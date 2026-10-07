@@ -7,8 +7,8 @@
     "melee",
     "land"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 철검과 씨앗 자루를 모두 보유해야 활성화된다. 검의 실제 공격 대상까지 선을 따라 밭 최대1개를 생성하고 씨앗 자루에 귀속한다. 적 없는 공격은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -27,5 +27,26 @@
     "name": "파종 검무",
     "effect": "베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다.",
     "cost": "경작지가 한 줄로 몰려 옆에서 들어오는 약탈에 취약해진다."
+  },
+  "runtimeProjection": {
+    "effects": [
+      {
+        "id": "core:sowing_sworddance_line",
+        "trigger": "attack",
+        "operation": "plant-path",
+        "subject": "core:seed_bag",
+        "amount": 1,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:iron_blade",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
   }
 }

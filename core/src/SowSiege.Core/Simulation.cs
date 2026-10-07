@@ -10,6 +10,7 @@ public sealed class Simulation
     private readonly CombatSystem combat;
     private readonly EstateSystem estate;
     private readonly ProgressionSystem progression;
+    internal RuntimeSystem? Runtime { get; }
     internal WorldState World { get; } = new();
     private readonly string peopleRule;
 
@@ -31,14 +32,17 @@ public sealed class Simulation
         foreach (var id in catalog.Tools.Keys.Order(StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
         World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
         World.Equipment.Add(new() { Id = catalog.Tuning.World.Progression.StartingWeapon });
-        combat = new(catalog, options, World, random, spatial);
-        estate = new(catalog, options, World, peopleRule, spatial);
-        progression = new(catalog, options, World, random);
+        if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial); }
+        combat = new(catalog, options, World, random, spatial, Runtime);
+        estate = new(catalog, options, World, peopleRule, spatial, Runtime);
+        progression = new(catalog, options, World, random, Runtime);
         World.Rerolls = catalog.Tuning.World.Progression.Rerolls;
         World.Bans = catalog.Tuning.World.Progression.Bans;
         World.Locks = catalog.Tuning.World.Progression.Locks;
         estate.Initialize();
+        if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
         if (options.Scenario == "load") { PrepareLoadTick(); }
+        if (Runtime is not null) { RecordSample(); }
     }
 
     public CardOfferSnapshot PendingCards => new(World.PendingCards.ToArray(), World.LockedCard, World.Rerolls, World.Bans, World.Locks);
@@ -67,7 +71,10 @@ public sealed class Simulation
         if (IsComplete) { throw new InvalidOperationException("Run is already complete."); }
         if (World.PendingCards.Length > 0) { throw new InvalidOperationException("Choose a pending card before advancing the world."); }
         SetSeason();
+        var wasInside = RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius);
         combat.MoveLord();
+        if (Runtime is not null && wasInside != RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius)) { Runtime.Emit("estate-cross", new(World.Lord)); }
+        Runtime?.Tick();
         combat.SpawnAndMoveEnemies();
         spatial.Rebuild(World.Enemies);
         foreach (var equipment in World.Equipment)
@@ -113,11 +120,11 @@ public sealed class Simulation
     {
         var hash = StateHash.Compute(new { options, catalog, World, RandomDraws = random.Draws });
         var tools = World.Tools.ToDictionary(pair => pair.Key, pair => new ToolTelemetry(pair.Value.ActivationDamage, pair.Value.GrowthProduced, pair.Value.GrowthDamage, pair.Value.Activations), StringComparer.Ordinal);
-        return new("S2 deterministic headless world; provisional gameplay tuning", options.Seed, options.HeroId, options.EstateId,
+        return new(Runtime is null ? "S2 deterministic headless world; provisional gameplay tuning" : "S4 bounded runtime projections; provisional gameplay tuning", options.Seed, options.HeroId, options.EstateId,
             options.Policy, catalog.Heroes[options.HeroId].StartingTool, World.Tick, World.WeaponDamage + World.AllyDamage + tools.Values.Sum(tool => tool.ActivationDamage + tool.GrowthDamage),
             tools.Values.Sum(tool => tool.GrowthProduced), hash, peopleRule, options.Scenario, World.LordHealth <= 0 ? "death" : IsComplete ? "duration" : "running", World.LordHealth > 0,
             World.Level, World.Season, random.Draws, World.WeaponDamage, tools, World.Timeline.ToArray(), World.KillExperience, World.HarvestExperience, World.TaxExperience,
             World.Food, World.People.Where(person => person.Role == "peasant").Sum(person => person.Members), World.People.Where(person => person.Role == "militia").Sum(person => person.Members), World.People.Count(person => person.Role == "vassal"),
-            World.Harvests, World.Ruins, World.Rebuilds, World.EstateTicks, World.SpawnedEnemies, World.DeathCause, World.Cards.ToArray(), World.AllyDamage);
+            World.Harvests, World.Ruins, World.Rebuilds, World.EstateTicks, World.SpawnedEnemies, World.DeathCause, World.Cards.ToArray(), World.AllyDamage, Runtime?.Result());
     }
 }

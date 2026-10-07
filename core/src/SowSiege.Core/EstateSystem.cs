@@ -1,6 +1,6 @@
 namespace SowSiege.Core;
 
-internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial)
+internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null)
 {
     public void Initialize()
     {
@@ -21,12 +21,25 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
 
     public void ApplyGrowth(ToolDefinition tool)
     {
+        if (catalog.Runtime?.Equipment.TryGetValue(tool.Id, out var projection) == true && projection.GrowthActions.Length > 0)
+        {
+            foreach (var action in projection.GrowthActions)
+            {
+                for (var index = 0; index < action.Yield * catalog.Estates[options.EstateId].GrowthMultiplier; index++)
+                {
+                    if (action.Operation == "construct") { Build(tool.Id); }
+                    else if (action.Operation == "garrison") { Garrison(tool.Id, action.DurationTicks); }
+                    else { throw new InvalidOperationException("Unknown mixed growth operation."); }
+                }
+            }
+            return;
+        }
         var amount = checked(tool.Growth.Yield * catalog.Estates[options.EstateId].GrowthMultiplier);
         for (var index = 0; index < amount; index++)
         {
             switch (tool.Growth.Target)
             {
-                case "land": Plant(tool.Id); break;
+                case "land": Plant(tool.Id, world.Lord); break;
                 case "building": Build(tool.Id); break;
                 case "people": Draft(tool.Id); break;
                 default: throw new InvalidOperationException($"Unknown growth target {tool.Growth.Target}");
@@ -34,13 +47,29 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
         }
     }
 
-    private void Plant(string source)
+    internal bool Plant(string source, Position origin)
     {
         var tuning = catalog.Tuning.World.Farms;
-        if (world.Farms.Count >= tuning.Capacity) { return; }
-        if (world.Farms.Any(farm => farm.Position.DistanceSquared(world.Lord) < (long)tuning.Spacing * tuning.Spacing)) { return; }
-        world.Farms.Add(new() { Id = world.AllocateId(), Position = world.Lord, Source = source });
+        if (world.Farms.Count >= tuning.Capacity) { return false; }
+        var position = runtime?.PlantingPosition(source, origin) ?? origin;
+        if (world.Farms.Any(farm => farm.Position.DistanceSquared(position) < (long)tuning.Spacing * tuning.Spacing)) { return false; }
+        var farm = new FarmState { Id = world.AllocateId(), Position = position, Source = source };
+        world.Farms.Add(farm);
         world.Tools[source].GrowthProduced++;
+        runtime?.Growth(source, "land", 1);
+        runtime?.Emit("plant", new(position, source, Farm: farm));
+        return true;
+    }
+
+    private void Garrison(string source, int duration)
+    {
+        var range = catalog.Tools[source].Activation.Range;
+        var building = world.Buildings.Where(building => building.Built && building.Health > 0 && RuntimeSystem.Within(building.Position, world.Lord, range)).OrderBy(building => building.Position.DistanceSquared(world.Lord)).ThenBy(building => building.Id).FirstOrDefault();
+        var person = world.People.Where(person => person.Role == "peasant" && person.Health > 0).OrderBy(person => person.Id).FirstOrDefault();
+        if (building is null || person is null) { return; }
+        person.Role = "guard"; person.Destination = building.Position; person.Source = source; person.DutyUntil = checked(world.Tick + duration);
+        world.Tools[source].GrowthProduced++;
+        runtime?.Growth(source, "people", person.Members);
     }
 
     private void Build(string source)
@@ -51,17 +80,24 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
             .Where(building => building.Position.DistanceSquared(world.Lord) <= (long)range * range)
             .OrderBy(building => building.Position.DistanceSquared(world.Lord)).ThenBy(building => building.Id).FirstOrDefault();
         if (building is null) { return; }
-        if (building.Built && building.Health == 0) { world.Rebuilds++; }
+        var ruined = building.Built && building.Health == 0;
+        var fresh = !building.Built;
+        if (ruined) { world.Rebuilds++; }
+        var context = new EffectContext(building.Position, source, Building: building, WasRuined: ruined, WasNew: fresh);
+        var repair = runtime?.Modify("repair-amount", tuning.RepairAmount, context) ?? tuning.RepairAmount;
+        if (runtime is not null && (fresh || ruined)) { runtime.Entity(building.Id).Facing = new(world.Lord.X - building.Position.X, world.Lord.Y - building.Position.Y); }
         building.Built = true;
-        building.Health = Math.Min(tuning.Health, building.Health + tuning.RepairAmount);
+        building.Health = Math.Min(tuning.Health, building.Health + repair);
         building.Source = source;
         world.Tools[source].GrowthProduced++;
+        runtime?.Growth(source, "building", 1);
+        runtime?.Emit("repair", context);
     }
 
     private void Draft(string source)
     {
         var people = catalog.Tuning.World.People;
-        var person = world.People.Where(person => person.Role == "peasant" && (rule != "B" || person.DutyUntil <= world.Tick)).OrderBy(person => person.Id).FirstOrDefault();
+        var person = world.People.Where(person => person.Role == "peasant" && (runtime?.CanDraft(person) ?? true) && (rule != "B" || person.DutyUntil <= world.Tick)).OrderBy(person => person.Id).FirstOrDefault();
         if (person is null && world.People.Sum(person => person.Members) < PopulationCap()) { person = AddPerson("peasant", source); }
         if (person is null) { return; }
         person.Source = source;
@@ -69,7 +105,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
         person.DutyUntil = world.Tick + people.DraftDurationTicks;
         if (rule != "B")
         {
-            var recruits = world.People.Where(candidate => candidate.Role == "peasant").OrderBy(candidate => candidate.Id)
+            var recruits = world.People.Where(candidate => candidate.Role == "peasant" && (runtime?.CanDraft(candidate) ?? true)).OrderBy(candidate => candidate.Id)
                 .Take(people.SquadSize - 1).ToArray();
             foreach (var recruit in recruits)
             {
@@ -79,6 +115,8 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
             }
         }
         world.Tools[source].GrowthProduced++;
+        runtime?.Growth(source, "people", person.Members);
+        runtime?.Emit("draft", new(person.Position, source, Person: person));
     }
 
     public void Tick()
@@ -102,6 +140,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
         var boostedWorkers = world.People.Count(person => person.Role == "peasant" && person.DutyUntil > world.Tick);
         foreach (var farm in world.Farms)
         {
+            if (runtime is not null && runtime.Entity(farm.Id).PauseUntil > world.Tick) { continue; }
             var lastStage = tuning.StageTicks.Length - 1;
             if (farm.Stage < lastStage)
             {
@@ -119,12 +158,20 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
             var canHarvest = farm.Position.DistanceSquared(world.Lord) <= (long)tuning.HarvestRange * tuning.HarvestRange
                 || world.People.Any(person => person.Role == "peasant" && person.Position.DistanceSquared(farm.Position) <= (long)tuning.HarvestRange * tuning.HarvestRange);
             if (!canHarvest) { continue; }
-            farm.Stage = 0; farm.Progress = 0;
-            world.Harvests++;
-            world.Food = Math.Min(catalog.Tuning.World.People.FoodCapacity, world.Food + tuning.FoodPerHarvest);
-            world.Experience += tuning.ExperiencePerHarvest;
-            world.HarvestExperience += tuning.ExperiencePerHarvest;
+            Harvest(farm);
         }
+    }
+
+    internal void Harvest(FarmState farm)
+    {
+        var tuning = catalog.Tuning.World.Farms;
+        farm.Stage = 0; farm.Progress = 0;
+        world.Harvests++;
+        world.Food = Math.Min(catalog.Tuning.World.People.FoodCapacity, world.Food + tuning.FoodPerHarvest);
+        world.Experience += tuning.ExperiencePerHarvest;
+        world.HarvestExperience += tuning.ExperiencePerHarvest;
+        runtime?.Experience("land", tuning.ExperiencePerHarvest);
+        runtime?.Emit("harvest", new(farm.Position, farm.Source, Farm: farm));
     }
 
     private void TickBuildings()
@@ -141,6 +188,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
             {
                 world.TaxExperience += tuning.TaxExperience;
                 world.Experience += tuning.TaxExperience;
+                runtime?.Experience("building", tuning.TaxExperience);
             }
         }
     }
@@ -151,7 +199,11 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
         var returned = new List<PersonState>();
         foreach (var person in world.People)
         {
-            if (person.Role == "militia" && rule == "C" && world.Tick >= person.DutyUntil) { person.Role = "returning"; }
+            if ((person.Role == "militia" && rule == "C" || person.Role == "guard") && world.Tick >= person.DutyUntil)
+            {
+                person.Role = "returning";
+                runtime?.Emit("return-start", new(person.Position, person.Source, Person: person));
+            }
             var target = person.Role is "vassal" or "militia" ? world.Lord : world.Estate;
             if (person.Role == "peasant")
             {
@@ -170,21 +222,38 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
                 }
                 target = person.Destination;
             }
-            person.Position = person.Position.MoveToward(target, tuning.ReturnSpeed);
+            if (person.Role == "guard") { target = person.Destination; }
+            var data = runtime?.Entity(person.Id);
+            if (person.Role == "returning" && data?.Waypoint is Position waypoint)
+            {
+                target = waypoint;
+                if (person.Position == waypoint && data.HoldUntil <= world.Tick) { data.Waypoint = null; target = world.Estate; }
+            }
+            var speed = runtime?.Modify(person.Role == "peasant" ? "worker-speed" : "draft-speed", tuning.ReturnSpeed, new(person.Position, person.Source, Person: person), 1) ?? tuning.ReturnSpeed;
+            person.Position = person.Position.MoveToward(target, speed);
             if (person.Role == "returning" && person.Position == world.Estate)
             {
+                runtime?.Emit("return-arrival", new(person.Position, person.Source, Person: person));
+                if (data is not null && data.HoldUntil > world.Tick)
+                {
+                    if (world.Tick >= person.AttackTick) { Attack(person.Position, tuning.Range, tuning.Damage * person.Members, person.Source); person.AttackTick = world.Tick + tuning.AttackCooldownTicks; }
+                    continue;
+                }
                 person.Role = "peasant";
+                runtime?.Returned(person);
                 person.Members = Math.Min(person.Members, person.Health);
                 while (person.Members > 1)
                 {
                     var health = Math.Min(tuning.VassalHealth, person.Health - (person.Members - 1));
                     person.Health -= health;
                     person.Members--;
-                    returned.Add(new() { Id = world.AllocateId(), Position = world.Estate, Destination = world.Estate, Source = person.Source, Health = health });
+                    var worker = new PersonState { Id = world.AllocateId(), Position = world.Estate, Destination = world.Estate, Source = person.Source, Health = health };
+                    returned.Add(worker);
+                    runtime?.Returned(worker);
                 }
                 person.Health = Math.Min(person.Health, tuning.VassalHealth);
             }
-            if (person.Role == "returning" || world.Tick < person.AttackTick) { continue; }
+            if (person.Role == "returning" && (data is null || data.HoldUntil <= world.Tick) || world.Tick < person.AttackTick) { continue; }
             Attack(person.Position, tuning.Range, tuning.Damage * person.Members, person.Source);
             person.AttackTick = world.Tick + tuning.AttackCooldownTicks;
         }

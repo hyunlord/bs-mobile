@@ -23,8 +23,8 @@
   "antiSynergy": [],
   "name": "생울타리 북",
   "concept": "발동: 뿌리 충격이 고리 모양으로 솟는다. 성장 산출: 일꾼이 가꾸는 살아 있는 방어 울타리. 비용: 울타리 돌봄에 묶인 일꾼이 경작에서 빠진다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 건물 건설·수리와 실제 백성의 건물 수비 전환을 각각 시도한다. 수비300틱 동안 밭일에서 빠지고 도구 귀속 전투에 참여한 뒤 귀환한다. 살아 있는 울타리 렌더링은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -33,5 +33,22 @@
     }
   ],
   "floorRationale": "발동 형태: 뿌리 충격이 고리 모양으로 솟는다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(일꾼이 가꾸는 살아 있는 방어 울타리) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
-  "antiSynergyNotes": []
+  "antiSynergyNotes": [],
+  "runtimeProjection": {
+    "growthActions": [
+      {
+        "target": "building",
+        "operation": "construct",
+        "yield": 1,
+        "durationTicks": 0
+      },
+      {
+        "target": "people",
+        "operation": "garrison",
+        "yield": 1,
+        "durationTicks": 300
+      }
+    ],
+    "effects": []
+  }
 }

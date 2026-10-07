@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
+if (process.argv[2]?.startsWith('s4-')) {
+  const { runS4Cli } = await import('./s4-league.mjs');
+  await runS4Cli(process.argv.slice(2));
+} else {
 const mode = process.argv[2] ?? 'smoke';
 if (!['smoke', 'stage', 'long'].includes(mode)) throw new Error('league mode must be smoke, stage or long');
 const tuning = JSON.parse(fs.readFileSync('data/tuning.json', 'utf8'));
@@ -54,3 +58,5 @@ const columns = ['policy', 'seed', 'peopleRule', 'ticks', 'survived', 'endReason
 const csv = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 fs.writeFileSync(`${directory}/outcomes.csv`, `${columns.join(',')}\n${rows.map(({ result }) => columns.map((field) => csv(result[field])).join(',')).join('\n')}\n`);
 console.log(`S2 ${mode}: ${rows.length} policy/seed cases × ${repeatCount} deterministic repeats; ${requestedTicks} tick cap; policy damage CV=${policyDamageCv ?? 'undefined (zero mean)'}; diagnostic only, not S4 balance.`);
+
+}

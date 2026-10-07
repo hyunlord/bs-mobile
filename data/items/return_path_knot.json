@@ -6,8 +6,8 @@
     "people",
     "harvest"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 귀환 시 가까운 건물을 중간 경유지로 삼아 노동 복귀 경로를 바꾼다. 익은 밭을 완전히 피하는 최적 경로라는 주장은 하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,23 @@
   },
   "linkedToolIds": [
     "core:muster_horn"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:return_path_knot_waypoint",
+        "trigger": "return-start",
+        "operation": "return-via-building",
+        "subject": "building",
+        "amount": 1,
+        "radius": 1600,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
 }

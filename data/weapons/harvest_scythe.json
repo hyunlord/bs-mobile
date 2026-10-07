@@ -12,17 +12,56 @@
     "shape": "melee",
     "knockback": 20,
     "form": "긴 낫이 옆으로 휘어져 익은 이삭과 적을 같은 선에서 훑는다.",
-    "damageCoefficient": 1.0
+    "damageCoefficient": 1
   },
   "name": "이삭 낫",
   "concept": "익은 작물 사이를 베면 낫끝의 적과 수확물을 함께 건드린다. 미숙한 밭까지 넓게 베면 다음 수확을 잃는다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 공격할 때 반경700의 익은 밭 최대1개를 수확하며 반경500의 미숙 밭 최대1개 성장 진행을 잃게 한다. 개별 이삭의 시각적 검 충돌은 구현하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
       "stage": "harvest",
       "reason": "수확 동선을 공격 동선과 겹치되 미숙한 작물의 손실을 비용으로 둔다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:harvest_scythe_harvest",
+        "trigger": "attack",
+        "operation": "harvest-near",
+        "subject": "core:harvest_scythe",
+        "amount": 1,
+        "radius": 700,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:harvest_scythe",
+            "minimum": 0
+          }
+        ]
+      },
+      {
+        "id": "core:harvest_scythe_young_cost",
+        "trigger": "attack",
+        "operation": "damage-young-plots",
+        "subject": "land",
+        "amount": 1,
+        "radius": 500,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:harvest_scythe",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

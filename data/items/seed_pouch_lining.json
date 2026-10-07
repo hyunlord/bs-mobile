@@ -6,8 +6,8 @@
     "land",
     "growth"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 기존 밭 가장자리 쪽으로 최대120 이동시켜 새 방향 확장을 줄인다. 위치·간격 제한으로 실패하면 공짜 밭은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,23 @@
   },
   "linkedToolIds": [
     "core:seed_bag"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:seed_pouch_lining_edge",
+        "trigger": "modifier",
+        "operation": "planting-bias",
+        "subject": "existing-edge",
+        "amount": 120,
+        "radius": 0,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
 }

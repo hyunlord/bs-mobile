@@ -1,6 +1,6 @@
 namespace SowSiege.Core;
 
-internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, SpatialHash spatial)
+internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, SpatialHash spatial, RuntimeSystem? runtime = null)
 {
     private readonly EnemyDefinition[] enemyTypes = catalog.Enemies.Values.OrderBy(enemy => enemy.Id, StringComparer.Ordinal).ToArray();
 
@@ -78,7 +78,7 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
 
     public void Activate(EquipmentState equipment, Activation activation, ToolLedger? ledger)
     {
-        equipment.ReadyTick = world.Tick + activation.CooldownTicks;
+        equipment.ReadyTick = world.Tick + (runtime?.Modify("attack-cooldown", activation.CooldownTicks, new(world.Lord, equipment.Id), 1) ?? activation.CooldownTicks);
         if (ledger is not null) { ledger.Activations++; }
         var candidates = spatial.Query(world.Lord, activation.Range).OrderBy(enemy => enemy.Position.DistanceSquared(world.Lord)).ThenBy(enemy => enemy.Id).ToArray();
         var nearest = candidates.FirstOrDefault();
@@ -94,16 +94,19 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
             };
             if (!hits) { continue; }
             var requested = checked((activation.Damage * equipment.Level + random.Next(catalog.Tuning.DamageRollMax)) * catalog.Heroes[options.HeroId].DamageMultiplier);
+            requested = runtime?.Modify("attack-damage", requested, new(world.Lord, equipment.Id, enemy)) ?? requested;
             var dealt = Math.Min(enemy.Health, requested);
             enemy.Health -= dealt;
             if (ledger is null) { world.WeaponDamage += dealt; } else { ledger.ActivationDamage += dealt; }
-            if (activation.Knockback > 0)
+            var knockback = runtime?.Modify("attack-knockback", activation.Knockback, new(world.Lord, equipment.Id, enemy)) ?? activation.Knockback;
+            if (knockback > 0)
             {
                 var map = catalog.Tuning.World.Map;
-                spatial.Move(enemy, new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - world.Lord.X) * activation.Knockback, 0, map.Width),
-                    Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - world.Lord.Y) * activation.Knockback, 0, map.Height)));
+                spatial.Move(enemy, new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - world.Lord.X) * knockback, 0, map.Width),
+                    Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - world.Lord.Y) * knockback, 0, map.Height)));
             }
         }
+        runtime?.Emit("attack", new(world.Lord, equipment.Id, nearest));
     }
 
     public void ResolveEnemyAttacks()
@@ -116,7 +119,9 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
                             .OrderBy(person => person.Position.DistanceSquared(enemy.Position)).ThenBy(person => person.Id).FirstOrDefault();
             if (defender is not null)
             {
-                defender.Health = Math.Max(0, defender.Health - definition.Damage);
+                var incoming = runtime?.Modify("worker-incoming-damage", definition.Damage, new(defender.Position, defender.Source, enemy, Person: defender)) ?? definition.Damage;
+                if (runtime is not null && runtime.Entity(defender.Id).ArrivalGuardUsed && runtime.Entity(defender.Id).HoldUntil > world.Tick) { incoming = 0; }
+                defender.Health = Math.Max(0, defender.Health - incoming);
                 defender.Members = Math.Min(defender.Members, (defender.Health + catalog.Tuning.World.People.VassalHealth - 1) / catalog.Tuning.World.People.VassalHealth);
                 enemy.AttackTick = world.Tick + definition.AttackCooldownTicks;
                 continue;
@@ -128,13 +133,14 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
             {
                 var farm = world.Farms.First(farm => farm.Id == enemy.TargetId);
                 if (!(enemy.LastTarget == "seed" ? farm.Stage <= 1 : farm.Stage == catalog.Tuning.World.Farms.StageTicks.Length - 1)) { enemy.TargetRefreshTick = 0; continue; }
+                if (runtime?.ShieldFarm(farm, enemy) == true) { continue; }
                 farm.Stage = 0; farm.Progress = 0; farm.Fertility = 0;
             }
             else if (enemy.LastTarget == "building")
             {
                 var building = world.Buildings.First(building => building.Id == enemy.TargetId);
                 if (building.Health <= 0) { enemy.TargetRefreshTick = 0; continue; }
-                building.Health = Math.Max(0, building.Health - definition.Damage);
+                building.Health = Math.Max(0, building.Health - (runtime?.BuildingDamage(building, enemy, definition.Damage) ?? definition.Damage));
                 if (building.Health == 0) { world.Ruins++; }
             }
             else
@@ -153,6 +159,8 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
             var experience = catalog.Enemies[enemy.Definition].Experience;
             world.Experience += experience;
             world.KillExperience += experience;
+            runtime?.Experience("weapon", experience);
+            runtime?.Emit("kill", new(enemy.Position, Enemy: enemy));
             var nearest = world.Farms.OrderBy(farm => farm.Position.DistanceSquared(enemy.Position)).ThenBy(farm => farm.Id).FirstOrDefault();
             if (nearest is not null) { nearest.Fertility += catalog.Tuning.World.Farms.FertilityPerKill; }
         }

@@ -1,0 +1,9 @@
+  복원할 프로젝트를 확인하는 중...
+  복원할 모든 프로젝트가 최신 상태입니다.
+  SowSiege.Core -> /Users/rexxa/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+  SowSiege.Sim -> /Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+  SowSiege.Tests -> /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+/Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll(.NETCoreApp,Version=v8.0)에 대한 테스트 실행
+지정된 패턴과 일치한 총 테스트 파일 수는 1개입니다.
+
+통과!  - 실패:     0, 통과:    95, 건너뜀:     0, 전체:    95, 기간: 5 s - SowSiege.Tests.dll (net8.0)

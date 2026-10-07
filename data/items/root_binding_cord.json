@@ -6,8 +6,8 @@
     "land",
     "defense"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,40 @@
   },
   "linkedToolIds": [
     "core:seed_bag"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:root_binding_cord_shield",
+        "trigger": "plant",
+        "operation": "shield-farms",
+        "subject": "land",
+        "amount": 1,
+        "radius": 350,
+        "durationTicks": 300,
+        "foodCost": 0,
+        "conditions": []
+      },
+      {
+        "id": "core:root_binding_cord_linked_delay",
+        "trigger": "farm-hit",
+        "operation": "pause-neighbor-growth",
+        "subject": "land",
+        "amount": 1,
+        "radius": 500,
+        "durationTicks": 60,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "shield-consumed",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

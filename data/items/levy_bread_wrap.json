@@ -6,8 +6,8 @@
     "people",
     "food"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 실제 징집 때 식량2를 지불해 군역 시간을 늘린다. 운반 물품 렌더링은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다. 중첩 수에 비례해 Amount×DurationTicks만큼 군역/귀환 보호 시간을 늘리며 식량 비용은 실제 적용당 한 번 차감한다. 내부 시간 정수 범위 제한은 인벤토리 중첩 제한이 아니다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,23 @@
   },
   "linkedToolIds": [
     "core:muster_horn"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:levy_bread_wrap_duty",
+        "trigger": "draft",
+        "operation": "extend-duty",
+        "subject": "people",
+        "amount": 1,
+        "radius": 0,
+        "durationTicks": 120,
+        "foodCost": 2,
+        "conditions": []
+      }
+    ]
+  }
 }

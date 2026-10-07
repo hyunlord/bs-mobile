@@ -6,8 +6,8 @@
     "building",
     "people"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,47 @@
   },
   "linkedToolIds": [
     "core:carpenter_hammer"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "building",
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:scaffold_step_worker_speed",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "worker-speed",
+        "amount": 1,
+        "radius": 800,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      },
+      {
+        "id": "core:scaffold_step_draft_cost",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "draft-speed",
+        "amount": -1,
+        "radius": 800,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

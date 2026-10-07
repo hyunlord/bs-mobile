@@ -1,0 +1,666 @@
+{
+  "data": {
+    "schemaVersion": 1,
+    "model": "headless-gameplay",
+    "stage": "S2",
+    "scope": "S2 truncated headless mechanics fixture; not a full game",
+    "gameplayBalanceClaim": false,
+    "commit": "b53c25d8af7bc1510175d278331fb229ea03981d",
+    "timestamp": "2026-10-07T21:34:45.0020464+00:00",
+    "runtime": {
+      "framework": "8.0.31",
+      "os": "Ubuntu 24.04.5 LTS",
+      "architecture": "X64",
+      "stopwatchFrequency": 1000000000
+    },
+    "seed": 42,
+    "policy": "mixed",
+    "iterations": 3,
+    "ticks": 900,
+    "tickP95Ms": 0.052478,
+    "tickSampleCount": 2700,
+    "stopwatchFrequency": 1000000000,
+    "requestedWarmupTicks": 300,
+    "actualWarmupTicks": 300,
+    "warmupExcluded": true,
+    "tickTimingScope": "Simulation.Tick only; snapshots and PrepareLoadTick excluded; end-tick fixture restoration included",
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "damage": 459,
+    "growth": 27,
+    "hash": "AC87E876D9FA3D227D478341785A99CDE4706D854DF827A5573D51B5F4435A6F",
+    "balanceDispersion": null,
+    "config": {
+      "profileId": "core:s2_baseline",
+      "profileSha256": "422DD5E165E402E102B1C7EBB2339EADA73E50ED682F9D10E27F0B8A25BD6E27",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "peopleRule": "C",
+      "scenario": "normal",
+      "policy": "mixed",
+      "seed": 42,
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "tickRate": 30,
+      "contentSha256": "1BCE02C2322BB3F43E961E5D95E2D227C5D471A6BDB99B2377B7A8E22DC5CBC3",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "iterations": 3,
+      "ticks": 900
+    },
+    "sourceMetadata": {
+      "profileId": "core:s2_baseline",
+      "profileSha256": "422DD5E165E402E102B1C7EBB2339EADA73E50ED682F9D10E27F0B8A25BD6E27",
+      "selectedIds": {
+        "weapons": [
+          "core:iron_blade",
+          "core:ember_wand",
+          "core:ward_orbit"
+        ],
+        "tools": [
+          "core:seed_bag",
+          "core:carpenter_hammer",
+          "core:muster_horn"
+        ],
+        "enemies": [
+          "core:raider",
+          "core:seed_mite",
+          "core:crop_grazer",
+          "core:stone_breaker"
+        ],
+        "heroes": [
+          "core:founder"
+        ],
+        "estates": [
+          "core:meadow"
+        ]
+      },
+      "designMetadataPolicy": "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning",
+      "contentSha256": "1BCE02C2322BB3F43E961E5D95E2D227C5D471A6BDB99B2377B7A8E22DC5CBC3",
+      "commit": "14e0bdd45f00c9e55c6ce0b3357db5c05255458b",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "90C02CFFDB6544866110667B40C0C6684597204D94C71977C4F6239A9BE41A8D",
+      "simulationAssemblySha256": "5E78C0A14A33BD7D86545E5BE84317D503D6B09EDD7444E51828CD216171E7C0",
+      "coreAssemblySha256": "FF65C1A2067FCBC85111E928CF838E4CFE5AC1F3B707E1C788DCD7E4D5906181",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "C",
+      "scenario": "normal",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "load": {
+      "enabled": false,
+      "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+      "squadSize": 5,
+      "expected": {
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60
+      },
+      "beforeMinimum": {
+        "enemies": 0,
+        "farms": 0,
+        "buildings": 0,
+        "people": 3
+      },
+      "beforeMaximum": {
+        "enemies": 33,
+        "farms": 9,
+        "buildings": 2,
+        "people": 13
+      },
+      "afterMinimum": {
+        "enemies": 4,
+        "farms": 1,
+        "buildings": 0,
+        "people": 3
+      },
+      "afterMaximum": {
+        "enemies": 33,
+        "farms": 9,
+        "buildings": 2,
+        "people": 13
+      },
+      "populationMembers": {
+        "beforeMinimum": 6,
+        "beforeMaximum": 15,
+        "afterMinimum": 6,
+        "afterMaximum": 15
+      },
+      "verifiedSamples": 0,
+      "allSamplesExact": false
+    },
+    "policyDamageCv": 0.02705842682220579,
+    "balanceMetric": "S2 diagnostic coefficient of variation of policy mean actual damage; not the formal S4 balance gate",
+    "league": {
+      "mode": "smoke",
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "policies": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
+      "peopleRule": "C",
+      "scenario": "normal",
+      "requestedTicks": 900,
+      "fullDurationTicks": 21600,
+      "shortenedSimulation": true,
+      "seasonsAccelerated": false,
+      "runCount": 18,
+      "repeatCount": 3,
+      "totalExecutions": 54,
+      "independentPolicySeedCases": 18,
+      "timingScope": "tick p95 is the mixed/first-seed baseline, not a pooled league percentile",
+      "policyMeans": [
+        {
+          "policy": "weapon",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 481.6666666666667,
+          "growth": 26.666666666666668,
+          "level": 5,
+          "ticks": 900,
+          "killExperience": 70.66666666666667,
+          "harvestExperience": 180,
+          "taxExperience": 0
+        },
+        {
+          "policy": "land",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 457,
+          "growth": 16.666666666666668,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 78.66666666666667,
+          "harvestExperience": 110,
+          "taxExperience": 0
+        },
+        {
+          "policy": "building",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 460,
+          "growth": 14.333333333333334,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 76,
+          "harvestExperience": 115,
+          "taxExperience": 8
+        },
+        {
+          "policy": "people",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 495,
+          "growth": 20.333333333333332,
+          "level": 4.666666666666667,
+          "ticks": 900,
+          "killExperience": 82.66666666666667,
+          "harvestExperience": 125,
+          "taxExperience": 0
+        },
+        {
+          "policy": "mixed",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 475,
+          "growth": 16.666666666666668,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 80.66666666666667,
+          "harvestExperience": 110,
+          "taxExperience": 0
+        },
+        {
+          "policy": "random",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 475,
+          "growth": 16.666666666666668,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 80.66666666666667,
+          "harvestExperience": 110,
+          "taxExperience": 0
+        }
+      ],
+      "sourceRecords": [
+        {
+          "resultsPath": "artifacts/league-smoke/weapon-42.results.json",
+          "metricsPath": "artifacts/league-smoke/weapon-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/weapon-43.results.json",
+          "metricsPath": "artifacts/league-smoke/weapon-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/weapon-44.results.json",
+          "metricsPath": "artifacts/league-smoke/weapon-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/land-42.results.json",
+          "metricsPath": "artifacts/league-smoke/land-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/land-43.results.json",
+          "metricsPath": "artifacts/league-smoke/land-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/land-44.results.json",
+          "metricsPath": "artifacts/league-smoke/land-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/building-42.results.json",
+          "metricsPath": "artifacts/league-smoke/building-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/building-43.results.json",
+          "metricsPath": "artifacts/league-smoke/building-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/building-44.results.json",
+          "metricsPath": "artifacts/league-smoke/building-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/people-42.results.json",
+          "metricsPath": "artifacts/league-smoke/people-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/people-43.results.json",
+          "metricsPath": "artifacts/league-smoke/people-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/people-44.results.json",
+          "metricsPath": "artifacts/league-smoke/people-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/mixed-42.results.json",
+          "metricsPath": "artifacts/league-smoke/mixed-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/mixed-43.results.json",
+          "metricsPath": "artifacts/league-smoke/mixed-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/mixed-44.results.json",
+          "metricsPath": "artifacts/league-smoke/mixed-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/random-42.results.json",
+          "metricsPath": "artifacts/league-smoke/random-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/random-43.results.json",
+          "metricsPath": "artifacts/league-smoke/random-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/random-44.results.json",
+          "metricsPath": "artifacts/league-smoke/random-44.metrics.json"
+        }
+      ]
+    },
+    "measurementScope": "S2 truncated headless mechanics fixture; not a full game"
+  },
+  "source": {
+    "schemaVersion": 1,
+    "model": "headless-gameplay",
+    "stage": "S2",
+    "scope": "S2 truncated headless mechanics fixture; not a full game",
+    "gameplayBalanceClaim": false,
+    "commit": "14e0bdd45f00c9e55c6ce0b3357db5c05255458b",
+    "timestamp": "2026-10-07T21:34:45.0020464+00:00",
+    "runtime": "8.0.31",
+    "seed": 42,
+    "policy": "mixed",
+    "iterations": 3,
+    "ticks": 900,
+    "tickP95Ms": 0.052478,
+    "tickSampleCount": 2700,
+    "stopwatchFrequency": 1000000000,
+    "requestedWarmupTicks": 300,
+    "actualWarmupTicks": 300,
+    "warmupExcluded": true,
+    "tickTimingScope": "Simulation.Tick only; snapshots and PrepareLoadTick excluded; end-tick fixture restoration included",
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "damage": 459,
+    "growth": 27,
+    "hash": "AC87E876D9FA3D227D478341785A99CDE4706D854DF827A5573D51B5F4435A6F",
+    "balanceDispersion": null,
+    "config": {
+      "profileId": "core:s2_baseline",
+      "profileSha256": "422DD5E165E402E102B1C7EBB2339EADA73E50ED682F9D10E27F0B8A25BD6E27",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "peopleRule": "C",
+      "scenario": "normal",
+      "policy": "mixed",
+      "seed": 42,
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "tickRate": 30,
+      "contentSha256": "1BCE02C2322BB3F43E961E5D95E2D227C5D471A6BDB99B2377B7A8E22DC5CBC3",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0
+    },
+    "sourceMetadata": {
+      "profileId": "core:s2_baseline",
+      "profileSha256": "422DD5E165E402E102B1C7EBB2339EADA73E50ED682F9D10E27F0B8A25BD6E27",
+      "selectedIds": {
+        "weapons": [
+          "core:iron_blade",
+          "core:ember_wand",
+          "core:ward_orbit"
+        ],
+        "tools": [
+          "core:seed_bag",
+          "core:carpenter_hammer",
+          "core:muster_horn"
+        ],
+        "enemies": [
+          "core:raider",
+          "core:seed_mite",
+          "core:crop_grazer",
+          "core:stone_breaker"
+        ],
+        "heroes": [
+          "core:founder"
+        ],
+        "estates": [
+          "core:meadow"
+        ]
+      },
+      "designMetadataPolicy": "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning",
+      "contentSha256": "1BCE02C2322BB3F43E961E5D95E2D227C5D471A6BDB99B2377B7A8E22DC5CBC3",
+      "commit": "14e0bdd45f00c9e55c6ce0b3357db5c05255458b",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "90C02CFFDB6544866110667B40C0C6684597204D94C71977C4F6239A9BE41A8D",
+      "simulationAssemblySha256": "5E78C0A14A33BD7D86545E5BE84317D503D6B09EDD7444E51828CD216171E7C0",
+      "coreAssemblySha256": "FF65C1A2067FCBC85111E928CF838E4CFE5AC1F3B707E1C788DCD7E4D5906181",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "C",
+      "scenario": "normal",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "load": {
+      "enabled": false,
+      "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+      "squadSize": 5,
+      "expected": {
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60
+      },
+      "beforeMinimum": {
+        "enemies": 0,
+        "farms": 0,
+        "buildings": 0,
+        "people": 3
+      },
+      "beforeMaximum": {
+        "enemies": 33,
+        "farms": 9,
+        "buildings": 2,
+        "people": 13
+      },
+      "afterMinimum": {
+        "enemies": 4,
+        "farms": 1,
+        "buildings": 0,
+        "people": 3
+      },
+      "afterMaximum": {
+        "enemies": 33,
+        "farms": 9,
+        "buildings": 2,
+        "people": 13
+      },
+      "populationMembers": {
+        "beforeMinimum": 6,
+        "beforeMaximum": 15,
+        "afterMinimum": 6,
+        "afterMaximum": 15
+      },
+      "verifiedSamples": 0,
+      "allSamplesExact": false
+    },
+    "policyDamageCv": 0.02705842682220579,
+    "balanceMetric": "S2 diagnostic coefficient of variation of policy mean actual damage; not the formal S4 balance gate",
+    "league": {
+      "mode": "smoke",
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "policies": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
+      "peopleRule": "C",
+      "scenario": "normal",
+      "requestedTicks": 900,
+      "fullDurationTicks": 21600,
+      "shortenedSimulation": true,
+      "seasonsAccelerated": false,
+      "runCount": 18,
+      "repeatCount": 3,
+      "totalExecutions": 54,
+      "independentPolicySeedCases": 18,
+      "timingScope": "tick p95 is the mixed/first-seed baseline, not a pooled league percentile",
+      "policyMeans": [
+        {
+          "policy": "weapon",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 481.6666666666667,
+          "growth": 26.666666666666668,
+          "level": 5,
+          "ticks": 900,
+          "killExperience": 70.66666666666667,
+          "harvestExperience": 180,
+          "taxExperience": 0
+        },
+        {
+          "policy": "land",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 457,
+          "growth": 16.666666666666668,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 78.66666666666667,
+          "harvestExperience": 110,
+          "taxExperience": 0
+        },
+        {
+          "policy": "building",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 460,
+          "growth": 14.333333333333334,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 76,
+          "harvestExperience": 115,
+          "taxExperience": 8
+        },
+        {
+          "policy": "people",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 495,
+          "growth": 20.333333333333332,
+          "level": 4.666666666666667,
+          "ticks": 900,
+          "killExperience": 82.66666666666667,
+          "harvestExperience": 125,
+          "taxExperience": 0
+        },
+        {
+          "policy": "mixed",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 475,
+          "growth": 16.666666666666668,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 80.66666666666667,
+          "harvestExperience": 110,
+          "taxExperience": 0
+        },
+        {
+          "policy": "random",
+          "independentSeeds": 3,
+          "survivalRate": 1,
+          "damage": 475,
+          "growth": 16.666666666666668,
+          "level": 4.333333333333333,
+          "ticks": 900,
+          "killExperience": 80.66666666666667,
+          "harvestExperience": 110,
+          "taxExperience": 0
+        }
+      ],
+      "sourceRecords": [
+        {
+          "resultsPath": "artifacts/league-smoke/weapon-42.results.json",
+          "metricsPath": "artifacts/league-smoke/weapon-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/weapon-43.results.json",
+          "metricsPath": "artifacts/league-smoke/weapon-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/weapon-44.results.json",
+          "metricsPath": "artifacts/league-smoke/weapon-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/land-42.results.json",
+          "metricsPath": "artifacts/league-smoke/land-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/land-43.results.json",
+          "metricsPath": "artifacts/league-smoke/land-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/land-44.results.json",
+          "metricsPath": "artifacts/league-smoke/land-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/building-42.results.json",
+          "metricsPath": "artifacts/league-smoke/building-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/building-43.results.json",
+          "metricsPath": "artifacts/league-smoke/building-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/building-44.results.json",
+          "metricsPath": "artifacts/league-smoke/building-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/people-42.results.json",
+          "metricsPath": "artifacts/league-smoke/people-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/people-43.results.json",
+          "metricsPath": "artifacts/league-smoke/people-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/people-44.results.json",
+          "metricsPath": "artifacts/league-smoke/people-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/mixed-42.results.json",
+          "metricsPath": "artifacts/league-smoke/mixed-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/mixed-43.results.json",
+          "metricsPath": "artifacts/league-smoke/mixed-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/mixed-44.results.json",
+          "metricsPath": "artifacts/league-smoke/mixed-44.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/random-42.results.json",
+          "metricsPath": "artifacts/league-smoke/random-42.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/random-43.results.json",
+          "metricsPath": "artifacts/league-smoke/random-43.metrics.json"
+        },
+        {
+          "resultsPath": "artifacts/league-smoke/random-44.results.json",
+          "metricsPath": "artifacts/league-smoke/random-44.metrics.json"
+        }
+      ]
+    }
+  }
+}

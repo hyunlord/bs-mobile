@@ -8,6 +8,7 @@ command -v dotnet >/dev/null || { echo 'Install .NET 8 SDK (see README).'; exit 
 npm ci --ignore-scripts
 npm test
 node --test tools/test-pr-policy.mjs
+node --test tools/test-csv.mjs tools/test-s4*.mjs
 npm run validate
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
@@ -20,3 +21,7 @@ dotnet test --no-build --configuration Release --logger 'trx;LogFileName=tests.t
 dotnet format --no-restore --verify-no-changes
 dotnet format tools/ArchitectureGuard --no-restore --verify-no-changes
 ./tools/league.sh
+cp artifacts/metrics.json artifacts/metrics-s2.json
+node tools/league.mjs s4-smoke --profile s4-stage-one --workers 2
+cp artifacts/league-s4-smoke/metrics.json artifacts/metrics.json
+node tools/s4-report.mjs artifacts/league-s4-smoke artifacts/s4-smoke-report --no-plots

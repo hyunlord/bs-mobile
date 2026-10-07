@@ -239,10 +239,70 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       skinNumericCount:canonical.filter(e=>e.kind==='skin' && containsNumber(e.record)).length,
       loopLinkedDistinct:loopLinked
     };
+    const effectIds = new Set();
+    for (const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) {
+      const projection=entry.record.runtimeProjection;
+      if(entry.record.designStatus==='s4-runtime' && ['weapon','tool','charter','item','evolution'].includes(entry.kind)) expect(isRecord(projection),`${entry.relative}: S4 content requires runtime projection`);
+      if(!isRecord(projection)) continue;
+      const actions=list(projection.growthActions);
+      expect(list(projection.effects).length+actions.length>0,`${entry.relative}: empty runtime projection`);
+      expect(entry.kind!=='weapon' || actions.length===0,`${entry.relative}: weapon cannot have growth actions`);
+      expect(new Set(actions.map(a=>a.target)).size===actions.length,`${entry.relative}: duplicate growth target`);
+      for(const action of actions) expect((action.target==='building' && action.operation==='construct' && action.durationTicks===0) || (action.target==='people' && action.operation==='garrison' && action.durationTicks>0),`${entry.relative}: unsupported growth action`);
+      for(const effect of list(projection.effects)) {
+        expect(!effectIds.has(effect.id) && !byId.has(effect.id),`${entry.relative}: duplicate runtime effect ID`); effectIds.add(effect.id);
+        expect(effect.amount!==0 && (effect.operation==='stat-add' || effect.amount>0),`${entry.relative}: invalid effect amount`);
+        expect(['stat-add','planting-bias'].includes(effect.operation)===(effect.trigger==='modifier'),`${entry.relative}: modifier trigger mismatch`);
+        expect(effect.trigger!=='modifier' || effect.foodCost===0,`${entry.relative}: modifier food cost is unsupported`);
+        const subjects={
+          'stat-add':['attack-damage','attack-knockback','attack-cooldown','repair-amount','draft-min-rest','draft-speed','worker-speed','worker-incoming-damage','building-front-damage','building-rear-damage'],
+          'planting-bias':['existing-edge','estate-inward'],'damage-pulse':['weapon-front'],
+          'repair-nearest':['building'],'return-via-building':['building'],'worker-buff':['people'],'rally-returners':['people'],
+          'extend-duty':['people'],'guard-return':['people'],'shield-farms':['land'],'damage-young-plots':['land'],'pause-neighbor-growth':['land']
+        };
+        if(effect.operation==='plant-path') ref(entry,'runtimeProjection.effect.subject',effect.subject,'tool');
+        else if(effect.operation==='harvest-near') expect(['weapon','tool'].includes(byId.get(effect.subject)?.kind),`${entry.relative}: unknown harvest subject`);
+        else expect(subjects[effect.operation]?.includes(effect.subject),`${entry.relative}: unsupported runtime subject`);
+        if(['worker-buff','rally-returners','shield-farms','extend-duty','guard-return','pause-neighbor-growth'].includes(effect.operation)) expect(effect.durationTicks>0,`${entry.relative}: timed effect requires duration`);
+        for(const condition of list(effect.conditions)) {
+          expect(['count','season'].includes(condition.kind) || condition.minimum===0, `${entry.relative}: unused condition minimum must be zero`);
+          if(['equipment-owned','equipment-id'].includes(condition.kind)) expect(['weapon','tool'].includes(byId.get(condition.value)?.kind),`${entry.relative}: invalid effect equipment reference`);
+          const values={'equipment-kind':['weapon','tool'],'growth-target':['land','building','people'],'person-role':['peasant','militia','returning','guard','vassal'],'enemy-target':['lord','seed','ripe','building'],'count':['farms','buildings','people','harvests']};
+          if(values[condition.kind]) expect(values[condition.kind].includes(condition.value),`${entry.relative}: invalid condition value`);
+          if(['near-seed','near-ripe','near-building','estate-inside','estate-outside','building-ruined','building-new','shield-consumed','season'].includes(condition.kind)) expect(condition.value===null && (condition.kind==='season'?condition.minimum<=3:condition.minimum===0),`${entry.relative}: invalid condition parameters`);
+        }
+      }
+    }
     const profiles=records.filter(e=>e.kind==='profile');
     expect(profiles.some(entry=>entry.relative===path.join('profiles','s2-baseline.json')), 'Explicit s2-baseline runtime profile required');
     const allSelected = new Set();
     for(const {record:r,relative} of profiles) {
+      if (isRecord(r.runtime)) {
+        for (const [directory,kind] of [['charters','charter'],['items','item'],['evolutions','evolution']]) for (const id of list(r.runtime[directory])) {
+          reference(relative,`runtime.${directory}`,id,kind); allSelected.add(id);
+          expect(byId.get(id)?.record.designStatus==='s4-runtime' && isRecord(byId.get(id)?.record.runtimeProjection),`${relative}: runtime selection requires implemented projection ${id}`);
+        }
+        const sources=list(r.runtime.tuning?.lootSources);
+        expect(new Set(sources.map(s=>s.id)).size===sources.length,`${relative}: duplicate loot channel ID`);
+        const equipmentIds=[...list(r.selection?.tools),...list(r.selection?.weapons)];
+        const selectedTags=new Set(equipmentIds.flatMap(id=>list(byId.get(id)?.record.tags)));
+        for(const id of [...equipmentIds,...list(r.runtime.charters),...list(r.runtime.items),...list(r.runtime.evolutions)]) {
+          for(const effect of list(byId.get(id)?.record.runtimeProjection?.effects)) {
+            if(['plant-path','harvest-near'].includes(effect.operation)) expect(equipmentIds.includes(effect.subject),`${relative}: effect subject outside selected equipment`);
+            for(const condition of list(effect.conditions)) {
+              if(['equipment-owned','equipment-id'].includes(condition.kind)) expect(equipmentIds.includes(condition.value),`${relative}: condition equipment outside selected profile`);
+              if(['owned-tag','equipment-tag'].includes(condition.kind)) expect(selectedTags.has(condition.value),`${relative}: condition tag outside selected profile`);
+            }
+          }
+        }
+        for(const id of list(r.runtime.items)) for(const tag of list(byId.get(id)?.record.runtimeProjection?.requiredTags)) expect(selectedTags.has(tag),`${relative}: unavailable item tag ${tag}`);
+        for(const id of list(r.runtime.evolutions)) for(const input of list(byId.get(id)?.record.inputIds)) expect(equipmentIds.includes(input),`${relative}: evolution input outside selected equipment ${input}`);
+      }
+      if(relative===path.join('profiles','s4-stage-one.json')) {
+        expect(isRecord(r.runtime),`${relative}: S4 runtime projection required`);
+        for(const [kind,count] of Object.entries({weapons:4,tools:4,enemies:6,heroes:1,estates:1})) expect(list(r.selection?.[kind]).length===count,`${relative}: S4 selection ${kind} must equal ${count}`);
+        for(const [kind,count] of Object.entries({charters:4,items:12,evolutions:2})) expect(list(r.runtime?.[kind]).length===count,`${relative}: S4 runtime ${kind} must equal ${count}`);
+      }
       const isBaseline = relative === path.join('profiles', 's2-baseline.json');
       const selected=new Set();
       const expectedCounts={selection:{weapons:3,tools:3,enemies:4,heroes:1,estates:1},testSelection:{weapons:0,tools:2,enemies:0,heroes:1,estates:1}};
@@ -254,12 +314,12 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
           reference(relative,`${group}.${directory}`,id,kind);
           expect(!selected.has(id),`${relative}: duplicate profile selection ${id}`); selected.add(id); allSelected.add(id);
           const target=byId.get(id);
-          expect(target?.record.designStatus==='s2-runtime',`${relative}: candidate cannot enter runtime profile ${id}`);
+          expect(target?.record.designStatus==='s2-runtime' || (isRecord(r.runtime) && target?.record.designStatus==='s4-runtime'),`${relative}: candidate cannot enter runtime profile ${id}`);
           expect(Boolean(target?.relative.startsWith(`test${path.sep}`))===(group==='testSelection'),`${relative}: profile test selection boundary mismatch ${id}`);
         }
       }
     }
-    for(const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) expect((entry.record.designStatus==='s2-runtime')===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
+    for(const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) expect((['s2-runtime','s4-runtime'].includes(entry.record.designStatus))===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
   }
   if (schemas.size === 0) errors.push('No valid schemas found');
   if (records.length === 0) errors.push('No content records found');

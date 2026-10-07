@@ -1,0 +1,2504 @@
+{
+  "data": {
+    "schemaVersion": 1,
+    "model": "headless-s4-league",
+    "stage": "S4",
+    "scope": "S4 truncated headless mechanics fixture; not a full game",
+    "gameplayBalanceClaim": false,
+    "commit": "e0b5b9b317e39996c14ca3b8b01718e3dc748d57",
+    "timestamp": "2026-10-07T22:09:38.4218780+00:00",
+    "runtime": {
+      "framework": "8.0.31",
+      "os": "Ubuntu 24.04.5 LTS",
+      "architecture": "X64",
+      "stopwatchFrequency": 1000000000
+    },
+    "seed": 42,
+    "iterations": 3,
+    "tickP95Ms": 0.13938,
+    "tickSampleCount": 2700,
+    "stopwatchFrequency": 1000000000,
+    "requestedWarmupTicks": 300,
+    "actualWarmupTicks": 300,
+    "warmupExcluded": true,
+    "tickTimingScope": "Simulation.Tick only; snapshots and PrepareLoadTick excluded; end-tick fixture restoration included",
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "damage": 550,
+    "growth": 26,
+    "hash": "4DE29B84F41DA1AC49C1AF7DE4F354A863AC889F602975532FA47BD8C3167FB9",
+    "balanceDispersion": null,
+    "config": {
+      "profileId": "core:s4_stage_one",
+      "profileSha256": "C1CBD90906AB7416F547A6A888EFBFDF8B7B59D24D9461AAABDDCC4749DE75A6",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "peopleRule": "A",
+      "scenario": "normal",
+      "policy": "mixed",
+      "seed": 42,
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "tickRate": 30,
+      "contentSha256": "F3EFB782684164ADB91C4450725D1174B17CDCEA32304CD4630F3F07266A5144",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "mode": "s4-smoke",
+      "policies": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
+      "peopleRules": [
+        "A",
+        "B",
+        "C"
+      ],
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "requestedTicks": 900,
+      "repeatCount": 3,
+      "workerLimit": 2,
+      "timingStatistic": "mixed-A-seed42-case-tick-p95",
+      "iterations": 3
+    },
+    "sourceMetadata": {
+      "profileId": "core:s4_stage_one",
+      "profileSha256": "C1CBD90906AB7416F547A6A888EFBFDF8B7B59D24D9461AAABDDCC4749DE75A6",
+      "selectedIds": {
+        "weapons": [
+          "core:iron_blade",
+          "core:ember_wand",
+          "core:ward_orbit",
+          "core:harvest_scythe"
+        ],
+        "tools": [
+          "core:seed_bag",
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:hedge_drum"
+        ],
+        "enemies": [
+          "core:raider",
+          "core:seed_mite",
+          "core:crop_grazer",
+          "core:stone_breaker",
+          "core:shield_raider",
+          "core:siege_cart"
+        ],
+        "heroes": [
+          "core:founder"
+        ],
+        "estates": [
+          "core:meadow"
+        ],
+        "charters": [
+          "core:guarded_harvest",
+          "core:repair_tithe",
+          "core:meal_oath",
+          "core:rally_boundary"
+        ],
+        "items": [
+          "core:boundary_hinge",
+          "core:joiner_square",
+          "core:ruin_keystone",
+          "core:scaffold_step",
+          "core:levy_bread_wrap",
+          "core:muster_roll",
+          "core:return_path_knot",
+          "core:shock_absorber_pad",
+          "core:meadow_buckle",
+          "core:root_binding_cord",
+          "core:seed_pouch_lining",
+          "core:wind_seed_flag"
+        ],
+        "evolutions": [
+          "core:sowing_sworddance",
+          "core:sheltered_sowing"
+        ]
+      },
+      "runtimeContractVersion": 1,
+      "cardCatalog": [
+        {
+          "id": "core:carpenter_hammer",
+          "kind": "tool",
+          "growthTargets": [
+            "building"
+          ],
+          "tags": [
+            "building",
+            "repair"
+          ]
+        },
+        {
+          "id": "core:ember_wand",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "ranged"
+          ]
+        },
+        {
+          "id": "core:guarded_harvest",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "melee",
+            "harvest"
+          ]
+        },
+        {
+          "id": "core:harvest_scythe",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "melee",
+            "harvest"
+          ]
+        },
+        {
+          "id": "core:hedge_drum",
+          "kind": "tool",
+          "growthTargets": [
+            "building",
+            "people"
+          ],
+          "tags": [
+            "building",
+            "people",
+            "defense"
+          ]
+        },
+        {
+          "id": "core:iron_blade",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "melee"
+          ]
+        },
+        {
+          "id": "core:meal_oath",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "people",
+            "food",
+            "growth"
+          ]
+        },
+        {
+          "id": "core:muster_horn",
+          "kind": "tool",
+          "growthTargets": [
+            "people"
+          ],
+          "tags": [
+            "people",
+            "muster"
+          ]
+        },
+        {
+          "id": "core:rally_boundary",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "people",
+            "muster",
+            "defense"
+          ]
+        },
+        {
+          "id": "core:repair_tithe",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "building",
+            "repair",
+            "food"
+          ]
+        },
+        {
+          "id": "core:seed_bag",
+          "kind": "tool",
+          "growthTargets": [
+            "land"
+          ],
+          "tags": [
+            "land",
+            "harvest"
+          ]
+        },
+        {
+          "id": "core:ward_orbit",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "orbit"
+          ]
+        }
+      ],
+      "effectCatalog": [
+        {
+          "effectId": "core:boundary_hinge_guard",
+          "sourceId": "core:boundary_hinge",
+          "sourceKind": "item",
+          "trigger": "return-arrival",
+          "operation": "guard-return",
+          "subject": "people",
+          "amount": 1,
+          "radius": 800,
+          "durationTicks": 60,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 귀환 완료 집단에 보호·정지 창을 적용해 노동 복귀를 지연한다. 실제 문 collider는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다. 중첩 수에 비례해 Amount×DurationTicks만큼 군역/귀환 보호 시간을 늘리며 식량 비용은 실제 적용당 한 번 차감한다. 내부 시간 정수 범위 제한은 인벤토리 중첩 제한이 아니다."
+        },
+        {
+          "effectId": "core:guarded_harvest_strike",
+          "sourceId": "core:guarded_harvest",
+          "sourceKind": "charter",
+          "trigger": "harvest",
+          "operation": "damage-pulse",
+          "subject": "weapon-front",
+          "amount": 12,
+          "radius": 900,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "owned-tag",
+              "value": "melee",
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 수확 시 근접 무기를 보유하면 전방 피해12/반경900을 가하며 익은 밭 근처 일반 무기 공격 간격은6틱 늘어난다. 수확 예약 애니메이션은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:guarded_harvest_tempo_cost",
+          "sourceId": "core:guarded_harvest",
+          "sourceKind": "charter",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "attack-cooldown",
+          "amount": 6,
+          "radius": 700,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-kind",
+              "value": "weapon",
+              "minimum": 0
+            },
+            {
+              "kind": "near-ripe",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 수확 시 근접 무기를 보유하면 전방 피해12/반경900을 가하며 익은 밭 근처 일반 무기 공격 간격은6틱 늘어난다. 수확 예약 애니메이션은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:harvest_scythe_harvest",
+          "sourceId": "core:harvest_scythe",
+          "sourceKind": "weapon",
+          "trigger": "attack",
+          "operation": "harvest-near",
+          "subject": "core:harvest_scythe",
+          "amount": 1,
+          "radius": 700,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-id",
+              "value": "core:harvest_scythe",
+              "minimum": 0
+            }
+          ],
+          "unit": "plots",
+          "implementationNote": "S4 헤드리스 프로토타입: 공격할 때 반경700의 익은 밭 최대1개를 수확하며 반경500의 미숙 밭 최대1개 성장 진행을 잃게 한다. 개별 이삭의 시각적 검 충돌은 구현하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:harvest_scythe_young_cost",
+          "sourceId": "core:harvest_scythe",
+          "sourceKind": "weapon",
+          "trigger": "attack",
+          "operation": "damage-young-plots",
+          "subject": "land",
+          "amount": 1,
+          "radius": 500,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-id",
+              "value": "core:harvest_scythe",
+              "minimum": 0
+            }
+          ],
+          "unit": "growth-progress-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 공격할 때 반경700의 익은 밭 최대1개를 수확하며 반경500의 미숙 밭 최대1개 성장 진행을 잃게 한다. 개별 이삭의 시각적 검 충돌은 구현하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:joiner_square_front",
+          "sourceId": "core:joiner_square",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "building-front-damage",
+          "amount": -2,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 공격 방향에 따라 정면 피해2 감소·후면 피해2 증가를 적용한다. 건축물 외형은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:joiner_square_rear_cost",
+          "sourceId": "core:joiner_square",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "building-rear-damage",
+          "amount": 2,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 공격 방향에 따라 정면 피해2 감소·후면 피해2 증가를 적용한다. 건축물 외형은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:levy_bread_wrap_duty",
+          "sourceId": "core:levy_bread_wrap",
+          "sourceKind": "item",
+          "trigger": "draft",
+          "operation": "extend-duty",
+          "subject": "people",
+          "amount": 1,
+          "radius": 0,
+          "durationTicks": 120,
+          "foodCost": 2,
+          "conditions": [],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 징집 때 식량2를 지불해 군역 시간을 늘린다. 운반 물품 렌더링은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다. 중첩 수에 비례해 Amount×DurationTicks만큼 군역/귀환 보호 시간을 늘리며 식량 비용은 실제 적용당 한 번 차감한다. 내부 시간 정수 범위 제한은 인벤토리 중첩 제한이 아니다."
+        },
+        {
+          "effectId": "core:meadow_buckle_seed_guard",
+          "sourceId": "core:meadow_buckle",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "attack-damage",
+          "amount": 4,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-kind",
+              "value": "weapon",
+              "minimum": 0
+            },
+            {
+              "kind": "equipment-tag",
+              "value": "melee",
+              "minimum": 0
+            },
+            {
+              "kind": "near-seed",
+              "value": null,
+              "minimum": 0
+            },
+            {
+              "kind": "enemy-target",
+              "value": "seed",
+              "minimum": 0
+            },
+            {
+              "kind": "estate-inside",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 근접 무기가 영지 안 씨앗 밭 근처에서 씨앗을 노리는 적에게 가하는 피해만4 증가한다. 조건 밖 이득은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:meal_oath_feed_workers",
+          "sourceId": "core:meal_oath",
+          "sourceKind": "charter",
+          "trigger": "harvest",
+          "operation": "worker-buff",
+          "subject": "people",
+          "amount": 3,
+          "radius": 1200,
+          "durationTicks": 300,
+          "foodCost": 2,
+          "conditions": [
+            {
+              "kind": "estate-inside",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 지불해 영지 안 일꾼 최대3명에게300틱 노동 강화를 적용한다. 식량 감소가 군사 모집 여력과 경쟁한다. 충성도 시스템은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:muster_roll_rest",
+          "sourceId": "core:muster_roll",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "draft-min-rest",
+          "amount": 60,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 귀환한 백성의 재징집 전 최소 휴식 시간을60틱 늘려 즉시 소집 인원을 줄인다. 이미 귀환 중인 사람 제외는 원래 규칙이며 새 효과로 집계하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:rally_boundary_rally",
+          "sourceId": "core:rally_boundary",
+          "sourceKind": "charter",
+          "trigger": "estate-cross",
+          "operation": "rally-returners",
+          "subject": "people",
+          "amount": 2,
+          "radius": 1400,
+          "durationTicks": 90,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 영주가 영지 경계를 넘을 때 반경1400의 귀환 집단 최대2개를90틱 방어 집결 상태로 묶어 전투하게 하며 밭 복귀는 지연한다. 길망은 모델링하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:repair_tithe_repair",
+          "sourceId": "core:repair_tithe",
+          "sourceKind": "charter",
+          "trigger": "harvest",
+          "operation": "repair-nearest",
+          "subject": "building",
+          "amount": 12,
+          "radius": 1400,
+          "durationTicks": 0,
+          "foodCost": 2,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 실제 차감하고 반경1400의 손상 건물을12 수리한다. 정상 전투 건물의 유지와 징집용 식량이 경쟁한다. 대상이 없으면 소비하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:return_path_knot_waypoint",
+          "sourceId": "core:return_path_knot",
+          "sourceKind": "item",
+          "trigger": "return-start",
+          "operation": "return-via-building",
+          "subject": "building",
+          "amount": 1,
+          "radius": 1600,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "rerouted-groups",
+          "implementationNote": "S4 헤드리스 프로토타입: 귀환 시 가까운 건물을 중간 경유지로 삼아 노동 복귀 경로를 바꾼다. 익은 밭을 완전히 피하는 최적 경로라는 주장은 하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:root_binding_cord_linked_delay",
+          "sourceId": "core:root_binding_cord",
+          "sourceKind": "item",
+          "trigger": "farm-hit",
+          "operation": "pause-neighbor-growth",
+          "subject": "land",
+          "amount": 1,
+          "radius": 500,
+          "durationTicks": 60,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "shield-consumed",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:root_binding_cord_shield",
+          "sourceId": "core:root_binding_cord",
+          "sourceKind": "item",
+          "trigger": "plant",
+          "operation": "shield-farms",
+          "subject": "land",
+          "amount": 1,
+          "radius": 350,
+          "durationTicks": 300,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "shield-charges",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:ruin_keystone_rebuild",
+          "sourceId": "core:ruin_keystone",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "repair-amount",
+          "amount": 8,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "building-ruined",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 폐허의 첫 재건 작업에만 수리량8을 추가한다. 정상 건물이나 새 터는 이득이 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:scaffold_step_draft_cost",
+          "sourceId": "core:scaffold_step",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "draft-speed",
+          "amount": -1,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:scaffold_step_worker_speed",
+          "sourceId": "core:scaffold_step",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "worker-speed",
+          "amount": 1,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:seed_pouch_lining_edge",
+          "sourceId": "core:seed_pouch_lining",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "planting-bias",
+          "subject": "existing-edge",
+          "amount": 120,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 기존 밭 가장자리 쪽으로 최대120 이동시켜 새 방향 확장을 줄인다. 위치·간격 제한으로 실패하면 공짜 밭은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:sheltered_sowing_shelter",
+          "sourceId": "core:sheltered_sowing",
+          "sourceKind": "evolution",
+          "trigger": "repair",
+          "operation": "shield-farms",
+          "subject": "land",
+          "amount": 1,
+          "radius": 900,
+          "durationTicks": 300,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "shield-charges",
+          "implementationNote": "S4 헤드리스 프로토타입: 씨앗 자루와 목수 망치 모두 보유해야 활성화된다. 실제 수리한 건물 주변 반경900 밭에300틱 동안 일회 보호를 부여한다. 영지 전체 무적이 아니다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:shock_absorber_pad_knockback_cost",
+          "sourceId": "core:shock_absorber_pad",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "attack-knockback",
+          "amount": -10,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            },
+            {
+              "kind": "equipment-id",
+              "value": "core:carpenter_hammer",
+              "minimum": 0
+            }
+          ],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 목수 망치가 건물 근처에서 수리할 때 수리량4 증가, 같은 위치의 공격 밀치기는10 감소한다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:shock_absorber_pad_repair",
+          "sourceId": "core:shock_absorber_pad",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "repair-amount",
+          "amount": 4,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            },
+            {
+              "kind": "equipment-id",
+              "value": "core:carpenter_hammer",
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 목수 망치가 건물 근처에서 수리할 때 수리량4 증가, 같은 위치의 공격 밀치기는10 감소한다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:sowing_sworddance_line",
+          "sourceId": "core:sowing_sworddance",
+          "sourceKind": "evolution",
+          "trigger": "attack",
+          "operation": "plant-path",
+          "subject": "core:seed_bag",
+          "amount": 1,
+          "radius": 1000,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-id",
+              "value": "core:iron_blade",
+              "minimum": 0
+            }
+          ],
+          "unit": "plots",
+          "implementationNote": "S4 헤드리스 프로토타입: 철검과 씨앗 자루를 모두 보유해야 활성화된다. 검의 실제 공격 대상까지 선을 따라 밭 최대1개를 생성하고 씨앗 자루에 귀속한다. 적 없는 공격은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:wind_seed_flag_inward",
+          "sourceId": "core:wind_seed_flag",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "planting-bias",
+          "subject": "estate-inward",
+          "amount": 120,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 영지 안쪽으로 최대120 이동시켜 안전한 내부와 외부 빈 공간의 교환을 만든다. 곡선 탄도는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        }
+      ],
+      "acquisitionCatalog": {
+        "weaponSlots": 5,
+        "toolSlots": 4,
+        "charterSlots": 4,
+        "recentExperienceWindowTicks": 900,
+        "experienceWeightDivisor": 30,
+        "lootPeriodTicks": 900,
+        "lootSpawnRadius": 300,
+        "lootPickupRadius": 350,
+        "maxGroundLoot": 8,
+        "lootQuantity": 1,
+        "lootSources": [
+          {
+            "id": "core:chest_channel",
+            "kind": "chest",
+            "weight": 5,
+            "foodCost": 0
+          },
+          {
+            "id": "core:cart_channel",
+            "kind": "cart",
+            "weight": 3,
+            "foodCost": 0
+          },
+          {
+            "id": "core:market_channel",
+            "kind": "market",
+            "weight": 2,
+            "foodCost": 2
+          }
+        ]
+      },
+      "timelineSampleIntervalTicks": 300,
+      "charterSlots": 4,
+      "designMetadataPolicy": "Only explicit runtimeProjection executes; candidate prose and design damage coefficients are not executable rules",
+      "contentSha256": "F3EFB782684164ADB91C4450725D1174B17CDCEA32304CD4630F3F07266A5144",
+      "commit": "83d5c266d7edff1d4b5e96e01a9e8102b69f64cd",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "50C2BE96E9D547AC1FF80042208F74E560FE7578F2A76843F42F2F6F6950C0C5",
+      "simulationAssemblySha256": "C90F61FB9535CC5082AEE7F1622A87C28B4CBC0E1FEFDC73630A7F6D0FCD1EF8",
+      "coreAssemblySha256": "878C870485F74BB167F615D58F90A5F478CEBF5EEFFBA25AC5D2D728D05674CB",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "A",
+      "scenario": "normal",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "load": {
+      "enabled": false,
+      "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+      "squadSize": 5,
+      "expected": {
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60
+      },
+      "beforeMinimum": {
+        "enemies": 0,
+        "farms": 0,
+        "buildings": 0,
+        "people": 3
+      },
+      "beforeMaximum": {
+        "enemies": 33,
+        "farms": 11,
+        "buildings": 0,
+        "people": 16
+      },
+      "afterMinimum": {
+        "enemies": 4,
+        "farms": 1,
+        "buildings": 0,
+        "people": 3
+      },
+      "afterMaximum": {
+        "enemies": 33,
+        "farms": 11,
+        "buildings": 0,
+        "people": 16
+      },
+      "populationMembers": {
+        "beforeMinimum": 6,
+        "beforeMaximum": 21,
+        "afterMinimum": 6,
+        "afterMaximum": 21
+      },
+      "verifiedSamples": 0,
+      "allSamplesExact": false
+    },
+    "policyDamageCv": 0.1298127069030591,
+    "balanceMetric": "Coefficient of variation of policy mean actual combat damage over independent people-rule/seed cases; diagnostic, not the S4 dominance gate or a balance pass.",
+    "measurementScope": "S4 normal league mixed/A/seed42 tick p95 across three repeats; not pooled league p95 or mobile performance.",
+    "league": {
+      "policyMeans": [
+        {
+          "policy": "weapon",
+          "independentCases": 9,
+          "damage": 321,
+          "survivalRate": 1,
+          "level": 4.666666666666667
+        },
+        {
+          "policy": "land",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "building",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "people",
+          "independentCases": 9,
+          "damage": 487.44444444444446,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "mixed",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "random",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        }
+      ],
+      "independentCases": 54,
+      "totalExecutions": 162,
+      "representativeCaseId": "mixed__A__42",
+      "timingStatistic": "mixed-A-seed42-case-tick-p95",
+      "reportSource": "seven adjacent CSV files; trend JSON is not report input",
+      "sourceMetrics": [
+        {
+          "caseId": "weapon__A__42",
+          "path": "raw/weapon__A__42.metrics.json",
+          "sha256": "846c67154c6db6f45671bc9c28c63e3b0ab950625f5346b008fec93d0ab79868",
+          "tickP95Ms": 0.13337
+        },
+        {
+          "caseId": "weapon__A__43",
+          "path": "raw/weapon__A__43.metrics.json",
+          "sha256": "e5d3779f92691c48821e3106065aa2dfaf67e0e66b1866fd1d8326087f545e98",
+          "tickP95Ms": 0.119964
+        },
+        {
+          "caseId": "weapon__A__44",
+          "path": "raw/weapon__A__44.metrics.json",
+          "sha256": "ef957b125a26d43f79d5b0be37ead2cc06c50b8e3448241d3f6f2e9f2b3d19c8",
+          "tickP95Ms": 0.126958
+        },
+        {
+          "caseId": "weapon__B__42",
+          "path": "raw/weapon__B__42.metrics.json",
+          "sha256": "57304e181db46588a75859f51934bfc9e99a0e60afd8afa918bbafc6fa313100",
+          "tickP95Ms": 0.134742
+        },
+        {
+          "caseId": "weapon__B__43",
+          "path": "raw/weapon__B__43.metrics.json",
+          "sha256": "76f7f89b1c05e7034499632d18ca6b58be9a1a9b61b86d7081bc6213609f664c",
+          "tickP95Ms": 0.115066
+        },
+        {
+          "caseId": "weapon__B__44",
+          "path": "raw/weapon__B__44.metrics.json",
+          "sha256": "bf1779abdfc512d0c5f16b701149ccbad028e8bb5833743ac6a9d9c191d9e9b1",
+          "tickP95Ms": 0.124563
+        },
+        {
+          "caseId": "weapon__C__42",
+          "path": "raw/weapon__C__42.metrics.json",
+          "sha256": "71d9aed76a990d4b33849a3edd598924b1366e8d7e95374063922175f651f857",
+          "tickP95Ms": 0.137046
+        },
+        {
+          "caseId": "weapon__C__43",
+          "path": "raw/weapon__C__43.metrics.json",
+          "sha256": "8c8f4f89e59feda474702f30706dcc993c0042396f43859d6030639d61a76cec",
+          "tickP95Ms": 0.119173
+        },
+        {
+          "caseId": "weapon__C__44",
+          "path": "raw/weapon__C__44.metrics.json",
+          "sha256": "3bbb23c1bf4f5eb087c739ba6fd07c3bda8ffca8fead9b87a3c0ccd2a26e85d1",
+          "tickP95Ms": 0.124533
+        },
+        {
+          "caseId": "land__A__42",
+          "path": "raw/land__A__42.metrics.json",
+          "sha256": "9bcd5c59579d8269dc1b5d5b7d9b43b5b3aca1675c49e412a04afffc66729dee",
+          "tickP95Ms": 0.131416
+        },
+        {
+          "caseId": "land__A__43",
+          "path": "raw/land__A__43.metrics.json",
+          "sha256": "7a8700baf838f5756cc729472a2a60ec072fd97c67cc52e2c76c484cf33ef40c",
+          "tickP95Ms": 0.123301
+        },
+        {
+          "caseId": "land__A__44",
+          "path": "raw/land__A__44.metrics.json",
+          "sha256": "b5d19c9d53824c354d522c5b80ac80b82e20bb9c7a026476346934e40e7f97c7",
+          "tickP95Ms": 0.116558
+        },
+        {
+          "caseId": "land__B__42",
+          "path": "raw/land__B__42.metrics.json",
+          "sha256": "e99d6c077d83a36a7c07a580bcebe766613b4f75a3579dc08b71a84e27f58841",
+          "tickP95Ms": 0.114134
+        },
+        {
+          "caseId": "land__B__43",
+          "path": "raw/land__B__43.metrics.json",
+          "sha256": "bfe0170694feae096ab285063cb07c0f72d11fdffcd63e6e071a4165e6ba2fdf",
+          "tickP95Ms": 0.122579
+        },
+        {
+          "caseId": "land__B__44",
+          "path": "raw/land__B__44.metrics.json",
+          "sha256": "9d89ecfbd9c513a173c083b5b4607142c695c5c7e26afb639407cf2b2a2df710",
+          "tickP95Ms": 0.165159
+        },
+        {
+          "caseId": "land__C__42",
+          "path": "raw/land__C__42.metrics.json",
+          "sha256": "82e32237bcced23b06a61b813bad9f96d8f48b5683f22d1d8bab1d001fe1c653",
+          "tickP95Ms": 0.112591
+        },
+        {
+          "caseId": "land__C__43",
+          "path": "raw/land__C__43.metrics.json",
+          "sha256": "5d017119dac66dccc695f3fcb488b1a6a3304e2ead2d625f721661b5c7812dc5",
+          "tickP95Ms": 0.121327
+        },
+        {
+          "caseId": "land__C__44",
+          "path": "raw/land__C__44.metrics.json",
+          "sha256": "c8ff0aeab67fa5ffd28b51356824e0ac759f889d2d49f309f7b3eda771865ced",
+          "tickP95Ms": 0.113342
+        },
+        {
+          "caseId": "building__A__42",
+          "path": "raw/building__A__42.metrics.json",
+          "sha256": "5c09988eb6da9c3c9e642a3e1cc2109250fb26b831c239217eb5713fe88ecb7e",
+          "tickP95Ms": 0.132658
+        },
+        {
+          "caseId": "building__A__43",
+          "path": "raw/building__A__43.metrics.json",
+          "sha256": "e05ec3de5177e3d9c70df8a5d9653b02864161ca57c3d78153812e91d1b5ba80",
+          "tickP95Ms": 0.124032
+        },
+        {
+          "caseId": "building__A__44",
+          "path": "raw/building__A__44.metrics.json",
+          "sha256": "cd6cadf555f2991b43163d68caf2ce67ee47f04950486c31980c6e90d31e38b8",
+          "tickP95Ms": 0.112761
+        },
+        {
+          "caseId": "building__B__42",
+          "path": "raw/building__B__42.metrics.json",
+          "sha256": "104860241c9bd77427b240875f1dadb90e6498f9a56b6640a945adcc85005603",
+          "tickP95Ms": 0.116298
+        },
+        {
+          "caseId": "building__B__43",
+          "path": "raw/building__B__43.metrics.json",
+          "sha256": "633e32ae2fcf7153e7293da26436e99e9188613c3fb555bb423ba2a2f7b241a7",
+          "tickP95Ms": 0.123981
+        },
+        {
+          "caseId": "building__B__44",
+          "path": "raw/building__B__44.metrics.json",
+          "sha256": "5c6f9502203e468e3b6344ac1188e70ab069ea7072ccf7c07ef81ae02451105f",
+          "tickP95Ms": 0.119233
+        },
+        {
+          "caseId": "building__C__42",
+          "path": "raw/building__C__42.metrics.json",
+          "sha256": "c39573f24f3ef540d11a9c3604b1a626d966abdd8415395fab182f04761afe25",
+          "tickP95Ms": 0.111829
+        },
+        {
+          "caseId": "building__C__43",
+          "path": "raw/building__C__43.metrics.json",
+          "sha256": "3fa8123da28c5cb7100962d04ecfd9bc1ca04eae498f7a59b5ac243e1d3881fb",
+          "tickP95Ms": 0.127468
+        },
+        {
+          "caseId": "building__C__44",
+          "path": "raw/building__C__44.metrics.json",
+          "sha256": "19eae1f0324ac6a9a904f8a843f2998a66952bcceae2079c1d433a48004c9d94",
+          "tickP95Ms": 0.116478
+        },
+        {
+          "caseId": "people__A__42",
+          "path": "raw/people__A__42.metrics.json",
+          "sha256": "2629819f1b5e8895219eed6a43b35265e2c7476d300525e5e1d4ad4a84dbaccc",
+          "tickP95Ms": 0.130685
+        },
+        {
+          "caseId": "people__A__43",
+          "path": "raw/people__A__43.metrics.json",
+          "sha256": "531fe051b7719f518ceab2142ea1d3845d7e1380cf497dd608f09868814cfa1b",
+          "tickP95Ms": 0.127468
+        },
+        {
+          "caseId": "people__A__44",
+          "path": "raw/people__A__44.metrics.json",
+          "sha256": "6c8a33ac4ee3dbe4935ba21e63e48cda17167f6f84b2fb23450e8f0bede8f02e",
+          "tickP95Ms": 0.115866
+        },
+        {
+          "caseId": "people__B__42",
+          "path": "raw/people__B__42.metrics.json",
+          "sha256": "977d5dbeff6eab04a9f3ffc07352427f614fd17bf9fbf6f55f95c77dcca9931b",
+          "tickP95Ms": 0.116277
+        },
+        {
+          "caseId": "people__B__43",
+          "path": "raw/people__B__43.metrics.json",
+          "sha256": "1f4472d0ea35c97de42e0b59bc40d600221126a8463a5446adfe38635c0d7c52",
+          "tickP95Ms": 0.128811
+        },
+        {
+          "caseId": "people__B__44",
+          "path": "raw/people__B__44.metrics.json",
+          "sha256": "8c49443c121549b925e88677454fd0eb3daa3118a3db1f3020cded96f9225bdd",
+          "tickP95Ms": 0.126507
+        },
+        {
+          "caseId": "people__C__42",
+          "path": "raw/people__C__42.metrics.json",
+          "sha256": "6c81bb00acc9735bc07d3bd23c00652c228314ee465a4d8a6972f1412bcfbff8",
+          "tickP95Ms": 0.108923
+        },
+        {
+          "caseId": "people__C__43",
+          "path": "raw/people__C__43.metrics.json",
+          "sha256": "34bd7a26d8c74f92bc46991c8239355a7842696d0ca72b718782b486d0d98222",
+          "tickP95Ms": 0.131166
+        },
+        {
+          "caseId": "people__C__44",
+          "path": "raw/people__C__44.metrics.json",
+          "sha256": "5b920680333a7d35f51c1a0db6227e3d7146829e3145c116ea0849b68b3037be",
+          "tickP95Ms": 0.115716
+        },
+        {
+          "caseId": "mixed__A__42",
+          "path": "raw/mixed__A__42.metrics.json",
+          "sha256": "3d834a46bcaf1d2231bd90c7a59805992e7cd24f9d5c5dfc74acac0fd1b63c98",
+          "tickP95Ms": 0.13938
+        },
+        {
+          "caseId": "mixed__A__43",
+          "path": "raw/mixed__A__43.metrics.json",
+          "sha256": "57e8f034dfb4efb9ce9b876a8a4fb47229024dd75f9cf5bf4ce77536963abe9a",
+          "tickP95Ms": 0.160741
+        },
+        {
+          "caseId": "mixed__A__44",
+          "path": "raw/mixed__A__44.metrics.json",
+          "sha256": "593fa697ce450151334c059fd534534572b1b3dcf18eb5116253c190b95c4076",
+          "tickP95Ms": 0.114945
+        },
+        {
+          "caseId": "mixed__B__42",
+          "path": "raw/mixed__B__42.metrics.json",
+          "sha256": "68e7bbfa1eabf0441ec7d8aa84d488646646ef31143bbcf4d6da189b4eca8a8f",
+          "tickP95Ms": 0.11221
+        },
+        {
+          "caseId": "mixed__B__43",
+          "path": "raw/mixed__B__43.metrics.json",
+          "sha256": "505c38853d9cb54a004e2887f301c726c6169b0a3a4d87f8ee06ae24f2764b41",
+          "tickP95Ms": 0.118922
+        },
+        {
+          "caseId": "mixed__B__44",
+          "path": "raw/mixed__B__44.metrics.json",
+          "sha256": "03a136c405c1d6d8c368b02bdfc9656de05b14342daa193a6dccea9ee97d03f4",
+          "tickP95Ms": 0.123581
+        },
+        {
+          "caseId": "mixed__C__42",
+          "path": "raw/mixed__C__42.metrics.json",
+          "sha256": "2b982ba0c9e9f33a5f6cd7f22a574ac53bf4c9a3ded927fe6ad7565c7bffeff4",
+          "tickP95Ms": 0.111288
+        },
+        {
+          "caseId": "mixed__C__43",
+          "path": "raw/mixed__C__43.metrics.json",
+          "sha256": "57210d2e469e0ffb459be7bd9f7f40dc613dd2d793c34f6a0a0c4800780e475a",
+          "tickP95Ms": 0.121498
+        },
+        {
+          "caseId": "mixed__C__44",
+          "path": "raw/mixed__C__44.metrics.json",
+          "sha256": "16c72e192919e40aaa0fcd3ec9bc4635f3e9ce8ae35ad3f6f21299c301ab0f4e",
+          "tickP95Ms": 0.115536
+        },
+        {
+          "caseId": "random__A__42",
+          "path": "raw/random__A__42.metrics.json",
+          "sha256": "b493b8f2f4cfc7570ef6dab0c2dc721af6774a887e39765b8e87514deab3f80b",
+          "tickP95Ms": 0.132047
+        },
+        {
+          "caseId": "random__A__43",
+          "path": "raw/random__A__43.metrics.json",
+          "sha256": "85ac2893918d1539068399e039592cbba7c86754d6b2df1f98ea912926bfe0cf",
+          "tickP95Ms": 0.124432
+        },
+        {
+          "caseId": "random__A__44",
+          "path": "raw/random__A__44.metrics.json",
+          "sha256": "2b6a96e59baf111d7346de2acc9596c859a20e10fc408c5d629db3f991ea446c",
+          "tickP95Ms": 0.114595
+        },
+        {
+          "caseId": "random__B__42",
+          "path": "raw/random__B__42.metrics.json",
+          "sha256": "f70b90943ae522741c2538a3b916a2f90a2d1c4407fe2fc1301a9e5e49192c62",
+          "tickP95Ms": 0.116037
+        },
+        {
+          "caseId": "random__B__43",
+          "path": "raw/random__B__43.metrics.json",
+          "sha256": "ff1747363d0cae5c2fbe18df2f1a2feadfe16deab888055e3acc94c7a4cfa230",
+          "tickP95Ms": 0.119664
+        },
+        {
+          "caseId": "random__B__44",
+          "path": "raw/random__B__44.metrics.json",
+          "sha256": "42eaaa61517bad99146df8dd543e39a4b21f5469d1504684c6326b38db81031c",
+          "tickP95Ms": 0.140102
+        },
+        {
+          "caseId": "random__C__42",
+          "path": "raw/random__C__42.metrics.json",
+          "sha256": "2da850b6a41b62ebeccfc36e0650672d10670a13d44fed89bccc90fcdda37849",
+          "tickP95Ms": 0.105547
+        },
+        {
+          "caseId": "random__C__43",
+          "path": "raw/random__C__43.metrics.json",
+          "sha256": "842689298e8fcddbe8f058a9a4b8a000e2ed3aefd541838b1e6b21ac0633b2e2",
+          "tickP95Ms": 0.13915
+        },
+        {
+          "caseId": "random__C__44",
+          "path": "raw/random__C__44.metrics.json",
+          "sha256": "6cf423045b53b7110142acddd69ca19343ba6a8955995e865b2e47e657008496",
+          "tickP95Ms": 0.145783
+        }
+      ]
+    }
+  },
+  "source": {
+    "schemaVersion": 1,
+    "model": "headless-s4-league",
+    "stage": "S4",
+    "scope": "S4 truncated headless mechanics fixture; not a full game",
+    "gameplayBalanceClaim": false,
+    "commit": "83d5c266d7edff1d4b5e96e01a9e8102b69f64cd",
+    "timestamp": "2026-10-07T22:09:38.4218780+00:00",
+    "runtime": "8.0.31",
+    "seed": 42,
+    "iterations": 3,
+    "tickP95Ms": 0.13938,
+    "tickSampleCount": 2700,
+    "stopwatchFrequency": 1000000000,
+    "requestedWarmupTicks": 300,
+    "actualWarmupTicks": 300,
+    "warmupExcluded": true,
+    "tickTimingScope": "Simulation.Tick only; snapshots and PrepareLoadTick excluded; end-tick fixture restoration included",
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "damage": 550,
+    "growth": 26,
+    "hash": "4DE29B84F41DA1AC49C1AF7DE4F354A863AC889F602975532FA47BD8C3167FB9",
+    "balanceDispersion": null,
+    "config": {
+      "profileId": "core:s4_stage_one",
+      "profileSha256": "C1CBD90906AB7416F547A6A888EFBFDF8B7B59D24D9461AAABDDCC4749DE75A6",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "peopleRule": "A",
+      "scenario": "normal",
+      "policy": "mixed",
+      "seed": 42,
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "tickRate": 30,
+      "contentSha256": "F3EFB782684164ADB91C4450725D1174B17CDCEA32304CD4630F3F07266A5144",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "mode": "s4-smoke",
+      "policies": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
+      "peopleRules": [
+        "A",
+        "B",
+        "C"
+      ],
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "requestedTicks": 900,
+      "repeatCount": 3,
+      "workerLimit": 2,
+      "timingStatistic": "mixed-A-seed42-case-tick-p95"
+    },
+    "sourceMetadata": {
+      "profileId": "core:s4_stage_one",
+      "profileSha256": "C1CBD90906AB7416F547A6A888EFBFDF8B7B59D24D9461AAABDDCC4749DE75A6",
+      "selectedIds": {
+        "weapons": [
+          "core:iron_blade",
+          "core:ember_wand",
+          "core:ward_orbit",
+          "core:harvest_scythe"
+        ],
+        "tools": [
+          "core:seed_bag",
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:hedge_drum"
+        ],
+        "enemies": [
+          "core:raider",
+          "core:seed_mite",
+          "core:crop_grazer",
+          "core:stone_breaker",
+          "core:shield_raider",
+          "core:siege_cart"
+        ],
+        "heroes": [
+          "core:founder"
+        ],
+        "estates": [
+          "core:meadow"
+        ],
+        "charters": [
+          "core:guarded_harvest",
+          "core:repair_tithe",
+          "core:meal_oath",
+          "core:rally_boundary"
+        ],
+        "items": [
+          "core:boundary_hinge",
+          "core:joiner_square",
+          "core:ruin_keystone",
+          "core:scaffold_step",
+          "core:levy_bread_wrap",
+          "core:muster_roll",
+          "core:return_path_knot",
+          "core:shock_absorber_pad",
+          "core:meadow_buckle",
+          "core:root_binding_cord",
+          "core:seed_pouch_lining",
+          "core:wind_seed_flag"
+        ],
+        "evolutions": [
+          "core:sowing_sworddance",
+          "core:sheltered_sowing"
+        ]
+      },
+      "runtimeContractVersion": 1,
+      "cardCatalog": [
+        {
+          "id": "core:carpenter_hammer",
+          "kind": "tool",
+          "growthTargets": [
+            "building"
+          ],
+          "tags": [
+            "building",
+            "repair"
+          ]
+        },
+        {
+          "id": "core:ember_wand",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "ranged"
+          ]
+        },
+        {
+          "id": "core:guarded_harvest",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "melee",
+            "harvest"
+          ]
+        },
+        {
+          "id": "core:harvest_scythe",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "melee",
+            "harvest"
+          ]
+        },
+        {
+          "id": "core:hedge_drum",
+          "kind": "tool",
+          "growthTargets": [
+            "building",
+            "people"
+          ],
+          "tags": [
+            "building",
+            "people",
+            "defense"
+          ]
+        },
+        {
+          "id": "core:iron_blade",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "melee"
+          ]
+        },
+        {
+          "id": "core:meal_oath",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "people",
+            "food",
+            "growth"
+          ]
+        },
+        {
+          "id": "core:muster_horn",
+          "kind": "tool",
+          "growthTargets": [
+            "people"
+          ],
+          "tags": [
+            "people",
+            "muster"
+          ]
+        },
+        {
+          "id": "core:rally_boundary",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "people",
+            "muster",
+            "defense"
+          ]
+        },
+        {
+          "id": "core:repair_tithe",
+          "kind": "charter",
+          "growthTargets": [],
+          "tags": [
+            "building",
+            "repair",
+            "food"
+          ]
+        },
+        {
+          "id": "core:seed_bag",
+          "kind": "tool",
+          "growthTargets": [
+            "land"
+          ],
+          "tags": [
+            "land",
+            "harvest"
+          ]
+        },
+        {
+          "id": "core:ward_orbit",
+          "kind": "weapon",
+          "growthTargets": [],
+          "tags": [
+            "weapon",
+            "orbit"
+          ]
+        }
+      ],
+      "effectCatalog": [
+        {
+          "effectId": "core:boundary_hinge_guard",
+          "sourceId": "core:boundary_hinge",
+          "sourceKind": "item",
+          "trigger": "return-arrival",
+          "operation": "guard-return",
+          "subject": "people",
+          "amount": 1,
+          "radius": 800,
+          "durationTicks": 60,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 귀환 완료 집단에 보호·정지 창을 적용해 노동 복귀를 지연한다. 실제 문 collider는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다. 중첩 수에 비례해 Amount×DurationTicks만큼 군역/귀환 보호 시간을 늘리며 식량 비용은 실제 적용당 한 번 차감한다. 내부 시간 정수 범위 제한은 인벤토리 중첩 제한이 아니다."
+        },
+        {
+          "effectId": "core:guarded_harvest_strike",
+          "sourceId": "core:guarded_harvest",
+          "sourceKind": "charter",
+          "trigger": "harvest",
+          "operation": "damage-pulse",
+          "subject": "weapon-front",
+          "amount": 12,
+          "radius": 900,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "owned-tag",
+              "value": "melee",
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 수확 시 근접 무기를 보유하면 전방 피해12/반경900을 가하며 익은 밭 근처 일반 무기 공격 간격은6틱 늘어난다. 수확 예약 애니메이션은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:guarded_harvest_tempo_cost",
+          "sourceId": "core:guarded_harvest",
+          "sourceKind": "charter",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "attack-cooldown",
+          "amount": 6,
+          "radius": 700,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-kind",
+              "value": "weapon",
+              "minimum": 0
+            },
+            {
+              "kind": "near-ripe",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 수확 시 근접 무기를 보유하면 전방 피해12/반경900을 가하며 익은 밭 근처 일반 무기 공격 간격은6틱 늘어난다. 수확 예약 애니메이션은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:harvest_scythe_harvest",
+          "sourceId": "core:harvest_scythe",
+          "sourceKind": "weapon",
+          "trigger": "attack",
+          "operation": "harvest-near",
+          "subject": "core:harvest_scythe",
+          "amount": 1,
+          "radius": 700,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-id",
+              "value": "core:harvest_scythe",
+              "minimum": 0
+            }
+          ],
+          "unit": "plots",
+          "implementationNote": "S4 헤드리스 프로토타입: 공격할 때 반경700의 익은 밭 최대1개를 수확하며 반경500의 미숙 밭 최대1개 성장 진행을 잃게 한다. 개별 이삭의 시각적 검 충돌은 구현하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:harvest_scythe_young_cost",
+          "sourceId": "core:harvest_scythe",
+          "sourceKind": "weapon",
+          "trigger": "attack",
+          "operation": "damage-young-plots",
+          "subject": "land",
+          "amount": 1,
+          "radius": 500,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-id",
+              "value": "core:harvest_scythe",
+              "minimum": 0
+            }
+          ],
+          "unit": "growth-progress-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 공격할 때 반경700의 익은 밭 최대1개를 수확하며 반경500의 미숙 밭 최대1개 성장 진행을 잃게 한다. 개별 이삭의 시각적 검 충돌은 구현하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:joiner_square_front",
+          "sourceId": "core:joiner_square",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "building-front-damage",
+          "amount": -2,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 공격 방향에 따라 정면 피해2 감소·후면 피해2 증가를 적용한다. 건축물 외형은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:joiner_square_rear_cost",
+          "sourceId": "core:joiner_square",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "building-rear-damage",
+          "amount": 2,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 공격 방향에 따라 정면 피해2 감소·후면 피해2 증가를 적용한다. 건축물 외형은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:levy_bread_wrap_duty",
+          "sourceId": "core:levy_bread_wrap",
+          "sourceKind": "item",
+          "trigger": "draft",
+          "operation": "extend-duty",
+          "subject": "people",
+          "amount": 1,
+          "radius": 0,
+          "durationTicks": 120,
+          "foodCost": 2,
+          "conditions": [],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 징집 때 식량2를 지불해 군역 시간을 늘린다. 운반 물품 렌더링은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다. 중첩 수에 비례해 Amount×DurationTicks만큼 군역/귀환 보호 시간을 늘리며 식량 비용은 실제 적용당 한 번 차감한다. 내부 시간 정수 범위 제한은 인벤토리 중첩 제한이 아니다."
+        },
+        {
+          "effectId": "core:meadow_buckle_seed_guard",
+          "sourceId": "core:meadow_buckle",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "attack-damage",
+          "amount": 4,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-kind",
+              "value": "weapon",
+              "minimum": 0
+            },
+            {
+              "kind": "equipment-tag",
+              "value": "melee",
+              "minimum": 0
+            },
+            {
+              "kind": "near-seed",
+              "value": null,
+              "minimum": 0
+            },
+            {
+              "kind": "enemy-target",
+              "value": "seed",
+              "minimum": 0
+            },
+            {
+              "kind": "estate-inside",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 실제 근접 무기가 영지 안 씨앗 밭 근처에서 씨앗을 노리는 적에게 가하는 피해만4 증가한다. 조건 밖 이득은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:meal_oath_feed_workers",
+          "sourceId": "core:meal_oath",
+          "sourceKind": "charter",
+          "trigger": "harvest",
+          "operation": "worker-buff",
+          "subject": "people",
+          "amount": 3,
+          "radius": 1200,
+          "durationTicks": 300,
+          "foodCost": 2,
+          "conditions": [
+            {
+              "kind": "estate-inside",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 지불해 영지 안 일꾼 최대3명에게300틱 노동 강화를 적용한다. 식량 감소가 군사 모집 여력과 경쟁한다. 충성도 시스템은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:muster_roll_rest",
+          "sourceId": "core:muster_roll",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "draft-min-rest",
+          "amount": 60,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 귀환한 백성의 재징집 전 최소 휴식 시간을60틱 늘려 즉시 소집 인원을 줄인다. 이미 귀환 중인 사람 제외는 원래 규칙이며 새 효과로 집계하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:rally_boundary_rally",
+          "sourceId": "core:rally_boundary",
+          "sourceKind": "charter",
+          "trigger": "estate-cross",
+          "operation": "rally-returners",
+          "subject": "people",
+          "amount": 2,
+          "radius": 1400,
+          "durationTicks": 90,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 영주가 영지 경계를 넘을 때 반경1400의 귀환 집단 최대2개를90틱 방어 집결 상태로 묶어 전투하게 하며 밭 복귀는 지연한다. 길망은 모델링하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:repair_tithe_repair",
+          "sourceId": "core:repair_tithe",
+          "sourceKind": "charter",
+          "trigger": "harvest",
+          "operation": "repair-nearest",
+          "subject": "building",
+          "amount": 12,
+          "radius": 1400,
+          "durationTicks": 0,
+          "foodCost": 2,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 실제 차감하고 반경1400의 손상 건물을12 수리한다. 정상 전투 건물의 유지와 징집용 식량이 경쟁한다. 대상이 없으면 소비하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:return_path_knot_waypoint",
+          "sourceId": "core:return_path_knot",
+          "sourceKind": "item",
+          "trigger": "return-start",
+          "operation": "return-via-building",
+          "subject": "building",
+          "amount": 1,
+          "radius": 1600,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "rerouted-groups",
+          "implementationNote": "S4 헤드리스 프로토타입: 귀환 시 가까운 건물을 중간 경유지로 삼아 노동 복귀 경로를 바꾼다. 익은 밭을 완전히 피하는 최적 경로라는 주장은 하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:root_binding_cord_linked_delay",
+          "sourceId": "core:root_binding_cord",
+          "sourceKind": "item",
+          "trigger": "farm-hit",
+          "operation": "pause-neighbor-growth",
+          "subject": "land",
+          "amount": 1,
+          "radius": 500,
+          "durationTicks": 60,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "shield-consumed",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "ticks",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:root_binding_cord_shield",
+          "sourceId": "core:root_binding_cord",
+          "sourceKind": "item",
+          "trigger": "plant",
+          "operation": "shield-farms",
+          "subject": "land",
+          "amount": 1,
+          "radius": 350,
+          "durationTicks": 300,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "shield-charges",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:ruin_keystone_rebuild",
+          "sourceId": "core:ruin_keystone",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "repair-amount",
+          "amount": 8,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "building-ruined",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 폐허의 첫 재건 작업에만 수리량8을 추가한다. 정상 건물이나 새 터는 이득이 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:scaffold_step_draft_cost",
+          "sourceId": "core:scaffold_step",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "draft-speed",
+          "amount": -1,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:scaffold_step_worker_speed",
+          "sourceId": "core:scaffold_step",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "worker-speed",
+          "amount": 1,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:seed_pouch_lining_edge",
+          "sourceId": "core:seed_pouch_lining",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "planting-bias",
+          "subject": "existing-edge",
+          "amount": 120,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 기존 밭 가장자리 쪽으로 최대120 이동시켜 새 방향 확장을 줄인다. 위치·간격 제한으로 실패하면 공짜 밭은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:sheltered_sowing_shelter",
+          "sourceId": "core:sheltered_sowing",
+          "sourceKind": "evolution",
+          "trigger": "repair",
+          "operation": "shield-farms",
+          "subject": "land",
+          "amount": 1,
+          "radius": 900,
+          "durationTicks": 300,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            }
+          ],
+          "unit": "shield-charges",
+          "implementationNote": "S4 헤드리스 프로토타입: 씨앗 자루와 목수 망치 모두 보유해야 활성화된다. 실제 수리한 건물 주변 반경900 밭에300틱 동안 일회 보호를 부여한다. 영지 전체 무적이 아니다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:shock_absorber_pad_knockback_cost",
+          "sourceId": "core:shock_absorber_pad",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "attack-knockback",
+          "amount": -10,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            },
+            {
+              "kind": "equipment-id",
+              "value": "core:carpenter_hammer",
+              "minimum": 0
+            }
+          ],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 목수 망치가 건물 근처에서 수리할 때 수리량4 증가, 같은 위치의 공격 밀치기는10 감소한다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:shock_absorber_pad_repair",
+          "sourceId": "core:shock_absorber_pad",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "stat-add",
+          "subject": "repair-amount",
+          "amount": 4,
+          "radius": 800,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "near-building",
+              "value": null,
+              "minimum": 0
+            },
+            {
+              "kind": "equipment-id",
+              "value": "core:carpenter_hammer",
+              "minimum": 0
+            }
+          ],
+          "unit": "health-points",
+          "implementationNote": "S4 헤드리스 프로토타입: 목수 망치가 건물 근처에서 수리할 때 수리량4 증가, 같은 위치의 공격 밀치기는10 감소한다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:sowing_sworddance_line",
+          "sourceId": "core:sowing_sworddance",
+          "sourceKind": "evolution",
+          "trigger": "attack",
+          "operation": "plant-path",
+          "subject": "core:seed_bag",
+          "amount": 1,
+          "radius": 1000,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [
+            {
+              "kind": "equipment-id",
+              "value": "core:iron_blade",
+              "minimum": 0
+            }
+          ],
+          "unit": "plots",
+          "implementationNote": "S4 헤드리스 프로토타입: 철검과 씨앗 자루를 모두 보유해야 활성화된다. 검의 실제 공격 대상까지 선을 따라 밭 최대1개를 생성하고 씨앗 자루에 귀속한다. 적 없는 공격은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        },
+        {
+          "effectId": "core:wind_seed_flag_inward",
+          "sourceId": "core:wind_seed_flag",
+          "sourceKind": "item",
+          "trigger": "modifier",
+          "operation": "planting-bias",
+          "subject": "estate-inward",
+          "amount": 120,
+          "radius": 0,
+          "durationTicks": 0,
+          "foodCost": 0,
+          "conditions": [],
+          "unit": "position-units",
+          "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 영지 안쪽으로 최대120 이동시켜 안전한 내부와 외부 빈 공간의 교환을 만든다. 곡선 탄도는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다."
+        }
+      ],
+      "acquisitionCatalog": {
+        "weaponSlots": 5,
+        "toolSlots": 4,
+        "charterSlots": 4,
+        "recentExperienceWindowTicks": 900,
+        "experienceWeightDivisor": 30,
+        "lootPeriodTicks": 900,
+        "lootSpawnRadius": 300,
+        "lootPickupRadius": 350,
+        "maxGroundLoot": 8,
+        "lootQuantity": 1,
+        "lootSources": [
+          {
+            "id": "core:chest_channel",
+            "kind": "chest",
+            "weight": 5,
+            "foodCost": 0
+          },
+          {
+            "id": "core:cart_channel",
+            "kind": "cart",
+            "weight": 3,
+            "foodCost": 0
+          },
+          {
+            "id": "core:market_channel",
+            "kind": "market",
+            "weight": 2,
+            "foodCost": 2
+          }
+        ]
+      },
+      "timelineSampleIntervalTicks": 300,
+      "charterSlots": 4,
+      "designMetadataPolicy": "Only explicit runtimeProjection executes; candidate prose and design damage coefficients are not executable rules",
+      "contentSha256": "F3EFB782684164ADB91C4450725D1174B17CDCEA32304CD4630F3F07266A5144",
+      "commit": "83d5c266d7edff1d4b5e96e01a9e8102b69f64cd",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "50C2BE96E9D547AC1FF80042208F74E560FE7578F2A76843F42F2F6F6950C0C5",
+      "simulationAssemblySha256": "C90F61FB9535CC5082AEE7F1622A87C28B4CBC0E1FEFDC73630A7F6D0FCD1EF8",
+      "coreAssemblySha256": "878C870485F74BB167F615D58F90A5F478CEBF5EEFFBA25AC5D2D728D05674CB",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "A",
+      "scenario": "normal",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "load": {
+      "enabled": false,
+      "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+      "squadSize": 5,
+      "expected": {
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60
+      },
+      "beforeMinimum": {
+        "enemies": 0,
+        "farms": 0,
+        "buildings": 0,
+        "people": 3
+      },
+      "beforeMaximum": {
+        "enemies": 33,
+        "farms": 11,
+        "buildings": 0,
+        "people": 16
+      },
+      "afterMinimum": {
+        "enemies": 4,
+        "farms": 1,
+        "buildings": 0,
+        "people": 3
+      },
+      "afterMaximum": {
+        "enemies": 33,
+        "farms": 11,
+        "buildings": 0,
+        "people": 16
+      },
+      "populationMembers": {
+        "beforeMinimum": 6,
+        "beforeMaximum": 21,
+        "afterMinimum": 6,
+        "afterMaximum": 21
+      },
+      "verifiedSamples": 0,
+      "allSamplesExact": false
+    },
+    "policyDamageCv": 0.1298127069030591,
+    "balanceMetric": "Coefficient of variation of policy mean actual combat damage over independent people-rule/seed cases; diagnostic, not the S4 dominance gate or a balance pass.",
+    "measurementScope": "S4 normal league mixed/A/seed42 tick p95 across three repeats; not pooled league p95 or mobile performance.",
+    "league": {
+      "policyMeans": [
+        {
+          "policy": "weapon",
+          "independentCases": 9,
+          "damage": 321,
+          "survivalRate": 1,
+          "level": 4.666666666666667
+        },
+        {
+          "policy": "land",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "building",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "people",
+          "independentCases": 9,
+          "damage": 487.44444444444446,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "mixed",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        },
+        {
+          "policy": "random",
+          "independentCases": 9,
+          "damage": 475.55555555555554,
+          "survivalRate": 1,
+          "level": 4.333333333333333
+        }
+      ],
+      "independentCases": 54,
+      "totalExecutions": 162,
+      "representativeCaseId": "mixed__A__42",
+      "timingStatistic": "mixed-A-seed42-case-tick-p95",
+      "reportSource": "seven adjacent CSV files; trend JSON is not report input",
+      "sourceMetrics": [
+        {
+          "caseId": "weapon__A__42",
+          "path": "raw/weapon__A__42.metrics.json",
+          "sha256": "846c67154c6db6f45671bc9c28c63e3b0ab950625f5346b008fec93d0ab79868",
+          "tickP95Ms": 0.13337
+        },
+        {
+          "caseId": "weapon__A__43",
+          "path": "raw/weapon__A__43.metrics.json",
+          "sha256": "e5d3779f92691c48821e3106065aa2dfaf67e0e66b1866fd1d8326087f545e98",
+          "tickP95Ms": 0.119964
+        },
+        {
+          "caseId": "weapon__A__44",
+          "path": "raw/weapon__A__44.metrics.json",
+          "sha256": "ef957b125a26d43f79d5b0be37ead2cc06c50b8e3448241d3f6f2e9f2b3d19c8",
+          "tickP95Ms": 0.126958
+        },
+        {
+          "caseId": "weapon__B__42",
+          "path": "raw/weapon__B__42.metrics.json",
+          "sha256": "57304e181db46588a75859f51934bfc9e99a0e60afd8afa918bbafc6fa313100",
+          "tickP95Ms": 0.134742
+        },
+        {
+          "caseId": "weapon__B__43",
+          "path": "raw/weapon__B__43.metrics.json",
+          "sha256": "76f7f89b1c05e7034499632d18ca6b58be9a1a9b61b86d7081bc6213609f664c",
+          "tickP95Ms": 0.115066
+        },
+        {
+          "caseId": "weapon__B__44",
+          "path": "raw/weapon__B__44.metrics.json",
+          "sha256": "bf1779abdfc512d0c5f16b701149ccbad028e8bb5833743ac6a9d9c191d9e9b1",
+          "tickP95Ms": 0.124563
+        },
+        {
+          "caseId": "weapon__C__42",
+          "path": "raw/weapon__C__42.metrics.json",
+          "sha256": "71d9aed76a990d4b33849a3edd598924b1366e8d7e95374063922175f651f857",
+          "tickP95Ms": 0.137046
+        },
+        {
+          "caseId": "weapon__C__43",
+          "path": "raw/weapon__C__43.metrics.json",
+          "sha256": "8c8f4f89e59feda474702f30706dcc993c0042396f43859d6030639d61a76cec",
+          "tickP95Ms": 0.119173
+        },
+        {
+          "caseId": "weapon__C__44",
+          "path": "raw/weapon__C__44.metrics.json",
+          "sha256": "3bbb23c1bf4f5eb087c739ba6fd07c3bda8ffca8fead9b87a3c0ccd2a26e85d1",
+          "tickP95Ms": 0.124533
+        },
+        {
+          "caseId": "land__A__42",
+          "path": "raw/land__A__42.metrics.json",
+          "sha256": "9bcd5c59579d8269dc1b5d5b7d9b43b5b3aca1675c49e412a04afffc66729dee",
+          "tickP95Ms": 0.131416
+        },
+        {
+          "caseId": "land__A__43",
+          "path": "raw/land__A__43.metrics.json",
+          "sha256": "7a8700baf838f5756cc729472a2a60ec072fd97c67cc52e2c76c484cf33ef40c",
+          "tickP95Ms": 0.123301
+        },
+        {
+          "caseId": "land__A__44",
+          "path": "raw/land__A__44.metrics.json",
+          "sha256": "b5d19c9d53824c354d522c5b80ac80b82e20bb9c7a026476346934e40e7f97c7",
+          "tickP95Ms": 0.116558
+        },
+        {
+          "caseId": "land__B__42",
+          "path": "raw/land__B__42.metrics.json",
+          "sha256": "e99d6c077d83a36a7c07a580bcebe766613b4f75a3579dc08b71a84e27f58841",
+          "tickP95Ms": 0.114134
+        },
+        {
+          "caseId": "land__B__43",
+          "path": "raw/land__B__43.metrics.json",
+          "sha256": "bfe0170694feae096ab285063cb07c0f72d11fdffcd63e6e071a4165e6ba2fdf",
+          "tickP95Ms": 0.122579
+        },
+        {
+          "caseId": "land__B__44",
+          "path": "raw/land__B__44.metrics.json",
+          "sha256": "9d89ecfbd9c513a173c083b5b4607142c695c5c7e26afb639407cf2b2a2df710",
+          "tickP95Ms": 0.165159
+        },
+        {
+          "caseId": "land__C__42",
+          "path": "raw/land__C__42.metrics.json",
+          "sha256": "82e32237bcced23b06a61b813bad9f96d8f48b5683f22d1d8bab1d001fe1c653",
+          "tickP95Ms": 0.112591
+        },
+        {
+          "caseId": "land__C__43",
+          "path": "raw/land__C__43.metrics.json",
+          "sha256": "5d017119dac66dccc695f3fcb488b1a6a3304e2ead2d625f721661b5c7812dc5",
+          "tickP95Ms": 0.121327
+        },
+        {
+          "caseId": "land__C__44",
+          "path": "raw/land__C__44.metrics.json",
+          "sha256": "c8ff0aeab67fa5ffd28b51356824e0ac759f889d2d49f309f7b3eda771865ced",
+          "tickP95Ms": 0.113342
+        },
+        {
+          "caseId": "building__A__42",
+          "path": "raw/building__A__42.metrics.json",
+          "sha256": "5c09988eb6da9c3c9e642a3e1cc2109250fb26b831c239217eb5713fe88ecb7e",
+          "tickP95Ms": 0.132658
+        },
+        {
+          "caseId": "building__A__43",
+          "path": "raw/building__A__43.metrics.json",
+          "sha256": "e05ec3de5177e3d9c70df8a5d9653b02864161ca57c3d78153812e91d1b5ba80",
+          "tickP95Ms": 0.124032
+        },
+        {
+          "caseId": "building__A__44",
+          "path": "raw/building__A__44.metrics.json",
+          "sha256": "cd6cadf555f2991b43163d68caf2ce67ee47f04950486c31980c6e90d31e38b8",
+          "tickP95Ms": 0.112761
+        },
+        {
+          "caseId": "building__B__42",
+          "path": "raw/building__B__42.metrics.json",
+          "sha256": "104860241c9bd77427b240875f1dadb90e6498f9a56b6640a945adcc85005603",
+          "tickP95Ms": 0.116298
+        },
+        {
+          "caseId": "building__B__43",
+          "path": "raw/building__B__43.metrics.json",
+          "sha256": "633e32ae2fcf7153e7293da26436e99e9188613c3fb555bb423ba2a2f7b241a7",
+          "tickP95Ms": 0.123981
+        },
+        {
+          "caseId": "building__B__44",
+          "path": "raw/building__B__44.metrics.json",
+          "sha256": "5c6f9502203e468e3b6344ac1188e70ab069ea7072ccf7c07ef81ae02451105f",
+          "tickP95Ms": 0.119233
+        },
+        {
+          "caseId": "building__C__42",
+          "path": "raw/building__C__42.metrics.json",
+          "sha256": "c39573f24f3ef540d11a9c3604b1a626d966abdd8415395fab182f04761afe25",
+          "tickP95Ms": 0.111829
+        },
+        {
+          "caseId": "building__C__43",
+          "path": "raw/building__C__43.metrics.json",
+          "sha256": "3fa8123da28c5cb7100962d04ecfd9bc1ca04eae498f7a59b5ac243e1d3881fb",
+          "tickP95Ms": 0.127468
+        },
+        {
+          "caseId": "building__C__44",
+          "path": "raw/building__C__44.metrics.json",
+          "sha256": "19eae1f0324ac6a9a904f8a843f2998a66952bcceae2079c1d433a48004c9d94",
+          "tickP95Ms": 0.116478
+        },
+        {
+          "caseId": "people__A__42",
+          "path": "raw/people__A__42.metrics.json",
+          "sha256": "2629819f1b5e8895219eed6a43b35265e2c7476d300525e5e1d4ad4a84dbaccc",
+          "tickP95Ms": 0.130685
+        },
+        {
+          "caseId": "people__A__43",
+          "path": "raw/people__A__43.metrics.json",
+          "sha256": "531fe051b7719f518ceab2142ea1d3845d7e1380cf497dd608f09868814cfa1b",
+          "tickP95Ms": 0.127468
+        },
+        {
+          "caseId": "people__A__44",
+          "path": "raw/people__A__44.metrics.json",
+          "sha256": "6c8a33ac4ee3dbe4935ba21e63e48cda17167f6f84b2fb23450e8f0bede8f02e",
+          "tickP95Ms": 0.115866
+        },
+        {
+          "caseId": "people__B__42",
+          "path": "raw/people__B__42.metrics.json",
+          "sha256": "977d5dbeff6eab04a9f3ffc07352427f614fd17bf9fbf6f55f95c77dcca9931b",
+          "tickP95Ms": 0.116277
+        },
+        {
+          "caseId": "people__B__43",
+          "path": "raw/people__B__43.metrics.json",
+          "sha256": "1f4472d0ea35c97de42e0b59bc40d600221126a8463a5446adfe38635c0d7c52",
+          "tickP95Ms": 0.128811
+        },
+        {
+          "caseId": "people__B__44",
+          "path": "raw/people__B__44.metrics.json",
+          "sha256": "8c49443c121549b925e88677454fd0eb3daa3118a3db1f3020cded96f9225bdd",
+          "tickP95Ms": 0.126507
+        },
+        {
+          "caseId": "people__C__42",
+          "path": "raw/people__C__42.metrics.json",
+          "sha256": "6c81bb00acc9735bc07d3bd23c00652c228314ee465a4d8a6972f1412bcfbff8",
+          "tickP95Ms": 0.108923
+        },
+        {
+          "caseId": "people__C__43",
+          "path": "raw/people__C__43.metrics.json",
+          "sha256": "34bd7a26d8c74f92bc46991c8239355a7842696d0ca72b718782b486d0d98222",
+          "tickP95Ms": 0.131166
+        },
+        {
+          "caseId": "people__C__44",
+          "path": "raw/people__C__44.metrics.json",
+          "sha256": "5b920680333a7d35f51c1a0db6227e3d7146829e3145c116ea0849b68b3037be",
+          "tickP95Ms": 0.115716
+        },
+        {
+          "caseId": "mixed__A__42",
+          "path": "raw/mixed__A__42.metrics.json",
+          "sha256": "3d834a46bcaf1d2231bd90c7a59805992e7cd24f9d5c5dfc74acac0fd1b63c98",
+          "tickP95Ms": 0.13938
+        },
+        {
+          "caseId": "mixed__A__43",
+          "path": "raw/mixed__A__43.metrics.json",
+          "sha256": "57e8f034dfb4efb9ce9b876a8a4fb47229024dd75f9cf5bf4ce77536963abe9a",
+          "tickP95Ms": 0.160741
+        },
+        {
+          "caseId": "mixed__A__44",
+          "path": "raw/mixed__A__44.metrics.json",
+          "sha256": "593fa697ce450151334c059fd534534572b1b3dcf18eb5116253c190b95c4076",
+          "tickP95Ms": 0.114945
+        },
+        {
+          "caseId": "mixed__B__42",
+          "path": "raw/mixed__B__42.metrics.json",
+          "sha256": "68e7bbfa1eabf0441ec7d8aa84d488646646ef31143bbcf4d6da189b4eca8a8f",
+          "tickP95Ms": 0.11221
+        },
+        {
+          "caseId": "mixed__B__43",
+          "path": "raw/mixed__B__43.metrics.json",
+          "sha256": "505c38853d9cb54a004e2887f301c726c6169b0a3a4d87f8ee06ae24f2764b41",
+          "tickP95Ms": 0.118922
+        },
+        {
+          "caseId": "mixed__B__44",
+          "path": "raw/mixed__B__44.metrics.json",
+          "sha256": "03a136c405c1d6d8c368b02bdfc9656de05b14342daa193a6dccea9ee97d03f4",
+          "tickP95Ms": 0.123581
+        },
+        {
+          "caseId": "mixed__C__42",
+          "path": "raw/mixed__C__42.metrics.json",
+          "sha256": "2b982ba0c9e9f33a5f6cd7f22a574ac53bf4c9a3ded927fe6ad7565c7bffeff4",
+          "tickP95Ms": 0.111288
+        },
+        {
+          "caseId": "mixed__C__43",
+          "path": "raw/mixed__C__43.metrics.json",
+          "sha256": "57210d2e469e0ffb459be7bd9f7f40dc613dd2d793c34f6a0a0c4800780e475a",
+          "tickP95Ms": 0.121498
+        },
+        {
+          "caseId": "mixed__C__44",
+          "path": "raw/mixed__C__44.metrics.json",
+          "sha256": "16c72e192919e40aaa0fcd3ec9bc4635f3e9ce8ae35ad3f6f21299c301ab0f4e",
+          "tickP95Ms": 0.115536
+        },
+        {
+          "caseId": "random__A__42",
+          "path": "raw/random__A__42.metrics.json",
+          "sha256": "b493b8f2f4cfc7570ef6dab0c2dc721af6774a887e39765b8e87514deab3f80b",
+          "tickP95Ms": 0.132047
+        },
+        {
+          "caseId": "random__A__43",
+          "path": "raw/random__A__43.metrics.json",
+          "sha256": "85ac2893918d1539068399e039592cbba7c86754d6b2df1f98ea912926bfe0cf",
+          "tickP95Ms": 0.124432
+        },
+        {
+          "caseId": "random__A__44",
+          "path": "raw/random__A__44.metrics.json",
+          "sha256": "2b6a96e59baf111d7346de2acc9596c859a20e10fc408c5d629db3f991ea446c",
+          "tickP95Ms": 0.114595
+        },
+        {
+          "caseId": "random__B__42",
+          "path": "raw/random__B__42.metrics.json",
+          "sha256": "f70b90943ae522741c2538a3b916a2f90a2d1c4407fe2fc1301a9e5e49192c62",
+          "tickP95Ms": 0.116037
+        },
+        {
+          "caseId": "random__B__43",
+          "path": "raw/random__B__43.metrics.json",
+          "sha256": "ff1747363d0cae5c2fbe18df2f1a2feadfe16deab888055e3acc94c7a4cfa230",
+          "tickP95Ms": 0.119664
+        },
+        {
+          "caseId": "random__B__44",
+          "path": "raw/random__B__44.metrics.json",
+          "sha256": "42eaaa61517bad99146df8dd543e39a4b21f5469d1504684c6326b38db81031c",
+          "tickP95Ms": 0.140102
+        },
+        {
+          "caseId": "random__C__42",
+          "path": "raw/random__C__42.metrics.json",
+          "sha256": "2da850b6a41b62ebeccfc36e0650672d10670a13d44fed89bccc90fcdda37849",
+          "tickP95Ms": 0.105547
+        },
+        {
+          "caseId": "random__C__43",
+          "path": "raw/random__C__43.metrics.json",
+          "sha256": "842689298e8fcddbe8f058a9a4b8a000e2ed3aefd541838b1e6b21ac0633b2e2",
+          "tickP95Ms": 0.13915
+        },
+        {
+          "caseId": "random__C__44",
+          "path": "raw/random__C__44.metrics.json",
+          "sha256": "6cf423045b53b7110142acddd69ca19343ba6a8955995e865b2e47e657008496",
+          "tickP95Ms": 0.145783
+        }
+      ]
+    }
+  }
+}

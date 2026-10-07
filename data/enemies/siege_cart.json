@@ -6,8 +6,8 @@
     "building",
     "melee"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 프로토타입: 체력130·이동3·건물 공격18/150틱의 느린 공성 압력. 손수레 렌더링과 지형 길찾기는 미구현.",
   "loopLinks": [],
   "target": "building",
   "health": 130,

@@ -26,14 +26,14 @@ public sealed record GrowthContent(string Target, int Yield, string Output, stri
 
 public sealed record ToolContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
     string ImplementationNote, LoopLink[] LoopLinks, ActivationContent Activation, GrowthContent Growth,
-    string FloorRationale, string[] AntiSynergy, AntiSynergyNote[] AntiSynergyNotes)
+    string FloorRationale, string[] AntiSynergy, AntiSynergyNote[] AntiSynergyNotes, EquipmentProjection? RuntimeProjection = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
     public ToolDefinition ToCore() => new(Id, Tags, Activation.ToCore(), Growth.ToCore(), FloorRationale, AntiSynergy);
 }
 
 public sealed record WeaponContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
-    string ImplementationNote, LoopLink[] LoopLinks, ActivationContent Activation)
+    string ImplementationNote, LoopLink[] LoopLinks, ActivationContent Activation, EquipmentProjection? RuntimeProjection = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
     public WeaponDefinition ToCore() => new(Id, Tags, Activation.ToCore());
@@ -68,7 +68,27 @@ public sealed record ContentSelection(string[] Weapons, string[] Tools, string[]
         [.. Tools, .. other.Tools], [.. Enemies, .. other.Enemies], [.. Heroes, .. other.Heroes], [.. Estates, .. other.Estates]);
 }
 
-public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection)
+public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null)
 {
     public ContentSelection Select(bool includeTest) => includeTest ? Selection.Add(TestSelection) : Selection;
 }
+
+public sealed record EquipmentProjection(GrowthActionDefinition[] GrowthActions, RuntimeEffectDefinition[] Effects);
+public sealed record CharterProjection(string PolicyCategory, RuntimeEffectDefinition[] Effects);
+public sealed record ItemProjection(string[] RequiredTags, RuntimeEffectDefinition[] Effects);
+public sealed record EvolutionProjection(RuntimeEffectDefinition[] Effects);
+public sealed record RuntimeProfileExtension(int ContractVersion, string[] Charters, string[] Items, string[] Evolutions, RuntimeTuning Tuning);
+public sealed record ProposedEffect(string Trigger, string Benefit, string Cost);
+public sealed record ProposedCharterEffect(string Target, string Trigger, string Benefit, string Cost);
+public sealed record EvolutionGrowthCondition(string Target, string State, int Minimum);
+public sealed record ProposedEvolutionResult(string BaseId, string Name, string Effect, string Cost);
+public sealed record CharterContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
+    string ImplementationNote, LoopLink[] LoopLinks, ProposedCharterEffect Effect, string[] Requirements, CharterProjection? RuntimeProjection = null)
+    : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);
+public sealed record ItemContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
+    string ImplementationNote, LoopLink[] LoopLinks, ProposedEffect Effect, string[] LinkedToolIds, ItemProjection? RuntimeProjection = null)
+    : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);
+public sealed record EvolutionContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
+    string ImplementationNote, LoopLink[] LoopLinks, string Kind, string[] InputIds, EvolutionGrowthCondition? GrowthCondition,
+    ProposedEvolutionResult Result, EvolutionProjection? RuntimeProjection = null)
+    : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);

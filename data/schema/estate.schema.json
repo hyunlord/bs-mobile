@@ -45,7 +45,8 @@
       "type": "string",
       "enum": [
         "candidate",
-        "s2-runtime"
+        "s2-runtime",
+        "s4-runtime"
       ]
     },
     "implementationNote": {

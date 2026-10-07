@@ -1,0 +1,19 @@
+using SowSiege.Core;
+using SowSiege.Sim;
+var basis=ContentLoader.Load("/Users/rexxa/bs-mobile/data",false,"s4-stage-one");
+var failures=0;
+foreach(var op in new[]{"worker-buff","rally-returners","pause-neighbor-growth","extend-duty","guard-return"})foreach(var old in new[]{0,9900,10050,10500}) {
+var trigger=op switch{"worker-buff"=>"harvest","rally-returners"=>"estate-cross","pause-neighbor-growth"=>"farm-hit","extend-duty"=>"draft",_=>"return-arrival"};
+var effect=new RuntimeEffectDefinition("test:timed",trigger,op,op=="pause-neighbor-growth"?"land":"people",1,1000,100,0,[]);
+var catalog=basis with{Runtime=basis.Runtime! with{Equipment=new Dictionary<string,EquipmentRuntimeDefinition>(),Charters=new Dictionary<string,CharterDefinition>(),Evolutions=new Dictionary<string,EvolutionDefinition>(),Items=new Dictionary<string,ItemDefinition>{{"test:item",new("test:item",[],[effect])}}}};
+var w=new Simulation(catalog,new(42,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed")).World;w.Tick=10000;w.People.Clear();w.Farms.Clear();var rt=new RuntimeSystem(catalog,w,new(42),new(600));w.Runtime!.Items["test:item"]=1;
+var p=new PersonState{Id=w.AllocateId(),Role=op=="rally-returners"?"returning":"peasant",Position=w.Lord,Health=100,DutyUntil=old};w.People.Add(p);rt.Entity(p.Id).HoldUntil=old;
+var farm=new FarmState{Id=w.AllocateId(),Source="core:seed_bag",Position=w.Lord};w.Farms.Add(farm);rt.Entity(farm.Id).PauseUntil=old;
+rt.Emit(trigger,new(w.Lord,Person:p));var telemetry=rt.Result().Effects.Single();var deadline=op switch{"worker-buff" or "extend-duty"=>p.DutyUntil,"pause-neighbor-growth"=>rt.Entity(farm.Id).PauseUntil,_=>rt.Entity(p.Id).HoldUntil};
+var expectedDeadline=op is "extend-duty" or "guard-return"?Math.Max(10000,old)+100:Math.Max(old,10100);var expectedDelta=expectedDeadline-Math.Max(10000,old);var pass=deadline==expectedDeadline&&telemetry.AppliedTotal==expectedDelta&&telemetry.ActivationCount==(expectedDelta>0?1:0);
+Console.WriteLine($"{(pass?"PASS":"FAIL")} {op} old={old} deadline={deadline} applied={telemetry.AppliedTotal} count={telemetry.ActivationCount} expectedDeadline={expectedDeadline} expectedApplied={expectedDelta}");if(!pass)failures++;
+}
+{
+var sim=new Simulation(basis,new(42,basis.Tuning.DefaultHero,basis.Tuning.DefaultEstate,"mixed"));var w=sim.World;w.Tick=10001;w.Equipment.Clear();w.Equipment.Add(new(){Id="core:carpenter_hammer"});w.Runtime!.GroundLoot.Add(new(w.AllocateId(),"core:chest_channel","core:scaffold_step",w.Lord));sim.Runtime!.Tick();var one=w.Runtime.Items.GetValueOrDefault("core:scaffold_step");w.Equipment.Add(new(){Id="core:muster_horn"});sim.Runtime.Tick();var both=w.Runtime.Items.GetValueOrDefault("core:scaffold_step");var pass=one==0&&both==1;Console.WriteLine($"{(pass?"PASS":"FAIL")} actual scaffold_step building-only={one} building+people={both}");if(!pass)failures++;
+}
+Console.WriteLine($"Failures={failures}");return failures==0?0:1;

@@ -1,0 +1,259 @@
+
+added 5 packages, and audited 6 packages in 342ms
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> test
+> node --test tools/test-content-validator.mjs
+
+✔ valid schema and cross-record references pass (37.355833ms)
+✔ rejects damage below minimum (14.607792ms)
+✔ rejects unknown field (9.793167ms)
+✔ rejects missing growth (9.05175ms)
+✔ rejects missing activation (8.379542ms)
+✔ rejects wrong scalar type (7.63675ms)
+✔ rejects invalid namespace (7.688083ms)
+✔ rejects unresolved hero tool (8.004334ms)
+✔ rejects wrong-kind reference (8.1715ms)
+✔ rejects unresolved estate tool (7.635125ms)
+✔ rejects unresolved tuning hero (7.565291ms)
+✔ rejects unresolved anti-synergy (7.345666ms)
+✔ rejects invalid schema (7.293833ms)
+✔ rejects undeclared schema draft (7.121541ms)
+✔ rejects unknown schema keyword (7.310958ms)
+✔ recursively checks test content and global duplicate IDs (7.311708ms)
+✔ rejects content without matching schema (7.3825ms)
+✔ skin numbers fail even if schema permits arbitrary fields (8.163334ms)
+✔ valid Draft2020 unevaluatedProperties is enforced (8.311458ms)
+✔ rejects malformed JSON instead of silently skipping it (6.922584ms)
+✔ S2 rejects season duration mismatch (124.909458ms)
+✔ S2 rejects missing world numeric tuning (110.144625ms)
+✔ S2 rejects unresolved starting weapon (99.446417ms)
+✔ S2 rejects excessive load (96.935209ms)
+✔ S2 rejects map-incompatible spawn inset (107.868125ms)
+✔ S2 rejects unsupported people rule (102.588083ms)
+✔ S2 rejects wrong card count (112.565417ms)
+✔ S2 rejects duplicate rarity names (97.985125ms)
+✔ S2 rejects oversized squad (97.9485ms)
+✔ S3 rejects missing canonical item (97.486583ms)
+✔ S3 rejects unknown estate loop stage (96.412458ms)
+✔ S3 rejects candidate profile activation (97.426708ms)
+✔ S3 rejects profile wrong kind (94.683125ms)
+✔ S3 rejects profile test leakage (93.015875ms)
+✔ S3 rejects missing anti-synergy rationale (96.54225ms)
+✔ S3 rejects hero affinity wrong kind (106.853584ms)
+✔ S3 canonical pool passes all semantic gates (47.6735ms)
+✔ S3 rejects candidate pretending implemented (117.285125ms)
+✔ S3 rejects missing profile enemy (100.7125ms)
+✔ S3 rejects missing test profile hero (95.643958ms)
+✔ S3 rejects test metadata orphan (97.211125ms)
+✔ S3 rejects reordered duplicate evolution (103.302834ms)
+✔ S3 rejects sparse tag coverage (137.936792ms)
+✔ S3 rejects evolution input kind (101.080584ms)
+✔ S3 rejects evolution result base (106.953541ms)
+✔ S3 rejects vassal owner kind (103.613291ms)
+✔ S3 rejects item tool reference (105.807167ms)
+✔ S3 rejects skin numeric metadata (104.094625ms)
+✔ S3 rejects insufficient anti pairs (103.985375ms)
+✔ S3 rejects insufficient loop links (131.997875ms)
+✔ additional subset profile accepts implemented subset (110.239125ms)
+✔ additional subset profile rejects candidate activation (103.021042ms)
+✔ additional profile can activate a new generic implemented test tool without changing baseline (107.941375ms)
+✔ S4 rejects unsupported pulse attribution (102.926542ms)
+✔ S4 rejects unsupported modifier cost (99.516209ms)
+✔ S4 rejects missing projection (102.452708ms)
+✔ S4 rejects unknown operation (107.749792ms)
+✔ S4 rejects wrong operation subject (100.495459ms)
+✔ S4 rejects zero effect (97.681167ms)
+✔ S4 rejects duplicate effect identity (97.992375ms)
+✔ S4 rejects wrong trigger (102.949125ms)
+✔ S4 rejects missing mixed secondary target (99.28975ms)
+✔ S4 rejects unselected effect equipment (99.637084ms)
+✔ S4 rejects empty timed effect (113.932792ms)
+✔ S4 rejects unknown condition tag (108.501ms)
+✔ S4 rejects invalid condition enum (102.978583ms)
+✔ S4 rejects duplicate loot source (103.339042ms)
+✔ S4 rejects missing selected evolution input (100.464458ms)
+ℹ tests 68
+ℹ suites 0
+ℹ pass 68
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5231.674125
+✔ standalone missing issue (106.153666ms)
+✔ inline missing issue (102.706083ms)
+✔ block missing issue (102.707667ms)
+✔ shell missing issue (104.416834ms)
+✔ linked inline (107.601708ms)
+✔ linked shell (107.374083ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 702.139875
+✔ CSV preserves Korean, commas, escaped quotes, multiline and empty cells (1.209ms)
+✔ CSV accepts CRLF and optional final newline without trimming (0.077958ms)
+✔ CSV serializes only explicit scalars, finite numbers and null (0.165625ms)
+✔ CSV rejects malformed quotes, duplicate/empty headers and wrong widths (0.092667ms)
+✔ CSV enforces exact schema and row keys (0.098208ms)
+✔ fixed matrix and strict CLI preserve requested sample size (2.040041ms)
+✔ bounded workers retain ordering and wait active jobs on failure (11.554958ms)
+✔ extract actual canonical rows and retain signed modifier deltas (1.237834ms)
+✔ reject corrupted repeats, timeline, damage, item cards, stacks and zero counters (1.339167ms)
+✔ assembly rejects missing/duplicate cases and inconsistent provenance (8.824458ms)
+✔ damage dispersion uses independent policy means and keeps zero mean undefined (0.391125ms)
+✔ reject lifecycle, missing sample, season and catalog contradictions (0.855791ms)
+✔ crossover accepts a positive tie and excludes zero-only samples (1.288166ms)
+✔ dominance fails even when all policies tie in every condition (0.18575ms)
+✔ crossover none is computed from direct damage (0.0525ms)
+✔ crossover zero only is computed from direct damage (0.030958ms)
+✔ crossover later is computed from direct damage (0.038708ms)
+✔ crossover first positive is computed from direct damage (0.030125ms)
+✔ rotating condition winners have no universally co-first policy (0.086916ms)
+✔ food and residence differences cannot break a rank tie (0.074542ms)
+✔ synthetic matrix validates zero-card and zero-loot cases (8.316291ms)
+✔ rejects missing case (4.097334ms)
+✔ rejects duplicate case (2.820791ms)
+✔ rejects terminal mismatch (3.108417ms)
+✔ rejects negative delta (3.215875ms)
+✔ rejects missing tick0 (2.760583ms)
+✔ rejects repeat mismatch (2.422ms)
+✔ rejects duplicate repeat (2.675583ms)
+✔ rejects bad final inventory (2.839208ms)
+✔ rejects unmatched effect (3.145375ms)
+✔ rejects effect identity drift (2.31575ms)
+✔ rejects numeric garbage (1.859417ms)
+✔ actual chosen mixed tool is counted once, never as an item (4.898125ms)
+✔ chosen-not-offered card fails closed (2.971667ms)
+✔ loot quantities reconcile actual unlimited inventory stack counts (3.45475ms)
+✔ zero XP ratios are null and do not become damage (4.123542ms)
+✔ observed cohorts do not forward-fill early terminal cases (3.739875ms)
+✔ CLI reproduces report bytes solely from copied seven CSV inputs (99.711958ms)
+✔ report and producer share identical frozen CSV headers (0.095708ms)
+✔ universally cofirst subset fails even when unique wins vary (0.107291ms)
+✔ recrossing retains first observed crossing (0.042583ms)
+✔ uppercase .NET SHA256 metadata and result hashes are valid hex digests (4.448958ms)
+✔ rejects lifecycle/catalog mutation: alive flag with zero terminal health (2.638875ms)
+✔ rejects lifecycle/catalog mutation: dead flag with positive terminal health (3.081291ms)
+✔ rejects lifecycle/catalog mutation: regressing level (2.460208ms)
+✔ rejects lifecycle/catalog mutation: regressing season (2.488792ms)
+✔ rejects lifecycle/catalog mutation: inconsistent terminal food (2.628792ms)
+✔ rejects lifecycle/catalog mutation: missing periodic sample (2.310833ms)
+✔ rejects lifecycle/catalog mutation: invalid source commit (1.502792ms)
+✔ rejects lifecycle/catalog mutation: invalid season configuration (2.023125ms)
+✔ rejects lifecycle/catalog mutation: foreign catalog card (2.242792ms)
+✔ premature alive duration is rejected even when terminal sums match (2.298625ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 264.551292
+
+> validate
+> node tools/validate-content.mjs
+
+{
+  "valid": true,
+  "records": 226,
+  "schemas": 12,
+  "errors": [],
+  "gateCounts": {
+    "canonicalCounts": {
+      "weapon": 30,
+      "tool": 40,
+      "charter": 16,
+      "item": 60,
+      "vassal": 16,
+      "enemy": 24,
+      "evolution": 30,
+      "hero": 1,
+      "estate": 1,
+      "skin": 1
+    },
+    "minTagDistinctCount": 8,
+    "noGrowthTools": 0,
+    "evolutionCounts": {
+      "weapon-tool": 10,
+      "tool-tool": 10,
+      "tool-growth": 10
+    },
+    "unorderedAntiSynergyPairs": 11,
+    "skinNumericCount": 0,
+    "loopLinkedDistinct": 130
+  }
+}
+S3 content tables match canonical JSON
+metrics selftest PASS
+PR policy: issue, ADR, template and comment checks passed
+PASS BCL algorithm
+PASS comments are not code
+PASS engine unused import
+PASS inactive branch engine
+PASS inactive branch numeric
+PASS engine alias
+PASS content id literal
+PASS content id escaped
+PASS content id concatenated
+PASS content id interpolated
+PASS data id without namespace
+PASS gameplay local
+PASS gameplay const
+PASS gameplay hexadecimal
+PASS gameplay negative
+PASS seeded random
+PASS unseeded random
+PASS implicit new random
+PASS shared random
+PASS clock alias
+PASS clock static import
+PASS random guid
+PASS stopwatch
+PASS exact algorithm constant exemption
+ArchitectureGuard self-tests: 24/24 passed.
+PASS repository PackageReference
+PASS repository ProjectReference
+PASS repository Reference
+PASS repository FrameworkReference
+PASS repository JSON-discovered content ID
+PASS repository nested loop stage is not a content identity
+PASS repository top-level estate identity remains protected
+PASS repository explicit nested hero reference remains protected
+PASS repository explicit nested hero object remains protected
+PASS repository generic word used as actual hero identity remains protected
+PASS repository inherited package reference
+ArchitectureGuard: 0 violation(s).
+  복원할 프로젝트를 확인하는 중...
+  복원할 모든 프로젝트가 최신 상태입니다.
+  SowSiege.Core -> /Users/rexxa/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+  SowSiege.Sim -> /Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+  SowSiege.Bench -> /Users/rexxa/bs-mobile/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
+  SowSiege.Tests -> /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+
+빌드했습니다.
+    경고 0개
+    오류 0개
+
+경과 시간: 00:00:00.56
+/Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll(.NETCoreApp,Version=v8.0)에 대한 테스트 실행
+VSTest 버전 17.11.1 (arm64)
+
+테스트 실행을 시작하는 중입니다. 잠시 기다려 주세요...
+지정된 패턴과 일치한 총 테스트 파일 수는 1개입니다.
+경고: 결과 파일을 덮어쓰는 중: /Users/rexxa/bs-mobile/artifacts/tests/tests.trx
+결과 파일: /Users/rexxa/bs-mobile/artifacts/tests/tests.trx
+
+통과!  - 실패:     0, 통과:    75, 건너뜀:     0, 전체:    75, 기간: 5 s - SowSiege.Tests.dll (net8.0)
+S2 smoke: 18 policy/seed cases × 3 deterministic repeats; 900 tick cap; policy damage CV=0.02705842682220579; diagnostic only, not S4 balance.
+S4 s4-smoke: 54 independent cases / 162 executions, seven CSVs at /Users/rexxa/bs-mobile/artifacts/league-s4-smoke
+S4 report: 54 independent cases; dominance not observed

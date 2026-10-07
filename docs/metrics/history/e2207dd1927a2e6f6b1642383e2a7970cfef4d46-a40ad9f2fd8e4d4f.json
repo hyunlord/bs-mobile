@@ -1,0 +1,175 @@
+{
+  "data": {
+    "policy": "mixed",
+    "seed": 42,
+    "schemaVersion": 1,
+    "model": "scaffold",
+    "config": {
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "tickRate": 30,
+      "durationTicks": 900,
+      "damageRollMax": 7,
+      "policy": "mixed",
+      "iterations": 3,
+      "ticks": 900
+    },
+    "stage": "S0",
+    "scope": "synthetic-scaffold",
+    "gameplayBalanceClaim": false,
+    "commit": "e2207dd1927a2e6f6b1642383e2a7970cfef4d46",
+    "timestamp": "2026-10-07T20:23:12.0661953+00:00",
+    "runtime": {
+      "framework": "8.0.31",
+      "os": "Ubuntu 24.04.5 LTS",
+      "architecture": "X64",
+      "stopwatchFrequency": 1000000000
+    },
+    "iterations": 3,
+    "ticks": 900,
+    "tickP95Ms": 0.000081,
+    "tickSampleCount": 2700,
+    "stopwatchFrequency": 1000000000,
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "damage": 8884,
+    "growth": 1800,
+    "hash": "43FD2B0BB0314D1EAA8ECB5249D82F6155F24FD9243ECF4274162CC6C2A82407",
+    "balanceDispersion": null,
+    "scaffoldDamageCv": 0.3748277841470601,
+    "balanceMetric": "coefficient-of-variation of policy mean scaffold damage; NOT gameplay balance",
+    "league": {
+      "mode": "smoke",
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "policies": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
+      "runCount": 18,
+      "repeatCount": 3,
+      "policyMeans": [
+        {
+          "policy": "weapon",
+          "damage": 13371,
+          "growth": 900
+        },
+        {
+          "policy": "land",
+          "damage": 4457,
+          "growth": 2700
+        },
+        {
+          "policy": "building",
+          "damage": 8914,
+          "growth": 1800
+        },
+        {
+          "policy": "people",
+          "damage": 8914,
+          "growth": 1800
+        },
+        {
+          "policy": "mixed",
+          "damage": 8914,
+          "growth": 1800
+        },
+        {
+          "policy": "random",
+          "damage": 4457,
+          "growth": 900
+        }
+      ]
+    },
+    "measurementScope": "synthetic-scaffold"
+  },
+  "source": {
+    "policy": "mixed",
+    "seed": 42,
+    "schemaVersion": 1,
+    "model": "scaffold",
+    "config": {
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "tickRate": 30,
+      "durationTicks": 900,
+      "damageRollMax": 7
+    },
+    "stage": "S0",
+    "scope": "synthetic-scaffold",
+    "gameplayBalanceClaim": false,
+    "commit": "6106ca4d11273ec70633e4b9a539eba078fc4f9b",
+    "timestamp": "2026-10-07T20:23:12.0661953+00:00",
+    "runtime": "8.0.31",
+    "iterations": 3,
+    "ticks": 900,
+    "tickP95Ms": 0.000081,
+    "tickSampleCount": 2700,
+    "stopwatchFrequency": 1000000000,
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "damage": 8884,
+    "growth": 1800,
+    "hash": "43FD2B0BB0314D1EAA8ECB5249D82F6155F24FD9243ECF4274162CC6C2A82407",
+    "balanceDispersion": null,
+    "scaffoldDamageCv": 0.3748277841470601,
+    "balanceMetric": "coefficient-of-variation of policy mean scaffold damage; NOT gameplay balance",
+    "league": {
+      "mode": "smoke",
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "policies": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
+      "runCount": 18,
+      "repeatCount": 3,
+      "policyMeans": [
+        {
+          "policy": "weapon",
+          "damage": 13371,
+          "growth": 900
+        },
+        {
+          "policy": "land",
+          "damage": 4457,
+          "growth": 2700
+        },
+        {
+          "policy": "building",
+          "damage": 8914,
+          "growth": 1800
+        },
+        {
+          "policy": "people",
+          "damage": 8914,
+          "growth": 1800
+        },
+        {
+          "policy": "mixed",
+          "damage": 8914,
+          "growth": 1800
+        },
+        {
+          "policy": "random",
+          "damage": 4457,
+          "growth": 900
+        }
+      ]
+    }
+  }
+}

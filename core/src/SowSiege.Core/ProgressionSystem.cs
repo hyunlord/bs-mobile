@@ -1,6 +1,6 @@
 namespace SowSiege.Core;
 
-internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random)
+internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, RuntimeSystem? runtime = null)
 {
     public void Tick()
     {
@@ -18,13 +18,13 @@ internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions optio
 
     private void Deal()
     {
-        var pool = catalog.Weapons.Keys.Concat(catalog.Tools.Keys).Order(StringComparer.Ordinal)
+        var pool = catalog.Weapons.Keys.Concat(catalog.Tools.Keys).Concat(catalog.Runtime?.Charters.Keys ?? []).Order(StringComparer.Ordinal)
             .Where(id => CanOffer(id) && !world.BannedCards.Contains(id)).ToList();
         var offer = new List<string>();
         if (world.LockedCard is not null && pool.Remove(world.LockedCard)) { offer.Add(world.LockedCard); }
         while (offer.Count < catalog.Tuning.World.Progression.CardCount && pool.Count > 0)
         {
-            var index = random.Next(pool.Count);
+            var index = runtime is null ? random.Next(pool.Count) : WeightedOffer(pool);
             offer.Add(pool[index]); pool.RemoveAt(index);
         }
         world.PendingCards = offer.ToArray();
@@ -34,9 +34,17 @@ internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions optio
     {
         RequireOffered(id);
         var rarity = RollRarity();
-        var owned = world.Equipment.FirstOrDefault(equipment => equipment.Id == id);
-        if (owned is null) { world.Equipment.Add(new() { Id = id, Level = rarity.UpgradeAmount }); }
-        else { owned.Level = checked(owned.Level + rarity.UpgradeAmount); }
+        if (catalog.Runtime?.Charters.ContainsKey(id) == true)
+        {
+            world.Runtime!.Charters[id] = checked(world.Runtime.Charters.GetValueOrDefault(id) + rarity.UpgradeAmount);
+        }
+        else
+        {
+            var owned = world.Equipment.FirstOrDefault(equipment => equipment.Id == id);
+            if (owned is null) { world.Equipment.Add(new() { Id = id, Level = rarity.UpgradeAmount }); }
+            else { owned.Level = checked(owned.Level + rarity.UpgradeAmount); }
+        }
+        runtime?.UnlockEvolutions();
         world.Cards.Add(new(world.Tick, world.PendingCards.ToArray(), id, rarity.Name, world.Level));
         world.PendingCards = [];
         world.LockedCard = null;
@@ -75,16 +83,17 @@ internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions optio
     private long RequiredExperience() => catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
     private bool CanOffer(string id)
     {
+        if (catalog.Runtime?.Charters.ContainsKey(id) == true) { return world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; }
         if (world.Equipment.Any(equipment => equipment.Id == id)) { return true; }
         var tool = catalog.Tools.ContainsKey(id);
         var count = world.Equipment.Count(equipment => catalog.Tools.ContainsKey(equipment.Id) == tool);
-        return count < (tool ? catalog.Tuning.World.Progression.ToolSlots : catalog.Tuning.World.Progression.WeaponSlots);
+        return count < (tool ? catalog.Runtime?.Tuning.ToolSlots ?? catalog.Tuning.World.Progression.ToolSlots : catalog.Runtime?.Tuning.WeaponSlots ?? catalog.Tuning.World.Progression.WeaponSlots);
     }
     private string Choose(IReadOnlyList<string> offer)
     {
         if (options.Policy == "random") { return offer[random.Next(offer.Count)]; }
         var policy = catalog.Tuning.Policies[options.Policy];
-        var weights = offer.Select(id => policy.CardWeights[catalog.Tools.TryGetValue(id, out var tool) ? tool.Growth.Target : "weapon"]).ToArray();
+        var weights = offer.Select(id => policy.CardWeights[Category(id)]).ToArray();
         var roll = random.Next(weights.Sum());
         for (var index = 0; index < offer.Count; index++)
         {
@@ -92,6 +101,14 @@ internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions optio
             if (roll < 0) { return offer[index]; }
         }
         throw new InvalidOperationException("Card weights must be positive.");
+    }
+    private string Category(string id) => catalog.Runtime?.Charters.TryGetValue(id, out var charter) == true ? charter.PolicyCategory : catalog.Tools.TryGetValue(id, out var tool) ? tool.Growth.Target : "weapon";
+    private int WeightedOffer(IReadOnlyList<string> pool)
+    {
+        var weights = pool.Select(id => runtime!.OfferWeight(Category(id))).ToArray();
+        var roll = random.Next(weights.Sum());
+        for (var index = 0; index < weights.Length; index++) { roll -= weights[index]; if (roll < 0) { return index; } }
+        throw new InvalidOperationException("Positive offer weights required.");
     }
     private RarityDefinition RollRarity()
     {

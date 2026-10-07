@@ -277,3 +277,30 @@ test('additional profile can activate a new generic implemented test tool withou
   assert.equal(result.valid, true, result.errors.join('\n'));
   assert.equal(await readFile(baselinePath, 'utf8'), baselineText);
 });
+
+const runtimeMutations = [
+  ['unsupported pulse attribution', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[0].subject='tool-growth';}, /unsupported runtime subject/],
+  ['unsupported modifier cost', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[1].foodCost=1;}, /modifier food cost is unsupported/],
+  ['missing projection', 'charters/guarded_harvest.json', v=>{delete v.runtimeProjection;}, /requires runtime projection|requires implemented projection/],
+  ['unknown operation', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[0].operation='eval';}, /schema violation/],
+  ['wrong operation subject', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[0].subject='random-object';}, /unsupported runtime subject/],
+  ['zero effect', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[0].amount=0;}, /invalid effect amount/],
+  ['duplicate effect identity', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[1].id=v.runtimeProjection.effects[0].id;}, /duplicate runtime effect ID/],
+  ['wrong trigger', 'charters/guarded_harvest.json', v=>{v.runtimeProjection.effects[0].trigger='modifier';}, /modifier trigger mismatch/],
+  ['missing mixed secondary target', 'tools/hedge_drum.json', v=>{v.runtimeProjection.growthActions[1].target='building';}, /duplicate growth target|unsupported growth action/],
+  ['unselected effect equipment', 'items/meadow_buckle.json', v=>{v.runtimeProjection.effects[0].conditions.push({kind:'equipment-id',value:'core:absent',minimum:0});}, /invalid effect equipment reference|outside selected profile/],
+  ['empty timed effect', 'charters/meal_oath.json', v=>{v.runtimeProjection.effects[0].durationTicks=0;}, /timed effect requires duration/],
+  ['unknown condition tag', 'items/meadow_buckle.json', v=>{v.runtimeProjection.effects[0].conditions.find(c=>c.kind==='equipment-tag').value='absent-tag';}, /condition tag outside/],
+  ['invalid condition enum', 'items/meadow_buckle.json', v=>{v.runtimeProjection.effects[0].conditions.find(c=>c.kind==='enemy-target').value='building-plus';}, /invalid condition value/],
+  ['duplicate loot source', 'profiles/s4-stage-one.json', v=>{v.runtime.tuning.lootSources[1].id=v.runtime.tuning.lootSources[0].id;}, /duplicate loot channel/],
+  ['missing selected evolution input', 'profiles/s4-stage-one.json', v=>{v.selection.tools[0]='core:muster_horn';}, /evolution input outside|duplicate profile selection/],
+];
+for(const [name,relative,mutate,expected] of runtimeMutations) test(`S4 rejects ${name}`,async t=>{
+  const directory=await mkdtemp(path.join(os.tmpdir(),'bs-s4-schema-'));
+  t.after(()=>rm(directory,{recursive:true,force:true}));
+  await cp(fileURLToPath(new URL('../data',import.meta.url)),directory,{recursive:true});
+  const filename=path.join(directory,relative);const value=JSON.parse(await readFile(filename,'utf8'));mutate(value);
+  await writeFile(filename,JSON.stringify(value));
+  const result=await validateContent(directory,{fullPool:true});
+  assert.equal(result.valid,false);assert.match(result.errors.join('\n'),expected);
+});
