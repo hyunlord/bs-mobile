@@ -1,0 +1,48 @@
+name: Durable metrics
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: durable-metrics
+  cancel-in-progress: false
+jobs:
+  archive:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Collect data only from completed run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          mkdir -p artifacts/incoming artifacts/durable/history
+          gh run download "$RUN_ID" --pattern 'evidence-*' --dir artifacts/incoming
+          test -f artifacts/incoming/metrics.json
+          if gh release view metrics-history >/dev/null 2>&1; then
+            gh release download metrics-history --pattern '*.json' --dir artifacts/durable/history
+          fi
+      - name: Render trusted generator with untrusted JSON input
+        env:
+          METRICS_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: node tools/metrics.mjs artifacts/incoming/metrics.json artifacts/durable
+      - name: Preserve history as release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view metrics-history >/dev/null 2>&1; then
+            gh release create metrics-history --target main --prerelease --title 'Commit metrics history' --notes 'Measured JSON per successful commit/run plus standalone HTML. S0 scaffold is not game balance evidence. Managed by trusted main workflow; no source branch bypass.'
+          fi
+          (cd artifacts/durable && zip -qr ../metrics-history.zip index.html history)
+          gh release upload metrics-history artifacts/durable/history/*.json artifacts/durable/index.html artifacts/metrics-history.zip --clobber

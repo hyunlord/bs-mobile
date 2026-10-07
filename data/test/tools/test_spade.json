@@ -1,0 +1,8 @@
+{
+  "id": "test:spade",
+  "tags": ["land"],
+  "activation": { "damage": 1 },
+  "growth": { "target": "land", "yield": 2 },
+  "floorRationale": "Synthetic alternate fixture, not production content.",
+  "antiSynergy": []
+}

@@ -1,0 +1,12 @@
+{
+  "name": "bs-mobile-content-checks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tools/test-content-validator.mjs",
+    "validate": "node tools/validate-content.mjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0"
+  }
+}

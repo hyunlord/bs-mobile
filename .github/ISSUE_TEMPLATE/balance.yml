@@ -1,0 +1,18 @@
+name: 밸런스 발견
+description: 커밋, 정책, 사람 규칙, seed 집합, 원본 CSV 및 재생성 명령
+title: "[balance] "
+labels: ["type/balance"]
+body:
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 밸런스 발견와 근거
+      description: 커밋, 정책, 사람 규칙, seed 집합, 원본 CSV 및 재생성 명령
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 검증 가능한 완료 조건
+    validations:
+      required: true

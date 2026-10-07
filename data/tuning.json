@@ -1,0 +1,15 @@
+{
+  "tickRate": 30,
+  "durationTicks": 900,
+  "damageRollMax": 7,
+  "defaultHero": "core:founder",
+  "defaultEstate": "core:meadow",
+  "policies": {
+    "weapon": { "damageMultiplier": 3, "growthMultiplier": 1 },
+    "land": { "damageMultiplier": 1, "growthMultiplier": 3 },
+    "building": { "damageMultiplier": 2, "growthMultiplier": 2 },
+    "people": { "damageMultiplier": 2, "growthMultiplier": 2 },
+    "mixed": { "damageMultiplier": 2, "growthMultiplier": 2 },
+    "random": { "damageMultiplier": 1, "growthMultiplier": 1 }
+  }
+}
