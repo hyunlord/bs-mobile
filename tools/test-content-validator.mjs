@@ -235,3 +235,45 @@ for(const [name,mutate,expected] of poolMutations) test(`S3 rejects ${name}`,asy
   await mutate(directory); const result=await validateContent(directory,{fullPool:true});
   assert.equal(result.valid,false);assert.match(result.errors.join('\n'),expected);
 });
+
+for (const candidate of [false, true]) test(`additional subset profile ${candidate ? 'rejects candidate activation' : 'accepts implemented subset'}`, async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-subset-profile-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, { recursive: true });
+  const profile = JSON.parse(await readFile(path.join(directory, 'profiles/s2-baseline.json'), 'utf8'));
+  profile.id = 'core:smoke_subset';
+  profile.name = '구현된 콘텐츠 부분집합';
+  profile.selection.weapons = ['core:iron_blade'];
+  profile.selection.tools = candidate ? ['core:bee_hive'] : ['core:seed_bag', 'core:carpenter_hammer'];
+  profile.selection.enemies = ['core:raider'];
+  for (const kind of Object.keys(profile.testSelection)) profile.testSelection[kind] = [];
+  await writeFile(path.join(directory, 'profiles/smoke-subset.json'), JSON.stringify(profile));
+  const result = await validateContent(directory, { fullPool: true });
+  if (candidate) {
+    assert.equal(result.valid, false);
+    assert.match(result.errors.join('\n'), /candidate cannot enter runtime profile core:bee_hive/);
+  } else {
+    assert.equal(result.valid, true, result.errors.join('\n'));
+  }
+});
+
+test('additional profile can activate a new generic implemented test tool without changing baseline', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-profile-extension-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, { recursive: true });
+  const baselinePath = path.join(directory, 'profiles/s2-baseline.json');
+  const baselineText = await readFile(baselinePath, 'utf8');
+  const profile = JSON.parse(baselineText);
+  const tool = JSON.parse(await readFile(path.join(directory, 'test/tools/test_spade.json'), 'utf8'));
+  tool.id = 'test:extension_spade';
+  tool.name = '추가 프로필 검증 삽';
+  await writeFile(path.join(directory, 'test/tools/extension_spade.json'), JSON.stringify(tool));
+  profile.id = 'test:extension_profile';
+  profile.name = '기준 집합을 보존하는 확장';
+  for (const kind of Object.keys(profile.testSelection)) profile.testSelection[kind] = [];
+  profile.testSelection.tools = [tool.id];
+  await writeFile(path.join(directory, 'profiles/extension.json'), JSON.stringify(profile));
+  const result = await validateContent(directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.equal(await readFile(baselinePath, 'utf8'), baselineText);
+});

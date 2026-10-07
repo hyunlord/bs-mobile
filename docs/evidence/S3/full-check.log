@@ -1,5 +1,5 @@
 
-added 5 packages, and audited 6 packages in 423ms
+added 5 packages, and audited 6 packages in 721ms
 
 2 packages are looking for funding
   run `npm fund` for details
@@ -9,70 +9,73 @@ found 0 vulnerabilities
 > test
 > node --test tools/test-content-validator.mjs
 
-✔ valid schema and cross-record references pass (33.777625ms)
-✔ rejects damage below minimum (10.97025ms)
-✔ rejects unknown field (11.132125ms)
-✔ rejects missing growth (9.380042ms)
-✔ rejects missing activation (8.409958ms)
-✔ rejects wrong scalar type (8.254708ms)
-✔ rejects invalid namespace (8.11025ms)
-✔ rejects unresolved hero tool (7.857292ms)
-✔ rejects wrong-kind reference (7.522083ms)
-✔ rejects unresolved estate tool (7.483834ms)
-✔ rejects unresolved tuning hero (7.051458ms)
-✔ rejects unresolved anti-synergy (7.45625ms)
-✔ rejects invalid schema (7.234375ms)
-✔ rejects undeclared schema draft (6.423958ms)
-✔ rejects unknown schema keyword (6.703459ms)
-✔ recursively checks test content and global duplicate IDs (7.628875ms)
-✔ rejects content without matching schema (7.302334ms)
-✔ skin numbers fail even if schema permits arbitrary fields (8.520166ms)
-✔ valid Draft2020 unevaluatedProperties is enforced (8.003792ms)
-✔ rejects malformed JSON instead of silently skipping it (7.60975ms)
-✔ S2 rejects season duration mismatch (117.306584ms)
-✔ S2 rejects missing world numeric tuning (102.528917ms)
-✔ S2 rejects unresolved starting weapon (95.568708ms)
-✔ S2 rejects excessive load (92.692375ms)
-✔ S2 rejects map-incompatible spawn inset (89.353292ms)
-✔ S2 rejects unsupported people rule (89.987333ms)
-✔ S2 rejects wrong card count (89.514958ms)
-✔ S2 rejects duplicate rarity names (86.045708ms)
-✔ S2 rejects oversized squad (95.102125ms)
-✔ S3 rejects missing canonical item (167.129291ms)
-✔ S3 rejects unknown estate loop stage (93.267375ms)
-✔ S3 rejects candidate profile activation (91.981041ms)
-✔ S3 rejects profile wrong kind (91.847834ms)
-✔ S3 rejects profile test leakage (93.877375ms)
-✔ S3 rejects missing anti-synergy rationale (89.71775ms)
-✔ S3 rejects hero affinity wrong kind (89.024458ms)
-✔ S3 canonical pool passes all semantic gates (40.035959ms)
-✔ S3 rejects candidate pretending implemented (87.59375ms)
-✔ S3 rejects missing profile enemy (86.811709ms)
-✔ S3 rejects missing test profile hero (87.60675ms)
-✔ S3 rejects test metadata orphan (94.338ms)
-✔ S3 rejects reordered duplicate evolution (92.15875ms)
-✔ S3 rejects sparse tag coverage (119.509209ms)
-✔ S3 rejects evolution input kind (87.066042ms)
-✔ S3 rejects evolution result base (88.016625ms)
-✔ S3 rejects vassal owner kind (87.729792ms)
-✔ S3 rejects item tool reference (90.03825ms)
-✔ S3 rejects skin numeric metadata (88.380791ms)
-✔ S3 rejects insufficient anti pairs (96.976375ms)
-✔ S3 rejects insufficient loop links (106.999542ms)
-ℹ tests 50
+✔ valid schema and cross-record references pass (34.826583ms)
+✔ rejects damage below minimum (11.484583ms)
+✔ rejects unknown field (10.958667ms)
+✔ rejects missing growth (8.903834ms)
+✔ rejects missing activation (8.655666ms)
+✔ rejects wrong scalar type (8.852958ms)
+✔ rejects invalid namespace (8.142958ms)
+✔ rejects unresolved hero tool (7.972583ms)
+✔ rejects wrong-kind reference (8.007667ms)
+✔ rejects unresolved estate tool (7.925583ms)
+✔ rejects unresolved tuning hero (8.045958ms)
+✔ rejects unresolved anti-synergy (7.526709ms)
+✔ rejects invalid schema (7.253625ms)
+✔ rejects undeclared schema draft (7.248334ms)
+✔ rejects unknown schema keyword (8.162125ms)
+✔ recursively checks test content and global duplicate IDs (8.064958ms)
+✔ rejects content without matching schema (7.546459ms)
+✔ skin numbers fail even if schema permits arbitrary fields (8.02075ms)
+✔ valid Draft2020 unevaluatedProperties is enforced (8.018167ms)
+✔ rejects malformed JSON instead of silently skipping it (7.08ms)
+✔ S2 rejects season duration mismatch (116.98725ms)
+✔ S2 rejects missing world numeric tuning (104.599542ms)
+✔ S2 rejects unresolved starting weapon (93.778833ms)
+✔ S2 rejects excessive load (92.041334ms)
+✔ S2 rejects map-incompatible spawn inset (94.486666ms)
+✔ S2 rejects unsupported people rule (93.175ms)
+✔ S2 rejects wrong card count (92.667875ms)
+✔ S2 rejects duplicate rarity names (92.150084ms)
+✔ S2 rejects oversized squad (94.949792ms)
+✔ S3 rejects missing canonical item (106.148541ms)
+✔ S3 rejects unknown estate loop stage (97.153375ms)
+✔ S3 rejects candidate profile activation (92.025666ms)
+✔ S3 rejects profile wrong kind (98.638667ms)
+✔ S3 rejects profile test leakage (94.053666ms)
+✔ S3 rejects missing anti-synergy rationale (96.319625ms)
+✔ S3 rejects hero affinity wrong kind (91.879334ms)
+✔ S3 canonical pool passes all semantic gates (41.99675ms)
+✔ S3 rejects candidate pretending implemented (93.742584ms)
+✔ S3 rejects missing profile enemy (91.368333ms)
+✔ S3 rejects missing test profile hero (91.777292ms)
+✔ S3 rejects test metadata orphan (103.758542ms)
+✔ S3 rejects reordered duplicate evolution (97.548459ms)
+✔ S3 rejects sparse tag coverage (131.200792ms)
+✔ S3 rejects evolution input kind (92.087125ms)
+✔ S3 rejects evolution result base (89.1005ms)
+✔ S3 rejects vassal owner kind (91.056125ms)
+✔ S3 rejects item tool reference (93.93025ms)
+✔ S3 rejects skin numeric metadata (94.751375ms)
+✔ S3 rejects insufficient anti pairs (103.302625ms)
+✔ S3 rejects insufficient loop links (111.423625ms)
+✔ additional subset profile accepts implemented subset (92.882709ms)
+✔ additional subset profile rejects candidate activation (92.855208ms)
+✔ additional profile can activate a new generic implemented test tool without changing baseline (92.265167ms)
+ℹ tests 53
 ℹ suites 0
-ℹ pass 50
+ℹ pass 53
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 3103.590958
-✔ standalone missing issue (103.138125ms)
-✔ inline missing issue (98.865792ms)
-✔ block missing issue (99.474667ms)
-✔ shell missing issue (101.651959ms)
-✔ linked inline (100.931291ms)
-✔ linked shell (102.502542ms)
+ℹ duration_ms 3437.481083
+✔ standalone missing issue (103.323125ms)
+✔ inline missing issue (109.740458ms)
+✔ block missing issue (104.156833ms)
+✔ shell missing issue (100.464208ms)
+✔ linked inline (107.073292ms)
+✔ linked shell (124.204542ms)
 ℹ tests 6
 ℹ suites 0
 ℹ pass 6
@@ -80,7 +83,7 @@ found 0 vulnerabilities
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 675.48425
+ℹ duration_ms 721.631459
 
 > validate
 > node tools/validate-content.mjs
@@ -159,14 +162,14 @@ ArchitectureGuard: 0 violation(s).
   복원할 모든 프로젝트가 최신 상태입니다.
   SowSiege.Core -> /Users/rexxa/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
   SowSiege.Sim -> /Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
-  SowSiege.Bench -> /Users/rexxa/bs-mobile/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
   SowSiege.Tests -> /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+  SowSiege.Bench -> /Users/rexxa/bs-mobile/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
 
 빌드했습니다.
     경고 0개
     오류 0개
 
-경과 시간: 00:00:00.56
+경과 시간: 00:00:00.88
 /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll(.NETCoreApp,Version=v8.0)에 대한 테스트 실행
 VSTest 버전 17.11.1 (arm64)
 
@@ -175,5 +178,5 @@ VSTest 버전 17.11.1 (arm64)
 경고: 결과 파일을 덮어쓰는 중: /Users/rexxa/bs-mobile/artifacts/tests/tests.trx
 결과 파일: /Users/rexxa/bs-mobile/artifacts/tests/tests.trx
 
-통과!  - 실패:     0, 통과:    43, 건너뜀:     0, 전체:    43, 기간: 4 s - SowSiege.Tests.dll (net8.0)
+통과!  - 실패:     0, 통과:    43, 건너뜀:     0, 전체:    43, 기간: 5 s - SowSiege.Tests.dll (net8.0)
 S2 smoke: 18 policy/seed cases × 3 deterministic repeats; 900 tick cap; policy damage CV=0.02705842682220579; diagnostic only, not S4 balance.

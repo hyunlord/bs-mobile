@@ -240,23 +240,26 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       loopLinkedDistinct:loopLinked
     };
     const profiles=records.filter(e=>e.kind==='profile');
-    expect(profiles.length>0,'Explicit runtime profile required');
+    expect(profiles.some(entry=>entry.relative===path.join('profiles','s2-baseline.json')), 'Explicit s2-baseline runtime profile required');
+    const allSelected = new Set();
     for(const {record:r,relative} of profiles) {
+      const isBaseline = relative === path.join('profiles', 's2-baseline.json');
       const selected=new Set();
       const expectedCounts={selection:{weapons:3,tools:3,enemies:4,heroes:1,estates:1},testSelection:{weapons:0,tools:2,enemies:0,heroes:1,estates:1}};
-      for(const [group,kinds] of Object.entries(expectedCounts)) for(const [kind,count] of Object.entries(kinds)) expect(list(r[group]?.[kind]).length===count,`${relative}: baseline profile ${group}.${kind} must select ${count}`);
+      if (isBaseline) for(const [group,kinds] of Object.entries(expectedCounts)) for(const [kind,count] of Object.entries(kinds)) expect(list(r[group]?.[kind]).length===count,`${relative}: baseline profile ${group}.${kind} must select ${count}`);
       for(const group of ['selection','testSelection']) for(const [directory,kind] of directoryKinds) {
         if(!['weapon','tool','enemy','hero','estate'].includes(kind)) continue;
+        if (group==='selection') expect(list(r[group]?.[directory]).length>0, `${relative}: runtime profile must select nonempty ${directory}`);
         for(const id of list(r[group]?.[directory])) {
           reference(relative,`${group}.${directory}`,id,kind);
-          expect(!selected.has(id),`${relative}: duplicate profile selection ${id}`); selected.add(id);
+          expect(!selected.has(id),`${relative}: duplicate profile selection ${id}`); selected.add(id); allSelected.add(id);
           const target=byId.get(id);
           expect(target?.record.designStatus==='s2-runtime',`${relative}: candidate cannot enter runtime profile ${id}`);
           expect(Boolean(target?.relative.startsWith(`test${path.sep}`))===(group==='testSelection'),`${relative}: profile test selection boundary mismatch ${id}`);
         }
       }
-      for(const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) expect((entry.record.designStatus==='s2-runtime')===selected.has(entry.record.id),`${entry.relative}: runtime status must match explicit baseline selection`);
     }
+    for(const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) expect((entry.record.designStatus==='s2-runtime')===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
   }
   if (schemas.size === 0) errors.push('No valid schemas found');
   if (records.length === 0) errors.push('No content records found');
