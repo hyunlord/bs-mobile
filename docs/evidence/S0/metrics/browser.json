@@ -1,0 +1,38 @@
+[
+  {
+    "width": 375,
+    "bodyWidth": 375,
+    "links": [
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json"
+    ],
+    "rows": 1,
+    "svg": 2,
+    "hasScaffold": true,
+    "focus": "DIV",
+    "errors": []
+  },
+  {
+    "width": 768,
+    "bodyWidth": 768,
+    "links": [
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json"
+    ],
+    "rows": 1,
+    "svg": 2,
+    "hasScaffold": true,
+    "focus": "DIV",
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "bodyWidth": 1280,
+    "links": [
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json"
+    ],
+    "rows": 1,
+    "svg": 2,
+    "hasScaffold": true,
+    "focus": "DIV",
+    "errors": []
+  }
+]

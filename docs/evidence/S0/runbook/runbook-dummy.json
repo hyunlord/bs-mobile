@@ -1,0 +1,38 @@
+[
+  {
+    "scope": "S0 synthetic scaffold; not gameplay balance",
+    "seed": 42,
+    "heroId": "test:scout",
+    "estateId": "test:moor",
+    "policy": "mixed",
+    "toolId": "test:dummy_rake",
+    "ticks": 900,
+    "damage": 14168,
+    "growth": 7200,
+    "hash": "6A46FC8D5A38FD17487F8C35A19719E9922685DF49C1E956747C4D02A0849979"
+  },
+  {
+    "scope": "S0 synthetic scaffold; not gameplay balance",
+    "seed": 42,
+    "heroId": "test:scout",
+    "estateId": "test:moor",
+    "policy": "mixed",
+    "toolId": "test:dummy_rake",
+    "ticks": 900,
+    "damage": 14168,
+    "growth": 7200,
+    "hash": "6A46FC8D5A38FD17487F8C35A19719E9922685DF49C1E956747C4D02A0849979"
+  },
+  {
+    "scope": "S0 synthetic scaffold; not gameplay balance",
+    "seed": 42,
+    "heroId": "test:scout",
+    "estateId": "test:moor",
+    "policy": "mixed",
+    "toolId": "test:dummy_rake",
+    "ticks": 900,
+    "damage": 14168,
+    "growth": 7200,
+    "hash": "6A46FC8D5A38FD17487F8C35A19719E9922685DF49C1E956747C4D02A0849979"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "model": "scaffold",
+  "config": {
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "tickRate": 30,
+    "durationTicks": 900,
+    "damageRollMax": 7
+  },
+  "stage": "S0",
+  "scope": "synthetic-scaffold",
+  "gameplayBalanceClaim": false,
+  "commit": "7a3b1fc91335351d00ae67d37e0135539eea35f9",
+  "timestamp": "2026-10-07T20:05:37.1055205\u002B00:00",
+  "runtime": "8.0.31",
+  "seed": 42,
+  "policy": "weapon",
+  "iterations": 3,
+  "ticks": 900,
+  "tickP95Ms": 4.8E-05,
+  "tickSampleCount": 2700,
+  "stopwatchFrequency": 1000000000,
+  "os": "Ubuntu 24.04.5 LTS",
+  "architecture": "X64",
+  "damage": 13326,
+  "growth": 900,
+  "hash": "DB3721530A31923772E6511C17CEACB4AFA7CB0EF81216AF0AA3D92BCD521CFD",
+  "balanceDispersion": null
+}

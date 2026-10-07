@@ -8,8 +8,8 @@ permissions:
   contents: read
   issues: read
 concurrency:
-  group: check-${{ github.ref }}
-  cancel-in-progress: true
+  group: check-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 jobs:
   quality:
     name: quality

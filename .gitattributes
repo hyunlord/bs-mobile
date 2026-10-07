@@ -1,0 +1,3 @@
+# Preserve supplied design bytes and machine-produced evidence verbatim.
+docs/design/*.md -text
+docs/evidence/** -text -whitespace
