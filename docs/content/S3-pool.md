@@ -548,4 +548,3 @@ A↔B와 B↔A는 한 쌍으로 센다. 아래 비용은 설계 가설이며 S2�
 | core:mandrake_bulb ↔ core:shepherd_staff | 방목 양이 익지 않은 구근을 먹어 양털 수입과 비명 수확이 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다. |
 | core:market_pole ↔ core:soup_ladle | 판매에 쓴 곡물은 급식에 쓸 수 없어 금화와 인원 유지가 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다. |
 | core:mushroom_sieve ↔ core:torch | 숲을 태워 개간하면 그늘 버섯의 채집 조건을 잃는다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다. |
-

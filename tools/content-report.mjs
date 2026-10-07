@@ -57,7 +57,7 @@ for (const [directory, label] of kinds) {
 }
 output.push('## 태그 분포', '', '테스트 레코드를 제외하고 같은 레코드 안의 중복 태그는 한 번만 센다.', '', table(['태그', '서로 다른 레코드 수', 'ID'], [...tags].sort(([a], [b]) => a.localeCompare(b)).map(([tag, ids]) => [tag, ids.length, ids.sort().join(', ')])));
 output.push('## 반시너지', '', 'A↔B와 B↔A는 한 쌍으로 센다. 아래 비용은 설계 가설이며 S2에서 모든 고유 상호작용을 구현했다는 뜻이 아니다.', '', table(['무순서 쌍', '경쟁하는 자원·시간·상태'], [...pairs].sort(([a], [b]) => a.localeCompare(b))));
-const rendered = `${output.join('\n')}\n`;
+const rendered = `${output.join('\n').trimEnd()}\n`;
 const destination = path.join(root, 'docs/content/S3-pool.md');
 if (process.argv.includes('--check')) {
   if (await fs.readFile(destination, 'utf8') !== rendered) throw new Error('S3-pool.md differs from canonical JSON; run node tools/content-report.mjs');
