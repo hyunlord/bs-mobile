@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "model": "headless-gameplay",
+  "stage": "S2",
+  "scope": "S2 full-duration headless gameplay simulation; balance not approved",
+  "gameplayBalanceClaim": false,
+  "commit": "61bb726cecacc79c670cde4c5bd9730a35196251",
+  "timestamp": "2026-10-07T20:50:17.7270660\u002B00:00",
+  "runtime": "8.0.31",
+  "seed": 42,
+  "policy": "mixed",
+  "iterations": 3,
+  "ticks": 21600,
+  "tickP95Ms": 0.052625,
+  "tickSampleCount": 64800,
+  "stopwatchFrequency": 1000000000,
+  "requestedWarmupTicks": 300,
+  "actualWarmupTicks": 300,
+  "warmupExcluded": true,
+  "tickTimingScope": "Simulation.Tick only; snapshots and PrepareLoadTick excluded; end-tick fixture restoration included",
+  "os": "Darwin 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:25 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6041",
+  "architecture": "Arm64",
+  "damage": 99017,
+  "growth": 130,
+  "hash": "5ECF650A1CC17E4F43318FA93F1CCBE0AB1A9502F026B2EAF2E0BF15B6403DB2",
+  "balanceDispersion": null,
+  "config": {
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "peopleRule": "A",
+    "scenario": "normal",
+    "policy": "mixed",
+    "seed": 42,
+    "includeTest": false,
+    "shortenedSimulation": false,
+    "configuredDurationTicks": 21600,
+    "requestedDurationTicks": 21600,
+    "tickRate": 30,
+    "contentSha256": "829CCA9800B9725A8CF36675E84805DF9F1B2C51ED3515C1C7388E328058C15D",
+    "metaSnapshot": "neutral-no-meta",
+    "advertisementUses": 0
+  },
+  "sourceMetadata": {
+    "contentSha256": "829CCA9800B9725A8CF36675E84805DF9F1B2C51ED3515C1C7388E328058C15D",
+    "commit": "61bb726cecacc79c670cde4c5bd9730a35196251",
+    "gitDirty": false,
+    "gitStatusAvailable": true,
+    "sourceTreeSha256": "C79071A1034ABDD480446C8B2B09EA46A4BA55DA85C151D6BA4E7ABE2B5762D1",
+    "simulationAssemblySha256": "CDCADB6C80AFA95CEFDF5F703A55C119AC8CE96B6D00CFE40960C8D5B40E7DB4",
+    "coreAssemblySha256": "2051798A23D9B52BC31AE9ED75C34347B65BFC05600C736EA3579E63FB33EF17",
+    "metaSnapshot": "neutral-no-meta",
+    "advertisementUses": 0,
+    "tuningStatus": "provisional-unbalanced",
+    "includeTest": false,
+    "shortenedSimulation": false,
+    "configuredDurationTicks": 21600,
+    "requestedDurationTicks": 21600,
+    "seasonDurationTicks": [
+      5400,
+      5400,
+      5400,
+      5400
+    ],
+    "seasonNames": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter"
+    ],
+    "tickRate": 30,
+    "nominalDurationSeconds": 720,
+    "peopleRule": "A",
+    "scenario": "normal",
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "mixed",
+    "seed": 42
+  },
+  "load": {
+    "enabled": false,
+    "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+    "squadSize": 5,
+    "expected": {
+      "enemies": 1000,
+      "farms": 300,
+      "buildings": 20,
+      "people": 60
+    },
+    "beforeMinimum": {
+      "enemies": 0,
+      "farms": 0,
+      "buildings": 0,
+      "people": 3
+    },
+    "beforeMaximum": {
+      "enemies": 170,
+      "farms": 17,
+      "buildings": 10,
+      "people": 34
+    },
+    "afterMinimum": {
+      "enemies": 4,
+      "farms": 1,
+      "buildings": 0,
+      "people": 3
+    },
+    "afterMaximum": {
+      "enemies": 170,
+      "farms": 17,
+      "buildings": 10,
+      "people": 34
+    },
+    "populationMembers": {
+      "beforeMinimum": 6,
+      "beforeMaximum": 40,
+      "afterMinimum": 6,
+      "afterMaximum": 40
+    },
+    "verifiedSamples": 0,
+    "allSamplesExact": false
+  }
+}

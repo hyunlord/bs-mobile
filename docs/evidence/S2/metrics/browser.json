@@ -1,0 +1,50 @@
+[
+  {
+    "width": 375,
+    "bodyWidth": 375,
+    "links": [
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json",
+      "history/678e0b517a9e3a2fd048137531c4cfdfc8302b41-6c2f7f95fa354ecd.json",
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-17664c5859deec77.json",
+      "history/61bb726cecacc79c670cde4c5bd9730a35196251-e2a229552832db76.json",
+      "history/61bb726cecacc79c670cde4c5bd9730a35196251-caba23389eeae1ff.json"
+    ],
+    "rows": 5,
+    "svg": 4,
+    "hasScaffold": true,
+    "focus": "DIV",
+    "errors": []
+  },
+  {
+    "width": 768,
+    "bodyWidth": 768,
+    "links": [
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json",
+      "history/678e0b517a9e3a2fd048137531c4cfdfc8302b41-6c2f7f95fa354ecd.json",
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-17664c5859deec77.json",
+      "history/61bb726cecacc79c670cde4c5bd9730a35196251-e2a229552832db76.json",
+      "history/61bb726cecacc79c670cde4c5bd9730a35196251-caba23389eeae1ff.json"
+    ],
+    "rows": 5,
+    "svg": 4,
+    "hasScaffold": true,
+    "focus": "DIV",
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "bodyWidth": 1280,
+    "links": [
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json",
+      "history/678e0b517a9e3a2fd048137531c4cfdfc8302b41-6c2f7f95fa354ecd.json",
+      "history/aafd7b6f671756d1b6f273876a50f02a996e8983-17664c5859deec77.json",
+      "history/61bb726cecacc79c670cde4c5bd9730a35196251-e2a229552832db76.json",
+      "history/61bb726cecacc79c670cde4c5bd9730a35196251-caba23389eeae1ff.json"
+    ],
+    "rows": 5,
+    "svg": 4,
+    "hasScaffold": true,
+    "focus": "DIV",
+    "errors": []
+  }
+]

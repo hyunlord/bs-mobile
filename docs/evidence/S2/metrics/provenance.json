@@ -1,0 +1,201 @@
+{
+  "artifact": "docs/metrics/index.html",
+  "sha256": "3cffde5288a45ac37ebf78baeffc86b3ebcb6e77462133cdb0c80f07b2ccc9ee",
+  "recordCount": 5,
+  "distinctCommits": [
+    "aafd7b6f671756d1b6f273876a50f02a996e8983",
+    "678e0b517a9e3a2fd048137531c4cfdfc8302b41",
+    "61bb726cecacc79c670cde4c5bd9730a35196251"
+  ],
+  "records": [
+    {
+      "sourceRecord": "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json",
+      "sha256": "e9317ec951533513dd553ef77ef51e97b5d3b5547549afb4111f92c7c3d14c68",
+      "commit": "aafd7b6f671756d1b6f273876a50f02a996e8983",
+      "timestamp": "2026-10-07T20:05:38.3111083+00:00",
+      "runtime": {
+        "framework": "8.0.31",
+        "os": "Ubuntu 24.04.5 LTS",
+        "architecture": "X64",
+        "stopwatchFrequency": 1000000000
+      },
+      "stage": "S0",
+      "model": "scaffold",
+      "scope": "synthetic-scaffold",
+      "tickP95Ms": 0.000046,
+      "balanceDispersion": null,
+      "scaffoldDamageCv": 0.3748277841470601,
+      "rawJsonOpened": true
+    },
+    {
+      "sourceRecord": "history/678e0b517a9e3a2fd048137531c4cfdfc8302b41-6c2f7f95fa354ecd.json",
+      "sha256": "067478604c3fa96c7042ba7c52c791bf5d4bc9d5cf69f0075b71ad643076bd30",
+      "commit": "678e0b517a9e3a2fd048137531c4cfdfc8302b41",
+      "timestamp": "2026-10-07T20:19:22.3354335+00:00",
+      "runtime": {
+        "framework": "8.0.31",
+        "os": "Ubuntu 24.04.5 LTS",
+        "architecture": "X64",
+        "stopwatchFrequency": 1000000000
+      },
+      "stage": "S0",
+      "model": "scaffold",
+      "scope": "synthetic-scaffold",
+      "tickP95Ms": 0.00007,
+      "balanceDispersion": null,
+      "scaffoldDamageCv": 0.3748277841470601,
+      "rawJsonOpened": true
+    },
+    {
+      "sourceRecord": "history/aafd7b6f671756d1b6f273876a50f02a996e8983-17664c5859deec77.json",
+      "sha256": "697b1e6944835915635c8d11ee613ed6f5b0dcc8987643dd6dd419dfbe205f14",
+      "commit": "aafd7b6f671756d1b6f273876a50f02a996e8983",
+      "timestamp": "2026-10-07T20:22:30.5355758+00:00",
+      "runtime": {
+        "framework": "8.0.31",
+        "os": "Ubuntu 24.04.5 LTS",
+        "architecture": "X64",
+        "stopwatchFrequency": 1000000000
+      },
+      "stage": "S0",
+      "model": "scaffold",
+      "scope": "synthetic-scaffold",
+      "tickP95Ms": 0.000081,
+      "balanceDispersion": null,
+      "scaffoldDamageCv": 0.3748277841470601,
+      "rawJsonOpened": true
+    },
+    {
+      "sourceRecord": "history/61bb726cecacc79c670cde4c5bd9730a35196251-e2a229552832db76.json",
+      "sha256": "acbc493bf1dcdc8ac59dc6351691aa1f01bbeb74074ca67f5e2cc2c7cc423260",
+      "commit": "61bb726cecacc79c670cde4c5bd9730a35196251",
+      "timestamp": "2026-10-07T20:50:26.8318210+00:00",
+      "runtime": {
+        "framework": "8.0.31",
+        "os": "Darwin 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:25 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6041",
+        "architecture": "Arm64",
+        "stopwatchFrequency": 1000000000
+      },
+      "stage": "S2",
+      "model": "headless-gameplay",
+      "scope": "S2 full-duration headless gameplay simulation; balance not approved",
+      "tickP95Ms": 0.061708,
+      "load": {
+        "enabled": false,
+        "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+        "squadSize": 5,
+        "expected": {
+          "enemies": 1000,
+          "farms": 300,
+          "buildings": 20,
+          "people": 60
+        },
+        "beforeMinimum": {
+          "enemies": 0,
+          "farms": 0,
+          "buildings": 0,
+          "people": 3
+        },
+        "beforeMaximum": {
+          "enemies": 314,
+          "farms": 19,
+          "buildings": 10,
+          "people": 18
+        },
+        "afterMinimum": {
+          "enemies": 4,
+          "farms": 1,
+          "buildings": 0,
+          "people": 3
+        },
+        "afterMaximum": {
+          "enemies": 314,
+          "farms": 19,
+          "buildings": 10,
+          "people": 18
+        },
+        "populationMembers": {
+          "beforeMinimum": 6,
+          "beforeMaximum": 35,
+          "afterMinimum": 6,
+          "afterMaximum": 35
+        },
+        "verifiedSamples": 0,
+        "allSamplesExact": false
+      },
+      "balanceDispersion": null,
+      "rawJsonOpened": true
+    },
+    {
+      "sourceRecord": "history/61bb726cecacc79c670cde4c5bd9730a35196251-caba23389eeae1ff.json",
+      "sha256": "00a7feb922dccb089131b3827d20094fc331388a755c2f016dea879fce1d6bb3",
+      "commit": "61bb726cecacc79c670cde4c5bd9730a35196251",
+      "timestamp": "2026-10-07T20:50:50.2777580+00:00",
+      "runtime": {
+        "framework": "8.0.31",
+        "os": "Darwin 25.4.0 Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:25 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T6041",
+        "architecture": "Arm64",
+        "stopwatchFrequency": 1000000000
+      },
+      "stage": "S2",
+      "model": "headless-gameplay",
+      "scope": "S2 exact-load mechanics fixture; maintenance included; not natural gameplay",
+      "tickP95Ms": 1.529375,
+      "load": {
+        "enabled": true,
+        "peopleRepresentation": "Active simulation entities; a militia or returning squad is one entity with multiple population members",
+        "squadSize": 5,
+        "expected": {
+          "enemies": 1000,
+          "farms": 300,
+          "buildings": 20,
+          "people": 60
+        },
+        "beforeMinimum": {
+          "enemies": 1000,
+          "farms": 300,
+          "buildings": 20,
+          "people": 60
+        },
+        "beforeMaximum": {
+          "enemies": 1000,
+          "farms": 300,
+          "buildings": 20,
+          "people": 60
+        },
+        "afterMinimum": {
+          "enemies": 1000,
+          "farms": 300,
+          "buildings": 20,
+          "people": 60
+        },
+        "afterMaximum": {
+          "enemies": 1000,
+          "farms": 300,
+          "buildings": 20,
+          "people": 60
+        },
+        "populationMembers": {
+          "beforeMinimum": 60,
+          "beforeMaximum": 116,
+          "afterMinimum": 60,
+          "afterMaximum": 116
+        },
+        "verifiedSamples": 2700,
+        "allSamplesExact": true
+      },
+      "balanceDispersion": null,
+      "rawJsonOpened": true
+    }
+  ],
+  "keyboardFocusedLink": true,
+  "keyboardOpenedFirstRecord": true,
+  "browserVersion": "153.0.8010.12",
+  "errors": [],
+  "checkedAt": "2026-10-07T20:52:41.479Z",
+  "limitations": [
+    "S0 scaffold and S2 actual headless measurements are separate series; neither proves mobile device performance or formal gameplay balance.",
+    "No Lighthouse scores claimed.",
+    "Archive workflow identities are supplied by the integrating agent; this browser check verifies the copied records and report only."
+  ]
+}

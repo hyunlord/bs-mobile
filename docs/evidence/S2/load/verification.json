@@ -1,0 +1,16 @@
+{
+  "source": "ticks.csv",
+  "samples": 2700,
+  "p95Ms": 1.529375,
+  "targetMs": 5,
+  "targetMet": true,
+  "allBeforeAfterCountsExact": true,
+  "commit": "61bb726cecacc79c670cde4c5bd9730a35196251",
+  "dirty": false,
+  "populationMembers": {
+    "beforeMinimum": 60,
+    "beforeMaximum": 116,
+    "afterMinimum": 60,
+    "afterMaximum": 116
+  }
+}
