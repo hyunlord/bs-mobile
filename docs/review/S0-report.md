@@ -48,3 +48,7 @@ main 보호는 quality/secrets 성공 필수·최신 base·관리자 포함·for
 5. 사용자 선택이 필요한 기본 영웅·영지 정체는 S3 후보 단계에 남는다. 현재 core:founder/core:meadow는 임시 데이터이며 확정 콘셉트가 아니다.
 
 단계 ZIP은 `tools/package-stage.sh S0 20261008`로 만든다. 루트 MANIFEST.json에 모든 파일의 크기·SHA-256·커밋을 남기고 CRC, 깨끗한 해제, 전체 해시·정확 파일 집합을 확인한다. build/cache/.git/자격증명은 제외한다.
+
+## 최종 누적 확인
+
+[보관 실행 37681523466](https://github.com/hyunlord/bs-mobile/actions/runs/37681523466) 성공 후 release에서 서로 다른 성공 커밋 `678e0b5`·`aafd7b6`의 JSON 두 개를 직접 내려받아 확인했다. 원본 첫 CI 기록까지 포함한 저장소 HTML도 다시 생성했다. 자산 목록은 `docs/evidence/S0/metrics-release-accumulated.json`이며, 한 번의 통과 수치가 아닌 커밋·시각별 기록의 누적을 실제로 검증했다. `metrics-history.zip`은 HTML과 상대 링크의 원본 JSON을 함께 제공한다.
