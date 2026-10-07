@@ -11,6 +11,7 @@ public sealed record SimulationResult(string Scope, int Seed, string HeroId, str
 /// <summary>S0 synthetic CI workload. It does not implement S2 combat or demonstrate game balance.</summary>
 public sealed class Simulation
 {
+    public const string ForbiddenHero = "core:founder";
     private readonly ContentCatalog catalog;
     private readonly RunOptions options;
     private readonly Random random;
