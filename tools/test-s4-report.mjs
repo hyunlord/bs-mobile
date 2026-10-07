@@ -132,3 +132,16 @@ for(const [name,mutate,pattern] of [
  ['smoke falsely unshortened',x=>x.metadata.find(row=>row.key==='shortenedSimulation').value='false',/shortenedSimulation/],
  ['load scenario in league',x=>x.metadata.find(row=>row.key==='scenario').value='load',/scenario/]
 ])test(`rejects frozen protocol violation: ${name}`,()=>{const tables=fixture();mutate(tables);assert.throws(()=>validateTables(tables),pattern);});
+
+import { failureObservations } from './s4-report.mjs';
+test('failure observations count paired neutral policies and survival saturation from CSV',()=>{
+ const league=validateTables(fixture());const result=failureObservations(league,summarize(league));
+ assert.equal(result.survivedCases,54);assert.equal(result.tiedSurvivalTimeConditions,9);
+ assert.equal(result.neutralPairs,9);assert.equal(result.identicalNeutralTimelines,9);assert.equal(result.identicalNeutralChoices,9);
+ assert.equal(result.strictLeaderLevelConditions,0);
+});
+test('failure observations detect a changed paired trajectory rather than asserting equality',()=>{
+ const tables=fixture();const changed=tables.timeline.find(row=>row.caseId==='mixed__A__42'&&row.tick==='450');changed.weaponDamage='4';
+ const league=validateTables(tables);const result=failureObservations(league,summarize(league));
+ assert.equal(result.identicalNeutralTimelines,8);
+});

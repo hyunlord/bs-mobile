@@ -1,0 +1,10 @@
+  SowSiege.Core -> /Users/rexxa/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+  SowSiege.Sim -> /Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+  SowSiege.Bench -> /Users/rexxa/bs-mobile/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
+  SowSiege.Tests -> /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+
+빌드했습니다.
+    경고 0개
+    오류 0개
+
+경과 시간: 00:00:00.99
