@@ -89,7 +89,8 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
         var people = catalog.Tuning.World.People;
         if (world.Tick > 0 && world.Tick % people.ConsumePeriodTicks == 0)
         {
-            world.Food = Math.Max(0, world.Food - world.People.Sum(person => person.Members));
+            var consumption = world.People.Sum(person => (long)person.Members) * people.FoodPerPerson;
+            world.Food = (int)Math.Max(0, world.Food - consumption);
         }
         if (world.Tick > 0 && world.Tick % people.RecruitPeriodTicks == 0 && world.People.Sum(person => person.Members) < PopulationCap()) { AddPerson("peasant", ""); }
     }

@@ -9,6 +9,23 @@ public sealed class PeopleAndThreatTests
     private static ContentCatalog Catalog() => ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), true);
     private static RunOptions Options(ContentCatalog catalog, string rule = "C") => new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", rule);
 
+    [Theory]
+    [InlineData(3, 4, 100, 88)]
+    [InlineData(1_000_000, 3_000, 1_000_000, 0)]
+    public void ConsumptionUsesConfiguredFoodPerMemberWithoutIntegerOverflow(int foodPerPerson, int members, int initialFood, int expectedFood)
+    {
+        var catalog = Catalog();
+        catalog = catalog with { Tuning = catalog.Tuning with { World = catalog.Tuning.World with { People = catalog.Tuning.World.People with { FoodPerPerson = foodPerPerson, FoodCapacity = Math.Max(catalog.Tuning.World.People.FoodCapacity, initialFood), MaxPeople = Math.Max(catalog.Tuning.World.People.MaxPeople, members), SquadSize = members } } } };
+        var simulation = new Simulation(catalog, Options(catalog));
+        var world = simulation.World;
+        world.People.Clear();
+        world.People.Add(new() { Id = world.AllocateId(), Position = world.Estate, Destination = world.Estate, Role = "militia", Members = members, Health = 1, DutyUntil = int.MaxValue });
+        world.Food = initialFood;
+        world.Tick = catalog.Tuning.World.People.ConsumePeriodTicks;
+        new EstateSystem(catalog, Options(catalog), world, "C", new(catalog.Tuning.World.Map.CellSize)).Tick();
+        Assert.Equal(expectedFood, world.Food);
+    }
+
     [Fact]
     public void MilitiaIsOneSquadAndReturningMembersResumeWorkOnlyAfterArrival()
     {
