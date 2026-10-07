@@ -1,1 +1,5 @@
-{ "id": "test:scout", "startingTool": "test:spade", "damageMultiplier": 2 }
+{
+  "id": "test:scout",
+  "startingTool": "test:dummy_rake",
+  "damageMultiplier": 2
+}
