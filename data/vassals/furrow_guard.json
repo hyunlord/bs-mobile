@@ -1,0 +1,26 @@
+{
+  "id": "core:furrow_guard",
+  "name": "고랑 방패수",
+  "concept": "고랑 방향으로 방패를 세워 적을 한쪽으로 밀고 빠져나갈 길을 만든다. 대신 방패를 세운 방향을 바꾸는 동안 후방 경작지는 지키지 못한다.",
+  "tags": [
+    "people",
+    "defense",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "고랑 방향으로 방패를 세워 적을 한쪽으로 밀고 빠져나갈 길을 만든다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "guard",
+  "ability": {
+    "trigger": "영주가 수확 중 근접 적에게 둘러싸이면",
+    "effect": "고랑 방향으로 방패를 세워 적을 한쪽으로 밀고 빠져나갈 길을 만든다.",
+    "cost": "방패를 세운 방향을 바꾸는 동안 후방 경작지는 지키지 못한다."
+  }
+}

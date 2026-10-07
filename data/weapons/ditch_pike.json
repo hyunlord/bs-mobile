@@ -1,0 +1,28 @@
+{
+  "id": "core:ditch_pike",
+  "tags": [
+    "weapon",
+    "melee",
+    "land"
+  ],
+  "activation": {
+    "damage": 23,
+    "range": 1600,
+    "cooldownTicks": 45,
+    "shape": "melee",
+    "knockback": 100,
+    "form": "낮게 뻗은 장창이 고랑의 한 줄을 따라 미끄러진다.",
+    "damageCoefficient": 1.0
+  },
+  "name": "고랑 장창",
+  "concept": "파종 고랑과 나란히 찌르면 고랑 끝까지 적을 밀어낸다. 가로지르는 적에게는 좁은 날만 닿는다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "이동으로 만든 경작 무늬가 방어선 방향을 결정한다."
+    }
+  ]
+}

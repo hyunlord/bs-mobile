@@ -1,0 +1,26 @@
+{
+  "id": "core:shrine_smoke_cap",
+  "name": "향로 연기덮개",
+  "concept": "연기가 낮게 머물러 앞선 병력의 후퇴를 가린다. 뒤의 백성도 시야가 좁아져 작업 출발이 늦어진다.",
+  "tags": [
+    "building",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "병력을 보존하는 집결 방어가 노동의 대기 시간으로 돌아온다."
+    }
+  ],
+  "effect": {
+    "trigger": "향로 주변으로 부대가 집결할 때",
+    "benefit": "연기가 낮게 머물러 앞선 병력의 후퇴를 가린다.",
+    "cost": "뒤의 백성도 시야가 좁아져 작업 출발이 늦어진다."
+  },
+  "linkedToolIds": [
+    "core:shrine_censer"
+  ]
+}

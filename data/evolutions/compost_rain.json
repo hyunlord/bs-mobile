@@ -1,0 +1,31 @@
+{
+  "id": "core:compost_rain",
+  "name": "거름비 순환",
+  "concept": "처치 자리에서 모은 거름을 물에 타 성장 중인 밭에 나누어 준다. 대신 여러 밭에 분산하므로 한 밭을 빠르게 익히는 집중 성장이 약해진다.",
+  "tags": [
+    "land",
+    "fertility",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "처치 자리에서 모은 거름을 물에 타 성장 중인 밭에 나누어 준다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:compost_sack",
+    "core:rain_ladle"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:compost_sack",
+    "name": "거름비 순환",
+    "effect": "처치 자리에서 모은 거름을 물에 타 성장 중인 밭에 나누어 준다.",
+    "cost": "여러 밭에 분산하므로 한 밭을 빠르게 익히는 집중 성장이 약해진다."
+  }
+}

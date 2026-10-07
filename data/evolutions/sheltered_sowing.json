@@ -1,0 +1,31 @@
+{
+  "id": "core:sheltered_sowing",
+  "name": "지붕 아래 파종",
+  "concept": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다. 대신 영지 밖 새 밭에는 지붕이 닿지 않아 확장과 집중 방어 중 하나를 골라야 한다.",
+  "tags": [
+    "land",
+    "building",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:seed_bag",
+    "core:carpenter_hammer"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:seed_bag",
+    "name": "지붕 아래 파종",
+    "effect": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다.",
+    "cost": "영지 밖 새 밭에는 지붕이 닿지 않아 확장과 집중 방어 중 하나를 골라야 한다."
+  }
+}

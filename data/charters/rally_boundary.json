@@ -1,0 +1,28 @@
+{
+  "id": "core:rally_boundary",
+  "name": "집결 경계선",
+  "concept": "영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다. 대신 집결이 끝날 때까지 부대는 밭으로 돌아가 일하지 않는다.",
+  "tags": [
+    "people",
+    "muster",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다."
+    }
+  ],
+  "effect": {
+    "target": "people",
+    "trigger": "이 헌장을 보유한 영주가 영지 경계를 통과하면",
+    "benefit": "영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다.",
+    "cost": "집결이 끝날 때까지 부대는 밭으로 돌아가 일하지 않는다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 영주가 영지 경계를 통과하면"
+  ]
+}

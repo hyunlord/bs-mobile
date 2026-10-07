@@ -1,0 +1,26 @@
+{
+  "id": "core:turning_weight",
+  "name": "회전 균형추",
+  "concept": "아군이 들어갈 사각을 일정한 방향에 남긴다. 적도 그 사각을 이용할 수 있어 부대가 떠나면 취약하다.",
+  "tags": [
+    "orbit",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "개인 무기의 빈틈과 동행 부대의 필요성을 서로 맞물리게 한다."
+    }
+  ],
+  "effect": {
+    "trigger": "회전 무기가 부대 바깥을 지날 때",
+    "benefit": "아군이 들어갈 사각을 일정한 방향에 남긴다.",
+    "cost": "적도 그 사각을 이용할 수 있어 부대가 떠나면 취약하다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ]
+}

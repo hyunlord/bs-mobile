@@ -1,0 +1,148 @@
+
+added 5 packages, and audited 6 packages in 447ms
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> test
+> node --test tools/test-content-validator.mjs
+
+✔ valid schema and cross-record references pass (34.41375ms)
+✔ rejects damage below minimum (10.599709ms)
+✔ rejects unknown field (11.023625ms)
+✔ rejects missing growth (8.469083ms)
+✔ rejects missing activation (8.097208ms)
+✔ rejects wrong scalar type (8.078541ms)
+✔ rejects invalid namespace (8.272334ms)
+✔ rejects unresolved hero tool (7.157542ms)
+✔ rejects wrong-kind reference (7.067375ms)
+✔ rejects unresolved estate tool (8.098875ms)
+✔ rejects unresolved tuning hero (7.548917ms)
+✔ rejects unresolved anti-synergy (7.301917ms)
+✔ rejects invalid schema (8.035833ms)
+✔ rejects undeclared schema draft (7.159916ms)
+✔ rejects unknown schema keyword (6.942208ms)
+✔ recursively checks test content and global duplicate IDs (7.78175ms)
+✔ rejects content without matching schema (7.01375ms)
+✔ skin numbers fail even if schema permits arbitrary fields (8.075125ms)
+✔ valid Draft2020 unevaluatedProperties is enforced (7.817791ms)
+✔ rejects malformed JSON instead of silently skipping it (7.057834ms)
+✔ S2 rejects season duration mismatch (117.090333ms)
+✔ S2 rejects missing world numeric tuning (102.057708ms)
+✔ S2 rejects unresolved starting weapon (94.623375ms)
+✔ S2 rejects excessive load (88.510542ms)
+✔ S2 rejects map-incompatible spawn inset (89.396083ms)
+✔ S2 rejects unsupported people rule (90.572417ms)
+✔ S2 rejects wrong card count (88.354083ms)
+✔ S2 rejects duplicate rarity names (88.31375ms)
+✔ S2 rejects oversized squad (90.791416ms)
+✔ S3 rejects missing canonical item (98.465333ms)
+✔ S3 rejects unknown estate loop stage (90.316875ms)
+✔ S3 rejects candidate profile activation (89.279417ms)
+✔ S3 rejects profile wrong kind (88.792667ms)
+✔ S3 rejects profile test leakage (89.015958ms)
+✔ S3 rejects missing anti-synergy rationale (89.505291ms)
+✔ S3 rejects hero affinity wrong kind (90.609208ms)
+✔ S3 canonical pool passes all semantic gates (40.117084ms)
+✔ S3 rejects sparse tag coverage (124.588084ms)
+✔ S3 rejects evolution input kind (90.101ms)
+✔ S3 rejects evolution result base (99.710792ms)
+✔ S3 rejects vassal owner kind (90.847542ms)
+✔ S3 rejects item tool reference (95.421333ms)
+✔ S3 rejects skin numeric metadata (90.350833ms)
+✔ S3 rejects insufficient anti pairs (93.509208ms)
+✔ S3 rejects insufficient loop links (107.648958ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 45
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2588.403792
+✔ standalone missing issue (102.794666ms)
+✔ inline missing issue (98.537ms)
+✔ block missing issue (100.62725ms)
+✔ shell missing issue (99.344083ms)
+✔ linked inline (101.89425ms)
+✔ linked shell (104.024666ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 677.291
+
+> validate
+> node tools/validate-content.mjs
+
+{
+  "valid": true,
+  "records": 225,
+  "schemas": 12,
+  "errors": [],
+  "gateCounts": {
+    "canonicalCounts": {
+      "weapon": 30,
+      "tool": 40,
+      "charter": 16,
+      "item": 60,
+      "vassal": 16,
+      "enemy": 24,
+      "evolution": 30,
+      "hero": 1,
+      "estate": 1,
+      "skin": 1
+    },
+    "minTagDistinctCount": 8,
+    "noGrowthTools": 0,
+    "evolutionCounts": {
+      "weapon-tool": 10,
+      "tool-tool": 10,
+      "tool-growth": 10
+    },
+    "unorderedAntiSynergyPairs": 11,
+    "skinNumericCount": 0,
+    "loopLinkedDistinct": 130
+  }
+}
+S3 content tables match canonical JSON
+metrics selftest PASS
+PR policy: issue, ADR, template and comment checks passed
+PASS BCL algorithm
+PASS comments are not code
+PASS engine unused import
+PASS inactive branch engine
+PASS inactive branch numeric
+PASS engine alias
+PASS content id literal
+PASS content id escaped
+PASS content id concatenated
+PASS content id interpolated
+PASS data id without namespace
+PASS gameplay local
+PASS gameplay const
+PASS gameplay hexadecimal
+PASS gameplay negative
+PASS seeded random
+PASS unseeded random
+PASS implicit new random
+PASS shared random
+PASS clock alias
+PASS clock static import
+PASS random guid
+PASS stopwatch
+PASS exact algorithm constant exemption
+ArchitectureGuard self-tests: 24/24 passed.
+PASS repository PackageReference
+PASS repository ProjectReference
+PASS repository Reference
+PASS repository FrameworkReference
+PASS repository JSON-discovered content ID
+PASS repository inherited package reference
+/Users/rexxa/bs-mobile/core/src/SowSiege.Core/EstateSystem.cs(31): AG002 Concrete content ID belongs in data, not Core.
+ArchitectureGuard: 1 violation(s).

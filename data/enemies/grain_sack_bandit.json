@@ -1,0 +1,24 @@
+{
+  "id": "core:grain_sack_bandit",
+  "name": "곡물 자루꾼",
+  "concept": "수확물을 담은 뒤 전장에서 빠져나가 식량 회수를 서두르게 한다. 짐을 든 뒤 느려지는 퇴로를 차단한다.",
+  "tags": [
+    "harvest",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "ripe",
+  "health": 50,
+  "speed": 8,
+  "damage": 5,
+  "range": 90,
+  "attackCooldownTicks": 85,
+  "experience": 10,
+  "behavior": {
+    "trigger": "익은 밭에 닿으면",
+    "pressure": "수확물을 담은 뒤 전장에서 빠져나가 식량 회수를 서두르게 한다.",
+    "counterplay": "짐을 든 뒤 느려지는 퇴로를 차단한다."
+  }
+}

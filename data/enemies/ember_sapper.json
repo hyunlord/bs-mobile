@@ -1,0 +1,24 @@
+{
+  "id": "core:ember_sapper",
+  "name": "불씨 공병",
+  "concept": "불씨를 던진 뒤 물러나 지속 수리 자원을 요구한다. 투척 전에 돌진해 끊거나 불씨가 붙은 건물을 우선 수리한다.",
+  "tags": [
+    "building",
+    "ranged"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "building",
+  "health": 38,
+  "speed": 8,
+  "damage": 8,
+  "range": 250,
+  "attackCooldownTicks": 110,
+  "experience": 10,
+  "behavior": {
+    "trigger": "건물 사거리 끝에 도착하면",
+    "pressure": "불씨를 던진 뒤 물러나 지속 수리 자원을 요구한다.",
+    "counterplay": "투척 전에 돌진해 끊거나 불씨가 붙은 건물을 우선 수리한다."
+  }
+}

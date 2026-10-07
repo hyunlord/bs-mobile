@@ -7,8 +7,8 @@ const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
-  ['retainers', 'retainer'], ['enemies', 'enemy'], ['evolutions', 'evolution'],
-  ['skins', 'skin'],
+  ['vassals', 'vassal'], ['enemies', 'enemy'], ['evolutions', 'evolution'],
+  ['skins', 'skin'], ['profiles', 'profile'],
 ]);
 
 async function jsonFiles(directory) {
@@ -38,7 +38,7 @@ function containsNumber(value) {
   return isRecord(value) && Object.values(value).some(containsNumber);
 }
 
-export async function validateContent(dataDirectory) {
+export async function validateContent(dataDirectory, { fullPool = false } = {}) {
   const dataRoot = path.resolve(dataDirectory);
   const errors = [];
   const schemas = new Map();
@@ -116,6 +116,7 @@ export async function validateContent(dataDirectory) {
     if (kind === 'skin' && containsNumber(record)) errors.push(`${relative}: skin must not contain numeric stats`);
   }
   function reference(relative, field, id, kind) {
+    if (!relative.startsWith(`test${path.sep}`) && !relative.startsWith(`profiles${path.sep}`) && ids.get(id)?.relative.startsWith(`test${path.sep}`)) errors.push(`${relative}: canonical reference cannot use test content ${field}`);
     if (typeof id !== 'string' || !namespaceId.test(id)) {
       errors.push(`${relative}: invalid namespace reference ${field}`);
     } else if (ids.get(id)?.kind !== kind) {
@@ -165,13 +166,105 @@ export async function validateContent(dataDirectory) {
       }
     }
   }
+  let gateCounts;
+  if (fullPool) {
+    const canonical = records.filter(({relative,kind}) => !relative.startsWith(`test${path.sep}`) && !['tuning','profile'].includes(kind));
+    const byId = new Map(records.map(entry => [entry.record.id, entry]));
+    const list = value => Array.isArray(value) ? value : [];
+    const expect = (condition, message) => { if (!condition) errors.push(message); };
+    const ref = (entry, field, id, kind) => {
+      reference(entry.relative, field, id, kind);
+      expect(entry.relative.startsWith(`test${path.sep}`) || !byId.get(id)?.relative.startsWith(`test${path.sep}`), `${entry.relative}: canonical reference cannot use test content ${field}`);
+    };
+    const counts = {weapon:30,tool:40,charter:16,item:60,vassal:16,enemy:24,evolution:30,hero:1,estate:1};
+    for (const [kind,count] of Object.entries(counts)) expect(canonical.filter(e=>e.kind===kind).length===count, `Canonical ${kind} count must equal ${count}`);
+    expect(canonical.some(e=>e.kind==='skin'), 'At least one canonical skin required');
+    const tags = new Map(); const pairs = new Set(); const recipes = new Set(); let loopLinked = 0;
+    const baseEstate = records.find(e=>e.kind==='tuning')?.record.defaultEstate;
+    for (const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) {
+      const {record:r,kind,relative} = entry;
+      const isCanonical = !relative.startsWith(`test${path.sep}`);
+      for (const tag of new Set(isCanonical ? list(r.tags) : [])) tags.set(tag,(tags.get(tag)??0)+1);
+      let baseLinked = false;
+      for (const link of list(r.loopLinks)) {
+        if (!isRecord(link)) continue;
+        ref(entry,'loopLinks.estateId',link.estateId,'estate');
+        const stages = list(byId.get(link.estateId)?.record.uniqueLoop?.stages);
+        expect(stages.some(stage=>stage.id===link.stage), `${relative}: unresolved estate loop stage ${link.stage}`);
+        if (link.estateId===baseEstate && stages.some(stage=>stage.id===link.stage)) baseLinked=true;
+      }
+      if (isCanonical && baseLinked && ['weapon','tool','item'].includes(kind)) loopLinked++;
+      if (kind==='hero') for(const id of list(r.affinityEstateIds)) ref(entry,'affinityEstateIds',id,'estate');
+      if (kind==='vassal') ref(entry,'heroId',r.heroId,'hero');
+      if (kind==='item') for(const id of list(r.linkedToolIds)) ref(entry,'linkedToolIds',id,'tool');
+      if (kind==='skin') ref(entry,'targetId',r.targetId,r.targetKind);
+      if (kind==='estate') {
+        const stages=list(r.uniqueLoop?.stages).map(s=>s.id);
+        expect(new Set(stages).size===stages.length,`${relative}: duplicate loop stage`);
+      }
+      if (kind==='tool') {
+        const anti=list(r.antiSynergy); const notes=list(r.antiSynergyNotes);
+        expect(notes.length===anti.length && notes.every(n=>anti.includes(n.otherId)) && new Set(notes.map(n=>n.otherId)).size===notes.length,`${relative}: anti-synergy notes must match references exactly`);
+        for(const id of anti) {
+          ref(entry,'antiSynergy',id,'tool');
+          expect(id!==r.id,`${relative}: self anti-synergy forbidden`);
+          if(isCanonical && id!==r.id && byId.get(id)?.kind==='tool') pairs.add([r.id,id].sort().join('|'));
+        }
+      }
+      if(kind==='evolution') {
+        const inputs=list(r.inputIds); const kinds=r.kind==='weapon-tool'?['weapon','tool']:r.kind==='tool-tool'?['tool','tool']:['tool'];
+        expect(inputs.length===kinds.length,`${relative}: evolution input arity mismatch`);
+        inputs.forEach((id,index)=>ref(entry,`inputIds[${index}]`,id,kinds[index]));
+        expect(new Set(inputs).size===inputs.length,`${relative}: evolution inputs must be distinct`);
+        expect(inputs.includes(r.result?.baseId),`${relative}: evolution result base must be an input`);
+        const condition=r.growthCondition;
+        if(r.kind==='tool-growth') {
+          const states={land:['seeded','growing','ripe'],building:['built','ruined','rebuilt'],people:['staffed','mobilized','returned']};
+          expect(isRecord(condition) && condition.target===byId.get(inputs[0])?.record.growth?.target && states[condition.target]?.includes(condition.state),`${relative}: invalid evolution growth condition`);
+        } else expect(condition===null,`${relative}: non-growth evolution condition must be null`);
+        const signature=JSON.stringify([r.kind,[...inputs].sort(),condition ? [condition.target,condition.state,condition.minimum] : null]);
+        expect(!recipes.has(signature),`${relative}: duplicate evolution recipe`); recipes.add(signature);
+      }
+    }
+    for(const [tag,count] of tags) expect(count>=3,`Tag ${tag} needs at least 3 distinct canonical records; got ${count}`);
+    expect(pairs.size>=8,`At least 8 distinct anti-synergy pairs required; got ${pairs.size}`);
+    expect(loopLinked>=15,`At least 15 base-loop-linked weapon/tool/item records required; got ${loopLinked}`);
+    for(const kind of ['weapon-tool','tool-tool','tool-growth']) expect(canonical.filter(e=>e.kind==='evolution' && e.record.kind===kind).length===10,`Evolution kind ${kind} count must equal 10`);
+    gateCounts = {
+      canonicalCounts: Object.fromEntries([...Object.keys(counts),'skin'].map(kind=>[kind,canonical.filter(e=>e.kind===kind).length])),
+      minTagDistinctCount: Math.min(...tags.values()),
+      noGrowthTools: canonical.filter(e=>e.kind==='tool' && !isRecord(e.record.growth)).length,
+      evolutionCounts: Object.fromEntries(['weapon-tool','tool-tool','tool-growth'].map(kind=>[kind,canonical.filter(e=>e.kind==='evolution' && e.record.kind===kind).length])),
+      unorderedAntiSynergyPairs:pairs.size,
+      skinNumericCount:canonical.filter(e=>e.kind==='skin' && containsNumber(e.record)).length,
+      loopLinkedDistinct:loopLinked
+    };
+    const profiles=records.filter(e=>e.kind==='profile');
+    expect(profiles.length>0,'Explicit runtime profile required');
+    for(const {record:r,relative} of profiles) {
+      const selected=new Set();
+      const expectedCounts={selection:{weapons:3,tools:3,enemies:4,heroes:1,estates:1},testSelection:{weapons:0,tools:2,enemies:0,heroes:1,estates:1}};
+      for(const [group,kinds] of Object.entries(expectedCounts)) for(const [kind,count] of Object.entries(kinds)) expect(list(r[group]?.[kind]).length===count,`${relative}: baseline profile ${group}.${kind} must select ${count}`);
+      for(const group of ['selection','testSelection']) for(const [directory,kind] of directoryKinds) {
+        if(!['weapon','tool','enemy','hero','estate'].includes(kind)) continue;
+        for(const id of list(r[group]?.[directory])) {
+          reference(relative,`${group}.${directory}`,id,kind);
+          expect(!selected.has(id),`${relative}: duplicate profile selection ${id}`); selected.add(id);
+          const target=byId.get(id);
+          expect(target?.record.designStatus==='s2-runtime',`${relative}: candidate cannot enter runtime profile ${id}`);
+          expect(Boolean(target?.relative.startsWith(`test${path.sep}`))===(group==='testSelection'),`${relative}: profile test selection boundary mismatch ${id}`);
+        }
+      }
+      for(const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) expect((entry.record.designStatus==='s2-runtime')===selected.has(entry.record.id),`${entry.relative}: runtime status must match explicit baseline selection`);
+    }
+  }
   if (schemas.size === 0) errors.push('No valid schemas found');
   if (records.length === 0) errors.push('No content records found');
-  return { valid: errors.length === 0, records: records.length, schemas: schemas.size, errors };
+  return { valid: errors.length === 0, records: records.length, schemas: schemas.size, errors, ...(fullPool ? {gateCounts} : {}) };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const result = await validateContent(process.argv[2] ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data'));
+  const result = await validateContent(process.argv[2] ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data'), { fullPool: true });
   console.log(JSON.stringify(result, null, 2));
   process.exitCode = result.valid ? 0 : 1;
 }

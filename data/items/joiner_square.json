@@ -1,0 +1,26 @@
+{
+  "id": "core:joiner_square",
+  "name": "이음 직각자",
+  "concept": "한 방향의 벽을 먼저 완성해 접근하는 적을 막는다. 반대편은 마감이 끝날 때까지 더 약하다.",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "건설의 진행 순서가 실제 방어 방향이 되어 영주의 위치 선택을 요구한다."
+    }
+  ],
+  "effect": {
+    "trigger": "망치가 처음 건물을 세울 때",
+    "benefit": "한 방향의 벽을 먼저 완성해 접근하는 적을 막는다.",
+    "cost": "반대편은 마감이 끝날 때까지 더 약하다."
+  },
+  "linkedToolIds": [
+    "core:carpenter_hammer"
+  ]
+}

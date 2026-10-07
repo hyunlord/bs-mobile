@@ -1,1 +1,44 @@
-{ "id": "core:meadow", "growthMultiplier": 1 }
+{
+  "id": "core:meadow",
+  "growthMultiplier": 1,
+  "name": "새싹 변경 (잠정)",
+  "concept": "전투의 흔적을 비옥도로 바꾸어 기묘한 작물을 기르고, 수확한 식량이 다음 전투의 사람을 유지하는 들판. 사용자 선택 전 임시 기준이다.",
+  "tags": [
+    "land",
+    "fertility",
+    "food"
+  ],
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [],
+  "uniqueLoop": {
+    "name": "전투에서 식량으로, 식량에서 전투로",
+    "summary": "처치 → 비옥도 → 작물 성장 → 수확 → 식량 → 백성과 부대 → 다음 처치. 단일 순환의 잠정 제안이며 사용자 미선택이다.",
+    "stages": [
+      {
+        "id": "combat",
+        "action": "적 처치로 침입을 줄이고 전투 흔적을 남긴다."
+      },
+      {
+        "id": "fertility",
+        "action": "처치 위치의 비옥도가 경작 위치 선택에 영향을 준다."
+      },
+      {
+        "id": "growth",
+        "action": "씨앗이 성장하는 동안 적으로부터 밭을 지킨다."
+      },
+      {
+        "id": "harvest",
+        "action": "성숙 작물을 수확해 식량과 경험치를 얻는다."
+      },
+      {
+        "id": "food",
+        "action": "식량은 인구 유지와 징집에 소비되며 상한을 넘겨 쌓지 않는다."
+      },
+      {
+        "id": "people",
+        "action": "백성은 생산을 돕고 부대는 다음 처치를 도와 순환을 닫는다."
+      }
+    ]
+  }
+}

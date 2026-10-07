@@ -1,0 +1,26 @@
+{
+  "id": "core:shepherd_token",
+  "name": "목동 교대패",
+  "concept": "같은 일꾼만 순찰하지 않도록 교대한다. 교대 순간에는 가장자리 감시가 비게 된다.",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "노동 지속성과 외곽 방어 사이에 짧은 전환 공백을 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "목동 종이 경작지 주변을 순회할 때",
+    "benefit": "같은 일꾼만 순찰하지 않도록 교대한다.",
+    "cost": "교대 순간에는 가장자리 감시가 비게 된다."
+  },
+  "linkedToolIds": [
+    "core:shepherd_bell"
+  ]
+}

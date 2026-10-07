@@ -1,0 +1,26 @@
+{
+  "id": "core:frost_drain_stone",
+  "name": "서리 배수돌",
+  "concept": "수확 길부터 얼음이 풀려 작물을 먼저 회수한다. 주변 싹의 보온에는 도움을 주지 않는다.",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "겨울의 수확 회수와 다음 파종 보호를 서로 다른 준비로 분리한다."
+    }
+  ],
+  "effect": {
+    "trigger": "서리 갈퀴가 지나간 밭이 익을 때",
+    "benefit": "수확 길부터 얼음이 풀려 작물을 먼저 회수한다.",
+    "cost": "주변 싹의 보온에는 도움을 주지 않는다."
+  },
+  "linkedToolIds": [
+    "core:frost_rake"
+  ]
+}

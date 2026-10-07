@@ -1,0 +1,36 @@
+{
+  "id": "core:shrine_censer",
+  "tags": [
+    "building",
+    "people"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "orbit",
+    "knockback": 30,
+    "form": "향로가 둥근 궤도로 돌며 불씨를 날린다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "building",
+    "yield": 1,
+    "output": "돌아온 일꾼을 쉬게 하는 성소",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [],
+  "name": "성소 향로",
+  "concept": "발동: 향로가 둥근 궤도로 돌며 불씨를 날린다. 성장 산출: 돌아온 일꾼을 쉬게 하는 성소. 비용: 휴식 중인 일꾼은 생산에서 빠진다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 돌아온 일꾼을 쉬게 하는 성소. 비용: 휴식 중인 일꾼은 생산에서 빠진다."
+    }
+  ],
+  "floorRationale": "발동 형태: 향로가 둥근 궤도로 돌며 불씨를 날린다. 비교 기준: 같은 접촉 시간과 적 밀도의 회전 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(돌아온 일꾼을 쉬게 하는 성소) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": []
+}

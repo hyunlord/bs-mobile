@@ -1,0 +1,26 @@
+{
+  "id": "core:ash_gathering_charm",
+  "name": "재 모음패",
+  "concept": "처치 흔적을 한곳에 모아 다음 파종에 전달한다. 모인 지점을 지키지 못하면 많은 비옥도를 한 번에 잃는다.",
+  "tags": [
+    "fertility",
+    "melee"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "분산된 전투 부산물을 효율적으로 쓰는 대신 한 지점의 보호 부담을 키운다."
+    }
+  ],
+  "effect": {
+    "trigger": "가까운 적을 쓰러뜨린 뒤 거름을 회수할 때",
+    "benefit": "처치 흔적을 한곳에 모아 다음 파종에 전달한다.",
+    "cost": "모인 지점을 지키지 못하면 많은 비옥도를 한 번에 잃는다."
+  },
+  "linkedToolIds": [
+    "core:compost_sack"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "core:winter_seed_stove",
+  "name": "겨울 씨앗 아궁이",
+  "concept": "종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다. 대신 보호를 받으려면 씨앗을 한곳에 모아야 하므로 곡창 습격 피해가 커진다.",
+  "tags": [
+    "building",
+    "land",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:kiln_bellows",
+    "core:seed_vault_key"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:kiln_bellows",
+    "name": "겨울 씨앗 아궁이",
+    "effect": "종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다.",
+    "cost": "보호를 받으려면 씨앗을 한곳에 모아야 하므로 곡창 습격 피해가 커진다."
+  }
+}

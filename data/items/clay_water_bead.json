@@ -1,0 +1,26 @@
+{
+  "id": "core:clay_water_bead",
+  "name": "질그릇 물구슬",
+  "concept": "근처 어린 밭까지 물기를 옮겨 성장 공백을 메운다. 이미 익은 밭에서는 물기를 옮겨도 이득이 없다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "관개의 이득을 성장 중인 작물에 한정해 익은 밭에 머무는 선택과 구분한다."
+    }
+  ],
+  "effect": {
+    "trigger": "빗물 국자가 물을 남긴 자리를 지날 때",
+    "benefit": "근처 어린 밭까지 물기를 옮겨 성장 공백을 메운다.",
+    "cost": "이미 익은 밭에서는 물기를 옮겨도 이득이 없다."
+  },
+  "linkedToolIds": [
+    "core:rain_ladle"
+  ]
+}

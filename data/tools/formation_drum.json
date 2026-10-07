@@ -1,0 +1,44 @@
+{
+  "id": "core:formation_drum",
+  "tags": [
+    "people",
+    "muster",
+    "defense"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 30,
+    "form": "북의 충격이 앞으로 넓게 퍼진다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "people",
+    "yield": 1,
+    "output": "진형을 유지하는 방어 부대",
+    "primaryRoute": "combat"
+  },
+  "antiSynergy": [
+    "core:chapel_bell"
+  ],
+  "name": "깃발 북",
+  "concept": "발동: 북의 충격이 앞으로 넓게 퍼진다. 성장 산출: 진형을 유지하는 방어 부대. 비용: 진형 유지 중 귀농이 늦어져 경작을 놓친다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 진형을 유지하는 방어 부대. 비용: 진형 유지 중 귀농이 늦어져 경작을 놓친다."
+    }
+  ],
+  "floorRationale": "발동 형태: 북의 충격이 앞으로 넓게 퍼진다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(진형을 유지하는 방어 부대) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:chapel_bell",
+      "reason": "진형 유지와 노동 귀환이 같은 인원을 요구하며 복무 중에는 즉시 전환할 수 없다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

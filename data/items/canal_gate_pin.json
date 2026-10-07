@@ -1,0 +1,26 @@
+{
+  "id": "core:canal_gate_pin",
+  "name": "수문 고정핀",
+  "concept": "먼 밭에 닿기 전 가까운 갈래로 물이 새지 않게 한다. 고정한 갈래 주변의 작물은 관개를 기다려야 한다.",
+  "tags": [
+    "building",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "한정된 물 공급을 특정 성장 구역에 집중하고 다른 구역의 지연을 드러낸다."
+    }
+  ],
+  "effect": {
+    "trigger": "수로 끌이 물길을 새로 열 때",
+    "benefit": "먼 밭에 닿기 전 가까운 갈래로 물이 새지 않게 한다.",
+    "cost": "고정한 갈래 주변의 작물은 관개를 기다려야 한다."
+  },
+  "linkedToolIds": [
+    "core:canal_chisel"
+  ]
+}

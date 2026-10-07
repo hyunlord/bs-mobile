@@ -1,0 +1,26 @@
+{
+  "id": "core:lantern_shutter",
+  "name": "등불 가림판",
+  "concept": "아군에게만 가까운 길을 읽히고 먼 적의 주목을 줄인다. 빛의 바깥에 남은 부대는 길 찾기가 늦다.",
+  "tags": [
+    "people",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "병력 보존을 돕는 시야가 제한된 인원에게만 적용되어 귀환 순서를 요구한다."
+    }
+  ],
+  "effect": {
+    "trigger": "등불 지팡이가 귀환 부대를 비출 때",
+    "benefit": "아군에게만 가까운 길을 읽히고 먼 적의 주목을 줄인다.",
+    "cost": "빛의 바깥에 남은 부대는 길 찾기가 늦다."
+  },
+  "linkedToolIds": [
+    "core:lantern_staff"
+  ]
+}

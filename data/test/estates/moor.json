@@ -1,1 +1,43 @@
-{ "id": "test:moor", "growthMultiplier": 2 }
+{
+  "id": "test:moor",
+  "growthMultiplier": 2,
+  "name": "시험용 황야",
+  "concept": "기본 영지와 다른 성장 배율을 읽는 확장성 검사용 더미.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "s2-runtime",
+  "implementationNote": "시험용 기존 성장 배율만 구현. 출시 영지 선택지가 아니다.",
+  "loopLinks": [],
+  "uniqueLoop": {
+    "name": "시험용 순환",
+    "summary": "기본 순환을 다른 데이터 배율로 실행하는 회귀 검사 전용 설정.",
+    "stages": [
+      {
+        "id": "combat",
+        "action": "적을 처치한다."
+      },
+      {
+        "id": "fertility",
+        "action": "비옥도를 얻는다."
+      },
+      {
+        "id": "growth",
+        "action": "작물을 성장시킨다."
+      },
+      {
+        "id": "harvest",
+        "action": "수확한다."
+      },
+      {
+        "id": "food",
+        "action": "식량을 소비한다."
+      },
+      {
+        "id": "people",
+        "action": "인구가 전투로 돌아간다."
+      }
+    ]
+  }
+}

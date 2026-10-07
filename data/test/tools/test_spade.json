@@ -9,12 +9,22 @@
     "range": 900,
     "cooldownTicks": 30,
     "shape": "melee",
-    "knockback": 20
+    "knockback": 20,
+    "form": "검사용 타격을 발생시킨다.",
+    "damageCoefficient": 1
   },
   "growth": {
     "target": "land",
-    "yield": 2
+    "yield": 2,
+    "output": "검사용 밭 생산",
+    "primaryRoute": "experience"
   },
   "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
-  "antiSynergy": []
+  "antiSynergy": [],
+  "name": "시험용 삽",
+  "concept": "기본 영웅과 다른 시작 도구를 읽는 확장성 검사용 더미. 출시 후보가 아니다.",
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 더미의 기존 숫자 동작만 구현되었다. 신규 기획 필드는 검증용 설명이다.",
+  "loopLinks": [],
+  "antiSynergyNotes": []
 }

@@ -1,0 +1,26 @@
+{
+  "id": "core:furrow_measuring_rope",
+  "name": "고랑 재는 줄",
+  "concept": "기존 고랑과 일정한 간격을 유지해 수확 통로를 남긴다. 좁은 빈 땅은 간격에 맞지 않아 파종하지 않는다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "통로 확보로 수확 동선은 좋아지지만 사용 가능한 경작 면적은 줄어든다."
+    }
+  ],
+  "effect": {
+    "trigger": "쟁기가 새 고랑을 만들 때",
+    "benefit": "기존 고랑과 일정한 간격을 유지해 수확 통로를 남긴다.",
+    "cost": "좁은 빈 땅은 간격에 맞지 않아 파종하지 않는다."
+  },
+  "linkedToolIds": [
+    "core:plough"
+  ]
+}

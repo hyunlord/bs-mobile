@@ -1,0 +1,28 @@
+{
+  "id": "core:stone_maul",
+  "tags": [
+    "weapon",
+    "melee",
+    "building"
+  ],
+  "activation": {
+    "damage": 35,
+    "range": 700,
+    "cooldownTicks": 65,
+    "shape": "wave",
+    "knockback": 100,
+    "form": "발밑 경계석을 두드려 짧고 굵은 충격을 퍼뜨린다.",
+    "damageCoefficient": 1.1
+  },
+  "name": "경계돌 망치",
+  "concept": "건물 가까이에서 큰 돌망치의 착지가 강해진다. 무거운 회수 동작 때문에 새 경작지를 따라가는 공격은 느리다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "완성 건물 주변을 전투 거점으로 삼아 건물 수리를 위한 시간을 확보한다."
+    }
+  ]
+}

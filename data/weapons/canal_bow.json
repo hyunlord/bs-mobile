@@ -1,0 +1,28 @@
+{
+  "id": "core:canal_bow",
+  "tags": [
+    "weapon",
+    "ranged",
+    "control"
+  ],
+  "activation": {
+    "damage": 19,
+    "range": 1900,
+    "cooldownTicks": 34,
+    "shape": "projectile",
+    "knockback": 10,
+    "form": "푸른 물방울을 끄는 화살이 수로 선을 따라 짧게 굽는다.",
+    "damageCoefficient": 0.95
+  },
+  "name": "수로 활",
+  "concept": "물을 따라 굽는 화살이 수로 옆 적의 전진을 늦춘다. 건조한 구역에서는 평범한 단발 화살에 머문다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "관개된 성장 구역을 따라 방어 동선을 만들며 수로 밖 추격의 기회를 포기한다."
+    }
+  ]
+}

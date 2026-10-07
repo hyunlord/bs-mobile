@@ -1,0 +1,31 @@
+{
+  "id": "core:harpoon_plough",
+  "name": "견인 쟁기창",
+  "concept": "작살에 걸린 적을 고랑 방향으로 끌며 쟁기가 비옥한 처치 터를 이어 간다. 대신 무거운 적을 끄는 동안 영주의 이동이 제한되어 포위 위험이 커진다.",
+  "tags": [
+    "weapon",
+    "control",
+    "fertility"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "작살에 걸린 적을 고랑 방향으로 끌며 쟁기가 비옥한 처치 터를 이어 간다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:root_harpoon",
+    "core:plough"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:root_harpoon",
+    "name": "견인 쟁기창",
+    "effect": "작살에 걸린 적을 고랑 방향으로 끌며 쟁기가 비옥한 처치 터를 이어 간다.",
+    "cost": "무거운 적을 끄는 동안 영주의 이동이 제한되어 포위 위험이 커진다."
+  }
+}

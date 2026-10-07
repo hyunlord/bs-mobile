@@ -1,0 +1,28 @@
+{
+  "id": "core:levy_relief",
+  "name": "교대 징집 규약",
+  "concept": "대기 백성과 역할을 교대해 같은 밭의 작업 공백을 줄인다. 대신 새 부대가 자동 편성되는 동안 기존 부대의 자동 공격이 중단된다.",
+  "tags": [
+    "people",
+    "muster",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "대기 백성과 역할을 교대해 같은 밭의 작업 공백을 줄인다."
+    }
+  ],
+  "effect": {
+    "target": "people",
+    "trigger": "동원된 부대가 영지에 귀환하면",
+    "benefit": "대기 백성과 역할을 교대해 같은 밭의 작업 공백을 줄인다.",
+    "cost": "새 부대가 자동 편성되는 동안 기존 부대의 자동 공격이 중단된다."
+  },
+  "requirements": [
+    "동원된 부대가 영지에 귀환하면"
+  ]
+}

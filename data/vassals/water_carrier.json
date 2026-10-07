@@ -1,0 +1,26 @@
+{
+  "id": "core:water_carrier",
+  "name": "물지게꾼",
+  "concept": "이동 경로에 물을 나눠 두 밭의 성장을 번갈아 돕는다. 대신 물을 운반하는 동안 직접 수확이나 전투 지원은 하지 못한다.",
+  "tags": [
+    "people",
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "이동 경로에 물을 나눠 두 밭의 성장을 번갈아 돕는다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "worker",
+  "ability": {
+    "trigger": "영주가 성장 중인 두 밭 사이를 오가면",
+    "effect": "이동 경로에 물을 나눠 두 밭의 성장을 번갈아 돕는다.",
+    "cost": "물을 운반하는 동안 직접 수확이나 전투 지원은 하지 못한다."
+  }
+}

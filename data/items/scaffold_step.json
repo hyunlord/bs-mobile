@@ -1,0 +1,26 @@
+{
+  "id": "core:scaffold_step",
+  "name": "비계 발판",
+  "concept": "작업자가 건물을 우회하지 않고 안전한 쪽으로 지나간다. 발판을 설치한 터는 완성 전 징집 집결지로 쓰기 어렵다.",
+  "tags": [
+    "building",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "건설과 노동 이동의 충돌을 줄이는 대신 병력 동선의 자유를 줄인다."
+    }
+  ],
+  "effect": {
+    "trigger": "백성이 공사 중인 터에 접근할 때",
+    "benefit": "작업자가 건물을 우회하지 않고 안전한 쪽으로 지나간다.",
+    "cost": "발판을 설치한 터는 완성 전 징집 집결지로 쓰기 어렵다."
+  },
+  "linkedToolIds": [
+    "core:carpenter_hammer"
+  ]
+}

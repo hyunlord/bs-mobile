@@ -1,0 +1,28 @@
+{
+  "id": "core:seed_bolt",
+  "tags": [
+    "weapon",
+    "ranged",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 21,
+    "range": 2100,
+    "cooldownTicks": 38,
+    "shape": "projectile",
+    "knockback": 15,
+    "form": "가느다란 쇠살이 이삭을 스치며 낱알 궤적을 남긴다.",
+    "damageCoefficient": 1.0
+  },
+  "name": "씨받이 쇠살",
+  "concept": "성숙 작물을 지나간 쇠살이 씨를 싣고 다음 적을 친다. 수확과 겹치는 사격은 남겨 둘 종자량을 줄일 수 있다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "익은 밭의 위치를 사격선으로 활용하며 즉시 수확과 종자 회수의 시점을 경쟁시킨다."
+    }
+  ]
+}

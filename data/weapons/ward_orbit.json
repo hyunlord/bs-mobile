@@ -9,6 +9,19 @@
     "range": 1000,
     "cooldownTicks": 20,
     "shape": "orbit",
-    "knockback": 30
-  }
+    "knockback": 30,
+    "form": "회전하는 수호편이 몸에서 떨어진 원형 띠를 훑는다.",
+    "damageCoefficient": 1.0
+  },
+  "name": "수호 고리",
+  "concept": "영주 둘레의 고리 띠로 접근하는 적을 밀지만, 고리 안쪽의 사각을 메울 동행 병력이 필요하다.",
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "징집 부대가 고리 안쪽의 사각을 지키고 영주는 외곽 적을 밀어 부대의 접촉 피해를 줄인다."
+    }
+  ]
 }

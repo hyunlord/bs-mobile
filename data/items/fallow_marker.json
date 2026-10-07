@@ -1,0 +1,26 @@
+{
+  "id": "core:fallow_marker",
+  "name": "휴경 표지목",
+  "concept": "쉬는 동안 다음 파종에 쓸 비옥도를 모은다. 휴경 중에는 그 밭의 식량과 경험치를 얻지 못한다.",
+  "tags": [
+    "land",
+    "fertility"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "즉시 수확을 포기한 시간이 다음 성장 주기의 자원으로 돌아간다."
+    }
+  ],
+  "effect": {
+    "trigger": "연속 수확한 밭을 잠시 비울 때",
+    "benefit": "쉬는 동안 다음 파종에 쓸 비옥도를 모은다.",
+    "cost": "휴경 중에는 그 밭의 식량과 경험치를 얻지 못한다."
+  },
+  "linkedToolIds": [
+    "core:plough"
+  ]
+}

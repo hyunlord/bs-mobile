@@ -1,0 +1,31 @@
+{
+  "id": "core:rally_kitchen",
+  "name": "집결 취사대",
+  "concept": "귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다. 대신 전선에서 멀어진 부대는 재동원까지 시간이 걸리고 식량을 추가 소모한다.",
+  "tags": [
+    "people",
+    "food",
+    "muster"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:muster_horn",
+    "core:soup_ladle"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:muster_horn",
+    "name": "집결 취사대",
+    "effect": "귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다.",
+    "cost": "전선에서 멀어진 부대는 재동원까지 시간이 걸리고 식량을 추가 소모한다."
+  }
+}

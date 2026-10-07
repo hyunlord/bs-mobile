@@ -1,0 +1,28 @@
+{
+  "id": "core:meal_oath",
+  "name": "공동 식탁 서약",
+  "concept": "수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다. 대신 식량 비축이 줄어 다음 징집 허용 인원이 감소한다.",
+  "tags": [
+    "people",
+    "food",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다."
+    }
+  ],
+  "effect": {
+    "target": "people",
+    "trigger": "이 헌장을 보유한 상태에서 수확 식량이 들어오면",
+    "benefit": "수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다.",
+    "cost": "식량 비축이 줄어 다음 징집 허용 인원이 감소한다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 상태에서 수확 식량이 들어오면"
+  ]
+}

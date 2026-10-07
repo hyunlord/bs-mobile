@@ -1,0 +1,26 @@
+{
+  "id": "core:levy_bread_wrap",
+  "name": "징집 빵보",
+  "concept": "휴대한 식량으로 먼 이동 중 유지 시간을 확보한다. 출발 전에 영지의 저장 식량을 먼저 가져간다.",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "외곽 전투의 자립 시간을 늘리는 만큼 남은 백성의 유지 여력이 줄어든다."
+    }
+  ],
+  "effect": {
+    "trigger": "뿔나팔이 부대를 영지 밖으로 보낼 때",
+    "benefit": "휴대한 식량으로 먼 이동 중 유지 시간을 확보한다.",
+    "cost": "출발 전에 영지의 저장 식량을 먼저 가져간다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ]
+}

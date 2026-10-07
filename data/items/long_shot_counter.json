@@ -1,0 +1,26 @@
+{
+  "id": "core:long_shot_counter",
+  "name": "먼 사격 눈금",
+  "concept": "먼 접근자의 위치를 빠르게 다시 겨눈다. 가까운 적으로 표적을 바꾸면 누적 조준을 잃는다.",
+  "tags": [
+    "ranged",
+    "building"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "건물 기반 방어선에 원거리 일관성을 주되 급한 근접 대응을 불리하게 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "망루 부근에서 같은 방향으로 연속 사격할 때",
+    "benefit": "먼 접근자의 위치를 빠르게 다시 겨눈다.",
+    "cost": "가까운 적으로 표적을 바꾸면 누적 조준을 잃는다."
+  },
+  "linkedToolIds": [
+    "core:tower_weight"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:meadow_buckle",
+  "name": "들판 허리쇠",
+  "concept": "짧은 전방 공격이 씨앗을 노리는 적을 먼저 견제한다. 영지 밖의 적을 추격할 때는 도움을 받지 못한다.",
+  "tags": [
+    "melee",
+    "land"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "파종 후 돌아와 보호하는 동선을 직접 전투 이득으로 연결한다."
+    }
+  ],
+  "effect": {
+    "trigger": "영주가 막 심은 밭으로 돌아와 싸울 때",
+    "benefit": "짧은 전방 공격이 씨앗을 노리는 적을 먼저 견제한다.",
+    "cost": "영지 밖의 적을 추격할 때는 도움을 받지 못한다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ]
+}

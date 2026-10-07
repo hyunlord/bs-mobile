@@ -1,0 +1,28 @@
+{
+  "id": "core:root_harpoon",
+  "tags": [
+    "weapon",
+    "ranged",
+    "control"
+  ],
+  "activation": {
+    "damage": 27,
+    "range": 1750,
+    "cooldownTicks": 60,
+    "shape": "projectile",
+    "knockback": 0,
+    "form": "날아간 작살 아래 굵은 뿌리가 벌어져 한 적의 발을 묶는다.",
+    "damageCoefficient": 1.0
+  },
+  "name": "뿌리 작살",
+  "concept": "가장 큰 접근자를 지면에 묶고 주변 적의 길을 좁힌다. 뿌리가 펼쳐진 자리에는 잠시 새 밭을 심을 수 없다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "적의 이동을 막는 임시 장벽과 파종 면적이 같은 공간을 경쟁한다."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "core:lantern_stalker",
+  "name": "등불 추적자",
+  "concept": "마지막으로 본 위치에 등불 표식을 남겨 은폐 체류를 제한한다. 표식 범위 밖으로 유인하면 느린 추적 속도를 이용할 수 있다.",
+  "tags": [
+    "control",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "lord",
+  "health": 55,
+  "speed": 7,
+  "damage": 6,
+  "range": 130,
+  "attackCooldownTicks": 50,
+  "experience": 10,
+  "behavior": {
+    "trigger": "영주가 건물 뒤에 숨으면",
+    "pressure": "마지막으로 본 위치에 등불 표식을 남겨 은폐 체류를 제한한다.",
+    "counterplay": "표식 범위 밖으로 유인하면 느린 추적 속도를 이용할 수 있다."
+  }
+}

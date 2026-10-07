@@ -1,0 +1,24 @@
+{
+  "id": "core:mud_sleeper",
+  "name": "진흙 잠복자",
+  "concept": "움직이지 않고 기다렸다가 복귀 동선에 몸을 드러낸다. 파종 직후 주변을 확인하거나 먼 발동으로 먼저 깨운다.",
+  "tags": [
+    "land",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "seed",
+  "health": 70,
+  "speed": 3,
+  "damage": 8,
+  "range": 100,
+  "attackCooldownTicks": 100,
+  "experience": 11,
+  "behavior": {
+    "trigger": "영주가 씨앗 밭을 떠나면",
+    "pressure": "움직이지 않고 기다렸다가 복귀 동선에 몸을 드러낸다.",
+    "counterplay": "파종 직후 주변을 확인하거나 먼 발동으로 먼저 깨운다."
+  }
+}

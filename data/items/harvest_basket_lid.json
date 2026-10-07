@@ -1,0 +1,26 @@
+{
+  "id": "core:harvest_basket_lid",
+  "name": "수확 바구니 뚜껑",
+  "concept": "짧은 피격에도 수확물을 덜 흘린다. 뚜껑을 여닫느라 다음 수확 시작이 늦어진다.",
+  "tags": [
+    "harvest",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "운반 중 손실을 줄여 생산된 식량이 인구 유지에 실제 도착하도록 돕는다."
+    }
+  ],
+  "effect": {
+    "trigger": "수확자가 식량을 들고 영지로 돌아올 때",
+    "benefit": "짧은 피격에도 수확물을 덜 흘린다.",
+    "cost": "뚜껑을 여닫느라 다음 수확 시작이 늦어진다."
+  },
+  "linkedToolIds": [
+    "core:harvest_cart"
+  ]
+}

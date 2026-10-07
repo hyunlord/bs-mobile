@@ -1,0 +1,28 @@
+{
+  "id": "core:thorn_whip",
+  "tags": [
+    "weapon",
+    "melee",
+    "control"
+  ],
+  "activation": {
+    "damage": 15,
+    "range": 1500,
+    "cooldownTicks": 38,
+    "shape": "melee",
+    "knockback": 0,
+    "form": "휘어진 가시줄이 한 표적을 감아 영주 쪽으로 접힌다.",
+    "damageCoefficient": 0.85
+  },
+  "name": "가시 덩굴채",
+  "concept": "먼 적을 당겨 밭 바깥에 묶는다. 익은 밭 안쪽에서 휘두르면 당긴 적이 수확물을 먼저 짓밟을 수 있다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "성장 구역에서 적을 빼내는 방향 선택이 밭의 생존과 연결된다."
+    }
+  ]
+}

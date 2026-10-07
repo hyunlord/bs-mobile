@@ -1,0 +1,26 @@
+{
+  "id": "core:compost_screen",
+  "name": "거름 체망",
+  "concept": "남은 이물질을 걸러 다음 작물에 쓸 비옥도를 안정시킨다. 회수가 느려져 먼 처치 흔적까지 따라가기는 어렵다.",
+  "tags": [
+    "fertility",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "전투 부산물을 안정적인 성장 자원으로 바꾸는 대신 회수 반경에 기회비용을 둔다."
+    }
+  ],
+  "effect": {
+    "trigger": "퇴비 자루가 처치 흔적을 회수할 때",
+    "benefit": "남은 이물질을 걸러 다음 작물에 쓸 비옥도를 안정시킨다.",
+    "cost": "회수가 느려져 먼 처치 흔적까지 따라가기는 어렵다."
+  },
+  "linkedToolIds": [
+    "core:compost_sack"
+  ]
+}

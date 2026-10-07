@@ -1,0 +1,20 @@
+{
+  "id": "core:harvest_cloak",
+  "name": "추수 망토",
+  "concept": "기본 영주의 경작자 이미지를 황토색 천과 볏짚 장식으로 바꾸는 외형 후보.",
+  "tags": [
+    "people",
+    "harvest"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "외형 설계 후보. 아트와 렌더링 미구현. 전투·성장·경제 수치 및 판정에 영향 없음.",
+  "loopLinks": [],
+  "targetKind": "hero",
+  "targetId": "core:founder",
+  "appearance": {
+    "palette": "황토색 망토와 마른 볏짚색 테두리",
+    "silhouette": "기본 영주와 같은 판정 크기의 짧은 망토",
+    "materials": "거친 천, 볏짚 매듭, 나무 단추",
+    "effects": "발걸음에 잠깐 사라지는 낙엽 잔상. 공격 범위나 적 가독성을 바꾸지 않는다."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:seed_pouch_lining",
+  "name": "씨주머니 안감",
+  "concept": "이미 남긴 씨앗 옆의 빈 틈부터 재파종한다. 새 방향으로 퍼지는 경작 폭은 좁아진다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "파종 밀도를 높여 기존 방어선 안의 성장물을 살리지만 영지 확장 속도를 낮춘다."
+    }
+  ],
+  "effect": {
+    "trigger": "영주가 같은 경작 길을 다시 지나갈 때",
+    "benefit": "이미 남긴 씨앗 옆의 빈 틈부터 재파종한다.",
+    "cost": "새 방향으로 퍼지는 경작 폭은 좁아진다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "core:grave_lantern",
+  "tags": [
+    "weapon",
+    "orbit",
+    "fertility"
+  ],
+  "activation": {
+    "damage": 14,
+    "range": 1350,
+    "cooldownTicks": 40,
+    "shape": "orbit",
+    "knockback": 20,
+    "form": "흙빛 불꽃이 넓게 돌며 처치 흔적 위에서 한 번 밝아진다.",
+    "damageCoefficient": 0.9
+  },
+  "name": "흙빛 혼등",
+  "concept": "등불이 최근 처치 지점을 짚어 잔해를 비옥도로 돌린다. 등불의 느린 궤도를 벗어난 적은 바로 추적하지 못한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "처치 위치를 경작 가능한 자리로 연결하지만 회수 동선과 전투 동선이 어긋날 수 있다."
+    }
+  ]
+}

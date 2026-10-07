@@ -1,5 +1,22 @@
 {
   "id": "test:scout",
   "startingTool": "test:dummy_rake",
-  "damageMultiplier": 2
+  "damageMultiplier": 2,
+  "name": "시험용 정찰자",
+  "concept": "다른 시작 도구와 배율을 읽는 영웅 확장성 검사용 더미.",
+  "tags": [
+    "land",
+    "people"
+  ],
+  "designStatus": "s2-runtime",
+  "implementationNote": "시험용 기본 수치만 구현. 출시 후보나 추가 영웅 상품이 아니다.",
+  "loopLinks": [],
+  "affinityEstateIds": [
+    "test:moor"
+  ],
+  "ability": {
+    "trigger": "시험 시작 시",
+    "effect": "기존 다른 시작 도구와 배율로 경로를 검증한다.",
+    "cost": "출시 콘텐츠로 사용하지 않는다."
+  }
 }

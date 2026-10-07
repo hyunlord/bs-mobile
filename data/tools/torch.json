@@ -1,0 +1,49 @@
+{
+  "id": "core:torch",
+  "tags": [
+    "land",
+    "fertility",
+    "control"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 30,
+    "form": "짧은 화염 파동이 전방을 훑는다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "숲을 태운 개간지",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [
+    "core:frost_rake",
+    "core:mushroom_sieve"
+  ],
+  "name": "횃불",
+  "concept": "발동: 짧은 화염 파동이 전방을 훑는다. 성장 산출: 숲을 태운 개간지. 비용: 불이 미성숙 작물에도 번져 다음 수확을 잃을 수 있다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "잠정 순환 연결: 처치 잔재 또는 경작 기반을 비옥도·성장 조건으로 바꾸는 경로를 제안한다. 연결 산출: 숲을 태운 개간지. 비용: 불이 미성숙 작물에도 번져 다음 수확을 잃을 수 있다."
+    }
+  ],
+  "floorRationale": "발동 형태: 짧은 화염 파동이 전방을 훑는다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(숲을 태운 개간지) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:frost_rake",
+      "reason": "화염이 서리 지대를 녹여 냉기 제어 지속을 줄인다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    },
+    {
+      "otherId": "core:mushroom_sieve",
+      "reason": "숲을 태워 개간하면 그늘 버섯의 채집 조건을 잃는다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

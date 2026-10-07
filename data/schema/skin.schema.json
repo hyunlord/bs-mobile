@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "weapon",
+          "melee",
+          "ranged",
+          "orbit",
+          "land",
+          "harvest",
+          "building",
+          "repair",
+          "people",
+          "muster",
+          "control",
+          "food",
+          "fertility",
+          "defense",
+          "economy",
+          "growth"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 1000,
+      "uniqueItems": true
+    },
+    "designStatus": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "s2-runtime"
+      ]
+    },
+    "implementationNote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loopLinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "estateId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "stage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "estateId",
+          "stage",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "targetKind": {
+      "type": "string",
+      "enum": [
+        "hero",
+        "estate"
+      ]
+    },
+    "targetId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "appearance": {
+      "type": "object",
+      "properties": {
+        "palette": {
+          "type": "string",
+          "minLength": 1
+        },
+        "silhouette": {
+          "type": "string",
+          "minLength": 1
+        },
+        "materials": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effects": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "palette",
+        "silhouette",
+        "materials",
+        "effects"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "concept",
+    "tags",
+    "designStatus",
+    "implementationNote",
+    "loopLinks",
+    "targetKind",
+    "targetId",
+    "appearance"
+  ],
+  "additionalProperties": false
+}

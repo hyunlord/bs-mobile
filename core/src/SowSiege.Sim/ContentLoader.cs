@@ -16,15 +16,16 @@ public static partial class ContentLoader
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
     };
 
-    public static ContentCatalog Load(string directory, bool includeTest = false)
+    public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
         var tuning = Read<Tuning>(Path.Combine(directory, "tuning.json"));
+        var selection = LoadProfile(directory, profileName).Select(includeTest);
         var roots = includeTest ? new[] { directory, Path.Combine(directory, "test") } : new[] { directory };
-        var tools = LoadRecords<ToolDefinition>(roots, "tools", tool => tool.Id);
-        var heroes = LoadRecords<HeroDefinition>(roots, "heroes", hero => hero.Id);
-        var estates = LoadRecords<EstateDefinition>(roots, "estates", estate => estate.Id);
-        var weapons = LoadRecords<WeaponDefinition>(roots, "weapons", weapon => weapon.Id);
-        var enemies = LoadRecords<EnemyDefinition>(roots, "enemies", enemy => enemy.Id);
+        var tools = LoadSelected<ToolContent, ToolDefinition>(roots, "tools", selection.Tools, tool => tool.ToCore());
+        var heroes = LoadSelected<HeroContent, HeroDefinition>(roots, "heroes", selection.Heroes, hero => hero.ToCore());
+        var estates = LoadSelected<EstateContent, EstateDefinition>(roots, "estates", selection.Estates, estate => estate.ToCore());
+        var weapons = LoadSelected<WeaponContent, WeaponDefinition>(roots, "weapons", selection.Weapons, weapon => weapon.ToCore());
+        var enemies = LoadSelected<EnemyContent, EnemyDefinition>(roots, "enemies", selection.Enemies, enemy => enemy.ToCore());
         var allIds = tools.Keys.Concat(heroes.Keys).Concat(estates.Keys).Concat(weapons.Keys).Concat(enemies.Keys).ToArray();
         Require(allIds.All(value => NamespaceId().IsMatch(value)), "Invalid namespace ID.");
         Require(allIds.Distinct(StringComparer.Ordinal).Count() == allIds.Length, "Duplicate content ID across kinds.");
@@ -51,6 +52,24 @@ public static partial class ContentLoader
         Require(heroes.ContainsKey(tuning.DefaultHero) && estates.ContainsKey(tuning.DefaultEstate), "Unknown default hero or estate.");
         ValidateWorld(tuning, weapons);
         return new(tuning, tools, heroes, estates, weapons, enemies);
+    }
+
+    public static RuntimeProfile LoadProfile(string directory, string profileName = "s2-baseline")
+    {
+        var profile = Read<RuntimeProfile>(ProfilePath(directory, profileName));
+        Require(NamespaceId().IsMatch(profile.Id), "Invalid profile ID.");
+        Require(new[] { profile.Selection.Tools, profile.Selection.Weapons, profile.Selection.Enemies,
+            profile.Selection.Heroes, profile.Selection.Estates }.All(ids => ids.Length > 0), "Runtime profile must select every required kind.");
+        return profile;
+    }
+
+    public static string ProfileHash(string directory, string profileName = "s2-baseline") =>
+        Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(ProfilePath(directory, profileName))));
+
+    private static string ProfilePath(string directory, string profileName)
+    {
+        Require(ProfileName().IsMatch(profileName), "Profile name must be a safe filename stem.");
+        return Path.Combine(directory, "profiles", profileName + ".json");
     }
 
     public static string Hash(string directory, bool includeTest)
@@ -96,10 +115,28 @@ public static partial class ContentLoader
         Require(activation.Shape is "melee" or "projectile" or "orbit" or "wave", $"Invalid activation shape: {id}");
     }
 
-    private static Dictionary<string, T> LoadRecords<T>(IEnumerable<string> roots, string kind, Func<T, string> id) => roots
-        .Select(root => Path.Combine(root, kind)).Where(Directory.Exists)
-        .SelectMany(root => Directory.EnumerateFiles(root, "*.json", SearchOption.AllDirectories)).Order(StringComparer.Ordinal)
-        .Select(Read<T>).ToDictionary(id, StringComparer.Ordinal);
+    private static Dictionary<string, TDefinition> LoadSelected<TContent, TDefinition>(IEnumerable<string> roots,
+        string kind, string[] selectedIds, Func<TContent, TDefinition> project) where TContent : ContentRecord
+    {
+        Require(selectedIds.Distinct(StringComparer.Ordinal).Count() == selectedIds.Length, $"Duplicate selection in {kind}.");
+        var index = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var file in roots.Select(root => Path.Combine(root, kind)).Where(Directory.Exists)
+                     .SelectMany(root => Directory.EnumerateFiles(root, "*.json", SearchOption.AllDirectories)).Order(StringComparer.Ordinal))
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(file));
+            var id = document.RootElement.GetProperty("id").GetString() ?? throw new InvalidDataException($"Missing ID: {file}");
+            Require(index.TryAdd(id, file), $"Duplicate {kind} ID: {id}");
+        }
+        foreach (var id in selectedIds) { Require(index.ContainsKey(id), $"Profile references missing {kind} ID: {id}"); }
+        var result = new Dictionary<string, TDefinition>(StringComparer.Ordinal);
+        foreach (var id in selectedIds.OrderBy(id => index[id], StringComparer.Ordinal))
+        {
+            var record = Read<TContent>(index[id]);
+            Require(record.DesignStatus == "s2-runtime", $"Profile cannot activate unimplemented candidate: {record.Id}");
+            result.Add(record.Id, project(record));
+        }
+        return result;
+    }
 
     private static T Read<T>(string path)
     {
@@ -119,6 +156,12 @@ public static partial class ContentLoader
             return;
         }
         if (type == typeof(string)) { Require(element.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(element.GetString()), $"Empty content string at {location}."); return; }
+        if (type == typeof(decimal))
+        {
+            Require(element.ValueKind == JsonValueKind.Number && element.TryGetDecimal(out var number) && number > 0 && number <= 10,
+                $"Invalid design coefficient at {location}.");
+            return;
+        }
         if (type.IsArray)
         {
             Require(element.ValueKind == JsonValueKind.Array, $"Expected array at {location}.");
@@ -147,4 +190,7 @@ public static partial class ContentLoader
 
     [GeneratedRegex("^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$", RegexOptions.CultureInvariant)]
     private static partial Regex NamespaceId();
+
+    [GeneratedRegex("^[a-z][a-z0-9_-]*$", RegexOptions.CultureInvariant)]
+    private static partial Regex ProfileName();
 }

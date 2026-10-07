@@ -1,0 +1,26 @@
+{
+  "id": "core:winter_dispatch_token",
+  "name": "겨울 교대패",
+  "concept": "쉬는 노동력을 우선 모아 현역 부대를 교대한다. 식량 소비가 끝나는 것은 아니므로 긴 원정은 여전히 부담이다.",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "계절에 따라 노동의 기회비용은 낮아지되 인구 유지 비용은 남는 구조를 강조한다."
+    }
+  ],
+  "effect": {
+    "trigger": "작물 성장이 멎은 시기에 뿔나팔을 불 때",
+    "benefit": "쉬는 노동력을 우선 모아 현역 부대를 교대한다.",
+    "cost": "식량 소비가 끝나는 것은 아니므로 긴 원정은 여전히 부담이다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ]
+}

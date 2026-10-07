@@ -1,0 +1,28 @@
+{
+  "id": "core:ditch_watch",
+  "name": "배수로 감시 의무",
+  "concept": "배수로가 처치 자리의 비옥도를 두 밭에 운반한다. 대신 연결 밭 밖의 처치 비옥도는 회수하지 못한다.",
+  "tags": [
+    "land",
+    "fertility",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "배수로가 처치 자리의 비옥도를 두 밭에 운반한다."
+    }
+  ],
+  "effect": {
+    "target": "land",
+    "trigger": "자란 밭 둘 사이에서 적을 처치하면",
+    "benefit": "배수로가 처치 자리의 비옥도를 두 밭에 운반한다.",
+    "cost": "연결 밭 밖의 처치 비옥도는 회수하지 못한다."
+  },
+  "requirements": [
+    "자란 밭 둘 사이에서 적을 처치하면"
+  ]
+}

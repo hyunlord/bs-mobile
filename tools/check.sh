@@ -9,6 +9,7 @@ npm ci --ignore-scripts
 npm test
 node --test tools/test-pr-policy.mjs
 npm run validate
+node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
 node tools/pr-policy.mjs
 dotnet run --project tools/ArchitectureGuard -- --self-test

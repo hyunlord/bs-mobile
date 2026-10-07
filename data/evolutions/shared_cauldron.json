@@ -1,0 +1,34 @@
+{
+  "id": "core:shared_cauldron",
+  "name": "공동 가마솥",
+  "concept": "영주에게 가장 가까운 작업 구역에 일꾼을 자동 집결시켜 공동 배식하고 식량 운반 이동을 줄인다. 대신 자동 집결 구역에 일꾼이 모이는 동안 먼 밭은 작업자를 잃는다.",
+  "tags": [
+    "people",
+    "food",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "영주에게 가장 가까운 작업 구역에 일꾼을 자동 집결시켜 공동 배식하고 식량 운반 이동을 줄인다."
+    }
+  ],
+  "kind": "tool-growth",
+  "inputIds": [
+    "core:soup_ladle"
+  ],
+  "growthCondition": {
+    "target": "people",
+    "state": "staffed",
+    "minimum": 12
+  },
+  "result": {
+    "baseId": "core:soup_ladle",
+    "name": "공동 가마솥",
+    "effect": "영주에게 가장 가까운 작업 구역에 일꾼을 자동 집결시켜 공동 배식하고 식량 운반 이동을 줄인다.",
+    "cost": "자동 집결 구역에 일꾼이 모이는 동안 먼 밭은 작업자를 잃는다."
+  }
+}

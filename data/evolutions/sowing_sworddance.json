@@ -1,0 +1,31 @@
+{
+  "id": "core:sowing_sworddance",
+  "name": "파종 검무",
+  "concept": "베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다. 대신 경작지가 한 줄로 몰려 옆에서 들어오는 약탈에 취약해진다.",
+  "tags": [
+    "weapon",
+    "melee",
+    "land"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:iron_blade",
+    "core:seed_bag"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:iron_blade",
+    "name": "파종 검무",
+    "effect": "베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다.",
+    "cost": "경작지가 한 줄로 몰려 옆에서 들어오는 약탈에 취약해진다."
+  }
+}

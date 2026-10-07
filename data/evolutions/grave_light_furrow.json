@@ -1,0 +1,31 @@
+{
+  "id": "core:grave_light_furrow",
+  "name": "묘광 경작등",
+  "concept": "묘지 삽으로 모은 처치 잔여물을 등불의 짧은 방어 광원으로 바꾼 뒤 밭에 돌려준다. 대신 광원이 꺼질 때까지 거름이 묶여 성장 보상이 뒤로 밀린다.",
+  "tags": [
+    "weapon",
+    "defense",
+    "fertility"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "묘지 삽으로 모은 처치 잔여물을 등불의 짧은 방어 광원으로 바꾼 뒤 밭에 돌려준다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:grave_lantern",
+    "core:grave_spade"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:grave_lantern",
+    "name": "묘광 경작등",
+    "effect": "묘지 삽으로 모은 처치 잔여물을 등불의 짧은 방어 광원으로 바꾼 뒤 밭에 돌려준다.",
+    "cost": "광원이 꺼질 때까지 거름이 묶여 성장 보상이 뒤로 밀린다."
+  }
+}

@@ -1,40 +1,87 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "id",
-    "tags",
-    "activation",
-    "growth",
-    "floorRationale",
-    "antiSynergy"
-  ],
   "properties": {
     "id": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
     },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1
+    },
     "tags": {
       "type": "array",
       "items": {
         "type": "string",
-        "minLength": 1
+        "enum": [
+          "weapon",
+          "melee",
+          "ranged",
+          "orbit",
+          "land",
+          "harvest",
+          "building",
+          "repair",
+          "people",
+          "muster",
+          "control",
+          "food",
+          "fertility",
+          "defense",
+          "economy",
+          "growth"
+        ]
       },
       "minItems": 1,
-      "maxItems": 10000,
+      "maxItems": 1000,
       "uniqueItems": true
+    },
+    "designStatus": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "s2-runtime"
+      ]
+    },
+    "implementationNote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loopLinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "estateId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "stage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "estateId",
+          "stage",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1000
     },
     "activation": {
       "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "damage",
-        "range",
-        "cooldownTicks",
-        "shape",
-        "knockback"
-      ],
       "properties": {
         "damage": {
           "type": "integer",
@@ -64,16 +111,30 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 1000000
+        },
+        "form": {
+          "type": "string",
+          "minLength": 1
+        },
+        "damageCoefficient": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10
         }
-      }
+      },
+      "required": [
+        "damage",
+        "range",
+        "cooldownTicks",
+        "shape",
+        "knockback",
+        "form",
+        "damageCoefficient"
+      ],
+      "additionalProperties": false
     },
     "growth": {
       "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "yield"
-      ],
       "properties": {
         "target": {
           "type": "string",
@@ -87,8 +148,28 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 1000000
+        },
+        "output": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primaryRoute": {
+          "type": "string",
+          "enum": [
+            "experience",
+            "combat",
+            "gold",
+            "buff"
+          ]
         }
-      }
+      },
+      "required": [
+        "target",
+        "yield",
+        "output",
+        "primaryRoute"
+      ],
+      "additionalProperties": false
     },
     "floorRationale": {
       "type": "string",
@@ -101,8 +182,46 @@
         "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
       },
       "minItems": 0,
-      "maxItems": 10000,
+      "maxItems": 1000,
       "uniqueItems": true
+    },
+    "antiSynergyNotes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "otherId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "otherId",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1000
     }
-  }
+  },
+  "required": [
+    "id",
+    "name",
+    "concept",
+    "tags",
+    "designStatus",
+    "implementationNote",
+    "loopLinks",
+    "activation",
+    "growth",
+    "floorRationale",
+    "antiSynergy",
+    "antiSynergyNotes"
+  ],
+  "additionalProperties": false
 }
