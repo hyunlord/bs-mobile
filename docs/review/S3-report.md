@@ -47,7 +47,7 @@ node tools/content-report.mjs --check
 
 ## 발견하고 수정한 문제
 
-- 첫 원격 CI는 PR 제목의 Conventional Commits 접두사가 빠져 차단됐다. 제목을 수정하고 새 실행으로 다시 검증한다. 정책 우회는 하지 않았다.
+- 첫 원격 CI는 PR 제목의 Conventional Commits 접두사가 빠져 차단됐다. 제목과 필수 PR 본문 항목(Gate result / Verification / Screens)을 모두 맞춰 새 실행으로 다시 검증한다. 정책 우회는 하지 않았다.
 
 - 성장 조건 JSON의 속성 순서만 바꾼 중복 진화를 검증기가 놓쳤다. 조건의 의미를 정규화한 키로 비교하도록 수정하고 회귀 검사를 추가했다.
 - 테스트 레코드의 부가 참조와 잘못된 실행 상태 표시를 전체 검사에 포함했다. 독립 변조 14건은 모두 차단됐다.
