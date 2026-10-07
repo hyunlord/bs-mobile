@@ -7,7 +7,7 @@ A plain engineering notebook. Dates, commit identity, measurement scope and miss
 Tokens: `--paper: #fbfbfa`, `--ink: #242424`, `--muted: #555550`, `--rule: #d5d5ce`, `--accent: #175c45`, `--focus: #964b00`. Accent identifies measurements and links. White backgrounds and dark text preserve contrast. No dark mode.
 
 ## 3. Typography
-System UI body 16px, line height 1.6; H1 28px and H2 20px, bold; metadata 14px. System monospace for commit/runtime/config identifiers. No downloaded fonts.
+System UI body 16px, line height 1.6; H1 28px and H2 20px, bold; metadata 14px. System monospace for commit/runtime/config identifiers. No downloaded fonts. SVG labels use 14 viewBox units on desktop and 28 below 600px so the responsive scale keeps rendered labels readable.
 
 ## 4. Spacing & Layout
 Base 4px. Tokens `--s2: 8px`, `--s4: 16px`, `--s6: 24px`, `--s8: 32px`. Single column, max 1120px, 16px minimum side padding. Tables scroll within a labelled focusable region. SVG viewBox 720×220 includes plot padding 48, vertical top 20, bottom 172; charts resize with the page.
