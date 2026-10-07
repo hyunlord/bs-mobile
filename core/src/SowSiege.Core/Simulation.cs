@@ -40,7 +40,7 @@ public sealed class Simulation
         if (IsComplete) { throw new InvalidOperationException("Run is already complete."); }
         damage = checked(damage + (long)(tool.Activation.Damage + random.Next(catalog.Tuning.DamageRollMax)) * hero.DamageMultiplier * policy.DamageMultiplier);
         growth = checked(growth + (long)tool.Growth.Yield * estate.GrowthMultiplier * policy.GrowthMultiplier);
-        ticks++;
+ticks++;
     }
 
     public SimulationResult Result()
