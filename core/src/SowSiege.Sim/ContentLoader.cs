@@ -1,15 +1,18 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using SowSiege.Core;
 
 namespace SowSiege.Sim;
 
-public static class ContentLoader
-
+public static partial class ContentLoader
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true,
+        PropertyNameCaseInsensitive = false,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
     };
 
@@ -20,33 +23,128 @@ public static class ContentLoader
         var tools = LoadRecords<ToolDefinition>(roots, "tools", tool => tool.Id);
         var heroes = LoadRecords<HeroDefinition>(roots, "heroes", hero => hero.Id);
         var estates = LoadRecords<EstateDefinition>(roots, "estates", estate => estate.Id);
+        var weapons = LoadRecords<WeaponDefinition>(roots, "weapons", weapon => weapon.Id);
+        var enemies = LoadRecords<EnemyDefinition>(roots, "enemies", enemy => enemy.Id);
+        var allIds = tools.Keys.Concat(heroes.Keys).Concat(estates.Keys).Concat(weapons.Keys).Concat(enemies.Keys).ToArray();
+        Require(allIds.All(value => NamespaceId().IsMatch(value)), "Invalid namespace ID.");
+        Require(allIds.Distinct(StringComparer.Ordinal).Count() == allIds.Length, "Duplicate content ID across kinds.");
         foreach (var hero in heroes.Values)
         {
-            if (!tools.ContainsKey(hero.StartingTool)) { throw new InvalidDataException($"Unknown starting tool: {hero.StartingTool}"); }
+            Require(tools.ContainsKey(hero.StartingTool), $"Unknown starting tool: {hero.StartingTool}");
+            Require(hero.DamageMultiplier > 0, $"Invalid hero multiplier: {hero.Id}");
         }
+        foreach (var estate in estates.Values) { Require(estate.GrowthMultiplier > 0, $"Invalid estate multiplier: {estate.Id}"); }
         foreach (var tool in tools.Values)
         {
-            if (tool.Activation.Damage <= 0 || tool.Growth.Yield <= 0) { throw new InvalidDataException($"Tool requires activation and growth: {tool.Id}"); }
-            foreach (var reference in tool.AntiSynergy)
-            {
-                if (!tools.ContainsKey(reference)) { throw new InvalidDataException($"Unknown anti-synergy: {reference}"); }
-            }
+            ValidateActivation(tool.Id, tool.Activation);
+            Require(tool.Growth.Yield > 0 && tool.Growth.Target is "land" or "building" or "people", $"Invalid growth: {tool.Id}");
+            Require(tool.Tags.Length > 0 && tool.Tags.All(tag => !string.IsNullOrWhiteSpace(tag)) && !string.IsNullOrWhiteSpace(tool.FloorRationale), $"Tool description missing: {tool.Id}");
+            foreach (var reference in tool.AntiSynergy) { Require(tools.ContainsKey(reference), $"Unknown anti-synergy: {reference}"); }
         }
-        if (tuning.TickRate <= 0 || tuning.DurationTicks <= 0 || tuning.DamageRollMax <= 0 ||
-            !heroes.ContainsKey(tuning.DefaultHero) || !estates.ContainsKey(tuning.DefaultEstate))
+        foreach (var weapon in weapons.Values) { ValidateActivation(weapon.Id, weapon.Activation); }
+        foreach (var enemy in enemies.Values)
         {
-            throw new InvalidDataException("Invalid simulation tuning or default references.");
+            Require(enemy.Target is "lord" or "seed" or "ripe" or "building", $"Invalid enemy target: {enemy.Id}");
+            Require(new[] { enemy.Health, enemy.Speed, enemy.Damage, enemy.Range, enemy.AttackCooldownTicks, enemy.Experience }.All(value => value > 0), $"Invalid enemy values: {enemy.Id}");
         }
-        return new(tuning, tools, heroes, estates);
+        Require(tuning.TickRate == 30 && tuning.DurationTicks > 0 && tuning.DamageRollMax > 0, "Invalid simulation clock or damage roll.");
+        Require(heroes.ContainsKey(tuning.DefaultHero) && estates.ContainsKey(tuning.DefaultEstate), "Unknown default hero or estate.");
+        ValidateWorld(tuning, weapons);
+        return new(tuning, tools, heroes, estates, weapons, enemies);
     }
 
-    private static Dictionary<string, T> LoadRecords<T>(IEnumerable<string> roots, string kind, Func<T, string> id)
+    public static string Hash(string directory, bool includeTest)
     {
-        return roots.Select(root => Path.Combine(root, kind)).Where(Directory.Exists)
-            .SelectMany(root => Directory.EnumerateFiles(root, "*.json")).Order(StringComparer.Ordinal)
-            .Select(Read<T>).ToDictionary(id, StringComparer.Ordinal);
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (var file in Directory.EnumerateFiles(directory, "*.json", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+        {
+            var relative = Path.GetRelativePath(directory, file).Replace(Path.DirectorySeparatorChar, '/');
+            if (!includeTest && relative.StartsWith("test/", StringComparison.Ordinal)) { continue; }
+            hash.AppendData(Encoding.UTF8.GetBytes(relative + "\0"));
+            hash.AppendData(File.ReadAllBytes(file));
+            hash.AppendData(new byte[] { 0 });
+        }
+        return Convert.ToHexString(hash.GetHashAndReset());
     }
 
-    private static T Read<T>(string path) => JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions)
-        ?? throw new InvalidDataException($"Null content: {path}");
+    private static void ValidateWorld(Tuning tuning, IReadOnlyDictionary<string, WeaponDefinition> weapons)
+    {
+        var world = tuning.World;
+        Require(world.DefaultPeopleRule is "A" or "B" or "C", "People rule must be A, B, or C.");
+        Require(world.Seasons.Length == 4 && world.Seasons.Sum(season => (long)season.DurationTicks) == tuning.DurationTicks, "Four season durations must sum to the full configured duration.");
+        Require(world.Seasons.All(season => season.DurationTicks > 0 && season.GrowthMultiplier > 0 && season.SpawnMultiplier > 0), "Invalid season values.");
+        Require(world.Seasons.Select(season => season.Name).Distinct(StringComparer.Ordinal).Count() == world.Seasons.Length, "Duplicate season names.");
+        Require(world.Farms.StageTicks.Length == 4 && world.Farms.StageTicks.All(value => value > 0), "Four positive crop stage durations required.");
+        Require(world.Progression.CardCount == 3 && weapons.ContainsKey(world.Progression.StartingWeapon), "Three cards and a valid starting weapon required.");
+        Require(world.Progression.Rarities.Length > 0 && world.Progression.Rarities.All(rarity => rarity.Weight > 0 && rarity.UpgradeAmount > 0), "Invalid rarity weights or upgrade amounts.");
+        Require(world.Progression.Rarities.Select(rarity => rarity.Name).Distinct(StringComparer.Ordinal).Count() == world.Progression.Rarities.Length, "Duplicate rarity names.");
+        Require(world.People.InitialFood <= world.People.FoodCapacity && world.People.InitialPeasants < world.People.MaxPeople, "Initial people or food exceed capacity.");
+        Require(world.People.SquadSize <= world.People.MaxPeople, "Squad size exceeds people capacity.");
+        Require(world.Load.Enemies <= world.Threat.EnemyCap && world.Load.Farms <= world.Farms.Capacity && world.Load.Buildings <= world.Buildings.SiteCount && world.Load.People <= world.People.MaxPeople, "Load fixture exceeds world capacity.");
+        Require(world.Threat.SpawnInset * 2L < Math.Min(world.Map.Width, world.Map.Height) && world.Map.CellSize <= Math.Min(world.Map.Width, world.Map.Height), "Map bounds are invalid for spawn inset or spatial cell.");
+        var policyNames = new[] { "weapon", "land", "building", "people", "mixed", "random" };
+        Require(policyNames.Order(StringComparer.Ordinal).SequenceEqual(tuning.Policies.Keys.Order(StringComparer.Ordinal)), "Six named policies required.");
+        foreach (var policy in tuning.Policies.Values)
+        {
+            Require(new[] { "weapon", "land", "building", "people" }.Order(StringComparer.Ordinal).SequenceEqual(policy.CardWeights.Keys.Order(StringComparer.Ordinal)) && policy.CardWeights.Values.All(weight => weight > 0), "Policy requires four positive card weights.");
+        }
+    }
+
+    private static void ValidateActivation(string id, Activation activation)
+    {
+        Require(activation.Damage > 0 && activation.Range > 0 && activation.CooldownTicks > 0 && activation.Knockback >= 0, $"Invalid activation values: {id}");
+        Require(activation.Shape is "melee" or "projectile" or "orbit" or "wave", $"Invalid activation shape: {id}");
+    }
+
+    private static Dictionary<string, T> LoadRecords<T>(IEnumerable<string> roots, string kind, Func<T, string> id) => roots
+        .Select(root => Path.Combine(root, kind)).Where(Directory.Exists)
+        .SelectMany(root => Directory.EnumerateFiles(root, "*.json", SearchOption.AllDirectories)).Order(StringComparer.Ordinal)
+        .Select(Read<T>).ToDictionary(id, StringComparer.Ordinal);
+
+    private static T Read<T>(string path)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        ValidateRequiredShape(document.RootElement, typeof(T), path);
+        return document.RootElement.Deserialize<T>(JsonOptions) ?? throw new InvalidDataException($"Null content: {path}");
+    }
+
+    private static void ValidateRequiredShape(JsonElement element, Type type, string location)
+    {
+        Require(element.ValueKind != JsonValueKind.Null, $"Null content at {location}.");
+        if (type == typeof(int))
+        {
+            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks" };
+            var minimum = zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
+            Require(element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var number) && number >= minimum && number <= 1000000, $"Integer out of content bounds at {location}.");
+            return;
+        }
+        if (type == typeof(string)) { Require(element.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(element.GetString()), $"Empty content string at {location}."); return; }
+        if (type.IsArray)
+        {
+            Require(element.ValueKind == JsonValueKind.Array, $"Expected array at {location}.");
+            foreach (var item in element.EnumerateArray()) { ValidateRequiredShape(item, type.GetElementType()!, location + "[]"); }
+            return;
+        }
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        {
+            Require(element.ValueKind == JsonValueKind.Object, $"Expected dictionary at {location}.");
+            foreach (var property in element.EnumerateObject()) { ValidateRequiredShape(property.Value, type.GenericTypeArguments[1], location + "." + property.Name); }
+            return;
+        }
+        Require(element.ValueKind == JsonValueKind.Object, $"Expected object at {location}.");
+        foreach (var property in type.GetProperties())
+        {
+            var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
+            Require(element.TryGetProperty(name, out var member), $"Missing required property {location}.{name}.");
+            ValidateRequiredShape(member, property.PropertyType, location + "." + name);
+        }
+    }
+
+    private static void Require(bool condition, string message)
+    {
+        if (!condition) { throw new InvalidDataException(message); }
+    }
+
+    [GeneratedRegex("^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$", RegexOptions.CultureInvariant)]
+    private static partial Regex NamespaceId();
 }

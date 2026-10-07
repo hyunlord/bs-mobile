@@ -1,0 +1,10 @@
+{
+  "id": "core:raider",
+  "target": "lord",
+  "health": 45,
+  "speed": 10,
+  "damage": 5,
+  "range": 90,
+  "attackCooldownTicks": 45,
+  "experience": 8
+}

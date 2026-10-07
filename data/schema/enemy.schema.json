@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "target",
+    "health",
+    "speed",
+    "damage",
+    "range",
+    "attackCooldownTicks",
+    "experience"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "lord",
+        "seed",
+        "ripe",
+        "building"
+      ]
+    },
+    "health": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "speed": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "damage": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "range": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "attackCooldownTicks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "experience": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    }
+  }
+}

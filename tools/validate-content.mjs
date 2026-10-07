@@ -132,6 +132,37 @@ export async function validateContent(dataDirectory) {
     if (kind === 'tuning') {
       reference(relative, 'defaultHero', record.defaultHero, 'hero');
       reference(relative, 'defaultEstate', record.defaultEstate, 'estate');
+      const world = record.world;
+      if (!isRecord(world)) continue;
+      if (isRecord(world.progression)) reference(relative, 'world.progression.startingWeapon', world.progression.startingWeapon, 'weapon');
+      if (Array.isArray(world.seasons) && world.seasons.every(isRecord)) {
+        if (world.seasons.reduce((sum, season) => sum + season.durationTicks, 0) !== record.durationTicks) {
+          errors.push(`${relative}: season durations must sum to durationTicks`);
+        }
+        if (new Set(world.seasons.map((season) => season.name)).size !== world.seasons.length) {
+          errors.push(`${relative}: season names must be unique`);
+        }
+      }
+      const limits = [
+        ['enemies', world.threat?.enemyCap], ['farms', world.farms?.capacity],
+        ['buildings', world.buildings?.siteCount], ['people', world.people?.maxPeople],
+      ];
+      for (const [field, capacity] of limits) {
+        if (isRecord(world.load) && world.load[field] > capacity) errors.push(`${relative}: load.${field} exceeds capacity`);
+      }
+      if (isRecord(world.people)) {
+        if (world.people.initialFood > world.people.foodCapacity) errors.push(`${relative}: initial food exceeds capacity`);
+        if (world.people.initialPeasants >= world.people.maxPeople) errors.push(`${relative}: initial peasants leave no vassal capacity`);
+        if (world.people.squadSize > world.people.maxPeople) errors.push(`${relative}: squad size exceeds people capacity`);
+      }
+      if (isRecord(world.map) && isRecord(world.threat)) {
+        if (world.threat.spawnInset * 2 >= Math.min(world.map.width, world.map.height)) errors.push(`${relative}: spawn inset exceeds map bounds`);
+        if (world.map.cellSize > Math.min(world.map.width, world.map.height)) errors.push(`${relative}: spatial cell exceeds map bounds`);
+      }
+      const rarities = world.progression?.rarities;
+      if (Array.isArray(rarities) && rarities.every(isRecord) && new Set(rarities.map((rarity) => rarity.name)).size !== rarities.length) {
+        errors.push(`${relative}: rarity names must be unique`);
+      }
     }
   }
   if (schemas.size === 0) errors.push('No valid schemas found');

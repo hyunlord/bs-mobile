@@ -1,0 +1,22 @@
+{
+  "id": "core:carpenter_hammer",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "activation": {
+    "damage": 18,
+    "range": 750,
+    "cooldownTicks": 45,
+    "shape": "melee",
+    "knockback": 90
+  },
+  "growth": {
+    "target": "building",
+    "yield": 1
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
+  "antiSynergy": [
+    "core:seed_bag"
+  ]
+}

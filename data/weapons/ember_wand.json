@@ -1,0 +1,14 @@
+{
+  "id": "core:ember_wand",
+  "tags": [
+    "weapon",
+    "ranged"
+  ],
+  "activation": {
+    "damage": 16,
+    "range": 1700,
+    "cooldownTicks": 24,
+    "shape": "projectile",
+    "knockback": 0
+  }
+}

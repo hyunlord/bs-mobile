@@ -1,8 +1,20 @@
 {
   "id": "test:dummy_rake",
-  "tags": ["land"],
-  "activation": { "damage": 1 },
-  "growth": { "target": "land", "yield": 2 },
-  "floorRationale": "S0 extensibility fixture only; not a measured gameplay balance value.",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 10,
+    "range": 1100,
+    "cooldownTicks": 36,
+    "shape": "wave",
+    "knockback": 20
+  },
+  "growth": {
+    "target": "land",
+    "yield": 2
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
   "antiSynergy": []
 }

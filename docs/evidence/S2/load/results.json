@@ -1,0 +1,1475 @@
+[
+  {
+    "scope": "S2 exact-load mechanics fixture; maintenance included; not natural gameplay",
+    "seed": 42,
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "mixed",
+    "toolId": "core:seed_bag",
+    "ticks": 900,
+    "damage": 36744,
+    "growth": 26,
+    "hash": "3AC6BCE5BFEDE93064D33558E40E7CB2FD3091B4813C45A900C47B3A77C5B92D",
+    "peopleRule": "C",
+    "scenario": "load",
+    "endReason": "fixture-duration",
+    "survived": true,
+    "level": 32,
+    "season": 0,
+    "randomDraws": 6413,
+    "weaponDamage": 6078,
+    "perTool": {
+      "core:carpenter_hammer": {
+        "activationDamage": 0,
+        "growthProduced": 0,
+        "growthDamage": 4483,
+        "activations": 17
+      },
+      "core:muster_horn": {
+        "activationDamage": 16472,
+        "growthProduced": 26,
+        "growthDamage": 1781,
+        "activations": 26
+      },
+      "core:seed_bag": {
+        "activationDamage": 885,
+        "growthProduced": 0,
+        "growthDamage": 0,
+        "activations": 30
+      }
+    },
+    "timeline": [
+      {
+        "tick": 300,
+        "season": 0,
+        "level": 16,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 4946,
+        "toolDamage": 3407,
+        "growthDamage": 1669,
+        "killExperience": 1898,
+        "harvestExperience": 150,
+        "taxExperience": 0,
+        "food": 120,
+        "lordHealth": 3000,
+        "allyDamage": 1825
+      },
+      {
+        "tick": 600,
+        "season": 0,
+        "level": 24,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 5419,
+        "toolDamage": 9070,
+        "growthDamage": 3410,
+        "killExperience": 3824,
+        "harvestExperience": 840,
+        "taxExperience": 0,
+        "food": 174,
+        "lordHealth": 3000,
+        "allyDamage": 4294
+      },
+      {
+        "tick": 900,
+        "season": 0,
+        "level": 32,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 6078,
+        "toolDamage": 17357,
+        "growthDamage": 6264,
+        "killExperience": 6590,
+        "harvestExperience": 1680,
+        "taxExperience": 0,
+        "food": 230,
+        "lordHealth": 3000,
+        "allyDamage": 7045
+      }
+    ],
+    "killExperience": 6590,
+    "harvestExperience": 1680,
+    "taxExperience": 0,
+    "food": 230,
+    "peasants": 46,
+    "militia": 30,
+    "vassals": 1,
+    "harvests": 112,
+    "ruins": 0,
+    "rebuilds": 0,
+    "estateTicks": 76,
+    "spawnedEnemies": 1828,
+    "deathCause": "",
+    "cards": [
+      {
+        "tick": 0,
+        "offered": [
+          "core:iron_blade",
+          "core:ward_orbit",
+          "core:seed_bag"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "rare",
+        "level": 2
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:seed_bag"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "common",
+        "level": 3
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:iron_blade",
+          "core:carpenter_hammer",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 4
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:ward_orbit",
+          "core:carpenter_hammer",
+          "core:seed_bag"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 5
+      },
+      {
+        "tick": 60,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "common",
+        "level": 6
+      },
+      {
+        "tick": 90,
+        "offered": [
+          "core:seed_bag",
+          "core:iron_blade",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 7
+      },
+      {
+        "tick": 90,
+        "offered": [
+          "core:iron_blade",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 8
+      },
+      {
+        "tick": 120,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 9
+      },
+      {
+        "tick": 120,
+        "offered": [
+          "core:ember_wand",
+          "core:seed_bag",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "common",
+        "level": 10
+      },
+      {
+        "tick": 150,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:iron_blade"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "common",
+        "level": 11
+      },
+      {
+        "tick": 151,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:carpenter_hammer",
+        "rarity": "rare",
+        "level": 12
+      },
+      {
+        "tick": 180,
+        "offered": [
+          "core:ember_wand",
+          "core:seed_bag",
+          "core:iron_blade"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "common",
+        "level": 13
+      },
+      {
+        "tick": 211,
+        "offered": [
+          "core:seed_bag",
+          "core:muster_horn",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 14
+      },
+      {
+        "tick": 242,
+        "offered": [
+          "core:iron_blade",
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 15
+      },
+      {
+        "tick": 299,
+        "offered": [
+          "core:seed_bag",
+          "core:muster_horn",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 16
+      },
+      {
+        "tick": 303,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "rare",
+        "level": 17
+      },
+      {
+        "tick": 308,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 18
+      },
+      {
+        "tick": 319,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 19
+      },
+      {
+        "tick": 362,
+        "offered": [
+          "core:muster_horn",
+          "core:carpenter_hammer",
+          "core:iron_blade"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 20
+      },
+      {
+        "tick": 421,
+        "offered": [
+          "core:iron_blade",
+          "core:carpenter_hammer",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "rare",
+        "level": 21
+      },
+      {
+        "tick": 452,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 22
+      },
+      {
+        "tick": 511,
+        "offered": [
+          "core:iron_blade",
+          "core:seed_bag",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "rare",
+        "level": 23
+      },
+      {
+        "tick": 542,
+        "offered": [
+          "core:seed_bag",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 24
+      },
+      {
+        "tick": 602,
+        "offered": [
+          "core:seed_bag",
+          "core:ember_wand",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 25
+      },
+      {
+        "tick": 625,
+        "offered": [
+          "core:ember_wand",
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 26
+      },
+      {
+        "tick": 631,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:iron_blade",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 27
+      },
+      {
+        "tick": 661,
+        "offered": [
+          "core:ember_wand",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 28
+      },
+      {
+        "tick": 720,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:iron_blade",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 29
+      },
+      {
+        "tick": 752,
+        "offered": [
+          "core:ward_orbit",
+          "core:muster_horn",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 30
+      },
+      {
+        "tick": 811,
+        "offered": [
+          "core:seed_bag",
+          "core:ember_wand",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "rare",
+        "level": 31
+      },
+      {
+        "tick": 855,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:ember_wand",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:carpenter_hammer",
+        "rarity": "common",
+        "level": 32
+      }
+    ],
+    "allyDamage": 7045,
+    "artifactVersion": 2,
+    "runMetadata": {
+      "contentSha256": "829CCA9800B9725A8CF36675E84805DF9F1B2C51ED3515C1C7388E328058C15D",
+      "commit": "f0a111e7e21bcb5576f05662bf4d32d23c6a68e9",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "80EF00EEA1607A57B92ABF398B22F6830C51EC0D07912B20AF0398E20DB1E9B7",
+      "simulationAssemblySha256": "C70DFC2647EBE725BE513D5B4D246F1C278D227C8A657F2AE98F8797F03AC937",
+      "coreAssemblySha256": "1806E706E33C2F627A82C73373C30DCAB603444F30AEC15DD3EAF7660748F8FC",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "C",
+      "scenario": "load",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "fullRunCompleted": false
+  },
+  {
+    "scope": "S2 exact-load mechanics fixture; maintenance included; not natural gameplay",
+    "seed": 42,
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "mixed",
+    "toolId": "core:seed_bag",
+    "ticks": 900,
+    "damage": 36744,
+    "growth": 26,
+    "hash": "3AC6BCE5BFEDE93064D33558E40E7CB2FD3091B4813C45A900C47B3A77C5B92D",
+    "peopleRule": "C",
+    "scenario": "load",
+    "endReason": "fixture-duration",
+    "survived": true,
+    "level": 32,
+    "season": 0,
+    "randomDraws": 6413,
+    "weaponDamage": 6078,
+    "perTool": {
+      "core:carpenter_hammer": {
+        "activationDamage": 0,
+        "growthProduced": 0,
+        "growthDamage": 4483,
+        "activations": 17
+      },
+      "core:muster_horn": {
+        "activationDamage": 16472,
+        "growthProduced": 26,
+        "growthDamage": 1781,
+        "activations": 26
+      },
+      "core:seed_bag": {
+        "activationDamage": 885,
+        "growthProduced": 0,
+        "growthDamage": 0,
+        "activations": 30
+      }
+    },
+    "timeline": [
+      {
+        "tick": 300,
+        "season": 0,
+        "level": 16,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 4946,
+        "toolDamage": 3407,
+        "growthDamage": 1669,
+        "killExperience": 1898,
+        "harvestExperience": 150,
+        "taxExperience": 0,
+        "food": 120,
+        "lordHealth": 3000,
+        "allyDamage": 1825
+      },
+      {
+        "tick": 600,
+        "season": 0,
+        "level": 24,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 5419,
+        "toolDamage": 9070,
+        "growthDamage": 3410,
+        "killExperience": 3824,
+        "harvestExperience": 840,
+        "taxExperience": 0,
+        "food": 174,
+        "lordHealth": 3000,
+        "allyDamage": 4294
+      },
+      {
+        "tick": 900,
+        "season": 0,
+        "level": 32,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 6078,
+        "toolDamage": 17357,
+        "growthDamage": 6264,
+        "killExperience": 6590,
+        "harvestExperience": 1680,
+        "taxExperience": 0,
+        "food": 230,
+        "lordHealth": 3000,
+        "allyDamage": 7045
+      }
+    ],
+    "killExperience": 6590,
+    "harvestExperience": 1680,
+    "taxExperience": 0,
+    "food": 230,
+    "peasants": 46,
+    "militia": 30,
+    "vassals": 1,
+    "harvests": 112,
+    "ruins": 0,
+    "rebuilds": 0,
+    "estateTicks": 76,
+    "spawnedEnemies": 1828,
+    "deathCause": "",
+    "cards": [
+      {
+        "tick": 0,
+        "offered": [
+          "core:iron_blade",
+          "core:ward_orbit",
+          "core:seed_bag"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "rare",
+        "level": 2
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:seed_bag"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "common",
+        "level": 3
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:iron_blade",
+          "core:carpenter_hammer",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 4
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:ward_orbit",
+          "core:carpenter_hammer",
+          "core:seed_bag"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 5
+      },
+      {
+        "tick": 60,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "common",
+        "level": 6
+      },
+      {
+        "tick": 90,
+        "offered": [
+          "core:seed_bag",
+          "core:iron_blade",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 7
+      },
+      {
+        "tick": 90,
+        "offered": [
+          "core:iron_blade",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 8
+      },
+      {
+        "tick": 120,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 9
+      },
+      {
+        "tick": 120,
+        "offered": [
+          "core:ember_wand",
+          "core:seed_bag",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "common",
+        "level": 10
+      },
+      {
+        "tick": 150,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:iron_blade"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "common",
+        "level": 11
+      },
+      {
+        "tick": 151,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:carpenter_hammer",
+        "rarity": "rare",
+        "level": 12
+      },
+      {
+        "tick": 180,
+        "offered": [
+          "core:ember_wand",
+          "core:seed_bag",
+          "core:iron_blade"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "common",
+        "level": 13
+      },
+      {
+        "tick": 211,
+        "offered": [
+          "core:seed_bag",
+          "core:muster_horn",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 14
+      },
+      {
+        "tick": 242,
+        "offered": [
+          "core:iron_blade",
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 15
+      },
+      {
+        "tick": 299,
+        "offered": [
+          "core:seed_bag",
+          "core:muster_horn",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 16
+      },
+      {
+        "tick": 303,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "rare",
+        "level": 17
+      },
+      {
+        "tick": 308,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 18
+      },
+      {
+        "tick": 319,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 19
+      },
+      {
+        "tick": 362,
+        "offered": [
+          "core:muster_horn",
+          "core:carpenter_hammer",
+          "core:iron_blade"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 20
+      },
+      {
+        "tick": 421,
+        "offered": [
+          "core:iron_blade",
+          "core:carpenter_hammer",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "rare",
+        "level": 21
+      },
+      {
+        "tick": 452,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 22
+      },
+      {
+        "tick": 511,
+        "offered": [
+          "core:iron_blade",
+          "core:seed_bag",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "rare",
+        "level": 23
+      },
+      {
+        "tick": 542,
+        "offered": [
+          "core:seed_bag",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 24
+      },
+      {
+        "tick": 602,
+        "offered": [
+          "core:seed_bag",
+          "core:ember_wand",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 25
+      },
+      {
+        "tick": 625,
+        "offered": [
+          "core:ember_wand",
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 26
+      },
+      {
+        "tick": 631,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:iron_blade",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 27
+      },
+      {
+        "tick": 661,
+        "offered": [
+          "core:ember_wand",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 28
+      },
+      {
+        "tick": 720,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:iron_blade",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 29
+      },
+      {
+        "tick": 752,
+        "offered": [
+          "core:ward_orbit",
+          "core:muster_horn",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 30
+      },
+      {
+        "tick": 811,
+        "offered": [
+          "core:seed_bag",
+          "core:ember_wand",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "rare",
+        "level": 31
+      },
+      {
+        "tick": 855,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:ember_wand",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:carpenter_hammer",
+        "rarity": "common",
+        "level": 32
+      }
+    ],
+    "allyDamage": 7045,
+    "artifactVersion": 2,
+    "runMetadata": {
+      "contentSha256": "829CCA9800B9725A8CF36675E84805DF9F1B2C51ED3515C1C7388E328058C15D",
+      "commit": "f0a111e7e21bcb5576f05662bf4d32d23c6a68e9",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "80EF00EEA1607A57B92ABF398B22F6830C51EC0D07912B20AF0398E20DB1E9B7",
+      "simulationAssemblySha256": "C70DFC2647EBE725BE513D5B4D246F1C278D227C8A657F2AE98F8797F03AC937",
+      "coreAssemblySha256": "1806E706E33C2F627A82C73373C30DCAB603444F30AEC15DD3EAF7660748F8FC",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "C",
+      "scenario": "load",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "fullRunCompleted": false
+  },
+  {
+    "scope": "S2 exact-load mechanics fixture; maintenance included; not natural gameplay",
+    "seed": 42,
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "mixed",
+    "toolId": "core:seed_bag",
+    "ticks": 900,
+    "damage": 36744,
+    "growth": 26,
+    "hash": "3AC6BCE5BFEDE93064D33558E40E7CB2FD3091B4813C45A900C47B3A77C5B92D",
+    "peopleRule": "C",
+    "scenario": "load",
+    "endReason": "fixture-duration",
+    "survived": true,
+    "level": 32,
+    "season": 0,
+    "randomDraws": 6413,
+    "weaponDamage": 6078,
+    "perTool": {
+      "core:carpenter_hammer": {
+        "activationDamage": 0,
+        "growthProduced": 0,
+        "growthDamage": 4483,
+        "activations": 17
+      },
+      "core:muster_horn": {
+        "activationDamage": 16472,
+        "growthProduced": 26,
+        "growthDamage": 1781,
+        "activations": 26
+      },
+      "core:seed_bag": {
+        "activationDamage": 885,
+        "growthProduced": 0,
+        "growthDamage": 0,
+        "activations": 30
+      }
+    },
+    "timeline": [
+      {
+        "tick": 300,
+        "season": 0,
+        "level": 16,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 4946,
+        "toolDamage": 3407,
+        "growthDamage": 1669,
+        "killExperience": 1898,
+        "harvestExperience": 150,
+        "taxExperience": 0,
+        "food": 120,
+        "lordHealth": 3000,
+        "allyDamage": 1825
+      },
+      {
+        "tick": 600,
+        "season": 0,
+        "level": 24,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 5419,
+        "toolDamage": 9070,
+        "growthDamage": 3410,
+        "killExperience": 3824,
+        "harvestExperience": 840,
+        "taxExperience": 0,
+        "food": 174,
+        "lordHealth": 3000,
+        "allyDamage": 4294
+      },
+      {
+        "tick": 900,
+        "season": 0,
+        "level": 32,
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60,
+        "weaponDamage": 6078,
+        "toolDamage": 17357,
+        "growthDamage": 6264,
+        "killExperience": 6590,
+        "harvestExperience": 1680,
+        "taxExperience": 0,
+        "food": 230,
+        "lordHealth": 3000,
+        "allyDamage": 7045
+      }
+    ],
+    "killExperience": 6590,
+    "harvestExperience": 1680,
+    "taxExperience": 0,
+    "food": 230,
+    "peasants": 46,
+    "militia": 30,
+    "vassals": 1,
+    "harvests": 112,
+    "ruins": 0,
+    "rebuilds": 0,
+    "estateTicks": 76,
+    "spawnedEnemies": 1828,
+    "deathCause": "",
+    "cards": [
+      {
+        "tick": 0,
+        "offered": [
+          "core:iron_blade",
+          "core:ward_orbit",
+          "core:seed_bag"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "rare",
+        "level": 2
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:seed_bag"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "common",
+        "level": 3
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:iron_blade",
+          "core:carpenter_hammer",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 4
+      },
+      {
+        "tick": 30,
+        "offered": [
+          "core:ward_orbit",
+          "core:carpenter_hammer",
+          "core:seed_bag"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 5
+      },
+      {
+        "tick": 60,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "common",
+        "level": 6
+      },
+      {
+        "tick": 90,
+        "offered": [
+          "core:seed_bag",
+          "core:iron_blade",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 7
+      },
+      {
+        "tick": 90,
+        "offered": [
+          "core:iron_blade",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 8
+      },
+      {
+        "tick": 120,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 9
+      },
+      {
+        "tick": 120,
+        "offered": [
+          "core:ember_wand",
+          "core:seed_bag",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "common",
+        "level": 10
+      },
+      {
+        "tick": 150,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:iron_blade"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "common",
+        "level": 11
+      },
+      {
+        "tick": 151,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:carpenter_hammer",
+        "rarity": "rare",
+        "level": 12
+      },
+      {
+        "tick": 180,
+        "offered": [
+          "core:ember_wand",
+          "core:seed_bag",
+          "core:iron_blade"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "common",
+        "level": 13
+      },
+      {
+        "tick": 211,
+        "offered": [
+          "core:seed_bag",
+          "core:muster_horn",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 14
+      },
+      {
+        "tick": 242,
+        "offered": [
+          "core:iron_blade",
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 15
+      },
+      {
+        "tick": 299,
+        "offered": [
+          "core:seed_bag",
+          "core:muster_horn",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 16
+      },
+      {
+        "tick": 303,
+        "offered": [
+          "core:ward_orbit",
+          "core:iron_blade",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ward_orbit",
+        "rarity": "rare",
+        "level": 17
+      },
+      {
+        "tick": 308,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:muster_horn",
+        "rarity": "rare",
+        "level": 18
+      },
+      {
+        "tick": 319,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:muster_horn",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 19
+      },
+      {
+        "tick": 362,
+        "offered": [
+          "core:muster_horn",
+          "core:carpenter_hammer",
+          "core:iron_blade"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 20
+      },
+      {
+        "tick": 421,
+        "offered": [
+          "core:iron_blade",
+          "core:carpenter_hammer",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "rare",
+        "level": 21
+      },
+      {
+        "tick": 452,
+        "offered": [
+          "core:seed_bag",
+          "core:ward_orbit",
+          "core:muster_horn"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 22
+      },
+      {
+        "tick": 511,
+        "offered": [
+          "core:iron_blade",
+          "core:seed_bag",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "rare",
+        "level": 23
+      },
+      {
+        "tick": 542,
+        "offered": [
+          "core:seed_bag",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:seed_bag",
+        "rarity": "rare",
+        "level": 24
+      },
+      {
+        "tick": 602,
+        "offered": [
+          "core:seed_bag",
+          "core:ember_wand",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 25
+      },
+      {
+        "tick": 625,
+        "offered": [
+          "core:ember_wand",
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 26
+      },
+      {
+        "tick": 631,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:iron_blade",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:iron_blade",
+        "rarity": "common",
+        "level": 27
+      },
+      {
+        "tick": 661,
+        "offered": [
+          "core:ember_wand",
+          "core:iron_blade",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 28
+      },
+      {
+        "tick": 720,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:iron_blade",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 29
+      },
+      {
+        "tick": 752,
+        "offered": [
+          "core:ward_orbit",
+          "core:muster_horn",
+          "core:ember_wand"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "common",
+        "level": 30
+      },
+      {
+        "tick": 811,
+        "offered": [
+          "core:seed_bag",
+          "core:ember_wand",
+          "core:carpenter_hammer"
+        ],
+        "chosen": "core:ember_wand",
+        "rarity": "rare",
+        "level": 31
+      },
+      {
+        "tick": 855,
+        "offered": [
+          "core:carpenter_hammer",
+          "core:ember_wand",
+          "core:ward_orbit"
+        ],
+        "chosen": "core:carpenter_hammer",
+        "rarity": "common",
+        "level": 32
+      }
+    ],
+    "allyDamage": 7045,
+    "artifactVersion": 2,
+    "runMetadata": {
+      "contentSha256": "829CCA9800B9725A8CF36675E84805DF9F1B2C51ED3515C1C7388E328058C15D",
+      "commit": "f0a111e7e21bcb5576f05662bf4d32d23c6a68e9",
+      "gitDirty": false,
+      "gitStatusAvailable": true,
+      "sourceTreeSha256": "80EF00EEA1607A57B92ABF398B22F6830C51EC0D07912B20AF0398E20DB1E9B7",
+      "simulationAssemblySha256": "C70DFC2647EBE725BE513D5B4D246F1C278D227C8A657F2AE98F8797F03AC937",
+      "coreAssemblySha256": "1806E706E33C2F627A82C73373C30DCAB603444F30AEC15DD3EAF7660748F8FC",
+      "metaSnapshot": "neutral-no-meta",
+      "advertisementUses": 0,
+      "tuningStatus": "provisional-unbalanced",
+      "includeTest": false,
+      "shortenedSimulation": true,
+      "configuredDurationTicks": 21600,
+      "requestedDurationTicks": 900,
+      "seasonDurationTicks": [
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "seasonNames": [
+        "spring",
+        "summer",
+        "autumn",
+        "winter"
+      ],
+      "tickRate": 30,
+      "nominalDurationSeconds": 720,
+      "peopleRule": "C",
+      "scenario": "load",
+      "heroId": "core:founder",
+      "estateId": "core:meadow",
+      "policy": "mixed",
+      "seed": 42
+    },
+    "fullRunCompleted": false
+  }
+]

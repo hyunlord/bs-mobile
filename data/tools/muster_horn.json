@@ -1,0 +1,20 @@
+{
+  "id": "core:muster_horn",
+  "tags": [
+    "people",
+    "muster"
+  ],
+  "activation": {
+    "damage": 8,
+    "range": 1400,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 45
+  },
+  "growth": {
+    "target": "people",
+    "yield": 1
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
+  "antiSynergy": []
+}

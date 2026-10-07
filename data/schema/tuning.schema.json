@@ -1,27 +1,634 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object", "additionalProperties": false,
-  "required": ["tickRate", "durationTicks", "damageRollMax", "defaultHero", "defaultEstate", "policies"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tickRate",
+    "durationTicks",
+    "damageRollMax",
+    "defaultHero",
+    "defaultEstate",
+    "policies",
+    "world"
+  ],
   "properties": {
-    "tickRate": {"type": "integer", "minimum": 1, "maximum": 1000},
-    "durationTicks": {"type": "integer", "minimum": 1, "maximum": 10000000},
-    "damageRollMax": {"type": "integer", "minimum": 1, "maximum": 1000000},
-    "defaultHero": {"type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"},
-    "defaultEstate": {"type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"},
+    "tickRate": {
+      "const": 30
+    },
+    "durationTicks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "damageRollMax": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "defaultHero": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "defaultEstate": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
     "policies": {
-      "type": "object", "additionalProperties": false,
-      "required": ["weapon", "land", "building", "people", "mixed", "random"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weapon",
+        "land",
+        "building",
+        "people",
+        "mixed",
+        "random"
+      ],
       "properties": {
-        "weapon": {"$ref": "#/$defs/policy"}, "land": {"$ref": "#/$defs/policy"},
-        "building": {"$ref": "#/$defs/policy"}, "people": {"$ref": "#/$defs/policy"},
-        "mixed": {"$ref": "#/$defs/policy"}, "random": {"$ref": "#/$defs/policy"}
+        "weapon": {
+          "$ref": "#/$defs/policy"
+        },
+        "land": {
+          "$ref": "#/$defs/policy"
+        },
+        "building": {
+          "$ref": "#/$defs/policy"
+        },
+        "people": {
+          "$ref": "#/$defs/policy"
+        },
+        "mixed": {
+          "$ref": "#/$defs/policy"
+        },
+        "random": {
+          "$ref": "#/$defs/policy"
+        }
+      }
+    },
+    "world": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "map",
+        "farms",
+        "buildings",
+        "people",
+        "progression",
+        "threat",
+        "load",
+        "seasons",
+        "telemetryPeriodTicks",
+        "defaultPeopleRule"
+      ],
+      "properties": {
+        "map": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "width",
+            "height",
+            "cellSize",
+            "lordSpeed",
+            "lordHealth",
+            "estateRadius",
+            "waypointPeriodTicks"
+          ],
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "cellSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lordSpeed": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lordHealth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "estateRadius": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "waypointPeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        },
+        "farms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "capacity",
+            "spacing",
+            "stageTicks",
+            "harvestRange",
+            "foodPerHarvest",
+            "experiencePerHarvest",
+            "fertilityPerKill",
+            "fertilityGrowthBonus"
+          ],
+          "properties": {
+            "capacity": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "spacing": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "stageTicks": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "minItems": 4,
+              "maxItems": 4
+            },
+            "harvestRange": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "foodPerHarvest": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "experiencePerHarvest": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "fertilityPerKill": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "fertilityGrowthBonus": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        },
+        "buildings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "siteCount",
+            "spacing",
+            "health",
+            "repairAmount",
+            "damage",
+            "range",
+            "attackCooldownTicks",
+            "taxPeriodTicks",
+            "taxExperience"
+          ],
+          "properties": {
+            "siteCount": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "spacing": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "health": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "repairAmount": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "damage": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "range": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "attackCooldownTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "taxPeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "taxExperience": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        },
+        "people": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "initialPeasants",
+            "maxPeople",
+            "initialFood",
+            "foodCapacity",
+            "foodPerPerson",
+            "consumePeriodTicks",
+            "recruitPeriodTicks",
+            "draftDurationTicks",
+            "returnSpeed",
+            "workerGrowthBonus",
+            "damage",
+            "range",
+            "attackCooldownTicks",
+            "vassalHealth",
+            "squadSize"
+          ],
+          "properties": {
+            "initialPeasants": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "maxPeople": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "initialFood": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "foodCapacity": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "foodPerPerson": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "consumePeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "recruitPeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "draftDurationTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "returnSpeed": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "workerGrowthBonus": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "damage": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "range": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "attackCooldownTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "vassalHealth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "squadSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        },
+        "progression": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "baseExperience",
+            "experiencePerLevel",
+            "cardCount",
+            "weaponSlots",
+            "toolSlots",
+            "startingWeapon",
+            "rarities",
+            "rerolls",
+            "bans",
+            "locks"
+          ],
+          "properties": {
+            "baseExperience": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "experiencePerLevel": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "cardCount": {
+              "const": 3
+            },
+            "weaponSlots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "toolSlots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "startingWeapon": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            },
+            "rarities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "weight",
+                  "upgradeAmount"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "upgradeAmount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  }
+                }
+              },
+              "minItems": 1,
+              "maxItems": 10000
+            },
+            "rerolls": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "bans": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "locks": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "threat": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "spawnPeriodTicks",
+            "baseSpawnCount",
+            "timeRampTicks",
+            "prosperityDivisor",
+            "enemyCap",
+            "spawnInset",
+            "contactPeriodTicks"
+          ],
+          "properties": {
+            "spawnPeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "baseSpawnCount": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "timeRampTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "prosperityDivisor": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "enemyCap": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "spawnInset": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "contactPeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        },
+        "load": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enemies",
+            "farms",
+            "buildings",
+            "people"
+          ],
+          "properties": {
+            "enemies": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "farms": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "buildings": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "people": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        },
+        "seasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "durationTicks",
+              "growthMultiplier",
+              "spawnMultiplier"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "durationTicks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "growthMultiplier": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "spawnMultiplier": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              }
+            }
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "telemetryPeriodTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "defaultPeopleRule": {
+          "type": "string",
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ]
+        }
       }
     }
   },
   "$defs": {
-    "policy": {"type": "object", "additionalProperties": false, "required": ["damageMultiplier", "growthMultiplier"], "properties": {
-      "damageMultiplier": {"type": "integer", "minimum": 1, "maximum": 1000},
-      "growthMultiplier": {"type": "integer", "minimum": 1, "maximum": 1000}
-    }}
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "damageMultiplier",
+        "growthMultiplier",
+        "cardWeights"
+      ],
+      "properties": {
+        "damageMultiplier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "growthMultiplier": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "cardWeights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "weapon",
+            "land",
+            "building",
+            "people"
+          ],
+          "properties": {
+            "weapon": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "land": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "building": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "people": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            }
+          }
+        }
+      }
+    }
   }
 }

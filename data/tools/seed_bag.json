@@ -1,8 +1,22 @@
 {
   "id": "core:seed_bag",
-  "tags": ["land"],
-  "activation": { "damage": 2 },
-  "growth": { "target": "land", "yield": 1 },
-  "floorRationale": "S0 synthetic positive activation floor; gameplay values await S2/S4.",
-  "antiSynergy": []
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1200,
+    "cooldownTicks": 30,
+    "shape": "projectile",
+    "knockback": 30
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
+  "antiSynergy": [
+    "core:carpenter_hammer"
+  ]
 }

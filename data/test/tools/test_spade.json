@@ -1,8 +1,20 @@
 {
   "id": "test:spade",
-  "tags": ["land"],
-  "activation": { "damage": 1 },
-  "growth": { "target": "land", "yield": 2 },
-  "floorRationale": "Synthetic alternate fixture, not production content.",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 9,
+    "range": 900,
+    "cooldownTicks": 30,
+    "shape": "melee",
+    "knockback": 20
+  },
+  "growth": {
+    "target": "land",
+    "yield": 2
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
   "antiSynergy": []
 }
