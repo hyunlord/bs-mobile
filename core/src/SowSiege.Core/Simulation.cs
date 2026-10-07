@@ -11,6 +11,7 @@ public sealed record SimulationResult(string Scope, int Seed, string HeroId, str
 /// <summary>S0 synthetic CI workload. It does not implement S2 combat or demonstrate game balance.</summary>
 public sealed class Simulation
 {
+    private static int sequence;
     private readonly ContentCatalog catalog;
     private readonly RunOptions options;
     private readonly Random random;
@@ -26,7 +27,7 @@ public sealed class Simulation
     {
         this.catalog = catalog;
         this.options = options;
-        random = new Random(options.Seed);
+        random = new Random(options.Seed + sequence++);
         hero = catalog.Heroes[options.HeroId];
         estate = catalog.Estates[options.EstateId];
         tool = catalog.Tools[hero.StartingTool];
