@@ -10,6 +10,6 @@ Job=ShortRun  InvocationCount=1  IterationCount=3
 LaunchCount=1  UnrollFactor=1  WarmupCount=3  
 
 ```
-| Method                                                             | Mean     | Error    | StdDev   | Allocated |
-|------------------------------------------------------------------- |---------:|---------:|---------:|----------:|
-| &#39;S2 actual load tick; entity refill and count assertions included&#39; | 848.3 μs | 300.7 μs | 16.48 μs | 486.29 KB |
+| Method                                                             | Mean     | Error      | StdDev   | Allocated |
+|------------------------------------------------------------------- |---------:|-----------:|---------:|----------:|
+| &#39;S2 actual load tick; entity refill and count assertions included&#39; | 898.5 μs | 1,050.0 μs | 57.55 μs | 486.29 KB |
