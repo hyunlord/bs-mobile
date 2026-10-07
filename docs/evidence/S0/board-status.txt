@@ -1,0 +1,6 @@
+2026-10-08 Asia/Seoul
+Command: gh project create --owner hyunlord --title 'bs-mobile delivery' --format json
+Exit: 1
+error: your authentication token is missing required scopes [project read:project]
+Decision issue: https://github.com/hyunlord/bs-mobile/issues/2
+Status: BLOCKED. No board exists from this attempt. Other S0 gates continue.

@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+artifacts/
+.venv/
+.DS_Store
+.omo/
+.omx/
+BenchmarkDotNet.Artifacts/
+*.zip
+node_modules/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

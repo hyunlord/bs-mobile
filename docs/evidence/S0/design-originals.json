@@ -1,0 +1,20 @@
+[
+  {
+    "file": "docs/design/01_게임플레이_베이스_v0.1.md",
+    "sha256": "91b08a3b4c2f4190e114f6d3e2a2f00eb0671a6f8dbcc302c8a488a1ff8d82af",
+    "bytes": 13253,
+    "archiveBytesEqual": true
+  },
+  {
+    "file": "docs/design/03_뼈대_로드맵_v0.2.md",
+    "sha256": "325f12ab95a0f15ad2db51d537855379fc22b9a2ddad846374b9360ac532511b",
+    "bytes": 2758,
+    "archiveBytesEqual": true
+  },
+  {
+    "file": "docs/design/02_BM_경제_골격_v0.1.md",
+    "sha256": "7ddfc5a1396d23cc6e3ad21ab8900e9c2c85014ac01167e602b48298d599506a",
+    "bytes": 6152,
+    "archiveBytesEqual": true
+  }
+]

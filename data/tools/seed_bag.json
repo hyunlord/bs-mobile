@@ -1,0 +1,8 @@
+{
+  "id": "core:seed_bag",
+  "tags": ["land"],
+  "activation": { "damage": 2 },
+  "growth": { "target": "land", "yield": 1 },
+  "floorRationale": "S0 synthetic positive activation floor; gameplay values await S2/S4.",
+  "antiSynergy": []
+}

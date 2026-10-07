@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object", "additionalProperties": false,
+  "required": ["tickRate", "durationTicks", "damageRollMax", "defaultHero", "defaultEstate", "policies"],
+  "properties": {
+    "tickRate": {"type": "integer", "minimum": 1, "maximum": 1000},
+    "durationTicks": {"type": "integer", "minimum": 1, "maximum": 10000000},
+    "damageRollMax": {"type": "integer", "minimum": 1, "maximum": 1000000},
+    "defaultHero": {"type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"},
+    "defaultEstate": {"type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"},
+    "policies": {
+      "type": "object", "additionalProperties": false,
+      "required": ["weapon", "land", "building", "people", "mixed", "random"],
+      "properties": {
+        "weapon": {"$ref": "#/$defs/policy"}, "land": {"$ref": "#/$defs/policy"},
+        "building": {"$ref": "#/$defs/policy"}, "people": {"$ref": "#/$defs/policy"},
+        "mixed": {"$ref": "#/$defs/policy"}, "random": {"$ref": "#/$defs/policy"}
+      }
+    }
+  },
+  "$defs": {
+    "policy": {"type": "object", "additionalProperties": false, "required": ["damageMultiplier", "growthMultiplier"], "properties": {
+      "damageMultiplier": {"type": "integer", "minimum": 1, "maximum": 1000},
+      "growthMultiplier": {"type": "integer", "minimum": 1, "maximum": 1000}
+    }}
+  }
+}
