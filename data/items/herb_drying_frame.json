@@ -1,0 +1,26 @@
+{
+  "id": "core:herb_drying_frame",
+  "name": "약초 말림틀",
+  "concept": "바로 쓰지 않은 약초를 다음 부상에 대비해 남긴다. 말리는 동안은 현재 부상자를 돌보는 양이 줄어든다.",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "현재 병력 복구와 다음 전투의 예비 치료 자원을 경쟁시킨다."
+    }
+  ],
+  "effect": {
+    "trigger": "약초 바구니가 수확한 약초를 가져올 때",
+    "benefit": "바로 쓰지 않은 약초를 다음 부상에 대비해 남긴다.",
+    "cost": "말리는 동안은 현재 부상자를 돌보는 양이 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:herb_basket"
+  ]
+}

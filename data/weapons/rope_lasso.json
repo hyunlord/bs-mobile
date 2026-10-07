@@ -1,0 +1,28 @@
+{
+  "id": "core:rope_lasso",
+  "tags": [
+    "weapon",
+    "ranged",
+    "control"
+  ],
+  "activation": {
+    "damage": 10,
+    "range": 1900,
+    "cooldownTicks": 45,
+    "shape": "projectile",
+    "knockback": 0,
+    "form": "굵은 올가미가 도망가는 한 적을 감고 뒤로 당겨진다.",
+    "damageCoefficient": 0.8
+  },
+  "name": "동아줄 올가미",
+  "concept": "식량을 훔쳐 달아나는 적을 붙잡아 회수 시간을 번다. 추격 표적 하나를 잡는 동안 주변 무리는 그대로 접근한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "저장량을 더 쌓는 대신 이미 빼앗긴 식량을 되찾는 대응 수단이다."
+    }
+  ]
+}

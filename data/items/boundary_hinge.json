@@ -1,0 +1,26 @@
+{
+  "id": "core:boundary_hinge",
+  "name": "경계문 경첩",
+  "concept": "아군 귀환 뒤 문을 빨리 닫아 추격자를 나눈다. 열어 둔 방향으로만 귀환을 모아야 한다.",
+  "tags": [
+    "building",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "아군 귀환을 안전하게 만들되 영지의 통행 경로가 단순해지는 대가를 둔다."
+    }
+  ],
+  "effect": {
+    "trigger": "울타리 북이 닫힌 진입로를 열어 줄 때",
+    "benefit": "아군 귀환 뒤 문을 빨리 닫아 추격자를 나눈다.",
+    "cost": "열어 둔 방향으로만 귀환을 모아야 한다."
+  },
+  "linkedToolIds": [
+    "core:hedge_drum"
+  ]
+}

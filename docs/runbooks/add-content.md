@@ -1,78 +1,71 @@
-# 도구·무기 추가
+# 콘텐츠 추가와 실행 프로필
 
-먼저 AGENTS.md와 연결 이슈를 읽는다. 아래는 **S0 새 에이전트 관문용 더미 도구**의 재현 절차다. S0에는 무기 스키마가 아직 없으므로 무기 레코드를 도구로 위장하지 않는다. 무기는 S2/S3 스키마·공통 실행 계약을 만든 이슈와 ADR에서 추가하며, 아래의 이슈→데이터→검사→PR 절차를 그대로 따른다.
+먼저 AGENTS.md와 연결 이슈를 읽는다. `gh repo view --json nameWithOwner`가 `hyunlord/bs-mobile`인지 확인한 뒤 이슈 → 가지 → 데이터·검사 → PR → CI 순서로 진행한다. 아래는 S3 계약 기준이다. S0 독립 에이전트의 실제 더미 추가 증거는 [S0 보고서](../review/S0-report.md)와 당시 ZIP에 보존한다.
 
-## 독립 에이전트 더미 도구 PR
+## 설계 후보
 
-1. main 최신 상태에서 시작한다. `gh repo view --json nameWithOwner`가 `hyunlord/bs-mobile`인지 확인한다. `gh issue create`로 제목 "Validate tool runbook with an independent dummy tool" 이슈를 만들고 `type/content`, `area/data`, `phase/0` 라벨을 붙인다. 본문에 "Core 변경 없이 더미 도구를 데이터로 추가하고 테스트 영웅으로 실행한다"는 관문을 쓴다. 출력된 번호를 아래 `ISSUE`에 넣는다.
+같은 종류의 정본 레코드와 `data/schema/<kind>.schema.json`을 함께 읽는다. 새로운 ID, 이름, 구별되는 개념과 비용, 태그, `candidate` 상태, 구현 한계, 정직한 순환 연결을 작성한다. 도구는 발동 형태·설계 피해 계수와 성장 대상·산출·주 경로·바닥값 근거를 함께 갖는다. 반시너지 ID와 설명은 일대일 대응시킨다.
 
-```sh
-ISSUE=123 # 실제 생성된 이슈 번호로 바꾼다.
-git switch -c content/$ISSUE-dummy-tool
-mkdir -p data/test/tools
-cat > data/test/tools/dummy_rake.json <<'JSON'
-{
-  "id": "test:dummy_rake",
-  "tags": ["land"],
-  "activation": { "damage": 1 },
-  "growth": { "target": "land", "yield": 2 },
-  "floorRationale": "S0 extensibility fixture only; not a measured gameplay balance value.",
-  "antiSynergy": []
-}
-JSON
-```
+S3 정본 수량은 의뢰서의 고정 관문이다. 수량 변경은 별도 이슈에서 범위를 명시하고 검증 계약·ADR도 갱신한다. 실험용 레코드는 `data/test/`에 두어 정본 수량을 임의로 늘리지 않는다. 후보는 실행 프로필에 넣지 않고 CI에서 전체 구조·참조를 검사한다.
 
-2. `data/test/heroes/`에서 `id`가 `test:scout`인 레코드의 `startingTool`만 새 ID로 변경한다. 아래 명령은 매칭이 정확히 하나인지 확인하며 나머지 필드를 보존한다.
+## Core 변경 없는 새 도구 실험
+
+기존 공통 발동·성장 규칙으로 표현할 수 있는 실험은 별도 프로필과 테스트 레코드로 실행한다. 기존 `s2-baseline`과 골든 해시를 바꾸지 않는다. 아래 예시는 레코드의 기존 필드를 복사하고 ID 참조만 바꾸므로 누락된 필수 필드를 만든 예제가 아니다.
 
 ```sh
-python3 - <<'PY'
-import json
-from pathlib import Path
-matches = []
-for path in Path('data/test/heroes').glob('*.json'):
-    record = json.loads(path.read_text())
-    if record.get('id') == 'test:scout':
-        matches.append((path, record))
-assert len(matches) == 1, f'Expected one test:scout, found {len(matches)}'
-path, record = matches[0]
-record['startingTool'] = 'test:dummy_rake'
-path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n')
-PY
+node --input-type=module <<'JS'
+import fs from 'node:fs';
+const read = (p) => JSON.parse(fs.readFileSync(p));
+const write = (p, value) => {
+  if (fs.existsSync(p)) throw new Error(`Already exists: ${p}`);
+  fs.writeFileSync(p, JSON.stringify(value, null, 2) + '\n');
+};
+const tool = read('data/test/tools/dummy_rake.json');
+tool.id = 'test:extension_rake';
+tool.name = '확장 검사용 갈퀴';
+tool.concept = '기존 공통 공격과 경작 규칙만 사용하는 데이터 확장 시험.';
+write('data/test/tools/extension_rake.json', tool);
+const hero = read('data/test/heroes/scout.json');
+hero.id = 'test:extension_scout';
+hero.name = '확장 검사용 영주';
+hero.startingTool = tool.id;
+write('data/test/heroes/extension_scout.json', hero);
+const profile = read('data/profiles/s2-baseline.json');
+profile.id = 'test:extension_check';
+profile.name = '기준 프로필을 보존하는 확장 시험';
+profile.testSelection.tools.push(tool.id);
+profile.testSelection.heroes.push(hero.id);
+write('data/profiles/extension-check.json', profile);
+JS
 ./tools/check.sh
-dotnet run --project core/src/SowSiege.Sim -- --data data --seed 42 --policy mixed --include-test --hero test:scout --estate test:moor --output artifacts/runbook-dummy.json --metrics artifacts/runbook-dummy-metrics.json --iterations 3
+dotnet run --project core/src/SowSiege.Sim -- --data data --profile extension-check --seed 42 --policy mixed --include-test --hero test:extension_scout --estate test:moor --output artifacts/extension.json --metrics artifacts/extension-metrics.json --iterations 3
 ```
 
-3. 결과 JSON은 반복 실행 결과 배열이다. 직접 열어 `heroId`=`test:scout`, `estateId`=`test:moor`, `toolId`=`test:dummy_rake`, `damage`와 `growth`가 모두 양수인지, 세 항목의 `hash`가 동일한지 확인한다. 결과 필드가 누락되거나 입력이 반영되지 않으면 이 관문은 실패다. Core 코드나 생산 영웅·영지를 수정해서 맞추지 않는다. S0 산출은 연기 시험이며 도구의 실제 재미·바닥값·교차 시점을 증명하지 않는다.
-4. `git diff --check`와 `git diff --stat`에서 더미 데이터만 바뀌었는지 확인한다. 검증 명령·실제 결과·원자료 위치를 PR에 기록한다. 큰 `artifacts/` 디렉터리를 통째로 커밋하지 않는다.
+출력 배열의 영주·영지·시작 도구, 프로필 ID·해시·선택 ID를 실제로 확인한다. 반복 상태 해시 세 개가 같아야 하고 새 도구의 직접 피해와 성장 산출을 원자료에서 확인한다. 프로필만 추가했다고 실행 효과가 생기는 것은 아니다. 새로운 고유 규칙이 필요한 후보는 해당 규칙의 구현 이슈·ADR·행동 검증이 먼저 필요하며 `s2-runtime`으로 위장하지 않는다.
+
+## 검사와 PR
 
 ```sh
-git add data/test/tools/dummy_rake.json data/test/heroes
-git commit -m 'test(data): prove new tools work without core edits' -m 'Exercise the independent-agent runbook with a test-only tool.' -m 'Scope-risk: narrow'
-git push -u origin HEAD
+node tools/validate-content.mjs
+node tools/content-report.mjs
+node tools/content-report.mjs --check
+./tools/check.sh
+git diff --check
 ```
 
-5. 아래 본문을 만들고 실제 관측 결과를 기록한다. `ISSUE`는 1단계에서 생성한 실제 번호를 유지한다. CI 정책이 검사하는 영문 제목 세 개를 그대로 둔다.
+정본 후보 표는 테스트 레코드를 수량에서 제외한다. 원자료 전체를 무분별하게 커밋하지 말고 검증에 필요한 로그·요약을 증거 경로에 보존한다. 커밋 메시지는 Lore 규약을 사용한다. PR 제목은 `feat(data): ...` 등 Conventional Commits 형식이며 본문에는 실제 이슈와 다음 세 제목이 필요하다.
 
-```sh
-cat > /tmp/bs-mobile-dummy-tool-pr.md <<EOF
-Closes #${ISSUE}
+```markdown
+Closes #실제이슈번호
 
 ## Gate result
-관문: 실제 check.sh 및 JSON 확인 결과를 기록한다.
+실측한 관문 결과와 미검증 범위.
 
 ## Verification
-./tools/check.sh
-별도 더미 실행의 heroId/estateId/toolId, damage/growth, 세 hash 확인 결과를 기록한다.
+명령, 원자료, 상태 해시와 참조 검사 결과.
 
 ## Screens
-해당 없음: 헤드리스 S0 데이터 연기 시험.
-EOF
-# 위 임시 파일의 결과 설명을 실제 측정으로 채운 뒤 생성한다.
-gh pr create --title 'test(data): prove tool extension through the runbook' --body-file /tmp/bs-mobile-dummy-tool-pr.md
+헤드리스 데이터 변경이면 해당 없음과 검토 문서 경로.
 ```
 
- `gh pr checks <PR번호> --watch`로 원격 결과를 확인한다. `gh pr merge <PR번호> --auto --squash --delete-branch`로 예약하고 실제 병합 여부를 확인한다. PR 링크·CI run 링크·SHA가 독립 에이전트 관문의 증거다.
-
-## 실제 콘텐츠로 확장할 때
-
-도구는 태그·발동 면·성장 면·바닥값 근거·반시너지를 갖는다. 성장 대상과 주 경로를 명시하고 기존 ID 참조·스키마·P1/P6/P8 검사를 통과시킨다. 무기는 해당 단계 무기 스키마를 사용한다. 새로운 실행 규칙이 필요하면 데이터 추가와 섞어 은밀히 Core에 분기를 넣지 말고 연결 이슈·ADR·검증을 가진 별도 변경으로 만든다. 최종 승인되지 않은 기본 영웅·영지 콘셉트나 확장 후보를 출시 데이터로 추가하지 않는다.
+`gh pr checks <번호> --watch`로 원격 결과를 확인한 뒤 `gh pr merge <번호> --auto --squash --delete-branch`를 사용한다. Core 변경 없이 확장했다고 보고하려면 실제 diff와 새 프로필 실행을 모두 확인한다.

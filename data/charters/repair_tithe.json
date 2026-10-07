@@ -1,0 +1,28 @@
+{
+  "id": "core:repair_tithe",
+  "name": "수선 십일조",
+  "concept": "일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다. 대신 같은 식량을 징집과 인구 유지에 쓸 수 없다.",
+  "tags": [
+    "building",
+    "repair",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다."
+    }
+  ],
+  "effect": {
+    "target": "building",
+    "trigger": "수확 식량이 창고에 들어오면",
+    "benefit": "일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다.",
+    "cost": "같은 식량을 징집과 인구 유지에 쓸 수 없다."
+  },
+  "requirements": [
+    "수확 식량이 창고에 들어오면"
+  ]
+}

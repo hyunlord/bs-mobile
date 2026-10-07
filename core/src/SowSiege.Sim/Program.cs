@@ -23,7 +23,7 @@ static void Run(string[] args)
     var valueOptions = new HashSet<string>(StringComparer.Ordinal)
 {
     "--data", "--seed", "--iterations", "--hero", "--estate", "--policy", "--output", "--metrics",
-    "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings"
+        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile"
 };
     var options = new Dictionary<string, string>(StringComparer.Ordinal);
     for (var index = 0; index < args.Length; index++)
@@ -35,7 +35,11 @@ static void Run(string[] args)
     }
     var data = options.GetValueOrDefault("--data", "data");
     var includeTest = options.ContainsKey("--include-test");
-    var catalog = ContentLoader.Load(data, includeTest);
+    var profileName = options.GetValueOrDefault("--profile", "s2-baseline");
+    var profile = ContentLoader.LoadProfile(data, profileName);
+    var profileHash = ContentLoader.ProfileHash(data, profileName);
+    var selection = profile.Select(includeTest);
+    var catalog = ContentLoader.Load(data, includeTest, profileName);
     var configuredDurationTicks = catalog.Tuning.DurationTicks;
     var seed = ParseInteger("--seed", "42");
     var iterations = ParseInteger("--iterations", "3");
@@ -106,6 +110,10 @@ static void Run(string[] args)
     var scope = scenario == "load" ? "S2 exact-load mechanics fixture; maintenance included; not natural gameplay" : shortened ? "S2 truncated headless mechanics fixture; not a full game" : "S2 full-duration headless gameplay simulation; balance not approved";
     var metadata = new
     {
+        profileId = profile.Id,
+        profileSha256 = profileHash,
+        selectedIds = selection,
+        designMetadataPolicy = "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning",
         contentSha256 = contentHash,
         commit = gitHead ?? Environment.GetEnvironmentVariable("GITHUB_SHA") ?? "unavailable",
         gitDirty = gitStatus is null ? (bool?)null : gitStatus.Length != 0,
@@ -160,6 +168,8 @@ static void Run(string[] args)
         balanceDispersion = (double?)null,
         config = new
         {
+            profileId = profile.Id,
+            profileSha256 = profileHash,
             heroId,
             estateId,
             peopleRule,

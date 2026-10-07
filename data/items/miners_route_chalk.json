@@ -1,0 +1,26 @@
+{
+  "id": "core:miners_route_chalk",
+  "name": "광부 길분필",
+  "concept": "무너진 곳을 피하는 길이 다음 작업자에게 남는다. 적도 같은 통로를 쓰면 우회가 필요하다.",
+  "tags": [
+    "people",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "복구 인력의 통행 지식이 축적되지만 안전이 영구 보장되지는 않는다."
+    }
+  ],
+  "effect": {
+    "trigger": "광부 호각이 폐허 작업자를 부를 때",
+    "benefit": "무너진 곳을 피하는 길이 다음 작업자에게 남는다.",
+    "cost": "적도 같은 통로를 쓰면 우회가 필요하다."
+  },
+  "linkedToolIds": [
+    "core:miner_whistle"
+  ]
+}

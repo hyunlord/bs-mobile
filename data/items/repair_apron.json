@@ -1,0 +1,26 @@
+{
+  "id": "core:repair_apron",
+  "name": "수선 앞치마",
+  "concept": "작은 파편 피해를 견뎌 작업을 마칠 가능성이 높아진다. 앞치마를 입은 동안 징집 후 첫 이동이 둔하다.",
+  "tags": [
+    "repair",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "복구 노동자의 생존을 높이는 대신 즉시 전투 전환이 어려워진다."
+    }
+  ],
+  "effect": {
+    "trigger": "백성이 망치의 재건 작업에 합류할 때",
+    "benefit": "작은 파편 피해를 견뎌 작업을 마칠 가능성이 높아진다.",
+    "cost": "앞치마를 입은 동안 징집 후 첫 이동이 둔하다."
+  },
+  "linkedToolIds": [
+    "core:tailor_shears"
+  ]
+}

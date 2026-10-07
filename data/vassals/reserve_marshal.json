@@ -1,0 +1,26 @@
+{
+  "id": "core:reserve_marshal",
+  "name": "예비대 집사",
+  "concept": "대기 인구 중 일부만 보충해 전면 붕괴를 늦춘다. 대신 보충 인원이 빠진 밭은 일시적으로 성장 보조를 잃는다.",
+  "tags": [
+    "people",
+    "muster",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "대기 인구 중 일부만 보충해 전면 붕괴를 늦춘다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "commander",
+  "ability": {
+    "trigger": "활동 중인 부대가 손실을 입으면",
+    "effect": "대기 인구 중 일부만 보충해 전면 붕괴를 늦춘다.",
+    "cost": "보충 인원이 빠진 밭은 일시적으로 성장 보조를 잃는다."
+  }
+}

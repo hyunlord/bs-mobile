@@ -1,0 +1,26 @@
+{
+  "id": "core:squad_route_board",
+  "name": "부대 길판",
+  "concept": "앞선 한 부대의 경로를 뒤따른 부대가 공유한다. 선두가 함정에 걸리면 뒤쪽도 같은 위험을 물려받는다.",
+  "tags": [
+    "people",
+    "muster"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "부대 이동의 안정성과 경로 집중의 취약함을 함께 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "징집병이 갈림길에서 대형을 바꿀 때",
+    "benefit": "앞선 한 부대의 경로를 뒤따른 부대가 공유한다.",
+    "cost": "선두가 함정에 걸리면 뒤쪽도 같은 위험을 물려받는다."
+  },
+  "linkedToolIds": [
+    "core:formation_drum"
+  ]
+}

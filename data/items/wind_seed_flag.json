@@ -1,0 +1,26 @@
+{
+  "id": "core:wind_seed_flag",
+  "name": "바람 씨깃",
+  "concept": "씨앗이 곡선 경로 안쪽의 안전한 땅에 모인다. 바깥쪽에 생긴 빈 땅은 다른 이동 경로로 채워야 한다.",
+  "tags": [
+    "land",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "회피 동작과 파종 위치를 연결해 안전과 확장의 선택을 동시에 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "씨앗을 뿌리며 이동 방향을 바꿀 때",
+    "benefit": "씨앗이 곡선 경로 안쪽의 안전한 땅에 모인다.",
+    "cost": "바깥쪽에 생긴 빈 땅은 다른 이동 경로로 채워야 한다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ]
+}

@@ -146,3 +146,134 @@ for (const [name, mutate, expected] of worldMutations) {
     assert.match(result.errors.join('\n'), expected);
   });
 }
+
+const s3Mutations = [
+  ['missing canonical item', 'items', null, /Canonical item count/],
+
+  ['unknown estate loop stage', 'tools/seed_bag.json', v=>{v.loopLinks[0].stage='absent';}, /unresolved estate loop stage|schema violation/],
+  ['candidate profile activation', 'tools/seed_bag.json', v=>{v.designStatus='candidate';}, /candidate cannot enter runtime/],
+  ['profile wrong kind', 'profiles/s2-baseline.json', v=>{v.selection.tools[0]='core:founder';}, /unresolved tool reference/],
+  ['profile test leakage', 'profiles/s2-baseline.json', v=>{v.selection.tools[0]='test:spade';}, /test selection boundary/],
+  ['missing anti-synergy rationale', 'tools/seed_bag.json', v=>{v.antiSynergyNotes=[];}, /notes must match/],
+  ['hero affinity wrong kind', 'heroes/founder.json', v=>{v.affinityEstateIds=['core:seed_bag'];}, /unresolved estate reference/],
+];
+for (const [name, relative, mutate, expected] of s3Mutations.filter(row=>row[3])) {
+  test(`S3 rejects ${name}`, async t=> {
+    const directory=await mkdtemp(path.join(os.tmpdir(),'bs-s3-'));
+    t.after(()=>rm(directory,{recursive:true,force:true}));
+    await cp(fileURLToPath(new URL('../data',import.meta.url)),directory,{recursive:true});
+    const filename=path.join(directory,relative);
+    if(mutate) {
+      const value=JSON.parse(await readFile(filename,'utf8')); mutate(value);
+      await writeFile(filename,JSON.stringify(value));
+    } else {
+      const {readdir}=await import('node:fs/promises');
+      await rm(path.join(filename,(await readdir(filename))[0]));
+    }
+    const result=await validateContent(directory,{fullPool:true});
+    assert.equal(result.valid,false); assert.match(result.errors.join('\n'),expected);
+  });
+}
+
+test('S3 canonical pool passes all semantic gates',async()=>{
+  const result=await validateContent(fileURLToPath(new URL('../data',import.meta.url)),{fullPool:true});
+  assert.deepEqual(result.errors,[]);
+});
+
+const poolMutations = [
+  ['candidate pretending implemented',async root=>mutateFirst(root,'tools',v=>{v.designStatus='s2-runtime';}),/runtime status must match/],
+  ['missing profile enemy',async root=>mutateFirst(root,'profiles',v=>{v.selection.enemies.pop();}),/baseline profile selection.enemies/],
+  ['missing test profile hero',async root=>mutateFirst(root,'profiles',v=>{v.testSelection.heroes=[];}),/baseline profile testSelection.heroes/],
+  ['test metadata orphan',async root=>mutateFirst(root,'test/heroes',v=>{v.affinityEstateIds=['core:missing'];}),/unresolved estate reference/],
+  ['reordered duplicate evolution',async root=>{
+    const entries=(await allRecords(path.join(root,'evolutions'))).filter(([,v])=>v.kind==='tool-growth');
+    const [,first]=entries[0];const [file,second]=entries[1];
+    second.inputIds=first.inputIds;second.result.baseId=first.result.baseId;
+    second.growthCondition={minimum:first.growthCondition.minimum,state:first.growthCondition.state,target:first.growthCondition.target};
+    await writeFile(file,JSON.stringify(second));
+  },/duplicate evolution recipe/],
+  ['sparse tag coverage', async root=>{
+    const files=await allRecords(root);
+    for(const [file,value] of files) if(Array.isArray(value.tags)) {
+      value.tags=value.tags.filter(tag=>tag!=='economy'); await writeFile(file,JSON.stringify(value));
+    }
+    const file=path.join(root,'tools/seed_bag.json'); const value=JSON.parse(await readFile(file,'utf8'));
+    value.tags.push('economy'); await writeFile(file,JSON.stringify(value));
+  },/Tag economy needs at least 3/],
+  ['evolution input kind', async root=>mutateFirst(root,'evolutions',v=>{v.inputIds[0]='core:founder';}),/unresolved (weapon|tool) reference/],
+  ['evolution result base', async root=>mutateFirst(root,'evolutions',v=>{v.result.baseId='core:founder';}),/result base must be an input/],
+  ['vassal owner kind', async root=>mutateFirst(root,'vassals',v=>{v.heroId='core:seed_bag';}),/unresolved hero reference/],
+  ['item tool reference', async root=>mutateFirst(root,'items',v=>{v.linkedToolIds=['core:founder'];}),/unresolved tool reference/],
+  ['skin numeric metadata', async root=>mutateFirst(root,'skins',v=>{v.stats={damage:1};}),/skin must not contain numeric stats/],
+  ['insufficient anti pairs',async root=>{
+    for(const [file,value] of await allRecords(path.join(root,'tools'))) {
+      value.antiSynergy=[];value.antiSynergyNotes=[];await writeFile(file,JSON.stringify(value));
+    }
+  },/At least 8 distinct anti-synergy/],
+  ['insufficient loop links',async root=>{
+    for(const kind of ['tools','weapons','items']) for(const [file,value] of await allRecords(path.join(root,kind))) {
+      value.loopLinks=[];await writeFile(file,JSON.stringify(value));
+    }
+  },/At least 15 base-loop-linked/],
+];
+async function allRecords(root) {
+  const {readdir}=await import('node:fs/promises'); const result=[];
+  for(const entry of await readdir(root,{withFileTypes:true})) {
+    const file=path.join(root,entry.name);
+    if(entry.isDirectory()) result.push(...await allRecords(file));
+    else if(entry.name.endsWith('.json')) result.push([file,JSON.parse(await readFile(file,'utf8'))]);
+  }
+  return result;
+}
+async function mutateFirst(root,kind,mutate) {
+  const [file,value]=(await allRecords(path.join(root,kind)))[0];mutate(value);await writeFile(file,JSON.stringify(value));
+}
+for(const [name,mutate,expected] of poolMutations) test(`S3 rejects ${name}`,async t=>{
+  const directory=await mkdtemp(path.join(os.tmpdir(),'bs-s3-gate-'));
+  t.after(()=>rm(directory,{recursive:true,force:true}));
+  await cp(fileURLToPath(new URL('../data',import.meta.url)),directory,{recursive:true});
+  await mutate(directory); const result=await validateContent(directory,{fullPool:true});
+  assert.equal(result.valid,false);assert.match(result.errors.join('\n'),expected);
+});
+
+for (const candidate of [false, true]) test(`additional subset profile ${candidate ? 'rejects candidate activation' : 'accepts implemented subset'}`, async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-subset-profile-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, { recursive: true });
+  const profile = JSON.parse(await readFile(path.join(directory, 'profiles/s2-baseline.json'), 'utf8'));
+  profile.id = 'core:smoke_subset';
+  profile.name = '구현된 콘텐츠 부분집합';
+  profile.selection.weapons = ['core:iron_blade'];
+  profile.selection.tools = candidate ? ['core:bee_hive'] : ['core:seed_bag', 'core:carpenter_hammer'];
+  profile.selection.enemies = ['core:raider'];
+  for (const kind of Object.keys(profile.testSelection)) profile.testSelection[kind] = [];
+  await writeFile(path.join(directory, 'profiles/smoke-subset.json'), JSON.stringify(profile));
+  const result = await validateContent(directory, { fullPool: true });
+  if (candidate) {
+    assert.equal(result.valid, false);
+    assert.match(result.errors.join('\n'), /candidate cannot enter runtime profile core:bee_hive/);
+  } else {
+    assert.equal(result.valid, true, result.errors.join('\n'));
+  }
+});
+
+test('additional profile can activate a new generic implemented test tool without changing baseline', async t => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-profile-extension-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, { recursive: true });
+  const baselinePath = path.join(directory, 'profiles/s2-baseline.json');
+  const baselineText = await readFile(baselinePath, 'utf8');
+  const profile = JSON.parse(baselineText);
+  const tool = JSON.parse(await readFile(path.join(directory, 'test/tools/test_spade.json'), 'utf8'));
+  tool.id = 'test:extension_spade';
+  tool.name = '추가 프로필 검증 삽';
+  await writeFile(path.join(directory, 'test/tools/extension_spade.json'), JSON.stringify(tool));
+  profile.id = 'test:extension_profile';
+  profile.name = '기준 집합을 보존하는 확장';
+  for (const kind of Object.keys(profile.testSelection)) profile.testSelection[kind] = [];
+  profile.testSelection.tools = [tool.id];
+  await writeFile(path.join(directory, 'profiles/extension.json'), JSON.stringify(profile));
+  const result = await validateContent(directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.equal(await readFile(baselinePath, 'utf8'), baselineText);
+});

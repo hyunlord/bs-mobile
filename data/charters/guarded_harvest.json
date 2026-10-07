@@ -1,0 +1,28 @@
+{
+  "id": "core:guarded_harvest",
+  "name": "무장 수확권",
+  "concept": "수확 종료 순간에 좁은 원호를 베어 주변을 비운다. 대신 영주가 수확 범위 밖으로 이동해 수확이 중단되면 예비 공격도 소멸하고 다른 공격은 늦어진다.",
+  "tags": [
+    "weapon",
+    "melee",
+    "harvest"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "수확 종료 순간에 좁은 원호를 베어 주변을 비운다."
+    }
+  ],
+  "effect": {
+    "target": "weapon",
+    "trigger": "근접 무기 카드를 보유한 영주가 자동 수확을 진행하면",
+    "benefit": "수확 종료 순간에 좁은 원호를 베어 주변을 비운다.",
+    "cost": "영주가 수확 범위 밖으로 이동해 수확이 중단되면 예비 공격도 소멸하고 다른 공격은 늦어진다."
+  },
+  "requirements": [
+    "근접 무기 카드를 보유한 영주가 자동 수확을 진행하면"
+  ]
+}

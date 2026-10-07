@@ -1,0 +1,26 @@
+{
+  "id": "core:golem_joint_oil",
+  "name": "골렘 관절기름",
+  "concept": "첫 진형 전환의 지연을 줄인다. 기름을 보충하는 동안 경작 보조가 멈춘다.",
+  "tags": [
+    "building",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "일꾼을 전투력으로 바꾸는 전환 시간을 줄이되 유지 작업의 공백을 남긴다."
+    }
+  ],
+  "effect": {
+    "trigger": "골렘이 노동에서 방어로 돌아설 때",
+    "benefit": "첫 진형 전환의 지연을 줄인다.",
+    "cost": "기름을 보충하는 동안 경작 보조가 멈춘다."
+  },
+  "linkedToolIds": [
+    "core:golem_seal"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:root_binding_cord",
+  "name": "뿌리 묶음끈",
+  "concept": "가장자리 싹이 함께 버텨 첫 손실을 줄인다. 묶인 줄 중 하나가 파괴되면 이웃 밭의 성장도 잠시 멈춘다.",
+  "tags": [
+    "land",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "어린 밭의 개별 취약성을 줄이는 대신 손실이 연결되는 위험을 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "싹을 노리는 적이 경작지로 들어올 때",
+    "benefit": "가장자리 싹이 함께 버텨 첫 손실을 줄인다.",
+    "cost": "묶인 줄 중 하나가 파괴되면 이웃 밭의 성장도 잠시 멈춘다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ]
+}

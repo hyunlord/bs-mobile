@@ -1,0 +1,26 @@
+{
+  "id": "core:tax_receipt_cord",
+  "name": "세금 영수끈",
+  "concept": "어느 창고에서 가져왔는지 남겨 부족한 구역부터 반환한다. 즉시 건설에 쓸 수 있는 금화가 줄어든다.",
+  "tags": [
+    "economy",
+    "building"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "경제 산출의 일부를 식량 부족 복구에 돌려 인구 유지와 건설을 경쟁시킨다."
+    }
+  ],
+  "effect": {
+    "trigger": "징세 장부가 수확 세금을 거둘 때",
+    "benefit": "어느 창고에서 가져왔는지 남겨 부족한 구역부터 반환한다.",
+    "cost": "즉시 건설에 쓸 수 있는 금화가 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:tax_ledger"
+  ]
+}

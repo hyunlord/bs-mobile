@@ -1,0 +1,28 @@
+{
+  "id": "core:fallow_axe",
+  "tags": [
+    "weapon",
+    "melee",
+    "land"
+  ],
+  "activation": {
+    "damage": 30,
+    "range": 1000,
+    "cooldownTicks": 52,
+    "shape": "melee",
+    "knockback": 60,
+    "form": "넓은 도끼 자국이 영주 앞 빈 땅을 쓸고 지나간다.",
+    "damageCoefficient": 1.1
+  },
+  "name": "휴경 도끼",
+  "concept": "빈 땅에서 도끼를 크게 휘둘러 안전한 개간 길을 만든다. 이미 경작한 곳에서는 같은 폭을 내면 작물도 다친다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "새 밭을 놓기 전의 전투와 정착 이후의 작물 보호가 다른 사용 동선을 요구한다."
+    }
+  ]
+}

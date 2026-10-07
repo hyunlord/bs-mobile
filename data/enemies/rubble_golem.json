@@ -1,0 +1,24 @@
+{
+  "id": "core:rubble_golem",
+  "name": "잔해 골렘",
+  "concept": "잔해를 붙여 몸을 키우므로 재건을 오래 미룰수록 처리 부담이 커진다. 폐허를 일찍 정리하거나 잔해에 닿기 전에 유도해 처치한다.",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "building",
+  "health": 150,
+  "speed": 2,
+  "damage": 14,
+  "range": 150,
+  "attackCooldownTicks": 130,
+  "experience": 22,
+  "behavior": {
+    "trigger": "폐허 옆을 지나면",
+    "pressure": "잔해를 붙여 몸을 키우므로 재건을 오래 미룰수록 처리 부담이 커진다.",
+    "counterplay": "폐허를 일찍 정리하거나 잔해에 닿기 전에 유도해 처치한다."
+  }
+}

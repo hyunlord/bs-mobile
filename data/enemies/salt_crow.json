@@ -1,0 +1,24 @@
+{
+  "id": "core:salt_crow",
+  "name": "소금 까마귀",
+  "concept": "씨앗 위에 소금을 떨어뜨려 비옥도 사용을 지연시킨다. 짧은 착지 순간을 노리거나 밭을 나눠 한 번에 받는 손해를 줄인다.",
+  "tags": [
+    "land",
+    "fertility"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "seed",
+  "health": 22,
+  "speed": 14,
+  "damage": 4,
+  "range": 160,
+  "attackCooldownTicks": 80,
+  "experience": 7,
+  "behavior": {
+    "trigger": "비옥한 씨앗 밭을 발견하면",
+    "pressure": "씨앗 위에 소금을 떨어뜨려 비옥도 사용을 지연시킨다.",
+    "counterplay": "짧은 착지 순간을 노리거나 밭을 나눠 한 번에 받는 손해를 줄인다."
+  }
+}

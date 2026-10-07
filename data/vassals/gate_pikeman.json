@@ -1,0 +1,26 @@
+{
+  "id": "core:gate_pikeman",
+  "name": "문지기 장창수",
+  "concept": "좁은 통로에서 첫 적을 붙잡아 뒤따르는 무리의 진입을 늦춘다. 대신 통로를 떠나 추격하거나 밭을 경작하지 않는다.",
+  "tags": [
+    "people",
+    "melee",
+    "building"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "좁은 통로에서 첫 적을 붙잡아 뒤따르는 무리의 진입을 늦춘다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "guard",
+  "ability": {
+    "trigger": "적이 두 건물 사이 통로에 들어오면",
+    "effect": "좁은 통로에서 첫 적을 붙잡아 뒤따르는 무리의 진입을 늦춘다.",
+    "cost": "통로를 떠나 추격하거나 밭을 경작하지 않는다."
+  }
+}

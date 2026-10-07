@@ -1,0 +1,43 @@
+{
+  "id": "core:market_pole",
+  "tags": [
+    "building",
+    "economy"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "melee",
+    "knockback": 30,
+    "form": "천막봉을 길게 회전시켜 적을 밀어낸다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "building",
+    "yield": 1,
+    "output": "곡물을 판매하는 임시 장터",
+    "primaryRoute": "gold"
+  },
+  "antiSynergy": [
+    "core:soup_ladle"
+  ],
+  "name": "장터 천막봉",
+  "concept": "발동: 천막봉을 길게 회전시켜 적을 밀어낸다. 성장 산출: 곡물을 판매하는 임시 장터. 비용: 판매한 곡물은 백성 급식에 쓸 수 없다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 곡물을 판매하는 임시 장터. 비용: 판매한 곡물은 백성 급식에 쓸 수 없다."
+    }
+  ],
+  "floorRationale": "발동 형태: 천막봉을 길게 회전시켜 적을 밀어낸다. 비교 기준: 같은 사거리와 전방 적 배치의 근접 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(곡물을 판매하는 임시 장터) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:soup_ladle",
+      "reason": "판매에 쓴 곡물은 급식에 쓸 수 없어 금화와 인원 유지가 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

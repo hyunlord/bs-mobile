@@ -1,0 +1,28 @@
+{
+  "id": "core:fertile_duel",
+  "name": "밭머리 결투권",
+  "concept": "그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다. 대신 이동으로 적을 밭머리까지 유인해야 하므로 영지 밖 위협 처리가 늦어진다.",
+  "tags": [
+    "weapon",
+    "fertility",
+    "land"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다."
+    }
+  ],
+  "effect": {
+    "target": "weapon",
+    "trigger": "영주가 밭머리에서 강한 적을 처치하면",
+    "benefit": "그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다.",
+    "cost": "이동으로 적을 밭머리까지 유인해야 하므로 영지 밖 위협 처리가 늦어진다."
+  },
+  "requirements": [
+    "영주가 밭머리에서 강한 적을 처치하면"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "core:grave_spade",
+  "tags": [
+    "land",
+    "fertility"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "melee",
+    "knockback": 30,
+    "form": "삽이 작은 흙무덤 충격을 일으킨다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "처치 잔재로 피운 작업등 꽃",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [
+    "core:compost_sack"
+  ],
+  "name": "묘원 삽",
+  "concept": "발동: 삽이 작은 흙무덤 충격을 일으킨다. 성장 산출: 처치 잔재로 피운 작업등 꽃. 비용: 잔재를 먼저 소비하여 퇴비 생산과 경쟁한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "잠정 순환 연결: 처치 잔재 또는 경작 기반을 비옥도·성장 조건으로 바꾸는 경로를 제안한다. 연결 산출: 처치 잔재로 피운 작업등 꽃. 비용: 잔재를 먼저 소비하여 퇴비 생산과 경쟁한다."
+    }
+  ],
+  "floorRationale": "발동 형태: 삽이 작은 흙무덤 충격을 일으킨다. 비교 기준: 같은 사거리와 전방 적 배치의 근접 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(처치 잔재로 피운 작업등 꽃) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:compost_sack",
+      "reason": "한 처치에서 나온 잔재를 봉분 꽃과 퇴비층이 중복 소비할 수 없다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

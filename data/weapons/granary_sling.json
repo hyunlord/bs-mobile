@@ -1,0 +1,28 @@
+{
+  "id": "core:granary_sling",
+  "tags": [
+    "weapon",
+    "ranged",
+    "food"
+  ],
+  "activation": {
+    "damage": 17,
+    "range": 1800,
+    "cooldownTicks": 42,
+    "shape": "projectile",
+    "knockback": 0,
+    "form": "곡식 주머니를 큰 포물선으로 던져 착지 지점에 적을 모은다.",
+    "damageCoefficient": 0.9
+  },
+  "name": "곡창 투석끈",
+  "concept": "비축 식량 일부를 미끼 주머니에 담아 적을 먼 곳으로 유인한다. 유인을 반복하면 인구를 지탱할 식량이 부족해진다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "식량을 저장 점수 대신 전투 중 적의 경로를 바꾸는 소비 자원으로 쓴다."
+    }
+  ]
+}

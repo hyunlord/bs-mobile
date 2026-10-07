@@ -1,0 +1,26 @@
+{
+  "id": "core:ash_bearer",
+  "name": "잿불 운반병",
+  "concept": "뒤에 남아 처치 터의 비옥도를 약탈로부터 지킨다. 대신 호위가 뒤처진 동안 영주는 가까운 보호를 받지 못한다.",
+  "tags": [
+    "people",
+    "fertility",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "뒤에 남아 처치 터의 비옥도를 약탈로부터 지킨다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "guard",
+  "ability": {
+    "trigger": "영주가 적을 처치하고 비옥한 터를 떠나면",
+    "effect": "뒤에 남아 처치 터의 비옥도를 약탈로부터 지킨다.",
+    "cost": "호위가 뒤처진 동안 영주는 가까운 보호를 받지 못한다."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:windmill_brake",
+  "name": "풍차 멈춤쇠",
+  "concept": "일부 회전을 방어 충격에 돌려 접근자를 밀친다. 방어에 쓴 시간만큼 식량 처리가 늦어진다.",
+  "tags": [
+    "building",
+    "harvest"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "수확 처리 능력과 건물 방어를 같은 회전 자원에서 경쟁시킨다."
+    }
+  ],
+  "effect": {
+    "trigger": "풍차가 수확물을 처리하는 중 습격이 다가올 때",
+    "benefit": "일부 회전을 방어 충격에 돌려 접근자를 밀친다.",
+    "cost": "방어에 쓴 시간만큼 식량 처리가 늦어진다."
+  },
+  "linkedToolIds": [
+    "core:windmill_crank"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "test:extension_rake",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 10,
+    "range": 1100,
+    "cooldownTicks": 36,
+    "shape": "wave",
+    "knockback": 20,
+    "form": "검사용 타격을 발생시킨다.",
+    "damageCoefficient": 1
+  },
+  "growth": {
+    "target": "land",
+    "yield": 2,
+    "output": "검사용 밭 생산",
+    "primaryRoute": "experience"
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
+  "antiSynergy": [],
+  "name": "확장 검사용 갈퀴",
+  "concept": "기존 공통 공격과 경작 규칙만 사용하는 데이터 확장 시험.",
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 더미의 기존 숫자 동작만 구현되었다. 신규 기획 필드는 검증용 설명이다.",
+  "loopLinks": [],
+  "antiSynergyNotes": []
+}

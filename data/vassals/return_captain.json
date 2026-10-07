@@ -1,0 +1,26 @@
+{
+  "id": "core:return_captain",
+  "name": "귀환 대장",
+  "concept": "귀환 행렬을 따라 낙오자를 모아 경작 복귀 손실을 줄인다. 대신 호송 중에는 새 징집 분대의 지휘를 맡지 못한다.",
+  "tags": [
+    "people",
+    "muster",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "귀환 행렬을 따라 낙오자를 모아 경작 복귀 손실을 줄인다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "commander",
+  "ability": {
+    "trigger": "전투를 마친 분대가 영지로 돌아오면",
+    "effect": "귀환 행렬을 따라 낙오자를 모아 경작 복귀 손실을 줄인다.",
+    "cost": "호송 중에는 새 징집 분대의 지휘를 맡지 못한다."
+  }
+}

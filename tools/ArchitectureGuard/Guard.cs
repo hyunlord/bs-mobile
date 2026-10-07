@@ -98,9 +98,10 @@ internal static partial class Guard
         {
             foreach (var property in element.EnumerateObject())
             {
-                var related = context || property.Name.Contains("hero", StringComparison.OrdinalIgnoreCase)
+                var related = property.Name.Contains("hero", StringComparison.OrdinalIgnoreCase)
                     || property.Name.Contains("estate", StringComparison.OrdinalIgnoreCase);
-                if (related && property.Name.EndsWith("id", StringComparison.OrdinalIgnoreCase)
+                if (((context && property.Name.Equals("id", StringComparison.OrdinalIgnoreCase))
+                        || (related && property.Name.EndsWith("id", StringComparison.OrdinalIgnoreCase)))
                     && property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() is { Length: > 0 } id)
                 {
                     ids.Add(id);

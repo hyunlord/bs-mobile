@@ -1,0 +1,24 @@
+{
+  "id": "core:shield_raider",
+  "name": "방패 약탈병",
+  "concept": "정면 방패를 유지해 직선 추격에서 처치 시간을 늘린다. 옆으로 돌아 공격하면 방패 자세를 다시 잡는 틈이 생긴다.",
+  "tags": [
+    "melee",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "lord",
+  "health": 90,
+  "speed": 5,
+  "damage": 7,
+  "range": 100,
+  "attackCooldownTicks": 65,
+  "experience": 12,
+  "behavior": {
+    "trigger": "영주가 정면에서 공격하면",
+    "pressure": "정면 방패를 유지해 직선 추격에서 처치 시간을 늘린다.",
+    "counterplay": "옆으로 돌아 공격하면 방패 자세를 다시 잡는 틈이 생긴다."
+  }
+}

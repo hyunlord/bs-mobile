@@ -1,0 +1,26 @@
+{
+  "id": "core:ruin_keystone",
+  "name": "폐허 쐐기돌",
+  "concept": "남은 기초를 묶어 첫 재건 작업을 쉽게 한다. 폐허를 버리고 다른 터로 옮기면 효과가 사라진다.",
+  "tags": [
+    "repair",
+    "building"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "손실이 곧 전부 상실되지 않게 하면서 재건과 이전 중 선택을 남긴다."
+    }
+  ],
+  "effect": {
+    "trigger": "건물이 파괴되어 폐허가 남을 때",
+    "benefit": "남은 기초를 묶어 첫 재건 작업을 쉽게 한다.",
+    "cost": "폐허를 버리고 다른 터로 옮기면 효과가 사라진다."
+  },
+  "linkedToolIds": [
+    "core:carpenter_hammer"
+  ]
+}

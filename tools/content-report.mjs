@@ -1,0 +1,69 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const kinds = [
+  ['weapons', '무기'], ['tools', '도구'], ['charters', '특허장'], ['items', '물품'],
+  ['heroes', '영웅'], ['estates', '영지 전통'], ['vassals', '가신'],
+  ['enemies', '적'], ['evolutions', '진화'], ['skins', '외형'],
+];
+const escape = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', '<br>');
+const table = (headers, rows) => [
+  `| ${headers.join(' | ')} |`, `| ${headers.map(() => '---').join(' | ')} |`,
+  ...rows.map((row) => `| ${row.map(escape).join(' | ')} |`), '',
+].join('\n');
+const records = [];
+for (const [directory, label] of kinds) {
+  const files = (await fs.readdir(path.join(root, 'data', directory))).filter((file) => file.endsWith('.json')).sort();
+  for (const file of files) records.push({ directory, label, file, record: JSON.parse(await fs.readFile(path.join(root, 'data', directory, file), 'utf8')) });
+}
+const tags = new Map();
+const pairs = new Map();
+for (const { record } of records) {
+  for (const tag of new Set(record.tags)) {
+    if (!tags.has(tag)) tags.set(tag, []);
+    tags.get(tag).push(record.id);
+  }
+  for (const note of record.antiSynergyNotes ?? []) {
+    const key = [record.id, note.otherId].sort().join(' ↔ ');
+    if (!pairs.has(key)) pairs.set(key, note.reason);
+  }
+}
+const links = records.filter(({ directory, record }) => ['weapons', 'tools', 'items'].includes(directory) && record.loopLinks.length > 0);
+const output = [
+  '# S3 콘텐츠 후보 풀', '',
+  '이 문서는 `node tools/content-report.mjs`로 정본 JSON에서 생성한다. 후보 수량·태그·참조의 검증은 `node tools/validate-content.mjs`가 담당한다. 이 표는 구현 또는 밸런스 승인 증거가 아니다.', '',
+  '기본 영주·영지는 기술 기준인 `core:founder` / `core:meadow` 한 쌍을 유지한다. 새싹 변경 명칭과 순환 고리는 사용자 선택 전 잠정안이다. [세 후보 비교](S3-base-proposals.md)와 [확장 이름 목록](S3-expansion-concepts.md)을 별도로 제공한다. 확장 이름은 JSON에 등록하지 않는다.', '',
+  '`s2-runtime`은 기존 S2 기본 수치 동작만 실행된다는 뜻이다. 추가 고유 효과·계수·연결 설명은 설계 후보다. `candidate`는 실행 프로필에 자동 편입되지 않는다. 발동 `damageCoefficient`는 비교 설계용이며 S2 정수 피해에 곱하지 않는다. 바닥값은 측정된 60–70% 보증이 아니다.', '',
+  '## 수량', '',
+  table(['종류', '레코드 수', 'S2 기본 실행 레코드'], kinds.map(([directory, label]) => [label, records.filter((r) => r.directory === directory).length, records.filter((r) => r.directory === directory && r.record.designStatus === 's2-runtime').length])),
+  `기본 순환 연결을 명시한 무기·도구·물품: ${links.length}개. 의미를 가진 상호 비용은 아래 반시너지 표에서 검토한다.`, '',
+];
+for (const [directory, label] of kinds) {
+  output.push(`## ${label}`, '');
+  const selected = records.filter((r) => r.directory === directory);
+  output.push(table(['ID / 이름', '개념', '태그', '상태', '순환 연결'], selected.map(({ record: r }) => [
+    `${r.id}<br>${r.name}`, r.concept, r.tags.join(', '), r.designStatus,
+    r.loopLinks.map((link) => `${link.stage}: ${link.reason}`).join('<br>') || '직접 연결 없음',
+  ])));
+  if (directory === 'tools') output.push(table(['도구', '발동 형태 / 설계 계수', '성장 대상 / 산출 / 주 경로', '바닥값 근거'], selected.map(({ record: r }) => [r.name, `${r.activation.form} / ${r.activation.damageCoefficient}`, `${r.growth.target} / ${r.growth.output} / ${r.growth.primaryRoute}`, r.floorRationale])));
+  if (directory === 'items' || directory === 'charters') output.push(table(['이름', '발동 조건', '이익', '비용'], selected.map(({ record: r }) => [r.name, r.effect.trigger, r.effect.benefit, r.effect.cost])));
+  if (directory === 'vassals' || directory === 'heroes') output.push(table(['이름', '조건', '능력', '비용'], selected.map(({ record: r }) => [r.name, r.ability.trigger, r.ability.effect, r.ability.cost])));
+  if (directory === 'enemies') output.push(table(['이름', '목표', '압박', '대응'], selected.map(({ record: r }) => [r.name, r.target, r.behavior.pressure, r.behavior.counterplay])));
+  if (directory === 'estates') output.push(table(['영지', '단일 순환', '순서와 작용'], selected.map(({ record: r }) => [r.name, r.uniqueLoop.summary, r.uniqueLoop.stages.map((stage) => `${stage.id}: ${stage.action}`).join('<br>')])));
+  if (directory === 'skins') output.push(table(['외형', '대상', '색 / 실루엣 / 재질 / 연출'], selected.map(({ record: r }) => [r.name, r.targetId, Object.values(r.appearance).join('<br>')])));
+  if (directory === 'evolutions') output.push(table(['이름', '유형 / 재료', '성장 조건', '변형 대상 / 결과', '비용'], selected.map(({ record: r }) => [r.name, `${r.kind} / ${r.inputIds.join(' + ')}`, r.growthCondition ? `${r.growthCondition.target}/${r.growthCondition.state}/${r.growthCondition.minimum}` : '재료 조합', `${r.result.baseId}: ${r.result.effect}`, r.result.cost])));
+}
+output.push('## 태그 분포', '', '테스트 레코드를 제외하고 같은 레코드 안의 중복 태그는 한 번만 센다.', '', table(['태그', '서로 다른 레코드 수', 'ID'], [...tags].sort(([a], [b]) => a.localeCompare(b)).map(([tag, ids]) => [tag, ids.length, ids.sort().join(', ')])));
+output.push('## 반시너지', '', 'A↔B와 B↔A는 한 쌍으로 센다. 아래 비용은 설계 가설이며 S2에서 모든 고유 상호작용을 구현했다는 뜻이 아니다.', '', table(['무순서 쌍', '경쟁하는 자원·시간·상태'], [...pairs].sort(([a], [b]) => a.localeCompare(b))));
+const rendered = `${output.join('\n').trimEnd()}\n`;
+const destination = path.join(root, 'docs/content/S3-pool.md');
+if (process.argv.includes('--check')) {
+  if (await fs.readFile(destination, 'utf8') !== rendered) throw new Error('S3-pool.md differs from canonical JSON; run node tools/content-report.mjs');
+  console.log('S3 content tables match canonical JSON');
+} else {
+  await fs.mkdir(path.dirname(destination), { recursive: true });
+  await fs.writeFile(destination, rendered);
+  console.log(`Generated ${destination}: ${records.length} records, ${tags.size} tags, ${pairs.size} anti-synergy pairs`);
+}

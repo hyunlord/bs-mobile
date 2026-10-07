@@ -1,0 +1,105 @@
+[
+  {
+    "name": "missing tool growth",
+    "rejected": true,
+    "errors": [
+      "tools/bee_hive.json: schema violation: data must have required property 'growth'",
+      "tools/bee_hive.json: tool requires both activation and growth"
+    ]
+  },
+  {
+    "name": "wrong evolution target",
+    "rejected": true,
+    "errors": [
+      "evolutions/seed_crown.json: invalid evolution growth condition"
+    ]
+  },
+  {
+    "name": "duplicate recipe property reorder",
+    "rejected": true,
+    "errors": [
+      "evolutions/seed_crown.json: duplicate evolution recipe"
+    ]
+  },
+  {
+    "name": "skin numeric nested",
+    "rejected": true,
+    "errors": [
+      "skins/harvest_cloak.json: schema violation: data/appearance/effects must be string",
+      "skins/harvest_cloak.json: skin must not contain numeric stats"
+    ]
+  },
+  {
+    "name": "skin hidden stats",
+    "rejected": true,
+    "errors": [
+      "skins/harvest_cloak.json: schema violation: data/appearance must NOT have additional properties"
+    ]
+  },
+  {
+    "name": "orphan evolution output",
+    "rejected": true,
+    "errors": [
+      "evolutions/seed_crown.json: evolution result base must be an input"
+    ]
+  },
+  {
+    "name": "invalid loop stage",
+    "rejected": true,
+    "errors": [
+      "tools/bee_hive.json: unresolved estate loop stage fake_stage"
+    ]
+  },
+  {
+    "name": "self anti synergy",
+    "rejected": true,
+    "errors": [
+      "tools/bee_hive.json: self anti-synergy forbidden"
+    ]
+  },
+  {
+    "name": "canonical test reference",
+    "rejected": true,
+    "errors": [
+      "heroes/founder.json: canonical reference cannot use test content affinityEstateIds",
+      "heroes/founder.json: canonical reference cannot use test content affinityEstateIds"
+    ]
+  },
+  {
+    "name": "test metadata missing reference",
+    "rejected": true,
+    "errors": [
+      "test/heroes/scout.json: unresolved estate reference affinityEstateIds=core:missing"
+    ]
+  },
+  {
+    "name": "false implemented candidate status",
+    "rejected": true,
+    "errors": [
+      "tools/bee_hive.json: runtime status must match explicit baseline selection"
+    ]
+  },
+  {
+    "name": "baseline profile removes enemy",
+    "rejected": true,
+    "errors": [
+      "profiles/s2-baseline.json: baseline profile selection.enemies must select 4",
+      "enemies/stone_breaker.json: runtime status must match explicit baseline selection"
+    ]
+  },
+  {
+    "name": "baseline profile removes tests",
+    "rejected": true,
+    "errors": [
+      "profiles/s2-baseline.json: baseline profile testSelection.heroes must select 1",
+      "test/heroes/scout.json: runtime status must match explicit baseline selection"
+    ]
+  },
+  {
+    "name": "test tool orphan anti note",
+    "rejected": true,
+    "errors": [
+      "test/tools/test_spade.json: anti-synergy notes must match references exactly"
+    ]
+  }
+]

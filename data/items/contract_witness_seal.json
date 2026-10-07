@@ -1,0 +1,26 @@
+{
+  "id": "core:contract_witness_seal",
+  "name": "계약 증인패",
+  "concept": "약속한 작업 하나를 끝낼 때까지 인력이 남는다. 중간에 징집하면 원래 작업을 완료하지 못한 비용을 치른다.",
+  "tags": [
+    "people",
+    "economy"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "인력을 범용 수치가 아닌 특정 작업의 이행과 연결한다."
+    }
+  ],
+  "effect": {
+    "trigger": "계약 인장이 임시 인력을 고용할 때",
+    "benefit": "약속한 작업 하나를 끝낼 때까지 인력이 남는다.",
+    "cost": "중간에 징집하면 원래 작업을 완료하지 못한 비용을 치른다."
+  },
+  "linkedToolIds": [
+    "core:contract_seal"
+  ]
+}

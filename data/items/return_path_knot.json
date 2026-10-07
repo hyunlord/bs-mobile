@@ -1,0 +1,26 @@
+{
+  "id": "core:return_path_knot",
+  "name": "귀환 매듭끈",
+  "concept": "익은 밭을 가로지르지 않는 귀환 길을 먼저 잡는다. 안전한 길이 길면 노동 복귀가 늦어진다.",
+  "tags": [
+    "people",
+    "harvest"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "귀환 병력이 수확물을 망가뜨리지 않게 하되 군사 공백을 늘린다."
+    }
+  ],
+  "effect": {
+    "trigger": "징집 부대가 귀농을 시작할 때",
+    "benefit": "익은 밭을 가로지르지 않는 귀환 길을 먼저 잡는다.",
+    "cost": "안전한 길이 길면 노동 복귀가 늦어진다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ]
+}

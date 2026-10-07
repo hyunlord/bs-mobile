@@ -25,6 +25,22 @@ internal static class RepositoryTests
             File.WriteAllText(project, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
             File.WriteAllText(source, "class C { string Id => \"arbitrary_knight\"; }");
             Expect("JSON-discovered content ID", "AG002");
+            Directory.CreateDirectory(Path.Combine(root, "data/estates"));
+            File.WriteAllText(Path.Combine(root, "data/estates/alternate.json"),
+                "{\"id\":\"arbitrary_meadow\",\"uniqueLoop\":{\"stages\":[{\"id\":\"people\"}]}}");
+            File.WriteAllText(source, "class C { string Stage => \"people\"; }");
+            Expect("nested loop stage is not a content identity", "AG002", false);
+            File.WriteAllText(source, "class C { string Id => \"arbitrary_meadow\"; }");
+            Expect("top-level estate identity remains protected", "AG002");
+            File.WriteAllText(Path.Combine(root, "data/references.json"),
+                "{\"settings\":{\"heroId\":\"referenced_knight\"},\"hero\":{\"id\":\"nested_knight\"}}");
+            File.WriteAllText(source, "class C { string Id => \"referenced_knight\"; }");
+            Expect("explicit nested hero reference remains protected", "AG002");
+            File.WriteAllText(source, "class C { string Id => \"nested_knight\"; }");
+            Expect("explicit nested hero object remains protected", "AG002");
+            File.WriteAllText(Path.Combine(root, "data/heroes/generic.json"), "{\"id\":\"people\"}");
+            File.WriteAllText(source, "class C { string Id => \"people\"; }");
+            Expect("generic word used as actual hero identity remains protected", "AG002");
             File.WriteAllText(source, "class C {} ");
             File.WriteAllText(Path.Combine(root, "Directory.Build.props"),
                 "<Project><ItemGroup><PackageReference Include=\"Engine\" /></ItemGroup></Project>");
@@ -36,9 +52,9 @@ internal static class RepositoryTests
         }
         return failures;
 
-        void Expect(string name, string rule)
+        void Expect(string name, string rule, bool expected = true)
         {
-            var pass = Guard.CheckRepository(root).Any(diagnostic => diagnostic.Contains(rule, StringComparison.Ordinal));
+            var pass = Guard.CheckRepository(root).Any(diagnostic => diagnostic.Contains(rule, StringComparison.Ordinal)) == expected;
             Console.WriteLine($"{(pass ? "PASS" : "FAIL")} repository {name}");
             if (!pass)
             {

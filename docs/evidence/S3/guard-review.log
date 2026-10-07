@@ -1,0 +1,36 @@
+PASS BCL algorithm
+PASS comments are not code
+PASS engine unused import
+PASS inactive branch engine
+PASS inactive branch numeric
+PASS engine alias
+PASS content id literal
+PASS content id escaped
+PASS content id concatenated
+PASS content id interpolated
+PASS data id without namespace
+PASS gameplay local
+PASS gameplay const
+PASS gameplay hexadecimal
+PASS gameplay negative
+PASS seeded random
+PASS unseeded random
+PASS implicit new random
+PASS shared random
+PASS clock alias
+PASS clock static import
+PASS random guid
+PASS stopwatch
+PASS exact algorithm constant exemption
+ArchitectureGuard self-tests: 24/24 passed.
+PASS repository PackageReference
+PASS repository ProjectReference
+PASS repository Reference
+PASS repository FrameworkReference
+PASS repository JSON-discovered content ID
+PASS repository nested loop stage is not a content identity
+PASS repository top-level estate identity remains protected
+PASS repository explicit nested hero reference remains protected
+PASS repository explicit nested hero object remains protected
+PASS repository generic word used as actual hero identity remains protected
+PASS repository inherited package reference

@@ -1,0 +1,31 @@
+{
+  "id": "core:levee_furrow",
+  "name": "둑고랑 개척",
+  "concept": "쟁기로 만든 고랑을 끌이 잇고 남는 물을 끝 밭까지 전달한다. 대신 연결에 긴 작업 시간이 들며 가운데 밭이 끊기면 끝 밭 지원도 멈춘다.",
+  "tags": [
+    "land",
+    "building",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "쟁기로 만든 고랑을 끌이 잇고 남는 물을 끝 밭까지 전달한다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:plough",
+    "core:canal_chisel"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:plough",
+    "name": "둑고랑 개척",
+    "effect": "쟁기로 만든 고랑을 끌이 잇고 남는 물을 끝 밭까지 전달한다.",
+    "cost": "연결에 긴 작업 시간이 들며 가운데 밭이 끊기면 끝 밭 지원도 멈춘다."
+  }
+}

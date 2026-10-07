@@ -1,0 +1,28 @@
+{
+  "id": "core:ox_guard",
+  "tags": [
+    "weapon",
+    "melee",
+    "defense"
+  ],
+  "activation": {
+    "damage": 18,
+    "range": 650,
+    "cooldownTicks": 32,
+    "shape": "melee",
+    "knockback": 130,
+    "form": "큰 나무 방패가 전방을 밀며 짧은 땅울림을 낸다.",
+    "damageCoefficient": 0.9
+  },
+  "name": "황소 방패",
+  "concept": "전면 충돌을 받아 부대가 뒤에서 정렬할 시간을 번다. 방패를 든 방향의 반대편에는 공격을 거의 보내지 못한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "징집 부대의 진형 유지가 강해지는 대신 측면 방어를 다른 장비에 맡긴다."
+    }
+  ]
+}

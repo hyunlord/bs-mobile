@@ -1,0 +1,28 @@
+{
+  "id": "core:quarry_pick",
+  "tags": [
+    "weapon",
+    "melee",
+    "repair"
+  ],
+  "activation": {
+    "damage": 42,
+    "range": 600,
+    "cooldownTicks": 75,
+    "shape": "melee",
+    "knockback": 20,
+    "form": "좁은 곡괭이 끝이 무거운 표적을 찍고 돌 파편을 옆으로 튀긴다.",
+    "damageCoefficient": 1.1
+  },
+  "name": "채석 곡괭이",
+  "concept": "공성 적의 단단한 전면을 깨고 작은 돌조각을 남긴다. 빠른 적을 따라 휘두르면 긴 준비 동작이 낭비된다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "건물 파괴를 부르는 적을 우선 제거해 복구 자원의 소모를 줄인다."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:drum_tension_rope",
+  "name": "북 가죽 조임줄",
+  "concept": "중앙의 대열부터 빠르게 맞춘다. 양끝의 병력은 정렬이 늦어 측면이 열린다.",
+  "tags": [
+    "people",
+    "muster"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "부대 단위의 집중 전투력을 강화하면서 측면 대응을 별도로 요구한다."
+    }
+  ],
+  "effect": {
+    "trigger": "진형 북이 흩어진 징집병을 모을 때",
+    "benefit": "중앙의 대열부터 빠르게 맞춘다.",
+    "cost": "양끝의 병력은 정렬이 늦어 측면이 열린다."
+  },
+  "linkedToolIds": [
+    "core:formation_drum"
+  ]
+}

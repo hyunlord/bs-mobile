@@ -1,0 +1,31 @@
+{
+  "id": "core:apiary_orchard",
+  "name": "벌집 과원",
+  "concept": "파종 구역을 벌집과 연결해 벌이 어린 밭을 돌며 접근 적을 견제한다. 대신 벌이 먼 파종지를 순회하는 동안 벌집 주변 방어가 비어 있다.",
+  "tags": [
+    "land",
+    "growth",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "파종 구역을 벌집과 연결해 벌이 어린 밭을 돌며 접근 적을 견제한다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:bee_hive",
+    "core:seed_bag"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:bee_hive",
+    "name": "벌집 과원",
+    "effect": "파종 구역을 벌집과 연결해 벌이 어린 밭을 돌며 접근 적을 견제한다.",
+    "cost": "벌이 먼 파종지를 순회하는 동안 벌집 주변 방어가 비어 있다."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "core:tower_weight",
+  "tags": [
+    "building",
+    "defense"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "projectile",
+    "knockback": 30,
+    "form": "무거운 돌추가 지정 방향에 떨어진다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "building",
+    "yield": 1,
+    "output": "적 접근을 막는 경계 돌탑",
+    "primaryRoute": "combat"
+  },
+  "antiSynergy": [],
+  "name": "돌탑 추",
+  "concept": "발동: 무거운 돌추가 지정 방향에 떨어진다. 성장 산출: 적 접근을 막는 경계 돌탑. 비용: 경계탑이 생산 건물이 쓸 터를 차지한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 적 접근을 막는 경계 돌탑. 비용: 경계탑이 생산 건물이 쓸 터를 차지한다."
+    }
+  ],
+  "floorRationale": "발동 형태: 무거운 돌추가 지정 방향에 떨어진다. 비교 기준: 같은 발사 간격과 유효 명중 수의 투사체 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(적 접근을 막는 경계 돌탑) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:shock_absorber_pad",
+  "name": "충격 흡수천",
+  "concept": "내 건물로 되돌아오는 진동을 덜어 수리를 유지한다. 흡수된 충격만큼 바깥 적을 밀어내는 힘도 줄어든다.",
+  "tags": [
+    "defense",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "발동 공격과 성장물 보호가 무조건 동시에 좋아지지 않도록 교환 비용을 둔다."
+    }
+  ],
+  "effect": {
+    "trigger": "망치 충격파가 건물 가까이에서 터질 때",
+    "benefit": "내 건물로 되돌아오는 진동을 덜어 수리를 유지한다.",
+    "cost": "흡수된 충격만큼 바깥 적을 밀어내는 힘도 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:carpenter_hammer"
+  ]
+}

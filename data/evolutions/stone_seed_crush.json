@@ -1,0 +1,31 @@
+{
+  "id": "core:stone_seed_crush",
+  "name": "돌씨 파쇄추",
+  "concept": "심어 둔 돌씨를 망치로 깨뜨려 가까운 적에게 파편을 뿌린다. 대신 깨뜨린 돌씨의 장기 성장 결과를 잃어 매번 다시 심어야 한다.",
+  "tags": [
+    "weapon",
+    "melee",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "심어 둔 돌씨를 망치로 깨뜨려 가까운 적에게 파편을 뿌린다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:stone_maul",
+    "core:stone_seed"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:stone_maul",
+    "name": "돌씨 파쇄추",
+    "effect": "심어 둔 돌씨를 망치로 깨뜨려 가까운 적에게 파편을 뿌린다.",
+    "cost": "깨뜨린 돌씨의 장기 성장 결과를 잃어 매번 다시 심어야 한다."
+  }
+}

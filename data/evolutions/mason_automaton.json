@@ -1,0 +1,31 @@
+{
+  "id": "core:mason_automaton",
+  "name": "석공 자동인형",
+  "concept": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다. 대신 표식을 멀리 흩으면 이동에 시간을 쓰고 즉시 수리 응답이 늦어진다.",
+  "tags": [
+    "building",
+    "repair",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:golem_seal",
+    "core:carpenter_hammer"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:golem_seal",
+    "name": "석공 자동인형",
+    "effect": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다.",
+    "cost": "표식을 멀리 흩으면 이동에 시간을 쓰고 즉시 수리 응답이 늦어진다."
+  }
+}

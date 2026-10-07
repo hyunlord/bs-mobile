@@ -1,0 +1,28 @@
+{
+  "id": "core:fallow_rotation",
+  "name": "휴경 순번장",
+  "concept": "세 밭 중 가장 최근 수확한 밭을 자동 휴경하고, 그 비옥도를 다음 파종 때 이웃 밭에 나눈다. 대신 휴경한 밭은 한 성장 주기 동안 생산하지 않는다.",
+  "tags": [
+    "land",
+    "fertility",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "세 밭 중 가장 최근 수확한 밭을 자동 휴경하고, 그 비옥도를 다음 파종 때 이웃 밭에 나눈다."
+    }
+  ],
+  "effect": {
+    "target": "land",
+    "trigger": "이 헌장을 보유한 채 서로 인접한 밭 세 곳 중 한 곳의 수확이 끝나면",
+    "benefit": "세 밭 중 가장 최근 수확한 밭을 자동 휴경하고, 그 비옥도를 다음 파종 때 이웃 밭에 나눈다.",
+    "cost": "휴경한 밭은 한 성장 주기 동안 생산하지 않는다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 채 서로 인접한 밭 세 곳 중 한 곳의 수확이 끝나면"
+  ]
+}

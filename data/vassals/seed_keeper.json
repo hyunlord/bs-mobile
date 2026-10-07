@@ -1,0 +1,26 @@
+{
+  "id": "core:seed_keeper",
+  "name": "씨앗 관리인",
+  "concept": "남은 씨앗을 모아 한 밭에 우선 재파종한다. 대신 구제받는 밭 외의 파종은 한 작업 주기 늦어진다.",
+  "tags": [
+    "people",
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "남은 씨앗을 모아 한 밭에 우선 재파종한다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "worker",
+  "ability": {
+    "trigger": "한 구역의 씨앗 밭이 반복해서 파괴되면",
+    "effect": "남은 씨앗을 모아 한 밭에 우선 재파종한다.",
+    "cost": "구제받는 밭 외의 파종은 한 작업 주기 늦어진다."
+  }
+}

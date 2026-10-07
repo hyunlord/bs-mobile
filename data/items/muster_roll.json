@@ -1,0 +1,26 @@
+{
+  "id": "core:muster_roll",
+  "name": "징집 명부",
+  "concept": "아직 복귀 중인 사람 대신 쉬고 있는 사람을 찾는다. 여유 인력이 없으면 즉시 소집 규모가 줄어든다.",
+  "tags": [
+    "people",
+    "muster"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "귀환 중인 노동력의 중복 소모를 막고 부족한 병력을 그대로 드러낸다."
+    }
+  ],
+  "effect": {
+    "trigger": "뿔나팔이 같은 백성을 다시 부르려 할 때",
+    "benefit": "아직 복귀 중인 사람 대신 쉬고 있는 사람을 찾는다.",
+    "cost": "여유 인력이 없으면 즉시 소집 규모가 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ]
+}

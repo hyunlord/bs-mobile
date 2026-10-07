@@ -1,0 +1,31 @@
+{
+  "id": "core:lantern_pasture",
+  "name": "등불 목양로",
+  "concept": "목양 종이 가리킨 귀환로를 등불이 밝혀 흩어진 인원을 같은 길로 모은다. 대신 모이는 길이 뚜렷해 적이 그 길을 막으면 여러 인원이 동시에 지연된다.",
+  "tags": [
+    "people",
+    "control",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "목양 종이 가리킨 귀환로를 등불이 밝혀 흩어진 인원을 같은 길로 모은다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:lantern_staff",
+    "core:shepherd_bell"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:lantern_staff",
+    "name": "등불 목양로",
+    "effect": "목양 종이 가리킨 귀환로를 등불이 밝혀 흩어진 인원을 같은 길로 모은다.",
+    "cost": "모이는 길이 뚜렷해 적이 그 길을 막으면 여러 인원이 동시에 지연된다."
+  }
+}

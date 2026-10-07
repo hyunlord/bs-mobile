@@ -1,0 +1,43 @@
+{
+  "id": "core:miner_whistle",
+  "tags": [
+    "people",
+    "economy"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 30,
+    "form": "날카로운 음파가 직선으로 나아간다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "people",
+    "yield": 1,
+    "output": "돌을 캐어 교환하는 인부",
+    "primaryRoute": "gold"
+  },
+  "antiSynergy": [
+    "core:beekeeper_veil"
+  ],
+  "name": "광부 호루라기",
+  "concept": "발동: 날카로운 음파가 직선으로 나아간다. 성장 산출: 돌을 캐어 교환하는 인부. 비용: 채집 인원은 꽃 관리와 경작에 참여하지 못한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 돌을 캐어 교환하는 인부. 비용: 채집 인원은 꽃 관리와 경작에 참여하지 못한다."
+    }
+  ],
+  "floorRationale": "발동 형태: 날카로운 음파가 직선으로 나아간다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(돌을 캐어 교환하는 인부) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:beekeeper_veil",
+      "reason": "같은 식량·인원 한도에서 채집 인부와 꽃 관리 일꾼이 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}
