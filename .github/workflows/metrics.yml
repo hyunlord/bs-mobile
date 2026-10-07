@@ -9,6 +9,7 @@ permissions:
 concurrency:
   group: durable-metrics
   cancel-in-progress: false
+  queue: max
 jobs:
   archive:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_repository.full_name == github.repository
@@ -33,7 +34,10 @@ jobs:
           gh run download "$RUN_ID" --name "$ARTIFACT_NAME" --dir artifacts/incoming
           test -f artifacts/incoming/metrics.json
           if gh release view metrics-history >/dev/null 2>&1; then
-            gh release download metrics-history --pattern '*.json' --dir artifacts/durable/history
+            JSON_ASSETS=$(gh release view metrics-history --json assets --jq '[.assets[] | select(.name | endswith(".json"))] | length')
+            if [ "$JSON_ASSETS" -gt 0 ]; then
+              gh release download metrics-history --pattern '*.json' --dir artifacts/durable/history
+            fi
           fi
       - name: Render trusted generator with untrusted JSON input
         env:

@@ -7,6 +7,7 @@ mkdir -p artifacts
 command -v dotnet >/dev/null || { echo 'Install .NET 8 SDK (see README).'; exit 1; }
 npm ci --ignore-scripts
 npm test
+node --test tools/test-pr-policy.mjs
 npm run validate
 node tools/metrics.mjs --selftest
 node tools/pr-policy.mjs

@@ -1,0 +1,38 @@
+[
+  {
+    "scope": "S0 synthetic scaffold; not gameplay balance",
+    "seed": 43,
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "building",
+    "toolId": "core:seed_bag",
+    "ticks": 900,
+    "damage": 8914,
+    "growth": 1800,
+    "hash": "881CD80C791B2CAA297B64080F9E8EA17B7DE0422DAA6B832F2E290DABC98EC7"
+  },
+  {
+    "scope": "S0 synthetic scaffold; not gameplay balance",
+    "seed": 43,
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "building",
+    "toolId": "core:seed_bag",
+    "ticks": 900,
+    "damage": 8914,
+    "growth": 1800,
+    "hash": "881CD80C791B2CAA297B64080F9E8EA17B7DE0422DAA6B832F2E290DABC98EC7"
+  },
+  {
+    "scope": "S0 synthetic scaffold; not gameplay balance",
+    "seed": 43,
+    "heroId": "core:founder",
+    "estateId": "core:meadow",
+    "policy": "building",
+    "toolId": "core:seed_bag",
+    "ticks": 900,
+    "damage": 8914,
+    "growth": 1800,
+    "hash": "881CD80C791B2CAA297B64080F9E8EA17B7DE0422DAA6B832F2E290DABC98EC7"
+  }
+]

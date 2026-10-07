@@ -1,0 +1,119 @@
+
+added 5 packages, and audited 6 packages in 492ms
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> test
+> node --test tools/test-content-validator.mjs
+
+✔ valid schema and cross-record references pass (33.806792ms)
+✔ rejects damage below minimum (10.469958ms)
+✔ rejects unknown field (8.69675ms)
+✔ rejects missing growth (10.959042ms)
+✔ rejects missing activation (9.197958ms)
+✔ rejects wrong scalar type (8.645875ms)
+✔ rejects invalid namespace (7.815709ms)
+✔ rejects unresolved hero tool (8.056542ms)
+✔ rejects wrong-kind reference (8.345208ms)
+✔ rejects unresolved estate tool (8.305792ms)
+✔ rejects unresolved tuning hero (8.040542ms)
+✔ rejects unresolved anti-synergy (6.9085ms)
+✔ rejects invalid schema (6.639042ms)
+✔ rejects undeclared schema draft (7.338125ms)
+✔ rejects unknown schema keyword (6.980875ms)
+✔ recursively checks test content and global duplicate IDs (7.520959ms)
+✔ rejects content without matching schema (6.97875ms)
+✔ skin numbers fail even if schema permits arbitrary fields (7.708041ms)
+✔ valid Draft2020 unevaluatedProperties is enforced (7.542125ms)
+✔ rejects malformed JSON instead of silently skipping it (6.990916ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 270.413291
+✔ standalone missing issue (102.268416ms)
+✔ inline missing issue (100.160833ms)
+✔ block missing issue (98.557625ms)
+✔ shell missing issue (99.766625ms)
+✔ linked inline (101.896833ms)
+✔ linked shell (109.019625ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 681.952083
+
+> validate
+> node tools/validate-content.mjs
+
+{
+  "valid": true,
+  "records": 8,
+  "schemas": 4,
+  "errors": []
+}
+metrics selftest PASS
+PR policy: issue, ADR, template and comment checks passed
+PASS BCL algorithm
+PASS comments are not code
+PASS engine unused import
+PASS inactive branch engine
+PASS inactive branch numeric
+PASS engine alias
+PASS content id literal
+PASS content id escaped
+PASS content id concatenated
+PASS content id interpolated
+PASS data id without namespace
+PASS gameplay local
+PASS gameplay const
+PASS gameplay hexadecimal
+PASS gameplay negative
+PASS seeded random
+PASS unseeded random
+PASS implicit new random
+PASS shared random
+PASS clock alias
+PASS clock static import
+PASS random guid
+PASS stopwatch
+PASS exact algorithm constant exemption
+ArchitectureGuard self-tests: 24/24 passed.
+PASS repository PackageReference
+PASS repository ProjectReference
+PASS repository Reference
+PASS repository FrameworkReference
+PASS repository JSON-discovered content ID
+PASS repository inherited package reference
+ArchitectureGuard: 0 violation(s).
+  복원할 프로젝트를 확인하는 중...
+  복원할 모든 프로젝트가 최신 상태입니다.
+  SowSiege.Core -> /Users/rexxa/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+  SowSiege.Sim -> /Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+  SowSiege.Bench -> /Users/rexxa/bs-mobile/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
+  SowSiege.Tests -> /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+
+빌드했습니다.
+    경고 0개
+    오류 0개
+
+경과 시간: 00:00:00.91
+/Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll(.NETCoreApp,Version=v8.0)에 대한 테스트 실행
+VSTest 버전 17.11.1 (arm64)
+
+테스트 실행을 시작하는 중입니다. 잠시 기다려 주세요...
+지정된 패턴과 일치한 총 테스트 파일 수는 1개입니다.
+경고: 결과 파일을 덮어쓰는 중: /Users/rexxa/bs-mobile/artifacts/tests/tests.trx
+결과 파일: /Users/rexxa/bs-mobile/artifacts/tests/tests.trx
+
+통과!  - 실패:     0, 통과:     6, 건너뜀:     0, 전체:     6, 기간: 4 ms - SowSiege.Tests.dll (net8.0)
+S0 scaffold smoke: 18 policy/seed cases × 3 deterministic repeats; damage CV=0.3748277841470601; no gameplay balance claim.

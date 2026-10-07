@@ -1,0 +1,176 @@
+quality	Full gate	﻿2026-10-07T20:06:54.6484090Z ##[group]Run ./tools/check.sh
+quality	Full gate	2026-10-07T20:06:54.6484501Z [36;1m./tools/check.sh[0m
+quality	Full gate	2026-10-07T20:06:54.6803670Z shell: /usr/bin/bash -e {0}
+quality	Full gate	2026-10-07T20:06:54.6804131Z env:
+quality	Full gate	2026-10-07T20:06:54.6804464Z   DOTNET_ROOT: /usr/share/dotnet
+quality	Full gate	2026-10-07T20:06:54.6809098Z   GH_TOKEN: ***
+quality	Full gate	2026-10-07T20:06:54.6809446Z ##[endgroup]
+quality	Full gate	2026-10-07T20:06:56.6369297Z 
+quality	Full gate	2026-10-07T20:06:56.6379620Z added 5 packages, and audited 6 packages in 2s
+quality	Full gate	2026-10-07T20:06:56.6380270Z 
+quality	Full gate	2026-10-07T20:06:56.6380743Z 2 packages are looking for funding
+quality	Full gate	2026-10-07T20:06:56.6381346Z   run `npm fund` for details
+quality	Full gate	2026-10-07T20:06:56.6384121Z 
+quality	Full gate	2026-10-07T20:06:56.6384765Z found 0 vulnerabilities
+quality	Full gate	2026-10-07T20:06:56.7752683Z 
+quality	Full gate	2026-10-07T20:06:56.7753364Z > test
+quality	Full gate	2026-10-07T20:06:56.7754021Z > node --test tools/test-content-validator.mjs
+quality	Full gate	2026-10-07T20:06:56.7754383Z 
+quality	Full gate	2026-10-07T20:06:56.9133963Z TAP version 13
+quality	Full gate	2026-10-07T20:06:57.0698053Z # Subtest: valid schema and cross-record references pass
+quality	Full gate	2026-10-07T20:06:57.0704129Z ok 1 - valid schema and cross-record references pass
+quality	Full gate	2026-10-07T20:06:57.0705209Z   ---
+quality	Full gate	2026-10-07T20:06:57.0705919Z   duration_ms: 79.892284
+quality	Full gate	2026-10-07T20:06:57.0706563Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.0708538Z   ...
+quality	Full gate	2026-10-07T20:06:57.1178959Z # Subtest: rejects damage below minimum
+quality	Full gate	2026-10-07T20:06:57.1180277Z ok 2 - rejects damage below minimum
+quality	Full gate	2026-10-07T20:06:57.1181395Z   ---
+quality	Full gate	2026-10-07T20:06:57.1182472Z   duration_ms: 48.012488
+quality	Full gate	2026-10-07T20:06:57.1182951Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.1183299Z   ...
+quality	Full gate	2026-10-07T20:06:57.1467339Z # Subtest: rejects unknown field
+quality	Full gate	2026-10-07T20:06:57.1470353Z ok 3 - rejects unknown field
+quality	Full gate	2026-10-07T20:06:57.1470865Z   ---
+quality	Full gate	2026-10-07T20:06:57.1471208Z   duration_ms: 29.104706
+quality	Full gate	2026-10-07T20:06:57.1471592Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.1471916Z   ...
+quality	Full gate	2026-10-07T20:06:57.1830142Z # Subtest: rejects missing growth
+quality	Full gate	2026-10-07T20:06:57.1830893Z ok 4 - rejects missing growth
+quality	Full gate	2026-10-07T20:06:57.1837739Z   ---
+quality	Full gate	2026-10-07T20:06:57.1857730Z   duration_ms: 35.832323
+quality	Full gate	2026-10-07T20:06:57.1862217Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.1862613Z   ...
+quality	Full gate	2026-10-07T20:06:57.2080332Z # Subtest: rejects missing activation
+quality	Full gate	2026-10-07T20:06:57.2081460Z ok 5 - rejects missing activation
+quality	Full gate	2026-10-07T20:06:57.2082008Z   ---
+quality	Full gate	2026-10-07T20:06:57.2082250Z   duration_ms: 24.986916
+quality	Full gate	2026-10-07T20:06:57.2083114Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.2083464Z   ...
+quality	Full gate	2026-10-07T20:06:57.2457767Z # Subtest: rejects wrong scalar type
+quality	Full gate	2026-10-07T20:06:57.2458863Z ok 6 - rejects wrong scalar type
+quality	Full gate	2026-10-07T20:06:57.2459414Z   ---
+quality	Full gate	2026-10-07T20:06:57.2460092Z   duration_ms: 37.928078
+quality	Full gate	2026-10-07T20:06:57.2460594Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.2460870Z   ...
+quality	Full gate	2026-10-07T20:06:57.2719960Z # Subtest: rejects invalid namespace
+quality	Full gate	2026-10-07T20:06:57.2720823Z ok 7 - rejects invalid namespace
+quality	Full gate	2026-10-07T20:06:57.2721337Z   ---
+quality	Full gate	2026-10-07T20:06:57.2721730Z   duration_ms: 26.125182
+quality	Full gate	2026-10-07T20:06:57.2722025Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.2722235Z   ...
+quality	Full gate	2026-10-07T20:06:57.2926102Z # Subtest: rejects unresolved hero tool
+quality	Full gate	2026-10-07T20:06:57.2927121Z ok 8 - rejects unresolved hero tool
+quality	Full gate	2026-10-07T20:06:57.2928207Z   ---
+quality	Full gate	2026-10-07T20:06:57.2928711Z   duration_ms: 20.501047
+quality	Full gate	2026-10-07T20:06:57.2929295Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.2929726Z   ...
+quality	Full gate	2026-10-07T20:06:57.3188312Z # Subtest: rejects wrong-kind reference
+quality	Full gate	2026-10-07T20:06:57.3189073Z ok 9 - rejects wrong-kind reference
+quality	Full gate	2026-10-07T20:06:57.3190007Z   ---
+quality	Full gate	2026-10-07T20:06:57.3190408Z   duration_ms: 25.78942
+quality	Full gate	2026-10-07T20:06:57.3190831Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.3191186Z   ...
+quality	Full gate	2026-10-07T20:06:57.3423621Z # Subtest: rejects unresolved estate tool
+quality	Full gate	2026-10-07T20:06:57.3427285Z ok 10 - rejects unresolved estate tool
+quality	Full gate	2026-10-07T20:06:57.3428058Z   ---
+quality	Full gate	2026-10-07T20:06:57.3428603Z   duration_ms: 23.628715
+quality	Full gate	2026-10-07T20:06:57.3429185Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.3429711Z   ...
+quality	Full gate	2026-10-07T20:06:57.3649231Z # Subtest: rejects unresolved tuning hero
+quality	Full gate	2026-10-07T20:06:57.3650398Z ok 11 - rejects unresolved tuning hero
+quality	Full gate	2026-10-07T20:06:57.3650918Z   ---
+quality	Full gate	2026-10-07T20:06:57.3651629Z   duration_ms: 22.414819
+quality	Full gate	2026-10-07T20:06:57.3652029Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.3652368Z   ...
+quality	Full gate	2026-10-07T20:06:57.3893983Z # Subtest: rejects unresolved anti-synergy
+quality	Full gate	2026-10-07T20:06:57.3894870Z ok 12 - rejects unresolved anti-synergy
+quality	Full gate	2026-10-07T20:06:57.3895591Z   ---
+quality	Full gate	2026-10-07T20:06:57.3907449Z   duration_ms: 24.506974
+quality	Full gate	2026-10-07T20:06:57.3908103Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.3908622Z   ...
+quality	Full gate	2026-10-07T20:06:57.4127898Z # Subtest: rejects invalid schema
+quality	Full gate	2026-10-07T20:06:57.4129085Z ok 13 - rejects invalid schema
+quality	Full gate	2026-10-07T20:06:57.4129801Z   ---
+quality	Full gate	2026-10-07T20:06:57.4131605Z   duration_ms: 23.324176
+quality	Full gate	2026-10-07T20:06:57.4132261Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.4132868Z   ...
+quality	Full gate	2026-10-07T20:06:57.4348355Z # Subtest: rejects undeclared schema draft
+quality	Full gate	2026-10-07T20:06:57.4349537Z ok 14 - rejects undeclared schema draft
+quality	Full gate	2026-10-07T20:06:57.4350058Z   ---
+quality	Full gate	2026-10-07T20:06:57.4350406Z   duration_ms: 21.895167
+quality	Full gate	2026-10-07T20:06:57.4350799Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.4351026Z   ...
+quality	Full gate	2026-10-07T20:06:57.4638144Z # Subtest: rejects unknown schema keyword
+quality	Full gate	2026-10-07T20:06:57.4639166Z ok 15 - rejects unknown schema keyword
+quality	Full gate	2026-10-07T20:06:57.4639866Z   ---
+quality	Full gate	2026-10-07T20:06:57.4640807Z   duration_ms: 28.944736
+quality	Full gate	2026-10-07T20:06:57.4641235Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.4641602Z   ...
+quality	Full gate	2026-10-07T20:06:57.4918895Z # Subtest: recursively checks test content and global duplicate IDs
+quality	Full gate	2026-10-07T20:06:57.4920018Z ok 16 - recursively checks test content and global duplicate IDs
+quality	Full gate	2026-10-07T20:06:57.4920629Z   ---
+quality	Full gate	2026-10-07T20:06:57.4920970Z   duration_ms: 27.997711
+quality	Full gate	2026-10-07T20:06:57.4921216Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.4921413Z   ...
+quality	Full gate	2026-10-07T20:06:57.5117328Z # Subtest: rejects content without matching schema
+quality	Full gate	2026-10-07T20:06:57.5118677Z ok 17 - rejects content without matching schema
+quality	Full gate	2026-10-07T20:06:57.5119359Z   ---
+quality	Full gate	2026-10-07T20:06:57.5119800Z   duration_ms: 19.734386
+quality	Full gate	2026-10-07T20:06:57.5120272Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.5120610Z   ...
+quality	Full gate	2026-10-07T20:06:57.5333090Z # Subtest: skin numbers fail even if schema permits arbitrary fields
+quality	Full gate	2026-10-07T20:06:57.5333912Z ok 18 - skin numbers fail even if schema permits arbitrary fields
+quality	Full gate	2026-10-07T20:06:57.5334271Z   ---
+quality	Full gate	2026-10-07T20:06:57.5334487Z   duration_ms: 21.554112
+quality	Full gate	2026-10-07T20:06:57.5334720Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.5335412Z   ...
+quality	Full gate	2026-10-07T20:06:57.5553741Z # Subtest: valid Draft2020 unevaluatedProperties is enforced
+quality	Full gate	2026-10-07T20:06:57.5555063Z ok 19 - valid Draft2020 unevaluatedProperties is enforced
+quality	Full gate	2026-10-07T20:06:57.5555742Z   ---
+quality	Full gate	2026-10-07T20:06:57.5556248Z   duration_ms: 22.144986
+quality	Full gate	2026-10-07T20:06:57.5557077Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.5557816Z   ...
+quality	Full gate	2026-10-07T20:06:57.5767877Z # Subtest: rejects malformed JSON instead of silently skipping it
+quality	Full gate	2026-10-07T20:06:57.5769377Z ok 20 - rejects malformed JSON instead of silently skipping it
+quality	Full gate	2026-10-07T20:06:57.5770053Z   ---
+quality	Full gate	2026-10-07T20:06:57.5770448Z   duration_ms: 21.372914
+quality	Full gate	2026-10-07T20:06:57.5770890Z   type: 'test'
+quality	Full gate	2026-10-07T20:06:57.5771261Z   ...
+quality	Full gate	2026-10-07T20:06:57.5897758Z 1..20
+quality	Full gate	2026-10-07T20:06:57.5898135Z # tests 20
+quality	Full gate	2026-10-07T20:06:57.5898494Z # suites 0
+quality	Full gate	2026-10-07T20:06:57.5899036Z # pass 20
+quality	Full gate	2026-10-07T20:06:57.5899558Z # fail 0
+quality	Full gate	2026-10-07T20:06:57.5900135Z # cancelled 0
+quality	Full gate	2026-10-07T20:06:57.5900611Z # skipped 0
+quality	Full gate	2026-10-07T20:06:57.5901141Z # todo 0
+quality	Full gate	2026-10-07T20:06:57.5901740Z # duration_ms 725.738725
+quality	Full gate	2026-10-07T20:06:57.6975948Z 
+quality	Full gate	2026-10-07T20:06:57.6977219Z > validate
+quality	Full gate	2026-10-07T20:06:57.6977864Z > node tools/validate-content.mjs
+quality	Full gate	2026-10-07T20:06:57.6978248Z 
+quality	Full gate	2026-10-07T20:06:57.8462830Z {
+quality	Full gate	2026-10-07T20:06:57.8463401Z   "valid": false,
+quality	Full gate	2026-10-07T20:06:57.8463908Z   "records": 7,
+quality	Full gate	2026-10-07T20:06:57.8464305Z   "schemas": 4,
+quality	Full gate	2026-10-07T20:06:57.8464741Z   "errors": [
+quality	Full gate	2026-10-07T20:06:57.8465479Z     "tools/seed_bag.json: schema violation: data/activation/damage must be integer"
+quality	Full gate	2026-10-07T20:06:57.8466175Z   ]
+quality	Full gate	2026-10-07T20:06:57.8466549Z }
+quality	Full gate	2026-10-07T20:06:57.8703747Z ##[error]Process completed with exit code 1.
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	﻿2026-10-07T20:06:57.8869632Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8870070Z with:
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8870338Z   name: evidence-0b6eb2ce39819346fa6593db59a3e89bc71b8b29
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8870671Z   path: artifacts/
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8870887Z   retention-days: 90
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8871126Z   if-no-files-found: error
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8871369Z   compression-level: 6
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8871581Z   overwrite: false
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8871797Z   include-hidden-files: false
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8872041Z env:
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8872237Z   DOTNET_ROOT: /usr/share/dotnet
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:57.8872480Z ##[endgroup]
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:58.0616215Z (node:2646) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:58.0618721Z (Use `node --trace-deprecation ...` to show where the warning was created)
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:06:58.0683694Z ##[error]No files were found with the provided path: artifacts/. No artifacts will be uploaded.

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="b8574e54-83fd-4f84-9ef1-864312af2849" name="@runnervmmprz5 2026-10-07 20:05:18" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-07T20:05:18.5328053+00:00" queuing="2026-10-07T20:05:18.5328053+00:00" start="2026-10-07T20:05:17.9646849+00:00" finish="2026-10-07T20:05:18.5387026+00:00" />
+  <TestSettings name="default" id="ca7f00d2-6be8-4ae9-a4cc-2cb084ed36cc">
+    <Deployment runDeploymentRoot="_runnervmmprz5_2026-10-07_20_05_18" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="edf79835-2127-43ee-9a56-a8407487e52b" testId="d46500b9-14f3-88c9-e769-88e334d0c02b" testName="SowSiege.Tests.SimulationTests.TuningChangesActualDamage" computerName="runnervmmprz5" duration="00:00:00.0005948" startTime="2026-10-07T20:05:18.4348746+00:00" endTime="2026-10-07T20:05:18.4348747+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edf79835-2127-43ee-9a56-a8407487e52b" />
+    <UnitTestResult executionId="617a0c08-716f-41b0-b8cd-5292846f377e" testId="92f52f71-8f43-c9a5-31a1-0a637ce6c70d" testName="SowSiege.Tests.SimulationTests.BothHeroEstateCombinationsCompleteWithActivationAndGrowth(hero: &quot;core:founder&quot;, estate: &quot;core:meadow&quot;)" computerName="runnervmmprz5" duration="00:00:00.0007097" startTime="2026-10-07T20:05:18.4320322+00:00" endTime="2026-10-07T20:05:18.4320323+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="617a0c08-716f-41b0-b8cd-5292846f377e" />
+    <UnitTestResult executionId="f956aa6c-f0c6-46f5-b8dd-af8eff6def12" testId="406e47aa-76f8-b6ed-566e-8bc59e28989a" testName="SowSiege.Tests.SimulationTests.DifferentSeedsChangeObservableState" computerName="runnervmmprz5" duration="00:00:00.0028771" startTime="2026-10-07T20:05:18.4323715+00:00" endTime="2026-10-07T20:05:18.4323716+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f956aa6c-f0c6-46f5-b8dd-af8eff6def12" />
+    <UnitTestResult executionId="85663c98-bd7e-40e0-97d6-97c1784e3468" testId="bba42167-6ee3-c2b9-2990-00def44651d2" testName="SowSiege.Tests.SimulationTests.SameSeedProducesSameHashThreeTimes" computerName="runnervmmprz5" duration="00:00:00.0020806" startTime="2026-10-07T20:05:18.4342135+00:00" endTime="2026-10-07T20:05:18.4342136+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="85663c98-bd7e-40e0-97d6-97c1784e3468" />
+    <UnitTestResult executionId="f177dbf9-552a-4f24-9893-12eb51638426" testId="a782429c-3268-3a96-dd63-696a815b37a4" testName="SowSiege.Tests.SimulationTests.BothHeroEstateCombinationsCompleteWithActivationAndGrowth(hero: &quot;test:scout&quot;, estate: &quot;test:moor&quot;)" computerName="runnervmmprz5" duration="00:00:00.0449248" startTime="2026-10-07T20:05:18.4289428+00:00" endTime="2026-10-07T20:05:18.4289624+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f177dbf9-552a-4f24-9893-12eb51638426" />
+    <UnitTestResult executionId="ac1d1706-dbd1-4c8a-86f5-f70ceeecc48b" testId="a9772dae-5d9e-d673-f615-c1a7642275ec" testName="SowSiege.Tests.SimulationTests.EveryStartingToolAndSynergyReferenceExists" computerName="runnervmmprz5" duration="00:00:00.0012359" startTime="2026-10-07T20:05:18.4361934+00:00" endTime="2026-10-07T20:05:18.4361935+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ac1d1706-dbd1-4c8a-86f5-f70ceeecc48b" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SowSiege.Tests.SimulationTests.SameSeedProducesSameHashThreeTimes" storage="/home/runner/work/bs-mobile/bs-mobile/core/tests/sowsiege.tests/bin/release/net8.0/sowsiege.tests.dll" id="bba42167-6ee3-c2b9-2990-00def44651d2">
+      <Execution id="85663c98-bd7e-40e0-97d6-97c1784e3468" />
+      <TestMethod codeBase="/home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SowSiege.Tests.SimulationTests" name="SameSeedProducesSameHashThreeTimes" />
+    </UnitTest>
+    <UnitTest name="SowSiege.Tests.SimulationTests.BothHeroEstateCombinationsCompleteWithActivationAndGrowth(hero: &quot;test:scout&quot;, estate: &quot;test:moor&quot;)" storage="/home/runner/work/bs-mobile/bs-mobile/core/tests/sowsiege.tests/bin/release/net8.0/sowsiege.tests.dll" id="a782429c-3268-3a96-dd63-696a815b37a4">
+      <Execution id="f177dbf9-552a-4f24-9893-12eb51638426" />
+      <TestMethod codeBase="/home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SowSiege.Tests.SimulationTests" name="BothHeroEstateCombinationsCompleteWithActivationAndGrowth" />
+    </UnitTest>
+    <UnitTest name="SowSiege.Tests.SimulationTests.DifferentSeedsChangeObservableState" storage="/home/runner/work/bs-mobile/bs-mobile/core/tests/sowsiege.tests/bin/release/net8.0/sowsiege.tests.dll" id="406e47aa-76f8-b6ed-566e-8bc59e28989a">
+      <Execution id="f956aa6c-f0c6-46f5-b8dd-af8eff6def12" />
+      <TestMethod codeBase="/home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SowSiege.Tests.SimulationTests" name="DifferentSeedsChangeObservableState" />
+    </UnitTest>
+    <UnitTest name="SowSiege.Tests.SimulationTests.BothHeroEstateCombinationsCompleteWithActivationAndGrowth(hero: &quot;core:founder&quot;, estate: &quot;core:meadow&quot;)" storage="/home/runner/work/bs-mobile/bs-mobile/core/tests/sowsiege.tests/bin/release/net8.0/sowsiege.tests.dll" id="92f52f71-8f43-c9a5-31a1-0a637ce6c70d">
+      <Execution id="617a0c08-716f-41b0-b8cd-5292846f377e" />
+      <TestMethod codeBase="/home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SowSiege.Tests.SimulationTests" name="BothHeroEstateCombinationsCompleteWithActivationAndGrowth" />
+    </UnitTest>
+    <UnitTest name="SowSiege.Tests.SimulationTests.EveryStartingToolAndSynergyReferenceExists" storage="/home/runner/work/bs-mobile/bs-mobile/core/tests/sowsiege.tests/bin/release/net8.0/sowsiege.tests.dll" id="a9772dae-5d9e-d673-f615-c1a7642275ec">
+      <Execution id="ac1d1706-dbd1-4c8a-86f5-f70ceeecc48b" />
+      <TestMethod codeBase="/home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SowSiege.Tests.SimulationTests" name="EveryStartingToolAndSynergyReferenceExists" />
+    </UnitTest>
+    <UnitTest name="SowSiege.Tests.SimulationTests.TuningChangesActualDamage" storage="/home/runner/work/bs-mobile/bs-mobile/core/tests/sowsiege.tests/bin/release/net8.0/sowsiege.tests.dll" id="d46500b9-14f3-88c9-e769-88e334d0c02b">
+      <Execution id="edf79835-2127-43ee-9a56-a8407487e52b" />
+      <TestMethod codeBase="/home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="SowSiege.Tests.SimulationTests" name="TuningChangesActualDamage" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d46500b9-14f3-88c9-e769-88e334d0c02b" executionId="edf79835-2127-43ee-9a56-a8407487e52b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="92f52f71-8f43-c9a5-31a1-0a637ce6c70d" executionId="617a0c08-716f-41b0-b8cd-5292846f377e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="406e47aa-76f8-b6ed-566e-8bc59e28989a" executionId="f956aa6c-f0c6-46f5-b8dd-af8eff6def12" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bba42167-6ee3-c2b9-2990-00def44651d2" executionId="85663c98-bd7e-40e0-97d6-97c1784e3468" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a782429c-3268-3a96-dd63-696a815b37a4" executionId="f177dbf9-552a-4f24-9893-12eb51638426" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a9772dae-5d9e-d673-f615-c1a7642275ec" executionId="ac1d1706-dbd1-4c8a-86f5-f70ceeecc48b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="6" executed="6" passed="6" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.31)
+[xUnit.net 00:00:00.04]   Discovering: SowSiege.Tests
+[xUnit.net 00:00:00.07]   Discovered:  SowSiege.Tests
+[xUnit.net 00:00:00.08]   Starting:    SowSiege.Tests
+[xUnit.net 00:00:00.17]   Finished:    SowSiege.Tests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

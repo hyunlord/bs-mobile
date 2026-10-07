@@ -1,0 +1,107 @@
+
+added 5 packages, and audited 6 packages in 472ms
+
+2 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> test
+> node --test tools/test-content-validator.mjs
+
+✔ valid schema and cross-record references pass (33.330625ms)
+✔ rejects damage below minimum (9.644625ms)
+✔ rejects unknown field (10.971958ms)
+✔ rejects missing growth (9.059041ms)
+✔ rejects missing activation (8.733125ms)
+✔ rejects wrong scalar type (7.810791ms)
+✔ rejects invalid namespace (8.179167ms)
+✔ rejects unresolved hero tool (7.623083ms)
+✔ rejects wrong-kind reference (7.628333ms)
+✔ rejects unresolved estate tool (7.474208ms)
+✔ rejects unresolved tuning hero (7.167333ms)
+✔ rejects unresolved anti-synergy (6.8245ms)
+✔ rejects invalid schema (6.857875ms)
+✔ rejects undeclared schema draft (7.1825ms)
+✔ rejects unknown schema keyword (7.395583ms)
+✔ recursively checks test content and global duplicate IDs (7.927625ms)
+✔ rejects content without matching schema (6.833834ms)
+✔ skin numbers fail even if schema permits arbitrary fields (8.301084ms)
+✔ valid Draft2020 unevaluatedProperties is enforced (8.772542ms)
+✔ rejects malformed JSON instead of silently skipping it (6.875541ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 265.126459
+
+> validate
+> node tools/validate-content.mjs
+
+{
+  "valid": true,
+  "records": 8,
+  "schemas": 4,
+  "errors": []
+}
+metrics selftest PASS
+PR policy: issue, ADR, template and comment checks passed
+PASS BCL algorithm
+PASS comments are not code
+PASS engine unused import
+PASS inactive branch engine
+PASS inactive branch numeric
+PASS engine alias
+PASS content id literal
+PASS content id escaped
+PASS content id concatenated
+PASS content id interpolated
+PASS data id without namespace
+PASS gameplay local
+PASS gameplay const
+PASS gameplay hexadecimal
+PASS gameplay negative
+PASS seeded random
+PASS unseeded random
+PASS implicit new random
+PASS shared random
+PASS clock alias
+PASS clock static import
+PASS random guid
+PASS stopwatch
+PASS exact algorithm constant exemption
+ArchitectureGuard self-tests: 24/24 passed.
+PASS repository PackageReference
+PASS repository ProjectReference
+PASS repository Reference
+PASS repository FrameworkReference
+PASS repository JSON-discovered content ID
+PASS repository inherited package reference
+ArchitectureGuard: 0 violation(s).
+  복원할 프로젝트를 확인하는 중...
+  /private/tmp/bs-mobile-runbook-trial/core/src/SowSiege.Sim/SowSiege.Sim.csproj을(를) 30밀리초 동안 복원했습니다.
+  /private/tmp/bs-mobile-runbook-trial/core/src/SowSiege.Core/SowSiege.Core.csproj을(를) 29밀리초 동안 복원했습니다.
+  /private/tmp/bs-mobile-runbook-trial/core/tests/SowSiege.Tests/SowSiege.Tests.csproj을(를) 95밀리초 동안 복원했습니다.
+  /private/tmp/bs-mobile-runbook-trial/core/bench/SowSiege.Bench/SowSiege.Bench.csproj을(를) 106밀리초 동안 복원했습니다.
+  SowSiege.Core -> /private/tmp/bs-mobile-runbook-trial/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+  SowSiege.Sim -> /private/tmp/bs-mobile-runbook-trial/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+  SowSiege.Tests -> /private/tmp/bs-mobile-runbook-trial/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+  SowSiege.Bench -> /private/tmp/bs-mobile-runbook-trial/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
+
+빌드했습니다.
+    경고 0개
+    오류 0개
+
+경과 시간: 00:00:00.89
+/private/tmp/bs-mobile-runbook-trial/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll(.NETCoreApp,Version=v8.0)에 대한 테스트 실행
+VSTest 버전 17.11.1 (arm64)
+
+테스트 실행을 시작하는 중입니다. 잠시 기다려 주세요...
+지정된 패턴과 일치한 총 테스트 파일 수는 1개입니다.
+결과 파일: /private/tmp/bs-mobile-runbook-trial/artifacts/tests/tests.trx
+
+통과!  - 실패:     0, 통과:     6, 건너뜀:     0, 전체:     6, 기간: 4 ms - SowSiege.Tests.dll (net8.0)
+S0 scaffold smoke: 18 policy/seed cases × 3 deterministic repeats; damage CV=0.3748277841470601; no gameplay balance claim.

@@ -1,0 +1,26 @@
+{
+  "artifact": "docs/metrics/index.html",
+  "sha256": "0ac8105740bc885bb16b72c0f61c75ff125c6b27a694f36ad15a25971f1c93c7",
+  "sourceRecord": "history/aafd7b6f671756d1b6f273876a50f02a996e8983-7b856b2eb41fca55.json",
+  "sourceRecordSha256": "e9317ec951533513dd553ef77ef51e97b5d3b5547549afb4111f92c7c3d14c68",
+  "commit": "aafd7b6f671756d1b6f273876a50f02a996e8983",
+  "runtime": {
+    "framework": "8.0.31",
+    "os": "Ubuntu 24.04.5 LTS",
+    "architecture": "X64",
+    "stopwatchFrequency": 1000000000
+  },
+  "scope": "synthetic-scaffold",
+  "balanceDispersion": null,
+  "scaffoldDamageCv": 0.3748277841470601,
+  "keyboardFocusedLink": true,
+  "rawJsonOpened": true,
+  "browserVersion": "153.0.8010.12",
+  "errors": [],
+  "checkedAt": "2026-10-07T20:10:26.243Z",
+  "limitations": [
+    "One recorded CI commit; multi-commit accumulation validated separately with temporary test fixtures.",
+    "S0 scaffold timing and policy dispersion are not gameplay balance or mobile device measurements.",
+    "No Lighthouse scores claimed."
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "schema",
+  "expected": "schema violation",
+  "issue": 8,
+  "issueUrl": "https://github.com/hyunlord/bs-mobile/issues/8",
+  "branch": "test/s0-negative-schema",
+  "directory": "/tmp/bs-mobile-negative-schema",
+  "url": "https://github.com/hyunlord/bs-mobile/pull/9",
+  "pr": 9,
+  "sha": "cbc7252d82fb52515b5d53fd4759c61a1c411c6e",
+  "run": "37679536322",
+  "beforeClose": {
+    "headRefOid": "cbc7252d82fb52515b5d53fd4759c61a1c411c6e",
+    "mergeStateStatus": "BLOCKED",
+    "mergedAt": null,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T20:07:00Z",
+        "conclusion": "FAILURE",
+        "detailsUrl": "https://github.com/hyunlord/bs-mobile/actions/runs/37679536322/job/112991701010",
+        "name": "quality",
+        "startedAt": "2026-10-07T20:06:46Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-07T20:06:54Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/hyunlord/bs-mobile/actions/runs/37679536322/job/112991700693",
+        "name": "secrets",
+        "startedAt": "2026-10-07T20:06:46Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      }
+    ],
+    "url": "https://github.com/hyunlord/bs-mobile/pull/9"
+  },
+  "expectedDiagnosticObserved": true,
+  "afterClose": {
+    "closedAt": "2026-10-07T20:09:28Z",
+    "headRefOid": "cbc7252d82fb52515b5d53fd4759c61a1c411c6e",
+    "mergedAt": null,
+    "state": "CLOSED",
+    "url": "https://github.com/hyunlord/bs-mobile/pull/9"
+  }
+}

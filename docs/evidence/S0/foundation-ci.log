@@ -1,0 +1,643 @@
+secrets	Set up job	﻿2026-10-07T20:04:39.9778251Z Current runner version: '2.337.0'
+secrets	Set up job	2026-10-07T20:04:39.9804901Z ##[group]Runner Image Provisioner
+secrets	Set up job	2026-10-07T20:04:39.9805782Z Hosted Compute Agent
+secrets	Set up job	2026-10-07T20:04:39.9806466Z Version: 20261002.596
+secrets	Set up job	2026-10-07T20:04:39.9807097Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+secrets	Set up job	2026-10-07T20:04:39.9807842Z Build Date: 2026-10-02T22:28:27Z
+secrets	Set up job	2026-10-07T20:04:39.9808577Z Worker ID: {0d5ae370-f61a-4c2a-bd81-1efc0063de0c}
+secrets	Set up job	2026-10-07T20:04:39.9809284Z Region: westus
+secrets	Set up job	2026-10-07T20:04:39.9809866Z Cloud: Azure
+secrets	Set up job	2026-10-07T20:04:39.9810393Z ##[endgroup]
+secrets	Set up job	2026-10-07T20:04:39.9812004Z ##[group]Operating System
+secrets	Set up job	2026-10-07T20:04:39.9812718Z Ubuntu
+secrets	Set up job	2026-10-07T20:04:39.9813287Z 24.04.5
+secrets	Set up job	2026-10-07T20:04:39.9814110Z LTS
+secrets	Set up job	2026-10-07T20:04:39.9814684Z ##[endgroup]
+secrets	Set up job	2026-10-07T20:04:39.9815225Z ##[group]Runner Image
+secrets	Set up job	2026-10-07T20:04:39.9815932Z Image: ubuntu-24.04
+secrets	Set up job	2026-10-07T20:04:39.9816593Z Version: 20261004.327.1
+secrets	Set up job	2026-10-07T20:04:39.9817692Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+secrets	Set up job	2026-10-07T20:04:39.9819445Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+secrets	Set up job	2026-10-07T20:04:39.9820564Z ##[endgroup]
+secrets	Set up job	2026-10-07T20:04:39.9821782Z ##[group]GITHUB_TOKEN Permissions
+secrets	Set up job	2026-10-07T20:04:39.9823698Z Contents: read
+secrets	Set up job	2026-10-07T20:04:39.9824617Z Metadata: read
+secrets	Set up job	2026-10-07T20:04:39.9825426Z PullRequests: read
+secrets	Set up job	2026-10-07T20:04:39.9826069Z ##[endgroup]
+secrets	Set up job	2026-10-07T20:04:39.9828258Z Secret source: Actions
+secrets	Set up job	2026-10-07T20:04:39.9829415Z Cache mode: write
+secrets	Set up job	2026-10-07T20:04:39.9830166Z Prepare workflow directory
+secrets	Set up job	2026-10-07T20:04:40.0181608Z Prepare all required actions
+secrets	Set up job	2026-10-07T20:04:40.0256843Z Getting action download info
+secrets	Set up job	2026-10-07T20:04:40.4260246Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+secrets	Set up job	2026-10-07T20:04:40.5136404Z Download action repository 'gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc' (SHA:dcedce43c6f43de0b836d1fe38946645c9c638dc)
+secrets	Set up job	2026-10-07T20:04:40.9902766Z Complete job name: secrets
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	﻿2026-10-07T20:04:41.0790926Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0792067Z with:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0792534Z   fetch-depth: 0
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0793020Z   persist-credentials: false
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0793568Z   repository: hyunlord/bs-mobile
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0797578Z   token: ***
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0798050Z   ssh-strict: true
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0798512Z   ssh-user: git
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0798942Z   clean: true
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0799405Z   sparse-checkout-cone-mode: true
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0799936Z   fetch-tags: false
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0800382Z   show-progress: true
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0800831Z   lfs: false
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0801257Z   submodules: false
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0801710Z   set-safe-directory: true
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0802225Z   allow-unsafe-pr-checkout: false
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.0803075Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1868695Z Syncing repository: hyunlord/bs-mobile
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1870967Z ##[group]Getting Git version info
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1872181Z Working directory is '/home/runner/work/bs-mobile/bs-mobile'
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1873475Z [command]/usr/bin/git version
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1917034Z git version 2.55.0
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1958243Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1969002Z Temporarily overriding HOME='/home/runner/work/_temp/68a0ee97-aa88-4dd4-a970-f3512bdc26a6' before making global git config changes
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1971547Z Adding repository directory to the temporary git global config as a safe directory
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1977664Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bs-mobile/bs-mobile
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2030101Z Deleting the contents of '/home/runner/work/bs-mobile/bs-mobile'
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2034963Z ##[group]Initializing the repository
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2040113Z [command]/usr/bin/git init /home/runner/work/bs-mobile/bs-mobile
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2164085Z hint: Using 'master' as the name for the initial branch. This default branch name
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2167351Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2169587Z hint: to use in all of your new repositories, which will suppress this warning,
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2171152Z hint: call:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2172069Z hint:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2173290Z hint: 	git config --global init.defaultBranch <name>
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2175085Z hint:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2176484Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2178502Z hint: 'development'. The just-created branch can be renamed via this command:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2180116Z hint:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2181074Z hint: 	git branch -m <name>
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2182084Z hint:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2183345Z hint: Disable this message with "git config set advice.defaultBranchName false"
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2186263Z Initialized empty Git repository in /home/runner/work/bs-mobile/bs-mobile/.git/
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2188631Z [command]/usr/bin/git remote add origin https://github.com/hyunlord/bs-mobile
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2235655Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2236899Z ##[group]Disabling automatic garbage collection
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2239765Z [command]/usr/bin/git config --local gc.auto 0
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2279093Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2280260Z ##[group]Setting up auth
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2286904Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2334422Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2710598Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2752844Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.2989529Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.3027249Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.3262110Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.3303382Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.3304679Z ##[group]Fetching the repository
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.3315321Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +7a3b1fc91335351d00ae67d37e0135539eea35f9:refs/remotes/pull/3/merge
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8368013Z From https://github.com/hyunlord/bs-mobile
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8370234Z  * [new branch]      infra/s0-foundation                      -> origin/infra/s0-foundation
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8372135Z  * [new branch]      main                                     -> origin/main
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8374209Z  * [new ref]         7a3b1fc91335351d00ae67d37e0135539eea35f9 -> pull/3/merge
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8377821Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8379407Z ##[group]Determining the checkout info
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8381412Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8386560Z [command]/usr/bin/git sparse-checkout disable
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8445480Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8486408Z ##[group]Checking out the ref
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8491167Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/3/merge
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8598762Z Note: switching to 'refs/remotes/pull/3/merge'.
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8599998Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8600919Z You are in 'detached HEAD' state. You can look around, make experimental
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8602642Z changes and commit them, and you can discard any commits you make in this
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8604745Z state without impacting any branches by switching back to a branch.
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8605553Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8606164Z If you want to create a new branch to retain commits you create, you may
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8607883Z do so (now or later) by using -c with the switch command. Example:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8608637Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8608971Z   git switch -c <new-branch-name>
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8609526Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8609854Z Or undo this operation with:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8610402Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8610686Z   git switch -
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8611096Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8611734Z Turn off this advice by setting config variable advice.detachedHead to false
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8612753Z 
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8614156Z HEAD is now at 7a3b1fc Merge aafd7b6f671756d1b6f273876a50f02a996e8983 into 7c4c4e751aa1b40682be404d8fef848e9d2a47e5
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8617805Z ##[endgroup]
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8653646Z [command]/usr/bin/git log -1 --format=%H
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8682877Z 7a3b1fc91335351d00ae67d37e0135539eea35f9
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8693247Z ##[group]Removing auth
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8698041Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8733410Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8964240Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.8996647Z http.https://github.com/.extraheader
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.9004497Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.9044439Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.9272892Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.9307086Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+secrets	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.9558791Z ##[endgroup]
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	﻿2026-10-07T20:04:41.9908901Z ##[group]Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:41.9911792Z env:
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:41.9926348Z   GITHUB_TOKEN: ***
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:41.9927926Z ##[endgroup]
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.1802964Z (node:2358) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.1807948Z (Use `node --trace-deprecation ...` to show where the warning was created)
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.1931070Z (node:2358) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.4248162Z [hyunlord] is an individual user. No license key is required.
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.4250225Z gitleaks version: 8.24.3
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.4251758Z Version to install: 8.24.3 (target directory: /tmp/gitleaks-8.24.3)
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:42.6970425Z Cache hit for: gitleaks-cache-8.24.3-linux-x64
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.0174926Z Received 1519336 of 5713640 (26.6%), 1.4 MBs/sec
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.3742048Z Received 5713640 of 5713640 (100.0%), 4.0 MBs/sec
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.3744256Z Cache Size: ~5 MB (5713640 B)
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.3777078Z [command]/usr/bin/tar -xf /home/runner/work/_temp/a19fd9ac-932c-428a-86e4-3605aad838b4/cache.tzst -P -C /home/runner/work/bs-mobile/bs-mobile --use-compress-program unzstd
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.4112835Z Cache restored successfully
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.4118741Z Gitleaks restored from cache
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.4122397Z event type: pull_request
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.7322604Z gitleaks cmd: gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges --first-parent 6028b08721d9e49e967677a8df9a685193f7b616^..aafd7b6f671756d1b6f273876a50f02a996e8983
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:44.7339828Z [command]/tmp/gitleaks-8.24.3/gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=results.sarif --log-level=debug --log-opts=--no-merges --first-parent 6028b08721d9e49e967677a8df9a685193f7b616^..aafd7b6f671756d1b6f273876a50f02a996e8983
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0021623Z 
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0022368Z     ○
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0022892Z     │╲
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0023275Z     │ ○
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0023661Z     ○ ░
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0025344Z     ░    gitleaks
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0025681Z 
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0026194Z [90m8:04PM[0m DBG using github.com/wasilibs/go-re2 regex engine
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.0027327Z [90m8:04PM[0m DBG no gitleaks config found in path .gitleaks.toml, using default gitleaks config
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1402690Z [90m8:04PM[0m DBG executing: /usr/bin/git -C . log -p -U0 --no-merges --first-parent 6028b08721d9e49e967677a8df9a685193f7b616^..aafd7b6f671756d1b6f273876a50f02a996e8983
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1452870Z [90m8:04PM[0m DBG SCM platform parsed from host [36mhost=[0mgithub.com [36mplatform=[0mgithub
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1704257Z [90m8:04PM[0m [32mINF[0m [1m3 commits scanned.[0m
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1705562Z [90m8:04PM[0m DBG Note: this number might be smaller than expected due to commits with no additions
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1706401Z [90m8:04PM[0m [32mINF[0m [1mscanned ~157138 bytes (157.14 KB) in 169ms[0m
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1706965Z [90m8:04PM[0m [32mINF[0m [1mno leaks found[0m
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1737734Z Artifact name is valid!
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.1740167Z Root directory input is valid!
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.5838921Z Beginning upload of artifact content to blob storage
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.8730866Z Uploaded bytes 6768
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.9486716Z Finished uploading artifact content to blob storage!
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.9487905Z SHA256 digest of uploaded artifact zip is 047450908c077188799273e62c46487728dddd6503eb3098706dc955a554379f
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:45.9489327Z Finalizing artifact upload
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:46.3917066Z Artifact gitleaks-results.sarif.zip successfully finalized. Artifact ID 11507807409
+secrets	Run gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc	2026-10-07T20:04:46.3934863Z ✅ No leaks detected
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	﻿2026-10-07T20:04:46.4195833Z Post job cleanup.
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5111219Z [command]/usr/bin/git version
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5160378Z git version 2.55.0
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5202184Z Temporarily overriding HOME='/home/runner/work/_temp/caa34814-e33e-48ab-90e2-ac71a179cb75' before making global git config changes
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5203549Z Adding repository directory to the temporary git global config as a safe directory
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5209242Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bs-mobile/bs-mobile
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5257743Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5305061Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5574776Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5617243Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5906975Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+secrets	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:46.5956928Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+secrets	Complete job	﻿2026-10-07T20:04:46.6462668Z Cleaning up orphan processes
+secrets	Complete job	2026-10-07T20:04:46.6818888Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262, gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+quality	Set up job	﻿2026-10-07T20:04:39.1307084Z Current runner version: '2.337.0'
+quality	Set up job	2026-10-07T20:04:39.1335065Z ##[group]Runner Image Provisioner
+quality	Set up job	2026-10-07T20:04:39.1336111Z Hosted Compute Agent
+quality	Set up job	2026-10-07T20:04:39.1336794Z Version: 20261002.596
+quality	Set up job	2026-10-07T20:04:39.1337514Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+quality	Set up job	2026-10-07T20:04:39.1338428Z Build Date: 2026-10-02T22:28:27Z
+quality	Set up job	2026-10-07T20:04:39.1339236Z Worker ID: {c85b1fc6-0f1e-42ed-a969-d420f140c2fc}
+quality	Set up job	2026-10-07T20:04:39.1340065Z Region: centralus
+quality	Set up job	2026-10-07T20:04:39.1340706Z Cloud: Azure
+quality	Set up job	2026-10-07T20:04:39.1341305Z ##[endgroup]
+quality	Set up job	2026-10-07T20:04:39.1343129Z ##[group]Operating System
+quality	Set up job	2026-10-07T20:04:39.1344039Z Ubuntu
+quality	Set up job	2026-10-07T20:04:39.1344621Z 24.04.5
+quality	Set up job	2026-10-07T20:04:39.1345102Z LTS
+quality	Set up job	2026-10-07T20:04:39.1345591Z ##[endgroup]
+quality	Set up job	2026-10-07T20:04:39.1346051Z ##[group]Runner Image
+quality	Set up job	2026-10-07T20:04:39.1346605Z Image: ubuntu-24.04
+quality	Set up job	2026-10-07T20:04:39.1347055Z Version: 20261004.327.1
+quality	Set up job	2026-10-07T20:04:39.1347934Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+quality	Set up job	2026-10-07T20:04:39.1349341Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+quality	Set up job	2026-10-07T20:04:39.1350146Z ##[endgroup]
+quality	Set up job	2026-10-07T20:04:39.1351088Z ##[group]GITHUB_TOKEN Permissions
+quality	Set up job	2026-10-07T20:04:39.1352868Z Contents: read
+quality	Set up job	2026-10-07T20:04:39.1353388Z Issues: read
+quality	Set up job	2026-10-07T20:04:39.1354245Z Metadata: read
+quality	Set up job	2026-10-07T20:04:39.1354699Z ##[endgroup]
+quality	Set up job	2026-10-07T20:04:39.1356421Z Secret source: Actions
+quality	Set up job	2026-10-07T20:04:39.1357195Z Cache mode: write
+quality	Set up job	2026-10-07T20:04:39.1357767Z Prepare workflow directory
+quality	Set up job	2026-10-07T20:04:39.1652549Z Prepare all required actions
+quality	Set up job	2026-10-07T20:04:39.1692355Z Getting action download info
+quality	Set up job	2026-10-07T20:04:39.4190704Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+quality	Set up job	2026-10-07T20:04:39.5035038Z Download action repository 'actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9' (SHA:67a3573c9a986a3f9c594539f4ab511d57bb3ce9)
+quality	Set up job	2026-10-07T20:04:40.0786242Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+quality	Set up job	2026-10-07T20:04:40.1732171Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+quality	Set up job	2026-10-07T20:04:40.4133333Z Complete job name: quality
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	﻿2026-10-07T20:04:40.4841646Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4843170Z with:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4844138Z   fetch-depth: 0
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4845057Z   persist-credentials: false
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4846028Z   repository: hyunlord/bs-mobile
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4853150Z   token: ***
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4854145Z   ssh-strict: true
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4855000Z   ssh-user: git
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4855835Z   clean: true
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4856785Z   sparse-checkout-cone-mode: true
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4857784Z   fetch-tags: false
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4858681Z   show-progress: true
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4859577Z   lfs: false
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4860384Z   submodules: false
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4861329Z   set-safe-directory: true
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4862276Z   allow-unsafe-pr-checkout: false
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.4863451Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5743093Z Syncing repository: hyunlord/bs-mobile
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5746208Z ##[group]Getting Git version info
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5747788Z Working directory is '/home/runner/work/bs-mobile/bs-mobile'
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5750406Z [command]/usr/bin/git version
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5817496Z git version 2.55.0
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5838424Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5851560Z Temporarily overriding HOME='/home/runner/work/_temp/c2e6f84a-21fc-4097-af45-6d446102dcdf' before making global git config changes
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5854638Z Adding repository directory to the temporary git global config as a safe directory
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5857268Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bs-mobile/bs-mobile
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5897795Z Deleting the contents of '/home/runner/work/bs-mobile/bs-mobile'
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5905735Z ##[group]Initializing the repository
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5912123Z [command]/usr/bin/git init /home/runner/work/bs-mobile/bs-mobile
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5991115Z hint: Using 'master' as the name for the initial branch. This default branch name
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5992959Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5995189Z hint: to use in all of your new repositories, which will suppress this warning,
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5997488Z hint: call:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5998585Z hint:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.5999959Z hint: 	git config --global init.defaultBranch <name>
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6001189Z hint:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6002367Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6004543Z hint: 'development'. The just-created branch can be renamed via this command:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6006475Z hint:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6007380Z hint: 	git branch -m <name>
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6008331Z hint:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6009484Z hint: Disable this message with "git config set advice.defaultBranchName false"
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6012814Z Initialized empty Git repository in /home/runner/work/bs-mobile/bs-mobile/.git/
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6017682Z [command]/usr/bin/git remote add origin https://github.com/hyunlord/bs-mobile
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6049049Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6051047Z ##[group]Disabling automatic garbage collection
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6052741Z [command]/usr/bin/git config --local gc.auto 0
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6080446Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6082397Z ##[group]Setting up auth
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6085911Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6112881Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6396969Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6425460Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6596588Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6621344Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6779421Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6810332Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6812645Z ##[group]Fetching the repository
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:40.6821109Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +7a3b1fc91335351d00ae67d37e0135539eea35f9:refs/remotes/pull/3/merge
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1154521Z From https://github.com/hyunlord/bs-mobile
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1156166Z  * [new branch]      infra/s0-foundation                      -> origin/infra/s0-foundation
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1157904Z  * [new branch]      main                                     -> origin/main
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1159681Z  * [new ref]         7a3b1fc91335351d00ae67d37e0135539eea35f9 -> pull/3/merge
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1162929Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1164519Z ##[group]Determining the checkout info
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1166250Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1167453Z [command]/usr/bin/git sparse-checkout disable
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1210470Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1237038Z ##[group]Checking out the ref
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1239070Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/3/merge
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1296160Z Note: switching to 'refs/remotes/pull/3/merge'.
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1297591Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1298445Z You are in 'detached HEAD' state. You can look around, make experimental
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1300173Z changes and commit them, and you can discard any commits you make in this
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1301669Z state without impacting any branches by switching back to a branch.
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1302858Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1303822Z If you want to create a new branch to retain commits you create, you may
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1305280Z do so (now or later) by using -c with the switch command. Example:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1306180Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1306646Z   git switch -c <new-branch-name>
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1307225Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1307635Z Or undo this operation with:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1308177Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1308519Z   git switch -
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1308924Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1309592Z Turn off this advice by setting config variable advice.detachedHead to false
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1310774Z 
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1311796Z HEAD is now at 7a3b1fc Merge aafd7b6f671756d1b6f273876a50f02a996e8983 into 7c4c4e751aa1b40682be404d8fef848e9d2a47e5
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1315187Z ##[endgroup]
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1334284Z [command]/usr/bin/git log -1 --format=%H
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1352719Z 7a3b1fc91335351d00ae67d37e0135539eea35f9
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1359750Z ##[group]Removing auth
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1364235Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1386575Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1541477Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1560659Z http.https://github.com/.extraheader
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1565670Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1599527Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1764065Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1790651Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+quality	Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:04:41.1968424Z ##[endgroup]
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	﻿2026-10-07T20:04:41.2217684Z ##[group]Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.2218956Z with:
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.2219709Z   global-json-file: global.json
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.2220555Z   cache: false
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.2221310Z ##[endgroup]
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.3404122Z (node:2177) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.3407287Z (Use `node --trace-deprecation ...` to show where the warning was created)
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.3425174Z [command]/home/runner/work/_actions/actions/setup-dotnet/67a3573c9a986a3f9c594539f4ab511d57bb3ce9/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.6799652Z dotnet-install: .NET Core Runtime with version '10.0.12' is already installed.
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.6819529Z [command]/home/runner/work/_actions/actions/setup-dotnet/67a3573c9a986a3f9c594539f4ab511d57bb3ce9/externals/install-dotnet.sh --skip-non-versioned-files --version 8.0.425
+quality	Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:04:41.8189648Z dotnet-install: .NET Core SDK with version '8.0.425' is already installed.
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	﻿2026-10-07T20:04:41.8357066Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8357473Z with:
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8357700Z   node-version: 22
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8357936Z   cache: npm
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8358163Z   always-auth: false
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8358522Z   check-latest: false
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8360568Z   token: ***
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8360784Z env:
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8361017Z   DOTNET_ROOT: /usr/share/dotnet
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.8361277Z ##[endgroup]
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.9531171Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.9534484Z (node:2350) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.9535170Z (Use `node --trace-deprecation ...` to show where the warning was created)
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:41.9536929Z ##[group]Environment details
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.3147021Z node: v22.23.3
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.3147548Z npm: 10.9.9
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.3147887Z yarn: 1.22.22
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.3148794Z ##[endgroup]
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.3164299Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.4090350Z /home/runner/.npm
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.5884991Z Cache hit for: node-cache-Linux-x64-npm-cdb2da766a805e8f9ebcf60a145848332c0bb5aaf2bc7f6f00be2d7028f88b29
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.5963098Z (node:2350) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.9468585Z Received 279587 of 279587 (100.0%), 1.4 MBs/sec
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.9469401Z Cache Size: ~0 MB (279587 B)
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.9495595Z [command]/usr/bin/tar -xf /home/runner/work/_temp/adf1525e-6a83-4ce1-8100-5bd35b08c3eb/cache.tzst -P -C /home/runner/work/bs-mobile/bs-mobile --use-compress-program unzstd
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.9555378Z Cache restored successfully
+quality	Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:04:42.9558992Z Cache restored from key: node-cache-Linux-x64-npm-cdb2da766a805e8f9ebcf60a145848332c0bb5aaf2bc7f6f00be2d7028f88b29
+quality	Full gate	﻿2026-10-07T20:04:42.9675324Z ##[group]Run ./tools/check.sh
+quality	Full gate	2026-10-07T20:04:42.9675895Z [36;1m./tools/check.sh[0m
+quality	Full gate	2026-10-07T20:04:42.9837865Z shell: /usr/bin/bash -e {0}
+quality	Full gate	2026-10-07T20:04:42.9838284Z env:
+quality	Full gate	2026-10-07T20:04:42.9838606Z   DOTNET_ROOT: /usr/share/dotnet
+quality	Full gate	2026-10-07T20:04:42.9840835Z   GH_TOKEN: ***
+quality	Full gate	2026-10-07T20:04:42.9841112Z ##[endgroup]
+quality	Full gate	2026-10-07T20:04:43.6538372Z 
+quality	Full gate	2026-10-07T20:04:43.6545128Z added 5 packages, and audited 6 packages in 621ms
+quality	Full gate	2026-10-07T20:04:43.6545643Z 
+quality	Full gate	2026-10-07T20:04:43.6545939Z 2 packages are looking for funding
+quality	Full gate	2026-10-07T20:04:43.6546536Z   run `npm fund` for details
+quality	Full gate	2026-10-07T20:04:43.6547378Z 
+quality	Full gate	2026-10-07T20:04:43.6547652Z found 0 vulnerabilities
+quality	Full gate	2026-10-07T20:04:43.7440929Z 
+quality	Full gate	2026-10-07T20:04:43.7441342Z > test
+quality	Full gate	2026-10-07T20:04:43.7441994Z > node --test tools/test-content-validator.mjs
+quality	Full gate	2026-10-07T20:04:43.7442287Z 
+quality	Full gate	2026-10-07T20:04:43.7842427Z TAP version 13
+quality	Full gate	2026-10-07T20:04:43.8958833Z # Subtest: valid schema and cross-record references pass
+quality	Full gate	2026-10-07T20:04:43.8965959Z ok 1 - valid schema and cross-record references pass
+quality	Full gate	2026-10-07T20:04:43.8967270Z   ---
+quality	Full gate	2026-10-07T20:04:43.8968206Z   duration_ms: 59.733681
+quality	Full gate	2026-10-07T20:04:43.8968752Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:43.8969045Z   ...
+quality	Full gate	2026-10-07T20:04:43.9258044Z # Subtest: rejects damage below minimum
+quality	Full gate	2026-10-07T20:04:43.9262002Z ok 2 - rejects damage below minimum
+quality	Full gate	2026-10-07T20:04:43.9263012Z   ---
+quality	Full gate	2026-10-07T20:04:43.9268616Z   duration_ms: 30.270959
+quality	Full gate	2026-10-07T20:04:43.9274265Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:43.9274861Z   ...
+quality	Full gate	2026-10-07T20:04:43.9487966Z # Subtest: rejects unknown field
+quality	Full gate	2026-10-07T20:04:43.9491377Z ok 3 - rejects unknown field
+quality	Full gate	2026-10-07T20:04:43.9491977Z   ---
+quality	Full gate	2026-10-07T20:04:43.9492462Z   duration_ms: 22.779343
+quality	Full gate	2026-10-07T20:04:43.9492719Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:43.9492973Z   ...
+quality	Full gate	2026-10-07T20:04:43.9747405Z # Subtest: rejects missing growth
+quality	Full gate	2026-10-07T20:04:43.9748089Z ok 4 - rejects missing growth
+quality	Full gate	2026-10-07T20:04:43.9748562Z   ---
+quality	Full gate	2026-10-07T20:04:43.9748944Z   duration_ms: 25.903867
+quality	Full gate	2026-10-07T20:04:43.9749414Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:43.9749760Z   ...
+quality	Full gate	2026-10-07T20:04:43.9913740Z # Subtest: rejects missing activation
+quality	Full gate	2026-10-07T20:04:43.9914449Z ok 5 - rejects missing activation
+quality	Full gate	2026-10-07T20:04:43.9914860Z   ---
+quality	Full gate	2026-10-07T20:04:43.9915051Z   duration_ms: 16.762599
+quality	Full gate	2026-10-07T20:04:43.9915272Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:43.9915517Z   ...
+quality	Full gate	2026-10-07T20:04:44.0205134Z # Subtest: rejects wrong scalar type
+quality	Full gate	2026-10-07T20:04:44.0205923Z ok 6 - rejects wrong scalar type
+quality	Full gate	2026-10-07T20:04:44.0206297Z   ---
+quality	Full gate	2026-10-07T20:04:44.0206692Z   duration_ms: 29.053425
+quality	Full gate	2026-10-07T20:04:44.0207081Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.0207342Z   ...
+quality	Full gate	2026-10-07T20:04:44.0407078Z # Subtest: rejects invalid namespace
+quality	Full gate	2026-10-07T20:04:44.0407772Z ok 7 - rejects invalid namespace
+quality	Full gate	2026-10-07T20:04:44.0408307Z   ---
+quality	Full gate	2026-10-07T20:04:44.0408856Z   duration_ms: 20.088541
+quality	Full gate	2026-10-07T20:04:44.0409283Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.0409572Z   ...
+quality	Full gate	2026-10-07T20:04:44.0553992Z # Subtest: rejects unresolved hero tool
+quality	Full gate	2026-10-07T20:04:44.0554592Z ok 8 - rejects unresolved hero tool
+quality	Full gate	2026-10-07T20:04:44.0554938Z   ---
+quality	Full gate	2026-10-07T20:04:44.0555244Z   duration_ms: 14.581333
+quality	Full gate	2026-10-07T20:04:44.0555605Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.0555861Z   ...
+quality	Full gate	2026-10-07T20:04:44.0737735Z # Subtest: rejects wrong-kind reference
+quality	Full gate	2026-10-07T20:04:44.0738288Z ok 9 - rejects wrong-kind reference
+quality	Full gate	2026-10-07T20:04:44.0738634Z   ---
+quality	Full gate	2026-10-07T20:04:44.0738914Z   duration_ms: 18.085307
+quality	Full gate	2026-10-07T20:04:44.0739137Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.0739327Z   ...
+quality	Full gate	2026-10-07T20:04:44.0889263Z # Subtest: rejects unresolved estate tool
+quality	Full gate	2026-10-07T20:04:44.0892438Z ok 10 - rejects unresolved estate tool
+quality	Full gate	2026-10-07T20:04:44.0892926Z   ---
+quality	Full gate	2026-10-07T20:04:44.0893296Z   duration_ms: 15.430598
+quality	Full gate	2026-10-07T20:04:44.0893844Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.0894210Z   ...
+quality	Full gate	2026-10-07T20:04:44.1056801Z # Subtest: rejects unresolved tuning hero
+quality	Full gate	2026-10-07T20:04:44.1057820Z ok 11 - rejects unresolved tuning hero
+quality	Full gate	2026-10-07T20:04:44.1058612Z   ---
+quality	Full gate	2026-10-07T20:04:44.1059262Z   duration_ms: 16.681365
+quality	Full gate	2026-10-07T20:04:44.1059601Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1060016Z   ...
+quality	Full gate	2026-10-07T20:04:44.1207877Z # Subtest: rejects unresolved anti-synergy
+quality	Full gate	2026-10-07T20:04:44.1208875Z ok 12 - rejects unresolved anti-synergy
+quality	Full gate	2026-10-07T20:04:44.1209240Z   ---
+quality	Full gate	2026-10-07T20:04:44.1209503Z   duration_ms: 15.082882
+quality	Full gate	2026-10-07T20:04:44.1209807Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1210212Z   ...
+quality	Full gate	2026-10-07T20:04:44.1386972Z # Subtest: rejects invalid schema
+quality	Full gate	2026-10-07T20:04:44.1387469Z ok 13 - rejects invalid schema
+quality	Full gate	2026-10-07T20:04:44.1388679Z   ---
+quality	Full gate	2026-10-07T20:04:44.1389087Z   duration_ms: 17.72394
+quality	Full gate	2026-10-07T20:04:44.1389416Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1389592Z   ...
+quality	Full gate	2026-10-07T20:04:44.1524405Z # Subtest: rejects undeclared schema draft
+quality	Full gate	2026-10-07T20:04:44.1524882Z ok 14 - rejects undeclared schema draft
+quality	Full gate	2026-10-07T20:04:44.1525232Z   ---
+quality	Full gate	2026-10-07T20:04:44.1525539Z   duration_ms: 13.887342
+quality	Full gate	2026-10-07T20:04:44.1525840Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1526319Z   ...
+quality	Full gate	2026-10-07T20:04:44.1685194Z # Subtest: rejects unknown schema keyword
+quality	Full gate	2026-10-07T20:04:44.1685923Z ok 15 - rejects unknown schema keyword
+quality	Full gate	2026-10-07T20:04:44.1687016Z   ---
+quality	Full gate	2026-10-07T20:04:44.1687398Z   duration_ms: 15.982444
+quality	Full gate	2026-10-07T20:04:44.1687882Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1688182Z   ...
+quality	Full gate	2026-10-07T20:04:44.1843009Z # Subtest: recursively checks test content and global duplicate IDs
+quality	Full gate	2026-10-07T20:04:44.1843928Z ok 16 - recursively checks test content and global duplicate IDs
+quality	Full gate	2026-10-07T20:04:44.1844693Z   ---
+quality	Full gate	2026-10-07T20:04:44.1845211Z   duration_ms: 15.68855
+quality	Full gate	2026-10-07T20:04:44.1845834Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1846209Z   ...
+quality	Full gate	2026-10-07T20:04:44.1986452Z # Subtest: rejects content without matching schema
+quality	Full gate	2026-10-07T20:04:44.1987200Z ok 17 - rejects content without matching schema
+quality	Full gate	2026-10-07T20:04:44.1987691Z   ---
+quality	Full gate	2026-10-07T20:04:44.1988093Z   duration_ms: 14.23621
+quality	Full gate	2026-10-07T20:04:44.1988415Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.1988667Z   ...
+quality	Full gate	2026-10-07T20:04:44.2138224Z # Subtest: skin numbers fail even if schema permits arbitrary fields
+quality	Full gate	2026-10-07T20:04:44.2138917Z ok 18 - skin numbers fail even if schema permits arbitrary fields
+quality	Full gate	2026-10-07T20:04:44.2139487Z   ---
+quality	Full gate	2026-10-07T20:04:44.2139812Z   duration_ms: 15.150221
+quality	Full gate	2026-10-07T20:04:44.2140158Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.2140472Z   ...
+quality	Full gate	2026-10-07T20:04:44.2294329Z # Subtest: valid Draft2020 unevaluatedProperties is enforced
+quality	Full gate	2026-10-07T20:04:44.2295044Z ok 19 - valid Draft2020 unevaluatedProperties is enforced
+quality	Full gate	2026-10-07T20:04:44.2295475Z   ---
+quality	Full gate	2026-10-07T20:04:44.2295811Z   duration_ms: 15.559611
+quality	Full gate	2026-10-07T20:04:44.2296138Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.2296365Z   ...
+quality	Full gate	2026-10-07T20:04:44.2462560Z # Subtest: rejects malformed JSON instead of silently skipping it
+quality	Full gate	2026-10-07T20:04:44.2463202Z ok 20 - rejects malformed JSON instead of silently skipping it
+quality	Full gate	2026-10-07T20:04:44.2463722Z   ---
+quality	Full gate	2026-10-07T20:04:44.2463989Z   duration_ms: 16.77071
+quality	Full gate	2026-10-07T20:04:44.2464198Z   type: 'test'
+quality	Full gate	2026-10-07T20:04:44.2464376Z   ...
+quality	Full gate	2026-10-07T20:04:44.2549029Z 1..20
+quality	Full gate	2026-10-07T20:04:44.2549332Z # tests 20
+quality	Full gate	2026-10-07T20:04:44.2549564Z # suites 0
+quality	Full gate	2026-10-07T20:04:44.2549793Z # pass 20
+quality	Full gate	2026-10-07T20:04:44.2564715Z # fail 0
+quality	Full gate	2026-10-07T20:04:44.2564986Z # cancelled 0
+quality	Full gate	2026-10-07T20:04:44.2565263Z # skipped 0
+quality	Full gate	2026-10-07T20:04:44.2565466Z # todo 0
+quality	Full gate	2026-10-07T20:04:44.2565680Z # duration_ms 479.87765
+quality	Full gate	2026-10-07T20:04:44.3307862Z 
+quality	Full gate	2026-10-07T20:04:44.3308373Z > validate
+quality	Full gate	2026-10-07T20:04:44.3308862Z > node tools/validate-content.mjs
+quality	Full gate	2026-10-07T20:04:44.3309061Z 
+quality	Full gate	2026-10-07T20:04:44.4423020Z {
+quality	Full gate	2026-10-07T20:04:44.4423364Z   "valid": true,
+quality	Full gate	2026-10-07T20:04:44.4423806Z   "records": 7,
+quality	Full gate	2026-10-07T20:04:44.4424081Z   "schemas": 4,
+quality	Full gate	2026-10-07T20:04:44.4424353Z   "errors": []
+quality	Full gate	2026-10-07T20:04:44.4424593Z }
+quality	Full gate	2026-10-07T20:04:44.4848438Z metrics selftest PASS
+quality	Full gate	2026-10-07T20:04:44.9788198Z PR policy: issue, ADR, template and comment checks passed
+quality	Full gate	2026-10-07T20:05:08.0390635Z PASS BCL algorithm
+quality	Full gate	2026-10-07T20:05:08.0696926Z PASS comments are not code
+quality	Full gate	2026-10-07T20:05:08.1297717Z PASS engine unused import
+quality	Full gate	2026-10-07T20:05:08.1743160Z PASS inactive branch engine
+quality	Full gate	2026-10-07T20:05:08.2230930Z PASS inactive branch numeric
+quality	Full gate	2026-10-07T20:05:08.2696837Z PASS engine alias
+quality	Full gate	2026-10-07T20:05:08.3131912Z PASS content id literal
+quality	Full gate	2026-10-07T20:05:08.3515334Z PASS content id escaped
+quality	Full gate	2026-10-07T20:05:08.3914376Z PASS content id concatenated
+quality	Full gate	2026-10-07T20:05:08.4377097Z PASS content id interpolated
+quality	Full gate	2026-10-07T20:05:08.4754133Z PASS data id without namespace
+quality	Full gate	2026-10-07T20:05:08.5142678Z PASS gameplay local
+quality	Full gate	2026-10-07T20:05:08.5536577Z PASS gameplay const
+quality	Full gate	2026-10-07T20:05:08.5943217Z PASS gameplay hexadecimal
+quality	Full gate	2026-10-07T20:05:08.6344830Z PASS gameplay negative
+quality	Full gate	2026-10-07T20:05:08.6986177Z PASS seeded random
+quality	Full gate	2026-10-07T20:05:08.7450786Z PASS unseeded random
+quality	Full gate	2026-10-07T20:05:08.7916598Z PASS implicit new random
+quality	Full gate	2026-10-07T20:05:08.8387424Z PASS shared random
+quality	Full gate	2026-10-07T20:05:08.8949825Z PASS clock alias
+quality	Full gate	2026-10-07T20:05:08.9409284Z PASS clock static import
+quality	Full gate	2026-10-07T20:05:08.9914812Z PASS random guid
+quality	Full gate	2026-10-07T20:05:09.0388215Z PASS stopwatch
+quality	Full gate	2026-10-07T20:05:09.1239230Z PASS exact algorithm constant exemption
+quality	Full gate	2026-10-07T20:05:09.1239872Z ArchitectureGuard self-tests: 24/24 passed.
+quality	Full gate	2026-10-07T20:05:09.1634318Z PASS repository PackageReference
+quality	Full gate	2026-10-07T20:05:09.1794001Z PASS repository ProjectReference
+quality	Full gate	2026-10-07T20:05:09.1944942Z PASS repository Reference
+quality	Full gate	2026-10-07T20:05:09.2094988Z PASS repository FrameworkReference
+quality	Full gate	2026-10-07T20:05:09.2324862Z PASS repository JSON-discovered content ID
+quality	Full gate	2026-10-07T20:05:09.2466386Z PASS repository inherited package reference
+quality	Full gate	2026-10-07T20:05:10.4963027Z ArchitectureGuard: 0 violation(s).
+quality	Full gate	2026-10-07T20:05:11.2565956Z   Determining projects to restore...
+quality	Full gate	2026-10-07T20:05:11.6644749Z   Restored /home/runner/work/bs-mobile/bs-mobile/core/src/SowSiege.Core/SowSiege.Core.csproj (in 66 ms).
+quality	Full gate	2026-10-07T20:05:11.6645798Z   Restored /home/runner/work/bs-mobile/bs-mobile/core/src/SowSiege.Sim/SowSiege.Sim.csproj (in 73 ms).
+quality	Full gate	2026-10-07T20:05:13.3465719Z   Restored /home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/SowSiege.Tests.csproj (in 1.77 sec).
+quality	Full gate	2026-10-07T20:05:13.3730071Z   Restored /home/runner/work/bs-mobile/bs-mobile/core/bench/SowSiege.Bench/SowSiege.Bench.csproj (in 1.8 sec).
+quality	Full gate	2026-10-07T20:05:14.1912722Z   SowSiege.Core -> /home/runner/work/bs-mobile/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+quality	Full gate	2026-10-07T20:05:14.5735465Z   SowSiege.Sim -> /home/runner/work/bs-mobile/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+quality	Full gate	2026-10-07T20:05:15.2424291Z   SowSiege.Tests -> /home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+quality	Full gate	2026-10-07T20:05:15.6371304Z   SowSiege.Bench -> /home/runner/work/bs-mobile/bs-mobile/core/bench/SowSiege.Bench/bin/Release/net8.0/SowSiege.Bench.dll
+quality	Full gate	2026-10-07T20:05:15.6874037Z 
+quality	Full gate	2026-10-07T20:05:15.6894611Z Build succeeded.
+quality	Full gate	2026-10-07T20:05:15.6924315Z     0 Warning(s)
+quality	Full gate	2026-10-07T20:05:15.6924653Z     0 Error(s)
+quality	Full gate	2026-10-07T20:05:15.6924821Z 
+quality	Full gate	2026-10-07T20:05:15.6924993Z Time Elapsed 00:00:02.14
+quality	Full gate	2026-10-07T20:05:16.9795641Z Test run for /home/runner/work/bs-mobile/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll (.NETCoreApp,Version=v8.0)
+quality	Full gate	2026-10-07T20:05:17.4805428Z VSTest version 17.11.1 (x64)
+quality	Full gate	2026-10-07T20:05:17.4859238Z 
+quality	Full gate	2026-10-07T20:05:17.9426641Z Starting test execution, please wait...
+quality	Full gate	2026-10-07T20:05:17.9860648Z A total of 1 test files matched the specified pattern.
+quality	Full gate	2026-10-07T20:05:18.5476583Z Results File: /home/runner/work/bs-mobile/bs-mobile/artifacts/tests/tests.trx
+quality	Full gate	2026-10-07T20:05:18.5478838Z 
+quality	Full gate	2026-10-07T20:05:18.5512587Z Passed!  - Failed:     0, Passed:     6, Skipped:     0, Total:     6, Duration: 7 ms - SowSiege.Tests.dll (net8.0)
+quality	Full gate	2026-10-07T20:05:38.8230548Z S0 scaffold smoke: 18 policy/seed cases × 3 deterministic repeats; damage CV=0.3748277841470601; no gameplay balance claim.
+quality	Record measurements with commit identity	﻿2026-10-07T20:05:38.8295840Z ##[group]Run node tools/metrics.mjs artifacts/metrics.json artifacts/trends
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8296304Z [36;1mnode tools/metrics.mjs artifacts/metrics.json artifacts/trends[0m
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8331340Z shell: /usr/bin/bash -e {0}
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8331604Z env:
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8331787Z   DOTNET_ROOT: /usr/share/dotnet
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8332045Z   METRICS_SHA: aafd7b6f671756d1b6f273876a50f02a996e8983
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8332313Z ##[endgroup]
+quality	Record measurements with commit identity	2026-10-07T20:05:38.8660086Z metrics: 1 records; artifacts/trends/index.html
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	﻿2026-10-07T20:05:38.8748293Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8748624Z with:
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8748852Z   name: evidence-7a3b1fc91335351d00ae67d37e0135539eea35f9
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8749168Z   path: artifacts/
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8749364Z   retention-days: 90
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8749561Z   if-no-files-found: error
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8749766Z   compression-level: 6
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8749961Z   overwrite: false
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8750151Z   include-hidden-files: false
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8750347Z env:
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8750522Z   DOTNET_ROOT: /usr/share/dotnet
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:38.8750730Z ##[endgroup]
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.0188786Z (node:3145) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.0189772Z (Use `node --trace-deprecation ...` to show where the warning was created)
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.0286649Z With the provided path, there will be 41 files uploaded
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.0291200Z Artifact name is valid!
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.0291759Z Root directory input is valid!
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.3123865Z Beginning upload of artifact content to blob storage
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.3691976Z (node:3145) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.5779475Z Uploaded bytes 25639
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.6236608Z Finished uploading artifact content to blob storage!
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.6237356Z SHA256 digest of uploaded artifact zip is 24fa6e538614e1f7c94a2eb5eaefc536d0962efee5a317d20328da63ac452283
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.6238570Z Finalizing artifact upload
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.8426945Z Artifact evidence-7a3b1fc91335351d00ae67d37e0135539eea35f9.zip successfully finalized. Artifact ID 11507528527
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.8427956Z Artifact evidence-7a3b1fc91335351d00ae67d37e0135539eea35f9 has been successfully uploaded! Final size is 25639 bytes. Artifact ID is 11507528527
+quality	Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02	2026-10-07T20:05:39.8431200Z Artifact download URL: https://github.com/hyunlord/bs-mobile/actions/runs/37679235067/artifacts/11507528527
+quality	Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	﻿2026-10-07T20:05:39.8562441Z Post job cleanup.
+quality	Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:05:39.9574377Z (node:3158) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+quality	Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:05:39.9575417Z (Use `node --trace-deprecation ...` to show where the warning was created)
+quality	Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020	2026-10-07T20:05:39.9577481Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-cdb2da766a805e8f9ebcf60a145848332c0bb5aaf2bc7f6f00be2d7028f88b29, not saving cache.
+quality	Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	﻿2026-10-07T20:05:39.9650964Z Post job cleanup.
+quality	Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:05:40.0729435Z (node:3166) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+quality	Post Run actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9	2026-10-07T20:05:40.0730456Z (Use `node --trace-deprecation ...` to show where the warning was created)
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	﻿2026-10-07T20:05:40.0824616Z Post job cleanup.
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1571083Z [command]/usr/bin/git version
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1607915Z git version 2.55.0
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1641995Z Temporarily overriding HOME='/home/runner/work/_temp/8fd93ba3-3762-42c0-abc2-f029861c0dcb' before making global git config changes
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1643135Z Adding repository directory to the temporary git global config as a safe directory
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1647491Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/bs-mobile/bs-mobile
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1678055Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1709517Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1944212Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.1973348Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.2146328Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+quality	Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262	2026-10-07T20:05:40.2174878Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+quality	Complete job	﻿2026-10-07T20:05:40.2455468Z Cleaning up orphan processes
+quality	Complete job	2026-10-07T20:05:40.2690127Z Terminate orphan process: pid (2523) (dotnet)
+quality	Complete job	2026-10-07T20:05:40.2742231Z Terminate orphan process: pid (2610) (dotnet)
+quality	Complete job	2026-10-07T20:05:40.2769686Z Terminate orphan process: pid (2611) (dotnet)
+quality	Complete job	2026-10-07T20:05:40.2822094Z Terminate orphan process: pid (2613) (dotnet)
+quality	Complete job	2026-10-07T20:05:40.2842203Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262, actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
