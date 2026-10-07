@@ -1,0 +1,10 @@
+{
+  "id": "core:stone_breaker",
+  "target": "building",
+  "health": 75,
+  "speed": 8,
+  "damage": 8,
+  "range": 110,
+  "attackCooldownTicks": 60,
+  "experience": 12
+}

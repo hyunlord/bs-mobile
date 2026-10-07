@@ -5,10 +5,7 @@
   "required": [
     "id",
     "tags",
-    "activation",
-    "growth",
-    "floorRationale",
-    "antiSynergy"
+    "activation"
   ],
   "properties": {
     "id": {
@@ -66,43 +63,6 @@
           "maximum": 1000000
         }
       }
-    },
-    "growth": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "target",
-        "yield"
-      ],
-      "properties": {
-        "target": {
-          "type": "string",
-          "enum": [
-            "land",
-            "building",
-            "people"
-          ]
-        },
-        "yield": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 1000000
-        }
-      }
-    },
-    "floorRationale": {
-      "type": "string",
-      "minLength": 1
-    },
-    "antiSynergy": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
-      },
-      "minItems": 0,
-      "maxItems": 10000,
-      "uniqueItems": true
     }
   }
 }

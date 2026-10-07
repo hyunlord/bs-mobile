@@ -1,0 +1,10 @@
+{
+  "id": "core:crop_grazer",
+  "target": "ripe",
+  "health": 38,
+  "speed": 6,
+  "damage": 6,
+  "range": 90,
+  "attackCooldownTicks": 60,
+  "experience": 8
+}

@@ -1,0 +1,10 @@
+{
+  "id": "core:seed_mite",
+  "target": "seed",
+  "health": 28,
+  "speed": 7,
+  "damage": 4,
+  "range": 80,
+  "attackCooldownTicks": 60,
+  "experience": 6
+}

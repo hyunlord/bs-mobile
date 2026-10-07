@@ -1,19 +1,19 @@
 {
-  "id": "test:spade",
+  "id": "core:muster_horn",
   "tags": [
-    "land",
-    "harvest"
+    "people",
+    "muster"
   ],
   "activation": {
-    "damage": 9,
-    "range": 900,
+    "damage": 8,
+    "range": 1400,
     "cooldownTicks": 30,
-    "shape": "melee",
-    "knockback": 20
+    "shape": "wave",
+    "knockback": 45
   },
   "growth": {
-    "target": "land",
-    "yield": 2
+    "target": "people",
+    "yield": 1
   },
   "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
   "antiSynergy": []

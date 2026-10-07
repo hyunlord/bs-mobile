@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { validateContent } from './validate-content.mjs';
 
 const id = { type: 'string', pattern: '^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$' };
@@ -119,3 +120,29 @@ test('rejects malformed JSON instead of silently skipping it', async (t) => {
   assert.equal(result.valid, false);
   assert.match(result.errors.join('\n'), /invalid JSON/);
 });
+
+const worldMutations = [
+  ['season duration mismatch', (v) => { v.world.seasons[0].durationTicks += 1; }, /season durations must sum/],
+  ['missing world numeric tuning', (v) => { delete v.world.people.consumePeriodTicks; }, /consumePeriodTicks/],
+  ['unresolved starting weapon', (v) => { v.world.progression.startingWeapon = 'core:missing'; }, /unresolved weapon reference/],
+  ['excessive load', (v) => { v.world.load.enemies = v.world.threat.enemyCap + 1; }, /load.enemies exceeds capacity/],
+  ['map-incompatible spawn inset', (v) => { v.world.threat.spawnInset = v.world.map.width; }, /spawn inset exceeds map bounds/],
+  ['unsupported people rule', (v) => { v.world.defaultPeopleRule = 'D'; }, /schema violation/],
+  ['wrong card count', (v) => { v.world.progression.cardCount = 2; }, /schema violation/],
+  ['duplicate rarity names', (v) => { v.world.progression.rarities[1].name = v.world.progression.rarities[0].name; }, /rarity names must be unique/],
+  ['oversized squad', (v) => { v.world.people.squadSize = v.world.people.maxPeople + 1; }, /squad size exceeds people capacity/],
+];
+for (const [name, mutate, expected] of worldMutations) {
+  test(`S2 rejects ${name}`, async (t) => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-world-schema-'));
+    t.after(() => rm(directory, { recursive: true, force: true }));
+    await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, { recursive: true });
+    const tuningPath = path.join(directory, 'tuning.json');
+    const tuning = JSON.parse(await readFile(tuningPath, 'utf8'));
+    mutate(tuning);
+    await writeFile(tuningPath, JSON.stringify(tuning));
+    const result = await validateContent(directory);
+    assert.equal(result.valid, false);
+    assert.match(result.errors.join('\n'), expected);
+  });
+}

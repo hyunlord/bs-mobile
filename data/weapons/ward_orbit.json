@@ -1,0 +1,14 @@
+{
+  "id": "core:ward_orbit",
+  "tags": [
+    "weapon",
+    "orbit"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 20,
+    "shape": "orbit",
+    "knockback": 30
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "core:iron_blade",
+  "tags": [
+    "weapon",
+    "melee"
+  ],
+  "activation": {
+    "damage": 22,
+    "range": 850,
+    "cooldownTicks": 30,
+    "shape": "melee",
+    "knockback": 50
+  }
+}
