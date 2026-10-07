@@ -1,0 +1,8 @@
+{
+  "id": "test:dummy_rake",
+  "tags": ["land"],
+  "activation": { "damage": 1 },
+  "growth": { "target": "land", "yield": 2 },
+  "floorRationale": "S0 extensibility fixture only; not a measured gameplay balance value.",
+  "antiSynergy": []
+}
