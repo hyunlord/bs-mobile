@@ -1,0 +1,387 @@
+[
+  {
+    "id": "S-play",
+    "url": "https://play.google.com/store/apps/details?hl=en_US&id=com.dxx.firenow",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference S-play"
+  },
+  {
+    "id": "S-apple",
+    "url": "https://apps.apple.com/us/app/survivor-io/id1528941310",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference S-apple"
+  },
+  {
+    "id": "S-energy",
+    "url": "https://gamesadda.in/gaming/survivor-io-get-energy/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference S-energy"
+  },
+  {
+    "id": "A-play",
+    "url": "https://play.google.com/store/apps/details?hl=en&id=com.xq.archeroii",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference A-play"
+  },
+  {
+    "id": "A-apple",
+    "url": "https://apps.apple.com/us/app/archero-2/id6502820653",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference A-apple"
+  },
+  {
+    "id": "V-play",
+    "url": "https://play.google.com/store/apps/details?id=com.poncle.vampiresurvivors&hl=en_US",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference V-play"
+  },
+  {
+    "id": "V-apple",
+    "url": "https://apps.apple.com/us/app/vampire-survivors/id6444525702",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference V-apple"
+  },
+  {
+    "id": "V-content",
+    "url": "https://poncle.games/ode-to-castlevania-faq",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference V-content"
+  },
+  {
+    "id": "V-support",
+    "url": "https://poncle.zendesk.com/hc/en-gb/articles/14803391394705-How-do-I-buy-DLC-on-mobile",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference V-support"
+  },
+  {
+    "id": "V-ads",
+    "url": "https://www.pcgamer.com/vampire-survivors-gets-surprise-mobile-release-and-its-free/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference V-ads"
+  },
+  {
+    "id": "V-arcade",
+    "url": "https://poncle.games/arcade-faq",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference V-arcade"
+  },
+  {
+    "id": "V-offline",
+    "url": "https://poncle.games/dlc-faq",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference V-offline"
+  },
+  {
+    "id": "V-downloads",
+    "url": "https://mobilegamer.biz/vampire-survivors-mobile-hits-5m-downloads/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference V-downloads"
+  },
+  {
+    "id": "M-steam",
+    "url": "https://store.steampowered.com/app/3405340/Megabonk/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference M-steam"
+  },
+  {
+    "id": "M-play",
+    "url": "https://www.pcgamer.com/games/roguelike/a-slot-machine-for-gags-disguised-as-a-vampire-survivors-like-is-taking-over-steam-and-im-just-as-addicted-to-pulling-the-lever-as-the-other-90k-people-playing-it/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference M-play"
+  },
+  {
+    "id": "M-complaint",
+    "url": "https://www.reddit.com/r/MegabonkOfficial/comments/1ntrbu5/rng_and_balance_are_unreasonably_brutal/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference M-complaint"
+  },
+  {
+    "id": "B-free-play",
+    "url": "https://play.google.com/store/apps/details?id=com.brotato.shooting.survivors.action.roguelike",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference B-free-play"
+  },
+  {
+    "id": "B-free-apple",
+    "url": "https://apps.apple.com/us/app/brotato/id6445884925",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference B-free-apple"
+  },
+  {
+    "id": "B-paid-play",
+    "url": "https://play.google.com/store/apps/details?hl=en-US&id=com.brotato.shooting.survivors.games.paid.android",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference B-paid-play"
+  },
+  {
+    "id": "B-paid-apple",
+    "url": "https://apps.apple.com/us/app/brotato-premium/id1668755109",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference B-paid-apple"
+  },
+  {
+    "id": "B-steam",
+    "url": "https://store.steampowered.com/app/1942280/Brotato/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference B-steam"
+  },
+  {
+    "id": "C-play",
+    "url": "https://play.google.com/store/apps/details?hl=en&id=com.habby.capybara",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference C-play"
+  },
+  {
+    "id": "C-revenue",
+    "url": "https://www.pocketgamer.biz/habbys-capybara-go-surpasses-100m-in-gross-player-spending/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-revenue"
+  },
+  {
+    "id": "K-official",
+    "url": "https://www.centurygames.com/games/kingshot/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-official"
+  },
+  {
+    "id": "K-play",
+    "url": "https://play.google.com/store/apps/details?hl=en-US&id=com.run.tower.defense",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-play"
+  },
+  {
+    "id": "K-apple",
+    "url": "https://apps.apple.com/us/app/kingshot/id6739554056",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-apple"
+  },
+  {
+    "id": "K-gold",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/9012-how-to-obtain-more-gold/?l=en",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-gold"
+  },
+  {
+    "id": "K-token",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/9126-how-to-acquire-skin-tokens-1783436152/?l=en",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-token"
+  },
+  {
+    "id": "K-vip",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/9240-what-s-included-in-prestige-benefits/?l=en",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-vip"
+  },
+  {
+    "id": "K-stars",
+    "url": "https://www.centurygames.com/kingshot-kingdom-stars-pack/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-stars"
+  },
+  {
+    "id": "K-card",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/9013-how-to-use-the-ultra-value-monthly-card-voucher/?l=en",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-card"
+  },
+  {
+    "id": "K-skin",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/9018-i-have-multiple-avatar-frames-marching-castle-skins-how-do-the-stat-bonuses-add-up/?gv=frVenez&p=winpc",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-skin"
+  },
+  {
+    "id": "K-energy",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/8527-how-to-acquire-energy/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-energy"
+  },
+  {
+    "id": "K-stamina",
+    "url": "https://centurygames.helpshift.com/hc/en/140-kingshot/faq/8769-what-rewards-are-granted-for-killing-dragonborn-escorts-does-this-spend-stamina/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-stamina"
+  },
+  {
+    "id": "K-revenue",
+    "url": "https://sensortower.com/blog/sensor-tower-apac-awards-2025",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference K-revenue"
+  },
+  {
+    "id": "GA-report",
+    "url": "https://www.gameanalytics.com/reports/2025-mobile-gaming-benchmarks",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference GA-report"
+  },
+  {
+    "id": "GA-metrics",
+    "url": "https://docs.gameanalytics.com/events-metrics-and-filtering/metrics/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference GA-metrics"
+  },
+  {
+    "id": "U-ads",
+    "url": "https://unity.com/blog/3-kpis-to-watch-when-a-b-testing-your-ad-placement-strategy",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference U-ads"
+  },
+  {
+    "id": "AF-arpdau",
+    "url": "https://www.appsflyer.com/glossary/arpdau/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference AF-arpdau"
+  },
+  {
+    "id": "S-guide",
+    "url": "https://www.talkandroid.com/24372-survivor-io-ultimate-game-guide-with-tips-2023/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference S-guide"
+  },
+  {
+    "id": "S-pets",
+    "url": "https://mturbogamer.com/2023/04/survivor-io-pets-guide-how-to-get-level-up-evolve-revive/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference S-pets"
+  },
+  {
+    "id": "S-pass",
+    "url": "https://mturbogamer.com/2022/12/survivor-io-survivor-pass-guide/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference S-pass"
+  },
+  {
+    "id": "S-revenue",
+    "url": "https://mobilegamer.biz/two-months-in-survivor-io-passes-75m-from-37m-downloads/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference S-revenue"
+  },
+  {
+    "id": "A-guide",
+    "url": "https://progameguides.com/archero-2/archero-2-beginners-guide/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference A-guide"
+  },
+  {
+    "id": "A-pass",
+    "url": "https://archero2hub.com/en/calculator/gem-income",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference A-pass"
+  },
+  {
+    "id": "A-revenue",
+    "url": "https://www.pocketgamer.biz/archero-2-makes-328m-in-first-30-days-from-player-spending/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference A-revenue"
+  },
+  {
+    "id": "C-apple",
+    "url": "https://apps.apple.com/us/app/capybara-go/id6596787726",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "official/store or primary provider",
+    "claimBinding": "docs/research/S5-bm.md reference C-apple"
+  },
+  {
+    "id": "C-guide",
+    "url": "https://capybara-go.game-vault.net/wiki/Guide:Ultimate_Beginners_Guide",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-guide"
+  },
+  {
+    "id": "C-talents",
+    "url": "https://www.pocketgamer.com/capybara-go/guide/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-talents"
+  },
+  {
+    "id": "C-abyss",
+    "url": "https://capybara-go.game-vault.net/wiki/Guide:Abyssal_Realm_And_Dungeon_Guide",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-abyss"
+  },
+  {
+    "id": "C-paid",
+    "url": "https://capybara-go.game-vault.net/wiki/Guide:Real_Money_Spending_P2W_Guide",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-paid"
+  },
+  {
+    "id": "C-pass",
+    "url": "https://appservatory.com/mechanics/season-pass/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-pass"
+  },
+  {
+    "id": "C-tips",
+    "url": "https://theriagames.com/guide/capybara-go-tips-and-tricks/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-tips"
+  },
+  {
+    "id": "S-tech",
+    "url": "https://gamesfuze.com/guides/survivor-io-tech-parts-guide/",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference S-tech"
+  },
+  {
+    "id": "C-energy",
+    "url": "https://capybara-go.game-vault.net/wiki/Energy",
+    "checkedAt": "2026-10-08",
+    "evidenceType": "external guide/reporting or user opinion",
+    "claimBinding": "docs/research/S5-bm.md reference C-energy"
+  }
+]

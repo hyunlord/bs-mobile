@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-08",
+  "games": 7,
+  "original02Sections": 11,
+  "sourceReferences": 55,
+  "usedReferenceLinks": 109,
+  "allReferenceDefinitionsResolve": true,
+  "localLinksExist": true,
+  "originalDesignDiff": "empty",
+  "reportSha256": "b3c7abfd05fc2f44e27d1682cb5a9c8de7f422f131243697d605a18e020f1117",
+  "scope": "Static coverage and link binding only; source meaning reviewed separately. Does not assert remote URL availability, runtime game behavior or market data accuracy."
+}
