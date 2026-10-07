@@ -276,4 +276,77 @@ public sealed class RuntimeMechanicTests
         Assert.True(simulation.Result().Runtime!.Effects.Single(effect => effect.EffectId == "core:guarded_harvest_strike").ActivationCount > 0);
     }
 
+    [Theory]
+    [InlineData("worker-buff", 0, 300)]
+    [InlineData("worker-buff", 9900, 300)]
+    [InlineData("worker-buff", 10100, 200)]
+    [InlineData("worker-buff", 10400, 0)]
+    [InlineData("rally-returners", 0, 300)]
+    [InlineData("rally-returners", 9900, 300)]
+    [InlineData("rally-returners", 10100, 200)]
+    [InlineData("rally-returners", 10400, 0)]
+    [InlineData("pause-neighbor-growth", 0, 300)]
+    [InlineData("pause-neighbor-growth", 9900, 300)]
+    [InlineData("pause-neighbor-growth", 10100, 200)]
+    [InlineData("pause-neighbor-growth", 10400, 0)]
+    public void TimedRefreshCountsOnlyAdditionalFutureTicks(string operation, int oldDeadline, long expected)
+    {
+        var simulation = WithItems(Effect("test:timer", "harvest", operation, operation == "pause-neighbor-growth" ? "land" : "people", 1, duration: 300));
+        var world = simulation.World; world.Tick = 10000;
+        var person = world.People[1]; world.People.Clear(); world.People.Add(person);
+        person.Role = operation == "rally-returners" ? "returning" : "peasant";
+        person.DutyUntil = oldDeadline;
+        simulation.Runtime!.Entity(person.Id).HoldUntil = oldDeadline;
+        var farm = Farm(simulation); simulation.Runtime.Entity(farm.Id).PauseUntil = oldDeadline;
+        simulation.Runtime.Emit("harvest", new(world.Lord));
+        var actualDeadline = operation switch { "worker-buff" => person.DutyUntil, "rally-returners" => simulation.Runtime.Entity(person.Id).HoldUntil, _ => simulation.Runtime.Entity(farm.Id).PauseUntil };
+        Assert.Equal(Math.Max(oldDeadline, 10300), actualDeadline);
+        var effect = Assert.Single(simulation.Result().Runtime!.Effects);
+        Assert.Equal(expected, effect.AppliedTotal);
+        Assert.Equal(expected > 0 ? 1 : 0, effect.ActivationCount);
+    }
+
+    [Theory]
+    [InlineData("worker-buff")]
+    [InlineData("rally-returners")]
+    [InlineData("pause-neighbor-growth")]
+    [InlineData("extend-duty")]
+    [InlineData("guard-return")]
+    public void TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(string operation)
+    {
+        var simulation = WithItems(Effect("test:timer", "harvest", operation, operation == "pause-neighbor-growth" ? "land" : "people", 1, duration: 300));
+        var world = simulation.World; world.Tick = int.MaxValue - 10;
+        var person = world.People[1]; world.People.Clear(); world.People.Add(person);
+        person.Role = operation == "rally-returners" ? "returning" : "peasant";
+        Farm(simulation);
+        simulation.Runtime!.Emit("harvest", new(world.Lord, Person: person));
+        Assert.Equal(10, Assert.Single(simulation.Result().Runtime!.Effects).AppliedTotal);
+    }
+
+    [Theory]
+    [InlineData("extend-duty")]
+    [InlineData("guard-return")]
+    public void SinglePersonTimersExtendFromCurrentOrActiveDeadline(string operation)
+    {
+        var simulation = WithItems(Effect("test:timer", "harvest", operation, "people", 1, duration: 300));
+        var world = simulation.World; world.Tick = 10000; var person = world.People[1];
+        person.DutyUntil = 0; simulation.Runtime!.Entity(person.Id).HoldUntil = 10100;
+        simulation.Runtime.Emit("harvest", new(world.Lord, Person: person));
+        Assert.Equal(operation == "extend-duty" ? 10300 : 10400, operation == "extend-duty" ? person.DutyUntil : simulation.Runtime.Entity(person.Id).HoldUntil);
+        Assert.Equal(300, Assert.Single(simulation.Result().Runtime!.Effects).AppliedTotal);
+    }
+
+    [Fact]
+    public void LootRequiresEveryPrerequisiteTagAcrossOwnedEquipment()
+    {
+        var catalog = RuntimeTests.Catalog();
+        catalog = catalog with { Runtime = catalog.Runtime! with { Tuning = catalog.Runtime.Tuning with { LootPeriodTicks = 100 }, Items = new Dictionary<string, ItemDefinition> { ["test:item"] = new("test:item", ["building", "people"], []) } } };
+        var simulation = RuntimeTests.Create(catalog); var world = simulation.World; world.Tick = 1;
+        world.Equipment.Clear(); world.Equipment.Add(new() { Id = catalog.Tools.Values.First(tool => tool.Tags.Contains("building") && !tool.Tags.Contains("people")).Id });
+        world.Runtime!.GroundLoot.Add(new(world.AllocateId(), "test:chest", "test:item", world.Lord));
+        simulation.Runtime!.Tick(); Assert.Empty(world.Runtime.Items); Assert.Single(world.Runtime.GroundLoot);
+        world.Equipment.Add(new() { Id = catalog.Tools.Values.First(tool => tool.Tags.Contains("people")).Id });
+        simulation.Runtime.Tick(); Assert.Equal(1, world.Runtime.Items["test:item"]); Assert.Empty(world.Runtime.GroundLoot);
+    }
+
 }

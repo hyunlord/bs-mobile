@@ -68,7 +68,7 @@ internal sealed class RuntimeSystem
         foreach (var id in state.Entities.Keys.Where(id => !liveIds.Contains(id)).ToArray()) { state.Entities.Remove(id); }
     }
     private int SignedOffset(int radius) => random.Next(radius + 1) * ((random.Next(int.MaxValue) & 1) == 0 ? -1 : 1);
-    private bool ItemEligible(ItemDefinition item) => item.RequiredTags.Length == 0 || item.RequiredTags.Any(tag => world.Equipment.Any(equipment => Tags(equipment.Id).Contains(tag, StringComparer.Ordinal)));
+    private bool ItemEligible(ItemDefinition item) => item.RequiredTags.All(tag => world.Equipment.Any(equipment => Tags(equipment.Id).Contains(tag, StringComparer.Ordinal)));
     public void UnlockEvolutions()
     {
         foreach (var evolution in definition.Evolutions.Values.OrderBy(value => value.Id, StringComparer.Ordinal))
@@ -158,14 +158,14 @@ internal sealed class RuntimeSystem
                 long duration = 0;
                 foreach (var person in world.People.Where(person => person.Role == "peasant" && Within(person.Position, context.Origin, effect.Radius)).OrderBy(person => person.Id).Take(amount))
                 {
-                    var until = Deadline(effect.DurationTicks); duration += Math.Max(0, until - person.DutyUntil); person.DutyUntil = Math.Max(person.DutyUntil, until);
+                    var until = Deadline(effect.DurationTicks); duration += Math.Max(0, until - Math.Max(person.DutyUntil, world.Tick)); person.DutyUntil = Math.Max(person.DutyUntil, until);
                 }
                 return duration;
             case "rally-returners":
                 long held = 0;
                 foreach (var person in world.People.Where(person => person.Role == "returning" && Within(person.Position, context.Origin, effect.Radius)).OrderBy(person => person.Id).Take(amount))
                 {
-                    var data = Entity(person.Id); var until = Deadline(effect.DurationTicks); held += Math.Max(0, until - data.HoldUntil); data.HoldUntil = Math.Max(data.HoldUntil, until); data.Waypoint = context.Origin;
+                    var data = Entity(person.Id); var until = Deadline(effect.DurationTicks); held += Math.Max(0, until - Math.Max(data.HoldUntil, world.Tick)); data.HoldUntil = Math.Max(data.HoldUntil, until); data.Waypoint = context.Origin;
                 }
                 return held;
             case "plant-path":
@@ -197,16 +197,21 @@ internal sealed class RuntimeSystem
                 return lost;
             case "extend-duty":
                 if (context.Person is null) { return 0; }
-                var extended = Clamp((long)context.Person.DutyUntil + (long)effect.DurationTicks * amount, 0) - context.Person.DutyUntil;
-                context.Person.DutyUntil += extended; return extended;
+                var dutyStart = Math.Max(context.Person.DutyUntil, world.Tick);
+                context.Person.DutyUntil = Clamp((long)dutyStart + (long)effect.DurationTicks * amount, 0);
+                return context.Person.DutyUntil - dutyStart;
             case "guard-return":
                 if (context.Person is null || Entity(context.Person.Id).ArrivalGuardUsed) { return 0; }
-                var guard = Entity(context.Person.Id); guard.ArrivalGuardUsed = true; guard.HoldUntil = Deadline(Clamp((long)effect.DurationTicks * amount, 0)); return guard.HoldUntil - world.Tick;
+                var guard = Entity(context.Person.Id);
+                var holdStart = Math.Max(guard.HoldUntil, world.Tick);
+                guard.ArrivalGuardUsed = true;
+                guard.HoldUntil = Clamp((long)holdStart + (long)effect.DurationTicks * amount, 0);
+                return guard.HoldUntil - holdStart;
             case "pause-neighbor-growth":
                 long paused = 0;
                 foreach (var farm in world.Farms.Where(farm => farm != context.Farm && Within(farm.Position, context.Origin, effect.Radius)))
                 {
-                    var data = Entity(farm.Id); var until = Deadline(effect.DurationTicks); paused += Math.Max(0, until - data.PauseUntil); data.PauseUntil = Math.Max(data.PauseUntil, until);
+                    var data = Entity(farm.Id); var until = Deadline(effect.DurationTicks); paused += Math.Max(0, until - Math.Max(data.PauseUntil, world.Tick)); data.PauseUntil = Math.Max(data.PauseUntil, until);
                 }
                 return paused;
             case "return-via-building":

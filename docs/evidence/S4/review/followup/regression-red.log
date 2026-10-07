@@ -1,0 +1,138 @@
+  복원할 프로젝트를 확인하는 중...
+  복원할 모든 프로젝트가 최신 상태입니다.
+  SowSiege.Core -> /Users/rexxa/bs-mobile/core/src/SowSiege.Core/bin/Release/net8.0/SowSiege.Core.dll
+  SowSiege.Sim -> /Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll
+  SowSiege.Tests -> /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll
+/Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/bin/Release/net8.0/SowSiege.Tests.dll(.NETCoreApp,Version=v8.0)에 대한 테스트 실행
+지정된 패턴과 일치한 총 테스트 파일 수는 1개입니다.
+[xUnit.net 00:00:00.16]     SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "worker-buff", oldDeadline: 0, expected: 300) [FAIL]
+[xUnit.net 00:00:00.16]     SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "rally-returners", oldDeadline: 9900, expected: 300) [FAIL]
+[xUnit.net 00:00:00.17]     SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "pause-neighbor-growth", oldDeadline: 0, expected: 300) [FAIL]
+[xUnit.net 00:00:00.19]     SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "pause-neighbor-growth", oldDeadline: 9900, expected: 300) [FAIL]
+[xUnit.net 00:00:00.19]     SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "rally-returners", oldDeadline: 0, expected: 300) [FAIL]
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "worker-buff", oldDeadline: 0, expected: 300) [87 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 300
+Actual:   10300
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(String operation, Int32 oldDeadline, Int64 expected) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 305
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "rally-returners", oldDeadline: 9900, expected: 300) [4 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 300
+Actual:   400
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(String operation, Int32 oldDeadline, Int64 expected) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 305
+   at InvokeStub_RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "pause-neighbor-growth", oldDeadline: 0, expected: 300) [3 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 300
+Actual:   10300
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(String operation, Int32 oldDeadline, Int64 expected) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 305
+   at InvokeStub_RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "pause-neighbor-growth", oldDeadline: 9900, expected: 300) [4 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 300
+Actual:   400
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(String operation, Int32 oldDeadline, Int64 expected) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 305
+   at InvokeStub_RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "rally-returners", oldDeadline: 0, expected: 300) [5 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 300
+Actual:   10300
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(String operation, Int32 oldDeadline, Int64 expected) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 305
+   at InvokeStub_RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.21]     SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "worker-buff", oldDeadline: 9900, expected: 300) [FAIL]
+[xUnit.net 00:00:00.22]     SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "rally-returners") [FAIL]
+[xUnit.net 00:00:00.22]     SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "pause-neighbor-growth") [FAIL]
+[xUnit.net 00:00:00.23]     SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "extend-duty") [FAIL]
+[xUnit.net 00:00:00.24]     SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "worker-buff") [FAIL]
+[xUnit.net 00:00:00.24]     SowSiege.Tests.RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(operation: "extend-duty") [FAIL]
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(operation: "worker-buff", oldDeadline: 9900, expected: 300) [3 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 300
+Actual:   400
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(String operation, Int32 oldDeadline, Int64 expected) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 305
+   at InvokeStub_RuntimeMechanicTests.TimedRefreshCountsOnlyAdditionalFutureTicks(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "rally-returners") [7 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 10
+Actual:   2147483647
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(String operation) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 323
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "pause-neighbor-growth") [4 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 10
+Actual:   2147483647
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(String operation) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 323
+   at InvokeStub_RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "extend-duty") [4 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 10
+Actual:   300
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(String operation) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 323
+   at InvokeStub_RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(operation: "worker-buff") [3 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 10
+Actual:   2147483647
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(String operation) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 323
+   at InvokeStub_RuntimeMechanicTests.TimedEffectsCountOnlyAvailableTicksAtIntegerDeadline(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(operation: "extend-duty") [3 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 10300
+Actual:   300
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(String operation) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 335
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.24]     SowSiege.Tests.RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(operation: "guard-return") [FAIL]
+[xUnit.net 00:00:00.25]     SowSiege.Tests.RuntimeMechanicTests.LootRequiresEveryPrerequisiteTagAcrossOwnedEquipment [FAIL]
+  실패 SowSiege.Tests.RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(operation: "guard-return") [3 ms]
+  오류 메시지:
+   Assert.Equal() Failure: Values differ
+Expected: 10400
+Actual:   10300
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(String operation) in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 335
+   at InvokeStub_RuntimeMechanicTests.SinglePersonTimersExtendFromCurrentOrActiveDeadline(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  실패 SowSiege.Tests.RuntimeMechanicTests.LootRequiresEveryPrerequisiteTagAcrossOwnedEquipment [7 ms]
+  오류 메시지:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [["test:item"] = 2]
+  스택 추적:
+     at SowSiege.Tests.RuntimeMechanicTests.LootRequiresEveryPrerequisiteTagAcrossOwnedEquipment() in /Users/rexxa/bs-mobile/core/tests/SowSiege.Tests/RuntimeMechanicTests.cs:line 347
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+실패!  - 실패:    13, 통과:     7, 건너뜀:     0, 전체:    20, 기간: 91 ms - SowSiege.Tests.dll (net8.0)
