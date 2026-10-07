@@ -19,13 +19,15 @@ public static partial class ContentLoader
     public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
         var tuning = Read<Tuning>(Path.Combine(directory, "tuning.json"));
-        var selection = LoadProfile(directory, profileName).Select(includeTest);
+        var profile = LoadProfile(directory, profileName);
+        var selection = profile.Select(includeTest);
+        var allowS4 = profile.Runtime is not null;
         var roots = includeTest ? new[] { directory, Path.Combine(directory, "test") } : new[] { directory };
-        var tools = LoadSelected<ToolContent, ToolDefinition>(roots, "tools", selection.Tools, tool => tool.ToCore());
-        var heroes = LoadSelected<HeroContent, HeroDefinition>(roots, "heroes", selection.Heroes, hero => hero.ToCore());
-        var estates = LoadSelected<EstateContent, EstateDefinition>(roots, "estates", selection.Estates, estate => estate.ToCore());
-        var weapons = LoadSelected<WeaponContent, WeaponDefinition>(roots, "weapons", selection.Weapons, weapon => weapon.ToCore());
-        var enemies = LoadSelected<EnemyContent, EnemyDefinition>(roots, "enemies", selection.Enemies, enemy => enemy.ToCore());
+        var tools = LoadSelected<ToolContent, ToolDefinition>(roots, "tools", selection.Tools, tool => tool.ToCore(), allowS4);
+        var heroes = LoadSelected<HeroContent, HeroDefinition>(roots, "heroes", selection.Heroes, hero => hero.ToCore(), allowS4);
+        var estates = LoadSelected<EstateContent, EstateDefinition>(roots, "estates", selection.Estates, estate => estate.ToCore(), allowS4);
+        var weapons = LoadSelected<WeaponContent, WeaponDefinition>(roots, "weapons", selection.Weapons, weapon => weapon.ToCore(), allowS4);
+        var enemies = LoadSelected<EnemyContent, EnemyDefinition>(roots, "enemies", selection.Enemies, enemy => enemy.ToCore(), allowS4);
         var allIds = tools.Keys.Concat(heroes.Keys).Concat(estates.Keys).Concat(weapons.Keys).Concat(enemies.Keys).ToArray();
         Require(allIds.All(value => NamespaceId().IsMatch(value)), "Invalid namespace ID.");
         Require(allIds.Distinct(StringComparer.Ordinal).Count() == allIds.Length, "Duplicate content ID across kinds.");
@@ -51,7 +53,8 @@ public static partial class ContentLoader
         Require(tuning.TickRate == 30 && tuning.DurationTicks > 0 && tuning.DamageRollMax > 0, "Invalid simulation clock or damage roll.");
         Require(heroes.ContainsKey(tuning.DefaultHero) && estates.ContainsKey(tuning.DefaultEstate), "Unknown default hero or estate.");
         ValidateWorld(tuning, weapons);
-        return new(tuning, tools, heroes, estates, weapons, enemies);
+        var runtime = profile.Runtime is null ? null : LoadRuntime(roots, profile.Runtime, selection, tools, weapons);
+        return new(tuning, tools, heroes, estates, weapons, enemies, runtime);
     }
 
     public static RuntimeProfile LoadProfile(string directory, string profileName = "s2-baseline")
@@ -116,8 +119,9 @@ public static partial class ContentLoader
     }
 
     private static Dictionary<string, TDefinition> LoadSelected<TContent, TDefinition>(IEnumerable<string> roots,
-        string kind, string[] selectedIds, Func<TContent, TDefinition> project) where TContent : ContentRecord
+        string kind, string[] selectedIds, Func<TContent, TDefinition> project, bool allowS4 = false) where TContent : ContentRecord
     {
+        Require(selectedIds.All(id => NamespaceId().IsMatch(id)), $"Invalid selected namespace ID in {kind}.");
         Require(selectedIds.Distinct(StringComparer.Ordinal).Count() == selectedIds.Length, $"Duplicate selection in {kind}.");
         var index = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var file in roots.Select(root => Path.Combine(root, kind)).Where(Directory.Exists)
@@ -132,7 +136,7 @@ public static partial class ContentLoader
         foreach (var id in selectedIds.OrderBy(id => index[id], StringComparer.Ordinal))
         {
             var record = Read<TContent>(index[id]);
-            Require(record.DesignStatus == "s2-runtime", $"Profile cannot activate unimplemented candidate: {record.Id}");
+            Require(record.DesignStatus == "s2-runtime" || (allowS4 && record.DesignStatus == "s4-runtime"), $"Profile cannot activate unimplemented candidate: {record.Id}");
             result.Add(record.Id, project(record));
         }
         return result;
@@ -150,8 +154,8 @@ public static partial class ContentLoader
         Require(element.ValueKind != JsonValueKind.Null, $"Null content at {location}.");
         if (type == typeof(int))
         {
-            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks" };
-            var minimum = zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
+            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum" };
+            var minimum = location.EndsWith(".amount", StringComparison.Ordinal) ? -1000000 : zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
             Require(element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var number) && number >= minimum && number <= 1000000, $"Integer out of content bounds at {location}.");
             return;
         }
@@ -178,7 +182,20 @@ public static partial class ContentLoader
         foreach (var property in type.GetProperties())
         {
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
-            Require(element.TryGetProperty(name, out var member), $"Missing required property {location}.{name}.");
+            if (!element.TryGetProperty(name, out var member))
+            {
+                if (name is "runtime" or "runtimeProjection")
+                {
+                    continue;
+                }
+
+                throw new InvalidDataException($"Missing required property {location}.{name}.");
+            }
+            if (member.ValueKind == JsonValueKind.Null && new System.Reflection.NullabilityInfoContext().Create(property).ReadState == System.Reflection.NullabilityState.Nullable)
+            {
+                continue;
+            }
+
             ValidateRequiredShape(member, property.PropertyType, location + "." + name);
         }
     }

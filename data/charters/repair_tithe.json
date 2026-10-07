@@ -7,8 +7,8 @@
     "repair",
     "food"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 실제 차감하고 반경1400의 손상 건물을12 수리한다. 정상 전투 건물의 유지와 징집용 식량이 경쟁한다. 대상이 없으면 소비하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -24,5 +24,27 @@
   },
   "requirements": [
     "수확 식량이 창고에 들어오면"
-  ]
+  ],
+  "runtimeProjection": {
+    "policyCategory": "building",
+    "effects": [
+      {
+        "id": "core:repair_tithe_repair",
+        "trigger": "harvest",
+        "operation": "repair-nearest",
+        "subject": "building",
+        "amount": 12,
+        "radius": 1400,
+        "durationTicks": 0,
+        "foodCost": 2,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

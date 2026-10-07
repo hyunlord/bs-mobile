@@ -7,8 +7,8 @@
     "food",
     "growth"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 지불해 영지 안 일꾼 최대3명에게300틱 노동 강화를 적용한다. 식량 감소가 군사 모집 여력과 경쟁한다. 충성도 시스템은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -24,5 +24,27 @@
   },
   "requirements": [
     "이 헌장을 보유한 상태에서 수확 식량이 들어오면"
-  ]
+  ],
+  "runtimeProjection": {
+    "policyCategory": "people",
+    "effects": [
+      {
+        "id": "core:meal_oath_feed_workers",
+        "trigger": "harvest",
+        "operation": "worker-buff",
+        "subject": "people",
+        "amount": 3,
+        "radius": 1200,
+        "durationTicks": 300,
+        "foodCost": 2,
+        "conditions": [
+          {
+            "kind": "estate-inside",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

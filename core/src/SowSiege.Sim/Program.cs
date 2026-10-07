@@ -107,13 +107,31 @@ static void Run(string[] args)
     var gitHead = Git("rev-parse", "HEAD");
     var gitStatus = Git("status", "--porcelain");
     var sourceHash = SourceHash(gitRoot);
+    var stage = catalog.Runtime is null ? "S2" : "S4";
     var scope = scenario == "load" ? "S2 exact-load mechanics fixture; maintenance included; not natural gameplay" : shortened ? "S2 truncated headless mechanics fixture; not a full game" : "S2 full-duration headless gameplay simulation; balance not approved";
+    scope = scope.Replace("S2", stage, StringComparison.Ordinal);
     var metadata = new
     {
         profileId = profile.Id,
         profileSha256 = profileHash,
-        selectedIds = selection,
-        designMetadataPolicy = "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning",
+        selectedIds = new
+        {
+            selection.Weapons,
+            selection.Tools,
+            selection.Enemies,
+            selection.Heroes,
+            selection.Estates,
+            charters = profile.Runtime?.Charters ?? [],
+            items = profile.Runtime?.Items ?? [],
+            evolutions = profile.Runtime?.Evolutions ?? []
+        },
+        runtimeContractVersion = profile.Runtime?.ContractVersion,
+        cardCatalog = ContentLoader.CardCatalog(data, profile, includeTest, catalog),
+        effectCatalog = ContentLoader.EffectCatalog(data, profile, includeTest, catalog),
+        acquisitionCatalog = catalog.Runtime?.Tuning,
+        timelineSampleIntervalTicks = catalog.Tuning.World.TelemetryPeriodTicks,
+        charterSlots = catalog.Runtime?.Tuning.CharterSlots ?? 0,
+        designMetadataPolicy = catalog.Runtime is null ? "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning" : "Only explicit runtimeProjection executes; candidate prose and design damage coefficients are not executable rules",
         contentSha256 = contentHash,
         commit = gitHead ?? Environment.GetEnvironmentVariable("GITHUB_SHA") ?? "unavailable",
         gitDirty = gitStatus is null ? (bool?)null : gitStatus.Length != 0,
@@ -142,8 +160,8 @@ static void Run(string[] args)
     var metrics = new
     {
         schemaVersion = 1,
-        model = "headless-gameplay",
-        stage = "S2",
+        model = catalog.Runtime is null ? "headless-gameplay" : "headless-s4-league",
+        stage,
         scope,
         gameplayBalanceClaim = false,
         commit = metadata.commit,

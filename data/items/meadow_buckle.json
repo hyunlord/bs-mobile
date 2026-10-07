@@ -6,8 +6,8 @@
     "melee",
     "land"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 실제 근접 무기가 영지 안 씨앗 밭 근처에서 씨앗을 노리는 적에게 가하는 피해만4 증가한다. 조건 밖 이득은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,49 @@
   },
   "linkedToolIds": [
     "core:seed_bag"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:meadow_buckle_seed_guard",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-damage",
+        "amount": 4,
+        "radius": 800,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-kind",
+            "value": "weapon",
+            "minimum": 0
+          },
+          {
+            "kind": "equipment-tag",
+            "value": "melee",
+            "minimum": 0
+          },
+          {
+            "kind": "near-seed",
+            "value": null,
+            "minimum": 0
+          },
+          {
+            "kind": "enemy-target",
+            "value": "seed",
+            "minimum": 0
+          },
+          {
+            "kind": "estate-inside",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

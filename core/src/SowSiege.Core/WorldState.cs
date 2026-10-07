@@ -78,6 +78,8 @@ internal sealed class TrackedRandom(int seed)
 }
 internal sealed class WorldState
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public RuntimeState? Runtime;
     public int Tick;
     public int Season;
     public int NextId;

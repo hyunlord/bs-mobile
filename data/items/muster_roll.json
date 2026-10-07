@@ -6,8 +6,8 @@
     "people",
     "muster"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 귀환한 백성의 재징집 전 최소 휴식 시간을60틱 늘려 즉시 소집 인원을 줄인다. 이미 귀환 중인 사람 제외는 원래 규칙이며 새 효과로 집계하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,23 @@
   },
   "linkedToolIds": [
     "core:muster_horn"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:muster_roll_rest",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "draft-min-rest",
+        "amount": 60,
+        "radius": 0,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
 }

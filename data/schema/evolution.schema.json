@@ -45,7 +45,8 @@
       "type": "string",
       "enum": [
         "candidate",
-        "s2-runtime"
+        "s2-runtime",
+        "s4-runtime"
       ]
     },
     "implementationNote": {
@@ -168,6 +169,150 @@
         "name",
         "effect",
         "cost"
+      ],
+      "additionalProperties": false
+    },
+    "runtimeProjection": {
+      "type": "object",
+      "properties": {
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+              },
+              "trigger": {
+                "enum": [
+                  "attack",
+                  "harvest",
+                  "repair",
+                  "plant",
+                  "farm-hit",
+                  "draft",
+                  "return-start",
+                  "return-arrival",
+                  "estate-cross",
+                  "kill",
+                  "modifier"
+                ]
+              },
+              "operation": {
+                "enum": [
+                  "damage-pulse",
+                  "repair-nearest",
+                  "worker-buff",
+                  "rally-returners",
+                  "plant-path",
+                  "shield-farms",
+                  "harvest-near",
+                  "damage-young-plots",
+                  "extend-duty",
+                  "guard-return",
+                  "pause-neighbor-growth",
+                  "return-via-building",
+                  "planting-bias",
+                  "stat-add"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              "radius": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "durationTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "foodCost": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "equipment-owned",
+                        "owned-tag",
+                        "equipment-tag",
+                        "equipment-id",
+                        "equipment-kind",
+                        "growth-target",
+                        "near-seed",
+                        "near-ripe",
+                        "near-building",
+                        "estate-inside",
+                        "estate-outside",
+                        "building-ruined",
+                        "building-new",
+                        "person-role",
+                        "enemy-target",
+                        "season",
+                        "count",
+                        "shield-consumed"
+                      ]
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "minimum": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "value",
+                    "minimum"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "id",
+              "trigger",
+              "operation",
+              "subject",
+              "amount",
+              "radius",
+              "durationTicks",
+              "foodCost",
+              "conditions"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "effects"
       ],
       "additionalProperties": false
     }

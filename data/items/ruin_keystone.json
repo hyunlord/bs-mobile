@@ -6,8 +6,8 @@
     "repair",
     "building"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 폐허의 첫 재건 작업에만 수리량8을 추가한다. 정상 건물이나 새 터는 이득이 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:meadow",
@@ -22,5 +22,29 @@
   },
   "linkedToolIds": [
     "core:carpenter_hammer"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "repair"
+    ],
+    "effects": [
+      {
+        "id": "core:ruin_keystone_rebuild",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "repair-amount",
+        "amount": 8,
+        "radius": 0,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "building-ruined",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }
