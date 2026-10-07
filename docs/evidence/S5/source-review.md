@@ -9,3 +9,5 @@
 The static document check additionally verifies seven game headings, all ten original top-level sections plus 2.1, defined reference links, local links and an empty diff for the three attached design originals. It does not infer remote availability from a link or treat source publication as proof of its estimates.
 
 Final navigation review also found that the evidence-ledger classifier mistook a PC Gamer article reference ending in -play for an official store. Classification now uses explicit URL domains, and the article is correctly external. No reported blocker remains. Missing current SKU entitlements, exact platform/country financial coverage and comparable retention remain explicitly 미확인 in the report. Dynamic store content can change after the checked date.
+
+Final quality/navigation audit: 17 local links resolve; 55 source definitions and 109 uses bind; original design files unchanged and no Core/data/dependency diff. Guard output categories were verified as 24 basic tests plus 11 repository regressions, correcting an intermediate audit that overlooked the latter rows. Reports now distinguish the categories.
