@@ -42,3 +42,14 @@ DTO 투영이 신규 메타데이터/설계 계수를 기존 Core 값에 섞지 
 통합 검사에서 발견한 `uniqueLoop.stages[].id="people"`의 오탐 수정도 확인했다. `tools/ArchitectureGuard/Guard.cs:101`은 영웅/영지 문맥을 모든 자손 객체에 전파하지 않고, 현재 객체의 정본 `id`와 명시적인 heroId/estateId 참조를 수집한다. Core에 예외를 추가하거나 일반어 목록을 허용하지 않는다. 기존 namespace ID 정규식, 엔진/의존성 검사, 숫자 상수 검사는 변경하지 않았다.
 
 직접 실행한 `/Users/rexxa/.dotnet/dotnet run --project tools/ArchitectureGuard -- --self-test`는 종료0이었다. `RepositoryTests.cs`의 회귀 사례는 순환 단계 people 허용, 실제 영지 arbitrary_meadow 차단, 중첩 heroId/hero.id 차단, 실제 영웅 ID 자체가 people인 경우 차단을 모두 확인했다. 출력은 `guard-review-selftest.txt`로 보관한다. 이어 실제 저장소에 실행한 Guard는 `ArchitectureGuard: 0 violation(s).`, 종료0이었다. 이 결과는 AG002 오탐 해결과 실제 ID 보호 유지의 좁은 증거이며 전체 CI 결과를 대신하지 않는다.
+
+## PR #37 프로필 확장 P2 후속 검토
+
+관문 결과: 좁은 프로필 확장 검토 PASS. `tools/validate-content.mjs:242` 이후와 추가 회귀 테스트의 diff를 독립 검토했다. 이전의 프로필별 실행 상태 전수 일치 검사는 모든 프로필이 같은 레코드를 선택하도록 강제하므로, 부분집합 및 별도 확장 프로필을 막았다. 현재는 정확한 수량을 `profiles/s2-baseline.json`에 한정하고, 각 프로필에서 종류·존재·후보 상태·정본/테스트 경계를 검사한 뒤 모든 프로필 선택의 합집합과 실행 상태를 비교한다. 기준 프로필 파일 자체의 존재도 필수다. 선택되지 않은 후보를 허위 실행 상태로 바꾸는 경우는 여전히 거절된다.
+
+직접 재실행:
+
+- `node --test tools/test-content-validator.mjs`: 53 tests, 53 pass, 0 fail, 종료0. 구현된 부분집합 허용, 후보 편입 거절, 기준 프로필 바이트를 보존하는 새 테스트 도구의 별도 프로필 편입 회귀가 포함된다.
+- `node /tmp/bs-s3-mutations.mjs`: 14/14 거절. `/tmp/bs-s3-profile-review-mutations.txt`와 갱신된 변이 JSON에 결과 보관.
+
+새 프로필의 선언은 실행 가능한 일반 필드의 선택 범위를 지정한다. 콘텐츠 고유 설명의 실제 구현 여부까지 정적 검증기가 증명하는 것은 아니며, 프로필을 실행했을 때의 참조 폐쇄와 동작은 Loader/실행 검증이 맡는다. 새 도구·영웅의 21600 tick 반복 실행과 Core diff=0 증거는 통합 담당자가 별도로 실행한 증거이며 여기서 중복 실행했다고 주장하지 않는다. 이 후속 변경에서 새로운 차단 결함을 찾지 못했다.

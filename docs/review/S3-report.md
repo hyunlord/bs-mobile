@@ -1,8 +1,8 @@
-관문 결과: S3 로컬 PASS 7/7 — 정본 219개, 반시너지 11쌍, 순환 연결 130개. 원격 CI 판정 대기.
+관문 결과: S3 PASS 7/7 — 정본 219개, 반시너지 11쌍, 순환 연결 130개. 원격 quality·secrets 통과.
 
 # S3 콘텐츠 풀 검증
 
-연결: [이슈 #36](https://github.com/hyunlord/bs-mobile/issues/36). 원본 의뢰서와 디자인 세 문서는 수정하지 않았다.
+연결: [이슈 #36](https://github.com/hyunlord/bs-mobile/issues/36), [PR #37](https://github.com/hyunlord/bs-mobile/pull/37), [구현 검증 CI 37689955116](https://github.com/hyunlord/bs-mobile/actions/runs/37689955116), 검증 소스 `0e4da17ee6a72b3ffed8e69833c1ce04d3f500e4`. 원본 의뢰서와 디자인 세 문서는 수정하지 않았다.
 
 ## 전달물과 읽는 순서
 
@@ -51,7 +51,7 @@ node tools/content-report.mjs --check
 
 ## 발견하고 수정한 문제
 
-- 첫 원격 CI는 PR 제목의 Conventional Commits 접두사가 빠져, 다음 실행은 필수 본문 제목이 빠져 각각 차단됐다. 제목과 필수 PR 본문 항목(Gate result / Verification / Screens)을 모두 맞춰 새 실행으로 다시 검증한다. 정책 우회는 하지 않았다.
+- 첫 원격 CI는 PR 제목의 Conventional Commits 접두사가 빠져, 다음 실행은 필수 본문 제목이 빠져 각각 차단됐다. 제목과 필수 PR 본문 항목(Gate result / Verification / Screens)을 모두 맞춰 새 실행에서 전체 검증을 통과했다. 정책 우회는 하지 않았다.
 
 - 추가 프로필에도 모든 기준 레코드를 강제로 요구하던 검증을 수정했다. 기준 프로필의 정확한 수량은 유지하면서 구현 상태의 전체 참조는 프로필 선택 합집합으로 검사한다. 새 프로필이 새 공통 규칙 도구를 선택할 수 있고, 선택되지 않은 후보의 허위 구현 표시는 계속 차단한다.
 - 성장 조건 JSON의 속성 순서만 바꾼 중복 진화를 검증기가 놓쳤다. 조건의 의미를 정규화한 키로 비교하도록 수정하고 회귀 검사를 추가했다.
