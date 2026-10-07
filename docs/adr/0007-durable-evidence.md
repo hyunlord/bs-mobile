@@ -1,11 +1,32 @@
 # ADR 0007: 커밋별 지표를 소스와 분리해 영구 보존
 
-상태: 채택, 2026-10-08. 연결 #20.
+상태: 채택. 날짜: 2026-10-08. 연결 이슈: #20.
 
-PR마다 품질·비밀 검사를 필수로 실행한다. 성공한 CI의 지표 JSON은 main의 신뢰된 workflow_run 생성기로 검증하고, metrics-history prerelease 자산으로 누적한다. 데이터만 읽으며 PR 코드를 특권 토큰으로 실행하지 않는다. SHA·실행 환경·설정·seed·시각과 원본을 함께 보존한다. Actions artifact는 90일 보조 증거, release JSON/ZIP은 명시 삭제 전까지 이력이다. HTML의 로컬 원본 링크는 metrics-history.zip을 풀어 연다.
+## 맥락
 
-실측 API 확인: gh run download --pattern은 이름별 하위 폴더를 만든다. Actions API에서 정확한 artifact 이름을 얻어 --name으로 내려받으면 지정 폴더에 metrics.json이 존재한다. 이 차이를 실제 CI artifact로 재현하고 수정했다.
+PR 품질·비밀 검사만으로는 장기 성능 변화를 추적할 수 없다. Actions artifact는 보존 기한이 있으며, 지표 생성이 main을 직접 수정하면 이슈→PR→CI 흐름을 우회하거나 재귀 빌드를 일으킨다. 외부 PR 코드를 쓰기 토큰으로 실행하는 경로도 피해야 한다.
 
-S0의 도구 발동·성장 합계는 합성 모델이다. scaffoldDamageCv는 정책별 합성 피해 평균의 변동계수이며 게임 생존율/밸런스가 아니다. balanceDispersion은 S0에서 null을 강제한다. tick p95와 게임 밸런스는 S2/S4에서 별도 모델·시리즈로 이어간다.
+실제 실행에서 `gh run download --pattern`은 이름별 하위 폴더를 만들었다. 따라서 첫 archival workflow는 `metrics.json` 위치 확인에서 실패했다. Actions API의 정확한 artifact 이름으로 `--name` 다운로드하면 지정 폴더에 파일이 존재함을 같은 원본으로 확인했다.
 
-소스 트리는 issue→PR→CI로만 변경한다. 지표 생성으로 main 직접 푸시나 재귀 빌드를 만들지 않는다. 실패 CI는 합격 측정으로 축적하지 않고 Actions 실패 로그로 보존한다. 의도적인 위반 PR은 절대 병합하지 않는다.
+## 결정
+
+성공한 CI JSON은 main의 신뢰된 workflow_run 생성기로 검증하고 metrics-history prerelease 자산으로 누적한다. SHA·실행 환경·설정·seed·시각과 원본을 함께 보존한다. PR 코드를 특권 토큰으로 실행하지 않고 데이터만 읽는다. Actions artifact는 90일 보조 증거, release JSON/ZIP은 명시 삭제 전까지 이력이다. HTML과 원본 링크는 metrics-history.zip을 풀어 연다.
+
+아티팩트 이름은 Actions API에서 조회해 정확한 `--name`으로 내려받는다. 실패 CI는 합격 측정으로 축적하지 않고 실패 로그로 보존한다. 소스 변경은 계속 이슈→PR→CI로만 병합한다.
+
+## 결과와 비용
+
+소스 저장소는 측정 자동 커밋으로 오염되지 않으며 재귀 CI도 발생하지 않는다. 대신 별도 release 자산 관리와 다운로드·병합·렌더 단계가 필요하다. GitHub 저장소/release 삭제까지 막는 외부 백업은 아니므로 단계 ZIP에도 원본을 포함한다. 역사 JSON을 읽는 비용은 축적량에 따라 증가한다.
+
+S0 `scaffoldDamageCv`는 정책별 합성 피해 평균의 변동계수이며 게임 밸런스가 아니다. `balanceDispersion`은 null을 강제한다. S2/S4는 새 모델·시리즈로 분리하여 산술 합성 모델과 비교하지 않는다.
+
+## 거절한 대안
+
+- main에 지표 자동 push: 보호된 소스 흐름을 우회하고 재귀 빌드를 유발하므로 거절.
+- Actions artifact만 사용: 90일 뒤 장기 추세 원본이 사라질 수 있어 거절.
+- PR 브랜치 생성기를 쓰기 토큰으로 실행: 비신뢰 코드가 저장소를 수정할 수 있어 거절.
+- 임의 외부 데이터베이스: S0 범위에 서버·자격증명·운영 비용을 추가하므로 거절.
+
+## 검증
+
+실패 run 37679685837에서 pattern 하위 폴더 가설을 재현했다. 성공 CI run 37679235067을 정확한 artifact 이름으로 다시 다운로드하여 최상위 metrics.json 존재 및 지표 생성기 성공을 확인했다. 로컬 생성기는 잘못된 SHA/nonfinite 수치 거부, 반복 입력 멱등성, 두 커밋 이력 유지를 검사했다. 수정 workflow의 실제 release 생성·두 커밋 누적 증거는 S0 최종 증거 PR에 기록한다. 확인 전에는 영구 보관 관문을 통과로 주장하지 않는다.
