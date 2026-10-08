@@ -28,6 +28,10 @@
 
 로컬 검사 자료는 `artifacts/phase1a-u3-core-check-frozen.log`, `artifacts/phase1a-u3-unity-check-final.log`, `artifacts/unity/{EditMode,PlayMode}.xml`, `artifacts/unity/app-recordings/`, `artifacts/unity/screenshots/`에 있다. 원본 계정/라이선스 로그는 공개하지 않는다. CSV에서 재생성 가능한 출력과 ZIP·CRC·영수증은 올리지 않는다.
 
+최종 APK는 수정 사항 없는 커밋 `92415c5d09d612f485daf0d4212de4aabfbafbbb`에서 다시 검증했다. `artifacts/phase1a-u3-unity-check-clean.log`의 전체 검사와 새 App 기록 3개의 CLI 검증이 통과했다. APK는 40,823,623바이트이며 소스 해시는 `985AE8271403F6E12FFFF79BC696CF5145C42C4764833D404384F5A2E455DCF5`다. 이 후속 문서 기록은 APK의 빌드 커밋을 바꾸지 않는다.
+
+[PR92](https://github.com/hyunlord/bs-mobile/pull/92)의 최초 CI는 Conventional Commits 접두사 없는 PR 제목을 거부했다. 제목을 수정한 [CI](https://github.com/hyunlord/bs-mobile/actions/runs/37798407124)는 전체 통과했다. 최초 실패는 삭제하지 않으며, 이 문서 커밋을 포함한 최종 HEAD도 병합 전 CI를 통과해야 한다.
+
 [플레이 목록](../runbooks/phase1a-playtest.md)과 [기기 기록 런북](../runbooks/device-play.md)에 설치·한 손 이동·조준 비교·도구/무기 판·기록 추출 순서를 적었다. #89는 비실기 구현 완료로 닫고 Android 비교를 포함하는 #90과 전체 #83은 유지한다. #85 조준 기본값은 사용자 플레이 판단을 기다린다.
 
 ## 구조 결정과 남은 위험
