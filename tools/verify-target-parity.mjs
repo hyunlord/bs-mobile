@@ -49,11 +49,17 @@ export function runProcess(command, args, label) {
   });
 }
 
-export async function exportFrozenData(commit, destination) {
+const frozenInputSource = 'd3c1652af921e7bf9ea36fa2ee709a1bf36e4183';
+const frozenDataTree = 'f0599e5ce72d94e4286832f64f0a607f4497323b';
+
+export async function exportFrozenData(commit, destination, expectedTree, cwd = process.cwd()) {
+  const git = (args, options = {}) => execute('git', args, { ...options, cwd });
+  assert.match(expectedTree, /^[0-9a-f]{40}$/i, 'historical data must have a pinned tree SHA');
   assert.match(commit, /^[0-9a-f]{40}$/i, 'historical source must be a full commit SHA');
-  try { await execute('git', ['cat-file', '-e', commit + '^{commit}']); }
+  try { await git(['cat-file', '-e', commit + '^{commit}']); }
   catch { throw new Error('Missing historical parity commit ' + commit + '; fetch full repository history.'); }
-  const listing = (await execute('git', ['ls-tree', '-r', '-z', commit, '--', 'data/'], { maxBuffer: 4 * 1024 * 1024 })).stdout;
+  assert.equal((await git(['rev-parse', commit + ':data'])).stdout.trim(), expectedTree, 'historical data tree mismatch');
+  const listing = (await git(['ls-tree', '-r', '-z', commit, '--', 'data/'], { maxBuffer: 4 * 1024 * 1024 })).stdout;
   const entries = listing.split('\0').filter(Boolean);
   assert.ok(entries.length > 0, 'historical data tree is empty');
   for (const entry of entries) {
@@ -63,7 +69,7 @@ export async function exportFrozenData(commit, destination) {
     assert.ok(relative && !relative.includes('\\') && !relative.split('/').some(part => ['', '.', '..'].includes(part)), 'unsafe historical data path');
     const target = path.join(destination, relative);
     await fs.mkdir(path.dirname(target), { recursive: true });
-    const { stdout } = await execute('git', ['show', commit + ':' + match[3]], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 });
+    const { stdout } = await git(['show', commit + ':' + match[3]], { encoding: 'buffer', maxBuffer: 8 * 1024 * 1024 });
     assert.equal(createHash('sha1').update(Buffer.from('blob ' + stdout.length + '\0')).update(stdout).digest('hex'), match[2], 'historical blob bytes mismatch');
     await fs.writeFile(target, stdout, { flag: 'wx' });
   }
@@ -78,7 +84,7 @@ export async function runParity(output, workers = 4) {
   assert.equal(new Set(baseline.cases.map(c => c.id)).size, 15);
   await fs.mkdir(output); // Refuse overwrite so failed evidence remains attributable.
   const historicalData = path.resolve(output, 'legacy-data');
-  const historicalDataFiles = await exportFrozenData(baseline.sourceCommit, historicalData);
+  const historicalDataFiles = await exportFrozenData(frozenInputSource, historicalData, frozenDataTree);
   const raw = path.join(output, 'raw');
   await fs.mkdir(raw);
   const sourceCommit = (await execute('git', ['rev-parse', 'HEAD'])).stdout.trim();
@@ -141,7 +147,7 @@ export async function runParity(output, workers = 4) {
     return { caseId: c.id, stateHash: (actualGolden ?? c).hash, gameplaySha256: (actualGolden ?? c).gameplaySha256, repeatsPerTarget: 3, passed: true };
   });
   assert.equal((await execute('git', ['rev-parse', 'HEAD'])).stdout.trim(), sourceCommit, 'commit changed during parity');
-  const summary = { sourceCommit, sourceDirty, schemaVersion: 1, passed: true, baselineSource: baseline.sourceCommit, historicalInput: { sourceCommit: baseline.sourceCommit, files: historicalDataFiles, activeRootSubstitution: historicalData }, candidateInput: 'active data with weapon-growth-79 profile', cases: rows, targetBindings: targets.map(t => ({ name: t.name, ...t.binding })), executions: rows.length * 6, scope: 'Separate .NET 8 host processes comparing net8.0 and netstandard2.1 Core; not Unity/IL2CPP runtime validation.' };
+  const summary = { sourceCommit, sourceDirty, schemaVersion: 1, passed: true, baselineSource: baseline.sourceCommit, historicalInput: { sourceCommit: frozenInputSource, dataTree: frozenDataTree, files: historicalDataFiles, activeRootSubstitution: historicalData }, candidateInput: 'active data with weapon-growth-79 profile', cases: rows, targetBindings: targets.map(t => ({ name: t.name, ...t.binding })), executions: rows.length * 6, scope: 'Separate .NET 8 host processes comparing net8.0 and netstandard2.1 Core; not Unity/IL2CPP runtime validation.' };
   await fs.writeFile(path.join(output, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
   console.log(`PASS parity: ${rows.length} cases / ${rows.length * 6} executions; ${output}`);
   return summary;

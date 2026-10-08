@@ -35,3 +35,25 @@ test('large CLI stdout is drained without buffering; failures identify case and 
   await runProcess(process.execPath, ['-e', "process.stdout.write('x'.repeat(5 * 1024 * 1024))"], 'large/net8');
   await assert.rejects(runProcess(process.execPath, ['-e', "process.stderr.write('failure');process.exit(7)"], 'case/standard21'), /case\/standard21.*7.*failure/);
 });
+
+test('historical export requires exact tree and reachable published commit before writing', async () => {
+  const fs = await import('node:fs/promises');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const { execFileSync } = await import('node:child_process');
+  const { exportFrozenData } = await import('./verify-target-parity.mjs');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'parity-tree-'));
+  const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+  try {
+    git('init', '-q'); git('config', 'user.name', 'Fixture'); git('config', 'user.email', 'fixture@example.invalid');
+    await fs.mkdir(path.join(root, 'data')); await fs.writeFile(path.join(root, 'data/input.json'), '{"frozen":true}\n');
+    git('add', 'data'); git('commit', '-qm', 'Freeze fixture');
+    const commit = git('rev-parse', 'HEAD'), tree = git('rev-parse', 'HEAD:data');
+    const target = path.join(root, 'export');
+    await assert.rejects(exportFrozenData(commit, target, '0'.repeat(40), root), /data tree mismatch/);
+    await assert.rejects(fs.stat(target), { code: 'ENOENT' });
+    await assert.rejects(exportFrozenData('0'.repeat(40), target, tree, root), /Missing historical parity commit/);
+    assert.equal(await exportFrozenData(commit, target, tree, root), 1);
+    assert.equal(await fs.readFile(path.join(target, 'input.json'), 'utf8'), '{"frozen":true}\n');
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
+});
