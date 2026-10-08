@@ -1,4 +1,4 @@
-관문: 부분 — R3 검증 절차 작성, 이 문서의 명령 실행 증거 0건. 집중·회귀·리그 결과는 실행 담당자의 증거를 대기한다.
+관문: 통과 — .NET 138/138·콘텐츠 123/123·잔재 보고 5/5, 기본·더미 각 21,600틱×3회 검증. 밸런스는 별도 R3 보고에서 FAIL(c)로 보존한다.
 변경: 선택 A안의 잔재 생성부터 실제 작물 성장·수확까지 검증하는 절차를 고정한다.
 결정: 기본 영웅·영지는 각 1개, 초기 설정은 1,000개·900틱·600 world-unit이며 R2 관문에 맞춰 재보정하지 않는다.
 한계: 영웅 운반·고유 능력·Unity·실기·재미 검증은 포함하지 않는다.
@@ -35,7 +35,7 @@ dotnet run --project core/src/SowSiege.Sim -c Release -- --data data --profile s
 
 ## 3. 더미 데이터와 역사 보존
 
-데이터 담당자가 확정한 더미는 `test:scout`·`test:moor`이며, 영지 설정은 보관 2개·수명 60틱·반경 130이다. 기본과 다른 설정으로 같은 공통 고리를 검증한다. 아래 실행은 이 문서에서 아직 검증하지 않았다.
+데이터 담당자가 확정한 더미는 `test:scout`·`test:moor`이며, 영지 설정은 보관 2개·수명 60틱·반경 130이다. 기본과 다른 설정으로 같은 공통 고리를 검증한다. 아래 실행은 측정 소스 `d9653353f0c17fcea756910d9b1db28d400680b6`에서 완료했다.
 
 ```sh
 dotnet run --project core/src/SowSiege.Sim -c Release -- --data data --profile s2-baseline --include-test --hero test:scout --estate test:moor --seed 42 --policy mixed --people-rule C --iterations 3 --output artifacts/r3-remains/dummy-results.json --metrics artifacts/r3-remains/dummy-metrics.json
@@ -54,6 +54,12 @@ dotnet test core/tests/SowSiege.Tests -c Release
 
 ## 4. R2 조건 재실행과 보관
 
-[S4b 사전 선언](../league/S4b-protocol.md)·[동결](../league/S4b-freeze.md)의 동일한 A/B 프로토콜·seed·위협·XP 수치를 재사용한다. R3용 결과 디렉터리와 원자료 식별자를 별도로 쓰고 R2 파일을 덮어쓰지 않는다. 실행 명령은 R3 프로필 경로가 고정된 뒤 실행 담당자의 이슈/보고에 기록한다. 결과가 나쁘다는 이유로 관문·정책·전역 수치를 바꾸지 않는다.
+[S4b 사전 선언](../league/S4b-protocol.md)·[동결](../league/S4b-freeze.md)의 동일한 A/B 프로토콜·seed·위협·XP 수치를 재사용한다. R3용 결과 디렉터리와 원자료 식별자를 별도로 쓰고 R2 파일을 덮어쓰지 않는다. 실제 실행은 `node tools/s4b-league.mjs A --profile s4b-02 --output <빈 외부 A 경로> --workers 4` 및 같은 명령의 `B` 변형이다. A 576·B 288사례를 각각 세 번 실행했다. 결과가 나쁘다는 이유로 관문·정책·전역 수치를 바꾸지 않는다.
 
 동일한 반복 실행을 독립 표본으로 세지 않는다. 잔재 보존식·집중 인과 증거·전체 리그 밸런스 판정을 분리해 보고한다. 원자료는 외부 증거 보관 정책을 따르고, 저장소에는 요약·매니페스트·재현 안내만 남긴다. ZIP/Release 다운로드·깨끗한 해제·전체 해시 검증 전에는 전달 무결성 통과라고 쓰지 않는다.
+
+## 완료된 실행 증거
+
+[R3 보고](../review/R3-report.md)와 [증거 안내](../evidence/R3/README.md)에 소스·결과·보관 경로를 연결했다. 외부 `technical/bs-r3-fullcheck.log`의 전체 검사와 `technical/full-default-dummy-verification.json`의 수동 CLI 결과를 함께 보존한다. 기본은 Created 2,292 = 흡수 698 + 만료 1,447 + 활성 147, 비옥도 소비/성장 605, 비옥도 사용 주기 수확 185다. 더미는 586 = 27 + 557 + 2, 상한 폐기 1,369, 소비/성장 17, 비옥도 사용 주기 수확 8이다. 각 세 반복 해시가 일치한다. 동일 초기 상태의 비활성 대조에서는 성장량 1, 활성에서는 3이며 실제 단계·첫 수확 시각도 비교했다.
+
+이 수동 실행은 이전 기술 프로필을 쓴다. `s4b-02`의 비선형 XP·위협 설정을 사용한 전체 밸런스 판정과 혼합하지 않는다. 전체 수확량을 비옥도의 추가 인과 효과로 귀속하지 않는다.

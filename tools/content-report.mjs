@@ -39,9 +39,9 @@ const output = [
   '# 현재 콘텐츠 풀', '',
   '이 문서는 `node tools/content-report.mjs`로 정본 JSON에서 생성한다. 후보 수량·태그·참조의 검증은 `node tools/validate-content.mjs`가 담당한다. 이 표는 구현 또는 밸런스 승인 증거가 아니다.', '',
   'R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경 `core:sprout_march`이다. 새싹 변경은 데이터의 `remainsLoop`로 처치 유해의 보관·만료·밭 흡수를 설정한다. 역사적 [S3 후보 표](S3-pool.md), [세 후보 비교](S3-base-proposals.md), [확장 이름 목록](S3-expansion-concepts.md)은 당시 기록으로 보존한다. 실행 검증 결과는 별도 R3 보고서를 따른다.', '',
-  '`s2-runtime`은 기존 S2 기본 수치 동작만 실행된다는 뜻이다. 추가 고유 효과·계수·연결 설명은 설계 후보다. `candidate`는 실행 프로필에 자동 편입되지 않는다. 발동 `damageCoefficient`는 비교 설계용이며 S2 정수 피해에 곱하지 않는다. 바닥값은 측정된 60–70% 보증이 아니다.', '',
+  '`s2-runtime`은 S2 당시 기본 실행 대상으로 분류된 기록이며, 이후 구현된 동작 전체를 제한하는 표시는 아니다. R3에서는 영지의 선택적 `remainsLoop`를 읽어 처치 유해의 보관·만료·밭 흡수를 실행하는 공통 기능이 구현되었다. 이 기능은 영웅의 유해 운반 능력이나 설명에 있는 모든 고유 효과의 구현을 뜻하지 않는다. `candidate`는 실행 프로필에 자동 편입되지 않는다. 발동 `damageCoefficient`는 비교 설계용이며 S2 정수 피해에 곱하지 않는다. 바닥값은 측정된 60–70% 보증이 아니다.', '',
   '## 수량', '',
-  table(['종류', '레코드 수', 'S2 기본 실행 레코드'], kinds.map(([directory, label]) => [label, records.filter((r) => r.directory === directory).length, records.filter((r) => r.directory === directory && r.record.designStatus === 's2-runtime').length])),
+  table(['종류', '레코드 수', 's2-runtime 분류 레코드'], kinds.map(([directory, label]) => [label, records.filter((r) => r.directory === directory).length, records.filter((r) => r.directory === directory && r.record.designStatus === 's2-runtime').length])),
   `기본 순환 연결을 명시한 무기·도구·물품: ${links.length}개. 의미를 가진 상호 비용은 아래 반시너지 표에서 검토한다.`, '',
 ];
 for (const [directory, label] of kinds) {
