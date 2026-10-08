@@ -17,7 +17,7 @@ public sealed class MechanicsTests
     public void EveryToolDamagesRealEnemyAndChangesActualWorld(string target)
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         var tool = Tool(catalog, target);
         var enemy = new EnemyState { Id = world.AllocateId(), Definition = catalog.Enemies.Keys.First(), Position = new(world.Lord.X + 1, world.Lord.Y), Health = 1000 };
@@ -42,7 +42,7 @@ public sealed class MechanicsTests
         var catalog = Catalog();
         var worldTuning = catalog.Tuning.World;
         catalog = catalog with { Tuning = catalog.Tuning with { World = worldTuning with { Farms = worldTuning.Farms with { StageTicks = [1, 1, 1, 2] } } } };
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         var estate = new EstateSystem(catalog, Options(catalog), world, "C", new(catalog.Tuning.World.Map.CellSize));
         estate.ApplyGrowth(Tool(catalog, "land"));
@@ -59,7 +59,7 @@ public sealed class MechanicsTests
     public void DestroyedBuildingRemainsRuinAndHammerRebuildsIt()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         var tool = Tool(catalog, "building");
         var estate = new EstateSystem(catalog, Options(catalog), world, "C", new(catalog.Tuning.World.Map.CellSize));
@@ -82,8 +82,8 @@ public sealed class MechanicsTests
     public void WorkerHornChangesActualGrowthRatherThanOnlyLedger()
     {
         var catalog = Catalog();
-        var first = new Simulation(catalog, Options(catalog, "B"));
-        var second = new Simulation(catalog, Options(catalog, "B"));
+        var first = SimulationFactory.Create(catalog, Options(catalog, "B"));
+        var second = SimulationFactory.Create(catalog, Options(catalog, "B"));
         var firstEstate = new EstateSystem(catalog, Options(catalog), first.World, "B", new(catalog.Tuning.World.Map.CellSize));
         var secondEstate = new EstateSystem(catalog, Options(catalog), second.World, "B", new(catalog.Tuning.World.Map.CellSize));
         firstEstate.ApplyGrowth(Tool(catalog, "land")); secondEstate.ApplyGrowth(Tool(catalog, "land"));
@@ -97,7 +97,7 @@ public sealed class MechanicsTests
     public void FirstKillingEnemyOwnsDeathCause()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         world.People.Clear();
         world.LordHealth = 1;
@@ -114,7 +114,7 @@ public sealed class MechanicsTests
     public void LevelHasNoGameplayCapAndOffersThreeDistinctCardsWithRarity()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         simulation.World.Level = 1000;
         simulation.World.Experience = catalog.Tuning.World.Progression.BaseExperience + 1000L * catalog.Tuning.World.Progression.ExperiencePerLevel;
         new ProgressionSystem(catalog, Options(catalog), simulation.World, new(42)).Tick();
@@ -131,7 +131,7 @@ public sealed class MechanicsTests
     public void BaselineAllyDamageDoesNotInflateWeaponOrToolLedgers()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         world.Enemies.Add(new() { Id = world.AllocateId(), Definition = catalog.Enemies.Keys.First(), Position = world.Estate, Health = 1000 });
         var spatial = new SpatialHash(catalog.Tuning.World.Map.CellSize);
@@ -147,8 +147,8 @@ public sealed class MechanicsTests
     {
         var catalog = Catalog();
         var reversed = catalog with { Tools = catalog.Tools.Reverse().ToDictionary(), Enemies = catalog.Enemies.Reverse().ToDictionary() };
-        var first = new Simulation(catalog, Options(catalog));
-        var second = new Simulation(reversed, Options(catalog));
+        var first = SimulationFactory.Create(catalog, Options(catalog));
+        var second = SimulationFactory.Create(reversed, Options(catalog));
         for (var tick = 0; tick < 120; tick++) { first.Tick(); second.Tick(); }
         Assert.Equal(first.Result().Hash, second.Result().Hash);
     }

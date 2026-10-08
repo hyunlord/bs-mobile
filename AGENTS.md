@@ -6,7 +6,7 @@
 
 ## 경계와 위치
 
-- `core/src/SowSiege.Core`: 순수 .NET 8 C#, 결정론 규칙. UnityEngine, 엔진 SDK, 시스템 시각, 비결정론 RNG, 네트워크·파일 I/O에 의존하지 않는다. seed·입력·설정·콘텐츠를 밖에서 주입한다.
+- `core/src/SowSiege.Core`: 순수 BCL, C# 9, net8.0 + netstandard2.1 결정론 규칙. UnityEngine, 엔진 SDK, 시스템 시각, 비결정론 RNG, 네트워크·파일 I/O에 의존하지 않는다. seed·입력·설정·콘텐츠·상태 해시 codec을 밖에서 주입한다. 역사 해시를 유지하며 실제 두 타깃 DLL 비교를 Unity/IL2CPP 실행 검증으로 확대하지 않는다.
 - `core/src/SowSiege.Sim`: JSON 로딩·콘솔·봇 실행과 결과 직렬화. Core를 호출한다.
 - `core/tests/SowSiege.Tests`: xUnit 기능·결정론·확장성 검사.
 - `core/bench/SowSiege.Bench`: BenchmarkDotNet 성능 측정. 하드웨어·설정·commit을 같이 기록한다.

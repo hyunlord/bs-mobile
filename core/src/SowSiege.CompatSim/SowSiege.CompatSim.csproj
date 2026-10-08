@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <DefineConstants>$(DefineConstants);COMPAT_CORE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../SowSiege.Sim/*.cs" Link="%(Filename)%(Extension)" />
+    <Reference Include="SowSiege.Core">
+      <HintPath>../SowSiege.Core/bin/$(Configuration)/netstandard2.1/SowSiege.Core.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+  <Target Name="RequireCompatibilityCore" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('../SowSiege.Core/bin/$(Configuration)/netstandard2.1/SowSiege.Core.dll')" Text="Build the netstandard2.1 Core target before CompatSim." />
+  </Target>
+</Project>

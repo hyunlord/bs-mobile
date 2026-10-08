@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "Symbol": "SowSiege.Core.Position.RecordHashMultiplier",
+    "Value": "1521134295",
+    "Reason": "Magnitude of the C# compiler record-struct hash multiplier; subtraction preserves the former generated negative multiplier exactly. Compatibility algorithm, not gameplay tuning."
+  }
+]

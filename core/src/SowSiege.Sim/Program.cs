@@ -10,7 +10,13 @@ using SowSiege.Sim;
 
 try
 {
-    Run(args);
+    var coreAssembly = CoreAssemblyMetadata.VerifyHostBinding();
+    if (args.Length == 2 && args[0] == "--assembly-metadata")
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(args[1]))!);
+        File.WriteAllText(args[1], JsonSerializer.Serialize(new { core = coreAssembly }, HostJson.CreateOptions(camelCase: true, indented: true)) + Environment.NewLine);
+    }
+    else { Run(args, coreAssembly); }
     return 0;
 }
 catch (Exception error) when (error is ArgumentException or InvalidOperationException or IOException or InvalidDataException or JsonException or OverflowException)
@@ -19,7 +25,7 @@ catch (Exception error) when (error is ArgumentException or InvalidOperationExce
     return 2;
 }
 
-static void Run(string[] args)
+static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
 {
     var valueOptions = new HashSet<string>(StringComparer.Ordinal)
 {
@@ -70,7 +76,7 @@ static void Run(string[] args)
     var afterMinimum = new[] { int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue };
     var afterMaximum = new int[5];
     var timingCsv = options.ContainsKey("--timings") ? new StringBuilder("iteration,tick,elapsed_ms,before_enemies,before_farms,before_buildings,before_people,after_enemies,after_farms,after_buildings,after_people,before_population_members,after_population_members\n") : null;
-    var warmup = new Simulation(catalog, run);
+    var warmup = SimulationFactory.Create(catalog, run);
     var actualWarmupTicks = 0;
     while (!warmup.IsComplete && actualWarmupTicks < warmupTicks)
     {
@@ -80,7 +86,7 @@ static void Run(string[] args)
     }
     for (var repeat = 0; repeat < iterations; repeat++)
     {
-        var simulation = new Simulation(catalog, run);
+        var simulation = SimulationFactory.Create(catalog, run);
         while (!simulation.IsComplete)
         {
             if (scenario == "load") { simulation.PrepareLoadTick(); }
@@ -175,6 +181,7 @@ static void Run(string[] args)
     var metrics = new
     {
         schemaVersion = 1,
+        coreAssembly,
         model = catalog.Experiment is not null ? "headless-s4b-controlled-league" : catalog.Runtime is null ? "headless-gameplay" : "headless-s4-league",
         stage,
         scope,
@@ -247,7 +254,7 @@ static void Run(string[] args)
             allSamplesExact = scenario == "load"
         }
     };
-    var jsonOptions = new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var jsonOptions = HostJson.CreateOptions(camelCase: true, indented: true);
     var artifacts = new JsonArray();
     foreach (var result in results)
     {

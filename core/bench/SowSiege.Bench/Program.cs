@@ -28,7 +28,7 @@ public class GameplayBenchmarks
     [IterationSetup]
     public void PrepareMeasuredTick()
     {
-        simulation = new Simulation(catalog, new RunOptions(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", Scenario: "load"));
+        simulation = SimulationFactory.Create(catalog, new RunOptions(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", Scenario: "load"));
         for (var tick = 0; tick < 120; tick++)
         {
             AssertLoad();

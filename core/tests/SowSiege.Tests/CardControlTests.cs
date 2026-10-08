@@ -17,7 +17,7 @@ public sealed class CardControlTests
 
     private static SimulationResult Run(ContentCatalog catalog)
     {
-        var simulation = new Simulation(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true));
+        var simulation = SimulationFactory.Create(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true));
         simulation.World.Experience = catalog.Tuning.World.Progression.BaseExperience;
         simulation.Tick();
         var before = simulation.PendingCards;
