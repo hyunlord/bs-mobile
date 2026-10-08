@@ -6,6 +6,7 @@ namespace SowSiege.Core
 
     internal sealed class ProgressionSystem
     {
+        private readonly DiagnosticObserver? diagnostics;
         private readonly ContentCatalog catalog;
         private readonly RunOptions options;
         private readonly WorldState world;
@@ -13,8 +14,9 @@ namespace SowSiege.Core
         private readonly RuntimeSystem? runtime;
         private readonly ExperimentSystem? experiment;
 
-        public ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null)
+        public ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null)
         {
+            this.diagnostics = diagnostics;
             this.catalog = catalog;
             this.options = options;
             this.world = world;
@@ -65,6 +67,7 @@ namespace SowSiege.Core
                 if (owned is null) { world.Equipment.Add(new() { Id = id, Level = rarity.UpgradeAmount }); }
                 else { owned.Level = checked(owned.Level + rarity.UpgradeAmount); }
             }
+            diagnostics?.Choice(catalog.Runtime?.Charters.ContainsKey(id) == true ? "charter" : catalog.Tools.ContainsKey(id) ? "tool" : "weapon", rarity.UpgradeAmount);
             runtime?.UnlockEvolutions();
             world.Cards.Add(new(world.Tick, world.PendingCards.ToArray(), id, rarity.Name, world.Level));
             world.PendingCards = Array.Empty<string>();
@@ -104,11 +107,13 @@ namespace SowSiege.Core
         private long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
         private bool CanOffer(string id)
         {
-            if (catalog.Runtime?.Charters.ContainsKey(id) == true) { return world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; }
+            if (catalog.Runtime?.Charters.ContainsKey(id) == true) { var allowed = world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; if (!allowed) { diagnostics?.SlotExcluded("charter"); } return allowed; }
             if (world.Equipment.Any(equipment => equipment.Id == id)) { return true; }
             var tool = catalog.Tools.ContainsKey(id);
             var count = world.Equipment.Count(equipment => catalog.Tools.ContainsKey(equipment.Id) == tool);
-            return count < (tool ? catalog.Runtime?.Tuning.ToolSlots ?? catalog.Tuning.World.Progression.ToolSlots : catalog.Runtime?.Tuning.WeaponSlots ?? catalog.Tuning.World.Progression.WeaponSlots);
+            var available = count < (tool ? catalog.Runtime?.Tuning.ToolSlots ?? catalog.Tuning.World.Progression.ToolSlots : catalog.Runtime?.Tuning.WeaponSlots ?? catalog.Tuning.World.Progression.WeaponSlots);
+            if (!available) { diagnostics?.SlotExcluded(tool ? "tool" : "weapon"); }
+            return available;
         }
         private string Choose(IReadOnlyList<string> offer)
         {

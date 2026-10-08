@@ -7,6 +7,7 @@ namespace SowSiege.Core
     /// <summary>Seeded fixed-tick world. IO, clocks, rendering and meta progression belong to adapters.</summary>
     public sealed class Simulation
     {
+        private readonly DiagnosticObserver? diagnostics;
         private readonly IStateHasher stateHasher;
         private readonly ContentCatalog catalog;
         private readonly RunOptions options;
@@ -20,8 +21,10 @@ namespace SowSiege.Core
         internal WorldState World { get; } = new();
         private readonly string peopleRule;
 
-        public Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher)
+        public Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher, DiagnosticObserver? diagnostics = null)
         {
+            this.diagnostics = diagnostics;
+            diagnostics?.Attach(catalog, World);
             this.stateHasher = stateHasher ?? throw new ArgumentNullException(nameof(stateHasher));
             this.catalog = catalog;
             this.options = options;
@@ -41,10 +44,10 @@ namespace SowSiege.Core
             World.Equipment.Add(new() { Id = catalog.Tuning.World.Progression.StartingWeapon });
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
             else if (options.Movement is not null) { throw new ArgumentException("Movement requires an experiment profile."); }
-            if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial); }
-            combat = new(catalog, options, World, random, spatial, Runtime, Experiment);
-            estate = new(catalog, options, World, peopleRule, spatial, Runtime, Experiment);
-            progression = new(catalog, options, World, random, Runtime, Experiment);
+            if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics); }
+            combat = new(catalog, options, World, random, spatial, Runtime, Experiment, diagnostics);
+            estate = new(catalog, options, World, peopleRule, spatial, Runtime, Experiment, diagnostics);
+            progression = new(catalog, options, World, random, Runtime, Experiment, diagnostics);
             World.Rerolls = catalog.Tuning.World.Progression.Rerolls;
             World.Bans = catalog.Tuning.World.Progression.Bans;
             World.Locks = catalog.Tuning.World.Progression.Locks;
@@ -53,7 +56,9 @@ namespace SowSiege.Core
             if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
             if (options.Scenario == "load") { PrepareLoadTick(); }
             Experiment?.Trace();
+            diagnostics?.Trace(World, random.Draws, false);
             if (Runtime is not null || Experiment is not null || World.Remains is not null) { RecordSample(); }
+            else { diagnostics?.Sample(IsComplete); }
         }
 
         public CardOfferSnapshot PendingCards => new(World.PendingCards.ToArray(), World.LockedCard, World.Rerolls, World.Bans, World.Locks);
@@ -104,6 +109,7 @@ namespace SowSiege.Core
             progression.Tick();
             if (World.Lord.DistanceSquared(World.Estate) <= (long)catalog.Tuning.World.Map.EstateRadius * catalog.Tuning.World.Map.EstateRadius) { World.EstateTicks++; }
             World.Tick++;
+            diagnostics?.Trace(World, random.Draws, true);
             Experiment?.Trace();
             if (IsComplete) { Experiment?.End(); }
             if (options.Scenario == "load") { PrepareLoadTick(); }
@@ -124,6 +130,7 @@ namespace SowSiege.Core
         private void RecordSample()
         {
             Experiment?.Sample();
+            diagnostics?.Sample(IsComplete);
             RemainsSystem.Sample(World);
             var state = Snapshot;
             World.Timeline.Add(new(World.Tick, World.Season, World.Level, state.ActiveEnemies, state.Farms, state.Buildings, state.People,
