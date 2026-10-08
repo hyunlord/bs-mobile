@@ -30,6 +30,7 @@ namespace SowSiege.Core
         RunStatus Status { get; }
         RunFrame CaptureFrame();
         CardOfferView CaptureCards();
+        FirstPlayableFrame? CaptureFirstPlayable();
     }
     public sealed record LordView(WorldPoint Position, WorldPoint Facing, int Health, int MaxHealth);
     public sealed record EnemyView(int Id, string DefinitionId, WorldPoint Position, int Health, int MaxHealth);
@@ -41,9 +42,9 @@ namespace SowSiege.Core
     public sealed record EquipmentView(string Id, int Level);
     public sealed record EntityCounts(int Enemies, int People, int Farms, int Buildings, int Projectiles);
     public sealed record CardOfferView(IReadOnlyList<string> Cards, string? LockedCardId, int Rerolls, int Bans, int Locks);
-    public enum PresentationKind { Attack, KillExperience, HarvestExperience, TaxExperience, BuildingCompleted }
+    public enum PresentationKind { Attack, KillExperience, HarvestExperience, TaxExperience, BuildingCompleted, Damage, EnemyKilled, LordHit, Evolution, BossWarning, EventSpawned, EventClaimed, CartBroken, BuildingStarted }
     public sealed record PresentationEvent(long Id, int Tick, PresentationKind Kind, string SourceId, WorldPoint Origin, WorldPoint Direction, string Shape, int Range, long Amount, IReadOnlyList<WorldPoint> Endpoints, IReadOnlyList<int> HitEntityIds, AttackGeometry? Geometry = null);
     public sealed record AttackGeometry(int InnerRadius, int BeamHalfWidth, int Count, int Pierce, IReadOnlyList<WorldPoint> RayEnds);
     public sealed record RunFrame(int Tick, RunStatus Status, int Season, int SeasonTicksRemaining, int DurationTicks, int TickRate, int MapWidth, int MapHeight, LordView Lord, WorldPoint Estate, long Experience, long RequiredExperience, int Level, int EstateExtent, EntityCounts Counts, IReadOnlyList<EnemyView> Enemies, IReadOnlyList<FarmView> Farms, IReadOnlyList<BuildingView> Buildings, IReadOnlyList<PersonView> People, IReadOnlyList<GroundLootView> Loot, IReadOnlyList<RemainView> Remains, IReadOnlyList<EquipmentView> Equipment, IReadOnlyList<PresentationEvent> Events);
-    public sealed record RunSummary(int Seed, int Tick, bool Survived, string EndReason, int Level, long KillExperience, long HarvestExperience, long TaxExperience, long WeaponDamage, long ToolActivationDamage, long ToolGrowthDamage, long AllyDamage, string StateHash);
+    public sealed record RunSummary(int Seed, int Tick, bool Survived, string EndReason, int Level, long KillExperience, long HarvestExperience, long TaxExperience, long WeaponDamage, long ToolActivationDamage, long ToolGrowthDamage, long AllyDamage, string StateHash, [property: OmitWhenNull] bool? BossDefeated = null);
 }

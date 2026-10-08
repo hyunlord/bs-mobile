@@ -40,7 +40,7 @@ public static class DiagnosticOutput
     public static string Digest(object value) => new CanonicalStateHasher().Compute(JsonSerializer.SerializeToElement(value, Json));
 
     public static JsonObject Create(DiagnosticRequest request, string profileName, string? movement, int requestedTicks,
-        object metadata, CoreAssemblyMetadata assembly, IReadOnlyList<SimulationResult> results, IReadOnlyList<DiagnosticResult> diagnostics)
+        object metadata, CoreAssemblyMetadata assembly, IReadOnlyList<SimulationResult> results, IReadOnlyList<DiagnosticResult> diagnostics, IReadOnlyList<IReadOnlyDictionary<string, long>>? firstPlayableCoverage = null)
     {
         if (results.Count != 3 || diagnostics.Count != 3) { throw new InvalidOperationException("Diagnostics require three complete repeats."); }
         var proofs = results.Select((result, index) => new
@@ -75,7 +75,7 @@ public static class DiagnosticOutput
         compact["rngTrace"] = Convert.ToBase64String(bytes);
         compact["rngTraceEncoding"] = "uint64le-base64-v1";
         compact["rngTraceCount"] = trace.Count;
-        return JsonSerializer.SerializeToNode(new
+        var packet = JsonSerializer.SerializeToNode(new
         {
             contractVersion = 1,
             caseIdentity = identity,
@@ -108,5 +108,20 @@ public static class DiagnosticOutput
             repeatVerification = new { identical = true, repeats = proofs },
             diagnostics = compact
         }, Json)!.AsObject();
+        if (firstPlayableCoverage is not null)
+        {
+            if (firstPlayableCoverage.Count != 3) { throw new InvalidOperationException("First playable coverage requires three repeats."); }
+            var digests = firstPlayableCoverage.Select(Digest).ToArray();
+            if (digests.Any(digest => digest != digests[0])) { throw new InvalidOperationException("First playable coverage repeat mismatch."); }
+            packet["firstPlayableCoverage"] = JsonSerializer.SerializeToNode(firstPlayableCoverage[0], Json);
+            packet["firstPlayableCoverageDigest"] = digests[0];
+            var runtimeDigests = results.Select(result => Digest(result.Runtime!)).ToArray();
+            if (runtimeDigests.Any(digest => digest != runtimeDigests[0])) { throw new InvalidOperationException("First playable runtime repeat mismatch."); }
+            packet["firstPlayableRuntime"] = JsonSerializer.SerializeToNode(first.Runtime, Json);
+            packet["firstPlayableRuntimeDigest"] = runtimeDigests[0];
+            var repeats = packet["repeatVerification"]!["repeats"]!.AsArray();
+            for (var index = 0; index < repeats.Count; index++) { repeats[index]!["firstPlayableCoverageDigest"] = digests[index]; repeats[index]!["firstPlayableRuntimeDigest"] = runtimeDigests[index]; }
+        }
+        return packet;
     }
 }

@@ -7,8 +7,8 @@
     "fertility",
     "defense"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 무기 attack-damage 3 및 영지 building-front-damage -2 전역 효과. 조건 충족 시 실제 연산으로 적용한다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -24,5 +24,38 @@
   },
   "requirements": [
     "자란 밭 둘 사이에서 적을 처치하면"
-  ]
+  ],
+  "runtimeProjection": {
+    "policyCategory": "land",
+    "effects": [
+      {
+        "id": "core:ditch_watch_fp_weapon",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-damage",
+        "amount": 3,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-kind",
+            "value": "weapon",
+            "minimum": 0
+          }
+        ]
+      },
+      {
+        "id": "core:ditch_watch_fp_estate",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "building-front-damage",
+        "amount": -2,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
 }

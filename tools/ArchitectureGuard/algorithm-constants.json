@@ -5,6 +5,16 @@
     "Reason": "Magnitude of the C# compiler record-struct hash multiplier; subtraction preserves the former generated negative multiplier exactly. Compatibility algorithm, not gameplay tuning."
   },
   {
+    "Symbol": "SowSiege.Core.FirstPlayableOrbit.QuarterTurn",
+    "Value": "1024",
+    "Reason": "Fixed-point quadrant resolution for deterministic integer orbit coordinates. Radius and angular speed remain canonical weapon data."
+  },
+  {
+    "Symbol": "SowSiege.Core.FirstPlayableOrbit.FullTurn",
+    "Value": "4096",
+    "Reason": "Four quadrants in the deterministic orbit phase representation; mathematical wrap modulus, not gameplay duration or speed."
+  },
+  {
     "Symbol": "SowSiege.Core.PlayerInput.Scale",
     "Value": "1000",
     "Reason": "Fixed-point input wire resolution and multiplier identity; does not set movement speed."

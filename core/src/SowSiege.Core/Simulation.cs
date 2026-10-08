@@ -50,6 +50,7 @@ namespace SowSiege.Core
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
             World.Equipment.Add(new() { Id = catalog.Tuning.World.Progression.StartingWeapon });
             if (catalog.WeaponCombat is not null) { World.WeaponCombat = new(); }
+            if (catalog.FirstPlayable is not null) { World.FirstPlayable = new(); }
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
             else if (options.Movement is not null) { throw new ArgumentException("Movement requires an experiment profile."); }
             if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics, interactive); }
@@ -69,6 +70,7 @@ namespace SowSiege.Core
             else { diagnostics?.Sample(IsComplete); }
         }
 
+        public IReadOnlyDictionary<string, long> FirstPlayableCoverage => new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(World.FirstPlayable?.Coverage ?? new SortedDictionary<string, long>(), StringComparer.Ordinal));
         public CardOfferSnapshot PendingCards => new(World.PendingCards.ToArray(), World.LockedCard, World.Rerolls, World.Bans, World.Locks);
         public void RerollCards() => progression.Reroll();
         public void BanCard(string id) => progression.Ban(id);
@@ -124,6 +126,7 @@ namespace SowSiege.Core
                 }
                 else { combat.Activate(equipment, catalog.Weapons[equipment.Id].Activation, null); }
             }
+            combat.TickFirstPlayableAttacks();
             estate.Tick();
             combat.ResolveEnemyAttacks();
             combat.ResolveDeaths();

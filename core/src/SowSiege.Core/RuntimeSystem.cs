@@ -4,7 +4,7 @@ using System.Linq;
 namespace SowSiege.Core
 {
 
-    internal sealed class RuntimeSystem
+    internal sealed partial class RuntimeSystem
     {
         private readonly DiagnosticObserver? diagnostics;
         private readonly InteractiveState? interactive;
@@ -41,6 +41,11 @@ namespace SowSiege.Core
         }
         public void Growth(string source, string target, long amount)
         {
+            if (amount > 0)
+            {
+                world.FirstPlayable?.Count("equipment:" + source + ":growth");
+            }
+
             if (amount <= 0) { return; }
             if (!state.Growth.TryGetValue(source, out var targets)) { targets = new(StringComparer.Ordinal); state.Growth.Add(source, targets); }
             targets[target] = targets.GetValueOrDefault(target) + amount;
@@ -48,6 +53,7 @@ namespace SowSiege.Core
         public void Tick()
         {
             UnlockEvolutions();
+            TickMapEvents();
             var tuning = definition.Tuning;
             if (world.Tick % tuning.LootPeriodTicks == 0 && state.GroundLoot.Count < tuning.MaxGroundLoot && definition.Items.Count > 0)
             {
@@ -81,8 +87,9 @@ namespace SowSiege.Core
         {
             foreach (var evolution in definition.Evolutions.Values.OrderBy(value => value.Id, StringComparer.Ordinal))
             {
-                if (!evolution.InputIds.All(id => world.Equipment.Any(equipment => equipment.Id == id)) || !state.Evolutions.Add(evolution.Id)) { continue; }
+                if (!EvolutionEligible(catalog, world, evolution) || !state.Evolutions.Add(evolution.Id)) { continue; }
                 state.EvolutionEvents.Add(new(world.Tick, evolution.Id, evolution.BaseId));
+                if (world.FirstPlayable is { } fp) { fp.Count("evolution:" + evolution.Id); interactive?.Experience(world.Tick, PresentationKind.Evolution, evolution.Id, world.Lord, 0); }
             }
         }
         private IEnumerable<OwnedEffect> OwnedEffects()
@@ -93,7 +100,7 @@ namespace SowSiege.Core
                 if (definition.Equipment.TryGetValue(equipment.Id, out var runtime)) { effects.AddRange(runtime.Effects.Select(effect => new OwnedEffect(equipment.Id, catalog.Tools.ContainsKey(equipment.Id) ? "tool" : "weapon", 1, effect))); }
             }
             foreach (var pair in state.Charters) { effects.AddRange(definition.Charters[pair.Key].Effects.Select(effect => new OwnedEffect(pair.Key, "charter", pair.Value, effect))); }
-            foreach (var pair in state.Items) { effects.AddRange(definition.Items[pair.Key].Effects.Select(effect => new OwnedEffect(pair.Key, "item", pair.Value, effect))); }
+            foreach (var pair in state.Items) { if (world.FirstPlayable is not null && !ItemEligible(definition.Items[pair.Key])) { continue; } effects.AddRange(definition.Items[pair.Key].Effects.Select(effect => new OwnedEffect(pair.Key, "item", pair.Value, effect))); }
             foreach (var id in state.Evolutions) { effects.AddRange(definition.Evolutions[id].Effects.Select(effect => new OwnedEffect(id, "evolution", 1, effect))); }
             return effects.OrderBy(effect => effect.Source, StringComparer.Ordinal).ThenBy(effect => effect.Definition.Id, StringComparer.Ordinal);
         }
@@ -185,12 +192,22 @@ namespace SowSiege.Core
                     }
                     return held;
                 case "plant-path":
-                    if (context.Enemy is null || PlantFarm is null || !world.Tools.ContainsKey(effect.Subject)) { return 0; }
+                    if ((context.Enemy is null && (world.FirstPlayable is null || context.Farm is null)) || PlantFarm is null || !world.Tools.ContainsKey(effect.Subject)) { return 0; }
                     long planted = 0;
                     for (var index = 0; index < amount; index++)
                     {
                         var distance = Math.Min(effect.Radius, catalog.Tuning.World.Farms.Spacing * (index + 1));
-                        if (PlantFarm(effect.Subject, context.Origin.MoveToward(context.Enemy.Position, distance))) { planted++; }
+                        var destination = context.Enemy?.Position ?? new Position(context.Origin.X + (world.WeaponCombat?.Facing.X ?? 1) * effect.Radius, context.Origin.Y + (world.WeaponCombat?.Facing.Y ?? 0) * effect.Radius);
+                        var attempts = world.FirstPlayable is not null && context.Farm is not null ? Math.Max(1, effect.Radius / catalog.Tuning.World.Farms.Spacing) : 1;
+                        if (attempts > 1)
+                        {
+                            destination = new Position(context.Origin.X + (world.WeaponCombat?.Facing.X ?? 1) * effect.Radius, context.Origin.Y + (world.WeaponCombat?.Facing.Y ?? 0) * effect.Radius);
+                        }
+
+                        for (var attempt = 0; attempt < attempts; attempt++)
+                        {
+                            if (PlantFarm(effect.Subject, context.Origin.MoveToward(destination, Math.Min(effect.Radius, distance + attempt * catalog.Tuning.World.Farms.Spacing)))) { planted++; break; }
+                        }
                     }
                     return planted;
                 case "shield-farms":
@@ -212,6 +229,13 @@ namespace SowSiege.Core
                     foreach (var farm in world.Farms.Where(farm => farm.Stage < catalog.Tuning.World.Farms.StageTicks.Length - 1 && farm.Progress > 0 && Within(farm.Position, context.Origin, effect.Radius)).OrderBy(farm => farm.Id).Take(amount)) { lost += farm.Progress; farm.Progress = 0; }
                     return lost;
                 case "extend-duty":
+                    if (context.Person is null && world.FirstPlayable is not null)
+                    {
+                        long extended = 0;
+                        foreach (var person in world.People.Where(p => p.Role is "militia" or "guard" && Within(p.Position, context.Origin, effect.Radius)))
+                        { var before = Math.Max(person.DutyUntil, world.Tick); person.DutyUntil = Clamp((long)before + (long)effect.DurationTicks * amount, 0); extended += person.DutyUntil - before; }
+                        return extended;
+                    }
                     if (context.Person is null) { return 0; }
                     var dutyStart = Math.Max(context.Person.DutyUntil, world.Tick);
                     context.Person.DutyUntil = Clamp((long)dutyStart + (long)effect.DurationTicks * amount, 0);
@@ -287,6 +311,14 @@ namespace SowSiege.Core
         private void Record(OwnedEffect effect, long amount)
         {
             if (amount == 0) { return; }
+            if (world.FirstPlayable is { } fp)
+            {
+                fp.Count(effect.Kind + ":" + effect.Source + ":effect");
+                if (effect.Kind == "charter")
+                {
+                    fp.Count("charter:" + effect.Source + (effect.Definition.Subject.StartsWith("attack-", StringComparison.Ordinal) || effect.Definition.Operation == "damage-pulse" ? ":weapon" : ":estate"));
+                }
+            }
             if (!state.Effects.TryGetValue(effect.Definition.Id, out var counter)) { counter = new(); state.Effects.Add(effect.Definition.Id, counter); }
             counter.Count++; counter.Total += amount; counter.First ??= world.Tick; counter.Last = world.Tick;
         }

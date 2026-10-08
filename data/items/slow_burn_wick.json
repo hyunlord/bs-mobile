@@ -6,8 +6,8 @@
     "land",
     "control"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 어린 밭 근처에서 ranged 태그 공격 간격 -3틱.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -22,5 +22,39 @@
   },
   "linkedToolIds": [
     "core:torch"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "ranged"
+    ],
+    "effects": [
+      {
+        "id": "core:slow_burn_wick_bonus",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-cooldown",
+        "amount": -3,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "owned-tag",
+            "value": "ranged",
+            "minimum": 0
+          },
+          {
+            "kind": "equipment-tag",
+            "value": "ranged",
+            "minimum": 0
+          },
+          {
+            "kind": "near-seed",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

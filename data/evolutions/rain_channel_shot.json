@@ -7,8 +7,8 @@
     "ranged",
     "land"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 재료 레벨과 성장 조건 충족 후 runtimeProjection의 실제 효과가 발동한다. stat-add 22",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -27,5 +27,31 @@
     "name": "물길 관통시위",
     "effect": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다.",
     "cost": "물길 밖에서는 관통하지 못하고 관개를 공격 경로에 맞춰야 한다."
+  },
+  "runtimeProjection": {
+    "effects": [
+      {
+        "id": "core:rain_channel_shot_damage",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-damage",
+        "amount": 22,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:canal_bow",
+            "minimum": 0
+          },
+          {
+            "kind": "near-seed",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
   }
 }

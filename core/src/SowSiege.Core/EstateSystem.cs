@@ -108,6 +108,26 @@ namespace SowSiege.Core
                 .OrderBy(building => building.Position.DistanceSquared(world.Lord)).ThenBy(building => building.Id).FirstOrDefault();
             if (building is null) { return; }
             var ruined = building.Built && building.Health == 0;
+            if (world.FirstPlayable is { } fp && (!building.Built || ruined))
+            {
+                var definition = catalog.FirstPlayable!;
+                var work = fp.BuildingWork.GetValueOrDefault(building.Id);
+                if (work == 0)
+                {
+                    interactive?.Experience(world.Tick, PresentationKind.BuildingStarted, source, building.Position, 0);
+                }
+
+                work = Math.Min(definition.BuildingWorkRequired, work + definition.BuildingWorkPerActivation);
+                fp.BuildingWork[building.Id] = work; building.Source = source;
+                if (ruined) { world.Rebuilds++; building.Built = false; }
+                world.Tools[source].GrowthProduced++; runtime?.Growth(source, "building", 1);
+                if (work < definition.BuildingWorkRequired)
+                {
+                    return;
+                }
+
+                fp.BuildingWork.Remove(building.Id);
+            }
             var fresh = !building.Built;
             if (ruined) { world.Rebuilds++; }
             var context = new EffectContext(building.Position, source, Building: building, WasRuined: ruined, WasNew: fresh);
@@ -169,7 +189,7 @@ namespace SowSiege.Core
             var workers = world.People.Count(person => person.Role == "peasant");
             var boostedWorkers = world.People.Count(person => person.Role == "peasant" && person.DutyUntil > world.Tick);
             diagnostics?.Labor(workers, boostedWorkers);
-            foreach (var farm in world.Farms)
+            foreach (var farm in world.FirstPlayable is null ? (IEnumerable<FarmState>)world.Farms : world.Farms.ToArray())
             {
                 if (runtime is not null && runtime.Entity(farm.Id).PauseUntil > world.Tick) { continue; }
                 var lastStage = tuning.StageTicks.Length - 1;
@@ -266,8 +286,14 @@ namespace SowSiege.Core
                     target = waypoint;
                     if (person.Position == waypoint && data.HoldUntil <= world.Tick) { data.Waypoint = null; target = world.Estate; }
                 }
+                var previousPosition = person.Position;
                 var speed = runtime?.Modify(person.Role == "peasant" ? "worker-speed" : "draft-speed", tuning.ReturnSpeed, new(person.Position, person.Source, Person: person), 1) ?? tuning.ReturnSpeed;
                 person.Position = person.Position.MoveToward(target, speed);
+                if (world.FirstPlayable is { } fp)
+                {
+                    fp.PersonActivities[person.Id] = person.Role is "militia" or "guard" ? "muster" : person.Role == "returning" ? "return" : person.Position != previousPosition ? "move" : person.Role == "peasant" && world.Farms.Any(f => RuntimeSystem.Within(f.Position, person.Position, catalog.Tuning.World.Farms.HarvestRange)) ? "work" : "idle";
+                }
+
                 if (person.Role == "returning" && person.Position == world.Estate)
                 {
                     runtime?.Emit("return-arrival", new(person.Position, person.Source, Person: person));

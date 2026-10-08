@@ -34,20 +34,20 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | ID / 이름 | 개념 | 태그 | 상태 | 순환 연결 |
 | --- | --- | --- | --- | --- |
 | core:ash_sabre<br>재받이 칼 | 최근 처치의 재를 칼끝에 모아 다음 베기에 쓴다. 재를 쓴 자리에서는 작물에 돌아갈 비옥도가 줄어든다. | weapon, melee, fertility | candidate | fertility: 같은 처치 부산물을 공격 강화와 작물 성장 중 어디에 쓸지 경쟁시킨다. |
-| core:canal_bow<br>수로 활 | 물을 따라 굽는 화살이 수로 옆 적의 전진을 늦춘다. 건조한 구역에서는 평범한 단발 화살에 머문다. | weapon, ranged, control | candidate | growth: 관개된 성장 구역을 따라 방어 동선을 만들며 수로 밖 추격의 기회를 포기한다. |
+| core:canal_bow<br>수로 활 | 물을 따라 굽는 화살이 수로 옆 적의 전진을 늦춘다. 건조한 구역에서는 평범한 단발 화살에 머문다. | weapon, ranged, control | s4-runtime | growth: 관개된 성장 구역을 따라 방어 동선을 만들며 수로 밖 추격의 기회를 포기한다. |
 | core:cinder_flail<br>숯불 도리깨 | 돌아오는 숯추가 처치 지점에 재를 남긴다. 재가 겹치는 곳은 단기 비옥도를 얻지만 어린 싹도 상한다. | weapon, orbit, land | candidate | fertility: 전투 부산물을 비옥도로 돌리는 대신 파종 직후의 안전한 자리를 줄인다. |
 | core:ditch_pike<br>고랑 장창 | 파종 고랑과 나란히 찌르면 고랑 끝까지 적을 밀어낸다. 가로지르는 적에게는 좁은 날만 닿는다. | weapon, melee, land | candidate | growth: 이동으로 만든 경작 무늬가 방어선 방향을 결정한다. |
 | core:ember_wand<br>잔불 지팡이 | 가장 가까운 적에게 불씨를 보내 외곽 접근을 끊지만, 단일 표적을 겨누는 동안 다른 진입로는 열린다. | weapon, ranged | s2-runtime | combat: 익은 밭을 향해 먼저 접근하는 적을 먼 거리에서 제거하는 방어 수단이다. |
 | core:fallow_axe<br>휴경 도끼 | 빈 땅에서 도끼를 크게 휘둘러 안전한 개간 길을 만든다. 이미 경작한 곳에서는 같은 폭을 내면 작물도 다친다. | weapon, melee, land | candidate | growth: 새 밭을 놓기 전의 전투와 정착 이후의 작물 보호가 다른 사용 동선을 요구한다. |
-| core:frost_chain<br>서릿줄 추 | 회전 줄에 닿은 적을 잠시 붙잡아 수확자가 빠져나갈 길을 연다. 넓은 회전 때문에 좁은 건물 사이에서 효율이 낮다. | weapon, orbit, control | candidate | harvest: 수확 중인 백성의 노출 시간을 줄이되 밀집 건설과 공간을 경쟁한다. |
+| core:frost_chain<br>서릿줄 산탄 | 서릿줄을 부채꼴 투사체로 펼쳐 여러 접근 경로를 친다. | weapon, orbit, control | s4-runtime | harvest: 수확 중인 백성의 노출 시간을 줄이되 밀집 건설과 공간을 경쟁한다. |
 | core:granary_sling<br>곡창 투석끈 | 비축 식량 일부를 미끼 주머니에 담아 적을 먼 곳으로 유인한다. 유인을 반복하면 인구를 지탱할 식량이 부족해진다. | weapon, ranged, food | candidate | food: 식량을 저장 점수 대신 전투 중 적의 경로를 바꾸는 소비 자원으로 쓴다. |
 | core:grave_lantern<br>흙빛 혼등 | 등불이 최근 처치 지점을 짚어 잔해를 비옥도로 돌린다. 등불의 느린 궤도를 벗어난 적은 바로 추적하지 못한다. | weapon, orbit, fertility | candidate | fertility: 처치 위치를 경작 가능한 자리로 연결하지만 회수 동선과 전투 동선이 어긋날 수 있다. |
 | core:harvest_scythe<br>이삭 낫 | 익은 작물 사이를 베면 낫끝의 적과 수확물을 함께 건드린다. 미숙한 밭까지 넓게 베면 다음 수확을 잃는다. | weapon, melee, harvest | s4-runtime | harvest: 수확 동선을 공격 동선과 겹치되 미숙한 작물의 손실을 비용으로 둔다. |
 | core:hearth_mace<br>화덕 철퇴 | 식량을 익혀 나눈 직후 철퇴가 달아올라 근접 포위를 푼다. 연속 가열을 위해 식량을 쓰면 징집 여력이 줄어든다. | weapon, melee, food | candidate | food: 식량의 소비를 일시적인 직접 화력과 인구 유지 사이에 배분한다. |
 | core:hive_dart<br>벌침 촉 | 벌지기가 붙어 있는 동안 작은 침이 여러 접근자를 나눠 견제한다. 벌지기를 징집하면 분산 견제가 끊긴다. | weapon, ranged, people | candidate | people: 노동 인력을 남기는 선택을 주변 경작지의 전투 안전으로 되돌린다. |
 | core:iron_blade<br>철날 검 | 짧은 전방 베기로 영주에게 붙은 적을 걷어 내지만, 뒤쪽 포위를 해결하려면 이동 방향을 바꾸어야 한다. | weapon, melee | s2-runtime | combat: 근접 처치가 경작지 주변의 비옥도 공급으로 돌아가도록 동선을 잡는다. |
-| core:levy_banner<br>징집 깃창 | 깃창이 세워진 방향으로 부대의 일제 공격을 모은다. 부대가 귀환하면 영주의 깃창 자체 화력만 남는다. | weapon, melee, muster | candidate | people: 식량으로 유지하는 징집 병력을 집중 화력으로 묶으며 귀농 시 손실도 선명하게 드러낸다. |
-| core:mill_disc<br>맷돌 원반 | 수확 직후 가속한 원반이 외곽 적을 밀어낸다. 수확이 끊기면 무거운 원반의 회전 간격이 벌어진다. | weapon, orbit, building | candidate | harvest: 수확 성공이 다음 방어 창을 여는 조건이며 겨울에는 다른 방어가 필요하다. |
+| core:levy_banner<br>징집 파동기 | 영주의 위치에서 넓어지는 원형 파동으로 포위를 밀어낸다. | weapon, melee, muster | s4-runtime | people: 식량으로 유지하는 징집 병력을 집중 화력으로 묶으며 귀농 시 손실도 선명하게 드러낸다. |
+| core:mill_disc<br>맷돌 원반 | 수확 직후 가속한 원반이 외곽 적을 밀어낸다. 수확이 끊기면 무거운 원반의 회전 간격이 벌어진다. | weapon, orbit, building | s4-runtime | harvest: 수확 성공이 다음 방어 창을 여는 조건이며 겨울에는 다른 방어가 필요하다. |
 | core:ox_guard<br>황소 방패 | 전면 충돌을 받아 부대가 뒤에서 정렬할 시간을 번다. 방패를 든 방향의 반대편에는 공격을 거의 보내지 못한다. | weapon, melee, defense | candidate | people: 징집 부대의 진형 유지가 강해지는 대신 측면 방어를 다른 장비에 맡긴다. |
 | core:pruning_blade<br>가지치기 쌍날 | 어린 밭 사이의 좁은 길을 빠르게 정리한다. 넓게 퍼진 무리를 상대하려면 여러 번 경로를 가로질러야 한다. | weapon, melee, growth | candidate | growth: 경작을 위해 이동하는 경로에 안전을 주되 외곽의 큰 무리는 통제하기 어렵다. |
 | core:quarry_pick<br>채석 곡괭이 | 공성 적의 단단한 전면을 깨고 작은 돌조각을 남긴다. 빠른 적을 따라 휘두르면 긴 준비 동작이 낭비된다. | weapon, melee, repair | candidate | combat: 건물 파괴를 부르는 적을 우선 제거해 복구 자원의 소모를 줄인다. |
@@ -57,9 +57,9 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:rope_lasso<br>동아줄 올가미 | 식량을 훔쳐 달아나는 적을 붙잡아 회수 시간을 번다. 추격 표적 하나를 잡는 동안 주변 무리는 그대로 접근한다. | weapon, ranged, control | candidate | food: 저장량을 더 쌓는 대신 이미 빼앗긴 식량을 되찾는 대응 수단이다. |
 | core:salt_javelin<br>소금 창살 | 착지 지점의 적을 오래 견제하는 소금 띠를 만든다. 띠가 남은 땅은 파종에 불리해 외곽에 던져야 한다. | weapon, ranged, land | candidate | growth: 당장의 적 진입 차단과 다음 파종 면적 사이에 분명한 공간 비용을 둔다. |
 | core:seed_bolt<br>씨받이 쇠살 | 성숙 작물을 지나간 쇠살이 씨를 싣고 다음 적을 친다. 수확과 겹치는 사격은 남겨 둘 종자량을 줄일 수 있다. | weapon, ranged, harvest | candidate | harvest: 익은 밭의 위치를 사격선으로 활용하며 즉시 수확과 종자 회수의 시점을 경쟁시킨다. |
-| core:spore_fan<br>포자 부채 | 포자 부채꼴 안에서 쓰러진 적이 비옥한 흔적을 남긴다. 포자에 덮인 익은 작물은 수확을 늦춰야 한다. | weapon, ranged, land | candidate | fertility: 처치를 다음 작물의 성장 자원으로 바꾸면서 당장 익은 작물의 회수를 지연한다. |
+| core:spore_fan<br>포자 부채 | 고정된 포자 장판이 일정 간격으로 지나가는 적을 타격한다. | weapon, ranged, land | s4-runtime | fertility: 처치를 다음 작물의 성장 자원으로 바꾸면서 당장 익은 작물의 회수를 지연한다. |
 | core:stone_maul<br>경계돌 망치 | 건물 가까이에서 큰 돌망치의 착지가 강해진다. 무거운 회수 동작 때문에 새 경작지를 따라가는 공격은 느리다. | weapon, melee, building | candidate | combat: 완성 건물 주변을 전투 거점으로 삼아 건물 수리를 위한 시간을 확보한다. |
-| core:storm_fork<br>빗물 쇠스랑 | 젖은 땅을 찍으면 가까운 적 사이로 충격이 퍼진다. 메마른 구역에서는 앞의 한 줄만 친다. | weapon, melee, control | candidate | growth: 관개 투자로 생긴 성장 구역이 방어 구역도 되지만 지역 의존성이 높다. |
+| core:storm_fork<br>빗물 쇠스랑 | 가장 가까운 적에서 다음 적으로 연쇄 충격이 번진다. | weapon, melee, control | s4-runtime | growth: 관개 투자로 생긴 성장 구역이 방어 구역도 되지만 지역 의존성이 높다. |
 | core:thorn_whip<br>가시 덩굴채 | 먼 적을 당겨 밭 바깥에 묶는다. 익은 밭 안쪽에서 휘두르면 당긴 적이 수확물을 먼저 짓밟을 수 있다. | weapon, melee, control | candidate | growth: 성장 구역에서 적을 빼내는 방향 선택이 밭의 생존과 연결된다. |
 | core:ward_orbit<br>수호 고리 | 영주 둘레의 고리 띠로 접근하는 적을 밀지만, 고리 안쪽의 사각을 메울 동행 병력이 필요하다. | weapon, orbit | s2-runtime | people: 징집 부대가 고리 안쪽의 사각을 지키고 영주는 외곽 적을 밀어 부대의 접촉 피해를 줄인다. |
 | core:watchtower_crossbow<br>망루 쇠뇌 | 망루가 지켜보는 방향에서 긴 관통 사격을 얻는다. 사격 준비가 길어 영주 곁의 급한 포위에는 약하다. | weapon, ranged, building | candidate | combat: 건물을 지키는 체류를 원거리 화력으로 바꾸되 건물 밖 확장을 늦춘다. |
@@ -91,9 +91,9 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:mushroom_sieve<br>버섯 체 | 발동: 체를 털어 포자를 원형으로 분사한다. 성장 산출: 그늘에서 채집하는 버섯 경험치. 비용: 햇빛이 드는 개간지에서는 채집 주기가 길어진다. | land, harvest | candidate | harvest: 잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 그늘에서 채집하는 버섯 경험치. 비용: 햇빛이 드는 개간지에서는 채집 주기가 길어진다. |
 | core:muster_horn<br>뿔나팔 | 발동: 뿔나팔 음파로 가까운 적을 밀어낸다. 성장 산출: 임시 징집 부대. 비용: 징집된 백성이 일을 멈추어 다음 수확이 줄어든다. | people, muster | s2-runtime | people: 잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 임시 징집 부대. 비용: 징집된 백성이 일을 멈추어 다음 수확이 줄어든다. |
 | core:plough<br>쟁기 | 발동: 쟁기가 직선으로 흙덩이를 튕긴다. 성장 산출: 성장을 돕는 비옥한 고랑. 비용: 직선 동선에 밭이 몰려 넓게 포위되면 보호가 어렵다. | land, fertility | candidate | fertility: 잠정 순환 연결: 처치 잔재 또는 경작 기반을 비옥도·성장 조건으로 바꾸는 경로를 제안한다. 연결 산출: 성장을 돕는 비옥한 고랑. 비용: 직선 동선에 밭이 몰려 넓게 포위되면 보호가 어렵다. |
-| core:poison_sickle<br>독초 낫 | 발동: 독 묻은 낫이 초승달로 베어낸다. 성장 산출: 적에게 독을 흩뿌리는 풀밭. 비용: 독초 구역은 유익한 벌의 활동을 방해한다. | land, control | candidate | combat: 잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 적에게 독을 흩뿌리는 풀밭. 비용: 독초 구역은 유익한 벌의 활동을 방해한다. |
+| core:poison_sickle<br>독초 낫 | 발동: 독 묻은 낫이 초승달로 베어낸다. 성장 산출: 적에게 독을 흩뿌리는 풀밭. 비용: 독초 구역은 유익한 벌의 활동을 방해한다. | land, control | s4-runtime | combat: 잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 적에게 독을 흩뿌리는 풀밭. 비용: 독초 구역은 유익한 벌의 활동을 방해한다. |
 | core:rain_chime<br>빗물 풍경 | 발동: 풍경의 물방울이 적 사이로 연쇄 튄다. 성장 산출: 저수조 곁 급수 일꾼의 물 배분. 비용: 급수 인원과 저수량을 다른 시설과 나눈다. | building, people, growth | candidate | growth: 잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 저수조 곁 급수 일꾼의 물 배분. 비용: 급수 인원과 저수량을 다른 시설과 나눈다. |
-| core:rain_ladle<br>빗물 바가지 | 발동: 물을 부채꼴로 끼얹어 적을 밀친다. 성장 산출: 마른 밭을 적시는 관개 웅덩이. 비용: 저수량을 먼저 소비해 긴 가뭄에는 급수가 끊긴다. | land, growth | candidate | growth: 잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 마른 밭을 적시는 관개 웅덩이. 비용: 저수량을 먼저 소비해 긴 가뭄에는 급수가 끊긴다. |
+| core:rain_ladle<br>빗물 바가지 | 발동: 물을 부채꼴로 끼얹어 적을 밀친다. 성장 산출: 마른 밭을 적시는 관개 웅덩이. 비용: 저수량을 먼저 소비해 긴 가뭄에는 급수가 끊긴다. | land, growth | s4-runtime | growth: 잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 마른 밭을 적시는 관개 웅덩이. 비용: 저수량을 먼저 소비해 긴 가뭄에는 급수가 끊긴다. |
 | core:salt_spreader<br>소금 살포기 | 발동: 소금 결정을 넓은 부채꼴로 뿌린다. 성장 산출: 적 발밑을 상하게 하는 소금띠. 비용: 소금띠의 구근 작물은 성장이 둔해진다. | land, defense | candidate | combat: 잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 적 발밑을 상하게 하는 소금띠. 비용: 소금띠의 구근 작물은 성장이 둔해진다. |
 | core:seed_bag<br>씨앗 자루 | 발동: 씨앗을 부채꼴로 흩뿌려 적을 밀친다. 성장 산출: 밭과 수확 경험치. 비용: 넓은 경작을 따라 이동하는 동안 건물 보호 체류가 줄어든다. | land, harvest | s2-runtime | growth: 잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 밭과 수확 경험치. 비용: 넓은 경작을 따라 이동하는 동안 건물 보호 체류가 줄어든다. |
 | core:seed_vault_key<br>종자 금고 열쇠 | 발동: 큰 열쇠가 적을 관통하며 돌아온다. 성장 산출: 파괴 뒤 재파종에 쓰는 보관 종자. 비용: 수확 일부를 보관하여 즉시 식량이 줄어든다. | building, defense | candidate | growth: 잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 파괴 뒤 재파종에 쓰는 보관 종자. 비용: 수확 일부를 보관하여 즉시 식량이 줄어든다. |
@@ -101,13 +101,13 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:shepherd_bell<br>목동 방울 | 발동: 방울 모양 탄환이 적을 튕겨낸다. 성장 산출: 가축 손실을 줄이는 호위 목동. 비용: 호위 인원은 수확 운반에 쓸 수 없다. | people, food | candidate | people: 잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 가축 손실을 줄이는 호위 목동. 비용: 호위 인원은 수확 운반에 쓸 수 없다. |
 | core:shepherd_staff<br>양치기 지팡이 | 발동: 갈고리 지팡이로 전방을 쓸어낸다. 성장 산출: 양 떼가 남기는 판 안 판매용 양털. 비용: 방목 양이 가까운 새싹을 먹는다. | land, economy | candidate | harvest: 잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 양 떼가 남기는 판 안 판매용 양털. 비용: 방목 양이 가까운 새싹을 먹는다. |
 | core:shrine_censer<br>성소 향로 | 발동: 향로가 둥근 궤도로 돌며 불씨를 날린다. 성장 산출: 돌아온 일꾼을 쉬게 하는 성소. 비용: 휴식 중인 일꾼은 생산에서 빠진다. | building, people | candidate | people: 잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 돌아온 일꾼을 쉬게 하는 성소. 비용: 휴식 중인 일꾼은 생산에서 빠진다. |
-| core:soup_ladle<br>밥솥 국자 | 발동: 뜨거운 국물을 짧은 부채꼴로 끼얹는다. 성장 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다. | people, food | candidate | food: 잠정 순환 연결: 수확 식량을 소비해 백성의 작업 가능 인원을 유지하는 경로를 제안한다. 연결 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다. |
+| core:soup_ladle<br>밥솥 국자 | 발동: 뜨거운 국물을 짧은 부채꼴로 끼얹는다. 성장 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다. | people, food | s4-runtime | food: 잠정 순환 연결: 수확 식량을 소비해 백성의 작업 가능 인원을 유지하는 경로를 제안한다. 연결 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다. |
 | core:stone_seed<br>돌씨 주머니 | 발동: 돌처럼 단단한 씨앗을 연달아 던진다. 성장 산출: 길목에서 적을 찌르는 돌가시 줄기. 비용: 성장한 줄기가 빈 경작지를 차지한다. | land, defense | candidate | combat: 잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 길목에서 적을 찌르는 돌가시 줄기. 비용: 성장한 줄기가 빈 경작지를 차지한다. |
 | core:tailor_shears<br>재봉 가위 | 발동: 가위가 전방에서 교차 참격을 낸다. 성장 산출: 작업복을 수선하는 기술자. 비용: 수선 인원과 재료가 다른 생산에서 빠진다. | people, repair | candidate | people: 잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 작업복을 수선하는 기술자. 비용: 수선 인원과 재료가 다른 생산에서 빠진다. |
 | core:tax_ledger<br>징세 장부 | 발동: 장부에서 동전이 적 사이로 연쇄 비산한다. 성장 산출: 건물 작업에서 모이는 판 안 세금. 비용: 징세 작업 시간만큼 직접 생산이 늦어진다. | building, economy | candidate | harvest: 잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 건물 작업에서 모이는 판 안 세금. 비용: 징세 작업 시간만큼 직접 생산이 늦어진다. |
 | core:torch<br>횃불 | 발동: 짧은 화염 파동이 전방을 훑는다. 성장 산출: 숲을 태운 개간지. 비용: 불이 미성숙 작물에도 번져 다음 수확을 잃을 수 있다. | land, fertility, control | candidate | fertility: 잠정 순환 연결: 처치 잔재 또는 경작 기반을 비옥도·성장 조건으로 바꾸는 경로를 제안한다. 연결 산출: 숲을 태운 개간지. 비용: 불이 미성숙 작물에도 번져 다음 수확을 잃을 수 있다. |
 | core:tower_weight<br>돌탑 추 | 발동: 무거운 돌추가 지정 방향에 떨어진다. 성장 산출: 적 접근을 막는 경계 돌탑. 비용: 경계탑이 생산 건물이 쓸 터를 차지한다. | building, defense | candidate | combat: 잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 적 접근을 막는 경계 돌탑. 비용: 경계탑이 생산 건물이 쓸 터를 차지한다. |
-| core:windmill_crank<br>풍차 손잡이 | 발동: 회전 날개가 영주 주변을 휩쓴다. 성장 산출: 수확 곡물을 가공한 경험치. 비용: 제분용 곡물을 급식으로 바로 쓸 수 없다. | building, harvest | candidate | harvest: 잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 수확 곡물을 가공한 경험치. 비용: 제분용 곡물을 급식으로 바로 쓸 수 없다. |
+| core:windmill_crank<br>풍차 손잡이 | 발동: 회전 날개가 영주 주변을 휩쓴다. 성장 산출: 수확 곡물을 가공한 경험치. 비용: 제분용 곡물을 급식으로 바로 쓸 수 없다. | building, harvest | s4-runtime | harvest: 잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 수확 곡물을 가공한 경험치. 비용: 제분용 곡물을 급식으로 바로 쓸 수 없다. |
 
 | 도구 | 발동 형태 / 설계 계수 | 성장 대상 / 산출 / 주 경로 | 바닥값 근거 |
 | --- | --- | --- | --- |
@@ -156,17 +156,17 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 
 | ID / 이름 | 개념 | 태그 | 상태 | 순환 연결 |
 | --- | --- | --- | --- | --- |
-| core:ditch_watch<br>배수로 감시 의무 | 배수로가 처치 자리의 비옥도를 두 밭에 운반한다. 대신 연결 밭 밖의 처치 비옥도는 회수하지 못한다. | land, fertility, defense | candidate | fertility: 배수로가 처치 자리의 비옥도를 두 밭에 운반한다. |
+| core:ditch_watch<br>배수로 감시 의무 | 배수로가 처치 자리의 비옥도를 두 밭에 운반한다. 대신 연결 밭 밖의 처치 비옥도는 회수하지 못한다. | land, fertility, defense | s4-runtime | fertility: 배수로가 처치 자리의 비옥도를 두 밭에 운반한다. |
 | core:fallow_rotation<br>휴경 순번장 | 세 밭 중 가장 최근 수확한 밭을 자동 휴경하고, 그 비옥도를 다음 파종 때 이웃 밭에 나눈다. 대신 휴경한 밭은 한 성장 주기 동안 생산하지 않는다. | land, fertility, growth | candidate | fertility: 세 밭 중 가장 최근 수확한 밭을 자동 휴경하고, 그 비옥도를 다음 파종 때 이웃 밭에 나눈다. |
-| core:fertile_duel<br>밭머리 결투권 | 그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다. 대신 이동으로 적을 밭머리까지 유인해야 하므로 영지 밖 위협 처리가 늦어진다. | weapon, fertility, land | candidate | fertility: 그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다. |
+| core:fertile_duel<br>밭머리 결투권 | 그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다. 대신 이동으로 적을 밭머리까지 유인해야 하므로 영지 밖 위협 처리가 늦어진다. | weapon, fertility, land | s4-runtime | fertility: 그 처치의 비옥도를 밭에 집중시켜 다음 성장 단계를 앞당긴다. |
 | core:gleaning_right<br>이삭 줍기 권리 | 수확 뒤 남은 이삭을 백성이 모아 다음 식량 소모를 일부 충당한다. 대신 수확 경험치 일부를 포기하고 회수 중인 백성은 전투에 참여하지 못한다. | land, harvest, food | candidate | food: 수확 뒤 남은 이삭을 백성이 모아 다음 식량 소모를 일부 충당한다. |
 | core:granary_lock<br>곡창 봉인장 | 곡창 식량 일부를 자동 봉인해 약탈과 긴급 건설 소비에서 보호한다. 대신 겨울 시작과 함께 자동 해제되기 전에는 굶주림이나 징집에도 그 몫을 꺼낼 수 없다. | building, food, defense | candidate | food: 곡창 식량 일부를 자동 봉인해 약탈과 긴급 건설 소비에서 보호한다. |
 | core:guarded_harvest<br>무장 수확권 | 수확 종료 순간에 좁은 원호를 베어 주변을 비운다. 대신 영주가 수확 범위 밖으로 이동해 수확이 중단되면 예비 공격도 소멸하고 다른 공격은 늦어진다. | weapon, melee, harvest | s4-runtime | harvest: 수확 종료 순간에 좁은 원호를 베어 주변을 비운다. |
 | core:harvest_truce<br>수확 유예령 | 미뤄진 기간 동안 다음 한 번의 자동 수확에 쓸 식량 보너스를 모은다. 대신 성숙 작물이 오래 노출되어 약탈당하면 모은 몫도 잃는다. | land, harvest, food | candidate | harvest: 미뤄진 기간 동안 다음 한 번의 자동 수확에 쓸 식량 보너스를 모은다. |
-| core:heirloom_service<br>가보 봉사계약 | 영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다. 대신 가신이 쓰는 동안 영주의 해당 무기 발동 간격이 길어진다. | people, weapon, defense | candidate | combat: 영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다. |
+| core:heirloom_service<br>가보 봉사계약 | 영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다. 대신 가신이 쓰는 동안 영주의 해당 무기 발동 간격이 길어진다. | people, weapon, defense | s4-runtime | combat: 영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다. |
 | core:levy_relief<br>교대 징집 규약 | 대기 백성과 역할을 교대해 같은 밭의 작업 공백을 줄인다. 대신 새 부대가 자동 편성되는 동안 기존 부대의 자동 공격이 중단된다. | people, muster, growth | candidate | people: 대기 백성과 역할을 교대해 같은 밭의 작업 공백을 줄인다. |
 | core:meal_oath<br>공동 식탁 서약 | 수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다. 대신 식량 비축이 줄어 다음 징집 허용 인원이 감소한다. | people, food, growth | s4-runtime | people: 수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다. |
-| core:measured_volley<br>절제 사격령 | 아낀 발사 기회를 사거리 재진입 때의 자동 조준 사격에 모아 농지 위 적을 관통한다. 대신 모아 쏜 뒤 재장전이 길어져 바로 뒤따르는 적에 대한 대응이 늦어진다. | weapon, ranged, control | candidate | combat: 아낀 발사 기회를 사거리 재진입 때의 자동 조준 사격에 모아 농지 위 적을 관통한다. |
+| core:measured_volley<br>절제 사격령 | 아낀 발사 기회를 사거리 재진입 때의 자동 조준 사격에 모아 농지 위 적을 관통한다. 대신 모아 쏜 뒤 재장전이 길어져 바로 뒤따르는 적에 대한 대응이 늦어진다. | weapon, ranged, control | s4-runtime | combat: 아낀 발사 기회를 사거리 재진입 때의 자동 조준 사격에 모아 농지 위 적을 관통한다. |
 | core:pursuit_limit<br>추격 제한령 | 추격을 중단한 무기의 다음 타격을 영지 안 방어에 집중한다. 대신 경계 밖 적의 경험치와 비옥도를 놓칠 수 있다. | weapon, defense, control | candidate | combat: 추격을 중단한 무기의 다음 타격을 영지 안 방어에 집중한다. |
 | core:rally_boundary<br>집결 경계선 | 영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다. 대신 집결이 끝날 때까지 부대는 밭으로 돌아가 일하지 않는다. | people, muster, defense | s4-runtime | combat: 영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다. |
 | core:repair_tithe<br>수선 십일조 | 일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다. 대신 같은 식량을 징집과 인구 유지에 쓸 수 없다. | building, repair, food | s4-runtime | food: 일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다. |
@@ -196,31 +196,31 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 
 | ID / 이름 | 개념 | 태그 | 상태 | 순환 연결 |
 | --- | --- | --- | --- | --- |
-| core:ash_gathering_charm<br>재 모음패 | 처치 흔적을 한곳에 모아 다음 파종에 전달한다. 모인 지점을 지키지 못하면 많은 비옥도를 한 번에 잃는다. | fertility, melee | candidate | fertility: 분산된 전투 부산물을 효율적으로 쓰는 대신 한 지점의 보호 부담을 키운다. |
+| core:ash_gathering_charm<br>재 모음패 | 처치 흔적을 한곳에 모아 다음 파종에 전달한다. 모인 지점을 지키지 못하면 많은 비옥도를 한 번에 잃는다. | fertility, melee | s4-runtime | fertility: 분산된 전투 부산물을 효율적으로 쓰는 대신 한 지점의 보호 부담을 키운다. |
 | core:bee_return_ribbon<br>벌 귀환띠 | 지나간 경로의 성장 중인 밭을 다시 찾기 쉬워진다. 벌통을 멀리 옮기면 익숙한 경로가 끊긴다. | growth, people | candidate | growth: 노동과 수분의 반복 경로를 성장에 연결하면서 잦은 영지 이전을 불리하게 만든다. |
-| core:bitter_seed_dust<br>쓴 씨앗 가루 | 먹힌 자리에 기피 흔적을 남겨 뒤따른 적의 경로를 틀어 놓는다. 첫 씨앗의 손실은 막지 못한다. | land, control | candidate | growth: 손실 뒤의 대응 시간을 벌지만 같은 밭에서 즉시 수확을 기대할 수 없다. |
+| core:bitter_seed_dust<br>쓴 씨앗 가루 | 먹힌 자리에 기피 흔적을 남겨 뒤따른 적의 경로를 틀어 놓는다. 첫 씨앗의 손실은 막지 못한다. | land, control | s4-runtime | growth: 손실 뒤의 대응 시간을 벌지만 같은 밭에서 즉시 수확을 기대할 수 없다. |
 | core:boundary_hinge<br>경계문 경첩 | 아군 귀환 뒤 문을 빨리 닫아 추격자를 나눈다. 열어 둔 방향으로만 귀환을 모아야 한다. | building, control | s4-runtime | combat: 아군 귀환을 안전하게 만들되 영지의 통행 경로가 단순해지는 대가를 둔다. |
-| core:canal_gate_pin<br>수문 고정핀 | 먼 밭에 닿기 전 가까운 갈래로 물이 새지 않게 한다. 고정한 갈래 주변의 작물은 관개를 기다려야 한다. | building, growth | candidate | growth: 한정된 물 공급을 특정 성장 구역에 집중하고 다른 구역의 지연을 드러낸다. |
+| core:canal_gate_pin<br>수문 고정핀 | 먼 밭에 닿기 전 가까운 갈래로 물이 새지 않게 한다. 고정한 갈래 주변의 작물은 관개를 기다려야 한다. | building, growth | s4-runtime | growth: 한정된 물 공급을 특정 성장 구역에 집중하고 다른 구역의 지연을 드러낸다. |
 | core:cart_axle_ring<br>수레 축테 | 요철 때문에 수확물을 쏟는 손실을 줄인다. 무거워진 축 때문에 빈 수레의 복귀는 느리다. | building, food | candidate | food: 수확물 운반 성공률과 다음 수확을 위한 회전 속도를 교환한다. |
 | core:chapel_reply_bell<br>예배당 답종 | 가장 가까운 부대가 먼저 응답해 복구 작업으로 돌아온다. 먼 부대는 귀환 순서를 기다린다. | people, repair | candidate | people: 동시에 모든 전투력을 잃지 않도록 귀농을 순차화하되 복구가 늦어질 수 있다. |
-| core:clay_water_bead<br>질그릇 물구슬 | 근처 어린 밭까지 물기를 옮겨 성장 공백을 메운다. 이미 익은 밭에서는 물기를 옮겨도 이득이 없다. | land, growth | candidate | growth: 관개의 이득을 성장 중인 작물에 한정해 익은 밭에 머무는 선택과 구분한다. |
+| core:clay_water_bead<br>질그릇 물구슬 | 근처 어린 밭까지 물기를 옮겨 성장 공백을 메운다. 이미 익은 밭에서는 물기를 옮겨도 이득이 없다. | land, growth | s4-runtime | growth: 관개의 이득을 성장 중인 작물에 한정해 익은 밭에 머무는 선택과 구분한다. |
 | core:compost_screen<br>거름 체망 | 남은 이물질을 걸러 다음 작물에 쓸 비옥도를 안정시킨다. 회수가 느려져 먼 처치 흔적까지 따라가기는 어렵다. | fertility, growth | candidate | fertility: 전투 부산물을 안정적인 성장 자원으로 바꾸는 대신 회수 반경에 기회비용을 둔다. |
 | core:contract_witness_seal<br>계약 증인패 | 약속한 작업 하나를 끝낼 때까지 인력이 남는다. 중간에 징집하면 원래 작업을 완료하지 못한 비용을 치른다. | people, economy | candidate | people: 인력을 범용 수치가 아닌 특정 작업의 이행과 연결한다. |
-| core:crop_guard_signet<br>곡식 수호인 | 수확 완료 전 한 차례의 경보가 먼저 울린다. 영주가 멀리 떠나면 자동 보호로 대신하지 않는다. | harvest, defense | candidate | harvest: 수확 보호를 영주의 실제 체류와 연결해 방치 수확의 이점을 제한한다. |
-| core:drum_tension_rope<br>북 가죽 조임줄 | 중앙의 대열부터 빠르게 맞춘다. 양끝의 병력은 정렬이 늦어 측면이 열린다. | people, muster | candidate | combat: 부대 단위의 집중 전투력을 강화하면서 측면 대응을 별도로 요구한다. |
+| core:crop_guard_signet<br>곡식 수호인 | 수확 완료 전 한 차례의 경보가 먼저 울린다. 영주가 멀리 떠나면 자동 보호로 대신하지 않는다. | harvest, defense | s4-runtime | harvest: 수확 보호를 영주의 실제 체류와 연결해 방치 수확의 이점을 제한한다. |
+| core:drum_tension_rope<br>북 가죽 조임줄 | 중앙의 대열부터 빠르게 맞춘다. 양끝의 병력은 정렬이 늦어 측면이 열린다. | people, muster | s4-runtime | combat: 부대 단위의 집중 전투력을 강화하면서 측면 대응을 별도로 요구한다. |
 | core:fallow_marker<br>휴경 표지목 | 쉬는 동안 다음 파종에 쓸 비옥도를 모은다. 휴경 중에는 그 밭의 식량과 경험치를 얻지 못한다. | land, fertility | candidate | fertility: 즉시 수확을 포기한 시간이 다음 성장 주기의 자원으로 돌아간다. |
-| core:front_rank_peg<br>전열 고정못 | 첫 밀침을 버텨 뒤의 일꾼이 빠져나갈 틈을 만든다. 고정한 부대는 곧바로 추격을 시작하지 못한다. | muster, defense | candidate | combat: 노동 인력의 탈출을 위해 군사 기동성을 소비한다. |
+| core:front_rank_peg<br>전열 고정못 | 첫 밀침을 버텨 뒤의 일꾼이 빠져나갈 틈을 만든다. 고정한 부대는 곧바로 추격을 시작하지 못한다. | muster, defense | s4-runtime | combat: 노동 인력의 탈출을 위해 군사 기동성을 소비한다. |
 | core:frost_drain_stone<br>서리 배수돌 | 수확 길부터 얼음이 풀려 작물을 먼저 회수한다. 주변 싹의 보온에는 도움을 주지 않는다. | land, harvest | candidate | harvest: 겨울의 수확 회수와 다음 파종 보호를 서로 다른 준비로 분리한다. |
 | core:furrow_measuring_rope<br>고랑 재는 줄 | 기존 고랑과 일정한 간격을 유지해 수확 통로를 남긴다. 좁은 빈 땅은 간격에 맞지 않아 파종하지 않는다. | land, growth | candidate | growth: 통로 확보로 수확 동선은 좋아지지만 사용 가능한 경작 면적은 줄어든다. |
 | core:golem_joint_oil<br>골렘 관절기름 | 첫 진형 전환의 지연을 줄인다. 기름을 보충하는 동안 경작 보조가 멈춘다. | building, people | candidate | combat: 일꾼을 전투력으로 바꾸는 전환 시간을 줄이되 유지 작업의 공백을 남긴다. |
 | core:grave_soil_sieve<br>묘토 거름망 | 백성이 쓸 수 있는 흙만 골라 다음 밭으로 보낸다. 선별 작업 동안 그 인력은 징집할 수 없다. | fertility, people | candidate | fertility: 처치 부산물의 성장 전환을 노동 시간과 연결해 공짜 자원화를 막는다. |
-| core:harvest_basket_lid<br>수확 바구니 뚜껑 | 짧은 피격에도 수확물을 덜 흘린다. 뚜껑을 여닫느라 다음 수확 시작이 늦어진다. | harvest, food | candidate | food: 운반 중 손실을 줄여 생산된 식량이 인구 유지에 실제 도착하도록 돕는다. |
+| core:harvest_basket_lid<br>수확 바구니 뚜껑 | 짧은 피격에도 수확물을 덜 흘린다. 뚜껑을 여닫느라 다음 수확 시작이 늦어진다. | harvest, food | s4-runtime | food: 운반 중 손실을 줄여 생산된 식량이 인구 유지에 실제 도착하도록 돕는다. |
 | core:herb_drying_frame<br>약초 말림틀 | 바로 쓰지 않은 약초를 다음 부상에 대비해 남긴다. 말리는 동안은 현재 부상자를 돌보는 양이 줄어든다. | people, food | candidate | people: 현재 병력 복구와 다음 전투의 예비 치료 자원을 경쟁시킨다. |
 | core:joiner_square<br>이음 직각자 | 한 방향의 벽을 먼저 완성해 접근하는 적을 막는다. 반대편은 마감이 끝날 때까지 더 약하다. | building, repair | s4-runtime | combat: 건설의 진행 순서가 실제 방어 방향이 되어 영주의 위치 선택을 요구한다. |
 | core:kiln_heat_tile<br>가마 축열판 | 남은 열로 수리 재료를 빨리 굳힌다. 다음 가열까지 먼 건물에는 같은 도움을 주지 못한다. | building, repair | candidate | combat: 생산 설비의 남은 열을 국지적인 복구 속도로 되돌린다. |
 | core:lantern_shutter<br>등불 가림판 | 아군에게만 가까운 길을 읽히고 먼 적의 주목을 줄인다. 빛의 바깥에 남은 부대는 길 찾기가 늦다. | people, control | candidate | combat: 병력 보존을 돕는 시야가 제한된 인원에게만 적용되어 귀환 순서를 요구한다. |
 | core:levy_bread_wrap<br>징집 빵보 | 휴대한 식량으로 먼 이동 중 유지 시간을 확보한다. 출발 전에 영지의 저장 식량을 먼저 가져간다. | people, food | s4-runtime | food: 외곽 전투의 자립 시간을 늘리는 만큼 남은 백성의 유지 여력이 줄어든다. |
-| core:long_shot_counter<br>먼 사격 눈금 | 먼 접근자의 위치를 빠르게 다시 겨눈다. 가까운 적으로 표적을 바꾸면 누적 조준을 잃는다. | ranged, building | candidate | combat: 건물 기반 방어선에 원거리 일관성을 주되 급한 근접 대응을 불리하게 만든다. |
+| core:long_shot_counter<br>먼 사격 눈금 | 먼 접근자의 위치를 빠르게 다시 겨눈다. 가까운 적으로 표적을 바꾸면 누적 조준을 잃는다. | ranged, building | s4-runtime | combat: 건물 기반 방어선에 원거리 일관성을 주되 급한 근접 대응을 불리하게 만든다. |
 | core:lure_pebble_box<br>유인 자갈함 | 자갈 소리로 짧은 우회 경로를 만들어 수확 시간을 번다. 유인을 반복하면 적이 소리가 나는 자리로 더 모인다. | control, food | candidate | food: 수확물 회수 시간을 벌되 밀집한 적을 처리할 방어가 따로 필요하다. |
 | core:mandrake_ear_plug<br>구근 귀마개 | 가까운 일꾼이 놀라 달아나지 않고 수확을 마친다. 경보 소리를 늦게 알아채므로 먼 습격 반응이 둔해진다. | harvest, people | candidate | harvest: 위험한 수확의 즉시 완수를 돕지만 다음 전투 대응 시간을 비용으로 둔다. |
 | core:market_awning_hook<br>장터 차양고리 | 보관 중인 식량의 임시 손실을 막는다. 차양 아래 터는 다른 방어 건물을 세우지 못한다. | building, economy | candidate | food: 음식의 보존을 위한 공간과 직접 방어 건설 공간이 경쟁한다. |
@@ -228,11 +228,11 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:miners_route_chalk<br>광부 길분필 | 무너진 곳을 피하는 길이 다음 작업자에게 남는다. 적도 같은 통로를 쓰면 우회가 필요하다. | people, repair | candidate | people: 복구 인력의 통행 지식이 축적되지만 안전이 영구 보장되지는 않는다. |
 | core:mushroom_breath_cloth<br>버섯 숨천 | 백성이 작업을 이어 갈 짧은 안전 창을 얻는다. 천을 말리는 동안 해당 백성은 다른 구역에서 쉬어야 한다. | land, people | candidate | growth: 성장 촉진 구역의 노동 위험을 줄이되 휴식 시간을 생산 비용으로 남긴다. |
 | core:muster_roll<br>징집 명부 | 아직 복귀 중인 사람 대신 쉬고 있는 사람을 찾는다. 여유 인력이 없으면 즉시 소집 규모가 줄어든다. | people, muster | s4-runtime | people: 귀환 중인 노동력의 중복 소모를 막고 부족한 병력을 그대로 드러낸다. |
-| core:projectile_return_hook<br>투사체 회수고리 | 이동 경로에서 회수하면 다음 발동 준비를 돕는다. 장비 회수를 위해 위험한 쪽으로 돌아가야 할 수 있다. | ranged, economy | candidate | combat: 낭비된 공격의 회수 동선을 영지 운반 동선과 연결한다. |
-| core:rain_watch_cup<br>빗소리 감시잔 | 외곽 밭의 물 공급과 감시 교대를 함께 맞춘다. 예고가 울리는 동안 다른 경보를 놓치기 쉽다. | growth, control | candidate | growth: 성장 지원의 타이밍을 방어 교대와 묶되 주의력 경쟁을 남긴다. |
-| core:repair_apron<br>수선 앞치마 | 작은 파편 피해를 견뎌 작업을 마칠 가능성이 높아진다. 앞치마를 입은 동안 징집 후 첫 이동이 둔하다. | repair, people | candidate | people: 복구 노동자의 생존을 높이는 대신 즉시 전투 전환이 어려워진다. |
+| core:projectile_return_hook<br>투사체 회수고리 | 이동 경로에서 회수하면 다음 발동 준비를 돕는다. 장비 회수를 위해 위험한 쪽으로 돌아가야 할 수 있다. | ranged, economy | s4-runtime | combat: 낭비된 공격의 회수 동선을 영지 운반 동선과 연결한다. |
+| core:rain_watch_cup<br>빗소리 감시잔 | 외곽 밭의 물 공급과 감시 교대를 함께 맞춘다. 예고가 울리는 동안 다른 경보를 놓치기 쉽다. | growth, control | s4-runtime | growth: 성장 지원의 타이밍을 방어 교대와 묶되 주의력 경쟁을 남긴다. |
+| core:repair_apron<br>수선 앞치마 | 작은 파편 피해를 견뎌 작업을 마칠 가능성이 높아진다. 앞치마를 입은 동안 징집 후 첫 이동이 둔하다. | repair, people | s4-runtime | people: 복구 노동자의 생존을 높이는 대신 즉시 전투 전환이 어려워진다. |
 | core:return_path_knot<br>귀환 매듭끈 | 익은 밭을 가로지르지 않는 귀환 길을 먼저 잡는다. 안전한 길이 길면 노동 복귀가 늦어진다. | people, harvest | s4-runtime | harvest: 귀환 병력이 수확물을 망가뜨리지 않게 하되 군사 공백을 늘린다. |
-| core:ripe_bell_clapper<br>익음 알림 추 | 가장 오래 기다린 밭에 백성의 수확 우선순위를 보낸다. 새로 익은 가까운 밭은 뒤로 밀릴 수 있다. | harvest, people | candidate | harvest: 오래 방치된 수확물의 손실을 줄이는 대신 짧은 운반 효율을 희생한다. |
+| core:ripe_bell_clapper<br>익음 알림 추 | 가장 오래 기다린 밭에 백성의 수확 우선순위를 보낸다. 새로 익은 가까운 밭은 뒤로 밀릴 수 있다. | harvest, people | s4-runtime | harvest: 오래 방치된 수확물의 손실을 줄이는 대신 짧은 운반 효율을 희생한다. |
 | core:root_binding_cord<br>뿌리 묶음끈 | 가장자리 싹이 함께 버텨 첫 손실을 줄인다. 묶인 줄 중 하나가 파괴되면 이웃 밭의 성장도 잠시 멈춘다. | land, defense | s4-runtime | growth: 어린 밭의 개별 취약성을 줄이는 대신 손실이 연결되는 위험을 만든다. |
 | core:ruin_keystone<br>폐허 쐐기돌 | 남은 기초를 묶어 첫 재건 작업을 쉽게 한다. 폐허를 버리고 다른 터로 옮기면 효과가 사라진다. | repair, building | s4-runtime | combat: 손실이 곧 전부 상실되지 않게 하면서 재건과 이전 중 선택을 남긴다. |
 | core:scaffold_step<br>비계 발판 | 작업자가 건물을 우회하지 않고 안전한 쪽으로 지나간다. 발판을 설치한 터는 완성 전 징집 집결지로 쓰기 어렵다. | building, people | s4-runtime | people: 건설과 노동 이동의 충돌을 줄이는 대신 병력 동선의 자유를 줄인다. |
@@ -241,19 +241,19 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:shepherd_token<br>목동 교대패 | 같은 일꾼만 순찰하지 않도록 교대한다. 교대 순간에는 가장자리 감시가 비게 된다. | people, food | candidate | people: 노동 지속성과 외곽 방어 사이에 짧은 전환 공백을 만든다. |
 | core:shock_absorber_pad<br>충격 흡수천 | 내 건물로 되돌아오는 진동을 덜어 수리를 유지한다. 흡수된 충격만큼 바깥 적을 밀어내는 힘도 줄어든다. | defense, repair | s4-runtime | combat: 발동 공격과 성장물 보호가 무조건 동시에 좋아지지 않도록 교환 비용을 둔다. |
 | core:shrine_smoke_cap<br>향로 연기덮개 | 연기가 낮게 머물러 앞선 병력의 후퇴를 가린다. 뒤의 백성도 시야가 좁아져 작업 출발이 늦어진다. | building, defense | candidate | people: 병력을 보존하는 집결 방어가 노동의 대기 시간으로 돌아온다. |
-| core:slow_burn_wick<br>느린 불심지 | 불길이 번지기 전에 적을 먼저 몰아낼 시간을 늘린다. 늦게 번지는 만큼 즉시 큰 무리를 처리하는 힘은 줄어든다. | land, control | candidate | growth: 개간 공격의 안전 조절이 순간 화력의 감소로 이어진다. |
-| core:soup_portion_cup<br>죽 배분잔 | 낭비되는 분량을 줄여 다음 교대분을 남긴다. 배분 대기 시간이 생겨 즉시 징집에는 불리하다. | people, food | candidate | food: 식량을 인구 유지로 옮기는 효율과 빠른 병력 집결을 교환한다. |
+| core:slow_burn_wick<br>느린 불심지 | 불길이 번지기 전에 적을 먼저 몰아낼 시간을 늘린다. 늦게 번지는 만큼 즉시 큰 무리를 처리하는 힘은 줄어든다. | land, control | s4-runtime | growth: 개간 공격의 안전 조절이 순간 화력의 감소로 이어진다. |
+| core:soup_portion_cup<br>죽 배분잔 | 낭비되는 분량을 줄여 다음 교대분을 남긴다. 배분 대기 시간이 생겨 즉시 징집에는 불리하다. | people, food | s4-runtime | food: 식량을 인구 유지로 옮기는 효율과 빠른 병력 집결을 교환한다. |
 | core:spare_seed_locket<br>여분 종자함 | 보관한 종자로 그 자리의 재파종을 먼저 시작한다. 보관 중에는 다른 곳에 심을 씨앗이 적다. | land, repair | candidate | growth: 현재 확장을 늦춘 비축이 성장물 손실 뒤의 복구 능력으로 돌아온다. |
-| core:squad_route_board<br>부대 길판 | 앞선 한 부대의 경로를 뒤따른 부대가 공유한다. 선두가 함정에 걸리면 뒤쪽도 같은 위험을 물려받는다. | people, muster | candidate | combat: 부대 이동의 안정성과 경로 집중의 취약함을 함께 만든다. |
+| core:squad_route_board<br>부대 길판 | 앞선 한 부대의 경로를 뒤따른 부대가 공유한다. 선두가 함정에 걸리면 뒤쪽도 같은 위험을 물려받는다. | people, muster | s4-runtime | combat: 부대 이동의 안정성과 경로 집중의 취약함을 함께 만든다. |
 | core:stitched_gaiter<br>덧댄 각반 | 다음 진형 이동에서 작은 충격에 덜 흩어진다. 손질 중인 병사는 밭일을 하지 못한다. | people, defense | candidate | people: 다음 전투의 부대 보존을 위해 현재 노동 시간을 지불한다. |
 | core:stone_sprout_cup<br>돌싹 받침 | 주변 어린 작물이 적의 첫 충돌을 대신 버틸 틈을 얻는다. 돌 주위는 수확자가 곧장 지나갈 수 없어 우회한다. | land, defense | candidate | growth: 새 경작지 방어와 수확 동선의 혼잡을 같은 배치 결정에 묶는다. |
 | core:tax_receipt_cord<br>세금 영수끈 | 어느 창고에서 가져왔는지 남겨 부족한 구역부터 반환한다. 즉시 건설에 쓸 수 있는 금화가 줄어든다. | economy, building | candidate | food: 경제 산출의 일부를 식량 부족 복구에 돌려 인구 유지와 건설을 경쟁시킨다. |
 | core:tower_plumb_line<br>망루 다림줄 | 그 길로 들어오는 적에게 사격 방향이 빨리 맞춰진다. 다른 방향으로 습격이 바뀌면 다시 조준해야 한다. | building, ranged | candidate | combat: 안정된 방어선의 이점을 주되 여러 경로의 습격에 고정화 비용을 남긴다. |
-| core:turning_weight<br>회전 균형추 | 아군이 들어갈 사각을 일정한 방향에 남긴다. 적도 그 사각을 이용할 수 있어 부대가 떠나면 취약하다. | orbit, people | candidate | people: 개인 무기의 빈틈과 동행 부대의 필요성을 서로 맞물리게 한다. |
+| core:turning_weight<br>회전 균형추 | 아군이 들어갈 사각을 일정한 방향에 남긴다. 적도 그 사각을 이용할 수 있어 부대가 떠나면 취약하다. | orbit, people | s4-runtime | people: 개인 무기의 빈틈과 동행 부대의 필요성을 서로 맞물리게 한다. |
 | core:vault_counting_tag<br>씨창고 계수표 | 한 번에 전부 쓰지 않고 재파종용 씨앗을 남긴다. 즉시 넓게 확장하는 파종은 줄어든다. | building, land | candidate | growth: 초기 면적 확대와 습격 뒤 재파종 능력을 동일한 종자 비축에서 선택한다. |
 | core:veil_fastener<br>벌망 고정쇠 | 수분 구역을 떠나지 않고 잠깐 휴식할 수 있다. 이 상태에서는 급히 전투 진형을 잡기 어렵다. | people, growth | candidate | growth: 경작 보조의 연속성을 높이는 대신 전투 대응의 유연함을 줄인다. |
 | core:wind_seed_flag<br>바람 씨깃 | 씨앗이 곡선 경로 안쪽의 안전한 땅에 모인다. 바깥쪽에 생긴 빈 땅은 다른 이동 경로로 채워야 한다. | land, control | s4-runtime | growth: 회피 동작과 파종 위치를 연결해 안전과 확장의 선택을 동시에 만든다. |
-| core:windmill_brake<br>풍차 멈춤쇠 | 일부 회전을 방어 충격에 돌려 접근자를 밀친다. 방어에 쓴 시간만큼 식량 처리가 늦어진다. | building, harvest | candidate | harvest: 수확 처리 능력과 건물 방어를 같은 회전 자원에서 경쟁시킨다. |
+| core:windmill_brake<br>풍차 멈춤쇠 | 일부 회전을 방어 충격에 돌려 접근자를 밀친다. 방어에 쓴 시간만큼 식량 처리가 늦어진다. | building, harvest | s4-runtime | harvest: 수확 처리 능력과 건물 방어를 같은 회전 자원에서 경쟁시킨다. |
 | core:winter_dispatch_token<br>겨울 교대패 | 쉬는 노동력을 우선 모아 현역 부대를 교대한다. 식량 소비가 끝나는 것은 아니므로 긴 원정은 여전히 부담이다. | people, food | candidate | people: 계절에 따라 노동의 기회비용은 낮아지되 인구 유지 비용은 남는 구조를 강조한다. |
 | core:worker_rest_mat<br>일꾼 쉼자리 | 짧게 쉬고 다음 작업 주기에 안정적으로 복귀한다. 쉼자리의 백성은 즉시 재징집 대상이 되지 않는다. | people, growth | candidate | growth: 노동 강화의 반복을 휴식 시간과 묶어 상시 강화로 변하는 것을 막는다. |
 
@@ -385,29 +385,29 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | ID / 이름 | 개념 | 태그 | 상태 | 순환 연결 |
 | --- | --- | --- | --- | --- |
 | core:basket_mimic<br>바구니 위장꾼 | 수확 바구니처럼 웅크렸다가 영주가 다가올 때 덮친다. 수확 전에 짧게 공격해 위장을 벗기면 느린 이동이 약점이 된다. | harvest, melee | candidate | 직접 연결 없음 |
-| core:bell_thief<br>종 훔치는 도적 | 기능 부품을 떼어내 전투력보다 영지 운영을 먼저 흔든다. 부품 운반자를 놓치지 않도록 건물 사이 통로를 지킨다. | building, economy | candidate | 직접 연결 없음 |
+| core:bell_thief<br>종 훔치는 도적 | 기능 부품을 떼어내 전투력보다 영지 운영을 먼저 흔든다. 부품 운반자를 놓치지 않도록 건물 사이 통로를 지킨다. | building, economy | s4-runtime | 직접 연결 없음 |
 | core:blight_beetle<br>역병 딱정벌레 | 밭 사이를 옮겨 다니며 초기 성장 지연을 퍼뜨린다. 밭 사이 간격을 두고 첫 표적을 빠르게 제거한다. | land, fertility | candidate | 직접 연결 없음 |
 | core:burrow_larva<br>굴파는 유충 | 밭 사이에 숨어 가장 어린 씨앗으로 이동한다. 땅이 솟는 표식을 보고 근접 공격으로 빠르게 드러낸다. | land, growth | candidate | 직접 연결 없음 |
 | core:crop_grazer<br>작물 포식자 | 익은 작물을 먼저 노려 수확 지연에 비용을 부과한다. | land, harvest | s2-runtime | 직접 연결 없음 |
-| core:ember_sapper<br>불씨 공병 | 불씨를 던진 뒤 물러나 지속 수리 자원을 요구한다. 투척 전에 돌진해 끊거나 불씨가 붙은 건물을 우선 수리한다. | building, ranged | candidate | 직접 연결 없음 |
+| core:ember_sapper<br>불씨 공병 | 불씨를 던진 뒤 물러나 지속 수리 자원을 요구한다. 투척 전에 돌진해 끊거나 불씨가 붙은 건물을 우선 수리한다. | building, ranged | s4-runtime | 직접 연결 없음 |
 | core:grain_sack_bandit<br>곡물 자루꾼 | 수확물을 담은 뒤 전장에서 빠져나가 식량 회수를 서두르게 한다. 짐을 든 뒤 느려지는 퇴로를 차단한다. | harvest, food | candidate | 직접 연결 없음 |
 | core:lantern_stalker<br>등불 추적자 | 마지막으로 본 위치에 등불 표식을 남겨 은폐 체류를 제한한다. 표식 범위 밖으로 유인하면 느린 추적 속도를 이용할 수 있다. | control, defense | candidate | 직접 연결 없음 |
-| core:locust_cloud<br>메뚜기 무리 | 작은 개체가 넓게 흩어져 한 목표 집중 공격을 비효율적으로 만든다. 넓은 발동을 준비하거나 성숙 시점을 분산한다. | harvest, control | candidate | 직접 연결 없음 |
+| core:locust_cloud<br>메뚜기 무리 | 작은 개체가 넓게 흩어져 한 목표 집중 공격을 비효율적으로 만든다. 넓은 발동을 준비하거나 성숙 시점을 분산한다. | harvest, control | s4-runtime | 직접 연결 없음 |
 | core:mortar_rat<br>줄눈 쥐 | 작은 틈을 찾아 연속 공격으로 수리 작업을 방해한다. 정비 전에 주변 무리를 넓게 쓸어내린다. | building, repair | candidate | 직접 연결 없음 |
 | core:mud_sleeper<br>진흙 잠복자 | 움직이지 않고 기다렸다가 복귀 동선에 몸을 드러낸다. 파종 직후 주변을 확인하거나 먼 발동으로 먼저 깨운다. | land, control | candidate | 직접 연결 없음 |
 | core:raider<br>약탈병 | 영주를 직접 추격하여 경작 동선을 끊는다. | melee, control | s2-runtime | 직접 연결 없음 |
-| core:ram_runner<br>돌진 주자 | 예고 뒤 직선 돌진으로 경작 이동 경로를 가로지른다. 예고 방향 옆으로 피하면 멈춘 뒤 긴 회복 시간을 노릴 수 있다. | melee, control | candidate | 직접 연결 없음 |
+| core:ram_runner<br>돌진 주자 | 예고 뒤 직선 돌진으로 경작 이동 경로를 가로지른다. 예고 방향 옆으로 피하면 멈춘 뒤 긴 회복 시간을 노릴 수 있다. | melee, control | s4-runtime | 직접 연결 없음 |
 | core:root_thief<br>뿌리 도둑 | 어린 뿌리를 뽑아 다음 밭까지 운반하며 두 곳의 작업을 끊는다. 운반 속도가 느린 동안 처치하면 뿌리를 회수할 수 있다는 설계다. | land, growth | candidate | 직접 연결 없음 |
-| core:rope_catcher<br>올가미 사냥꾼 | 앞쪽에 올가미를 던져 같은 경로의 반복 이동을 막는다. 투척 예고 후 방향을 바꾸면 재장전 동안 빈틈이 생긴다. | ranged, control | candidate | 직접 연결 없음 |
+| core:rope_catcher<br>올가미 사냥꾼 | 앞쪽에 올가미를 던져 같은 경로의 반복 이동을 막는다. 투척 예고 후 방향을 바꾸면 재장전 동안 빈틈이 생긴다. | ranged, control | s4-runtime | 직접 연결 없음 |
 | core:rubble_golem<br>잔해 골렘 | 잔해를 붙여 몸을 키우므로 재건을 오래 미룰수록 처리 부담이 커진다. 폐허를 일찍 정리하거나 잔해에 닿기 전에 유도해 처치한다. | building, repair | candidate | 직접 연결 없음 |
 | core:salt_crow<br>소금 까마귀 | 씨앗 위에 소금을 떨어뜨려 비옥도 사용을 지연시킨다. 짧은 착지 순간을 노리거나 밭을 나눠 한 번에 받는 손해를 줄인다. | land, fertility | candidate | 직접 연결 없음 |
 | core:seed_mite<br>씨앗 진드기 | 성장 초기 밭을 노려 재파종 부담을 만든다. | land, growth | s2-runtime | 직접 연결 없음 |
 | core:shield_raider<br>방패 약탈병 | 정면 방패를 유지해 직선 추격에서 처치 시간을 늘린다. 옆으로 돌아 공격하면 방패 자세를 다시 잡는 틈이 생긴다. | melee, defense | s4-runtime | 직접 연결 없음 |
 | core:siege_cart<br>공성 손수레 | 느리게 밀고 와 큰 한 번의 충격으로 수리 여유를 줄인다. 접근 시간을 활용해 집중 공격하거나 경로를 우회시킨다. | building, melee | s4-runtime | 직접 연결 없음 |
 | core:stone_breaker<br>돌벽 파괴자 | 건물에 접근해 손상을 누적시키고 폐허를 만든다. | building, melee | s2-runtime | 직접 연결 없음 |
-| core:whistle_hunter<br>호각 추격자 | 호각으로 동료의 접근 방향을 모아 체류를 흔든다. 호각 준비가 보일 때 먼저 끊으면 약한 몸체만 남는다. | ranged, control | candidate | 직접 연결 없음 |
+| core:whistle_hunter<br>호각 추격자 | 호각으로 동료의 접근 방향을 모아 체류를 흔든다. 호각 준비가 보일 때 먼저 끊으면 약한 몸체만 남는다. | ranged, control | s4-runtime | 직접 연결 없음 |
 | core:wine_wasp<br>발효 말벌 | 수확 접근 순간에 독침을 쏘고 뒤로 빠진다. 사격을 유도한 뒤 재공격 전 수확하거나 먼 거리에서 제거한다. | harvest, ranged | candidate | 직접 연결 없음 |
-| core:winter_hart<br>겨울 뿔사슴 | 긴 몸체로 수확 접근을 막고 몸을 돌려 여러 작물을 훑는다. 회전 바깥으로 유도해 밭에서 떨어뜨린 뒤 수확한다. | harvest, food | candidate | 직접 연결 없음 |
+| core:winter_hart<br>겨울 뿔사슴 | 긴 몸체로 수확 접근을 막고 몸을 돌려 여러 작물을 훑는다. 회전 바깥으로 유도해 밭에서 떨어뜨린 뒤 수확한다. | harvest, food | s4-runtime | 직접 연결 없음 |
 
 | 이름 | 목표 | 압박 | 대응 |
 | --- | --- | --- | --- |
@@ -432,7 +432,7 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | 방패 약탈병 | lord | 정면 방패를 유지해 직선 추격에서 처치 시간을 늘린다. | 옆으로 돌아 공격하면 방패 자세를 다시 잡는 틈이 생긴다. |
 | 공성 손수레 | building | 느리게 밀고 와 큰 한 번의 충격으로 수리 여유를 줄인다. | 접근 시간을 활용해 집중 공격하거나 경로를 우회시킨다. |
 | 돌벽 파괴자 | building | 건물에 접근해 손상을 누적시키고 폐허를 만든다. | 건물에 붙기 전에 유도하고 손상 건물을 수리한다. |
-| 호각 추격자 | lord | 호각으로 동료의 접근 방향을 모아 체류를 흔든다. | 호각 준비가 보일 때 먼저 끊으면 약한 몸체만 남는다. |
+| 호각 추격자 | people | 호각으로 동료의 접근 방향을 모아 체류를 흔든다. | 호각 준비가 보일 때 먼저 끊으면 약한 몸체만 남는다. |
 | 발효 말벌 | ripe | 수확 접근 순간에 독침을 쏘고 뒤로 빠진다. | 사격을 유도한 뒤 재공격 전 수확하거나 먼 거리에서 제거한다. |
 | 겨울 뿔사슴 | ripe | 긴 몸체로 수확 접근을 막고 몸을 돌려 여러 작물을 훑는다. | 회전 바깥으로 유도해 밭에서 떨어뜨린 뒤 수확한다. |
 
@@ -453,13 +453,13 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:living_compost<br>살아 있는 퇴비 | 성장 중인 밭에서 남은 유기물을 모아 다음 성장 주기 비옥도로 저장한다. 대신 현재 주기의 성장 속도를 일부 양보해야 저장분이 생긴다. | land, fertility, growth | candidate | fertility: 성장 중인 밭에서 남은 유기물을 모아 다음 성장 주기 비옥도로 저장한다. |
 | core:marching_banner<br>교대 진군기 | 군기가 북의 박자에 맞춰 분대 교대 순간을 표시해 퇴각 부대 뒤를 예비대가 메운다. 대신 박자를 맞추느라 즉시 징집을 지연하고 경작 인력이 한때 줄어든다. | weapon, people, muster | candidate | people: 군기가 북의 박자에 맞춰 분대 교대 순간을 표시해 퇴각 부대 뒤를 예비대가 메운다. |
 | core:mason_automaton<br>석공 자동인형 | 망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다. 대신 표식을 멀리 흩으면 이동에 시간을 쓰고 즉시 수리 응답이 늦어진다. | building, repair, people | candidate | growth: 망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다. |
-| core:mill_return_disc<br>방앗간 회수륜 | 바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다. 대신 귀환 경로가 길어져 다음 발사가 늦고 건물 밖 추격에는 불리하다. | weapon, building, ranged | candidate | combat: 바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다. |
-| core:rain_channel_shot<br>물길 관통시위 | 물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다. 대신 물길 밖에서는 관통하지 못하고 관개를 공격 경로에 맞춰야 한다. | weapon, ranged, land | candidate | combat: 물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다. |
-| core:rally_kitchen<br>집결 취사대 | 귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다. 대신 전선에서 멀어진 부대는 재동원까지 시간이 걸리고 식량을 추가 소모한다. | people, food, muster | candidate | people: 귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다. |
+| core:mill_return_disc<br>방앗간 회수륜 | 바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다. 대신 귀환 경로가 길어져 다음 발사가 늦고 건물 밖 추격에는 불리하다. | weapon, building, ranged | s4-runtime | combat: 바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다. |
+| core:rain_channel_shot<br>물길 관통시위 | 물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다. 대신 물길 밖에서는 관통하지 못하고 관개를 공격 경로에 맞춰야 한다. | weapon, ranged, land | s4-runtime | combat: 물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다. |
+| core:rally_kitchen<br>집결 취사대 | 귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다. 대신 전선에서 멀어진 부대는 재동원까지 시간이 걸리고 식량을 추가 소모한다. | people, food, muster | s4-runtime | people: 귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다. |
 | core:returning_mallet<br>귀환 망치 | 재건한 건물의 작업 기억을 이어 다음 폐허의 첫 공정을 대신한다. 대신 활성 건물 수리는 뒤로 미뤄져 현재 방어선이 약해질 수 있다. | building, repair, growth | candidate | growth: 재건한 건물의 작업 기억을 이어 다음 폐허의 첫 공정을 대신한다. |
 | core:rotating_squadrons<br>순환 진군 | 세 분대가 공격·경계·귀환 역할을 순서대로 교대해 한 부대의 장기 이탈을 줄인다. 대신 세 역할이 동시에 돌아야 하므로 순간 집중 화력이 낮아진다. | people, muster, control | candidate | people: 세 분대가 공격·경계·귀환 역할을 순서대로 교대해 한 부대의 장기 이탈을 줄인다. |
 | core:ruin_shadow_grove<br>폐허 그늘숲 | 폐허 둘레의 그늘 말뚝을 연결해 적의 접근을 늦추는 통로를 만든다. 대신 그늘 통로를 유지하는 동안 해당 폐허를 재건할 수 없다. | building, repair, control | candidate | combat: 폐허 둘레의 그늘 말뚝을 연결해 적의 접근을 늦추는 통로를 만든다. |
-| core:seed_crown<br>이삭관 파종 | 성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다. 대신 성숙 밭의 이번 수확량이 줄어 당장 쓸 식량은 적어진다. | land, harvest, growth | candidate | growth: 성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다. |
+| core:seed_crown<br>이삭관 파종 | 성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다. 대신 성숙 밭의 이번 수확량이 줄어 당장 쓸 식량은 적어진다. | land, harvest, growth | s4-runtime | growth: 성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다. |
 | core:shared_cauldron<br>공동 가마솥 | 영주에게 가장 가까운 작업 구역에 일꾼을 자동 집결시켜 공동 배식하고 식량 운반 이동을 줄인다. 대신 자동 집결 구역에 일꾼이 모이는 동안 먼 밭은 작업자를 잃는다. | people, food, growth | candidate | food: 영주에게 가장 가까운 작업 구역에 일꾼을 자동 집결시켜 공동 배식하고 식량 운반 이동을 줄인다. |
 | core:sheltered_sowing<br>지붕 아래 파종 | 수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다. 대신 영지 밖 새 밭에는 지붕이 닿지 않아 확장과 집중 방어 중 하나를 골라야 한다. | land, building, defense | s4-runtime | growth: 수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다. |
 | core:sowing_sworddance<br>파종 검무 | 베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다. 대신 경작지가 한 줄로 몰려 옆에서 들어오는 약탈에 취약해진다. | weapon, melee, land | s4-runtime | growth: 베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다. |
@@ -467,8 +467,8 @@ R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경
 | core:thorn_formation<br>가시 진형 북 | 두 북의 박자를 번갈아 써 생울타리 틈으로 분대가 교대 출입하도록 한다. 대신 고정된 출입구를 지켜야 해서 먼 농지의 위협 대응이 늦어진다. | people, muster, building | candidate | combat: 두 북의 박자를 번갈아 써 생울타리 틈으로 분대가 교대 출입하도록 한다. |
 | core:tithe_harvest_wagon<br>십일조 수확마차 | 수확 수레가 실어 온 작물을 장부의 고정 비율에 따라 배식 몫과 재건 몫으로 자동 분류해 목적지에 넘긴다. 대신 분류가 끝나기 전에는 어느 몫도 긴급 소비할 수 없다. | harvest, food, economy | candidate | food: 수확 수레가 실어 온 작물을 장부의 고정 비율에 따라 배식 몫과 재건 몫으로 자동 분류해 목적지에 넘긴다. |
 | core:tower_counterweight<br>망루 평형추 | 여러 망루의 평형추를 이어 한쪽 공격 때 다른 쪽을 빠르게 재장전한다. 대신 동시에 사격할 수 있는 망루 수가 줄어 포위에 취약해진다. | building, ranged, defense | candidate | combat: 여러 망루의 평형추를 이어 한쪽 공격 때 다른 쪽을 빠르게 재장전한다. |
-| core:venom_reaping<br>독이삭 수확날 | 독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다. 대신 독을 보호에 쓰므로 표시 적에게 남아 있던 추가 피해를 포기한다. | weapon, melee, growth | candidate | growth: 독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다. |
-| core:warded_masonry<br>호위 성가퀴 | 회전 수호물이 수리 중인 건물 바깥을 돌아 목수의 작업 공간을 지킨다. 대신 수호물이 건물에 묶인 동안 영주 주변의 방어 회전 범위가 줄어든다. | weapon, orbit, repair | candidate | combat: 회전 수호물이 수리 중인 건물 바깥을 돌아 목수의 작업 공간을 지킨다. |
+| core:venom_reaping<br>독이삭 수확날 | 독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다. 대신 독을 보호에 쓰므로 표시 적에게 남아 있던 추가 피해를 포기한다. | weapon, melee, growth | s4-runtime | growth: 독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다. |
+| core:warded_masonry<br>호위 성가퀴 | 회전 수호물이 수리 중인 건물 바깥을 돌아 목수의 작업 공간을 지킨다. 대신 수호물이 건물에 묶인 동안 영주 주변의 방어 회전 범위가 줄어든다. | weapon, orbit, repair | s4-runtime | combat: 회전 수호물이 수리 중인 건물 바깥을 돌아 목수의 작업 공간을 지킨다. |
 | core:winter_seed_stove<br>겨울 씨앗 아궁이 | 종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다. 대신 보호를 받으려면 씨앗을 한곳에 모아야 하므로 곡창 습격 피해가 커진다. | building, land, defense | candidate | growth: 종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다. |
 
 | 이름 | 유형 / 재료 | 성장 조건 | 변형 대상 / 결과 | 비용 |

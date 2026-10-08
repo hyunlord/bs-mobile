@@ -24,8 +24,8 @@
   ],
   "name": "빗물 바가지",
   "concept": "발동: 물을 부채꼴로 끼얹어 적을 밀친다. 성장 산출: 마른 밭을 적시는 관개 웅덩이. 비용: 저수량을 먼저 소비해 긴 가뭄에는 급수가 끊긴다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 기본 공격과 land 성장에 실제 runtimeProjection 효과를 더한다. 제안 문구 중 실행 수치로 선언된 범위만 구현.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -39,5 +39,21 @@
       "otherId": "core:kiln_bellows",
       "reason": "가마 열은 관개수를 말리고 급수는 가마 작업열을 식힌다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:rain_ladle_soak",
+        "trigger": "plant",
+        "operation": "shield-farms",
+        "subject": "land",
+        "amount": 1,
+        "radius": 1000,
+        "durationTicks": 150,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
 }

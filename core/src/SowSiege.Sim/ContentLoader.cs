@@ -19,7 +19,7 @@ public static partial class ContentLoader
     public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
         var profile = LoadProfile(directory, profileName);
-        var baseline = Read<Tuning>(ConfigurationPath(directory, profile.TuningFile ?? "tuning.json", @"\A(?:tuning\.json|experiments/tuning-s2-baseline\.json)\z"));
+        var baseline = Read<Tuning>(ConfigurationPath(directory, profile.TuningFile ?? "tuning.json", profile.FirstPlayable is null ? @"\A(?:tuning\.json|experiments/tuning-s2-baseline\.json)\z" : @"\Afirst-playable-tuning\.json\z"));
         var experiment = LoadExperiment(directory, profile, baseline);
         var tuning = experiment?.Tuning ?? baseline;
         var selection = profile.Select(includeTest);
@@ -55,19 +55,21 @@ public static partial class ContentLoader
             ValidateActivation(tool.Id, tool.Activation);
             Require(tool.Growth.Yield > 0 && tool.Growth.Target is "land" or "building" or "people", $"Invalid growth: {tool.Id}");
             Require(tool.Tags.Length > 0 && tool.Tags.All(tag => !string.IsNullOrWhiteSpace(tag)) && !string.IsNullOrWhiteSpace(tool.FloorRationale), $"Tool description missing: {tool.Id}");
-            foreach (var reference in tool.AntiSynergy) { Require(tools.ContainsKey(reference), $"Unknown anti-synergy: {reference}"); }
+            foreach (var reference in tool.AntiSynergy) { Require(tools.ContainsKey(reference) || profile.FirstPlayable is not null && CanonicalToolExists(directory, reference), $"Unknown anti-synergy: {reference}"); }
         }
         foreach (var weapon in weapons.Values) { ValidateActivation(weapon.Id, weapon.Activation); }
         foreach (var enemy in enemies.Values)
         {
-            Require(enemy.Target is "lord" or "seed" or "ripe" or "building", $"Invalid enemy target: {enemy.Id}");
+            Require(enemy.Target is "lord" or "seed" or "ripe" or "building" || profile.FirstPlayable is not null && enemy.Target == "people", $"Invalid enemy target: {enemy.Id}");
             Require(new[] { enemy.Health, enemy.Speed, enemy.Damage, enemy.Range, enemy.AttackCooldownTicks, enemy.Experience }.All(value => value > 0), $"Invalid enemy values: {enemy.Id}");
         }
         Require(tuning.TickRate == 30 && tuning.DurationTicks > 0 && tuning.DamageRollMax > 0, "Invalid simulation clock or damage roll.");
         Require(heroes.ContainsKey(tuning.DefaultHero) && estates.ContainsKey(tuning.DefaultEstate), "Unknown default hero or estate.");
         ValidateWorld(tuning, weapons);
-        var runtime = profile.Runtime is null ? null : LoadRuntime(roots, profile.Runtime, selection, tools, weapons);
-        return new(tuning, tools, heroes, estates, weapons, enemies, runtime, experiment?.Experiment, LoadWeaponCombat(directory, profile, selection.Weapons));
+        var runtime = profile.Runtime is null ? null : LoadRuntime(roots, profile.Runtime, selection, tools, weapons, profile.FirstPlayable, profile.RuntimeOverrides);
+        Require(profile.FirstPlayable is not null || profile.RuntimeOverrides is null, "Runtime overrides require first playable.");
+        ValidateFirstPlayable(profile, tuning, weapons, tools, enemies, runtime);
+        return new(tuning, tools, heroes, estates, weapons, enemies, runtime, experiment?.Experiment, LoadWeaponCombat(directory, profile, selection.Weapons), profile.FirstPlayable);
     }
 
     public static RuntimeProfile LoadProfile(string directory, string profileName = "s2-baseline")
@@ -172,7 +174,7 @@ public static partial class ContentLoader
         type = Nullable.GetUnderlyingType(type) ?? type;
         if (type == typeof(int))
         {
-            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum", ".linear", ".pierce", ".beamHalfWidth" };
+            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum", ".linear", ".pierce", ".beamHalfWidth", ".speed", ".chainRange", ".firstSpawnTick", ".repeatTicks", ".weight", ".rewardCount", ".healAmount", ".experience", ".health", ".spreadPermille", ".burstIntervalTicks" };
             var minimum = (location.EndsWith(".amount", StringComparison.Ordinal) || location.EndsWith(".x", StringComparison.Ordinal) || location.EndsWith(".y", StringComparison.Ordinal)) ? -1000000 : zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
             Require(element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var number) && number >= minimum && number <= 1000000, $"Integer out of content bounds at {location}.");
             return;
@@ -190,7 +192,7 @@ public static partial class ContentLoader
             foreach (var item in element.EnumerateArray()) { ValidateRequiredShape(item, type.GetElementType()!, location + "[]"); }
             return;
         }
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>) || type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)))
         {
             Require(element.ValueKind == JsonValueKind.Object, $"Expected dictionary at {location}.");
             foreach (var property in element.EnumerateObject()) { ValidateRequiredShape(property.Value, type.GenericTypeArguments[1], location + "." + property.Name); }
@@ -203,7 +205,8 @@ public static partial class ContentLoader
             if (!element.TryGetProperty(name, out var member))
             {
                 if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent)
-                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" && type == typeof(RuntimeProfile)
+                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" && type == typeof(RuntimeProfile)
+                    || name == "evolutionGrowthRequirements" && type == typeof(FirstPlayableDefinition)
                     || name == "growth" && type == typeof(WeaponContent)
                     || name is "damage" or "range" or "cooldownTicks" or "knockback" && type == typeof(WeaponActivationContent)
                     || name == "definitionsFile" && type == typeof(WeaponCombatProfileExtension))
@@ -214,7 +217,7 @@ public static partial class ContentLoader
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
             Require(!(type == typeof(EstateContent) && name == "remainsLoop" && member.ValueKind == JsonValueKind.Null), "Remains loop must be omitted or a complete object.");
-            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
+            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
             Require(!(type == typeof(WeaponContent) && name == "growth" && member.ValueKind == JsonValueKind.Null), "Weapon growth must be omitted or complete.");
             Require(!(type == typeof(WeaponActivationContent) && member.ValueKind == JsonValueKind.Null), "Activation members cannot be null.");
             Require(!(type == typeof(WeaponCombatProfileExtension) && member.ValueKind == JsonValueKind.Null), "Weapon combat members cannot be null.");

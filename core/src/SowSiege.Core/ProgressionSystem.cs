@@ -51,12 +51,21 @@ namespace SowSiege.Core
                 offer.Add(pool[index]); pool.RemoveAt(index);
             }
             world.PendingCards = offer.ToArray();
+            if (world.FirstPlayable is { } fp)
+            {
+                var kept = world.LockedCard is not null && fp.OfferedRarities.TryGetValue(world.LockedCard, out var locked) ? locked : null;
+                fp.OfferedRarities.Clear();
+                foreach (var id in offer)
+                {
+                    fp.OfferedRarities[id] = id == world.LockedCard && kept is not null ? kept : RollRarity();
+                }
+            }
         }
 
         public void Select(string id)
         {
             RequireOffered(id);
-            var rarity = RollRarity();
+            var rarity = world.FirstPlayable is { } fp ? fp.OfferedRarities[id] : RollRarity();
             if (catalog.Runtime?.Charters.ContainsKey(id) == true)
             {
                 world.Runtime!.Charters[id] = checked(world.Runtime.Charters.GetValueOrDefault(id) + rarity.UpgradeAmount);
@@ -73,6 +82,7 @@ namespace SowSiege.Core
             runtime?.UnlockEvolutions();
             world.Cards.Add(new(world.Tick, world.PendingCards.ToArray(), id, rarity.Name, world.Level));
             world.PendingCards = Array.Empty<string>();
+            world.FirstPlayable?.OfferedRarities.Clear();
             world.LockedCard = null;
         }
 

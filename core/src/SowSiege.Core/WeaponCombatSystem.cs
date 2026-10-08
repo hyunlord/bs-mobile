@@ -9,6 +9,7 @@ namespace SowSiege.Core
     {
         private void ActivateWeapon(EquipmentState equipment)
         {
+            if (catalog.FirstPlayable is not null) { ActivateFirstPlayableWeapon(equipment); return; }
             var definition = catalog.WeaponCombat!.Weapons[equipment.Id];
             var level = definition.Levels[Math.Min(equipment.Level, definition.Levels.Length) - 1];
             equipment.ReadyTick = checked(world.Tick + (runtime?.Modify("attack-cooldown", level.CooldownTicks, new(world.Lord, equipment.Id), 1) ?? level.CooldownTicks));

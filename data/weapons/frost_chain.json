@@ -6,23 +6,155 @@
     "control"
   ],
   "activation": {
-    "damage": 13,
-    "range": 1400,
-    "cooldownTicks": 36,
     "shape": "orbit",
-    "knockback": 10,
-    "form": "서리 낀 줄이 영주 둘레에 낮은 원을 그린다.",
+    "form": "서릿줄을 부채꼴 투사체로 펼쳐 여러 접근 경로를 친다.",
     "damageCoefficient": 0.85
   },
-  "name": "서릿줄 추",
-  "concept": "회전 줄에 닿은 적을 잠시 붙잡아 수확자가 빠져나갈 길을 연다. 넓은 회전 때문에 좁은 건물 사이에서 효율이 낮다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "name": "서릿줄 산탄",
+  "concept": "서릿줄을 부채꼴 투사체로 펼쳐 여러 접근 경로를 친다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 서릿줄을 부채꼴 투사체로 펼쳐 여러 접근 경로를 친다. 수치와 수·빈도·범위는 12단계 성장표를 따른다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "수확 중인 백성의 노출 시간을 줄이되 밀집 건설과 공간을 경쟁한다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:frost_chain_identity",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-knockback",
+        "amount": 5,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:frost_chain",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  },
+  "growth": {
+    "attackModel": "rays",
+    "beamHalfWidth": 90,
+    "levels": [
+      {
+        "level": 1,
+        "damage": 13,
+        "range": 1400,
+        "cooldownTicks": 36,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 2,
+        "damage": 17,
+        "range": 1435,
+        "cooldownTicks": 34,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 3,
+        "damage": 21,
+        "range": 1470,
+        "cooldownTicks": 32,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 4,
+        "damage": 25,
+        "range": 1505,
+        "cooldownTicks": 30,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 5,
+        "damage": 29,
+        "range": 1540,
+        "cooldownTicks": 28,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 6,
+        "damage": 33,
+        "range": 1575,
+        "cooldownTicks": 26,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 7,
+        "damage": 37,
+        "range": 1610,
+        "cooldownTicks": 24,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 8,
+        "damage": 41,
+        "range": 1645,
+        "cooldownTicks": 22,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 9,
+        "damage": 45,
+        "range": 1680,
+        "cooldownTicks": 20,
+        "count": 3,
+        "pierce": 2,
+        "knockback": 10
+      },
+      {
+        "level": 10,
+        "damage": 49,
+        "range": 1715,
+        "cooldownTicks": 18,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 10
+      },
+      {
+        "level": 11,
+        "damage": 53,
+        "range": 1750,
+        "cooldownTicks": 16,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 10
+      },
+      {
+        "level": 12,
+        "damage": 57,
+        "range": 1785,
+        "cooldownTicks": 14,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 10
+      }
+    ]
+  }
 }
