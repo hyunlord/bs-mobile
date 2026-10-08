@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
+const experimentFilename = /^tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -23,6 +25,7 @@ async function jsonFiles(directory) {
 }
 
 function inferKind(relative) {
+  if (experimentFilename.test(relative)) return 'experiment-tuning';
   const segments = relative.split(path.sep);
   if (segments[0] === 'test') segments.shift();
   return directoryKinds.get(segments[0]) ?? (segments.length === 1 ? path.basename(segments[0], '.json') : null);
@@ -101,7 +104,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record });
-    if (kind !== 'tuning' || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -123,6 +126,51 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       errors.push(`${relative}: unresolved ${kind} reference ${field}=${id}`);
     }
   }
+  const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
+  for (const { relative, kind, record } of records) {
+    if (kind === 'experiment-tuning') {
+      const overrides = Array.isArray(record.enemyOverrides) ? record.enemyOverrides : [];
+      const seen = new Set();
+      for (const override of overrides) {
+        reference(relative, 'enemyOverrides.id', override?.id, 'enemy');
+        if (seen.has(override?.id)) errors.push(`${relative}: duplicate enemy override ${override?.id}`);
+        seen.add(override?.id);
+      }
+      const movement = record.experiment?.movement;
+      const map = record.tuning?.world?.map;
+      if (isRecord(movement) && isRecord(map)) {
+        if (movement.decisionPeriodTicks > record.tuning.durationTicks) errors.push(`${relative}: decision period exceeds durationTicks`);
+        const points = Array.isArray(movement.circuitOffsets) ? movement.circuitOffsets : [];
+        const positions = new Set();
+        for (const point of points) {
+          if (!Number.isSafeInteger(point?.x) || !Number.isSafeInteger(point?.y)) continue;
+          if (Math.abs(point.x) > map.width || Math.abs(point.y) > map.height) errors.push(`${relative}: circuit offset exceeds map bounds`);
+          const x = Math.max(0, Math.min(map.width, Math.floor(map.width / 2) + point.x));
+          const y = Math.max(0, Math.min(map.height, Math.floor(map.height / 2) + point.y));
+          positions.add(`${x},${y}`);
+        }
+        if (positions.size < 2) errors.push(`${relative}: at least two distinct clamped waypoints required`);
+      }
+    }
+    if (kind === 'profile' && isRecord(record.experiment)) {
+      const filename = record.experiment.tuningFile;
+      if (typeof filename !== 'string' || !experimentFilename.test(filename)) {
+        errors.push(`${relative}: experiment requires a safe tuning filename at data root`);
+        continue;
+      }
+      const wrapper = experimentFiles.get(filename);
+      if (!wrapper) {
+        errors.push(`${relative}: missing experiment tuning ${filename}`);
+        continue;
+      }
+      const selected = Array.isArray(record.selection?.enemies) ? record.selection.enemies : [];
+      const overrides = Array.isArray(wrapper.enemyOverrides) ? wrapper.enemyOverrides : [];
+      const overrideIds = overrides.map(override => override?.id);
+      if (overrideIds.length !== selected.length || new Set(overrideIds).size !== overrideIds.length || selected.some(id => !overrideIds.includes(id))) {
+        errors.push(`${relative}: enemy override IDs must match primary selection.enemies exactly`);
+      }
+    }
+  }
   for (const { relative, kind, record } of records) {
     if ((kind === 'hero' || kind === 'estate') && Object.hasOwn(record, 'startingTool')) {
       reference(relative, 'startingTool', record.startingTool, 'tool');
@@ -130,14 +178,16 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     if (kind === 'tool' && Array.isArray(record.antiSynergy)) {
       record.antiSynergy.forEach((id, index) => reference(relative, `antiSynergy[${index}]`, id, 'tool'));
     }
-    if (kind === 'tuning') {
-      reference(relative, 'defaultHero', record.defaultHero, 'hero');
-      reference(relative, 'defaultEstate', record.defaultEstate, 'estate');
-      const world = record.world;
+    if (kind === 'tuning' || kind === 'experiment-tuning') {
+      const tuning = kind === 'tuning' ? record : record.tuning;
+      if (!isRecord(tuning)) continue;
+      reference(relative, 'defaultHero', tuning.defaultHero, 'hero');
+      reference(relative, 'defaultEstate', tuning.defaultEstate, 'estate');
+      const world = tuning.world;
       if (!isRecord(world)) continue;
       if (isRecord(world.progression)) reference(relative, 'world.progression.startingWeapon', world.progression.startingWeapon, 'weapon');
       if (Array.isArray(world.seasons) && world.seasons.every(isRecord)) {
-        if (world.seasons.reduce((sum, season) => sum + season.durationTicks, 0) !== record.durationTicks) {
+        if (world.seasons.reduce((sum, season) => sum + season.durationTicks, 0) !== tuning.durationTicks) {
           errors.push(`${relative}: season durations must sum to durationTicks`);
         }
         if (new Set(world.seasons.map((season) => season.name)).size !== world.seasons.length) {
@@ -168,7 +218,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   }
   let gateCounts;
   if (fullPool) {
-    const canonical = records.filter(({relative,kind}) => !relative.startsWith(`test${path.sep}`) && !['tuning','profile'].includes(kind));
+    const canonical = records.filter(({relative,kind}) => !relative.startsWith(`test${path.sep}`) && !configurationKinds.has(kind));
     const byId = new Map(records.map(entry => [entry.record.id, entry]));
     const list = value => Array.isArray(value) ? value : [];
     const expect = (condition, message) => { if (!condition) errors.push(message); };
@@ -181,7 +231,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     expect(canonical.some(e=>e.kind==='skin'), 'At least one canonical skin required');
     const tags = new Map(); const pairs = new Set(); const recipes = new Set(); let loopLinked = 0;
     const baseEstate = records.find(e=>e.kind==='tuning')?.record.defaultEstate;
-    for (const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) {
+    for (const entry of records.filter(e=>!configurationKinds.has(e.kind))) {
       const {record:r,kind,relative} = entry;
       const isCanonical = !relative.startsWith(`test${path.sep}`);
       for (const tag of new Set(isCanonical ? list(r.tags) : [])) tags.set(tag,(tags.get(tag)??0)+1);
@@ -240,7 +290,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       loopLinkedDistinct:loopLinked
     };
     const effectIds = new Set();
-    for (const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) {
+    for (const entry of records.filter(e=>!configurationKinds.has(e.kind))) {
       const projection=entry.record.runtimeProjection;
       if(entry.record.designStatus==='s4-runtime' && ['weapon','tool','charter','item','evolution'].includes(entry.kind)) expect(isRecord(projection),`${entry.relative}: S4 content requires runtime projection`);
       if(!isRecord(projection)) continue;
@@ -319,7 +369,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
         }
       }
     }
-    for(const entry of records.filter(e=>!['profile','tuning'].includes(e.kind))) expect((['s2-runtime','s4-runtime'].includes(entry.record.designStatus))===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
+    for(const entry of records.filter(e=>!configurationKinds.has(e.kind))) expect((['s2-runtime','s4-runtime'].includes(entry.record.designStatus))===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
   }
   if (schemas.size === 0) errors.push('No valid schemas found');
   if (records.length === 0) errors.push('No content records found');

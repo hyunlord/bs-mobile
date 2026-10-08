@@ -1,6 +1,6 @@
 namespace SowSiege.Core;
 
-internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null)
+internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null)
 {
     public void Initialize()
     {
@@ -149,7 +149,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
                 {
                     farm.Progress += growth + (workers + boostedWorkers) * catalog.Tuning.World.People.WorkerGrowthBonus;
                     if (farm.Fertility > 0) { farm.Progress += tuning.FertilityGrowthBonus; farm.Fertility--; }
-                    if (farm.Progress >= tuning.StageTicks[farm.Stage]) { farm.Progress = 0; farm.Stage++; }
+                    if (farm.Progress >= tuning.StageTicks[farm.Stage]) { farm.Progress = 0; farm.Stage++; if (farm.Stage == lastStage) { experiment?.Ripe(farm); } }
                 }
             }
             if (farm.Stage != lastStage) { continue; }
@@ -165,6 +165,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
     internal void Harvest(FarmState farm)
     {
         var tuning = catalog.Tuning.World.Farms;
+        experiment?.CloseRipe(farm, "harvest");
         farm.Stage = 0; farm.Progress = 0;
         world.Harvests++;
         world.Food = Math.Min(catalog.Tuning.World.People.FoodCapacity, world.Food + tuning.FoodPerHarvest);

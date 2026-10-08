@@ -1,0 +1,109 @@
+{
+  "id": "core:s4b_01",
+  "name": "S4b 통제 리그 보정 후보 1",
+  "selection": {
+    "weapons": [
+      "core:iron_blade",
+      "core:ember_wand",
+      "core:ward_orbit",
+      "core:harvest_scythe"
+    ],
+    "tools": [
+      "core:seed_bag",
+      "core:carpenter_hammer",
+      "core:muster_horn",
+      "core:hedge_drum"
+    ],
+    "enemies": [
+      "core:raider",
+      "core:seed_mite",
+      "core:crop_grazer",
+      "core:stone_breaker",
+      "core:shield_raider",
+      "core:siege_cart"
+    ],
+    "heroes": [
+      "core:founder"
+    ],
+    "estates": [
+      "core:meadow"
+    ]
+  },
+  "testSelection": {
+    "weapons": [],
+    "tools": [
+      "test:spade",
+      "test:dummy_rake"
+    ],
+    "enemies": [],
+    "heroes": [
+      "test:scout"
+    ],
+    "estates": [
+      "test:moor"
+    ]
+  },
+  "runtime": {
+    "contractVersion": 1,
+    "charters": [
+      "core:guarded_harvest",
+      "core:repair_tithe",
+      "core:meal_oath",
+      "core:rally_boundary"
+    ],
+    "items": [
+      "core:boundary_hinge",
+      "core:joiner_square",
+      "core:ruin_keystone",
+      "core:scaffold_step",
+      "core:levy_bread_wrap",
+      "core:muster_roll",
+      "core:return_path_knot",
+      "core:shock_absorber_pad",
+      "core:meadow_buckle",
+      "core:root_binding_cord",
+      "core:seed_pouch_lining",
+      "core:wind_seed_flag"
+    ],
+    "evolutions": [
+      "core:sowing_sworddance",
+      "core:sheltered_sowing"
+    ],
+    "tuning": {
+      "weaponSlots": 5,
+      "toolSlots": 4,
+      "charterSlots": 4,
+      "recentExperienceWindowTicks": 900,
+      "experienceWeightDivisor": 30,
+      "lootPeriodTicks": 900,
+      "lootSpawnRadius": 300,
+      "lootPickupRadius": 350,
+      "maxGroundLoot": 8,
+      "lootQuantity": 1,
+      "lootSources": [
+        {
+          "id": "core:chest_channel",
+          "kind": "chest",
+          "weight": 5,
+          "foodCost": 0
+        },
+        {
+          "id": "core:cart_channel",
+          "kind": "cart",
+          "weight": 3,
+          "foodCost": 0
+        },
+        {
+          "id": "core:market_channel",
+          "kind": "market",
+          "weight": 2,
+          "foodCost": 2
+        }
+      ]
+    }
+  },
+  "experiment": {
+    "contractVersion": 1,
+    "tuningFile": "tuning-s4b-01.json"
+  }
+}

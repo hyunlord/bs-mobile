@@ -1,6 +1,6 @@
 namespace SowSiege.Core;
 
-internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, RuntimeSystem? runtime = null)
+internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null)
 {
     public void Tick()
     {
@@ -80,7 +80,7 @@ internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions optio
         if (!world.PendingCards.Contains(id, StringComparer.Ordinal)) { throw new ArgumentException("Card is not in the pending offer.", nameof(id)); }
     }
 
-    private long RequiredExperience() => catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
+    private long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
     private bool CanOffer(string id)
     {
         if (catalog.Runtime?.Charters.ContainsKey(id) == true) { return world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; }
@@ -92,6 +92,13 @@ internal sealed class ProgressionSystem(ContentCatalog catalog, RunOptions optio
     private string Choose(IReadOnlyList<string> offer)
     {
         if (options.Policy == "random") { return offer[random.Next(offer.Count)]; }
+        if (experiment is not null && options.Policy == "mixed")
+        {
+            var owned = world.Equipment.Select(equipment => equipment.Id).Concat(world.Runtime?.Charters.Keys.AsEnumerable() ?? []).ToArray();
+            var category = catalog.Experiment!.MixedCategoryOrder.Where(category => offer.Any(id => Category(id) == category))
+                .OrderBy(category => owned.Count(id => Category(id) == category)).First();
+            offer = offer.Where(id => Category(id) == category).ToArray();
+        }
         var policy = catalog.Tuning.Policies[options.Policy];
         var weights = offer.Select(id => policy.CardWeights[Category(id)]).ToArray();
         var roll = random.Next(weights.Sum());

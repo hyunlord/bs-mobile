@@ -1,0 +1,30 @@
+using System.Text.RegularExpressions;
+using SowSiege.Core;
+
+namespace SowSiege.Sim;
+
+public sealed record ExperimentProfileExtension(int ContractVersion, string TuningFile);
+public sealed record EnemyOverride(string Id, int Speed, int Damage, int Health, int AttackCooldownTicks);
+public sealed record ExperimentTuningFile(Tuning Tuning, EnemyOverride[] EnemyOverrides, ExperimentDefinition Experiment);
+public static partial class ContentLoader
+{
+    private static ExperimentTuningFile? LoadExperiment(string directory, RuntimeProfile profile)
+    {
+        if (profile.Experiment is null) { return null; }
+        Require(profile.Experiment.ContractVersion == 1, "Unsupported experiment version.");
+        Require(Regex.IsMatch(profile.Experiment.TuningFile, @"\Atuning-s4b-[a-zA-Z0-9_-]+\.json\z", RegexOptions.CultureInvariant), "Unsafe experiment tuning filename.");
+        var result = Read<ExperimentTuningFile>(Path.Combine(directory, profile.Experiment.TuningFile));
+        Require(result.EnemyOverrides.Length is >= 1 and <= 1000, "Invalid enemy override count.");
+        Require(result.EnemyOverrides.Select(enemy => enemy.Id).Distinct(StringComparer.Ordinal).Count() == result.EnemyOverrides.Length && result.EnemyOverrides.Select(enemy => enemy.Id).ToHashSet(StringComparer.Ordinal).SetEquals(profile.Selection.Enemies), "Experiment overrides must cover selected enemies exactly.");
+        foreach (var enemy in result.EnemyOverrides) { Require(new[] { enemy.Speed, enemy.Damage, enemy.Health, enemy.AttackCooldownTicks }.All(value => value is > 0 and <= 1000000), "Invalid enemy override value."); }
+        var curve = result.Experiment.Experience;
+        Require(curve.Base is > 0 and <= 1000000 && curve.Linear is >= 0 and <= 1000000 && curve.Quadratic is > 0 and <= 1000000, "Invalid nonlinear experience curve.");
+        var categories = result.Experiment.MixedCategoryOrder;
+        Require(categories.Length == 4 && categories.ToHashSet(StringComparer.Ordinal).SetEquals(["weapon", "land", "building", "people"]), "Mixed category order must contain each family exactly once.");
+        var movement = result.Experiment.Movement; var map = result.Tuning.World.Map;
+        Require(movement.DecisionPeriodTicks > 0 && movement.DecisionPeriodTicks <= Math.Min(1000000, result.Tuning.DurationTicks) && movement.EvadeRange is > 0 and <= 1000000 && movement.EvadeStep is > 0 and <= 1000000, "Invalid movement tuning.");
+        Require(movement.CircuitOffsets.Length is >= 2 and <= 10000 && movement.CircuitOffsets.All(point => Math.Abs((long)point.X) <= map.Width && Math.Abs((long)point.Y) <= map.Height), "Invalid circuit offset.");
+        Require(movement.CircuitOffsets.Select(point => (Math.Clamp((map.Width >> 1) + point.X, 0, map.Width), Math.Clamp((map.Height >> 1) + point.Y, 0, map.Height))).Distinct().Count() >= 2, "Circuit must have distinct clamped destinations.");
+        return result;
+    }
+}

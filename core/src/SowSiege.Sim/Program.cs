@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -23,7 +24,7 @@ static void Run(string[] args)
     var valueOptions = new HashSet<string>(StringComparer.Ordinal)
 {
     "--data", "--seed", "--iterations", "--hero", "--estate", "--policy", "--output", "--metrics",
-        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile"
+        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement"
 };
     var options = new Dictionary<string, string>(StringComparer.Ordinal);
     for (var index = 0; index < args.Length; index++)
@@ -59,7 +60,8 @@ static void Run(string[] args)
     var estateId = options.GetValueOrDefault("--estate", catalog.Tuning.DefaultEstate);
     if (peopleRule is not ("A" or "B" or "C") || scenario is not ("normal" or "load")) { throw new ArgumentException("people-rule must be A/B/C; scenario must be normal/load."); }
     if (!catalog.Tuning.Policies.ContainsKey(policy) || !catalog.Heroes.ContainsKey(heroId) || !catalog.Estates.ContainsKey(estateId)) { throw new ArgumentException("Unknown policy, hero, or estate."); }
-    var run = new RunOptions(seed, heroId, estateId, policy, peopleRule, scenario);
+    var movement = options.TryGetValue("--movement", out var requestedMovement) ? requestedMovement : catalog.Experiment is null ? null : "circuit";
+    var run = new RunOptions(seed, heroId, estateId, policy, peopleRule, scenario, Movement: movement);
     var samples = new List<double>();
     var results = new List<SimulationResult>();
     var loadExpected = catalog.Tuning.World.Load;
@@ -107,13 +109,23 @@ static void Run(string[] args)
     var gitHead = Git("rev-parse", "HEAD");
     var gitStatus = Git("status", "--porcelain");
     var sourceHash = SourceHash(gitRoot);
-    var stage = catalog.Runtime is null ? "S2" : "S4";
+    var stage = catalog.Experiment is not null ? "S4b" : catalog.Runtime is null ? "S2" : "S4";
     var scope = scenario == "load" ? "S2 exact-load mechanics fixture; maintenance included; not natural gameplay" : shortened ? "S2 truncated headless mechanics fixture; not a full game" : "S2 full-duration headless gameplay simulation; balance not approved";
     scope = scope.Replace("S2", stage, StringComparison.Ordinal);
     var metadata = new
     {
         profileId = profile.Id,
         profileSha256 = profileHash,
+        experimentContractVersion = profile.Experiment?.ContractVersion,
+        movementMode = movement,
+        tuningFile = profile.Experiment?.TuningFile,
+        tuningSha256 = profile.Experiment is null ? null : Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(data, profile.Experiment.TuningFile)))),
+        experimentDefinition = catalog.Experiment,
+        experienceCurve = catalog.Experiment?.Experience,
+        mixedCategoryOrder = catalog.Experiment?.MixedCategoryOrder,
+        worldUnit = catalog.Experiment is null ? null : "world-unit",
+        threatTuning = catalog.Experiment is null ? null : catalog.Tuning.World.Threat,
+        enemyTuning = catalog.Experiment is null ? null : catalog.Enemies.Values.OrderBy(enemy => enemy.Id, StringComparer.Ordinal).ToArray(),
         selectedIds = new
         {
             selection.Weapons,
@@ -160,7 +172,7 @@ static void Run(string[] args)
     var metrics = new
     {
         schemaVersion = 1,
-        model = catalog.Runtime is null ? "headless-gameplay" : "headless-s4-league",
+        model = catalog.Experiment is not null ? "headless-s4b-controlled-league" : catalog.Runtime is null ? "headless-gameplay" : "headless-s4-league",
         stage,
         scope,
         gameplayBalanceClaim = false,
@@ -188,6 +200,16 @@ static void Run(string[] args)
         {
             profileId = profile.Id,
             profileSha256 = profileHash,
+            experimentContractVersion = profile.Experiment?.ContractVersion,
+            movementMode = movement,
+            tuningFile = profile.Experiment?.TuningFile,
+            tuningSha256 = profile.Experiment is null ? null : Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(data, profile.Experiment.TuningFile)))),
+            experimentDefinition = catalog.Experiment,
+            experienceCurve = catalog.Experiment?.Experience,
+            mixedCategoryOrder = catalog.Experiment?.MixedCategoryOrder,
+            worldUnit = catalog.Experiment is null ? null : "world-unit",
+            threatTuning = catalog.Experiment is null ? null : catalog.Tuning.World.Threat,
+            enemyTuning = catalog.Experiment is null ? null : catalog.Enemies.Values.OrderBy(enemy => enemy.Id, StringComparer.Ordinal).ToArray(),
             heroId,
             estateId,
             peopleRule,
@@ -224,6 +246,17 @@ static void Run(string[] args)
     foreach (var result in results)
     {
         var artifact = JsonSerializer.SerializeToNode(result, jsonOptions)!.AsObject();
+        if (result.Experiment is not null)
+        {
+            var trace = result.Experiment.MovementTrace;
+            var bytes = new byte[checked(trace.Length * sizeof(int))];
+            for (var index = 0; index < trace.Length; index++) { BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(index * sizeof(int), sizeof(int)), trace[index]); }
+            var experiment = artifact["experiment"]!.AsObject();
+            experiment.Remove("movementTrace");
+            experiment["movementTraceEncoding"] = "int32le-xy-v1";
+            experiment["movementTraceCount"] = trace.Length / 2;
+            experiment["movementTraceBase64"] = Convert.ToBase64String(bytes);
+        }
         artifact["artifactVersion"] = 2;
         artifact["scope"] = scope;
         artifact["runMetadata"] = JsonSerializer.SerializeToNode(metadata, jsonOptions);
