@@ -11,7 +11,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "fertility",
       "reason": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다."
     }

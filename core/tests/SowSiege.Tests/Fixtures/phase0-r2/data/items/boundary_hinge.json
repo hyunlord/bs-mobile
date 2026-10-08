@@ -1,0 +1,50 @@
+{
+  "id": "core:boundary_hinge",
+  "name": "경계문 경첩",
+  "concept": "아군 귀환 뒤 문을 빨리 닫아 추격자를 나눈다. 열어 둔 방향으로만 귀환을 모아야 한다.",
+  "tags": [
+    "building",
+    "control"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 귀환 완료 집단에 보호·정지 창을 적용해 노동 복귀를 지연한다. 실제 문 collider는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다. 중첩 수에 비례해 Amount×DurationTicks만큼 군역/귀환 보호 시간을 늘리며 식량 비용은 실제 적용당 한 번 차감한다. 내부 시간 정수 범위 제한은 인벤토리 중첩 제한이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "아군 귀환을 안전하게 만들되 영지의 통행 경로가 단순해지는 대가를 둔다."
+    }
+  ],
+  "effect": {
+    "trigger": "울타리 북이 닫힌 진입로를 열어 줄 때",
+    "benefit": "아군 귀환 뒤 문을 빨리 닫아 추격자를 나눈다.",
+    "cost": "열어 둔 방향으로만 귀환을 모아야 한다."
+  },
+  "linkedToolIds": [
+    "core:hedge_drum"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "building"
+    ],
+    "effects": [
+      {
+        "id": "core:boundary_hinge_guard",
+        "trigger": "return-arrival",
+        "operation": "guard-return",
+        "subject": "people",
+        "amount": 1,
+        "radius": 800,
+        "durationTicks": 60,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

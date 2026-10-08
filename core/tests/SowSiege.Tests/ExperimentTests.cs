@@ -8,7 +8,7 @@ public sealed class ExperimentTests
 {
     internal static ContentCatalog Catalog()
     {
-        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "s4-stage-one");
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), false, "s4-stage-one");
         return catalog with { Experiment = new(new([new(-3000, -3000), new(3000, -3000), new(3000, 3000), new(-3000, 3000)], 90, 1200, 1200), new(30, 15, 3), ["weapon", "land", "building", "people"]) };
     }
     internal static Simulation Create(ContentCatalog catalog, string policy = "mixed", string movement = "circuit") => new(catalog, new(9000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, policy, Movement: movement));
@@ -95,7 +95,7 @@ public sealed class ExperimentTests
     [Fact]
     public void ProfileOverridesAreIsolatedAndTraceStopsAtRealDeath()
     {
-        var data = Path.Combine(AppContext.BaseDirectory, "data"); var old = ContentLoader.Load(data, false, "s4-stage-one"); var current = ContentLoader.Load(data, false, "s4b-01");
+        var data = Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"); var old = ContentLoader.Load(data, false, "s4-stage-one"); var current = ContentLoader.Load(data, false, "s4b-01");
         Assert.Null(old.Experiment); Assert.Equal(3000, old.Tuning.World.Map.LordHealth); Assert.Equal(900, current.Tuning.World.Map.LordHealth);
         Assert.Equal(10, old.Enemies["core:raider"].Speed); Assert.Equal(30, current.Enemies["core:raider"].Speed);
         var simulation = Create(current); simulation.World.LordHealth = 1; simulation.World.People.Clear(); simulation.World.Equipment.Clear();
@@ -106,7 +106,7 @@ public sealed class ExperimentTests
     [Fact]
     public void LegacyS4CommittedCrossPlatformHashIsUnchanged()
     {
-        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "s4-stage-one");
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), false, "s4-stage-one");
         catalog = catalog with { Tuning = catalog.Tuning with { DurationTicks = 900 } };
         var result = SimulationTests.Finish(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "weapon", "A"));
         Assert.Equal("4BA4C83F44050B7B606A2929164BB86D15E270FAEED6BD80A80AC27E49548938", result.Hash);

@@ -1,0 +1,44 @@
+{
+  "id": "core:seed_pouch_lining",
+  "name": "씨주머니 안감",
+  "concept": "이미 남긴 씨앗 옆의 빈 틈부터 재파종한다. 새 방향으로 퍼지는 경작 폭은 좁아진다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 기존 밭 가장자리 쪽으로 최대120 이동시켜 새 방향 확장을 줄인다. 위치·간격 제한으로 실패하면 공짜 밭은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "파종 밀도를 높여 기존 방어선 안의 성장물을 살리지만 영지 확장 속도를 낮춘다."
+    }
+  ],
+  "effect": {
+    "trigger": "영주가 같은 경작 길을 다시 지나갈 때",
+    "benefit": "이미 남긴 씨앗 옆의 빈 틈부터 재파종한다.",
+    "cost": "새 방향으로 퍼지는 경작 폭은 좁아진다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:seed_pouch_lining_edge",
+        "trigger": "modifier",
+        "operation": "planting-bias",
+        "subject": "existing-edge",
+        "amount": 120,
+        "radius": 0,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
+}

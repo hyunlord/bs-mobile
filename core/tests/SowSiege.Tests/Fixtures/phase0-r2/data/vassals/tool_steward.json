@@ -1,0 +1,26 @@
+{
+  "id": "core:tool_steward",
+  "name": "도구 보관관",
+  "concept": "영주에게 더 가까운 진행 중 공정에 다음 한 주기의 인력을 자동 예약해 중간 중단을 줄인다. 대신 자동 예약에서 밀린 공정은 손상이 생겨도 다음 주기까지 대기해야 한다.",
+  "tags": [
+    "people",
+    "building",
+    "land"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "영주에게 더 가까운 진행 중 공정에 다음 한 주기의 인력을 자동 예약해 중간 중단을 줄인다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "steward",
+  "ability": {
+    "trigger": "건설과 경작이 같은 작업 인력을 요구하면",
+    "effect": "영주에게 더 가까운 진행 중 공정에 다음 한 주기의 인력을 자동 예약해 중간 중단을 줄인다.",
+    "cost": "자동 예약에서 밀린 공정은 손상이 생겨도 다음 주기까지 대기해야 한다."
+  }
+}

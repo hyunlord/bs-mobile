@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 귀환 시 가까운 건물을 중간 경유지로 삼아 노동 복귀 경로를 바꾼다. 익은 밭을 완전히 피하는 최적 경로라는 주장은 하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "귀환 병력이 수확물을 망가뜨리지 않게 하되 군사 공백을 늘린다."
     }

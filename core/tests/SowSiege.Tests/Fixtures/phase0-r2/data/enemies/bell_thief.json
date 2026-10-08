@@ -1,0 +1,24 @@
+{
+  "id": "core:bell_thief",
+  "name": "종 훔치는 도적",
+  "concept": "기능 부품을 떼어내 전투력보다 영지 운영을 먼저 흔든다. 부품 운반자를 놓치지 않도록 건물 사이 통로를 지킨다.",
+  "tags": [
+    "building",
+    "economy"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "building",
+  "health": 44,
+  "speed": 11,
+  "damage": 5,
+  "range": 85,
+  "attackCooldownTicks": 75,
+  "experience": 10,
+  "behavior": {
+    "trigger": "세금이나 지휘 기능 건물을 발견하면",
+    "pressure": "기능 부품을 떼어내 전투력보다 영지 운영을 먼저 흔든다.",
+    "counterplay": "부품 운반자를 놓치지 않도록 건물 사이 통로를 지킨다."
+  }
+}

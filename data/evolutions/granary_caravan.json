@@ -11,7 +11,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "food",
       "reason": "연속 성숙 밭을 잇는 수확 행렬을 만들어 식량을 한 번에 운반한다."
     }

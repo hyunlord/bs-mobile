@@ -1,0 +1,26 @@
+{
+  "id": "core:kiln_heat_tile",
+  "name": "가마 축열판",
+  "concept": "남은 열로 수리 재료를 빨리 굳힌다. 다음 가열까지 먼 건물에는 같은 도움을 주지 못한다.",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "생산 설비의 남은 열을 국지적인 복구 속도로 되돌린다."
+    }
+  ],
+  "effect": {
+    "trigger": "가마 불이 잦아든 직후 망치 수리가 시작될 때",
+    "benefit": "남은 열로 수리 재료를 빨리 굳힌다.",
+    "cost": "다음 가열까지 먼 건물에는 같은 도움을 주지 못한다."
+  },
+  "linkedToolIds": [
+    "core:kiln_bellows"
+  ]
+}

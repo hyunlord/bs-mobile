@@ -1,0 +1,28 @@
+{
+  "id": "core:pruning_blade",
+  "tags": [
+    "weapon",
+    "melee",
+    "growth"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 650,
+    "cooldownTicks": 18,
+    "shape": "melee",
+    "knockback": 20,
+    "form": "짧은 두 날이 이동 경로 양옆을 번갈아 친다.",
+    "damageCoefficient": 0.9
+  },
+  "name": "가지치기 쌍날",
+  "concept": "어린 밭 사이의 좁은 길을 빠르게 정리한다. 넓게 퍼진 무리를 상대하려면 여러 번 경로를 가로질러야 한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "경작을 위해 이동하는 경로에 안전을 주되 외곽의 큰 무리는 통제하기 어렵다."
+    }
+  ]
+}

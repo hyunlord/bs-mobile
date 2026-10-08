@@ -10,7 +10,7 @@
   "implementationNote": "외형 설계 후보. 아트와 렌더링 미구현. 전투·성장·경제 수치 및 판정에 영향 없음.",
   "loopLinks": [],
   "targetKind": "hero",
-  "targetId": "core:founder",
+  "targetId": "core:frontier_knight",
   "appearance": {
     "palette": "황토색 망토와 마른 볏짚색 테두리",
     "silhouette": "기본 영주와 같은 판정 크기의 짧은 망토",

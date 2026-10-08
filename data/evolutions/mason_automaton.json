@@ -11,7 +11,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다."
     }

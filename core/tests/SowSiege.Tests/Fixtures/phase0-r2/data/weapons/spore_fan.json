@@ -1,0 +1,28 @@
+{
+  "id": "core:spore_fan",
+  "tags": [
+    "weapon",
+    "ranged",
+    "land"
+  ],
+  "activation": {
+    "damage": 11,
+    "range": 1250,
+    "cooldownTicks": 28,
+    "shape": "wave",
+    "knockback": 0,
+    "form": "얇은 부채에서 누런 포자 층이 낮고 넓게 뻗는다.",
+    "damageCoefficient": 0.85
+  },
+  "name": "포자 부채",
+  "concept": "포자 부채꼴 안에서 쓰러진 적이 비옥한 흔적을 남긴다. 포자에 덮인 익은 작물은 수확을 늦춰야 한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "처치를 다음 작물의 성장 자원으로 바꾸면서 당장 익은 작물의 회수를 지연한다."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:veil_fastener",
+  "name": "벌망 고정쇠",
+  "concept": "수분 구역을 떠나지 않고 잠깐 휴식할 수 있다. 이 상태에서는 급히 전투 진형을 잡기 어렵다.",
+  "tags": [
+    "people",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "경작 보조의 연속성을 높이는 대신 전투 대응의 유연함을 줄인다."
+    }
+  ],
+  "effect": {
+    "trigger": "벌지기 면사가 작업자를 보호할 때",
+    "benefit": "수분 구역을 떠나지 않고 잠깐 휴식할 수 있다.",
+    "cost": "이 상태에서는 급히 전투 진형을 잡기 어렵다."
+  },
+  "linkedToolIds": [
+    "core:beekeeper_veil"
+  ]
+}

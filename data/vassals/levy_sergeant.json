@@ -11,12 +11,12 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "people",
       "reason": "분대별 집결 지점을 달리해 같은 고랑에 몰리는 것을 막는다."
     }
   ],
-  "heroId": "core:founder",
+  "heroId": "core:frontier_knight",
   "role": "commander",
   "ability": {
     "trigger": "백성이 부대로 전환되면",

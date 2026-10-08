@@ -121,6 +121,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
 
     public void Tick()
     {
+        RemainsSystem.Absorb(world, catalog.Tuning.World.Farms.FertilityPerKill);
         TickPeople();
         TickFarms();
         TickBuildings();
@@ -148,7 +149,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
                 if (growth > 0)
                 {
                     farm.Progress += growth + (workers + boostedWorkers) * catalog.Tuning.World.People.WorkerGrowthBonus;
-                    if (farm.Fertility > 0) { farm.Progress += tuning.FertilityGrowthBonus; farm.Fertility--; }
+                    if (farm.Fertility > 0) { farm.Progress += tuning.FertilityGrowthBonus; farm.Fertility--; RemainsSystem.Consumed(world, farm, tuning.FertilityGrowthBonus); }
                     if (farm.Progress >= tuning.StageTicks[farm.Stage]) { farm.Progress = 0; farm.Stage++; if (farm.Stage == lastStage) { experiment?.Ripe(farm); } }
                 }
             }
@@ -166,6 +167,7 @@ internal sealed class EstateSystem(ContentCatalog catalog, RunOptions options, W
     {
         var tuning = catalog.Tuning.World.Farms;
         experiment?.CloseRipe(farm, "harvest");
+        RemainsSystem.Harvest(world, farm);
         farm.Stage = 0; farm.Progress = 0;
         world.Harvests++;
         world.Food = Math.Min(catalog.Tuning.World.People.FoodCapacity, world.Food + tuning.FoodPerHarvest);

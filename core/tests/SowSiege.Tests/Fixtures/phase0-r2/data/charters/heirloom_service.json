@@ -1,0 +1,28 @@
+{
+  "id": "core:heirloom_service",
+  "name": "가보 봉사계약",
+  "concept": "영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다. 대신 가신이 쓰는 동안 영주의 해당 무기 발동 간격이 길어진다.",
+  "tags": [
+    "people",
+    "weapon",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다."
+    }
+  ],
+  "effect": {
+    "target": "people",
+    "trigger": "이 헌장을 선택한 뒤 가신과 영주의 보유 무기가 함께 있으면",
+    "benefit": "영주의 가장 오래 보유한 무기 효과 일부를 가신 호위에 자동 배분해 가까운 위협을 끊게 한다.",
+    "cost": "가신이 쓰는 동안 영주의 해당 무기 발동 간격이 길어진다."
+  },
+  "requirements": [
+    "이 헌장을 선택한 뒤 가신과 영주의 보유 무기가 함께 있으면"
+  ]
+}

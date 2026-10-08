@@ -11,12 +11,12 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "people",
       "reason": "대기 인구 중 일부만 보충해 전면 붕괴를 늦춘다."
     }
   ],
-  "heroId": "core:founder",
+  "heroId": "core:frontier_knight",
   "role": "commander",
   "ability": {
     "trigger": "활동 중인 부대가 손실을 입으면",

@@ -10,7 +10,7 @@
   "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "관개의 이득을 성장 중인 작물에 한정해 익은 밭에 머무는 선택과 구분한다."
     }

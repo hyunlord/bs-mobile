@@ -1,0 +1,26 @@
+{
+  "id": "core:slow_burn_wick",
+  "name": "느린 불심지",
+  "concept": "불길이 번지기 전에 적을 먼저 몰아낼 시간을 늘린다. 늦게 번지는 만큼 즉시 큰 무리를 처리하는 힘은 줄어든다.",
+  "tags": [
+    "land",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "개간 공격의 안전 조절이 순간 화력의 감소로 이어진다."
+    }
+  ],
+  "effect": {
+    "trigger": "횃불을 경작지 가장자리에 놓을 때",
+    "benefit": "불길이 번지기 전에 적을 먼저 몰아낼 시간을 늘린다.",
+    "cost": "늦게 번지는 만큼 즉시 큰 무리를 처리하는 힘은 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:torch"
+  ]
+}

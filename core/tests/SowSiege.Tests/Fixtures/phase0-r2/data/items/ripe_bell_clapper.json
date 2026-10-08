@@ -1,0 +1,26 @@
+{
+  "id": "core:ripe_bell_clapper",
+  "name": "익음 알림 추",
+  "concept": "가장 오래 기다린 밭에 백성의 수확 우선순위를 보낸다. 새로 익은 가까운 밭은 뒤로 밀릴 수 있다.",
+  "tags": [
+    "harvest",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "오래 방치된 수확물의 손실을 줄이는 대신 짧은 운반 효율을 희생한다."
+    }
+  ],
+  "effect": {
+    "trigger": "서로 떨어진 밭들이 같은 시기에 익을 때",
+    "benefit": "가장 오래 기다린 밭에 백성의 수확 우선순위를 보낸다.",
+    "cost": "새로 익은 가까운 밭은 뒤로 밀릴 수 있다."
+  },
+  "linkedToolIds": [
+    "core:chapel_bell"
+  ]
+}

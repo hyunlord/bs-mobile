@@ -127,6 +127,32 @@
         "stages"
       ],
       "additionalProperties": false
+    },
+    "remainsLoop": {
+      "type": "object",
+      "properties": {
+        "capacity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "lifetimeTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "absorptionRadius": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        }
+      },
+      "required": [
+        "capacity",
+        "lifetimeTicks",
+        "absorptionRadius"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

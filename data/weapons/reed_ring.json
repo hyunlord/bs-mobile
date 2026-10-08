@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "수확 통로 유지에 특화되어 건물 파괴 위협은 별도의 대비를 요구한다."
     }

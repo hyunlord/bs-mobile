@@ -1,0 +1,26 @@
+{
+  "id": "core:spare_seed_locket",
+  "name": "여분 종자함",
+  "concept": "보관한 종자로 그 자리의 재파종을 먼저 시작한다. 보관 중에는 다른 곳에 심을 씨앗이 적다.",
+  "tags": [
+    "land",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "현재 확장을 늦춘 비축이 성장물 손실 뒤의 복구 능력으로 돌아온다."
+    }
+  ],
+  "effect": {
+    "trigger": "밭이 먹힌 직후 영주가 손실 지점에 돌아올 때",
+    "benefit": "보관한 종자로 그 자리의 재파종을 먼저 시작한다.",
+    "cost": "보관 중에는 다른 곳에 심을 씨앗이 적다."
+  },
+  "linkedToolIds": [
+    "core:seed_vault_key"
+  ]
+}

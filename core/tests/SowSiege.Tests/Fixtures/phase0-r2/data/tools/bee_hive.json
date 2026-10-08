@@ -1,0 +1,43 @@
+{
+  "id": "core:bee_hive",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "projectile",
+    "knockback": 30,
+    "form": "벌들이 좁은 침투사체 무리로 튀어나온다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "꽃밭에서 거두는 꿀 경험치",
+    "primaryRoute": "experience"
+  },
+  "antiSynergy": [
+    "core:poison_sickle"
+  ],
+  "name": "꿀벌 통",
+  "concept": "발동: 벌들이 좁은 침투사체 무리로 튀어나온다. 성장 산출: 꽃밭에서 거두는 꿀 경험치. 비용: 수분 중인 벌은 공격에 참여하지 못한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 꽃밭에서 거두는 꿀 경험치. 비용: 수분 중인 벌은 공격에 참여하지 못한다."
+    }
+  ],
+  "floorRationale": "발동 형태: 벌들이 좁은 침투사체 무리로 튀어나온다. 비교 기준: 같은 발사 간격과 유효 명중 수의 투사체 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(꽃밭에서 거두는 꿀 경험치) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:poison_sickle",
+      "reason": "독초 구역이 수분 벌의 활동을 줄여 독 피해와 꿀 생산이 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

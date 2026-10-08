@@ -10,7 +10,7 @@
   "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "낭비된 공격의 회수 동선을 영지 운반 동선과 연결한다."
     }

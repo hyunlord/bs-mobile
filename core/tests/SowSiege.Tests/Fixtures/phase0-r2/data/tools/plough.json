@@ -1,0 +1,36 @@
+{
+  "id": "core:plough",
+  "tags": [
+    "land",
+    "fertility"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "melee",
+    "knockback": 30,
+    "form": "쟁기가 직선으로 흙덩이를 튕긴다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "성장을 돕는 비옥한 고랑",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [],
+  "name": "쟁기",
+  "concept": "발동: 쟁기가 직선으로 흙덩이를 튕긴다. 성장 산출: 성장을 돕는 비옥한 고랑. 비용: 직선 동선에 밭이 몰려 넓게 포위되면 보호가 어렵다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "잠정 순환 연결: 처치 잔재 또는 경작 기반을 비옥도·성장 조건으로 바꾸는 경로를 제안한다. 연결 산출: 성장을 돕는 비옥한 고랑. 비용: 직선 동선에 밭이 몰려 넓게 포위되면 보호가 어렵다."
+    }
+  ],
+  "floorRationale": "발동 형태: 쟁기가 직선으로 흙덩이를 튕긴다. 비교 기준: 같은 사거리와 전방 적 배치의 근접 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(성장을 돕는 비옥한 고랑) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": []
+}

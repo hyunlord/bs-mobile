@@ -1,0 +1,24 @@
+{
+  "id": "core:root_thief",
+  "name": "뿌리 도둑",
+  "concept": "어린 뿌리를 뽑아 다음 밭까지 운반하며 두 곳의 작업을 끊는다. 운반 속도가 느린 동안 처치하면 뿌리를 회수할 수 있다는 설계다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "seed",
+  "health": 36,
+  "speed": 10,
+  "damage": 4,
+  "range": 80,
+  "attackCooldownTicks": 65,
+  "experience": 8,
+  "behavior": {
+    "trigger": "어린 밭에 도착하면",
+    "pressure": "어린 뿌리를 뽑아 다음 밭까지 운반하며 두 곳의 작업을 끊는다.",
+    "counterplay": "운반 속도가 느린 동안 처치하면 뿌리를 회수할 수 있다는 설계다."
+  }
+}

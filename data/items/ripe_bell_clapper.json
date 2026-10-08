@@ -10,7 +10,7 @@
   "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "오래 방치된 수확물의 손실을 줄이는 대신 짧은 운반 효율을 희생한다."
     }

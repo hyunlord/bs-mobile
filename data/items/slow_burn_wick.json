@@ -10,7 +10,7 @@
   "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "개간 공격의 안전 조절이 순간 화력의 감소로 이어진다."
     }

@@ -10,7 +10,7 @@
   "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "새 경작지 방어와 수확 동선의 혼잡을 같은 배치 결정에 묶는다."
     }

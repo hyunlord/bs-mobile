@@ -1,0 +1,28 @@
+{
+  "id": "core:hive_dart",
+  "tags": [
+    "weapon",
+    "ranged",
+    "people"
+  ],
+  "activation": {
+    "damage": 9,
+    "range": 1400,
+    "cooldownTicks": 18,
+    "shape": "projectile",
+    "knockback": 0,
+    "form": "작은 벌침이 가까운 표적들 사이에서 짧게 갈라져 날아간다.",
+    "damageCoefficient": 0.85
+  },
+  "name": "벌침 촉",
+  "concept": "벌지기가 붙어 있는 동안 작은 침이 여러 접근자를 나눠 견제한다. 벌지기를 징집하면 분산 견제가 끊긴다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "노동 인력을 남기는 선택을 주변 경작지의 전투 안전으로 되돌린다."
+    }
+  ]
+}

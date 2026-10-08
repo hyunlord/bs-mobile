@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 목수 망치가 건물 근처에서 수리할 때 수리량4 증가, 같은 위치의 공격 밀치기는10 감소한다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "발동 공격과 성장물 보호가 무조건 동시에 좋아지지 않도록 교환 비용을 둔다."
     }

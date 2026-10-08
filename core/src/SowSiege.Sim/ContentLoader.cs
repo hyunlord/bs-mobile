@@ -45,7 +45,11 @@ public static partial class ContentLoader
             Require(tools.ContainsKey(hero.StartingTool), $"Unknown starting tool: {hero.StartingTool}");
             Require(hero.DamageMultiplier > 0, $"Invalid hero multiplier: {hero.Id}");
         }
-        foreach (var estate in estates.Values) { Require(estate.GrowthMultiplier > 0, $"Invalid estate multiplier: {estate.Id}"); }
+        foreach (var estate in estates.Values)
+        {
+            Require(estate.GrowthMultiplier > 0, $"Invalid estate multiplier: {estate.Id}");
+            if (estate.RemainsLoop is { } loop) { Require(new[] { loop.Capacity, loop.LifetimeTicks, loop.AbsorptionRadius }.All(value => value > 0 && value <= 1000000), "Invalid remains loop."); }
+        }
         foreach (var tool in tools.Values)
         {
             ValidateActivation(tool.Id, tool.Activation);
@@ -194,13 +198,14 @@ public static partial class ContentLoader
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
             if (!element.TryGetProperty(name, out var member))
             {
-                if (name is "runtime" or "runtimeProjection" || name == "experiment" && type == typeof(RuntimeProfile))
+                if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent) || name == "experiment" && type == typeof(RuntimeProfile))
                 {
                     continue;
                 }
 
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
+            Require(!(type == typeof(EstateContent) && name == "remainsLoop" && member.ValueKind == JsonValueKind.Null), "Remains loop must be omitted or a complete object.");
             Require(!(type == typeof(RuntimeProfile) && name == "experiment" && member.ValueKind == JsonValueKind.Null), "Experiment must be omitted or a complete object.");
             if (member.ValueKind == JsonValueKind.Null && new System.Reflection.NullabilityInfoContext().Create(property).ReadState == System.Reflection.NullabilityState.Nullable)
             {

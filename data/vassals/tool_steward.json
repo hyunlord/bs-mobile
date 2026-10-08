@@ -11,12 +11,12 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "영주에게 더 가까운 진행 중 공정에 다음 한 주기의 인력을 자동 예약해 중간 중단을 줄인다."
     }
   ],
-  "heroId": "core:founder",
+  "heroId": "core:frontier_knight",
   "role": "steward",
   "ability": {
     "trigger": "건설과 경작이 같은 작업 인력을 요구하면",

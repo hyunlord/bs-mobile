@@ -1,0 +1,49 @@
+{
+  "id": "core:sprout_march",
+  "growthMultiplier": 1,
+  "name": "새싹 변경",
+  "concept": "전투 유해를 가까운 밭의 비옥도로 흡수하고 작물 성장과 수확으로 식량을 얻어 백성과 부대를 유지하는 영지.",
+  "tags": [
+    "land",
+    "fertility",
+    "food"
+  ],
+  "designStatus": "s2-runtime",
+  "implementationNote": "R3 데이터 설정: 실제 처치 위치에 유해를 보관하고 다음 영지 틱부터 가까운 밭에 한 번 흡수한다. 용량 초과와 만료는 손실이며 비옥도·성장·수확 계수는 기존 수치를 유지한다.",
+  "loopLinks": [],
+  "uniqueLoop": {
+    "name": "전투에서 식량으로, 식량에서 전투로",
+    "summary": "처치 → 위치가 있는 유해 → 밭 흡수와 비옥도 → 작물 성장 → 수확 → 식량 → 백성과 부대 → 다음 처치.",
+    "stages": [
+      {
+        "id": "combat",
+        "action": "적 처치로 침입을 줄이고 전투 흔적을 남긴다."
+      },
+      {
+        "id": "fertility",
+        "action": "흡수 반경 안에서 가장 가까운 밭이 유해를 한 번 흡수한다. 밭이 없으면 유해는 만료까지 남는다."
+      },
+      {
+        "id": "growth",
+        "action": "씨앗이 성장하는 동안 적으로부터 밭을 지킨다."
+      },
+      {
+        "id": "harvest",
+        "action": "성숙 작물을 수확해 식량과 경험치를 얻는다."
+      },
+      {
+        "id": "food",
+        "action": "식량은 인구 유지와 징집에 소비되며 상한을 넘겨 쌓지 않는다."
+      },
+      {
+        "id": "people",
+        "action": "백성은 생산을 돕고 부대는 다음 처치를 도와 순환을 닫는다."
+      }
+    ]
+  },
+  "remainsLoop": {
+    "capacity": 1000,
+    "lifetimeTicks": 900,
+    "absorptionRadius": 600
+  }
+}

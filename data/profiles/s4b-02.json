@@ -23,10 +23,10 @@
       "core:siege_cart"
     ],
     "heroes": [
-      "core:founder"
+      "core:frontier_knight"
     ],
     "estates": [
-      "core:meadow"
+      "core:sprout_march"
     ]
   },
   "testSelection": {

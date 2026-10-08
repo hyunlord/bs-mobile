@@ -1,0 +1,26 @@
+{
+  "id": "core:chapel_reply_bell",
+  "name": "예배당 답종",
+  "concept": "가장 가까운 부대가 먼저 응답해 복구 작업으로 돌아온다. 먼 부대는 귀환 순서를 기다린다.",
+  "tags": [
+    "people",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "동시에 모든 전투력을 잃지 않도록 귀농을 순차화하되 복구가 늦어질 수 있다."
+    }
+  ],
+  "effect": {
+    "trigger": "예배당 종이 부대의 귀환을 알릴 때",
+    "benefit": "가장 가까운 부대가 먼저 응답해 복구 작업으로 돌아온다.",
+    "cost": "먼 부대는 귀환 순서를 기다린다."
+  },
+  "linkedToolIds": [
+    "core:chapel_bell"
+  ]
+}

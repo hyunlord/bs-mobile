@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "fertility",
       "reason": "처치 위치를 경작 가능한 자리로 연결하지만 회수 동선과 전투 동선이 어긋날 수 있다."
     }

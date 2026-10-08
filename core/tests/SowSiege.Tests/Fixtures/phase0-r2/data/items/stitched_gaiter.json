@@ -1,0 +1,26 @@
+{
+  "id": "core:stitched_gaiter",
+  "name": "덧댄 각반",
+  "concept": "다음 진형 이동에서 작은 충격에 덜 흩어진다. 손질 중인 병사는 밭일을 하지 못한다.",
+  "tags": [
+    "people",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "다음 전투의 부대 보존을 위해 현재 노동 시간을 지불한다."
+    }
+  ],
+  "effect": {
+    "trigger": "재봉 가위가 복귀한 병사의 장비를 손볼 때",
+    "benefit": "다음 진형 이동에서 작은 충격에 덜 흩어진다.",
+    "cost": "손질 중인 병사는 밭일을 하지 못한다."
+  },
+  "linkedToolIds": [
+    "core:tailor_shears"
+  ]
+}

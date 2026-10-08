@@ -11,7 +11,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다."
     }

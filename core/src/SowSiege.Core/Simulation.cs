@@ -42,11 +42,12 @@ public sealed class Simulation
         World.Rerolls = catalog.Tuning.World.Progression.Rerolls;
         World.Bans = catalog.Tuning.World.Progression.Bans;
         World.Locks = catalog.Tuning.World.Progression.Locks;
+        if (catalog.Estates[options.EstateId].RemainsLoop is { } loop) { World.Remains = new() { Definition = loop }; }
         estate.Initialize();
         if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
         if (options.Scenario == "load") { PrepareLoadTick(); }
         Experiment?.Trace();
-        if (Runtime is not null || Experiment is not null) { RecordSample(); }
+        if (Runtime is not null || Experiment is not null || World.Remains is not null) { RecordSample(); }
     }
 
     public CardOfferSnapshot PendingCards => new(World.PendingCards.ToArray(), World.LockedCard, World.Rerolls, World.Bans, World.Locks);
@@ -117,6 +118,7 @@ public sealed class Simulation
     private void RecordSample()
     {
         Experiment?.Sample();
+        RemainsSystem.Sample(World);
         var state = Snapshot;
         World.Timeline.Add(new(World.Tick, World.Season, World.Level, state.ActiveEnemies, state.Farms, state.Buildings, state.People,
             World.WeaponDamage, World.Tools.Values.Sum(tool => tool.ActivationDamage), World.Tools.Values.Sum(tool => tool.GrowthDamage),
@@ -132,6 +134,6 @@ public sealed class Simulation
             tools.Values.Sum(tool => tool.GrowthProduced), hash, peopleRule, options.Scenario, World.LordHealth <= 0 ? "death" : IsComplete ? "duration" : "running", World.LordHealth > 0,
             World.Level, World.Season, random.Draws, World.WeaponDamage, tools, World.Timeline.ToArray(), World.KillExperience, World.HarvestExperience, World.TaxExperience,
             World.Food, World.People.Where(person => person.Role == "peasant").Sum(person => person.Members), World.People.Where(person => person.Role == "militia").Sum(person => person.Members), World.People.Count(person => person.Role == "vassal"),
-            World.Harvests, World.Ruins, World.Rebuilds, World.EstateTicks, World.SpawnedEnemies, World.DeathCause, World.Cards.ToArray(), World.AllyDamage, Runtime?.Result(), Experiment?.Result());
+            World.Harvests, World.Ruins, World.Rebuilds, World.EstateTicks, World.SpawnedEnemies, World.DeathCause, World.Cards.ToArray(), World.AllyDamage, Runtime?.Result(), Experiment?.Result(), RemainsSystem.Result(World));
     }
 }

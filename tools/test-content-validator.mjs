@@ -152,10 +152,10 @@ const s3Mutations = [
 
   ['unknown estate loop stage', 'tools/seed_bag.json', v=>{v.loopLinks[0].stage='absent';}, /unresolved estate loop stage|schema violation/],
   ['candidate profile activation', 'tools/seed_bag.json', v=>{v.designStatus='candidate';}, /candidate cannot enter runtime/],
-  ['profile wrong kind', 'profiles/s2-baseline.json', v=>{v.selection.tools[0]='core:founder';}, /unresolved tool reference/],
+  ['profile wrong kind', 'profiles/s2-baseline.json', v=>{v.selection.tools[0]='core:frontier_knight';}, /unresolved tool reference/],
   ['profile test leakage', 'profiles/s2-baseline.json', v=>{v.selection.tools[0]='test:spade';}, /test selection boundary/],
   ['missing anti-synergy rationale', 'tools/seed_bag.json', v=>{v.antiSynergyNotes=[];}, /notes must match/],
-  ['hero affinity wrong kind', 'heroes/founder.json', v=>{v.affinityEstateIds=['core:seed_bag'];}, /unresolved estate reference/],
+  ['hero affinity wrong kind', 'heroes/frontier_knight.json', v=>{v.affinityEstateIds=['core:seed_bag'];}, /unresolved estate reference/],
 ];
 for (const [name, relative, mutate, expected] of s3Mutations.filter(row=>row[3])) {
   test(`S3 rejects ${name}`, async t=> {
@@ -200,10 +200,10 @@ const poolMutations = [
     const file=path.join(root,'tools/seed_bag.json'); const value=JSON.parse(await readFile(file,'utf8'));
     value.tags.push('economy'); await writeFile(file,JSON.stringify(value));
   },/Tag economy needs at least 3/],
-  ['evolution input kind', async root=>mutateFirst(root,'evolutions',v=>{v.inputIds[0]='core:founder';}),/unresolved (weapon|tool) reference/],
-  ['evolution result base', async root=>mutateFirst(root,'evolutions',v=>{v.result.baseId='core:founder';}),/result base must be an input/],
+  ['evolution input kind', async root=>mutateFirst(root,'evolutions',v=>{v.inputIds[0]='core:frontier_knight';}),/unresolved (weapon|tool) reference/],
+  ['evolution result base', async root=>mutateFirst(root,'evolutions',v=>{v.result.baseId='core:frontier_knight';}),/result base must be an input/],
   ['vassal owner kind', async root=>mutateFirst(root,'vassals',v=>{v.heroId='core:seed_bag';}),/unresolved hero reference/],
-  ['item tool reference', async root=>mutateFirst(root,'items',v=>{v.linkedToolIds=['core:founder'];}),/unresolved tool reference/],
+  ['item tool reference', async root=>mutateFirst(root,'items',v=>{v.linkedToolIds=['core:frontier_knight'];}),/unresolved tool reference/],
   ['skin numeric metadata', async root=>mutateFirst(root,'skins',v=>{v.stats={damage:1};}),/skin must not contain numeric stats/],
   ['insufficient anti pairs',async root=>{
     for(const [file,value] of await allRecords(path.join(root,'tools'))) {
@@ -406,3 +406,27 @@ test('S4b compares against current base tuning rather than freezing historical I
   await f.save(); const result = await validateContent(f.directory, { fullPool: true });
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
+
+for (const [label, remainsLoop, valid] of [
+  ['omitted legacy', undefined, true],
+  ['minimum', {capacity:1,lifetimeTicks:1,absorptionRadius:1}, true],
+  ['maximum', {capacity:1000000,lifetimeTicks:1000000,absorptionRadius:1000000}, true],
+  ['explicit null', null, false],
+  ['missing member', {capacity:1,lifetimeTicks:1}, false],
+  ['unknown member', {capacity:1,lifetimeTicks:1,absorptionRadius:1,bonus:1}, false],
+  ...['capacity','lifetimeTicks','absorptionRadius'].flatMap(field => [0,-1,1.5,1000001,'1'].map(value =>
+    [`${field}=${value} (${typeof value})`, {capacity:1,lifetimeTicks:1,absorptionRadius:1,[field]:value}, false])),
+]) {
+  test(`R3 remainsLoop ${label}`, async t => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-remains-schema-'));
+    t.after(() => rm(directory, {recursive:true,force:true}));
+    await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, {recursive:true});
+    const [file, estate] = (await allRecords(path.join(directory,'estates')))[0];
+    if (remainsLoop === undefined) delete estate.remainsLoop;
+    else estate.remainsLoop = remainsLoop;
+    await writeFile(file, JSON.stringify(estate));
+    const result = await validateContent(directory, {fullPool:true});
+    assert.equal(result.valid, valid, result.errors.join('\n'));
+    if (!valid) assert.match(result.errors.join('\n'), /schema violation/);
+  });
+}

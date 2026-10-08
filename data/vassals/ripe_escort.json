@@ -11,12 +11,12 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "영주보다 성숙 밭을 우선 엄호하며 짧은 반격으로 약탈을 끊는다."
     }
   ],
-  "heroId": "core:founder",
+  "heroId": "core:frontier_knight",
   "role": "guard",
   "ability": {
     "trigger": "성숙 작물에 약탈자가 접근하면",

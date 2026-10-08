@@ -1,0 +1,28 @@
+{
+  "id": "core:reed_spear",
+  "tags": [
+    "weapon",
+    "melee",
+    "defense"
+  ],
+  "activation": {
+    "damage": 18,
+    "range": 1300,
+    "cooldownTicks": 32,
+    "shape": "melee",
+    "knockback": 70,
+    "form": "영주와 부대 앞에서 가느다란 직선 찌르기가 길게 뻗는다.",
+    "damageCoefficient": 0.95
+  },
+  "name": "갈대 창",
+  "concept": "가벼운 창이 부대 앞의 좁은 선을 지킨다. 옆으로 우회한 적은 긴 찌르기의 회수 동안 막지 못한다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "징집병의 전면 접촉을 줄여 식량으로 유지한 병력을 보존한다."
+    }
+  ]
+}

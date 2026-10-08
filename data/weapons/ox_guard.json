@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "people",
       "reason": "징집 부대의 진형 유지가 강해지는 대신 측면 방어를 다른 장비에 맡긴다."
     }

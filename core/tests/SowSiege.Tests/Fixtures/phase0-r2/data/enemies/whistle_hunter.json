@@ -1,0 +1,24 @@
+{
+  "id": "core:whistle_hunter",
+  "name": "호각 추격자",
+  "concept": "호각으로 동료의 접근 방향을 모아 체류를 흔든다. 호각 준비가 보일 때 먼저 끊으면 약한 몸체만 남는다.",
+  "tags": [
+    "ranged",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "lord",
+  "health": 32,
+  "speed": 12,
+  "damage": 4,
+  "range": 180,
+  "attackCooldownTicks": 55,
+  "experience": 8,
+  "behavior": {
+    "trigger": "영주가 경작지에 오래 머무르면",
+    "pressure": "호각으로 동료의 접근 방향을 모아 체류를 흔든다.",
+    "counterplay": "호각 준비가 보일 때 먼저 끊으면 약한 몸체만 남는다."
+  }
+}

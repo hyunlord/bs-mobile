@@ -1,0 +1,44 @@
+{
+  "id": "core:return_path_knot",
+  "name": "귀환 매듭끈",
+  "concept": "익은 밭을 가로지르지 않는 귀환 길을 먼저 잡는다. 안전한 길이 길면 노동 복귀가 늦어진다.",
+  "tags": [
+    "people",
+    "harvest"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 귀환 시 가까운 건물을 중간 경유지로 삼아 노동 복귀 경로를 바꾼다. 익은 밭을 완전히 피하는 최적 경로라는 주장은 하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "귀환 병력이 수확물을 망가뜨리지 않게 하되 군사 공백을 늘린다."
+    }
+  ],
+  "effect": {
+    "trigger": "징집 부대가 귀농을 시작할 때",
+    "benefit": "익은 밭을 가로지르지 않는 귀환 길을 먼저 잡는다.",
+    "cost": "안전한 길이 길면 노동 복귀가 늦어진다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:return_path_knot_waypoint",
+        "trigger": "return-start",
+        "operation": "return-via-building",
+        "subject": "building",
+        "amount": 1,
+        "radius": 1600,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
+}

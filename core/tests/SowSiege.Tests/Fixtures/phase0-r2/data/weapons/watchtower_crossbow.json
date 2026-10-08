@@ -1,0 +1,28 @@
+{
+  "id": "core:watchtower_crossbow",
+  "tags": [
+    "weapon",
+    "ranged",
+    "building"
+  ],
+  "activation": {
+    "damage": 38,
+    "range": 2300,
+    "cooldownTicks": 80,
+    "shape": "projectile",
+    "knockback": 30,
+    "form": "망루 방향을 향한 가는 조준선 뒤로 굵은 쇠살이 발사된다.",
+    "damageCoefficient": 1.1
+  },
+  "name": "망루 쇠뇌",
+  "concept": "망루가 지켜보는 방향에서 긴 관통 사격을 얻는다. 사격 준비가 길어 영주 곁의 급한 포위에는 약하다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "건물을 지키는 체류를 원거리 화력으로 바꾸되 건물 밖 확장을 늦춘다."
+    }
+  ]
+}

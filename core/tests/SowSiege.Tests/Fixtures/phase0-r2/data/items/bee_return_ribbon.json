@@ -1,0 +1,26 @@
+{
+  "id": "core:bee_return_ribbon",
+  "name": "벌 귀환띠",
+  "concept": "지나간 경로의 성장 중인 밭을 다시 찾기 쉬워진다. 벌통을 멀리 옮기면 익숙한 경로가 끊긴다.",
+  "tags": [
+    "growth",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "노동과 수분의 반복 경로를 성장에 연결하면서 잦은 영지 이전을 불리하게 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "벌이 경작지를 오간 뒤 벌통으로 돌아올 때",
+    "benefit": "지나간 경로의 성장 중인 밭을 다시 찾기 쉬워진다.",
+    "cost": "벌통을 멀리 옮기면 익숙한 경로가 끊긴다."
+  },
+  "linkedToolIds": [
+    "core:bee_hive"
+  ]
+}

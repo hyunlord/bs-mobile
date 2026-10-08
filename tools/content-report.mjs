@@ -32,9 +32,13 @@ for (const { record } of records) {
 }
 const links = records.filter(({ directory, record }) => ['weapons', 'tools', 'items'].includes(directory) && record.loopLinks.length > 0);
 const output = [
-  '# S3 콘텐츠 후보 풀', '',
+  `관문: 부분 — 콘텐츠 ${records.length}개 정본 표 생성. 실행·밸런스 판정은 R3 보고서를 따른다.`, '',
+  '변경: 기본 영웅·영지를 개척 기사·새싹 변경으로 이관하고 유해 순환 설정을 반영했다.',
+  '결정: 과거 S3 표는 보존하고 현재 데이터 표를 별도 파일로 생성한다.',
+  '검증 범위: 생성 표의 데이터 일치 확인이며 실행 효과·성능·밸런스를 입증하지 않는다.', '',
+  '# 현재 콘텐츠 풀', '',
   '이 문서는 `node tools/content-report.mjs`로 정본 JSON에서 생성한다. 후보 수량·태그·참조의 검증은 `node tools/validate-content.mjs`가 담당한다. 이 표는 구현 또는 밸런스 승인 증거가 아니다.', '',
-  '기본 영주·영지는 기술 기준인 `core:founder` / `core:meadow` 한 쌍을 유지한다. 새싹 변경 명칭과 순환 고리는 사용자 선택 전 잠정안이다. [세 후보 비교](S3-base-proposals.md)와 [확장 이름 목록](S3-expansion-concepts.md)을 별도로 제공한다. 확장 이름은 JSON에 등록하지 않는다.', '',
+  'R3 기본 영웅·영지는 개척 기사 `core:frontier_knight` / 새싹 변경 `core:sprout_march`이다. 새싹 변경은 데이터의 `remainsLoop`로 처치 유해의 보관·만료·밭 흡수를 설정한다. 역사적 [S3 후보 표](S3-pool.md), [세 후보 비교](S3-base-proposals.md), [확장 이름 목록](S3-expansion-concepts.md)은 당시 기록으로 보존한다. 실행 검증 결과는 별도 R3 보고서를 따른다.', '',
   '`s2-runtime`은 기존 S2 기본 수치 동작만 실행된다는 뜻이다. 추가 고유 효과·계수·연결 설명은 설계 후보다. `candidate`는 실행 프로필에 자동 편입되지 않는다. 발동 `damageCoefficient`는 비교 설계용이며 S2 정수 피해에 곱하지 않는다. 바닥값은 측정된 60–70% 보증이 아니다.', '',
   '## 수량', '',
   table(['종류', '레코드 수', 'S2 기본 실행 레코드'], kinds.map(([directory, label]) => [label, records.filter((r) => r.directory === directory).length, records.filter((r) => r.directory === directory && r.record.designStatus === 's2-runtime').length])),
@@ -58,10 +62,10 @@ for (const [directory, label] of kinds) {
 output.push('## 태그 분포', '', '테스트 레코드를 제외하고 같은 레코드 안의 중복 태그는 한 번만 센다.', '', table(['태그', '서로 다른 레코드 수', 'ID'], [...tags].sort(([a], [b]) => a.localeCompare(b)).map(([tag, ids]) => [tag, ids.length, ids.sort().join(', ')])));
 output.push('## 반시너지', '', 'A↔B와 B↔A는 한 쌍으로 센다. 아래 비용은 설계 가설이며 S2에서 모든 고유 상호작용을 구현했다는 뜻이 아니다.', '', table(['무순서 쌍', '경쟁하는 자원·시간·상태'], [...pairs].sort(([a], [b]) => a.localeCompare(b))));
 const rendered = `${output.join('\n').trimEnd()}\n`;
-const destination = path.join(root, 'docs/content/S3-pool.md');
+const destination = path.join(root, 'docs/content/current-pool.md');
 if (process.argv.includes('--check')) {
-  if (await fs.readFile(destination, 'utf8') !== rendered) throw new Error('S3-pool.md differs from canonical JSON; run node tools/content-report.mjs');
-  console.log('S3 content tables match canonical JSON');
+  if (await fs.readFile(destination, 'utf8') !== rendered) throw new Error('current-pool.md differs from canonical JSON; run node tools/content-report.mjs');
+  console.log('Current content tables match canonical JSON');
 } else {
   await fs.mkdir(path.dirname(destination), { recursive: true });
   await fs.writeFile(destination, rendered);

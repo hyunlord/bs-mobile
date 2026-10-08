@@ -1,0 +1,24 @@
+{
+  "id": "core:siege_cart",
+  "name": "공성 손수레",
+  "concept": "느리게 밀고 와 큰 한 번의 충격으로 수리 여유를 줄인다. 접근 시간을 활용해 집중 공격하거나 경로를 우회시킨다.",
+  "tags": [
+    "building",
+    "melee"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 프로토타입: 체력130·이동3·건물 공격18/150틱의 느린 공성 압력. 손수레 렌더링과 지형 길찾기는 미구현.",
+  "loopLinks": [],
+  "target": "building",
+  "health": 130,
+  "speed": 3,
+  "damage": 18,
+  "range": 140,
+  "attackCooldownTicks": 150,
+  "experience": 20,
+  "behavior": {
+    "trigger": "건물까지 길이 확보되면",
+    "pressure": "느리게 밀고 와 큰 한 번의 충격으로 수리 여유를 줄인다.",
+    "counterplay": "접근 시간을 활용해 집중 공격하거나 경로를 우회시킨다."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "core:tower_plumb_line",
+  "name": "망루 다림줄",
+  "concept": "그 길로 들어오는 적에게 사격 방향이 빨리 맞춰진다. 다른 방향으로 습격이 바뀌면 다시 조준해야 한다.",
+  "tags": [
+    "building",
+    "ranged"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "안정된 방어선의 이점을 주되 여러 경로의 습격에 고정화 비용을 남긴다."
+    }
+  ],
+  "effect": {
+    "trigger": "망루 추가 같은 진입로를 오래 지켜볼 때",
+    "benefit": "그 길로 들어오는 적에게 사격 방향이 빨리 맞춰진다.",
+    "cost": "다른 방향으로 습격이 바뀌면 다시 조준해야 한다."
+  },
+  "linkedToolIds": [
+    "core:tower_weight"
+  ]
+}

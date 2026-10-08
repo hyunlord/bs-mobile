@@ -29,7 +29,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 진형을 유지하는 방어 부대. 비용: 진형 유지 중 귀농이 늦어져 경작을 놓친다."
     }

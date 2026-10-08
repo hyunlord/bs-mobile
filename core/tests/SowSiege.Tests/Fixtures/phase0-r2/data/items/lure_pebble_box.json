@@ -1,0 +1,26 @@
+{
+  "id": "core:lure_pebble_box",
+  "name": "유인 자갈함",
+  "concept": "자갈 소리로 짧은 우회 경로를 만들어 수확 시간을 번다. 유인을 반복하면 적이 소리가 나는 자리로 더 모인다.",
+  "tags": [
+    "control",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "수확물 회수 시간을 벌되 밀집한 적을 처리할 방어가 따로 필요하다."
+    }
+  ],
+  "effect": {
+    "trigger": "식량을 노리는 적이 익은 밭에 접근할 때",
+    "benefit": "자갈 소리로 짧은 우회 경로를 만들어 수확 시간을 번다.",
+    "cost": "유인을 반복하면 적이 소리가 나는 자리로 더 모인다."
+  },
+  "linkedToolIds": [
+    "core:shepherd_staff"
+  ]
+}

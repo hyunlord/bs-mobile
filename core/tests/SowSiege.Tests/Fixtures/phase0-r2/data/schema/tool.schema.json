@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "weapon",
+          "melee",
+          "ranged",
+          "orbit",
+          "land",
+          "harvest",
+          "building",
+          "repair",
+          "people",
+          "muster",
+          "control",
+          "food",
+          "fertility",
+          "defense",
+          "economy",
+          "growth"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 1000,
+      "uniqueItems": true
+    },
+    "designStatus": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "s2-runtime",
+        "s4-runtime"
+      ]
+    },
+    "implementationNote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loopLinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "estateId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "stage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "estateId",
+          "stage",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "activation": {
+      "type": "object",
+      "properties": {
+        "damage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "range": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "cooldownTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "shape": {
+          "type": "string",
+          "enum": [
+            "melee",
+            "projectile",
+            "orbit",
+            "wave"
+          ]
+        },
+        "knockback": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "form": {
+          "type": "string",
+          "minLength": 1
+        },
+        "damageCoefficient": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        }
+      },
+      "required": [
+        "damage",
+        "range",
+        "cooldownTicks",
+        "shape",
+        "knockback",
+        "form",
+        "damageCoefficient"
+      ],
+      "additionalProperties": false
+    },
+    "growth": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "land",
+            "building",
+            "people"
+          ]
+        },
+        "yield": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "output": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primaryRoute": {
+          "type": "string",
+          "enum": [
+            "experience",
+            "combat",
+            "gold",
+            "buff"
+          ]
+        }
+      },
+      "required": [
+        "target",
+        "yield",
+        "output",
+        "primaryRoute"
+      ],
+      "additionalProperties": false
+    },
+    "floorRationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "antiSynergy": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+      },
+      "minItems": 0,
+      "maxItems": 1000,
+      "uniqueItems": true
+    },
+    "antiSynergyNotes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "otherId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "otherId",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "runtimeProjection": {
+      "type": "object",
+      "properties": {
+        "growthActions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "enum": [
+                  "building",
+                  "people"
+                ]
+              },
+              "operation": {
+                "enum": [
+                  "construct",
+                  "garrison"
+                ]
+              },
+              "yield": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "durationTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "target",
+              "operation",
+              "yield",
+              "durationTicks"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1000
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+              },
+              "trigger": {
+                "enum": [
+                  "attack",
+                  "harvest",
+                  "repair",
+                  "plant",
+                  "farm-hit",
+                  "draft",
+                  "return-start",
+                  "return-arrival",
+                  "estate-cross",
+                  "kill",
+                  "modifier"
+                ]
+              },
+              "operation": {
+                "enum": [
+                  "damage-pulse",
+                  "repair-nearest",
+                  "worker-buff",
+                  "rally-returners",
+                  "plant-path",
+                  "shield-farms",
+                  "harvest-near",
+                  "damage-young-plots",
+                  "extend-duty",
+                  "guard-return",
+                  "pause-neighbor-growth",
+                  "return-via-building",
+                  "planting-bias",
+                  "stat-add"
+                ]
+              },
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": -1000000,
+                "maximum": 1000000
+              },
+              "radius": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "durationTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "foodCost": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "conditions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "equipment-owned",
+                        "owned-tag",
+                        "equipment-tag",
+                        "equipment-id",
+                        "equipment-kind",
+                        "growth-target",
+                        "near-seed",
+                        "near-ripe",
+                        "near-building",
+                        "estate-inside",
+                        "estate-outside",
+                        "building-ruined",
+                        "building-new",
+                        "person-role",
+                        "enemy-target",
+                        "season",
+                        "count",
+                        "shield-consumed"
+                      ]
+                    },
+                    "value": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "minimum": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "value",
+                    "minimum"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "id",
+              "trigger",
+              "operation",
+              "subject",
+              "amount",
+              "radius",
+              "durationTicks",
+              "foodCost",
+              "conditions"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1000
+        }
+      },
+      "required": [
+        "growthActions",
+        "effects"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "concept",
+    "tags",
+    "designStatus",
+    "implementationNote",
+    "loopLinks",
+    "activation",
+    "growth",
+    "floorRationale",
+    "antiSynergy",
+    "antiSynergyNotes"
+  ],
+  "additionalProperties": false
+}

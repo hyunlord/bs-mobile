@@ -20,7 +20,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 공격할 때 반경700의 익은 밭 최대1개를 수확하며 반경500의 미숙 밭 최대1개 성장 진행을 잃게 한다. 개별 이삭의 시각적 검 충돌은 구현하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "수확 동선을 공격 동선과 겹치되 미숙한 작물의 손실을 비용으로 둔다."
     }

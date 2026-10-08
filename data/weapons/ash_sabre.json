@@ -12,7 +12,7 @@
     "shape": "melee",
     "knockback": 20,
     "form": "칼날에 모인 회색 재가 다음 전방 베기에서 짧게 터진다.",
-    "damageCoefficient": 1.0
+    "damageCoefficient": 1
   },
   "name": "재받이 칼",
   "concept": "최근 처치의 재를 칼끝에 모아 다음 베기에 쓴다. 재를 쓴 자리에서는 작물에 돌아갈 비옥도가 줄어든다.",
@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "fertility",
       "reason": "같은 처치 부산물을 공격 강화와 작물 성장 중 어디에 쓸지 경쟁시킨다."
     }

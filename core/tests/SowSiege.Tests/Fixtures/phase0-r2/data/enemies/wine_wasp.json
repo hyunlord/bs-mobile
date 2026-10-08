@@ -1,0 +1,24 @@
+{
+  "id": "core:wine_wasp",
+  "name": "발효 말벌",
+  "concept": "수확 접근 순간에 독침을 쏘고 뒤로 빠진다. 사격을 유도한 뒤 재공격 전 수확하거나 먼 거리에서 제거한다.",
+  "tags": [
+    "harvest",
+    "ranged"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "ripe",
+  "health": 26,
+  "speed": 12,
+  "damage": 5,
+  "range": 180,
+  "attackCooldownTicks": 55,
+  "experience": 7,
+  "behavior": {
+    "trigger": "익은 작물 가까이 영주가 들어오면",
+    "pressure": "수확 접근 순간에 독침을 쏘고 뒤로 빠진다.",
+    "counterplay": "사격을 유도한 뒤 재공격 전 수확하거나 먼 거리에서 제거한다."
+  }
+}

@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "완성 건물 주변을 전투 거점으로 삼아 건물 수리를 위한 시간을 확보한다."
     }

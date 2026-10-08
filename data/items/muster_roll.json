@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 귀환한 백성의 재징집 전 최소 휴식 시간을60틱 늘려 즉시 소집 인원을 줄인다. 이미 귀환 중인 사람 제외는 원래 규칙이며 새 효과로 집계하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "people",
       "reason": "귀환 중인 노동력의 중복 소모를 막고 부족한 병력을 그대로 드러낸다."
     }

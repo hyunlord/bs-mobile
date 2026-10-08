@@ -1,0 +1,43 @@
+{
+  "id": "core:salt_spreader",
+  "tags": [
+    "land",
+    "defense"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "projectile",
+    "knockback": 30,
+    "form": "소금 결정을 넓은 부채꼴로 뿌린다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "적 발밑을 상하게 하는 소금띠",
+    "primaryRoute": "combat"
+  },
+  "antiSynergy": [
+    "core:mandrake_bulb"
+  ],
+  "name": "소금 살포기",
+  "concept": "발동: 소금 결정을 넓은 부채꼴로 뿌린다. 성장 산출: 적 발밑을 상하게 하는 소금띠. 비용: 소금띠의 구근 작물은 성장이 둔해진다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "잠정 순환 연결: 성장 산출의 공격·방어가 다음 전투에서 적을 막는 경로를 제안한다. 연결 산출: 적 발밑을 상하게 하는 소금띠. 비용: 소금띠의 구근 작물은 성장이 둔해진다."
+    }
+  ],
+  "floorRationale": "발동 형태: 소금 결정을 넓은 부채꼴로 뿌린다. 비교 기준: 같은 발사 간격과 유효 명중 수의 투사체 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(적 발밑을 상하게 하는 소금띠) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:mandrake_bulb",
+      "reason": "소금띠가 구근 성장을 늦춰 즉시 방어와 후속 수확이 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

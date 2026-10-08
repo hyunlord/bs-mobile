@@ -1,0 +1,28 @@
+{
+  "id": "core:tower_exclusion",
+  "name": "망루 사계 확보령",
+  "concept": "그 밭의 다음 재파종을 자동 유예해 사격로를 확보하고 접근 적을 더 멀리 견제한다. 대신 생산 가능한 밭 하나를 계속 비워 두어야 한다.",
+  "tags": [
+    "building",
+    "ranged",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "그 밭의 다음 재파종을 자동 유예해 사격로를 확보하고 접근 적을 더 멀리 견제한다."
+    }
+  ],
+  "effect": {
+    "target": "building",
+    "trigger": "이 헌장을 보유한 상태에서 망루에 가장 가까운 밭의 수확이 끝나면",
+    "benefit": "그 밭의 다음 재파종을 자동 유예해 사격로를 확보하고 접근 적을 더 멀리 견제한다.",
+    "cost": "생산 가능한 밭 하나를 계속 비워 두어야 한다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 상태에서 망루에 가장 가까운 밭의 수확이 끝나면"
+  ]
+}

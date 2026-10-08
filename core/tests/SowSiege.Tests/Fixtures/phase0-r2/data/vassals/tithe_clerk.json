@@ -1,0 +1,26 @@
+{
+  "id": "core:tithe_clerk",
+  "name": "수확 서기",
+  "concept": "수확 순번을 표시해 다음 식량 부족 전에 가까운 밭부터 회수하도록 돕는다. 대신 먼 고수익 밭을 뒤로 미뤄 약탈 위험을 남긴다.",
+  "tags": [
+    "people",
+    "harvest",
+    "economy"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "수확 순번을 표시해 다음 식량 부족 전에 가까운 밭부터 회수하도록 돕는다."
+    }
+  ],
+  "heroId": "core:founder",
+  "role": "steward",
+  "ability": {
+    "trigger": "여러 밭이 동시에 성숙하면",
+    "effect": "수확 순번을 표시해 다음 식량 부족 전에 가까운 밭부터 회수하도록 돕는다.",
+    "cost": "먼 고수익 밭을 뒤로 미뤄 약탈 위험을 남긴다."
+  }
+}

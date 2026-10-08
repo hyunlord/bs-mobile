@@ -7,4 +7,5 @@
     <ProjectReference Include="../../src/SowSiege.Sim/SowSiege.Sim.csproj" />
   </ItemGroup>
   <ItemGroup><Content Include="../../../data/**/*.json" Link="data/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><Content Include="Fixtures/**/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

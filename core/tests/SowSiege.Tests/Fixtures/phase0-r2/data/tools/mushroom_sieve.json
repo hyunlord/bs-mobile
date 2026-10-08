@@ -1,0 +1,43 @@
+{
+  "id": "core:mushroom_sieve",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 30,
+    "form": "체를 털어 포자를 원형으로 분사한다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "그늘에서 채집하는 버섯 경험치",
+    "primaryRoute": "experience"
+  },
+  "antiSynergy": [
+    "core:torch"
+  ],
+  "name": "버섯 체",
+  "concept": "발동: 체를 털어 포자를 원형으로 분사한다. 성장 산출: 그늘에서 채집하는 버섯 경험치. 비용: 햇빛이 드는 개간지에서는 채집 주기가 길어진다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 그늘에서 채집하는 버섯 경험치. 비용: 햇빛이 드는 개간지에서는 채집 주기가 길어진다."
+    }
+  ],
+  "floorRationale": "발동 형태: 체를 털어 포자를 원형으로 분사한다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(그늘에서 채집하는 버섯 경험치) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:torch",
+      "reason": "숲을 태워 개간하면 그늘 버섯의 채집 조건을 잃는다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

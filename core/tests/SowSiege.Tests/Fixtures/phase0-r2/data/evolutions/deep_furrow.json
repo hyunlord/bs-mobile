@@ -1,0 +1,34 @@
+{
+  "id": "core:deep_furrow",
+  "name": "깊은 고랑",
+  "concept": "여러 씨앗 밭을 하나의 깊은 고랑으로 묶어 처치 비옥도를 차례로 배분한다. 대신 고랑 중심이 점령되면 연결 밭 모두가 비옥도 지원을 잃는다.",
+  "tags": [
+    "land",
+    "fertility",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "여러 씨앗 밭을 하나의 깊은 고랑으로 묶어 처치 비옥도를 차례로 배분한다."
+    }
+  ],
+  "kind": "tool-growth",
+  "inputIds": [
+    "core:plough"
+  ],
+  "growthCondition": {
+    "target": "land",
+    "state": "seeded",
+    "minimum": 16
+  },
+  "result": {
+    "baseId": "core:plough",
+    "name": "깊은 고랑",
+    "effect": "여러 씨앗 밭을 하나의 깊은 고랑으로 묶어 처치 비옥도를 차례로 배분한다.",
+    "cost": "고랑 중심이 점령되면 연결 밭 모두가 비옥도 지원을 잃는다."
+  }
+}

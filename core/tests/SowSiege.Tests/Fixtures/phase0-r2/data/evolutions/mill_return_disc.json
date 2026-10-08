@@ -1,0 +1,31 @@
+{
+  "id": "core:mill_return_disc",
+  "name": "방앗간 회수륜",
+  "concept": "바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다. 대신 귀환 경로가 길어져 다음 발사가 늦고 건물 밖 추격에는 불리하다.",
+  "tags": [
+    "weapon",
+    "building",
+    "ranged"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:mill_disc",
+    "core:windmill_crank"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:mill_disc",
+    "name": "방앗간 회수륜",
+    "effect": "바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다.",
+    "cost": "귀환 경로가 길어져 다음 발사가 늦고 건물 밖 추격에는 불리하다."
+  }
+}

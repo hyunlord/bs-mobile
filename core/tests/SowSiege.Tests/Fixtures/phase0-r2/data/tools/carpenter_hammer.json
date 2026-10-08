@@ -1,0 +1,43 @@
+{
+  "id": "core:carpenter_hammer",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "activation": {
+    "damage": 18,
+    "range": 750,
+    "cooldownTicks": 45,
+    "shape": "melee",
+    "knockback": 90,
+    "form": "망치를 내려쳐 전방에 충격을 보낸다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "building",
+    "yield": 1,
+    "output": "터의 건물과 폐허 복구",
+    "primaryRoute": "combat"
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
+  "antiSynergy": [
+    "core:seed_bag"
+  ],
+  "name": "목수 망치",
+  "concept": "발동: 망치를 내려쳐 전방에 충격을 보낸다. 성장 산출: 터의 건물과 폐허 복구. 비용: 건물 근처에 체류하는 동안 멀리 떨어진 수확이 늦어진다.",
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 터의 건물과 폐허 복구. 비용: 건물 근처에 체류하는 동안 멀리 떨어진 수확이 늦어진다."
+    }
+  ],
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:seed_bag",
+      "reason": "넓게 파종하는 이동 시간과 건물 보호를 위한 좁은 체류 시간이 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

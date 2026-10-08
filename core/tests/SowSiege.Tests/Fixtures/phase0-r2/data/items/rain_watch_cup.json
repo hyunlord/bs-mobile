@@ -1,0 +1,26 @@
+{
+  "id": "core:rain_watch_cup",
+  "name": "빗소리 감시잔",
+  "concept": "외곽 밭의 물 공급과 감시 교대를 함께 맞춘다. 예고가 울리는 동안 다른 경보를 놓치기 쉽다.",
+  "tags": [
+    "growth",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "성장 지원의 타이밍을 방어 교대와 묶되 주의력 경쟁을 남긴다."
+    }
+  ],
+  "effect": {
+    "trigger": "비 차임이 관개 시작을 알릴 때",
+    "benefit": "외곽 밭의 물 공급과 감시 교대를 함께 맞춘다.",
+    "cost": "예고가 울리는 동안 다른 경보를 놓치기 쉽다."
+  },
+  "linkedToolIds": [
+    "core:rain_chime"
+  ]
+}

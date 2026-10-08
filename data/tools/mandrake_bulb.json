@@ -30,7 +30,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "잠정 순환 연결: 성숙 산물을 회수·가공·운반하여 경험치나 판 안 금화로 돌리는 경로를 제안한다. 연결 산출: 수확할 때 비명을 내는 작물. 비용: 익기 전에는 성장 면의 군중 제어를 사용할 수 없다."
     }

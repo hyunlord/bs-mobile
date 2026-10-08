@@ -12,7 +12,7 @@
     "shape": "wave",
     "knockback": 50,
     "form": "쇠스랑이 땅을 찍고 젖은 자리를 잇는 짧은 번개가 튄다.",
-    "damageCoefficient": 1.0
+    "damageCoefficient": 1
   },
   "name": "빗물 쇠스랑",
   "concept": "젖은 땅을 찍으면 가까운 적 사이로 충격이 퍼진다. 메마른 구역에서는 앞의 한 줄만 친다.",
@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "관개 투자로 생긴 성장 구역이 방어 구역도 되지만 지역 의존성이 높다."
     }

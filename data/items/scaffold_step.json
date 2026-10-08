@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "people",
       "reason": "건설과 노동 이동의 충돌을 줄이는 대신 병력 동선의 자유를 줄인다."
     }

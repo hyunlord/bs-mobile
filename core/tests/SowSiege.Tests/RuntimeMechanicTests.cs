@@ -262,7 +262,7 @@ public sealed class RuntimeMechanicTests
     [Fact]
     public void AttackHarvestDispatchesDistinctCharterHarvestTrigger()
     {
-        var catalog = SowSiege.Sim.ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "s4-stage-one");
+        var catalog = SowSiege.Sim.ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), false, "s4-stage-one");
         var simulation = RuntimeTests.Create(catalog); var world = simulation.World;
         world.Equipment.Add(new() { Id = "core:harvest_scythe", ReadyTick = int.MaxValue });
         world.Runtime!.Charters.Add("core:guarded_harvest", 1);

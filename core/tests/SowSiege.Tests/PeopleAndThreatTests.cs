@@ -6,7 +6,7 @@ namespace SowSiege.Tests;
 
 public sealed class PeopleAndThreatTests
 {
-    private static ContentCatalog Catalog() => ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), true);
+    private static ContentCatalog Catalog() => ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), true);
     private static RunOptions Options(ContentCatalog catalog, string rule = "C") => new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", rule);
 
     [Theory]

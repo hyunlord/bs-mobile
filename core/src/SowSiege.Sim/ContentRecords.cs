@@ -48,10 +48,10 @@ public sealed record HeroContent(string Id, string Name, string Concept, string[
 }
 
 public sealed record EstateContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
-    string ImplementationNote, LoopLink[] LoopLinks, int GrowthMultiplier, EstateLoop UniqueLoop)
+    string ImplementationNote, LoopLink[] LoopLinks, int GrowthMultiplier, EstateLoop UniqueLoop, RemainsLoopDefinition? RemainsLoop = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
-    public EstateDefinition ToCore() => new(Id, GrowthMultiplier);
+    public EstateDefinition ToCore() => new(Id, GrowthMultiplier, RemainsLoop);
 }
 
 public sealed record EnemyContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,

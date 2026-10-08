@@ -1,0 +1,50 @@
+{
+  "id": "core:meal_oath",
+  "name": "공동 식탁 서약",
+  "concept": "수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다. 대신 식량 비축이 줄어 다음 징집 허용 인원이 감소한다.",
+  "tags": [
+    "people",
+    "food",
+    "growth"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 지불해 영지 안 일꾼 최대3명에게300틱 노동 강화를 적용한다. 식량 감소가 군사 모집 여력과 경쟁한다. 충성도 시스템은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다."
+    }
+  ],
+  "effect": {
+    "target": "people",
+    "trigger": "이 헌장을 보유한 상태에서 수확 식량이 들어오면",
+    "benefit": "수확 몫 일부를 백성에게 자동 추가 배식하여 다음 노동 주기의 경작 참여를 유지한다.",
+    "cost": "식량 비축이 줄어 다음 징집 허용 인원이 감소한다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 상태에서 수확 식량이 들어오면"
+  ],
+  "runtimeProjection": {
+    "policyCategory": "people",
+    "effects": [
+      {
+        "id": "core:meal_oath_feed_workers",
+        "trigger": "harvest",
+        "operation": "worker-buff",
+        "subject": "people",
+        "amount": 3,
+        "radius": 1200,
+        "durationTicks": 300,
+        "foodCost": 2,
+        "conditions": [
+          {
+            "kind": "estate-inside",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

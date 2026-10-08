@@ -11,7 +11,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "people",
       "reason": "세 분대가 공격·경계·귀환 역할을 순서대로 교대해 한 부대의 장기 이탈을 줄인다."
     }

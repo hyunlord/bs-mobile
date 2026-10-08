@@ -6,7 +6,7 @@ namespace SowSiege.Tests;
 
 public sealed class ContentProfileTests
 {
-    private static string Data => Path.Combine(AppContext.BaseDirectory, "data");
+    private static string Data => Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data");
 
     [Fact]
     public void CandidatePoolDoesNotExpandRuntimeSelection()

@@ -12,7 +12,7 @@
     "shape": "projectile",
     "knockback": 40,
     "form": "하얀 창살이 꽂히며 가는 소금 선이 뒤로 퍼진다.",
-    "damageCoefficient": 1.0
+    "damageCoefficient": 1
   },
   "name": "소금 창살",
   "concept": "착지 지점의 적을 오래 견제하는 소금 띠를 만든다. 띠가 남은 땅은 파종에 불리해 외곽에 던져야 한다.",
@@ -20,7 +20,7 @@
   "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "당장의 적 진입 차단과 다음 파종 면적 사이에 분명한 공간 비용을 둔다."
     }

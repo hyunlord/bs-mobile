@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "concept": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "weapon",
+          "melee",
+          "ranged",
+          "orbit",
+          "land",
+          "harvest",
+          "building",
+          "repair",
+          "people",
+          "muster",
+          "control",
+          "food",
+          "fertility",
+          "defense",
+          "economy",
+          "growth"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 1000,
+      "uniqueItems": true
+    },
+    "designStatus": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "s2-runtime",
+        "s4-runtime"
+      ]
+    },
+    "implementationNote": {
+      "type": "string",
+      "minLength": 1
+    },
+    "loopLinks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "estateId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "stage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "estateId",
+          "stage",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "target": {
+      "type": "string",
+      "enum": [
+        "lord",
+        "seed",
+        "ripe",
+        "building"
+      ]
+    },
+    "health": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "speed": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "damage": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "range": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "attackCooldownTicks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "experience": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "behavior": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pressure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "counterplay": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trigger",
+        "pressure",
+        "counterplay"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "concept",
+    "tags",
+    "designStatus",
+    "implementationNote",
+    "loopLinks",
+    "target",
+    "health",
+    "speed",
+    "damage",
+    "range",
+    "attackCooldownTicks",
+    "experience",
+    "behavior"
+  ],
+  "additionalProperties": false
+}
