@@ -42,6 +42,7 @@ namespace SowSiege.Core
             foreach (var id in catalog.Tools.Keys.OrderBy(value => value, StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
             World.Equipment.Add(new() { Id = catalog.Tuning.World.Progression.StartingWeapon });
+            if (catalog.WeaponCombat is not null) { World.WeaponCombat = new(); }
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
             else if (options.Movement is not null) { throw new ArgumentException("Movement requires an experiment profile."); }
             if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics); }
@@ -88,7 +89,12 @@ namespace SowSiege.Core
             if (World.PendingCards.Length > 0) { throw new InvalidOperationException("Choose a pending card before advancing the world."); }
             SetSeason();
             var wasInside = RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius);
+            var previousLord = World.Lord;
             if (Experiment is null) { combat.MoveLord(); } else { Experiment.MoveLord(); }
+            if (World.WeaponCombat is not null && World.Lord != previousLord)
+            {
+                World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);
+            }
             if (Runtime is not null && wasInside != RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius)) { Runtime.Emit("estate-cross", new(World.Lord)); }
             Runtime?.Tick();
             combat.SpawnAndMoveEnemies();

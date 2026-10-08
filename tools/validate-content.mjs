@@ -1,3 +1,4 @@
+import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -5,7 +6,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -25,6 +26,7 @@ async function jsonFiles(directory) {
 }
 
 function inferKind(relative) {
+  if (weaponGrowthFilename.test(relative)) return 'weapon-growth';
   if (experimentFilename.test(relative)) return 'experiment-tuning';
   const segments = relative.split(path.sep);
   if (segments[0] === 'test') segments.shift();
@@ -68,7 +70,11 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   const parsed = new Map();
   for (const file of files) {
     try {
-      parsed.set(file, JSON.parse(await readFile(file, 'utf8')));
+      const text = await readFile(file, 'utf8');
+      parsed.set(file, JSON.parse(text));
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file))) {
+        for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
+      }
     } catch (error) {
       errors.push(`${path.relative(dataRoot, file)}: invalid JSON: ${String(error)}`);
     }
@@ -110,13 +116,14 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     const validate = ajv.getSchema(kind);
-    if (!validate(record)) errors.push(`${relative}: schema violation: ${ajv.errorsText(validate.errors, { separator: '; ' })}`);
+    const schemaValid = validate(record);
+    if (!schemaValid) errors.push(`${relative}: schema violation: ${ajv.errorsText(validate.errors, { separator: '; ' })}`);
     if (!isRecord(record)) {
       errors.push(`${relative}: each content file must hold one object`);
       continue;
     }
-    records.push({ relative, kind, record });
-    if (!['tuning', 'experiment-tuning'].includes(kind) || Object.hasOwn(record, 'id')) {
+    records.push({ relative, kind, record, schemaValid });
+    if (!['tuning', 'experiment-tuning', 'weapon-growth'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -391,6 +398,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     }
     for(const entry of records.filter(e=>!configurationKinds.has(e.kind))) expect((['s2-runtime','s4-runtime'].includes(entry.record.designStatus))===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
   }
+  errors.push(...validateWeaponGrowth(records));
   if (schemas.size === 0) errors.push('No valid schemas found');
   if (records.length === 0) errors.push('No content records found');
   return { valid: errors.length === 0, records: records.length, schemas: schemas.size, errors, ...(fullPool ? {gateCounts} : {}) };

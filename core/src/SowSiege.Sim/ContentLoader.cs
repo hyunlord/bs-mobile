@@ -67,7 +67,7 @@ public static partial class ContentLoader
         Require(heroes.ContainsKey(tuning.DefaultHero) && estates.ContainsKey(tuning.DefaultEstate), "Unknown default hero or estate.");
         ValidateWorld(tuning, weapons);
         var runtime = profile.Runtime is null ? null : LoadRuntime(roots, profile.Runtime, selection, tools, weapons);
-        return new(tuning, tools, heroes, estates, weapons, enemies, runtime, experiment?.Experiment);
+        return new(tuning, tools, heroes, estates, weapons, enemies, runtime, experiment?.Experiment, LoadWeaponCombat(directory, profile, selection.Weapons));
     }
 
     public static RuntimeProfile LoadProfile(string directory, string profileName = "s2-baseline")
@@ -168,7 +168,7 @@ public static partial class ContentLoader
         Require(element.ValueKind != JsonValueKind.Null, $"Null content at {location}.");
         if (type == typeof(int))
         {
-            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum", ".linear" };
+            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum", ".linear", ".pierce", ".beamHalfWidth" };
             var minimum = (location.EndsWith(".amount", StringComparison.Ordinal) || location.EndsWith(".x", StringComparison.Ordinal) || location.EndsWith(".y", StringComparison.Ordinal)) ? -1000000 : zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
             Require(element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var number) && number >= minimum && number <= 1000000, $"Integer out of content bounds at {location}.");
             return;
@@ -198,7 +198,7 @@ public static partial class ContentLoader
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
             if (!element.TryGetProperty(name, out var member))
             {
-                if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent) || name == "experiment" && type == typeof(RuntimeProfile))
+                if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent) || name is "experiment" or "weaponCombat" && type == typeof(RuntimeProfile))
                 {
                     continue;
                 }
@@ -206,7 +206,7 @@ public static partial class ContentLoader
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
             Require(!(type == typeof(EstateContent) && name == "remainsLoop" && member.ValueKind == JsonValueKind.Null), "Remains loop must be omitted or a complete object.");
-            Require(!(type == typeof(RuntimeProfile) && name == "experiment" && member.ValueKind == JsonValueKind.Null), "Experiment must be omitted or a complete object.");
+            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" && member.ValueKind == JsonValueKind.Null), "Experiment must be omitted or a complete object.");
             if (member.ValueKind == JsonValueKind.Null && new System.Reflection.NullabilityInfoContext().Create(property).ReadState == System.Reflection.NullabilityState.Nullable)
             {
                 continue;

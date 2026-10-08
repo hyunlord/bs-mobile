@@ -4,7 +4,7 @@ namespace SowSiege.Core
 {
     public enum DiagnosticVariant { Control, OffenseOff, InterceptionOff, BothOff }
     public sealed record DiagnosticOptions(DiagnosticVariant Variant);
-    public sealed record DiagnosticAttackSource(string ActorKind, string Role, string SourceId, long AttackAttempts, long NoTargetAttempts, long HitCount, long RequestedDamage, long AppliedHpDamage, long SuppressedHpDamage, long CandidateCount, long ShapeEligibleCount, long EffectiveCooldownSum, long KnockbackDistance);
+    public sealed record DiagnosticAttackSource(string ActorKind, string Role, string SourceId, long AttackAttempts, long NoTargetAttempts, long HitCount, long RequestedDamage, long AppliedHpDamage, long SuppressedHpDamage, long CandidateCount, long ShapeEligibleCount, long EffectiveCooldownSum, long KnockbackDistance, [property: OmitWhenNull] long? EmptyActivations = null, [property: OmitWhenNull] long? EligibleBeforeCap = null);
     public sealed record DiagnosticInterception(long EligibleEnemyAttackCount, long CandidatePersonCount, long InterceptCount, long OriginalTargetInRangeCount, long UnknownOriginalTargetCount, long TargetRefreshDueCount, long ActualPersonHpDamage, long GuardZeroDamageCount, long PreventedByModifierAmount, long ReroutedAttackCount, IReadOnlyDictionary<string, long> InterceptedTargetKinds);
     public sealed record DiagnosticTargetDamage(string TargetKind, long AttackAttempts, long RawTargetDamage, long AppliedTargetDamage);
     public sealed record DiagnosticPopulation(string Role, int Entities, int Members, long MemberTicks, long DeathEvents, long MembersLost);

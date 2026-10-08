@@ -14,6 +14,7 @@ node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
 node --test tools/test-diagnostic-*.mjs
+node --test tools/test-weapon-holdout.mjs
 npm run validate
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
@@ -30,6 +31,8 @@ TARGET_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/target-parity.XXXXXX")
 node tools/verify-target-parity.mjs "$TARGET_PARITY_ROOT/run" 4
 DIAGNOSTIC_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/diagnostic-smoke.XXXXXX")
 node tools/diagnostic-runner.mjs smoke "$DIAGNOSTIC_SMOKE_ROOT/run" 4
+WEAPON_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/weapon-smoke.XXXXXX")
+node tools/weapon-holdout.mjs smoke "$WEAPON_SMOKE_ROOT/run" 4
 ./tools/league.sh
 cp artifacts/metrics.json artifacts/metrics-s2.json
 node tools/league.mjs s4-smoke --profile s4-stage-one --workers 2
