@@ -1,12 +1,12 @@
 관문: 부분 — 0건의 Unity 실행·기기 검증. 1단계는 미착수이며 이 문서는 착수 체크리스트다.
 변경: 공식 문서 조사로 에디터 고정안·호환성 관문·사람이 처리할 계정 작업·첫 회색 상자 범위를 정리했다.
-결정: Unity 6.3 LTS 6000.3.25f1을 검증된 후보로 권고한다. 프로젝트 고정·설치·CI 방식은 아직 적용하지 않았다.
+결정: 사용자 승인(2026-10-08)으로 Unity 6.3 LTS 6000.3.25f1 고정 후보를 채택했다. 시험 기기·Unity CI 방식은 답변 대기이며 설치하지 않았다.
 근거: 확인일 2026-10-08. 아래 공식 자료는 그 시점의 확인이며 절대 최신 패치를 보증하지 않는다.
 한계: 프로젝트 생성·에디터/SDK 설치·라이선스 활성화·비밀값 등록을 수행하지 않았다. Phase0 헤드리스 통과는 모바일 품질 통과가 아니다.
 
 # 1단계 Unity 착수 체크리스트
 
-계획 결정은 [needs-decision #65](https://github.com/hyunlord/bs-mobile/issues/65), Phase0 종료 정리는 [#64](https://github.com/hyunlord/bs-mobile/issues/64)에서 추적한다.
+버전 후보 승인은 #65에 기록했다. 시험 기기·Unity CI 방식은 사용자 답변 전 확정하지 않는다. 남은 계획 결정은 [needs-decision #65](https://github.com/hyunlord/bs-mobile/issues/65), Phase0 종료 정리는 [#64](https://github.com/hyunlord/bs-mobile/issues/64)에서 추적한다.
 
 ## 에디터와 플랫폼 고정안
 

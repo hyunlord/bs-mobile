@@ -91,21 +91,29 @@ jobs:
           node-version: '22'
           cache: npm
       - name: Full gate
-        run: GITHUB_EVENT_PATH="${DEPENDENCY_EVENT_PATH:-$GITHUB_EVENT_PATH}" ./tools/check.sh
+        run: |
+          mkdir -p artifacts/logs
+          set -o pipefail
+          GITHUB_EVENT_PATH="${DEPENDENCY_EVENT_PATH:-$GITHUB_EVENT_PATH}" ./tools/check.sh 2>&1 | tee artifacts/logs/full-gate.log
         env:
           GH_TOKEN: ${{ github.token }}
-      - name: Record measurements with commit identity
-        if: success()
-        run: node tools/metrics.mjs artifacts/metrics.json artifacts/trends
-        env:
-          METRICS_SHA: ${{ needs.dependency-context.outputs.head || github.event.pull_request.head.sha || github.sha }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: evidence-${{ github.sha }}
-          path: artifacts/
+          path: |
+            artifacts/tests/*.trx
+            artifacts/metrics.json
           retention-days: 90
           if-no-files-found: error
+      - name: Retain failed gate log
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: failure()
+        with:
+          name: failure-${{ github.sha }}
+          path: artifacts/logs/full-gate.log
+          retention-days: 90
+          if-no-files-found: ignore
   secrets:
     name: secrets
     needs: dependency-context
