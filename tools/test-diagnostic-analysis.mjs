@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { numeric } from './diagnostic-report.mjs';
+import { numeric, commonAliveSnapshots } from './diagnostic-report.mjs';
 import { formatCsv } from './csv.mjs';
 import { makeCases, pairedEffects, selectPublicCases, firstDivergence } from './diagnostic-analysis.mjs';
 test('full matrix has 768 active plus96 historical distinct cases', () => {
@@ -22,4 +22,16 @@ test('terminal numeric headers ignore variable interception dictionary keys',()=
  const a=numeric({interception:{interceptCount:1,interceptedTargetKinds:{lord:1}}});
  const b=numeric({interception:{interceptCount:2,interceptedTargetKinds:{seed:2,building:1}}});
  assert.deepEqual(Object.keys(a),Object.keys(b));assert.doesNotThrow(()=>formatCsv(Object.keys(a),[a,b]));
+});
+
+test('common alive endpoint excludes death-on-grid in either arm and retains duration survivors',()=>{
+ const snapshot=(tick,terminal=false,survived=true)=>({tick,terminal,survived});
+ const alive=[snapshot(0),snapshot(300),snapshot(600),snapshot(900,true)];
+ const death=[snapshot(0),snapshot(300),snapshot(600,true,false)];
+ for(const [left,right]of [[alive,death],[death,alive],[death,death]]){
+  const pair=commonAliveSnapshots(left,right);assert.equal(pair.control.tick,300);assert.equal(pair.treatment.tick,300);
+ }
+ assert.equal(commonAliveSnapshots(alive,alive).control.tick,900);
+ const earlyDeath=[snapshot(0),snapshot(300,true,false)];
+ assert.equal(commonAliveSnapshots(alive,earlyDeath).control.tick,0);
 });
