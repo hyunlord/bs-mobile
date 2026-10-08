@@ -18,9 +18,10 @@ public static partial class ContentLoader
 
     public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
+        var baseline = Read<Tuning>(Path.Combine(directory, "tuning.json"));
         var profile = LoadProfile(directory, profileName);
-        var experiment = LoadExperiment(directory, profile);
-        var tuning = experiment?.Tuning ?? Read<Tuning>(Path.Combine(directory, "tuning.json"));
+        var experiment = LoadExperiment(directory, profile, baseline);
+        var tuning = experiment?.Tuning ?? baseline;
         var selection = profile.Select(includeTest);
         var allowS4 = profile.Runtime is not null;
         var roots = includeTest ? new[] { directory, Path.Combine(directory, "test") } : new[] { directory };
@@ -152,6 +153,7 @@ public static partial class ContentLoader
 
     private static T Read<T>(string path)
     {
+        Require((File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0, $"Content symlink is not allowed: {path}");
         using var document = JsonDocument.Parse(File.ReadAllText(path));
         ValidateRequiredShape(document.RootElement, typeof(T), path);
         return document.RootElement.Deserialize<T>(JsonOptions) ?? throw new InvalidDataException($"Null content: {path}");
@@ -199,6 +201,7 @@ public static partial class ContentLoader
 
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
+            Require(!(type == typeof(RuntimeProfile) && name == "experiment" && member.ValueKind == JsonValueKind.Null), "Experiment must be omitted or a complete object.");
             if (member.ValueKind == JsonValueKind.Null && new System.Reflection.NullabilityInfoContext().Create(property).ReadState == System.Reflection.NullabilityState.Nullable)
             {
                 continue;

@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using SowSiege.Core;
 
@@ -8,12 +10,20 @@ public sealed record EnemyOverride(string Id, int Speed, int Damage, int Health,
 public sealed record ExperimentTuningFile(Tuning Tuning, EnemyOverride[] EnemyOverrides, ExperimentDefinition Experiment);
 public static partial class ContentLoader
 {
-    private static ExperimentTuningFile? LoadExperiment(string directory, RuntimeProfile profile)
+    private static ExperimentTuningFile? LoadExperiment(string directory, RuntimeProfile profile, Tuning baseline)
     {
         if (profile.Experiment is null) { return null; }
         Require(profile.Experiment.ContractVersion == 1, "Unsupported experiment version.");
         Require(Regex.IsMatch(profile.Experiment.TuningFile, @"\Atuning-s4b-[a-zA-Z0-9_-]+\.json\z", RegexOptions.CultureInvariant), "Unsafe experiment tuning filename.");
         var result = Read<ExperimentTuningFile>(Path.Combine(directory, profile.Experiment.TuningFile));
+        var original = JsonSerializer.SerializeToNode(baseline, JsonOptions)!;
+        var candidate = JsonSerializer.SerializeToNode(result.Tuning, JsonOptions)!;
+        foreach (var value in new[] { original, candidate })
+        {
+            value["world"]!["map"]!.AsObject().Remove("lordHealth");
+            value["world"]!.AsObject().Remove("threat");
+        }
+        Require(JsonNode.DeepEquals(original, candidate), "Experiment tuning may change only lord health and global threat values.");
         Require(result.EnemyOverrides.Length is >= 1 and <= 1000, "Invalid enemy override count.");
         Require(result.EnemyOverrides.Select(enemy => enemy.Id).Distinct(StringComparer.Ordinal).Count() == result.EnemyOverrides.Length && result.EnemyOverrides.Select(enemy => enemy.Id).ToHashSet(StringComparer.Ordinal).SetEquals(profile.Selection.Enemies), "Experiment overrides must cover selected enemies exactly.");
         foreach (var enemy in result.EnemyOverrides) { Require(new[] { enemy.Speed, enemy.Damage, enemy.Health, enemy.AttackCooldownTicks }.All(value => value is > 0 and <= 1000000), "Invalid enemy override value."); }

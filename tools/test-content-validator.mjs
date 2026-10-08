@@ -371,3 +371,36 @@ test('maximum bounded XP coefficients remain valid because runtime uses saturati
   await f.save(); const result = await validateContent(f.directory, { fullPool: true });
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
+
+for (const [name, mutate] of [
+  ['policy weights', tuning => { tuning.policies.weapon.damageMultiplier++; }],
+  ['farm yield', tuning => { tuning.world.farms.foodPerHarvest++; }],
+  ['people capacity', tuning => { tuning.world.people.maxPeople++; }],
+  ['building count', tuning => { tuning.world.buildings.siteCount++; }],
+  ['movement speed', tuning => { tuning.world.map.lordSpeed++; }],
+  ['progression budget', tuning => { tuning.world.progression.rerolls++; }],
+  ['season growth', tuning => { tuning.world.seasons[0].growthMultiplier++; }],
+  ['damage roll', tuning => { tuning.damageRollMax++; }],
+]) test(`S4b global-only boundary rejects independent ${name}`, async t => {
+  const f = await experimentFixture(t); mutate(f.wrapper.tuning); await f.save();
+  const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, false); assert.match(result.errors.join('\n'), /outside preregistered global tuning/);
+});
+test('S4b allows only lord health and threat changes and ignores object key order', async t => {
+  const f = await experimentFixture(t);
+  f.wrapper.tuning.world.map.lordHealth++;
+  f.wrapper.tuning.world.threat.spawnPeriodTicks++;
+  f.wrapper.tuning = Object.fromEntries(Object.entries(f.wrapper.tuning).reverse());
+  await f.save(); const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});
+test('S4b compares against current base tuning rather than freezing historical IDs or numbers', async t => {
+  const f = await experimentFixture(t); f.wrapper.tuning.world.map.lordSpeed++;
+  await writeFile(path.join(f.directory, 'tuning.json'), JSON.stringify(f.wrapper.tuning));
+  const existingPath = path.join(f.directory, 'tuning-s4b-01.json');
+  const existing = JSON.parse(await readFile(existingPath, 'utf8'));
+  existing.tuning.world.map.lordSpeed = f.wrapper.tuning.world.map.lordSpeed;
+  await writeFile(existingPath, JSON.stringify(existing));
+  await f.save(); const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});

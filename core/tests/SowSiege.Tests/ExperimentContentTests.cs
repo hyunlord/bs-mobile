@@ -8,6 +8,11 @@ public sealed class ExperimentContentTests
 {
     [Theory]
     [InlineData("unsafe-path")]
+    [InlineData("explicit-null")]
+    [InlineData("policy-change")]
+    [InlineData("economy-change")]
+    [InlineData("map-speed-change")]
+    [InlineData("symlink")]
     [InlineData("missing-config")]
     [InlineData("unknown-member")]
     [InlineData("missing-enemy")]
@@ -30,6 +35,10 @@ public sealed class ExperimentContentTests
             var profile = JsonNode.Parse(File.ReadAllText(profilePath))!; var tuning = JsonNode.Parse(File.ReadAllText(tuningPath))!;
             switch (mutation)
             {
+                case "explicit-null": profile["experiment"] = null; break;
+                case "policy-change": tuning["tuning"]!["policies"]!["weapon"]!["cardWeights"]!["weapon"] = 9; break;
+                case "economy-change": tuning["tuning"]!["world"]!["people"]!["foodCapacity"] = 301; break;
+                case "map-speed-change": tuning["tuning"]!["world"]!["map"]!["lordSpeed"] = 25; break;
                 case "unsafe-path": profile["experiment"]!["tuningFile"] = "../tuning-s4b-01.json"; break;
                 case "missing-config": tuning.AsObject().Remove("experiment"); break;
                 case "unknown-member": tuning["mystery"] = 1; break;
@@ -41,6 +50,18 @@ public sealed class ExperimentContentTests
                 case "zero-period": tuning["experiment"]!["movement"]!["decisionPeriodTicks"] = 0; break;
             }
             File.WriteAllText(profilePath, profile.ToJsonString()); File.WriteAllText(tuningPath, tuning.ToJsonString());
+            if (mutation == "symlink")
+            {
+                var external = Path.Combine(Path.GetDirectoryName(root)!, Path.GetFileName(root) + "-external.json");
+                File.Copy(tuningPath, external);
+                try
+                {
+                    File.Delete(tuningPath); File.CreateSymbolicLink(tuningPath, external);
+                    Assert.ThrowsAny<Exception>(() => ContentLoader.Load(root, false, "s4b-01"));
+                }
+                finally { File.Delete(external); }
+                return;
+            }
             Assert.ThrowsAny<Exception>(() => ContentLoader.Load(root, false, "s4b-01"));
         }
         finally { if (Directory.Exists(root)) { Directory.Delete(root, true); } }

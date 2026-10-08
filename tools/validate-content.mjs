@@ -35,6 +35,18 @@ function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+export function experimentTuningDifferences(base, actual, location = '') {
+  if (isRecord(base) && isRecord(actual)) {
+    return [...new Set([...Object.keys(base), ...Object.keys(actual)])].sort().flatMap(key =>
+      experimentTuningDifferences(base[key], actual[key], location ? `${location}.${key}` : key));
+  }
+  if (Array.isArray(base) && Array.isArray(actual) && base.length === actual.length) {
+    return base.flatMap((value, index) => experimentTuningDifferences(value, actual[index], `${location}[${index}]`));
+  }
+  if (Object.is(base, actual)) return [];
+  return [{ path: location, base, actual, allowed: location === 'world.map.lordHealth' || location.startsWith('world.threat.') }];
+}
+
 function containsNumber(value) {
   if (typeof value === 'number') return true;
   if (Array.isArray(value)) return value.some(containsNumber);
@@ -127,8 +139,16 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     }
   }
   const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
+  const baseTuning = records.find(entry => entry.kind === 'tuning' && entry.relative === 'tuning.json')?.record;
   for (const { relative, kind, record } of records) {
     if (kind === 'experiment-tuning') {
+      if (!isRecord(baseTuning) || !isRecord(record.tuning)) {
+        errors.push(`${relative}: experiment requires valid base tuning.json and embedded tuning`);
+      } else {
+        for (const difference of experimentTuningDifferences(baseTuning, record.tuning)) {
+          if (!difference.allowed) errors.push(`${relative}: ${difference.path} is outside preregistered global tuning (only world.map.lordHealth and world.threat.* may differ)`);
+        }
+      }
       const overrides = Array.isArray(record.enemyOverrides) ? record.enemyOverrides : [];
       const seen = new Set();
       for (const override of overrides) {

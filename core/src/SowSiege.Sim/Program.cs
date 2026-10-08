@@ -13,7 +13,7 @@ try
     Run(args);
     return 0;
 }
-catch (Exception error) when (error is ArgumentException or InvalidOperationException or IOException or JsonException or OverflowException)
+catch (Exception error) when (error is ArgumentException or InvalidOperationException or IOException or InvalidDataException or JsonException or OverflowException)
 {
     Console.Error.WriteLine($"Simulation failed: {error.Message}");
     return 2;
