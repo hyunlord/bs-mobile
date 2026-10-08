@@ -1,9 +1,0 @@
-From https://github.com/hyunlord/bs-mobile
- * branch            main       -> FETCH_HEAD
-   1a95c20..ba99f8e  main       -> origin/main
-Updating 1a95c20..ba99f8e
-Fast-forward
- data/test/heroes/scout.json     | 6 +++++-
- data/test/tools/dummy_rake.json | 8 ++++++++
- 2 files changed, 13 insertions(+), 1 deletion(-)
- create mode 100644 data/test/tools/dummy_rake.json

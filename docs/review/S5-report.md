@@ -1,4 +1,9 @@
 관문: 통과 — S5, 7종 조사, 02의 10개 본절·§2.1 대응, 출처 55개·참조 109곳 검증. 비교 가능한 경쟁작 리텐션은 미확인으로 남겼다.
+변경: 경쟁작 일곱 종의 구조·상품·광고·공개 지표를 구분하고 원본 02 절별 권고를 작성했다.
+결정: BM 권리·가격·확률·에너지는 승인하지 않았으며 [#42](https://github.com/hyunlord/bs-mobile/issues/42)에 남겼다.
+한계: 공개 자료 조사이며 실기·결제 검증이 아니다. S0 부분 통과와 S4 밸런스 실패는 유지한다.
+시점: 본문은 각 단계 완료 당시의 기록이다. R1은 요약·보관 링크만 정리하며 당시 수치와 판정을 바꾸지 않는다.
+
 
 # S5 시장·BM 근거 인계
 
@@ -6,9 +11,9 @@
 
 핵심 구분은 Brotato 무료/Premium/PC와 VS 일반/Arcade 판본, Megabonk 공식 모바일 미확인, Kingshot 스킨의 능력치다. 다운로드 구간·과거 추정 매출·현재 상품 목록·코호트 리텐션을 서로 대체하지 않는다. 가이드의 과거 관찰과 실기 확인을 구분한다. 상점 가격·확률·에너지 한도는 승인하거나 코드에 구현하지 않았다.
 
-[정적 문서 검사](../evidence/S5/document-check.json), [출처 목록](../evidence/S5/source-ledger.json), [독립 출처 검토](../evidence/S5/source-review.md)를 보존했다. 원본 설계 문서 세 개의 최초 커밋 대비 diff는 비어 있다. 근거 없는 리텐션 부재 표현, 직접 에너지 근거 누락, Premium 해금 설명 과장을 고쳐 재검토했다.
+[정적 문서 검사](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S5/document-check.json), [출처 목록](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S5/source-ledger.json), [독립 출처 검토](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S5/source-review.md)를 보존했다. 원본 설계 문서 세 개의 최초 커밋 대비 diff는 비어 있다. 근거 없는 리텐션 부재 표현, 직접 에너지 근거 누락, Premium 해금 설명 과장을 고쳐 재검토했다.
 
-[전체 로컬 검사](../evidence/S5/full-check.log)는 콘텐츠 68, PR 정책 6, CSV/리그/보고서 57, .NET 95, Guard 기본 24개·저장소 회귀 11개 및 실제 위반 0건, 빌드·형식·S2/S4 연기 시험 통과다. 변경은 조사·보고·증거 문서뿐이며 Core·데이터·스키마·SDK·의존성 변경은 없다. 연구 자체는 앱 설치·결제·광고 시청·모바일 실기 검증이 아니다.
+[전체 로컬 검사](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S5/full-check.log)는 콘텐츠 68, PR 정책 6, CSV/리그/보고서 57, .NET 95, Guard 기본 24개·저장소 회귀 11개 및 실제 위반 0건, 빌드·형식·S2/S4 연기 시험 통과다. 변경은 조사·보고·증거 문서뿐이며 Core·데이터·스키마·SDK·의존성 변경은 없다. 연구 자체는 앱 설치·결제·광고 시청·모바일 실기 검증이 아니다.
 
 ## 원본 02에 대한 권고
 

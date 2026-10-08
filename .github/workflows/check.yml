@@ -4,22 +4,85 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      dependency_pr:
+        description: Same-repository Dependabot PR number (empty runs main)
+        type: string
+        default: ''
+      dependency_sha:
+        description: Exact prepared dependency head SHA
+        type: string
+        default: ''
 permissions:
   contents: read
   issues: read
+  pull-requests: read
 concurrency:
-  group: check-${{ github.ref }}-${{ github.sha }}
+  group: check-${{ github.ref }}-${{ github.sha }}-${{ inputs.dependency_pr }}-${{ inputs.dependency_sha }}
   cancel-in-progress: false
 jobs:
+  dependency-context:
+    if: github.event_name == 'workflow_dispatch' && inputs.dependency_pr != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      head: ${{ steps.resolve.outputs.head }}
+      number: ${{ steps.resolve.outputs.number }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Resolve current same-repository Dependabot head
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPENDENCY_PR: ${{ inputs.dependency_pr }}
+          DEPENDENCY_SHA: ${{ inputs.dependency_sha }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import { execFileSync } from 'node:child_process';
+          import { assertTrustedPull } from './tools/dependency-policy.mjs';
+          const number = process.env.DEPENDENCY_PR;
+          if (!/^[1-9][0-9]*$/.test(number)) throw new Error('Invalid dependency PR');
+          const pr = JSON.parse(execFileSync('gh', ['api', 'repos/' + process.env.GITHUB_REPOSITORY + '/pulls/' + number], {encoding:'utf8'}));
+          assertTrustedPull(pr, process.env.GITHUB_REPOSITORY);
+          if (pr.head.sha !== process.env.DEPENDENCY_SHA) throw new Error('Dependency PR head changed');
+          const comparison = JSON.parse(execFileSync('gh', ['api', 'repos/' + process.env.GITHUB_REPOSITORY + '/compare/' + pr.base.sha + '...' + pr.head.sha], {encoding:'utf8'}));
+          if (!['ahead','identical'].includes(comparison.status)) throw new Error('Dependency branch must include current main');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'head=' + pr.head.sha + '\nnumber=' + number + '\n');
+          NODE
   quality:
     name: quality
+    needs: dependency-context
+    if: always() && (needs.dependency-context.result == 'success' || needs.dependency-context.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ needs.dependency-context.outputs.head || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Supply strict PR policy context for dispatched dependency CI
+        if: needs.dependency-context.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPENDENCY_PR: ${{ needs.dependency-context.outputs.number }}
+          DEPENDENCY_SHA: ${{ needs.dependency-context.outputs.head }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$DEPENDENCY_PR" > "$RUNNER_TEMP/dependency-pr.json"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const pr=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/dependency-pr.json','utf8'));
+          if(pr.head.sha!==process.env.DEPENDENCY_SHA) throw new Error('PR changed after dispatch');
+          const eventPath=process.env.RUNNER_TEMP+'/dependency-event.json';
+          fs.writeFileSync(eventPath,JSON.stringify({pull_request:pr,number:pr.number}));
+          fs.appendFileSync(process.env.GITHUB_ENV,'DEPENDENCY_EVENT_PATH='+eventPath+'\n');
+          NODE
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           global-json-file: global.json
@@ -28,14 +91,14 @@ jobs:
           node-version: '22'
           cache: npm
       - name: Full gate
-        run: ./tools/check.sh
+        run: GITHUB_EVENT_PATH="${DEPENDENCY_EVENT_PATH:-$GITHUB_EVENT_PATH}" ./tools/check.sh
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Record measurements with commit identity
         if: success()
         run: node tools/metrics.mjs artifacts/metrics.json artifacts/trends
         env:
-          METRICS_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          METRICS_SHA: ${{ needs.dependency-context.outputs.head || github.event.pull_request.head.sha || github.sha }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -45,6 +108,8 @@ jobs:
           if-no-files-found: error
   secrets:
     name: secrets
+    needs: dependency-context
+    if: always() && (needs.dependency-context.result == 'success' || needs.dependency-context.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -53,8 +118,50 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: ${{ needs.dependency-context.outputs.head || github.sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Supply strict PR policy context for dispatched dependency CI
+        if: needs.dependency-context.result == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPENDENCY_PR: ${{ needs.dependency-context.outputs.number }}
+          DEPENDENCY_SHA: ${{ needs.dependency-context.outputs.head }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$DEPENDENCY_PR" > "$RUNNER_TEMP/dependency-pr.json"
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const pr=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+'/dependency-pr.json','utf8'));
+          if(pr.head.sha!==process.env.DEPENDENCY_SHA) throw new Error('PR changed after dispatch');
+          const eventPath=process.env.RUNNER_TEMP+'/dependency-event.json';
+          fs.writeFileSync(eventPath,JSON.stringify({pull_request:pr,number:pr.number}));
+          fs.appendFileSync(process.env.GITHUB_ENV,'DEPENDENCY_EVENT_PATH='+eventPath+'\n');
+          NODE
       - uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
         env:
           GITHUB_TOKEN: ${{ github.token }}
+  dependency-results:
+    if: always() && needs.dependency-context.result == 'success'
+    needs: [dependency-context, quality, secrets]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      statuses: write
+    steps:
+      # No checkout or execution of PR files in this write-token job.
+      - name: Attach real read-only job conclusions to the tested dependency SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPENDENCY_PR: ${{ needs.dependency-context.outputs.number }}
+          DEPENDENCY_SHA: ${{ needs.dependency-context.outputs.head }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          SECRETS_RESULT: ${{ needs.secrets.result }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          const api=(route,body)=>JSON.parse(execFileSync('gh',['api',route,...(body?['--method','POST','--input','-']:[])],{encoding:'utf8',input:body?JSON.stringify(body):undefined}));
+          const base='repos/'+process.env.GITHUB_REPOSITORY;
+          const pr=api(base+'/pulls/'+process.env.DEPENDENCY_PR);
+          if(pr.state!=='open'||pr.user.login!=='dependabot[bot]'||pr.head.repo.full_name!==process.env.GITHUB_REPOSITORY||pr.base.ref!=='main'||pr.head.sha!==process.env.DEPENDENCY_SHA) throw new Error('Refusing stale or untrusted PR result');
+          for(const [context,result] of [['quality',process.env.QUALITY_RESULT],['secrets',process.env.SECRETS_RESULT]]) api(base+'/statuses/'+pr.head.sha,{state:result==='success'?'success':'failure',context,description:'Dependency CI '+context+': '+result,target_url:process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID});
+          NODE

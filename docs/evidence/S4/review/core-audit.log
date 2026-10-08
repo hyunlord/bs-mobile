@@ -1,8 +1,0 @@
-scythe harvest=1 enemyHP=88 weaponDamage=12
-normal harvest=2 enemyHP=76 weaponDamage=24
-arrival hold enemyHP tick1=992 tick2=992 attackTick=31 configuredCooldown=30
-mixed buildingHP=35 guards=1 workersBefore=5 workersAfter=4 targets=building:1,people:1
-evolution absentInput=0 bothInputs=1 actualFarms=1
-tag melee=14 ranged=10
-north pulse northHP=0 southHP=100 weaponDamage=3 growthDamage=0
-charter realCosts food=6 buildingHP=22 buffedWorkers=3

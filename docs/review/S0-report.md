@@ -1,4 +1,9 @@
 관문: 부분 — 실행 관문 3/4 통과, 관리 관문은 라벨·마일스톤·템플릿 통과 / Projects 보드 권한 부족. 의도적 위반 PR 5/5 차단·미병합 종료.
+변경: 저장소·CI·이슈 체계·ADR·런북·지표 축적을 마련하고 의도적 위반 PR 다섯 개를 검증했다.
+결정: 당시 Projects 권한 제한은 [#2](https://github.com/hyunlord/bs-mobile/issues/2)에 남겼다. R1에서도 추가 권한을 요청하지 않는다.
+한계: 개발 기반의 검증이며 게임 행동·재미·모바일 품질을 증명하지 않는다.
+시점: 본문은 각 단계 완료 당시의 기록이다. R1은 요약·보관 링크만 정리하며 당시 수치와 판정을 바꾸지 않는다.
+
 
 # S0 개발 기반 보고
 
@@ -8,10 +13,10 @@
 
 | 관문 | 결과 | 원본 증거 |
 |---|---|---|
-| 깨끗한 클론에서 명령 하나 | 통과: `./tools/check.sh`, 경고/오류 0, xUnit 6/6, 콘텐츠 경계 20/20, 적합성 자체 30/30, 정책·seed 18조합×3회 | `docs/evidence/S0/clean-clone.log`, 기반 [CI run](https://github.com/hyunlord/bs-mobile/actions/runs/37679235067) |
-| 의도적 위반 PR 5개 | 통과: 5/5 해당 검사 실패, 필수 체크로 BLOCKED, 모두 CLOSED·mergedAt=null | 아래 표와 `docs/evidence/S0/negative-prs/` |
-| 관리 체계 | 부분: 요청 라벨 21종, 마일스톤 6개, 이슈 템플릿 5개, PR 템플릿 존재. Projects v2 생성 거부 | `labels.json`, `milestones.json`, `board-status.txt`, [결정 #2](https://github.com/hyunlord/bs-mobile/issues/2) |
-| 새 에이전트 런북 | 통과: AGENTS만 진입점으로 더미 도구/테스트 영웅 2파일 변경, Core 수정 0, 원격 CI 통과·병합 | [이슈 #19](https://github.com/hyunlord/bs-mobile/issues/19), [PR #21](https://github.com/hyunlord/bs-mobile/pull/21), `docs/evidence/S0/runbook/` |
+| 깨끗한 클론에서 명령 하나 | 통과: `./tools/check.sh`, 경고/오류 0, xUnit 6/6, 콘텐츠 경계 20/20, 적합성 자체 30/30, 정책·seed 18조합×3회 | [docs/evidence/S0/clean-clone.log](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/clean-clone.log), 기반 [CI run](https://github.com/hyunlord/bs-mobile/actions/runs/37679235067) |
+| 의도적 위반 PR 5개 | 통과: 5/5 해당 검사 실패, 필수 체크로 BLOCKED, 모두 CLOSED·mergedAt=null | 아래 표와 [docs/evidence/S0/negative-prs/](https://github.com/hyunlord/bs-mobile/tree/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/negative-prs) |
+| 관리 체계 | 부분: 요청 라벨 21종, 마일스톤 6개, 이슈 템플릿 5개, PR 템플릿 존재. Projects v2 생성 거부 | [labels.json](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/labels.json), [milestones.json](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/milestones.json), [board-status.txt](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/board-status.txt), [결정 #2](https://github.com/hyunlord/bs-mobile/issues/2) |
+| 새 에이전트 런북 | 통과: AGENTS만 진입점으로 더미 도구/테스트 영웅 2파일 변경, Core 수정 0, 원격 CI 통과·병합 | [이슈 #19](https://github.com/hyunlord/bs-mobile/issues/19), [PR #21](https://github.com/hyunlord/bs-mobile/pull/21), [docs/evidence/S0/runbook/](https://github.com/hyunlord/bs-mobile/tree/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/runbook) |
 
 | 의도한 위반 | PR | 실제 차단 진단 |
 |---|---|---|
@@ -37,7 +42,7 @@ main 보호는 quality/secrets 성공 필수·최신 base·관리자 포함·for
 - CI 틱 p95 **0.000046ms**, 2,700개 개별 틱 표본. 이는 S0 산술 합성 루프이며 S2의 1,000적·300땅·20건물·60사람 부하가 아니다. 모바일 성능 추정에 사용하지 않는다.
 - 정책 피해 평균 CV **0.3748277841470601**은 `scaffoldDamageCv`다. 게임 밸런스 필드 `balanceDispersion`은 null이며 생존율·재미 주장을 하지 않는다.
 - [야간 실제 실행](https://github.com/hyunlord/bs-mobile/actions/runs/37679521811): 6정책×128seed×3반복, 768조합. BenchmarkDotNet ShortRun 전체 900틱+결과 해시 평균 **11.67µs**, 표준편차 **0.019µs**, 할당 **912B**. 개별 틱 p95와 다른 측정이다. AMD EPYC 7763 / Ubuntu24.04.5 / .NET8.0.31; 전체 원본은 `nightly-raw.tar.gz`, 요약·BDN JSON/CSV는 `nightly/`.
-- `docs/metrics/index.html`은 실제 CI JSON에서 재생성했다. 375/768/1280px 브라우저·키보드 원본 링크·오류/넘침 검사를 했다. 표는 좁은 화면에서 가로 스크롤한다. 스크린샷·원본 해시는 `docs/evidence/S0/metrics/`.
+- `docs/metrics/index.html`은 실제 CI JSON에서 재생성했다. 375/768/1280px 브라우저·키보드 원본 링크·오류/넘침 검사를 했다. 표는 좁은 화면에서 가로 스크롤한다. 스크린샷·원본 해시는 [docs/evidence/S0/metrics/](https://github.com/hyunlord/bs-mobile/tree/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/metrics).
 
 ## 미완료 결정과 위험
 
@@ -51,4 +56,4 @@ main 보호는 quality/secrets 성공 필수·최신 base·관리자 포함·for
 
 ## 최종 누적 확인
 
-[보관 실행 37681523466](https://github.com/hyunlord/bs-mobile/actions/runs/37681523466) 성공 후 release에서 서로 다른 성공 커밋 `678e0b5`·`aafd7b6`의 JSON 두 개를 직접 내려받아 확인했다. 원본 첫 CI 기록까지 포함한 저장소 HTML도 다시 생성했다. 자산 목록은 `docs/evidence/S0/metrics-release-accumulated.json`이며, 한 번의 통과 수치가 아닌 커밋·시각별 기록의 누적을 실제로 검증했다. `metrics-history.zip`은 HTML과 상대 링크의 원본 JSON을 함께 제공한다.
+[보관 실행 37681523466](https://github.com/hyunlord/bs-mobile/actions/runs/37681523466) 성공 후 release에서 서로 다른 성공 커밋 `678e0b5`·`aafd7b6`의 JSON 두 개를 직접 내려받아 확인했다. 원본 첫 CI 기록까지 포함한 저장소 HTML도 다시 생성했다. 자산 목록은 [docs/evidence/S0/metrics-release-accumulated.json](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S0/metrics-release-accumulated.json)이며, 한 번의 통과 수치가 아닌 커밋·시각별 기록의 누적을 실제로 검증했다. `metrics-history.zip`은 HTML과 상대 링크의 원본 JSON을 함께 제공한다.
