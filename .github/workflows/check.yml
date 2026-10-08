@@ -102,11 +102,18 @@ jobs:
         with:
           name: evidence-${{ github.sha }}
           path: |
-            artifacts/logs/full-gate.log
             artifacts/tests/*.trx
             artifacts/metrics.json
           retention-days: 90
           if-no-files-found: error
+      - name: Retain failed gate log
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: failure()
+        with:
+          name: failure-${{ github.sha }}
+          path: artifacts/logs/full-gate.log
+          retention-days: 90
+          if-no-files-found: ignore
   secrets:
     name: secrets
     needs: dependency-context
