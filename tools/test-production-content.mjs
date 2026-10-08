@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { validateContent } from './validate-content.mjs';
 import { weaponDefinitionHash } from './weapon-definition-provenance.mjs';
 
@@ -70,4 +72,24 @@ for (const mutation of ['duplicate', 'symlink']) test(`weapon provenance rejects
   if (mutation === 'duplicate') await cp(source, target);
   else await symlink(source, target);
   await assert.rejects(weaponDefinitionHash(directory, profile), /duplicate|Symbolic/i);
+});
+
+test('production parity rejects projection-only changes before launching sample runs', async t => {
+  const approved = await fixture(t);
+  const sandbox = await mkdtemp(path.join(os.tmpdir(), 'production-parity-'));
+  t.after(() => rm(sandbox, { recursive: true, force: true }));
+  const data = path.join(sandbox, 'data');
+  await cp(approved, data, { recursive: true });
+  const filename = path.join(data, 'weapons/harvest_scythe.json');
+  const weapon = JSON.parse(await readFile(filename));
+  weapon.runtimeProjection.effects[0].amount++;
+  await writeFile(filename, JSON.stringify(weapon));
+  assert.equal((await validateContent(data)).valid, true);
+  const script = fileURLToPath(new URL('./verify-production-parity.mjs', import.meta.url));
+  const result = spawnSync(process.execPath, [script, approved, path.join(sandbox, 'output')], {
+    cwd: sandbox, encoding: 'utf8', env: { ...process.env, DOTNET: path.join(sandbox, 'sample-run-must-not-start') },
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /production effective rules or numeric inputs differ from pinned candidate/);
+  assert.doesNotMatch(result.stderr, /approved run failed|sample-run-must-not-start/);
 });

@@ -27,7 +27,7 @@ async function effectiveInputs(directory, name) {
       if (kind !== 'weapons') return [id, record];
       const growth = record.growth ?? table.weapons[id];
       const first = growth.levels[0];
-      return [id, { id, tags: record.tags, activation: { shape: record.activation.shape, damage: first.damage, range: first.range, cooldownTicks: first.cooldownTicks, knockback: first.knockback }, growth }];
+      return [id, { id, tags: record.tags, activation: { shape: record.activation.shape, damage: first.damage, range: first.range, cooldownTicks: first.cooldownTicks, knockback: first.knockback }, growth, runtimeProjection: record.runtimeProjection }];
     }));
   }
   for (const kind of ['charters', 'items', 'evolutions']) {
