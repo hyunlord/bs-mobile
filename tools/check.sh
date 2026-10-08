@@ -11,7 +11,7 @@ npm ci --ignore-scripts
 npm test
 node --test tools/test-verify-evidence.mjs
 node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
-node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-package-stage.mjs
+node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 npm run validate
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest

@@ -50,5 +50,4 @@ jobs:
           if ! gh release view metrics-history >/dev/null 2>&1; then
             gh release create metrics-history --target main --prerelease --title 'Commit metrics history' --notes 'Measured JSON per successful commit/run plus standalone HTML. S0 scaffold is not game balance evidence. Managed by trusted main workflow; no source branch bypass.'
           fi
-          (cd artifacts/durable && zip -qr ../metrics-history.zip index.html history)
-          gh release upload metrics-history artifacts/durable/history/*.json artifacts/durable/index.html artifacts/metrics-history.zip --clobber
+          gh release upload metrics-history artifacts/durable/history/*.json artifacts/durable/index.html --clobber
