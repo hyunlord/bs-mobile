@@ -1,0 +1,194 @@
+{
+  "tickRate": 30,
+  "durationTicks": 27000,
+  "damageRollMax": 5,
+  "defaultHero": "core:frontier_knight",
+  "defaultEstate": "core:sprout_march",
+  "policies": {
+    "weapon": {
+      "damageMultiplier": 1,
+      "growthMultiplier": 1,
+      "cardWeights": {
+        "weapon": 8,
+        "land": 2,
+        "building": 2,
+        "people": 2
+      }
+    },
+    "land": {
+      "damageMultiplier": 1,
+      "growthMultiplier": 1,
+      "cardWeights": {
+        "weapon": 2,
+        "land": 8,
+        "building": 2,
+        "people": 2
+      }
+    },
+    "building": {
+      "damageMultiplier": 1,
+      "growthMultiplier": 1,
+      "cardWeights": {
+        "weapon": 2,
+        "land": 2,
+        "building": 8,
+        "people": 2
+      }
+    },
+    "people": {
+      "damageMultiplier": 1,
+      "growthMultiplier": 1,
+      "cardWeights": {
+        "weapon": 2,
+        "land": 2,
+        "building": 2,
+        "people": 8
+      }
+    },
+    "mixed": {
+      "damageMultiplier": 1,
+      "growthMultiplier": 1,
+      "cardWeights": {
+        "weapon": 2,
+        "land": 2,
+        "building": 2,
+        "people": 2
+      }
+    },
+    "random": {
+      "damageMultiplier": 1,
+      "growthMultiplier": 1,
+      "cardWeights": {
+        "weapon": 2,
+        "land": 2,
+        "building": 2,
+        "people": 2
+      }
+    }
+  },
+  "world": {
+    "map": {
+      "width": 12000,
+      "height": 12000,
+      "cellSize": 600,
+      "lordSpeed": 24,
+      "lordHealth": 1800,
+      "estateRadius": 2500,
+      "waypointPeriodTicks": 90
+    },
+    "farms": {
+      "capacity": 300,
+      "spacing": 130,
+      "stageTicks": [
+        300,
+        300,
+        300,
+        300
+      ],
+      "harvestRange": 1000,
+      "foodPerHarvest": 3,
+      "experiencePerHarvest": 15,
+      "fertilityPerKill": 1,
+      "fertilityGrowthBonus": 1
+    },
+    "buildings": {
+      "siteCount": 20,
+      "spacing": 500,
+      "health": 200,
+      "repairAmount": 35,
+      "damage": 12,
+      "range": 1400,
+      "attackCooldownTicks": 45,
+      "taxPeriodTicks": 300,
+      "taxExperience": 12
+    },
+    "people": {
+      "initialPeasants": 5,
+      "maxPeople": 60,
+      "initialFood": 90,
+      "foodCapacity": 300,
+      "foodPerPerson": 1,
+      "consumePeriodTicks": 300,
+      "recruitPeriodTicks": 180,
+      "draftDurationTicks": 180,
+      "returnSpeed": 18,
+      "workerGrowthBonus": 1,
+      "damage": 8,
+      "range": 700,
+      "attackCooldownTicks": 30,
+      "vassalHealth": 300,
+      "squadSize": 5
+    },
+    "progression": {
+      "baseExperience": 30,
+      "experiencePerLevel": 15,
+      "cardCount": 3,
+      "weaponSlots": 3,
+      "toolSlots": 3,
+      "startingWeapon": "core:iron_blade",
+      "rarities": [
+        {
+          "name": "common",
+          "weight": 70,
+          "upgradeAmount": 1
+        },
+        {
+          "name": "rare",
+          "weight": 25,
+          "upgradeAmount": 2
+        },
+        {
+          "name": "epic",
+          "weight": 5,
+          "upgradeAmount": 3
+        }
+      ],
+      "rerolls": 1,
+      "bans": 1,
+      "locks": 1
+    },
+    "threat": {
+      "spawnPeriodTicks": 90,
+      "baseSpawnCount": 3,
+      "timeRampTicks": 1800,
+      "prosperityDivisor": 40,
+      "enemyCap": 1000,
+      "spawnInset": 200,
+      "contactPeriodTicks": 30
+    },
+    "load": {
+      "enemies": 1000,
+      "farms": 300,
+      "buildings": 20,
+      "people": 60
+    },
+    "seasons": [
+      {
+        "name": "spring",
+        "durationTicks": 6750,
+        "growthMultiplier": 2,
+        "spawnMultiplier": 1
+      },
+      {
+        "name": "summer",
+        "durationTicks": 6750,
+        "growthMultiplier": 2,
+        "spawnMultiplier": 1
+      },
+      {
+        "name": "autumn",
+        "durationTicks": 6750,
+        "growthMultiplier": 1,
+        "spawnMultiplier": 2
+      },
+      {
+        "name": "winter",
+        "durationTicks": 6750,
+        "growthMultiplier": 1,
+        "spawnMultiplier": 2
+      }
+    ],
+    "telemetryPeriodTicks": 300,
+    "defaultPeopleRule": "C"
+  }
+}

@@ -1,4 +1,5 @@
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
+import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
 import { readFile } from 'node:fs/promises';
 import { jsonFiles } from './content-files.mjs';
 import path from 'node:path';
@@ -18,6 +19,7 @@ const directoryKinds = new Map([
 function inferKind(relative) {
   if (weaponGrowthFilename.test(relative)) return 'weapon-growth';
   if (relative === 'experiments/tuning-s2-baseline.json') return 'tuning';
+  if (relative === 'first-playable-tuning.json') return 'tuning';
   if (experimentFilename.test(relative)) return 'experiment-tuning';
   const segments = relative.split(path.sep);
   if (segments[0] === 'test') segments.shift();
@@ -140,12 +142,12 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
   const baseTuning = records.find(entry => entry.kind === 'tuning' && entry.relative === 'tuning.json')?.record;
   const gameplayRecords = records.filter(entry => entry.kind === 'profile' && isRecord(entry.record.gameplay)).map(entry => ({
-    relative: entry.relative, kind: 'experiment-tuning', record: { tuning: baseTuning, ...entry.record.gameplay },
+    relative: entry.relative, kind: 'experiment-tuning', record: { tuning: records.find(config => config.kind === 'tuning' && config.relative === (entry.record.tuningFile ?? 'tuning.json'))?.record, ...entry.record.gameplay },
   }));
   for (const { relative, kind, record } of [...records, ...gameplayRecords]) {
     if (kind === 'profile' && record.tuningFile !== undefined && !records.some(entry => entry.kind === 'tuning' && entry.relative === record.tuningFile && entry.schemaValid)) errors.push(`${relative}: missing or invalid baseline tuning`);
     if (kind === 'experiment-tuning') {
-      const profiles = records.filter(entry => entry.kind === 'profile' && entry.record.experiment?.tuningFile === relative);
+      const profiles = records.filter(entry => entry.kind === 'profile' && (entry.record.experiment?.tuningFile === relative || entry.relative === relative));
       const baselines = profiles.length ? profiles.map(entry => records.find(config => config.kind === 'tuning' && config.relative === (entry.record.tuningFile ?? 'tuning.json'))?.record) : [baseTuning];
       if (baselines.some(baseline => !isRecord(baseline)) || !isRecord(record.tuning)) {
         errors.push(`${relative}: experiment requires valid base tuning.json and embedded tuning`);
@@ -314,18 +316,32 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       skinNumericCount:canonical.filter(e=>e.kind==='skin' && containsNumber(e.record)).length,
       loopLinkedDistinct:loopLinked
     };
-    const effectIds = new Set();
-    for (const entry of records.filter(e=>!configurationKinds.has(e.kind))) {
+    const effectIds = new Map();
+    const overrides = [];
+    for (const profile of records.filter(e => e.kind === 'profile' && e.record.firstPlayable)) {
+      const selection = profile.record.selection ?? {}, runtime = profile.record.runtime ?? {};
+      for (const [group, values] of Object.entries(profile.record.runtimeOverrides ?? {})) {
+        const selected = group === 'equipment' ? [...list(selection.weapons), ...list(selection.tools)] : list(runtime[group]);
+        for (const [id, projection] of Object.entries(values)) {
+          expect(selected.includes(id), `${profile.relative}: runtime override outside selected ${group}: ${id}`);
+          const original = byId.get(id);
+          if (original) overrides.push({ ...original, relative: `${profile.relative}#runtimeOverrides.${group}.${id}`, record: { ...original.record, runtimeProjection: projection } });
+        }
+      }
+    }
+    for (const entry of [...records.filter(e=>!configurationKinds.has(e.kind)), ...overrides]) {
       const projection=entry.record.runtimeProjection;
       if(entry.record.designStatus==='s4-runtime' && ['weapon','tool','charter','item','evolution'].includes(entry.kind)) expect(isRecord(projection),`${entry.relative}: S4 content requires runtime projection`);
       if(!isRecord(projection)) continue;
       const actions=list(projection.growthActions);
+      const projectionEffectIds = new Set();
       expect(list(projection.effects).length+actions.length>0,`${entry.relative}: empty runtime projection`);
       expect(entry.kind!=='weapon' || actions.length===0,`${entry.relative}: weapon cannot have growth actions`);
       expect(new Set(actions.map(a=>a.target)).size===actions.length,`${entry.relative}: duplicate growth target`);
       for(const action of actions) expect((action.target==='building' && action.operation==='construct' && action.durationTicks===0) || (action.target==='people' && action.operation==='garrison' && action.durationTicks>0),`${entry.relative}: unsupported growth action`);
       for(const effect of list(projection.effects)) {
-        expect(!effectIds.has(effect.id) && !byId.has(effect.id),`${entry.relative}: duplicate runtime effect ID`); effectIds.add(effect.id);
+        expect((!effectIds.has(effect.id) || (entry.relative.includes('#runtimeOverrides.') && effectIds.get(effect.id) === entry.record.id)) && !projectionEffectIds.has(effect.id) && !byId.has(effect.id),`${entry.relative}: duplicate runtime effect ID`);
+        effectIds.set(effect.id, entry.record.id); projectionEffectIds.add(effect.id);
         expect(effect.amount!==0 && (effect.operation==='stat-add' || effect.amount>0),`${entry.relative}: invalid effect amount`);
         expect(['stat-add','planting-bias'].includes(effect.operation)===(effect.trigger==='modifier'),`${entry.relative}: modifier trigger mismatch`);
         expect(effect.trigger!=='modifier' || effect.foodCost===0,`${entry.relative}: modifier food cost is unsupported`);
@@ -352,6 +368,16 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     expect(profiles.some(entry=>entry.relative===path.join('profiles','s2-baseline.json')), 'Explicit s2-baseline runtime profile required');
     const allSelected = new Set();
     for(const {record:r,relative} of profiles) {
+      const projection = id => {
+        const kind = byId.get(id)?.kind;
+        const group = kind === 'weapon' || kind === 'tool' ? 'equipment' : `${kind}s`;
+        return r.firstPlayable ? r.runtimeOverrides?.[group]?.[id] ?? byId.get(id)?.record.runtimeProjection : byId.get(id)?.record.runtimeProjection;
+      };
+      if (r.firstPlayable) {
+        try {
+          validateFirstPlayableDefinitions(r, records.map(e => e.record), records.find(e => e.kind === 'tuning' && e.relative === r.tuningFile)?.record);
+        } catch (error) { errors.push(`${relative}: ${error.message}`); }
+      }
       if (isRecord(r.runtime)) {
         for (const [directory,kind] of [['charters','charter'],['items','item'],['evolutions','evolution']]) for (const id of list(r.runtime[directory])) {
           reference(relative,`runtime.${directory}`,id,kind); allSelected.add(id);
@@ -362,7 +388,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
         const equipmentIds=[...list(r.selection?.tools),...list(r.selection?.weapons)];
         const selectedTags=new Set(equipmentIds.flatMap(id=>list(byId.get(id)?.record.tags)));
         for(const id of [...equipmentIds,...list(r.runtime.charters),...list(r.runtime.items),...list(r.runtime.evolutions)]) {
-          for(const effect of list(byId.get(id)?.record.runtimeProjection?.effects)) {
+          for(const effect of list(projection(id)?.effects)) {
             if(['plant-path','harvest-near'].includes(effect.operation)) expect(equipmentIds.includes(effect.subject),`${relative}: effect subject outside selected equipment`);
             for(const condition of list(effect.conditions)) {
               if(['equipment-owned','equipment-id'].includes(condition.kind)) expect(equipmentIds.includes(condition.value),`${relative}: condition equipment outside selected profile`);
@@ -370,7 +396,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
             }
           }
         }
-        for(const id of list(r.runtime.items)) for(const tag of list(byId.get(id)?.record.runtimeProjection?.requiredTags)) expect(selectedTags.has(tag),`${relative}: unavailable item tag ${tag}`);
+        for(const id of list(r.runtime.items)) for(const tag of list(projection(id)?.requiredTags)) expect(selectedTags.has(tag),`${relative}: unavailable item tag ${tag}`);
         for(const id of list(r.runtime.evolutions)) for(const input of list(byId.get(id)?.record.inputIds)) expect(equipmentIds.includes(input),`${relative}: evolution input outside selected equipment ${input}`);
       }
       if(relative===path.join('profiles','s4-stage-one.json')) {

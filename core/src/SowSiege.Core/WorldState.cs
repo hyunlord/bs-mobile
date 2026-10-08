@@ -100,6 +100,7 @@ namespace SowSiege.Core
     }
     internal sealed class WorldState
     {
+        [OmitWhenNull] public FirstPlayableState? FirstPlayable;
         [OmitWhenNull]
         public RuntimeState? Runtime;
         [OmitWhenNull]

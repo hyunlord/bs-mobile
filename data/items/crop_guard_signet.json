@@ -6,8 +6,8 @@
     "harvest",
     "defense"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: harvest 태그 장비 보유 시 worker-incoming-damage -1 실제 효과. 해당 태그 무기/도구 및 대상에만 적용.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -22,5 +22,29 @@
   },
   "linkedToolIds": [
     "core:harvest_cart"
-  ]
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "harvest"
+    ],
+    "effects": [
+      {
+        "id": "core:crop_guard_signet_bonus",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "worker-incoming-damage",
+        "amount": -1,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "owned-tag",
+            "value": "harvest",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
 }

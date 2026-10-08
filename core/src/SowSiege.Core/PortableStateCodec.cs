@@ -8,7 +8,7 @@ using System.Text;
 namespace SowSiege.Core
 {
     // Explicit schema: changes to state fields require a codec-version review and coverage test.
-    internal sealed class PortableStateCodec
+    internal sealed partial class PortableStateCodec
     {
         private readonly BinaryWriter writer;
         private PortableStateCodec(Stream stream) { writer = new BinaryWriter(stream, Encoding.UTF8, true); }
@@ -414,6 +414,7 @@ namespace SowSiege.Core
             Write(value.Runtime);
             Write(value.Experiment);
             Write(value.WeaponCombat);
+            if (value.FirstPlayable is not null) { WriteFirstPlayable(value.FirstPlayable); }
         }
         private void Write(EffectCounter? value)
         {
@@ -706,6 +707,7 @@ namespace SowSiege.Core
             WriteMap(value.Tools, mapValue => { Write(mapValue); });
             WriteList(value.Timeline, item => { Write(item); });
             WriteList(value.Cards, item => { Write(item); });
+            if (value.FirstPlayable is not null) { WriteFirstPlayable(value.FirstPlayable); }
         }
         private void Write(RunOptions? value)
         {

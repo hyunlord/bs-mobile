@@ -6,23 +6,155 @@
     "building"
   ],
   "activation": {
-    "damage": 26,
-    "range": 1200,
-    "cooldownTicks": 55,
     "shape": "orbit",
-    "knockback": 80,
     "form": "맷돌 모양 원반이 영주 둘레를 넓게 돌아 되돌아온다.",
     "damageCoefficient": 1.05
   },
   "name": "맷돌 원반",
   "concept": "수확 직후 가속한 원반이 외곽 적을 밀어낸다. 수확이 끊기면 무거운 원반의 회전 간격이 벌어진다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 12단계 절대 성장표와 firstPlayable 무기 형태로 실행한다. 맷돌 모양 원반이 영주 둘레를 넓게 돌아 되돌아온다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "수확 성공이 다음 방어 창을 여는 조건이며 겨울에는 다른 방어가 필요하다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:mill_disc_identity",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-knockback",
+        "amount": 5,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:mill_disc",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  },
+  "growth": {
+    "attackModel": "rays",
+    "beamHalfWidth": 90,
+    "levels": [
+      {
+        "level": 1,
+        "damage": 26,
+        "range": 1200,
+        "cooldownTicks": 55,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 80
+      },
+      {
+        "level": 2,
+        "damage": 30,
+        "range": 1235,
+        "cooldownTicks": 53,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 80
+      },
+      {
+        "level": 3,
+        "damage": 34,
+        "range": 1270,
+        "cooldownTicks": 51,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 80
+      },
+      {
+        "level": 4,
+        "damage": 38,
+        "range": 1305,
+        "cooldownTicks": 49,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 80
+      },
+      {
+        "level": 5,
+        "damage": 42,
+        "range": 1340,
+        "cooldownTicks": 47,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 80
+      },
+      {
+        "level": 6,
+        "damage": 46,
+        "range": 1375,
+        "cooldownTicks": 45,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 80
+      },
+      {
+        "level": 7,
+        "damage": 50,
+        "range": 1410,
+        "cooldownTicks": 43,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 80
+      },
+      {
+        "level": 8,
+        "damage": 54,
+        "range": 1445,
+        "cooldownTicks": 41,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 80
+      },
+      {
+        "level": 9,
+        "damage": 58,
+        "range": 1480,
+        "cooldownTicks": 39,
+        "count": 3,
+        "pierce": 2,
+        "knockback": 80
+      },
+      {
+        "level": 10,
+        "damage": 62,
+        "range": 1515,
+        "cooldownTicks": 37,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 80
+      },
+      {
+        "level": 11,
+        "damage": 66,
+        "range": 1550,
+        "cooldownTicks": 35,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 80
+      },
+      {
+        "level": 12,
+        "damage": 70,
+        "range": 1585,
+        "cooldownTicks": 33,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 80
+      }
+    ]
+  }
 }

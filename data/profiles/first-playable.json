@@ -1,0 +1,743 @@
+{
+  "id": "core:first_playable",
+  "name": "새싹 변경의 한 해 · 첫 플레이 가능판",
+  "selection": {
+    "weapons": [
+      "core:iron_blade",
+      "core:harvest_scythe",
+      "core:ember_wand",
+      "core:ward_orbit",
+      "core:canal_bow",
+      "core:mill_disc",
+      "core:storm_fork",
+      "core:spore_fan",
+      "core:frost_chain",
+      "core:levy_banner"
+    ],
+    "tools": [
+      "core:seed_bag",
+      "core:rain_ladle",
+      "core:poison_sickle",
+      "core:carpenter_hammer",
+      "core:hedge_drum",
+      "core:windmill_crank",
+      "core:muster_horn",
+      "core:soup_ladle"
+    ],
+    "enemies": [
+      "core:raider",
+      "core:seed_mite",
+      "core:crop_grazer",
+      "core:stone_breaker",
+      "core:ram_runner",
+      "core:rope_catcher",
+      "core:locust_cloud",
+      "core:ember_sapper",
+      "core:bell_thief",
+      "core:whistle_hunter",
+      "core:shield_raider",
+      "core:siege_cart",
+      "core:winter_hart"
+    ],
+    "heroes": [
+      "core:frontier_knight"
+    ],
+    "estates": [
+      "core:sprout_march"
+    ]
+  },
+  "testSelection": {
+    "weapons": [],
+    "tools": [
+      "test:spade",
+      "test:dummy_rake"
+    ],
+    "enemies": [],
+    "heroes": [
+      "test:scout"
+    ],
+    "estates": [
+      "test:moor"
+    ]
+  },
+  "runtime": {
+    "contractVersion": 1,
+    "charters": [
+      "core:guarded_harvest",
+      "core:repair_tithe",
+      "core:meal_oath",
+      "core:rally_boundary",
+      "core:ditch_watch",
+      "core:fertile_duel",
+      "core:heirloom_service",
+      "core:measured_volley"
+    ],
+    "items": [
+      "core:boundary_hinge",
+      "core:joiner_square",
+      "core:ruin_keystone",
+      "core:scaffold_step",
+      "core:levy_bread_wrap",
+      "core:muster_roll",
+      "core:return_path_knot",
+      "core:shock_absorber_pad",
+      "core:meadow_buckle",
+      "core:root_binding_cord",
+      "core:seed_pouch_lining",
+      "core:wind_seed_flag",
+      "core:ash_gathering_charm",
+      "core:bitter_seed_dust",
+      "core:canal_gate_pin",
+      "core:clay_water_bead",
+      "core:crop_guard_signet",
+      "core:drum_tension_rope",
+      "core:front_rank_peg",
+      "core:harvest_basket_lid",
+      "core:long_shot_counter",
+      "core:projectile_return_hook",
+      "core:rain_watch_cup",
+      "core:repair_apron",
+      "core:ripe_bell_clapper",
+      "core:slow_burn_wick",
+      "core:soup_portion_cup",
+      "core:squad_route_board",
+      "core:turning_weight",
+      "core:windmill_brake"
+    ],
+    "evolutions": [
+      "core:sowing_sworddance",
+      "core:warded_masonry",
+      "core:rain_channel_shot",
+      "core:mill_return_disc",
+      "core:venom_reaping",
+      "core:sheltered_sowing",
+      "core:rally_kitchen",
+      "core:seed_crown"
+    ],
+    "tuning": {
+      "weaponSlots": 5,
+      "toolSlots": 4,
+      "charterSlots": 4,
+      "recentExperienceWindowTicks": 900,
+      "experienceWeightDivisor": 30,
+      "lootPeriodTicks": 900,
+      "lootSpawnRadius": 300,
+      "lootPickupRadius": 350,
+      "maxGroundLoot": 8,
+      "lootQuantity": 1,
+      "lootSources": [
+        {
+          "id": "core:chest_channel",
+          "kind": "chest",
+          "weight": 5,
+          "foodCost": 0
+        },
+        {
+          "id": "core:cart_channel",
+          "kind": "cart",
+          "weight": 3,
+          "foodCost": 0
+        },
+        {
+          "id": "core:market_channel",
+          "kind": "market",
+          "weight": 2,
+          "foodCost": 2
+        }
+      ]
+    }
+  },
+  "weaponCombat": {
+    "contractVersion": 2
+  },
+  "gameplay": {
+    "enemyOverrides": [
+      {
+        "id": "core:raider",
+        "speed": 30,
+        "damage": 12,
+        "health": 45,
+        "attackCooldownTicks": 30
+      },
+      {
+        "id": "core:seed_mite",
+        "speed": 14,
+        "damage": 8,
+        "health": 28,
+        "attackCooldownTicks": 60
+      },
+      {
+        "id": "core:crop_grazer",
+        "speed": 12,
+        "damage": 12,
+        "health": 38,
+        "attackCooldownTicks": 60
+      },
+      {
+        "id": "core:stone_breaker",
+        "speed": 16,
+        "damage": 16,
+        "health": 75,
+        "attackCooldownTicks": 60
+      },
+      {
+        "id": "core:ram_runner",
+        "speed": 30,
+        "damage": 10,
+        "health": 60,
+        "attackCooldownTicks": 110
+      },
+      {
+        "id": "core:rope_catcher",
+        "speed": 16,
+        "damage": 5,
+        "health": 42,
+        "attackCooldownTicks": 95
+      },
+      {
+        "id": "core:locust_cloud",
+        "speed": 32,
+        "damage": 2,
+        "health": 18,
+        "attackCooldownTicks": 35
+      },
+      {
+        "id": "core:ember_sapper",
+        "speed": 16,
+        "damage": 8,
+        "health": 38,
+        "attackCooldownTicks": 110
+      },
+      {
+        "id": "core:bell_thief",
+        "speed": 22,
+        "damage": 5,
+        "health": 44,
+        "attackCooldownTicks": 75
+      },
+      {
+        "id": "core:whistle_hunter",
+        "speed": 24,
+        "damage": 4,
+        "health": 32,
+        "attackCooldownTicks": 55
+      },
+      {
+        "id": "core:shield_raider",
+        "speed": 26,
+        "damage": 14,
+        "health": 90,
+        "attackCooldownTicks": 45
+      },
+      {
+        "id": "core:siege_cart",
+        "speed": 6,
+        "damage": 36,
+        "health": 130,
+        "attackCooldownTicks": 150
+      },
+      {
+        "id": "core:winter_hart",
+        "speed": 18,
+        "damage": 11,
+        "health": 3500,
+        "attackCooldownTicks": 100
+      }
+    ],
+    "experiment": {
+      "movement": {
+        "circuitOffsets": [
+          {
+            "x": -3000,
+            "y": -3000
+          },
+          {
+            "x": 3000,
+            "y": -3000
+          },
+          {
+            "x": 3000,
+            "y": 3000
+          },
+          {
+            "x": -3000,
+            "y": 3000
+          }
+        ],
+        "decisionPeriodTicks": 90,
+        "evadeRange": 1200,
+        "evadeStep": 1200
+      },
+      "experience": {
+        "base": 30,
+        "linear": 15,
+        "quadratic": 5
+      },
+      "mixedCategoryOrder": [
+        "weapon",
+        "land",
+        "building",
+        "people"
+      ]
+    }
+  },
+  "tuningFile": "first-playable-tuning.json",
+  "runtimeOverrides": {
+    "equipment": {},
+    "charters": {
+      "core:guarded_harvest": {
+        "policyCategory": "weapon",
+        "effects": [
+          {
+            "id": "core:guarded_harvest_fp_weapon",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "attack-damage",
+            "amount": 4,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": [
+              {
+                "kind": "equipment-kind",
+                "value": "weapon",
+                "minimum": 0
+              }
+            ]
+          },
+          {
+            "id": "core:guarded_harvest_fp_estate",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "repair-amount",
+            "amount": 2,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": []
+          }
+        ]
+      },
+      "core:repair_tithe": {
+        "policyCategory": "building",
+        "effects": [
+          {
+            "id": "core:repair_tithe_fp_weapon",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "attack-cooldown",
+            "amount": -2,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": [
+              {
+                "kind": "equipment-kind",
+                "value": "weapon",
+                "minimum": 0
+              }
+            ]
+          },
+          {
+            "id": "core:repair_tithe_fp_estate",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "repair-amount",
+            "amount": 3,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": []
+          }
+        ]
+      },
+      "core:meal_oath": {
+        "policyCategory": "people",
+        "effects": [
+          {
+            "id": "core:meal_oath_fp_weapon",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "attack-damage",
+            "amount": 3,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": [
+              {
+                "kind": "equipment-kind",
+                "value": "weapon",
+                "minimum": 0
+              }
+            ]
+          },
+          {
+            "id": "core:meal_oath_fp_estate",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "worker-speed",
+            "amount": 2,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": []
+          }
+        ]
+      },
+      "core:rally_boundary": {
+        "policyCategory": "people",
+        "effects": [
+          {
+            "id": "core:rally_boundary_fp_weapon",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "attack-knockback",
+            "amount": 15,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": [
+              {
+                "kind": "equipment-kind",
+                "value": "weapon",
+                "minimum": 0
+              }
+            ]
+          },
+          {
+            "id": "core:rally_boundary_fp_estate",
+            "trigger": "modifier",
+            "operation": "stat-add",
+            "subject": "draft-speed",
+            "amount": 3,
+            "radius": 1000,
+            "durationTicks": 0,
+            "foodCost": 0,
+            "conditions": []
+          }
+        ]
+      }
+    },
+    "items": {},
+    "evolutions": {}
+  },
+  "firstPlayable": {
+    "contractVersion": 1,
+    "weapons": {
+      "core:iron_blade": {
+        "form": "sector90",
+        "speed": 0,
+        "radius": 90,
+        "lifetimeTicks": 1,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 0
+      },
+      "core:harvest_scythe": {
+        "form": "sector180",
+        "speed": 0,
+        "radius": 90,
+        "lifetimeTicks": 1,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 0
+      },
+      "core:ember_wand": {
+        "form": "projectile",
+        "speed": 90,
+        "radius": 90,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      },
+      "core:ward_orbit": {
+        "form": "orbit",
+        "speed": 90,
+        "radius": 90,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      },
+      "core:canal_bow": {
+        "form": "piercing",
+        "speed": 90,
+        "radius": 90,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      },
+      "core:mill_disc": {
+        "form": "boomerang",
+        "speed": 90,
+        "radius": 90,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      },
+      "core:storm_fork": {
+        "form": "chain",
+        "speed": 0,
+        "radius": 90,
+        "lifetimeTicks": 1,
+        "hitIntervalTicks": 10,
+        "chainRange": 650,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 0
+      },
+      "core:spore_fan": {
+        "form": "field",
+        "speed": 0,
+        "radius": 420,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 15,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      },
+      "core:frost_chain": {
+        "form": "volley",
+        "speed": 90,
+        "radius": 90,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      },
+      "core:levy_banner": {
+        "form": "nova",
+        "speed": 90,
+        "radius": 90,
+        "lifetimeTicks": 90,
+        "hitIntervalTicks": 10,
+        "chainRange": 0,
+        "spreadPermille": 200,
+        "burstIntervalTicks": 3
+      }
+    },
+    "enemies": {
+      "core:raider": {
+        "rank": "normal",
+        "firstSpawnTick": 0,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:seed_mite": {
+        "rank": "normal",
+        "firstSpawnTick": 450,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:crop_grazer": {
+        "rank": "normal",
+        "firstSpawnTick": 900,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:stone_breaker": {
+        "rank": "normal",
+        "firstSpawnTick": 1350,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:ram_runner": {
+        "rank": "normal",
+        "firstSpawnTick": 1800,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:rope_catcher": {
+        "rank": "normal",
+        "firstSpawnTick": 2250,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:locust_cloud": {
+        "rank": "normal",
+        "firstSpawnTick": 2700,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:ember_sapper": {
+        "rank": "normal",
+        "firstSpawnTick": 3150,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:bell_thief": {
+        "rank": "normal",
+        "firstSpawnTick": 3600,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:whistle_hunter": {
+        "rank": "normal",
+        "firstSpawnTick": 4050,
+        "repeatTicks": 0,
+        "weight": 5
+      },
+      "core:shield_raider": {
+        "rank": "elite",
+        "firstSpawnTick": 9000,
+        "repeatTicks": 4500,
+        "weight": 0
+      },
+      "core:siege_cart": {
+        "rank": "elite",
+        "firstSpawnTick": 13500,
+        "repeatTicks": 4500,
+        "weight": 0
+      },
+      "core:winter_hart": {
+        "rank": "boss",
+        "firstSpawnTick": 25200,
+        "repeatTicks": 0,
+        "weight": 0
+      }
+    },
+    "mapEvents": [
+      {
+        "id": "core:road_merchant",
+        "kind": "merchant",
+        "firstSpawnTick": 1800,
+        "repeatTicks": 6300,
+        "lifetimeTicks": 3600,
+        "spawnRadius": 800,
+        "interactRadius": 280,
+        "foodCost": 4,
+        "rewardCount": 1,
+        "healAmount": 0,
+        "experience": 0,
+        "health": 0,
+        "itemIds": []
+      },
+      {
+        "id": "core:pilgrim_shrine",
+        "kind": "shrine",
+        "firstSpawnTick": 3600,
+        "repeatTicks": 7200,
+        "lifetimeTicks": 3600,
+        "spawnRadius": 900,
+        "interactRadius": 280,
+        "foodCost": 0,
+        "rewardCount": 1,
+        "healAmount": 100,
+        "experience": 40,
+        "health": 0,
+        "itemIds": []
+      },
+      {
+        "id": "core:plunder_cart",
+        "kind": "cart",
+        "firstSpawnTick": 2700,
+        "repeatTicks": 5400,
+        "lifetimeTicks": 3600,
+        "spawnRadius": 700,
+        "interactRadius": 280,
+        "foodCost": 0,
+        "rewardCount": 2,
+        "healAmount": 0,
+        "experience": 0,
+        "health": 120,
+        "itemIds": []
+      }
+    ],
+    "evolutionRequirements": {
+      "core:sowing_sworddance": [
+        {
+          "equipmentId": "core:iron_blade",
+          "minimumLevel": 5
+        },
+        {
+          "equipmentId": "core:seed_bag",
+          "minimumLevel": 3
+        }
+      ],
+      "core:warded_masonry": [
+        {
+          "equipmentId": "core:ward_orbit",
+          "minimumLevel": 5
+        },
+        {
+          "equipmentId": "core:carpenter_hammer",
+          "minimumLevel": 3
+        }
+      ],
+      "core:rain_channel_shot": [
+        {
+          "equipmentId": "core:canal_bow",
+          "minimumLevel": 5
+        },
+        {
+          "equipmentId": "core:rain_ladle",
+          "minimumLevel": 3
+        }
+      ],
+      "core:mill_return_disc": [
+        {
+          "equipmentId": "core:mill_disc",
+          "minimumLevel": 5
+        },
+        {
+          "equipmentId": "core:windmill_crank",
+          "minimumLevel": 3
+        }
+      ],
+      "core:venom_reaping": [
+        {
+          "equipmentId": "core:harvest_scythe",
+          "minimumLevel": 5
+        },
+        {
+          "equipmentId": "core:poison_sickle",
+          "minimumLevel": 3
+        }
+      ],
+      "core:sheltered_sowing": [
+        {
+          "equipmentId": "core:seed_bag",
+          "minimumLevel": 3
+        },
+        {
+          "equipmentId": "core:carpenter_hammer",
+          "minimumLevel": 3
+        }
+      ],
+      "core:rally_kitchen": [
+        {
+          "equipmentId": "core:muster_horn",
+          "minimumLevel": 3
+        },
+        {
+          "equipmentId": "core:soup_ladle",
+          "minimumLevel": 3
+        }
+      ],
+      "core:seed_crown": [
+        {
+          "equipmentId": "core:seed_bag",
+          "minimumLevel": 3
+        }
+      ]
+    },
+    "buildingWorkRequired": 100,
+    "buildingWorkPerActivation": 25,
+    "maxActiveAttacks": 256,
+    "evolutionGrowthRequirements": {
+      "core:seed_crown": {
+        "target": "ripe",
+        "minimum": 12
+      }
+    }
+  }
+}

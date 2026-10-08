@@ -34,14 +34,14 @@ public static partial class ContentLoader
         var roots = includeTest ? new[] { directory, Path.Combine(directory, "test") } : [directory];
         var selection = profile.Select(includeTest);
         var records = new List<(ContentRecord Record, string Kind, RuntimeEffectDefinition[] Effects)>();
-        records.AddRange(LoadSelected<ToolContent, ToolContent>(roots, "tools", selection.Tools, r => r, true).Values.Select(r => ((ContentRecord)r, "tool", r.RuntimeProjection?.Effects ?? [])));
-        records.AddRange(LoadSelected<WeaponContent, WeaponContent>(roots, "weapons", selection.Weapons, r => r, true).Values.Select(r => ((ContentRecord)r, "weapon", r.RuntimeProjection?.Effects ?? [])));
-        records.AddRange(LoadSelected<CharterContent, CharterContent>(roots, "charters", profile.Runtime.Charters, r => r, true).Values.Select(r => ((ContentRecord)r, "charter", r.RuntimeProjection?.Effects ?? [])));
-        records.AddRange(LoadSelected<ItemContent, ItemContent>(roots, "items", profile.Runtime.Items, r => r, true).Values.Select(r => ((ContentRecord)r, "item", r.RuntimeProjection?.Effects ?? [])));
-        records.AddRange(LoadSelected<EvolutionContent, EvolutionContent>(roots, "evolutions", profile.Runtime.Evolutions, r => r, true).Values.Select(r => ((ContentRecord)r, "evolution", r.RuntimeProjection?.Effects ?? [])));
+        records.AddRange(LoadSelected<ToolContent, ToolContent>(roots, "tools", selection.Tools, r => r, true).Values.Select(r => ((ContentRecord)r, "tool", catalog.Runtime.Equipment.GetValueOrDefault(r.Id)?.Effects ?? [])));
+        records.AddRange(LoadSelected<WeaponContent, WeaponContent>(roots, "weapons", selection.Weapons, r => r, true).Values.Select(r => ((ContentRecord)r, "weapon", catalog.Runtime.Equipment.GetValueOrDefault(r.Id)?.Effects ?? [])));
+        records.AddRange(LoadSelected<CharterContent, CharterContent>(roots, "charters", profile.Runtime.Charters, r => r, true).Values.Select(r => ((ContentRecord)r, "charter", catalog.Runtime.Charters[r.Id].Effects)));
+        records.AddRange(LoadSelected<ItemContent, ItemContent>(roots, "items", profile.Runtime.Items, r => r, true).Values.Select(r => ((ContentRecord)r, "item", catalog.Runtime.Items[r.Id].Effects)));
+        records.AddRange(LoadSelected<EvolutionContent, EvolutionContent>(roots, "evolutions", profile.Runtime.Evolutions, r => r, true).Values.Select(r => ((ContentRecord)r, "evolution", catalog.Runtime.Evolutions[r.Id].Effects)));
         return records.SelectMany(source => source.Effects.Select(effect => new EffectCatalogEntry(effect.Id, source.Record.Id, source.Kind,
             effect.Trigger, effect.Operation, effect.Subject, effect.Amount, effect.Radius, effect.DurationTicks, effect.FoodCost,
-            effect.Conditions, EffectUnit(effect), source.Record.ImplementationNote))).OrderBy(e => e.EffectId, StringComparer.Ordinal).ToArray();
+            effect.Conditions, EffectUnit(effect), profile.FirstPlayable is null ? source.Record.ImplementationNote : $"First playable effective projection: {effect.Trigger}/{effect.Operation}/{effect.Subject}/{effect.Amount}; conditions={string.Join(",", effect.Conditions.Select(condition => condition.Kind + ":" + condition.Value))}"))).OrderBy(e => e.EffectId, StringComparer.Ordinal).ToArray();
     }
 
     private static string EffectUnit(RuntimeEffectDefinition effect) => effect.Operation switch

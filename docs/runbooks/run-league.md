@@ -41,6 +41,25 @@ S4에서는 정책×A/B/C×seed별 원본 CSV에서 보고 수치를 재생성�
 
 DGX는 S4 대량 리그에만 별도 폴더·낮은 우선순위로 사용하며 다른 프로젝트 관문을 방해하면 즉시 중단한다. 공개 저장소의 Actions 자체 호스팅 러너로 연결하지 않는다.
 
+## 첫 플레이 가능판 M1
+
+`first-playable`은 역사 production/S4와 별도인 27000틱 프로필이다. smoke는 seed9300의 900틱 18사례만 검사하므로 밸런스 관문 통과를 뜻하지 않는다. full은 사전 선언한 seed40000–40031 × 사람규칙A/B/C × 정책6의 576사례를 세 번씩 실행한다. 저장소가 깨끗한 커밋 상태여야 하며 실행기는 Release DLL을 다시 빌드하고 소스·데이터·DLL 식별자가 끝까지 같은지 검사한다. 실행 중 다른 빌드나 소스 변경을 하지 않는다.
+
+```sh
+node tools/first-playable-league.mjs smoke artifacts/first-playable-smoke 4
+node tools/first-playable-league.mjs full artifacts/first-playable-candidate-01 4
+node tools/first-playable-report.mjs artifacts/first-playable-candidate-01 artifacts/first-playable-report-01 full
+node tools/verify-first-playable-target-parity.mjs artifacts/first-playable-parity 4
+```
+
+출력 경로는 매번 새로 지정한다. 판정 실패도 완료된 CSV·packet을 보존하며 종료 코드가 실패로 반환된다. 실행 자체가 중단된 경우 `.incomplete-*`의 `failure.json`에 완료·누락 사례가 남는다. 실패 후보를 덮어쓰거나 성공 후보로 바꿔 이름 붙이지 않는다.
+
+`runs.csv`와 `provenance.csv`가 관문 재생성 입력이다. 기존(b)의 순위 의미와 c′의 같은 묶음 random 대비 전문 정책 생존비0.6–1.5를 유지하고, 혼합 생존수가 random 이상인 묶음이 최소2개인지 추가 검사한다. random 생존0은 평가 불가다. `weapon-sources.csv`는 과잉 요청 피해와 완료된 발동 그룹의 허공 비율을 구별한다. `runtime-effects.csv`, `evolutions.csv`, `coverage.csv`는 실제 효과·진화 시점·동작 관찰을 기록하며 단위가 다른 효과량을 합쳐 성능 점수로 쓰지 않는다.
+
+두 타깃 검사는 서로 다른 net8.0/netstandard2.1 DLL에서 5seed의 27000틱 입력을 각각 세 번 재생하는 정확성 검사다. 무적 fixture이므로 밸런스·Unity·실기 플레이 검증이 아니다. 전체 원자료는 로컬에 보존하고, 공개 원자료는 [사전 선정 표본](../review/phase1b-first-playable.md)만 사용한다. 로컬 CSV 용량을 이유로 관측 행을 삭제하지 않는다.
+
+첫 정식 결과는 [M1 candidate-01](../league/first-playable-m1/README.md)에 보존한다. 저장소의 작은 정본 CSV에서 관문을 다시 계산할 수 있으며, 전체 생존이라는 상한 효과를 난이도·재미의 통과로 확대하지 않는다.
+
 ## S4 실행과 원자료 재생성
 
 S4는 별도 프로필 `s4-stage-one`을 명시한다. 기존 `smoke`·`stage`·`long` 모드는 S2 계약을 유지한다. Release 빌드 후 저장소 루트에서 실행한다.

@@ -44,6 +44,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     }
     var diagnostic = DiagnosticRequest.Parse(options, int.Parse(options.GetValueOrDefault("--iterations", "3"), CultureInfo.InvariantCulture));
     var diagnosticResults = new List<DiagnosticResult>();
+    var firstPlayableCoverage = new List<IReadOnlyDictionary<string, long>>();
     var data = options.GetValueOrDefault("--data", "data");
     var includeTest = options.ContainsKey("--include-test");
     var profileName = options.GetValueOrDefault("--profile", "s2-baseline");
@@ -108,7 +109,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
             timingCsv?.Append(CultureInfo.InvariantCulture, $"{repeat},{after.Tick},{elapsed:R},{before.ActiveEnemies},{before.Farms},{before.Buildings},{before.People},{after.ActiveEnemies},{after.Farms},{after.Buildings},{after.People},{before.PopulationMembers},{after.PopulationMembers}\n");
         }
         results.Add(simulation.Result());
-        if (observer is not null) { diagnosticResults.Add(observer.Result()); }
+        if (observer is not null) { diagnosticResults.Add(observer.Result()); if (catalog.FirstPlayable is not null) { firstPlayableCoverage.Add(simulation.FirstPlayableCoverage); } }
     }
     if (samples.Count == 0) { throw new InvalidOperationException("No simulation ticks measured."); }
     if (results.Select(result => result.Hash).Distinct(StringComparer.Ordinal).Count() != 1)
@@ -120,7 +121,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var gitRoot = Git("rev-parse", "--show-toplevel");
     var gitHead = Git("rev-parse", "HEAD");
     var gitStatus = Git("status", "--porcelain");
-    var sourceHash = SourceHash(gitRoot);
+    var sourceHash = ContentProvenance.SourceHash(gitRoot);
     var stage = catalog.Experiment is not null ? "S4b" : catalog.Runtime is null ? "S2" : "S4";
     var scope = scenario == "load" ? "S2 exact-load mechanics fixture; maintenance included; not natural gameplay" : shortened ? "S2 truncated headless mechanics fixture; not a full game" : "S2 full-duration headless gameplay simulation; balance not approved";
     scope = scope.Replace("S2", stage, StringComparison.Ordinal);
@@ -263,7 +264,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         }
     };
     var jsonOptions = HostJson.CreateOptions(camelCase: true, indented: true);
-    JsonObject? diagnosticPacket = diagnostic is null ? null : DiagnosticOutput.Create(diagnostic, profileName, movement, catalog.Tuning.DurationTicks, metadata, coreAssembly, results, diagnosticResults);
+    JsonObject? diagnosticPacket = diagnostic is null ? null : DiagnosticOutput.Create(diagnostic, profileName, movement, catalog.Tuning.DurationTicks, metadata, coreAssembly, results, diagnosticResults, catalog.FirstPlayable is null ? null : firstPlayableCoverage);
     if (diagnostic is not null && diagnostic.RawOutput is null)
     {
         Write(diagnostic.Output, diagnosticPacket!.ToJsonString(jsonOptions));
@@ -347,23 +348,6 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         catch (System.ComponentModel.Win32Exception) { return null; }
     }
 
-    static string? SourceHash(string? root)
-    {
-        if (root is null || !Directory.Exists(Path.Combine(root, "core"))) { return null; }
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        var paths = Directory.EnumerateFiles(Path.Combine(root, "core"), "*", SearchOption.AllDirectories)
-            .Where(file => !Path.GetRelativePath(root, file).Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj"))
-            .Where(file => Path.GetExtension(file) is ".cs" or ".csproj" or ".props" or ".targets")
-            .Concat(new[] { "global.json", "Directory.Build.props", "Directory.Build.targets" }.Select(file => Path.Combine(root, file)).Where(File.Exists))
-            .Order(StringComparer.Ordinal);
-        foreach (var file in paths)
-        {
-            hash.AppendData(Encoding.UTF8.GetBytes(Path.GetRelativePath(root, file).Replace(Path.DirectorySeparatorChar, '/') + "\0"));
-            hash.AppendData(File.ReadAllBytes(file));
-            hash.AppendData(new byte[] { 0 });
-        }
-        return Convert.ToHexString(hash.GetHashAndReset());
-    }
 
     static void Write(string path, string content)
     {

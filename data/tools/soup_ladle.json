@@ -24,8 +24,8 @@
   ],
   "name": "밥솥 국자",
   "concept": "발동: 뜨거운 국물을 짧은 부채꼴로 끼얹는다. 성장 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 기본 공격과 people 성장에 실제 runtimeProjection 효과를 더한다. 제안 문구 중 실행 수치로 선언된 범위만 구현.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -39,5 +39,21 @@
       "otherId": "core:market_pole",
       "reason": "판매에 쓴 곡물은 급식에 쓸 수 없어 금화와 인원 유지가 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:soup_ladle_meal",
+        "trigger": "harvest",
+        "operation": "worker-buff",
+        "subject": "people",
+        "amount": 2,
+        "radius": 1000,
+        "durationTicks": 240,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
 }

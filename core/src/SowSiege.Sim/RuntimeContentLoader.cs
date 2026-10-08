@@ -5,7 +5,7 @@ namespace SowSiege.Sim;
 public static partial class ContentLoader
 {
     private static RuntimeCatalog LoadRuntime(string[] roots, RuntimeProfileExtension profile, ContentSelection selection,
-        IReadOnlyDictionary<string, ToolDefinition> tools, IReadOnlyDictionary<string, WeaponDefinition> weapons)
+        IReadOnlyDictionary<string, ToolDefinition> tools, IReadOnlyDictionary<string, WeaponDefinition> weapons, FirstPlayableDefinition? firstPlayable = null, RuntimeProjectionOverrides? overrides = null)
     {
         Require(profile.ContractVersion == 1, "Unsupported runtime contract version.");
         var equipment = new Dictionary<string, EquipmentRuntimeDefinition>(StringComparer.Ordinal);
@@ -13,12 +13,12 @@ public static partial class ContentLoader
         var weaponRecords = LoadSelected<WeaponContent, WeaponContent>(roots, "weapons", selection.Weapons, record => record, true);
         foreach (var record in toolRecords.Values)
         {
-            AddEquipment(record, record.RuntimeProjection, false);
+            AddEquipment(record, overrides?.Equipment.GetValueOrDefault(record.Id) ?? record.RuntimeProjection, false);
         }
 
         foreach (var record in weaponRecords.Values)
         {
-            AddEquipment(record, record.RuntimeProjection, true);
+            AddEquipment(record, overrides?.Equipment.GetValueOrDefault(record.Id) ?? record.RuntimeProjection, true);
         }
 
         var charterRecords = LoadSelected<CharterContent, CharterContent>(roots, "charters", profile.Charters, record => record, true);
@@ -30,29 +30,30 @@ public static partial class ContentLoader
         var allTags = tools.Values.SelectMany(t => t.Tags).Concat(weapons.Values.SelectMany(w => w.Tags)).ToHashSet(StringComparer.Ordinal);
         foreach (var record in charterRecords.Values)
         {
-            var projection = record.RuntimeProjection ?? throw new InvalidDataException($"Missing charter runtime projection: {record.Id}");
+            var projection = overrides?.Charters.GetValueOrDefault(record.Id) ?? record.RuntimeProjection ?? throw new InvalidDataException($"Missing charter runtime projection: {record.Id}");
             Require(projection.PolicyCategory is "weapon" or "land" or "building" or "people", "Invalid charter policy category.");
             Require(projection.Effects.Length > 0, "Charter requires executable effects.");
             charters.Add(record.Id, new(record.Id, projection.PolicyCategory, projection.Effects));
         }
         foreach (var record in itemRecords.Values)
         {
-            var projection = record.RuntimeProjection ?? throw new InvalidDataException($"Missing item runtime projection: {record.Id}");
+            var projection = overrides?.Items.GetValueOrDefault(record.Id) ?? record.RuntimeProjection ?? throw new InvalidDataException($"Missing item runtime projection: {record.Id}");
             Require(projection.RequiredTags.All(allTags.Contains), $"Unknown selected equipment tag: {record.Id}");
             Require(projection.Effects.Length > 0, "Item requires executable effects.");
             items.Add(record.Id, new(record.Id, projection.RequiredTags, projection.Effects));
         }
         foreach (var record in evolutionRecords.Values)
         {
-            var projection = record.RuntimeProjection ?? throw new InvalidDataException($"Missing evolution runtime projection: {record.Id}");
+            var projection = overrides?.Evolutions.GetValueOrDefault(record.Id) ?? record.RuntimeProjection ?? throw new InvalidDataException($"Missing evolution runtime projection: {record.Id}");
             Require(record.InputIds.Distinct(StringComparer.Ordinal).Count() == record.InputIds.Length, "Duplicate evolution input.");
             var valid = record.Kind switch
             {
                 "weapon-tool" => record.InputIds.Length == 2 && weapons.ContainsKey(record.InputIds[0]) && tools.ContainsKey(record.InputIds[1]),
                 "tool-tool" => record.InputIds.Length == 2 && record.InputIds.All(tools.ContainsKey),
+                "tool-growth" => firstPlayable is not null && record.InputIds.Length == 1 && record.InputIds.All(tools.ContainsKey) && record.GrowthCondition is { Target: "land", State: "ripe" } growth && firstPlayable.EvolutionGrowthRequirements?.TryGetValue(record.Id, out var required) == true && required.Target == "ripe" && required.Minimum == growth.Minimum,
                 _ => false
             };
-            Require(valid && record.GrowthCondition is null, "S4 runtime supports only selected cross-equipment evolutions.");
+            Require(valid && (record.GrowthCondition is null || record.Kind == "tool-growth" && firstPlayable is not null), "S4 runtime supports only selected cross-equipment evolutions.");
             Require(record.InputIds.Contains(record.Result.BaseId, StringComparer.Ordinal) && projection.Effects.Length > 0, "Invalid evolution base or effects.");
             evolutions.Add(record.Id, new(record.Id, record.Kind, record.InputIds, record.Result.BaseId, projection.Effects));
         }
@@ -70,6 +71,10 @@ public static partial class ContentLoader
             Require(NamespaceId().IsMatch(source.Id) && source.Kind is "chest" or "cart" or "market", "Invalid loot channel.");
         }
 
+        if (overrides is not null)
+        {
+            Require(overrides.Equipment.Keys.All(id => tools.ContainsKey(id) || weapons.ContainsKey(id)) && overrides.Charters.Keys.All(charters.ContainsKey) && overrides.Items.Keys.All(items.ContainsKey) && overrides.Evolutions.Keys.All(evolutions.ContainsKey), "Runtime override must reference selected content.");
+        }
         return new(profile.Tuning, equipment, charters, items, evolutions);
 
         void AddEquipment(ContentRecord record, EquipmentProjection? projection, bool weapon)

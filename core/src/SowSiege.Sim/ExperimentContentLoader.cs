@@ -12,7 +12,7 @@ public static partial class ContentLoader
 {
     private static ExperimentTuningFile? LoadExperiment(string directory, RuntimeProfile profile, Tuning baseline)
     {
-        Require(profile.Gameplay is null || profile.Experiment is null && profile.TuningFile is null, "Production gameplay cannot also select experimental tuning.");
+        Require(profile.Gameplay is null || profile.Experiment is null && (profile.TuningFile is null || profile.FirstPlayable is not null), "Production gameplay cannot also select experimental tuning.");
         if (profile.Gameplay is { } gameplay)
         {
             var production = new ExperimentTuningFile(baseline, gameplay.EnemyOverrides, gameplay.Experiment);

@@ -7,8 +7,8 @@
     "harvest",
     "growth"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 재료 레벨과 성장 조건 충족 후 runtimeProjection의 실제 효과가 발동한다. plant-path 1",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -30,5 +30,20 @@
     "name": "이삭관 파종",
     "effect": "성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다.",
     "cost": "성숙 밭의 이번 수확량이 줄어 당장 쓸 식량은 적어진다."
+  },
+  "runtimeProjection": {
+    "effects": [
+      {
+        "id": "core:seed_crown_scatter",
+        "trigger": "harvest",
+        "operation": "plant-path",
+        "subject": "core:seed_bag",
+        "amount": 1,
+        "radius": 1200,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
   }
 }

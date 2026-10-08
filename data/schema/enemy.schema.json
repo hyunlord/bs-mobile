@@ -87,7 +87,8 @@
         "lord",
         "seed",
         "ripe",
-        "building"
+        "building",
+        "people"
       ]
     },
     "health": {

@@ -364,7 +364,11 @@
     },
     "tuningFile": {
       "type": "string",
-      "pattern": "^experiments/tuning-s2-baseline\\.json$"
+      "enum": [
+        "tuning.json",
+        "experiments/tuning-s2-baseline.json",
+        "first-playable-tuning.json"
+      ]
     },
     "gameplay": {
       "type": "object",
@@ -379,6 +383,968 @@
       "required": [
         "enemyOverrides",
         "experiment"
+      ],
+      "additionalProperties": false
+    },
+    "firstPlayable": {
+      "type": "object",
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "weapons": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "form": {
+                "enum": [
+                  "sector90",
+                  "sector180",
+                  "projectile",
+                  "volley",
+                  "orbit",
+                  "field",
+                  "piercing",
+                  "chain",
+                  "boomerang",
+                  "nova"
+                ]
+              },
+              "speed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "radius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "lifetimeTicks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "hitIntervalTicks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "chainRange": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "spreadPermille": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "burstIntervalTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "form",
+              "speed",
+              "radius",
+              "lifetimeTicks",
+              "hitIntervalTicks",
+              "chainRange",
+              "spreadPermille",
+              "burstIntervalTicks"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "enemies": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "rank": {
+                "enum": [
+                  "normal",
+                  "elite",
+                  "boss"
+                ]
+              },
+              "firstSpawnTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "repeatTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "rank",
+              "firstSpawnTick",
+              "repeatTicks",
+              "weight"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "mapEvents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "merchant",
+                  "shrine",
+                  "cart"
+                ]
+              },
+              "firstSpawnTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "repeatTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "lifetimeTicks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "spawnRadius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "interactRadius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "foodCost": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "rewardCount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "healAmount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "experience": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "health": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "itemIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "firstSpawnTick",
+              "repeatTicks",
+              "lifetimeTicks",
+              "spawnRadius",
+              "interactRadius",
+              "foodCost",
+              "rewardCount",
+              "healAmount",
+              "experience",
+              "health",
+              "itemIds"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 1000
+        },
+        "evolutionRequirements": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "equipmentId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minimumLevel": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "equipmentId",
+                "minimumLevel"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 1000
+          }
+        },
+        "buildingWorkRequired": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "buildingWorkPerActivation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "maxActiveAttacks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024
+        },
+        "evolutionGrowthRequirements": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "const": "ripe"
+              },
+              "minimum": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "target",
+              "minimum"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "contractVersion",
+        "weapons",
+        "enemies",
+        "mapEvents",
+        "evolutionRequirements",
+        "buildingWorkRequired",
+        "buildingWorkPerActivation",
+        "maxActiveAttacks"
+      ],
+      "additionalProperties": false
+    },
+    "runtimeOverrides": {
+      "type": "object",
+      "properties": {
+        "equipment": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "growthActions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "target": {
+                      "enum": [
+                        "building",
+                        "people"
+                      ]
+                    },
+                    "operation": {
+                      "enum": [
+                        "construct",
+                        "garrison"
+                      ]
+                    },
+                    "yield": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 1000000
+                    },
+                    "durationTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    }
+                  },
+                  "required": [
+                    "target",
+                    "operation",
+                    "yield",
+                    "durationTicks"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              },
+              "effects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+                    },
+                    "trigger": {
+                      "enum": [
+                        "attack",
+                        "harvest",
+                        "repair",
+                        "plant",
+                        "farm-hit",
+                        "draft",
+                        "return-start",
+                        "return-arrival",
+                        "estate-cross",
+                        "kill",
+                        "modifier"
+                      ]
+                    },
+                    "operation": {
+                      "enum": [
+                        "damage-pulse",
+                        "repair-nearest",
+                        "worker-buff",
+                        "rally-returners",
+                        "plant-path",
+                        "shield-farms",
+                        "harvest-near",
+                        "damage-young-plots",
+                        "extend-duty",
+                        "guard-return",
+                        "pause-neighbor-growth",
+                        "return-via-building",
+                        "planting-bias",
+                        "stat-add"
+                      ]
+                    },
+                    "subject": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    "radius": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "durationTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "foodCost": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "equipment-owned",
+                              "owned-tag",
+                              "equipment-tag",
+                              "equipment-id",
+                              "equipment-kind",
+                              "growth-target",
+                              "near-seed",
+                              "near-ripe",
+                              "near-building",
+                              "estate-inside",
+                              "estate-outside",
+                              "building-ruined",
+                              "building-new",
+                              "person-role",
+                              "enemy-target",
+                              "season",
+                              "count",
+                              "shield-consumed"
+                            ]
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "minimum": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "minimum"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 1000
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "trigger",
+                    "operation",
+                    "subject",
+                    "amount",
+                    "radius",
+                    "durationTicks",
+                    "foodCost",
+                    "conditions"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "growthActions",
+              "effects"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "charters": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "policyCategory": {
+                "enum": [
+                  "weapon",
+                  "land",
+                  "building",
+                  "people"
+                ]
+              },
+              "effects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+                    },
+                    "trigger": {
+                      "enum": [
+                        "attack",
+                        "harvest",
+                        "repair",
+                        "plant",
+                        "farm-hit",
+                        "draft",
+                        "return-start",
+                        "return-arrival",
+                        "estate-cross",
+                        "kill",
+                        "modifier"
+                      ]
+                    },
+                    "operation": {
+                      "enum": [
+                        "damage-pulse",
+                        "repair-nearest",
+                        "worker-buff",
+                        "rally-returners",
+                        "plant-path",
+                        "shield-farms",
+                        "harvest-near",
+                        "damage-young-plots",
+                        "extend-duty",
+                        "guard-return",
+                        "pause-neighbor-growth",
+                        "return-via-building",
+                        "planting-bias",
+                        "stat-add"
+                      ]
+                    },
+                    "subject": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    "radius": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "durationTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "foodCost": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "equipment-owned",
+                              "owned-tag",
+                              "equipment-tag",
+                              "equipment-id",
+                              "equipment-kind",
+                              "growth-target",
+                              "near-seed",
+                              "near-ripe",
+                              "near-building",
+                              "estate-inside",
+                              "estate-outside",
+                              "building-ruined",
+                              "building-new",
+                              "person-role",
+                              "enemy-target",
+                              "season",
+                              "count",
+                              "shield-consumed"
+                            ]
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "minimum": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "minimum"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 1000
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "trigger",
+                    "operation",
+                    "subject",
+                    "amount",
+                    "radius",
+                    "durationTicks",
+                    "foodCost",
+                    "conditions"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "policyCategory",
+              "effects"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "items": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "requiredTags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "maxItems": 1000,
+                "uniqueItems": true
+              },
+              "effects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+                    },
+                    "trigger": {
+                      "enum": [
+                        "attack",
+                        "harvest",
+                        "repair",
+                        "plant",
+                        "farm-hit",
+                        "draft",
+                        "return-start",
+                        "return-arrival",
+                        "estate-cross",
+                        "kill",
+                        "modifier"
+                      ]
+                    },
+                    "operation": {
+                      "enum": [
+                        "damage-pulse",
+                        "repair-nearest",
+                        "worker-buff",
+                        "rally-returners",
+                        "plant-path",
+                        "shield-farms",
+                        "harvest-near",
+                        "damage-young-plots",
+                        "extend-duty",
+                        "guard-return",
+                        "pause-neighbor-growth",
+                        "return-via-building",
+                        "planting-bias",
+                        "stat-add"
+                      ]
+                    },
+                    "subject": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    "radius": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "durationTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "foodCost": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "equipment-owned",
+                              "owned-tag",
+                              "equipment-tag",
+                              "equipment-id",
+                              "equipment-kind",
+                              "growth-target",
+                              "near-seed",
+                              "near-ripe",
+                              "near-building",
+                              "estate-inside",
+                              "estate-outside",
+                              "building-ruined",
+                              "building-new",
+                              "person-role",
+                              "enemy-target",
+                              "season",
+                              "count",
+                              "shield-consumed"
+                            ]
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "minimum": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "minimum"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 1000
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "trigger",
+                    "operation",
+                    "subject",
+                    "amount",
+                    "radius",
+                    "durationTicks",
+                    "foodCost",
+                    "conditions"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "requiredTags",
+              "effects"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "evolutions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "effects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+                    },
+                    "trigger": {
+                      "enum": [
+                        "attack",
+                        "harvest",
+                        "repair",
+                        "plant",
+                        "farm-hit",
+                        "draft",
+                        "return-start",
+                        "return-arrival",
+                        "estate-cross",
+                        "kill",
+                        "modifier"
+                      ]
+                    },
+                    "operation": {
+                      "enum": [
+                        "damage-pulse",
+                        "repair-nearest",
+                        "worker-buff",
+                        "rally-returners",
+                        "plant-path",
+                        "shield-farms",
+                        "harvest-near",
+                        "damage-young-plots",
+                        "extend-duty",
+                        "guard-return",
+                        "pause-neighbor-growth",
+                        "return-via-building",
+                        "planting-bias",
+                        "stat-add"
+                      ]
+                    },
+                    "subject": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "minimum": -1000000,
+                      "maximum": 1000000
+                    },
+                    "radius": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "durationTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "foodCost": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "equipment-owned",
+                              "owned-tag",
+                              "equipment-tag",
+                              "equipment-id",
+                              "equipment-kind",
+                              "growth-target",
+                              "near-seed",
+                              "near-ripe",
+                              "near-building",
+                              "estate-inside",
+                              "estate-outside",
+                              "building-ruined",
+                              "building-new",
+                              "person-role",
+                              "enemy-target",
+                              "season",
+                              "count",
+                              "shield-consumed"
+                            ]
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "minimum": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000000
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "minimum"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "maxItems": 1000
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "trigger",
+                    "operation",
+                    "subject",
+                    "amount",
+                    "radius",
+                    "durationTicks",
+                    "foodCost",
+                    "conditions"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 1000
+              }
+            },
+            "required": [
+              "effects"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "equipment",
+        "charters",
+        "items",
+        "evolutions"
       ],
       "additionalProperties": false
     }
@@ -405,14 +1371,47 @@
       }
     },
     {
-      "not": {
+      "if": {
+        "not": {
+          "required": [
+            "firstPlayable"
+          ],
+          "properties": {
+            "firstPlayable": {}
+          },
+          "type": "object"
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "gameplay",
+            "tuningFile"
+          ],
+          "properties": {
+            "gameplay": {},
+            "tuningFile": {}
+          },
+          "type": "object"
+        }
+      }
+    },
+    {
+      "if": {
         "required": [
-          "gameplay",
-          "tuningFile"
+          "runtimeOverrides"
         ],
         "properties": {
-          "gameplay": {},
-          "tuningFile": {}
+          "runtimeOverrides": {}
+        },
+        "type": "object"
+      },
+      "then": {
+        "required": [
+          "firstPlayable"
+        ],
+        "properties": {
+          "firstPlayable": {}
         },
         "type": "object"
       }

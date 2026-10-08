@@ -53,6 +53,7 @@ namespace SowSiege.Core
         public void SpawnAndMoveEnemies()
         {
             var tuning = catalog.Tuning.World.Threat;
+            SpawnScheduledEnemies();
             if (world.Tick % tuning.SpawnPeriodTicks == 0 && options.Scenario != "load")
             {
                 var prosperity = world.Food + world.Farms.Count(farm => farm.Stage == catalog.Tuning.World.Farms.StageTicks.Length - 1)
@@ -90,6 +91,19 @@ namespace SowSiege.Core
                     enemy.TargetId = farm.Id;
                 }
             }
+            if (definition.Target == "people" && world.FirstPlayable is not null)
+            {
+                foreach (var person in world.People.Where(p => p.Health > 0))
+                {
+                    var distance = person.Position.DistanceSquared(enemy.Position);
+                    if (distance >= bestDistance)
+                    {
+                        continue;
+                    }
+
+                    bestDistance = distance; enemy.LastTarget = "person"; enemy.TargetId = person.Id; enemy.TargetPosition = person.Position;
+                }
+            }
             if (definition.Target == "building")
             {
                 foreach (var building in world.Buildings)
@@ -110,7 +124,7 @@ namespace SowSiege.Core
         {
             if (ledger is null && catalog.WeaponCombat is not null) { ActivateWeapon(equipment); return; }
             equipment.ReadyTick = world.Tick + (runtime?.Modify("attack-cooldown", activation.CooldownTicks, new(world.Lord, equipment.Id), 1) ?? activation.CooldownTicks);
-            if (ledger is not null) { ledger.Activations++; }
+            if (ledger is not null) { ledger.Activations++; world.FirstPlayable?.Count("equipment:" + equipment.Id + ":activation"); }
             var candidates = spatial.Query(world.Lord, activation.Range).OrderBy(enemy => enemy.Position.DistanceSquared(world.Lord)).ThenBy(enemy => enemy.Id).ToArray();
             var nearest = candidates.FirstOrDefault();
             var visualHits = interactive is null ? null : new System.Collections.Generic.List<EnemyState>();
@@ -195,12 +209,24 @@ namespace SowSiege.Core
                     diagnostics?.TargetDamage("building", definition.Damage, previousHealth - building.Health);
                     if (building.Health == 0) { world.Ruins++; }
                 }
+                else if (enemy.LastTarget == "person")
+                {
+                    var person = world.People.FirstOrDefault(p => p.Id == enemy.TargetId && p.Health > 0);
+                    if (person is null) { enemy.TargetRefreshTick = 0; continue; }
+                    var before = person.Health; person.Health = Math.Max(0, person.Health - definition.Damage);
+                    diagnostics?.TargetDamage("person", definition.Damage, before - person.Health);
+                }
                 else
                 {
                     if (world.LordHealth <= 0 || interactive?.Invulnerable == true) { continue; }
                     var previousHealth = world.LordHealth;
                     world.LordHealth = Math.Max(0, world.LordHealth - definition.Damage);
                     diagnostics?.TargetDamage("lord", definition.Damage, previousHealth - world.LordHealth);
+                    if (world.FirstPlayable is not null)
+                    {
+                        interactive?.Experience(world.Tick, PresentationKind.LordHit, definition.Id, world.Lord, previousHealth - world.LordHealth);
+                    }
+
                     if (world.LordHealth == 0) { world.DeathCause = definition.Id; }
                 }
             }
@@ -211,6 +237,16 @@ namespace SowSiege.Core
             foreach (var enemy in world.Enemies.Where(enemy => enemy.Health <= 0))
             {
                 diagnostics?.Kill(catalog.Enemies[enemy.Definition].Health);
+                if (world.FirstPlayable is { } fp)
+                {
+                    fp.Kills++; fp.Count("enemy:" + catalog.FirstPlayable!.Enemies[enemy.Definition].Rank + ":kill");
+                    if (catalog.FirstPlayable.Enemies[enemy.Definition].Rank != "normal")
+                    {
+                        fp.DefeatedBosses.Add(enemy.Definition);
+                    }
+
+                    interactive?.Experience(world.Tick, PresentationKind.EnemyKilled, enemy.Definition, enemy.Position, 0);
+                }
                 var experience = catalog.Enemies[enemy.Definition].Experience;
                 world.Experience += experience;
                 world.KillExperience += experience;
@@ -237,6 +273,18 @@ namespace SowSiege.Core
             var map = catalog.Tuning.World.Map;
             var inset = catalog.Tuning.World.Threat.SpawnInset;
             var definition = enemyTypes[random.Next(enemyTypes.Length)];
+            if (catalog.FirstPlayable is { } fp)
+            {
+                var eligible = enemyTypes.Where(e => fp.Enemies[e.Id].Rank == "normal" && fp.Enemies[e.Id].FirstSpawnTick <= world.Tick && fp.Enemies[e.Id].Weight > 0).ToArray();
+                if (eligible.Length == 0)
+                {
+                    return;
+                }
+
+                var roll = random.Next(eligible.Sum(e => fp.Enemies[e.Id].Weight));
+                definition = eligible[0];
+                foreach (var candidate in eligible) { roll -= fp.Enemies[candidate.Id].Weight; if (roll < 0) { definition = candidate; break; } }
+            }
             Position position;
             if (options.Scenario == "load") { position = new(random.Next(map.Width), random.Next(map.Height)); }
             else

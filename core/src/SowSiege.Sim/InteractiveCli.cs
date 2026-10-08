@@ -9,8 +9,8 @@ public static class InteractiveCli
     {
         try
         {
-            if (args.Length != 3 || args[0] is not ("interactive-fixtures" or "interactive-replay")) { throw new ArgumentException("Usage: interactive-fixtures <data-directory> <output-directory> | interactive-replay <data-directory> <replay-file>"); }
-            var catalog = ContentLoader.Load(args[1], profileName: "production"); var dataHash = ContentLoader.Hash(args[1], false);
+            if (args.Length is not (3 or 4) || args[0] is not ("interactive-fixtures" or "interactive-replay")) { throw new ArgumentException("Usage: interactive-fixtures <data-directory> <output-directory> [profile] | interactive-replay <data-directory> <replay-file> [profile]"); }
+            var catalog = ContentLoader.Load(args[1], profileName: args.Length == 4 ? args[3] : "production"); var dataHash = ContentLoader.Hash(args[1], false);
             if (args[0] == "interactive-replay")
             {
                 using var input = File.OpenRead(args[2]); var verification = ReplayRunner.Verify(catalog, dataHash, ReplayCodec.Read(input));

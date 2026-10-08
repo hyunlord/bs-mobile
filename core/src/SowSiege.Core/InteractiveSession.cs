@@ -61,13 +61,14 @@ namespace SowSiege.Core
         {
             var w = Simulation.World;
             return new(Options.Run.Seed, w.Tick, w.LordHealth > 0, w.LordHealth <= 0 ? "death" : Simulation.IsComplete ? "duration" : "running", w.Level,
-                w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash());
+                w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w));
         }
         private sealed class SessionView : IReadOnlyRunView
         {
             private readonly InteractiveSession session;
             internal SessionView(InteractiveSession session) { this.session = session; }
             public RunStatus Status => session.Status;
+            public FirstPlayableFrame? CaptureFirstPlayable() => FirstPlayableView.Capture(session.Catalog, session.Simulation.World, session.Options.Run.HeroId);
             public CardOfferView CaptureCards()
             {
                 var w = session.Simulation.World;

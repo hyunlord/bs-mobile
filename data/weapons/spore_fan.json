@@ -6,23 +6,155 @@
     "land"
   ],
   "activation": {
-    "damage": 11,
-    "range": 1250,
-    "cooldownTicks": 28,
     "shape": "wave",
-    "knockback": 0,
-    "form": "얇은 부채에서 누런 포자 층이 낮고 넓게 뻗는다.",
+    "form": "고정된 포자 장판이 일정 간격으로 지나가는 적을 타격한다.",
     "damageCoefficient": 0.85
   },
   "name": "포자 부채",
-  "concept": "포자 부채꼴 안에서 쓰러진 적이 비옥한 흔적을 남긴다. 포자에 덮인 익은 작물은 수확을 늦춰야 한다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "concept": "고정된 포자 장판이 일정 간격으로 지나가는 적을 타격한다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 고정된 포자 장판이 일정 간격으로 지나가는 적을 타격한다. 수치와 수·빈도·범위는 12단계 성장표를 따른다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
       "stage": "fertility",
       "reason": "처치를 다음 작물의 성장 자원으로 바꾸면서 당장 익은 작물의 회수를 지연한다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:spore_fan_identity",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-knockback",
+        "amount": 5,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:spore_fan",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  },
+  "growth": {
+    "attackModel": "disk",
+    "beamHalfWidth": 0,
+    "levels": [
+      {
+        "level": 1,
+        "damage": 11,
+        "range": 1250,
+        "cooldownTicks": 28,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 2,
+        "damage": 15,
+        "range": 1285,
+        "cooldownTicks": 26,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 3,
+        "damage": 19,
+        "range": 1320,
+        "cooldownTicks": 24,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 4,
+        "damage": 23,
+        "range": 1355,
+        "cooldownTicks": 22,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 5,
+        "damage": 27,
+        "range": 1390,
+        "cooldownTicks": 20,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 6,
+        "damage": 31,
+        "range": 1425,
+        "cooldownTicks": 18,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 7,
+        "damage": 35,
+        "range": 1460,
+        "cooldownTicks": 16,
+        "count": 3,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 8,
+        "damage": 39,
+        "range": 1495,
+        "cooldownTicks": 14,
+        "count": 3,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 9,
+        "damage": 43,
+        "range": 1530,
+        "cooldownTicks": 12,
+        "count": 3,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 10,
+        "damage": 47,
+        "range": 1565,
+        "cooldownTicks": 12,
+        "count": 4,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 11,
+        "damage": 51,
+        "range": 1600,
+        "cooldownTicks": 12,
+        "count": 4,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 12,
+        "damage": 55,
+        "range": 1635,
+        "cooldownTicks": 12,
+        "count": 4,
+        "pierce": 0,
+        "knockback": 0
+      }
+    ]
+  }
 }

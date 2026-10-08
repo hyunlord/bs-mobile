@@ -70,7 +70,7 @@ public sealed record ContentSelection(string[] Weapons, string[] Tools, string[]
 }
 
 public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null, ExperimentProfileExtension? Experiment = null, WeaponCombatProfileExtension? WeaponCombat = null,
-    string? TuningFile = null, ProductionGameplay? Gameplay = null)
+    string? TuningFile = null, ProductionGameplay? Gameplay = null, FirstPlayableDefinition? FirstPlayable = null, RuntimeProjectionOverrides? RuntimeOverrides = null)
 {
     public ContentSelection Select(bool includeTest) => includeTest ? Selection.Add(TestSelection) : Selection;
 }
@@ -113,3 +113,5 @@ public sealed record WeaponActivationContent(string Shape, string Form, decimal 
         return new(Damage!.Value, Range!.Value, CooldownTicks!.Value, Shape, Knockback!.Value);
     }
 }
+
+public sealed record RuntimeProjectionOverrides(Dictionary<string, EquipmentProjection> Equipment, Dictionary<string, CharterProjection> Charters, Dictionary<string, ItemProjection> Items, Dictionary<string, EvolutionProjection> Evolutions);

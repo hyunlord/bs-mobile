@@ -6,23 +6,155 @@
     "control"
   ],
   "activation": {
-    "damage": 19,
-    "range": 1900,
-    "cooldownTicks": 34,
     "shape": "projectile",
-    "knockback": 10,
     "form": "푸른 물방울을 끄는 화살이 수로 선을 따라 짧게 굽는다.",
     "damageCoefficient": 0.95
   },
   "name": "수로 활",
   "concept": "물을 따라 굽는 화살이 수로 옆 적의 전진을 늦춘다. 건조한 구역에서는 평범한 단발 화살에 머문다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 12단계 절대 성장표와 firstPlayable 무기 형태로 실행한다. 푸른 물방울을 끄는 화살이 수로 선을 따라 짧게 굽는다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "관개된 성장 구역을 따라 방어 동선을 만들며 수로 밖 추격의 기회를 포기한다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:canal_bow_identity",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-knockback",
+        "amount": 5,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:canal_bow",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  },
+  "growth": {
+    "attackModel": "rays",
+    "beamHalfWidth": 90,
+    "levels": [
+      {
+        "level": 1,
+        "damage": 19,
+        "range": 1900,
+        "cooldownTicks": 34,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 2,
+        "damage": 23,
+        "range": 1935,
+        "cooldownTicks": 32,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 3,
+        "damage": 27,
+        "range": 1970,
+        "cooldownTicks": 30,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 4,
+        "damage": 31,
+        "range": 2005,
+        "cooldownTicks": 28,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 10
+      },
+      {
+        "level": 5,
+        "damage": 35,
+        "range": 2040,
+        "cooldownTicks": 26,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 6,
+        "damage": 39,
+        "range": 2075,
+        "cooldownTicks": 24,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 7,
+        "damage": 43,
+        "range": 2110,
+        "cooldownTicks": 22,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 8,
+        "damage": 47,
+        "range": 2145,
+        "cooldownTicks": 20,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 10
+      },
+      {
+        "level": 9,
+        "damage": 51,
+        "range": 2180,
+        "cooldownTicks": 18,
+        "count": 3,
+        "pierce": 2,
+        "knockback": 10
+      },
+      {
+        "level": 10,
+        "damage": 55,
+        "range": 2215,
+        "cooldownTicks": 16,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 10
+      },
+      {
+        "level": 11,
+        "damage": 59,
+        "range": 2250,
+        "cooldownTicks": 14,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 10
+      },
+      {
+        "level": 12,
+        "damage": 63,
+        "range": 2285,
+        "cooldownTicks": 12,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 10
+      }
+    ]
+  }
 }

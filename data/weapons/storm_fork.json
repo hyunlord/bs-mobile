@@ -6,23 +6,155 @@
     "control"
   ],
   "activation": {
-    "damage": 20,
-    "range": 1150,
-    "cooldownTicks": 50,
     "shape": "wave",
-    "knockback": 50,
-    "form": "쇠스랑이 땅을 찍고 젖은 자리를 잇는 짧은 번개가 튄다.",
+    "form": "가장 가까운 적에서 다음 적으로 연쇄 충격이 번진다.",
     "damageCoefficient": 1
   },
   "name": "빗물 쇠스랑",
-  "concept": "젖은 땅을 찍으면 가까운 적 사이로 충격이 퍼진다. 메마른 구역에서는 앞의 한 줄만 친다.",
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "concept": "가장 가까운 적에서 다음 적으로 연쇄 충격이 번진다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 가장 가까운 적에서 다음 적으로 연쇄 충격이 번진다. 수치와 수·빈도·범위는 12단계 성장표를 따른다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "관개 투자로 생긴 성장 구역이 방어 구역도 되지만 지역 의존성이 높다."
     }
-  ]
+  ],
+  "runtimeProjection": {
+    "growthActions": [],
+    "effects": [
+      {
+        "id": "core:storm_fork_identity",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-knockback",
+        "amount": 5,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:storm_fork",
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  },
+  "growth": {
+    "attackModel": "rays",
+    "beamHalfWidth": 90,
+    "levels": [
+      {
+        "level": 1,
+        "damage": 20,
+        "range": 1150,
+        "cooldownTicks": 50,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 50
+      },
+      {
+        "level": 2,
+        "damage": 24,
+        "range": 1185,
+        "cooldownTicks": 48,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 50
+      },
+      {
+        "level": 3,
+        "damage": 28,
+        "range": 1220,
+        "cooldownTicks": 46,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 50
+      },
+      {
+        "level": 4,
+        "damage": 32,
+        "range": 1255,
+        "cooldownTicks": 44,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 50
+      },
+      {
+        "level": 5,
+        "damage": 36,
+        "range": 1290,
+        "cooldownTicks": 42,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 50
+      },
+      {
+        "level": 6,
+        "damage": 40,
+        "range": 1325,
+        "cooldownTicks": 40,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 50
+      },
+      {
+        "level": 7,
+        "damage": 44,
+        "range": 1360,
+        "cooldownTicks": 38,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 50
+      },
+      {
+        "level": 8,
+        "damage": 48,
+        "range": 1395,
+        "cooldownTicks": 36,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 50
+      },
+      {
+        "level": 9,
+        "damage": 52,
+        "range": 1430,
+        "cooldownTicks": 34,
+        "count": 3,
+        "pierce": 2,
+        "knockback": 50
+      },
+      {
+        "level": 10,
+        "damage": 56,
+        "range": 1465,
+        "cooldownTicks": 32,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 50
+      },
+      {
+        "level": 11,
+        "damage": 60,
+        "range": 1500,
+        "cooldownTicks": 30,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 50
+      },
+      {
+        "level": 12,
+        "damage": 64,
+        "range": 1535,
+        "cooldownTicks": 28,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 50
+      }
+    ]
+  }
 }

@@ -18,7 +18,9 @@ DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
 node tools/verify-unity-boundaries.mjs
 node --test tools/test-diagnostic-*.mjs
 node --test tools/test-weapon-holdout.mjs
+node --test tools/test-first-playable*.mjs
 npm run validate
+node tools/first-playable-content.mjs data
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs
@@ -28,17 +30,23 @@ dotnet run --project tools/ArchitectureGuard -- --self-test
 dotnet run --project tools/ArchitectureGuard -- "$PWD"
 dotnet restore
 dotnet build --no-restore --configuration Release
-dotnet test --no-build --configuration Release --logger 'trx;LogFileName=tests.trx' --results-directory "$PWD/artifacts/tests"
+FIRST_PLAYABLE_COVERAGE_ROOT=$(mktemp -d "$PWD/artifacts/first-playable-coverage.XXXXXX")
+BS_FIRST_PLAYABLE_COVERAGE_OUTPUT="$FIRST_PLAYABLE_COVERAGE_ROOT/runtime.json" dotnet test --no-build --configuration Release --logger 'trx;LogFileName=tests.trx' --results-directory "$PWD/artifacts/tests"
+node tools/first-playable-content.mjs data "$FIRST_PLAYABLE_COVERAGE_ROOT/runtime.json"
 dotnet build core/src/SowSiege.Core/SowSiege.Core.csproj --no-restore --configuration Debug --framework netstandard2.1
 dotnet format --no-restore --verify-no-changes
 dotnet format tools/ArchitectureGuard --no-restore --verify-no-changes
 dotnet format tools/UnityResultCheck --no-restore --verify-no-changes
 TARGET_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/target-parity.XXXXXX")
 node tools/verify-target-parity.mjs "$TARGET_PARITY_ROOT/run" 4
+FIRST_PLAYABLE_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/first-playable-parity.XXXXXX")
+node tools/verify-first-playable-target-parity.mjs "$FIRST_PLAYABLE_PARITY_ROOT/run" 4
 DIAGNOSTIC_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/diagnostic-smoke.XXXXXX")
 node tools/diagnostic-runner.mjs smoke "$DIAGNOSTIC_SMOKE_ROOT/run" 4
 WEAPON_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/weapon-smoke.XXXXXX")
 node tools/weapon-holdout.mjs smoke "$WEAPON_SMOKE_ROOT/run" 4
+FIRST_PLAYABLE_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/first-playable-smoke.XXXXXX")
+node tools/first-playable-league.mjs smoke "$FIRST_PLAYABLE_SMOKE_ROOT/run" 4
 ./tools/league.sh
 cp artifacts/metrics.json artifacts/metrics-s2.json
 node tools/league.mjs s4-smoke --profile s4-stage-one --workers 2

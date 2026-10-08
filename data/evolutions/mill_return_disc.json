@@ -7,8 +7,8 @@
     "building",
     "ranged"
   ],
-  "designStatus": "candidate",
-  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "designStatus": "s4-runtime",
+  "implementationNote": "첫 플레이 가능판: 재료 레벨과 성장 조건 충족 후 runtimeProjection의 실제 효과가 발동한다. stat-add -10",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
@@ -27,5 +27,31 @@
     "name": "방앗간 회수륜",
     "effect": "바람개비가 원반의 돌아오는 경로를 건물 둘레로 굽혀 접근 적을 두 번 견제한다.",
     "cost": "귀환 경로가 길어져 다음 발사가 늦고 건물 밖 추격에는 불리하다."
+  },
+  "runtimeProjection": {
+    "effects": [
+      {
+        "id": "core:mill_return_disc_speed",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-cooldown",
+        "amount": -10,
+        "radius": 1000,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-id",
+            "value": "core:mill_disc",
+            "minimum": 0
+          },
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
   }
 }
