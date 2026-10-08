@@ -17,3 +17,7 @@ Core 호환성 #67의 병합 이후 Microsoft.NET.Test.Sdk만 17.14.1에서 18.1
 ## 대안과 되돌리기
 
 SDK와 adapter를 함께 올리는 안은 실패 원인 분리를 어렵게 하므로 사용하지 않는다. xunit.v3 전환은 이번 승인 범위가 아니다. 회귀 시 이 한 패키지 버전 변경을 되돌린다.
+
+## 2026-10-08 검증 완료 기록
+
+초기 기준은 147개 테스트였다. #74 병합본 b067c3a 통합 후 최종 검사는 **165개 발견·165개 통과**, 두 Core 타깃 간 15사례 × 3반복 × 2타깃 = **90회** 동등성 실행과 전체 tools/check.sh 통과다. [최종 CI 37738544737](https://github.com/hyunlord/bs-mobile/actions/runs/37738544737) 통과 후 [PR #75](https://github.com/hyunlord/bs-mobile/pull/75)는 `ea6e5a7e6c8e40aeea725e541f32388520bf4eb6`으로 병합되어 이 결정을 채택했다. 초기 147개와 최종 165개를 같은 시점의 수치로 혼용하지 않는다.
