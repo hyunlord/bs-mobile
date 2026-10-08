@@ -16,6 +16,8 @@ namespace SowSiege.Core
                 .OrderBy(enemy => enemy.Position.DistanceSquared(world.Lord)).ThenBy(enemy => enemy.Id).ToArray();
             var selected = WeaponTargets.Select(definition, level, world.Lord, world.WeaponCombat!.Facing, candidates);
             diagnostics?.Attack("weapon", "", equipment.Id, candidates.Length, equipment.ReadyTick - world.Tick, selected.Eligible);
+            interactive?.Attack(world.Tick, equipment.Id, world.Lord, world.WeaponCombat!.Facing, definition.AttackModel, level.Range, selected.Hits,
+                InteractiveState.Geometry(world.Lord, world.WeaponCombat.Facing, definition.AttackModel, level.Range, candidates, definition.BeamHalfWidth, level.Count, level.Pierce));
             foreach (var enemy in selected.Hits)
             {
                 var requested = checked((level.Damage + random.Next(catalog.Tuning.DamageRollMax)) * catalog.Heroes[options.HeroId].DamageMultiplier);

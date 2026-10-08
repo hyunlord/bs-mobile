@@ -1,7 +1,11 @@
-# Unity 경계 예약
+# Unity 1단계 A
 
-Unity 프로젝트는 아직 생성하지 않았다. 사용자 결정은 **Unity 6.6 6000.6.4f1 ARM64 + Universal 2D(URP 2D Renderer)**이며, 이전 6.3 선택의 대체 이력과 실제 설치 상태는 [ADR 0018](../docs/adr/0018-unity-66-urp-baseline.md)에 기록한다. 에디터는 설치되어 있지만 Android/iOS 빌드 모듈은 확인한 설치 루트에 없다. Personal 활성화는 사용자 진술이며 독립 검증하지 않았다.
+**Unity 6.6 6000.6.4f1 ARM64 + Universal 2D(URP 2D Renderer)**를 사용한다. Android OpenJDK·SDK·NDK와 iOS 모듈, Personal 라이선스의 실제 batch 실행은 [U0 보고](../docs/review/phase1a-u0.md)에서 확인했다. 이전 설치 상태와 6.3 선택 대체 이력은 [ADR0018](../docs/adr/0018-unity-66-urp-baseline.md)에 보존한다.
 
-[착수 체크리스트](../docs/runbooks/Unity-phase1-checklist.md)에 따라 별도 Phase1 착수 요청 후 프로젝트를 생성한다. 실제 시험 기기와 Unity CI 방식은 [#65](https://github.com/hyunlord/bs-mobile/issues/65), 6.7 LTS 정식 출시 후 전환 검토는 [#70](https://github.com/hyunlord/bs-mobile/issues/70)에서 추적한다.
+저장소 루트에서 먼저 `bash tools/prepare-unity.sh`를 실행한 뒤 이 폴더를 Unity Hub로 연다. .NET 8 SDK와 Node가 필요하다. 생성된 Core DLL과 데이터 브리지는 Git에서 제외되며 정본 소스·데이터가 바뀌면 다시 생성한다. `bash tools/prepare-unity.sh --verify`는 생성물을 수정하지 않고 오래된 연결을 거부한다.
 
-Unity 어댑터는 입력·표시·플랫폼 서비스를 맡고 순수 C# Core를 소비한다. 엔진 타입·시각·SDK를 Core에 역참조시키지 않는다. .NET Standard 2.1 계약의 .NET 8 호스트 검증과 Unity/IL2CPP·실기 검증은 별개다. Force Text·LFS·asmdef·CI의 구체 설정은 착수 범위에서 검증한다. 광고·결제·분석·크래시 SDK는 이 준비 작업에 포함하지 않는다.
+`bash tools/check-unity.sh`는 생성·경계 검사, Editor 설정, EditMode·PlayMode, ARM64 Android IL2CPP 빌드를 순서대로 실행한다. 기본 출력은 `artifacts/unity/`이며 성공한 APK는 `sow-siege.apk`다. 같은 프로젝트를 연 Editor를 먼저 종료한다. `UNITY_EDITOR`와 `UNITY_CHECK_OUTPUT`으로 실행 경로와 출력 폴더를 지정할 수 있지만 에디터 버전은 고정한다. 로컬 원본 로그에는 라이선스 정보가 포함될 수 있으므로 공개하지 않는다.
+
+Unity는 입력·표시·플랫폼 서비스를 맡고 `netstandard2.1` Core를 소비한다. `Game.App`이 Core 명령을 적용하며 View는 읽기 전용 스냅샷과 사건을 받는다. 정본 JSON은 빌드 때 패키지에 포함하고 실제 읽은 바이트를 시작 전에 검증한다. 연결 방식은 [ADR0024](../docs/adr/0024-generated-core-and-canonical-unity-bridge.md), 입력·재생은 [ADR0025](../docs/adr/0025-interactive-core-and-portable-replay.md), 화면 규칙은 [게임 디자인 시스템](../docs/design/05_phase1a-game-design-system.md)에 따른다.
+
+시험 기기는 Galaxy Z Fold8, Unity 검사는 Personal 활성화된 맥북의 로컬 실행이다. GitHub CI는 Core 검사를 유지한다. 실제 기기 실행·물리 접힘·성능은 빌드 성공과 별도 관문이다. 현재 진행 상태와 실행 절차는 [1단계 체크리스트](../docs/runbooks/Unity-phase1-checklist.md)를 따른다. 6.7 LTS 정식 출시 후 전환은 [#70](https://github.com/hyunlord/bs-mobile/issues/70)에서 별도로 검토한다.

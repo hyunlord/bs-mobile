@@ -20,3 +20,5 @@ No animation. The static report works from file:// with no scripts, network or l
 
 ## 7. Depth & Surface
 Borders-only: 1px `--rule` for table rows and chart baseline. No shadows, gradients or raster substitutes for data.
+
+Game UI uses the separate [Phase1A screen system](docs/design/05_phase1a-game-design-system.md); the internal engineering report contract above remains unchanged.

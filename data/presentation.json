@@ -1,0 +1,11 @@
+{
+  "contractVersion": 1,
+  "camera": {
+    "worldUnitsPerUnityUnit": 1000,
+    "minHalfHeight": 2400,
+    "maxHalfHeight": 6000,
+    "estatePadding": 600,
+    "followMilliseconds": 120,
+    "zoomMilliseconds": 800
+  }
+}

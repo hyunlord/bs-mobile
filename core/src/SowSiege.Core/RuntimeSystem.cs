@@ -7,6 +7,7 @@ namespace SowSiege.Core
     internal sealed class RuntimeSystem
     {
         private readonly DiagnosticObserver? diagnostics;
+        private readonly InteractiveState? interactive;
         private readonly ContentCatalog catalog;
         private readonly WorldState world;
         private readonly TrackedRandom random;
@@ -17,9 +18,10 @@ namespace SowSiege.Core
         public Func<string, Position, bool>? PlantFarm { get; set; }
         private readonly HashSet<string> activeTriggers = new(StringComparer.Ordinal);
 
-        public RuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, SpatialHash spatial, DiagnosticObserver? diagnostics = null)
+        public RuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, SpatialHash spatial, DiagnosticObserver? diagnostics = null, InteractiveState? interactive = null)
         {
             this.diagnostics = diagnostics;
+            this.interactive = interactive;
             this.catalog = catalog; this.world = world; this.random = random; this.spatial = spatial;
             definition = catalog.Runtime ?? throw new ArgumentException("Runtime content required.");
             state = world.Runtime = new();
@@ -145,14 +147,19 @@ namespace SowSiege.Core
                     var weapon = world.Equipment.Where(equipment => catalog.Weapons.ContainsKey(equipment.Id) && Tags(equipment.Id).Contains("melee", StringComparer.Ordinal)).OrderBy(equipment => equipment.Id, StringComparer.Ordinal).FirstOrDefault();
                     if (weapon is null) { return 0; }
                     long damage = 0; var candidates = 0;
+                    var visualHits = interactive is null ? null : new List<EnemyState>();
                     foreach (var enemy in spatial.Query(context.Origin, effect.Radius))
                     {
                         candidates++;
                         if (effect.Subject == "weapon-front" && !InFront(context.Origin, enemy.Position)) { continue; }
+                        visualHits?.Add(enemy);
                         var dealt = Math.Min(enemy.Health, amount); enemy.Health -= dealt; damage += dealt;
                         diagnostics?.Hit("runtime-pulse", "", owned.Source, amount, dealt);
                     }
                     diagnostics?.Attack("runtime-pulse", "", owned.Source, candidates, 0);
+                    var direction = new Position(world.Destination.X - world.Lord.X, world.Destination.Y - world.Lord.Y);
+                    if (direction == new Position(0, 0)) { direction = new(1, 0); }
+                    interactive?.Attack(world.Tick, owned.Source, context.Origin, direction, effect.Subject == "weapon-front" ? "sector180" : "disk", effect.Radius, visualHits!);
                     world.WeaponDamage += damage; return damage;
                 case "repair-nearest":
                     var building = world.Buildings.Where(building => building.Built && building.Health < catalog.Tuning.World.Buildings.Health && Within(building.Position, context.Origin, effect.Radius)).OrderBy(building => building.Position.DistanceSquared(context.Origin)).ThenBy(building => building.Id).FirstOrDefault();

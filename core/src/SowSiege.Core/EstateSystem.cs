@@ -7,6 +7,7 @@ namespace SowSiege.Core
     internal sealed class EstateSystem
     {
         private readonly DiagnosticObserver? diagnostics;
+        private readonly InteractiveState? interactive;
         private readonly ContentCatalog catalog;
         private readonly RunOptions options;
         private readonly WorldState world;
@@ -15,9 +16,10 @@ namespace SowSiege.Core
         private readonly RuntimeSystem? runtime;
         private readonly ExperimentSystem? experiment;
 
-        public EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null)
+        public EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null, InteractiveState? interactive = null)
         {
             this.diagnostics = diagnostics;
+            this.interactive = interactive;
             this.catalog = catalog;
             this.options = options;
             this.world = world;
@@ -114,6 +116,7 @@ namespace SowSiege.Core
             building.Built = true;
             building.Health = Math.Min(tuning.Health, building.Health + repair);
             building.Source = source;
+            if (fresh || ruined) { interactive?.Experience(world.Tick, PresentationKind.BuildingCompleted, source, building.Position, 0); }
             world.Tools[source].GrowthProduced++;
             runtime?.Growth(source, "building", 1);
             runtime?.Emit("repair", context);
@@ -202,6 +205,7 @@ namespace SowSiege.Core
             world.Food = Math.Min(catalog.Tuning.World.People.FoodCapacity, world.Food + tuning.FoodPerHarvest);
             world.Experience += tuning.ExperiencePerHarvest;
             world.HarvestExperience += tuning.ExperiencePerHarvest;
+            interactive?.Experience(world.Tick, PresentationKind.HarvestExperience, farm.Source, farm.Position, tuning.ExperiencePerHarvest);
             runtime?.Experience("land", tuning.ExperiencePerHarvest);
             runtime?.Emit("harvest", new(farm.Position, farm.Source, Farm: farm));
         }
@@ -219,6 +223,7 @@ namespace SowSiege.Core
                 if (world.Tick > 0 && world.Tick % tuning.TaxPeriodTicks == 0 && building.Position.DistanceSquared(world.Lord) <= (long)tuning.Range * tuning.Range)
                 {
                     world.TaxExperience += tuning.TaxExperience;
+                    interactive?.Experience(world.Tick, PresentationKind.TaxExperience, building.Source, building.Position, tuning.TaxExperience);
                     world.Experience += tuning.TaxExperience;
                     runtime?.Experience("building", tuning.TaxExperience);
                 }
@@ -297,6 +302,7 @@ namespace SowSiege.Core
         {
             var enemy = spatial.Query(position, range).OrderBy(enemy => enemy.Position.DistanceSquared(position)).ThenBy(enemy => enemy.Id).FirstOrDefault();
             diagnostics?.Attack(role is null ? "building" : "person", role ?? "", source, enemy is null ? 0 : 1, role is null ? catalog.Tuning.World.Buildings.AttackCooldownTicks : catalog.Tuning.World.People.AttackCooldownTicks);
+            interactive?.Attack(world.Tick, source, position, new Position(1, 0), "projectile", range, enemy is null ? Array.Empty<EnemyState>() : new[] { enemy });
             if (enemy is null) { return; }
             var dealt = Math.Min(enemy.Health, damage);
             var suppressed = role is not null && diagnostics?.OffenseOff == true ? dealt : 0;

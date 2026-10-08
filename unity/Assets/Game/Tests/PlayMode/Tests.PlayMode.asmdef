@@ -1,0 +1,16 @@
+{
+  "name": "Tests.PlayMode",
+  "references": [
+    "Game.App"
+  ],
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "SowSiege.Core.dll",
+    "nunit.framework.dll"
+  ],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

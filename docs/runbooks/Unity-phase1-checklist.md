@@ -1,4 +1,45 @@
-관문: 부분 — 0건의 Unity 실행·기기 검증. 1단계는 미착수이며 이 문서는 착수 체크리스트다.
+관문: 진행 중 — U0 실제 설치·batch 실행과 U1 정본 이관은 통과, U2 Unity 기반 검증 중. 실기 관문은 별도다.
+
+# 현재 실행 절차 — 1단계 A
+
+사용자의 [1단계 A 의뢰서](../design/04_ASTRA_GOAL_bs-mobile_phase1a.md)가 이전 미착수 제한을 대체한다. 추적은 [#83](https://github.com/hyunlord/bs-mobile/issues/83), Core 명령·재생은 [#86](https://github.com/hyunlord/bs-mobile/issues/86), Unity 기반은 [#87](https://github.com/hyunlord/bs-mobile/issues/87)이다. 시험 기기는 **Galaxy Z Fold8**, Unity CI 방식은 **Personal 활성화된 맥북의 로컬 검사**로 결정되어 #65를 닫았다.
+
+| 관문 | 현재 확인과 완료 조건 |
+|---|---|
+| U0 | 6000.6.4f1, Android OpenJDK·SDK·NDK와 iOS 모듈, 실제 라이선스 batch 실행 통과. [보고](../review/phase1a-u0.md) |
+| U1 | production 정본과 실험 경계 이관 완료. [PR88](https://github.com/hyunlord/bs-mobile/pull/88), 병합 `1385eae0255a2bb187e7bd2b5ef6c03ae102cd55`, [CI](https://github.com/hyunlord/bs-mobile/actions/runs/37782971456) 통과 |
+| U2 | 아래 명령으로 생성 연결·실제 Editor 테스트·ARM64 IL2CPP APK를 검증하고 연결 PR에 결과 기록 |
+| U3/U4 | 한 해 수동 조작·카드·결산·표현·개발 도구·재생·프레임 지표를 구현하고 실제 화면에서 검증 |
+| 실기 | 같은 5개 기록의 .NET/Mono/IL2CPP 일치, 기기 기록 CLI 재생, 마지막 계절 p95, 접기·펼치기 각3회와 두 화면 캡처 |
+
+저장소 루트에서 실행한다. Unity 프로젝트를 사용하는 다른 Editor 프로세스는 종료한 뒤 검사한다.
+
+```sh
+bash tools/prepare-unity.sh
+bash tools/prepare-unity.sh --verify
+bash tools/check-unity.sh
+```
+
+생성 DLL·브리지와 패키지 데이터의 출처/해시가 맞지 않으면 실패한다. 생성물을 수동 수정하지 않는다. `check-unity.sh`는 실제 테스트 수가 양수이고 실패가 없는지 결과 XML을 검사하며 IL2CPP/ARM64 BuildReport와 APK를 확인한다. 출력은 `artifacts/unity/`다. 실제 기기 설치·실행 성공은 별도이며 빌드 결과로 대신하지 않는다.
+
+재생 파일은 Core 명령과 checkpoint를 가진 한 파일이다. .NET CLI에서 다음과 같이 검증한다. fixture 생성은 현재 정본 데이터에 맞춘 correctness 검사이며 밸런스 측정이 아니다.
+
+```sh
+dotnet run --project core/src/SowSiege.Sim -- interactive-fixtures data artifacts/phase1a/replays
+dotnet run --project core/src/SowSiege.Sim -- interactive-replay data artifacts/phase1a/replays/30000.ssreplay
+```
+
+Unity는 `production`을 선택한다. U1 이전 S2 CLI 기본값을 Unity 설정으로 대체 사용하지 않는다. 과거 R2/R3 판정과 이후 무기 holdout 통과는 각각 보존하고, 새 수치 보정은 이 단계에 포함하지 않는다. [생성 연결 ADR0024](../adr/0024-generated-core-and-canonical-unity-bridge.md), [재생 ADR0025](../adr/0025-interactive-core-and-portable-replay.md), [세로 폴드·검사 ADR0026](../adr/0026-portrait-fold-layout-and-local-unity-ci.md)를 따른다.
+
+보고는 커밋·PR·CI와 실제 로컬 검사 결과로 한다. ZIP·CRC·전달 영수증은 만들지 않는다. 원본 로그의 Unity 계정/라이선스나 기기 식별자는 공개하지 않는다. 최종 APK와 해 볼 것 목록을 전달하며, 1단계 B는 시작하지 않는다.
+
+---
+
+## 아래는 1단계 승인 전 조사 기록
+
+다음의 미설치·미활성화·기기 미정·미착수 문구는 당시 상태다. 현재 실행에는 위 절차와 U0 결과를 적용하며 과거 조사·판정 자체는 보존한다.
+
+관문(당시): 부분 — 0건의 Unity 실행·기기 검증. 1단계는 미착수이며 이 문서는 착수 체크리스트다.
 변경: 공식 문서 조사로 에디터 고정안·호환성 관문·사람이 처리할 계정 작업·첫 회색 상자 범위를 정리했다.
 결정: 사용자 정정(2026-10-08)에 따라 설치된 Unity 6.6 6000.6.4f1 ARM64와 Universal 2D(URP 2D Renderer)를 채택했다. 시험 기기·Unity CI 방식은 미정이다.
 근거: 확인일 2026-10-08. 아래 공식 자료는 그 시점의 확인이며 절대 최신 패치를 보증하지 않는다.
