@@ -11,7 +11,7 @@ public sealed class RuntimeTests
         var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), true);
         return catalog with { Runtime = new(new(5, 4, 4, 300, 10, 1, 0, 100, 8, 1, [new("test:chest", "chest", 1, 0)]), new Dictionary<string, EquipmentRuntimeDefinition>(), new Dictionary<string, CharterDefinition>(), new Dictionary<string, ItemDefinition>(), new Dictionary<string, EvolutionDefinition>()) };
     }
-    internal static Simulation Create(ContentCatalog catalog) => new(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed"));
+    internal static Simulation Create(ContentCatalog catalog) => SimulationFactory.Create(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed"));
 
     [Fact]
     public void RuntimeRecordsActualInitialWorldBeforeFirstTick()

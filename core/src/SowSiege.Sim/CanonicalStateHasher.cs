@@ -1,13 +1,15 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace SowSiege.Core;
+using SowSiege.Core;
 
-internal static class StateHash
+namespace SowSiege.Sim;
+
+public sealed class CanonicalStateHasher : IStateHasher
 {
-    public static string Compute(object state)
+    public string Compute(object state)
     {
-        var element = JsonSerializer.SerializeToElement(state, new JsonSerializerOptions { IncludeFields = true });
+        var element = JsonSerializer.SerializeToElement(state, HostJson.CreateOptions(includeFields: true));
         using var stream = new MemoryStream();
         using (var writer = new Utf8JsonWriter(stream)) { WriteCanonical(writer, element); }
         return Convert.ToHexString(SHA256.HashData(stream.ToArray()));

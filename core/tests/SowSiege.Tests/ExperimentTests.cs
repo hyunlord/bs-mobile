@@ -11,7 +11,7 @@ public sealed class ExperimentTests
         var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), false, "s4-stage-one");
         return catalog with { Experiment = new(new([new(-3000, -3000), new(3000, -3000), new(3000, 3000), new(-3000, 3000)], 90, 1200, 1200), new(30, 15, 3), ["weapon", "land", "building", "people"]) };
     }
-    internal static Simulation Create(ContentCatalog catalog, string policy = "mixed", string movement = "circuit") => new(catalog, new(9000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, policy, Movement: movement));
+    internal static Simulation Create(ContentCatalog catalog, string policy = "mixed", string movement = "circuit") => SimulationFactory.Create(catalog, new(9000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, policy, Movement: movement));
     [Fact]
     public void CircuitActualTraceIsIdenticalAcrossPoliciesDespiteCardAndRandomDifferences()
     {

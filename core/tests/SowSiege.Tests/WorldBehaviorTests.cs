@@ -12,7 +12,7 @@ public sealed class WorldBehaviorTests
     public void LordRemainsInsideBoundedMapAndVisitsAllSeasons()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed"));
+        var simulation = SimulationFactory.Create(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed"));
         var seasons = new HashSet<int>();
         while (!simulation.IsComplete)
         {
@@ -29,7 +29,7 @@ public sealed class WorldBehaviorTests
     public void LoadFixtureContainsRealRequestedEntitiesBeforeAndAfterTick()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", "C", "load"));
+        var simulation = SimulationFactory.Create(catalog, new(42, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", "C", "load"));
         simulation.PrepareLoadTick();
         var before = simulation.Snapshot;
         for (var tick = 0; tick < 600; tick++)

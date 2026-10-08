@@ -16,7 +16,7 @@ public sealed class PeopleAndThreatTests
     {
         var catalog = Catalog();
         catalog = catalog with { Tuning = catalog.Tuning with { World = catalog.Tuning.World with { People = catalog.Tuning.World.People with { FoodPerPerson = foodPerPerson, FoodCapacity = Math.Max(catalog.Tuning.World.People.FoodCapacity, initialFood), MaxPeople = Math.Max(catalog.Tuning.World.People.MaxPeople, members), SquadSize = members } } } };
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         world.People.Clear();
         world.People.Add(new() { Id = world.AllocateId(), Position = world.Estate, Destination = world.Estate, Role = "militia", Members = members, Health = 1, DutyUntil = int.MaxValue });
@@ -31,7 +31,7 @@ public sealed class PeopleAndThreatTests
     {
         var catalog = Catalog();
         catalog = catalog with { Tuning = catalog.Tuning with { World = catalog.Tuning.World with { People = catalog.Tuning.World.People with { RecruitPeriodTicks = int.MaxValue } } } };
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         var estate = new EstateSystem(catalog, Options(catalog), world, "C", new(catalog.Tuning.World.Map.CellSize));
         var horn = catalog.Tools.Values.First(tool => tool.Growth.Target == "people");
@@ -59,7 +59,7 @@ public sealed class PeopleAndThreatTests
     public void DeadPeopleAreRemovedAndHornCanRecoverPopulationWithinFoodCap()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         world.People.Clear();
         world.People.Add(new() { Id = world.AllocateId(), Position = world.Lord, Health = 1 });
@@ -79,7 +79,7 @@ public sealed class PeopleAndThreatTests
     public void WoundedReturningSquadDoesNotCreateHealthWhenItSplits()
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         world.People.Clear();
         world.Tick = 1;
@@ -97,7 +97,7 @@ public sealed class PeopleAndThreatTests
     public void EnemySelectsItsDeclaredTargetWhenAvailable(string target)
     {
         var catalog = Catalog();
-        var simulation = new Simulation(catalog, Options(catalog));
+        var simulation = SimulationFactory.Create(catalog, Options(catalog));
         var world = simulation.World;
         world.Tick = 1;
         world.Farms.Add(new() { Id = world.AllocateId(), Position = new(100, 100), Stage = 0 });
@@ -115,8 +115,8 @@ public sealed class PeopleAndThreatTests
     public void ProsperityIncreasesActualSpawnCount()
     {
         var catalog = Catalog();
-        var low = new Simulation(catalog, Options(catalog));
-        var high = new Simulation(catalog, Options(catalog));
+        var low = SimulationFactory.Create(catalog, Options(catalog));
+        var high = SimulationFactory.Create(catalog, Options(catalog));
         low.World.Food = 0;
         high.World.Food = catalog.Tuning.World.People.FoodCapacity;
         low.Tick(); high.Tick();

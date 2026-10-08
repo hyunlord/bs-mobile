@@ -56,7 +56,7 @@ public sealed class SimulationTests
 
     internal static SimulationResult Finish(ContentCatalog catalog, RunOptions options)
     {
-        var simulation = new Simulation(catalog, options);
+        var simulation = SimulationFactory.Create(catalog, options);
         while (!simulation.IsComplete) { simulation.Tick(); }
         return simulation.Result();
     }

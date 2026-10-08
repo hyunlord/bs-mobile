@@ -14,7 +14,7 @@ public sealed class RemainsTests
         var estate = JsonSerializer.Deserialize<EstateDefinition>("{\"Id\":\"test:estate\",\"GrowthMultiplier\":1,\"RemainsLoop\":{\"Capacity\":2,\"LifetimeTicks\":10,\"AbsorptionRadius\":100}}")!;
         catalog = catalog with { Estates = new Dictionary<string, EstateDefinition> { [estate.Id] = estate } };
         var options = new RunOptions(9000, catalog.Tuning.DefaultHero, estate.Id, "mixed");
-        var simulation = new Simulation(catalog, options);
+        var simulation = SimulationFactory.Create(catalog, options);
         simulation.World.Farms.Clear();
         simulation.World.Enemies.Add(new() { Id = 999, Definition = catalog.Enemies.Keys.First(), Position = simulation.World.Lord, Health = 0 });
         var nextId = simulation.World.NextId;
@@ -31,7 +31,7 @@ public sealed class RemainsTests
         estates[catalog.Tuning.DefaultEstate] = estates[catalog.Tuning.DefaultEstate] with { RemainsLoop = new(capacity, lifetime, radius) };
         catalog = catalog with { Estates = estates };
         var options = new RunOptions(9000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed");
-        var simulation = new Simulation(catalog, options);
+        var simulation = SimulationFactory.Create(catalog, options);
         simulation.World.Farms.Clear(); simulation.World.People.Clear(); simulation.World.Enemies.Clear();
         return (catalog, options, simulation);
     }
@@ -114,7 +114,7 @@ public sealed class RemainsTests
         var hashes = new List<string>();
         for (var repetition = 0; repetition < 3; repetition++)
         {
-            var options = new RunOptions(9000, hero.Id, estate.Id, "mixed"); var sim = new Simulation(catalog, options); var world = sim.World;
+            var options = new RunOptions(9000, hero.Id, estate.Id, "mixed"); var sim = SimulationFactory.Create(catalog, options); var world = sim.World;
             world.Equipment.Clear(); world.People.Clear(); world.Enemies.Clear(); world.Farms.Clear(); world.Food = 0;
             var farm = new FarmState { Id = world.AllocateId(), Position = world.Lord, Source = hero.StartingTool }; world.Farms.Add(farm);
             var nextId = world.NextId; var random = new TrackedRandom(9000);
@@ -151,7 +151,7 @@ public sealed class RemainsTests
     public void ActualTickSamplesConserveAndResultDoesNotMutateState()
     {
         var (catalog, options, _) = Fixture(); catalog = catalog with { Tuning = catalog.Tuning with { DurationTicks = 7 } };
-        var sim = new Simulation(catalog, options);
+        var sim = SimulationFactory.Create(catalog, options);
         sim.World.Enemies.Add(new() { Id = 999, Definition = catalog.Enemies.Keys.First(), Position = sim.World.Lord, Health = 0 });
         while (!sim.IsComplete) { sim.Tick(); }
         var result = sim.Result(); var remains = result.Remains!;

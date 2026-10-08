@@ -1,25 +1,26 @@
 관문: 부분 — 0건의 Unity 실행·기기 검증. 1단계는 미착수이며 이 문서는 착수 체크리스트다.
 변경: 공식 문서 조사로 에디터 고정안·호환성 관문·사람이 처리할 계정 작업·첫 회색 상자 범위를 정리했다.
-결정: 사용자 승인(2026-10-08)으로 Unity 6.3 LTS 6000.3.25f1 고정 후보를 채택했다. 시험 기기·Unity CI 방식은 답변 대기이며 설치하지 않았다.
+결정: 사용자 정정(2026-10-08)에 따라 설치된 Unity 6.6 6000.6.4f1 ARM64와 Universal 2D(URP 2D Renderer)를 채택했다. 시험 기기·Unity CI 방식은 미정이다.
 근거: 확인일 2026-10-08. 아래 공식 자료는 그 시점의 확인이며 절대 최신 패치를 보증하지 않는다.
-한계: 프로젝트 생성·에디터/SDK 설치·라이선스 활성화·비밀값 등록을 수행하지 않았다. Phase0 헤드리스 통과는 모바일 품질 통과가 아니다.
+한계: 에디터 설치는 읽기 전용 확인했다. Personal 활성화는 사용자 진술이며 독립 검증하지 않았다. 에이전트는 프로젝트 생성·SDK 설치·활성화·비밀값 등록을 하지 않았다.
 
 # 1단계 Unity 착수 체크리스트
 
-버전 후보 승인은 #65에 기록했다. 시험 기기·Unity CI 방식은 사용자 답변 전 확정하지 않는다. 남은 계획 결정은 [needs-decision #65](https://github.com/hyunlord/bs-mobile/issues/65), Phase0 종료 정리는 [#64](https://github.com/hyunlord/bs-mobile/issues/64)에서 추적한다.
+이전 Unity 6.3 LTS 6000.3.25f1 선택은 사용자 정정으로 대체했다. [ADR 0018](../adr/0018-unity-66-urp-baseline.md)에 이력을 보존한다. 시험 기기·Unity CI 방식은 사용자 답변 전 확정하지 않는다. 남은 계획 결정은 [needs-decision #65](https://github.com/hyunlord/bs-mobile/issues/65), Phase0 종료 정리는 [#64](https://github.com/hyunlord/bs-mobile/issues/64)에서 추적한다.
 
 ## 에디터와 플랫폼 고정안
 
-- [ ] **Unity 6.3 LTS `6000.3.25f1`, changeset `e1dba0a9aba4`**를 후보로 검토한다. 공식 출시일은 2026-09-24이며 macOS ARM64와 Android/iOS Build Support를 제공한다. 이는 공식 페이지로 확인한 구체적인 후보이지, 더 새로운 패치가 없다는 주장이 아니다. 실제 착수 시 알려진 문제를 다시 확인하고 `ProjectVersion.txt`와 패키지 잠금 파일에 승인한 버전을 고정한다. [공식 패치·모듈·알려진 문제](https://unity.com/releases/editor/whats-new/6000.3.25f1)
-- [ ] 6.3 LTS의 공식 지원 기한은 2027년 12월이다. 해당 패치의 2D Renderer/Bloom 검은 화면 등 알려진 문제를 고려해 첫 회색 상자는 후처리 없이 시작하는 안을 권고한다. 실제 프로젝트에서 안전하다는 검증은 아직 없다. [지원 정책](https://unity.com/releases/unity-6/support), [패치 알려진 문제](https://unity.com/releases/editor/whats-new/6000.3.25f1)
-- [ ] Android는 선택 에디터의 Android Build Support·SDK·NDK·OpenJDK 조합을 설치·기록한다. 의존성 버전은 해당 에디터 지원 조합을 확인하며 임의의 최신 버전으로 대체하지 않는다. [Unity Android 환경 설정](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/android/getting-started/sdksetup)
-- [ ] iOS는 iOS Build Support와 Xcode 또는 Unity Build Automation 경로를 선택한다. 로컬 최종 빌드에는 macOS/Xcode가 필요하다. 프로젝트 생성과 최종 서명·기기 설치를 별도 관문으로 기록한다. [Unity iOS 환경 설정](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/iphone/getting-started/ios-environment-setup)
+- [x] 설치된 **Unity 6.6 `6000.6.4f1` ARM64**를 확인했다. 경로는 `/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app`이며 Info.plist 버전과 실행파일 아키텍처를 대조했다. 공식 출시일은 2026-10-01이다. [패치·알려진 문제](https://unity.com/releases/editor/whats-new/6000.6.4f1)
+- [ ] 착수할 때 Universal 2D 템플릿의 URP 2D Renderer를 사용하고 ProjectVersion.txt와 패키지 잠금 파일을 고정한다. 아직 프로젝트를 생성하지 않았다. [URP 2D Renderer](https://docs.unity3d.com/6000.6/Documentation/Manual/urp/2DRendererData-overview.html)
+- [ ] Android Build Support·OpenJDK·SDK·NDK 및 iOS Build Support를 필요한 대상에 맞춰 준비한다. 설치 루트의 PlaybackEngines에는 MacStandaloneSupport/WebGLSupport만 있고 AndroidPlayer와 그 OpenJDK/SDK/NDK, iOSSupport는 없다. modules.json 카탈로그를 설치 완료로 해석하지 않는다. [Android 환경](https://docs.unity3d.com/6000.6/Documentation/Manual/android-sdksetup.html), [iOS 환경](https://docs.unity3d.com/6000.6/Documentation/Manual/ios-environment-setup.html)
+- [ ] 알려진 Vulkan 충돌(UUM-153744), Player의 UnloadUnusedAssets 지연(UUM-149540), 복수 bee_backend 충돌(UUM-142773)을 적용 대상에서 확인한다. 공식 알려진 문제이며 이 프로젝트에서 재현한 결과가 아니다. 처음에는 빌드를 직렬 실행하고 불필요한 후처리를 피하는 방식을 권고한다. [공식 release note](https://unity.com/releases/editor/whats-new/6000.6.4f1)
+- [ ] 연말 계획인 6.7 LTS는 현재 beta다. 정식 출시 후 [#70](https://github.com/hyunlord/bs-mobile/issues/70)에서 별도 전환 검증한다. Built-in은 6.5부터 deprecated이고 최신 공식 발표상 7.0에서 제거된다. [초기 전략](https://unity.com/topics/render-pipelines-strategy-for-2026), [최신 공식 발표](https://discussions.unity.com/t/the-path-to-a-single-render-pipeline-in-unity-7/1737908)
 
 ## Core 연결 선행 관문
 
-- [ ] 현재 저장소의 `Directory.Build.props`는 `net8.0`을 대상으로 한다. Unity 6.3의 API 수준은 .NET Standard 2.1 또는 .NET Framework 4.8이며 .NET Core 대상 관리 플러그인은 지원 대상이 아니다. 현재 DLL을 그대로 넣으면 된다고 가정하지 않는다. [Unity .NET 호환성](https://docs.unity.com/en-us/engine/6000.3/manual/programming-environment/overview-of-dot-net-in-unity/dotnet-profile-support)
-- [ ] 별도 이슈·ADR에서 Unity 호환 타깃, 사용하는 BCL API·C# 문법·직렬화·IL2CPP/AOT 제약을 확인한다. .NET 8 CLI·역사 fixture를 유지하면서 공통 Core를 연결하는 최소 경로를 검증한다. 멀티타깃 또는 소스 공유는 검토안이며 이미 성공한 구현이 아니다.
-- [ ] Unity 어댑터는 입력·카메라·표시·플랫폼 처리를 맡고, Core에는 Unity 타입·시각·SDK나 구체 영웅/영지 ID를 추가하지 않는다. 같은 데이터·seed·입력 순서의 결과를 .NET 실행과 Editor·기기 실행에서 대조한다. IL2CPP는 AOT를 사용하므로 Editor 통과만으로 기기 호환성을 선언하지 않는다. [Unity API·AOT 설명](https://docs.unity.com/en-us/engine/6000.3/manual/programming-environment/overview-of-dot-net-in-unity/dotnet-profile-support)
+- [ ] [#67](https://github.com/hyunlord/bs-mobile/issues/67)의 Core 호환성 결과와 실제 산출 타깃을 확인한다. Unity 6.6의 API 수준은 .NET Standard 2.1 또는 .NET Framework 4.8이며 .NET Core 대상 관리 플러그인은 지원 대상이 아니다. net8.0 DLL을 그대로 넣으면 된다고 가정하지 않는다. [Unity .NET 호환성](https://docs.unity.com/en-us/engine/6000.6/manual/programming-environment/overview-of-dot-net-in-unity/dotnet-profile-support)
+- [ ] C# 9/.NET Standard 2.1 계약, 사용하는 BCL API·직렬화·IL2CPP/AOT 제약을 확인한다. .NET 8 CLI·역사 fixture를 유지한다. netstandard2.1 Core를 .NET 8 테스트 호스트에서 실행한 동등성 결과를 실제 Unity/IL2CPP 실행 검증과 구분한다. [C# 9 및 record 제약](https://docs.unity3d.com/6000.6/Documentation/Manual/csharp-compiler.html)
+- [ ] Unity 어댑터는 입력·카메라·표시·플랫폼 처리를 맡고, Core에는 Unity 타입·시각·SDK나 구체 영웅/영지 ID를 추가하지 않는다. 같은 데이터·seed·입력 순서의 결과를 .NET 실행과 Editor·기기 실행에서 대조한다. IL2CPP는 AOT를 사용하므로 Editor 통과만으로 기기 호환성을 선언하지 않는다. [Unity API·AOT 설명](https://docs.unity.com/en-us/engine/6000.6/manual/programming-environment/overview-of-dot-net-in-unity/dotnet-profile-support)
 
 ## 사람이 직접 처리할 계정·권한 작업
 
@@ -27,10 +28,10 @@
 
 | 필요한 시점 | 사용자가 직접 확인하거나 처리할 일 | 근거·경계 |
 |---|---|---|
-| 에디터를 사용하기 전 | 본인/조직의 재무·계약 관계에 맞는 라이선스와 좌석을 확인하고 계정 로그인·인증·동의를 처리한다. | Personal 소개 페이지는 최근 12개월 매출·투자금 $200K 미만 자격을 설명한다. 이 문서는 사용자의 자격을 판정하지 않는다. [Unity Personal](https://unity.com/products/unity-personal) |
-| Unity CI를 켜기 전 | 사용할 runner/서비스의 라이선스 방식과 비용·조직 권한을 확인한다. 필요한 인증만 승인한 비밀 저장소에 등록한다. | 6.3 매뉴얼은 Personal 활성화·반납에 Hub만 지원한다고 명시한다. 무료 라이선스 파일을 복사하면 CI가 된다는 전제를 두지 않는다. 실제 batch 빌드 통과 전에는 CI 준비 완료가 아니다. [활성화 방식](https://docs.unity.com/en-us/engine/6000.3/manual/get-started/install-and-upgrade/licenses-and-activation/license-activation-methods) |
-| Android 기기 시험 | 사용할 기기를 준비하고 잠금 해제·연결·디버깅 승인을 처리한다. | 개발용 설치와 스토어 배포를 분리한다. 배포가 필요해질 때 keystore·alias·암호의 소유·보관 방식을 확정한다. [키 로드·서명 설정](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/android/getting-started/keystore/load) |
-| iOS 기기 시험·배포 | Apple ID·개발 팀·기기 신뢰/등록을 처리한다. 배포 경로에 맞는 회원 자격과 서명 권한을 확인한다. | Unity 환경 문서는 무료 Apple ID의 기기 시험과 Apple Developer Program의 App Store 배포 등을 구분한다. [iOS 환경 설정](https://docs.unity.com/en-us/engine/6000.3/manual/platform-specific/iphone/getting-started/ios-environment-setup) |
+| 에디터를 사용하기 전 | 사용자가 Personal 활성화를 알렸다. 독립 검증은 하지 않았으며 추가 계정·좌석 확인이 실제로 필요한 경우에만 처리한다. | Personal 소개 페이지는 최근 12개월 매출·투자금 $200K 미만 자격을 설명한다. 이 문서는 사용자의 자격을 판정하지 않는다. [Unity Personal](https://unity.com/products/unity-personal) |
+| Unity CI를 켜기 전 | 사용할 runner/서비스의 라이선스 방식과 비용·조직 권한을 확인한다. 필요한 인증만 승인한 비밀 저장소에 등록한다. | 6.6 매뉴얼은 Personal 활성화·반납에 Hub만 지원한다고 명시한다. 무료 라이선스 파일을 복사하면 CI가 된다는 전제를 두지 않는다. 실제 batch 빌드 통과 전에는 CI 준비 완료가 아니다. [활성화 방식](https://docs.unity.com/en-us/engine/6000.6/manual/get-started/install-and-upgrade/licenses-and-activation/license-activation-methods) |
+| Android 기기 시험 | 사용할 기기를 준비하고 잠금 해제·연결·디버깅 승인을 처리한다. | 개발용 설치와 스토어 배포를 분리한다. 배포가 필요해질 때 keystore·alias·암호의 소유·보관 방식을 확정한다. [키 로드·서명 설정](https://docs.unity.com/en-us/engine/6000.6/manual/platform-specific/android/getting-started/keystore/load) |
+| iOS 기기 시험·배포 | Apple ID·개발 팀·기기 신뢰/등록을 처리한다. 배포 경로에 맞는 회원 자격과 서명 권한을 확인한다. | Unity 환경 문서는 무료 Apple ID의 기기 시험과 Apple Developer Program의 App Store 배포 등을 구분한다. [iOS 환경 설정](https://docs.unity.com/en-us/engine/6000.6/manual/platform-specific/iphone/getting-started/ios-environment-setup) |
 | iOS 자동 서명 빌드가 필요할 때 | `.p12`·해당 암호·`.mobileprovision`과 필요한 기기/앱 식별자를 준비해 승인한 CI 저장소에 등록한다. | Unity Build Automation 서명 문서가 이 입력을 명시한다. 인증서·키·암호는 채팅·Git·전달 ZIP에 넣지 않는다. 첫 로컬 회색 상자에 모든 배포용 비밀값을 선행 요구하지 않는다. [Unity iOS 서명](https://docs.unity.com/en-us/build-automation/sign-build-artifacts/sign-an-ios-application) |
 
 ## 측정 프로필을 명시적으로 인계
@@ -48,7 +49,7 @@
 - [ ] 씨앗 자루의 직접 전투 효과와 성장 결과를 구별하고 첫 도구가 두 역할을 한다는 점을 사람이 이해하는지 관찰한다. 처치·잔재·비옥도·성장의 변화는 실제 Core 사건에서 표시한다. 영상 연출로 미구현 고리를 대신하지 않는다.
 - [ ] 최소 HUD는 체력·시간/계절·레벨·카드 선택·종료/재시작을 제공한다. 잔재 운반 같은 후보 능력은 구현·검증한 범위만 표시한다. 영웅 선택 화면이나 다중 영지 제작으로 범위를 넓히지 않는다.
 - [ ] Android/iOS의 지정 실제 기기에서 터치 이동, 카드 선택 중 입력, 화면 가림·가독성, 안전 영역, 앱 일시정지·복귀, 사망·재시작을 관찰한다. 지원 대상 전체를 검증했다고 확대하지 않는다.
-- [ ] 기기 모델·OS·빌드 커밋·에디터 버전·설정·seed와 함께 프레임 시간·할당·발열/지속 실행 조건을 기록한다. Core 틱 p95와 전체 프레임 시간은 다른 지표다. Unity도 Editor와 대상 플랫폼 양쪽 프로파일링을 권고한다. [Unity 플랫폼별 프로파일링 경계](https://docs.unity.com/en-us/engine/6000.3/manual/programming-environment/overview-of-dot-net-in-unity/dotnet-profile-support)
+- [ ] 기기 모델·OS·빌드 커밋·에디터 버전·설정·seed와 함께 프레임 시간·할당·발열/지속 실행 조건을 기록한다. Core 틱 p95와 전체 프레임 시간은 다른 지표다. Unity도 Editor와 대상 플랫폼 양쪽 프로파일링을 권고한다. [Unity 플랫폼별 프로파일링 경계](https://docs.unity.com/en-us/engine/6000.6/manual/programming-environment/overview-of-dot-net-in-unity/dotnet-profile-support)
 
 ## 완료 판정과 이번 범위 밖
 
