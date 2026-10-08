@@ -22,12 +22,20 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator PortraitAndSquareRetainRunAndCaptureRealUi()
         {
-            PlayModeWindow.SetCustomRenderingResolution(360,800,"Phase1A QA");
+            using var preferences=new RunPreferenceScope();
+            PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
             while((app=UnityEngine.Object.FindFirstObjectByType<RunCoordinator>())==null&&Time.realtimeSinceStartup<deadline)yield return null;
             yield return null;Assert.That(app.Error,Is.Null);yield return Capture("meta-portrait");
-            Click(app,"설정");yield return null;yield return Capture("settings-portrait");Click(app,"돌아가기");app.StartRun(30000);
+            Click(app,"시작");yield return null;yield return Capture("intro-portrait");
+            PlayModeWindow.SetCustomRenderingResolution(1080,1080,"Phase1B QA");yield return null;yield return Capture("intro-square");
+            Click(app,"돌아가기");yield return null;yield return Capture("meta-square");
+            Click(app,"설정");yield return null;yield return Capture("settings-square");
+            var squareSettings=app.Ui.GetComponentInChildren<ScrollRect>();squareSettings.verticalNormalizedPosition=0;yield return null;yield return Capture("settings-square-bottom");
+            Click(app,"돌아가기");PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");yield return null;
+            Click(app,"설정");yield return null;yield return Capture("settings-portrait");
+            var settingsScroll=app.Ui.GetComponentInChildren<ScrollRect>();settingsScroll.verticalNormalizedPosition=0;yield return null;yield return Capture("settings-portrait-bottom");Click(app,"돌아가기");app.StartRun(30000);
             while(app.Session==null&&Time.realtimeSinceStartup<deadline)yield return null;
             var debug=app.GetComponent<Game.Debug.DebugOverlay>();debug.SetOpen(true);yield return null;Click(app,"무적 전환");debug.SetOpen(false);var original=app.Session;
             while(app.Frame.Tick<18000)
@@ -48,7 +56,8 @@ namespace Tests.PlayMode
             for(var i=0;i<10&&scroll.verticalNormalizedPosition>.05f;i++){ExecuteEvents.Execute(scroll.gameObject,new PointerEventData(EventSystem.current){scrollDelta=new Vector2(0,-100)},ExecuteEvents.scrollHandler);yield return null;}
             Assert.That(scroll.verticalNormalizedPosition,Is.LessThan(.1f));yield return Capture("debug-portrait-bottom");debug.SetOpen(false);
             app.Send(ReplayCommandKind.GrantLevel);yield return null;yield return Capture("cards-portrait");
-            var pausedTick=app.Frame.Tick;PlayModeWindow.SetCustomRenderingResolution(720,720,"Phase1A QA");yield return null;yield return null;
+            var cardScroll=app.Ui.GetComponentInChildren<ScrollRect>();cardScroll.verticalNormalizedPosition=0;yield return null;yield return Capture("cards-portrait-bottom");
+            var pausedTick=app.Frame.Tick;PlayModeWindow.SetCustomRenderingResolution(1080,1080,"Phase1B QA");yield return null;yield return null;
             Assert.That(app.Session,Is.SameAs(original));Assert.That(app.Frame.Tick,Is.EqualTo(pausedTick));yield return Capture("cards-square");
             Click(app,"선택");yield return null;yield return Capture("run-square-late");
             while(app.Frame.Status!=RunStatus.Completed)
@@ -60,7 +69,8 @@ namespace Tests.PlayMode
                 }
                 yield return null;
             }
-            yield return null;Assert.That(app.Frame.Tick,Is.EqualTo(app.Frame.DurationTicks));yield return Capture("summary-square");SaveReplay(app,"duration",ReplayEndKind.Duration);
+            yield return null;Assert.That(app.Frame.Tick,Is.EqualTo(app.Frame.DurationTicks));yield return Capture("summary-square");
+            var summaryScroll=app.Ui.GetComponentInChildren<ScrollRect>();summaryScroll.verticalNormalizedPosition=0;yield return null;yield return Capture("summary-square-bottom");SaveReplay(app,"duration",ReplayEndKind.Duration);
             Click(app,"다시 하기");yield return null;yield return null;
             Assert.That(app.Session,Is.Not.SameAs(original));Assert.That(app.Error,Is.Null);
             var retrySession=app.Session;debug.SetOpen(true);app.StartRun(30000);while(app.Session==retrySession)yield return null;
@@ -73,7 +83,7 @@ namespace Tests.PlayMode
                 yield return null;
             }
             debug.SetOpen(false);yield return null;Assert.That(app.Session.GetSummary().EndReason,Is.EqualTo("death"));
-            PlayModeWindow.SetCustomRenderingResolution(360,800,"Phase1A QA");yield return null;yield return Capture("death-portrait");SaveReplay(app,"death",ReplayEndKind.Death);
+            PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");yield return null;yield return Capture("death-portrait");SaveReplay(app,"death",ReplayEndKind.Death);
             var dead=app.Session;Click(app,"다시 하기");yield return null;yield return null;Assert.That(app.Session,Is.Not.SameAs(dead));
             foreach(var boot in UnityEngine.Object.FindObjectsByType<FoundationBoot>())UnityEngine.Object.Destroy(boot.gameObject);
             yield return null;
@@ -108,7 +118,7 @@ namespace Tests.PlayMode
         private static IEnumerator Capture(string name)
         {
             yield return null;yield return null;
-            var path=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/unity/screenshots",name+".png"));Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var path=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/phase1b/m3-runtime",name+".png"));Directory.CreateDirectory(Path.GetDirectoryName(path));
             if(File.Exists(path))File.Delete(path);
             ScreenCapture.CaptureScreenshot(path);
             var deadline=Time.realtimeSinceStartup+10;

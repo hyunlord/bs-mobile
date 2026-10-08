@@ -42,7 +42,7 @@ namespace Game.View
             mapSize = new Vector2((float)width / settings.WorldUnitsPerUnityUnit, (float)height / settings.WorldUnitsPerUnityUnit);
         }
 
-        public void Present(Vector2 lord, int estateExtent, float deltaTime)
+        public void Present(Vector2 lord, int estateExtent, float deltaTime, Rect? safeAreaPixels = null)
         {
             SetVisualOffset(Vector2.zero);
             var units = settings.WorldUnitsPerUnityUnit; var aspect = Mathf.Max(0.01f, camera.aspect);
@@ -54,19 +54,27 @@ namespace Game.View
             var follow = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.FollowMilliseconds);
             var zoom = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.ZoomMilliseconds);
             camera.orthographicSize = positioned ? Mathf.Min(Mathf.Lerp(camera.orthographicSize, desired, zoom), maximum) : desired;
-            var target = ClampToMap(lord);
+            var viewport = camera.pixelRect;
+            var safe = safeAreaPixels ?? viewport;
+            safe = Rect.MinMaxRect(Mathf.Max(viewport.xMin, safe.xMin), Mathf.Max(viewport.yMin, safe.yMin),
+                Mathf.Min(viewport.xMax, safe.xMax), Mathf.Min(viewport.yMax, safe.yMax));
+            if (safe.width <= 0 || safe.height <= 0) safe = viewport;
+            var pixelsToWorld = camera.orthographicSize * 2 / Mathf.Max(1, viewport.height);
+            var excluded = new Vector4(safe.xMin - viewport.xMin, safe.yMin - viewport.yMin,
+                viewport.xMax - safe.xMax, viewport.yMax - safe.yMax) * pixelsToWorld;
+            var target = ClampToMap(lord - (safe.center - viewport.center) * pixelsToWorld, excluded);
             var position = positioned ? Vector2.Lerp(camera.transform.position, target, follow) : target;
-            position = ClampToMap(position);
+            position = ClampToMap(position, excluded);
             camera.transform.position = new Vector3(position.x, position.y, -10); positioned = true;
         }
 
-        Vector2 ClampToMap(Vector2 position)
+        Vector2 ClampToMap(Vector2 position, Vector4 excluded)
         {
             if (mapSize.x <= 0) return position;
             var halfHeight = camera.orthographicSize; var halfWidth = halfHeight * camera.aspect;
             var margin = GameVisualTokens.CameraOutsideMargin;
-            return new Vector2(Mathf.Clamp(position.x, halfWidth - margin, mapSize.x - halfWidth + margin),
-                Mathf.Clamp(position.y, halfHeight - margin, mapSize.y - halfHeight + margin));
+            return new Vector2(Mathf.Clamp(position.x, halfWidth - margin - excluded.x, mapSize.x - halfWidth + margin + excluded.z),
+                Mathf.Clamp(position.y, halfHeight - margin - excluded.y, mapSize.y - halfHeight + margin + excluded.w));
         }
 
         public void SetVisualOffset(Vector2 offset)

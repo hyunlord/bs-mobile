@@ -44,4 +44,4 @@
 
 현재 `FontProvider`는 운영체제에 설치된 폰트를 런타임에 참조한다. Apple 폰트 바이너리를 프로젝트에 복사하는 방식이 아니다. macOS의 Apple SD Gothic Neo와 Android의 Noto/Gothic 후보는 선택 우선순위이며, 실제 선택 폰트는 기기별로 달라질 수 있다. 최종 패키지의 폰트 파일 미포함 여부는 패키징 검사에서 확인한다. [Unity 6.6 OS 폰트 API](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Font.CreateDynamicFontFromOSFont.html)
 
-이 기록 시점의 M3 효과음·음악은 아직 제작하지 않았다. 아트의 사용 근거를 오디오에 자동 적용하지 않으며, 실제 제작·선정된 음원의 출처와 사용 조건을 별도로 기록한다.
+M3에서 프로젝트 원본 합성 효과음7개와 반복 음악1개를 제작했다. 저작 소스·사용 근거·PCM 검사와 실제 Editor 출력 검증 범위는 [오디오 기록](assets.md)에 별도로 남겼다. 외부 음원이나 CC0 파일을 사용하지 않았다.

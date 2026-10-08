@@ -19,9 +19,10 @@ namespace Game.View
         readonly ArtCatalog art;
         float remaining;
         bool boss;
+        bool suppressed;
         int pendingSeason = -1;
         public string Message => label.text;
-        public bool Visible => banner.gameObject.activeSelf;
+        public bool Visible => !suppressed && banner.gameObject.activeSelf;
         public bool AtBottom { get; private set; }
 
         public WorldAnnouncements(Camera camera, ArtCatalog art)
@@ -56,8 +57,13 @@ namespace Game.View
             boss = true; label.text = "보스 출현"; icon.sprite = art.Resolve("enemy", sourceId, "idle").Sprite;
             icon.gameObject.SetActive(true); remaining = NoticeSeconds; banner.gameObject.SetActive(true);
         }
+        public void SetSuppressed(bool value)
+        {
+            suppressed = value; root.GetComponent<Canvas>().enabled = !value;
+        }
         public void Present(float seconds, Rect safeAreaPixels, Vector2 lordScreenPoint)
         {
+            if (suppressed) return;
             remaining = Mathf.Max(0, remaining - Mathf.Max(0, seconds));
             if (remaining <= 0)
             {
