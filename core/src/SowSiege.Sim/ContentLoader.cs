@@ -18,8 +18,8 @@ public static partial class ContentLoader
 
     public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
-        var baseline = Read<Tuning>(Path.Combine(directory, "tuning.json"));
         var profile = LoadProfile(directory, profileName);
+        var baseline = Read<Tuning>(ConfigurationPath(directory, profile.TuningFile ?? "tuning.json", @"\A(?:tuning\.json|experiments/tuning-s2-baseline\.json)\z"));
         var experiment = LoadExperiment(directory, profile, baseline);
         var tuning = experiment?.Tuning ?? baseline;
         var selection = profile.Select(includeTest);
@@ -159,13 +159,17 @@ public static partial class ContentLoader
     {
         Require((File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0, $"Content symlink is not allowed: {path}");
         using var document = JsonDocument.Parse(File.ReadAllText(path));
+        UniqueProperties(document.RootElement);
         ValidateRequiredShape(document.RootElement, typeof(T), path);
-        return document.RootElement.Deserialize<T>(JsonOptions) ?? throw new InvalidDataException($"Null content: {path}");
+        var result = document.RootElement.Deserialize<T>(JsonOptions) ?? throw new InvalidDataException($"Null content: {path}");
+        if (result is WeaponContent weapon) { ValidateWeaponSource(weapon); }
+        return result;
     }
 
     private static void ValidateRequiredShape(JsonElement element, Type type, string location)
     {
         Require(element.ValueKind != JsonValueKind.Null, $"Null content at {location}.");
+        type = Nullable.GetUnderlyingType(type) ?? type;
         if (type == typeof(int))
         {
             var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum", ".linear", ".pierce", ".beamHalfWidth" };
@@ -198,7 +202,11 @@ public static partial class ContentLoader
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
             if (!element.TryGetProperty(name, out var member))
             {
-                if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent) || name is "experiment" or "weaponCombat" && type == typeof(RuntimeProfile))
+                if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent)
+                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" && type == typeof(RuntimeProfile)
+                    || name == "growth" && type == typeof(WeaponContent)
+                    || name is "damage" or "range" or "cooldownTicks" or "knockback" && type == typeof(WeaponActivationContent)
+                    || name == "definitionsFile" && type == typeof(WeaponCombatProfileExtension))
                 {
                     continue;
                 }
@@ -206,7 +214,10 @@ public static partial class ContentLoader
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
             Require(!(type == typeof(EstateContent) && name == "remainsLoop" && member.ValueKind == JsonValueKind.Null), "Remains loop must be omitted or a complete object.");
-            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" && member.ValueKind == JsonValueKind.Null), "Experiment must be omitted or a complete object.");
+            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
+            Require(!(type == typeof(WeaponContent) && name == "growth" && member.ValueKind == JsonValueKind.Null), "Weapon growth must be omitted or complete.");
+            Require(!(type == typeof(WeaponActivationContent) && member.ValueKind == JsonValueKind.Null), "Activation members cannot be null.");
+            Require(!(type == typeof(WeaponCombatProfileExtension) && member.ValueKind == JsonValueKind.Null), "Weapon combat members cannot be null.");
             if (member.ValueKind == JsonValueKind.Null && new System.Reflection.NullabilityInfoContext().Create(property).ReadState == System.Reflection.NullabilityState.Nullable)
             {
                 continue;

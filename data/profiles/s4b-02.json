@@ -104,6 +104,7 @@
   },
   "experiment": {
     "contractVersion": 1,
-    "tuningFile": "tuning-s4b-02.json"
-  }
+    "tuningFile": "experiments/tuning-s4b-02.json"
+  },
+  "tuningFile": "experiments/tuning-s2-baseline.json"
 }

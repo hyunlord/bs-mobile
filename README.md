@@ -2,9 +2,11 @@
 
 모바일 판타지 액션에서 도구가 공격하고 땅·건물·사람을 키우는 게임. 기본 영웅 1·영지 전통 1로 시작하되 규칙은 데이터로 확장한다.
 
-**Phase0 S0–S5** 산출물을 정리했다. [단계 결과와 남은 결정](docs/review/S5-report.md), [시장·BM 근거](docs/research/S5-bm.md)를 먼저 읽는다. S0 Projects 보드는 권한 제한으로 미완료다. **S4 헤드리스 봇 리그** 실행을 마쳤다. 576사례의 결정론·CSV 재현은 통과했으나 무기형이 모든 조건에서 우세해 밸런스 관문은 실패했다. [결과와 한계](docs/review/S4-report.md)를 보존했다. S2의 30Hz 월드에서 이동·전투·농지·건물·사람과 카드 선택을 실행하고, S4 프로필은 선택된 후보의 특허장·물품·진화를 연결한다. 전체 판은 임시 설정 12분이며 CI 연기 시험은 앞 900틱만 실행한다. S0의 과거 지표와 실제 게임 지표는 분리한다. 측정된 리그 결과와 모바일 화면·사람의 재미 검증을 구분하며 Unity 프로젝트는 다음 개발 단계에서 생성한다.
+**1단계 A 착수:** [의뢰서](docs/design/04_ASTRA_GOAL_bs-mobile_phase1a.md)에 따라 데이터 정리를 Unity 구현보다 먼저 진행한다. [승인된 무기 평가](docs/review/weapon-holdout-79.md)는 무기 하한·기존(b)·c′를 모두 통과했다. [U0 환경 확인](docs/review/phase1a-u0.md)과 [생산 데이터 진입점](docs/runbooks/production-data.md)을 먼저 읽는다. Unity 실기 검증과 사람의 재미 판정은 별도 관문이며 1단계 B는 시작하지 않는다.
 
-.NET 8 SDK, Node.js 22 이상(npm), Git, Bash, 시스템 zip/unzip를 준비한 깨끗한 클론의 루트에서:
+Phase0의 [S5](docs/review/S5-report.md)·[기존 S4 실패](docs/review/S4-report.md)·R2/R3·진단 원자료는 당시 기록으로 보존한다. Projects 보드는 사용자 결정 #2에 따라 사용하지 않고 라벨·마일스톤·이슈/PR로 관리한다. 전체 판은 현재12분/30Hz이며 CI 스모크900틱을 한 판·모바일 성능 검증으로 부르지 않는다.
+
+.NET 8 SDK, Node.js 22 이상(npm), Git, Bash를 준비한 깨끗한 클론의 루트에서:
 
 ```sh
 ./tools/check.sh

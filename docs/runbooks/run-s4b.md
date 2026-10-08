@@ -17,7 +17,7 @@ node tools/s4b-report.mjs artifacts/league-s4b-smoke-B artifacts/report-s4b-smok
 
 ## 보정과 동결
 
-후보마다 전체 위협·XP 수치 묶음을 새 `data/tuning-s4b-NN.json`과 연결 프로필로 보관한다. 최대 6개이며 이전 후보를 덮어쓰지 않는다. 변경 이유와 모든 후보 결과는 `docs/league/tuning-log.md`에 남긴다. 보정 seed1000–1031만 사용하며 평가 A/B 결과를 먼저 보지 않는다.
+후보마다 전체 위협·XP 수치 묶음을 새 `data/experiments/tuning-s4b-NN.json`과 연결 프로필로 보관한다. 최대 6개이며 이전 후보를 덮어쓰지 않는다. 변경 이유와 모든 후보 결과는 `docs/league/tuning-log.md`에 남긴다. 보정 seed1000–1031만 사용하며 평가 A/B 결과를 먼저 보지 않는다.
 
 ```sh
 node tools/s4b-league.mjs calibration --profile s4b-01 --output artifacts/s4b-calibration-01 --workers 4
@@ -41,6 +41,6 @@ node tools/s4b-report.mjs artifacts/s4b-B artifacts/s4b-B-report
 
 ## 보관과 R3
 
-대량 JSON·사례별 CSV·trace는 git에 넣지 않는다. 원자료, 보고서, 실행 로그, 고정 입력을 Release 자산으로 압축하고 자산·파일별 SHA-256/바이트 매니페스트를 만든다. 새 다운로드를 깨끗하게 추출하여 정확한 파일 집합과 전수 해시를 검사한다. 저장소에는 요약 CSV·보고서·작은 매니페스트·재현 링크를 남긴다.
+대량 JSON·사례별 trace는 git에 넣지 않는다. 신규 보관은 [보고 규칙](../review/report-format.md)을 따른다. ZIP·CRC·전달 영수증을 만들지 않으며, 필요한 작은 정본 CSV와 재생성 명령만 보존한다. 원자료가 필요하면 사전 선정한 실패·표본만 Release에 올리고 CSV에서 재생성 가능한 결과는 업로드하지 않는다. 과거 Release는 원본 그대로 유지한다.
 
 R3은 동일한 동결 수치·프로토콜·seed로 A/B를 다시 실행하되 출력·Release 이름을 분리한다. 새로운 기본 영지 고리와 ID를 제외한 재보정은 하지 않는다. R2 결과를 덮어쓰지 않는다.

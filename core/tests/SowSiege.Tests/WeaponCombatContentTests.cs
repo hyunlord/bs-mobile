@@ -46,6 +46,14 @@ public sealed class WeaponCombatContentTests
             }
             var profile = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "profiles/s4b-02.json")))!;
             profile["weaponCombat"] = JsonNode.Parse("{\"contractVersion\":1,\"definitionsFile\":\"weapon-growth-test.json\"}");
+            foreach (var weaponPath in Directory.GetFiles(Path.Combine(root, "weapons"), "*.json"))
+            {
+                var weapon = JsonNode.Parse(File.ReadAllText(weaponPath))!;
+                if (weapon["growth"] is not { } growth) { continue; }
+                foreach (var key in new[] { "damage", "range", "cooldownTicks", "knockback" }) { weapon["activation"]![key] = growth["levels"]![0]![key]!.DeepClone(); }
+                weapon.AsObject().Remove("growth");
+                File.WriteAllText(weaponPath, weapon.ToJsonString());
+            }
             var weapons = new JsonObject();
             foreach (var id in profile["selection"]!["weapons"]!.AsArray())
             {

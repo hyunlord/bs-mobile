@@ -1,4 +1,5 @@
 import './test-weapon-growth.mjs';
+import './test-production-content.mjs';
 import assert from 'node:assert/strict';
 import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -183,8 +184,8 @@ test('S3 canonical pool passes all semantic gates',async()=>{
 
 const poolMutations = [
   ['candidate pretending implemented',async root=>mutateFirst(root,'tools',v=>{v.designStatus='s2-runtime';}),/runtime status must match/],
-  ['missing profile enemy',async root=>mutateFirst(root,'profiles',v=>{v.selection.enemies.pop();}),/baseline profile selection.enemies/],
-  ['missing test profile hero',async root=>mutateFirst(root,'profiles',v=>{v.testSelection.heroes=[];}),/baseline profile testSelection.heroes/],
+  ['missing profile enemy',async root=>mutateBaseline(root,v=>{v.selection.enemies.pop();}),/baseline profile selection.enemies/],
+  ['missing test profile hero',async root=>mutateBaseline(root,v=>{v.testSelection.heroes=[];}),/baseline profile testSelection.heroes/],
   ['test metadata orphan',async root=>mutateFirst(root,'test/heroes',v=>{v.affinityEstateIds=['core:missing'];}),/unresolved estate reference/],
   ['reordered duplicate evolution',async root=>{
     const entries=(await allRecords(path.join(root,'evolutions'))).filter(([,v])=>v.kind==='tool-growth');
@@ -228,6 +229,12 @@ async function allRecords(root) {
 }
 async function mutateFirst(root,kind,mutate) {
   const [file,value]=(await allRecords(path.join(root,kind)))[0];mutate(value);await writeFile(file,JSON.stringify(value));
+}
+async function mutateBaseline(root, mutate) {
+  const file = path.join(root, 'profiles/s2-baseline.json');
+  const value = JSON.parse(await readFile(file));
+  mutate(value);
+  await writeFile(file, JSON.stringify(value));
 }
 for(const [name,mutate,expected] of poolMutations) test(`S3 rejects ${name}`,async t=>{
   const directory=await mkdtemp(path.join(os.tmpdir(),'bs-s3-gate-'));
@@ -313,6 +320,7 @@ async function experimentFixture(t) {
   const tuning = JSON.parse(await readFile(path.join(directory, 'tuning.json'), 'utf8'));
   const profile = JSON.parse(await readFile(path.join(directory, 'profiles/s4-stage-one.json'), 'utf8'));
   profile.id = 'test:experiment_validation';
+  delete profile.tuningFile;
   profile.experiment = { contractVersion: 1, tuningFile: 'tuning-s4b-validation.json' };
   const wrapper = {
     tuning,
@@ -398,12 +406,6 @@ test('S4b allows only lord health and threat changes and ignores object key orde
 test('S4b compares against current base tuning rather than freezing historical IDs or numbers', async t => {
   const f = await experimentFixture(t); f.wrapper.tuning.world.map.lordSpeed++;
   await writeFile(path.join(f.directory, 'tuning.json'), JSON.stringify(f.wrapper.tuning));
-  for (const filename of (await readdir(f.directory)).filter(name => /^tuning-s4b-[a-zA-Z0-9_-]+\.json$/.test(name))) {
-    const existingPath = path.join(f.directory, filename);
-    const existing = JSON.parse(await readFile(existingPath, 'utf8'));
-    existing.tuning.world.map.lordSpeed = f.wrapper.tuning.world.map.lordSpeed;
-    await writeFile(existingPath, JSON.stringify(existing));
-  }
   await f.save(); const result = await validateContent(f.directory, { fullPool: true });
   assert.equal(result.valid, true, result.errors.join('\n'));
 });

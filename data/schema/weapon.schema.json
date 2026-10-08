@@ -124,11 +124,7 @@
         }
       },
       "required": [
-        "damage",
-        "range",
-        "cooldownTicks",
         "shape",
-        "knockback",
         "form",
         "damageCoefficient"
       ],
@@ -316,6 +312,9 @@
         "effects"
       ],
       "additionalProperties": false
+    },
+    "growth": {
+      "$ref": "weapon-growth#/$defs/weapon"
     }
   },
   "required": [
@@ -328,5 +327,87 @@
     "loopLinks",
     "activation"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "required": [
+        "growth"
+      ],
+      "properties": {
+        "activation": {
+          "not": {
+            "anyOf": [
+              {
+                "required": [
+                  "damage"
+                ],
+                "properties": {
+                  "damage": {}
+                },
+                "type": "object"
+              },
+              {
+                "required": [
+                  "range"
+                ],
+                "properties": {
+                  "range": {}
+                },
+                "type": "object"
+              },
+              {
+                "required": [
+                  "cooldownTicks"
+                ],
+                "properties": {
+                  "cooldownTicks": {}
+                },
+                "type": "object"
+              },
+              {
+                "required": [
+                  "knockback"
+                ],
+                "properties": {
+                  "knockback": {}
+                },
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "growth": {}
+      },
+      "type": "object"
+    },
+    {
+      "not": {
+        "required": [
+          "growth"
+        ],
+        "properties": {
+          "growth": {}
+        },
+        "type": "object"
+      },
+      "properties": {
+        "activation": {
+          "required": [
+            "damage",
+            "range",
+            "cooldownTicks",
+            "knockback"
+          ],
+          "properties": {
+            "damage": {},
+            "range": {},
+            "cooldownTicks": {},
+            "knockback": {}
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    }
+  ]
 }

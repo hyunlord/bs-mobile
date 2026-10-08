@@ -12,7 +12,7 @@
 - `core/bench/SowSiege.Bench`: BenchmarkDotNet 성능 측정. 하드웨어·설정·commit을 같이 기록한다.
 - `data/`: 네임스페이스 ID(`core:seed_bag`)의 JSON 정의. `schema/`는 계약, `test/`는 출시 콘텐츠가 아닌 검사용 더미.
 - `tools/`: 검사·리그·지표 재생성 명령. `docs/design/` 원본, `adr/` 결정 기록, `runbooks/` 절차, `research/` 출처, `review/` 검토, `league/` 원자료·해석, `metrics/` 추세.
-- `unity/`: 현재 README만. Unity 프로젝트·그래픽·광고·결제·서버는 이번 0단계 범위 밖이다.
+- `unity/`: Unity6000.6.4f1 Universal 2D의 1단계 A 회색 상자. Core만 규칙을 소유하며 Unity는 입력 전달·보간·그리기를 담당한다. Core와 data 정본을 복사해 따로 편집하지 않는다. 생성 DLL·데이터 연결은 스크립트로 재생성·검증한다. 광고·결제·서버·1단계 B는 범위 밖이다.
 
 ## P1~P8: 변경 검토의 기준
 
@@ -54,3 +54,11 @@ S0 초기 부트스트랩 이후 모든 작업은 이슈를 먼저 만들고 짧
 Charter & Kin / `feudal-lord-simulator` 저장소에 커밋·푸시 금지. 다른 에이전트의 변경을 되돌리지 않는다. 요청 없는 의존성 추가 금지(의뢰서 지정 .NET/xUnit/BenchmarkDotNet 등 기반 구성은 승인된 범위). 비밀·토큰을 로그나 저장소에 남기지 않는다. 공개 저장소에 자체 호스팅 DGX 러너 연결 금지. DGX는 S4 대량 리그만 별도 폴더·낮은 우선순위로 실행하며 다른 프로젝트 관문을 방해하면 중단한다.
 
 각 단계 보고 첫 줄은 `관문: 통과/실패/부분 — 수치와 이유`이며 첫 요약은 10줄 이내다. 신규 ZIP·CRC 검사·전달 영수증을 만들지 않는다. 완료 보고는 커밋 해시 + PR + CI 링크로 남긴다. 원자료가 필요할 때는 Release 태그만 추가하고, 실패 사례와 사전에 선정 기준을 명시한 표본만 올린다. 전체 성공 실행 원자료와 CSV에서 재생성 가능한 보고서·그래프·중복 산출물을 업로드하지 않는다. 필요한 작은 정본 CSV·재생성 명령·소스/설정/seed provenance는 저장소에 유지한다. 과거 ZIP·영수증·Release·R2/R3 원판정은 역사 기록으로 보존하며 새 규칙을 이유로 삭제하거나 다시 포장하지 않는다. 실제 실행, 정적 검사, 외부 출처, 추정을 구별한다. 미확인 항목은 미확인으로 둔다. 세부 사항은 [보고 형식](docs/review/report-format.md)을 따른다.
+
+## 1단계 A 승인 범위
+
+[의뢰서](docs/design/04_ASTRA_GOAL_bs-mobile_phase1a.md)의 U0→U1→U2/U3/U4 순서를 지킨다. Android 모듈이 없으면 U0에서 멈춘다. U1 데이터 정리의 PR·CI·병합을 Unity 제품 구현보다 먼저 완료한다. iOS/Xcode 부재는 차단하지 않으며, 기기가 연결되지 않았으면 실기 전까지 독립 작업을 진행한다. Unity 검사는 Personal 라이선스가 활성화된 맥북 로컬에서 실행하고 GitHub Actions는 기존 Core 검사를 담당한다.
+
+최종 관문은 실제 .NET/Editor Mono/Android IL2CPP의 5seed 이상 입력 재생 해시, Fold8 막바지 성능과 물리 접기·펼치기 각3회 및 화면, 기기 기록의 CLI 재생이다. 에디터 화면 크기 변경이나 헤드리스 검사를 실기 증거로 대체하지 않는다. 사용자가 판정할 설치 가능한 빌드와 해 볼 것 목록을 전달하며, 재미 판정을 대신하거나 1단계 B를 시작하지 않는다.
+
+[#2 결정](https://github.com/hyunlord/bs-mobile/issues/2)에 따라 Projects 보드를 만들지 않고 라벨·마일스톤·이슈/PR을 작업 관리 정본으로 사용한다. Projects 토큰 권한을 추가 요구하지 않는다.

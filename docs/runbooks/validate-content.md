@@ -15,7 +15,7 @@ npm run validate
 
 검증기는 잠금 파일로 고정한 Ajv를 사용한다. `npm test`는 검증기의 음성·양성 사례를 검사한다. 전체 관문은 여전히 `./tools/check.sh`다. 형식만 자동 교정하려면 해당 .NET 솔루션의 `dotnet format`을 쓰되 다른 에이전트 변경까지 임의 수정하지 않는다.
 
-S2 콘텐츠는 `data/weapons/`, `data/tools/`, `data/enemies/`, `data/heroes/`, `data/estates/`, `data/tuning.json`; 계약은 `data/schema/`다. `data/test/`는 명시적 `--include-test` 실행에만 포함한다. 네임스페이스 ID와 참조를 일치시키고, 도구의 activation·growth 양면을 채운다. 수치의 근거는 가설/측정 여부를 밝혀 기록한다.
+공통 콘텐츠는 `data/weapons/`, `data/tools/`, `data/enemies/`, `data/heroes/`, `data/estates/`, `data/tuning.json`; 계약은 `data/schema/`다. `data/test/`는 명시적 `--include-test` 실행에만 포함한다. 네임스페이스 ID와 참조를 일치시키고, 도구의 activation·growth 양면을 채운다. 수치의 근거는 가설/측정 여부를 밝혀 기록한다.
 
 기본·더미 조합을 따로 관찰하는 실행 예:
 
@@ -30,4 +30,4 @@ dotnet run --project core/src/SowSiege.Sim -- --data data --seed 42 --policy mix
 
 현재 검사기는 S3의 수량·태그 분포·진화 참조·반시너지·스킨·기본 순환 연결 관문을 모두 검사한다. `node tools/content-report.mjs --check`는 사람이 읽는 표와 정본의 일치를 확인한다. 전체 후보 검증 통과는 후보 고유 효과의 구현이나 밸런스 통과를 의미하지 않는다.
 
-`--profile s2-baseline`이 기본 실행 집합이다. `--include-test`도 프로필에 명시된 테스트 ID만 추가한다. 다른 프로필은 구현된 레코드를 다르게 선택할 수 있지만 기존 기준 프로필의 구성·해시는 유지해야 한다. 실험 예시는 [콘텐츠 추가](add-content.md)를 따른다.
+CLI의 `--profile s2-baseline`은 역사 기본 실행 집합이다. 실제 게임은 [생산 데이터 진입점](production-data.md)의 `--profile production`을 명시한다. `--include-test`도 프로필에 명시된 테스트 ID만 추가한다. 다른 프로필은 구현된 레코드를 다르게 선택할 수 있지만 기존 기준 프로필의 유효 규칙과 동결 fixture 해시는 유지해야 한다. 저작 파일 이동에 따른 현재 content/profile 출처 해시는 별도로 기록한다. 실험 예시는 [콘텐츠 추가](add-content.md)를 따른다.

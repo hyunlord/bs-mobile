@@ -5,23 +5,133 @@
     "ranged"
   ],
   "activation": {
-    "damage": 16,
-    "range": 1700,
-    "cooldownTicks": 24,
     "shape": "projectile",
-    "knockback": 0,
-    "form": "가느다란 불씨 하나가 앞선 적을 향해 날아간다.",
+    "form": "가까운 적을 향한 폭 있는 광선으로 즉시 타격한다.",
     "damageCoefficient": 1
   },
   "name": "잔불 지팡이",
   "concept": "가장 가까운 적에게 불씨를 보내 외곽 접근을 끊지만, 단일 표적을 겨누는 동안 다른 진입로는 열린다.",
   "designStatus": "s2-runtime",
-  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "implementationNote": "정본 성장표의 레벨 1이 기본 발동 수치다. weaponCombat을 명시한 프로필에서만 12단계 성장과 타격 형태를 적용하며, 과거 프로필은 기존 발동 규칙을 유지한다. 별도 기획 계수와 순환 설명 전체의 구현을 뜻하지 않는다.",
   "loopLinks": [
     {
       "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "익은 밭을 향해 먼저 접근하는 적을 먼 거리에서 제거하는 방어 수단이다."
     }
-  ]
+  ],
+  "growth": {
+    "attackModel": "rays",
+    "beamHalfWidth": 80,
+    "levels": [
+      {
+        "level": 1,
+        "damage": 16,
+        "range": 1700,
+        "cooldownTicks": 24,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 2,
+        "damage": 19,
+        "range": 1800,
+        "cooldownTicks": 24,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 3,
+        "damage": 22,
+        "range": 1800,
+        "cooldownTicks": 22,
+        "count": 1,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 4,
+        "damage": 26,
+        "range": 1800,
+        "cooldownTicks": 22,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 5,
+        "damage": 30,
+        "range": 1900,
+        "cooldownTicks": 22,
+        "count": 2,
+        "pierce": 0,
+        "knockback": 0
+      },
+      {
+        "level": 6,
+        "damage": 34,
+        "range": 1900,
+        "cooldownTicks": 20,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 0
+      },
+      {
+        "level": 7,
+        "damage": 38,
+        "range": 2000,
+        "cooldownTicks": 20,
+        "count": 2,
+        "pierce": 1,
+        "knockback": 0
+      },
+      {
+        "level": 8,
+        "damage": 42,
+        "range": 2000,
+        "cooldownTicks": 18,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 0
+      },
+      {
+        "level": 9,
+        "damage": 46,
+        "range": 2100,
+        "cooldownTicks": 18,
+        "count": 3,
+        "pierce": 1,
+        "knockback": 0
+      },
+      {
+        "level": 10,
+        "damage": 50,
+        "range": 2100,
+        "cooldownTicks": 16,
+        "count": 3,
+        "pierce": 2,
+        "knockback": 0
+      },
+      {
+        "level": 11,
+        "damage": 55,
+        "range": 2200,
+        "cooldownTicks": 14,
+        "count": 3,
+        "pierce": 2,
+        "knockback": 0
+      },
+      {
+        "level": 12,
+        "damage": 60,
+        "range": 2200,
+        "cooldownTicks": 12,
+        "count": 4,
+        "pierce": 2,
+        "knockback": 0
+      }
+    ]
+  }
 }

@@ -294,7 +294,7 @@
         },
         "tuningFile": {
           "type": "string",
-          "pattern": "^tuning-s4b-[a-zA-Z0-9_-]+\\.json$"
+          "pattern": "^(experiments/)?tuning-s4b-[a-zA-Z0-9_-]+\\.json$"
         }
       },
       "required": [
@@ -307,16 +307,78 @@
       "type": "object",
       "properties": {
         "contractVersion": {
-          "const": 1
+          "enum": [
+            1,
+            2
+          ]
         },
         "definitionsFile": {
           "type": "string",
-          "pattern": "^weapon-growth-[a-zA-Z0-9_-]+\\.json$"
+          "pattern": "^(experiments/)?weapon-growth-[a-zA-Z0-9_-]+\\.json$"
         }
       },
       "required": [
-        "contractVersion",
-        "definitionsFile"
+        "contractVersion"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "contractVersion": {
+                "const": 1
+              }
+            },
+            "type": "object"
+          },
+          "then": {
+            "required": [
+              "definitionsFile"
+            ],
+            "properties": {
+              "definitionsFile": {}
+            },
+            "type": "object"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "contractVersion": {
+                "const": 2
+              }
+            }
+          },
+          "then": {
+            "type": "object",
+            "properties": {
+              "definitionsFile": {
+                "type": "string",
+                "pattern": "^experiments/weapon-growth-[a-zA-Z0-9_-]+\\.json$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tuningFile": {
+      "type": "string",
+      "pattern": "^experiments/tuning-s2-baseline\\.json$"
+    },
+    "gameplay": {
+      "type": "object",
+      "properties": {
+        "enemyOverrides": {
+          "$ref": "experiment-tuning#/properties/enemyOverrides"
+        },
+        "experiment": {
+          "$ref": "experiment-tuning#/properties/experiment"
+        }
+      },
+      "required": [
+        "enemyOverrides",
+        "experiment"
       ],
       "additionalProperties": false
     }
@@ -327,5 +389,33 @@
     "selection",
     "testSelection"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "not": {
+        "required": [
+          "gameplay",
+          "experiment"
+        ],
+        "properties": {
+          "gameplay": {},
+          "experiment": {}
+        },
+        "type": "object"
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "gameplay",
+          "tuningFile"
+        ],
+        "properties": {
+          "gameplay": {},
+          "tuningFile": {}
+        },
+        "type": "object"
+      }
+    }
+  ]
 }
