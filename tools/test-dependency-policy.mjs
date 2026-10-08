@@ -38,25 +38,30 @@ test('ADR records actual update metadata and does not claim unrun CI passed', ()
 import fs from 'node:fs';
 import { prepareDependency } from './dependency-policy.mjs';
 
-function fixture({ commits, major = false, race = false } = {}) {
+function fixture({ commits, major = false, race = false, lagReads = 0, refRace = false, prepared = false } = {}) {
   const calls = [];
-  let head = pr.head.sha;
   const next = 'b'.repeat(40);
+  let head = prepared ? next : pr.head.sha;
+  let written = false;
+  let remainingLagReads = lagReads;
   const issues = [{ number: 45, state: 'open', body: '<!-- bs-mobile:dependency-tracker -->' }, { number: 46, state: 'open', body: '<!-- bs-mobile:dependency-major-decision -->' }];
   const api = async (route, method = 'GET', body) => {
     calls.push({ route, method, body });
-    if (route.endsWith('/pulls/24') && method === 'GET') return { ...structuredClone(pr), head: { ...pr.head, sha: head }, body: 'Dependabot release notes' };
+    if (route.endsWith('/pulls/24') && method === 'GET') return { ...structuredClone(pr), head: { ...pr.head, sha: written && remainingLagReads-- > 0 ? pr.head.sha : head }, body: 'Dependabot release notes' };
+    if (route.includes('/git/ref/heads/')) return { object: { sha: refRace ? 'c'.repeat(40) : next } };
+    if (prepared && route.includes('/contents/')) return {content:Buffer.from(decisionDocument(pr,[patch],80)).toString('base64')};
+    if (prepared && route.endsWith('/commits/'+next)) return {files:[{filename:'docs/adr/0013-dependency-pr-24.md'}]};
     if (route.includes('/pulls/24/commits')) return commits ?? [{ sha: pr.head.sha, author: { login: 'dependabot[bot]' }, commit: { verification: { verified: true }, message: 'signed dependency metadata' } }];
     if (route.includes('/compare/')) return {status:'ahead'};
-    if (route.includes('/issues?')) return issues;
+    if (route.includes('/issues?')) return prepared ? [...issues,{number:80,state:'open',body:'<!-- dependency-work-pr-24 -->'}] : issues;
     if (route.endsWith('/issues') && method === 'POST') return { number: 80, state: 'open', ...body };
     if (route.includes('/comments?')) return [];
-    if (route.includes('/pulls/24/files')) return [{ filename: 'package-lock.json' }];
-    if (route === 'graphql') { head = race ? 'c'.repeat(40) : next; return { data: { createCommitOnBranch: { commit: { oid: next } } } }; }
+    if (route.includes('/pulls/24/files')) return prepared ? [{filename:'docs/adr/0013-dependency-pr-24.md'}] : [{ filename: 'package-lock.json' }];
+    if (route === 'graphql') { written = true; head = race ? 'c'.repeat(40) : next; return { data: { createCommitOnBranch: { commit: { oid: next } } } }; }
     return null;
   };
   const merge = async (number, sha) => calls.push({ route: 'MERGE', number, sha });
-  return { calls, run: () => prepareDependency({ repo: 'hyunlord/bs-mobile', number: 24, expectedHead: pr.head.sha, rows: [{ ...patch, updateType: major ? 'version-update:semver-major' : patch.updateType }], api, merge }) };
+  return { calls, run: () => prepareDependency({ repo: 'hyunlord/bs-mobile', number: 24, expectedHead: prepared ? next : pr.head.sha, pause:async milliseconds=>calls.push({route:'WAIT',milliseconds}), rows: [{ ...patch, updateType: major ? 'version-update:semver-major' : patch.updateType }], api, merge }) };
 }
 test('major uses the single central issue and never edits branch or enables merge', async () => {
   const f = fixture({ major: true });
@@ -77,6 +82,7 @@ test('preparation binds appendix atomically, dispatches exact new head, then req
   const result = await f.run();
   const commit = f.calls.find(call => call.route === 'graphql');
   assert.equal(commit.body.variables.input.expectedHeadOid, pr.head.sha);
+  assert.equal(commit.body.variables.input.message.headline, 'docs(deps): preserve upgrade rationale for PR #24');
   assert.deepEqual(commit.body.variables.input.fileChanges.additions.map(row => row.path), ['docs/adr/0013-dependency-pr-24.md']);
   const statuses = f.calls.filter(call => call.route.includes('/statuses/'));
   assert.deepEqual(statuses.map(call => call.body.context), ['quality', 'secrets']);
@@ -130,4 +136,33 @@ test('pre-existing auto-merge is disabled before a new major is queued', async (
   await assert.rejects(prepareDependency({repo:'hyunlord/bs-mobile',number:24,expectedHead:'e'.repeat(40),rows:[patch],api:async(route,method='GET',body)=>{calls.push({route,method,body});if(route==='graphql')return {data:{disablePullRequestAutoMerge:{pullRequest:{id:'PR_test'}}}};return majorPull;}}),/Metadata head/);
   assert.equal(calls[1]?.route,'graphql');
   assert.match(calls[1].body.query,/disablePullRequestAutoMerge/);
+});
+
+test('post-write old PR head is retried only when branch ref proves expected new commit', async () => {
+  const f=fixture({lagReads:2});
+  const result=await f.run();
+  assert.equal(result.head,'b'.repeat(40));
+  assert.equal(f.calls.filter(call=>call.route==='WAIT').length,2);
+  assert.equal(f.calls.at(-1).route,'MERGE');
+});
+test('lag retries are bounded and cannot dispatch while PR indexing stays stale', async () => {
+  const f=fixture({lagReads:20});
+  await assert.rejects(f.run(),/did not converge/);
+  assert.equal(f.calls.filter(call=>call.route==='WAIT').length,3);
+  assert.ok(!f.calls.some(call=>call.route==='MERGE'||call.route.endsWith('/dispatches')));
+});
+test('an old PR view with a different live branch head fails without retry', async () => {
+  const f=fixture({lagReads:1,refRace:true});
+  await assert.rejects(f.run(),/branch head changed/);
+  assert.ok(!f.calls.some(call=>call.route==='WAIT'||call.route==='MERGE'));
+});
+test('a signed legacy appendix left by failed preparation is reused without another commit', async () => {
+  const a=pr.head.sha,b='b'.repeat(40);
+  const f=fixture({prepared:true,commits:[
+    {sha:a,author:{login:'dependabot[bot]'},commit:{verification:{verified:true},message:'signed metadata'}},
+    {sha:b,author:{login:'github-actions[bot]'},commit:{verification:{verified:true},message:'docs(deps): record decision for PR #24\n\nConstraint: ADR required'}}
+  ]});
+  await f.run();
+  assert.ok(!f.calls.some(call=>call.route==='graphql'));
+  assert.equal(f.calls.at(-1).sha,b);
 });
