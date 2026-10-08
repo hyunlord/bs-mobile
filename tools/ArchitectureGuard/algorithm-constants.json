@@ -3,5 +3,70 @@
     "Symbol": "SowSiege.Core.Position.RecordHashMultiplier",
     "Value": "1521134295",
     "Reason": "Magnitude of the C# compiler record-struct hash multiplier; subtraction preserves the former generated negative multiplier exactly. Compatibility algorithm, not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.PlayerInput.Scale",
+    "Value": "1000",
+    "Reason": "Fixed-point input wire resolution and multiplier identity; does not set movement speed."
+  },
+  {
+    "Symbol": "SowSiege.Core.InteractiveSession.MaximumSpawnPermille",
+    "Value": "10000",
+    "Reason": "Bounded developer-command protocol range; actual spawn tuning remains canonical data."
+  },
+  {
+    "Symbol": "SowSiege.Core.PortableRandom.ArrayLength",
+    "Value": "56",
+    "Reason": "Pinned dotnet seeded subtractive PRNG state word count."
+  },
+  {
+    "Symbol": "SowSiege.Core.PortableRandom.Last",
+    "Value": "55",
+    "Reason": "Pinned dotnet seeded subtractive PRNG final state index."
+  },
+  {
+    "Symbol": "SowSiege.Core.PortableRandom.InitialOffset",
+    "Value": "21",
+    "Reason": "Pinned dotnet seeded subtractive PRNG partner and initialization stride."
+  },
+  {
+    "Symbol": "SowSiege.Core.PortableRandom.MixOffset",
+    "Value": "30",
+    "Reason": "Pinned dotnet seeded subtractive PRNG initialization offset."
+  },
+  {
+    "Symbol": "SowSiege.Core.PortableRandom.MixLimit",
+    "Value": "5",
+    "Reason": "Exclusive loop bound for the pinned PRNG four initialization mixes."
+  },
+  {
+    "Symbol": "SowSiege.Core.PortableRandom.GoldenSeed",
+    "Value": "161803398",
+    "Reason": "Pinned dotnet seeded subtractive PRNG initialization seed constant."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.CheckpointTag",
+    "Value": "2",
+    "Reason": "Versioned binary replay record discriminator, not gameplay."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.EndTag",
+    "Value": "3",
+    "Reason": "Versioned binary replay terminal discriminator, not gameplay."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.HashLength",
+    "Value": "64",
+    "Reason": "SHA256 hexadecimal wire length."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.MaximumStringBytes",
+    "Value": "4096",
+    "Reason": "Replay decoder bounded allocation limit for untrusted input."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.MaximumCommands",
+    "Value": "1000000",
+    "Reason": "Replay decoder bounded command allocation limit for untrusted input."
   }
 ]

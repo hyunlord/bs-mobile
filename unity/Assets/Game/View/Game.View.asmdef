@@ -1,0 +1,10 @@
+{
+  "name": "Game.View",
+  "references": [],
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "SowSiege.Core.dll"
+  ],
+  "noEngineReferences": false
+}

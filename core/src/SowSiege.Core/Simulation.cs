@@ -20,9 +20,16 @@ namespace SowSiege.Core
         internal ExperimentSystem? Experiment { get; }
         internal WorldState World { get; } = new();
         private readonly string peopleRule;
+        internal InteractiveState? Interactive { get; }
+        internal TrackedRandom RandomState => random;
+        internal long RequiredExperience => progression.RequiredExperience();
+        internal void GrantLevel() { World.Experience = Math.Max(World.Experience, progression.RequiredExperience()); progression.Tick(); }
 
-        public Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher, DiagnosticObserver? diagnostics = null)
+        public Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher, DiagnosticObserver? diagnostics = null) : this(catalog, options, stateHasher, diagnostics, null) { }
+
+        internal Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher, DiagnosticObserver? diagnostics, InteractiveState? interactive)
         {
+            Interactive = interactive;
             this.diagnostics = diagnostics;
             diagnostics?.Attach(catalog, World);
             this.stateHasher = stateHasher ?? throw new ArgumentNullException(nameof(stateHasher));
@@ -31,7 +38,7 @@ namespace SowSiege.Core
             peopleRule = options.PeopleRule ?? catalog.Tuning.World.DefaultPeopleRule;
             if (peopleRule is not ("A" or "B" or "C")) { throw new ArgumentException("Unknown people rule."); }
             if (options.Scenario is not ("normal" or "load")) { throw new ArgumentException("Unknown scenario."); }
-            random = new(options.Seed);
+            random = new(options.Seed, interactive is not null);
             spatial = new(catalog.Tuning.World.Map.CellSize);
             var map = catalog.Tuning.World.Map;
             World.Estate = new(map.Width >> 1, map.Height >> 1);
@@ -45,9 +52,9 @@ namespace SowSiege.Core
             if (catalog.WeaponCombat is not null) { World.WeaponCombat = new(); }
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
             else if (options.Movement is not null) { throw new ArgumentException("Movement requires an experiment profile."); }
-            if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics); }
-            combat = new(catalog, options, World, random, spatial, Runtime, Experiment, diagnostics);
-            estate = new(catalog, options, World, peopleRule, spatial, Runtime, Experiment, diagnostics);
+            if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics, interactive); }
+            combat = new(catalog, options, World, random, spatial, Runtime, Experiment, diagnostics, interactive);
+            estate = new(catalog, options, World, peopleRule, spatial, Runtime, Experiment, diagnostics, interactive);
             progression = new(catalog, options, World, random, Runtime, Experiment, diagnostics);
             World.Rerolls = catalog.Tuning.World.Progression.Rerolls;
             World.Bans = catalog.Tuning.World.Progression.Bans;
@@ -83,14 +90,17 @@ namespace SowSiege.Core
             World.LordHealth = catalog.Tuning.World.Map.LordHealth;
         }
 
-        public void Tick()
+        public void Tick() => Advance(null);
+
+        internal void Advance(PlayerInput? input)
         {
             if (IsComplete) { throw new InvalidOperationException("Run is already complete."); }
             if (World.PendingCards.Length > 0) { throw new InvalidOperationException("Choose a pending card before advancing the world."); }
             SetSeason();
             var wasInside = RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius);
             var previousLord = World.Lord;
-            if (Experiment is null) { combat.MoveLord(); } else { Experiment.MoveLord(); }
+            if (input.HasValue) { MoveManual(input.Value); }
+            else if (Experiment is null) { combat.MoveLord(); } else { Experiment.MoveLord(); }
             if (World.WeaponCombat is not null && World.Lord != previousLord)
             {
                 World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);
@@ -99,6 +109,11 @@ namespace SowSiege.Core
             Runtime?.Tick();
             combat.SpawnAndMoveEnemies();
             spatial.Rebuild(World.Enemies);
+            if (Interactive?.Aim == AimMode.NearestEnemy && World.WeaponCombat is not null)
+            {
+                var nearest = World.Enemies.Where(enemy => enemy.Health > 0).OrderBy(enemy => enemy.Position.DistanceSquared(World.Lord)).ThenBy(enemy => enemy.Id).FirstOrDefault();
+                if (nearest is not null && nearest.Position != World.Lord) { World.WeaponCombat.Facing = new(nearest.Position.X - World.Lord.X, nearest.Position.Y - World.Lord.Y); }
+            }
             foreach (var equipment in World.Equipment)
             {
                 if (equipment.ReadyTick > World.Tick) { continue; }
@@ -120,6 +135,15 @@ namespace SowSiege.Core
             if (IsComplete) { Experiment?.End(); }
             if (options.Scenario == "load") { PrepareLoadTick(); }
             if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); }
+        }
+
+        private void MoveManual(PlayerInput input)
+        {
+            var map = catalog.Tuning.World.Map;
+            var scale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
+            World.Lord = new(Math.Clamp(World.Lord.X + (int)((long)input.X * map.LordSpeed / scale), 0, map.Width),
+                Math.Clamp(World.Lord.Y + (int)((long)input.Y * map.LordSpeed / scale), 0, map.Height));
+            World.Destination = new(Math.Clamp(World.Lord.X + input.X, 0, map.Width), Math.Clamp(World.Lord.Y + input.Y, 0, map.Height));
         }
 
         private void SetSeason()

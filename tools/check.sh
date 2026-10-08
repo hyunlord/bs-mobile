@@ -13,6 +13,9 @@ node --test tools/test-verify-evidence.mjs
 node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
+node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs
+DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
+node tools/verify-unity-boundaries.mjs
 node --test tools/test-diagnostic-*.mjs
 node --test tools/test-weapon-holdout.mjs
 npm run validate
@@ -27,6 +30,7 @@ dotnet test --no-build --configuration Release --logger 'trx;LogFileName=tests.t
 dotnet build core/src/SowSiege.Core/SowSiege.Core.csproj --no-restore --configuration Debug --framework netstandard2.1
 dotnet format --no-restore --verify-no-changes
 dotnet format tools/ArchitectureGuard --no-restore --verify-no-changes
+dotnet format tools/UnityResultCheck --no-restore --verify-no-changes
 TARGET_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/target-parity.XXXXXX")
 node tools/verify-target-parity.mjs "$TARGET_PARITY_ROOT/run" 4
 DIAGNOSTIC_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/diagnostic-smoke.XXXXXX")

@@ -86,14 +86,17 @@ namespace SowSiege.Core
     }
     internal sealed class TrackedRandom
     {
-        public TrackedRandom(int seed)
+        public TrackedRandom(int seed, bool portable = false)
         {
             random = new Random(seed);
+            if (portable) { Portable = new PortableRandom(seed); }
         }
+
+        internal PortableRandom? Portable { get; }
 
         private readonly Random random;
         public long Draws { get; private set; }
-        public int Next(int limit) { Draws++; return random.Next(limit); }
+        public int Next(int limit) { Draws++; return Portable is null ? random.Next(limit) : Portable.Next(limit); }
     }
     internal sealed class WorldState
     {

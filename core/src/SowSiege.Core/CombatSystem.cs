@@ -7,6 +7,7 @@ namespace SowSiege.Core
     internal sealed partial class CombatSystem
     {
         private readonly DiagnosticObserver? diagnostics;
+        private readonly InteractiveState? interactive;
         private readonly ContentCatalog catalog;
         private readonly RunOptions options;
         private readonly WorldState world;
@@ -15,9 +16,10 @@ namespace SowSiege.Core
         private readonly RuntimeSystem? runtime;
         private readonly ExperimentSystem? experiment;
 
-        public CombatSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null)
+        public CombatSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null, InteractiveState? interactive = null)
         {
             this.diagnostics = diagnostics;
+            this.interactive = interactive;
             this.catalog = catalog;
             this.options = options;
             this.world = world;
@@ -57,6 +59,7 @@ namespace SowSiege.Core
                     + world.Buildings.Count(building => building.Built && building.Health > 0);
                 var count = (tuning.BaseSpawnCount + world.Tick / tuning.TimeRampTicks + prosperity / tuning.ProsperityDivisor)
                     * catalog.Tuning.World.Seasons[world.Season].SpawnMultiplier;
+                if (interactive is not null) { count = (int)Math.Min(int.MaxValue, (long)count * interactive.SpawnPermille / PlayerInput.Scale); }
                 diagnostics?.SpawnRequest(count, Math.Max(0, count - Math.Max(0, tuning.EnemyCap - world.Enemies.Count)));
                 for (var index = 0; index < count && world.Enemies.Count < tuning.EnemyCap; index++) { Spawn(); }
             }
@@ -110,6 +113,7 @@ namespace SowSiege.Core
             if (ledger is not null) { ledger.Activations++; }
             var candidates = spatial.Query(world.Lord, activation.Range).OrderBy(enemy => enemy.Position.DistanceSquared(world.Lord)).ThenBy(enemy => enemy.Id).ToArray();
             var nearest = candidates.FirstOrDefault();
+            var visualHits = interactive is null ? null : new System.Collections.Generic.List<EnemyState>();
             var actor = ledger is null ? "weapon" : "tool-activation";
             diagnostics?.Attack(actor, "", equipment.Id, candidates.Length, equipment.ReadyTick - world.Tick);
             foreach (var enemy in candidates)
@@ -123,6 +127,7 @@ namespace SowSiege.Core
                     _ => throw new InvalidOperationException($"Unknown attack shape {activation.Shape}")
                 };
                 if (!hits) { continue; }
+                visualHits?.Add(new EnemyState { Id = enemy.Id, Position = enemy.Position });
                 var requested = checked((activation.Damage * equipment.Level + random.Next(catalog.Tuning.DamageRollMax)) * catalog.Heroes[options.HeroId].DamageMultiplier);
                 requested = runtime?.Modify("attack-damage", requested, new(world.Lord, equipment.Id, enemy)) ?? requested;
                 var dealt = Math.Min(enemy.Health, requested);
@@ -138,6 +143,8 @@ namespace SowSiege.Core
                 }
                 diagnostics?.Hit(actor, "", equipment.Id, requested, dealt, knockback: Math.Abs((long)enemy.Position.X - beforeKnockback.X) + Math.Abs((long)enemy.Position.Y - beforeKnockback.Y));
             }
+            var visualDirection = activation.Shape == "melee" ? new Position(world.Destination.X >= world.Lord.X ? 1 : -1, 0) : world.WeaponCombat?.Facing ?? new Position(1, 0);
+            interactive?.Attack(world.Tick, equipment.Id, world.Lord, visualDirection, activation.Shape, activation.Range, visualHits!);
             runtime?.Emit("attack", new(world.Lord, equipment.Id, nearest));
         }
 
@@ -190,7 +197,7 @@ namespace SowSiege.Core
                 }
                 else
                 {
-                    if (world.LordHealth <= 0) { continue; }
+                    if (world.LordHealth <= 0 || interactive?.Invulnerable == true) { continue; }
                     var previousHealth = world.LordHealth;
                     world.LordHealth = Math.Max(0, world.LordHealth - definition.Damage);
                     diagnostics?.TargetDamage("lord", definition.Damage, previousHealth - world.LordHealth);
@@ -207,6 +214,7 @@ namespace SowSiege.Core
                 var experience = catalog.Enemies[enemy.Definition].Experience;
                 world.Experience += experience;
                 world.KillExperience += experience;
+                interactive?.Experience(world.Tick, PresentationKind.KillExperience, enemy.Definition, enemy.Position, experience);
                 runtime?.Experience("weapon", experience);
                 runtime?.Emit("kill", new(enemy.Position, Enemy: enemy));
                 if (world.Remains is not null) { RemainsSystem.Create(world, enemy); continue; }

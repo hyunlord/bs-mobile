@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contractVersion", "camera"],
+  "properties": {
+    "contractVersion": { "const": 1 },
+    "camera": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worldUnitsPerUnityUnit", "minHalfHeight", "maxHalfHeight", "estatePadding", "followMilliseconds", "zoomMilliseconds"],
+      "properties": {
+        "worldUnitsPerUnityUnit": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+        "minHalfHeight": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+        "maxHalfHeight": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+        "estatePadding": { "type": "integer", "minimum": 1, "maximum": 1000000 },
+        "followMilliseconds": { "type": "integer", "minimum": 1, "maximum": 60000 },
+        "zoomMilliseconds": { "type": "integer", "minimum": 1, "maximum": 60000 }
+      }
+    }
+  }
+}

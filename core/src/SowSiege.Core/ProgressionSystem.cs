@@ -106,7 +106,7 @@ namespace SowSiege.Core
             if (!world.PendingCards.Contains(id, StringComparer.Ordinal)) { throw new ArgumentException("Card is not in the pending offer.", nameof(id)); }
         }
 
-        private long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
+        internal long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
         private bool CanOffer(string id)
         {
             if (catalog.Runtime?.Charters.ContainsKey(id) == true) { var allowed = world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; if (!allowed) { diagnostics?.SlotExcluded("charter"); } return allowed; }

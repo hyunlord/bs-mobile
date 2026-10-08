@@ -1,0 +1,12 @@
+{
+  "name": "Game.Input",
+  "references": [
+    "Unity.InputSystem"
+  ],
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "SowSiege.Core.dll"
+  ],
+  "noEngineReferences": false
+}

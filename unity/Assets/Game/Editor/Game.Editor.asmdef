@@ -1,0 +1,17 @@
+{
+  "name": "Game.Editor",
+  "references": [
+    "Game.App",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Game.View"
+  ],
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "SowSiege.Core.dll"
+  ],
+  "noEngineReferences": false,
+  "includePlatforms": [
+    "Editor"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Tests.EditMode",
+  "references": [
+    "Game.App",
+    "Game.Editor",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Universal.2D.Runtime"
+  ],
+  "autoReferenced": false,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "SowSiege.Core.dll",
+    "nunit.framework.dll"
+  ],
+  "noEngineReferences": false,
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

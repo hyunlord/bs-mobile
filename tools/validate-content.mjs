@@ -7,7 +7,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -114,7 +114,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -126,6 +126,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     if (kind === 'tool' && (!isRecord(record.activation) || !isRecord(record.growth))) {
       errors.push(`${relative}: tool requires both activation and growth`);
     }
+    if (kind === 'presentation' && schemaValid && record.camera.minHalfHeight > record.camera.maxHalfHeight) errors.push(`${relative}: camera minHalfHeight must not exceed maxHalfHeight`);
     if (kind === 'skin' && containsNumber(record)) errors.push(`${relative}: skin must not contain numeric stats`);
   }
   function reference(relative, field, id, kind) {
