@@ -9,6 +9,7 @@ import { runProcess } from './verify-target-parity.mjs';
 import { validatePacket } from './diagnostic-packet.mjs';
 import { captureProvenance,validateProvenance } from './diagnostic-provenance.mjs';
 import { canonical } from './s4b-contract.mjs';
+import { weaponDefinitionHash } from './weapon-definition-provenance.mjs';
 import { formatCsv } from './csv.mjs';
 import { makeCases,reportContents,sourceIdentity } from './weapon-holdout-report.mjs';
 export const PROFILE='weapon-growth-79';
@@ -19,7 +20,7 @@ export async function rebuildForFull(commit,{readGit=git,execute=runProcess}={})
  await execute(process.env.DOTNET??'dotnet',['build','core/src/SowSiege.Sim/SowSiege.Sim.csproj','--configuration','Release','--no-incremental','--target:Rebuild'],'full holdout clean-source rebuild');
  assert.equal(readGit('rev-parse','HEAD'),commit,'HEAD changed during build');assert.equal(readGit('status','--porcelain=v1'),'','source changed during build');
 }
-export async function frozenInputs(){const frozen=await captureProvenance(),bytes=await fs.readFile(`data/profiles/${PROFILE}.json`),p=JSON.parse(bytes);assert.equal(p.id,'core:weapon_growth_79');assert.equal(p.weaponCombat.contractVersion,1);assert.equal(p.weaponCombat.definitionsFile,'weapon-growth-79.json');assert.equal(p.experiment.tuningFile,'tuning-s4b-02.json');frozen.cohorts.r3.profileSha256=sha(bytes);frozen.cohorts.r3.tuningSha256=sha(await fs.readFile(`data/${p.experiment.tuningFile}`));frozen.weaponDefinitionSha256=sha(await fs.readFile(`data/${p.weaponCombat.definitionsFile}`));return frozen;}
+export async function frozenInputs(){const frozen=await captureProvenance(),bytes=await fs.readFile(`data/profiles/${PROFILE}.json`),p=JSON.parse(bytes);assert.equal(p.id,'core:weapon_growth_79');assert.equal(p.weaponCombat.contractVersion,2);assert.equal(p.weaponCombat.definitionsFile,'experiments/weapon-growth-79.json');assert.equal(p.experiment.tuningFile,'experiments/tuning-s4b-02.json');frozen.cohorts.r3.profileSha256=sha(bytes);frozen.cohorts.r3.tuningSha256=sha(await fs.readFile(`data/${p.experiment.tuningFile}`));frozen.weaponDefinitionSha256=await weaponDefinitionHash('data',p);return frozen;}
 export function args(c,file){const result=['core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll','--data','data','--profile',PROFILE,'--policy',c.policy,'--people-rule',c.peopleRule,'--seed',String(c.seed),'--movement','circuit','--scenario','normal','--iterations','3','--diagnostic-variant','control','--diagnostic-output',file];if(c.requestedTicks!==21600)result.push('--duration-ticks',String(c.requestedTicks));return result;}
 export function weaponCounters(source){
  assert.equal(source.actorKind,'weapon');assert.equal(source.suppressedHpDamage,0);

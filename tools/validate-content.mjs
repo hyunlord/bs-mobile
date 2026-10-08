@@ -1,11 +1,12 @@
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
+import { jsonFiles } from './content-files.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
-const experimentFilename = /^tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
+const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
 const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
@@ -14,19 +15,9 @@ const directoryKinds = new Map([
   ['skins', 'skin'], ['profiles', 'profile'],
 ]);
 
-async function jsonFiles(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const nested = await Promise.all(entries.sort((a, b) => a.name.localeCompare(b.name)).map(async (entry) => {
-    const filename = path.join(directory, entry.name);
-    if (entry.isSymbolicLink()) throw new Error(`Symbolic links are not content: ${filename}`);
-    if (entry.isDirectory()) return jsonFiles(filename);
-    return entry.isFile() && entry.name.endsWith('.json') ? [filename] : [];
-  }));
-  return nested.flat();
-}
-
 function inferKind(relative) {
   if (weaponGrowthFilename.test(relative)) return 'weapon-growth';
+  if (relative === 'experiments/tuning-s2-baseline.json') return 'tuning';
   if (experimentFilename.test(relative)) return 'experiment-tuning';
   const segments = relative.split(path.sep);
   if (segments[0] === 'test') segments.shift();
@@ -72,7 +63,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     try {
       const text = await readFile(file, 'utf8');
       parsed.set(file, JSON.parse(text));
-      if (weaponGrowthFilename.test(path.relative(dataRoot, file))) {
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || inferKind(path.relative(dataRoot, file)) === 'weapon') {
         for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
       }
     } catch (error) {
@@ -147,12 +138,18 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   }
   const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
   const baseTuning = records.find(entry => entry.kind === 'tuning' && entry.relative === 'tuning.json')?.record;
-  for (const { relative, kind, record } of records) {
+  const gameplayRecords = records.filter(entry => entry.kind === 'profile' && isRecord(entry.record.gameplay)).map(entry => ({
+    relative: entry.relative, kind: 'experiment-tuning', record: { tuning: baseTuning, ...entry.record.gameplay },
+  }));
+  for (const { relative, kind, record } of [...records, ...gameplayRecords]) {
+    if (kind === 'profile' && record.tuningFile !== undefined && !records.some(entry => entry.kind === 'tuning' && entry.relative === record.tuningFile && entry.schemaValid)) errors.push(`${relative}: missing or invalid baseline tuning`);
     if (kind === 'experiment-tuning') {
-      if (!isRecord(baseTuning) || !isRecord(record.tuning)) {
+      const profiles = records.filter(entry => entry.kind === 'profile' && entry.record.experiment?.tuningFile === relative);
+      const baselines = profiles.length ? profiles.map(entry => records.find(config => config.kind === 'tuning' && config.relative === (entry.record.tuningFile ?? 'tuning.json'))?.record) : [baseTuning];
+      if (baselines.some(baseline => !isRecord(baseline)) || !isRecord(record.tuning)) {
         errors.push(`${relative}: experiment requires valid base tuning.json and embedded tuning`);
       } else {
-        for (const difference of experimentTuningDifferences(baseTuning, record.tuning)) {
+        for (const difference of baselines.flatMap(baseline => experimentTuningDifferences(baseline, record.tuning))) {
           if (!difference.allowed) errors.push(`${relative}: ${difference.path} is outside preregistered global tuning (only world.map.lordHealth and world.threat.* may differ)`);
         }
       }
@@ -179,13 +176,13 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
         if (positions.size < 2) errors.push(`${relative}: at least two distinct clamped waypoints required`);
       }
     }
-    if (kind === 'profile' && isRecord(record.experiment)) {
-      const filename = record.experiment.tuningFile;
-      if (typeof filename !== 'string' || !experimentFilename.test(filename)) {
-        errors.push(`${relative}: experiment requires a safe tuning filename at data root`);
+    if (kind === 'profile' && (isRecord(record.experiment) || isRecord(record.gameplay))) {
+      const filename = record.experiment?.tuningFile;
+      if (!record.gameplay && (typeof filename !== 'string' || !experimentFilename.test(filename))) {
+        errors.push(`${relative}: experiment requires a safe tuning filename`);
         continue;
       }
-      const wrapper = experimentFiles.get(filename);
+      const wrapper = record.gameplay ?? experimentFiles.get(filename);
       if (!wrapper) {
         errors.push(`${relative}: missing experiment tuning ${filename}`);
         continue;

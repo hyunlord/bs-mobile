@@ -1,6 +1,6 @@
 {
-  "id": "core:weapon_growth_79",
-  "name": "S4b 전역 보정 후보 02",
+  "id": "core:production",
+  "name": "정본 회색 상자 한 판",
   "selection": {
     "weapons": [
       "core:iron_blade",
@@ -102,13 +102,89 @@
       ]
     }
   },
-  "experiment": {
-    "contractVersion": 1,
-    "tuningFile": "experiments/tuning-s4b-02.json"
-  },
   "weaponCombat": {
-    "contractVersion": 2,
-    "definitionsFile": "experiments/weapon-growth-79.json"
+    "contractVersion": 2
   },
-  "tuningFile": "experiments/tuning-s2-baseline.json"
+  "gameplay": {
+    "enemyOverrides": [
+      {
+        "id": "core:raider",
+        "speed": 30,
+        "damage": 12,
+        "health": 45,
+        "attackCooldownTicks": 30
+      },
+      {
+        "id": "core:seed_mite",
+        "speed": 14,
+        "damage": 8,
+        "health": 28,
+        "attackCooldownTicks": 60
+      },
+      {
+        "id": "core:crop_grazer",
+        "speed": 12,
+        "damage": 12,
+        "health": 38,
+        "attackCooldownTicks": 60
+      },
+      {
+        "id": "core:stone_breaker",
+        "speed": 16,
+        "damage": 16,
+        "health": 75,
+        "attackCooldownTicks": 60
+      },
+      {
+        "id": "core:shield_raider",
+        "speed": 26,
+        "damage": 14,
+        "health": 90,
+        "attackCooldownTicks": 45
+      },
+      {
+        "id": "core:siege_cart",
+        "speed": 6,
+        "damage": 36,
+        "health": 130,
+        "attackCooldownTicks": 150
+      }
+    ],
+    "experiment": {
+      "movement": {
+        "circuitOffsets": [
+          {
+            "x": -3000,
+            "y": -3000
+          },
+          {
+            "x": 3000,
+            "y": -3000
+          },
+          {
+            "x": 3000,
+            "y": 3000
+          },
+          {
+            "x": -3000,
+            "y": 3000
+          }
+        ],
+        "decisionPeriodTicks": 90,
+        "evadeRange": 1200,
+        "evadeStep": 1200
+      },
+      "experience": {
+        "base": 30,
+        "linear": 15,
+        "quadratic": 5
+      },
+      "mixedCategoryOrder": [
+        "weapon",
+        "land",
+        "building",
+        "people"
+      ]
+    }
+  }
 }

@@ -1,0 +1,9 @@
+{
+  "contractVersion": 2,
+  "weapons": [
+    "core:iron_blade",
+    "core:harvest_scythe",
+    "core:ember_wand",
+    "core:ward_orbit"
+  ]
+}

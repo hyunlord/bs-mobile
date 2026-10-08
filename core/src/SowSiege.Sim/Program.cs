@@ -122,14 +122,16 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var stage = catalog.Experiment is not null ? "S4b" : catalog.Runtime is null ? "S2" : "S4";
     var scope = scenario == "load" ? "S2 exact-load mechanics fixture; maintenance included; not natural gameplay" : shortened ? "S2 truncated headless mechanics fixture; not a full game" : "S2 full-duration headless gameplay simulation; balance not approved";
     scope = scope.Replace("S2", stage, StringComparison.Ordinal);
+    var tuningSource = profile.Experiment?.TuningFile ?? profile.TuningFile ?? (profile.Gameplay is null ? null : "tuning.json");
+    var tuningHash = tuningSource is null ? null : Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(data, tuningSource))));
     var metadata = new
     {
         profileId = profile.Id,
         profileSha256 = profileHash,
-        experimentContractVersion = profile.Experiment?.ContractVersion,
+        experimentContractVersion = profile.Experiment?.ContractVersion ?? (profile.Gameplay is null ? (int?)null : 1),
         movementMode = movement,
-        tuningFile = profile.Experiment?.TuningFile,
-        tuningSha256 = profile.Experiment is null ? null : Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(data, profile.Experiment.TuningFile)))),
+        tuningFile = tuningSource,
+        tuningSha256 = tuningHash,
         experimentDefinition = catalog.Experiment,
         remainsLoop = catalog.Estates[estateId].RemainsLoop,
         fertilityPerKill = catalog.Tuning.World.Farms.FertilityPerKill,
@@ -214,10 +216,10 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         {
             profileId = profile.Id,
             profileSha256 = profileHash,
-            experimentContractVersion = profile.Experiment?.ContractVersion,
+            experimentContractVersion = profile.Experiment?.ContractVersion ?? (profile.Gameplay is null ? (int?)null : 1),
             movementMode = movement,
-            tuningFile = profile.Experiment?.TuningFile,
-            tuningSha256 = profile.Experiment is null ? null : Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(data, profile.Experiment.TuningFile)))),
+            tuningFile = tuningSource,
+            tuningSha256 = tuningHash,
             experimentDefinition = catalog.Experiment,
             remainsLoop = catalog.Estates[estateId].RemainsLoop,
             fertilityPerKill = catalog.Tuning.World.Farms.FertilityPerKill,

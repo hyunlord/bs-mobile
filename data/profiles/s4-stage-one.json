@@ -101,5 +101,6 @@
         }
       ]
     }
-  }
+  },
+  "tuningFile": "experiments/tuning-s2-baseline.json"
 }

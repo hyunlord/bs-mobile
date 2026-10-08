@@ -38,5 +38,6 @@
     "estates": [
       "test:moor"
     ]
-  }
+  },
+  "tuningFile": "experiments/tuning-s2-baseline.json"
 }

@@ -31,7 +31,7 @@ public sealed class ExperimentContentTests
             {
                 var target = Path.Combine(root, Path.GetRelativePath(source, file)); Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(file, target);
             }
-            var profilePath = Path.Combine(root, "profiles/s4b-01.json"); var tuningPath = Path.Combine(root, "tuning-s4b-01.json");
+            var profilePath = Path.Combine(root, "profiles/s4b-01.json"); var tuningPath = Path.Combine(root, "experiments/tuning-s4b-01.json");
             var profile = JsonNode.Parse(File.ReadAllText(profilePath))!; var tuning = JsonNode.Parse(File.ReadAllText(tuningPath))!;
             switch (mutation)
             {

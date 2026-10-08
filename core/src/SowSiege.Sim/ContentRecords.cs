@@ -33,10 +33,11 @@ public sealed record ToolContent(string Id, string Name, string Concept, string[
 }
 
 public sealed record WeaponContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
-    string ImplementationNote, LoopLink[] LoopLinks, ActivationContent Activation, EquipmentProjection? RuntimeProjection = null)
+    string ImplementationNote, LoopLink[] LoopLinks, WeaponActivationContent Activation, EquipmentProjection? RuntimeProjection = null,
+    WeaponCombatWeaponDefinition? Growth = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
-    public WeaponDefinition ToCore() => new(Id, Tags, Activation.ToCore());
+    public WeaponDefinition ToCore() => new(Id, Tags, Activation.ToCore(Growth));
 }
 
 public sealed record HeroContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
@@ -68,7 +69,8 @@ public sealed record ContentSelection(string[] Weapons, string[] Tools, string[]
         [.. Tools, .. other.Tools], [.. Enemies, .. other.Enemies], [.. Heroes, .. other.Heroes], [.. Estates, .. other.Estates]);
 }
 
-public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null, ExperimentProfileExtension? Experiment = null, WeaponCombatProfileExtension? WeaponCombat = null)
+public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null, ExperimentProfileExtension? Experiment = null, WeaponCombatProfileExtension? WeaponCombat = null,
+    string? TuningFile = null, ProductionGameplay? Gameplay = null)
 {
     public ContentSelection Select(bool includeTest) => includeTest ? Selection.Add(TestSelection) : Selection;
 }
@@ -93,5 +95,21 @@ public sealed record EvolutionContent(string Id, string Name, string Concept, st
     ProposedEvolutionResult Result, EvolutionProjection? RuntimeProjection = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);
 
-public sealed record WeaponCombatProfileExtension(int ContractVersion, string DefinitionsFile);
+public sealed record WeaponCombatProfileExtension(int ContractVersion, string? DefinitionsFile = null);
 public sealed record WeaponCombatFile(int ContractVersion, Dictionary<string, WeaponCombatWeaponDefinition> Weapons);
+public sealed record WeaponCombatManifest(int ContractVersion, string[] Weapons);
+public sealed record ProductionGameplay(EnemyOverride[] EnemyOverrides, ExperimentDefinition Experiment);
+
+public sealed record WeaponActivationContent(string Shape, string Form, decimal DamageCoefficient,
+    int? Damage = null, int? Range = null, int? CooldownTicks = null, int? Knockback = null)
+{
+    public Activation ToCore(WeaponCombatWeaponDefinition? growth)
+    {
+        if (growth is not null)
+        {
+            var first = growth.Levels[0];
+            return new(first.Damage, first.Range, first.CooldownTicks, Shape, first.Knockback);
+        }
+        return new(Damage!.Value, Range!.Value, CooldownTicks!.Value, Shape, Knockback!.Value);
+    }
+}

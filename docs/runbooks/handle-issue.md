@@ -2,7 +2,7 @@
 
 1. `gh repo view --json nameWithOwner`가 `hyunlord/bs-mobile`인지 확인한다. 다른 저장소면 멈추고 작업 경로를 고친다.
 2. 중복 이슈를 확인하고 문제·수용 관문·범위 밖·검증 방법을 기록한 이슈를 만든다. `type/feature|bug|balance|content|tech-debt|research`, `area/core|data|unity|ui|art|meta|bm|infra`, `phase/0`~`phase/5` 중 해당 라벨과 로드맵 마일스톤을 붙인다. 결정 요청에는 `needs-decision`도 붙이고 근거·선택지·권고·가역적 임시 가정을 적는다. 답을 기다리지 않고 독립 작업을 계속한다.
-3. GitHub Projects 보드에 이슈를 넣고 진행 상태로 옮긴다. 보드 권한이 없으면 API 오류와 필요한 권한을 needs-decision 이슈에 남긴다. 로컬 목록만 만들고 보드가 존재한다고 보고하지 않는다.
+3. 사용자 결정 [#2](https://github.com/hyunlord/bs-mobile/issues/2)에 따라 Projects 보드를 만들지 않는다. 라벨·마일스톤·이슈/PR로 진행 상태를 관리하고 Projects 권한을 추가 요청하지 않는다.
 4. 최신 main에서 `git switch -c <type>/<issue>-<topic>`로 짧은 가지를 만든다. 기존 변경을 보존한다. 병행 에이전트에는 파일 소유권을 정한다.
 5. 요구사항을 만족하는 최소 변경과 필요한 검증을 실행한다. 구조 변경이면 ADR을 포함한다. `TODO #123:`처럼 실제 이슈 참조 없는 TODO를 남기지 않는다.
 6. `./tools/check.sh`를 실행하고 결과를 읽는다. 실패를 숨기는 변경·검사 삭제·타입 억제는 금지다. 단계 증거에는 실제 command·SHA·환경·원자료 경로를 남긴다.
