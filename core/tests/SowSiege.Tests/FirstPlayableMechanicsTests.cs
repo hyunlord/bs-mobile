@@ -108,7 +108,8 @@ public sealed class FirstPlayableMechanicsTests
         var estate = new EstateSystem(c, s.Options.Run, w, "C", new SpatialHash(600), s.Simulation.Runtime, interactive: s.State);
         estate.ApplyGrowth(tool); Assert.False(building.Built); Assert.Equal("constructing", s.View.CaptureFirstPlayable()!.BuildingProgress.Single(b => b.Id == building.Id).State);
         estate.ApplyGrowth(tool); estate.ApplyGrowth(tool); estate.ApplyGrowth(tool); Assert.True(building.Built);
-        building.Health = 0; estate.ApplyGrowth(tool); Assert.False(building.Built); Assert.Equal(1, w.Rebuilds);
+        building.Health = 0; estate.ApplyGrowth(tool); Assert.True(building.Built); Assert.Equal(0, w.Rebuilds);
+        Assert.Equal("constructing", s.View.CaptureFirstPlayable()!.BuildingProgress.Single(b => b.Id == building.Id).State);
     }
     [Fact]
     public void RipeEvolutionThresholdIsCheckedAndAllNewHiddenFieldsChangeHash()

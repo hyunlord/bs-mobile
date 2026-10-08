@@ -119,7 +119,6 @@ namespace SowSiege.Core
 
                 work = Math.Min(definition.BuildingWorkRequired, work + definition.BuildingWorkPerActivation);
                 fp.BuildingWork[building.Id] = work; building.Source = source;
-                if (ruined) { world.Rebuilds++; building.Built = false; }
                 world.Tools[source].GrowthProduced++; runtime?.Growth(source, "building", 1);
                 if (work < definition.BuildingWorkRequired)
                 {

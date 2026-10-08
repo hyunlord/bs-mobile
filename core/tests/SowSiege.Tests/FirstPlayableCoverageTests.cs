@@ -316,4 +316,108 @@ public sealed class FirstPlayableCoverageTests
         }
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void StagedBuildingPreservesRuinConditionsUntilCompletion(bool ruined, bool equipped)
+    {
+        var c = ContentLoader.Load(Path.Combine(Root(), "data"), profileName: "first-playable");
+        var s = Fixture(c); var w = s.Simulation.World; var building = w.Buildings.Single();
+        building.Built = ruined; building.Health = 0; w.Lord = building.Position;
+        w.Equipment.Clear(); w.Equipment.Add(new() { Id = "core:carpenter_hammer", Level = 1 });
+        if (equipped)
+        {
+            w.Runtime!.Items["core:ruin_keystone"] = 1;
+        }
+
+        var estate = new EstateSystem(c, s.Options.Run, w, "C", new SpatialHash(600), s.Simulation.Runtime, interactive: s.State);
+        var tool = c.Tools["core:carpenter_hammer"]; var states = new List<string>(); var counts = new List<int>();
+        for (var n = 0; n < 4; n++)
+        {
+            estate.ApplyGrowth(tool); states.Add(s.View.CaptureFirstPlayable()!.BuildingProgress.Single().State); counts.Add(w.Rebuilds);
+            if (n < 3)
+            {
+                Assert.Equal(0, building.Health);
+            }
+        }
+        Assert.Equal(c.Tuning.World.Buildings.RepairAmount + (ruined && equipped ? 8 : 0), building.Health);
+        Assert.Equal(new[] { "constructing", "constructing", "constructing", "damaged" }, states);
+        Assert.Equal(new[] { 0, 0, 0, ruined ? 1 : 0 }, counts);
+        Assert.True(building.Built); Assert.Empty(w.FirstPlayable!.BuildingWork);
+        Assert.Single(s.State.Events, e => e.Kind == PresentationKind.BuildingStarted);
+        Assert.Single(s.State.Events, e => e.Kind == PresentationKind.BuildingCompleted);
+        var before = building.Health; estate.ApplyGrowth(tool);
+        Assert.Equal(before + c.Tuning.World.Buildings.RepairAmount, building.Health);
+        Assert.Equal(ruined ? 1 : 0, w.Rebuilds);
+        Assert.Single(s.State.Events, e => e.Kind == PresentationKind.BuildingCompleted);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RebuiltRuinsDoNotSatisfyFreshBuildingCondition(bool ruined)
+    {
+        var c = ContentLoader.Load(Path.Combine(Root(), "data"), profileName: "first-playable");
+        var item = c.Runtime!.Items["core:ruin_keystone"];
+        var items = c.Runtime.Items.ToDictionary(p => p.Key, p => p.Value);
+        items[item.Id] = item with { Effects = item.Effects.Select(e => e with { Conditions = new[] { new RuntimeCondition("building-new") } }).ToArray() };
+        c = c with { Runtime = c.Runtime with { Items = items } };
+        var s = Fixture(c); var w = s.Simulation.World; var building = w.Buildings.Single(); building.Built = ruined; building.Health = 0; w.Lord = building.Position;
+        w.Equipment.Clear(); w.Equipment.Add(new() { Id = "core:carpenter_hammer", Level = 1 }); w.Runtime!.Items[item.Id] = 1;
+        var estate = new EstateSystem(c, s.Options.Run, w, "C", new SpatialHash(600), s.Simulation.Runtime);
+        for (var n = 0; n < 4; n++)
+        {
+            estate.ApplyGrowth(c.Tools["core:carpenter_hammer"]);
+        }
+
+        Assert.Equal(c.Tuning.World.Buildings.RepairAmount + (ruined ? 0 : 8), building.Health);
+        var before = building.Health; estate.ApplyGrowth(c.Tools["core:carpenter_hammer"]);
+        Assert.Equal(before + c.Tuning.World.Buildings.RepairAmount, building.Health);
+    }
+
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(2, false)]
+    [InlineData(2, true)]
+    public void ActualOrbitEvolutionRepairsOnlyLivingFirstPlayableBuildings(int stage, bool evolved)
+    {
+        var c = ContentLoader.Load(Path.Combine(Root(), "data"), profileName: "first-playable");
+        var s = Fixture(c); var w = s.Simulation.World; var building = w.Buildings.Single(); building.Health = stage == 2 ? 50 : 0; w.Lord = building.Position;
+        var estate = new EstateSystem(c, s.Options.Run, w, "C", new SpatialHash(600), s.Simulation.Runtime, interactive: s.State);
+        if (stage == 1)
+        {
+            estate.ApplyGrowth(c.Tools["core:carpenter_hammer"]);
+        }
+
+        if (evolved)
+        {
+            w.Runtime!.Evolutions.Add("core:warded_masonry");
+        }
+
+        var weapon = w.Equipment.Single(e => e.Id == "core:ward_orbit");
+        w.Enemies[0].Position = new(w.Lord.X + c.WeaponCombat!.Weapons[weapon.Id].Levels[weapon.Level - 1].Range, w.Lord.Y);
+        var spatial = new SpatialHash(600); spatial.Rebuild(w.Enemies);
+        var combat = new CombatSystem(c, s.Options.Run, w, s.Simulation.RandomState, spatial, s.Simulation.Runtime, interactive: s.State);
+        combat.Activate(weapon, c.Weapons[weapon.Id].Activation, null); combat.TickFirstPlayableAttacks();
+        Assert.True(w.WeaponDamage > 0);
+        Assert.Equal(stage == 2 ? 50 + (evolved ? 8 : 0) : 0, building.Health);
+        Assert.Equal(0, w.Rebuilds);
+        Assert.Equal(stage == 0 ? "ruin" : stage == 1 ? "constructing" : "damaged", s.View.CaptureFirstPlayable()!.BuildingProgress.Single().State);
+        Assert.DoesNotContain(s.State.Events, e => e.Kind == PresentationKind.BuildingCompleted);
+    }
+    [Fact]
+    public void LegacyPassiveRepairStillRevivesRuins()
+    {
+        var c = ContentLoader.Load(Path.Combine(Root(), "data"), profileName: "first-playable") with { FirstPlayable = null };
+        var s = Fixture(c); var w = s.Simulation.World; var building = w.Buildings.Single(); building.Health = 0;
+        w.Runtime!.Evolutions.Add("core:warded_masonry");
+        s.Simulation.Runtime!.Emit("attack", new(building.Position, "core:ward_orbit"));
+        Assert.Equal(8, building.Health); Assert.Equal(1, w.Rebuilds);
+    }
+
 }

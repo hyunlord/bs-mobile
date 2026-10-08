@@ -49,3 +49,7 @@ node tools/first-playable-league.mjs full artifacts/phase1b/m1-reproduced 4
 ## 해석 한계와 다음 관문
 
 모든 정책의 생존율이100%이므로 이번 실행만으로 혼합 빌드의 우수성이나 난이도 적절성을 판정할 수 없다. 관문 기준을 사후 변경하거나 성공률을 낮추기 위한 재조정은 하지 않는다. 실제 화면·손맛·입력·15분 흐름은 M2/M3, 실제 폴드7 성능·플레이와 .NET/Mono/IL2CPP 교차 검증은 M4에서 확인한다.
+
+### 실행 후 병합 리뷰에서 발견한 결함
+
+[PR 리뷰](https://github.com/hyunlord/bs-mobile/pull/99#discussion_r4222779948)가 다회 발동 재건 중 폐허였다는 문맥을 잃어 `core:ruin_keystone`의 실제 재건 효과가 적용되지 않는 경로를 지적했다. candidate-01의 CSV·소스·당시 수치 판정은 그대로 보존한다. 이 리그 통과만으로 결함까지 해소됐다고 보지 않으며, 실제 재건 회귀와 수정 소스의 후속 검증 전에는 M1 전체를 병합하지 않는다.

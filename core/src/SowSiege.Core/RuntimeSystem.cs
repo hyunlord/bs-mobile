@@ -169,7 +169,7 @@ namespace SowSiege.Core
                     interactive?.Attack(world.Tick, owned.Source, context.Origin, direction, effect.Subject == "weapon-front" ? "sector180" : "disk", effect.Radius, visualHits!);
                     world.WeaponDamage += damage; return damage;
                 case "repair-nearest":
-                    var building = world.Buildings.Where(building => building.Built && building.Health < catalog.Tuning.World.Buildings.Health && Within(building.Position, context.Origin, effect.Radius)).OrderBy(building => building.Position.DistanceSquared(context.Origin)).ThenBy(building => building.Id).FirstOrDefault();
+                    var building = world.Buildings.Where(building => building.Built && (world.FirstPlayable is null || building.Health > 0) && building.Health < catalog.Tuning.World.Buildings.Health && Within(building.Position, context.Origin, effect.Radius)).OrderBy(building => building.Position.DistanceSquared(context.Origin)).ThenBy(building => building.Id).FirstOrDefault();
                     if (building is null) { return 0; }
                     var repaired = Math.Min(amount, catalog.Tuning.World.Buildings.Health - building.Health);
                     if (repaired > 0 && building.Health == 0) { world.Rebuilds++; }
