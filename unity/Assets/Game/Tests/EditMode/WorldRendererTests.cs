@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using SowSiege.Core;
 using Game.View;
@@ -36,7 +39,13 @@ namespace Tests.EditMode
 
         [Test] public void ExperienceRendersBelowReadyAlliesAttacksAndEnemies()
         {
-            int Layer(string name) => (int)typeof(WorldRenderer).GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).GetRawConstantValue();
+            var source = File.ReadAllText(Path.Combine(Application.dataPath, "Game/View/WorldRenderer.cs"));
+            int Layer(string name)
+            {
+                var declarations = Regex.Matches(source, @"(?m)^\s*private\s+const\s+int\s+" + Regex.Escape(name) + @"\s*=\s*(\d+)\s*;");
+                Assert.That(declarations.Count, Is.EqualTo(1), "Expected one explicit layer constant: " + name);
+                return int.Parse(declarations[0].Groups[1].Value, CultureInfo.InvariantCulture);
+            }
             var experience = Layer("ExperienceLayer");
             Assert.That(experience, Is.GreaterThan(Layer("GrowthLayer")));
             foreach (var name in new[] { "ReadyLayer", "AllyOutlineLayer", "AllyFillLayer", "AttackLayer", "EnemyLayer", "LordOutlineLayer" })
