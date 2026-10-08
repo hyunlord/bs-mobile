@@ -1,0 +1,6 @@
+gate,status,source,evidence,detail
+release_download,PASS,b3f4830bb8c441343f61362e2b39e474f5709290,https://github.com/hyunlord/bs-mobile/releases/tag/phase0-evidence-original-20261008,1399 files exact set and SHA256
+foundation_ci,PASS,8aaf94eb025713d8ad57051dfa32ec6952807625,https://github.com/hyunlord/bs-mobile/actions/runs/37715959947,quality and secrets succeeded
+budget_negative,PASS,test/r1-budget-negative,https://github.com/hyunlord/bs-mobile/pull/49,5000001 bytes rejected by RB001; closed unmerged
+budget_negative_ci,EXPECTED_FAILURE,test/r1-budget-negative,https://github.com/hyunlord/bs-mobile/actions/runs/37716260011,quality failed budget; secrets succeeded
+major_routing,PASS,ADR0013,https://github.com/hyunlord/bs-mobile/actions/runs/37716314060,grouped majors recorded in issue46 without enabling merge

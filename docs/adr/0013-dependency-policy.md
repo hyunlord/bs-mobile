@@ -61,3 +61,11 @@ Dependabot가 주간 그룹을 생성하는 스케줄 실행 자체, 새 메이�
 - [GitHub: 원자적 커밋 입력](https://docs.github.com/en/graphql/reference/input-objects#createcommitonbranchinput): expectedHeadOid를 통해 동시 변경을 확인한다.
 
 기각: Dependabot를 PR 정책에서 면제하기, 알 수 없는 SHA를 패치로 취급하기, 메이저 자동 병합, CI 결과와 무관한 성공 상태 게시, 쓰기 토큰으로 PR 테스트 실행, 추가 PAT를 요구해 일상 갱신을 사람 승인에 의존하기.
+
+## R1 실제 실행 보정 (#53)
+
+2026-10-08 PR #51 준비 실행 `37716422870`은 ADR 커밋 뒤 `PR head changed during preparation`으로 실패했다. 서명된 Dependabot 커밋 `34f9c127f5ef98ab9c3a3c7cb6e0c6a9a6614768`(02:08:38 UTC)의 자식으로 서명된 단일 ADR 커밋 `06c0cc3f017752c72309c5c878262770a16b724b`(02:08:55 UTC)이 생성됐고, 실패 로그는 02:08:56.620 UTC, PR의 updated_at은 02:08:57 UTC였다. 이후 PR head와 실제 branch ref가 모두 `06c0cc3f…`이며 다른 커밋이나 force-push 기록은 발견하지 못했다. 조회 지연을 강하게 시사하지만 당시 REST 응답과 GraphQL 반환 OID가 로그에 없으므로 과거 원인을 확정하지 않는다.
+
+커밋 직후 PR 조회가 **쓰기 전 SHA 그대로이고 실제 branch ref가 방금 반환된 새 OID일 때만** 제한 재시도를 허용한다. 최대 네 번 관측, 대기 0.5/1/2초이며 매번 이전·기대·관측 PR/branch SHA를 기록한다. 다른 SHA, 다른 branch ref, 미수렴은 실패한다. 새로운 PR head를 무조건 채택하거나 불일치를 무시하지 않는다.
+
+재실행에서는 커밋 제목 생성·검증을 같은 함수로 맞췄다. 최초 실패 실행이 남긴 정확한 옛 제목 `docs(deps): record decision for PR #N`도 서명·단일 ADR 파일·현재 메타데이터로 재생성한 본문 일치 검사를 모두 통과할 때만 복구 대상으로 인정한다. 기존 부록은 다시 커밋하지 않고 같은 작업 이슈와 HEAD의 CI를 재사용한다. 오래된 workflow 실행을 단순 rerun하면 옛 이벤트 HEAD가 남으므로 복구하지 못한다. 정책 수정이 main에 반영된 뒤 PR이 최신 main을 포함하면 close/reopen으로 새 이벤트를 만들 수 있다. main보다 뒤처졌거나 Dependabot가 수동 변경 때문에 rebase를 거부하면 `@dependabot recreate`로 bot의 서명된 최신 변경을 다시 생성한 후 같은 정책을 실행한다. 실제 GitHub 재실행·병합 통과는 R1 보고서의 별도 관문이다.

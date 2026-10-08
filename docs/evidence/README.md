@@ -21,3 +21,14 @@ tar -xzf phase0-original/phase0-evidence-original-b3f4830.tar.gz -C phase0-origi
 기존 보고서의 스크린샷·JSON·원시 CSV는 Release를 추출하면 원래 상대 경로로 열린다. 현재 트리에 없는 파일을 온라인에서 확인하려면 [원본 커밋의 evidence](https://github.com/hyunlord/bs-mobile/tree/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence)와 [league](https://github.com/hyunlord/bs-mobile/tree/b3f4830bb8c441343f61362e2b39e474f5709290/docs/league)를 사용한다. Release 자산을 덮어쓰지 않으며 수정본은 새 버전으로 발행한다.
 
 Release의 GitHub `isImmutable` 값은 `false`다. 자산을 덮어쓰지 않는 운영 규칙이며 플랫폼 불변성 보장은 아니다. 해시 목록은 payload 2개(압축 원본·파일별 매니페스트)를 검증한다. 해시 목록 자체와 안내문은 별도 다운로드 후 업로드 원본과 바이트 비교했다. 목록 자체의 재귀적인 자기 해시는 주장하지 않는다.
+
+## Node로 전체 검증 재현
+
+현재 저장소 루트에서 다운로드 자산과 추출 파일을 각각 검사한다. 별도 패키지 설치는 필요 없다.
+
+```sh
+node tools/verify-evidence.mjs docs/evidence/phase0-assets-sha256.csv phase0-original
+node tools/verify-evidence.mjs docs/evidence/phase0-source-manifest.csv phase0-original/extracted
+```
+
+첫 명령은 매니페스트에 열거된 **payload 2개만** 크기·SHA-256 검증한다. `unverifiedExtraFiles`에 표시되는 Release README·자산 매니페스트 자체는 이 명령이 인증하지 않는다. 두 번째 명령은 **1,399개 원본 파일**의 크기·SHA-256과 정확한 파일 집합을 검증한다. 경로 탈출·중복 경로·심볼릭 링크·누락·추가 파일은 실패한다. 추출 디렉터리는 새로 만든 빈 디렉터리를 사용한다.
