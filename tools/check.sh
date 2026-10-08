@@ -21,6 +21,8 @@ node --test tools/test-weapon-holdout.mjs
 npm run validate
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
+node --test tools/test-metrics-device.mjs
+node --test tools/test-device-metrics.mjs
 node tools/pr-policy.mjs
 dotnet run --project tools/ArchitectureGuard -- --self-test
 dotnet run --project tools/ArchitectureGuard -- "$PWD"

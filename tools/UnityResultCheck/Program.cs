@@ -2,6 +2,11 @@ using System.Globalization;
 using System.Xml;
 using System.Xml.Linq;
 
+if (args.Length == 2 && args[0] == "--release")
+{
+    return ReleaseBoundary.Verify(args[1]);
+}
+
 if (args.Length != 1) { Console.Error.WriteLine("Expected NUnit XML file path."); return 1; }
 try
 {
@@ -25,7 +30,7 @@ try
     Console.WriteLine($"UNITY_TEST_PASS {args[0]} total={total} passed={passed}");
     return 0;
 }
-catch (Exception exception) when (exception is IOException or XmlException or FormatException or OverflowException)
+catch (Exception exception) when (exception is IOException or InvalidDataException or XmlException or FormatException or OverflowException)
 {
     Console.Error.WriteLine("UNITY_TEST_FAIL " + exception.Message);
     return 1;

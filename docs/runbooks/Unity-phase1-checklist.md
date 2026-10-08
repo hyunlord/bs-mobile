@@ -1,4 +1,4 @@
-관문: 진행 중 — U0 실제 설치·batch 실행과 U1 정본 이관은 통과, U2 Unity 기반 검증 중. 실기 관문은 별도다.
+관문: 비실기 검사 통과 — U0·U1·U2와 U3/U4 에디터·기록 검증 완료. 사용자 요청으로 실기 관문 3·4·5와 관문 2의 Android 실행은 대기.
 
 # 현재 실행 절차 — 1단계 A
 
@@ -8,9 +8,9 @@
 |---|---|
 | U0 | 6000.6.4f1, Android OpenJDK·SDK·NDK와 iOS 모듈, 실제 라이선스 batch 실행 통과. [보고](../review/phase1a-u0.md) |
 | U1 | production 정본과 실험 경계 이관 완료. [PR88](https://github.com/hyunlord/bs-mobile/pull/88), 병합 `1385eae0255a2bb187e7bd2b5ef6c03ae102cd55`, [CI](https://github.com/hyunlord/bs-mobile/actions/runs/37782971456) 통과 |
-| U2 | 아래 명령으로 생성 연결·실제 Editor 테스트·ARM64 IL2CPP APK를 검증하고 연결 PR에 결과 기록 |
-| U3/U4 | 한 해 수동 조작·카드·결산·표현·개발 도구·재생·프레임 지표를 구현하고 실제 화면에서 검증 |
-| 실기 | 같은 5개 기록의 .NET/Mono/IL2CPP 일치, 기기 기록 CLI 재생, 마지막 계절 p95, 접기·펼치기 각3회와 두 화면 캡처 |
+| U2 | 생성 연결·실제 Editor 테스트·ARM64 IL2CPP APK 통과. [PR91](https://github.com/hyunlord/bs-mobile/pull/91), 병합 `23ba6ed2bb369bfd1af73a2f4114aaab4c202019`, [CI](https://github.com/hyunlord/bs-mobile/actions/runs/37788588929) 통과 |
+| U3/U4 | 실제 EditMode 19개·PlayMode 8개·host 17개 통과. 한 해·사망·종료 기록의 CLI 재생 일치. [검증 보고](../review/phase1a-playable-graybox.md) |
+| 실기 대기 | .NET/Mono 5개 기록 일치 완료. Android IL2CPP 실행·기기 기록 CLI 재생·마지막 계절 p95·접기/펼치기 각3회는 연결 후 검증. APK 빌드 성공과 구분 |
 
 저장소 루트에서 실행한다. Unity 프로젝트를 사용하는 다른 Editor 프로세스는 종료한 뒤 검사한다.
 
@@ -32,6 +32,8 @@ dotnet run --project core/src/SowSiege.Sim -- interactive-replay data artifacts/
 Unity는 `production`을 선택한다. U1 이전 S2 CLI 기본값을 Unity 설정으로 대체 사용하지 않는다. 과거 R2/R3 판정과 이후 무기 holdout 통과는 각각 보존하고, 새 수치 보정은 이 단계에 포함하지 않는다. [생성 연결 ADR0024](../adr/0024-generated-core-and-canonical-unity-bridge.md), [재생 ADR0025](../adr/0025-interactive-core-and-portable-replay.md), [세로 폴드·검사 ADR0026](../adr/0026-portrait-fold-layout-and-local-unity-ci.md)를 따른다.
 
 보고는 커밋·PR·CI와 실제 로컬 검사 결과로 한다. ZIP·CRC·전달 영수증은 만들지 않는다. 원본 로그의 Unity 계정/라이선스나 기기 식별자는 공개하지 않는다. 최종 APK와 해 볼 것 목록을 전달하며, 1단계 B는 시작하지 않는다.
+
+플레이 순서는 [폴드8에서 해 볼 것](phase1a-playtest.md), 기록 추출·프레임 집계·기기 재생 검증은 [기기 기록 런북](device-play.md)을 따른다. 빌드 소스 식별과 기기 지표 분리는 [ADR0027](../adr/0027-player-build-identity-and-frame-metrics.md)에 기록한다.
 
 ---
 

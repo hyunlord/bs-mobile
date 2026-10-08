@@ -3,8 +3,14 @@ import { chmod, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { execFileSync } from 'node:child_process';
 import { inputSnapshot, outputSnapshot, outputs, prepare, verify } from './unity-export.mjs';
 import { validateContent } from './validate-content.mjs';
+import { buildIdentity, identitySource } from './unity-build-identity.mjs';
+
+function git(root, args) {
+  return execFileSync('git', ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', '-c', 'core.hooksPath=/dev/null', ...args], { cwd: root, stdio: 'pipe', env: { ...process.env, DEVELOPER_DIR: process.env.DEVELOPER_DIR ?? '/Library/Developer/CommandLineTools' } });
+}
 
 async function fixture(t) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'unity-provenance-'));
@@ -13,13 +19,18 @@ async function fixture(t) {
     'core/src/Core/Simulation.cs': 'source', 'core/src/Core/Core.csproj': 'project',
     'Directory.Build.props': 'props', 'global.json': 'sdk',
     'tools/prepare-unity.sh': 'script', 'tools/unity-export.mjs': 'helper',
+    'tools/unity-build-identity.mjs': 'identity helper',
     'data/tuning.json': '{}', 'data/bin/included.json': '{}', 'data/test/fixture.json': '{}',
-    [outputs.bridge]: 'bridge', [outputs.core]: 'dll',
+    [outputs.bridge]: 'bridge', [outputs.core]: 'dll', [outputs.identity]: 'identity',
   })) {
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
     await writeFile(path.join(root, relative), text);
   }
-  const manifest = { contractVersion: 1, profileName: 'production', inputs: await inputSnapshot(root), outputs: await outputSnapshot(root) };
+  await writeFile(path.join(root, '.gitignore'), 'unity/Assets/Generated/\nunity/Assets/Game/App/Generated/\n');
+  git(root, ['init', '-q']); git(root, ['add', '.']); git(root, ['commit', '-qm', 'fixture']);
+  const identity = await buildIdentity(root);
+  await writeFile(path.join(root, outputs.identity), identitySource(identity));
+  const manifest = { contractVersion: 2, profileName: 'production', buildIdentity: identity, inputs: await inputSnapshot(root), outputs: await outputSnapshot(root) };
   await writeFile(path.join(root, outputs.provenance), JSON.stringify(manifest));
   return root;
 }
@@ -32,13 +43,33 @@ test('preparation verification is read-only and excludes test data', async t => 
   assert.deepEqual(await readFile(file), before);
 });
 
-for (const relative of ['core/src/Core/Simulation.cs', 'Directory.Build.props', 'global.json', 'data/tuning.json', 'data/bin/included.json', outputs.bridge, outputs.core]) {
+test('preparation rejects a new source commit until runtime identity is regenerated', async t => {
+  const root = await fixture(t);
+  git(root, ['commit', '--allow-empty', '-qm', 'new source identity']);
+  await assert.rejects(verify(root), /Stale Unity build identity/);
+});
+
+for (const relative of ['core/src/Core/Simulation.cs', 'Directory.Build.props', 'global.json', 'data/tuning.json', 'data/bin/included.json', outputs.bridge, outputs.core, outputs.identity]) {
   test(`preparation rejects stale ${relative}`, async t => {
     const root = await fixture(t);
     await writeFile(path.join(root, relative), 'changed');
     await assert.rejects(verify(root), /Stale Unity/);
   });
 }
+
+test('Unity source edits have a distinct dirty identity and invalidate preparation', async t => {
+  const root = await fixture(t), before = await buildIdentity(root);
+  assert.equal(before.sourceDirty, false);
+  const source = path.join(root, 'unity/Assets/Game/App/Presentation.cs');
+  await writeFile(source, 'presentation source');
+  const after = await buildIdentity(root);
+  assert.equal(after.commit, before.commit);
+  assert.equal(after.sourceDirty, true);
+  assert.notEqual(after.sourceHash, before.sourceHash);
+  await assert.rejects(verify(root), /Stale Unity build identity/);
+  await rm(source);
+  assert.deepEqual(await buildIdentity(root), before);
+});
 
 test('preparation rejects added input and symlinked output', async t => {
   const root = await fixture(t);
