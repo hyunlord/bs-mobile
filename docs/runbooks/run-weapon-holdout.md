@@ -52,3 +52,5 @@ node tools/weapon-holdout-report.mjs artifacts/weapon-holdout-full artifacts/wea
 `eligibleBeforeCap`의 광선 값은 이미 선택된 발사 수만큼의 광선 통로에 들어온 고유 적 합집합에서 관통 상한을 적용하기 전 개수다. 발사 수 선택 이전의 모든 가능한 적 수를 뜻하지 않는다. 부채꼴·원판에서는 해당 기하 영역의 타격 수 상한 전 적 수다.
 
 자동 생성 `report.md`는 CSV 관문 재생성용 하위 표다. 전달용 최종 검토 보고서는 별도 `docs/review/` 문서이며, 그 첫10줄에 commit/PR/CI를 연결하고 무기별 지표 표를 포함한다. 자동 표의 생성을 최종 보고 완료로 취급하지 않는다.
+
+정식 실행기는 내부에서 `dotnet build`로 Sim/Core Release를 강제 재빌드한 뒤에만 동결 입력을 잡는다. 호출 전후 clean HEAD가 동일해야 한다. CSV 재생은 사례 inputHash와 diagnosticIdentity를 출처 및 cardsDigest로 다시 계산하여 바꿔 끼운 행을 거부한다.

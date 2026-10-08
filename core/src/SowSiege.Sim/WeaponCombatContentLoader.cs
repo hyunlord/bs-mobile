@@ -16,7 +16,10 @@ public static partial class ContentLoader
         using (var document = JsonDocument.Parse(File.ReadAllText(filename))) { UniqueProperties(document.RootElement); }
         var content = Read<WeaponCombatFile>(filename);
         Require(content.ContractVersion == 1, "Unsupported weapon combat definitions version.");
-        Require(content.Weapons.Count > 0 && content.Weapons.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(selectedWeapons), "Weapon combat definitions must exactly cover selected weapons.");
+        var allowedWeapons = profile.Selection.Weapons.Concat(profile.TestSelection.Weapons).ToHashSet(StringComparer.Ordinal);
+        Require(content.Weapons.Count > 0 && content.Weapons.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(allowedWeapons), "Weapon combat definitions must exactly cover primary and test weapons.");
+        var selected = selectedWeapons.ToHashSet(StringComparer.Ordinal);
+        Require(selected.IsSubsetOf(allowedWeapons), "Weapon combat definitions must cover currently selected weapons.");
         foreach (var weapon in content.Weapons.Values)
         {
             Require(weapon.AttackModel is "sector90" or "sector180" or "rays" or "disk", "Unknown weapon attack model.");
@@ -37,7 +40,7 @@ public static partial class ContentLoader
                     || level.Knockback > previous.Knockback || level.CooldownTicks < previous.CooldownTicks, "Each weapon level requires a non-damage improvement.");
             }
         }
-        return new(content.ContractVersion, content.Weapons);
+        return new(content.ContractVersion, content.Weapons.Where(pair => selected.Contains(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal));
     }
 
     private static void UniqueProperties(JsonElement element)

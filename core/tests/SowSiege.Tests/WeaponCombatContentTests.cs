@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using SowSiege.Core;
 using SowSiege.Sim;
 using Xunit;
 
@@ -8,6 +9,9 @@ public sealed class WeaponCombatContentTests
 {
     [Theory]
     [InlineData("valid")]
+    [InlineData("test-weapon")]
+    [InlineData("missing-test-definition")]
+    [InlineData("invalid-test-definition")]
     [InlineData("explicit-null")]
     [InlineData("unsafe-path")]
     [InlineData("unknown-field")]
@@ -52,6 +56,19 @@ public sealed class WeaponCombatContentTests
                     ["levels"] = new JsonArray(Enumerable.Range(1, 12).Select(level => (JsonNode)new JsonObject { ["level"] = level, ["damage"] = level, ["range"] = 100 + level, ["cooldownTicks"] = 30, ["count"] = 1, ["pierce"] = 0, ["knockback"] = 0 }).ToArray())
                 };
             }
+            if (mutation is "test-weapon" or "missing-test-definition" or "invalid-test-definition")
+            {
+                const string testId = "test:host_weapon";
+                var primaryId = weapons.First().Key;
+                var weaponFile = Directory.GetFiles(Path.Combine(root, "weapons"), "*.json").First(file => JsonNode.Parse(File.ReadAllText(file))!["id"]!.GetValue<string>() == primaryId);
+                var dummy = JsonNode.Parse(File.ReadAllText(weaponFile))!;
+                dummy["id"] = testId;
+                Directory.CreateDirectory(Path.Combine(root, "test/weapons"));
+                File.WriteAllText(Path.Combine(root, "test/weapons/host-weapon.json"), dummy.ToJsonString());
+                profile["testSelection"]!["weapons"]!.AsArray().Add(testId);
+                if (mutation != "missing-test-definition") { weapons[testId] = weapons.First().Value!.DeepClone(); }
+                if (mutation == "invalid-test-definition") { weapons[testId]!["levels"]![0]!["count"] = 65; }
+            }
             var config = new JsonObject { ["contractVersion"] = 1, ["weapons"] = weapons };
             var first = weapons.First(); var levels = first.Value!["levels"]!.AsArray();
             switch (mutation)
@@ -83,13 +100,36 @@ public sealed class WeaponCombatContentTests
             if (mutation == "duplicate-json-key") { json = json.Replace("\"weapons\":{", "\"weapons\":{" + System.Text.Json.JsonSerializer.Serialize(first.Key) + ":" + first.Value!.ToJsonString() + ",", StringComparison.Ordinal); }
             File.WriteAllText(filePath, json);
             if (mutation == "symlink") { File.Move(filePath, filePath + ".original"); File.CreateSymbolicLink(filePath, filePath + ".original"); }
-            if (mutation == "valid")
+            if (mutation is "valid" or "test-weapon")
             {
                 var loaded = ContentLoader.Load(root, false, "weapon-host-test");
                 Assert.NotNull(loaded.WeaponCombat);
                 Assert.Equal(loaded.Weapons.Count, loaded.WeaponCombat.Weapons.Count);
                 Assert.All(loaded.WeaponCombat.Weapons.Values, weapon => Assert.Equal(12, weapon.Levels.Length));
                 Assert.Null(ContentLoader.Load(root, false, "s4b-02").WeaponCombat);
+                Assert.Equal(profile["selection"]!["weapons"]!.AsArray().Select(id => id!.GetValue<string>()), loaded.WeaponCombat.Weapons.Keys);
+                if (mutation == "test-weapon")
+                {
+                    const string testId = "test:host_weapon";
+                    Assert.False(loaded.WeaponCombat.Weapons.ContainsKey(testId));
+                    Assert.False(loaded.Weapons.ContainsKey(testId));
+                    var withTest = ContentLoader.Load(root, true, "weapon-host-test");
+                    Assert.Equal(loaded.Weapons.Count + 1, withTest.WeaponCombat!.Weapons.Count);
+                    Assert.True(withTest.Weapons.ContainsKey(testId));
+                    var options = new RunOptions(9100, withTest.Tuning.DefaultHero, withTest.Tuning.DefaultEstate, "weapon");
+                    var sim = SimulationFactory.Create(withTest, options);
+                    sim.World.Enemies.Clear();
+                    sim.World.Lord = new(1000, 1000);
+                    sim.World.WeaponCombat!.Facing = new(0, 1);
+                    var enemy = new EnemyState { Id = sim.World.AllocateId(), Position = new(1000, 1050), Health = 100 };
+                    sim.World.Enemies.Add(enemy);
+                    var spatial = new SpatialHash(withTest.Tuning.World.Map.CellSize);
+                    spatial.Rebuild(sim.World.Enemies);
+                    var combat = new CombatSystem(withTest, options, sim.World, new TrackedRandom(9100), spatial);
+                    combat.Activate(new EquipmentState { Id = testId, Level = 1 }, withTest.Weapons[testId].Activation, null);
+                    Assert.True(enemy.Health < 100);
+                    Assert.Equal(100 - enemy.Health, sim.World.WeaponDamage);
+                }
                 var originalHash = ContentLoader.Hash(root, false);
                 File.AppendAllText(filePath, " ");
                 Assert.NotEqual(originalHash, ContentLoader.Hash(root, false));

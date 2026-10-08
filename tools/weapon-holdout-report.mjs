@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { digest } from './diagnostic-packet.mjs';
 import { dominance } from './s4-report.mjs';
 import { ratioVerdict } from './retrospective-c-prime.mjs';
 import { formatCsv,parseCsv } from './csv.mjs';
@@ -21,13 +22,22 @@ export function reportContents(runs,mode){const r=evaluate(runs,mode),gates=['b'
  return new Map([['outcomes.csv',formatCsv(Object.keys(r.outcomes[0]),r.outcomes)],['ratios.csv',formatCsv(Object.keys(r.ratios[0]),r.ratios)],['condition-ranks.csv',formatCsv(Object.keys(r.conditions[0]),r.conditions)],['gates.csv',formatCsv(Object.keys(gates[0]),gates)],['report.md',text]]);
 }
 export function parseRuns(text){return parseCsv(text).map(r=>{assert.ok(['true','false'].includes(r.survived),'invalid survival boolean');assert.equal(r.repeatCount,'3','exactly3 repeats required');assert.equal(r.repeatVerified,'true','verified repeats required');const numbers={};for(const k of ['seed','ticks','level','weaponDamage','toolActivationDamage','toolGrowthDamage','allyDamage']){assert.match(r[k],/^(0|[1-9][0-9]*)$/);numbers[k]=Number(r[k]);assert.ok(Number.isSafeInteger(numbers[k]));}return {...r,...numbers,survived:r.survived==='true',repeatCount:3,repeatVerified:true};});}
+export function sourceIdentity(row,source){return digest({sourceCommit:source.sourceCommit.toLowerCase(),sourceTreeSha256:source.sourceTreeSha256.toLowerCase(),coreAssemblySha256:source.coreAssemblySha256.toLowerCase(),simulationAssemblySha256:source.simulationAssemblySha256.toLowerCase(),inputHash:row.inputHash.toLowerCase(),diagnosticIdentity:row.diagnosticIdentity.toLowerCase()});}
 export function validateReplayInputs(rows,provenance,mode){
  assert.equal(provenance.length,1,'one provenance row required');const p=provenance[0],full=mode==='full';assert.ok(['full','smoke'].includes(mode));
  const required={mode,profile:'weapon-growth-79',profileId:'core:weapon_growth_79',seeds:full?'20000..20031':'9100',distinctCases:String(full?576:18),seedBlocks:String(full?32:1),repeatCount:'3',totalExecutions:String(full?1728:54),tickRate:'30',configuredDurationTicks:'21600',requestedTicks:String(full?21600:900)};
  for(const[k,v]of Object.entries(required))assert.equal(p[k],v,`provenance ${k}`);assert.ok(['true','false'].includes(p.sourceDirty));if(full)assert.equal(p.sourceDirty,'false','full source must be clean');assert.match(p.sourceCommit,/^[0-9a-f]{40}$/i);
  for(const key of ['sourceTreeSha256','simulationAssemblySha256','coreAssemblySha256','profileSha256','tuningSha256','contentSha256','weaponDefinitionSha256'])assert.match(p[key],/^[0-9a-f]{64}$/i);
  for(const key of ['runtime','os','architecture'])assert.ok(typeof p[key]==='string'&&p[key].length);assert.equal(p.coreTargetFramework,'.NETCoreApp,Version=v8.0');
- for(const r of rows)for(const key of ['inputHash','packetSha256','gameplayHash','gameplayDigest','diagnosticDigest','diagnosticIdentity'])assert.match(r[key],/^[0-9a-f]{64}$/i,`run ${key}`);
+ for(const r of rows)for(const key of ['inputHash','packetSha256','gameplayHash','gameplayDigest','diagnosticDigest','diagnosticIdentity','cardsDigest','sourceIdentity'])assert.match(r[key],/^[0-9a-f]{64}$/i,`run ${key}`);
+ for(const r of rows){
+  const caseIdentity={caseId:`weapon-growth-79-${r.policy}-${r.peopleRule}-${r.seed}-control`,variant:'control',seed:r.seed,policy:r.policy,peopleRule:r.peopleRule,movement:'circuit',requestedTicks:Number(p.requestedTicks)};
+  const inputHash=digest({caseIdentity,content:p.contentSha256.toUpperCase(),profile:p.profileSha256.toUpperCase(),tuning:p.tuningSha256.toUpperCase()});
+  assert.equal(r.inputHash.toLowerCase(),inputHash,'case inputHash does not bind supplied provenance');
+  const identity=digest({contractVersion:1,variant:'control',inputHash:r.inputHash.toUpperCase(),gameplayHash:r.gameplayHash.toUpperCase(),diagnosticDigest:r.diagnosticDigest.toUpperCase(),cardsDigest:r.cardsDigest.toUpperCase()});
+  assert.equal(r.diagnosticIdentity.toLowerCase(),identity,'case diagnostic identity mismatch');
+  assert.equal(r.sourceIdentity.toLowerCase(),sourceIdentity(r,p),'case executed source identity mismatch');
+ }
  evaluate(rows,mode);
 }
 export async function replay(input,output,mode){

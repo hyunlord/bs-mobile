@@ -40,7 +40,7 @@ export function validateWeaponGrowth(records) {
     const entry = files.get(record.weaponCombat.definitionsFile);
     if (!entry?.schemaValid) { errors.push(`${relative}: missing or invalid weapon growth definitions`); continue; }
     const actual = Object.keys(entry.record.weapons).sort();
-    const selected = [...record.selection.weapons].sort();
+    const selected = [...new Set([...record.selection.weapons, ...(record.testSelection?.weapons ?? [])])].sort();
     if (JSON.stringify(actual) !== JSON.stringify(selected)) errors.push(`${relative}: weapon growth IDs must match selected weapons exactly`);
   }
   return errors;

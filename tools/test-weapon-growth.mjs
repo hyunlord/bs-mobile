@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -49,4 +49,22 @@ test('weapon growth rejects duplicate JSON keys instead of last-key-wins', async
   const directory = await fixture(t), file = path.join(directory, 'weapon-growth-79.json');
   await writeFile(file, (await readFile(file, 'utf8')).replace('"damage": 22', '"damage": 21, "damage": 22'));
   assert.equal((await validateContent(directory)).valid, false);
+});
+
+for (const coverage of ['complete', 'missing test weapon', 'unselected weapon']) test(`weapon growth test-selection coverage: ${coverage}`, async t => {
+  const directory = await fixture(t), profileFile = path.join(directory, 'profiles/weapon-growth-79.json');
+  const profile = JSON.parse(await readFile(profileFile));
+  profile.testSelection.weapons = ['test:growth_blade'];
+  await writeFile(profileFile, JSON.stringify(profile));
+  const weapon = JSON.parse(await readFile(path.join(directory, 'weapons/iron_blade.json')));
+  weapon.id = 'test:growth_blade';
+  await mkdir(path.join(directory, 'test/weapons'), { recursive: true });
+  await writeFile(path.join(directory, 'test/weapons/growth_blade.json'), JSON.stringify(weapon));
+  const growthFile = path.join(directory, 'weapon-growth-79.json'), growth = JSON.parse(await readFile(growthFile));
+  if (coverage !== 'missing test weapon') growth.weapons[weapon.id] = structuredClone(growth.weapons['core:iron_blade']);
+  if (coverage === 'unselected weapon') growth.weapons['test:unselected'] = structuredClone(growth.weapons['core:iron_blade']);
+  await writeFile(growthFile, JSON.stringify(growth));
+  const result = await validateContent(directory, { fullPool: true });
+  assert.equal(result.valid, coverage === 'complete', result.errors.join('\n'));
+  if (coverage !== 'complete') assert.ok(result.errors.some(error => error.includes('weapon growth IDs must match')));
 });
