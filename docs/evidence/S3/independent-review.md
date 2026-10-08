@@ -9,7 +9,7 @@
 - `node tools/validate-content.mjs`: valid=true, records=225, schemas=12, errors=[]. 정본 콘텐츠는 219개이며 테스트 4개와 tuning/profile 2개는 콘텐츠 수량에서 제외된다.
 - 무기30·도구40·특허장16·물품60·가신16·적24·진화30·영웅1·영지1·스킨1. 진화는 10/10/10. 성장 없는 도구0, 사용 태그의 최소 서로 다른 레코드 수8, 무순서 반시너지11쌍, 수치가 있는 스킨0, 기본 순환 연결 무기/도구/물품130개.
 - `node tools/content-report.mjs --check`: `S3 content tables match canonical JSON`.
-- `node /tmp/bs-s3-mutations.mjs`: 최종 14/14 변이를 거절했다. 재현 스크립트와 구조화 출력은 함께 보관하는 `mutation-harness.mjs.txt`, `mutations.json`에 대응한다. 스크립트의 저장소 경로는 이 검토 환경의 절대경로다.
+- `node /tmp/bs-s3-mutations.mjs`: 최종 14/14 변이를 거절했다. 재현 스크립트와 구조화 출력은 함께 보관하는 [mutation-harness.mjs.txt](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/mutation-harness.mjs.txt), [mutations.json](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/mutations.json)에 대응한다. 스크립트의 저장소 경로는 이 검토 환경의 절대경로다.
 - HEAD의 기존 S2 콘텐츠 16개를 `git show HEAD:<path>`로 읽어 현재 파일의 모든 기존 키와 재귀 비교했다. 결과 `{"trackedS2RecordsCompared":16,"oldFieldDifferences":[]}`. 새 필드의 추가는 허용하되 기존 배열·문자열·숫자 값은 동일했다. 이 비교에는 Core 상태 해시에 들어가는 floorRationale 문자열도 포함했다.
 
 ## 발견 후 수정 확인

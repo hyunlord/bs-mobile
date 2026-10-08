@@ -1,4 +1,9 @@
 관문: 통과 — S2 실행 관문 5/5, 기본·더미 × A/B/C 6조건 × 3회 동일 해시·4계절 완주, 부하 2,700표본 p95 1.40675ms ≤ 5ms.
+변경: 결정론 헤드리스 코어, 도구의 피해·성장 분리 집계와 기본·더미 데이터 실행을 검증했다.
+결정: 당시 기본 조합·상품 선택은 [#32](https://github.com/hyunlord/bs-mobile/issues/32)의 미정 사항이었다.
+한계: 아래 측정은 S2 당시 설정·환경의 결과이며 전체 정책의 생존·재미나 모바일 성능을 보증하지 않는다.
+시점: 본문은 각 단계 완료 당시의 기록이다. R1은 요약·보관 링크만 정리하며 당시 수치와 판정을 바꾸지 않는다.
+
 
 # S2 — 결정론 헤드리스 코어
 
@@ -20,7 +25,7 @@
 
 ## 전체 판 원자료
 
-모든 조건이 30Hz × 720초 = 21,600틱, 네 계절을 실행했다. 반복 실행은 결정론 검증이며 독립 표본 3개로 세지 않는다. [전체 조건 요약](../evidence/S2/full/summary.json)과 같은 폴더의 results/metrics JSON에서 메타 중립·광고 없음·정확한 설정과 결과를 확인할 수 있다.
+모든 조건이 30Hz × 720초 = 21,600틱, 네 계절을 실행했다. 반복 실행은 결정론 검증이며 독립 표본 3개로 세지 않는다. [전체 조건 요약](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/full/summary.json)과 같은 폴더의 results/metrics JSON에서 메타 중립·광고 없음·정확한 설정과 결과를 확인할 수 있다.
 
 | 조건 | 틱 | 최종 레벨 | 동일한 결과 해시 |
 |---|---:|---:|---|
@@ -39,15 +44,15 @@
 | core:muster_horn | 41924 | 603 | 3678 | 702 |
 | core:seed_bag | 4034 | 19 | 0 | 720 |
 
-성장 산출 단위는 심은 농지·수리/건설·소집/작업 강화 등으로 서로 다르다. 이를 피해로 환산하지 않는다. 씨앗의 성장물 직접 피해가0이어도 수확 경험치·식량이 실제 발생한다. 경험치로 강화한 무기 피해를 다시 도구 피해로 넣지 않는다. 이 실행의 무기 피해 27072, 기본 아군 피해 10, 총피해 99418는 별도 원장이다. 원자료 [default-C.results.json](../evidence/S2/full/default-C.results.json).
+성장 산출 단위는 심은 농지·수리/건설·소집/작업 강화 등으로 서로 다르다. 이를 피해로 환산하지 않는다. 씨앗의 성장물 직접 피해가0이어도 수확 경험치·식량이 실제 발생한다. 경험치로 강화한 무기 피해를 다시 도구 피해로 넣지 않는다. 이 실행의 무기 피해 27072, 기본 아군 피해 10, 총피해 99418는 별도 원장이다. 원자료 [default-C.results.json](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/full/default-C.results.json).
 
 ## 부하와 측정 한계
 
-Apple M4 Max, macOS26.4.1/Darwin25.4.0, .NET8.0.31 Arm64, SDK8.0.425. 300틱 워밍업을 제외하고 900틱 × 3회 = 2,700개 Simulation.Tick 시간을 Stopwatch로 측정했다. p95는 정렬한 원본에서 nearest-rank 95백분위다. 초기화·스냅샷 조회는 측정 밖, 틱 끝의 fixture 보충·정리 비용은 안이다. [원본 CSV](../evidence/S2/load/ticks.csv), [측정 메타](../evidence/S2/load/metrics.json), [전수 재계산](../evidence/S2/load/verification.json).
+Apple M4 Max, macOS26.4.1/Darwin25.4.0, .NET8.0.31 Arm64, SDK8.0.425. 300틱 워밍업을 제외하고 900틱 × 3회 = 2,700개 Simulation.Tick 시간을 Stopwatch로 측정했다. p95는 정렬한 원본에서 nearest-rank 95백분위다. 초기화·스냅샷 조회는 측정 밖, 틱 끝의 fixture 보충·정리 비용은 안이다. [원본 CSV](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/load/ticks.csv), [측정 메타](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/load/metrics.json), [전수 재계산](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/load/verification.json).
 
 사람60은 실제 시뮬레이션 entity 수다. 부대 구성원 총수는60~116명으로 별도 보고한다. 부대 복귀로 개체 수가 늘면 fixture가 초과분을 정리한다. 정상 게임은 이 부하 복구·영주 체력 복원을 사용하지 않는다. 5ms는 헤드리스 임시 목표이며 모바일 렌더링·발열·터치 성능을 증명하지 않는다.
 
-BenchmarkDotNet ShortRun의 별도 단일 틱 측정은 평균898.5μs, 표준편차57.55μs, 할당486.29KB/operation이었다. 이는120틱 워밍업 뒤 특정 상태를 측정한 평균이며 위900틱 구간 p95와 같은 통계가 아니다. 표본3개의 짧은 실행으로 안정적인 장기 성능을 주장하지 않는다. [BDN 원본](../evidence/S2/benchmark/GameplayBenchmarks-report-github.md).
+BenchmarkDotNet ShortRun의 별도 단일 틱 측정은 평균898.5μs, 표준편차57.55μs, 할당486.29KB/operation이었다. 이는120틱 워밍업 뒤 특정 상태를 측정한 평균이며 위900틱 구간 p95와 같은 통계가 아니다. 표본3개의 짧은 실행으로 안정적인 장기 성능을 주장하지 않는다. [BDN 원본](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/benchmark/GameplayBenchmarks-report-github.md).
 
 ## 재현
 
@@ -59,11 +64,11 @@ dotnet core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll --seed 42 --pol
 node tools/verify-s2-load.mjs artifacts/s2-load
 ```
 
-숫자 재검산만 하려면 `node tools/verify-s2-load.mjs docs/evidence/S2/load`를 실행한다. 운영체제·부하 상태에 따라 새 측정 시간은 달라질 수 있다.
+숫자 재검산은 [보관 안내](../league/README.md)에 따라 원본 증거를 내려받아 해시를 검증하고 작업 폴더에 해제한 뒤, `node tools/verify-s2-load.mjs <해제한-증거>/docs/evidence/S2/load`로 실행한다. 운영체제·부하 상태에 따라 새 측정 시간은 달라질 수 있다.
 
 ## 수정 기록과 남은 범위
 
-[독립 재현 기록](../evidence/S2/independent-review.md)은 넉백 공간 인덱스 누락, B 성장 허수 집계, 사망 원인 덮어쓰기, 부대 귀환 부하 초과, 귀환 체력 생성의 재현·수정 결과를 담는다. [통합 검토](../evidence/S2/integration-review.md)는 부대 표현·사람 손실·아군 피해 귀속·지표 provenance 분리를 설명한다. 전체 검사의 서식 오류도 교정 후 재실행했다.
+[독립 재현 기록](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/independent-review.md)은 넉백 공간 인덱스 누락, B 성장 허수 집계, 사망 원인 덮어쓰기, 부대 귀환 부하 초과, 귀환 체력 생성의 재현·수정 결과를 담는다. [통합 검토](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S2/integration-review.md)는 부대 표현·사람 손실·아군 피해 귀속·지표 provenance 분리를 설명한다. 전체 검사의 서식 오류도 교정 후 재실행했다.
 
 현재 수치는 가설이며 S4 밸런스 검증 전이다. 이 seed의 완주가 모든 seed·정책의 생존 또는 재미를 증명하지 않는다. 기본 영웅·영지 정체와 상품 선택은 [#32](https://github.com/hyunlord/bs-mobile/issues/32)에서 미정이다. 지도 이벤트·메타·상품·그래픽은 이번 S2 범위에 없다. S3 콘텐츠 풀 및 S4의 특허장·물품·진화 연결은 후속 작업이다. 무제한 레벨은 별도 설계 cap이 없다는 뜻이며 정수 표현 범위를 무한 수학 정수로 주장하지 않는다.
 

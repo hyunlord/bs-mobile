@@ -1,4 +1,9 @@
 관문: 통과 — S3 7/7, 정본 219개, 반시너지 11쌍, 순환 연결 130개. 원격 quality·secrets 통과.
+변경: 데이터 콘텐츠 풀, 반시너지·순환 연결, 기본 세 후보와 확장 콘셉트를 작성·검증했다.
+결정: 당시 기본 영웅·영지 후보는 사용자 미선택이며 [#32](https://github.com/hyunlord/bs-mobile/issues/32)에 남겼다.
+한계: 후보 스키마·실행 프로필 검증이며 전체 후보의 실제 게임 행동·재미를 입증한 것은 아니다.
+시점: 본문은 각 단계 완료 당시의 기록이다. R1은 요약·보관 링크만 정리하며 당시 수치와 판정을 바꾸지 않는다.
+
 
 # S3 콘텐츠 풀 검증
 
@@ -13,7 +18,7 @@
 
 ## 자동 콘텐츠 관문
 
-[검증 원본](../evidence/S3/validation.json): 정본 219개 + 테스트 4개 + 실행 프로필·튜닝 2개, 총 225개 레코드. 콘텐츠 열 종류와 설정 두 종류의 스키마 12개를 적용했다.
+[검증 원본](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/validation.json): 정본 219개 + 테스트 4개 + 실행 프로필·튜닝 2개, 총 225개 레코드. 콘텐츠 열 종류와 설정 두 종류의 스키마 12개를 적용했다.
 
 | 관문 | 결과 |
 | --- | --- |
@@ -41,13 +46,13 @@ node tools/content-report.mjs --check
 
 ## 실행 검증
 
-[전체 검사 로그](../evidence/S3/full-check.log): 콘텐츠 검사 53/53, PR 정책 검사 6/6, .NET 행동·프로필 검사 43/43, 빌드 경고·오류 0개, 형식 검사 통과, Guard 기본 자체 검사 24개·저장소 회귀 검사 11개(합계 35개) 통과·실제 위반 0건. CLI 연기 시험은 18조건 × 3회 해시 일치다. 전체 21,600틱 기준의 6조건 golden 검사는 43개 .NET 검사 안에 포함된다.
+[전체 검사 로그](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/full-check.log): 콘텐츠 검사 53/53, PR 정책 검사 6/6, .NET 행동·프로필 검사 43/43, 빌드 경고·오류 0개, 형식 검사 통과, Guard 기본 자체 검사 24개·저장소 회귀 검사 11개(합계 35개) 통과·실제 위반 0건. CLI 연기 시험은 18조건 × 3회 해시 일치다. 전체 21,600틱 기준의 6조건 golden 검사는 43개 .NET 검사 안에 포함된다.
 
-[독립 검토](../evidence/S3/independent-review.md)와 [14건 변조 결과](../evidence/S3/mutations.json)는 작성자와 분리된 검토에서 확인했다. 기존 S2 레코드 16개의 모든 원래 필드가 그대로 유지된다. 원본 문서 세 개도 SHA-256 대조를 통과했다.
+[독립 검토](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/independent-review.md)와 [14건 변조 결과](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/mutations.json)는 작성자와 분리된 검토에서 확인했다. 기존 S2 레코드 16개의 모든 원래 필드가 그대로 유지된다. 원본 문서 세 개도 SHA-256 대조를 통과했다.
 
 ## 데이터만 추가하는 실행 검증
 
-[확장 런북 원자료](../evidence/S3/extension/summary.json): 격리된 데이터 복사본에 테스트 영주·도구·프로필을 추가해 실행했다. 21,600틱 × 3회 상태 해시가 같았고 새 도구는 직접 피해 629, 성장 산출 14, 발동 600회를 기록했다. Core diff는 비어 있고 기존 기준 프로필은 바이트 동일하다. 이 실행은 작성 중 작업 트리(gitDirty=true)의 수동 QA이며, 깨끗한 원격 CI 결과와 구분한다. 새 테스트 데이터는 정본 수량에 포함하지 않는다.
+[확장 런북 원자료](https://github.com/hyunlord/bs-mobile/blob/b3f4830bb8c441343f61362e2b39e474f5709290/docs/evidence/S3/extension/summary.json): 격리된 데이터 복사본에 테스트 영주·도구·프로필을 추가해 실행했다. 21,600틱 × 3회 상태 해시가 같았고 새 도구는 직접 피해 629, 성장 산출 14, 발동 600회를 기록했다. Core diff는 비어 있고 기존 기준 프로필은 바이트 동일하다. 이 실행은 작성 중 작업 트리(gitDirty=true)의 수동 QA이며, 깨끗한 원격 CI 결과와 구분한다. 새 테스트 데이터는 정본 수량에 포함하지 않는다.
 
 ## 발견하고 수정한 문제
 

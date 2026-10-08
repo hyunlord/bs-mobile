@@ -1,0 +1,39 @@
+name: Dependency policy
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+permissions: {}
+concurrency:
+  group: dependency-policy
+  cancel-in-progress: false
+  queue: max
+jobs:
+  prepare:
+    if: github.repository == 'hyunlord/bs-mobile' && github.event.pull_request.user.login == 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+      statuses: write
+    steps:
+      # Only the base workflow and base helper are executed with write permissions.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - name: Verify signed Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
+        with:
+          github-token: ${{ github.token }}
+          skip-verification: false
+          skip-commit-verification: false
+      - name: Prepare issue, ADR, strict CI and conditional auto-merge
+        run: node tools/dependency-policy.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPENDENCY_METADATA: ${{ steps.metadata.outputs.updated-dependencies-json }}
