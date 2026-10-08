@@ -30,7 +30,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var valueOptions = new HashSet<string>(StringComparer.Ordinal)
 {
     "--data", "--seed", "--iterations", "--hero", "--estate", "--policy", "--output", "--metrics",
-        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement"
+        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement", "--diagnostic-variant", "--diagnostic-output", "--diagnostic-raw-output"
 };
     var options = new Dictionary<string, string>(StringComparer.Ordinal);
     for (var index = 0; index < args.Length; index++)
@@ -40,6 +40,8 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         else if (valueOptions.Contains(key) && index + 1 < args.Length && !args[index + 1].StartsWith("--", StringComparison.Ordinal)) { options.Add(key, args[++index]); }
         else { throw new ArgumentException($"Unknown or incomplete option: {key}"); }
     }
+    var diagnostic = DiagnosticRequest.Parse(options, int.Parse(options.GetValueOrDefault("--iterations", "3"), CultureInfo.InvariantCulture));
+    var diagnosticResults = new List<DiagnosticResult>();
     var data = options.GetValueOrDefault("--data", "data");
     var includeTest = options.ContainsKey("--include-test");
     var profileName = options.GetValueOrDefault("--profile", "s2-baseline");
@@ -86,7 +88,8 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     }
     for (var repeat = 0; repeat < iterations; repeat++)
     {
-        var simulation = SimulationFactory.Create(catalog, run);
+        var observer = diagnostic is null ? null : new DiagnosticObserver(diagnostic.Options);
+        var simulation = SimulationFactory.Create(catalog, run, observer);
         while (!simulation.IsComplete)
         {
             if (scenario == "load") { simulation.PrepareLoadTick(); }
@@ -103,6 +106,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
             timingCsv?.Append(CultureInfo.InvariantCulture, $"{repeat},{after.Tick},{elapsed:R},{before.ActiveEnemies},{before.Farms},{before.Buildings},{before.People},{after.ActiveEnemies},{after.Farms},{after.Buildings},{after.People},{before.PopulationMembers},{after.PopulationMembers}\n");
         }
         results.Add(simulation.Result());
+        if (observer is not null) { diagnosticResults.Add(observer.Result()); }
     }
     if (samples.Count == 0) { throw new InvalidOperationException("No simulation ticks measured."); }
     if (results.Select(result => result.Hash).Distinct(StringComparer.Ordinal).Count() != 1)
@@ -255,6 +259,13 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         }
     };
     var jsonOptions = HostJson.CreateOptions(camelCase: true, indented: true);
+    JsonObject? diagnosticPacket = diagnostic is null ? null : DiagnosticOutput.Create(diagnostic, profileName, movement, catalog.Tuning.DurationTicks, metadata, coreAssembly, results, diagnosticResults);
+    if (diagnostic is not null && diagnostic.RawOutput is null)
+    {
+        Write(diagnostic.Output, diagnosticPacket!.ToJsonString(jsonOptions));
+        Console.WriteLine($"Diagnostic complete: {diagnostic.Variant}; {results[0].Ticks} ticks; three repeats verified.");
+        return;
+    }
     var artifacts = new JsonArray();
     foreach (var result in results)
     {
@@ -282,6 +293,13 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         artifacts.Add(artifact);
     }
     var resultJson = artifacts.ToJsonString(jsonOptions);
+    if (diagnostic is not null)
+    {
+        Write(diagnostic.RawOutput!, resultJson);
+        Write(diagnostic.Output, diagnosticPacket!.ToJsonString(jsonOptions));
+        Console.WriteLine($"Diagnostic complete: {diagnostic.Variant}; {results[0].Ticks} ticks; selected raw repeats saved.");
+        return;
+    }
     if (options.TryGetValue("--output", out var output)) { Write(output, resultJson); }
     if (options.TryGetValue("--metrics", out var metricsOutput)) { Write(metricsOutput, JsonSerializer.Serialize(metrics, jsonOptions)); }
     if (options.TryGetValue("--timings", out var timingsOutput)) { Write(timingsOutput, timingCsv!.ToString()); }

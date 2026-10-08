@@ -6,6 +6,7 @@ namespace SowSiege.Core
 
     internal sealed class EstateSystem
     {
+        private readonly DiagnosticObserver? diagnostics;
         private readonly ContentCatalog catalog;
         private readonly RunOptions options;
         private readonly WorldState world;
@@ -14,8 +15,9 @@ namespace SowSiege.Core
         private readonly RuntimeSystem? runtime;
         private readonly ExperimentSystem? experiment;
 
-        public EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null)
+        public EstateSystem(ContentCatalog catalog, RunOptions options, WorldState world, string rule, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null)
         {
+            this.diagnostics = diagnostics;
             this.catalog = catalog;
             this.options = options;
             this.world = world;
@@ -139,6 +141,7 @@ namespace SowSiege.Core
             }
             world.Tools[source].GrowthProduced++;
             runtime?.Growth(source, "people", person.Members);
+            diagnostics?.Draft();
             runtime?.Emit("draft", new(person.Position, source, Person: person));
         }
 
@@ -162,6 +165,7 @@ namespace SowSiege.Core
             var tuning = catalog.Tuning.World.Farms;
             var workers = world.People.Count(person => person.Role == "peasant");
             var boostedWorkers = world.People.Count(person => person.Role == "peasant" && person.DutyUntil > world.Tick);
+            diagnostics?.Labor(workers, boostedWorkers);
             foreach (var farm in world.Farms)
             {
                 if (runtime is not null && runtime.Entity(farm.Id).PauseUntil > world.Tick) { continue; }
@@ -171,7 +175,9 @@ namespace SowSiege.Core
                     var growth = catalog.Tuning.World.Seasons[world.Season].GrowthMultiplier;
                     if (growth > 0)
                     {
-                        farm.Progress += growth + (workers + boostedWorkers) * catalog.Tuning.World.People.WorkerGrowthBonus;
+                        var laborBonus = (workers + boostedWorkers) * catalog.Tuning.World.People.WorkerGrowthBonus;
+                        diagnostics?.LaborGrowth(laborBonus);
+                        farm.Progress += growth + laborBonus;
                         if (farm.Fertility > 0) { farm.Progress += tuning.FertilityGrowthBonus; farm.Fertility--; RemainsSystem.Consumed(world, farm, tuning.FertilityGrowthBonus); }
                         if (farm.Progress >= tuning.StageTicks[farm.Stage]) { farm.Progress = 0; farm.Stage++; if (farm.Stage == lastStage) { experiment?.Ripe(farm); } }
                     }
@@ -262,9 +268,10 @@ namespace SowSiege.Core
                     runtime?.Emit("return-arrival", new(person.Position, person.Source, Person: person));
                     if (data is not null && data.HoldUntil > world.Tick)
                     {
-                        if (world.Tick >= person.AttackTick) { Attack(person.Position, tuning.Range, tuning.Damage * person.Members, person.Source); person.AttackTick = world.Tick + tuning.AttackCooldownTicks; }
+                        if (world.Tick >= person.AttackTick) { Attack(person.Position, tuning.Range, tuning.Damage * person.Members, person.Source, person.Role); person.AttackTick = world.Tick + tuning.AttackCooldownTicks; }
                         continue;
                     }
+                    diagnostics?.Return();
                     person.Role = "peasant";
                     runtime?.Returned(person);
                     person.Members = Math.Min(person.Members, person.Health);
@@ -280,17 +287,21 @@ namespace SowSiege.Core
                     person.Health = Math.Min(person.Health, tuning.VassalHealth);
                 }
                 if (person.Role == "returning" && (data is null || data.HoldUntil <= world.Tick) || world.Tick < person.AttackTick) { continue; }
-                Attack(person.Position, tuning.Range, tuning.Damage * person.Members, person.Source);
+                Attack(person.Position, tuning.Range, tuning.Damage * person.Members, person.Source, person.Role);
                 person.AttackTick = world.Tick + tuning.AttackCooldownTicks;
             }
             world.People.AddRange(returned);
         }
 
-        private void Attack(Position position, int range, int damage, string source)
+        private void Attack(Position position, int range, int damage, string source, string? role = null)
         {
             var enemy = spatial.Query(position, range).OrderBy(enemy => enemy.Position.DistanceSquared(position)).ThenBy(enemy => enemy.Id).FirstOrDefault();
+            diagnostics?.Attack(role is null ? "building" : "person", role ?? "", source, enemy is null ? 0 : 1, role is null ? catalog.Tuning.World.Buildings.AttackCooldownTicks : catalog.Tuning.World.People.AttackCooldownTicks);
             if (enemy is null) { return; }
             var dealt = Math.Min(enemy.Health, damage);
+            var suppressed = role is not null && diagnostics?.OffenseOff == true ? dealt : 0;
+            if (suppressed > 0) { dealt = 0; }
+            diagnostics?.Hit(role is null ? "building" : "person", role ?? "", source, damage, dealt, suppressed);
             enemy.Health -= dealt;
             if (world.Tools.TryGetValue(source, out var ledger)) { ledger.GrowthDamage += dealt; }
             else { world.AllyDamage += dealt; }
