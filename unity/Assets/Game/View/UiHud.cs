@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using SowSiege.Core;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +11,7 @@ namespace Game.View
         readonly ContentCatalog catalog;
         readonly RectTransform root, hpFill, xpFill, equipment;
         readonly Text season, health, experience;
-        string equipmentIdentity;
+        readonly List<string> equipmentIds = new List<string>();
         public float ReservedTopPixels => root.rect.height * ui.Canvas.scaleFactor;
         public UiHud(UiShell ui) : this(ui,null,null) { }
         public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings)
@@ -45,10 +45,36 @@ namespace Game.View
             health.text=$"체력 {frame.Lord.Health}/{frame.Lord.MaxHealth}";experience.text=$"레벨 {frame.Level} · {frame.Experience}/{frame.RequiredExperience}";
             hpFill.anchorMax=new Vector2(frame.Lord.MaxHealth>0?Mathf.Clamp01((float)frame.Lord.Health/frame.Lord.MaxHealth):0,1);
             xpFill.anchorMax=new Vector2(frame.RequiredExperience>0?Mathf.Clamp01((float)frame.Experience/frame.RequiredExperience):0,1);
-            var ids=frame.Equipment.Where(e=>catalog==null||catalog.Weapons.ContainsKey(e.Id)||catalog.Tools.ContainsKey(e.Id)).Select(e=>e.Id).Concat(firstPlayable?.Charters??Array.Empty<string>()).ToArray();
-            var identity=string.Join("|",ids);if(identity==equipmentIdentity)return;equipmentIdentity=identity;
-            foreach(Transform child in equipment){child.gameObject.SetActive(false);UnityEngine.Object.Destroy(child.gameObject);}
-            foreach(var id in ids)ui.Icon(equipment,id,44);
+            if (EquipmentMatches(frame, firstPlayable)) return;
+            equipmentIds.Clear();
+            for (var i = 0; i < frame.Equipment.Count; i++)
+            {
+                var id = frame.Equipment[i].Id;
+                if (IsEquipment(id)) equipmentIds.Add(id);
+            }
+            if (firstPlayable != null)
+                for (var i = 0; i < firstPlayable.Charters.Count; i++) equipmentIds.Add(firstPlayable.Charters[i]);
+            for (var i = equipment.childCount - 1; i >= 0; i--)
+            {
+                var child = equipment.GetChild(i).gameObject; child.SetActive(false);
+                if (Application.isPlaying) UnityEngine.Object.Destroy(child); else UnityEngine.Object.DestroyImmediate(child);
+            }
+            for (var i = 0; i < equipmentIds.Count; i++) ui.Icon(equipment,equipmentIds[i],44);
+        }
+        bool IsEquipment(string id) => catalog == null || catalog.Weapons.ContainsKey(id) || catalog.Tools.ContainsKey(id);
+        bool EquipmentMatches(RunFrame frame, FirstPlayableFrame firstPlayable)
+        {
+            var index = 0;
+            for (var i = 0; i < frame.Equipment.Count; i++)
+            {
+                var id = frame.Equipment[i].Id;
+                if (!IsEquipment(id)) continue;
+                if (index >= equipmentIds.Count || !string.Equals(equipmentIds[index++], id, StringComparison.Ordinal)) return false;
+            }
+            if (firstPlayable != null)
+                for (var i = 0; i < firstPlayable.Charters.Count; i++)
+                    if (index >= equipmentIds.Count || !string.Equals(equipmentIds[index++], firstPlayable.Charters[i], StringComparison.Ordinal)) return false;
+            return index == equipmentIds.Count;
         }
     }
 }

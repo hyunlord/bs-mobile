@@ -25,7 +25,7 @@
 
 ## 숨겨진 개발 도구
 
-Editor 또는 Development Build에서만 **F12**로 개발 패널을 여닫는다. 일반 화면에는 개발 패널 실행 버튼이 없다. Android의 ADB 키 이벤트가 Input System의 F12로 들어오는지는 아직 검증하지 않았으므로 특정 `adb input keyevent` 명령을 작동한다고 가정하지 않는다. Release에서는 개발 코드·fixture가 제외되어야 한다.
+Editor 또는 Development Build에서만 **F12**로 개발 패널을 여닫는다. 일반 화면에는 개발 패널 실행 버튼이 없다. 폴드7의 M3 검증용 Development APK에서 `adb shell input keyevent 142`로 실제 열림/닫힘을 확인했다. 앱 시작·씬 로드가 끝난 뒤 사용한다. Release에서는 개발 코드·fixture가 제외되어야 한다.
 
 패널의 배속·레벨 지급·무적·생성 배수는 재현/부하 진단 전용이다. 열린 패널은 게임을 멈춘다. 이 기능을 사용한 판은 정상 플레이 관문에 포함하지 않는다. **기기 재생5개 검증**도 게임을 멈추고 정확성 fixture를 실행하며, 실제 플레이3판을 대신하지 않는다.
 
