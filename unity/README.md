@@ -8,6 +8,6 @@
 
 Unity는 입력·표시·플랫폼 서비스를 맡고 `netstandard2.1` Core를 소비한다. `Game.App`이 Core 명령을 적용하며 View는 읽기 전용 스냅샷과 사건을 받는다. 정본 JSON은 빌드 때 패키지에 포함하고 실제 읽은 바이트를 시작 전에 검증한다. 연결 방식은 [ADR0024](../docs/adr/0024-generated-core-and-canonical-unity-bridge.md), 입력·재생은 [ADR0025](../docs/adr/0025-interactive-core-and-portable-replay.md), 화면 규칙은 [게임 디자인 시스템](../docs/design/05_phase1a-game-design-system.md)에 따른다.
 
-개발 APK에는 기록 재생 검사와 개발 메뉴가 있다. 같은 검사 명령에서 별도로 컴파일한 Android 릴리스 스크립트에 개발 UI·검증 타입이 없는지도 확인한다. 릴리스 APK의 실기 실행까지 검증했다는 뜻은 아니다. [기기 기록 추출](../docs/runbooks/device-play.md)과 [폴드8에서 해 볼 것](../docs/runbooks/phase1a-playtest.md)을 함께 사용한다.
+개발 APK에는 기록 재생 검사와 개발 메뉴가 있다. 같은 검사 명령에서 별도로 컴파일한 Android 릴리스 스크립트에 개발 UI·검증 타입이 없는지도 확인한다. 릴리스 APK의 실기 실행까지 검증했다는 뜻은 아니다. [기기 기록 추출](../docs/runbooks/device-play.md)과 [폴드7에서 해 볼 것](../docs/runbooks/phase1a-playtest.md)을 함께 사용한다.
 
-시험 기기는 Galaxy Z Fold8, Unity 검사는 Personal 활성화된 맥북의 로컬 실행이다. GitHub CI는 Core 검사를 유지한다. 실제 기기 실행·물리 접힘·성능은 빌드 성공과 별도 관문이다. 현재 진행 상태와 실행 절차는 [1단계 체크리스트](../docs/runbooks/Unity-phase1-checklist.md)를 따른다. 6.7 LTS 정식 출시 후 전환은 [#70](https://github.com/hyunlord/bs-mobile/issues/70)에서 별도로 검토한다.
+시험 기기는 Galaxy Z Fold7 (SM-F966N, Android 16), Unity 검사는 Personal 활성화된 맥북의 로컬 실행이다. GitHub CI는 Core 검사를 유지한다. 실제 기기 실행·물리 접힘·성능은 빌드 성공과 별도 관문이다. 현재 진행 상태와 실행 절차는 [1단계 체크리스트](../docs/runbooks/Unity-phase1-checklist.md)를 따른다. 6.7 LTS 정식 출시 후 전환은 [#70](https://github.com/hyunlord/bs-mobile/issues/70)에서 별도로 검토한다.

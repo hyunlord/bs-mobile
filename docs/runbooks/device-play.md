@@ -34,3 +34,25 @@ Capture actual folded and unfolded Korean UI, safe areas, joystick/menu interact
 A boot/font/data failure shows a diagnostic and stops the run. It does not offer an unsafe return into an invalid catalog/session. Keep the diagnostic and available replay checkpoint, correct the reported cause, then relaunch the app. The English diagnostic fallback is intentional when Korean font initialization itself fails.
 
 Thermal collection uses Android's existing [`PowerManager.getCurrentThermalStatus()`](https://developer.android.com/reference/android/os/PowerManager#getCurrentThermalStatus()), available from API 29, through Unity's built-in Android JNI module. The integer is mapped to the documented throttling categories; older platforms or failed queries remain `unavailable`. No external Android SDK package is introduced.
+
+## Reproduce a selected Release sample
+
+The selected run publishes only the original `frames.csv`, `run.ssreplay`, `device.json`, and `recording.json`. Download them into one directory and use the APK's recorded source commit and matching canonical data. Verify the replay with the CLI first. Reconstruct the local summary contract below, then run `device-metrics.mjs` and `metrics.mjs` as above. Generated summary/statistics/HTML are not additional Release assets.
+
+```sh
+node --input-type=module - "$run_dir" <<'JS'
+import fs from 'node:fs';
+import { parseCsv } from './tools/csv.mjs';
+import { headers } from './tools/device-metrics.mjs';
+const dir = process.argv[2];
+const identity = JSON.parse(fs.readFileSync(`${dir}/recording.json`));
+const { durationTicks } = JSON.parse(fs.readFileSync('data/tuning.json'));
+const frames = parseCsv(fs.readFileSync(`${dir}/frames.csv`, 'utf8'), headers).length;
+fs.writeFileSync(`${dir}/frame-summary.json`, JSON.stringify({
+  sessionId: identity.sessionId, build: identity.build, dataHash: identity.dataHash,
+  durationTicks, lateStartTick: Math.floor(durationTicks * 3 / 4), frames
+}, null, 2));
+JS
+```
+
+This reconstructs a compatibility input, not an independent producer frame-count check. Retain the original device summary locally for that check. The exact replay terminal/checkpoints, raw frame continuity and complete late-window checks still apply. The selected-run description states the observed posture; never infer physical folding from dimensions.
