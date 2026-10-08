@@ -1,0 +1,1068 @@
+fileFormatVersion: 2
+guid: 07d3243b43057493db793aeca2b9085e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3561527158540521457
+    second: crops-people_0
+  - first:
+      213: -3479194443540128687
+    second: crops-people_1
+  - first:
+      213: -8345912354717146290
+    second: crops-people_2
+  - first:
+      213: -1873954463302919392
+    second: crops-people_3
+  - first:
+      213: -9073701957063166608
+    second: crops-people_4
+  - first:
+      213: -8214453008468782231
+    second: crops-people_5
+  - first:
+      213: -5165361694648171644
+    second: crops-people_6
+  - first:
+      213: 9120096069813139786
+    second: crops-people_7
+  - first:
+      213: -2870925115362679354
+    second: crops-people_8
+  - first:
+      213: 8346910766423773378
+    second: crops-people_9
+  - first:
+      213: -5079792565066558989
+    second: crops-people_10
+  - first:
+      213: -1591271353751301386
+    second: crops-people_11
+  - first:
+      213: -4422026479172425117
+    second: crops-people_12
+  - first:
+      213: 3523854131375683220
+    second: crops-people_13
+  - first:
+      213: 4581969695015688289
+    second: crops-people_14
+  - first:
+      213: 3379422518976693086
+    second: crops-people_15
+  - first:
+      213: 4495334616939507562
+    second: crops-people_16
+  - first:
+      213: -8301283766987745933
+    second: crops-people_17
+  - first:
+      213: -5408795423899499011
+    second: crops-people_18
+  - first:
+      213: -8881401903029825749
+    second: crops-people_19
+  - first:
+      213: 3938175276050760356
+    second: crops-people_20
+  - first:
+      213: -1555433500320157778
+    second: crops-people_21
+  - first:
+      213: -2004283567146567845
+    second: crops-people_22
+  - first:
+      213: 3010524579461396923
+    second: crops-people_23
+  - first:
+      213: 7129694641457039520
+    second: crops-people_24
+  - first:
+      213: 3374464417975615594
+    second: crops-people_25
+  - first:
+      213: -475538996579490719
+    second: crops-people_26
+  - first:
+      213: 2090737788514823182
+    second: crops-people_27
+  - first:
+      213: -7391233225786139733
+    second: crops-people_28
+  - first:
+      213: 493065680913678379
+    second: crops-people_29
+  - first:
+      213: -913407385445677756
+    second: crops-people_30
+  - first:
+      213: -859610767893638403
+    second: crops-people_31
+  - first:
+      213: -894049246699329281
+    second: crops-people_32
+  - first:
+      213: -679837457925580681
+    second: crops-people_33
+  - first:
+      213: -4009312014513977815
+    second: crops-people_34
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: crops-people_0
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 867
+        width: 286
+        height: 367
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ffc6b6b4161d6130800000000000000
+      internalID: 3561527158540521457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_1
+      rect:
+        serializedVersion: 2
+        x: 538
+        y: 1179
+        width: 80
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15c1740561b67bfc0800000000000000
+      internalID: -3479194443540128687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_2
+      rect:
+        serializedVersion: 2
+        x: 615
+        y: 889
+        width: 305
+        height: 357
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e436a829eec5d2c80800000000000000
+      internalID: -8345912354717146290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_3
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 919
+        width: 272
+        height: 297
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02b529128506ef5e0800000000000000
+      internalID: -1873954463302919392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_4
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 871
+        width: 279
+        height: 303
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 075bb73052cb31280800000000000000
+      internalID: -9073701957063166608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_5
+      rect:
+        serializedVersion: 2
+        x: 348
+        y: 1156
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9635416c286600e80800000000000000
+      internalID: -8214453008468782231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_6
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 1152
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 483061ee7e2f058b0800000000000000
+      internalID: -5165361694648171644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_7
+      rect:
+        serializedVersion: 2
+        x: 936
+        y: 953
+        width: 11
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a49f5ae1e07119e70800000000000000
+      internalID: 9120096069813139786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_8
+      rect:
+        serializedVersion: 2
+        x: 943
+        y: 966
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c56f0281dc6828d0800000000000000
+      internalID: -2870925115362679354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_9
+      rect:
+        serializedVersion: 2
+        x: 635
+        y: 933
+        width: 29
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c092944e1f26d370800000000000000
+      internalID: 8346910766423773378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_10
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 923
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f199827393f089b0800000000000000
+      internalID: -5079792565066558989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_11
+      rect:
+        serializedVersion: 2
+        x: 215
+        y: 891
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f2166a722baae9e0800000000000000
+      internalID: -1591271353751301386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_12
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 645
+        width: 313
+        height: 274
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36a6e89985ec1a2c0800000000000000
+      internalID: -4422026479172425117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_13
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 885
+        width: 16
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 496b0fc89ae37e030800000000000000
+      internalID: 3523854131375683220
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_14
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 586
+        width: 299
+        height: 276
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 168d30b492d669f30800000000000000
+      internalID: 4581969695015688289
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_15
+      rect:
+        serializedVersion: 2
+        x: 344
+        y: 582
+        width: 280
+        height: 276
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e53cf8540ee16ee20800000000000000
+      internalID: 3379422518976693086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_16
+      rect:
+        serializedVersion: 2
+        x: 617
+        y: 291
+        width: 325
+        height: 312
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6f223d4403a26e30800000000000000
+      internalID: 4495334616939507562
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_17
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 600
+        width: 301
+        height: 286
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3759af0656aebcc80800000000000000
+      internalID: -8301283766987745933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_18
+      rect:
+        serializedVersion: 2
+        x: 965
+        y: 294
+        width: 266
+        height: 332
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df546bf083910f4b0800000000000000
+      internalID: -5408795423899499011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_19
+      rect:
+        serializedVersion: 2
+        x: 29
+        y: 343
+        width: 260
+        height: 222
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2fcd6e560ceeb480800000000000000
+      internalID: -8881401903029825749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_20
+      rect:
+        serializedVersion: 2
+        x: 321
+        y: 532
+        width: 20
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4a24b385c8537a630800000000000000
+      internalID: 3938175276050760356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_21
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 523
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eafaca5f87df96ae0800000000000000
+      internalID: -1555433500320157778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_22
+      rect:
+        serializedVersion: 2
+        x: 342
+        y: 353
+        width: 255
+        height: 212
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b57731ff6ba5f24e0800000000000000
+      internalID: -2004283567146567845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_23
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 465
+        width: 20
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb9f062972887c920800000000000000
+      internalID: 3010524579461396923
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_24
+      rect:
+        serializedVersion: 2
+        x: 924
+        y: 355
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a88d0d6083c1f260800000000000000
+      internalID: 7129694641457039520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_25
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 19
+        width: 316
+        height: 331
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a60c1ac628184de20800000000000000
+      internalID: 3374464417975615594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_26
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 327
+        width: 14
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 164a8085dcb8669f0800000000000000
+      internalID: -475538996579490719
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_27
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 320
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0c69e201fac30d10800000000000000
+      internalID: 2090737788514823182
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_28
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 23
+        width: 271
+        height: 300
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: babd3f4aa801d6990800000000000000
+      internalID: -7391233225786139733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_29
+      rect:
+        serializedVersion: 2
+        x: 301
+        y: 272
+        width: 22
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b20cbc9df98b7d600800000000000000
+      internalID: 493065680913678379
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_30
+      rect:
+        serializedVersion: 2
+        x: 665
+        y: 19
+        width: 275
+        height: 299
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 445ca4782dce253f0800000000000000
+      internalID: -913407385445677756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_31
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 21
+        width: 269
+        height: 274
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df2599e9f8c0214f0800000000000000
+      internalID: -859610767893638403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_32
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 111
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff8e7ce62f2b793f0800000000000000
+      internalID: -894049246699329281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_33
+      rect:
+        serializedVersion: 2
+        x: 920
+        y: 111
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77857571f6bb096f0800000000000000
+      internalID: -679837457925580681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: crops-people_34
+      rect:
+        serializedVersion: 2
+        x: 914
+        y: 85
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 926403d07ff0c58c0800000000000000
+      internalID: -4009312014513977815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      crops-people_0: 3561527158540521457
+      crops-people_1: -3479194443540128687
+      crops-people_10: -5079792565066558989
+      crops-people_11: -1591271353751301386
+      crops-people_12: -4422026479172425117
+      crops-people_13: 3523854131375683220
+      crops-people_14: 4581969695015688289
+      crops-people_15: 3379422518976693086
+      crops-people_16: 4495334616939507562
+      crops-people_17: -8301283766987745933
+      crops-people_18: -5408795423899499011
+      crops-people_19: -8881401903029825749
+      crops-people_2: -8345912354717146290
+      crops-people_20: 3938175276050760356
+      crops-people_21: -1555433500320157778
+      crops-people_22: -2004283567146567845
+      crops-people_23: 3010524579461396923
+      crops-people_24: 7129694641457039520
+      crops-people_25: 3374464417975615594
+      crops-people_26: -475538996579490719
+      crops-people_27: 2090737788514823182
+      crops-people_28: -7391233225786139733
+      crops-people_29: 493065680913678379
+      crops-people_3: -1873954463302919392
+      crops-people_30: -913407385445677756
+      crops-people_31: -859610767893638403
+      crops-people_32: -894049246699329281
+      crops-people_33: -679837457925580681
+      crops-people_34: -4009312014513977815
+      crops-people_4: -9073701957063166608
+      crops-people_5: -8214453008468782231
+      crops-people_6: -5165361694648171644
+      crops-people_7: 9120096069813139786
+      crops-people_8: -2870925115362679354
+      crops-people_9: 8346910766423773378
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
