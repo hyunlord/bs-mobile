@@ -11,7 +11,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 씨앗 자루와 목수 망치 모두 보유해야 활성화된다. 실제 수리한 건물 주변 반경900 밭에300틱 동안 일회 보호를 부여한다. 영지 전체 무적이 아니다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다."
     }

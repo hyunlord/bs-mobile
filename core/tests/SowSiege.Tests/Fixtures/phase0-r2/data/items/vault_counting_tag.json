@@ -1,0 +1,26 @@
+{
+  "id": "core:vault_counting_tag",
+  "name": "씨창고 계수표",
+  "concept": "한 번에 전부 쓰지 않고 재파종용 씨앗을 남긴다. 즉시 넓게 확장하는 파종은 줄어든다.",
+  "tags": [
+    "building",
+    "land"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "초기 면적 확대와 습격 뒤 재파종 능력을 동일한 종자 비축에서 선택한다."
+    }
+  ],
+  "effect": {
+    "trigger": "씨창고 열쇠가 비축 종자를 꺼낼 때",
+    "benefit": "한 번에 전부 쓰지 않고 재파종용 씨앗을 남긴다.",
+    "cost": "즉시 넓게 확장하는 파종은 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:seed_vault_key"
+  ]
+}

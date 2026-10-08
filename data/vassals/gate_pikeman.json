@@ -11,12 +11,12 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "좁은 통로에서 첫 적을 붙잡아 뒤따르는 무리의 진입을 늦춘다."
     }
   ],
-  "heroId": "core:founder",
+  "heroId": "core:frontier_knight",
   "role": "guard",
   "ability": {
     "trigger": "적이 두 건물 사이 통로에 들어오면",

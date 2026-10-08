@@ -10,7 +10,7 @@
   "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "fertility",
       "reason": "분산된 전투 부산물을 효율적으로 쓰는 대신 한 지점의 보호 부담을 키운다."
     }

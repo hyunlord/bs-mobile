@@ -1,0 +1,26 @@
+{
+  "id": "core:mushroom_breath_cloth",
+  "name": "버섯 숨천",
+  "concept": "백성이 작업을 이어 갈 짧은 안전 창을 얻는다. 천을 말리는 동안 해당 백성은 다른 구역에서 쉬어야 한다.",
+  "tags": [
+    "land",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "성장 촉진 구역의 노동 위험을 줄이되 휴식 시간을 생산 비용으로 남긴다."
+    }
+  ],
+  "effect": {
+    "trigger": "버섯 체의 포자 구역에서 일할 때",
+    "benefit": "백성이 작업을 이어 갈 짧은 안전 창을 얻는다.",
+    "cost": "천을 말리는 동안 해당 백성은 다른 구역에서 쉬어야 한다."
+  },
+  "linkedToolIds": [
+    "core:mushroom_sieve"
+  ]
+}

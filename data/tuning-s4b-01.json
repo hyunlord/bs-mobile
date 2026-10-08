@@ -3,8 +3,8 @@
     "tickRate": 30,
     "durationTicks": 21600,
     "damageRollMax": 5,
-    "defaultHero": "core:founder",
-    "defaultEstate": "core:meadow",
+    "defaultHero": "core:frontier_knight",
+    "defaultEstate": "core:sprout_march",
     "policies": {
       "weapon": {
         "damageMultiplier": 1,

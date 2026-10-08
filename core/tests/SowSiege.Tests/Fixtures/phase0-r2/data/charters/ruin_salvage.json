@@ -1,0 +1,28 @@
+{
+  "id": "core:ruin_salvage",
+  "name": "폐허 회수권",
+  "concept": "폐허 자재를 다음 재건 공정에 넘겨 준비 시간을 줄인다. 대신 회수 중에는 건물 공격과 경작 보조가 멈춘다.",
+  "tags": [
+    "building",
+    "repair",
+    "economy"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "폐허 자재를 다음 재건 공정에 넘겨 준비 시간을 줄인다."
+    }
+  ],
+  "effect": {
+    "target": "building",
+    "trigger": "건물이 파괴된 뒤 자재를 회수하면",
+    "benefit": "폐허 자재를 다음 재건 공정에 넘겨 준비 시간을 줄인다.",
+    "cost": "회수 중에는 건물 공격과 경작 보조가 멈춘다."
+  },
+  "requirements": [
+    "건물이 파괴된 뒤 자재를 회수하면"
+  ]
+}

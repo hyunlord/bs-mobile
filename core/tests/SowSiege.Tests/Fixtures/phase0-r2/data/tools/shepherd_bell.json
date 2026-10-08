@@ -1,0 +1,36 @@
+{
+  "id": "core:shepherd_bell",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "projectile",
+    "knockback": 30,
+    "form": "방울 모양 탄환이 적을 튕겨낸다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "people",
+    "yield": 1,
+    "output": "가축 손실을 줄이는 호위 목동",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [],
+  "name": "목동 방울",
+  "concept": "발동: 방울 모양 탄환이 적을 튕겨낸다. 성장 산출: 가축 손실을 줄이는 호위 목동. 비용: 호위 인원은 수확 운반에 쓸 수 없다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "잠정 순환 연결: 노동·복구·징집에 인원을 배정하여 다음 생산과 방어를 이어가는 경로를 제안한다. 연결 산출: 가축 손실을 줄이는 호위 목동. 비용: 호위 인원은 수확 운반에 쓸 수 없다."
+    }
+  ],
+  "floorRationale": "발동 형태: 방울 모양 탄환이 적을 튕겨낸다. 비교 기준: 같은 발사 간격과 유효 명중 수의 투사체 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(가축 손실을 줄이는 호위 목동) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": []
+}

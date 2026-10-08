@@ -1,0 +1,43 @@
+{
+  "id": "core:seed_bag",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1200,
+    "cooldownTicks": 30,
+    "shape": "projectile",
+    "knockback": 30,
+    "form": "씨앗을 부채꼴로 흩뿌려 적을 밀친다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "land",
+    "yield": 1,
+    "output": "밭과 수확 경험치",
+    "primaryRoute": "experience"
+  },
+  "floorRationale": "S2 provisional headless tuning, not measured parity. Activation damage and growth output are recorded separately; indirect XP is never counted as damage.",
+  "antiSynergy": [
+    "core:carpenter_hammer"
+  ],
+  "name": "씨앗 자루",
+  "concept": "발동: 씨앗을 부채꼴로 흩뿌려 적을 밀친다. 성장 산출: 밭과 수확 경험치. 비용: 넓은 경작을 따라 이동하는 동안 건물 보호 체류가 줄어든다.",
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 밭과 수확 경험치. 비용: 넓은 경작을 따라 이동하는 동안 건물 보호 체류가 줄어든다."
+    }
+  ],
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:carpenter_hammer",
+      "reason": "넓게 파종하는 이동 시간과 건물 보호를 위한 좁은 체류 시간이 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "core:wind_seed_flag",
+  "name": "바람 씨깃",
+  "concept": "씨앗이 곡선 경로 안쪽의 안전한 땅에 모인다. 바깥쪽에 생긴 빈 땅은 다른 이동 경로로 채워야 한다.",
+  "tags": [
+    "land",
+    "control"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 영지 안쪽으로 최대120 이동시켜 안전한 내부와 외부 빈 공간의 교환을 만든다. 곡선 탄도는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "회피 동작과 파종 위치를 연결해 안전과 확장의 선택을 동시에 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "씨앗을 뿌리며 이동 방향을 바꿀 때",
+    "benefit": "씨앗이 곡선 경로 안쪽의 안전한 땅에 모인다.",
+    "cost": "바깥쪽에 생긴 빈 땅은 다른 이동 경로로 채워야 한다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:wind_seed_flag_inward",
+        "trigger": "modifier",
+        "operation": "planting-bias",
+        "subject": "estate-inward",
+        "amount": 120,
+        "radius": 0,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
+}

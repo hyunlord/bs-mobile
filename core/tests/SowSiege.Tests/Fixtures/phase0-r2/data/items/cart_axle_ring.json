@@ -1,0 +1,26 @@
+{
+  "id": "core:cart_axle_ring",
+  "name": "수레 축테",
+  "concept": "요철 때문에 수확물을 쏟는 손실을 줄인다. 무거워진 축 때문에 빈 수레의 복귀는 느리다.",
+  "tags": [
+    "building",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "수확물 운반 성공률과 다음 수확을 위한 회전 속도를 교환한다."
+    }
+  ],
+  "effect": {
+    "trigger": "수레 멍에가 식량을 싣고 폐허 근처를 지날 때",
+    "benefit": "요철 때문에 수확물을 쏟는 손실을 줄인다.",
+    "cost": "무거워진 축 때문에 빈 수레의 복귀는 느리다."
+  },
+  "linkedToolIds": [
+    "core:cart_yoke"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "core:rope_catcher",
+  "name": "올가미 사냥꾼",
+  "concept": "앞쪽에 올가미를 던져 같은 경로의 반복 이동을 막는다. 투척 예고 후 방향을 바꾸면 재장전 동안 빈틈이 생긴다.",
+  "tags": [
+    "ranged",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "lord",
+  "health": 42,
+  "speed": 8,
+  "damage": 5,
+  "range": 350,
+  "attackCooldownTicks": 95,
+  "experience": 10,
+  "behavior": {
+    "trigger": "영주가 직선으로 달리면",
+    "pressure": "앞쪽에 올가미를 던져 같은 경로의 반복 이동을 막는다.",
+    "counterplay": "투척 예고 후 방향을 바꾸면 재장전 동안 빈틈이 생긴다."
+  }
+}

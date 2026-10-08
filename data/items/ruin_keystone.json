@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 폐허의 첫 재건 작업에만 수리량8을 추가한다. 정상 건물이나 새 터는 이득이 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "손실이 곧 전부 상실되지 않게 하면서 재건과 이전 중 선택을 남긴다."
     }

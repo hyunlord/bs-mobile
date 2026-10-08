@@ -28,7 +28,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 차가운 열매가 적을 늦추는 밭. 비용: 냉기 구역은 수확 숙성도 늦춘다."
     }

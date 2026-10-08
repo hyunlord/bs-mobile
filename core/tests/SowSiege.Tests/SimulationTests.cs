@@ -6,7 +6,7 @@ namespace SowSiege.Tests;
 
 public sealed class SimulationTests
 {
-    private static ContentCatalog Catalog() => ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), true);
+    private static ContentCatalog Catalog() => ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), true);
 
     [Fact]
     public void SameSeedProducesSameHashThreeTimes()

@@ -1,0 +1,24 @@
+{
+  "id": "core:crop_grazer",
+  "name": "작물 포식자",
+  "concept": "익은 작물을 먼저 노려 수확 지연에 비용을 부과한다.",
+  "tags": [
+    "land",
+    "harvest"
+  ],
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [],
+  "target": "ripe",
+  "health": 38,
+  "speed": 6,
+  "damage": 6,
+  "range": 90,
+  "attackCooldownTicks": 60,
+  "experience": 8,
+  "behavior": {
+    "trigger": "성숙한 밭이 있으면",
+    "pressure": "익은 작물을 먼저 노려 수확 지연에 비용을 부과한다.",
+    "counterplay": "수확 순서를 앞당기거나 성숙 밭 앞에서 차단한다."
+  }
+}

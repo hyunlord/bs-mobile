@@ -11,7 +11,7 @@ npm ci --ignore-scripts
 npm test
 node --test tools/test-verify-evidence.mjs
 node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
-node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-package-stage.mjs
+node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-package-stage.mjs
 npm run validate
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
@@ -31,5 +31,7 @@ node tools/s4-report.mjs artifacts/league-s4-smoke artifacts/s4-smoke-report --n
 S4B_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/s4b-smoke.XXXXXX")
 node tools/s4b-league.mjs smoke-A --profile s4b-01 --output "$S4B_SMOKE_ROOT/A" --workers 2
 node tools/s4b-report.mjs "$S4B_SMOKE_ROOT/A" "$S4B_SMOKE_ROOT/A-report"
+node tools/r3-remains-report.mjs "$S4B_SMOKE_ROOT/A" "$S4B_SMOKE_ROOT/A-remains-report"
 node tools/s4b-league.mjs smoke-B --profile s4b-01 --output "$S4B_SMOKE_ROOT/B" --workers 2
 node tools/s4b-report.mjs "$S4B_SMOKE_ROOT/B" "$S4B_SMOKE_ROOT/B-report"
+node tools/r3-remains-report.mjs "$S4B_SMOKE_ROOT/B" "$S4B_SMOKE_ROOT/B-remains-report"

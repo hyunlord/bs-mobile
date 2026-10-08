@@ -1,0 +1,43 @@
+{
+  "id": "core:soup_ladle",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 30,
+    "form": "뜨거운 국물을 짧은 부채꼴로 끼얹는다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "people",
+    "yield": 1,
+    "output": "공동 급식으로 유지되는 작업 인원",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [
+    "core:market_pole"
+  ],
+  "name": "밥솥 국자",
+  "concept": "발동: 뜨거운 국물을 짧은 부채꼴로 끼얹는다. 성장 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "잠정 순환 연결: 수확 식량을 소비해 백성의 작업 가능 인원을 유지하는 경로를 제안한다. 연결 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다."
+    }
+  ],
+  "floorRationale": "발동 형태: 뜨거운 국물을 짧은 부채꼴로 끼얹는다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(공동 급식으로 유지되는 작업 인원) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:market_pole",
+      "reason": "판매에 쓴 곡물은 급식에 쓸 수 없어 금화와 인원 유지가 경쟁한다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

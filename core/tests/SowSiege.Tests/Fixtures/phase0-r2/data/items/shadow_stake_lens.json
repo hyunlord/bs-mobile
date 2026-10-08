@@ -1,0 +1,26 @@
+{
+  "id": "core:shadow_stake_lens",
+  "name": "그늘말뚝 렌즈",
+  "concept": "적이 밭을 바로 알아보지 못하도록 그림자를 길게 편다. 그늘 속 작물의 성장도 늦어진다.",
+  "tags": [
+    "building",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "탐지 지연으로 얻는 보호를 실제 성장 시간의 손해로 지불한다."
+    }
+  ],
+  "effect": {
+    "trigger": "그늘말뚝이 어린 밭 앞에 설치될 때",
+    "benefit": "적이 밭을 바로 알아보지 못하도록 그림자를 길게 편다.",
+    "cost": "그늘 속 작물의 성장도 늦어진다."
+  },
+  "linkedToolIds": [
+    "core:shadow_stake"
+  ]
+}

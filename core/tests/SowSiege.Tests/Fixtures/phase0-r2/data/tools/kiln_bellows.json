@@ -1,0 +1,43 @@
+{
+  "id": "core:kiln_bellows",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "activation": {
+    "damage": 12,
+    "range": 1000,
+    "cooldownTicks": 30,
+    "shape": "wave",
+    "knockback": 30,
+    "form": "풀무 불꽃이 좁은 원뿔로 뿜어진다",
+    "damageCoefficient": 0.65
+  },
+  "growth": {
+    "target": "building",
+    "yield": 1,
+    "output": "복구 자재를 만드는 가마 작업열",
+    "primaryRoute": "buff"
+  },
+  "antiSynergy": [
+    "core:rain_ladle"
+  ],
+  "name": "가마 풀무",
+  "concept": "발동: 풀무 불꽃이 좁은 원뿔로 뿜어진다. 성장 산출: 복구 자재를 만드는 가마 작업열. 비용: 작업열이 가까운 관개수를 말린다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "잠정 순환 연결: 식물이 자라거나 손실 후 다시 성장할 수 있는 조건을 제공한다. 연결 산출: 복구 자재를 만드는 가마 작업열. 비용: 작업열이 가까운 관개수를 말린다."
+    }
+  ],
+  "floorRationale": "발동 형태: 풀무 불꽃이 좁은 원뿔로 뿜어진다. 비교 기준: 같은 범위와 피격 적 수의 파동 무기. 직접 발동 피해 계수 0.65는 제안일 뿐 실측 DPS 비율이 아니다. 성장 산출(복구 자재를 만드는 가마 작업열) 및 제어 기여는 바닥값 피해에 합산하지 않는다.",
+  "antiSynergyNotes": [
+    {
+      "otherId": "core:rain_ladle",
+      "reason": "가마 열은 관개수를 말리고 급수는 가마 작업열을 식힌다. S3 설계상의 비용이며 아직 효과 구현을 검증하지 않았다."
+    }
+  ]
+}

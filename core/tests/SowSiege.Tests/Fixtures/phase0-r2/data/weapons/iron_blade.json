@@ -1,0 +1,27 @@
+{
+  "id": "core:iron_blade",
+  "tags": [
+    "weapon",
+    "melee"
+  ],
+  "activation": {
+    "damage": 22,
+    "range": 850,
+    "cooldownTicks": 30,
+    "shape": "melee",
+    "knockback": 50,
+    "form": "이동 방향 앞쪽으로 넓고 짧은 반원을 그린다.",
+    "damageCoefficient": 1.0
+  },
+  "name": "철날 검",
+  "concept": "짧은 전방 베기로 영주에게 붙은 적을 걷어 내지만, 뒤쪽 포위를 해결하려면 이동 방향을 바꾸어야 한다.",
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "근접 처치가 경작지 주변의 비옥도 공급으로 돌아가도록 동선을 잡는다."
+    }
+  ]
+}

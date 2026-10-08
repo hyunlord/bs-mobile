@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 파종 위치를 기존 밭 가장자리 쪽으로 최대120 이동시켜 새 방향 확장을 줄인다. 위치·간격 제한으로 실패하면 공짜 밭은 생성하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "파종 밀도를 높여 기존 방어선 안의 성장물을 살리지만 영지 확장 속도를 낮춘다."
     }

@@ -1,0 +1,52 @@
+{
+  "id": "core:sheltered_sowing",
+  "name": "지붕 아래 파종",
+  "concept": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다. 대신 영지 밖 새 밭에는 지붕이 닿지 않아 확장과 집중 방어 중 하나를 골라야 한다.",
+  "tags": [
+    "land",
+    "building",
+    "defense"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 씨앗 자루와 목수 망치 모두 보유해야 활성화된다. 실제 수리한 건물 주변 반경900 밭에300틱 동안 일회 보호를 부여한다. 영지 전체 무적이 아니다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다."
+    }
+  ],
+  "kind": "tool-tool",
+  "inputIds": [
+    "core:seed_bag",
+    "core:carpenter_hammer"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:seed_bag",
+    "name": "지붕 아래 파종",
+    "effect": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다.",
+    "cost": "영지 밖 새 밭에는 지붕이 닿지 않아 확장과 집중 방어 중 하나를 골라야 한다."
+  },
+  "runtimeProjection": {
+    "effects": [
+      {
+        "id": "core:sheltered_sowing_shelter",
+        "trigger": "repair",
+        "operation": "shield-farms",
+        "subject": "land",
+        "amount": 1,
+        "radius": 900,
+        "durationTicks": 300,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

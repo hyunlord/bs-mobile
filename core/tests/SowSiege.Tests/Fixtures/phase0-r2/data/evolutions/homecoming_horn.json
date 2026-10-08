@@ -1,0 +1,34 @@
+{
+  "id": "core:homecoming_horn",
+  "name": "귀농 호령",
+  "concept": "돌아온 부대의 구성원을 파손된 경작 구역에 먼저 배치해 생산 공백을 메운다. 대신 귀환 인원을 바로 재징집할 수 없어 전선 보충이 늦어진다.",
+  "tags": [
+    "people",
+    "muster",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "돌아온 부대의 구성원을 파손된 경작 구역에 먼저 배치해 생산 공백을 메운다."
+    }
+  ],
+  "kind": "tool-growth",
+  "inputIds": [
+    "core:muster_horn"
+  ],
+  "growthCondition": {
+    "target": "people",
+    "state": "returned",
+    "minimum": 5
+  },
+  "result": {
+    "baseId": "core:muster_horn",
+    "name": "귀농 호령",
+    "effect": "돌아온 부대의 구성원을 파손된 경작 구역에 먼저 배치해 생산 공백을 메운다.",
+    "cost": "귀환 인원을 바로 재징집할 수 없어 전선 보충이 늦어진다."
+  }
+}

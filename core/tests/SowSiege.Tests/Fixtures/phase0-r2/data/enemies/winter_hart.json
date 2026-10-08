@@ -1,0 +1,24 @@
+{
+  "id": "core:winter_hart",
+  "name": "겨울 뿔사슴",
+  "concept": "긴 몸체로 수확 접근을 막고 몸을 돌려 여러 작물을 훑는다. 회전 바깥으로 유도해 밭에서 떨어뜨린 뒤 수확한다.",
+  "tags": [
+    "harvest",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "ripe",
+  "health": 95,
+  "speed": 9,
+  "damage": 11,
+  "range": 130,
+  "attackCooldownTicks": 100,
+  "experience": 15,
+  "behavior": {
+    "trigger": "익은 밭으로 달려오면",
+    "pressure": "긴 몸체로 수확 접근을 막고 몸을 돌려 여러 작물을 훑는다.",
+    "counterplay": "회전 바깥으로 유도해 밭에서 떨어뜨린 뒤 수확한다."
+  }
+}

@@ -1,3 +1,5 @@
+> **선택 승인 안내 · 2026-10-08:** 사용자가 [#32](https://github.com/hyunlord/bs-mobile/issues/32)에서 **A안 새싹 변경 / 개척 기사**를 선택했다. 기본 영웅·영지는 각 하나이며 활성 ID는 `core:frontier_knight`·`core:sprout_march`로 이관한다. [R3 #62](https://github.com/hyunlord/bs-mobile/issues/62)의 최소 잔재 고리는 구현·검증 단계이고 영웅 운반 능력·Unity는 포함하지 않는다. **아래는 선택 전 S3 후보 원문**으로, “미선택/잠정/후보” 및 과거 ID는 당시 기록을 보존한 것이다. 선택 승인을 후보 효과 전체의 구현 완료로 읽지 않는다.
+
 # 기본 영웅·영지 세 후보
 
 2026-10-08 · [S3 #36](https://github.com/hyunlord/bs-mobile/issues/36) · [사용자 결정 대기 #32](https://github.com/hyunlord/bs-mobile/issues/32)

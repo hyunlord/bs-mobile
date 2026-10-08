@@ -8,7 +8,7 @@
     "growth"
   ],
   "designStatus": "s2-runtime",
-  "implementationNote": "시험용 기존 성장 배율만 구현. 출시 영지 선택지가 아니다.",
+  "implementationNote": "시험용 성장 배율과 별도 유해 용량·수명·반경을 읽는다. 출시 영지 선택지가 아니다.",
   "loopLinks": [],
   "uniqueLoop": {
     "name": "시험용 순환",
@@ -39,5 +39,10 @@
         "action": "인구가 전투로 돌아간다."
       }
     ]
+  },
+  "remainsLoop": {
+    "capacity": 2,
+    "lifetimeTicks": 60,
+    "absorptionRadius": 130
   }
 }

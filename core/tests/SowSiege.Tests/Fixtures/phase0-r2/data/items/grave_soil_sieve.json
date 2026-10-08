@@ -1,0 +1,26 @@
+{
+  "id": "core:grave_soil_sieve",
+  "name": "묘토 거름망",
+  "concept": "백성이 쓸 수 있는 흙만 골라 다음 밭으로 보낸다. 선별 작업 동안 그 인력은 징집할 수 없다.",
+  "tags": [
+    "fertility",
+    "people"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "처치 부산물의 성장 전환을 노동 시간과 연결해 공짜 자원화를 막는다."
+    }
+  ],
+  "effect": {
+    "trigger": "무덤 삽이 전투 흔적에서 흙을 거둘 때",
+    "benefit": "백성이 쓸 수 있는 흙만 골라 다음 밭으로 보낸다.",
+    "cost": "선별 작업 동안 그 인력은 징집할 수 없다."
+  },
+  "linkedToolIds": [
+    "core:grave_spade"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "core:burrow_larva",
+  "name": "굴파는 유충",
+  "concept": "밭 사이에 숨어 가장 어린 씨앗으로 이동한다. 땅이 솟는 표식을 보고 근접 공격으로 빠르게 드러낸다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "seed",
+  "health": 24,
+  "speed": 9,
+  "damage": 3,
+  "range": 75,
+  "attackCooldownTicks": 70,
+  "experience": 6,
+  "behavior": {
+    "trigger": "새로 파종한 밭이 늘어나면",
+    "pressure": "밭 사이에 숨어 가장 어린 씨앗으로 이동한다.",
+    "counterplay": "땅이 솟는 표식을 보고 근접 공격으로 빠르게 드러낸다."
+  }
+}

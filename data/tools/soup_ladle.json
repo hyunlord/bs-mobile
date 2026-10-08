@@ -28,7 +28,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "food",
       "reason": "잠정 순환 연결: 수확 식량을 소비해 백성의 작업 가능 인원을 유지하는 경로를 제안한다. 연결 산출: 공동 급식으로 유지되는 작업 인원. 비용: 곡물을 급식에 쓰면 판매할 재고가 줄어든다."
     }

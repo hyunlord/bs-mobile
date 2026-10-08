@@ -1,0 +1,26 @@
+{
+  "id": "core:front_rank_peg",
+  "name": "전열 고정못",
+  "concept": "첫 밀침을 버텨 뒤의 일꾼이 빠져나갈 틈을 만든다. 고정한 부대는 곧바로 추격을 시작하지 못한다.",
+  "tags": [
+    "muster",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "노동 인력의 탈출을 위해 군사 기동성을 소비한다."
+    }
+  ],
+  "effect": {
+    "trigger": "부대가 건물 앞에서 진형을 멈출 때",
+    "benefit": "첫 밀침을 버텨 뒤의 일꾼이 빠져나갈 틈을 만든다.",
+    "cost": "고정한 부대는 곧바로 추격을 시작하지 못한다."
+  },
+  "linkedToolIds": [
+    "core:formation_drum"
+  ]
+}

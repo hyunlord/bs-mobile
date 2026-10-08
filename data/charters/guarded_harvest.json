@@ -11,7 +11,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 실제 수확 시 근접 무기를 보유하면 전방 피해12/반경900을 가하며 익은 밭 근처 일반 무기 공격 간격은6틱 늘어난다. 수확 예약 애니메이션은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "harvest",
       "reason": "수확 종료 순간에 좁은 원호를 베어 주변을 비운다."
     }

@@ -1,0 +1,26 @@
+{
+  "id": "core:stone_sprout_cup",
+  "name": "돌싹 받침",
+  "concept": "주변 어린 작물이 적의 첫 충돌을 대신 버틸 틈을 얻는다. 돌 주위는 수확자가 곧장 지나갈 수 없어 우회한다.",
+  "tags": [
+    "land",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "새 경작지 방어와 수확 동선의 혼잡을 같은 배치 결정에 묶는다."
+    }
+  ],
+  "effect": {
+    "trigger": "돌씨앗이 처음 터를 잡을 때",
+    "benefit": "주변 어린 작물이 적의 첫 충돌을 대신 버틸 틈을 얻는다.",
+    "cost": "돌 주위는 수확자가 곧장 지나갈 수 없어 우회한다."
+  },
+  "linkedToolIds": [
+    "core:stone_seed"
+  ]
+}

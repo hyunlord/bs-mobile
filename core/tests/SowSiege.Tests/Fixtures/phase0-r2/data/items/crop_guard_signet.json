@@ -1,0 +1,26 @@
+{
+  "id": "core:crop_guard_signet",
+  "name": "곡식 수호인",
+  "concept": "수확 완료 전 한 차례의 경보가 먼저 울린다. 영주가 멀리 떠나면 자동 보호로 대신하지 않는다.",
+  "tags": [
+    "harvest",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "harvest",
+      "reason": "수확 보호를 영주의 실제 체류와 연결해 방치 수확의 이점을 제한한다."
+    }
+  ],
+  "effect": {
+    "trigger": "익은 밭에 영주와 백성이 함께 있을 때",
+    "benefit": "수확 완료 전 한 차례의 경보가 먼저 울린다.",
+    "cost": "영주가 멀리 떠나면 자동 보호로 대신하지 않는다."
+  },
+  "linkedToolIds": [
+    "core:harvest_cart"
+  ]
+}

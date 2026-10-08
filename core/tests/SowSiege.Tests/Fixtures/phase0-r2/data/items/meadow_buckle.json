@@ -1,0 +1,70 @@
+{
+  "id": "core:meadow_buckle",
+  "name": "들판 허리쇠",
+  "concept": "짧은 전방 공격이 씨앗을 노리는 적을 먼저 견제한다. 영지 밖의 적을 추격할 때는 도움을 받지 못한다.",
+  "tags": [
+    "melee",
+    "land"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 실제 근접 무기가 영지 안 씨앗 밭 근처에서 씨앗을 노리는 적에게 가하는 피해만4 증가한다. 조건 밖 이득은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "파종 후 돌아와 보호하는 동선을 직접 전투 이득으로 연결한다."
+    }
+  ],
+  "effect": {
+    "trigger": "영주가 막 심은 밭으로 돌아와 싸울 때",
+    "benefit": "짧은 전방 공격이 씨앗을 노리는 적을 먼저 견제한다.",
+    "cost": "영지 밖의 적을 추격할 때는 도움을 받지 못한다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:meadow_buckle_seed_guard",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "attack-damage",
+        "amount": 4,
+        "radius": 800,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "equipment-kind",
+            "value": "weapon",
+            "minimum": 0
+          },
+          {
+            "kind": "equipment-tag",
+            "value": "melee",
+            "minimum": 0
+          },
+          {
+            "kind": "near-seed",
+            "value": null,
+            "minimum": 0
+          },
+          {
+            "kind": "enemy-target",
+            "value": "seed",
+            "minimum": 0
+          },
+          {
+            "kind": "estate-inside",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

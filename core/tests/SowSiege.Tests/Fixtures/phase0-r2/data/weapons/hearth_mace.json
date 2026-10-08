@@ -1,0 +1,28 @@
+{
+  "id": "core:hearth_mace",
+  "tags": [
+    "weapon",
+    "melee",
+    "food"
+  ],
+  "activation": {
+    "damage": 28,
+    "range": 800,
+    "cooldownTicks": 48,
+    "shape": "wave",
+    "knockback": 70,
+    "form": "붉어진 철퇴가 가까운 적을 쳐 작은 열기 파동을 만든다.",
+    "damageCoefficient": 1.0
+  },
+  "name": "화덕 철퇴",
+  "concept": "식량을 익혀 나눈 직후 철퇴가 달아올라 근접 포위를 푼다. 연속 가열을 위해 식량을 쓰면 징집 여력이 줄어든다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "식량의 소비를 일시적인 직접 화력과 인구 유지 사이에 배분한다."
+    }
+  ]
+}

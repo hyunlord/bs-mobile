@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 건물 공격 방향에 따라 정면 피해2 감소·후면 피해2 증가를 적용한다. 건축물 외형은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "건설의 진행 순서가 실제 방어 방향이 되어 영주의 위치 선택을 요구한다."
     }

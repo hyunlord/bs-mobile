@@ -1,0 +1,44 @@
+{
+  "id": "core:muster_roll",
+  "name": "징집 명부",
+  "concept": "아직 복귀 중인 사람 대신 쉬고 있는 사람을 찾는다. 여유 인력이 없으면 즉시 소집 규모가 줄어든다.",
+  "tags": [
+    "people",
+    "muster"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 귀환한 백성의 재징집 전 최소 휴식 시간을60틱 늘려 즉시 소집 인원을 줄인다. 이미 귀환 중인 사람 제외는 원래 규칙이며 새 효과로 집계하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "귀환 중인 노동력의 중복 소모를 막고 부족한 병력을 그대로 드러낸다."
+    }
+  ],
+  "effect": {
+    "trigger": "뿔나팔이 같은 백성을 다시 부르려 할 때",
+    "benefit": "아직 복귀 중인 사람 대신 쉬고 있는 사람을 찾는다.",
+    "cost": "여유 인력이 없으면 즉시 소집 규모가 줄어든다."
+  },
+  "linkedToolIds": [
+    "core:muster_horn"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:muster_roll_rest",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "draft-min-rest",
+        "amount": 60,
+        "radius": 0,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
+}

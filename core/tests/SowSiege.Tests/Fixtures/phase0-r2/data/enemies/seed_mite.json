@@ -1,0 +1,24 @@
+{
+  "id": "core:seed_mite",
+  "name": "씨앗 진드기",
+  "concept": "성장 초기 밭을 노려 재파종 부담을 만든다.",
+  "tags": [
+    "land",
+    "growth"
+  ],
+  "designStatus": "s2-runtime",
+  "implementationNote": "S2 수치 필드의 기본 동작만 구현됨. 추가 기획 계수·고유 효과·순환 연결은 설계 설명이며 별도 구현·검증이 필요하다.",
+  "loopLinks": [],
+  "target": "seed",
+  "health": 28,
+  "speed": 7,
+  "damage": 4,
+  "range": 80,
+  "attackCooldownTicks": 60,
+  "experience": 6,
+  "behavior": {
+    "trigger": "씨앗이나 어린 밭이 있으면",
+    "pressure": "성장 초기 밭을 노려 재파종 부담을 만든다.",
+    "counterplay": "씨앗 구역을 한꺼번에 넓히기보다 방어 가능한 범위로 묶는다."
+  }
+}

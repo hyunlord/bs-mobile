@@ -82,6 +82,8 @@ internal sealed class WorldState
     public RuntimeState? Runtime;
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ExperimentState? Experiment;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public RemainsState? Remains;
     public int Tick;
     public int Season;
     public int NextId;

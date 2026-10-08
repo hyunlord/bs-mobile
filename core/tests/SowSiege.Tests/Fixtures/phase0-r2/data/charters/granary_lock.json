@@ -1,0 +1,28 @@
+{
+  "id": "core:granary_lock",
+  "name": "곡창 봉인장",
+  "concept": "곡창 식량 일부를 자동 봉인해 약탈과 긴급 건설 소비에서 보호한다. 대신 겨울 시작과 함께 자동 해제되기 전에는 굶주림이나 징집에도 그 몫을 꺼낼 수 없다.",
+  "tags": [
+    "building",
+    "food",
+    "defense"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "곡창 식량 일부를 자동 봉인해 약탈과 긴급 건설 소비에서 보호한다."
+    }
+  ],
+  "effect": {
+    "target": "building",
+    "trigger": "이 헌장을 보유한 채 가을의 마지막 성장 주기에 들어가면",
+    "benefit": "곡창 식량 일부를 자동 봉인해 약탈과 긴급 건설 소비에서 보호한다.",
+    "cost": "겨울 시작과 함께 자동 해제되기 전에는 굶주림이나 징집에도 그 몫을 꺼낼 수 없다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 채 가을의 마지막 성장 주기에 들어가면"
+  ]
+}

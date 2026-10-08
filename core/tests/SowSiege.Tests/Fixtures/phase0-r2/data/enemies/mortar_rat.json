@@ -1,0 +1,24 @@
+{
+  "id": "core:mortar_rat",
+  "name": "줄눈 쥐",
+  "concept": "작은 틈을 찾아 연속 공격으로 수리 작업을 방해한다. 정비 전에 주변 무리를 넓게 쓸어내린다.",
+  "tags": [
+    "building",
+    "repair"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "building",
+  "health": 20,
+  "speed": 13,
+  "damage": 3,
+  "range": 60,
+  "attackCooldownTicks": 40,
+  "experience": 5,
+  "behavior": {
+    "trigger": "손상 건물 주변에 틈이 생기면",
+    "pressure": "작은 틈을 찾아 연속 공격으로 수리 작업을 방해한다.",
+    "counterplay": "정비 전에 주변 무리를 넓게 쓸어내린다."
+  }
+}

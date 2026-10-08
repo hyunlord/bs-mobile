@@ -1,0 +1,24 @@
+{
+  "id": "core:blight_beetle",
+  "name": "역병 딱정벌레",
+  "concept": "밭 사이를 옮겨 다니며 초기 성장 지연을 퍼뜨린다. 밭 사이 간격을 두고 첫 표적을 빠르게 제거한다.",
+  "tags": [
+    "land",
+    "fertility"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "seed",
+  "health": 40,
+  "speed": 7,
+  "damage": 5,
+  "range": 90,
+  "attackCooldownTicks": 90,
+  "experience": 9,
+  "behavior": {
+    "trigger": "서로 붙은 어린 밭에 접근하면",
+    "pressure": "밭 사이를 옮겨 다니며 초기 성장 지연을 퍼뜨린다.",
+    "counterplay": "밭 사이 간격을 두고 첫 표적을 빠르게 제거한다."
+  }
+}

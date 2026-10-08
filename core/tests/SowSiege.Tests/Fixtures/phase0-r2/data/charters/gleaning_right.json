@@ -1,0 +1,28 @@
+{
+  "id": "core:gleaning_right",
+  "name": "이삭 줍기 권리",
+  "concept": "수확 뒤 남은 이삭을 백성이 모아 다음 식량 소모를 일부 충당한다. 대신 수확 경험치 일부를 포기하고 회수 중인 백성은 전투에 참여하지 못한다.",
+  "tags": [
+    "land",
+    "harvest",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "수확 뒤 남은 이삭을 백성이 모아 다음 식량 소모를 일부 충당한다."
+    }
+  ],
+  "effect": {
+    "target": "land",
+    "trigger": "같은 밭을 두 번째 수확하면",
+    "benefit": "수확 뒤 남은 이삭을 백성이 모아 다음 식량 소모를 일부 충당한다.",
+    "cost": "수확 경험치 일부를 포기하고 회수 중인 백성은 전투에 참여하지 못한다."
+  },
+  "requirements": [
+    "같은 밭을 두 번째 수확하면"
+  ]
+}

@@ -30,7 +30,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과와 임시 수치·피해 계수는 시뮬레이션에 구현되지 않았으며 측정된 균형값이 아니다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "fertility",
       "reason": "잠정 순환 연결: 처치 잔재 또는 경작 기반을 비옥도·성장 조건으로 바꾸는 경로를 제안한다. 연결 산출: 숲을 태운 개간지. 비용: 불이 미성숙 작물에도 번져 다음 수확을 잃을 수 있다."
     }

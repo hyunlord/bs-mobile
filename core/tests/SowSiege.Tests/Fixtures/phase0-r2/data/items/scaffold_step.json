@@ -1,0 +1,68 @@
+{
+  "id": "core:scaffold_step",
+  "name": "비계 발판",
+  "concept": "작업자가 건물을 우회하지 않고 안전한 쪽으로 지나간다. 발판을 설치한 터는 완성 전 징집 집결지로 쓰기 어렵다.",
+  "tags": [
+    "building",
+    "people"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 건물 근처 일꾼 이동은1 증가하고 징집 이동은1 감소한다. 발판 mesh는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "건설과 노동 이동의 충돌을 줄이는 대신 병력 동선의 자유를 줄인다."
+    }
+  ],
+  "effect": {
+    "trigger": "백성이 공사 중인 터에 접근할 때",
+    "benefit": "작업자가 건물을 우회하지 않고 안전한 쪽으로 지나간다.",
+    "cost": "발판을 설치한 터는 완성 전 징집 집결지로 쓰기 어렵다."
+  },
+  "linkedToolIds": [
+    "core:carpenter_hammer"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "building",
+      "people"
+    ],
+    "effects": [
+      {
+        "id": "core:scaffold_step_worker_speed",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "worker-speed",
+        "amount": 1,
+        "radius": 800,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      },
+      {
+        "id": "core:scaffold_step_draft_cost",
+        "trigger": "modifier",
+        "operation": "stat-add",
+        "subject": "draft-speed",
+        "amount": -1,
+        "radius": 800,
+        "durationTicks": 0,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

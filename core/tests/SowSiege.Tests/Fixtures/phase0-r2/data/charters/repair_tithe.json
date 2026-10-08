@@ -1,0 +1,50 @@
+{
+  "id": "core:repair_tithe",
+  "name": "수선 십일조",
+  "concept": "일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다. 대신 같은 식량을 징집과 인구 유지에 쓸 수 없다.",
+  "tags": [
+    "building",
+    "repair",
+    "food"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 수확 시 식량2를 실제 차감하고 반경1400의 손상 건물을12 수리한다. 정상 전투 건물의 유지와 징집용 식량이 경쟁한다. 대상이 없으면 소비하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다."
+    }
+  ],
+  "effect": {
+    "target": "building",
+    "trigger": "수확 식량이 창고에 들어오면",
+    "benefit": "일부 식량을 목수에게 지급해 가까운 건물의 손상을 복구한다.",
+    "cost": "같은 식량을 징집과 인구 유지에 쓸 수 없다."
+  },
+  "requirements": [
+    "수확 식량이 창고에 들어오면"
+  ],
+  "runtimeProjection": {
+    "policyCategory": "building",
+    "effects": [
+      {
+        "id": "core:repair_tithe_repair",
+        "trigger": "harvest",
+        "operation": "repair-nearest",
+        "subject": "building",
+        "amount": 12,
+        "radius": 1400,
+        "durationTicks": 0,
+        "foodCost": 2,
+        "conditions": [
+          {
+            "kind": "near-building",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

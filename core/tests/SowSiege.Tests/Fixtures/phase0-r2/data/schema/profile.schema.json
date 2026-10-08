@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selection": {
+      "type": "object",
+      "properties": {
+        "weapons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "enemies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "heroes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "estates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "weapons",
+        "tools",
+        "enemies",
+        "heroes",
+        "estates"
+      ],
+      "additionalProperties": false
+    },
+    "testSelection": {
+      "type": "object",
+      "properties": {
+        "weapons": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "enemies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "heroes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "estates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "maxItems": 1000,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "weapons",
+        "tools",
+        "enemies",
+        "heroes",
+        "estates"
+      ],
+      "additionalProperties": false
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "charters": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "evolutions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "maxItems": 1000,
+          "uniqueItems": true
+        },
+        "tuning": {
+          "type": "object",
+          "properties": {
+            "weaponSlots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "toolSlots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "charterSlots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "recentExperienceWindowTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "experienceWeightDivisor": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lootPeriodTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lootSpawnRadius": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lootPickupRadius": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "maxGroundLoot": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lootQuantity": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000000
+            },
+            "lootSources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+                  },
+                  "kind": {
+                    "enum": [
+                      "chest",
+                      "cart",
+                      "market"
+                    ]
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000000
+                  },
+                  "foodCost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "weight",
+                  "foodCost"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 1000,
+              "minItems": 1
+            }
+          },
+          "required": [
+            "weaponSlots",
+            "toolSlots",
+            "charterSlots",
+            "recentExperienceWindowTicks",
+            "experienceWeightDivisor",
+            "lootPeriodTicks",
+            "lootSpawnRadius",
+            "lootPickupRadius",
+            "maxGroundLoot",
+            "lootQuantity",
+            "lootSources"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "contractVersion",
+        "charters",
+        "items",
+        "evolutions",
+        "tuning"
+      ],
+      "additionalProperties": false
+    },
+    "experiment": {
+      "type": "object",
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "tuningFile": {
+          "type": "string",
+          "pattern": "^tuning-s4b-[a-zA-Z0-9_-]+\\.json$"
+        }
+      },
+      "required": [
+        "contractVersion",
+        "tuningFile"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "selection",
+    "testSelection"
+  ],
+  "additionalProperties": false
+}

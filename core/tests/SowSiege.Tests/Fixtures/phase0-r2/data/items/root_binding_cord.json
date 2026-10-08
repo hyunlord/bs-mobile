@@ -1,0 +1,61 @@
+{
+  "id": "core:root_binding_cord",
+  "name": "뿌리 묶음끈",
+  "concept": "가장자리 싹이 함께 버텨 첫 손실을 줄인다. 묶인 줄 중 하나가 파괴되면 이웃 밭의 성장도 잠시 멈춘다.",
+  "tags": [
+    "land",
+    "defense"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "어린 밭의 개별 취약성을 줄이는 대신 손실이 연결되는 위험을 만든다."
+    }
+  ],
+  "effect": {
+    "trigger": "싹을 노리는 적이 경작지로 들어올 때",
+    "benefit": "가장자리 싹이 함께 버텨 첫 손실을 줄인다.",
+    "cost": "묶인 줄 중 하나가 파괴되면 이웃 밭의 성장도 잠시 멈춘다."
+  },
+  "linkedToolIds": [
+    "core:seed_bag"
+  ],
+  "runtimeProjection": {
+    "requiredTags": [
+      "land"
+    ],
+    "effects": [
+      {
+        "id": "core:root_binding_cord_shield",
+        "trigger": "plant",
+        "operation": "shield-farms",
+        "subject": "land",
+        "amount": 1,
+        "radius": 350,
+        "durationTicks": 300,
+        "foodCost": 0,
+        "conditions": []
+      },
+      {
+        "id": "core:root_binding_cord_linked_delay",
+        "trigger": "farm-hit",
+        "operation": "pause-neighbor-growth",
+        "subject": "land",
+        "amount": 1,
+        "radius": 500,
+        "durationTicks": 60,
+        "foodCost": 0,
+        "conditions": [
+          {
+            "kind": "shield-consumed",
+            "value": null,
+            "minimum": 0
+          }
+        ]
+      }
+    ]
+  }
+}

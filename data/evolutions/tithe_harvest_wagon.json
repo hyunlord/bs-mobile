@@ -11,7 +11,7 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "food",
       "reason": "수확 수레가 실어 온 작물을 장부의 고정 비율에 따라 배식 몫과 재건 몫으로 자동 분류해 목적지에 넘긴다."
     }

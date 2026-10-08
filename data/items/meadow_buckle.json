@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 실제 근접 무기가 영지 안 씨앗 밭 근처에서 씨앗을 노리는 적에게 가하는 피해만4 증가한다. 조건 밖 이득은 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "combat",
       "reason": "파종 후 돌아와 보호하는 동선을 직접 전투 이득으로 연결한다."
     }

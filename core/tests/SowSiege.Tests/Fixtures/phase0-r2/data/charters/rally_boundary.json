@@ -1,0 +1,44 @@
+{
+  "id": "core:rally_boundary",
+  "name": "집결 경계선",
+  "concept": "영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다. 대신 집결이 끝날 때까지 부대는 밭으로 돌아가 일하지 않는다.",
+  "tags": [
+    "people",
+    "muster",
+    "defense"
+  ],
+  "designStatus": "s4-runtime",
+  "implementationNote": "S4 헤드리스 프로토타입: 영주가 영지 경계를 넘을 때 반경1400의 귀환 집단 최대2개를90틱 방어 집결 상태로 묶어 전투하게 하며 밭 복귀는 지연한다. 길망은 모델링하지 않는다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다."
+    }
+  ],
+  "effect": {
+    "target": "people",
+    "trigger": "이 헌장을 보유한 영주가 영지 경계를 통과하면",
+    "benefit": "영주가 통과한 가장 가까운 경계 지점을 자동 집결지로 삼아 귀환 부대를 재정렬하고 농지 진입을 막는다.",
+    "cost": "집결이 끝날 때까지 부대는 밭으로 돌아가 일하지 않는다."
+  },
+  "requirements": [
+    "이 헌장을 보유한 영주가 영지 경계를 통과하면"
+  ],
+  "runtimeProjection": {
+    "policyCategory": "people",
+    "effects": [
+      {
+        "id": "core:rally_boundary_rally",
+        "trigger": "estate-cross",
+        "operation": "rally-returners",
+        "subject": "people",
+        "amount": 2,
+        "radius": 1400,
+        "durationTicks": 90,
+        "foodCost": 0,
+        "conditions": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "core:cinder_furrow",
+  "name": "잿불 고랑",
+  "concept": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다. 대신 불꽃이 남아 있는 동안 그 밭을 수확할 수 없어 식량 확보가 늦어진다.",
+  "tags": [
+    "weapon",
+    "ranged",
+    "fertility"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "fertility",
+      "reason": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:ember_wand",
+    "core:torch"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:ember_wand",
+    "name": "잿불 고랑",
+    "effect": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다.",
+    "cost": "불꽃이 남아 있는 동안 그 밭을 수확할 수 없어 식량 확보가 늦어진다."
+  }
+}

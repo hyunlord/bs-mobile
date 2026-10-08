@@ -1,0 +1,28 @@
+{
+  "id": "core:levy_banner",
+  "tags": [
+    "weapon",
+    "melee",
+    "muster"
+  ],
+  "activation": {
+    "damage": 16,
+    "range": 1000,
+    "cooldownTicks": 40,
+    "shape": "melee",
+    "knockback": 30,
+    "form": "깃폭이 펼쳐지는 방향으로 짧은 창줄이 맞춰 나간다.",
+    "damageCoefficient": 0.9
+  },
+  "name": "징집 깃창",
+  "concept": "깃창이 세워진 방향으로 부대의 일제 공격을 모은다. 부대가 귀환하면 영주의 깃창 자체 화력만 남는다.",
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 공격 형상·수치·고유 상호작용은 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "people",
+      "reason": "식량으로 유지하는 징집 병력을 집중 화력으로 묶으며 귀농 시 손실도 선명하게 드러낸다."
+    }
+  ]
+}

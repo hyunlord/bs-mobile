@@ -1,0 +1,24 @@
+{
+  "id": "core:basket_mimic",
+  "name": "바구니 위장꾼",
+  "concept": "수확 바구니처럼 웅크렸다가 영주가 다가올 때 덮친다. 수확 전에 짧게 공격해 위장을 벗기면 느린 이동이 약점이 된다.",
+  "tags": [
+    "harvest",
+    "melee"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [],
+  "target": "ripe",
+  "health": 65,
+  "speed": 5,
+  "damage": 9,
+  "range": 110,
+  "attackCooldownTicks": 100,
+  "experience": 12,
+  "behavior": {
+    "trigger": "성숙 작물 옆에 멈추면",
+    "pressure": "수확 바구니처럼 웅크렸다가 영주가 다가올 때 덮친다.",
+    "counterplay": "수확 전에 짧게 공격해 위장을 벗기면 느린 이동이 약점이 된다."
+  }
+}

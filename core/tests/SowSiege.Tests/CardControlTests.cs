@@ -9,7 +9,7 @@ public sealed class CardControlTests
     [Fact]
     public void LockPersistsRerollBanExcludesAndBudgetsAreConsumedDeterministically()
     {
-        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), true);
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "Fixtures", "phase0-r2", "data"), true);
         var first = Run(catalog);
         var second = Run(catalog);
         Assert.Equal(first.Hash, second.Hash);

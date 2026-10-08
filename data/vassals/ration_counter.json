@@ -11,12 +11,12 @@
   "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "food",
       "reason": "다음 유지 비용만큼 식량을 자동 예약하고 남은 몫만 징집에 써 유지 몫의 오용을 막는다."
     }
   ],
-  "heroId": "core:founder",
+  "heroId": "core:frontier_knight",
   "role": "steward",
   "ability": {
     "trigger": "식량이 다음 인구 유지 비용에 가까워지면",

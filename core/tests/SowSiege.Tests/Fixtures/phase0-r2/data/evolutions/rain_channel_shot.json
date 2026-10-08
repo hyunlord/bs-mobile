@@ -1,0 +1,31 @@
+{
+  "id": "core:rain_channel_shot",
+  "name": "물길 관통시위",
+  "concept": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다. 대신 물길 밖에서는 관통하지 못하고 관개를 공격 경로에 맞춰야 한다.",
+  "tags": [
+    "weapon",
+    "ranged",
+    "land"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "combat",
+      "reason": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:canal_bow",
+    "core:rain_ladle"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:canal_bow",
+    "name": "물길 관통시위",
+    "effect": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다.",
+    "cost": "물길 밖에서는 관통하지 못하고 관개를 공격 경로에 맞춰야 한다."
+  }
+}

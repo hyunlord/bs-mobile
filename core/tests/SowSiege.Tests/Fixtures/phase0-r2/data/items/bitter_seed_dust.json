@@ -1,0 +1,26 @@
+{
+  "id": "core:bitter_seed_dust",
+  "name": "쓴 씨앗 가루",
+  "concept": "먹힌 자리에 기피 흔적을 남겨 뒤따른 적의 경로를 틀어 놓는다. 첫 씨앗의 손실은 막지 못한다.",
+  "tags": [
+    "land",
+    "control"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "손실 뒤의 대응 시간을 벌지만 같은 밭에서 즉시 수확을 기대할 수 없다."
+    }
+  ],
+  "effect": {
+    "trigger": "새로 심은 씨앗을 먹는 적이 나타날 때",
+    "benefit": "먹힌 자리에 기피 흔적을 남겨 뒤따른 적의 경로를 틀어 놓는다.",
+    "cost": "첫 씨앗의 손실은 막지 못한다."
+  },
+  "linkedToolIds": [
+    "core:poison_sickle"
+  ]
+}

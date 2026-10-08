@@ -1,0 +1,31 @@
+{
+  "id": "core:venom_reaping",
+  "name": "독이삭 수확날",
+  "concept": "독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다. 대신 독을 보호에 쓰므로 표시 적에게 남아 있던 추가 피해를 포기한다.",
+  "tags": [
+    "weapon",
+    "melee",
+    "growth"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 고유 효과는 아직 시뮬레이션에 구현되지 않았다. 수치·조건은 후보이며 밸런스 검증 전이다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "growth",
+      "reason": "독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다."
+    }
+  ],
+  "kind": "weapon-tool",
+  "inputIds": [
+    "core:harvest_scythe",
+    "core:poison_sickle"
+  ],
+  "growthCondition": null,
+  "result": {
+    "baseId": "core:harvest_scythe",
+    "name": "독이삭 수확날",
+    "effect": "독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다.",
+    "cost": "독을 보호에 쓰므로 표시 적에게 남아 있던 추가 피해를 포기한다."
+  }
+}

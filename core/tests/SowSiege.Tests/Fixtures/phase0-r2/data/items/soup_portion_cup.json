@@ -1,0 +1,26 @@
+{
+  "id": "core:soup_portion_cup",
+  "name": "죽 배분잔",
+  "concept": "낭비되는 분량을 줄여 다음 교대분을 남긴다. 배분 대기 시간이 생겨 즉시 징집에는 불리하다.",
+  "tags": [
+    "people",
+    "food"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "식량을 인구 유지로 옮기는 효율과 빠른 병력 집결을 교환한다."
+    }
+  ],
+  "effect": {
+    "trigger": "급식 국자가 일꾼에게 식량을 나눌 때",
+    "benefit": "낭비되는 분량을 줄여 다음 교대분을 남긴다.",
+    "cost": "배분 대기 시간이 생겨 즉시 징집에는 불리하다."
+  },
+  "linkedToolIds": [
+    "core:soup_ladle"
+  ]
+}

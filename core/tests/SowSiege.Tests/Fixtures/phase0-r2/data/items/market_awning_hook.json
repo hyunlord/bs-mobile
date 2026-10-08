@@ -1,0 +1,26 @@
+{
+  "id": "core:market_awning_hook",
+  "name": "장터 차양고리",
+  "concept": "보관 중인 식량의 임시 손실을 막는다. 차양 아래 터는 다른 방어 건물을 세우지 못한다.",
+  "tags": [
+    "building",
+    "economy"
+  ],
+  "designStatus": "candidate",
+  "implementationNote": "S3 설계 후보. 조건·이득·비용은 기획 제안이며 아직 시뮬레이션에 구현되지 않았다.",
+  "loopLinks": [
+    {
+      "estateId": "core:meadow",
+      "stage": "food",
+      "reason": "음식의 보존을 위한 공간과 직접 방어 건설 공간이 경쟁한다."
+    }
+  ],
+  "effect": {
+    "trigger": "장터가 수확물을 모으는 중 비가 올 때",
+    "benefit": "보관 중인 식량의 임시 손실을 막는다.",
+    "cost": "차양 아래 터는 다른 방어 건물을 세우지 못한다."
+  },
+  "linkedToolIds": [
+    "core:market_pole"
+  ]
+}

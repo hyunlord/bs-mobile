@@ -135,6 +135,7 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
                 if (!(enemy.LastTarget == "seed" ? farm.Stage <= 1 : farm.Stage == catalog.Tuning.World.Farms.StageTicks.Length - 1)) { enemy.TargetRefreshTick = 0; continue; }
                 if (runtime?.ShieldFarm(farm, enemy) == true) { continue; }
                 experiment?.CloseRipe(farm, "destroyed");
+                RemainsSystem.Destroyed(world, farm);
                 farm.Stage = 0; farm.Progress = 0; farm.Fertility = 0;
             }
             else if (enemy.LastTarget == "building")
@@ -162,6 +163,7 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
             world.KillExperience += experience;
             runtime?.Experience("weapon", experience);
             runtime?.Emit("kill", new(enemy.Position, Enemy: enemy));
+            if (world.Remains is not null) { RemainsSystem.Create(world, enemy); continue; }
             var nearest = world.Farms.OrderBy(farm => farm.Position.DistanceSquared(enemy.Position)).ThenBy(farm => farm.Id).FirstOrDefault();
             if (nearest is not null) { nearest.Fertility += catalog.Tuning.World.Farms.FertilityPerKill; }
         }

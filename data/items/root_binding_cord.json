@@ -10,7 +10,7 @@
   "implementationNote": "S4 헤드리스 프로토타입: 파종 지점 가까운 밭에 일회 방어를 부여하되 실제 보호가 소모되면 인접 밭 성장을60틱 멈춘다. 원격 피해 전파 그래프는 없다. runtimeProjection 수치만 실행하며 피해 계수와 기존 기획 문구 전체의 구현·균형·모바일 체감은 보증하지 않는다.",
   "loopLinks": [
     {
-      "estateId": "core:meadow",
+      "estateId": "core:sprout_march",
       "stage": "growth",
       "reason": "어린 밭의 개별 취약성을 줄이는 대신 손실이 연결되는 위험을 만든다."
     }
