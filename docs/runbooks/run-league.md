@@ -58,6 +58,8 @@ node tools/verify-first-playable-target-parity.mjs artifacts/first-playable-pari
 
 두 타깃 검사는 서로 다른 net8.0/netstandard2.1 DLL에서 5seed의 27000틱 입력을 각각 세 번 재생하는 정확성 검사다. 무적 fixture이므로 밸런스·Unity·실기 플레이 검증이 아니다. 전체 원자료는 로컬에 보존하고, 공개 원자료는 [사전 선정 표본](../review/phase1b-first-playable.md)만 사용한다. 로컬 CSV 용량을 이유로 관측 행을 삭제하지 않는다.
 
+첫 정식 결과는 [M1 candidate-01](../league/first-playable-m1/README.md)에 보존한다. 저장소의 작은 정본 CSV에서 관문을 다시 계산할 수 있으며, 전체 생존이라는 상한 효과를 난이도·재미의 통과로 확대하지 않는다.
+
 ## S4 실행과 원자료 재생성
 
 S4는 별도 프로필 `s4-stage-one`을 명시한다. 기존 `smoke`·`stage`·`long` 모드는 S2 계약을 유지한다. Release 빌드 후 저장소 루트에서 실행한다.

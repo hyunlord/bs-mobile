@@ -1,6 +1,6 @@
-# 1단계 B: 첫 플레이 가능판
+관문: 부분 — M1 통합 검사와 정식 리그 통과. M2·M3·M4는 아직 시작하지 않았다.
 
-관문: 부분 — M1 통합 검사 통과, 정식 리그 미판정. M2·M3·M4는 아직 시작하지 않았다.
+# 1단계 B: 첫 플레이 가능판
 
 - 기준: main `9b126bd8cb5d4524d550bb180bd49e45b810e0e7`, [의뢰서](../design/06_ASTRA_GOAL_bs-mobile_phase1b-first-playable.md), [#94](https://github.com/hyunlord/bs-mobile/issues/94).
 - 진행 순서: [M1 #95](https://github.com/hyunlord/bs-mobile/issues/95) → [M2 #96](https://github.com/hyunlord/bs-mobile/issues/96) → [M3 #97](https://github.com/hyunlord/bs-mobile/issues/97) → [M4 #98](https://github.com/hyunlord/bs-mobile/issues/98).
@@ -12,7 +12,7 @@
 |---|---|---|
 | M1 콘텐츠 | 무기10×12레벨, 도구8(3/3/2), 특허8, 물품30, 진화8(교차≥4), 일반적10+정예2+보스1, 지도사건3 | 정의 검사 및 현재 소스에 결합한 실행 관찰156개 통과 |
 | M1 로직 | 도구의 발동·성장, 구별되는 공격 형태, 태그 효과, 진화 조건, 사람 목표 적, 건설/작물/백성 상태, 시작 가신1 | 전체330테스트 통과; 실제 수확 진화·특허 양축 세계 변화·수레 공통 타격 예산 회귀 포함 |
-| M1 관문 | Core·두 타깃 결정론·확장성·구현 검사, 32×3×6 리그(b)/c′/혼합2묶음≥random | `tools/check.sh` 통과. 역사96회 및 신규5seed×두DLL×3회=30회 해시 일치. 정식 holdout40000–40031은 아직 미판정 |
+| M1 관문 | Core·두 타깃 결정론·확장성·구현 검사, 32×3×6 리그(b)/c′/혼합2묶음≥random | `tools/check.sh` 통과. 역사96회 및 신규5seed×두DLL×3회=30회 해시 일치. holdout40000–40031의576조건·1728회 통과, (b)/c′/무기하한/혼합3묶음 통과. [정본 CSV와 한계](../league/first-playable-m1/README.md) |
 | M2 방향·그림 | 같은 장면 후보3장, 1안 채택, 아트 바이블, 역할→그림 계약, 전체 스프라이트/계절 지형 | M1 통과 후 진행 |
 | M2 손맛 | 피격/넉백/처치/흡수/수확/레벨업/진화/흔들림/피해수치/보스/계절 전환 | 실제 화면과 설정 효과 검증 필요 |
 | M3 흐름·UI | 타이틀·한 번만 안내·판·결산·재시작·설정, 작은 HUD·장비 아이콘·카드 변화/진화 단서 | M2 후 진행 |
