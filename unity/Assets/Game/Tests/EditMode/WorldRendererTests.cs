@@ -34,6 +34,16 @@ namespace Tests.EditMode
             Assert.That(ShapeBatch.MaximumInstances, Is.InRange(1, 511));
         }
 
+        [Test] public void ExperienceRendersBelowReadyAlliesAttacksAndEnemies()
+        {
+            int Layer(string name) => (int)typeof(WorldRenderer).GetField(name, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static).GetRawConstantValue();
+            var experience = Layer("ExperienceLayer");
+            Assert.That(experience, Is.GreaterThan(Layer("GrowthLayer")));
+            foreach (var name in new[] { "ReadyLayer", "AllyOutlineLayer", "AllyFillLayer", "AttackLayer", "EnemyLayer", "LordOutlineLayer" })
+                Assert.That(experience, Is.LessThan(Layer(name)), name + " must remain readable above XP.");
+            Assert.That(Layer("EnemyLayer"), Is.GreaterThan(Layer("AttackLayer")));
+        }
+
         [Test] public void CameraSettingsRejectInvalidCanonicalRanges()
         {
             Assert.Throws<ArgumentException>(() => new WorldCameraSettings(0, 2400, 6000, 600, 120, 800));

@@ -46,3 +46,33 @@ test('suspension and partial terminal remain raw but cannot inflate complete-fra
  const {dir}=fixture(t,[{tick:74,deltaMs:16},{tick:80,deltaMs:9000,suspended:1},{tick:100,deltaMs:500,partial:1}]);
  const m=summarizeDevice(dir,{commit});assert.equal(m.totalFrameCount,3);assert.equal(m.suspendedFrameCount,1);assert.equal(m.partialFrameCount,1);assert.equal(m.sampleCount,0);assert.equal(m.lateComplete,false);assert.equal(m.frameP95Ms,null);
 });
+
+for (const runtime of [
+  { backend: 'Mono', os: 'Mac OS X 15.7' },
+  { backend: 'IL2CPP', os: 'Mac OS X 15.7' },
+  { backend: 'Mono', os: 'Android OS 16 / API-36' },
+  { backend: 'IL2CPP', os: 'iOS 18.0' },
+]) {
+  test(`rejects unsupported Phase1A device runtime ${runtime.backend}/${runtime.os}`, t => {
+    const { dir } = fixture(t, [{ tick: 74, deltaMs: 16 }, { tick: 100, deltaMs: 16 }]);
+    const file = path.join(dir, 'device.json');
+    const facts = JSON.parse(fs.readFileSync(file, 'utf8'));
+    fs.writeFileSync(file, JSON.stringify({ ...facts, ...runtime }));
+    assert.throws(() => summarizeDevice(dir, { commit }), /Android IL2CPP/);
+  });
+}
+
+test('accepts versioned Android IL2CPP identity without changing full-window statistics', t => {
+  const { dir } = fixture(t, [{ tick: 74, deltaMs: 16 }, { tick: 80, deltaMs: 18 }, { tick: 100, deltaMs: 20 }]);
+  const file = path.join(dir, 'device.json');
+  const facts = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const android = 'Android OS 16 / API-36 (BP4A.251205.006/F966NKSSCBZH3)';
+  fs.writeFileSync(file, JSON.stringify({ ...facts, os: android }));
+  const result = summarizeDevice(dir, { commit });
+  assert.equal(result.runtime.os, android);
+  assert.equal(result.runtime.backend, 'IL2CPP');
+  assert.equal(result.lateComplete, true);
+  assert.equal(result.sampleCount, 2);
+  assert.equal(result.frameP95Ms, 20);
+  assert.equal(result.config.sourceHash, hash);
+});

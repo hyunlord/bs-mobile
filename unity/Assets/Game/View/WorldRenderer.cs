@@ -16,13 +16,13 @@ namespace Game.View
         private const float ReadyPulseAmplitude = 0.045f;
         private const float ReadyPulseRate = 2;
         private const int GrowthLayer = 10;
+        private const int ExperienceLayer = 15;
         private const int ReadyLayer = 20;
         private const int AllyOutlineLayer = 30;
         private const int AllyFillLayer = 31;
         private const int AttackLayer = 40;
         private const int EnemyLayer = 50;
         private const int LordOutlineLayer = 80;
-        private const int ExperienceLayer = 70;
         private const int ThreatLayer = 90;
         private readonly Dictionary<int, ShapeBatch> batches = new Dictionary<int, ShapeBatch>();
         private readonly Dictionary<int, Vector2> previousEnemies = new Dictionary<int, Vector2>();

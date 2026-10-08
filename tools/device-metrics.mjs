@@ -12,6 +12,7 @@ export function summarizeDevice(directory, { commit, posture = 'unknown' }) {
   if (!['folded', 'unfolded', 'mixed', 'unknown'].includes(posture)) throw new Error('Invalid posture');
   if (!Number.isInteger(summary.durationTicks) || summary.durationTicks <= 0 || summary.lateStartTick !== Math.floor(summary.durationTicks * 3 / 4)) throw new Error('Invalid measurement window');
   for (const key of ['model', 'os', 'unityVersion', 'backend', 'sourceHash']) if (typeof facts[key] !== 'string' || !facts[key]) throw new Error(`Missing device ${key}`);
+  if (facts.backend !== 'IL2CPP' || !/^Android(?:\s|$)/.test(facts.os)) throw new Error('Phase1A device metrics require Android IL2CPP evidence; Editor and other platforms are unsupported');
   if (!/^[a-f\d]{64}$/i.test(facts.sourceHash) || typeof facts.sourceDirty !== 'boolean' || identity.sourceHash !== facts.sourceHash || identity.sourceDirty !== facts.sourceDirty) throw new Error('Invalid source provenance');
   const rows = parseCsv(fs.readFileSync(path.join(directory, 'frames.csv'), 'utf8'), headers);
   let previousTick = -1;
