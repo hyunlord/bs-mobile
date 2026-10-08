@@ -23,6 +23,7 @@ namespace Game.Editor
 
         public static void Configure()
         {
+            ArtPreparation.Prepare();
             EditorSettings.serializationMode = SerializationMode.ForceText;
             VersionControlSettings.mode = "Visible Meta Files";
             PlayerSettings.companyName = "SowSiege";
@@ -61,10 +62,37 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
         }
 
+        public static void VerifyProfile()
+        {
+            var catalog = CanonicalContent.CreateCatalog();
+            if (CanonicalContent.ProfileName != "first-playable" || catalog.Tuning.DurationTicks != 27000 || catalog.Tuning.TickRate != 30 ||
+                catalog.FirstPlayable == null || catalog.Runtime == null || catalog.Weapons.Count != 10 || catalog.Tools.Count != 8 ||
+                catalog.Enemies.Count != 13 || catalog.Runtime.Charters.Count != 8 || catalog.Runtime.Items.Count != 30 || catalog.Runtime.Evolutions.Count != 8)
+                throw new BuildFailedException("Unity requires the complete first-playable catalog.");
+            using (var hash = System.Security.Cryptography.SHA256.Create())
+            {
+                var bytes = File.ReadAllBytes(Path.Combine(RepoRoot, "data/profiles/first-playable.json"));
+                var actual = BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "");
+                if (!string.Equals(actual, CanonicalContent.ProfileHash, StringComparison.Ordinal))
+                    throw new BuildFailedException("Generated first-playable profile hash is stale.");
+            }
+        }
+
+        public static ReplayVerification VerifyReplayFixture(ReplayDocument replay, int seed)
+        {
+            VerifyProfile();
+            if (replay.Header.Options.DataHash != CanonicalContent.DataHash || replay.Header.Options.Run.Seed != seed ||
+                replay.End.Tick != 27000 || replay.End.Kind != ReplayEndKind.Duration)
+                throw new BuildFailedException("Replay fixture identity/duration is stale for first-playable.");
+            // DataHash covers all profiles: replay against the actual catalog to prove matching rules.
+            return ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, replay);
+        }
+
         public static void VerifyGenerated()
         {
             var start = new ProcessStartInfo("/bin/bash") { WorkingDirectory = RepoRoot, UseShellExecute = false };
             start.Arguments = "tools/prepare-unity.sh --verify";
+            VerifyProfile();
             using (var process = Process.Start(start))
             {
                 if (process == null) throw new BuildFailedException("Cannot verify canonical generation.");
@@ -97,18 +125,18 @@ namespace Game.Editor
     {
         public override void PrepareForBuild(BuildPlayerContext context)
         {
+            ArtPreparation.Prepare();
             FoundationBuild.VerifyGenerated();
             if ((context.BuildPlayerOptions.options & BuildOptions.Development) != 0)
             {
                 for (var seed = 30000; seed < 30005; seed++)
                 {
-                    var source = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1a/replays", seed + ".ssreplay");
+                    var source = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1b/replays", seed + ".ssreplay");
                     if (!File.Exists(source)) throw new BuildFailedException("Missing freshly generated replay fixture: " + source);
                     using (var input = File.OpenRead(source))
                     {
                         var replay = ReplayCodec.Read(input);
-                        if (replay.Header.Options.DataHash != CanonicalContent.DataHash || replay.Header.Options.Run.Seed != seed)
-                            throw new BuildFailedException("Replay fixture identity is stale: " + source);
+                        FoundationBuild.VerifyReplayFixture(replay, seed);
                     }
                     context.AddAdditionalPathToStreamingAssets(source, "replays/" + seed + ".ssreplay");
                 }

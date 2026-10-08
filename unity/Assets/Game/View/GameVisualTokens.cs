@@ -1,0 +1,22 @@
+using UnityEngine;
+
+namespace Game.View
+{
+    // Values are the runtime counterpart of unity/DESIGN.md, sections 2, 4, 6 and 7.
+    public static class GameVisualTokens
+    {
+        public static readonly Color Ink = new Color32(0x29, 0x28, 0x22, 255);
+        public static readonly Color Ally = new Color32(0x37, 0x64, 0x8B, 255);
+        public static readonly Color Ready = new Color32(0xEB, 0xC5, 0x62, 255);
+        public static readonly Color Attack = new Color32(0xF8, 0xEB, 0xC7, 255);
+        public static readonly Color Hostile = new Color32(0xB6, 0x47, 0x38, 255);
+        public static readonly Color[] Seasons = { new Color32(0x8B, 0x98, 0x74, 255), new Color32(0x77, 0x8B, 0x62, 255), new Color32(0xA4, 0x9A, 0x68, 255), new Color32(0xCB, 0xD0, 0xC1, 255) };
+        public static readonly string[] SeasonNames = { "spring", "summer", "autumn", "winter" };
+        public const int TerrainLayer = 0, GrowthLayer = 10, ExperienceLayer = 15, ReadyLayer = 20, AllyLayer = 30, AttackLayer = 40, EnemyLayer = 50, LordLayer = 80, ThreatLayer = 90;
+        public const float SeasonBlendSeconds = 1.8f, HitFlashSeconds = 0.09f, KillSeconds = 0.32f, HarvestSeconds = 0.48f, ExperienceSeconds = 0.42f, EmphasisSeconds = 0.45f;
+        public const float CameraOutsideMargin = 1f, CameraReferencePixelHeight = 1600f;
+        public const float TerrainUvInset = 0.16f, TerrainStride = 1f, TerrainOpacity = 0.45f;
+        public const float FieldOpacity = 0.10f, AreaAttackOpacity = 0.26f, TravellingAttackOpacity = 0.72f, AttackRibbonWidth = 0.08f;
+        public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
+    }
+}

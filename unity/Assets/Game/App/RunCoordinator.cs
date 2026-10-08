@@ -19,6 +19,7 @@ namespace Game.App
     {
         public InteractiveSession Session { get; private set; }
         public RunFrame Frame { get; private set; }
+        public FirstPlayableFrame FirstPlayable { get; private set; }
         public FloatingStick Stick { get; private set; }
         public UiShell Ui { get; private set; }
         public int Speed { get; private set; } = 1;
@@ -78,10 +79,10 @@ namespace Game.App
             try
             {
                 seed=nextSeed;var c=FoundationBoot.Catalog;var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true),Aim,FoundationBoot.VerifiedDataHash);
-                Session=new InteractiveSession(c,options);Frame=Session.View.CaptureFrame();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsIdentity=null;MenuOpen=false;
+                Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsIdentity=null;MenuOpen=false;
                 recording=new RunRecording(Application.persistentDataPath,options,BuildIdentity.Commit);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
-                world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds));world.AcceptFrame(Frame);
+                world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,Frame.MapWidth,Frame.MapHeight);world.AcceptFrame(Frame,FirstPlayable);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 invulnerable=false;spawnPermille=1000;
 #endif
@@ -119,7 +120,7 @@ namespace Game.App
             if(world!=null)
             {
                 var visible=Screen.safeArea;if(hud!=null)visible.height=Mathf.Max(1,visible.height-120*Ui.Canvas.scaleFactor);
-                world.Present(previous,Frame,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
+                world.Present(previous,Frame,FirstPlayable,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
             }
             if(!finished&&telemetry!=null)
             {
@@ -142,12 +143,18 @@ namespace Game.App
                 if(kind==ReplayCommandKind.SetSpawnPermille)spawnPermille=value;
 #endif
                 if(kind==ReplayCommandKind.SetAimMode)Aim=(AimMode)value;
-                previous=Frame;Frame=Session.View.CaptureFrame();world?.AcceptFrame(Frame);
+                previous=Frame;CaptureSnapshots();world?.AcceptFrame(Frame,FirstPlayable);
                 if(kind!=ReplayCommandKind.Advance){Stick.ResetStick();accumulator=0;cardsIdentity=null;}
                 if(kind==ReplayCommandKind.Advance && Frame.Tick%1800==0)recording.Checkpoint(Session);
                 if(Frame.Status==RunStatus.Running&&MenuOpen&&kind==ReplayCommandKind.ChooseCard)ShowHud();
             }
             catch(Exception e){Fail(e);}
+        }
+        private void CaptureSnapshots()
+        {
+            var frame=Session.View.CaptureFrame();
+            var firstPlayable=Session.View.CaptureFirstPlayable() ?? throw new InvalidOperationException("First-playable view is required.");
+            Frame=frame;FirstPlayable=firstPlayable;
         }
         private void ShowCards()
         {
@@ -189,7 +196,7 @@ namespace Game.App
             Ui.Button(panel,"다시 하기",()=>StartRun());Ui.Button(panel,"나가기",()=>StartCoroutine(ReturnMeta()));
         }
         private static string Ratio(long value,double total)=>total>0?(value/total).ToString("P0"):"0%";
-        private IEnumerator ReturnMeta(){StopRecording();Session=null;Frame=null;yield return SceneManager.LoadSceneAsync("Meta");ShowMeta();}
+        private IEnumerator ReturnMeta(){StopRecording();Session=null;Frame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");ShowMeta();}
         private void StopRecording(){if(recording!=null){if(Session!=null&&!finished)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}
         private void OnApplicationPause(bool pause)
         {
@@ -218,7 +225,7 @@ namespace Game.App
         private IEnumerator VerifyFixtures()
         {
             parityRunning=true;MenuOpen=true;debug.SetOpen(false);Ui.Clear();hud=null;var panel=Ui.Panel("Replay verification");var status=Ui.Label(panel,"기록 검증 중",16,240);
-            var uris=Enumerable.Range(30000,5).Select(id=>Application.isEditor?new Uri(System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath,"../../artifacts/phase1a/replays",id+".ssreplay"))).AbsoluteUri:Application.streamingAssetsPath+"/replays/"+id+".ssreplay").ToArray();
+            var uris=Enumerable.Range(30000,5).Select(id=>Application.isEditor?new Uri(System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath,"../../artifacts/phase1b/replays",id+".ssreplay"))).AbsoluteUri:Application.streamingAssetsPath+"/replays/"+id+".ssreplay").ToArray();
             yield return DeviceParity.Run(FoundationBoot.Catalog,CanonicalContent.DataHash,uris,System.IO.Path.Combine(Application.persistentDataPath,"parity"),text=>status.text=text);
             parityRunning=false;Ui.Button(panel,"돌아가기",()=>{if(Frame.Status==RunStatus.AwaitingCard){cardsIdentity=null;ShowCards();}else ShowHud();});
         }

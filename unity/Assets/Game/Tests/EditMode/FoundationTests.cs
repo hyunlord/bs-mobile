@@ -14,13 +14,22 @@ namespace Tests.EditMode
     public sealed class FoundationTests
     {
         [Test]
-        public void ProductionBridgeConstructsCanonicalYear()
+        public void FirstPlayableBridgeConstructsCanonicalFifteenMinutes()
         {
             var catalog = CanonicalContent.CreateCatalog();
-            Assert.That(CanonicalContent.ProfileName, Is.EqualTo("production"));
-            Assert.That(catalog.Tuning.DurationTicks, Is.EqualTo(21600));
+            Assert.That(CanonicalContent.ProfileName, Is.EqualTo("first-playable"));
+            Assert.That(catalog.Tuning.DurationTicks, Is.EqualTo(27000));
             Assert.That(catalog.Tuning.World.Seasons.Length, Is.EqualTo(4));
             Assert.That(catalog.WeaponCombat, Is.Not.Null);
+            Assert.That(catalog.Tuning.TickRate, Is.EqualTo(30));
+            Assert.That(catalog.FirstPlayable, Is.Not.Null);
+            Assert.That(catalog.Weapons.Count, Is.EqualTo(10));
+            Assert.That(catalog.Tools.Count, Is.EqualTo(8));
+            Assert.That(catalog.Enemies.Count, Is.EqualTo(13));
+            Assert.That(catalog.Runtime.Charters.Count, Is.EqualTo(8));
+            Assert.That(catalog.Runtime.Items.Count, Is.EqualTo(30));
+            Assert.That(catalog.Runtime.Evolutions.Count, Is.EqualTo(8));
+            FoundationBuild.VerifyProfile();
         }
 
         [Test]

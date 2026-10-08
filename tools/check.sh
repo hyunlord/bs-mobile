@@ -21,6 +21,8 @@ node --test tools/test-weapon-holdout.mjs
 node --test tools/test-first-playable*.mjs
 npm run validate
 node tools/first-playable-content.mjs data
+node --test tools/first-playable-art.test.mjs
+node tools/first-playable-art.mjs "$PWD"
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs

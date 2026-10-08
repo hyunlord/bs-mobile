@@ -13,7 +13,7 @@ mkdir -p "$OUT"
 actual_version="$("$EDITOR" -version)"
 [[ "$actual_version" == "6000.6.4f1" ]] || { echo "Expected Unity 6000.6.4f1, got: $actual_version" >&2; exit 1; }
 bash tools/prepare-unity.sh
-dotnet run --project core/src/SowSiege.Sim --configuration Release -- interactive-fixtures data artifacts/phase1a/replays > "$OUT/dotnet-replay.log"
+dotnet run --project core/src/SowSiege.Sim --configuration Release -- interactive-fixtures data artifacts/phase1b/replays first-playable > "$OUT/dotnet-replay.log"
 node tools/verify-unity-boundaries.mjs
 node --test tools/test-unity-boundaries.mjs tools/test-unity-results.mjs tools/test-unity-export.mjs
 "$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -executeMethod Game.Editor.FoundationBuild.Configure -logFile "$OUT/configure.log"

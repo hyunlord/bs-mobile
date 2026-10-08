@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 import { chmod, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -20,8 +21,8 @@ async function fixture(t) {
     'Directory.Build.props': 'props', 'global.json': 'sdk',
     'tools/prepare-unity.sh': 'script', 'tools/unity-export.mjs': 'helper',
     'tools/unity-build-identity.mjs': 'identity helper',
-    'data/tuning.json': '{}', 'data/bin/included.json': '{}', 'data/test/fixture.json': '{}',
-    [outputs.bridge]: 'bridge', [outputs.core]: 'dll', [outputs.identity]: 'identity',
+    'data/profiles/first-playable.json': '{}', 'data/tuning.json': '{}', 'data/bin/included.json': '{}', 'data/test/fixture.json': '{}',
+    [outputs.bridge]: 'public const string ProfileName = "first-playable";\npublic const string ProfileHash = "' + createHash('sha256').update('{}').digest('hex').toUpperCase() + '";', [outputs.core]: 'dll', [outputs.identity]: 'identity',
   })) {
     await mkdir(path.dirname(path.join(root, relative)), { recursive: true });
     await writeFile(path.join(root, relative), text);
@@ -30,7 +31,7 @@ async function fixture(t) {
   git(root, ['init', '-q']); git(root, ['add', '.']); git(root, ['commit', '-qm', 'fixture']);
   const identity = await buildIdentity(root);
   await writeFile(path.join(root, outputs.identity), identitySource(identity));
-  const manifest = { contractVersion: 2, profileName: 'production', buildIdentity: identity, inputs: await inputSnapshot(root), outputs: await outputSnapshot(root) };
+  const manifest = { contractVersion: 3, profileName: 'first-playable', profileHash: createHash('sha256').update('{}').digest('hex').toUpperCase(), buildIdentity: identity, inputs: await inputSnapshot(root), outputs: await outputSnapshot(root) };
   await writeFile(path.join(root, outputs.provenance), JSON.stringify(manifest));
   return root;
 }
@@ -110,3 +111,20 @@ test('preparation rejects edits made while the fresh build runs', async t => {
   await assert.rejects(prepare(root), /Source\/data changed during Unity preparation/);
   assert.deepEqual(await readFile(path.join(root, outputs.provenance)), manifest);
 });
+
+for (const mutation of ['manifest-profile', 'manifest-hash', 'bridge-profile', 'bridge-hash']) {
+  test('preparation rejects wrong profile even with internally consistent output hashes: ' + mutation, async t => {
+    const root = await fixture(t), file = path.join(root, outputs.provenance);
+    const manifest = JSON.parse(await readFile(file, 'utf8'));
+    if (mutation === 'manifest-profile') manifest.profileName = 'production';
+    if (mutation === 'manifest-hash') manifest.profileHash = '0'.repeat(64);
+    if (mutation.startsWith('bridge-')) {
+      const bridge = path.join(root, outputs.bridge);
+      const text = await readFile(bridge, 'utf8');
+      await writeFile(bridge, mutation === 'bridge-profile' ? text.replace('first-playable', 'production') : text.replace(manifest.profileHash, '0'.repeat(64)));
+      manifest.outputs = await outputSnapshot(root);
+    }
+    await writeFile(file, JSON.stringify(manifest));
+    await assert.rejects(verify(root), /profile/i);
+  });
+}
