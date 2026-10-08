@@ -1,0 +1,5 @@
+"policy","peopleRule","movementMode","endKind","interpretation","events","meanSeconds","medianSeconds","p95Seconds"
+"random","C","circuit","harvest","completed-harvest","38906","23.745842115184036","28.366666666666667","34.333333333333336"
+"random","C","circuit","destroyed","competing-destruction","66293","10.376699902956046","7.533333333333333","27.366666666666667"
+"random","C","circuit","death-censored","right-censored-lower-bound","3745","11.590422785936799","8.866666666666667","27.1"
+"random","C","circuit","duration-censored","right-censored-lower-bound","959","11.53538408063955","9.866666666666667","26.6"
