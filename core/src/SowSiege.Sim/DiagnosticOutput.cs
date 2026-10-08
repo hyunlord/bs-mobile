@@ -59,6 +59,9 @@ public static class DiagnosticOutput
         var identity = new { caseId = $"{profileName}-{first.Policy}-{first.PeopleRule}-{first.Seed}-{request.Variant}", variant = request.Variant, first.Seed, first.Policy, first.PeopleRule, movement, requestedTicks };
         var source = JsonSerializer.SerializeToNode(metadata, Json)!.AsObject();
         source["coreAssembly"] = JsonSerializer.SerializeToNode(assembly, Json);
+        source["runtime"] = Environment.Version.ToString();
+        source["os"] = System.Runtime.InteropServices.RuntimeInformation.OSDescription;
+        source["architecture"] = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString();
         var inputHash = Digest(new { caseIdentity = identity, content = source["contentSha256"], profile = source["profileSha256"], tuning = source["tuningSha256"] });
         source["inputHash"] = inputHash;
         var compact = JsonSerializer.SerializeToNode(diagnostics[0], Json)!.AsObject();

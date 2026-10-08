@@ -68,7 +68,7 @@ public sealed record ContentSelection(string[] Weapons, string[] Tools, string[]
         [.. Tools, .. other.Tools], [.. Enemies, .. other.Enemies], [.. Heroes, .. other.Heroes], [.. Estates, .. other.Estates]);
 }
 
-public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null, ExperimentProfileExtension? Experiment = null)
+public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null, ExperimentProfileExtension? Experiment = null, WeaponCombatProfileExtension? WeaponCombat = null)
 {
     public ContentSelection Select(bool includeTest) => includeTest ? Selection.Add(TestSelection) : Selection;
 }
@@ -92,3 +92,6 @@ public sealed record EvolutionContent(string Id, string Name, string Concept, st
     string ImplementationNote, LoopLink[] LoopLinks, string Kind, string[] InputIds, EvolutionGrowthCondition? GrowthCondition,
     ProposedEvolutionResult Result, EvolutionProjection? RuntimeProjection = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);
+
+public sealed record WeaponCombatProfileExtension(int ContractVersion, string DefinitionsFile);
+public sealed record WeaponCombatFile(int ContractVersion, Dictionary<string, WeaponCombatWeaponDefinition> Weapons);

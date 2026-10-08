@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "weapons": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1000,
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "attackModel": {
+            "enum": [
+              "sector90",
+              "sector180",
+              "rays",
+              "disk"
+            ]
+          },
+          "beamHalfWidth": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "levels": {
+            "type": "array",
+            "minItems": 12,
+            "maxItems": 12,
+            "items": {
+              "type": "object",
+              "properties": {
+                "level": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "damage": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "range": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "cooldownTicks": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 64
+                },
+                "pierce": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 64
+                },
+                "knockback": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "level",
+                "damage",
+                "range",
+                "cooldownTicks",
+                "count",
+                "pierce",
+                "knockback"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "attackModel",
+          "beamHalfWidth",
+          "levels"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "contractVersion",
+    "weapons"
+  ],
+  "additionalProperties": false
+}

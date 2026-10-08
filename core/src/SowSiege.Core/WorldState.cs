@@ -103,6 +103,8 @@ namespace SowSiege.Core
         public ExperimentState? Experiment;
         [OmitWhenNull]
         public RemainsState? Remains;
+        [OmitWhenNull]
+        public WeaponCombatState? WeaponCombat;
         public int Tick;
         public int Season;
         public int NextId;

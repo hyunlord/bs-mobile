@@ -10,7 +10,8 @@ namespace SowSiege.Core
         {
             public string Actor = "", Role = "", Source = "";
             public long Attempts, NoTarget, Hits, Requested, Applied, Suppressed, Candidates, Eligible, Cooldown, Knockback;
-            public DiagnosticAttackSource Read() => new(Actor, Role, Source, Attempts, NoTarget, Hits, Requested, Applied, Suppressed, Candidates, Eligible, Cooldown, Knockback);
+            public long? EmptyActivations, EligibleBeforeCap;
+            public DiagnosticAttackSource Read() => new(Actor, Role, Source, Attempts, NoTarget, Hits, Requested, Applied, Suppressed, Candidates, Eligible, Cooldown, Knockback, EmptyActivations, EligibleBeforeCap);
         }
         private sealed class TargetCounter
         {
@@ -55,10 +56,11 @@ namespace SowSiege.Core
             if (!attacks.TryGetValue(key, out var counter)) { counter = new() { Actor = actor, Role = role, Source = source }; attacks.Add(key, counter); }
             return counter;
         }
-        internal void Attack(string actor, string role, string source, int candidateCount, int cooldown)
+        internal void Attack(string actor, string role, string source, int candidateCount, int cooldown, int? shapeEligible = null)
         {
             var counter = Counter(actor, role, source); counter.Attempts++; counter.Candidates += candidateCount; counter.Cooldown += cooldown;
             if (candidateCount == 0) { counter.NoTarget++; }
+            if (shapeEligible.HasValue) { counter.EligibleBeforeCap = (counter.EligibleBeforeCap ?? 0) + shapeEligible.Value; counter.EmptyActivations = (counter.EmptyActivations ?? 0) + (shapeEligible.Value == 0 ? 1 : 0); }
         }
         internal void Hit(string actor, string role, string source, int requested, int applied, int suppressed = 0, long knockback = 0)
         {

@@ -302,6 +302,23 @@
         "tuningFile"
       ],
       "additionalProperties": false
+    },
+    "weaponCombat": {
+      "type": "object",
+      "properties": {
+        "contractVersion": {
+          "const": 1
+        },
+        "definitionsFile": {
+          "type": "string",
+          "pattern": "^weapon-growth-[a-zA-Z0-9_-]+\\.json$"
+        }
+      },
+      "required": [
+        "contractVersion",
+        "definitionsFile"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

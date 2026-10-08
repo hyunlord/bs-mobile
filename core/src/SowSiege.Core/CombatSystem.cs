@@ -4,7 +4,7 @@ using System.Linq;
 namespace SowSiege.Core
 {
 
-    internal sealed class CombatSystem
+    internal sealed partial class CombatSystem
     {
         private readonly DiagnosticObserver? diagnostics;
         private readonly ContentCatalog catalog;
@@ -105,6 +105,7 @@ namespace SowSiege.Core
 
         public void Activate(EquipmentState equipment, Activation activation, ToolLedger? ledger)
         {
+            if (ledger is null && catalog.WeaponCombat is not null) { ActivateWeapon(equipment); return; }
             equipment.ReadyTick = world.Tick + (runtime?.Modify("attack-cooldown", activation.CooldownTicks, new(world.Lord, equipment.Id), 1) ?? activation.CooldownTicks);
             if (ledger is not null) { ledger.Activations++; }
             var candidates = spatial.Query(world.Lord, activation.Range).OrderBy(enemy => enemy.Position.DistanceSquared(world.Lord)).ThenBy(enemy => enemy.Id).ToArray();

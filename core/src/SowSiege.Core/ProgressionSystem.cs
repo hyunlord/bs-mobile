@@ -64,8 +64,10 @@ namespace SowSiege.Core
             else
             {
                 var owned = world.Equipment.FirstOrDefault(equipment => equipment.Id == id);
-                if (owned is null) { world.Equipment.Add(new() { Id = id, Level = rarity.UpgradeAmount }); }
-                else { owned.Level = checked(owned.Level + rarity.UpgradeAmount); }
+                var nextLevel = checked((owned?.Level ?? 0) + rarity.UpgradeAmount);
+                if (catalog.WeaponCombat?.Weapons.TryGetValue(id, out var weapon) == true) { nextLevel = Math.Min(nextLevel, weapon.Levels.Length); }
+                if (owned is null) { world.Equipment.Add(new() { Id = id, Level = nextLevel }); }
+                else { owned.Level = nextLevel; }
             }
             diagnostics?.Choice(catalog.Runtime?.Charters.ContainsKey(id) == true ? "charter" : catalog.Tools.ContainsKey(id) ? "tool" : "weapon", rarity.UpgradeAmount);
             runtime?.UnlockEvolutions();
@@ -108,7 +110,8 @@ namespace SowSiege.Core
         private bool CanOffer(string id)
         {
             if (catalog.Runtime?.Charters.ContainsKey(id) == true) { var allowed = world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; if (!allowed) { diagnostics?.SlotExcluded("charter"); } return allowed; }
-            if (world.Equipment.Any(equipment => equipment.Id == id)) { return true; }
+            var owned = world.Equipment.FirstOrDefault(equipment => equipment.Id == id);
+            if (owned is not null) { return catalog.WeaponCombat is null || !catalog.WeaponCombat.Weapons.TryGetValue(id, out var weapon) || owned.Level < weapon.Levels.Length; }
             var tool = catalog.Tools.ContainsKey(id);
             var count = world.Equipment.Count(equipment => catalog.Tools.ContainsKey(equipment.Id) == tool);
             var available = count < (tool ? catalog.Runtime?.Tuning.ToolSlots ?? catalog.Tuning.World.Progression.ToolSlots : catalog.Runtime?.Tuning.WeaponSlots ?? catalog.Tuning.World.Progression.WeaponSlots);
