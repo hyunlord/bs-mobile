@@ -15,13 +15,13 @@ namespace Tests.EditMode
         [TestCase(30004)]
         public void MonoVerifiesEntireDotNetRecordedYear(int seed)
         {
-            var path = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1a/replays", seed + ".ssreplay");
+            var path = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1b/replays", seed + ".ssreplay");
             Assert.That(File.Exists(path), Is.True, "Run tools/check-unity.sh to generate canonical replay fixtures.");
             using (var input = File.OpenRead(path))
             {
-                var result = ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, ReplayCodec.Read(input));
+                var result = FoundationBuild.VerifyReplayFixture(ReplayCodec.Read(input), seed);
                 Assert.That(result.Seed, Is.EqualTo(seed));
-                Assert.That(result.Tick, Is.EqualTo(21600));
+                Assert.That(result.Tick, Is.EqualTo(27000));
                 Assert.That(result.EndKind, Is.EqualTo(ReplayEndKind.Duration));
                 var output = Path.Combine(FoundationBuild.RepoRoot, "artifacts/unity", "mono-" + seed + ".txt");
                 Directory.CreateDirectory(Path.GetDirectoryName(output));

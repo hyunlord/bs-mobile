@@ -1,0 +1,1328 @@
+fileFormatVersion: 2
+guid: 68c878bc71f4440bf8a5ea0c8ac2a010
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5357457282185501634
+    second: equipment_0
+  - first:
+      213: -3109597227326708797
+    second: equipment_1
+  - first:
+      213: 8102782580162445882
+    second: equipment_2
+  - first:
+      213: -8632003197428247103
+    second: equipment_3
+  - first:
+      213: -2012831630524758095
+    second: equipment_4
+  - first:
+      213: 3544025558719922539
+    second: equipment_5
+  - first:
+      213: 6716528728708213977
+    second: equipment_6
+  - first:
+      213: 8467683157880815104
+    second: equipment_7
+  - first:
+      213: -26949062715411665
+    second: equipment_8
+  - first:
+      213: -1483235383253983028
+    second: equipment_9
+  - first:
+      213: 3417289076994943864
+    second: equipment_10
+  - first:
+      213: -6053966211132119045
+    second: equipment_11
+  - first:
+      213: -3182285284497557363
+    second: equipment_12
+  - first:
+      213: 6498891532138818622
+    second: equipment_13
+  - first:
+      213: 1860282391967556643
+    second: equipment_14
+  - first:
+      213: 4148921757903692327
+    second: equipment_15
+  - first:
+      213: -6236394787706765838
+    second: equipment_16
+  - first:
+      213: -8604442660071458216
+    second: equipment_17
+  - first:
+      213: 6570268489712156326
+    second: equipment_18
+  - first:
+      213: 58871714835614906
+    second: equipment_19
+  - first:
+      213: 8177592800064516171
+    second: equipment_20
+  - first:
+      213: 6158815677814029037
+    second: equipment_21
+  - first:
+      213: 706596411503717034
+    second: equipment_22
+  - first:
+      213: -4172093525194545820
+    second: equipment_23
+  - first:
+      213: -2428032568287108569
+    second: equipment_24
+  - first:
+      213: -4024687509956921097
+    second: equipment_25
+  - first:
+      213: 4878653245968754958
+    second: equipment_26
+  - first:
+      213: 4376039020826832956
+    second: equipment_27
+  - first:
+      213: -5691923995853896888
+    second: equipment_28
+  - first:
+      213: -6843679723412636810
+    second: equipment_29
+  - first:
+      213: -6112289427481720446
+    second: equipment_30
+  - first:
+      213: 540508030186792344
+    second: equipment_31
+  - first:
+      213: 7818553124956262225
+    second: equipment_32
+  - first:
+      213: -4518185171905457434
+    second: equipment_33
+  - first:
+      213: 1579633673866622421
+    second: equipment_34
+  - first:
+      213: -1165885455966499596
+    second: equipment_35
+  - first:
+      213: -8075540540573667582
+    second: equipment_36
+  - first:
+      213: 7621569044609605059
+    second: equipment_37
+  - first:
+      213: -2585122154237316114
+    second: equipment_38
+  - first:
+      213: -693078523021356187
+    second: equipment_39
+  - first:
+      213: 5231988061205888351
+    second: equipment_40
+  - first:
+      213: -5559721161364422116
+    second: equipment_41
+  - first:
+      213: -2959049900171790259
+    second: equipment_42
+  - first:
+      213: 7523399911401585219
+    second: equipment_43
+  - first:
+      213: 1824238568700962771
+    second: equipment_44
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: equipment_0
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 752
+        width: 261
+        height: 354
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2cb1ffb5303895a40800000000000000
+      internalID: 5357457282185501634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_1
+      rect:
+        serializedVersion: 2
+        x: 316
+        y: 884
+        width: 267
+        height: 212
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c3e6ae0ccd78d4d0800000000000000
+      internalID: -3109597227326708797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_2
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 780
+        width: 257
+        height: 286
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a324ec683ddd27070800000000000000
+      internalID: 8102782580162445882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_3
+      rect:
+        serializedVersion: 2
+        x: 868
+        y: 1041
+        width: 80
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c5d04583d6f43880800000000000000
+      internalID: -8632003197428247103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_4
+      rect:
+        serializedVersion: 2
+        x: 1049
+        y: 1055
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b7c6e5eb4cf014e0800000000000000
+      internalID: -2012831630524758095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_5
+      rect:
+        serializedVersion: 2
+        x: 1116
+        y: 872
+        width: 225
+        height: 242
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b610866f778ee2130800000000000000
+      internalID: 3544025558719922539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_6
+      rect:
+        serializedVersion: 2
+        x: 902
+        y: 880
+        width: 191
+        height: 146
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9dceb560b47e53d50800000000000000
+      internalID: 6716528728708213977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_7
+      rect:
+        serializedVersion: 2
+        x: 1168
+        y: 872
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00e3b08e7f0438570800000000000000
+      internalID: 8467683157880815104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_8
+      rect:
+        serializedVersion: 2
+        x: 763
+        y: 864
+        width: 14
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2371d168f140aff0800000000000000
+      internalID: -26949062715411665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_9
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 792
+        width: 12
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc02bd6074d7a6be0800000000000000
+      internalID: -1483235383253983028
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_10
+      rect:
+        serializedVersion: 2
+        x: 308
+        y: 506
+        width: 283
+        height: 324
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87b2b195f46ac6f20800000000000000
+      internalID: 3417289076994943864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_11
+      rect:
+        serializedVersion: 2
+        x: 651
+        y: 786
+        width: 11
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf7a0476ecdfbfba0800000000000000
+      internalID: -6053966211132119045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_12
+      rect:
+        serializedVersion: 2
+        x: 1106
+        y: 562
+        width: 255
+        height: 231
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d88f19be46046d3d0800000000000000
+      internalID: -3182285284497557363
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_13
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 598
+        width: 175
+        height: 171
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3cade67a63b03a50800000000000000
+      internalID: 6498891532138818622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_14
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 524
+        width: 179
+        height: 232
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 324e323bafc01d910800000000000000
+      internalID: 1860282391967556643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_15
+      rect:
+        serializedVersion: 2
+        x: 846
+        y: 460
+        width: 273
+        height: 331
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7222dbc5b5ee39930800000000000000
+      internalID: 4148921757903692327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_16
+      rect:
+        serializedVersion: 2
+        x: 1086
+        y: 641
+        width: 13
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fdf3af7bffd379a0800000000000000
+      internalID: -6236394787706765838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_17
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 546
+        width: 26
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85a393c2df0e69880800000000000000
+      internalID: -8604442660071458216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_18
+      rect:
+        serializedVersion: 2
+        x: 213
+        y: 534
+        width: 46
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ae3c3071684e2b50800000000000000
+      internalID: 6570268489712156326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_19
+      rect:
+        serializedVersion: 2
+        x: 898
+        y: 566
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: abc4812438721d000800000000000000
+      internalID: 58871714835614906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_20
+      rect:
+        serializedVersion: 2
+        x: 916
+        y: 566
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4033ad2355ac7170800000000000000
+      internalID: 8177592800064516171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_21
+      rect:
+        serializedVersion: 2
+        x: 733
+        y: 538
+        width: 19
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dea36396a32887550800000000000000
+      internalID: 6158815677814029037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_22
+      rect:
+        serializedVersion: 2
+        x: 751
+        y: 544
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aaaae3b41b55ec900800000000000000
+      internalID: 706596411503717034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_23
+      rect:
+        serializedVersion: 2
+        x: 902
+        y: 552
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 46562152b0fb916c0800000000000000
+      internalID: -4172093525194545820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_24
+      rect:
+        serializedVersion: 2
+        x: 908
+        y: 548
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 722ea205e35ed4ed0800000000000000
+      internalID: -2428032568287108569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_25
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 356
+        width: 231
+        height: 182
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f8f01d88007528c0800000000000000
+      internalID: -4024687509956921097
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_26
+      rect:
+        serializedVersion: 2
+        x: 639
+        y: 277
+        width: 152
+        height: 242
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e09264c674574b340800000000000000
+      internalID: 4878653245968754958
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_27
+      rect:
+        serializedVersion: 2
+        x: 761
+        y: 517
+        width: 14
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c30b1afdd40dabc30800000000000000
+      internalID: 4376039020826832956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_28
+      rect:
+        serializedVersion: 2
+        x: 765
+        y: 515
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8434b9a68493201b0800000000000000
+      internalID: -5691923995853896888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_29
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 506
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67b32790d8d5601a0800000000000000
+      internalID: -6843679723412636810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_30
+      rect:
+        serializedVersion: 2
+        x: 1146
+        y: 263
+        width: 243
+        height: 258
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 28983966629cc2ba0800000000000000
+      internalID: -6112289427481720446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_31
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 59
+        width: 231
+        height: 230
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 895a7819035408700800000000000000
+      internalID: 540508030186792344
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_32
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 39
+        width: 307
+        height: 240
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15fc98684a4118c60800000000000000
+      internalID: 7818553124956262225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_33
+      rect:
+        serializedVersion: 2
+        x: 338
+        y: 364
+        width: 215
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e25327468e2c41c0800000000000000
+      internalID: -4518185171905457434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_34
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 183
+        width: 146
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d5b016057cfbe510800000000000000
+      internalID: 1579633673866622421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_35
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 285
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fc825cda51f1dfe0800000000000000
+      internalID: -1165885455966499596
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_36
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 287
+        width: 7
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20f27d51aaaedef80800000000000000
+      internalID: -8075540540573667582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_37
+      rect:
+        serializedVersion: 2
+        x: 622
+        y: 21
+        width: 235
+        height: 238
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3cd911f4aa045c960800000000000000
+      internalID: 7621569044609605059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_38
+      rect:
+        serializedVersion: 2
+        x: 683
+        y: 270
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee331b7e81dcf1cd0800000000000000
+      internalID: -2585122154237316114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_39
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 133
+        width: 317
+        height: 381
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5631cd161c0b166f0800000000000000
+      internalID: -693078523021356187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_40
+      rect:
+        serializedVersion: 2
+        x: 882
+        y: 47
+        width: 251
+        height: 195
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5df241eb61cb9840800000000000000
+      internalID: 5231988061205888351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_41
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 219
+        width: 9
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c12c6a67f07e7d2b0800000000000000
+      internalID: -5559721161364422116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_42
+      rect:
+        serializedVersion: 2
+        x: 1126
+        y: 143
+        width: 11
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d48fa932bc75fe6d0800000000000000
+      internalID: -2959049900171790259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_43
+      rect:
+        serializedVersion: 2
+        x: 1128
+        y: 0
+        width: 245
+        height: 259
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34afb46db5c786860800000000000000
+      internalID: 7523399911401585219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: equipment_44
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 31
+        width: 32
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d7ecf0205ff05910800000000000000
+      internalID: 1824238568700962771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      equipment_0: 5357457282185501634
+      equipment_1: -3109597227326708797
+      equipment_10: 3417289076994943864
+      equipment_11: -6053966211132119045
+      equipment_12: -3182285284497557363
+      equipment_13: 6498891532138818622
+      equipment_14: 1860282391967556643
+      equipment_15: 4148921757903692327
+      equipment_16: -6236394787706765838
+      equipment_17: -8604442660071458216
+      equipment_18: 6570268489712156326
+      equipment_19: 58871714835614906
+      equipment_2: 8102782580162445882
+      equipment_20: 8177592800064516171
+      equipment_21: 6158815677814029037
+      equipment_22: 706596411503717034
+      equipment_23: -4172093525194545820
+      equipment_24: -2428032568287108569
+      equipment_25: -4024687509956921097
+      equipment_26: 4878653245968754958
+      equipment_27: 4376039020826832956
+      equipment_28: -5691923995853896888
+      equipment_29: -6843679723412636810
+      equipment_3: -8632003197428247103
+      equipment_30: -6112289427481720446
+      equipment_31: 540508030186792344
+      equipment_32: 7818553124956262225
+      equipment_33: -4518185171905457434
+      equipment_34: 1579633673866622421
+      equipment_35: -1165885455966499596
+      equipment_36: -8075540540573667582
+      equipment_37: 7621569044609605059
+      equipment_38: -2585122154237316114
+      equipment_39: -693078523021356187
+      equipment_4: -2012831630524758095
+      equipment_40: 5231988061205888351
+      equipment_41: -5559721161364422116
+      equipment_42: -2959049900171790259
+      equipment_43: 7523399911401585219
+      equipment_44: 1824238568700962771
+      equipment_5: 3544025558719922539
+      equipment_6: 6716528728708213977
+      equipment_7: 8467683157880815104
+      equipment_8: -26949062715411665
+      equipment_9: -1483235383253983028
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

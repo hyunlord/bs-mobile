@@ -81,21 +81,25 @@ public sealed class UnityExportTests : IDisposable
         Assert.Equal(modified, File.ReadAllText(file));
     }
 
-    [Fact]
-    public async Task GeneratedConstructorsCompileAndReproduceTheCompleteProductionGraph()
+    [Theory]
+    [InlineData("production")]
+    [InlineData("first-playable")]
+    public async Task GeneratedConstructorsCompileAndReproduceTheCompleteProfileGraph(string profile)
     {
         var weaponFile = Path.Combine(Data, "weapons/iron_blade.json");
         var weapon = JsonNode.Parse(File.ReadAllText(weaponFile))!;
         weapon["growth"]!["levels"]![0]!["damage"] = 23;
         weapon["name"] = "Canonical \"blade\" \n 눈";
         File.WriteAllText(weaponFile, weapon.ToJsonString());
-        var source = UnityExport.Generate(Data);
+        var source = UnityExport.Generate(Data, profile);
         Assert.DoesNotContain("System.Reflection", source);
         Assert.DoesNotContain("SowSiege.Sim", source);
         File.WriteAllText(Path.Combine(root, "CanonicalContent.g.cs"), source);
+        UnityExport.Verify(Data, Path.Combine(root, "CanonicalContent.g.cs"), profile);
+        Assert.Throws<InvalidDataException>(() => UnityExport.Verify(Data, Path.Combine(root, "CanonicalContent.g.cs"), profile == "production" ? "first-playable" : "production"));
         var core = System.Security.SecurityElement.Escape(typeof(ContentCatalog).Assembly.Location);
         File.WriteAllText(Path.Combine(root, "ExportProbe.csproj"), $"""
-            <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>9.0</LangVersion><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+            <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><LangVersion>9.0</LangVersion><AssemblyName>ExportProbe-{profile}</AssemblyName><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
             <ItemGroup><Compile Include="CanonicalContent.g.cs"/><Reference Include="SowSiege.Core"><HintPath>{core}</HintPath></Reference></ItemGroup></Project>
             """);
         var info = new ProcessStartInfo("dotnet") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true };
@@ -106,14 +110,24 @@ public sealed class UnityExportTests : IDisposable
         try { await process.WaitForExitAsync(timeout.Token); }
         catch (OperationCanceledException) { process.Kill(entireProcessTree: true); throw; }
         Assert.True(process.ExitCode == 0, await stdout + await stderr);
-        var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root, "bin/Release/net8.0/ExportProbe.dll"));
+        var assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(Path.Combine(root, $"bin/Release/net8.0/ExportProbe-{profile}.dll"));
         var type = assembly.GetType("Game.App.Generated.CanonicalContent", true)!;
         var actual = (ContentCatalog)type.GetMethod("CreateCatalog")!.Invoke(null, null)!;
-        var expected = ContentLoader.Load(Data, false, "production");
+        var expected = ContentLoader.Load(Data, false, profile);
+        Assert.Equal(profile, type.GetField("ProfileName")!.GetRawConstantValue());
+        if (profile == "first-playable")
+        {
+            Assert.NotNull(actual.FirstPlayable);
+            Assert.Equal(27000, actual.Tuning.DurationTicks);
+            Assert.Equal(30, actual.Tuning.TickRate);
+            Assert.Equal(10, actual.Weapons.Count); Assert.Equal(8, actual.Tools.Count); Assert.Equal(13, actual.Enemies.Count);
+            Assert.Equal(8, actual.Runtime!.Charters.Count); Assert.Equal(30, actual.Runtime.Items.Count); Assert.Equal(8, actual.Runtime.Evolutions.Count);
+        }
+        else { Assert.Null(actual.FirstPlayable); Assert.Equal(21600, actual.Tuning.DurationTicks); }
         Assert.Equal(new CanonicalStateHasher().Compute(expected), new CanonicalStateHasher().Compute(actual));
         Assert.Equal(JsonSerializer.Serialize(expected, HostJson.CreateOptions()), JsonSerializer.Serialize(actual, HostJson.CreateOptions()));
         Assert.Equal(ContentLoader.Hash(Data, false), type.GetField("DataHash")!.GetRawConstantValue());
-        Assert.Equal(ContentLoader.ProfileHash(Data, "production"), type.GetField("ProfileHash")!.GetRawConstantValue());
+        Assert.Equal(ContentLoader.ProfileHash(Data, profile), type.GetField("ProfileHash")!.GetRawConstantValue());
         var displays = (Array)type.GetField("Displays")!.GetValue(null)!;
         var blade = Assert.Single(displays.Cast<object>(), item => (string)item.GetType().GetProperty("Id")!.GetValue(item)! == "core:iron_blade");
         Assert.Equal(weapon["name"]!.GetValue<string>(), blade.GetType().GetProperty("DisplayName")!.GetValue(blade));
@@ -123,6 +137,23 @@ public sealed class UnityExportTests : IDisposable
         Assert.Equal(SimulationTests.Finish(expected, options).Hash, SimulationTests.Finish(actual, options).Hash);
     }
 
+
+    [Fact]
+    public void ProductionReplayCannotBeRelabeledAsFirstPlayableDespiteSharedDataHash()
+    {
+        var production = ContentLoader.Load(Data, false, "production");
+        var firstPlayable = ContentLoader.Load(Data, false, "first-playable");
+        var dataHash = ContentLoader.Hash(Data, false);
+        using var recording = new MemoryStream();
+        InteractiveCli.RecordFixture(production, dataHash, 30000, recording);
+        recording.Position = 0;
+        var replay = ReplayCodec.Read(recording);
+        Assert.Equal(dataHash, replay.Header.Options.DataHash);
+        Assert.Equal(21600, ReplayRunner.Verify(production, dataHash, replay).Tick);
+        Assert.Equal("Card is not offered.", Assert.Throws<ArgumentException>(() => ReplayRunner.Verify(firstPlayable, dataHash, replay)).Message);
+        var forgedDuration = replay with { End = replay.End with { Tick = 27000 } };
+        Assert.Throws<InvalidDataException>(() => ReplayRunner.Verify(firstPlayable, dataHash, forgedDuration));
+    }
 
     [Theory]
     [InlineData("minHalfHeight", 6001)]

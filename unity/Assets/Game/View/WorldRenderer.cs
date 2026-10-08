@@ -7,181 +7,317 @@ namespace Game.View
 {
     public sealed class WorldRenderer : MonoBehaviour
     {
-        public const float LordRadius = 0.13f;
-        public const float EnemyRadius = 0.11f;
-        public const float PersonRadius = 0.085f;
-        public const float FarmRadius = 0.16f;
-        public const float BuildingRadius = 0.19f;
-        private const float AllyInnerScale = 0.72f;
-        private const float ReadyPulseAmplitude = 0.045f;
-        private const float ReadyPulseRate = 2;
-        private const int GrowthLayer = 10;
-        private const int ExperienceLayer = 15;
-        private const int ReadyLayer = 20;
-        private const int AllyOutlineLayer = 30;
-        private const int AllyFillLayer = 31;
-        private const int AttackLayer = 40;
-        private const int EnemyLayer = 50;
-        private const int LordOutlineLayer = 80;
-        private const int ThreatLayer = 90;
-        private readonly Dictionary<int, ShapeBatch> batches = new Dictionary<int, ShapeBatch>();
-        private readonly Dictionary<int, Vector2> previousEnemies = new Dictionary<int, Vector2>();
-        private readonly Dictionary<int, Vector2> previousPeople = new Dictionary<int, Vector2>();
-        private readonly WorldEffects effects = new WorldEffects();
-        private readonly ThreatMarkers threats = new ThreatMarkers();
-        private RunFrame indexedPrevious;
-        private Camera renderCamera;
-        private RunCamera followCamera;
-        private WorldCameraSettings settings;
-        private ShapeMeshes meshes;
-        private Shader shader;
-        private float visualTime;
-        public int ActiveVisualProjectiles => effects.ActiveVisualProjectiles;
+        readonly Dictionary<(string kind, string id, string state), ArtVisual> visuals = new Dictionary<(string, string, string), ArtVisual>();
+        readonly Dictionary<(int layer, Texture2D texture), SpriteBatch> batches = new Dictionary<(int, Texture2D), SpriteBatch>();
+        readonly Dictionary<int, Vector2> previousEnemies = new Dictionary<int, Vector2>();
+        readonly Dictionary<int, Vector2> previousPeople = new Dictionary<int, Vector2>();
+        readonly Dictionary<int, BuildingProgressView> construction = new Dictionary<int, BuildingProgressView>();
+        readonly Dictionary<int, string> activities = new Dictionary<int, string>();
+        readonly Dictionary<int, float> hitUntil = new Dictionary<int, float>();
+        readonly List<int> expiredHits = new List<int>();
+        readonly HashSet<string> activeAttackSources = new HashSet<string>(StringComparer.Ordinal);
+        readonly WorldEffects effects = new WorldEffects();
+        readonly ThreatMarkers threats = new ThreatMarkers();
+        RunFrame indexedPrevious, acceptedFrame;
+        FirstPlayableFrame firstPlayable;
+        Camera renderCamera;
+        RunCamera followCamera;
+        WorldCameraSettings settings;
+        WorldDamageNumbers numbers;
+        WorldAnnouncements announcements;
+        ArtCatalog art;
+        Shader shader;
+        string estateId;
+        int mapWidth, mapHeight, season, previousSeason, level;
+        float visualTime, seasonAge, heroHitUntil, shakeUntil, levelAge = 10;
+        public bool ShowDamageNumbers { get; set; } = true;
+        public bool ShakeEnabled { get; set; } = true;
+        public Vector2 CameraShakeOffset { get; private set; }
+        public string WarningSourceId { get; private set; } = "";
+        public string WarningRank { get; private set; } = "";
+        public float WarningRemainingSeconds { get; private set; }
+        public int ActiveVisualProjectiles => ActivePersistentAttacks + effects.CountVisualProjectiles(ShouldDrawAttack);
+        public int ActivePersistentAttacks => firstPlayable?.Attacks.Count ?? 0;
         public int ActiveEffects => effects.ActiveCount;
         public int DroppedEffects => effects.DroppedCount;
         public int UnsupportedShapeCount => effects.UnsupportedShapeCount;
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
 
-        public void Initialize(Camera camera, WorldCameraSettings cameraSettings)
+        public void Initialize(Camera camera, WorldCameraSettings cameraSettings, string estate, int width, int height)
         {
-            if (meshes != null) throw new InvalidOperationException("World renderer is already initialized.");
-            shader = Resources.Load<Shader>("WorldShape");
-            if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D world shader is unavailable.");
-            if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("GPU instancing is required by the world renderer.");
+            if (art != null) throw new InvalidOperationException("World renderer is already initialized.");
+            if (width <= 0 || height <= 0 || string.IsNullOrEmpty(estate)) throw new ArgumentException("Canonical map dimensions and estate ID are required.");
+            shader = Resources.Load<Shader>("WorldSprite");
+            if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D sprite shader is unavailable.");
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
-            settings = cameraSettings; followCamera = new RunCamera(camera, settings); meshes = new ShapeMeshes();
+            settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
+            estateId = estate; mapWidth = width; mapHeight = height;
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); announcements = new WorldAnnouncements(camera, art);
         }
 
-        public void AcceptFrame(RunFrame frame)
+        public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot)
         {
             if (frame == null) throw new ArgumentNullException(nameof(frame));
-            effects.Accept(frame.Events);
+            if (snapshot == null) throw new ArgumentNullException(nameof(snapshot), "The first-playable world requires its authoritative snapshot.");
+            firstPlayable = snapshot;
+            if (ReferenceEquals(frame, acceptedFrame)) return;
+            if (acceptedFrame == null) { season = previousSeason = frame.Season; seasonAge = GameVisualTokens.SeasonBlendSeconds; level = frame.Level; }
+            else
+            {
+                if (frame.Season != season) { previousSeason = season; season = frame.Season; seasonAge = 0; announcements.ShowSeason(season); }
+                if (frame.Level > level) levelAge = 0;
+                level = frame.Level;
+            }
+            acceptedFrame = frame;
+            construction.Clear(); foreach (var building in snapshot.BuildingProgress) construction.Add(building.Id, building);
+            activities.Clear(); foreach (var person in snapshot.People) activities.Add(person.Id, person.Activity);
+            activeAttackSources.Clear(); foreach (var attack in snapshot.Attacks) activeAttackSources.Add(attack.SourceId);
+            effects.Accept(frame.Events, OnEvent);
         }
 
-        public void Present(RunFrame previous, RunFrame current, float alpha, float unscaledDeltaTime, Rect safeAreaPixels)
+        void OnEvent(PresentationEvent effect)
         {
-            if (meshes == null) throw new InvalidOperationException("Initialize the world renderer before presenting frames.");
+            if (effect.Kind == PresentationKind.Attack)
+                foreach (var id in effect.HitEntityIds) hitUntil[id] = visualTime + GameVisualTokens.HitFlashSeconds;
+            if (effect.Kind == PresentationKind.LordHit)
+            {
+                heroHitUntil = visualTime + GameVisualTokens.HitFlashSeconds;
+                shakeUntil = visualTime + GameVisualTokens.ShakeSeconds;
+            }
+            if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
+            if (effect.Kind == PresentationKind.BossWarning)
+            {
+                foreach (var boss in firstPlayable.Bosses)
+                    if (boss.DefinitionId == effect.SourceId) { WarningRank = boss.Rank; WarningSourceId = effect.SourceId; WarningRemainingSeconds = 1.2f; if (boss.Rank == "boss") announcements.ShowBoss(effect.SourceId); break; }
+            }
+        }
+
+        public void Present(RunFrame previous, RunFrame current, FirstPlayableFrame snapshot, float alpha, float unscaledDeltaTime, Rect safeAreaPixels)
+        {
+            if (art == null) throw new InvalidOperationException("Initialize the world renderer before presenting frames.");
             if (current == null) throw new ArgumentNullException(nameof(current));
             previous = previous ?? current; alpha = Mathf.Clamp01(alpha);
-            effects.Advance(unscaledDeltaTime); AcceptFrame(current); visualTime += Mathf.Max(0, unscaledDeltaTime);
-            IndexPrevious(previous);
+            var seconds = Mathf.Max(0, unscaledDeltaTime);
+            effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
+            WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);
+            numbers.Advance(seconds, ShowDamageNumbers); AcceptFrame(current, snapshot); IndexPrevious(previous);
+            expiredHits.Clear(); foreach (var pair in hitUntil) if (pair.Value <= visualTime) expiredHits.Add(pair.Key);
+            foreach (var id in expiredHits) hitUntil.Remove(id);
             var lord = Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
-            followCamera.Present(lord, current.EstateExtent, unscaledDeltaTime);
+            var shake = ShakeEnabled ? Mathf.Clamp01((shakeUntil - visualTime) / GameVisualTokens.ShakeSeconds) : 0;
+            CameraShakeOffset = new Vector2(Mathf.Sin(visualTime * 113), Mathf.Cos(visualTime * 97)) * (shake * GameVisualTokens.ShakeAmplitude);
+            followCamera.Present(lord, current.EstateExtent, seconds); followCamera.SetVisualOffset(CameraShakeOffset);
+            announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
-            DrawEstate(current);
-            var pulse = 1 + ReadyPulseAmplitude * Mathf.Sin(visualTime * ReadyPulseRate);
+            DrawTerrain();
             foreach (var farm in current.Farms)
-                Add(WorldShape.Square, farm.Ripe ? ReadyLayer : GrowthLayer, Point(farm.Position), Vector2.one * FarmRadius * (farm.Ripe ? pulse : 1), 0, farm.Ripe ? GamePalette.Ready : GamePalette.Growing);
+                Draw(Resolve("crop", farm.SourceId, "stage" + farm.Stage), farm.Ripe ? GameVisualTokens.ReadyLayer : GameVisualTokens.GrowthLayer, Point(farm.Position), visualTime + farm.Id * 0.13f);
             foreach (var building in current.Buildings)
             {
-                var ready = building.Built && building.Health > 0;
-                Add(WorldShape.Square, ready ? ReadyLayer : GrowthLayer, Point(building.Position), Vector2.one * BuildingRadius * (ready ? pulse : 1), 45, ready ? GamePalette.Ready : GamePalette.Growing);
-                if (building.Built && building.Health <= 0) Add(WorldShape.Square, GrowthLayer + 1, Point(building.Position), new Vector2(BuildingRadius, 0.018f), -45, GamePalette.Stroke);
+                if (!construction.TryGetValue(building.Id, out var progress)) throw new InvalidOperationException("Missing building progress: " + building.Id);
+                var ready = progress.State == "complete" || progress.State == "damaged";
+                var visual = Resolve("building", building.SourceId, progress.State);
+                var time = visualTime + building.Id * 0.13f;
+                Draw(visual, ready ? GameVisualTokens.ReadyLayer : GameVisualTokens.GrowthLayer, Point(building.Position), time);
+                if (progress.State == "constructing")
+                {
+                    var fraction = Mathf.Clamp01((float)progress.Work / Mathf.Max(1, progress.RequiredWork));
+                    Draw(Resolve("building", building.SourceId, "complete"), GameVisualTokens.GrowthLayer + 1, Point(building.Position), time, opacity: fraction * 0.65f);
+                }
             }
-            foreach (var remain in current.Remains) Add(WorldShape.Diamond, GrowthLayer, Point(remain.Position), Vector2.one * 0.035f, 0, GamePalette.Stroke);
-            foreach (var loot in current.Loot) Add(WorldShape.Diamond, GrowthLayer, Point(loot.Position), Vector2.one * 0.06f, 0, GamePalette.Growing);
+            foreach (var remain in current.Remains) Draw(Resolve("object", "remains", "default"), GameVisualTokens.GrowthLayer, Point(remain.Position), visualTime);
+            foreach (var loot in current.Loot) Draw(Resolve("object", "loot", "default"), GameVisualTokens.ReadyLayer, Point(loot.Position), visualTime);
+            foreach (var mapEvent in snapshot.MapEvents)
+            {
+                var state = mapEvent.MaxHealth > 0 && mapEvent.Health < mapEvent.MaxHealth ? "damaged" : "present";
+                Draw(Resolve("mapEvent", mapEvent.DefinitionId, state), GameVisualTokens.ReadyLayer, Point(mapEvent.Position), visualTime);
+            }
             foreach (var person in current.People)
             {
-                var point = Interpolate(previousPeople, person.Id, person.Position, alpha);
-                var shape = person.Role == "militia" ? WorldShape.Triangle : person.Role == "vassal" ? WorldShape.Diamond : WorldShape.Circle;
-                Add(shape, AllyOutlineLayer, point, Vector2.one * PersonRadius, 0, GamePalette.Lord);
-                Add(shape, AllyFillLayer, point, Vector2.one * PersonRadius * AllyInnerScale, 0, GamePalette.AllyFill);
+                if (!activities.TryGetValue(person.Id, out var activity)) throw new InvalidOperationException("Missing person activity: " + person.Id);
+                Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, Interpolate(previousPeople, person.Id, person.Position, alpha), visualTime + person.Id * 0.13f);
             }
-            DrawEffects();
+            DrawEffects(lord);
+            foreach (var attack in snapshot.Attacks)
+            {
+                var before = Point(attack.PreviousPosition); var position = Vector2.Lerp(before, Point(attack.Position), alpha);
+                var visual = Resolve("attack", attack.SourceId, attack.Form);
+                var size = attack.Form == "field" ? Vector2.one * attack.Radius * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
+                Draw(visual, GameVisualTokens.AttackLayer, position, (float)attack.AgeTicks / current.TickRate, size, Angle(Point(attack.Position) - before), opacity: attack.Form == "field" ? GameVisualTokens.FieldOpacity : attack.Form == "nova" ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity);
+            }
             foreach (var enemy in current.Enemies)
-                Add(WorldShape.Diamond, EnemyLayer, Interpolate(previousEnemies, enemy.Id, enemy.Position, alpha), Vector2.one * EnemyRadius, 0, GamePalette.Enemy);
-            Add(WorldShape.Circle, LordOutlineLayer, lord, Vector2.one * LordRadius, 0, GamePalette.Lord);
-            var facing = new Vector2(current.Lord.Facing.X, current.Lord.Facing.Y).normalized;
-            Add(WorldShape.Triangle, LordOutlineLayer + 1, lord + facing * LordRadius, Vector2.one * 0.045f, Angle(facing), GamePalette.Lord);
-            threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels);
-            DrawThreats();
+            {
+                var flashing = hitUntil.ContainsKey(enemy.Id);
+                var moved = previousEnemies.TryGetValue(enemy.Id, out var before) && before != Point(enemy.Position);
+                var state = enemy.Health <= 0 ? "death" : flashing ? "hit" : moved ? "walk" : "idle";
+                Draw(Resolve("enemy", enemy.DefinitionId, state), GameVisualTokens.EnemyLayer, Interpolate(previousEnemies, enemy.Id, enemy.Position, alpha), visualTime + enemy.Id * 0.13f, flash: flashing ? 0.8f : 0);
+            }
+            var heroHit = heroHitUntil > visualTime;
+            var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : Point(previous.Lord.Position) != Point(current.Lord.Position) ? "walk" : "idle";
+            Draw(Resolve("hero", snapshot.HeroId, heroState), GameVisualTokens.LordLayer, lord, visualTime, flash: heroHit ? 0.8f : 0);
+            if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
+            threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
             SubmittedInstances = 0; DrawCalls = 0;
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
         }
 
-        private void IndexPrevious(RunFrame previous)
+        void IndexPrevious(RunFrame previous)
         {
             if (ReferenceEquals(indexedPrevious, previous)) return;
             indexedPrevious = previous; previousEnemies.Clear(); previousPeople.Clear();
             foreach (var enemy in previous.Enemies) previousEnemies[enemy.Id] = Point(enemy.Position);
             foreach (var person in previous.People) previousPeople[person.Id] = Point(person.Position);
         }
-
-        private Vector2 Interpolate(Dictionary<int, Vector2> positions, int id, WorldPoint current, float alpha)
+        Vector2 Interpolate(Dictionary<int, Vector2> positions, int id, WorldPoint current, float alpha)
         {
             var point = Point(current); return positions.TryGetValue(id, out var before) ? Vector2.Lerp(before, point, alpha) : point;
         }
-        private Vector2 Point(WorldPoint value) => followCamera.Point(value);
-        private static float Angle(Vector2 direction) => Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        private static Color Fade(Color color, float opacity) { color.a *= Mathf.Clamp01(opacity); return color; }
+        Vector2 Point(WorldPoint value) => followCamera.Point(value);
+        static float Angle(Vector2 direction) => Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
-        private void DrawEstate(RunFrame frame)
+        void DrawTerrain()
         {
-            var extent = (float)frame.EstateExtent / settings.WorldUnitsPerUnityUnit;
-            Add(WorldShape.Circle, GrowthLayer - 1, Point(frame.Estate), Vector2.one * extent, 0, Fade(GamePalette.Growing, 0.25f), 0.99f);
+            var width = (float)mapWidth / settings.WorldUnitsPerUnityUnit; var height = (float)mapHeight / settings.WorldUnitsPerUnityUnit;
+            var visual = Resolve("terrain", estateId, GameVisualTokens.SeasonNames[season]);
+            var old = Resolve("terrain", estateId, GameVisualTokens.SeasonNames[previousSeason]);
+            var blend = Mathf.Clamp01(seasonAge / GameVisualTokens.SeasonBlendSeconds);
+            var tint = Color.Lerp(Color.white, Color.Lerp(GameVisualTokens.Seasons[previousSeason], GameVisualTokens.Seasons[season], blend), 0.16f);
+            renderCamera.backgroundColor = Color.Lerp(GameVisualTokens.Seasons[previousSeason], GameVisualTokens.Seasons[season], blend);
+            var size = visual.WorldSize; var stride = size * GameVisualTokens.TerrainStride;
+            var halfHeight = renderCamera.orthographicSize; var halfWidth = halfHeight * renderCamera.aspect; var center = renderCamera.transform.position;
+            var xMin = Mathf.Max(-1, Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1); var xMax = Mathf.Min(Mathf.CeilToInt(width / stride.x), Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1);
+            var yMin = Mathf.Max(-1, Mathf.FloorToInt((center.y - halfHeight) / stride.y) - 1); var yMax = Mathf.Min(Mathf.CeilToInt(height / stride.y), Mathf.FloorToInt((center.y + halfHeight) / stride.y) + 1);
+            for (var y = yMin; y <= yMax; y++) for (var x = xMin; x <= xMax; x++)
+            {
+                var left = x * stride.x; var bottom = y * stride.y;
+                var x0 = Mathf.Max(0, left); var y0 = Mathf.Max(0, bottom);
+                var x1 = Mathf.Min(width, left + size.x); var y1 = Mathf.Min(height, bottom + size.y);
+                if (x1 <= x0 || y1 <= y0) continue;
+                var cell = new Vector2(x1 - x0, y1 - y0);
+                var position = new Vector2(x0, y0) + Vector2.Scale(visual.Pivot, cell);
+                var fraction = new Rect((x0 - left) / size.x, (y0 - bottom) / size.y, cell.x / size.x, cell.y / size.y);
+                if (blend < 1) Draw(old, GameVisualTokens.TerrainLayer, position, 0, cell, opacity: (1 - blend) * GameVisualTokens.TerrainOpacity, tint: tint, uv: TerrainUv(old.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
+                Draw(visual, GameVisualTokens.TerrainLayer + 1, position, 0, cell, opacity: blend * GameVisualTokens.TerrainOpacity, tint: tint, uv: TerrainUv(visual.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
+            }
+            var edge = Resolve("boundary", "edge", "default"); var corner = Resolve("boundary", "corner", "default");
+            var step = edge.WorldSize.x;
+            for (var x = Mathf.Max(0, Mathf.FloorToInt((center.x - halfWidth) / step)); x * step < Mathf.Min(width, center.x + halfWidth + step); x++)
+            {
+                Draw(edge, GameVisualTokens.GrowthLayer - 1, new Vector2(Mathf.Min(width, (x + 0.5f) * step), 0), 0);
+                Draw(edge, GameVisualTokens.GrowthLayer - 1, new Vector2(Mathf.Min(width, (x + 0.5f) * step), height), 0, degrees: 180);
+            }
+            for (var y = Mathf.Max(0, Mathf.FloorToInt((center.y - halfHeight) / step)); y * step < Mathf.Min(height, center.y + halfHeight + step); y++)
+            {
+                Draw(edge, GameVisualTokens.GrowthLayer - 1, new Vector2(0, Mathf.Min(height, (y + 0.5f) * step)), 0, degrees: 90);
+                Draw(edge, GameVisualTokens.GrowthLayer - 1, new Vector2(width, Mathf.Min(height, (y + 0.5f) * step)), 0, degrees: -90);
+            }
+            Draw(corner, GameVisualTokens.GrowthLayer - 1, Vector2.zero, 0);
+            Draw(corner, GameVisualTokens.GrowthLayer - 1, new Vector2(width, 0), 0, degrees: 90);
+            Draw(corner, GameVisualTokens.GrowthLayer - 1, new Vector2(width, height), 0, degrees: 180);
+            Draw(corner, GameVisualTokens.GrowthLayer - 1, new Vector2(0, height), 0, degrees: 270);
         }
 
-        private void DrawEffects()
+        static Rect TerrainUv(Rect source, Rect fraction, bool flipX, bool flipY)
+        {
+            // Crop only the transparent decorative rim at draw time; preserve authored pixels and clip the sample with the map edge.
+            var inset = GameVisualTokens.TerrainUvInset; var inner = 1 - inset * 2;
+            var x = flipX ? 1 - fraction.x : fraction.x; var y = flipY ? 1 - fraction.y : fraction.y;
+            return new Rect(source.x + source.width * (inset + x * inner), source.y + source.height * (inset + y * inner),
+                source.width * fraction.width * inner * (flipX ? -1 : 1), source.height * fraction.height * inner * (flipY ? -1 : 1));
+        }
+
+        void DrawEffects(Vector2 lord)
         {
             for (var index = 0; index < effects.ActiveCount; index++)
             {
-                var pooled = effects[index]; var effect = pooled.Event; var progress = pooled.Progress;
-                var origin = Point(effect.Origin);
-                if (effect.Kind == PresentationKind.Attack) { DrawAttack(effect, progress); continue; }
-                if (effect.Kind == PresentationKind.BuildingCompleted)
+                var pooled = effects[index]; var effect = pooled.Event; var progress = pooled.Progress; var origin = Point(effect.Origin);
+                switch (effect.Kind)
                 {
-                    Add(WorldShape.Circle, ReadyLayer + 1, origin, Vector2.one * BuildingRadius * (1 + progress), 0, Fade(GamePalette.Ready, 1 - progress), 0.88f); continue;
+                    case PresentationKind.Attack: DrawAttack(effect, pooled.Age, progress); break;
+                    case PresentationKind.Damage: Feedback("hit", GameVisualTokens.AttackLayer, origin, progress); break;
+                    case PresentationKind.EnemyKilled:
+                        Draw(Resolve("enemy", effect.SourceId, "death"), GameVisualTokens.EnemyLayer, origin, pooled.Age, opacity: 1 - progress);
+                        Feedback("death", GameVisualTokens.AttackLayer, origin, progress); break;
+                    case PresentationKind.KillExperience: Feedback("kill-experience", GameVisualTokens.ExperienceLayer, Vector2.Lerp(origin, lord, progress * progress), progress); break;
+                    case PresentationKind.HarvestExperience:
+                        Feedback("harvest", GameVisualTokens.ExperienceLayer, origin, progress);
+                        Feedback("harvest-experience", GameVisualTokens.ExperienceLayer, Vector2.Lerp(origin, lord, progress * progress), progress); break;
+                    case PresentationKind.TaxExperience: Feedback("tax", GameVisualTokens.ExperienceLayer, Vector2.Lerp(origin, lord, progress * progress), progress); break;
+                    case PresentationKind.BuildingStarted: Feedback("building-start", GameVisualTokens.ReadyLayer, origin, progress); break;
+                    case PresentationKind.BuildingCompleted: Feedback("building-complete", GameVisualTokens.ReadyLayer, origin, progress); break;
+                    case PresentationKind.Evolution: Feedback("evolution", GameVisualTokens.ExperienceLayer, origin, progress); break;
+                    case PresentationKind.LordHit: Feedback("lord-hit", GameVisualTokens.AttackLayer, origin, progress); break;
+                    case PresentationKind.EventSpawned: Feedback("event-spawn", GameVisualTokens.ReadyLayer, origin, progress); break;
+                    case PresentationKind.EventClaimed:
+                        Draw(Resolve("mapEvent", effect.SourceId, "claimed"), GameVisualTokens.ReadyLayer, origin, pooled.Age, opacity: 1 - progress);
+                        Feedback("event-claim", GameVisualTokens.ReadyLayer, origin, progress); break;
+                    case PresentationKind.CartBroken:
+                        Draw(Resolve("mapEvent", effect.SourceId, "broken"), GameVisualTokens.ReadyLayer, origin, pooled.Age, opacity: 1 - progress);
+                        Feedback("cart-broken", GameVisualTokens.ReadyLayer, origin, progress); break;
+                    case PresentationKind.BossWarning:
+                        foreach (var boss in firstPlayable.Bosses) if (boss.DefinitionId == effect.SourceId) { Feedback(boss.Rank == "boss" ? "boss-warning" : "elite-warning", GameVisualTokens.ThreatLayer, origin, progress); break; }
+                        break;
                 }
-                var color = effect.Kind == PresentationKind.KillExperience ? GamePalette.KillXp : effect.Kind == PresentationKind.HarvestExperience ? GamePalette.HarvestXp : Fade(GamePalette.MutedText, 0.5f);
-                var shape = effect.Kind == PresentationKind.KillExperience ? WorldShape.Diamond : effect.Kind == PresentationKind.HarvestExperience ? WorldShape.Circle : WorldShape.Square;
-                Add(shape, ExperienceLayer, origin + Vector2.up * (progress * 0.22f), Vector2.one * 0.045f, 0, Fade(color, 1 - progress));
             }
         }
-
-        private void DrawAttack(PresentationEvent effect, float progress)
+        bool ShouldDrawAttack(PresentationEvent effect) => !(activeAttackSources.Contains(effect.SourceId) && (WorldEffects.IsTravelling(effect.Shape) || effect.Shape == "field" || effect.Shape == "nova"));
+        void DrawAttack(PresentationEvent effect, float age, float progress)
         {
-            var origin = Point(effect.Origin); var radius = (float)effect.Range / settings.WorldUnitsPerUnityUnit;
-            var color = Fade(GamePalette.Attack, 1 - progress); var direction = new Vector2(effect.Direction.X, effect.Direction.Y);
-            if (effect.Shape == "rays" || effect.Shape == "projectile")
+            if (!ShouldDrawAttack(effect)) return;
+            var visual = Resolve("attack", effect.SourceId, effect.Shape); var origin = Point(effect.Origin);
+            if (effect.Shape == "rays" || effect.Shape == "projectile" || effect.Shape == "chain")
             {
-                if (effect.Geometry == null) return;
-                foreach (var end in effect.Geometry.RayEnds)
+                var ends = effect.Shape == "chain" ? effect.Endpoints : effect.Geometry?.RayEnds ?? effect.Endpoints;
+                foreach (var end in ends)
                 {
                     var target = Point(end); var vector = target - origin;
-                    var halfWidth = Mathf.Max(0.012f, (float)effect.Geometry.BeamHalfWidth / settings.WorldUnitsPerUnityUnit);
-                    Add(WorldShape.Square, AttackLayer, (origin + target) * 0.5f, new Vector2(vector.magnitude * 0.5f, halfWidth), Angle(vector), color);
-                    Add(WorldShape.Circle, AttackLayer, Vector2.Lerp(origin, target, progress), Vector2.one * halfWidth * 1.5f, 0, color);
+                    Draw(visual, GameVisualTokens.AttackLayer, (origin + target) * 0.5f, age, new Vector2(vector.magnitude, Mathf.Min(visual.WorldSize.y, GameVisualTokens.AttackRibbonWidth)), Angle(vector), (1 - progress) * GameVisualTokens.TravellingAttackOpacity);
+                    if (effect.Shape == "chain") origin = target;
                 }
-                return;
+                if (ends.Count > 0) return;
             }
-            var shape = effect.Shape == "sector90" ? WorldShape.Sector90 : effect.Shape == "sector180" || effect.Shape == "melee" ? WorldShape.Sector180 : WorldShape.Circle;
-            var inner = effect.Shape == "orbit" && effect.Geometry != null && effect.Range > 0 ? (float)effect.Geometry.InnerRadius / effect.Range : -1;
-            Add(shape, AttackLayer, origin, Vector2.one * radius, Angle(direction), color, inner);
+            var area = effect.Shape == "sector90" || effect.Shape == "sector180" || effect.Shape == "disk" || effect.Shape == "nova" || effect.Shape == "wave" || effect.Shape == "melee";
+            var size = area ? Vector2.one * effect.Range * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
+            Draw(visual, GameVisualTokens.AttackLayer, origin, age, size, Angle(new Vector2(effect.Direction.X, effect.Direction.Y)), (1 - progress) * (area ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity));
         }
-
-        private void DrawThreats()
+        void Feedback(string name, int layer, Vector2 point, float progress) => Draw(Resolve("feedback", name, "default"), layer, point, progress, opacity: 1 - progress);
+        void DrawThreats()
         {
             var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            for (var index = 0; index < threats.Count; index++)
+            for (var i = 0; i < threats.Count; i++)
             {
-                var marker = threats[index]; var point = renderCamera.ScreenToWorldPoint(new Vector3(marker.ScreenPosition.x, marker.ScreenPosition.y, -renderCamera.transform.position.z));
-                Add(WorldShape.Triangle, ThreatLayer, point, Vector2.one * pixelsToWorld * 7, Angle(marker.Direction), GamePalette.Enemy);
-                if (marker.ClusterCount > 1)
-                    Add(WorldShape.Circle, ThreatLayer, (Vector2)point - marker.Direction * pixelsToWorld * 12, Vector2.one * pixelsToWorld * 2.5f, 0, GamePalette.Enemy);
+                var marker = threats[i]; var point = (Vector2)renderCamera.ScreenToWorldPoint(new Vector3(marker.ScreenPosition.x, marker.ScreenPosition.y, -renderCamera.transform.position.z));
+                Draw(Resolve("feedback", "threat", "default"), GameVisualTokens.ThreatLayer, point, visualTime, Vector2.one * pixelsToWorld * 24, Angle(marker.Direction));
+                if (marker.ClusterCount > 1) Draw(Resolve("feedback", "threat-cluster", "default"), GameVisualTokens.ThreatLayer, point - marker.Direction * pixelsToWorld * 18, visualTime, Vector2.one * pixelsToWorld * 12);
             }
         }
-
-        private void Add(WorldShape shape, int layer, Vector2 position, Vector2 scale, float degrees, Color color, float innerRadius = -1)
+        ArtVisual Resolve(string kind, string id, string state)
         {
-            var key = layer * 10 + (int)shape;
-            if (!batches.TryGetValue(key, out var batch)) { batch = new ShapeBatch(meshes[shape], shader, renderCamera, layer); batches.Add(key, batch); }
-            batch.Add(position, scale, degrees, color, innerRadius);
+            var key = (kind, id, state);
+            if (!visuals.TryGetValue(key, out var visual)) { visual = art.Resolve(kind, id, state); visuals.Add(key, visual); }
+            return visual;
         }
-
-        private void OnDestroy()
+        void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null)
         {
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); meshes?.Dispose(); meshes = null;
+            var dimensions = size ?? visual.WorldSize;
+            var phase = time * Mathf.PI * 2 / GameVisualTokens.WalkSeconds;
+            switch (visual.Tween)
+            {
+                case "walk": position.y += Mathf.Abs(Mathf.Sin(phase)) * GameVisualTokens.WalkBob; degrees += Mathf.Sin(phase) * GameVisualTokens.WalkLeanDegrees; break;
+                case "work": degrees += Mathf.Sin(phase) * GameVisualTokens.WalkLeanDegrees * 1.5f; break;
+                case "pulse": dimensions *= 1 + 0.035f * Mathf.Sin(phase * 0.4f); break;
+                case "recoil": dimensions.y *= 1 - flash * 0.07f; break;
+            }
+            var frame = Mathf.FloorToInt(Mathf.Max(0, time) * 1000 / visual.FrameMs) % visual.UvRects.Count;
+            var color = tint ?? Color.white; color.a *= Mathf.Clamp01(opacity);
+            var key = (layer, visual.Texture);
+            if (!batches.TryGetValue(key, out var batch)) { batch = new SpriteBatch(visual.Texture, shader, renderCamera, layer); batches.Add(key, batch); }
+            batch.Add(position, dimensions, visual.Pivot, uv ?? visual.UvRects[frame], degrees, color, flash);
+        }
+        void OnDestroy()
+        {
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); visuals.Clear(); numbers?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }

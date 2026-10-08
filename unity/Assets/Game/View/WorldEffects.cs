@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using SowSiege.Core;
 using UnityEngine;
@@ -17,26 +18,27 @@ namespace Game.View
     {
         public const int Capacity = 2048;
         public const float AttackLifetimeSeconds = 0.18f;
-        public const float ExperienceLifetimeSeconds = 0.55f;
-        public const float BuildingLifetimeSeconds = 0.45f;
-        private readonly WorldEffect[] active = new WorldEffect[Capacity];
-        private long lastEventId = -1;
-        private int recycleIndex;
+        public const float ExperienceLifetimeSeconds = GameVisualTokens.ExperienceSeconds;
+        public const float BuildingLifetimeSeconds = GameVisualTokens.EmphasisSeconds;
+        readonly WorldEffect[] active = new WorldEffect[Capacity];
+        long lastEventId = -1;
+        int recycleIndex;
         public int ActiveCount { get; private set; }
         public int DroppedCount { get; private set; }
         public int UnsupportedShapeCount { get; private set; }
         public WorldEffect this[int index] => active[index];
-        public int ActiveVisualProjectiles
+        public int ActiveVisualProjectiles => CountVisualProjectiles();
+        public int CountVisualProjectiles(Func<PresentationEvent, bool> included = null)
         {
-            get
+            var result = 0;
+            for (var i = 0; i < ActiveCount; i++)
             {
-                var result = 0;
-                for (var index = 0; index < ActiveCount; index++) if (active[index].Event.Kind == PresentationKind.Attack && (active[index].Event.Shape == "rays" || active[index].Event.Shape == "projectile")) result++;
-                return result;
+                var effect = active[i].Event;
+                if (effect.Kind == PresentationKind.Attack && (effect.Shape == "rays" || IsTravelling(effect.Shape)) && (included == null || included(effect))) result++;
             }
+            return result;
         }
-
-        public void Accept(IReadOnlyList<PresentationEvent> events)
+        public void Accept(IReadOnlyList<PresentationEvent> events, Action<PresentationEvent> accepted = null)
         {
             for (var index = 0; index < events.Count; index++)
             {
@@ -46,17 +48,15 @@ namespace Game.View
                 if (effect.Kind == PresentationKind.Attack && !Supported(effect.Shape))
                 {
                     UnsupportedShapeCount++;
-                    UnityEngine.Debug.LogWarning("Unsupported Core attack shape: " + effect.Shape);
-                    continue;
+                    Debug.LogWarning("Unsupported Core attack shape: " + effect.Shape); continue;
                 }
-                var duration = effect.Kind == PresentationKind.Attack ? AttackLifetimeSeconds : effect.Kind == PresentationKind.BuildingCompleted ? BuildingLifetimeSeconds : ExperienceLifetimeSeconds;
+                accepted?.Invoke(effect);
                 var slot = ActiveCount;
                 if (slot == Capacity) { slot = recycleIndex; recycleIndex = (recycleIndex + 1) % Capacity; DroppedCount++; }
                 else ActiveCount++;
-                active[slot] = new WorldEffect(effect, 0, duration);
+                active[slot] = new WorldEffect(effect, 0, Duration(effect.Kind));
             }
         }
-
         public void Advance(float seconds)
         {
             seconds = Mathf.Max(0, seconds);
@@ -68,7 +68,20 @@ namespace Game.View
                 active[index] = new WorldEffect(effect.Event, age, effect.Duration); index++;
             }
         }
-
-        private static bool Supported(string shape) => shape == "rays" || shape == "projectile" || shape == "sector90" || shape == "sector180" || shape == "disk" || shape == "melee" || shape == "orbit" || shape == "wave";
+        public static bool IsTravelling(string shape) => shape == "projectile" || shape == "piercing" || shape == "volley" || shape == "boomerang" || shape == "orbit";
+        static float Duration(PresentationKind kind)
+        {
+            switch (kind)
+            {
+                case PresentationKind.Attack: return AttackLifetimeSeconds;
+                case PresentationKind.Damage: case PresentationKind.LordHit: return GameVisualTokens.HitFlashSeconds;
+                case PresentationKind.EnemyKilled: case PresentationKind.CartBroken: return GameVisualTokens.KillSeconds;
+                case PresentationKind.HarvestExperience: return GameVisualTokens.HarvestSeconds;
+                case PresentationKind.KillExperience: case PresentationKind.TaxExperience: return GameVisualTokens.ExperienceSeconds;
+                case PresentationKind.BossWarning: return 1.2f;
+                default: return BuildingLifetimeSeconds;
+            }
+        }
+        static bool Supported(string shape) => shape == "rays" || IsTravelling(shape) || shape == "sector90" || shape == "sector180" || shape == "disk" || shape == "melee" || shape == "wave" || shape == "chain" || shape == "field" || shape == "nova";
     }
 }
