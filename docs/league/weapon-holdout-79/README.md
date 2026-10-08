@@ -5,7 +5,7 @@
 - 실행 소스: `65fd21ac97f23840ab081a86d78f121d0af57693`, clean HEAD. 정확한 소스·DLL·콘텐츠·성장표 해시와 런타임은 `provenance.csv`.
 - seed20000–20031 × 정책6 × 사람규칙ABC =576조건, 실제3반복은 검증용이며 독립 표본으로 세지 않는다.
 - 정본: `runs.csv`, `weapon-sources.csv`, `terminal.csv`, `weapon-equipment.csv`, `provenance.csv`.
-- 파생 검토 표: `outcomes.csv`, `ratios.csv`, `condition-ranks.csv`, `gates.csv`, `report.md`. 후자는 최종 전달 보고가 아닌 CSV 하위 보고다.
+- 파생 검토 표 `outcomes.csv`, `ratios.csv`, `condition-ranks.csv`, `gates.csv`, `report.md`는 아래 명령으로 로컬에 생성하며 Git·Release에 보관하지 않는다. 최종 판단·한계는 별도 검토 보고서에만 남긴다.
 - 전체 compact packet은 로컬 `artifacts/weapon-holdout-full-20261008/packets`에만 보존했다. 새 ZIP·CRC·영수증·중복 Release 자산은 만들지 않았다. 필요시 공개 표본은 사전 선언된 최대4사례만 사용한다.
 
 ## 재생성
