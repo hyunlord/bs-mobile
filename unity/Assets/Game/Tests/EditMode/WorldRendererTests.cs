@@ -12,6 +12,12 @@ namespace Tests.EditMode
         private static PresentationEvent Event(long id, string shape = "rays") => new(id, 0, PresentationKind.Attack, "test", new(0, 0), new(1, 0), shape, 1000, 0,
             Array.AsReadOnly(Array.Empty<WorldPoint>()), Array.AsReadOnly(Array.Empty<int>()), new(0, 20, 1, 0, Array.AsReadOnly(new[] { new WorldPoint(1000, 0) })));
 
+        [Test] public void ToolOrbitUsesAuthoritativeRangeDiameter()
+        {
+            Assert.That(WorldRenderer.EventAttackSize("orbit", 1000, Vector2.one * 0.25f, 1000), Is.EqualTo(Vector2.one * 2));
+            Assert.That(WorldRenderer.EventAttackSize("projectile", 1000, Vector2.one * 0.25f, 1000), Is.EqualTo(Vector2.one * 0.25f));
+        }
+
         [Test] public void EffectPoolDeduplicatesRepeatedPausedFramesAndRemainsBounded()
         {
             var effects = new WorldEffects();
@@ -69,7 +75,8 @@ namespace Tests.EditMode
             var frame = session.View.CaptureFrame() with { Events = new[] { persistentEvent, allyEvent } };
             snapshot = snapshot with { Attacks = new[] {
                 new ActiveAttackView(10, "test:persistent", "projectile", new(10, 0), new(0, 0), 20, 1, 10),
-                new ActiveAttackView(11, "test:persistent", "projectile", new(20, 0), new(10, 0), 20, 1, 10)
+                new ActiveAttackView(11, "test:persistent", "projectile", new(20, 0), new(10, 0), 20, 1, 10),
+                new ActiveAttackView(12, "test:persistent", "projectile", new(0, 0), new(0, 0), 20, 1, 10, IsActive: false)
             } };
             var owner = new GameObject("Projectile telemetry test");
             try

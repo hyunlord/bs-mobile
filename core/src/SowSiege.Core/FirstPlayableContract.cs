@@ -11,7 +11,7 @@ namespace SowSiege.Core
         int InteractRadius, int FoodCost, int RewardCount, int HealAmount, int Experience, int Health, string[] ItemIds);
     public sealed record EvolutionRequirement(string EquipmentId, int MinimumLevel);
     public sealed record EvolutionGrowthRequirement(string Target, int Minimum);
-    public sealed record ActiveAttackView(int Id, string SourceId, string Form, WorldPoint Position, WorldPoint PreviousPosition, int Radius, int AgeTicks, int LifetimeTicks);
+    public sealed record ActiveAttackView(int Id, string SourceId, string Form, WorldPoint Position, WorldPoint PreviousPosition, int Radius, int AgeTicks, int LifetimeTicks, bool IsActive = true, int? PresentationRadius = null);
     public sealed record MapEventView(int Id, string DefinitionId, string Kind, WorldPoint Position, int Health, int MaxHealth, int FoodCost, int ExpiresTick);
     public sealed record BuildingProgressView(int Id, string State, int Work, int RequiredWork);
     public sealed record EvolutionClueView(string Id, bool Activated, bool Available, IReadOnlyList<EvolutionRequirement> Requirements, EvolutionGrowthRequirement? GrowthRequirement);

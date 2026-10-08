@@ -10,7 +10,16 @@ namespace SowSiege.Core
         internal static FirstPlayableFrame? Capture(ContentCatalog catalog, WorldState world, string heroId)
         {
             if (catalog.FirstPlayable is not { } definition || world.FirstPlayable is not { } state) { return null; }
-            var attacks = state.Attacks.Select(a => new ActiveAttackView(a.Id, a.Source, a.Form, InteractiveState.Point(a.Position), InteractiveState.Point(a.Previous), definition.Weapons[a.Source].Radius, a.Age, definition.Weapons[a.Source].LifetimeTicks)).ToArray();
+            var attacks = state.Attacks.Select(a =>
+            {
+                var weapon = definition.Weapons[a.Source];
+                // Age is incremented after combat processing, including deferred ticks. Present the last completed tick.
+                var active = a.Form is not ("projectile" or "piercing" or "nova") || a.Age > a.Phase;
+                var radius = a.Form == "nova"
+                    ? (int)Math.Min(catalog.WeaponCombat!.Weapons[a.Source].Levels[a.Level - 1].Range, Math.Max(0L, (long)a.Age - a.Phase) * weapon.Speed)
+                    : weapon.Radius;
+                return new ActiveAttackView(a.Id, a.Source, a.Form, InteractiveState.Point(a.Position), InteractiveState.Point(a.Previous), weapon.Radius, a.Age, weapon.LifetimeTicks, active, radius);
+            }).ToArray();
             var events = state.MapEvents.Select(e => { var d = definition.MapEvents.Single(x => x.Id == e.Definition); return new MapEventView(e.Id, e.Definition, d.Kind, InteractiveState.Point(e.Position), e.Health, d.Health, d.FoodCost, e.ExpiresTick); }).ToArray();
             var buildings = world.Buildings.Select(b => { var work = state.BuildingWork.GetValueOrDefault(b.Id); var status = work > 0 ? "constructing" : b.Built ? b.Health == 0 ? "ruin" : b.Health < catalog.Tuning.World.Buildings.Health ? "damaged" : "complete" : "site"; return new BuildingProgressView(b.Id, status, work, definition.BuildingWorkRequired); }).ToArray();
             var evolutions = catalog.Runtime!.Evolutions.Values.OrderBy(e => e.Id, StringComparer.Ordinal).Select(e => new EvolutionClueView(e.Id, world.Runtime!.Evolutions.Contains(e.Id), RuntimeSystem.EvolutionEligible(catalog, world, e), Array.AsReadOnly(definition.EvolutionRequirements.GetValueOrDefault(e.Id) ?? Array.Empty<EvolutionRequirement>()), definition.EvolutionGrowthRequirements?.GetValueOrDefault(e.Id))).ToArray();

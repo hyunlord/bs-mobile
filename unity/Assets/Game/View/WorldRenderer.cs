@@ -37,7 +37,10 @@ namespace Game.View
         public string WarningRank { get; private set; } = "";
         public float WarningRemainingSeconds { get; private set; }
         public int ActiveVisualProjectiles => ActivePersistentAttacks + effects.CountVisualProjectiles(ShouldDrawAttack);
-        public int ActivePersistentAttacks => firstPlayable?.Attacks.Count ?? 0;
+        public int ActivePersistentAttacks
+        {
+            get { var count = 0; if (firstPlayable != null) foreach (var attack in firstPlayable.Attacks) if (attack.IsActive) count++; return count; }
+        }
         public int ActiveEffects => effects.ActiveCount;
         public int DroppedEffects => effects.DroppedCount;
         public int UnsupportedShapeCount => effects.UnsupportedShapeCount;
@@ -72,7 +75,7 @@ namespace Game.View
             acceptedFrame = frame;
             construction.Clear(); foreach (var building in snapshot.BuildingProgress) construction.Add(building.Id, building);
             activities.Clear(); foreach (var person in snapshot.People) activities.Add(person.Id, person.Activity);
-            activeAttackSources.Clear(); foreach (var attack in snapshot.Attacks) activeAttackSources.Add(attack.SourceId);
+            activeAttackSources.Clear(); foreach (var attack in snapshot.Attacks) if (attack.IsActive) activeAttackSources.Add(attack.SourceId);
             effects.Accept(frame.Events, OnEvent);
         }
 
@@ -141,9 +144,10 @@ namespace Game.View
             DrawEffects(lord);
             foreach (var attack in snapshot.Attacks)
             {
+                if (!attack.IsActive) continue;
                 var before = Point(attack.PreviousPosition); var position = Vector2.Lerp(before, Point(attack.Position), alpha);
                 var visual = Resolve("attack", attack.SourceId, attack.Form);
-                var size = attack.Form == "field" ? Vector2.one * attack.Radius * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
+                var size = attack.Form == "field" || attack.Form == "nova" ? Vector2.one * (attack.PresentationRadius ?? attack.Radius) * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
                 Draw(visual, GameVisualTokens.AttackLayer, position, (float)attack.AgeTicks / current.TickRate, size, Angle(Point(attack.Position) - before), opacity: attack.Form == "field" ? GameVisualTokens.FieldOpacity : attack.Form == "nova" ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity);
             }
             foreach (var enemy in current.Enemies)
@@ -277,10 +281,14 @@ namespace Game.View
                 }
                 if (ends.Count > 0) return;
             }
-            var area = effect.Shape == "sector90" || effect.Shape == "sector180" || effect.Shape == "disk" || effect.Shape == "nova" || effect.Shape == "wave" || effect.Shape == "melee";
-            var size = area ? Vector2.one * effect.Range * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
+            var area = IsAreaAttack(effect.Shape);
+            var size = EventAttackSize(effect.Shape, effect.Range, visual.WorldSize, settings.WorldUnitsPerUnityUnit);
             Draw(visual, GameVisualTokens.AttackLayer, origin, age, size, Angle(new Vector2(effect.Direction.X, effect.Direction.Y)), (1 - progress) * (area ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity));
         }
+        static bool IsAreaAttack(string shape) => shape == "sector90" || shape == "sector180" || shape == "disk" || shape == "nova" || shape == "wave" || shape == "melee" || shape == "orbit";
+        public static Vector2 EventAttackSize(string shape, int range, Vector2 authoredSize, float worldUnitsPerUnityUnit) =>
+            IsAreaAttack(shape) ? Vector2.one * range * 2 / worldUnitsPerUnityUnit : authoredSize;
+
         void Feedback(string name, int layer, Vector2 point, float progress) => Draw(Resolve("feedback", name, "default"), layer, point, progress, opacity: 1 - progress);
         void DrawThreats()
         {
