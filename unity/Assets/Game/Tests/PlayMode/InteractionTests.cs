@@ -28,7 +28,8 @@ namespace Tests.PlayMode
             Assert.That(app.Error,Is.Null);
             Assert.That(FontProvider.Supports(app.Ui.Font,FontProvider.Labels+string.Concat(CanonicalContent.Displays.Select(d=>d.DisplayName))),Is.True);
             AssertUiConsumes(app.Ui.GetComponentsInChildren<Button>().First(b=>b.GetComponentInChildren<Text>().text=="설정").transform as RectTransform);
-            Click(app,"시작");
+            Click(app,"시작");yield return null;
+            if(app.Ui.Content.Find("Introduction")!=null)Click(app,"개척 시작");
             while(app.Session==null&&Time.realtimeSinceStartup<deadline)yield return null;
             Assert.That(app.Session,Is.Not.Null);yield return null;
             Assert.That(app.Session.GetSummary().Seed,Is.GreaterThanOrEqualTo(0));

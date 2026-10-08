@@ -30,6 +30,7 @@ namespace Game.View
         string estateId;
         int mapWidth, mapHeight, season, previousSeason, level;
         float visualTime, seasonAge, heroHitUntil, shakeUntil, levelAge = 10;
+        public bool ShowAnnouncements { get; set; } = true;
         public bool ShowDamageNumbers { get; set; } = true;
         public bool ShakeEnabled { get; set; } = true;
         public Vector2 CameraShakeOffset { get; private set; }
@@ -110,7 +111,8 @@ namespace Game.View
             var lord = Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
             var shake = ShakeEnabled ? Mathf.Clamp01((shakeUntil - visualTime) / GameVisualTokens.ShakeSeconds) : 0;
             CameraShakeOffset = new Vector2(Mathf.Sin(visualTime * 113), Mathf.Cos(visualTime * 97)) * (shake * GameVisualTokens.ShakeAmplitude);
-            followCamera.Present(lord, current.EstateExtent, seconds); followCamera.SetVisualOffset(CameraShakeOffset);
+            followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels); followCamera.SetVisualOffset(CameraShakeOffset);
+            announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
             DrawTerrain();

@@ -19,6 +19,14 @@ namespace Tests.EditMode
                 notices.ShowSeason(1); notices.ShowBoss(bossId); notices.ShowSeason(3);
                 notices.Present(0.1f, new Rect(0, 0, 900, 1600), new Vector2(450, 1500));
                 Assert.That(notices.Message, Is.EqualTo("보스 출현")); Assert.That(notices.AtBottom, Is.True);
+                notices.SetSuppressed(true);
+                Assert.That(notices.Visible, Is.False);
+                notices.Present(30f, new Rect(0, 0, 900, 1600), Vector2.zero);
+                Assert.That(notices.Visible, Is.False); Assert.That(notices.Message, Is.EqualTo("보스 출현"));
+                notices.SetSuppressed(false);
+                Assert.That(notices.Visible, Is.True);
+                notices.Present(0.1f, new Rect(0, 0, 900, 1600), new Vector2(450, 300));
+                Assert.That(notices.Message, Is.EqualTo("보스 출현"), "Suppression must freeze the priority notice timer and preserve the deferred season.");
                 notices.Present(1.8f, new Rect(0, 0, 900, 1600), new Vector2(450, 300));
                 Assert.That(notices.Message, Is.EqualTo("겨울")); Assert.That(notices.Visible, Is.True); Assert.That(notices.AtBottom, Is.False);
                 notices.Present(1.8f, new Rect(0, 0, 900, 1600), Vector2.zero);

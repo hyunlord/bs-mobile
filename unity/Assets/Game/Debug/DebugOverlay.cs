@@ -38,8 +38,8 @@ namespace Game.Debug
             get
             {
                 var safe = Screen.safeArea;
-                var scale = Screen.width / 360f;
-                return IsOpen ? safe : new Rect(safe.xMax - 88 * scale, safe.yMax - 56 * scale, 88 * scale, 56 * scale);
+
+                return IsOpen ? safe : default;
             }
         }
         public bool BlocksPointer(Vector2 position) => HitBounds.Contains(position);
@@ -51,8 +51,6 @@ namespace Game.Debug
             canvas = root.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = 100;
             var scaler = root.GetComponent<UnityEngine.UI.CanvasScaler>(); scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(360,800); scaler.matchWidthOrHeight = 0;
             safeRoot = Rect("SafeArea",root.transform); Stretch(safeRoot);
-            var toggle = Button(safeRoot, "개발", font, () => SetOpen(!IsOpen));
-            toggle.anchorMin = toggle.anchorMax = new Vector2(1,1); toggle.pivot = new Vector2(1,1); toggle.anchoredPosition = new Vector2(-8,-8); toggle.sizeDelta = new Vector2(80,48);
             var panelRect = Rect("Panel",safeRoot); Stretch(panelRect); panel = panelRect.gameObject; Background(panelRect);
             Place(Button(panelRect,"개발 메뉴 닫기",font,()=>SetOpen(false)),8,8,48);
             var viewport = Rect("Viewport",panelRect); Stretch(viewport); viewport.offsetMin = new Vector2(8,8); viewport.offsetMax = new Vector2(-8,-64);

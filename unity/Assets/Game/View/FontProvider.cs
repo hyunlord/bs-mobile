@@ -6,7 +6,7 @@ namespace Game.View
 {
     public static class FontProvider
     {
-        public const string Labels = "씨앗과 공성 시작 설정 돌아가기 이동 방향 가까운 적 자동 조준 한 손으로 화면을 끌어 이동하세요 공격과 도구는 자동으로 작동합니다 봄 여름 가을 겨울 남음 체력 경험치 레벨 성장 선택 현재 보유 없음 무기 도구 사람 땅 장신구 진화 다시 뽑기 금지 고정 해제 선택하면 계속됩니다 생존 사망 한 해 완료 결산 사냥 수확 세금 피해 비중 다시 하기 나가기 오류 준비 중 잠시 멈춤 계속 희귀도는 선택 후 결정됩니다";
+        public const string Labels = "씨앗과 공성 시작 설정 돌아가기 이동 방향 가까운 적 자동 조준 한 손으로 화면을 끌어 이동하세요 공격과 도구는 자동으로 작동합니다 봄 여름 가을 겨울 남음 체력 경험치 레벨 성장 선택 현재 보유 없음 무기 도구 사람 땅 장신구 진화 다시 뽑기 금지 고정 해제 선택하면 계속됩니다 생존 사망 한 해 완료 결산 사냥 수확 세금 피해 비중 다시 하기 나가기 오류 준비 중 잠시 멈춤 계속 일반 희귀 영웅 조건 가능 완료 처치 이번 판 빌드 보스 격파 미격파 소리 음량 진동 화면 흔들림 피해 숫자 켜짐 꺼짐 익은 밭 백성 징집 함께 키우세요 0123456789% → +";
         public static Font Create(IEnumerable<string> contentNames)
         {
             var text = Labels + string.Concat(contentNames);
