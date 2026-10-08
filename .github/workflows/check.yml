@@ -31,7 +31,7 @@ jobs:
       head: ${{ steps.resolve.outputs.head }}
       number: ${{ steps.resolve.outputs.number }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ needs.dependency-context.outputs.head || github.sha }}
           fetch-depth: 0
@@ -83,10 +83,10 @@ jobs:
           fs.writeFileSync(eventPath,JSON.stringify({pull_request:pr,number:pr.number}));
           fs.appendFileSync(process.env.GITHUB_ENV,'DEPENDENCY_EVENT_PATH='+eventPath+'\n');
           NODE
-      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
           global-json-file: global.json
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '22'
           cache: npm
@@ -99,7 +99,7 @@ jobs:
         run: node tools/metrics.mjs artifacts/metrics.json artifacts/trends
         env:
           METRICS_SHA: ${{ needs.dependency-context.outputs.head || github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: evidence-${{ github.sha }}
@@ -116,7 +116,7 @@ jobs:
       contents: read
       pull-requests: read
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ needs.dependency-context.outputs.head || github.sha }}
           fetch-depth: 0
