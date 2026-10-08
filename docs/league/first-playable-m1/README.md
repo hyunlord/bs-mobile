@@ -1,3 +1,31 @@
+관문: 통과 — 재건 수정본 candidate-02의576조건·1728회와 (b)·c′·무기 하한·혼합 관문 모두 통과.
+소스: `7e4dd4ad149722b1bb1b7df51438bd33d99e27e3`의 깨끗한 작업 트리에서 실행했다.
+변경: 폐허 재건 문맥과 단계 재건 우회 결함을 고친 뒤 같은 seed로 전체 리그를 다시 실행했다.
+검증: 전체343테스트, 구현 관찰156개, 두 실제 Core DLL의 신규30회·역사96회 재생 일치.
+리그: seed40000–40031 × 사람규칙ABC × 정책6, 각27000틱·3반복 일치; 새 독립 holdout이 아닌 수정 전후 대응 비교다.
+한계: 모든 정책32/32 생존, 수정 전후 리그의 게임플레이·진단·카드 해시는 동일했다. 실제 재건 효과는 별도 회귀 검사로 증명했다.
+보존: candidate-01의 정본·당시 판정·발견 결함을 아래에 유지한다. 관문을 위한 수치 보정은 하지 않았다.
+연결: [PR #99](https://github.com/hyunlord/bs-mobile/pull/99), [수정 소스 CI](https://github.com/hyunlord/bs-mobile/actions/runs/37828211351), [종합 진행표](../../review/phase1b-first-playable.md).
+
+# M1 candidate-02
+
+| 후보 | 실행 소스 | 조건·반복 | (b) / c′ / 무기 하한 | 혼합≥random | 생존율 |
+|---|---|---|---|---|---|
+| candidate-01 (보존) | aec84d2 | 576×3 | 모두 통과 | 3/3, 동률 | 18정책·규칙 셀 각각32/32 |
+| candidate-02 (현재) | 7e4dd4a | 576×3 | 모두 통과 | 3/3, 동률 | 18정책·규칙 셀 각각32/32 |
+
+수정은 실제4회 성장 발동의 재건 완료 시 폐허 문맥을 보존하고, 수호 고리 진화의 수동적 수선이 폐허를 즉시 되살려 단계를 건너뛰지 못하게 한다. 신규13회귀를 포함한343테스트가 통과했다. 이 수정의 효과를 리그가 관측했다고 확대하지 않는다. 대응576사례의 생존·틱·레벨·피해·경험치·식량·수확·RNG·게임플레이/진단/카드 해시에는 차이가 없었다. 실행 소스·DLL과 원본 packet 식별자는 새 provenance로 구분한다.
+
+현재 관문 재계산의 정본은 `candidate-02/runs.csv`와 `candidate-02/provenance.csv`다. 무기·장비·진화·종료 상태 진단CSV4개는 candidate-01과 바이트 단위로 동일해서 복제하지 않고 기존 파일을 참조한다. 로컬의 상세coverage/runtime-effects CSV도 동일함을 확인했다. 진화8종658회·397사례 관측과 아래 진단 해석도 같으며, 구성 효과의 인과적 우위는 뜻하지 않는다.
+
+```sh
+node tools/first-playable-report.mjs docs/league/first-playable-m1/candidate-02 artifacts/phase1b/m1-candidate-02-recalculated full
+```
+
+현재 실행 출력과 CSV 재생성의 `condition-ranks.csv`, `gates.csv`, `mixed.csv`, `outcomes.csv`, `ratios.csv`, `report.md`6개가 바이트 단위로 동일하다. 전체 packet은 로컬 `artifacts/phase1b/m1-candidate-02/`에 보존한다. 표본 선정과 업로드 제한은 candidate-01과 동일하다.
+
+# 보존: candidate-01 당시 결과
+
 관문: 통과 — M1 정식576조건·1728회, (b)·c′·무기 하한·혼합 관문 모두 통과.
 소스: `aec84d2a5097a001d2203dcd069f1e55ea267fa0`의 깨끗한 작업 트리에서 빌드·실행했다.
 변경: 별도15분 first-playable 프로필의 실제 콘텐츠와 공격·영지·이벤트를 검증했다.
