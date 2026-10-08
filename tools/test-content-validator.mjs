@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -397,10 +397,12 @@ test('S4b allows only lord health and threat changes and ignores object key orde
 test('S4b compares against current base tuning rather than freezing historical IDs or numbers', async t => {
   const f = await experimentFixture(t); f.wrapper.tuning.world.map.lordSpeed++;
   await writeFile(path.join(f.directory, 'tuning.json'), JSON.stringify(f.wrapper.tuning));
-  const existingPath = path.join(f.directory, 'tuning-s4b-01.json');
-  const existing = JSON.parse(await readFile(existingPath, 'utf8'));
-  existing.tuning.world.map.lordSpeed = f.wrapper.tuning.world.map.lordSpeed;
-  await writeFile(existingPath, JSON.stringify(existing));
+  for (const filename of (await readdir(f.directory)).filter(name => /^tuning-s4b-[a-zA-Z0-9_-]+\.json$/.test(name))) {
+    const existingPath = path.join(f.directory, filename);
+    const existing = JSON.parse(await readFile(existingPath, 'utf8'));
+    existing.tuning.world.map.lordSpeed = f.wrapper.tuning.world.map.lordSpeed;
+    await writeFile(existingPath, JSON.stringify(existing));
+  }
   await f.save(); const result = await validateContent(f.directory, { fullPool: true });
   assert.equal(result.valid, true, result.errors.join('\n'));
 });
