@@ -1,20 +1,28 @@
+using System;
 using UnityEngine;
-
+using UnityEngine.UI;
 namespace Game.View
 {
     public sealed class FoundationStatus : MonoBehaviour
     {
-        public string Message { get; set; } = "Verifying game data...";
+        public string Message { get; set; } = "준비 중";
         public bool Failed { get; set; }
-        public static readonly Color Ground = new Color32(231, 229, 223, 255);
-        private GUIStyle style;
-
-        private void OnGUI()
+        public static Color Ground => GamePalette.Ground;
+        private UiShell ui;
+        private Text label;
+        private Font font;
+        private void Start()
         {
-            if (style == null) style = new GUIStyle(GUI.skin.label) { wordWrap = true, fontSize = 16 };
-            style.normal.textColor = Failed ? new Color32(143, 56, 53, 255) : new Color32(37, 42, 45, 255);
-            var safe = Screen.safeArea;
-            GUI.Label(new Rect(safe.x + 16, Screen.height - safe.yMax + 24, safe.width - 32, safe.height - 48), Message, style);
+            try
+            {
+                font=FontProvider.Create(Array.Empty<string>());
+                var root=new GameObject("Boot status",typeof(RectTransform));root.transform.SetParent(transform,false);ui=root.AddComponent<UiShell>();ui.Initialize(font);
+                label=ui.Label(ui.Panel("Boot"),Message,GamePalette.BodySize,240);
+            }
+            catch(Exception e){Message="Unable to display Korean text: "+e.Message;UnityEngine.Debug.LogError(e.Message);}
         }
+        private void Update(){if(label!=null){label.text=Message;label.color=Failed?GamePalette.Danger:GamePalette.Text;}}
+        private void OnGUI(){if(label==null)GUI.Label(new Rect(16,24,Screen.width-32,Screen.height-48),Message);}
+        private void OnDestroy(){if(ui!=null)Destroy(ui.gameObject);if(font!=null)Destroy(font);}
     }
 }

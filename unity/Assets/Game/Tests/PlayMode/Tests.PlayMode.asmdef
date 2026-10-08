@@ -1,7 +1,11 @@
 {
   "name": "Tests.PlayMode",
   "references": [
-    "Game.App"
+    "Game.App",
+    "Game.View",
+    "Game.Input",
+    "UnityEngine.UI",
+    "Game.Debug"
   ],
   "autoReferenced": false,
   "overrideReferences": true,

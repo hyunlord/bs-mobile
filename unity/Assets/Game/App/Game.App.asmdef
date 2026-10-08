@@ -3,7 +3,9 @@
   "references": [
     "Game.View",
     "Game.Input",
-    "Game.Debug"
+    "Game.Debug",
+    "UnityEngine.UI",
+    "Unity.InputSystem"
   ],
   "autoReferenced": false,
   "overrideReferences": true,

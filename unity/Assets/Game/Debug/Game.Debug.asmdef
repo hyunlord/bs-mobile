@@ -1,6 +1,8 @@
 {
   "name": "Game.Debug",
-  "references": [],
+  "references": [
+    "UnityEngine.UI"
+  ],
   "autoReferenced": false,
   "overrideReferences": true,
   "precompiledReferences": [

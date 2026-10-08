@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Game.App;
 using Game.App.Generated;
+using SowSiege.Core;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -97,6 +98,21 @@ namespace Game.Editor
         public override void PrepareForBuild(BuildPlayerContext context)
         {
             FoundationBuild.VerifyGenerated();
+            if ((context.BuildPlayerOptions.options & BuildOptions.Development) != 0)
+            {
+                for (var seed = 30000; seed < 30005; seed++)
+                {
+                    var source = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1a/replays", seed + ".ssreplay");
+                    if (!File.Exists(source)) throw new BuildFailedException("Missing freshly generated replay fixture: " + source);
+                    using (var input = File.OpenRead(source))
+                    {
+                        var replay = ReplayCodec.Read(input);
+                        if (replay.Header.Options.DataHash != CanonicalContent.DataHash || replay.Header.Options.Run.Seed != seed)
+                            throw new BuildFailedException("Replay fixture identity is stale: " + source);
+                    }
+                    context.AddAdditionalPathToStreamingAssets(source, "replays/" + seed + ".ssreplay");
+                }
+            }
             foreach (var file in CanonicalContent.Files)
             {
                 var source = Path.Combine(FoundationBuild.RepoRoot, "data", file.RelativePath);

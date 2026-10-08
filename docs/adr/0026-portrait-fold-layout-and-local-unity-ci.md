@@ -19,3 +19,7 @@ GitHub Actions는 기존 Core 검사만 수행한다. 공개 저장소에 개인
 실기 프레임은 1배속 마지막 계절의 전체 표본을 유지한다. nearest-rank p95와 최대 프레임 시간·최대 개체 수·가능한 thermal status를 기록한다. 이른 사망으로 마지막 계절이 없으면 불완전한 성능 관측이다. 별도 무적 부하 판을 쓰면 일반 플레이와 구분해 기록한다. 16.7ms 목표를 넘으면 실제 병목과 개선안을 보고한다.
 
 참고: [Unity 테스트 CLI](https://docs.unity3d.com/6000.6/Documentation/Manual/test-framework/reference-command-line.html), [safeArea](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Screen-safeArea.html), [Android 큰 화면 Unity 지침](https://developer.android.com/games/engines/unity/unity-large-screen?hl=en).
+
+## 2026-10-09 시험 기기 명칭 정정
+
+사용자가 실제 연결 모델 SM-F966N을 확인한 뒤 시험 기기를 Galaxy Z Fold7으로 정정했다([#93](https://github.com/hyunlord/bs-mobile/issues/93)). Android 16 기기에서 무선 디버깅으로 검사한다. 기존 Fold8 명칭은 당시 의뢰 기록이며 현재 시험 대상이 아니다. 물리 접기·펼치기 각3회는 사용자 조작이 가능한 때 수행하며, 현재 화면의 결과를 두 자세의 검증으로 확대하지 않는다.

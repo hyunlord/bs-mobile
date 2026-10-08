@@ -23,6 +23,9 @@ for platform in EditMode PlayMode; do
   "$EDITOR" -batchmode -projectPath "$ROOT/unity" -runTests -testPlatform "$platform" -testResults "$result" -logFile "$OUT/$platform.log"
   dotnet run --project tools/UnityResultCheck -- "$result"
 done
+"$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -executeMethod Game.Editor.ReleaseBoundaryCheck.Run -logFile "$OUT/release-boundary.log"
+dotnet run --project tools/UnityResultCheck -- --release "$ROOT/artifacts/unity/release-scripts" > "$OUT/release-boundary.txt"
+cat "$OUT/release-boundary.txt"
 bash tools/prepare-unity.sh --verify
 rm -f "$UNITY_APK_PATH" "$OUT/build-result.json"
 "$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -buildTarget Android -executeMethod Game.Editor.FoundationBuild.Android -logFile "$OUT/android-build.log"

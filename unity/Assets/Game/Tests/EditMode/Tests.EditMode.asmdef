@@ -4,7 +4,10 @@
     "Game.App",
     "Game.Editor",
     "Unity.RenderPipelines.Universal.Runtime",
-    "Unity.RenderPipelines.Universal.2D.Runtime"
+    "Unity.RenderPipelines.Universal.2D.Runtime",
+    "Game.View",
+    "Game.Input",
+    "UnityEngine.UI"
   ],
   "autoReferenced": false,
   "overrideReferences": true,

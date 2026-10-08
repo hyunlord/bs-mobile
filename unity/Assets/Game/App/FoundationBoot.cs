@@ -20,6 +20,7 @@ namespace Game.App
 
         private IEnumerator Start()
         {
+            Application.targetFrameRate = 60;
             DontDestroyOnLoad(gameObject);
             var status = gameObject.AddComponent<FoundationStatus>();
             var files = new Dictionary<string, byte[]>(StringComparer.Ordinal);
@@ -44,10 +45,15 @@ namespace Game.App
                 VerifiedDataHash = BundleVerifier.Verify(files);
                 Catalog = CanonicalContent.CreateCatalog();
                 Complete = true;
-                status.Message = "Foundation ready\nProfile: " + CanonicalContent.ProfileName + "\nData: " + VerifiedDataHash + "\nPlayable run follows in phase U3.";
+                status.Message = "준비 완료";
             }
             catch (Exception exception) { Fail(status, exception.Message); }
-            if (Complete) yield return SceneManager.LoadSceneAsync("Meta");
+            if (Complete)
+            {
+                yield return SceneManager.LoadSceneAsync("Meta");
+                Destroy(status);
+                gameObject.AddComponent<RunCoordinator>().Initialize();
+            }
         }
 
         private void Fail(FoundationStatus status, string reason)
@@ -56,7 +62,7 @@ namespace Game.App
             VerifiedDataHash = null;
             Error = reason;
             status.Failed = true;
-            status.Message = "Game data could not be verified.\n" + reason;
+            status.Message = "게임 데이터를 확인할 수 없습니다.\n" + reason;
             UnityEngine.Debug.LogError(reason);
         }
     }
