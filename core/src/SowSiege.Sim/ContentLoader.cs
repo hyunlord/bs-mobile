@@ -18,8 +18,10 @@ public static partial class ContentLoader
 
     public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
-        var tuning = Read<Tuning>(Path.Combine(directory, "tuning.json"));
+        var baseline = Read<Tuning>(Path.Combine(directory, "tuning.json"));
         var profile = LoadProfile(directory, profileName);
+        var experiment = LoadExperiment(directory, profile, baseline);
+        var tuning = experiment?.Tuning ?? baseline;
         var selection = profile.Select(includeTest);
         var allowS4 = profile.Runtime is not null;
         var roots = includeTest ? new[] { directory, Path.Combine(directory, "test") } : new[] { directory };
@@ -28,6 +30,13 @@ public static partial class ContentLoader
         var estates = LoadSelected<EstateContent, EstateDefinition>(roots, "estates", selection.Estates, estate => estate.ToCore(), allowS4);
         var weapons = LoadSelected<WeaponContent, WeaponDefinition>(roots, "weapons", selection.Weapons, weapon => weapon.ToCore(), allowS4);
         var enemies = LoadSelected<EnemyContent, EnemyDefinition>(roots, "enemies", selection.Enemies, enemy => enemy.ToCore(), allowS4);
+        if (experiment is not null)
+        {
+            foreach (var change in experiment.EnemyOverrides)
+            {
+                var enemy = enemies[change.Id]; enemies[change.Id] = enemy with { Speed = change.Speed, Damage = change.Damage, Health = change.Health, AttackCooldownTicks = change.AttackCooldownTicks };
+            }
+        }
         var allIds = tools.Keys.Concat(heroes.Keys).Concat(estates.Keys).Concat(weapons.Keys).Concat(enemies.Keys).ToArray();
         Require(allIds.All(value => NamespaceId().IsMatch(value)), "Invalid namespace ID.");
         Require(allIds.Distinct(StringComparer.Ordinal).Count() == allIds.Length, "Duplicate content ID across kinds.");
@@ -54,7 +63,7 @@ public static partial class ContentLoader
         Require(heroes.ContainsKey(tuning.DefaultHero) && estates.ContainsKey(tuning.DefaultEstate), "Unknown default hero or estate.");
         ValidateWorld(tuning, weapons);
         var runtime = profile.Runtime is null ? null : LoadRuntime(roots, profile.Runtime, selection, tools, weapons);
-        return new(tuning, tools, heroes, estates, weapons, enemies, runtime);
+        return new(tuning, tools, heroes, estates, weapons, enemies, runtime, experiment?.Experiment);
     }
 
     public static RuntimeProfile LoadProfile(string directory, string profileName = "s2-baseline")
@@ -144,6 +153,7 @@ public static partial class ContentLoader
 
     private static T Read<T>(string path)
     {
+        Require((File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0, $"Content symlink is not allowed: {path}");
         using var document = JsonDocument.Parse(File.ReadAllText(path));
         ValidateRequiredShape(document.RootElement, typeof(T), path);
         return document.RootElement.Deserialize<T>(JsonOptions) ?? throw new InvalidDataException($"Null content: {path}");
@@ -154,8 +164,8 @@ public static partial class ContentLoader
         Require(element.ValueKind != JsonValueKind.Null, $"Null content at {location}.");
         if (type == typeof(int))
         {
-            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum" };
-            var minimum = location.EndsWith(".amount", StringComparison.Ordinal) ? -1000000 : zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
+            var zeroAllowed = new[] { ".initialPeasants", ".initialFood", ".knockback", ".rerolls", ".bans", ".locks", ".radius", ".durationTicks", ".foodCost", ".minimum", ".linear" };
+            var minimum = (location.EndsWith(".amount", StringComparison.Ordinal) || location.EndsWith(".x", StringComparison.Ordinal) || location.EndsWith(".y", StringComparison.Ordinal)) ? -1000000 : zeroAllowed.Any(suffix => location.EndsWith(suffix, StringComparison.Ordinal)) ? 0 : 1;
             Require(element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var number) && number >= minimum && number <= 1000000, $"Integer out of content bounds at {location}.");
             return;
         }
@@ -184,13 +194,14 @@ public static partial class ContentLoader
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
             if (!element.TryGetProperty(name, out var member))
             {
-                if (name is "runtime" or "runtimeProjection")
+                if (name is "runtime" or "runtimeProjection" || name == "experiment" && type == typeof(RuntimeProfile))
                 {
                     continue;
                 }
 
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
+            Require(!(type == typeof(RuntimeProfile) && name == "experiment" && member.ValueKind == JsonValueKind.Null), "Experiment must be omitted or a complete object.");
             if (member.ValueKind == JsonValueKind.Null && new System.Reflection.NullabilityInfoContext().Create(property).ReadState == System.Reflection.NullabilityState.Nullable)
             {
                 continue;

@@ -1,0 +1,8 @@
+"gate","pass","applicable"
+"validity","true","true"
+"a","false","false"
+"b","true","false"
+"c","false","false"
+"d","true","false"
+"XP","false","false"
+"mixed-ledger","true","false"

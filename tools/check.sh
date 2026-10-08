@@ -28,3 +28,8 @@ cp artifacts/metrics.json artifacts/metrics-s2.json
 node tools/league.mjs s4-smoke --profile s4-stage-one --workers 2
 cp artifacts/league-s4-smoke/metrics.json artifacts/metrics.json
 node tools/s4-report.mjs artifacts/league-s4-smoke artifacts/s4-smoke-report --no-plots
+S4B_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/s4b-smoke.XXXXXX")
+node tools/s4b-league.mjs smoke-A --profile s4b-01 --output "$S4B_SMOKE_ROOT/A" --workers 2
+node tools/s4b-report.mjs "$S4B_SMOKE_ROOT/A" "$S4B_SMOKE_ROOT/A-report"
+node tools/s4b-league.mjs smoke-B --profile s4b-01 --output "$S4B_SMOKE_ROOT/B" --workers 2
+node tools/s4b-report.mjs "$S4B_SMOKE_ROOT/B" "$S4B_SMOKE_ROOT/B-report"

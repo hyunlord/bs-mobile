@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -303,4 +303,106 @@ for(const [name,relative,mutate,expected] of runtimeMutations) test(`S4 rejects 
   await writeFile(filename,JSON.stringify(value));
   const result=await validateContent(directory,{fullPool:true});
   assert.equal(result.valid,false);assert.match(result.errors.join('\n'),expected);
+});
+
+async function experimentFixture(t) {
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-experiment-schema-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(fileURLToPath(new URL('../data', import.meta.url)), directory, { recursive: true });
+  const tuning = JSON.parse(await readFile(path.join(directory, 'tuning.json'), 'utf8'));
+  const profile = JSON.parse(await readFile(path.join(directory, 'profiles/s4-stage-one.json'), 'utf8'));
+  profile.id = 'test:experiment_validation';
+  profile.experiment = { contractVersion: 1, tuningFile: 'tuning-s4b-validation.json' };
+  const wrapper = {
+    tuning,
+    enemyOverrides: profile.selection.enemies.map(id => ({ id, speed: 1, damage: 1, health: 1, attackCooldownTicks: 1 })),
+    experiment: {
+      movement: { circuitOffsets: [{x: -1, y: 0}, {x: 1, y: 0}], decisionPeriodTicks: 30, evadeRange: 10, evadeStep: 1 },
+      experience: { base: 1, linear: 0, quadratic: 1 },
+      mixedCategoryOrder: ['weapon', 'land', 'building', 'people'],
+    },
+  };
+  async function save() {
+    await writeFile(path.join(directory, 'profiles/experiment-validation.json'), JSON.stringify(profile));
+    await writeFile(path.join(directory, 'tuning-s4b-validation.json'), JSON.stringify(wrapper));
+  }
+  return { directory, wrapper, profile, save };
+}
+test('optional experiment wrapper validates without changing legacy tuning or profiles', async t => {
+  const f = await experimentFixture(t);
+  const before = await readFile(path.join(f.directory, 'tuning.json'), 'utf8');
+  await f.save();
+  const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+  assert.equal(await readFile(path.join(f.directory, 'tuning.json'), 'utf8'), before);
+});
+const experimentMutations = [
+  ['unsafe parent path', f => { f.profile.experiment.tuningFile = '../tuning-s4b-validation.json'; }, /schema violation|safe tuning/],
+  ['absolute path', f => { f.profile.experiment.tuningFile = '/tmp/tuning-s4b-validation.json'; }, /schema violation|safe tuning/],
+  ['Windows path', f => { f.profile.experiment.tuningFile = 'dir\\tuning-s4b-validation.json'; }, /schema violation|safe tuning/],
+  ['wrong contract', f => { f.profile.experiment.contractVersion = 2; }, /schema violation/],
+  ['missing file', f => { f.profile.experiment.tuningFile = 'tuning-s4b-absent.json'; }, /missing experiment tuning/],
+  ['unknown override ID', f => { f.wrapper.enemyOverrides[0].id = 'core:absent'; }, /unresolved enemy|override IDs/],
+  ['duplicate override', f => { f.wrapper.enemyOverrides.push(f.wrapper.enemyOverrides[0]); }, /duplicate enemy override|override IDs/],
+  ['missing selected enemy', f => { f.wrapper.enemyOverrides.pop(); }, /override IDs/],
+  ['zero enemy stat', f => { f.wrapper.enemyOverrides[0].health = 0; }, /schema violation/],
+  ['oversized enemy stat', f => { f.wrapper.enemyOverrides[0].speed = 1_000_001; }, /schema violation/],
+  ['unknown wrapper field', f => { f.wrapper.extra = 1; }, /schema violation/],
+  ['unknown movement field', f => { f.wrapper.experiment.movement.extra = 1; }, /schema violation/],
+  ['fractional coefficient', f => { f.wrapper.experiment.experience.linear = 0.5; }, /schema violation/],
+  ['negative coefficient', f => { f.wrapper.experiment.experience.linear = -1; }, /schema violation/],
+  ['zero quadratic', f => { f.wrapper.experiment.experience.quadratic = 0; }, /schema violation/],
+  ['unsafe coefficient', f => { f.wrapper.experiment.experience.quadratic = Number.MAX_SAFE_INTEGER; }, /schema violation/],
+  ['decision after duration', f => { f.wrapper.experiment.movement.decisionPeriodTicks = f.wrapper.tuning.durationTicks + 1; }, /decision period exceeds/],
+  ['offset outside map', f => { f.wrapper.experiment.movement.circuitOffsets[0].x = f.wrapper.tuning.world.map.width + 1; }, /offset exceeds map/],
+  ['clamped duplicate waypoints', f => { const w=f.wrapper.tuning.world.map.width; f.wrapper.experiment.movement.circuitOffsets = [{x:-w,y:0},{x:-w+1,y:0}]; }, /distinct clamped waypoints/],
+  ['duplicate mixed category', f => { f.wrapper.experiment.mixedCategoryOrder[0] = 'land'; }, /schema violation/],
+  ['nested season mismatch', f => { f.wrapper.tuning.world.seasons[0].durationTicks++; }, /season durations/],
+  ['nested unknown hero', f => { f.wrapper.tuning.defaultHero = 'core:missing'; }, /unresolved hero/],
+];
+for (const [name, mutate, expected] of experimentMutations) test(`S4b rejects ${name}`, async t => {
+  const f = await experimentFixture(t); mutate(f); await f.save();
+  const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, false); assert.match(result.errors.join('\n'), expected);
+});
+test('maximum bounded XP coefficients remain valid because runtime uses saturating BigInteger arithmetic', async t => {
+  const f = await experimentFixture(t);
+  f.wrapper.experiment.experience = { base: 1_000_000, linear: 1_000_000, quadratic: 1_000_000 };
+  await f.save(); const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});
+
+for (const [name, mutate] of [
+  ['policy weights', tuning => { tuning.policies.weapon.damageMultiplier++; }],
+  ['farm yield', tuning => { tuning.world.farms.foodPerHarvest++; }],
+  ['people capacity', tuning => { tuning.world.people.maxPeople++; }],
+  ['building count', tuning => { tuning.world.buildings.siteCount++; }],
+  ['movement speed', tuning => { tuning.world.map.lordSpeed++; }],
+  ['progression budget', tuning => { tuning.world.progression.rerolls++; }],
+  ['season growth', tuning => { tuning.world.seasons[0].growthMultiplier++; }],
+  ['damage roll', tuning => { tuning.damageRollMax++; }],
+]) test(`S4b global-only boundary rejects independent ${name}`, async t => {
+  const f = await experimentFixture(t); mutate(f.wrapper.tuning); await f.save();
+  const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, false); assert.match(result.errors.join('\n'), /outside preregistered global tuning/);
+});
+test('S4b allows only lord health and threat changes and ignores object key order', async t => {
+  const f = await experimentFixture(t);
+  f.wrapper.tuning.world.map.lordHealth++;
+  f.wrapper.tuning.world.threat.spawnPeriodTicks++;
+  f.wrapper.tuning = Object.fromEntries(Object.entries(f.wrapper.tuning).reverse());
+  await f.save(); const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
+});
+test('S4b compares against current base tuning rather than freezing historical IDs or numbers', async t => {
+  const f = await experimentFixture(t); f.wrapper.tuning.world.map.lordSpeed++;
+  await writeFile(path.join(f.directory, 'tuning.json'), JSON.stringify(f.wrapper.tuning));
+  for (const filename of (await readdir(f.directory)).filter(name => /^tuning-s4b-[a-zA-Z0-9_-]+\.json$/.test(name))) {
+    const existingPath = path.join(f.directory, filename);
+    const existing = JSON.parse(await readFile(existingPath, 'utf8'));
+    existing.tuning.world.map.lordSpeed = f.wrapper.tuning.world.map.lordSpeed;
+    await writeFile(existingPath, JSON.stringify(existing));
+  }
+  await f.save(); const result = await validateContent(f.directory, { fullPool: true });
+  assert.equal(result.valid, true, result.errors.join('\n'));
 });

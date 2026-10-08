@@ -64,9 +64,9 @@ export async function boundedMap(items, limit, work) {
   if (failure) throw failure;
   return output;
 }
-function runtimeIdentity(metrics) {
+function runtimeIdentity(metrics, expectedStage = 'S4') {
   const source = object(metrics.sourceMetadata, 'sourceMetadata');
-  requireValue(metrics.stage === 'S4', 'Refusing non-S4 telemetry');
+  requireValue(metrics.stage === expectedStage, 'Unexpected telemetry stage');
   const identity = {
     profileId: text(source.profileId, 'profile ID'), profileSha256: hash(source.profileSha256, 'profile hash'), contentSha256: hash(source.contentSha256, 'content hash'),
     sourceCommit: hash(source.commit, 'source commit', 40), sourceTreeSha256: hash(source.sourceTreeSha256, 'source tree hash'), sourceDirty: source.gitDirty,
@@ -97,7 +97,7 @@ export function extractS4Case(packet, expected) {
   const results = list(packet.results, 'results');
   requireValue(results.length === expected.repeatCount, `Repeat count mismatch ${caseInfo.caseId}`);
   const first = results[0];
-  const identity = runtimeIdentity(metrics);
+  const identity = runtimeIdentity(metrics, expected.stage ?? 'S4');
   requireValue(identity.requestedTicks === expected.requestedTicks, 'Case tick cap mismatch');
   requireValue(first.policy === caseInfo.policy && first.peopleRule === caseInfo.peopleRule && first.seed === caseInfo.seed && first.scenario === 'normal', 'Case identity mismatch');
   requireValue(metrics.policy === first.policy && metrics.seed === first.seed && metrics.sourceMetadata.peopleRule === first.peopleRule, 'Metrics case identity mismatch');

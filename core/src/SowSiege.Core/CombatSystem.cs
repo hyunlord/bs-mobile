@@ -1,6 +1,6 @@
 namespace SowSiege.Core;
 
-internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, SpatialHash spatial, RuntimeSystem? runtime = null)
+internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, SpatialHash spatial, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null)
 {
     private readonly EnemyDefinition[] enemyTypes = catalog.Enemies.Values.OrderBy(enemy => enemy.Id, StringComparer.Ordinal).ToArray();
 
@@ -134,6 +134,7 @@ internal sealed class CombatSystem(ContentCatalog catalog, RunOptions options, W
                 var farm = world.Farms.First(farm => farm.Id == enemy.TargetId);
                 if (!(enemy.LastTarget == "seed" ? farm.Stage <= 1 : farm.Stage == catalog.Tuning.World.Farms.StageTicks.Length - 1)) { enemy.TargetRefreshTick = 0; continue; }
                 if (runtime?.ShieldFarm(farm, enemy) == true) { continue; }
+                experiment?.CloseRipe(farm, "destroyed");
                 farm.Stage = 0; farm.Progress = 0; farm.Fertility = 0;
             }
             else if (enemy.LastTarget == "building")
