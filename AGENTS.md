@@ -29,7 +29,7 @@ CI는 자동화 가능한 경계만 증명한다. P2·P4·P5 등의 재미·조�
 
 ## 실행과 검증
 
-필수: Git, Bash, Node.js 22 이상(npm 포함), .NET 8 SDK; 런북의 JSON 편집 예제에는 Python 3; GitHub 작업에는 인증된 `gh` CLI. 루트에서:
+필수: Git, Bash, Node.js 22 이상(npm 포함), .NET 8 SDK; ZIP 작성·검증에는 시스템 zip/unzip; GitHub 작업에는 인증된 `gh` CLI. 루트에서:
 
 ```sh
 ./tools/check.sh

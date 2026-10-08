@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+node --test tools/test-repository-budget.mjs
+node tools/repository-budget.mjs
 export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 mkdir -p artifacts
 command -v dotnet >/dev/null || { echo 'Install .NET 8 SDK (see README).'; exit 1; }
 npm ci --ignore-scripts
 npm test
-node --test tools/test-pr-policy.mjs
-node --test tools/test-csv.mjs tools/test-s4*.mjs
+node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
+node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-package-stage.mjs
 npm run validate
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest

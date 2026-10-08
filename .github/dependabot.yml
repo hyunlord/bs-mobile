@@ -4,11 +4,47 @@ updates:
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      time: '03:00'
+      timezone: Asia/Seoul
+    commit-message:
+      prefix: 'build(deps)'
+    groups:
+      nuget-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+      nuget-major-review:
+        patterns: ['*']
+        update-types: [major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      time: '03:00'
+      timezone: Asia/Seoul
+    commit-message:
+      prefix: 'build(deps)'
+    groups:
+      actions-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+      actions-major-review:
+        patterns: ['*']
+        update-types: [major]
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+      day: monday
+      time: '03:00'
+      timezone: Asia/Seoul
+    commit-message:
+      prefix: 'build(deps)'
+    groups:
+      npm-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+      npm-major-review:
+        patterns: ['*']
+        update-types: [major]
