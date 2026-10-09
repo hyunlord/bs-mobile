@@ -89,8 +89,13 @@ namespace Game.View
             }
         }
 
-        public void AcceptFrame(RunFrame frame, FirstPlayableFrame firstPlayable)
+        public void AcceptFrame(RunFrame frame, FirstPlayableFrame firstPlayable) => AcceptFeedback(frame, null);
+
+        public void AcceptCommonFeedback(RunFrame frame, Action<string> output) => AcceptFeedback(frame, output ?? throw new ArgumentNullException(nameof(output)));
+
+        void AcceptFeedback(RunFrame frame, Action<string> commonOutput)
         {
+            void Emit(Cue cue) { if(commonOutput == null) Play(cue); else commonOutput(ClipNames[(int)cue]); }
             if (!initialized) throw new InvalidOperationException("Initialize audio before accepting frames.");
             if (frame == null) throw new ArgumentNullException(nameof(frame));
             for (var i = 0; i < frame.Events.Count; i++)
@@ -100,20 +105,20 @@ namespace Game.View
                 lastEventId = value.Id;
                 switch (value.Kind)
                 {
-                    case PresentationKind.Damage: if (value.Amount > 0) Play(Cue.Hit); break;
-                    case PresentationKind.EnemyKilled: Play(Cue.Kill); break;
-                    case PresentationKind.HarvestExperience: Play(Cue.Harvest); break;
-                    case PresentationKind.Evolution: Play(Cue.Evolution); break;
-                    case PresentationKind.LordHit: Play(Cue.Hurt); Vibrate(); break;
+                    case PresentationKind.Damage: if (value.Amount > 0) Emit(Cue.Hit); break;
+                    case PresentationKind.EnemyKilled: Emit(Cue.Kill); break;
+                    case PresentationKind.HarvestExperience: Emit(Cue.Harvest); break;
+                    case PresentationKind.Evolution: if(commonOutput == null) Play(Cue.Evolution); break;
+                    case PresentationKind.LordHit: Emit(Cue.Hurt); Vibrate(); break;
                     case PresentationKind.BossWarning:
-                        if (catalog.FirstPlayable != null && catalog.FirstPlayable.Enemies.TryGetValue(value.SourceId, out var enemy) && enemy.Rank == "boss")
+                        if (commonOutput == null && catalog.FirstPlayable != null && catalog.FirstPlayable.Enemies.TryGetValue(value.SourceId, out var enemy) && enemy.Rank == "boss")
                         {
                             Play(Cue.Boss); Vibrate();
                         }
                         break;
                 }
             }
-            if (lastLevel >= 0 && frame.Level > lastLevel) Play(Cue.Level);
+            if (lastLevel >= 0 && frame.Level > lastLevel) Emit(Cue.Level);
             lastLevel = frame.Level;
         }
 

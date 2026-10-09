@@ -28,11 +28,12 @@ namespace Game.App
                 if(wide){cardSize.minWidth=0;cardSize.preferredWidth=0;}
                 var heading=UiShell.Rect("Card heading",card);var headingLayout=heading.gameObject.AddComponent<HorizontalLayoutGroup>();headingLayout.spacing=8;headingLayout.childControlWidth=true;headingLayout.childForceExpandWidth=false;headingLayout.childControlHeight=true;headingLayout.childForceExpandHeight=false;
                 ui.Icon(heading,id,48);ui.Label(heading,display.DisplayName,UiTokens.Heading,48).gameObject.GetComponent<LayoutElement>().flexibleWidth=1;
-                ui.Label(card,Rarity(detail.Rarity)+$" · 레벨 {detail.CurrentLevel} → {detail.NextLevel}"+(offer.LockedCardId==id?" · 고정":""),UiTokens.Small,32);
+                var levelText=catalog.WaveRuntime==null?Rarity(detail.Rarity)+$" · 레벨 {detail.CurrentLevel} → {detail.NextLevel}":catalog.WaveRuntime.Evolutions.ContainsKey(id)?"진화 선택":detail.CurrentLevel>0?$"보유 레벨 {detail.CurrentLevel}":"새 성장 선택";
+                ui.Label(card,levelText+(offer.LockedCardId==id?" · 고정":""),UiTokens.Small,32);
                 ui.Label(card,"기본 효과 · "+display.EffectDescription,UiTokens.Body,36);
                 if(catalog.Tools.ContainsKey(id)&&!string.IsNullOrWhiteSpace(display.GrowthDescription))ui.Label(card,display.GrowthDescription,UiTokens.Small,32);
-                var changes=UpgradeChanges(detail);if(changes.Length>0)ui.Label(card,changes,UiTokens.Small,32);
-                var clues=EvolutionClues(detail,firstPlayable,displays);if(clues.Length>0)ui.Label(card,clues,UiTokens.Caption,32);
+                var changes=catalog.WaveRuntime==null?UpgradeChanges(detail):WaveUpgradeChanges(detail,catalog.WaveRuntime,frame.TickRate);if(changes.Length>0)ui.Label(card,changes,UiTokens.Small,32);
+                var clues=catalog.WaveRuntime==null?EvolutionClues(detail,firstPlayable,displays):WaveEvolutionClues(detail,firstPlayable,catalog.WaveRuntime,displays);if(clues.Length>0)ui.Label(card,clues,UiTokens.Caption,32);
                 if(wide)ui.Button(card,"선택",()=>send(ReplayCommandKind.ChooseCard,id));
                 var actions=UiShell.Rect("Card actions",card);var row=actions.gameObject.AddComponent<HorizontalLayoutGroup>();row.spacing=4;row.childControlWidth=true;row.childForceExpandWidth=true;row.childControlHeight=true;row.childForceExpandHeight=false;actions.gameObject.AddComponent<LayoutElement>().minHeight=UiTokens.MinTouchHeight;
                 if(!wide)ui.Button(actions,"선택",()=>send(ReplayCommandKind.ChooseCard,id));
@@ -58,6 +59,27 @@ namespace Game.App
             }
             return string.Join(" · ",result);
         }
+        public static string WaveUpgradeChanges(OfferedCardDetail detail,WaveRuntimeDefinition definition,int tickRate)
+        {
+            if(!definition.Gear.TryGetValue(detail.Id,out var gear)||gear.Levels==null||gear.Levels.Length==0||detail.CurrentLevel==0)return "";
+            var before=gear.Levels[Math.Min(detail.CurrentLevel,gear.Levels.Length)-1];
+            var after=gear.Levels[Math.Min(detail.CurrentLevel+1,gear.Levels.Length)-1];
+            var values=new List<string>();
+            void Delta(string label,int a,int b,string suffix=""){if(a!=b)values.Add($"{label} {a}{suffix}→{b}{suffix}");}
+            Delta("피해",before.Damage,after.Damage);Delta("범위",before.Range,after.Range);Delta("타격 수",before.Count,after.Count);
+            if(before.CooldownTicks!=after.CooldownTicks)values.Add($"공격 간격 {(before.CooldownTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초→{(after.CooldownTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초");
+            Delta("속도",before.Speed,after.Speed);Delta("밀치기",before.Knockback,after.Knockback);
+            if(before.LifetimeTicks!=after.LifetimeTicks)values.Add($"지속 {(before.LifetimeTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초→{(after.LifetimeTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초");
+            return values.Count==0?"성장표 상한": "다음 1레벨 기준 · "+string.Join(" · ",values);
+        }
+        static string WaveEvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,WaveRuntimeDefinition definition,IReadOnlyDictionary<string,ContentDisplay> displays)
+        {
+            return string.Join("\n",frame.Evolutions.Where(e=>card.EvolutionIds.Contains(e.Id)).Select(e=>
+            {
+                var gate=definition.Evolutions[e.Id].Kind switch {WaveEvolutionKind.PlantingArc=>"밭 위의 적을 검으로 처치",WaveEvolutionKind.RepairOrbit=>"건물 수리 완료",WaveEvolutionKind.ShelteredPlot=>"건물 곁에서 수확",_=>throw new InvalidOperationException("Unknown evolution gate")};
+                return "진화 · "+displays[e.Id].DisplayName+" · "+(e.Activated?"완료":e.Available?"선택 가능":"조건")+" · "+string.Join(" + ",e.Requirements.Select(r=>displays[r.EquipmentId].DisplayName))+" · "+gate;
+            }));
+        }
         static string EvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,IReadOnlyDictionary<string,ContentDisplay> displays)
         {
             return string.Join("\n",frame.Evolutions.Where(e=>card.EvolutionIds.Contains(e.Id)).Select(e=>
@@ -68,7 +90,7 @@ namespace Game.App
         static string Growth(string target)=>target switch {"ripe"=>"익은 밭","harvests"=>"수확","buildings"=>"건물","people"=>"백성",_=>target};
         static string Rarity(string rarity)=>rarity switch {"common"=>"일반","rare"=>"희귀","epic"=>"영웅",_=>throw new InvalidOperationException("Unknown offered rarity: "+rarity)};
         public static string Ratio(long value,double total)=>total>0?(value/total*100).ToString("0",CultureInfo.InvariantCulture)+"%":"0%";
-        public static void Summary(UiShell ui,RunSummary summary,RunFrame terminalFrame,FirstPlayableFrame terminalFirstPlayable,IReadOnlyDictionary<string,ContentDisplay> displays,Action retry,Action exit,bool abandoned=false)
+        public static void Summary(UiShell ui,RunSummary summary,RunFrame terminalFrame,FirstPlayableFrame terminalFirstPlayable,IReadOnlyDictionary<string,ContentDisplay> displays,Action retry,Action exit,bool abandoned=false,bool wave=false)
         {
             var panel=ui.Panel("Summary");ui.Label(panel,abandoned?"출정 포기":summary.Survived?"한 해 완료":"사망",UiTokens.Display,72);
             var survivedSeconds=summary.Tick/terminalFrame.TickRate;
@@ -77,8 +99,11 @@ namespace Game.App
             ui.Label(panel,terminalFirstPlayable.BossDefeated?"보스 격파":"보스 미격파",UiTokens.Small,36);
             double xp=summary.KillExperience+summary.HarvestExperience+summary.TaxExperience;
             ui.Label(panel,$"경험치 출처\n사냥 {Ratio(summary.KillExperience,xp)} · 수확 {Ratio(summary.HarvestExperience,xp)} · 세금 {Ratio(summary.TaxExperience,xp)}",UiTokens.Body,72);
+            if(!wave)
+            {
             var tool=summary.ToolActivationDamage+summary.ToolGrowthDamage;double damage=summary.WeaponDamage+tool+summary.AllyDamage;
             ui.Label(panel,$"피해 비중\n무기 {Ratio(summary.WeaponDamage,damage)} · 도구 {Ratio(tool,damage)} · 아군 {Ratio(summary.AllyDamage,damage)}",UiTokens.Body,72);
+            }
             var actions=UiShell.Rect("Summary actions",panel);var buttons=actions.gameObject.AddComponent<HorizontalLayoutGroup>();buttons.spacing=16;buttons.childControlWidth=true;buttons.childForceExpandWidth=true;buttons.childControlHeight=true;buttons.childForceExpandHeight=false;
             ui.Button(actions,"다시 하기",retry);ui.Button(actions,"나가기",exit);
             ui.Label(panel,"이번 판 빌드",UiTokens.Heading,48);

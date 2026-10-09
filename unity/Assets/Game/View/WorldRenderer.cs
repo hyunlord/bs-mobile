@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.View
 {
-    public sealed class WorldRenderer : MonoBehaviour
+    public sealed partial class WorldRenderer : MonoBehaviour
     {
         readonly Dictionary<(string kind, string id, string state), ArtVisual> visuals = new Dictionary<(string, string, string), ArtVisual>();
         readonly Dictionary<(int layer, Texture2D texture), SpriteBatch> batches = new Dictionary<(int, Texture2D), SpriteBatch>();
@@ -46,7 +46,7 @@ namespace Game.View
         public int ActiveVisualProjectiles => ActivePersistentAttacks + effects.CountVisualProjectiles(ShouldDrawAttack);
         public int ActivePersistentAttacks
         {
-            get { var count = 0; if (firstPlayable != null) foreach (var attack in firstPlayable.Attacks) if (attack.IsActive) count++; return count; }
+            get { var count = wave == null ? 0 : wave.Projectiles.Count + wave.Attacks.Count; if (firstPlayable != null) foreach (var attack in firstPlayable.Attacks) if (attack.IsActive) count++; return count; }
         }
         public int ActiveEffects => effects.ActiveCount;
         public int DroppedEffects => effects.DroppedCount;
@@ -117,11 +117,13 @@ namespace Game.View
             var lord = Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
             var shake = ShakeEnabled ? Mathf.Clamp01((shakeUntil - visualTime) / GameVisualTokens.ShakeSeconds) : 0;
             CameraShakeOffset = new Vector2(Mathf.Sin(visualTime * 113), Mathf.Cos(visualTime * 97)) * (shake * GameVisualTokens.ShakeAmplitude);
+            if(wave!=null){var heroSize=Resolve("hero",snapshot.HeroId,"idle").WorldSize;followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels); followCamera.SetVisualOffset(CameraShakeOffset);
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
             DrawTerrain();
+            DrawWave(current);
             foreach (var farm in current.Farms)
                 Draw(Resolve("crop", farm.SourceId, "stage" + farm.Stage), farm.Ripe ? GameVisualTokens.ReadyLayer : GameVisualTokens.GrowthLayer, Point(farm.Position), visualTime + farm.Id * 0.13f);
             foreach (var building in current.Buildings)
@@ -163,10 +165,17 @@ namespace Game.View
                 var flashing = hitUntil.ContainsKey(enemy.Id);
                 var moved = previousEnemies.TryGetValue(enemy.Id, out var before) && before != Point(enemy.Position);
                 var state = enemy.Health <= 0 ? "death" : flashing ? "hit" : moved ? "walk" : "idle";
-                Draw(Resolve("enemy", enemy.DefinitionId, state), GameVisualTokens.EnemyLayer, Interpolate(previousEnemies, enemy.Id, enemy.Position, alpha), visualTime + enemy.Id * 0.13f, flash: flashing ? 0.8f : 0);
+                state = WaveEnemyState(enemy.Id, enemy.DefinitionId, state);
+                Draw(Resolve("enemy", enemy.DefinitionId, state), GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19)), Interpolate(previousEnemies, enemy.Id, enemy.Position, alpha), visualTime + enemy.Id * 0.13f, flash: flashing ? 0.8f : 0);
             }
             var heroHit = heroHitUntil > visualTime;
             var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : Point(previous.Lord.Position) != Point(current.Lord.Position) ? "walk" : "idle";
+            if(wave!=null)
+            {
+                var heroArt=Resolve("hero",snapshot.HeroId,heroState);
+                foreach(var direction in new[]{Vector2.left,Vector2.right,Vector2.up,Vector2.down})
+                    Draw(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline,visualTime,tint:GameVisualTokens.Ink);
+            }
             Draw(Resolve("hero", snapshot.HeroId, heroState), GameVisualTokens.LordLayer, lord, visualTime, flash: heroHit ? 0.8f : 0);
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
             threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
@@ -196,6 +205,7 @@ namespace Game.View
             var blend = Mathf.Clamp01(seasonAge / GameVisualTokens.SeasonBlendSeconds);
             var tint = Color.Lerp(Color.white, Color.Lerp(GameVisualTokens.Seasons[previousSeason], GameVisualTokens.Seasons[season], blend), 0.16f);
             renderCamera.backgroundColor = Color.Lerp(GameVisualTokens.Seasons[previousSeason], GameVisualTokens.Seasons[season], blend);
+            var terrainOpacity=wave==null?GameVisualTokens.TerrainOpacity:GameVisualTokens.WaveTerrainOpacity;
             var size = visual.WorldSize; var stride = size * GameVisualTokens.TerrainStride;
             var halfHeight = renderCamera.orthographicSize; var halfWidth = halfHeight * renderCamera.aspect; var center = renderCamera.transform.position;
             var xMin = Mathf.Max(-1, Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1); var xMax = Mathf.Min(Mathf.CeilToInt(width / stride.x), Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1);
@@ -203,14 +213,15 @@ namespace Game.View
             for (var y = yMin; y <= yMax; y++) for (var x = xMin; x <= xMax; x++)
             {
                 var left = x * stride.x; var bottom = y * stride.y;
-                var x0 = Mathf.Max(0, left); var y0 = Mathf.Max(0, bottom);
-                var x1 = Mathf.Min(width, left + size.x); var y1 = Mathf.Min(height, bottom + size.y);
+                var exterior=wave==null?0:followCamera.EdgeActorMargin;
+                var x0 = Mathf.Max(-exterior, left); var y0 = Mathf.Max(-exterior, bottom);
+                var x1 = Mathf.Min(width+exterior, left + size.x); var y1 = Mathf.Min(height+exterior, bottom + size.y);
                 if (x1 <= x0 || y1 <= y0) continue;
                 var cell = new Vector2(x1 - x0, y1 - y0);
                 var position = new Vector2(x0, y0) + Vector2.Scale(visual.Pivot, cell);
                 var fraction = new Rect((x0 - left) / size.x, (y0 - bottom) / size.y, cell.x / size.x, cell.y / size.y);
-                if (blend < 1) Draw(old, GameVisualTokens.TerrainLayer, position, 0, cell, opacity: (1 - blend) * GameVisualTokens.TerrainOpacity, tint: tint, uv: TerrainUv(old.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
-                Draw(visual, GameVisualTokens.TerrainLayer + 1, position, 0, cell, opacity: blend * GameVisualTokens.TerrainOpacity, tint: tint, uv: TerrainUv(visual.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
+                if (blend < 1) Draw(old, GameVisualTokens.TerrainLayer, position, 0, cell, opacity: (1 - blend) * terrainOpacity, tint: tint, uv: TerrainUv(old.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
+                Draw(visual, GameVisualTokens.TerrainLayer + 1, position, 0, cell, opacity: blend * terrainOpacity, tint: tint, uv: TerrainUv(visual.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
             }
             foreach(var region in chapterTerrain)
             {
@@ -227,6 +238,22 @@ namespace Game.View
                 }
             }
             var edge = Resolve("boundary", "edge", "default"); var corner = Resolve("boundary", "corner", "default");
+            if(wave!=null)
+            {
+                var columns=Mathf.CeilToInt(width/edge.WorldSize.x);var rows=Mathf.CeilToInt(height/edge.WorldSize.x);
+                var horizontal=new Vector2(width/columns,edge.WorldSize.y);var vertical=new Vector2(height/rows,edge.WorldSize.y);
+                for(var i=0;i<columns;i++)
+                {
+                    Draw(edge,GameVisualTokens.GrowthLayer-1,new Vector2((i+.5f)*horizontal.x,0),0,horizontal,opacity:GameVisualTokens.WaveFenceOpacity);
+                    Draw(edge,GameVisualTokens.GrowthLayer-1,new Vector2((i+.5f)*horizontal.x,height),0,horizontal,180,GameVisualTokens.WaveFenceOpacity);
+                }
+                for(var i=0;i<rows;i++)
+                {
+                    Draw(edge,GameVisualTokens.GrowthLayer-1,new Vector2(0,(i+.5f)*vertical.x),0,vertical,90,GameVisualTokens.WaveFenceOpacity);
+                    Draw(edge,GameVisualTokens.GrowthLayer-1,new Vector2(width,(i+.5f)*vertical.x),0,vertical,-90,GameVisualTokens.WaveFenceOpacity);
+                }
+                return;
+            }
             var step = edge.WorldSize.x;
             for (var x = Mathf.Max(0, Mathf.FloorToInt((center.x - halfWidth) / step)); x * step < Mathf.Min(width, center.x + halfWidth + step); x++)
             {

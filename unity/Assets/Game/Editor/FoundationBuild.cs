@@ -23,6 +23,7 @@ namespace Game.Editor
 
         public static void Configure()
         {
+            Game.View.ArtCatalog.ProfileName = CanonicalContent.ProfileName;
             ArtPreparation.Prepare();
             EditorSettings.serializationMode = SerializationMode.ForceText;
             VersionControlSettings.mode = "Visible Meta Files";
@@ -64,14 +65,20 @@ namespace Game.Editor
 
         public static void VerifyProfile()
         {
+            Game.View.ArtCatalog.ProfileName = CanonicalContent.ProfileName;
             var catalog = CanonicalContent.CreateCatalog();
-            if (CanonicalContent.ProfileName != "first-playable" || catalog.Tuning.DurationTicks != 27000 || catalog.Tuning.TickRate != 30 ||
+            if (CanonicalContent.ProfileName == "wave-1a")
+            {
+                if (catalog.WaveRuntime == null || catalog.Weapons.Count != 5 || catalog.Tools.Count != 4 || catalog.Enemies.Count != 7 || catalog.WaveRuntime.Items.Count != 8 || catalog.WaveRuntime.Evolutions.Count != 3 || catalog.Runtime != null || catalog.FirstPlayable != null)
+                    throw new BuildFailedException("Unity requires the isolated wave-1a catalog.");
+            }
+            else if (CanonicalContent.ProfileName != "first-playable" || catalog.Tuning.DurationTicks != 27000 || catalog.Tuning.TickRate != 30 ||
                 catalog.FirstPlayable == null || catalog.Runtime == null || catalog.Weapons.Count != 10 || catalog.Tools.Count != 8 ||
                 catalog.Enemies.Count != 13 || catalog.Runtime.Charters.Count != 8 || catalog.Runtime.Items.Count != 30 || catalog.Runtime.Evolutions.Count != 8)
                 throw new BuildFailedException("Unity requires the complete first-playable catalog.");
             using (var hash = System.Security.Cryptography.SHA256.Create())
             {
-                var bytes = File.ReadAllBytes(Path.Combine(RepoRoot, "data/profiles/first-playable.json"));
+                var bytes = File.ReadAllBytes(Path.Combine(RepoRoot, "data/profiles/" + CanonicalContent.ProfileName + ".json"));
                 var actual = BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "");
                 if (!string.Equals(actual, CanonicalContent.ProfileHash, StringComparison.Ordinal))
                     throw new BuildFailedException("Generated first-playable profile hash is stale.");
@@ -82,7 +89,7 @@ namespace Game.Editor
         {
             VerifyProfile();
             if (replay.Header.Options.DataHash != CanonicalContent.DataHash || replay.Header.Options.Run.Seed != seed ||
-                replay.End.Tick != 27000 || replay.End.Kind != ReplayEndKind.Duration)
+                replay.End.Tick != CanonicalContent.CreateCatalog().Tuning.DurationTicks || replay.End.Kind != ReplayEndKind.Duration)
                 throw new BuildFailedException("Replay fixture identity/duration is stale for first-playable.");
             // DataHash covers all profiles: replay against the actual catalog to prove matching rules.
             return ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, replay);
@@ -150,7 +157,7 @@ namespace Game.Editor
             if (report.summary.result != BuildResult.Succeeded || !Directory.Exists(output))
                 throw new BuildFailedException("macOS Release build failed: " + report.summary.result);
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "mac-build-result.json"),
-                "{\"result\":\"Succeeded\",\"backend\":\"Mono\",\"architecture\":\"ARM64\",\"development\":false,\"profile\":\"first-playable\",\"bytes\":" + report.summary.totalSize + "}");
+                "{\"result\":\"Succeeded\",\"backend\":\"Mono\",\"architecture\":\"ARM64\",\"development\":false,\"profile\":\"" + CanonicalContent.ProfileName + "\",\"bytes\":" + report.summary.totalSize + "}");
             UnityEngine.Debug.Log("FOUNDATION_MAC_BUILD_SUCCEEDED " + output);
         }
 

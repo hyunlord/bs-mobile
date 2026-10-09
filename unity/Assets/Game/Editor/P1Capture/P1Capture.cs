@@ -18,6 +18,7 @@ namespace Game.P1Capture
     [InitializeOnLoad]
     public static class P1Capture
     {
+        static int CaptureSeed => int.TryParse(Environment.GetEnvironmentVariable("P1_CAPTURE_SEED"),out var seed)?seed:30000;
         const string ActiveKey = "SowSiege.P1Capture.Active";
         const string PreferencesKey = "SowSiege.P1Capture.Preferences";
         const string BackgroundKey = "SowSiege.P1Capture.Background";
@@ -33,6 +34,7 @@ namespace Game.P1Capture
         static CaptureClockGuard clock = new CaptureClockGuard();
         static int stage;
         static long lastEvent;
+        static long lastWaveEvent=-1;
         static int people;
         static string replayPath;
         static string recordingError;
@@ -126,6 +128,7 @@ namespace Game.P1Capture
             if (run != null && !lifecycleAttached)
             {
                 run.EditorCaptureLifecycle += OnLifecycle;
+                run.WaveFrameAccepted += OnWaveFrame;
                 run.SetEditorCaptureActive(true);
                 lifecycleAttached = true;
             }
@@ -133,6 +136,7 @@ namespace Game.P1Capture
             if (run == null || run.Ui == null) return;
             if (stage == 0)
             {
+                WaveCaptureInput.ConfigurePriority(Environment.GetEnvironmentVariable("P1_CAPTURE_PRIORITY"));
                 output = SessionState.GetString("SowSiege.P1Capture.Output", "");
                 ledger = new StreamWriter(Path.Combine(output, "capture-ledger.tsv"), false) { AutoFlush = true };
                 ledger.WriteLine("mediaSeconds\ttick\tkind\tdetail\tunscaledSeconds\trenderFrame");
@@ -145,7 +149,15 @@ namespace Game.P1Capture
             if (stage == -1)
             {
                 if (Time.unscaledTimeAsDouble - preparationAt < 1) return;
-                run.StartNeutralRun(30000);
+                var target=Environment.GetEnvironmentVariable("P1_CAPTURE_TARGET");
+                if(!string.IsNullOrEmpty(target))
+                {
+                    if(!run.IsWave||!FoundationBoot.Catalog.WaveRuntime.MaterialTargets.TryGetValue(target,out var tool))throw new InvalidOperationException("Unsupported capture material target.");
+                    var name=CanonicalContent.Displays.Single(d=>d.Id==tool).DisplayName;
+                    var button=run.Ui.GetComponentsInChildren<Button>().Single(b=>b.GetComponentInChildren<Text>()?.text.Contains(name)==true);button.onClick.Invoke();
+                    Log("target-material-click",target);
+                }
+                run.StartNeutralRun(CaptureSeed);
                 stage = -2;
                 return;
             }
@@ -184,9 +196,9 @@ namespace Game.P1Capture
                 started = Time.timeAsDouble;
                 unscaledStarted = Time.unscaledTimeAsDouble;
                 movieStarted = true;
-                Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; neutral first-playable rules without meta injection; seed=30000");
+                Log("capture-start", $"Unity Recorder 5.1.7; automated pointer/card inputs; 1x; selected profile without meta injection; seed={CaptureSeed}");
                 Log("capture-lifecycle-policy", "editor-only opt-in; focus/pause notifications logged but ignored for simulation/input/audio; runInBackground=true; ordinary launch unchanged");
-                Log("identity", $"commit={BuildIdentity.Commit};sourceHash={BuildIdentity.SourceHash};dirty={BuildIdentity.SourceDirty};dataHash={FoundationBoot.VerifiedDataHash};profile=first-playable;unity={Application.unityVersion}");
+                Log("identity", $"commit={BuildIdentity.Commit};sourceHash={BuildIdentity.SourceHash};dirty={BuildIdentity.SourceDirty};dataHash={FoundationBoot.VerifiedDataHash};profile={CanonicalContent.ProfileName};unity={Application.unityVersion}");
                 Log("selection-rule", "early=start at run-start for180 seconds; late=end at run-complete+8 seconds for180 seconds; continuous clips at1x with no omitted in-clip frames");
                 stage = 1;
                 return;
@@ -237,9 +249,10 @@ namespace Game.P1Capture
                 if (frame.Status == RunStatus.Completed)
                 {
                     var summary = run.Session.GetSummary();
-                    if (!summary.Survived || summary.Tick != 27000 || summary.BossDefeated != true)
+                    if (!run.IsWave && (!summary.Survived || summary.Tick != run.Frame.DurationTicks || summary.BossDefeated != true))
                         throw new InvalidOperationException("Normal run did not survive full duration and defeat winter boss: " + summary);
                     completedAt = elapsed;
+                    if(run.Wave!=null)Log("wave-counters",string.Join(";",run.Wave.Counters.Select(p=>p.Key+"="+p.Value)));
                     Log("run-complete", run.Session.GetSummary().ToString());
                     stage = 4;
                     return;
@@ -271,8 +284,9 @@ namespace Game.P1Capture
                 movieStopped = true;
                 if (recordingError != null) throw new InvalidOperationException("Recorder finalization failed: " + recordingError);
                 restartAt = Time.realtimeSinceStartupAsDouble;
-                run.StartNeutralRun(30001);
-                Log("restart-request", "seed=30001; outside movie; screenshot evidence only");
+                lastWaveEvent=-1;
+                run.StartNeutralRun(checked(CaptureSeed+1));
+                Log("restart-request", $"seed={CaptureSeed+1}; outside movie; screenshot evidence only");
                 stage = 6;
             }
             if (stage == 6 && Time.realtimeSinceStartupAsDouble - restartAt >= 3)
@@ -299,13 +313,22 @@ namespace Game.P1Capture
             }
         }
 
-        static int CardRank(string id) { var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
+        static int CardRank(string id) { if(CanonicalContent.ProfileName=="wave-1a")return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
 
         static void ClickButton(string label)
         {
             var button = run.Ui.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>()?.text == label);
             if (!button.interactable) throw new InvalidOperationException("Normal UI button is unavailable: " + label);
             button.onClick.Invoke();
+        }
+
+        static void OnWaveFrame(WaveRuntimeFrame frame)
+        {
+            foreach(var value in frame.Events)
+            {
+                if(value.Id<=lastWaveEvent)continue;lastWaveEvent=value.Id;
+                Log("wave-event",$"eventId={value.Id};tick={value.Tick};kind={value.Kind};source={value.Source};subject={value.SubjectId};x={value.Position.X};y={value.Position.Y};targetX={value.Target.X};targetY={value.Target.Y};amount={value.Amount}");
+            }
         }
 
         static void OnLifecycle(string kind, bool value, bool ignored)
@@ -318,6 +341,7 @@ namespace Game.P1Capture
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Math.Pow(f.Position.X-frame.Lord.Position.X,2)+Math.Pow(f.Position.Y-frame.Lord.Position.Y,2)).FirstOrDefault();
             var angle = frame.Tick / 180d;
             var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
+            if(run.Wave!=null)target=WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog);
             var direction = new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y).normalized;
             var origin = new Vector2(Screen.width * .25f, Screen.height * .2f);
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = origin };
@@ -365,7 +389,7 @@ namespace Game.P1Capture
                 () => Log("capture-stop-request", "requestedResult=" + result + "; not final acceptance; capture-result.txt and SessionState after cleanup are authoritative"),
                 () => recorder?.StopRecording(),
                 () => { if (run != null && lifecycleAttached) run.SetEditorCaptureActive(false); },
-                () => { if (run != null && lifecycleAttached) run.EditorCaptureLifecycle -= OnLifecycle; },
+                () => { if (run != null && lifecycleAttached) { run.EditorCaptureLifecycle -= OnLifecycle;run.WaveFrameAccepted-=OnWaveFrame;} },
                 () => ledger?.Dispose(),
                 CapturePlayerLoop.Uninstall);
             if (cleanupError != null) result = "failed: " + cleanupError;
@@ -377,7 +401,7 @@ namespace Game.P1Capture
             if (writeError != null) { result = "failed: " + writeError; SessionState.SetString("SowSiege.P1Capture.Result", result); }
             EditorApplication.isPlaying = false;
             recorder = null; run = null; ledger = null; stage = 0;
-            cardAt = -1; completedAt = -1; nextSample = 0; lastEvent = 0;
+            cardAt = -1; completedAt = -1; nextSample = 0; lastEvent = 0; lastWaveEvent=-1;
             people = 0; replayPath = null;
             clock = new CaptureClockGuard();
             diagnosticFrames = 0;
