@@ -13,6 +13,7 @@ node --test tools/test-verify-evidence.mjs
 node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
+node --test tools/test-meta-target-parity.mjs
 node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs
 DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
 node tools/verify-unity-boundaries.mjs
@@ -21,6 +22,8 @@ node --test tools/test-weapon-holdout.mjs
 node --test tools/test-first-playable*.mjs
 npm run validate
 node tools/first-playable-content.mjs data
+node tools/meta-content.mjs "$PWD"
+node --test tools/test-meta-content.mjs
 node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
 node tools/content-report.mjs --check
@@ -43,6 +46,8 @@ TARGET_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/target-parity.XXXXXX")
 node tools/verify-target-parity.mjs "$TARGET_PARITY_ROOT/run" 4
 FIRST_PLAYABLE_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/first-playable-parity.XXXXXX")
 node tools/verify-first-playable-target-parity.mjs "$FIRST_PLAYABLE_PARITY_ROOT/run" 4
+META_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/meta-parity.XXXXXX")
+node tools/verify-meta-target-parity.mjs "$META_PARITY_ROOT/run"
 DIAGNOSTIC_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/diagnostic-smoke.XXXXXX")
 node tools/diagnostic-runner.mjs smoke "$DIAGNOSTIC_SMOKE_ROOT/run" 4
 WEAPON_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/weapon-smoke.XXXXXX")

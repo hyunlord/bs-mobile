@@ -45,7 +45,10 @@ internal static class SelfTests
         var algorithm = new[] { new AlgorithmConstant("C.Multiplier", "42", "Test fixture algorithm constant") };
         var allowed = Guard.CheckSources(new Dictionary<string, string> { ["Fixture.cs"] = "class C { const int Multiplier = 42; }" }, [], algorithm);
         var changed = Guard.CheckSources(new Dictionary<string, string> { ["Fixture.cs"] = "class C { const int Multiplier = 43; }" }, [], algorithm);
-        var algorithmPass = allowed.Count == 0 && changed.Any(line => line.Contains("AG003", StringComparison.Ordinal));
+        var gameplay = Guard.CheckSources(new Dictionary<string, string> { ["Fixture.cs"] = "class C { const int Damage = 42; }" }, [], algorithm);
+        var inline = Guard.CheckSources(new Dictionary<string, string> { ["Fixture.cs"] = "class C { const int Multiplier = 42; int Reward => 42; }" }, [], algorithm);
+        var algorithmPass = allowed.Count == 0 && changed.Any(line => line.Contains("AG003", StringComparison.Ordinal))
+            && gameplay.Any(line => line.Contains("AG003", StringComparison.Ordinal)) && inline.Any(line => line.Contains("AG003", StringComparison.Ordinal));
         Console.WriteLine($"{(algorithmPass ? "PASS" : "FAIL")} exact algorithm constant exemption");
         if (!algorithmPass)
         {

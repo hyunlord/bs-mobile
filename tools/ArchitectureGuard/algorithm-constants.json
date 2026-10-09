@@ -78,5 +78,70 @@
     "Symbol": "SowSiege.Core.ReplayCodec.MaximumCommands",
     "Value": "1000000",
     "Reason": "Replay decoder bounded command allocation limit for untrusted input."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.CurrentVersion",
+    "Value": "3",
+    "Reason": "Current binary meta save schema discriminator, not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.ClockVersion",
+    "Value": "2",
+    "Reason": "Binary save migration schema introducing clock fields."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.EnvelopeBytes",
+    "Value": "44",
+    "Reason": "Three 32-bit envelope words plus SHA256 checksum bytes."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.ChecksumBytes",
+    "Value": "32",
+    "Reason": "SHA256 digest byte width."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.MaximumCollectionEntries",
+    "Value": "4096",
+    "Reason": "Bounded binary decoder allocation limit for untrusted collection counts."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.MaximumStringBytes",
+    "Value": "1024",
+    "Reason": "Bounded UTF8 decoder allocation limit for identifier bytes."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.Magic",
+    "Value": "1397572948",
+    "Reason": "Binary meta save file signature discriminator."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.MaximumBytes",
+    "Value": "1048576",
+    "Reason": "One MiB decoder input allocation ceiling, not wallet or gameplay capacity."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaReplayContext.MinimumBytes",
+    "Value": "140",
+    "Reason": "Replay context header width: three Int32 words and two SHA256 hexadecimal hashes."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaReplayContext.HashBytes",
+    "Value": "64",
+    "Reason": "ASCII SHA256 hexadecimal digest width."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaReplayContext.Magic",
+    "Value": "1297240140",
+    "Reason": "Binary meta replay file signature discriminator."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaReplayContext.MaximumBytes",
+    "Value": "1049000",
+    "Reason": "Bounded replay decoder envelope allocation ceiling around one MiB save snapshot."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaValidation.MaximumMetricValue",
+    "Value": "1000000000000",
+    "Reason": "Finite cumulative telemetry counter saturation bound; challenge targets and rewards remain catalog data."
   }
 ]

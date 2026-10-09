@@ -18,6 +18,11 @@ public static class UnityExportExpression
         if (value is int number) { return number.ToString(CultureInfo.InvariantCulture); }
         if (value is long large) { return large.ToString(CultureInfo.InvariantCulture) + "L"; }
         var type = value.GetType();
+        if (type.IsEnum && type.Assembly == typeof(ContentCatalog).Assembly && type.Namespace == "SowSiege.Core")
+        {
+            var name = Enum.GetName(type, value) ?? throw new InvalidDataException("Undefined Unity export enum value.");
+            return TypeName(type) + "." + name;
+        }
         if (!active.Add(value)) { throw new InvalidDataException("Cycle in Unity export graph."); }
         try
         {

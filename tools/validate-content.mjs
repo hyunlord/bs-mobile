@@ -1,3 +1,4 @@
+import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
 import { readFile } from 'node:fs/promises';
@@ -8,12 +9,12 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
   ['vassals', 'vassal'], ['enemies', 'enemy'], ['evolutions', 'evolution'],
-  ['skins', 'skin'], ['profiles', 'profile'],
+  ['skins', 'skin'], ['profiles', 'profile'], ['meta', 'meta'],
 ]);
 
 function inferKind(relative) {
@@ -65,7 +66,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     try {
       const text = await readFile(file, 'utf8');
       parsed.set(file, JSON.parse(text));
-      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || inferKind(path.relative(dataRoot, file)) === 'weapon') {
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta'].includes(inferKind(path.relative(dataRoot, file)))) {
         for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
       }
     } catch (error) {
@@ -116,7 +117,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -421,6 +422,12 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       }
     }
     for(const entry of records.filter(e=>!configurationKinds.has(e.kind))) expect((['s2-runtime','s4-runtime'].includes(entry.record.designStatus))===allSelected.has(entry.record.id),`${entry.relative}: runtime status must match explicit profile selection union`);
+  }
+  for (const entry of records.filter(e => e.kind === 'meta' && e.schemaValid)) {
+    try {
+      if (entry.relative !== path.join('meta', 'progression.json')) throw new Error('Meta catalog must use meta/progression.json');
+      validateMeta(entry.record, path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), dataRoot);
+    } catch (error) { errors.push(`${entry.relative}: meta validation: ${error.message}`); }
   }
   errors.push(...validateWeaponGrowth(records));
   if (schemas.size === 0) errors.push('No valid schemas found');

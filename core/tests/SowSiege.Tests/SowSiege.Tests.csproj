@@ -8,4 +8,6 @@
   </ItemGroup>
   <ItemGroup><Content Include="../../../data/**/*.json" Link="data/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><Content Include="Fixtures/**/*.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><Compile Include="../../../unity/Assets/Game/App/AtomicSaveStore.cs" Link="Host/AtomicSaveStore.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../../unity/Assets/Game/App/MetaProgression.cs" Link="Host/MetaProgression.cs" /></ItemGroup>
 </Project>
