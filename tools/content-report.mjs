@@ -57,7 +57,7 @@ for (const [directory, label] of kinds) {
   if (directory === 'enemies') output.push(table(['이름', '목표', '압박', '대응'], selected.map(({ record: r }) => [r.name, r.target, r.behavior.pressure, r.behavior.counterplay])));
   if (directory === 'estates') output.push(table(['영지', '단일 순환', '순서와 작용'], selected.map(({ record: r }) => [r.name, r.uniqueLoop.summary, r.uniqueLoop.stages.map((stage) => `${stage.id}: ${stage.action}`).join('<br>')])));
   if (directory === 'skins') output.push(table(['외형', '대상', '색 / 실루엣 / 재질 / 연출'], selected.map(({ record: r }) => [r.name, r.targetId, Object.values(r.appearance).join('<br>')])));
-  if (directory === 'evolutions') output.push(table(['이름', '유형 / 재료', '성장 조건', '변형 대상 / 결과', '비용'], selected.map(({ record: r }) => [r.name, `${r.kind} / ${r.inputIds.join(' + ')}`, r.growthCondition ? `${r.growthCondition.target}/${r.growthCondition.state}/${r.growthCondition.minimum}` : '재료 조합', `${r.result.baseId}: ${r.result.effect}`, r.result.cost])));
+  if (directory === 'evolutions') output.push(table(['이름', '유형 / 재료', '성장 조건', '변형 대상 / 결과', '비용'], selected.map(({ record: r }) => [r.name, `${r.evolutionKind} / ${r.inputIds.join(' + ')}`, r.growthCondition ? `${r.growthCondition.target}/${r.growthCondition.state}/${r.growthCondition.minimum}` : '재료 조합', `${r.result.baseId}: ${r.result.effect}`, r.result.cost])));
 }
 output.push('## 태그 분포', '', '테스트 레코드를 제외하고 같은 레코드 안의 중복 태그는 한 번만 센다.', '', table(['태그', '서로 다른 레코드 수', 'ID'], [...tags].sort(([a], [b]) => a.localeCompare(b)).map(([tag, ids]) => [tag, ids.length, ids.sort().join(', ')])));
 output.push('## 반시너지', '', 'A↔B와 B↔A는 한 쌍으로 센다. 아래 비용은 설계 가설이며 S2에서 모든 고유 상호작용을 구현했다는 뜻이 아니다.', '', table(['무순서 쌍', '경쟁하는 자원·시간·상태'], [...pairs].sort(([a], [b]) => a.localeCompare(b))));

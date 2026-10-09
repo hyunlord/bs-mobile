@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:lantern_staff"
-  ]
+  ],
+  "kind": "item"
 }

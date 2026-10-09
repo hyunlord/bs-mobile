@@ -1,3 +1,4 @@
+import './test-normalized-content.mjs';
 import './test-weapon-growth.mjs';
 import './test-production-content.mjs';
 import assert from 'node:assert/strict';
@@ -188,7 +189,7 @@ const poolMutations = [
   ['missing test profile hero',async root=>mutateBaseline(root,v=>{v.testSelection.heroes=[];}),/baseline profile testSelection.heroes/],
   ['test metadata orphan',async root=>mutateFirst(root,'test/heroes',v=>{v.affinityEstateIds=['core:missing'];}),/unresolved estate reference/],
   ['reordered duplicate evolution',async root=>{
-    const entries=(await allRecords(path.join(root,'evolutions'))).filter(([,v])=>v.kind==='tool-growth');
+    const entries=(await allRecords(path.join(root,'evolutions'))).filter(([,v])=>v.evolutionKind==='tool-growth');
     const [,first]=entries[0];const [file,second]=entries[1];
     second.inputIds=first.inputIds;second.result.baseId=first.result.baseId;
     second.growthCondition={minimum:first.growthCondition.minimum,state:first.growthCondition.state,target:first.growthCondition.target};

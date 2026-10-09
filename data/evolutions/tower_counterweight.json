@@ -16,7 +16,7 @@
       "reason": "여러 망루의 평형추를 이어 한쪽 공격 때 다른 쪽을 빠르게 재장전한다."
     }
   ],
-  "kind": "tool-growth",
+  "kind": "evolution",
   "inputIds": [
     "core:tower_weight"
   ],
@@ -29,6 +29,12 @@
     "baseId": "core:tower_weight",
     "name": "망루 평형추",
     "effect": "여러 망루의 평형추를 이어 한쪽 공격 때 다른 쪽을 빠르게 재장전한다.",
+    "cost": "동시에 사격할 수 있는 망루 수가 줄어 포위에 취약해진다."
+  },
+  "evolutionKind": "tool-growth",
+  "effect": {
+    "trigger": "building/built 4 및 inputIds 조건 충족",
+    "benefit": "여러 망루의 평형추를 이어 한쪽 공격 때 다른 쪽을 빠르게 재장전한다.",
     "cost": "동시에 사격할 수 있는 망루 수가 줄어 포위에 취약해진다."
   }
 }

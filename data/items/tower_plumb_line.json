@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:tower_weight"
-  ]
+  ],
+  "kind": "item"
 }

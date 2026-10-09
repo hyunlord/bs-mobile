@@ -16,7 +16,7 @@
       "reason": "쟁기로 만든 고랑을 끌이 잇고 남는 물을 끝 밭까지 전달한다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:plough",
     "core:canal_chisel"
@@ -26,6 +26,12 @@
     "baseId": "core:plough",
     "name": "둑고랑 개척",
     "effect": "쟁기로 만든 고랑을 끌이 잇고 남는 물을 끝 밭까지 전달한다.",
+    "cost": "연결에 긴 작업 시간이 들며 가운데 밭이 끊기면 끝 밭 지원도 멈춘다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "쟁기로 만든 고랑을 끌이 잇고 남는 물을 끝 밭까지 전달한다.",
     "cost": "연결에 긴 작업 시간이 들며 가운데 밭이 끊기면 끝 밭 지원도 멈춘다."
   }
 }

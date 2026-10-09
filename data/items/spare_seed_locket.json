@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:seed_vault_key"
-  ]
+  ],
+  "kind": "item"
 }

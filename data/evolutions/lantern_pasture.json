@@ -16,7 +16,7 @@
       "reason": "목양 종이 가리킨 귀환로를 등불이 밝혀 흩어진 인원을 같은 길로 모은다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:lantern_staff",
     "core:shepherd_bell"
@@ -26,6 +26,12 @@
     "baseId": "core:lantern_staff",
     "name": "등불 목양로",
     "effect": "목양 종이 가리킨 귀환로를 등불이 밝혀 흩어진 인원을 같은 길로 모은다.",
+    "cost": "모이는 길이 뚜렷해 적이 그 길을 막으면 여러 인원이 동시에 지연된다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "목양 종이 가리킨 귀환로를 등불이 밝혀 흩어진 인원을 같은 길로 모은다.",
     "cost": "모이는 길이 뚜렷해 적이 그 길을 막으면 여러 인원이 동시에 지연된다."
   }
 }

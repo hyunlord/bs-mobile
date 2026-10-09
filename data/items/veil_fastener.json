@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:beekeeper_veil"
-  ]
+  ],
+  "kind": "item"
 }

@@ -45,5 +45,11 @@
     "capacity": 1000,
     "lifetimeTicks": 900,
     "absorptionRadius": 600
+  },
+  "kind": "estate",
+  "effect": {
+    "trigger": "영지 고유 순환 조건에서",
+    "benefit": "처치 → 위치가 있는 유해 → 밭 흡수와 비옥도 → 작물 성장 → 수확 → 식량 → 백성과 부대 → 다음 처치.",
+    "cost": "별도 비용은 기존 설계에 명시되지 않았다."
   }
 }

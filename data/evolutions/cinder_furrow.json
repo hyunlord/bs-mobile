@@ -16,7 +16,7 @@
       "reason": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:ember_wand",
     "core:torch"
@@ -26,6 +26,12 @@
     "baseId": "core:ember_wand",
     "name": "잿불 고랑",
     "effect": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다.",
+    "cost": "불꽃이 남아 있는 동안 그 밭을 수확할 수 없어 식량 확보가 늦어진다."
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "지팡이 불꽃이 횃불로 그은 터를 따라 번지고 식은 자리에 비옥도를 남긴다.",
     "cost": "불꽃이 남아 있는 동안 그 밭을 수확할 수 없어 식량 확보가 늦어진다."
   }
 }

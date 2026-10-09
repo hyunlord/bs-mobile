@@ -16,7 +16,7 @@
       "reason": "종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:kiln_bellows",
     "core:seed_vault_key"
@@ -26,6 +26,12 @@
     "baseId": "core:kiln_bellows",
     "name": "겨울 씨앗 아궁이",
     "effect": "종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다.",
+    "cost": "보호를 받으려면 씨앗을 한곳에 모아야 하므로 곡창 습격 피해가 커진다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "종자고에서 꺼낸 씨앗을 아궁이 근처에서 보호해 다음 파종 준비를 이어 간다.",
     "cost": "보호를 받으려면 씨앗을 한곳에 모아야 하므로 곡창 습격 피해가 커진다."
   }
 }

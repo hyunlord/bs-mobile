@@ -16,7 +16,7 @@
       "reason": "성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다."
     }
   ],
-  "kind": "tool-growth",
+  "kind": "evolution",
   "inputIds": [
     "core:seed_bag"
   ],
@@ -45,5 +45,11 @@
         "conditions": []
       }
     ]
+  },
+  "evolutionKind": "tool-growth",
+  "effect": {
+    "trigger": "land/ripe 12 및 inputIds 조건 충족",
+    "benefit": "성숙 밭의 씨앗 일부를 바깥쪽으로 나눠 다음 경작 구역을 연다.",
+    "cost": "성숙 밭의 이번 수확량이 줄어 당장 쓸 식량은 적어진다."
   }
 }

@@ -16,7 +16,7 @@
       "reason": "베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:iron_blade",
     "core:seed_bag"
@@ -48,5 +48,11 @@
         ]
       }
     ]
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "베어 낸 선을 따라 씨앗을 좁게 이어 심어 공격 동선을 경작 통로로 바꾼다.",
+    "cost": "경작지가 한 줄로 몰려 옆에서 들어오는 약탈에 취약해진다."
   }
 }

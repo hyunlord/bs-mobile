@@ -44,5 +44,11 @@
     "capacity": 2,
     "lifetimeTicks": 60,
     "absorptionRadius": 130
+  },
+  "kind": "estate",
+  "effect": {
+    "trigger": "영지 고유 순환 조건에서",
+    "benefit": "기본 순환을 다른 데이터 배율로 실행하는 회귀 검사 전용 설정.",
+    "cost": "별도 비용은 기존 설계에 명시되지 않았다."
   }
 }

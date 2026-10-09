@@ -83,11 +83,7 @@
     },
     "kind": {
       "type": "string",
-      "enum": [
-        "weapon-tool",
-        "tool-tool",
-        "tool-growth"
-      ]
+      "const": "evolution"
     },
     "inputIds": {
       "type": "array",
@@ -315,6 +311,37 @@
         "effects"
       ],
       "additionalProperties": false
+    },
+    "evolutionKind": {
+      "type": "string",
+      "enum": [
+        "weapon-tool",
+        "tool-tool",
+        "tool-growth"
+      ]
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "benefit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trigger",
+        "benefit",
+        "cost"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -325,10 +352,12 @@
     "designStatus",
     "implementationNote",
     "loopLinks",
-    "kind",
+    "evolutionKind",
     "inputIds",
     "growthCondition",
-    "result"
+    "result",
+    "kind",
+    "effect"
   ],
   "additionalProperties": false
 }

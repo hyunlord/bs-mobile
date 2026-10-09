@@ -5,25 +5,73 @@
       "id": "meta:grain",
       "name": "곡물",
       "walletCap": 20000,
-      "artRole": "icon.core.harvest_basket_lid.default"
+      "artRole": "icon.core.harvest_basket_lid.default",
+      "kind": "material",
+      "tags": [
+        "meta",
+        "material"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "출정 성과를 식량으로 보관하여 장원과 가신 성장에 사용한다.",
+      "effect": {
+        "trigger": "출정 결산·도전 보상·자동 생산 수령",
+        "benefit": "곡물을 지갑 상한까지 보관한다.",
+        "cost": "장원 성장과 가신 레벨 강화 시 소비된다."
+      }
     },
     {
       "id": "meta:timber",
       "name": "목재",
       "walletCap": 16000,
-      "artRole": "icon.core.carpenter_hammer.default"
+      "artRole": "icon.core.carpenter_hammer.default",
+      "kind": "material",
+      "tags": [
+        "meta",
+        "material"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "건물 성장 등 출정 성과를 목재로 보관하여 장원과 가신 성장에 사용한다.",
+      "effect": {
+        "trigger": "출정 결산·도전 보상·자동 생산 수령",
+        "benefit": "목재을 지갑 상한까지 보관한다.",
+        "cost": "장원 성장과 가신 레벨 강화 시 소비된다."
+      }
     },
     {
       "id": "meta:iron",
       "name": "철재",
       "walletCap": 12000,
-      "artRole": "icon.core.iron_blade.default"
+      "artRole": "icon.core.iron_blade.default",
+      "kind": "material",
+      "tags": [
+        "meta",
+        "material"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "건물 성장 등 출정 성과를 철로 보관하여 장원과 가신 성장에 사용한다.",
+      "effect": {
+        "trigger": "출정 결산·도전 보상·자동 생산 수령",
+        "benefit": "철재을 지갑 상한까지 보관한다.",
+        "cost": "장원 성장과 가신 레벨 강화 시 소비된다."
+      }
     },
     {
       "id": "meta:charter",
       "name": "인장",
       "walletCap": 6000,
-      "artRole": "icon.core.muster_roll.default"
+      "artRole": "icon.core.muster_roll.default",
+      "kind": "material",
+      "tags": [
+        "meta",
+        "material"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "사람 성장과 보스 처치 성과를 인장으로 보관하여 장원과 가신 성장에 사용한다.",
+      "effect": {
+        "trigger": "출정 결산·도전 보상·자동 생산 수령",
+        "benefit": "인장을 지갑 상한까지 보관한다.",
+        "cost": "장원 성장과 가신 레벨 강화 시 소비된다."
+      }
     }
   ],
   "chapters": [
@@ -84,6 +132,18 @@
         "meta:timber": 115,
         "meta:iron": 70,
         "meta:charter": 28
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "새싹 들판: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -143,6 +203,18 @@
         "meta:timber": 140,
         "meta:iron": 90,
         "meta:charter": 36
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "물굽이 나루: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -202,6 +274,18 @@
         "meta:timber": 165,
         "meta:iron": 110,
         "meta:charter": 44
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "그늘 숲길: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -262,6 +346,18 @@
         "meta:timber": 190,
         "meta:iron": 130,
         "meta:charter": 52
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "돌등성이: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -322,6 +418,18 @@
         "meta:timber": 215,
         "meta:iron": 150,
         "meta:charter": 60
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "갈대 여울: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -382,6 +490,18 @@
         "meta:timber": 240,
         "meta:iron": 170,
         "meta:charter": 68
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "잿빛 수림: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -442,6 +562,18 @@
         "meta:timber": 265,
         "meta:iron": 190,
         "meta:charter": 76
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "바람 고개: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -502,6 +634,18 @@
         "meta:timber": 290,
         "meta:iron": 210,
         "meta:charter": 84
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "두 강의 변경: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -562,6 +706,18 @@
         "meta:timber": 315,
         "meta:iron": 230,
         "meta:charter": 92
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "겨울 능선: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     },
     {
@@ -622,6 +778,18 @@
         "meta:timber": 340,
         "meta:iron": 250,
         "meta:charter": 100
+      },
+      "kind": "chapter",
+      "tags": [
+        "meta",
+        "chapter"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "장원의 마지막 해: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "effect": {
+        "trigger": "해금한 챕터를 선택하고 출정",
+        "benefit": "정의된 지형·적 구성·배율·보상 상한으로 한 판을 실행한다.",
+        "cost": "전투 위험을 감수하며 결산 결과에 따라 보상이 제한된다."
       }
     }
   ],
@@ -631,7 +799,6 @@
       "name": "대장간",
       "description": "가신의 강화 가능 레벨 상한을 연다.",
       "artRole": "metaManor.meta:forge",
-      "effect": "VassalLevelCap",
       "maxLevel": 10,
       "baseCost": {
         "meta:grain": 35,
@@ -644,6 +811,19 @@
         "meta:timber": 30,
         "meta:iron": 20,
         "meta:charter": 10
+      },
+      "manorEffect": "VassalLevelCap",
+      "kind": "manor-building",
+      "tags": [
+        "meta",
+        "manor-building"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "가신의 강화 가능 레벨 상한을 연다.",
+      "effect": {
+        "trigger": "보유 자재가 다음 자동 성장 비용을 충족",
+        "benefit": "가신의 강화 가능 레벨 상한을 연다.",
+        "cost": "기본 비용과 레벨별 추가 비용의 자재를 소비한다."
       }
     },
     {
@@ -651,7 +831,6 @@
       "name": "기록소",
       "description": "도전 연구 조건을 열어 새로운 도구와 물품을 발견한다.",
       "artRole": "metaManor.meta:scriptorium",
-      "effect": "Research",
       "maxLevel": 10,
       "baseCost": {
         "meta:grain": 35,
@@ -664,6 +843,19 @@
         "meta:timber": 35,
         "meta:iron": 25,
         "meta:charter": 10
+      },
+      "manorEffect": "Research",
+      "kind": "manor-building",
+      "tags": [
+        "meta",
+        "manor-building"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "도전 연구 조건을 열어 새로운 도구와 물품을 발견한다.",
+      "effect": {
+        "trigger": "보유 자재가 다음 자동 성장 비용을 충족",
+        "benefit": "도전 연구 조건을 열어 새로운 도구와 물품을 발견한다.",
+        "cost": "기본 비용과 레벨별 추가 비용의 자재를 소비한다."
       }
     },
     {
@@ -671,7 +863,6 @@
       "name": "곡물창고",
       "description": "자동 생산의 시간 상한을 늘린다.",
       "artRole": "metaManor.meta:granary",
-      "effect": "IdleCapacity",
       "maxLevel": 10,
       "baseCost": {
         "meta:grain": 35,
@@ -684,6 +875,19 @@
         "meta:timber": 40,
         "meta:iron": 30,
         "meta:charter": 10
+      },
+      "manorEffect": "IdleCapacity",
+      "kind": "manor-building",
+      "tags": [
+        "meta",
+        "manor-building"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "자동 생산의 시간 상한을 늘린다.",
+      "effect": {
+        "trigger": "보유 자재가 다음 자동 성장 비용을 충족",
+        "benefit": "자동 생산의 시간 상한을 늘린다.",
+        "cost": "기본 비용과 레벨별 추가 비용의 자재를 소비한다."
       }
     },
     {
@@ -691,7 +895,6 @@
       "name": "병영",
       "description": "함께 출전할 가신 자리를 연다.",
       "artRole": "metaManor.meta:barracks",
-      "effect": "VassalSlots",
       "maxLevel": 10,
       "baseCost": {
         "meta:grain": 35,
@@ -704,6 +907,19 @@
         "meta:timber": 45,
         "meta:iron": 35,
         "meta:charter": 10
+      },
+      "manorEffect": "VassalSlots",
+      "kind": "manor-building",
+      "tags": [
+        "meta",
+        "manor-building"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "함께 출전할 가신 자리를 연다.",
+      "effect": {
+        "trigger": "보유 자재가 다음 자동 성장 비용을 충족",
+        "benefit": "함께 출전할 가신 자리를 연다.",
+        "cost": "기본 비용과 레벨별 추가 비용의 자재를 소비한다."
       }
     }
   ],
@@ -739,6 +955,18 @@
         "meta:timber": 8,
         "meta:iron": 6,
         "meta:charter": 3
+      },
+      "kind": "meta-vassal",
+      "tags": [
+        "meta",
+        "meta-vassal"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "무기와 도구의 공격력을 높인다.",
+      "effect": {
+        "trigger": "해금한 가신을 출전 슬롯에 편성",
+        "benefit": "무기와 도구의 공격력을 높인다.",
+        "cost": "출전 슬롯을 차지하며 레벨 강화에는 자재, 승급에는 조각을 소비한다."
       }
     },
     {
@@ -772,6 +1000,18 @@
         "meta:timber": 8,
         "meta:iron": 6,
         "meta:charter": 3
+      },
+      "kind": "meta-vassal",
+      "tags": [
+        "meta",
+        "meta-vassal"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "영주의 최대 체력을 높인다.",
+      "effect": {
+        "trigger": "해금한 가신을 출전 슬롯에 편성",
+        "benefit": "영주의 최대 체력을 높인다.",
+        "cost": "출전 슬롯을 차지하며 레벨 강화에는 자재, 승급에는 조각을 소비한다."
       }
     },
     {
@@ -805,6 +1045,18 @@
         "meta:timber": 8,
         "meta:iron": 6,
         "meta:charter": 3
+      },
+      "kind": "meta-vassal",
+      "tags": [
+        "meta",
+        "meta-vassal"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "영주의 이동 속도를 높인다.",
+      "effect": {
+        "trigger": "해금한 가신을 출전 슬롯에 편성",
+        "benefit": "영주의 이동 속도를 높인다.",
+        "cost": "출전 슬롯을 차지하며 레벨 강화에는 자재, 승급에는 조각을 소비한다."
       }
     },
     {
@@ -838,6 +1090,18 @@
         "meta:timber": 8,
         "meta:iron": 6,
         "meta:charter": 3
+      },
+      "kind": "meta-vassal",
+      "tags": [
+        "meta",
+        "meta-vassal"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "농지 성장과 수확을 돕는다.",
+      "effect": {
+        "trigger": "해금한 가신을 출전 슬롯에 편성",
+        "benefit": "농지 성장과 수확을 돕는다.",
+        "cost": "출전 슬롯을 차지하며 레벨 강화에는 자재, 승급에는 조각을 소비한다."
       }
     },
     {
@@ -871,6 +1135,18 @@
         "meta:timber": 8,
         "meta:iron": 6,
         "meta:charter": 3
+      },
+      "kind": "meta-vassal",
+      "tags": [
+        "meta",
+        "meta-vassal"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "아군의 공격 기여를 높인다.",
+      "effect": {
+        "trigger": "해금한 가신을 출전 슬롯에 편성",
+        "benefit": "아군의 공격 기여를 높인다.",
+        "cost": "출전 슬롯을 차지하며 레벨 강화에는 자재, 승급에는 조각을 소비한다."
       }
     },
     {
@@ -904,6 +1180,18 @@
         "meta:timber": 8,
         "meta:iron": 6,
         "meta:charter": 3
+      },
+      "kind": "meta-vassal",
+      "tags": [
+        "meta",
+        "meta-vassal"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "한 판의 경험치 획득을 높인다.",
+      "effect": {
+        "trigger": "해금한 가신을 출전 슬롯에 편성",
+        "benefit": "한 판의 경험치 획득을 높인다.",
+        "cost": "출전 슬롯을 차지하며 레벨 강화에는 자재, 승급에는 조각을 소비한다."
       }
     }
   ],
@@ -924,6 +1212,18 @@
         "meta:timber": 15,
         "meta:iron": 10,
         "meta:charter": 3
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "첫 출정: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Runs 지표가 1에 도달하고 연구 레벨 0 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -944,6 +1244,18 @@
         "meta:timber": 17,
         "meta:iron": 11,
         "meta:charter": 4
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "수확의 기쁨: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Harvests 지표가 10에 도달하고 연구 레벨 0 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -962,6 +1274,18 @@
         "meta:timber": 19,
         "meta:iron": 12,
         "meta:charter": 5
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "변경 수비: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Kills 지표가 100에 도달하고 연구 레벨 0 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -980,6 +1304,18 @@
         "meta:timber": 21,
         "meta:iron": 13,
         "meta:charter": 6
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "기초 공사: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Buildings 지표가 10에 도달하고 연구 레벨 0 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1000,6 +1336,18 @@
         "meta:timber": 23,
         "meta:iron": 14,
         "meta:charter": 7
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "함께 걷는 길: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 People 지표가 30에 도달하고 연구 레벨 1 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1018,6 +1366,18 @@
         "meta:timber": 25,
         "meta:iron": 15,
         "meta:charter": 8
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "두 번의 겨울: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Clears 지표가 2에 도달하고 연구 레벨 1 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1036,6 +1396,18 @@
         "meta:timber": 27,
         "meta:iron": 16,
         "meta:charter": 9
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "세 번째 변경: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 HighestChapter 지표가 3에 도달하고 연구 레벨 1 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1056,6 +1428,18 @@
         "meta:timber": 29,
         "meta:iron": 17,
         "meta:charter": 10
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "두 해의 기록: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 SurvivalTicks 지표가 54000에 도달하고 연구 레벨 1 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1074,6 +1458,18 @@
         "meta:timber": 31,
         "meta:iron": 18,
         "meta:charter": 11
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "가신의 훈련: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 VassalLevel 지표가 5에 도달하고 연구 레벨 2 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1092,6 +1488,18 @@
         "meta:timber": 33,
         "meta:iron": 19,
         "meta:charter": 12
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "사슴의 발자국: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Bosses 지표가 3에 도달하고 연구 레벨 2 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1110,6 +1518,18 @@
         "meta:timber": 35,
         "meta:iron": 20,
         "meta:charter": 13
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "여덟 번의 원정: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Runs 지표가 8에 도달하고 연구 레벨 2 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1130,6 +1550,18 @@
         "meta:timber": 37,
         "meta:iron": 21,
         "meta:charter": 14
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "풍요의 계절: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Harvests 지표가 200에 도달하고 연구 레벨 2 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1148,6 +1580,18 @@
         "meta:timber": 39,
         "meta:iron": 22,
         "meta:charter": 15
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "노련한 수비대: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Kills 지표가 3000에 도달하고 연구 레벨 3 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1166,6 +1610,18 @@
         "meta:timber": 41,
         "meta:iron": 23,
         "meta:charter": 16
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "장원의 초석: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Buildings 지표가 80에 도달하고 연구 레벨 3 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1183,6 +1639,18 @@
         "meta:timber": 43,
         "meta:iron": 24,
         "meta:charter": 17
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "사람들의 마을: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 People 지표가 300에 도달하고 연구 레벨 3 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1202,6 +1670,18 @@
         "meta:timber": 45,
         "meta:iron": 25,
         "meta:charter": 18
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "여덟 개의 승전보: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Clears 지표가 8에 도달하고 연구 레벨 3 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1219,6 +1699,18 @@
         "meta:timber": 47,
         "meta:iron": 26,
         "meta:charter": 19
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "높은 변경: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 HighestChapter 지표가 7에 도달하고 연구 레벨 4 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1236,6 +1728,18 @@
         "meta:timber": 49,
         "meta:iron": 27,
         "meta:charter": 20
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "열세 해의 기억: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 SurvivalTicks 지표가 350000에 도달하고 연구 레벨 4 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1253,6 +1757,18 @@
         "meta:timber": 51,
         "meta:iron": 28,
         "meta:charter": 21
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "숙련된 가신: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 VassalLevel 지표가 15에 도달하고 연구 레벨 4 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     },
     {
@@ -1270,6 +1786,18 @@
         "meta:timber": 53,
         "meta:iron": 29,
         "meta:charter": 22
+      },
+      "kind": "challenge",
+      "tags": [
+        "meta",
+        "challenge"
+      ],
+      "designStatus": "current-implementation",
+      "concept": "마지막 겨울: 누적 성과와 연구 조건을 충족하여 새 선택지와 자재를 얻는다.",
+      "effect": {
+        "trigger": "누적 Bosses 지표가 10에 도달하고 연구 레벨 4 충족",
+        "benefit": "정의된 콘텐츠·가신을 해금하고 자재 보상을 한 번 지급한다.",
+        "cost": "추가 소비는 없으며 누적 성과와 연구 선행 조건이 필요하다."
       }
     }
   ],

@@ -16,7 +16,7 @@
       "reason": "재건한 건물의 작업 기억을 이어 다음 폐허의 첫 공정을 대신한다."
     }
   ],
-  "kind": "tool-growth",
+  "kind": "evolution",
   "inputIds": [
     "core:carpenter_hammer"
   ],
@@ -29,6 +29,12 @@
     "baseId": "core:carpenter_hammer",
     "name": "귀환 망치",
     "effect": "재건한 건물의 작업 기억을 이어 다음 폐허의 첫 공정을 대신한다.",
+    "cost": "활성 건물 수리는 뒤로 미뤄져 현재 방어선이 약해질 수 있다."
+  },
+  "evolutionKind": "tool-growth",
+  "effect": {
+    "trigger": "building/rebuilt 3 및 inputIds 조건 충족",
+    "benefit": "재건한 건물의 작업 기억을 이어 다음 폐허의 첫 공정을 대신한다.",
     "cost": "활성 건물 수리는 뒤로 미뤄져 현재 방어선이 약해질 수 있다."
   }
 }

@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:cart_yoke"
-  ]
+  ],
+  "kind": "item"
 }

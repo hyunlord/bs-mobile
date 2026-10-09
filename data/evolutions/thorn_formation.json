@@ -16,7 +16,7 @@
       "reason": "두 북의 박자를 번갈아 써 생울타리 틈으로 분대가 교대 출입하도록 한다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:formation_drum",
     "core:hedge_drum"
@@ -26,6 +26,12 @@
     "baseId": "core:formation_drum",
     "name": "가시 진형 북",
     "effect": "두 북의 박자를 번갈아 써 생울타리 틈으로 분대가 교대 출입하도록 한다.",
+    "cost": "고정된 출입구를 지켜야 해서 먼 농지의 위협 대응이 늦어진다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "두 북의 박자를 번갈아 써 생울타리 틈으로 분대가 교대 출입하도록 한다.",
     "cost": "고정된 출입구를 지켜야 해서 먼 농지의 위협 대응이 늦어진다."
   }
 }

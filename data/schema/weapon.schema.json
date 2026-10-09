@@ -315,6 +315,33 @@
     },
     "growth": {
       "$ref": "weapon-growth#/$defs/weapon"
+    },
+    "kind": {
+      "type": "string",
+      "const": "weapon"
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "benefit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trigger",
+        "benefit",
+        "cost"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -325,7 +352,9 @@
     "designStatus",
     "implementationNote",
     "loopLinks",
-    "activation"
+    "activation",
+    "kind",
+    "effect"
   ],
   "additionalProperties": false,
   "oneOf": [

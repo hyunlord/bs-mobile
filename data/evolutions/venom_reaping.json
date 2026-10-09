@@ -16,7 +16,7 @@
       "reason": "독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:harvest_scythe",
     "core:poison_sickle"
@@ -48,5 +48,11 @@
         ]
       }
     ]
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "독낫으로 표시한 적을 수확낫이 베면 남은 독을 미성숙 밭 보호막으로 바꾼다.",
+    "cost": "독을 보호에 쓰므로 표시 적에게 남아 있던 추가 피해를 포기한다."
   }
 }

@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:mushroom_sieve"
-  ]
+  ],
+  "kind": "item"
 }

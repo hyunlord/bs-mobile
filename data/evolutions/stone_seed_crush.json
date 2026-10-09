@@ -16,7 +16,7 @@
       "reason": "심어 둔 돌씨를 망치로 깨뜨려 가까운 적에게 파편을 뿌린다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:stone_maul",
     "core:stone_seed"
@@ -26,6 +26,12 @@
     "baseId": "core:stone_maul",
     "name": "돌씨 파쇄추",
     "effect": "심어 둔 돌씨를 망치로 깨뜨려 가까운 적에게 파편을 뿌린다.",
+    "cost": "깨뜨린 돌씨의 장기 성장 결과를 잃어 매번 다시 심어야 한다."
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "심어 둔 돌씨를 망치로 깨뜨려 가까운 적에게 파편을 뿌린다.",
     "cost": "깨뜨린 돌씨의 장기 성장 결과를 잃어 매번 다시 심어야 한다."
   }
 }

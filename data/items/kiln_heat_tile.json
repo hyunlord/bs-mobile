@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:kiln_bellows"
-  ]
+  ],
+  "kind": "item"
 }

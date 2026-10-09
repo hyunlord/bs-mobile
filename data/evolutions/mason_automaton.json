@@ -16,7 +16,7 @@
       "reason": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:golem_seal",
     "core:carpenter_hammer"
@@ -26,6 +26,12 @@
     "baseId": "core:golem_seal",
     "name": "석공 자동인형",
     "effect": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다.",
+    "cost": "표식을 멀리 흩으면 이동에 시간을 쓰고 즉시 수리 응답이 늦어진다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "망치가 남긴 수리 표식을 골렘이 차례로 찾아 건물 보수를 이어 간다.",
     "cost": "표식을 멀리 흩으면 이동에 시간을 쓰고 즉시 수리 응답이 늦어진다."
   }
 }

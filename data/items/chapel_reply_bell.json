@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:chapel_bell"
-  ]
+  ],
+  "kind": "item"
 }

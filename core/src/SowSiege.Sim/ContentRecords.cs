@@ -10,7 +10,10 @@ public sealed record EstateLoop(string Name, string Summary, LoopStage[] Stages)
 public sealed record EnemyBehavior(string Trigger, string Pressure, string Counterplay);
 
 public abstract record ContentRecord(string Id, string Name, string Concept, string[] Tags,
-    string DesignStatus, string ImplementationNote, LoopLink[] LoopLinks);
+    string DesignStatus, string ImplementationNote, LoopLink[] LoopLinks)
+{
+    public string? Kind { get; init; }
+}
 
 public sealed record ActivationContent(int Damage, int Range, int CooldownTicks, string Shape, int Knockback,
     string Form, decimal DamageCoefficient)
@@ -29,6 +32,8 @@ public sealed record ToolContent(string Id, string Name, string Concept, string[
     string FloorRationale, string[] AntiSynergy, AntiSynergyNote[] AntiSynergyNotes, EquipmentProjection? RuntimeProjection = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
+    public ProposedEffect? Effect { get; init; }
+
     public ToolDefinition ToCore() => new(Id, Tags, Activation.ToCore(), Growth.ToCore(), FloorRationale, AntiSynergy);
 }
 
@@ -37,6 +42,8 @@ public sealed record WeaponContent(string Id, string Name, string Concept, strin
     WeaponCombatWeaponDefinition? Growth = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
+    public ProposedEffect? Effect { get; init; }
+
     public WeaponDefinition ToCore() => new(Id, Tags, Activation.ToCore(Growth));
 }
 
@@ -45,6 +52,8 @@ public sealed record HeroContent(string Id, string Name, string Concept, string[
     string[] AffinityEstateIds, ProposedAbility Ability)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
+    public ProposedEffect? Effect { get; init; }
+
     public HeroDefinition ToCore() => new(Id, StartingTool, DamageMultiplier);
 }
 
@@ -52,6 +61,8 @@ public sealed record EstateContent(string Id, string Name, string Concept, strin
     string ImplementationNote, LoopLink[] LoopLinks, int GrowthMultiplier, EstateLoop UniqueLoop, RemainsLoopDefinition? RemainsLoop = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
+    public ProposedEffect? Effect { get; init; }
+
     public EstateDefinition ToCore() => new(Id, GrowthMultiplier, RemainsLoop);
 }
 
@@ -60,6 +71,8 @@ public sealed record EnemyContent(string Id, string Name, string Concept, string
     int Range, int AttackCooldownTicks, int Experience, EnemyBehavior Behavior)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
 {
+    public ProposedEffect? Effect { get; init; }
+
     public EnemyDefinition ToCore() => new(Id, Target, Health, Speed, Damage, Range, AttackCooldownTicks, Experience);
 }
 
@@ -91,9 +104,12 @@ public sealed record ItemContent(string Id, string Name, string Concept, string[
     string ImplementationNote, LoopLink[] LoopLinks, ProposedEffect Effect, string[] LinkedToolIds, ItemProjection? RuntimeProjection = null)
     : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);
 public sealed record EvolutionContent(string Id, string Name, string Concept, string[] Tags, string DesignStatus,
-    string ImplementationNote, LoopLink[] LoopLinks, string Kind, string[] InputIds, EvolutionGrowthCondition? GrowthCondition,
-    ProposedEvolutionResult Result, EvolutionProjection? RuntimeProjection = null)
-    : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks);
+    string ImplementationNote, LoopLink[] LoopLinks, string[] InputIds, EvolutionGrowthCondition? GrowthCondition,
+    ProposedEvolutionResult Result, EvolutionProjection? RuntimeProjection = null, string? EvolutionKind = null)
+    : ContentRecord(Id, Name, Concept, Tags, DesignStatus, ImplementationNote, LoopLinks)
+{
+    public ProposedEffect? Effect { get; init; }
+}
 
 public sealed record WeaponCombatProfileExtension(int ContractVersion, string? DefinitionsFile = null);
 public sealed record WeaponCombatFile(int ContractVersion, Dictionary<string, WeaponCombatWeaponDefinition> Weapons);

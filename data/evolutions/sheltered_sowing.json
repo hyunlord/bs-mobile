@@ -16,7 +16,7 @@
       "reason": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:seed_bag",
     "core:carpenter_hammer"
@@ -48,5 +48,11 @@
         ]
       }
     ]
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "수리한 건물에 붙은 씨앗 밭에 짧은 지붕을 만들어 첫 약탈 시도를 막는다.",
+    "cost": "영지 밖 새 밭에는 지붕이 닿지 않아 확장과 집중 방어 중 하나를 골라야 한다."
   }
 }

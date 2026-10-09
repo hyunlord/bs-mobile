@@ -153,6 +153,33 @@
         "absorptionRadius"
       ],
       "additionalProperties": false
+    },
+    "kind": {
+      "type": "string",
+      "const": "estate"
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "benefit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trigger",
+        "benefit",
+        "cost"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -164,7 +191,9 @@
     "implementationNote",
     "loopLinks",
     "growthMultiplier",
-    "uniqueLoop"
+    "uniqueLoop",
+    "kind",
+    "effect"
   ],
   "additionalProperties": false
 }

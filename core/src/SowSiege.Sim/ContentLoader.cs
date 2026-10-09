@@ -164,8 +164,31 @@ public static partial class ContentLoader
         UniqueProperties(document.RootElement);
         ValidateRequiredShape(document.RootElement, typeof(T), path);
         var result = document.RootElement.Deserialize<T>(JsonOptions) ?? throw new InvalidDataException($"Null content: {path}");
+        if (result is ContentRecord content) { ValidateNormalizedContent(document.RootElement, content); }
         if (result is WeaponContent weapon) { ValidateWeaponSource(weapon); }
         return result;
+    }
+
+    private static void ValidateNormalizedContent(JsonElement source, ContentRecord content)
+    {
+        // Historical fixture catalogs predate the normalized design contract.
+        if (!source.TryGetProperty("kind", out var kind)) { return; }
+        var expected = content switch
+        {
+            ToolContent => "tool",
+            WeaponContent => "weapon",
+            HeroContent => "hero",
+            EstateContent => "estate",
+            EnemyContent => "enemy",
+            CharterContent => "charter",
+            ItemContent => "item",
+            EvolutionContent => "evolution",
+            _ => throw new InvalidDataException("Unknown content kind.")
+        };
+        if (content is EvolutionContent legacy && legacy.EvolutionKind is null && kind.ValueKind == JsonValueKind.String && kind.GetString() is "weapon-tool" or "tool-tool" or "tool-growth") { return; }
+        Require(kind.ValueKind == JsonValueKind.String && kind.GetString() == expected, $"Invalid content kind: {content.Id}");
+        Require(source.TryGetProperty("effect", out var effect) && effect.ValueKind == JsonValueKind.Object, $"Missing normalized effect: {content.Id}");
+        if (content is EvolutionContent evolution) { Require(evolution.EvolutionKind is "weapon-tool" or "tool-tool" or "tool-growth", "Missing evolution subtype."); }
     }
 
     private static void ValidateRequiredShape(JsonElement element, Type type, string location)
@@ -204,7 +227,9 @@ public static partial class ContentLoader
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
             if (!element.TryGetProperty(name, out var member))
             {
-                if (name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent)
+                if (typeof(ContentRecord).IsAssignableFrom(type) && name is "kind" or "evolutionKind"
+                    || name == "effect" && type != typeof(CharterContent) && type != typeof(ItemContent) && typeof(ContentRecord).IsAssignableFrom(type)
+                    || name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent)
                     || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" && type == typeof(RuntimeProfile)
                     || name == "evolutionGrowthRequirements" && type == typeof(FirstPlayableDefinition)
                     || name == "growth" && type == typeof(WeaponContent)

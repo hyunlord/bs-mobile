@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:mandrake_bulb"
-  ]
+  ],
+  "kind": "item"
 }

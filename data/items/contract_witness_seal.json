@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:contract_seal"
-  ]
+  ],
+  "kind": "item"
 }

@@ -16,7 +16,7 @@
       "reason": "수확 수레가 실어 온 작물을 장부의 고정 비율에 따라 배식 몫과 재건 몫으로 자동 분류해 목적지에 넘긴다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:tax_ledger",
     "core:harvest_cart"
@@ -26,6 +26,12 @@
     "baseId": "core:tax_ledger",
     "name": "십일조 수확마차",
     "effect": "수확 수레가 실어 온 작물을 장부의 고정 비율에 따라 배식 몫과 재건 몫으로 자동 분류해 목적지에 넘긴다.",
+    "cost": "분류가 끝나기 전에는 어느 몫도 긴급 소비할 수 없다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "수확 수레가 실어 온 작물을 장부의 고정 비율에 따라 배식 몫과 재건 몫으로 자동 분류해 목적지에 넘긴다.",
     "cost": "분류가 끝나기 전에는 어느 몫도 긴급 소비할 수 없다."
   }
 }

@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:grave_spade"
-  ]
+  ],
+  "kind": "item"
 }

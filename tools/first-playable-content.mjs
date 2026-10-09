@@ -45,7 +45,7 @@ export function validateFirstPlayableDefinitions(profile, records, tuning) {
   exactKeys(fp.mapEvents.map(e => e.kind), ['merchant', 'shrine', 'cart'], 'three distinct events');
   assert.equal(new Set(fp.mapEvents.map(e => e.id)).size, 3, 'event IDs unique');
   exactKeys(Object.keys(fp.evolutionRequirements), selected.evolutions, 'evolution level requirement coverage');
-  assert.ok(selected.evolutions.filter(id => byId.get(id).kind === 'weapon-tool').length >= 4, 'four weapon-tool evolutions');
+  assert.ok(selected.evolutions.filter(id => byId.get(id).evolutionKind === 'weapon-tool').length >= 4, 'four weapon-tool evolutions');
   for (const id of selected.evolutions) {
     const definition = byId.get(id), requirements = fp.evolutionRequirements[id];
     exactKeys(requirements.map(r => r.equipmentId), definition.inputIds, `${id} exact evolution inputs`);

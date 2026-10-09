@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:shrine_censer"
-  ]
+  ],
+  "kind": "item"
 }
