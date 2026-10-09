@@ -5,7 +5,7 @@ import { parseCsv } from './csv.mjs';
 
 export const headers = 'frame,tick,deltaMs,speed,paused,enemies,projectiles,visualProjectiles,people,farms,buildings,width,height,safeX,safeY,safeWidth,safeHeight,thermal,suspended,partial'.split(',');
 const thermalStates = new Set(['unavailable', 'none', 'light', 'moderate', 'severe', 'critical', 'emergency', 'shutdown']);
-export function summarizeDevice(directory, { commit, posture = 'unknown' }) {
+export function readDeviceRecording(directory, { commit, posture = 'unknown' }) {
   const read = (name) => JSON.parse(fs.readFileSync(path.join(directory, name), 'utf8'));
   const identity = read('recording.json'), facts = read('device.json'), summary = read('frame-summary.json');
   if (!/^[a-f\d]{40}$/i.test(commit) || identity.build !== commit || !Number.isInteger(identity.seed) || identity.seed < 0 || !/^[a-f\d]{64}$/i.test(identity.dataHash) || summary.dataHash !== identity.dataHash || summary.sessionId !== identity.sessionId || summary.build !== identity.build) throw new Error('Invalid or mismatched recording identity');
@@ -26,6 +26,10 @@ export function summarizeDevice(directory, { commit, posture = 'unknown' }) {
     previousTick = row.tick;
   }
   if (rows.length !== summary.frames) throw new Error('Incomplete frame CSV');
+  return { identity, facts, summary, rows };
+}
+export function summarizeDevice(directory, { commit, posture = 'unknown' }) {
+  const { identity, facts, summary, rows } = readDeviceRecording(directory, { commit, posture });
   const late = rows.filter((row) => row.tick >= summary.lateStartTick && !row.paused && !row.suspended);
   const eligible = late.filter((row) => row.speed === 1 && !row.partial).map((row) => row.deltaMs).sort((a,b) => a-b);
   const screens = [...new Set(rows.map((row) => `${row.width}x${row.height}`))];

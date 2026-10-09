@@ -92,22 +92,33 @@ namespace SowSiege.Core
                 if (world.FirstPlayable is { } fp) { fp.Count("evolution:" + evolution.Id); interactive?.Experience(world.Tick, PresentationKind.Evolution, evolution.Id, world.Lord, 0); }
             }
         }
-        private IEnumerable<OwnedEffect> OwnedEffects()
+        private IEnumerable<OwnedEffect> OwnedEffects(string trigger, string? operation = null, string? subject = null)
         {
             var effects = new List<OwnedEffect>();
             foreach (var equipment in world.Equipment)
             {
-                if (definition.Equipment.TryGetValue(equipment.Id, out var runtime)) { effects.AddRange(runtime.Effects.Select(effect => new OwnedEffect(equipment.Id, catalog.Tools.ContainsKey(equipment.Id) ? "tool" : "weapon", 1, effect))); }
+                if (definition.Equipment.TryGetValue(equipment.Id, out var runtime)) { Add(equipment.Id, catalog.Tools.ContainsKey(equipment.Id) ? "tool" : "weapon", 1, runtime.Effects); }
             }
-            foreach (var pair in state.Charters) { effects.AddRange(definition.Charters[pair.Key].Effects.Select(effect => new OwnedEffect(pair.Key, "charter", pair.Value, effect))); }
-            foreach (var pair in state.Items) { if (world.FirstPlayable is not null && !ItemEligible(definition.Items[pair.Key])) { continue; } effects.AddRange(definition.Items[pair.Key].Effects.Select(effect => new OwnedEffect(pair.Key, "item", pair.Value, effect))); }
-            foreach (var id in state.Evolutions) { effects.AddRange(definition.Evolutions[id].Effects.Select(effect => new OwnedEffect(id, "evolution", 1, effect))); }
+            foreach (var pair in state.Charters) { Add(pair.Key, "charter", pair.Value, definition.Charters[pair.Key].Effects); }
+            foreach (var pair in state.Items) { if (world.FirstPlayable is not null && !ItemEligible(definition.Items[pair.Key])) { continue; } Add(pair.Key, "item", pair.Value, definition.Items[pair.Key].Effects); }
+            foreach (var id in state.Evolutions) { Add(id, "evolution", 1, definition.Evolutions[id].Effects); }
             return effects.OrderBy(effect => effect.Source, StringComparer.Ordinal).ThenBy(effect => effect.Definition.Id, StringComparer.Ordinal);
+
+            void Add(string source, string kind, int stacks, RuntimeEffectDefinition[] definitions)
+            {
+                foreach (var effect in definitions)
+                {
+                    if (effect.Trigger == trigger && (operation is null || effect.Operation == operation) && (subject is null || effect.Subject == subject))
+                    {
+                        effects.Add(new(source, kind, stacks, effect));
+                    }
+                }
+            }
         }
         public int Modify(string subject, int original, EffectContext context, int minimum = 0)
         {
             var result = original;
-            foreach (var effect in OwnedEffects().Where(effect => effect.Definition.Trigger == "modifier" && effect.Definition.Operation == "stat-add" && effect.Definition.Subject == subject))
+            foreach (var effect in OwnedEffects("modifier", "stat-add", subject))
             {
                 if (!Matches(effect.Definition, context)) { continue; }
                 var changed = Clamp((long)result + (long)effect.Definition.Amount * effect.Stacks, minimum);
@@ -118,7 +129,7 @@ namespace SowSiege.Core
         public Position PlantingPosition(string source, Position original)
         {
             var result = original;
-            foreach (var effect in OwnedEffects().Where(effect => effect.Definition.Trigger == "modifier" && effect.Definition.Operation == "planting-bias"))
+            foreach (var effect in OwnedEffects("modifier", "planting-bias"))
             {
                 if (!Matches(effect.Definition, new(result, source))) { continue; }
                 var target = effect.Definition.Subject == "estate-inward" ? world.Estate : world.Farms.OrderBy(farm => farm.Position.DistanceSquared(result)).ThenBy(farm => farm.Id).FirstOrDefault()?.Position;
@@ -133,7 +144,7 @@ namespace SowSiege.Core
             if (!activeTriggers.Add(trigger)) { return; }
             try
             {
-                foreach (var effect in OwnedEffects().Where(effect => effect.Definition.Trigger == trigger))
+                foreach (var effect in OwnedEffects(trigger))
                 {
                     if (!Matches(effect.Definition, context) || world.Food < effect.Definition.FoodCost) { continue; }
                     world.Food -= effect.Definition.FoodCost;

@@ -103,6 +103,16 @@ namespace Game.Editor
 
         public static void Android()
         {
+            BuildAndroid(true);
+        }
+
+        public static void AndroidRelease()
+        {
+            BuildAndroid(false);
+        }
+
+        private static void BuildAndroid(bool development)
+        {
             Configure();
             VerifyGenerated();
             var output = Environment.GetEnvironmentVariable("UNITY_APK_PATH") ?? Path.Combine(RepoRoot, "artifacts/unity/sow-siege.apk");
@@ -111,12 +121,12 @@ namespace Game.Editor
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = ScenePaths, target = BuildTarget.Android, locationPathName = output,
-                options = BuildOptions.Development
+                options = development ? BuildOptions.Development : BuildOptions.None
             });
             if (report.summary.result != BuildResult.Succeeded || !File.Exists(output))
                 throw new BuildFailedException("Android IL2CPP build failed: " + report.summary.result);
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "build-result.json"),
-                "{\"result\":\"Succeeded\",\"backend\":\"IL2CPP\",\"architecture\":\"ARM64\",\"bytes\":" + report.summary.totalSize + "}");
+                "{\"result\":\"Succeeded\",\"backend\":\"IL2CPP\",\"architecture\":\"ARM64\",\"development\":" + (development ? "true" : "false") + ",\"bytes\":" + report.summary.totalSize + ",\"apkBytes\":" + new FileInfo(output).Length + "}");
             UnityEngine.Debug.Log("FOUNDATION_ANDROID_BUILD_SUCCEEDED " + output);
         }
     }

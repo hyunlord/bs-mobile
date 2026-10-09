@@ -46,3 +46,57 @@ M3 Editor 검사로 다음 항목을 통과 처리하지 않는다.
 - 실제 초반·중반·후반·보스·결산 캡처와 각각30초 이상 `adb shell screenrecord` 영상2개. 물리 접기/펼치기 #83은 사용자 조작 대기로 유지하며 화면 비율 검사로 대체 통과하지 않는다.
 
 기기 원자료는 익명 sessionId별 `Application.persistentDataPath/runs/`에 보존한다. FP 기록 재검증은 `dotnet run --project core/src/SowSiege.Sim -- interactive-replay data <run.ssreplay> first-playable`을 사용한다. 기존 `device-metrics.mjs`의 final-quarter 지표는 연속60초500+ 관문과 별개다. 공개 원자료는 실패 사례·사전 선정 표본과 요청 영상/캡처만 Release 태그에 올리고, CSV에서 재생성 가능한 요약·HTML·ZIP·CRC·전달 영수증을 추가하지 않는다. 보고는 관문 결과 첫 줄과 커밋·PR·CI 링크로 남긴다.
+
+## M4 현재 보류 범위
+
+사용자 요청으로 **연결된 폴드7을 사용하는 모든 작업을 보류한다**. 설치·입력·진단 수집·실기 성능·정상3판·기기 parity·화면 녹화·최종 Release APK 실기 검사는 재개 지시 전까지 실행하지 않는다. 아래 명령은 이후 재현 절차이며 새 실행/통과 주장으로 읽지 않는다. 기존 실기 관측은 보존하되 미완료 관문을 대신하지 않는다. 비기기 소스 검사·Editor 분석·APK 생성은 별도로 진행할 수 있다.
+
+## 진단 raw의 Editor 분석
+
+Development 메뉴의 **진단 추적10초 시작**은 메뉴를 닫고 별도 프로파일러 수집을 시작한다. 수동 중지·시간 한도·포커스 상실·중단·종료로 닫힌 `diagnostic-*.raw`와 인접한 `.raw.json`을 함께 보존한다. 진단 출현×10은 기존 기록 가능한 Core 명령이며 정상 판과 분리한다. 실제 수집 시간은 스톨로10초를 넘을 수 있다.
+
+이미 확보한 raw를 분석할 때 실행 중인 Editor/프로파일러를 먼저 종료하고, **존재하지 않는 새 출력 디렉터리**를 지정한다. 저장소 루트에서:
+
+```sh
+UNITY_PROFILER_TRACE="$PWD/artifacts/phase1b/m4-diagnostic/trace-01/diagnostic-<id>.raw" \
+UNITY_PROFILER_EXPORT="$PWD/artifacts/phase1b/m4-diagnostic/export-02" \
+/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity \
+  -batchmode -quit -projectPath "$PWD/unity" \
+  -executeMethod Game.Editor.ProfilerTraceExport.Run -logFile /tmp/p1b-m4-export.log
+```
+
+일반 Editor에서는 **Sow and Siege → Export diagnostic profiler trace**도 사용한다. `frames.csv`·`samples.csv`·`export.json`·원본 `trace-provenance.json`이 생성된다. 모든 캡처 스레드의 엔진/대기/렌더 샘플을 보존하며 이름이 없는 샘플은 빈 이름과 `unnamedSamples`로 남긴다. 중첩 inclusive 시간을 합산하거나 누락된 GC 메타데이터를0바이트로 읽지 않는다. 이 출력의 profiler frame 인덱스는 실기 텔레메트리 행 ID가 아니다. 원본 SHA·출처 검증과 필수 마커 관측은 분석 가능성 검사이며 병목 원인·성능 관문 통과를 자동 증명하지 않는다.
+
+## 지속500 관문의 엄격한 분석 명령
+
+`tools/first-playable-frame-window.mjs`는 실제 `recording.json`, `device.json`, `frame-summary.json`, `frames.csv`와 정확한 사전등록 선언 바이트를 요구한다. 선언 스키마는 추가 필드도 거부한다:
+
+- 최상위: `schemaVersion:1`, `identity`, `profile:"first-playable"`, `mode:"stress"|"normal"`, `startTick`, `posture`, 비어 있지 않은 `setup`, `capture`, `preregistrationReference`.
+- `identity`: `sessionId`, `seed`, `build`, `dataHash`, `sourceHash`, `sourceDirty`, `model`, `os`, `unityVersion`, `backend`. 실제 기록과 같아야 하며 기기는 `SM-F966N`, backend는 Android IL2CPP여야 한다.
+- `capture`: boolean `screenRecording`, `replayRecording:true`, `profilerRecording:false`, `deepProfiling:false`.
+
+측정 구간이 시작되기 전에 실제 session 식별자로 선언을 확정하고 외부 시각 기록에 파일 SHA256과 참조를 남긴다. 선언된 시작 틱보다 앞선 원자료도 보존한다. 분석 시 SHA를 다시 계산해 사전등록을 대신하지 않는다. 사전등록한64자리 값을 아래에 넣는다:
+
+```sh
+node tools/first-playable-frame-window.mjs \
+  artifacts/device-runs/<sessionId> artifacts/phase1b/m4-declaration.json \
+  --declaration-sha256 <externally-preregistered-64-hex-sha256> \
+  --output artifacts/phase1b/m4-window-result.json
+```
+
+출력 파일은 새 경로여야 한다. 선언 시작 틱에 도달한 첫 행부터 누적60000ms를 넘기는 행 전체까지 검사하며 저개체 수·정지·중단·부분 구간·가속·느린 행을 제외하지 않는다. 실패도 결과로 저장하고 종료 코드1을 반환한다. 선언 자체의 시각/프로파일러 꺼짐/녹화 여부는 외부 증거와 대조한다. 분석기는 무치트 정상 판이나 리플레이 정확성을 인증하지 않는다.
+
+## 최종 Release와 개발 fixture parity의 분리
+
+최종 사용자 APK는 bridge 준비·전체 검사 후 별도 출력 폴더에 Development 옵션 없이 생성한다:
+
+```sh
+UNITY_APK_PATH="$PWD/artifacts/phase1b/release/sow-siege.apk" \
+/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity \
+  -batchmode -quit -projectPath "$PWD/unity" -buildTarget Android \
+  -executeMethod Game.Editor.FoundationBuild.AndroidRelease -logFile /tmp/p1b-m4-release-build.log
+```
+
+같은 폴더의 `build-result.json`에서 `development:false`·IL2CPP·ARM64와 실제 APK 크기를 확인한다. Release에는 개발 메뉴/진단 캡처와30000–30004 fixture가 제외되지만 실제 판 기록은 유지된다. 빌드 성공은 설치·조작·실기 성능을 증명하지 않는다.
+
+`tools/check-unity.sh` 및 `FoundationBuild.Android`는 별도 **Development** 검증 경로다. 정확한 `artifacts/phase1b/replays/30000–30004.ssreplay` 바이트를 개발 빌드에만 패키징하여 Editor Mono와 개발 메뉴 **기기 재생5개 검증** 결과의 입력 SHA·27000틱·상태 해시를 비교한다. 원자료는 `Application.persistentDataPath/parity/device-parity.json`이다. Development parity를 최종 Release APK 실행 검사나 정상3판으로 대체하지 않는다. 현재 사용자 보류에 따라 기기 parity와 최종 APK 실기 확인도 실행하지 않는다.
