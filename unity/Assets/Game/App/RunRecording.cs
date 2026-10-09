@@ -29,6 +29,7 @@ namespace Game.App
 
         public void WriteAccepted(ReplayCommand command)
         {
+            using var scope = RunProfilerMarkers.RecordingWrite.Auto();
             RequireLive();
             if (command.Sequence != commands || command.Tick != tick) throw new InvalidOperationException("Recording command sequence does not match accepted input.");
             ReplayCodec.WriteCommand(live, command);
@@ -38,6 +39,7 @@ namespace Game.App
 
         public void Checkpoint(InteractiveSession session)
         {
+            using var scope = RunProfilerMarkers.RecordingCheckpoint.Auto();
             if (finished) return;
             RequireLive();
             var summary = session.GetSummary();
@@ -48,6 +50,7 @@ namespace Game.App
 
         public void Finish(InteractiveSession session, ReplayEndKind kind)
         {
+            using var scope = RunProfilerMarkers.RecordingFinish.Auto();
             if (finished) return;
             RequireLive();
             var summary = session.GetSummary();

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Game.Debug
 {
-    public enum DebugIntent { Speed1, Speed2, Speed4, GrantLevel, ToggleInvulnerable, SpawnNormal, SpawnDouble, AimMovement, AimNearest, VerifyFixtures }
+    public enum DebugIntent { Speed1, Speed2, Speed4, GrantLevel, ToggleInvulnerable, SpawnNormal, SpawnDouble, SpawnStress, AimMovement, AimNearest, VerifyFixtures, TraceStart, TraceStop }
     public readonly struct DebugSnapshot
     {
         public readonly int Seed, Speed, SpawnPermille, ActiveVisualProjectiles, DroppedEffects, UnsupportedShapes;
@@ -20,7 +20,7 @@ namespace Game.Debug
 
     public sealed class DebugOverlay : MonoBehaviour
     {
-        public const string RequiredGlyphs = "개발 메뉴 닫기 속도 레벨업 무적 전환 출현 이동 방향 조준 가까운 적 기기 재생 검증 이번 틱 공격 사건 표시 투사체 사람 밭 건물 효과 누락 지원 밖 도형 읽기 실패 통과";
+        public const string RequiredGlyphs = "개발 메뉴 닫기 속도 레벨업 무적 전환 출현 이동 방향 조준 가까운 적 기기 재생 검증 이번 틱 공격 사건 표시 투사체 사람 밭 건물 효과 누락 지원 밖 도형 읽기 실패 통과 진단 추적 초 시작 중지 스트레스";
         Action<DebugIntent> send;
         Canvas canvas;
         RectTransform safeRoot;
@@ -57,10 +57,10 @@ namespace Game.Debug
             viewport.gameObject.AddComponent<UnityEngine.UI.RectMask2D>();
             viewport.gameObject.AddComponent<UnityEngine.UI.Image>().color = Color.clear;
             var scroller = viewport.gameObject.AddComponent<UnityEngine.UI.ScrollRect>(); scroller.horizontal = false; scroller.viewport = viewport;
-            var content = Rect("Content",viewport); content.anchorMin = new Vector2(0,1); content.anchorMax = Vector2.one; content.pivot = new Vector2(.5f,1); content.sizeDelta = new Vector2(0,880); scroller.content = content;
+            var content = Rect("Content",viewport); content.anchorMin = new Vector2(0,1); content.anchorMax = Vector2.one; content.pivot = new Vector2(.5f,1); content.sizeDelta = new Vector2(0,1048); scroller.content = content;
             var label = Rect("Metrics",content); Place(label,0,0,260); metrics = Label(label,font,12,"");
-            var names = new[] { "속도 ×1", "속도 ×2", "속도 ×4", "레벨업", "무적 전환", "출현 ×1", "출현 ×2", "이동 방향 조준", "가까운 적 조준", "기기 재생 5개 검증" };
-            var intents = new[] { DebugIntent.Speed1,DebugIntent.Speed2,DebugIntent.Speed4,DebugIntent.GrantLevel,DebugIntent.ToggleInvulnerable,DebugIntent.SpawnNormal,DebugIntent.SpawnDouble,DebugIntent.AimMovement,DebugIntent.AimNearest,DebugIntent.VerifyFixtures };
+            var names = new[] { "속도 ×1", "속도 ×2", "속도 ×4", "레벨업", "무적 전환", "출현 ×1", "출현 ×2", "진단 스트레스 출현 ×10", "이동 방향 조준", "가까운 적 조준", "기기 재생 5개 검증", "진단 추적 10초 시작", "진단 추적 중지" };
+            var intents = new[] { DebugIntent.Speed1,DebugIntent.Speed2,DebugIntent.Speed4,DebugIntent.GrantLevel,DebugIntent.ToggleInvulnerable,DebugIntent.SpawnNormal,DebugIntent.SpawnDouble,DebugIntent.SpawnStress,DebugIntent.AimMovement,DebugIntent.AimNearest,DebugIntent.VerifyFixtures,DebugIntent.TraceStart,DebugIntent.TraceStop };
             for(var i=0;i<intents.Length;i++) { var intent=intents[i]; Place(Button(content,names[i],font,()=>send(intent)),0,268+i*56,48); }
             SetOpen(false); UpdateSafeArea();
         }

@@ -28,6 +28,9 @@ namespace Game.App
         public AimMode Aim { get; private set; }
         public string Error { get; private set; }
         public string RecordedReplayPath => recording?.ReplayPath;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private readonly DevelopmentProfilerTrace profilerTrace = new DevelopmentProfilerTrace();
+#endif
         private readonly Dictionary<string,ContentDisplay> displays=new Dictionary<string,ContentDisplay>(StringComparer.Ordinal);
         private RunFrame previous;
         private WorldRenderer world;
@@ -130,10 +133,12 @@ namespace Game.App
         {
             if(Ui==null||Stick==null)return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            profilerTrace.Pump(Frame?.Tick ?? 0);
             if(UnityEngine.InputSystem.Keyboard.current?.f12Key.wasPressedThisFrame==true)debug?.SetOpen(!debug.IsOpen);
 #endif
             if(telemetry!=null&&!telemetryClosed)
             {
+                using var telemetryScope=RunProfilerMarkers.Telemetry.Auto();
                 telemetry.CompleteInterval(Time.unscaledDeltaTime,suspendedInterval);suspendedInterval=false;intervalStarted=0;
                 if(finished){telemetry.Finish();telemetryClosed=true;}
             }
@@ -148,9 +153,11 @@ namespace Game.App
                 var step=1d/Frame.TickRate;
                 while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,Stick.Sample);}
             }
-            if(Session.View.Status==RunStatus.AwaitingCard&&(screen==UiScreen.Run||screen==UiScreen.Cards))ShowCards();
-            hud?.Present(Frame,FirstPlayable);
-            UpdateHints();
+            using(RunProfilerMarkers.Hud.Auto())
+            {
+                if(Session.View.Status==RunStatus.AwaitingCard&&(screen==UiScreen.Run||screen==UiScreen.Cards))ShowCards();
+                hud?.Present(Frame,FirstPlayable);UpdateHints();
+            }
             if(world!=null)
             {
                 var visible=Screen.safeArea;
@@ -160,10 +167,11 @@ namespace Game.App
                     visible.yMin+=bottom;visible.yMax=Mathf.Max(visible.yMin+1,visible.yMax-hud.ReservedTopPixels);
                 }
                 world.ShowAnnouncements=screen==UiScreen.Run;
-                world.Present(previous,Frame,FirstPlayable,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
+                using(RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous,Frame,FirstPlayable,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
             }
             if(!finished&&telemetry!=null)
             {
+                using var telemetryScope=RunProfilerMarkers.Telemetry.Auto();
                 telemetry.BeginInterval(Frame,speedAtFrameStart,world!=null?world.ActiveVisualProjectiles:0,new Rect(0,0,Screen.width,Screen.height),Screen.safeArea,pausedAtFrameStart);
                 intervalStarted=Time.realtimeSinceStartupAsDouble;
             }
@@ -177,13 +185,15 @@ namespace Game.App
             if(Session==null||finished)return;
             try
             {
-                var command=new ReplayCommand(Session.NextSequence,Frame.Tick,kind,input,card,value);Session.Apply(command);recording.WriteAccepted(command);
+                var command=new ReplayCommand(Session.NextSequence,Frame.Tick,kind,input,card,value);
+                using(RunProfilerMarkers.CoreApply.Auto())Session.Apply(command);recording.WriteAccepted(command);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if(kind==ReplayCommandKind.SetInvulnerable)invulnerable=value!=0;
                 if(kind==ReplayCommandKind.SetSpawnPermille)spawnPermille=value;
 #endif
                 if(kind==ReplayCommandKind.SetAimMode)Aim=(AimMode)value;
-                previous=Frame;CaptureSnapshots();world?.AcceptFrame(Frame,FirstPlayable);sound?.AcceptFrame(Frame,FirstPlayable);
+                previous=Frame;CaptureSnapshots();
+                using(RunProfilerMarkers.AcceptPresentation.Auto()){world?.AcceptFrame(Frame,FirstPlayable);sound?.AcceptFrame(Frame,FirstPlayable);}
                 if(kind!=ReplayCommandKind.Advance){Stick.ResetStick();accumulator=0;cardsIdentity=null;}
                 if(kind==ReplayCommandKind.Advance && Frame.Tick%1800==0)recording.Checkpoint(Session);
                 if(Frame.Status==RunStatus.Running&&MenuOpen&&kind==ReplayCommandKind.ChooseCard)ShowHud();
@@ -192,8 +202,9 @@ namespace Game.App
         }
         private void CaptureSnapshots()
         {
-            var frame=Session.View.CaptureFrame();
-            var firstPlayable=Session.View.CaptureFirstPlayable() ?? throw new InvalidOperationException("First-playable view is required.");
+            RunFrame frame;FirstPlayableFrame firstPlayable;
+            using(RunProfilerMarkers.CaptureRun.Auto())frame=Session.View.CaptureFrame();
+            using(RunProfilerMarkers.CaptureFirstPlayable.Auto())firstPlayable=Session.View.CaptureFirstPlayable() ?? throw new InvalidOperationException("First-playable view is required.");
             Frame=frame;FirstPlayable=firstPlayable;
         }
         private void ShowCards()
@@ -246,7 +257,7 @@ namespace Game.App
         private void CompleteRun()
         {
             finished=true;MenuOpen=true;Stick.ResetStick();completedSummary=Session.GetSummary();
-            recording.Finish(Session,completedSummary.Survived?ReplayEndKind.Duration:ReplayEndKind.Death);ShowSummary();
+            recording.Finish(Session,completedSummary.Survived?ReplayEndKind.Duration:ReplayEndKind.Death);ShowSummary();StopDiagnosticTrace("run-complete");
         }
         private void ShowSummary()
         {
@@ -298,20 +309,29 @@ namespace Game.App
             }
         }
         private IEnumerator ReturnMeta(){StopRecording();Session=null;Frame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");ShowMeta();}
-        private void StopRecording(){if(recording!=null){if(Session!=null&&!finished)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}
+        private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
             suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);preferences?.Save();
             if(pause&&Session!=null&&!finished)recording?.Checkpoint(Session);
+            if(pause)StopDiagnosticTrace("application-paused");
         }
         private void OnApplicationFocus(bool focus)
         {
             suspendedInterval=true;focusLost=!focus;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
+            if(!focus)StopDiagnosticTrace("focus-lost");
         }
         private void OnApplicationQuit(){preferences?.Save();StopRecording();}
         private void OnDestroy(){StopRecording();if(ownsFont&&font!=null)Destroy(font);}
+        private void StopDiagnosticTrace(string reason)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            profilerTrace.Stop(Frame?.Tick ?? 0,reason);
+#endif
+        }
         private void Fail(Exception e)
         {
+            StopDiagnosticTrace("error");
             Error=e.Message;screen=UiScreen.Error;MenuOpen=true;Stick?.ResetStick();
             try { if(Session!=null&&!finished)recording?.Checkpoint(Session); } catch(Exception snapshotError) { UnityEngine.Debug.LogWarning("Replay checkpoint failed: "+snapshotError.Message); }
             if(Ui==null)
@@ -332,6 +352,8 @@ namespace Game.App
         }
         private void DebugAction(DebugIntent intent)
         {
+            if(intent==DebugIntent.TraceStop){StopDiagnosticTrace("manual");return;}
+            if(intent==DebugIntent.TraceStart){if(recording!=null&&!finished&&!parityRunning&&profilerTrace.Start(recording,Frame.Tick,CanonicalContent.DataHash))debug.SetOpen(false);return;}
             Stick?.ResetStick();accumulator=0;if(Session==null||finished||parityRunning)return;
             switch(intent)
             {
@@ -341,6 +363,7 @@ namespace Game.App
                 case DebugIntent.ToggleInvulnerable:invulnerable=!invulnerable;Send(ReplayCommandKind.SetInvulnerable,value:invulnerable?1:0);break;
                 case DebugIntent.SpawnNormal:spawnPermille=1000;Send(ReplayCommandKind.SetSpawnPermille,value:spawnPermille);break;
                 case DebugIntent.SpawnDouble:spawnPermille=2000;Send(ReplayCommandKind.SetSpawnPermille,value:spawnPermille);break;
+                case DebugIntent.SpawnStress:spawnPermille=InteractiveSession.MaximumSpawnPermille;Send(ReplayCommandKind.SetSpawnPermille,value:spawnPermille);break;
                 case DebugIntent.AimMovement:Aim=AimMode.Movement;Send(ReplayCommandKind.SetAimMode,value:(int)Aim);break;
                 case DebugIntent.AimNearest:Aim=AimMode.NearestEnemy;Send(ReplayCommandKind.SetAimMode,value:(int)Aim);break;
             }
