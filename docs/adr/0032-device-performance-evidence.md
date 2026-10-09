@@ -31,3 +31,10 @@ raw trace와 전체 샘플은 클 수 있으므로 로컬 분석에 보관한다
 ## 검증
 
 분석기의 경계·실패 보존을 Node 테스트로 확인한다. 실제 raw 생성·Editor 가져오기·원인 판정, 폴드7 성능·정상3판·녹화는 별도 실기 증거가 필요하다. 이 ADR은 관문 통과 보고가 아니다.
+
+## 구현 연결과 현재 실행 경계
+
+- raw 분석: `UNITY_PROFILER_TRACE=<raw>`와 `UNITY_PROFILER_EXPORT=<새 디렉터리>`를 지정하고 Unity6000.6.4f1의 `-executeMethod Game.Editor.ProfilerTraceExport.Run`을 실행한다. 인접 `.raw.json`과 raw 해시를 검증하며 모든 샘플을 보존한다. 이름 부재는 빈 이름/명시적 개수, allocation metadata 부재는 미확인으로 남긴다.
+- 지속500 분석: `node tools/first-playable-frame-window.mjs <run-directory> <declaration.json> --declaration-sha256 <외부 사전등록 SHA256> --output <새 결과 파일>`. 원자료와 선언의 출처가 일치해야 하며 선언을 사후 수정해 유리한 창을 찾지 않는다. 정확한 선언 필드와 명령은 [Phase1B 런북](../runbooks/phase1b-playtest.md)을 따른다.
+- 사용자 배포 빌드는 `UNITY_APK_PATH=<최종 APK>`와 `Game.Editor.FoundationBuild.AndroidRelease`를 사용한다. `FoundationBuild.Android`/`tools/check-unity.sh`의 Development fixture parity는 별도 검증이며 최종 Release 자체의 실행 증거가 아니다.
+- 사용자 요청으로 연결된 폴드7의 모든 작업은 보류한다. 기기 진단·성능·정상3판·parity·녹화·최종 APK 실기 확인은 재개 지시 뒤 수행한다. 비기기 검사와 빌드의 결과를 보류된 실기 관문의 통과로 승격하지 않는다. 물리 접기/펼치기 #83도 계속 대기다.
