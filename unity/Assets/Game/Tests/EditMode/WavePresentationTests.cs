@@ -88,45 +88,6 @@ namespace Game.Tests
             finally{WaveCaptureInput.ConfigureMovement(null);}
         }
         [Test]
-        public void WaveEnemyIndexesRetainFirstMatchAndInvalidateRemovedActors()
-        {
-            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Wave catalog required.");
-            var catalog=CanonicalContent.CreateCatalog();
-            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
-            var source=((IWaveRunView)session.View).CaptureWaveRuntime();
-            var first=new WaveEnemyView(7,"tell-water",default,default,100,false,false,0);
-            var duplicate=first with {Phase="charge"};
-            var wave=source with {Enemies=new[]{first,duplicate}};
-            var actor=new EnemyView(7,catalog.WaveRuntime.BossId,new WorldPoint(200,300),100,100);
-            var frame=session.View.CaptureFrame() with {Enemies=new[]{actor,actor with {Position=new WorldPoint(900,900)}}};
-            var owner=new UnityEngine.GameObject("Wave index QA");
-            try
-            {
-                var renderer=owner.AddComponent<Game.View.WorldRenderer>();
-                const System.Reflection.BindingFlags flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
-                var type=typeof(Game.View.WorldRenderer);
-                var index=type.GetMethod("IndexWaveActors",flags);
-                var state=type.GetMethod("WaveEnemyState",flags);
-                var actors=(System.Collections.Generic.Dictionary<int,EnemyView>)type.GetField("waveActorById",flags).GetValue(renderer);
-                renderer.AcceptWave(catalog,wave);index.Invoke(renderer,new object[]{frame});
-                Assert.That(state.Invoke(renderer,new object[]{7,catalog.WaveRuntime.BossId,"idle"}),Is.EqualTo("water-windup"));
-                Assert.That(actors[7],Is.SameAs(actor),"Duplicate IDs keep original FirstOrDefault semantics.");
-                renderer.AcceptWave(catalog,wave);index.Invoke(renderer,new object[]{frame});
-                Assert.That(actors.Count,Is.EqualTo(1));Assert.That(actors[7],Is.SameAs(actor));
-                renderer.AcceptWave(catalog,wave with {Enemies=Array.Empty<WaveEnemyView>()});
-                index.Invoke(renderer,new object[]{frame with {Enemies=Array.Empty<EnemyView>()}});
-                Assert.That(actors,Is.Empty);
-                Assert.That(state.Invoke(renderer,new object[]{7,catalog.WaveRuntime.BossId,"walk"}),Is.EqualTo("walk"),"Removed IDs cannot keep an old phase.");
-                renderer.AcceptWave(catalog,wave);index.Invoke(renderer,new object[]{frame});
-                renderer.AcceptWave(null,null);Assert.That(actors,Is.Empty);
-                Assert.That(state.Invoke(renderer,new object[]{7,catalog.WaveRuntime.BossId,"idle"}),Is.EqualTo("idle"));
-                renderer.AcceptWave(catalog,wave);index.Invoke(renderer,new object[]{frame});
-                renderer.AcceptWave(CanonicalContent.CreateCatalog(),wave);
-                Assert.That(actors,Is.Empty,"Profile replacement invalidates same-frame actor index.");
-            }
-            finally{UnityEngine.Object.DestroyImmediate(owner);}
-        }
-        [Test]
         public void WaveProfileFeedsSharedWidgetsFromItsOwnState()
         {
             if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Run this profile integration with UNITY_CONTENT_PROFILE=wave-1a.");

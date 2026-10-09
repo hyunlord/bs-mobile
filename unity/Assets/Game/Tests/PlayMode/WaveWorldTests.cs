@@ -14,6 +14,44 @@ namespace Tests.PlayMode
 {
     public sealed class WaveWorldTests
     {
+        [UnityTest]
+        public IEnumerator NewAndRepeatedSnapshotsRemoveStaleEnemyPresentation()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName=CanonicalContent.ProfileName;
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var empty=session.View.CaptureFrame() with {Enemies=System.Array.Empty<EnemyView>()};
+            var wave=((IWaveRunView)session.View).CaptureWaveRuntime() with {Enemies=System.Array.Empty<WaveEnemyView>()};
+            var actor=new EnemyView(700,catalog.WaveRuntime.BossId,empty.Lord.Position,100,100);
+            var occupied=empty with {Enemies=new[]{actor}};
+            var marked=wave with {Enemies=new[]{new WaveEnemyView(700,"approach",actor.Position,actor.Position,100,true,false,0)}};
+            var owner=new GameObject("Wave snapshot transition QA");var cameraOwner=new GameObject("Wave snapshot transition camera");
+            var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1280,24);camera.targetTexture=texture;
+            try
+            {
+                var world=owner.AddComponent<WorldRenderer>();var config=CanonicalContent.Presentation.Camera;
+                world.Initialize(camera,new WorldCameraSettings(config.WorldUnitsPerUnityUnit,config.MinHalfHeight,config.MaxHalfHeight,config.EstatePadding,config.FollowMilliseconds,config.ZoomMilliseconds),catalog.Tuning.DefaultEstate,empty.MapWidth,empty.MapHeight);
+                void Present(RunFrame frame,WaveRuntimeFrame state)
+                {
+                    world.AcceptWave(catalog,state);
+                    world.Present(frame,frame,WavePresentation.Envelope(catalog,frame,session.View.CaptureCards(),state),1,0,new Rect(0,0,720,1280));
+                }
+                Present(empty,wave);yield return null;var baseline=world.SubmittedInstances;
+                Present(occupied,marked);yield return null;var populated=world.SubmittedInstances;
+                Assert.That(populated,Is.EqualTo(baseline+2),"One actual enemy and its wet marker are submitted.");
+                Present(occupied,marked);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(populated),"Repeated snapshot does not duplicate presentation.");
+                Present(empty with {Tick=empty.Tick+1},marked);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline),"No enemy or wet marker survives an actor removed from the new frame.");
+                Present(occupied,wave);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"A new wave snapshot without the status removes its wet marker.");
+                world.AcceptWave(null,null);
+                Present(occupied,marked);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(populated),"Profile reset rebuilds presentation from the current snapshots.");
+            }
+            finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
+        }
         [UnityTest, Timeout(300000)]
         public IEnumerator ActualWaveSnapshotDrawsAuthoredPixels()
         {
