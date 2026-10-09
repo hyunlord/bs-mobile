@@ -1,4 +1,3 @@
-using System.Reflection;
 using Game.App;
 using NUnit.Framework;
 using UnityEngine;
@@ -14,10 +13,11 @@ namespace Game.P1Capture.Tests
             try
             {
                 var run = host.AddComponent<RunCoordinator>();
-                Call(run, "OnApplicationFocus", false);
-                Assert.That(Flag(run, "focusLost"), Is.True);
-                Call(run, "OnApplicationPause", true);
-                Assert.That(Flag(run, "applicationPaused"), Is.True);
+                run.SendMessage("OnApplicationFocus", false);
+                Assert.That(run.EditorCaptureFocusLost, Is.True);
+                run.SendMessage("OnApplicationPause", true);
+                Assert.That(run.EditorCaptureApplicationPaused, Is.True);
+                Assert.That(run.EditorCaptureSuspendedInterval, Is.True);
             }
             finally { Object.DestroyImmediate(host); }
         }
@@ -32,20 +32,18 @@ namespace Game.P1Capture.Tests
                 var notifications = 0;
                 run.EditorCaptureLifecycle += (kind, value, ignored) => { Assert.That(ignored, Is.True); notifications++; };
                 run.SetEditorCaptureActive(true);
-                Call(run, "OnApplicationFocus", false);
-                Call(run, "OnApplicationPause", true);
+                run.SendMessage("OnApplicationFocus", false);
+                run.SendMessage("OnApplicationPause", true);
                 Assert.That(notifications, Is.EqualTo(2));
-                Assert.That(Flag(run, "focusLost"), Is.False);
-                Assert.That(Flag(run, "applicationPaused"), Is.False);
-                Assert.That(Flag(run, "suspendedInterval"), Is.False);
+                Assert.That(run.EditorCaptureFocusLost, Is.False);
+                Assert.That(run.EditorCaptureApplicationPaused, Is.False);
+                Assert.That(run.EditorCaptureSuspendedInterval, Is.False);
                 run.SetEditorCaptureActive(false);
-                Assert.That(Flag(run, "focusLost"), Is.True);
-                Assert.That(Flag(run, "applicationPaused"), Is.True);
+                Assert.That(run.EditorCaptureFocusLost, Is.True);
+                Assert.That(run.EditorCaptureApplicationPaused, Is.True);
             }
             finally { Object.DestroyImmediate(host); }
         }
 
-        static bool Flag(RunCoordinator run, string name) => (bool)typeof(RunCoordinator).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(run);
-        static void Call(RunCoordinator run, string name, bool value) => typeof(RunCoordinator).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic).Invoke(run, new object[] { value });
     }
 }

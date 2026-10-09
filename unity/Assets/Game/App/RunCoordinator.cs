@@ -81,6 +81,9 @@ namespace Game.App
 #if UNITY_EDITOR
         private bool editorCaptureActive, editorLastPause, editorLastFocus = true;
         public event Action<string,bool,bool> EditorCaptureLifecycle;
+        public bool EditorCaptureFocusLost => focusLost;
+        public bool EditorCaptureApplicationPaused => applicationPaused;
+        public bool EditorCaptureSuspendedInterval => suspendedInterval;
         public void SetEditorCaptureActive(bool active)
         {
             editorCaptureActive=active;
