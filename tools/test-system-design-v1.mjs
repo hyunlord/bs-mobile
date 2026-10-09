@@ -99,3 +99,63 @@ test('D3 integration preserves canonical pool membership and runtime selections'
     assert.equal(result.gateCounts.canonicalCounts[kind], currentRecords.filter(record=>record.kind===kind).length);
   }
 });
+
+for (const [rule, mutate] of [
+  ['D11-01-tool-xp', d=>{first(d,'tool').returns=[];}],
+  ['D11-02-evolution-coverage', d=>{d.content=d.content.filter(r=>r.kind!=='evolution');}],
+  ['D11-03-item-links', d=>{d.content.filter(r=>r.kind==='item').forEach(r=>{r.linkedToolIds=[];r.linkedWeaponIds=[];});}],
+  ['D11-04-weapon-gap', d=>{first(d,'weapon').costKind='estate-loss';}],
+  ['D11-05-card-text', d=>{first(d,'weapon').cardText='가'.repeat(40)+'→나';}],
+  ['D11-05-readable-gear', d=>{delete first(d,'weapon').readability;}],
+  ['D11-07-group-policy', d=>{delete first(d,'vassal').allyGroup;}],
+  ['D11-08-material-access', d=>{delete first(d,'material').guarantee;}],
+  ['D11-09-vassal-scenes', d=>{delete first(d,'vassal').signatureScene;}],
+  ['D11-11-wave-1a', d=>{d.implementationWaves[0].contentIds=[];}],
+  ['D11-preserved-systems', d=>{d.systems.pop();}],
+]) test(`D3 v1.1 rejects ${rule}`, async()=>{
+  const module=await import('./system-design-v1.mjs');
+  assert.equal(typeof module.systemDesignRuleReport,'function');
+  const design=structuredClone(catalog); mutate(design);
+  const result=module.systemDesignRuleReport(design).rules.find(row=>row.id===rule);
+  assert.ok(result); assert.equal(result.pass,false);
+  assert.ok('expected' in result && 'actual' in result && Array.isArray(result.violatingIds));
+});
+
+for (const [name, mutate] of [
+  ['English card', d=>{first(d,'weapon').cardText='condition→effect';}],
+  ['extra card arrow', d=>{first(d,'weapon').cardText='조건→효과→추가';}],
+  ['second conditional variant', d=>{first(d,'weapon').readability={baseAction:'베기',conditionalVariant:[{visibleState:'빛',action:'찌르기'},{visibleState:'불',action:'쏘기'}]};}],
+  ['group numeric cap', d=>{first(d,'vassal').allyGroup={entityUnit:'group',capPolicy:'shared-active-group-budget',onCap:'do-not-spawn',representation:'representative-sprites',capValue:20,spriteCount:null};}],
+]) test(`D3 v1.1 schema rejects ${name}`,()=>{const d=structuredClone(catalog);mutate(d);assert.equal(validate(d),false);});
+
+test('D3 v1.1 primitive report rejects unknown parameter',async()=>{
+  const {systemDesignRuleReport}=await import('./system-design-v1.mjs');const d=structuredClone(catalog);
+  const r=first(d,'weapon');r.params={'unit:attack-shape':{damage:12}};
+  assert.equal(systemDesignRuleReport(d).rules.find(r=>r.id==='D11-10-primitives').pass,false);
+});
+
+test('D3 v1.1 item natural cost may be null',()=>{
+  const d=structuredClone(catalog);first(d,'item').effect.cost=null;
+  assert.equal(validate(d),true,JSON.stringify(validate.errors));
+});
+
+test('D3 v1.1 card count uses Unicode codepoints',async()=>{
+  const {systemDesignRuleReport}=await import('./system-design-v1.mjs');const d=structuredClone(catalog);
+  first(d,'weapon').cardText='가'+ '😀'.repeat(37)+'→나';
+  const result=systemDesignRuleReport(d).rules.find(r=>r.id==='D11-05-card-text');
+  assert.equal(result.violatingIds.includes(first(d,'weapon').id),false);
+});
+
+for (const [name,rule,mutate] of [
+  ['weapon weapon recipe','D11-02-evolution-coverage',d=>{const r=d.content.find(r=>r.id==='core:compost_rain');r.inputIds=['core:iron_blade','core:ward_orbit'];}],
+  ['seven vassals','D11-09-vassal-scenes',d=>{const id=first(d,'vassal').id;d.content=d.content.filter(r=>r.id!==id);}],
+  ['unknown primitive content reference','D11-10-primitives',d=>{const r=first(d,'evolution');r.params['unit:evolution-replace'].inputIds[0]='core:absent_gear';}],
+  ['inconsistent primitive recipe','D11-10-primitives',d=>{const r=first(d,'evolution');r.params['unit:evolution-replace'].inputIds=['core:iron_blade','core:rain_ladle'];}],
+]) test(`D3 v1.1 rejects ${name}`,async()=>{const {systemDesignRuleReport}=await import('./system-design-v1.mjs');const d=structuredClone(catalog);mutate(d);assert.equal(systemDesignRuleReport(d).rules.find(r=>r.id===rule).pass,false);});
+
+test('D3 v1.1 allied evolution requires group policy independent of primitives',async()=>{const {systemDesignRuleReport}=await import('./system-design-v1.mjs');const d=structuredClone(catalog);const r=d.content.find(r=>r.id==='core:marching_banner');delete r.allyGroup;r.primitives=r.primitives.filter(id=>id!=='unit:ally-task');delete r.params['unit:ally-task'];assert.equal(systemDesignRuleReport(d).rules.find(r=>r.id==='D11-07-group-policy').pass,false);});
+
+for(const [name,mutate] of [
+  ['material guarantee mirror',d=>{const r=first(d,'material');r.params['unit:material-guarantee'].earlyToolId=d.content.find(t=>t.kind==='tool'&&t.id!==r.guarantee.earlyToolId).id;}],
+  ['equipment links mirror',d=>{const r=first(d,'item');r.params['unit:equipment-scope'].weaponIds=['core:iron_blade','core:ward_orbit'];}],
+])test(`D3 v1.1 rejects ${name}`,async()=>{const {systemDesignRuleReport}=await import('./system-design-v1.mjs');const d=structuredClone(catalog);mutate(d);assert.equal(systemDesignRuleReport(d).rules.find(r=>r.id==='D11-10-primitives').pass,false);});
