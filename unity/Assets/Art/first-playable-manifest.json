@@ -81,22 +81,22 @@
     {
       "id": "meta-river",
       "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
-      "source": "image_gen output exec-aaf43ed5-6569-49b6-9beb-3ac2f68af136.png; original RGBA preserved without resampling",
-      "prompt": "Quiet shallow north-south winding stream with low grassy banks and rounded stones; top-down slight three-quarter medieval fantasy ink and gouache; sage #8B9874, turquoise #8DC7CB, soil #A99164, warm ink #292822; broad quiet world terrain, organic alpha edges, no text/frame/characters.",
+      "source": "image_gen output exec-66ee4ba6-3aca-48c9-b033-3e7fa0c0ccab.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Quiet shallow north-south winding stream with low grassy banks and rounded stones; top-down slight three-quarter medieval fantasy ink and gouache; sage #8B9874, turquoise #8DC7CB, soil #A99164, warm ink #292822; broad quiet world terrain, organic alpha edges, no text/frame/characters. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
       "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
     },
     {
       "id": "meta-forest",
       "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
-      "source": "image_gen output exec-8b7cadf7-774c-4cb6-ae63-63d99d442838.png; original RGBA preserved without resampling",
-      "prompt": "Low cluster of three rounded broadleaf canopies and short trunks with moss and ferns; high top-down slight three-quarter ink and gouache; muted sage/olive #8B9874/#778B62, soil #A99164, ink #292822; sparse low-contrast terrain under characters, genuine alpha, no icon frame or text.",
+      "source": "image_gen output exec-647eb68f-7eaf-44da-9ab5-0cd1ef4bf4f1.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Low cluster of three rounded broadleaf canopies and short trunks with moss and ferns; high top-down slight three-quarter ink and gouache; muted sage/olive #8B9874/#778B62, soil #A99164, ink #292822; sparse low-contrast terrain under characters, genuine alpha, no icon frame or text. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
       "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
     },
     {
       "id": "meta-hill",
       "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
-      "source": "image_gen output exec-0ee4f1af-69f1-45ef-8e86-f45e867e9961.png; original RGBA preserved without resampling",
-      "prompt": "Low rolling grassy hill, broad weathered gray sandstone ledges, rounded summit and gentle slopes; high top-down slight three-quarter ink and gouache; muted sage/olive, tan soil, warm ink outlines; organic grassy alpha edges, no mountain peak/tree/structure/frame/text.",
+      "source": "image_gen output exec-15b5a860-9943-47b6-9002-ae103f593574.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Low rolling grassy hill, broad weathered gray sandstone ledges, rounded summit and gentle slopes; high top-down slight three-quarter ink and gouache; muted sage/olive, tan soil, warm ink outlines; organic grassy alpha edges, no mountain peak/tree/structure/frame/text. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
       "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
     }
   ],
@@ -7810,9 +7810,9 @@
       "atlas": "meta-river",
       "frames": [
         {
-          "x": 2,
+          "x": 4,
           "y": 2,
-          "width": 1250,
+          "width": 1248,
           "height": 1250
         }
       ],

@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { requiredBindings, validateManifest } from './first-playable-art.mjs';
+import { requiredBindings, validateManifest, validateRegistry } from './first-playable-art.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 function fixture() {
   return { schemaVersion: 1,
@@ -40,4 +43,37 @@ test('full selected inventory can bind intentionally shared presentation and rej
   assert.equal(validateManifest(m, required).required, required.length);
   m.bindings = m.bindings.filter(b => !(b.kind === 'crop' && b.contentId === 'core:seed_bag' && b.state === 'stage3'));
   assert.throws(() => validateManifest(m, required), /missing required binding crop\|core:seed_bag\|stage3/);
+});
+test('registry guard follows manifest atlas order and PNG meta GUIDs', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-playable-art-'));
+  try {
+    const art = path.join(tmp, 'unity/Assets/Art'); const resources = path.join(tmp, 'unity/Assets/Resources');
+    fs.mkdirSync(art, { recursive: true }); fs.mkdirSync(resources, { recursive: true });
+    const manifest = { atlases: [
+      { id: 'actors', path: 'Assets/Art/actors.png' },
+      { id: 'terrain', path: 'Assets/Art/terrain.png' },
+    ] };
+    const actorGuid = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+    const terrainGuid = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    fs.writeFileSync(path.join(art, 'actors.png.meta'), `fileFormatVersion: 2\nguid: ${actorGuid}\n`);
+    fs.writeFileSync(path.join(art, 'terrain.png.meta'), `fileFormatVersion: 2\nguid: ${terrainGuid}\n`);
+    const writeRegistry = guids => fs.writeFileSync(path.join(resources, 'FirstPlayableArt.asset'), [
+      '%YAML 1.1',
+      '--- !u!114 &11400000',
+      'MonoBehaviour:',
+      '  atlases:',
+      ...guids.map(guid => `  - {fileID: 2800000, guid: ${guid}, type: 3}`),
+      '',
+    ].join('\n'));
+    writeRegistry([actorGuid, terrainGuid]);
+    assert.deepEqual(validateRegistry(tmp, manifest), { registryAtlases: 2 });
+    writeRegistry([actorGuid]);
+    assert.throws(() => validateRegistry(tmp, manifest), /atlas count mismatch/);
+    writeRegistry([terrainGuid, actorGuid]);
+    assert.throws(() => validateRegistry(tmp, manifest), /atlas 0 mismatch: expected actors/);
+    writeRegistry([actorGuid, 'cccccccccccccccccccccccccccccccc']);
+    assert.throws(() => validateRegistry(tmp, manifest), /atlas 1 mismatch: expected terrain/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });

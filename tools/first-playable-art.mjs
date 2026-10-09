@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const key = b => `${b.kind}|${b.contentId}|${b.state}`;
 export const tweens = ['none', 'walk', 'work', 'pulse', 'recoil'];
+const guidPattern = /guid:\s*([0-9a-f]{32})/i;
 export function requiredBindings(root) {
   const p = read(path.join(root, 'data/profiles/first-playable.json'));
   const result = [];
@@ -89,6 +90,37 @@ export function validateManifest(m, required = []) {
   for (const b of required) check(bindings.has(key(b)), `missing required binding ${key(b)}`);
   return { atlases: atlases.size, roles: roles.size, bindings: bindings.size, required: required.length };
 }
+function readUnityGuid(file, label) {
+  const match = fs.readFileSync(file, 'utf8').match(guidPattern);
+  check(match, `${label}: missing Unity guid`);
+  return match[1].toLowerCase();
+}
+function registryAtlasGuids(asset) {
+  const lines = fs.readFileSync(asset, 'utf8').split(/\r?\n/);
+  const start = lines.findIndex(line => line.trim() === 'atlases:');
+  check(start >= 0, 'art registry: missing atlases');
+  const guids = [];
+  for (const line of lines.slice(start + 1)) {
+    if (/^\S/.test(line)) break;
+    if (!line.trim()) continue;
+    if (!line.trim().startsWith('-')) continue;
+    const match = line.match(guidPattern);
+    check(match, `art registry: invalid atlas reference ${line.trim()}`);
+    guids.push(match[1].toLowerCase());
+  }
+  return guids;
+}
+export function validateRegistry(root, manifest) {
+  const asset = path.join(root, 'unity/Assets/Resources/FirstPlayableArt.asset');
+  const actual = registryAtlasGuids(asset);
+  const expected = manifest.atlases.map(a => readUnityGuid(path.join(root, 'unity', a.path + '.meta'), `atlas ${a.id}`));
+  check(actual.length === expected.length, `art registry atlas count mismatch: manifest ${expected.length}, asset ${actual.length}`);
+  for (let i = 0; i < expected.length; i++) {
+    const atlas = manifest.atlases[i];
+    check(actual[i] === expected[i], `art registry atlas ${i} mismatch: expected ${atlas.id} ${expected[i]}, found ${actual[i]}`);
+  }
+  return { registryAtlases: actual.length };
+}
 export function validateRepository(root) {
   const m = read(path.join(root, 'unity/Assets/Art/first-playable-manifest.json'));
   const result = validateManifest(m, requiredBindings(root));
@@ -98,7 +130,7 @@ export function validateRepository(root) {
     check(png.readUInt32BE(16) === a.width && png.readUInt32BE(20) === a.height, `atlas ${a.id}: PNG dimensions differ`);
     check(png[25] === 6 || png[25] === 4 || (png[25] === 3 && png.includes(Buffer.from('tRNS'))), `atlas ${a.id}: no alpha channel`);
   }
-  return result;
+  return { ...result, ...validateRegistry(root, m) };
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = path.resolve(process.argv[2] ?? path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
