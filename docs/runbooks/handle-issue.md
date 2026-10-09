@@ -5,7 +5,7 @@
 3. 사용자 결정 [#2](https://github.com/hyunlord/bs-mobile/issues/2)에 따라 Projects 보드를 만들지 않는다. 라벨·마일스톤·이슈/PR로 진행 상태를 관리하고 Projects 권한을 추가 요청하지 않는다.
 4. 최신 main에서 `git switch -c <type>/<issue>-<topic>`로 짧은 가지를 만든다. 기존 변경을 보존한다. 병행 에이전트에는 파일 소유권을 정한다.
 5. 요구사항을 만족하는 최소 변경과 필요한 검증을 실행한다. 구조 변경이면 ADR을 포함한다. `TODO #123:`처럼 실제 이슈 참조 없는 TODO를 남기지 않는다.
-6. `./tools/check.sh`를 실행하고 결과를 읽는다. 실패를 숨기는 변경·검사 삭제·타입 억제는 금지다. 단계 증거에는 실제 command·SHA·환경·원자료 경로를 남긴다.
+6. 로컬에서는 변경 범위의 집중 검사만 실행하고 결과를 읽는다. 문서 변경은 `node tools/check-docs.mjs`로 커밋된 `origin/main...HEAD`의 Markdown을 검사한다. CI와 동일한 전체 검사를 로컬에서 중복 실행하지 않는다. PR의 모든 변경 경로가 `docs/`이면 CI 문서 관문(PR 정책·저장소 용량·변경 Markdown 형식/로컬 파일 링크)과 비밀 검사만 실행한다. 다른 경로가 섞이거나 범위가 불확실하면 CI가 `./tools/check.sh` 전체 관문을 실행한다. `main` push·수동 실행도 전체 관문이며 [ADR0038](../adr/0038-docs-only-ci.md)을 따른다. 실패를 숨기는 변경·검사 삭제·타입 억제는 금지다. 단계 증거에는 실제 command·SHA·환경·원자료 경로를 남긴다.
 7. Conventional Commit + 필요한 Lore trailers로 커밋하고 가지를 푸시한다. PR에 `Closes #번호`와 정확한 제목 `## Gate result`, `## Verification`, `## Screens`를 넣고 각각 관문 결과, 검증 명령과 실제 결과, 화면 또는 헤드리스라 해당 없음의 이유를 쓴다. PR 템플릿의 제목을 번역하거나 생략하지 않는다.
 8. `gh pr checks <번호> --watch`로 필수 CI를 확인하고 `gh pr merge <번호> --auto --squash --delete-branch`로 자동 병합을 예약한다. 실제 병합을 확인하고 main으로 복귀해 갱신한다. 정책/권한 차단은 needs-decision으로 남기며 우회 푸시하지 않는다.
 9. 의도적인 음성 대조 PR은 병합하지 않는다. 의도한 CI가 실패했음을 확인한 뒤 증거 링크를 남기고 닫고 가지를 삭제한다. 한 PR에 한 위반을 넣어 실패 원인을 구분한다.
