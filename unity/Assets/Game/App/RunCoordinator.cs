@@ -84,6 +84,8 @@ namespace Game.App
         public bool EditorCaptureFocusLost => focusLost;
         public bool EditorCaptureApplicationPaused => applicationPaused;
         public bool EditorCaptureSuspendedInterval => suspendedInterval;
+        public void EditorCaptureNotifyFocus(bool focus) => OnApplicationFocus(focus);
+        public void EditorCaptureNotifyPause(bool pause) => OnApplicationPause(pause);
         public void SetEditorCaptureActive(bool active)
         {
             editorCaptureActive=active;

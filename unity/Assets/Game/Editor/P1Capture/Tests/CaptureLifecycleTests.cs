@@ -13,9 +13,9 @@ namespace Game.P1Capture.Tests
             try
             {
                 var run = host.AddComponent<RunCoordinator>();
-                run.SendMessage("OnApplicationFocus", false);
+                run.EditorCaptureNotifyFocus(false);
                 Assert.That(run.EditorCaptureFocusLost, Is.True);
-                run.SendMessage("OnApplicationPause", true);
+                run.EditorCaptureNotifyPause(true);
                 Assert.That(run.EditorCaptureApplicationPaused, Is.True);
                 Assert.That(run.EditorCaptureSuspendedInterval, Is.True);
             }
@@ -32,8 +32,8 @@ namespace Game.P1Capture.Tests
                 var notifications = 0;
                 run.EditorCaptureLifecycle += (kind, value, ignored) => { Assert.That(ignored, Is.True); notifications++; };
                 run.SetEditorCaptureActive(true);
-                run.SendMessage("OnApplicationFocus", false);
-                run.SendMessage("OnApplicationPause", true);
+                run.EditorCaptureNotifyFocus(false);
+                run.EditorCaptureNotifyPause(true);
                 Assert.That(notifications, Is.EqualTo(2));
                 Assert.That(run.EditorCaptureFocusLost, Is.False);
                 Assert.That(run.EditorCaptureApplicationPaused, Is.False);
