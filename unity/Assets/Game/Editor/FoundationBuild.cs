@@ -111,6 +111,49 @@ namespace Game.Editor
             BuildAndroid(false);
         }
 
+        public static void ConfigureMac()
+        {
+#if UNITY_STANDALONE_OSX
+            Configure();
+            if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, BuildTarget.StandaloneOSX))
+                throw new BuildFailedException("macOS Standalone module is not installed.");
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, "com.hyunlord.sowsiege");
+            PlayerSettings.SetApiCompatibilityLevel(NamedBuildTarget.Standalone, ApiCompatibilityLevel.NET_Standard);
+            UnityEditor.OSXStandalone.UserBuildSettings.architecture = OSArchitecture.ARM64;
+            PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
+            PlayerSettings.defaultScreenWidth = 360;
+            PlayerSettings.defaultScreenHeight = 780;
+            PlayerSettings.resizableWindow = true;
+            PlayerSettings.runInBackground = false;
+            EditorUserBuildSettings.development = false;
+            AssetDatabase.SaveAssets();
+#else
+            throw new BuildFailedException("Run ConfigureMac with -buildTarget OSXUniversal.");
+#endif
+        }
+
+        public static void MacRelease()
+        {
+            ConfigureMac();
+            VerifyGenerated();
+            var output = Path.GetFullPath(Environment.GetEnvironmentVariable("UNITY_MAC_PATH")
+                ?? Path.Combine(RepoRoot, "artifacts/unity/Sow and Siege.app"));
+            if (!output.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
+                throw new BuildFailedException("UNITY_MAC_PATH must end in .app.");
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = ScenePaths, target = BuildTarget.StandaloneOSX, locationPathName = output,
+                options = BuildOptions.None
+            });
+            if (report.summary.result != BuildResult.Succeeded || !Directory.Exists(output))
+                throw new BuildFailedException("macOS Release build failed: " + report.summary.result);
+            File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "mac-build-result.json"),
+                "{\"result\":\"Succeeded\",\"backend\":\"Mono\",\"architecture\":\"ARM64\",\"development\":false,\"profile\":\"first-playable\",\"bytes\":" + report.summary.totalSize + "}");
+            UnityEngine.Debug.Log("FOUNDATION_MAC_BUILD_SUCCEEDED " + output);
+        }
+
         private static void BuildAndroid(bool development)
         {
             Configure();

@@ -18,6 +18,8 @@ namespace Game.App
         public bool Complete { get; private set; }
         public string Error { get; private set; }
 
+        public static string ToRequestUri(string path) => Path.IsPathRooted(path) ? new Uri(path).AbsoluteUri : path;
+
         private IEnumerator Start()
         {
             Application.targetFrameRate = 60;
@@ -29,7 +31,7 @@ namespace Game.App
                 var path = Application.isEditor
                     ? new Uri(Path.GetFullPath(Path.Combine(Application.dataPath, "../../data", file.RelativePath))).AbsoluteUri
                     : Application.streamingAssetsPath + "/data/" + file.RelativePath;
-                using (var request = UnityWebRequest.Get(path))
+                using (var request = UnityWebRequest.Get(ToRequestUri(path)))
                 {
                     yield return request.SendWebRequest();
                     if (request.result != UnityWebRequest.Result.Success)

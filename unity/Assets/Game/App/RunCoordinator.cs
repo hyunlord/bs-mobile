@@ -37,6 +37,7 @@ namespace Game.App
         private UiHud hud;
         private FirstPlayableAudio sound;
         private RunPreferences preferences;
+        private readonly DesktopControls desktopControls = new DesktopControls();
         private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
@@ -63,6 +64,7 @@ namespace Game.App
 #endif
         public void Initialize()
         {
+            DesktopControls.InitializeWindow();
             try
             {
                 foreach(var item in CanonicalContent.Displays) displays.Add(item.Id,item);
@@ -122,7 +124,7 @@ namespace Game.App
             catch(Exception e){Fail(e);}
             loading=false;
         }
-        private void ClearUi(){Ui.Clear();activeHint=null;}
+        private void ClearUi(){desktopControls.Reset();Ui.Clear();activeHint=null;}
         private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,FoundationBoot.Catalog,()=>ShowSettings(true));MenuOpen=false;cardsIdentity=null;Stick.ResetStick();}
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -132,6 +134,7 @@ namespace Game.App
         private void Update()
         {
             if(Ui==null||Stick==null)return;
+            DesktopControls.UpdateWindow();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             profilerTrace.Pump(Frame?.Tick ?? 0);
             if(UnityEngine.InputSystem.Keyboard.current?.f12Key.wasPressedThisFrame==true)debug?.SetOpen(!debug.IsOpen);
@@ -144,6 +147,7 @@ namespace Game.App
             }
             var pausedAtFrameStart=Paused;var speedAtFrameStart=Speed;
             Stick.Blocked=Paused;if(Paused){Stick.ResetStick();accumulator=0;}
+            var movement=desktopControls.Sample(Stick,Paused);
             Ui.ShowStick(Stick.Active,Stick.Origin,Stick.Offset);
             sound?.SetPaused(applicationPaused||focusLost);
             if(Session==null||loading||Error!=null)return;
@@ -151,7 +155,7 @@ namespace Game.App
             {
                 if(discardResumeDelta)discardResumeDelta=false;else accumulator+=Time.unscaledDeltaTime*Speed;
                 var step=1d/Frame.TickRate;
-                while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,Stick.Sample);}
+                while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,movement);}
             }
             using(RunProfilerMarkers.Hud.Auto())
             {
@@ -312,12 +316,14 @@ namespace Game.App
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
+            desktopControls.Reset();
             suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);preferences?.Save();
             if(pause&&Session!=null&&!finished)recording?.Checkpoint(Session);
             if(pause)StopDiagnosticTrace("application-paused");
         }
         private void OnApplicationFocus(bool focus)
         {
+            desktopControls.Reset();
             suspendedInterval=true;focusLost=!focus;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
             if(!focus)StopDiagnosticTrace("focus-lost");
         }
