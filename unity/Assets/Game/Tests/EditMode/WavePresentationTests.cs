@@ -21,6 +21,20 @@ namespace Game.Tests
             cue.Accept(7,"charge");cue.Reset();
             Assert.That(cue.Accept(7,"recovery"),Is.False,"New run must not inherit the previous charge.");
         }
+        [TestCase("tell-water",0,"water-windup")]
+        [TestCase("water",0,"water-surge")]
+        [TestCase("tell-charge",2,"charge-windup")]
+        [TestCase("charge",0,"charge")]
+        [TestCase("recovery",0,"stuck")]
+        [TestCase("recovery",1,"recover")]
+        [TestCase("recovery",2,"recover")]
+        public void BossPhasePoseSurvivesHitFlashAndDistinguishesRecovery(string phase,int bossPhase,string expected)
+        {
+            var state=new WaveEnemyView(1,phase,default,default,100,false,false,bossPhase);
+            Assert.That(Game.View.WorldRenderer.WaveBossState(state,"hit"),Is.EqualTo(expected));
+            Assert.That(Game.View.WorldRenderer.WaveBossState(state,"idle"),Is.EqualTo(expected));
+            Assert.That(Game.View.WorldRenderer.WaveBossState(state,"death"),Is.EqualTo("death"));
+        }
         [Test]
         public void MissingWaveFrameCannotBePresentedAsLegacyState()
         {

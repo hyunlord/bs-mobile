@@ -27,10 +27,11 @@ namespace Game.View
         }
         string WaveEnemyState(int id,string source,string fallback)
         {
-            if(wave==null||fallback=="death"||fallback=="hit")return fallback;
+            if(wave==null||fallback=="death")return fallback;
             var view=wave.Enemies.FirstOrDefault(e=>e.Id==id);if(view==null)return fallback;
             var kind=waveDefinition.Enemies[source].Kind;
-            if(kind==WaveEnemyKind.FloodBoss)return view.Phase switch {"tell-water"=>"water-windup","tell-charge"=>"charge-windup","charge"=>"charge","water"=>"water-surge","recovery"=>"stuck",_=>"idle"};
+            if(kind==WaveEnemyKind.FloodBoss)return WaveBossState(view,fallback);
+            if(fallback=="hit")return fallback;
             if(kind==WaveEnemyKind.Ranged)return view.Phase=="tell-shot"?"shoot":view.Phase=="recovery"?"retreat":fallback;
             if(kind==WaveEnemyKind.Charger)return view.Phase=="tell-charge"?"windup":view.Phase=="recovery"?"recover":fallback;
             if(kind==WaveEnemyKind.Shield)return view.Phase=="turn"?"turn":"guard";
@@ -38,6 +39,8 @@ namespace Game.View
             if(kind==WaveEnemyKind.Pursuer&&view.Phase.StartsWith("tell-",StringComparison.Ordinal))return "windup";
             return fallback;
         }
+        public static string WaveBossState(WaveEnemyView view,string fallback)
+            =>fallback=="death"?"death":view.Phase switch {"tell-water"=>"water-windup","tell-charge"=>"charge-windup","charge"=>"charge","water"=>"water-surge","recovery"=>view.BossPhase==0?"stuck":"recover",_=>"idle"};
         void WaveSprite(string id,int layer,WorldPoint position,float opacity=1,float scale=1,float heightScale=1)
         {
             var visual=Resolve("wave",id,"default");
@@ -91,7 +94,7 @@ namespace Game.View
                 if(waveDefinition.Evolutions.TryGetValue(source,out var evolution))source=evolution.InputIds.First(id=>waveDefinition.Gear[id].Kind>=WaveAttackKind.SeedFan);
                 var kind=waveDefinition.Gear[source].Kind;
                 var id=kind==WaveAttackKind.WaterFan?"xp-water":kind==WaveAttackKind.ConstructionSlam?"xp-timber":kind==WaveAttackKind.MusterWave?"xp-mission":"xp-grain";
-                WaveSprite(id,GameVisualTokens.ExperienceLayer,reward.Position);
+                WaveSprite(id,GameVisualTokens.ExperienceLayer,reward.Position,scale:GameVisualTokens.WaveRewardScale);
             }
             foreach(var group in wave.Groups)
             {
@@ -128,7 +131,13 @@ namespace Game.View
                 if(enemy.Phase=="tell-charge"||enemy.Phase=="tell-water"||enemy.Phase=="water")
                 {
                     var a=Point(enemy.Origin);var b=Point(enemy.Target);var visual=Resolve("wave",enemy.Phase.Contains("water")?"water-lane":"charge-tell","default");
-                    Draw(visual,GameVisualTokens.AttackLayer,(a+b)*.5f,visualTime,new Vector2((b-a).magnitude,waveCatalog.Enemies[actor.DefinitionId].Range*2f/settings.WorldUnitsPerUnityUnit),Angle(b-a),GameVisualTokens.AreaAttackOpacity);
+                    var diameter=waveCatalog.Enemies[actor.DefinitionId].Range*2f/settings.WorldUnitsPerUnityUnit;
+                    var opacity=enemy.Phase=="water"?GameVisualTokens.WaveHostileActiveOpacity:GameVisualTokens.WaveHostileTellOpacity;
+                    Draw(visual,GameVisualTokens.AttackLayer,(a+b)*.5f,visualTime,new Vector2((b-a).magnitude,diameter),Angle(b-a),opacity);
+                    var cap=Resolve("attack","core:levy_banner","nova");
+                    var tint=enemy.Phase.Contains("water")?Color.white:GameVisualTokens.Hostile;
+                    Draw(cap,GameVisualTokens.AttackLayer,a,0,Vector2.one*diameter,opacity:opacity,tint:tint);
+                    Draw(cap,GameVisualTokens.AttackLayer,b,0,Vector2.one*diameter,opacity:opacity,tint:tint);
                 }
             }
             for(var i=waveEffects.Count-1;i>=0;i--)
