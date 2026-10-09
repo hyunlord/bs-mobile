@@ -29,7 +29,7 @@ namespace Game.P1Capture
         static long lastEvent;
         static int people;
         static string replayPath;
-        static CapturePlayerLoop playerLoop;
+        static bool playerLoopInstalled;
         static int diagnosticFrames;
         static StreamWriter ledger;
         static readonly string[] Priority = { "core:muster_horn", "core:seed_bag", "core:ward_orbit", "core:harvest_scythe", "core:iron_blade", "core:soup_ladle", "core:rain_ladle" };
@@ -46,6 +46,8 @@ namespace Game.P1Capture
             EditorApplication.playModeStateChanged += state =>
             {
                 if (state != PlayModeStateChange.EnteredEditMode) return;
+                CapturePlayerLoop.Uninstall();
+                playerLoopInstalled = false;
                 RestorePreferences();
                 if (SessionState.GetBool(ActiveKey, false)) Finish("failed: play mode exited before completion");
                 if (Environment.GetEnvironmentVariable("P1_CAPTURE_EXIT") == "1" && !string.IsNullOrEmpty(SessionState.GetString("SowSiege.P1Capture.Output", "")))
@@ -81,11 +83,14 @@ namespace Game.P1Capture
         static void Update()
         {
             if (!SessionState.GetBool(ActiveKey, false) || !EditorApplication.isPlaying) return;
-            if (playerLoop == null)
+            if (!playerLoopInstalled)
             {
-                var host = new GameObject("P1 editor capture player loop");
-                UnityEngine.Object.DontDestroyOnLoad(host);
-                playerLoop = host.AddComponent<CapturePlayerLoop>();
+                try
+                {
+                    CapturePlayerLoop.Install(PlayerLoopUpdate);
+                    playerLoopInstalled = true;
+                }
+                catch (Exception error) { Finish("failed: " + error); }
             }
         }
 
@@ -293,6 +298,8 @@ namespace Game.P1Capture
             recorder?.StopRecording();
             ledger?.Dispose();
             SessionState.SetBool(ActiveKey, false);
+            CapturePlayerLoop.Uninstall();
+            playerLoopInstalled = false;
             SessionState.SetString("SowSiege.P1Capture.Result", result);
             File.WriteAllText(Path.Combine(output, "capture-result.txt"), result);
             EditorApplication.isPlaying = false;
