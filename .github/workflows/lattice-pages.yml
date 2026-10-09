@@ -18,11 +18,12 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: source
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: hyunlord/lattice
-          ref: df2a47ab0875c053b7b0749ced07315eb54a0b44
+          ref: eb2aba6e20521b634e5a0540d09465ee43ff625d
           path: lattice-tool
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -32,9 +33,13 @@ jobs:
           cache-dependency-path: lattice-tool/package-lock.json
       - run: npm ci --ignore-scripts && npm run build
         working-directory: lattice-tool
-      - name: Build source graph and static map
+      - name: Build comparable catalog snapshots and static map
         run: |
-          node lattice-tool/bin/lattice.mjs build --root source --lens .lattice/lens.json
+          cp source/.lattice/lens.json "$RUNNER_TEMP/lens.json"
+          node lattice-tool/bin/lattice.mjs diff de2a5713ce7c9d9c9f38a663e0a1cae66bbfe5b5 --root source --lens "$RUNNER_TEMP/lens.json" --json > "$RUNNER_TEMP/lattice-diff.json"
+          node source/.lattice/verify-designed.mjs source/.lattice/cache/graph.json
+          BASELINE_GRAPH=$(node -e 'const fs=require("node:fs"); const s=JSON.parse(fs.readFileSync("source/.lattice/cache/snapshots.json","utf8")).find(s=>s.commit==="de2a5713ce7c9d9c9f38a663e0a1cae66bbfe5b5"); if(!s)process.exit(1); process.stdout.write("source/.lattice/cache/"+s.artifactPath)')
+          node source/.lattice/verify-designed.mjs "$BASELINE_GRAPH" --baseline
           node lattice-tool/bin/lattice.mjs export "$RUNNER_TEMP/lattice-site" --root source
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
