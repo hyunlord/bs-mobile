@@ -19,6 +19,30 @@ public sealed class WaveEnemyTests
     private static void Tick(WaveEnemySystem system, WorldState world, int count = 1)
     { for (var i = 0; i < count; i++) { system.Tick(); world.Tick++; } }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PathConnectivityPreservesTiesAndRefreshesAfterTheNextTick(bool reversed)
+    {
+        var (system, world, enemy, _) = Arena(WaveEnemyKind.Pursuer);
+        var second = new EnemyState { Id = 2, Definition = enemy.Definition, Position = enemy.Position, Health = 100 };
+        world.Enemies.Add(second);
+        var firstPath = new Position(140, reversed ? 120 : 80);
+        var otherPath = new Position(140, reversed ? 80 : 120);
+        world.WaveRuntime!.Paths.AddRange(new[] { firstPath, otherPath });
+        Tick(system, world);
+        var expected = new Position(110, reversed ? 105 : 95);
+        Assert.Equal(expected, enemy.Position);
+        Assert.Equal(expected, second.Position);
+
+        // Work appends paths after the enemy phase; the next tick must see them.
+        world.WaveRuntime.Paths.Add(new Position(125, 100));
+        enemy.Position = second.Position = new Position(100, 100);
+        Tick(system, world);
+        Assert.Equal(new Position(110, 100), enemy.Position);
+        Assert.Equal(enemy.Position, second.Position);
+    }
+
     [Fact]
     public void ChargeLocksItsTellAndMissesASidestep()
     {

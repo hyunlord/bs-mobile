@@ -18,6 +18,7 @@ namespace SowSiege.Core
         internal void Tick()
         {
             Spawn();
+            Position[]? connectedPaths = null;
             State.Detours.RemoveAll(d => d.UntilTick <= world.Tick);
             foreach (var enemy in world.Enemies.Where(e => e.Health > 0).OrderBy(e => e.Id))
             {
@@ -25,7 +26,7 @@ namespace SowSiege.Core
                 if (!State.EnemyActions.TryGetValue(enemy.Id, out var action))
                 { action = new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 }; State.EnemyActions.Add(enemy.Id, action); }
                 if (action.StopUntil > world.Tick) { continue; }
-                Advance(enemy, rule, action);
+                Advance(enemy, rule, action, ref connectedPaths);
             }
             foreach (var shot in State.Projectiles.Where(p => p.Hostile).ToArray())
             {
@@ -62,7 +63,7 @@ namespace SowSiege.Core
             }
         }
 
-        private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action)
+        private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action, ref Position[]? connectedPaths)
         {
             var body = catalog.Enemies[enemy.Definition];
             var speed = action.WetUntil > world.Tick ? Math.Max(1, body.Speed / Definition.Behavior.WetSpeedDivisor) : body.Speed;
@@ -191,7 +192,9 @@ namespace SowSiege.Core
             if (enemy.Position.DistanceSquared(target) <= (long)body.Range * body.Range) { Tell(enemy, action, rule, "strike", target); return; }
             if (action.TargetId < 0 && (rule.Kind == WaveEnemyKind.Pursuer || rule.Kind == WaveEnemyKind.SeedThief) && State.Paths.Count > 1)
             {
-                var connected = State.Paths.Where(p => State.Paths.Any(other => other != p && other.DistanceSquared(p) <= (long)Definition.Behavior.PathConnectionMultiplier * Definition.Behavior.PathConnectionMultiplier * Definition.PathSpacing * Definition.PathSpacing)).OrderBy(p => p.DistanceSquared(enemy.Position)).ToArray();
+                // Paths change only in the work phase after all enemies advance.
+                connectedPaths ??= State.Paths.Where(p => State.Paths.Any(other => other != p && other.DistanceSquared(p) <= (long)Definition.Behavior.PathConnectionMultiplier * Definition.Behavior.PathConnectionMultiplier * Definition.PathSpacing * Definition.PathSpacing)).ToArray();
+                var connected = connectedPaths.OrderBy(p => p.DistanceSquared(enemy.Position)).ToArray();
                 if (connected.Length > 0)
                 {
                     var path = connected[0];
