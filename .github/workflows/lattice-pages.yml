@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           repository: hyunlord/lattice
-          ref: 5377931708923f783d0384ce1d41be09649e87e4
+          ref: eb2aba6e20521b634e5a0540d09465ee43ff625d
           path: lattice-tool
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020

@@ -10,7 +10,7 @@ const systems = designed.filter(node => node.kind === 'system');
 const catalog = designed.find(node => node.kind === 'catalog');
 assert(catalog, 'The original catalog root must be available');
 assert.equal(catalog.attributes.originalId, catalog.attributes.revision, 'Catalog identity must come from revision');
-assert.equal(catalog.attributes.revision, 'designed-v1');
+assert.equal(typeof catalog.attributes.revision, 'string');
 const waves = catalog.attributes.implementationWaves;
 assert(Array.isArray(waves) && waves.length > 0, 'Catalog waves must be available');
 const waveFacets = new Map(graph.facets.filter(facet => facet.key === 'wave').map(facet => [facet.nodeId, facet.value]));
@@ -23,7 +23,7 @@ for (const node of content) {
 const waveOneEvolutions = content.filter(node => node.kind === 'evolution' && waveFacets.get(node.id).includes(waves[0].id)).length;
 const ids = new Set(graph.nodes.map(node => node.id));
 assert.equal(ids.size, graph.nodes.length, 'Layer-qualified identities must be unique');
-for (const node of designed) assert.equal(node.id, `designed-v1:${node.attributes.originalId}`);
+for (const node of designed) assert.equal(node.id, `${catalog.attributes.revision}:${node.attributes.originalId}`);
 const influence = graph.edges.filter(edge => edge.kind === 'system-influence');
 const systemIds = new Set(systems.map(node => node.id));
 for (const edge of influence) {
@@ -58,6 +58,7 @@ const observed = {
 assert.equal(metric('designed-wave-one-evolutions'), waveOneEvolutions, 'Wave finding must agree with actual memberships');
 // This oracle describes the requested historical commit only. Current catalogs have no fixed count gate.
 if (flags.includes('--baseline')) {
+  assert.equal(catalog.attributes.revision, 'designed-v1');
   assert.equal(content.length, 151, 'Historical baseline content count');
   assert.deepEqual(observed, {
   noEvolutionWeapons: 6,
@@ -68,4 +69,4 @@ if (flags.includes('--baseline')) {
   waveOneEvolutions: 0,
   });
 }
-console.log(JSON.stringify({ baseline: flags.includes('--baseline'), content: content.length, systems: systems.length, influenceEdges: influence.length, findings: findings.map(({ id, metrics }) => ({ id, metrics })), observed }, null, 2));
+console.log(JSON.stringify({ baseline: flags.includes('--baseline'), revision: catalog.attributes.revision, content: content.length, systems: systems.length, influenceEdges: influence.length, findings: findings.map(({ id, metrics }) => ({ id, metrics })), observed }, null, 2));

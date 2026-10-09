@@ -210,7 +210,8 @@
           "records": "/content",
           "kindField": "kind",
           "layer": "designed-v1",
-          "references": false
+          "references": false,
+          "namespaceFrom": "/revision"
         }
       ],
       "hidden": true
@@ -226,7 +227,8 @@
           ],
           "records": "/systems",
           "layer": "designed-v1",
-          "references": false
+          "references": false,
+          "namespaceFrom": "/revision"
         }
       ]
     },
@@ -241,7 +243,8 @@
           ],
           "records": "/implementationWaves",
           "layer": "designed-v1",
-          "references": false
+          "references": false,
+          "namespaceFrom": "/revision"
         }
       ],
       "hidden": true
@@ -258,7 +261,8 @@
           "records": "",
           "layer": "designed-v1",
           "references": false,
-          "idField": "revision"
+          "idField": "revision",
+          "namespaceFrom": "/revision"
         }
       ],
       "hidden": true
@@ -272,7 +276,7 @@
         "op": "lookup",
         "kind": "catalog",
         "field": [
-          "originalId"
+          "layer"
         ],
         "equals": "designed-v1"
       }
@@ -2170,9 +2174,61 @@
             ]
           }
         },
-        "layer": "designed-v1"
+        "layer": "designed-v1",
+        "primitiveReferences": {
+          "op": "sum",
+          "value": {
+            "op": "map",
+            "input": {
+              "op": "filter",
+              "input": {
+                "op": "get",
+                "from": "graph",
+                "path": [
+                  "nodes"
+                ]
+              },
+              "where": {
+                "op": "and",
+                "values": [
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "layer"
+                      ]
+                    },
+                    "right": "designed-v1"
+                  },
+                  {
+                    "op": "exists",
+                    "value": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "primitives"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "value": {
+              "op": "count",
+              "value": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "primitives"
+                ]
+              }
+            }
+          }
+        }
       },
-      "template": "primitives가 없는 콘텐츠 {count}개",
+      "template": "primitives가 없는 콘텐츠 {count}개 · 문법 참조 {primitiveReferences}개",
       "severity": "warning",
       "basis": "computed",
       "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
@@ -2194,31 +2250,18 @@
         ],
         "layer": "designed-v1",
         "where": {
-          "op": "or",
-          "values": [
-            {
-              "op": "eq",
-              "left": {
-                "op": "get",
-                "from": "node",
-                "path": [
-                  "bespoke"
-                ]
-              },
-              "right": true
-            },
-            {
-              "op": "in",
-              "value": "bespoke",
-              "collection": {
-                "op": "get",
-                "from": "node",
-                "path": [
-                  "primitives"
-                ]
-              }
+          "op": "gt",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "get",
+              "from": "node",
+              "path": [
+                "bespoke"
+              ]
             }
-          ]
+          },
+          "right": 0
         }
       },
       "metrics": {
@@ -2232,12 +2275,36 @@
             ]
           }
         },
-        "layer": "designed-v1"
+        "layer": "designed-v1",
+        "entries": {
+          "op": "sum",
+          "value": {
+            "op": "map",
+            "input": {
+              "op": "get",
+              "from": "vars",
+              "path": [
+                "targets"
+              ]
+            },
+            "value": {
+              "op": "count",
+              "value": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "bespoke"
+                ]
+              }
+            }
+          }
+        }
       },
-      "template": "bespoke 콘텐츠 {count}개",
+      "template": "bespoke 콘텐츠 {count}개 · 별도 행위 {entries}개",
       "severity": "warning",
       "basis": "computed",
-      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.",
+      "implementation": "bespoke 배열의 레코드 수와 id/reason 항목 수를 각각 집계합니다. primitive 사용량은 실행 지원 또는 구현률이 아닙니다."
     }
   ],
   "presentation": {
@@ -2391,7 +2458,18 @@
         "kinds": [
           "item"
         ],
-        "layer": "designed-v1"
+        "layer": "designed-v1",
+        "where": {
+          "op": "ne",
+          "left": {
+            "op": "get",
+            "from": "node",
+            "path": [
+              "itemScope"
+            ]
+          },
+          "right": "universal"
+        }
       },
       "target": {
         "op": "get",
@@ -2415,7 +2493,18 @@
         "kinds": [
           "item"
         ],
-        "layer": "designed-v1"
+        "layer": "designed-v1",
+        "where": {
+          "op": "ne",
+          "left": {
+            "op": "get",
+            "from": "node",
+            "path": [
+              "itemScope"
+            ]
+          },
+          "right": "universal"
+        }
       },
       "target": {
         "op": "get",
@@ -2784,7 +2873,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -2965,7 +3061,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -3146,7 +3249,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -3327,7 +3437,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -3508,7 +3625,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -3689,7 +3813,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -3870,7 +4001,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -4051,7 +4189,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -4232,7 +4377,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
@@ -4413,7 +4565,14 @@
                             "revision"
                           ]
                         },
-                        "right": "designed-v1"
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
                       },
                       {
                         "op": "eq",
