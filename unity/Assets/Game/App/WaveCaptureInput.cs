@@ -10,6 +10,19 @@ namespace Game.App
         static string[] preferred;
         public static void ConfigurePriority(string value) => preferred=string.IsNullOrWhiteSpace(value)?null:value.Split(',');
         public static int CardRank(string id) { var selection=preferred??Priority;var index=Array.IndexOf(selection,id);return index<0?100:index; }
+        public static string ChooseCard(CardOfferView offers,RunFrame frame,ContentCatalog catalog,string targetMaterial=null)
+        {
+            if(offers==null||offers.Cards.Count==0)throw new ArgumentException("At least one actual offered card is required.",nameof(offers));
+            var definition=catalog?.WaveRuntime??throw new ArgumentException("Wave capture requires a wave catalog.",nameof(catalog));
+            var owned=frame.Equipment.Select(e=>e.Id).ToHashSet(StringComparer.Ordinal);
+            if(frame.Level==2&&targetMaterial!=null&&definition.MaterialTargets!=null&&definition.MaterialTargets.TryGetValue(targetMaterial,out var target)&&!owned.Contains(target)&&offers.Cards.Contains(target))return target;
+            var selection=preferred??Priority;
+            var evolution=selection.FirstOrDefault(id=>definition.Evolutions.ContainsKey(id)&&offers.Cards.Contains(id));
+            if(evolution!=null)return evolution;
+            var newGear=selection.FirstOrDefault(id=>definition.Gear.ContainsKey(id)&&!owned.Contains(id)&&offers.Cards.Contains(id));
+            if(newGear!=null)return newGear;
+            return offers.Cards.OrderBy(CardRank).First();
+        }
         public static WorldPoint Target(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog=null)
         {
             var reward=wave.Rewards.OrderBy(r=>Distance(r.Position,frame.Lord.Position)).FirstOrDefault();if(reward!=null)return reward.Position;

@@ -176,7 +176,8 @@ namespace Game.App
             {
                 if (cardAt < 0) { cardAt = Elapsed; Log("cards-visible", string.Join(",", run.Session.View.CaptureCards().Cards)); }
                 if (Elapsed - cardAt < 2) return;
-                var card = run.Session.View.CaptureCards().Cards.OrderBy(CardRank).First();
+                var offers=run.Session.View.CaptureCards();
+                var card = run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,captureTarget):offers.Cards.OrderBy(CardRank).First();
                 var parent = run.Ui.GetComponentsInChildren<RectTransform>().First(t => t.name == "Card " + card);
                 ClickButton(parent.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>().text == "선택"));
                 Log("card-click", card); cardAt = -1; return;

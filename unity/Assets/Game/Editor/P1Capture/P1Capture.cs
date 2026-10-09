@@ -262,7 +262,8 @@ namespace Game.P1Capture
                     if (cardAt < 0) { cardAt = elapsed; Log("cards-visible", string.Join(",", run.Session.View.CaptureCards().Cards)); }
                     if (elapsed - cardAt >= 2)
                     {
-                        var card = run.Session.View.CaptureCards().Cards.OrderBy(CardRank).First();
+                        var offers=run.Session.View.CaptureCards();
+                        var card = run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,Environment.GetEnvironmentVariable("P1_CAPTURE_TARGET")):offers.Cards.OrderBy(CardRank).First();
                         Log("automated-card-choice", card);
                         run.Send(ReplayCommandKind.ChooseCard, card: card);
                         cardAt = -1;
