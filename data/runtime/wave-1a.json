@@ -1,0 +1,1904 @@
+{
+  "contractVersion": 1,
+  "designRevision": "designed-v1.1",
+  "bindings": [
+    {
+      "id": "core:iron_blade",
+      "kind": "weapon",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:iron_blade"
+      },
+      "semanticSha256": "8c0209e906e43e97d6d5667ad07b62af02657971d3406e585383886a9651612a"
+    },
+    {
+      "id": "core:ward_orbit",
+      "kind": "weapon",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:ward_orbit"
+      },
+      "semanticSha256": "c0c1eecf560b7f604de9017a91c447eb1d23a42858e12826db5b9925642f53a8"
+    },
+    {
+      "id": "core:storm_fork",
+      "kind": "weapon",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:storm_fork"
+      },
+      "semanticSha256": "b680d1649fa4d9b9117194380980f985ed9ca71b244ca5ee856cb8600e403818"
+    },
+    {
+      "id": "core:ember_wand",
+      "kind": "weapon",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:ember_wand"
+      },
+      "semanticSha256": "a80f061f339435203251913d5a10f845837185ecf4007cb21226df7fc5c94f96"
+    },
+    {
+      "id": "core:harvest_scythe",
+      "kind": "weapon",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:harvest_scythe"
+      },
+      "semanticSha256": "ba5b393c8c3522d7a06fc5e590cf87641ee8c97522fac4a91663bf8f03c78379"
+    },
+    {
+      "id": "core:seed_bag",
+      "kind": "tool",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:seed_bag"
+      },
+      "semanticSha256": "27eaff8f097c5418187d40f943c5294844e6ad0066a15417ffd760b3bc3de444"
+    },
+    {
+      "id": "core:rain_ladle",
+      "kind": "tool",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:rain_ladle"
+      },
+      "semanticSha256": "b16be61bb7d35c8605f0e68813ab0b1532046a044571cbcc561c425861ed590a"
+    },
+    {
+      "id": "core:carpenter_hammer",
+      "kind": "tool",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:carpenter_hammer"
+      },
+      "semanticSha256": "0c64e01205f15d84bfa12aa3a29866c6729377dd705d5e3180fdbbf9c0d1a9d0"
+    },
+    {
+      "id": "core:muster_horn",
+      "kind": "tool",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:muster_horn"
+      },
+      "semanticSha256": "598c64f4e07c88934585cd2eb4a7a53f0d36ad8c979acc7da14212672abce754"
+    },
+    {
+      "id": "core:sowing_sworddance",
+      "kind": "evolution",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:sowing_sworddance"
+      },
+      "semanticSha256": "86f0e82a5734bb86295475a15c772a83c158fd4b743ecf939b41df38b2aea6cf"
+    },
+    {
+      "id": "core:warded_masonry",
+      "kind": "evolution",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:warded_masonry"
+      },
+      "semanticSha256": "43cff35a4525dbd31e23cac074bd51c3475530f5c111489e62b822135f3fb046"
+    },
+    {
+      "id": "core:sheltered_sowing",
+      "kind": "evolution",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:sheltered_sowing"
+      },
+      "semanticSha256": "529223ac02c79f10bf58e48643ecded397933a884b3f9428f76c282535fe2358"
+    },
+    {
+      "id": "core:bitter_seed_dust",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:bitter_seed_dust"
+      },
+      "semanticSha256": "c1a980c7bca64773382d2ad06620465c374de1718c4d4d9233ba540bffb089b1"
+    },
+    {
+      "id": "core:clay_water_bead",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:clay_water_bead"
+      },
+      "semanticSha256": "5ff075665aedb34409b13a32aa462b1d5f644daf87016e5247e817d5d19555a8"
+    },
+    {
+      "id": "core:crop_guard_signet",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:crop_guard_signet"
+      },
+      "semanticSha256": "f99954d0541fc9e6f25caafe7f34d09f71671450a6ca2710051ca59c9167fe85"
+    },
+    {
+      "id": "core:joiner_square",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:joiner_square"
+      },
+      "semanticSha256": "8f7b9b322bc08fb2234bab0abc9b751284c63d8b9d2c542c3e867131a7fdaa10"
+    },
+    {
+      "id": "core:meadow_buckle",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:meadow_buckle"
+      },
+      "semanticSha256": "b9b8028a3fd389a634854e1383a6a82064979d6e83eb058359861db197d43aea"
+    },
+    {
+      "id": "core:levy_bread_wrap",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:levy_bread_wrap"
+      },
+      "semanticSha256": "b991b0fcca0164f76cbd401a2a60770acb6a3e789b26e3000040a10c54cf37a6"
+    },
+    {
+      "id": "core:gathering_loop",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:gathering_loop"
+      },
+      "semanticSha256": "9fd69e6c9837fe1b1442cf97c821137e26eda4e5d8596a36424be41a276833cd"
+    },
+    {
+      "id": "core:wayfarer_boots",
+      "kind": "item",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:wayfarer_boots"
+      },
+      "semanticSha256": "0425043d1ab30a177d1af22cadfc8fb0f61f4d6a2b59430fde9223ee025888b4"
+    },
+    {
+      "id": "core:raider",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:raider"
+      },
+      "semanticSha256": "f59e4a69d0992bbe90029ae23d1860de13e2985f5a21be72912dea4fb393d842"
+    },
+    {
+      "id": "core:seed_mite",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:seed_mite"
+      },
+      "semanticSha256": "94b127632c50293bbc9d49f181f29d197b397800e21a6aae157cfc6fa362d56d"
+    },
+    {
+      "id": "core:crop_grazer",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:crop_grazer"
+      },
+      "semanticSha256": "2c622633d4115f071d44ed347a3fe088cca5b72a3ba372356a47651318529c4e"
+    },
+    {
+      "id": "core:ram_runner",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:ram_runner"
+      },
+      "semanticSha256": "7e389eb7005fe3f670f40e6d3c235243cabc9451c7fbefca40e4120b6bc8cd31"
+    },
+    {
+      "id": "core:shield_raider",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:shield_raider"
+      },
+      "semanticSha256": "289bce79527a499e9095280defd291c2c97f23b93446a34b82fe62fc4e0c90b6"
+    },
+    {
+      "id": "core:wine_wasp",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:wine_wasp"
+      },
+      "semanticSha256": "b8c5ac8e970b642569ab6cf1da4010cb42757b1ed209f688c6b41136e54f64be"
+    },
+    {
+      "id": "core:flood_tusk",
+      "kind": "enemy",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "core:flood_tusk"
+      },
+      "semanticSha256": "2c1aedd230e339bdedf0c0a5e6813146bbb27ba13b836f758e2f574e9ea1dda2"
+    },
+    {
+      "id": "meta:chapter_1",
+      "kind": "chapter",
+      "designRef": {
+        "catalog": "data/system-design-v1.json",
+        "revision": "designed-v1.1",
+        "id": "meta:chapter_1"
+      },
+      "semanticSha256": "ac2f24516a0445da4c352e06118e3553f53bfcb139249045b48118d6181c3859"
+    }
+  ],
+  "tuning": {
+    "tickRate": 30,
+    "durationTicks": 27000,
+    "damageRollMax": 5,
+    "defaultHero": "core:frontier_knight",
+    "defaultEstate": "core:sprout_march",
+    "policies": {
+      "weapon": {
+        "damageMultiplier": 1,
+        "growthMultiplier": 1,
+        "cardWeights": {
+          "weapon": 8,
+          "land": 2,
+          "building": 2,
+          "people": 2
+        }
+      },
+      "land": {
+        "damageMultiplier": 1,
+        "growthMultiplier": 1,
+        "cardWeights": {
+          "weapon": 2,
+          "land": 8,
+          "building": 2,
+          "people": 2
+        }
+      },
+      "building": {
+        "damageMultiplier": 1,
+        "growthMultiplier": 1,
+        "cardWeights": {
+          "weapon": 2,
+          "land": 2,
+          "building": 8,
+          "people": 2
+        }
+      },
+      "people": {
+        "damageMultiplier": 1,
+        "growthMultiplier": 1,
+        "cardWeights": {
+          "weapon": 2,
+          "land": 2,
+          "building": 2,
+          "people": 8
+        }
+      },
+      "mixed": {
+        "damageMultiplier": 1,
+        "growthMultiplier": 1,
+        "cardWeights": {
+          "weapon": 2,
+          "land": 2,
+          "building": 2,
+          "people": 2
+        }
+      },
+      "random": {
+        "damageMultiplier": 1,
+        "growthMultiplier": 1,
+        "cardWeights": {
+          "weapon": 2,
+          "land": 2,
+          "building": 2,
+          "people": 2
+        }
+      }
+    },
+    "world": {
+      "map": {
+        "width": 12000,
+        "height": 12000,
+        "cellSize": 600,
+        "lordSpeed": 24,
+        "lordHealth": 1800,
+        "estateRadius": 2500,
+        "waypointPeriodTicks": 90
+      },
+      "farms": {
+        "capacity": 300,
+        "spacing": 130,
+        "stageTicks": [
+          300,
+          300,
+          300,
+          300
+        ],
+        "harvestRange": 1000,
+        "foodPerHarvest": 3,
+        "experiencePerHarvest": 15,
+        "fertilityPerKill": 1,
+        "fertilityGrowthBonus": 1
+      },
+      "buildings": {
+        "siteCount": 20,
+        "spacing": 500,
+        "health": 200,
+        "repairAmount": 35,
+        "damage": 12,
+        "range": 1400,
+        "attackCooldownTicks": 45,
+        "taxPeriodTicks": 300,
+        "taxExperience": 12
+      },
+      "people": {
+        "initialPeasants": 5,
+        "maxPeople": 60,
+        "initialFood": 90,
+        "foodCapacity": 300,
+        "foodPerPerson": 1,
+        "consumePeriodTicks": 300,
+        "recruitPeriodTicks": 180,
+        "draftDurationTicks": 180,
+        "returnSpeed": 18,
+        "workerGrowthBonus": 1,
+        "damage": 8,
+        "range": 700,
+        "attackCooldownTicks": 30,
+        "vassalHealth": 300,
+        "squadSize": 5
+      },
+      "progression": {
+        "baseExperience": 30,
+        "experiencePerLevel": 15,
+        "cardCount": 3,
+        "weaponSlots": 3,
+        "toolSlots": 3,
+        "startingWeapon": "core:iron_blade",
+        "rarities": [
+          {
+            "name": "common",
+            "weight": 70,
+            "upgradeAmount": 1
+          },
+          {
+            "name": "rare",
+            "weight": 25,
+            "upgradeAmount": 2
+          },
+          {
+            "name": "epic",
+            "weight": 5,
+            "upgradeAmount": 3
+          }
+        ],
+        "rerolls": 1,
+        "bans": 1,
+        "locks": 1
+      },
+      "threat": {
+        "spawnPeriodTicks": 90,
+        "baseSpawnCount": 3,
+        "timeRampTicks": 1800,
+        "prosperityDivisor": 40,
+        "enemyCap": 1000,
+        "spawnInset": 200,
+        "contactPeriodTicks": 30
+      },
+      "load": {
+        "enemies": 1000,
+        "farms": 300,
+        "buildings": 20,
+        "people": 60
+      },
+      "seasons": [
+        {
+          "name": "spring",
+          "durationTicks": 6750,
+          "growthMultiplier": 2,
+          "spawnMultiplier": 1
+        },
+        {
+          "name": "summer",
+          "durationTicks": 6750,
+          "growthMultiplier": 2,
+          "spawnMultiplier": 1
+        },
+        {
+          "name": "autumn",
+          "durationTicks": 6750,
+          "growthMultiplier": 1,
+          "spawnMultiplier": 2
+        },
+        {
+          "name": "winter",
+          "durationTicks": 6750,
+          "growthMultiplier": 1,
+          "spawnMultiplier": 2
+        }
+      ],
+      "telemetryPeriodTicks": 300,
+      "defaultPeopleRule": "C"
+    }
+  },
+  "enemyStats": {
+    "core:raider": {
+      "id": "core:raider",
+      "target": "lord",
+      "health": 45,
+      "speed": 30,
+      "damage": 12,
+      "range": 300,
+      "attackCooldownTicks": 60,
+      "experience": 5
+    },
+    "core:seed_mite": {
+      "id": "core:seed_mite",
+      "target": "seed",
+      "health": 28,
+      "speed": 14,
+      "damage": 8,
+      "range": 300,
+      "attackCooldownTicks": 60,
+      "experience": 5
+    },
+    "core:crop_grazer": {
+      "id": "core:crop_grazer",
+      "target": "ripe",
+      "health": 38,
+      "speed": 12,
+      "damage": 12,
+      "range": 300,
+      "attackCooldownTicks": 60,
+      "experience": 5
+    },
+    "core:ram_runner": {
+      "id": "core:ram_runner",
+      "target": "lord",
+      "health": 60,
+      "speed": 30,
+      "damage": 10,
+      "range": 300,
+      "attackCooldownTicks": 60,
+      "experience": 5
+    },
+    "core:shield_raider": {
+      "id": "core:shield_raider",
+      "target": "lord",
+      "health": 90,
+      "speed": 16,
+      "damage": 14,
+      "range": 300,
+      "attackCooldownTicks": 60,
+      "experience": 5
+    },
+    "core:wine_wasp": {
+      "id": "core:wine_wasp",
+      "target": "lord",
+      "health": 42,
+      "speed": 20,
+      "damage": 8,
+      "range": 1500,
+      "attackCooldownTicks": 60,
+      "experience": 5
+    },
+    "core:flood_tusk": {
+      "id": "core:flood_tusk",
+      "target": "lord",
+      "health": 3500,
+      "speed": 18,
+      "damage": 11,
+      "range": 300,
+      "attackCooldownTicks": 60,
+      "experience": 100
+    }
+  },
+  "definition": {
+    "revision": "designed-v1.1",
+    "chapterId": "meta:chapter_1",
+    "chapterDesignRef": "data/system-design-v1.json@designed-v1.1#meta:chapter_1",
+    "bossId": "core:flood_tusk",
+    "bossSpawnTick": 25200,
+    "groupCap": 3,
+    "initialWorkers": 3,
+    "initialTimber": 12,
+    "waterCapacity": 12,
+    "waterRefillTicks": 90,
+    "pickupRadius": 350,
+    "wetTicks": 90,
+    "stopTicks": 12,
+    "pathSpacing": 180,
+    "pathCapacity": 256,
+    "gear": {
+      "core:iron_blade": {
+        "id": "core:iron_blade",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:iron_blade",
+        "kind": "Arc",
+        "damage": 24,
+        "range": 650,
+        "cooldownTicks": 32,
+        "speed": 90,
+        "count": 1,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 1,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 24,
+            "range": 650,
+            "cooldownTicks": 32,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 650,
+            "cooldownTicks": 32,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 685,
+            "cooldownTicks": 30,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 685,
+            "cooldownTicks": 30,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 720,
+            "cooldownTicks": 28,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 720,
+            "cooldownTicks": 28,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 755,
+            "cooldownTicks": 26,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 755,
+            "cooldownTicks": 26,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 790,
+            "cooldownTicks": 24,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 30,
+            "range": 790,
+            "cooldownTicks": 24,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 30,
+            "range": 825,
+            "cooldownTicks": 22,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 30,
+            "range": 825,
+            "cooldownTicks": 22,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:ward_orbit": {
+        "id": "core:ward_orbit",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:ward_orbit",
+        "kind": "Orbit",
+        "damage": 14,
+        "range": 700,
+        "cooldownTicks": 40,
+        "speed": 90,
+        "count": 3,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 1,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 14,
+            "range": 700,
+            "cooldownTicks": 40,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 700,
+            "cooldownTicks": 40,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 735,
+            "cooldownTicks": 38,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 735,
+            "cooldownTicks": 38,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 770,
+            "cooldownTicks": 36,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 770,
+            "cooldownTicks": 36,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 18,
+            "range": 805,
+            "cooldownTicks": 34,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 18,
+            "range": 805,
+            "cooldownTicks": 34,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 18,
+            "range": 840,
+            "cooldownTicks": 32,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 840,
+            "cooldownTicks": 32,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 875,
+            "cooldownTicks": 30,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 875,
+            "cooldownTicks": 30,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:storm_fork": {
+        "id": "core:storm_fork",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:storm_fork",
+        "kind": "Chain",
+        "damage": 18,
+        "range": 850,
+        "cooldownTicks": 55,
+        "speed": 90,
+        "count": 4,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 1,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 18,
+            "range": 850,
+            "cooldownTicks": 55,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 18,
+            "range": 850,
+            "cooldownTicks": 55,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 18,
+            "range": 885,
+            "cooldownTicks": 53,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 885,
+            "cooldownTicks": 53,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 920,
+            "cooldownTicks": 51,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 920,
+            "cooldownTicks": 51,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 955,
+            "cooldownTicks": 49,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 955,
+            "cooldownTicks": 49,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 990,
+            "cooldownTicks": 47,
+            "speed": 90,
+            "count": 6,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 990,
+            "cooldownTicks": 47,
+            "speed": 90,
+            "count": 6,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 1025,
+            "cooldownTicks": 45,
+            "speed": 90,
+            "count": 6,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 1025,
+            "cooldownTicks": 45,
+            "speed": 90,
+            "count": 6,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:ember_wand": {
+        "id": "core:ember_wand",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:ember_wand",
+        "kind": "Homing",
+        "damage": 28,
+        "range": 1500,
+        "cooldownTicks": 45,
+        "speed": 90,
+        "count": 1,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 1,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 28,
+            "range": 1500,
+            "cooldownTicks": 45,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 1500,
+            "cooldownTicks": 45,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 1535,
+            "cooldownTicks": 43,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 30,
+            "range": 1535,
+            "cooldownTicks": 43,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 30,
+            "range": 1570,
+            "cooldownTicks": 41,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 30,
+            "range": 1570,
+            "cooldownTicks": 41,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 32,
+            "range": 1605,
+            "cooldownTicks": 39,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 32,
+            "range": 1605,
+            "cooldownTicks": 39,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 32,
+            "range": 1640,
+            "cooldownTicks": 37,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 34,
+            "range": 1640,
+            "cooldownTicks": 37,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 34,
+            "range": 1675,
+            "cooldownTicks": 35,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 34,
+            "range": 1675,
+            "cooldownTicks": 35,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:harvest_scythe": {
+        "id": "core:harvest_scythe",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:harvest_scythe",
+        "kind": "HarvestArc",
+        "damage": 22,
+        "range": 950,
+        "cooldownTicks": 55,
+        "speed": 90,
+        "count": 1,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 1,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 22,
+            "range": 950,
+            "cooldownTicks": 55,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 950,
+            "cooldownTicks": 55,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 985,
+            "cooldownTicks": 53,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 985,
+            "cooldownTicks": 53,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 1020,
+            "cooldownTicks": 51,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 1020,
+            "cooldownTicks": 51,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 1055,
+            "cooldownTicks": 49,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 1055,
+            "cooldownTicks": 49,
+            "speed": 90,
+            "count": 2,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 1090,
+            "cooldownTicks": 47,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 1090,
+            "cooldownTicks": 47,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 1125,
+            "cooldownTicks": 45,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 28,
+            "range": 1125,
+            "cooldownTicks": 45,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:seed_bag": {
+        "id": "core:seed_bag",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:seed_bag",
+        "kind": "SeedFan",
+        "damage": 10,
+        "range": 800,
+        "cooldownTicks": 75,
+        "speed": 90,
+        "count": 3,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 300,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 120,
+        "levels": [
+          {
+            "damage": 10,
+            "range": 800,
+            "cooldownTicks": 75,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 800,
+            "cooldownTicks": 75,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 835,
+            "cooldownTicks": 73,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 835,
+            "cooldownTicks": 73,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 870,
+            "cooldownTicks": 71,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 870,
+            "cooldownTicks": 71,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 905,
+            "cooldownTicks": 69,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 905,
+            "cooldownTicks": 69,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 940,
+            "cooldownTicks": 67,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 940,
+            "cooldownTicks": 67,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 975,
+            "cooldownTicks": 65,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 975,
+            "cooldownTicks": 65,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:rain_ladle": {
+        "id": "core:rain_ladle",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:rain_ladle",
+        "kind": "WaterFan",
+        "damage": 10,
+        "range": 750,
+        "cooldownTicks": 70,
+        "speed": 90,
+        "count": 3,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 90,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 10,
+            "range": 750,
+            "cooldownTicks": 70,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 750,
+            "cooldownTicks": 70,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 785,
+            "cooldownTicks": 68,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 785,
+            "cooldownTicks": 68,
+            "speed": 90,
+            "count": 3,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 820,
+            "cooldownTicks": 66,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 820,
+            "cooldownTicks": 66,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 855,
+            "cooldownTicks": 64,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 855,
+            "cooldownTicks": 64,
+            "speed": 90,
+            "count": 4,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 890,
+            "cooldownTicks": 62,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 890,
+            "cooldownTicks": 62,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 925,
+            "cooldownTicks": 60,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 16,
+            "range": 925,
+            "cooldownTicks": 60,
+            "speed": 90,
+            "count": 5,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:carpenter_hammer": {
+        "id": "core:carpenter_hammer",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:carpenter_hammer",
+        "kind": "ConstructionSlam",
+        "damage": 20,
+        "range": 650,
+        "cooldownTicks": 70,
+        "speed": 90,
+        "count": 1,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 180,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 12,
+        "levels": [
+          {
+            "damage": 20,
+            "range": 650,
+            "cooldownTicks": 70,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 650,
+            "cooldownTicks": 70,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 20,
+            "range": 685,
+            "cooldownTicks": 68,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 685,
+            "cooldownTicks": 68,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 720,
+            "cooldownTicks": 66,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 22,
+            "range": 720,
+            "cooldownTicks": 66,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 755,
+            "cooldownTicks": 64,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 755,
+            "cooldownTicks": 64,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 24,
+            "range": 790,
+            "cooldownTicks": 62,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 790,
+            "cooldownTicks": 62,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 825,
+            "cooldownTicks": 60,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 26,
+            "range": 825,
+            "cooldownTicks": 60,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      },
+      "core:muster_horn": {
+        "id": "core:muster_horn",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:muster_horn",
+        "kind": "MusterWave",
+        "damage": 8,
+        "range": 1100,
+        "cooldownTicks": 100,
+        "speed": 90,
+        "count": 1,
+        "lifetimeTicks": 90,
+        "knockback": 40,
+        "workTicks": 90,
+        "workRadius": 1000,
+        "rewardExperience": 15,
+        "capacity": 8,
+        "levels": [
+          {
+            "damage": 8,
+            "range": 1100,
+            "cooldownTicks": 100,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 8,
+            "range": 1100,
+            "cooldownTicks": 100,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 8,
+            "range": 1135,
+            "cooldownTicks": 98,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 1135,
+            "cooldownTicks": 98,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 1170,
+            "cooldownTicks": 96,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 10,
+            "range": 1170,
+            "cooldownTicks": 96,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 1205,
+            "cooldownTicks": 94,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 1205,
+            "cooldownTicks": 94,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 12,
+            "range": 1240,
+            "cooldownTicks": 92,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 1240,
+            "cooldownTicks": 92,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 1275,
+            "cooldownTicks": 90,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          },
+          {
+            "damage": 14,
+            "range": 1275,
+            "cooldownTicks": 90,
+            "speed": 90,
+            "count": 1,
+            "lifetimeTicks": 90,
+            "knockback": 40
+          }
+        ]
+      }
+    },
+    "items": {
+      "core:bitter_seed_dust": {
+        "id": "core:bitter_seed_dust",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:bitter_seed_dust",
+        "kind": "SeedDetour",
+        "equipmentIds": [
+          "core:seed_bag"
+        ],
+        "amount": 1
+      },
+      "core:clay_water_bead": {
+        "id": "core:clay_water_bead",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:clay_water_bead",
+        "kind": "CarryWater",
+        "equipmentIds": [
+          "core:rain_ladle"
+        ],
+        "amount": 1
+      },
+      "core:crop_guard_signet": {
+        "id": "core:crop_guard_signet",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:crop_guard_signet",
+        "kind": "HarvestGuard",
+        "equipmentIds": [
+          "core:harvest_scythe",
+          "core:seed_bag",
+          "core:muster_horn"
+        ],
+        "amount": 1
+      },
+      "core:joiner_square": {
+        "id": "core:joiner_square",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:joiner_square",
+        "kind": "FrontOrbit",
+        "equipmentIds": [
+          "core:ward_orbit"
+        ],
+        "amount": 1
+      },
+      "core:meadow_buckle": {
+        "id": "core:meadow_buckle",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:meadow_buckle",
+        "kind": "RaiderAim",
+        "equipmentIds": [
+          "core:iron_blade"
+        ],
+        "amount": 1
+      },
+      "core:levy_bread_wrap": {
+        "id": "core:levy_bread_wrap",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:levy_bread_wrap",
+        "kind": "FieldMeal",
+        "equipmentIds": [
+          "core:muster_horn"
+        ],
+        "amount": 1
+      },
+      "core:gathering_loop": {
+        "id": "core:gathering_loop",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:gathering_loop",
+        "kind": "PickupRadius",
+        "equipmentIds": [],
+        "amount": 200
+      },
+      "core:wayfarer_boots": {
+        "id": "core:wayfarer_boots",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:wayfarer_boots",
+        "kind": "MoveSpeed",
+        "equipmentIds": [],
+        "amount": 4
+      }
+    },
+    "evolutions": {
+      "core:sowing_sworddance": {
+        "id": "core:sowing_sworddance",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:sowing_sworddance",
+        "kind": "PlantingArc",
+        "inputIds": [
+          "core:iron_blade",
+          "core:seed_bag"
+        ]
+      },
+      "core:warded_masonry": {
+        "id": "core:warded_masonry",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:warded_masonry",
+        "kind": "RepairOrbit",
+        "inputIds": [
+          "core:ward_orbit",
+          "core:carpenter_hammer"
+        ]
+      },
+      "core:sheltered_sowing": {
+        "id": "core:sheltered_sowing",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:sheltered_sowing",
+        "kind": "ShelteredPlot",
+        "inputIds": [
+          "core:seed_bag",
+          "core:carpenter_hammer"
+        ]
+      }
+    },
+    "enemies": {
+      "core:raider": {
+        "id": "core:raider",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:raider",
+        "kind": "Pursuer",
+        "tellTicks": 30,
+        "activeTicks": 15,
+        "recoveryTicks": 45,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 0
+      },
+      "core:seed_mite": {
+        "id": "core:seed_mite",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:seed_mite",
+        "kind": "SeedThief",
+        "tellTicks": 30,
+        "activeTicks": 15,
+        "recoveryTicks": 45,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 450
+      },
+      "core:crop_grazer": {
+        "id": "core:crop_grazer",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:crop_grazer",
+        "kind": "RipeGrazer",
+        "tellTicks": 30,
+        "activeTicks": 15,
+        "recoveryTicks": 45,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 900
+      },
+      "core:ram_runner": {
+        "id": "core:ram_runner",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:ram_runner",
+        "kind": "Charger",
+        "tellTicks": 30,
+        "activeTicks": 30,
+        "recoveryTicks": 45,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 1350
+      },
+      "core:shield_raider": {
+        "id": "core:shield_raider",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:shield_raider",
+        "kind": "Shield",
+        "tellTicks": 30,
+        "activeTicks": 15,
+        "recoveryTicks": 45,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 1800
+      },
+      "core:wine_wasp": {
+        "id": "core:wine_wasp",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:wine_wasp",
+        "kind": "Ranged",
+        "tellTicks": 30,
+        "activeTicks": 15,
+        "recoveryTicks": 45,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 2250
+      },
+      "core:flood_tusk": {
+        "id": "core:flood_tusk",
+        "designRef": "data/system-design-v1.json@designed-v1.1#core:flood_tusk",
+        "kind": "FloodBoss",
+        "tellTicks": 75,
+        "activeTicks": 30,
+        "recoveryTicks": 90,
+        "projectileSpeed": 60,
+        "firstSpawnTick": 25200
+      }
+    },
+    "materialTargets": {
+      "meta:grain": "core:seed_bag",
+      "meta:timber": "core:carpenter_hammer",
+      "meta:charter": "core:muster_horn"
+    },
+    "dryAfterTicks": 45
+  },
+  "provenance": [
+    {
+      "path": "tuning",
+      "classification": "inherited-unchanged",
+      "source": "data/first-playable-tuning.json",
+      "note": "Exact historical first-playable tuning; legacy growth and economic systems are bypassed by wave rules."
+    },
+    {
+      "path": "definition",
+      "classification": "provisional-executable",
+      "source": "D3 v1.1 #143 / runtime #152",
+      "note": "Initial bounded implementation values only. No balance, superiority, survival or economy acceptance; #126 remains held."
+    },
+    {
+      "path": "enemyStats",
+      "classification": "provisional-executable",
+      "source": "Existing first-playable archetype baselines and new wave roles",
+      "note": "Explicit finite starting values; new ranged and boss semantics do not imply balance approval."
+    }
+  ]
+}

@@ -41,9 +41,10 @@ namespace SowSiege.Core
 
         private void Deal()
         {
-            var pool = catalog.Weapons.Keys.Concat(catalog.Tools.Keys).Concat(catalog.Runtime?.Charters.Keys ?? Enumerable.Empty<string>()).OrderBy(value => value, StringComparer.Ordinal)
+            var pool = catalog.Weapons.Keys.Concat(catalog.Tools.Keys).Concat(catalog.Runtime?.Charters.Keys ?? Enumerable.Empty<string>()).Concat(WaveCards()).OrderBy(value => value, StringComparer.Ordinal)
                 .Where(id => CanOffer(id) && !world.BannedCards.Contains(id)).ToList();
             var offer = new List<string>();
+            if (world.Cards.Count == 0 && options.TargetMaterial is not null && catalog.WaveRuntime?.MaterialTargets?.TryGetValue(options.TargetMaterial, out var guaranteed) == true && pool.Remove(guaranteed)) { offer.Add(guaranteed); }
             if (world.LockedCard is not null && pool.Remove(world.LockedCard)) { offer.Add(world.LockedCard); }
             while (offer.Count < catalog.Tuning.World.Progression.CardCount && pool.Count > 0)
             {
@@ -66,7 +67,8 @@ namespace SowSiege.Core
         {
             RequireOffered(id);
             var rarity = world.FirstPlayable is { } fp ? fp.OfferedRarities[id] : RollRarity();
-            if (catalog.Runtime?.Charters.ContainsKey(id) == true)
+            if (SelectWave(id)) { }
+            else if (catalog.Runtime?.Charters.ContainsKey(id) == true)
             {
                 world.Runtime!.Charters[id] = checked(world.Runtime.Charters.GetValueOrDefault(id) + rarity.UpgradeAmount);
             }
@@ -117,13 +119,40 @@ namespace SowSiege.Core
         }
 
         internal long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
+        private IEnumerable<string> WaveCards()
+        {
+            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) return Enumerable.Empty<string>();
+            return d.Items.Values.Where(i => !w.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(d.Evolutions.Values.Where(e => !w.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) && (e.Kind switch { WaveEvolutionKind.PlantingArc => w.BladePlotKill, WaveEvolutionKind.RepairOrbit => w.RepairCompleted, WaveEvolutionKind.ShelteredPlot => w.HarvestNearBuilding, _ => false })).Select(e => e.Id));
+        }
+        private bool SelectWave(string id)
+        {
+            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) return false;
+            if (d.Items.ContainsKey(id)) { w.Items.Add(id); w.Emit(world.Tick, "item-selected", id, -1, world.Lord, world.Lord); return true; }
+            if (d.Evolutions.TryGetValue(id,out var evolution))
+            {
+                w.Evolutions.Add(id);
+                if(evolution.Kind == WaveEvolutionKind.RepairOrbit)
+                {
+                    for(var i=0;i<w.Attacks.Count;i++)
+                    {
+                        if(w.Attacks[i].Source==evolution.InputIds[0]) w.Attacks[i]=w.Attacks[i] with {Source=id};
+                    }
+                }
+                w.Emit(world.Tick, "evolution-activated", id, -1, world.Lord, world.Lord);
+                return true;
+            }
+            return false;
+        }
         private bool CanOffer(string id)
         {
+            if (catalog.WaveRuntime is { } wave && (wave.Items.ContainsKey(id) || wave.Evolutions.ContainsKey(id))) return WaveCards().Contains(id);
             if (catalog.Runtime?.Charters.ContainsKey(id) == true) { var allowed = world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; if (!allowed) { diagnostics?.SlotExcluded("charter"); } return allowed; }
             var owned = world.Equipment.FirstOrDefault(equipment => equipment.Id == id);
+            if (owned is not null && catalog.WaveRuntime?.Gear.TryGetValue(id, out var waveGear) == true) { return waveGear.Levels is null || owned.Level < waveGear.Levels.Length; }
             if (owned is not null) { return catalog.WeaponCombat is null || !catalog.WeaponCombat.Weapons.TryGetValue(id, out var weapon) || owned.Level < weapon.Levels.Length; }
             var tool = catalog.Tools.ContainsKey(id);
-            var count = world.Equipment.Count(equipment => catalog.Tools.ContainsKey(equipment.Id) == tool);
+            var released = world.WaveRuntime?.Evolutions.Select(id => catalog.WaveRuntime!.Evolutions[id]).Where(e => e.Kind == WaveEvolutionKind.ShelteredPlot).Select(e => e.InputIds[1]).ToArray() ?? Array.Empty<string>();
+            var count = world.Equipment.Count(equipment => !released.Contains(equipment.Id) && catalog.Tools.ContainsKey(equipment.Id) == tool);
             var available = count < (tool ? catalog.Runtime?.Tuning.ToolSlots ?? catalog.Tuning.World.Progression.ToolSlots : catalog.Runtime?.Tuning.WeaponSlots ?? catalog.Tuning.World.Progression.WeaponSlots);
             if (!available) { diagnostics?.SlotExcluded(tool ? "tool" : "weapon"); }
             return available;

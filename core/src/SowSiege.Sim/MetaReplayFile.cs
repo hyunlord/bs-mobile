@@ -12,6 +12,8 @@ public static class MetaReplayFile
             return ReplayRunner.Verify(source, dataHash, replay);
         }
 
+        if (source.WaveRuntime is not null) { throw new InvalidDataException("Wave replay cannot apply historical meta economy context."); }
+
         if (new FileInfo(contextPath).Length > 1049000)
         {
             throw new InvalidDataException("Meta replay context exceeds size limit.");

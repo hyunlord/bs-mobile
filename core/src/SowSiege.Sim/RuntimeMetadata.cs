@@ -15,6 +15,11 @@ public static partial class ContentLoader
             .Concat(catalog.Tools.Values.Select(t => new CardCatalogEntry(t.Id, "tool",
                 catalog.Runtime?.Equipment.TryGetValue(t.Id, out var projection) == true && projection.GrowthActions.Length > 0
                     ? projection.GrowthActions.Select(g => g.Target).ToArray() : [t.Growth.Target], t.Tags))).ToList();
+        if (catalog.WaveRuntime is { } wave)
+        {
+            cards.AddRange(wave.Items.Values.Select(item => new CardCatalogEntry(item.Id, "item", [], [])));
+            cards.AddRange(wave.Evolutions.Values.Select(evolution => new CardCatalogEntry(evolution.Id, "evolution", [], [])));
+        }
         if (profile.Runtime is not null)
         {
             var roots = includeTest ? new[] { directory, Path.Combine(directory, "test") } : [directory];

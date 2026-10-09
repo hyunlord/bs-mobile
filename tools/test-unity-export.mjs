@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { execFileSync } from 'node:child_process';
-import { inputSnapshot, outputSnapshot, outputs, prepare, verify } from './unity-export.mjs';
+import { inputSnapshot, outputSnapshot, outputs, prepare, selectedProfile, verify } from './unity-export.mjs';
 import { validateContent } from './validate-content.mjs';
 import { buildIdentity, identitySource } from './unity-build-identity.mjs';
 
@@ -128,3 +128,14 @@ for (const mutation of ['manifest-profile', 'manifest-hash', 'bridge-profile', '
     await assert.rejects(verify(root), /profile/i);
   });
 }
+
+test('Unity profile selection is explicit and bounded', () => {
+  assert.equal(selectedProfile('first-playable'), 'first-playable');
+  assert.equal(selectedProfile('wave-1a'), 'wave-1a');
+  assert.throws(() => selectedProfile('../wave-1a'), /Unsupported Unity content profile/);
+});
+
+test('wave bridge cannot pass verification as a historical profile', async t => {
+  const root = await fixture(t);
+  await assert.rejects(verify(root, 'wave-1a'), /profile mismatch/);
+});

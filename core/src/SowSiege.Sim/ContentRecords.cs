@@ -83,7 +83,7 @@ public sealed record ContentSelection(string[] Weapons, string[] Tools, string[]
 }
 
 public sealed record RuntimeProfile(string Id, string Name, ContentSelection Selection, ContentSelection TestSelection, RuntimeProfileExtension? Runtime = null, ExperimentProfileExtension? Experiment = null, WeaponCombatProfileExtension? WeaponCombat = null,
-    string? TuningFile = null, ProductionGameplay? Gameplay = null, FirstPlayableDefinition? FirstPlayable = null, RuntimeProjectionOverrides? RuntimeOverrides = null)
+    string? TuningFile = null, ProductionGameplay? Gameplay = null, FirstPlayableDefinition? FirstPlayable = null, RuntimeProjectionOverrides? RuntimeOverrides = null, string? WaveRuntimeFile = null)
 {
     public ContentSelection Select(bool includeTest) => includeTest ? Selection.Add(TestSelection) : Selection;
 }

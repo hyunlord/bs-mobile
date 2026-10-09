@@ -13,6 +13,10 @@ export const outputs = Object.freeze({
   provenance: 'unity/Assets/Generated/preparation.json',
 });
 export const profileName = 'first-playable';
+export function selectedProfile(value = process.env.UNITY_CONTENT_PROFILE ?? profileName) {
+  assert.ok(['first-playable', 'wave-1a'].includes(value), 'Unsupported Unity content profile');
+  return value;
+}
 const digest = bytes => createHash('sha256').update(bytes).digest('hex').toUpperCase();
 const portable = relative => relative.split(path.sep).join('/');
 
@@ -68,17 +72,18 @@ export async function outputSnapshot(root) {
   return entries;
 }
 
-export async function verify(root) {
+export async function verify(root, profile = selectedProfile()) {
+  selectedProfile(profile);
   const manifest = JSON.parse(await readFile(await safeOutput(root, outputs.provenance), 'utf8'));
   assert.equal(manifest.contractVersion, 3, 'Unsupported Unity preparation manifest; regenerate');
   assert.deepEqual(manifest.inputs, await inputSnapshot(root), 'Stale Unity source/data; run tools/prepare-unity.sh');
   assert.deepEqual(manifest.outputs, await outputSnapshot(root), 'Stale Unity bridge/DLL; run tools/prepare-unity.sh');
   assert.deepEqual(manifest.buildIdentity, await buildIdentity(root), 'Stale Unity build identity; run tools/prepare-unity.sh');
-  assert.equal(manifest.profileName, profileName, 'Unity requires first-playable profile');
-  const profileHash = digest(await readFile(await safeOutput(root, 'data/profiles/first-playable.json')));
+  assert.equal(manifest.profileName, profile, 'Unity preparation profile mismatch');
+  const profileHash = digest(await readFile(await safeOutput(root, `data/profiles/${profile}.json`)));
   assert.equal(manifest.profileHash, profileHash, 'Unity profile hash mismatch');
   const bridge = await readFile(await safeOutput(root, outputs.bridge), 'utf8');
-  assert.ok(bridge.includes('public const string ProfileName = "' + profileName + '";'), 'Unity bridge profile mismatch');
+  assert.ok(bridge.includes('public const string ProfileName = "' + profile + '";'), 'Unity bridge profile mismatch');
   assert.ok(bridge.includes('public const string ProfileHash = "' + profileHash + '";'), 'Unity bridge profile hash mismatch');
   return manifest;
 }
@@ -89,7 +94,8 @@ function run(root, arguments_) {
   assert.equal(result.status, 0, `dotnet ${arguments_.join(' ')} failed (${result.signal ?? result.status})`);
 }
 
-export async function prepare(root) {
+export async function prepare(root, profile = selectedProfile()) {
+  selectedProfile(profile);
   const before = await inputSnapshot(root);
   const identity = await buildIdentity(root);
   const provenance = await safeOutput(root, outputs.provenance);
@@ -97,12 +103,12 @@ export async function prepare(root) {
   const core = await safeOutput(root, outputs.core);
   run(root, ['build', 'core/src/SowSiege.Sim/SowSiege.Sim.csproj', '--configuration', 'Release', '--no-incremental', '--nologo']);
   run(root, ['build', 'core/src/SowSiege.Core/SowSiege.Core.csproj', '--configuration', 'Release', '--framework', 'netstandard2.1', '--no-incremental', '--nologo']);
-  run(root, ['core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll', '--export-unity', path.join(root, 'data'), bridge, profileName]);
+  run(root, ['core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll', '--export-unity', path.join(root, 'data'), bridge, profile]);
   assert.deepEqual(await inputSnapshot(root), before, 'Source/data changed during Unity preparation; retry after edits finish');
   await mkdir(path.dirname(core), { recursive: true });
   await copyFile(path.join(root, 'core/src/SowSiege.Core/bin/Release/netstandard2.1/SowSiege.Core.dll'), core);
   await writeFile(await safeOutput(root, outputs.identity), identitySource(identity));
-  const manifest = { contractVersion: 3, profileName, profileHash: digest(await readFile(await safeOutput(root, 'data/profiles/first-playable.json'))), buildIdentity: identity, inputs: before, outputs: await outputSnapshot(root) };
+  const manifest = { contractVersion: 3, profileName: profile, profileHash: digest(await readFile(await safeOutput(root, `data/profiles/${profile}.json`))), buildIdentity: identity, inputs: before, outputs: await outputSnapshot(root) };
   assert.deepEqual(await inputSnapshot(root), before, 'Source/data changed before Unity preparation completed');
   assert.deepEqual(await buildIdentity(root), identity, 'Source changed before Unity build identity completed');
   await writeFile(provenance, `${JSON.stringify(manifest, null, 2)}\n`);
@@ -112,11 +118,14 @@ export async function prepare(root) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   try {
-    assert.ok(args.length === 0 || (args.length === 1 && args[0] === '--verify'), 'Usage: tools/prepare-unity.sh [--verify]');
+    const verifyOnly = args[0] === '--verify';
+    if (verifyOnly) args.shift();
+    assert.ok(args.length === 0 || (args.length === 2 && args[0] === '--profile'), 'Usage: tools/prepare-unity.sh [--verify] [--profile first-playable|wave-1a]');
+    const profile = selectedProfile(args[1]);
     const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-    if (args.length) await verify(root);
-    else await prepare(root);
-    console.log(`Unity canonical preparation ${args.length ? 'verified' : 'generated'} (${outputs.provenance})`);
+    if (verifyOnly) await verify(root, profile);
+    else await prepare(root, profile);
+    console.log(`Unity canonical preparation ${verifyOnly ? 'verified' : 'generated'} (${outputs.provenance})`);
   } catch (error) {
     console.error(`Unity preparation failed: ${error.message}`);
     process.exitCode = 1;

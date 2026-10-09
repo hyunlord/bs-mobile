@@ -1,0 +1,619 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "designRevision": {
+      "const": "designed-v1.1"
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "weapon",
+              "tool",
+              "item",
+              "evolution",
+              "enemy",
+              "chapter"
+            ]
+          },
+          "designRef": {
+            "type": "object",
+            "properties": {
+              "catalog": {
+                "const": "data/system-design-v1.json"
+              },
+              "revision": {
+                "const": "designed-v1.1"
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "catalog",
+              "revision",
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "semanticSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "designRef",
+          "semanticSha256"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 28,
+      "minItems": 28
+    },
+    "tuning": {
+      "$ref": "tuning"
+    },
+    "enemyStats": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "health": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "speed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "damage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "range": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "attackCooldownTicks": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "experience": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          }
+        },
+        "required": [
+          "id",
+          "target",
+          "health",
+          "speed",
+          "damage",
+          "range",
+          "attackCooldownTicks",
+          "experience"
+        ],
+        "additionalProperties": false
+      },
+      "minProperties": 1,
+      "maxProperties": 512
+    },
+    "definition": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chapterId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chapterDesignRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bossId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bossSpawnTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "groupCap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "initialWorkers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "initialTimber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "waterCapacity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "waterRefillTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "pickupRadius": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "wetTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "stopTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "pathSpacing": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "pathCapacity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "gear": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "designRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "Arc",
+                  "Orbit",
+                  "Chain",
+                  "Homing",
+                  "HarvestArc",
+                  "SeedFan",
+                  "WaterFan",
+                  "ConstructionSlam",
+                  "MusterWave"
+                ]
+              },
+              "damage": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "range": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "cooldownTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "speed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "lifetimeTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "knockback": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "workTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "workRadius": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "rewardExperience": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "capacity": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "damage": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "range": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "cooldownTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "speed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "lifetimeTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "knockback": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    }
+                  },
+                  "required": [
+                    "damage",
+                    "range",
+                    "cooldownTicks",
+                    "speed",
+                    "count",
+                    "lifetimeTicks",
+                    "knockback"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 12,
+                "minItems": 12
+              }
+            },
+            "required": [
+              "id",
+              "designRef",
+              "kind",
+              "damage",
+              "range",
+              "cooldownTicks",
+              "speed",
+              "count",
+              "lifetimeTicks",
+              "knockback",
+              "workTicks",
+              "workRadius",
+              "rewardExperience",
+              "capacity",
+              "levels"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1,
+          "maxProperties": 512
+        },
+        "items": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "designRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "SeedDetour",
+                  "CarryWater",
+                  "HarvestGuard",
+                  "FrontOrbit",
+                  "RaiderAim",
+                  "FieldMeal",
+                  "PickupRadius",
+                  "MoveSpeed"
+                ]
+              },
+              "equipmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "maxItems": 512
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "id",
+              "designRef",
+              "kind",
+              "equipmentIds",
+              "amount"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1,
+          "maxProperties": 512
+        },
+        "evolutions": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "designRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "PlantingArc",
+                  "RepairOrbit",
+                  "ShelteredPlot"
+                ]
+              },
+              "inputIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "maxItems": 512
+              }
+            },
+            "required": [
+              "id",
+              "designRef",
+              "kind",
+              "inputIds"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1,
+          "maxProperties": 512
+        },
+        "enemies": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "designRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "Pursuer",
+                  "SeedThief",
+                  "RipeGrazer",
+                  "Charger",
+                  "Shield",
+                  "Ranged",
+                  "FloodBoss"
+                ]
+              },
+              "tellTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "activeTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "recoveryTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "projectileSpeed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "firstSpawnTick": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            },
+            "required": [
+              "id",
+              "designRef",
+              "kind",
+              "tellTicks",
+              "activeTicks",
+              "recoveryTicks",
+              "projectileSpeed",
+              "firstSpawnTick"
+            ],
+            "additionalProperties": false
+          },
+          "minProperties": 1,
+          "maxProperties": 512
+        },
+        "materialTargets": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minProperties": 1,
+          "maxProperties": 512
+        },
+        "dryAfterTicks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        }
+      },
+      "required": [
+        "revision",
+        "chapterId",
+        "chapterDesignRef",
+        "bossId",
+        "bossSpawnTick",
+        "groupCap",
+        "initialWorkers",
+        "initialTimber",
+        "waterCapacity",
+        "waterRefillTicks",
+        "pickupRadius",
+        "wetTicks",
+        "stopTicks",
+        "pathSpacing",
+        "pathCapacity",
+        "gear",
+        "items",
+        "evolutions",
+        "enemies",
+        "materialTargets",
+        "dryAfterTicks"
+      ],
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "classification",
+          "source",
+          "note"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 512
+    }
+  },
+  "required": [
+    "contractVersion",
+    "designRevision",
+    "bindings",
+    "tuning",
+    "enemyStats",
+    "definition",
+    "provenance"
+  ],
+  "additionalProperties": false
+}

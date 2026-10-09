@@ -415,6 +415,7 @@ namespace SowSiege.Core
             Write(value.Experiment);
             Write(value.WeaponCombat);
             if (value.FirstPlayable is not null) { WriteFirstPlayable(value.FirstPlayable); }
+            if (value.WaveRuntime is not null) { WriteWave(value.WaveRuntime); }
         }
         private void Write(EffectCounter? value)
         {
@@ -708,6 +709,7 @@ namespace SowSiege.Core
             WriteList(value.Timeline, item => { Write(item); });
             WriteList(value.Cards, item => { Write(item); });
             if (value.FirstPlayable is not null) { WriteFirstPlayable(value.FirstPlayable); }
+            if (value.WaveRuntime is not null) WriteWave(value.WaveRuntime);
         }
         private void Write(RunOptions? value)
         {
@@ -720,6 +722,7 @@ namespace SowSiege.Core
             Write(value.Scenario);
             Write(value.ManualCards);
             Write(value.Movement);
+            if (value.TargetMaterial is not null) { Write("target-material-v1"); Write(value.TargetMaterial); }
         }
         private void Write(InteractiveOptions? value)
         {
