@@ -43,6 +43,7 @@ public static partial class UnityExport
         foreach (var stat in UpgradeStats(catalog)) { source.AppendLine(FormattableString.Invariant($"            new UpgradeStat({Literal(stat.Id)}, {Literal(stat.Label)}, {Literal(stat.Unit)}, {stat.Level}, {stat.Value}, {stat.PerLevel.ToString().ToLowerInvariant()}),")); }
         source.AppendLine("        };");
         source.AppendLine("        public static global::SowSiege.Core.ContentCatalog CreateCatalog() => " + UnityExportExpression.Write(catalog) + ";");
+        source.AppendLine("        public static global::SowSiege.Core.MetaCatalog CreateMetaCatalog() => " + UnityExportExpression.Write(MetaContentLoader.Read(directory)) + ";");
         source.AppendLine("    }\n}");
         snapshot.AssertUnchanged(directory);
         return source.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);

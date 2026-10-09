@@ -64,6 +64,8 @@ public sealed class UnityExportTests : IDisposable
     public void ExpressionRejectsUnsupportedTypesAndCycles()
     {
         Assert.Throws<InvalidDataException>(() => UnityExportExpression.Write(DateTime.UtcNow));
+        Assert.Throws<InvalidDataException>(() => UnityExportExpression.Write((MetaAbility)int.MaxValue));
+        Assert.Equal("global::SowSiege.Core.MetaAbility.Attack", UnityExportExpression.Write(MetaAbility.Attack));
         var cycle = new object[1]; cycle[0] = cycle;
         Assert.Throws<InvalidDataException>(() => UnityExportExpression.Write(cycle));
         Assert.Throws<InvalidDataException>(() => UnityExportExpression.Write(new Dictionary<int, int> { [1] = 2 }));
@@ -114,6 +116,10 @@ public sealed class UnityExportTests : IDisposable
         var type = assembly.GetType("Game.App.Generated.CanonicalContent", true)!;
         var actual = (ContentCatalog)type.GetMethod("CreateCatalog")!.Invoke(null, null)!;
         var expected = ContentLoader.Load(Data, false, profile);
+        var actualMeta = (MetaCatalog)type.GetMethod("CreateMetaCatalog")!.Invoke(null, null)!;
+        var expectedMeta = MetaContentLoader.Read(Data);
+        Assert.Equal(JsonSerializer.Serialize(expectedMeta), JsonSerializer.Serialize(actualMeta));
+        Assert.Equal(MetaSaveCodec.Encode(MetaEngine.NewGame(expectedMeta)), MetaSaveCodec.Encode(MetaEngine.NewGame(actualMeta)));
         Assert.Equal(profile, type.GetField("ProfileName")!.GetRawConstantValue());
         if (profile == "first-playable")
         {

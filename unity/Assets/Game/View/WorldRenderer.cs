@@ -28,6 +28,12 @@ namespace Game.View
         ArtCatalog art;
         Shader shader;
         string estateId;
+        MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
+        public void SetChapterTerrain(MetaTerrain[] terrain)
+        {
+            chapterTerrain=terrain??throw new ArgumentNullException(nameof(terrain));
+            foreach(var region in chapterTerrain)art.ResolveRole(region.ArtRole);
+        }
         int mapWidth, mapHeight, season, previousSeason, level;
         float visualTime, seasonAge, heroHitUntil, shakeUntil, levelAge = 10;
         public bool ShowAnnouncements { get; set; } = true;
@@ -205,6 +211,20 @@ namespace Game.View
                 var fraction = new Rect((x0 - left) / size.x, (y0 - bottom) / size.y, cell.x / size.x, cell.y / size.y);
                 if (blend < 1) Draw(old, GameVisualTokens.TerrainLayer, position, 0, cell, opacity: (1 - blend) * GameVisualTokens.TerrainOpacity, tint: tint, uv: TerrainUv(old.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
                 Draw(visual, GameVisualTokens.TerrainLayer + 1, position, 0, cell, opacity: blend * GameVisualTokens.TerrainOpacity, tint: tint, uv: TerrainUv(visual.UvRects[0], fraction, (x & 1) != 0, (y & 1) != 0));
+            }
+            foreach(var region in chapterTerrain)
+            {
+                var patch=art.ResolveRole(region.ArtRole);
+                var regionWidth=width*region.WidthPermille/1000f;var regionHeight=height*region.HeightPermille/1000f;
+                var left=width*region.XPermille/1000f;var bottom=height*region.YPermille/1000f;
+                var columns=Mathf.Max(1,Mathf.CeilToInt(regionWidth/patch.WorldSize.x));var rows=Mathf.Max(1,Mathf.CeilToInt(regionHeight/patch.WorldSize.y));
+                var cell=new Vector2(regionWidth/columns,regionHeight/rows);
+                for(var y=0;y<rows;y++)for(var x=0;x<columns;x++)
+                {
+                    var position=new Vector2(left+(x+.5f)*cell.x,bottom+(y+.5f)*cell.y);
+                    if(position.x+cell.x<center.x-halfWidth||position.x-cell.x>center.x+halfWidth||position.y+cell.y<center.y-halfHeight||position.y-cell.y>center.y+halfHeight)continue;
+                    Draw(patch,GameVisualTokens.TerrainLayer+2,position,0,cell,opacity:GameVisualTokens.TerrainOpacity);
+                }
             }
             var edge = Resolve("boundary", "edge", "default"); var corner = Resolve("boundary", "corner", "default");
             var step = edge.WorldSize.x;

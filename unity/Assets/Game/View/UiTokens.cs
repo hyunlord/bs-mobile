@@ -2,6 +2,7 @@ namespace Game.View
 {
     public static class UiTokens
     {
+        public const float GrowthStartScale = .82f;
         public const int Display = 48, Title = 36, Heading = 30, Body = 26, Small = 22, Caption = 20;
         public const float MinTouchHeight = 88, BottomWorldInset = 180, PanelInset = 48, CardInset = 36;
         public const float FrameBorderFraction = 0.2f, FramePixelsPerUnitMultiplier = 2;

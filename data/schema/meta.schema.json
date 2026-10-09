@@ -1,0 +1,642 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "materials",
+    "chapters",
+    "manorBuildings",
+    "vassals",
+    "challenges",
+    "initialContentIds",
+    "economy"
+  ],
+  "properties": {
+    "contractVersion": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000,
+      "const": 1
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "walletCap",
+          "artRole"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "walletCap": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "artRole": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "index",
+          "name",
+          "description",
+          "widthPermille",
+          "heightPermille",
+          "siteCount",
+          "siteSpacing",
+          "farmCapacity",
+          "threatPermille",
+          "enemyHealthPermille",
+          "enemyDamagePermille",
+          "enemyIds",
+          "bossId",
+          "terrain",
+          "rewardCaps"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "widthPermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "heightPermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "siteCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "siteSpacing": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "farmCapacity": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "threatPermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "enemyHealthPermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "enemyDamagePermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "enemyIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "bossId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "terrain": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "xPermille",
+                "yPermille",
+                "widthPermille",
+                "heightPermille",
+                "artRole"
+              ],
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "xPermille": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "yPermille": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "widthPermille": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "heightPermille": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1000000
+                },
+                "artRole": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "rewardCaps": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            }
+          }
+        }
+      },
+      "minItems": 10,
+      "maxItems": 10
+    },
+    "manorBuildings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "artRole",
+          "effect",
+          "maxLevel",
+          "baseCost",
+          "costPerLevel"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artRole": {
+            "type": "string",
+            "minLength": 1
+          },
+          "effect": {
+            "type": "string",
+            "minLength": 1
+          },
+          "maxLevel": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "baseCost": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            }
+          },
+          "costPerLevel": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            }
+          }
+        }
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "vassals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "artRole",
+          "ability",
+          "initiallyUnlocked",
+          "basePermille",
+          "perLevelPermille",
+          "perRankPermille",
+          "maxLevel",
+          "maxRank",
+          "fragmentCap",
+          "rankCosts",
+          "levelCostBase",
+          "levelCostStep"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artRole": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ability": {
+            "type": "string",
+            "minLength": 1
+          },
+          "initiallyUnlocked": {
+            "type": "boolean"
+          },
+          "basePermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "perLevelPermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "perRankPermille": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "maxLevel": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "maxRank": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "fragmentCap": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "rankCosts": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "minItems": 1
+          },
+          "levelCostBase": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            }
+          },
+          "levelCostStep": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            }
+          }
+        }
+      },
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "challenges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "metric",
+          "target",
+          "researchLevel",
+          "unlockContentIds",
+          "unlockVassalIds",
+          "rewards"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "metric": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "researchLevel": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "unlockContentIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "unlockVassalIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "rewards": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+            }
+          }
+        }
+      },
+      "minItems": 20,
+      "maxItems": 20
+    },
+    "initialContentIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "economy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repeatPermille",
+        "deathPermille",
+        "abandonPermille",
+        "minimumRewardTicks",
+        "idleStepSeconds",
+        "baseIdleCapSeconds",
+        "idleCapSecondsPerLevel",
+        "maximumIdleCapSeconds",
+        "idlePerStep",
+        "clockToleranceSeconds",
+        "baseVassalLevelCap",
+        "levelCapPerForgeLevel",
+        "baseVassalSlots",
+        "barracksLevelsPerSlot",
+        "maximumVassalSlots",
+        "fragmentsPerClear",
+        "fragmentsPerDeath",
+        "rewardRules"
+      ],
+      "properties": {
+        "repeatPermille": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "deathPermille": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "abandonPermille": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "minimumRewardTicks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "idleStepSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "baseIdleCapSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "idleCapSecondsPerLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 14400
+        },
+        "maximumIdleCapSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "idlePerStep": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          }
+        },
+        "clockToleranceSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "baseVassalLevelCap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "levelCapPerForgeLevel": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "baseVassalSlots": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "barracksLevelsPerSlot": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "maximumVassalSlots": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "fragmentsPerClear": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "fragmentsPerDeath": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "rewardRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "materialId",
+              "perFarm",
+              "perBuilding",
+              "perPerson",
+              "perHarvest",
+              "perLevel",
+              "perBoss"
+            ],
+            "properties": {
+              "materialId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "perFarm": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "perBuilding": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "perPerson": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "perHarvest": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "perLevel": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "perBoss": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Phase2A progression contract"
+}

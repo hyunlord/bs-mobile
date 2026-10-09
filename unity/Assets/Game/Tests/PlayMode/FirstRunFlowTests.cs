@@ -16,10 +16,13 @@ namespace Tests.PlayMode
 {
     internal sealed class RunPreferenceScope : IDisposable
     {
+        readonly string previousMetaDirectory = RunCoordinator.MetaDirectoryOverride;
+        readonly string metaDirectory = System.IO.Path.Combine(System.IO.Path.GetTempPath(),"sowsiege-ui-"+Guid.NewGuid().ToString("N"));
         readonly Dictionary<string, float> floats = new Dictionary<string, float>();
         readonly Dictionary<string, int> integers = new Dictionary<string, int>();
         public RunPreferenceScope()
         {
+            RunCoordinator.MetaDirectoryOverride=metaDirectory;
             foreach(var key in RunPreferences.Keys)
             {
                 var name=RunPreferences.Prefix+key;
@@ -34,6 +37,8 @@ namespace Tests.PlayMode
         }
         public void Dispose()
         {
+            RunCoordinator.MetaDirectoryOverride=previousMetaDirectory;
+            if(System.IO.Directory.Exists(metaDirectory))System.IO.Directory.Delete(metaDirectory,true);
             foreach(var key in RunPreferences.Keys)PlayerPrefs.DeleteKey(RunPreferences.Prefix+key);
             foreach(var pair in floats)PlayerPrefs.SetFloat(pair.Key,pair.Value);
             foreach(var pair in integers)PlayerPrefs.SetInt(pair.Key,pair.Value);
@@ -83,7 +88,7 @@ namespace Tests.PlayMode
             var replayPath=app.RecordedReplayPath;
             foreach(var boot in UnityEngine.Object.FindObjectsByType<FoundationBoot>())UnityEngine.Object.Destroy(boot.gameObject);
             yield return null;
-            using(var input=System.IO.File.OpenRead(replayPath))Assert.That(ReplayRunner.Verify(FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,ReplayCodec.Read(input)).EndKind,Is.EqualTo(ReplayEndKind.Quit));
+            using(var input=System.IO.File.OpenRead(replayPath))Assert.That(MetaReplayContext.Verify(System.IO.File.ReadAllBytes(replayPath+".meta"),FoundationBoot.Catalog,Game.App.Generated.CanonicalContent.CreateMetaCatalog(),FoundationBoot.VerifiedDataHash,ReplayCodec.Read(input)).EndKind,Is.EqualTo(ReplayEndKind.Quit));
             var saved=RunPreferences.Load();Assert.That(saved.Aim,Is.EqualTo(AimMode.NearestEnemy));Assert.That(saved.EffectsVolume,Is.EqualTo(.23f).Within(.001f));
             Assert.That(saved.Haptics||saved.Shake||saved.DamageNumbers,Is.False);
             yield return SceneManager.LoadSceneAsync("Boot");app=null;deadline=Time.realtimeSinceStartup+45;

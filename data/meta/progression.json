@@ -1,0 +1,1354 @@
+{
+  "contractVersion": 1,
+  "materials": [
+    {
+      "id": "meta:grain",
+      "name": "곡물",
+      "walletCap": 20000,
+      "artRole": "icon.core.harvest_basket_lid.default"
+    },
+    {
+      "id": "meta:timber",
+      "name": "목재",
+      "walletCap": 16000,
+      "artRole": "icon.core.carpenter_hammer.default"
+    },
+    {
+      "id": "meta:iron",
+      "name": "철재",
+      "walletCap": 12000,
+      "artRole": "icon.core.iron_blade.default"
+    },
+    {
+      "id": "meta:charter",
+      "name": "인장",
+      "walletCap": 6000,
+      "artRole": "icon.core.muster_roll.default"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "meta:chapter_1",
+      "index": 1,
+      "name": "새싹 들판",
+      "description": "새싹 들판: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 900,
+      "heightPermille": 1000,
+      "siteCount": 16,
+      "siteSpacing": 400,
+      "farmCapacity": 240,
+      "threatPermille": 650,
+      "enemyHealthPermille": 700,
+      "enemyDamagePermille": 650,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:rope_catcher",
+        "core:ember_sapper",
+        "core:bell_thief",
+        "core:shield_raider",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 100,
+          "yPermille": 100,
+          "widthPermille": 90,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 100,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 100,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 170,
+        "meta:timber": 115,
+        "meta:iron": 70,
+        "meta:charter": 28
+      }
+    },
+    {
+      "id": "meta:chapter_2",
+      "index": 2,
+      "name": "물굽이 나루",
+      "description": "물굽이 나루: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 925,
+      "heightPermille": 1100,
+      "siteCount": 17,
+      "siteSpacing": 420,
+      "farmCapacity": 250,
+      "threatPermille": 745,
+      "enemyHealthPermille": 870,
+      "enemyDamagePermille": 780,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:locust_cloud",
+        "core:ember_sapper",
+        "core:whistle_hunter",
+        "core:shield_raider",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 167,
+          "yPermille": 100,
+          "widthPermille": 110,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 153,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 137,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 200,
+        "meta:timber": 140,
+        "meta:iron": 90,
+        "meta:charter": 36
+      }
+    },
+    {
+      "id": "meta:chapter_3",
+      "index": 3,
+      "name": "그늘 숲길",
+      "description": "그늘 숲길: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 950,
+      "heightPermille": 1200,
+      "siteCount": 18,
+      "siteSpacing": 440,
+      "farmCapacity": 260,
+      "threatPermille": 840,
+      "enemyHealthPermille": 1040,
+      "enemyDamagePermille": 910,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:rope_catcher",
+        "core:locust_cloud",
+        "core:bell_thief",
+        "core:whistle_hunter",
+        "core:shield_raider",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 234,
+          "yPermille": 100,
+          "widthPermille": 130,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 206,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 174,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 230,
+        "meta:timber": 165,
+        "meta:iron": 110,
+        "meta:charter": 44
+      }
+    },
+    {
+      "id": "meta:chapter_4",
+      "index": 4,
+      "name": "돌등성이",
+      "description": "돌등성이: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 975,
+      "heightPermille": 1000,
+      "siteCount": 19,
+      "siteSpacing": 460,
+      "farmCapacity": 270,
+      "threatPermille": 935,
+      "enemyHealthPermille": 1210,
+      "enemyDamagePermille": 1040,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:rope_catcher",
+        "core:ember_sapper",
+        "core:bell_thief",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 301,
+          "yPermille": 100,
+          "widthPermille": 90,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 259,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 211,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 260,
+        "meta:timber": 190,
+        "meta:iron": 130,
+        "meta:charter": 52
+      }
+    },
+    {
+      "id": "meta:chapter_5",
+      "index": 5,
+      "name": "갈대 여울",
+      "description": "갈대 여울: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 1000,
+      "heightPermille": 1100,
+      "siteCount": 20,
+      "siteSpacing": 480,
+      "farmCapacity": 280,
+      "threatPermille": 1030,
+      "enemyHealthPermille": 1380,
+      "enemyDamagePermille": 1170,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:locust_cloud",
+        "core:ember_sapper",
+        "core:whistle_hunter",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 368,
+          "yPermille": 100,
+          "widthPermille": 110,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 312,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 248,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 290,
+        "meta:timber": 215,
+        "meta:iron": 150,
+        "meta:charter": 60
+      }
+    },
+    {
+      "id": "meta:chapter_6",
+      "index": 6,
+      "name": "잿빛 수림",
+      "description": "잿빛 수림: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 1025,
+      "heightPermille": 1200,
+      "siteCount": 21,
+      "siteSpacing": 500,
+      "farmCapacity": 290,
+      "threatPermille": 1125,
+      "enemyHealthPermille": 1550,
+      "enemyDamagePermille": 1300,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:rope_catcher",
+        "core:locust_cloud",
+        "core:bell_thief",
+        "core:whistle_hunter",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 435,
+          "yPermille": 100,
+          "widthPermille": 130,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 365,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 285,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 320,
+        "meta:timber": 240,
+        "meta:iron": 170,
+        "meta:charter": 68
+      }
+    },
+    {
+      "id": "meta:chapter_7",
+      "index": 7,
+      "name": "바람 고개",
+      "description": "바람 고개: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 1050,
+      "heightPermille": 1000,
+      "siteCount": 22,
+      "siteSpacing": 520,
+      "farmCapacity": 300,
+      "threatPermille": 1220,
+      "enemyHealthPermille": 1720,
+      "enemyDamagePermille": 1430,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:rope_catcher",
+        "core:ember_sapper",
+        "core:bell_thief",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 502,
+          "yPermille": 100,
+          "widthPermille": 90,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 418,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 122,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 350,
+        "meta:timber": 265,
+        "meta:iron": 190,
+        "meta:charter": 76
+      }
+    },
+    {
+      "id": "meta:chapter_8",
+      "index": 8,
+      "name": "두 강의 변경",
+      "description": "두 강의 변경: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 1075,
+      "heightPermille": 1100,
+      "siteCount": 23,
+      "siteSpacing": 540,
+      "farmCapacity": 310,
+      "threatPermille": 1315,
+      "enemyHealthPermille": 1890,
+      "enemyDamagePermille": 1560,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:locust_cloud",
+        "core:ember_sapper",
+        "core:whistle_hunter",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 569,
+          "yPermille": 100,
+          "widthPermille": 110,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 471,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 159,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 380,
+        "meta:timber": 290,
+        "meta:iron": 210,
+        "meta:charter": 84
+      }
+    },
+    {
+      "id": "meta:chapter_9",
+      "index": 9,
+      "name": "겨울 능선",
+      "description": "겨울 능선: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 1100,
+      "heightPermille": 1200,
+      "siteCount": 24,
+      "siteSpacing": 560,
+      "farmCapacity": 320,
+      "threatPermille": 1410,
+      "enemyHealthPermille": 2060,
+      "enemyDamagePermille": 1690,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:rope_catcher",
+        "core:locust_cloud",
+        "core:bell_thief",
+        "core:whistle_hunter",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 136,
+          "yPermille": 100,
+          "widthPermille": 130,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 124,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 196,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 410,
+        "meta:timber": 315,
+        "meta:iron": 230,
+        "meta:charter": 92
+      }
+    },
+    {
+      "id": "meta:chapter_10",
+      "index": 10,
+      "name": "장원의 마지막 해",
+      "description": "장원의 마지막 해: 강과 숲, 언덕 사이의 건설 부지를 지키고 겨울 사슴을 쓰러뜨린 뒤 한 해를 생존한다.",
+      "widthPermille": 1125,
+      "heightPermille": 1000,
+      "siteCount": 25,
+      "siteSpacing": 580,
+      "farmCapacity": 330,
+      "threatPermille": 1505,
+      "enemyHealthPermille": 2230,
+      "enemyDamagePermille": 1820,
+      "enemyIds": [
+        "core:raider",
+        "core:seed_mite",
+        "core:crop_grazer",
+        "core:stone_breaker",
+        "core:ram_runner",
+        "core:rope_catcher",
+        "core:ember_sapper",
+        "core:bell_thief",
+        "core:shield_raider",
+        "core:siege_cart",
+        "core:winter_hart"
+      ],
+      "bossId": "core:winter_hart",
+      "terrain": [
+        {
+          "kind": "river",
+          "xPermille": 203,
+          "yPermille": 100,
+          "widthPermille": 90,
+          "heightPermille": 750,
+          "artRole": "terrain.meta.river"
+        },
+        {
+          "kind": "forest",
+          "xPermille": 550,
+          "yPermille": 177,
+          "widthPermille": 300,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.forest"
+        },
+        {
+          "kind": "hill",
+          "xPermille": 233,
+          "yPermille": 650,
+          "widthPermille": 200,
+          "heightPermille": 200,
+          "artRole": "terrain.meta.hill"
+        }
+      ],
+      "rewardCaps": {
+        "meta:grain": 440,
+        "meta:timber": 340,
+        "meta:iron": 250,
+        "meta:charter": 100
+      }
+    }
+  ],
+  "manorBuildings": [
+    {
+      "id": "meta:forge",
+      "name": "대장간",
+      "description": "가신의 강화 가능 레벨 상한을 연다.",
+      "artRole": "metaManor.meta:forge",
+      "effect": "VassalLevelCap",
+      "maxLevel": 10,
+      "baseCost": {
+        "meta:grain": 35,
+        "meta:timber": 25,
+        "meta:iron": 15,
+        "meta:charter": 5
+      },
+      "costPerLevel": {
+        "meta:grain": 35,
+        "meta:timber": 30,
+        "meta:iron": 20,
+        "meta:charter": 10
+      }
+    },
+    {
+      "id": "meta:scriptorium",
+      "name": "기록소",
+      "description": "도전 연구 조건을 열어 새로운 도구와 물품을 발견한다.",
+      "artRole": "metaManor.meta:scriptorium",
+      "effect": "Research",
+      "maxLevel": 10,
+      "baseCost": {
+        "meta:grain": 35,
+        "meta:timber": 25,
+        "meta:iron": 15,
+        "meta:charter": 5
+      },
+      "costPerLevel": {
+        "meta:grain": 40,
+        "meta:timber": 35,
+        "meta:iron": 25,
+        "meta:charter": 10
+      }
+    },
+    {
+      "id": "meta:granary",
+      "name": "곡물창고",
+      "description": "자동 생산의 시간 상한을 늘린다.",
+      "artRole": "metaManor.meta:granary",
+      "effect": "IdleCapacity",
+      "maxLevel": 10,
+      "baseCost": {
+        "meta:grain": 35,
+        "meta:timber": 25,
+        "meta:iron": 15,
+        "meta:charter": 5
+      },
+      "costPerLevel": {
+        "meta:grain": 45,
+        "meta:timber": 40,
+        "meta:iron": 30,
+        "meta:charter": 10
+      }
+    },
+    {
+      "id": "meta:barracks",
+      "name": "병영",
+      "description": "함께 출전할 가신 자리를 연다.",
+      "artRole": "metaManor.meta:barracks",
+      "effect": "VassalSlots",
+      "maxLevel": 10,
+      "baseCost": {
+        "meta:grain": 35,
+        "meta:timber": 25,
+        "meta:iron": 15,
+        "meta:charter": 5
+      },
+      "costPerLevel": {
+        "meta:grain": 50,
+        "meta:timber": 45,
+        "meta:iron": 35,
+        "meta:charter": 10
+      }
+    }
+  ],
+  "vassals": [
+    {
+      "id": "core:furrow_guard",
+      "name": "고랑 방패수",
+      "description": "무기와 도구의 공격력을 높인다.",
+      "artRole": "metaVassal.core:furrow_guard",
+      "ability": "Attack",
+      "initiallyUnlocked": true,
+      "basePermille": 30,
+      "perLevelPermille": 10,
+      "perRankPermille": 20,
+      "maxLevel": 20,
+      "maxRank": 5,
+      "fragmentCap": 1000,
+      "rankCosts": [
+        5,
+        10,
+        20,
+        40,
+        80
+      ],
+      "levelCostBase": {
+        "meta:grain": 12,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 2
+      },
+      "levelCostStep": {
+        "meta:grain": 10,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 3
+      }
+    },
+    {
+      "id": "core:ripe_escort",
+      "name": "황금밭 호위",
+      "description": "영주의 최대 체력을 높인다.",
+      "artRole": "metaVassal.core:ripe_escort",
+      "ability": "Health",
+      "initiallyUnlocked": false,
+      "basePermille": 30,
+      "perLevelPermille": 10,
+      "perRankPermille": 20,
+      "maxLevel": 20,
+      "maxRank": 5,
+      "fragmentCap": 1000,
+      "rankCosts": [
+        5,
+        10,
+        20,
+        40,
+        80
+      ],
+      "levelCostBase": {
+        "meta:grain": 12,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 2
+      },
+      "levelCostStep": {
+        "meta:grain": 10,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 3
+      }
+    },
+    {
+      "id": "core:return_captain",
+      "name": "귀환 대장",
+      "description": "영주의 이동 속도를 높인다.",
+      "artRole": "metaVassal.core:return_captain",
+      "ability": "Movement",
+      "initiallyUnlocked": false,
+      "basePermille": 30,
+      "perLevelPermille": 10,
+      "perRankPermille": 20,
+      "maxLevel": 20,
+      "maxRank": 5,
+      "fragmentCap": 1000,
+      "rankCosts": [
+        5,
+        10,
+        20,
+        40,
+        80
+      ],
+      "levelCostBase": {
+        "meta:grain": 12,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 2
+      },
+      "levelCostStep": {
+        "meta:grain": 10,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 3
+      }
+    },
+    {
+      "id": "core:fertility_surveyor",
+      "name": "비옥도 측량관",
+      "description": "농지 성장과 수확을 돕는다.",
+      "artRole": "metaVassal.core:fertility_surveyor",
+      "ability": "Growth",
+      "initiallyUnlocked": false,
+      "basePermille": 30,
+      "perLevelPermille": 10,
+      "perRankPermille": 20,
+      "maxLevel": 20,
+      "maxRank": 5,
+      "fragmentCap": 1000,
+      "rankCosts": [
+        5,
+        10,
+        20,
+        40,
+        80
+      ],
+      "levelCostBase": {
+        "meta:grain": 12,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 2
+      },
+      "levelCostStep": {
+        "meta:grain": 10,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 3
+      }
+    },
+    {
+      "id": "core:levy_sergeant",
+      "name": "징집 조장",
+      "description": "아군의 공격 기여를 높인다.",
+      "artRole": "metaVassal.core:levy_sergeant",
+      "ability": "Allies",
+      "initiallyUnlocked": false,
+      "basePermille": 30,
+      "perLevelPermille": 10,
+      "perRankPermille": 20,
+      "maxLevel": 20,
+      "maxRank": 5,
+      "fragmentCap": 1000,
+      "rankCosts": [
+        5,
+        10,
+        20,
+        40,
+        80
+      ],
+      "levelCostBase": {
+        "meta:grain": 12,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 2
+      },
+      "levelCostStep": {
+        "meta:grain": 10,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 3
+      }
+    },
+    {
+      "id": "core:tithe_clerk",
+      "name": "수확 서기",
+      "description": "한 판의 경험치 획득을 높인다.",
+      "artRole": "metaVassal.core:tithe_clerk",
+      "ability": "Experience",
+      "initiallyUnlocked": false,
+      "basePermille": 30,
+      "perLevelPermille": 10,
+      "perRankPermille": 20,
+      "maxLevel": 20,
+      "maxRank": 5,
+      "fragmentCap": 1000,
+      "rankCosts": [
+        5,
+        10,
+        20,
+        40,
+        80
+      ],
+      "levelCostBase": {
+        "meta:grain": 12,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 2
+      },
+      "levelCostStep": {
+        "meta:grain": 10,
+        "meta:timber": 8,
+        "meta:iron": 6,
+        "meta:charter": 3
+      }
+    }
+  ],
+  "challenges": [
+    {
+      "id": "meta:challenge_1",
+      "name": "첫 출정",
+      "metric": "Runs",
+      "target": 1,
+      "researchLevel": 0,
+      "unlockContentIds": [
+        "core:ember_wand",
+        "core:crop_guard_signet"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 20,
+        "meta:timber": 15,
+        "meta:iron": 10,
+        "meta:charter": 3
+      }
+    },
+    {
+      "id": "meta:challenge_2",
+      "name": "수확의 기쁨",
+      "metric": "Harvests",
+      "target": 10,
+      "researchLevel": 0,
+      "unlockContentIds": [
+        "core:canal_bow",
+        "core:drum_tension_rope"
+      ],
+      "unlockVassalIds": [
+        "core:ripe_escort"
+      ],
+      "rewards": {
+        "meta:grain": 23,
+        "meta:timber": 17,
+        "meta:iron": 11,
+        "meta:charter": 4
+      }
+    },
+    {
+      "id": "meta:challenge_3",
+      "name": "변경 수비",
+      "metric": "Kills",
+      "target": 100,
+      "researchLevel": 0,
+      "unlockContentIds": [
+        "core:mill_disc",
+        "core:front_rank_peg"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 26,
+        "meta:timber": 19,
+        "meta:iron": 12,
+        "meta:charter": 5
+      }
+    },
+    {
+      "id": "meta:challenge_4",
+      "name": "기초 공사",
+      "metric": "Buildings",
+      "target": 10,
+      "researchLevel": 0,
+      "unlockContentIds": [
+        "core:storm_fork",
+        "core:harvest_basket_lid"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 29,
+        "meta:timber": 21,
+        "meta:iron": 13,
+        "meta:charter": 6
+      }
+    },
+    {
+      "id": "meta:challenge_5",
+      "name": "함께 걷는 길",
+      "metric": "People",
+      "target": 30,
+      "researchLevel": 1,
+      "unlockContentIds": [
+        "core:spore_fan",
+        "core:long_shot_counter"
+      ],
+      "unlockVassalIds": [
+        "core:return_captain"
+      ],
+      "rewards": {
+        "meta:grain": 32,
+        "meta:timber": 23,
+        "meta:iron": 14,
+        "meta:charter": 7
+      }
+    },
+    {
+      "id": "meta:challenge_6",
+      "name": "두 번의 겨울",
+      "metric": "Clears",
+      "target": 2,
+      "researchLevel": 1,
+      "unlockContentIds": [
+        "core:frost_chain",
+        "core:projectile_return_hook"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 35,
+        "meta:timber": 25,
+        "meta:iron": 15,
+        "meta:charter": 8
+      }
+    },
+    {
+      "id": "meta:challenge_7",
+      "name": "세 번째 변경",
+      "metric": "HighestChapter",
+      "target": 3,
+      "researchLevel": 1,
+      "unlockContentIds": [
+        "core:levy_banner",
+        "core:rain_watch_cup"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 38,
+        "meta:timber": 27,
+        "meta:iron": 16,
+        "meta:charter": 9
+      }
+    },
+    {
+      "id": "meta:challenge_8",
+      "name": "두 해의 기록",
+      "metric": "SurvivalTicks",
+      "target": 54000,
+      "researchLevel": 1,
+      "unlockContentIds": [
+        "core:poison_sickle",
+        "core:repair_apron"
+      ],
+      "unlockVassalIds": [
+        "core:fertility_surveyor"
+      ],
+      "rewards": {
+        "meta:grain": 41,
+        "meta:timber": 29,
+        "meta:iron": 17,
+        "meta:charter": 10
+      }
+    },
+    {
+      "id": "meta:challenge_9",
+      "name": "가신의 훈련",
+      "metric": "VassalLevel",
+      "target": 5,
+      "researchLevel": 2,
+      "unlockContentIds": [
+        "core:hedge_drum",
+        "core:ripe_bell_clapper"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 44,
+        "meta:timber": 31,
+        "meta:iron": 18,
+        "meta:charter": 11
+      }
+    },
+    {
+      "id": "meta:challenge_10",
+      "name": "사슴의 발자국",
+      "metric": "Bosses",
+      "target": 3,
+      "researchLevel": 2,
+      "unlockContentIds": [
+        "core:windmill_crank",
+        "core:slow_burn_wick"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 47,
+        "meta:timber": 33,
+        "meta:iron": 19,
+        "meta:charter": 12
+      }
+    },
+    {
+      "id": "meta:challenge_11",
+      "name": "여덟 번의 원정",
+      "metric": "Runs",
+      "target": 8,
+      "researchLevel": 2,
+      "unlockContentIds": [
+        "core:return_path_knot",
+        "core:soup_portion_cup"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 50,
+        "meta:timber": 35,
+        "meta:iron": 20,
+        "meta:charter": 13
+      }
+    },
+    {
+      "id": "meta:challenge_12",
+      "name": "풍요의 계절",
+      "metric": "Harvests",
+      "target": 200,
+      "researchLevel": 2,
+      "unlockContentIds": [
+        "core:shock_absorber_pad",
+        "core:squad_route_board"
+      ],
+      "unlockVassalIds": [
+        "core:levy_sergeant"
+      ],
+      "rewards": {
+        "meta:grain": 53,
+        "meta:timber": 37,
+        "meta:iron": 21,
+        "meta:charter": 14
+      }
+    },
+    {
+      "id": "meta:challenge_13",
+      "name": "노련한 수비대",
+      "metric": "Kills",
+      "target": 3000,
+      "researchLevel": 3,
+      "unlockContentIds": [
+        "core:meadow_buckle",
+        "core:turning_weight"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 56,
+        "meta:timber": 39,
+        "meta:iron": 22,
+        "meta:charter": 15
+      }
+    },
+    {
+      "id": "meta:challenge_14",
+      "name": "장원의 초석",
+      "metric": "Buildings",
+      "target": 80,
+      "researchLevel": 3,
+      "unlockContentIds": [
+        "core:root_binding_cord",
+        "core:windmill_brake"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 59,
+        "meta:timber": 41,
+        "meta:iron": 23,
+        "meta:charter": 16
+      }
+    },
+    {
+      "id": "meta:challenge_15",
+      "name": "사람들의 마을",
+      "metric": "People",
+      "target": 300,
+      "researchLevel": 3,
+      "unlockContentIds": [
+        "core:seed_pouch_lining"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 62,
+        "meta:timber": 43,
+        "meta:iron": 24,
+        "meta:charter": 17
+      }
+    },
+    {
+      "id": "meta:challenge_16",
+      "name": "여덟 개의 승전보",
+      "metric": "Clears",
+      "target": 8,
+      "researchLevel": 3,
+      "unlockContentIds": [
+        "core:wind_seed_flag"
+      ],
+      "unlockVassalIds": [
+        "core:tithe_clerk"
+      ],
+      "rewards": {
+        "meta:grain": 65,
+        "meta:timber": 45,
+        "meta:iron": 25,
+        "meta:charter": 18
+      }
+    },
+    {
+      "id": "meta:challenge_17",
+      "name": "높은 변경",
+      "metric": "HighestChapter",
+      "target": 7,
+      "researchLevel": 4,
+      "unlockContentIds": [
+        "core:ash_gathering_charm"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 68,
+        "meta:timber": 47,
+        "meta:iron": 26,
+        "meta:charter": 19
+      }
+    },
+    {
+      "id": "meta:challenge_18",
+      "name": "열세 해의 기억",
+      "metric": "SurvivalTicks",
+      "target": 350000,
+      "researchLevel": 4,
+      "unlockContentIds": [
+        "core:bitter_seed_dust"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 71,
+        "meta:timber": 49,
+        "meta:iron": 27,
+        "meta:charter": 20
+      }
+    },
+    {
+      "id": "meta:challenge_19",
+      "name": "숙련된 가신",
+      "metric": "VassalLevel",
+      "target": 15,
+      "researchLevel": 4,
+      "unlockContentIds": [
+        "core:canal_gate_pin"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 74,
+        "meta:timber": 51,
+        "meta:iron": 28,
+        "meta:charter": 21
+      }
+    },
+    {
+      "id": "meta:challenge_20",
+      "name": "마지막 겨울",
+      "metric": "Bosses",
+      "target": 10,
+      "researchLevel": 4,
+      "unlockContentIds": [
+        "core:clay_water_bead"
+      ],
+      "unlockVassalIds": [],
+      "rewards": {
+        "meta:grain": 77,
+        "meta:timber": 53,
+        "meta:iron": 29,
+        "meta:charter": 22
+      }
+    }
+  ],
+  "initialContentIds": [
+    "core:iron_blade",
+    "core:harvest_scythe",
+    "core:ward_orbit",
+    "core:seed_bag",
+    "core:rain_ladle",
+    "core:carpenter_hammer",
+    "core:muster_horn",
+    "core:soup_ladle",
+    "core:boundary_hinge",
+    "core:joiner_square",
+    "core:ruin_keystone",
+    "core:scaffold_step",
+    "core:levy_bread_wrap",
+    "core:muster_roll"
+  ],
+  "economy": {
+    "repeatPermille": 600,
+    "deathPermille": 400,
+    "abandonPermille": 100,
+    "minimumRewardTicks": 1800,
+    "idleStepSeconds": 600,
+    "baseIdleCapSeconds": 7200,
+    "idleCapSecondsPerLevel": 720,
+    "maximumIdleCapSeconds": 14400,
+    "idlePerStep": {
+      "meta:grain": 3,
+      "meta:timber": 2,
+      "meta:iron": 1,
+      "meta:charter": 1
+    },
+    "clockToleranceSeconds": 120,
+    "baseVassalLevelCap": 5,
+    "levelCapPerForgeLevel": 2,
+    "baseVassalSlots": 1,
+    "barracksLevelsPerSlot": 4,
+    "maximumVassalSlots": 3,
+    "fragmentsPerClear": 2,
+    "fragmentsPerDeath": 0,
+    "rewardRules": [
+      {
+        "materialId": "meta:grain",
+        "perFarm": 1,
+        "perBuilding": 0,
+        "perPerson": 0,
+        "perHarvest": 1,
+        "perLevel": 1,
+        "perBoss": 10
+      },
+      {
+        "materialId": "meta:timber",
+        "perFarm": 0,
+        "perBuilding": 3,
+        "perPerson": 0,
+        "perHarvest": 0,
+        "perLevel": 1,
+        "perBoss": 10
+      },
+      {
+        "materialId": "meta:iron",
+        "perFarm": 0,
+        "perBuilding": 1,
+        "perPerson": 0,
+        "perHarvest": 0,
+        "perLevel": 1,
+        "perBoss": 10
+      },
+      {
+        "materialId": "meta:charter",
+        "perFarm": 0,
+        "perBuilding": 0,
+        "perPerson": 1,
+        "perHarvest": 0,
+        "perLevel": 0,
+        "perBoss": 5
+      }
+    ]
+  }
+}

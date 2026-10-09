@@ -98,6 +98,20 @@
       "source": "image_gen output exec-15b5a860-9943-47b6-9002-ae103f593574.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
       "prompt": "Low rolling grassy hill, broad weathered gray sandstone ledges, rounded summit and gentle slopes; high top-down slight three-quarter ink and gouache; muted sage/olive, tan soil, warm ink outlines; organic grassy alpha edges, no mountain peak/tree/structure/frame/text. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
       "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
+    },
+    {
+      "id": "meta-manor",
+      "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
+      "source": "image_gen output exec-ee2114d2-edf0-4bcd-8f57-5201bfcd5417.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Four distinct permanent manor buildings in a two by two atlas: forge, scriptorium, granary, barracks; top-down three-quarter ink and gouache, warm parchment and muted blue/olive, transparent background, no text. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
+      "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
+    },
+    {
+      "id": "meta-vassals",
+      "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
+      "source": "image_gen output exec-903a5a2e-212f-493b-ad8b-dd34596c8e8f.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Six small isolated medieval rural vassal busts in a three by two square atlas, blue cloth and warm ink/gouache: shield guard, older wheat guardian, red-braided captain, elderly female surveyor, horn sergeant, young female harvest scribe; large fully transparent margins, no text or panel backgrounds.",
+      "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
     }
   ],
   "atlases": [
@@ -212,6 +226,22 @@
       "height": 1254,
       "padding": 2,
       "license": "meta-hill"
+    },
+    {
+      "id": "meta-manor",
+      "path": "Assets/Art/meta-manor.png",
+      "width": 1254,
+      "height": 1254,
+      "padding": 2,
+      "license": "meta-manor"
+    },
+    {
+      "id": "meta-vassals",
+      "path": "Assets/Art/meta-vassals.png",
+      "width": 1254,
+      "height": 1254,
+      "padding": 2,
+      "license": "meta-vassals"
     }
   ],
   "roles": [
@@ -7870,6 +7900,226 @@
       },
       "frameMs": 1000,
       "tween": "none"
+    },
+    {
+      "id": "metaManor.meta:forge",
+      "atlas": "meta-manor",
+      "frames": [
+        {
+          "x": 47,
+          "y": 48,
+          "width": 565,
+          "height": 517
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaManor.meta:scriptorium",
+      "atlas": "meta-manor",
+      "frames": [
+        {
+          "x": 660,
+          "y": 31,
+          "width": 565,
+          "height": 550
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaManor.meta:granary",
+      "atlas": "meta-manor",
+      "frames": [
+        {
+          "x": 35,
+          "y": 634,
+          "width": 612,
+          "height": 552
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaManor.meta:barracks",
+      "atlas": "meta-manor",
+      "frames": [
+        {
+          "x": 674,
+          "y": 662,
+          "width": 562,
+          "height": 574
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaVassal.core:furrow_guard",
+      "atlas": "meta-vassals",
+      "frames": [
+        {
+          "x": 57,
+          "y": 176,
+          "width": 324,
+          "height": 383
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaVassal.core:ripe_escort",
+      "atlas": "meta-vassals",
+      "frames": [
+        {
+          "x": 467,
+          "y": 156,
+          "width": 355,
+          "height": 396
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaVassal.core:return_captain",
+      "atlas": "meta-vassals",
+      "frames": [
+        {
+          "x": 910,
+          "y": 177,
+          "width": 294,
+          "height": 375
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaVassal.core:fertility_surveyor",
+      "atlas": "meta-vassals",
+      "frames": [
+        {
+          "x": 62,
+          "y": 746,
+          "width": 314,
+          "height": 381
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaVassal.core:levy_sergeant",
+      "atlas": "meta-vassals",
+      "frames": [
+        {
+          "x": 451,
+          "y": 740,
+          "width": 373,
+          "height": 388
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "metaVassal.core:tithe_clerk",
+      "atlas": "meta-vassals",
+      "frames": [
+        {
+          "x": 912,
+          "y": 750,
+          "width": 294,
+          "height": 375
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 1000,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -9864,6 +10114,66 @@
       "contentId": "hill",
       "state": "default",
       "roleId": "terrain.meta.hill"
+    },
+    {
+      "kind": "metaManor",
+      "contentId": "meta:forge",
+      "state": "default",
+      "roleId": "metaManor.meta:forge"
+    },
+    {
+      "kind": "metaManor",
+      "contentId": "meta:scriptorium",
+      "state": "default",
+      "roleId": "metaManor.meta:scriptorium"
+    },
+    {
+      "kind": "metaManor",
+      "contentId": "meta:granary",
+      "state": "default",
+      "roleId": "metaManor.meta:granary"
+    },
+    {
+      "kind": "metaManor",
+      "contentId": "meta:barracks",
+      "state": "default",
+      "roleId": "metaManor.meta:barracks"
+    },
+    {
+      "kind": "metaVassal",
+      "contentId": "core:furrow_guard",
+      "state": "default",
+      "roleId": "metaVassal.core:furrow_guard"
+    },
+    {
+      "kind": "metaVassal",
+      "contentId": "core:ripe_escort",
+      "state": "default",
+      "roleId": "metaVassal.core:ripe_escort"
+    },
+    {
+      "kind": "metaVassal",
+      "contentId": "core:return_captain",
+      "state": "default",
+      "roleId": "metaVassal.core:return_captain"
+    },
+    {
+      "kind": "metaVassal",
+      "contentId": "core:fertility_surveyor",
+      "state": "default",
+      "roleId": "metaVassal.core:fertility_surveyor"
+    },
+    {
+      "kind": "metaVassal",
+      "contentId": "core:levy_sergeant",
+      "state": "default",
+      "roleId": "metaVassal.core:levy_sergeant"
+    },
+    {
+      "kind": "metaVassal",
+      "contentId": "core:tithe_clerk",
+      "state": "default",
+      "roleId": "metaVassal.core:tithe_clerk"
     }
   ]
 }

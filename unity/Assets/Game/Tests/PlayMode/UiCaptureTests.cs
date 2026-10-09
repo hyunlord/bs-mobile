@@ -108,7 +108,8 @@ namespace Tests.PlayMode
         private static void SaveReplay(RunCoordinator app,string name,ReplayEndKind kind)
         {
             var folder=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/unity/app-recordings"));Directory.CreateDirectory(folder);var target=Path.Combine(folder,name+".ssreplay");File.Copy(app.RecordedReplayPath,target,true);
-            using(var stream=File.OpenRead(target)){var result=ReplayRunner.Verify(FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,ReplayCodec.Read(stream));Assert.That(result.EndKind,Is.EqualTo(kind));}
+            File.Copy(app.RecordedReplayPath+".meta",target+".meta",true);
+            using(var stream=File.OpenRead(target)){var result=MetaReplayContext.Verify(File.ReadAllBytes(target+".meta"),FoundationBoot.Catalog,Game.App.Generated.CanonicalContent.CreateMetaCatalog(),FoundationBoot.VerifiedDataHash,ReplayCodec.Read(stream));Assert.That(result.EndKind,Is.EqualTo(kind));}
         }
         private static void Click(RunCoordinator app,string label)
         {

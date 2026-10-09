@@ -12,6 +12,7 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator BootVerifiesActualBytesBeforeEnteringMeta()
         {
+            using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             var deadline = Time.realtimeSinceStartup + 30;
             while (SceneManager.GetActiveScene().name != "Meta" && Time.realtimeSinceStartup < deadline)

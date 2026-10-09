@@ -13,7 +13,7 @@ public static class InteractiveCli
             var catalog = ContentLoader.Load(args[1], profileName: args.Length == 4 ? args[3] : "production"); var dataHash = ContentLoader.Hash(args[1], false);
             if (args[0] == "interactive-replay")
             {
-                using var input = File.OpenRead(args[2]); var verification = ReplayRunner.Verify(catalog, dataHash, ReplayCodec.Read(input));
+                using var input = File.OpenRead(args[2]); var verification = MetaReplayFile.Verify(args[2], args[1], catalog, dataHash, ReplayCodec.Read(input));
                 Console.WriteLine(JsonSerializer.Serialize(verification)); return 0;
             }
             Directory.CreateDirectory(args[2]); var results = new List<ReplayVerification>();

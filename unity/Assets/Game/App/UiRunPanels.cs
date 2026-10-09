@@ -68,9 +68,9 @@ namespace Game.App
         static string Growth(string target)=>target switch {"ripe"=>"익은 밭","harvests"=>"수확","buildings"=>"건물","people"=>"백성",_=>target};
         static string Rarity(string rarity)=>rarity switch {"common"=>"일반","rare"=>"희귀","epic"=>"영웅",_=>throw new InvalidOperationException("Unknown offered rarity: "+rarity)};
         public static string Ratio(long value,double total)=>total>0?(value/total*100).ToString("0",CultureInfo.InvariantCulture)+"%":"0%";
-        public static void Summary(UiShell ui,RunSummary summary,RunFrame terminalFrame,FirstPlayableFrame terminalFirstPlayable,IReadOnlyDictionary<string,ContentDisplay> displays,Action retry,Action exit)
+        public static void Summary(UiShell ui,RunSummary summary,RunFrame terminalFrame,FirstPlayableFrame terminalFirstPlayable,IReadOnlyDictionary<string,ContentDisplay> displays,Action retry,Action exit,bool abandoned=false)
         {
-            var panel=ui.Panel("Summary");ui.Label(panel,summary.Survived?"한 해 완료":"사망",UiTokens.Display,72);
+            var panel=ui.Panel("Summary");ui.Label(panel,abandoned?"출정 포기":summary.Survived?"한 해 완료":"사망",UiTokens.Display,72);
             var survivedSeconds=summary.Tick/terminalFrame.TickRate;
             ui.Label(panel,$"생존 {survivedSeconds/60:00}:{survivedSeconds%60:00}",UiTokens.Body,40);
             ui.Label(panel,$"레벨 {summary.Level} · 처치 {terminalFirstPlayable.Kills} · 수확 {terminalFirstPlayable.Harvests}회",UiTokens.Heading,48);
