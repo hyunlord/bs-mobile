@@ -84,3 +84,9 @@ test('CLI emits failed verdict, exits nonzero and refuses to overwrite existing 
   const original = fs.readFileSync(output); const repeated = spawnSync(process.execPath, args, { encoding: 'utf8' });
   assert.equal(repeated.status, 1); assert.match(repeated.stderr, /EEXIST/); assert.deepEqual(fs.readFileSync(output), original);
 });
+test('unknown physical posture remains explicit without weakening the frame gate', t => {
+  const f = fixture(t); f.declaration.posture = 'unknown';
+  const result = f.run(); assert.equal(result.passed, true); assert.equal(result.posture, 'unknown');
+  f.rows[11].enemies = 499; assert.equal(f.run().passed, false);
+  f.declaration.posture = 'guessed'; assert.throws(f.run, /posture/);
+});

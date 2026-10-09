@@ -19,7 +19,7 @@ function declarationFrom(bytes, preregisteredDigest) {
   assert.equal(value.schemaVersion, 1); assert.equal(value.profile, 'first-playable');
   assert.ok(['stress', 'normal'].includes(value.mode), 'Unknown declared mode');
   assert.ok(Number.isSafeInteger(value.startTick) && value.startTick >= 0 && value.startTick < 27000, 'Invalid startTick');
-  assert.ok(['folded', 'unfolded', 'mixed'].includes(value.posture), 'Observed posture is required');
+  assert.ok(['folded', 'unfolded', 'mixed', 'unknown'].includes(value.posture), 'Supported posture or explicit unknown is required');
   for (const name of ['setup', 'preregistrationReference']) assert.ok(typeof value[name] === 'string' && value[name].trim(), `Missing ${name}`);
   keys(value.capture, ['screenRecording', 'replayRecording', 'profilerRecording', 'deepProfiling'], 'capture');
   assert.equal(typeof value.capture.screenRecording, 'boolean', 'Declare screen recording state');
