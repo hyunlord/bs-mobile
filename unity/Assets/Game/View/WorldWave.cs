@@ -10,10 +10,23 @@ namespace Game.View
         WaveRuntimeDefinition waveDefinition;
         ContentCatalog waveCatalog;
         WaveRuntimeFrame wave;
+        RunFrame indexedWaveActors;
+        readonly Dictionary<int,WaveEnemyView> waveEnemyById = new Dictionary<int,WaveEnemyView>();
+        readonly Dictionary<int,EnemyView> waveActorById = new Dictionary<int,EnemyView>();
         readonly List<(WaveEvent value,float started)> waveEffects = new List<(WaveEvent,float)>();
         long lastWaveEvent = -1;
         public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame)
         {
+            var profileChanged=!ReferenceEquals(waveCatalog,catalog);
+            if(profileChanged||frame==null)
+            {
+                waveEnemyById.Clear();waveActorById.Clear();indexedWaveActors=null;
+            }
+            if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
+            {
+                waveEnemyById.Clear();
+                foreach(var enemy in frame.Enemies)if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);
+            }
             waveCatalog=catalog;waveDefinition=catalog?.WaveRuntime;wave=frame;
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
             if(frame==null)return;
@@ -28,7 +41,7 @@ namespace Game.View
         string WaveEnemyState(int id,string source,string fallback)
         {
             if(wave==null||fallback=="death")return fallback;
-            var view=wave.Enemies.FirstOrDefault(e=>e.Id==id);if(view==null)return fallback;
+            if(!waveEnemyById.TryGetValue(id,out var view))return fallback;
             var kind=waveDefinition.Enemies[source].Kind;
             if(kind==WaveEnemyKind.FloodBoss)return WaveBossState(view,fallback);
             if(fallback=="hit")return fallback;
@@ -46,9 +59,17 @@ namespace Game.View
             var visual=Resolve("wave",id,"default");
             Draw(visual,layer,Point(position),visualTime,Vector2.Scale(visual.WorldSize,new Vector2(scale,scale*heightScale)),opacity:opacity);
         }
+        void IndexWaveActors(RunFrame current)
+        {
+            if(ReferenceEquals(indexedWaveActors,current))return;
+            waveActorById.Clear();
+            foreach(var enemy in current.Enemies)if(!waveActorById.ContainsKey(enemy.Id))waveActorById.Add(enemy.Id,enemy);
+            indexedWaveActors=current;
+        }
         void DrawWave(RunFrame current)
         {
             if(wave==null)return;
+            IndexWaveActors(current);
             if(wave.Timber>0)
             {
                 var pile=Resolve("wave","timber-source","default");
@@ -125,7 +146,7 @@ namespace Game.View
             }
             foreach(var enemy in wave.Enemies)
             {
-                var actor=current.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);if(actor==null)continue;
+                if(!waveActorById.TryGetValue(enemy.Id,out var actor))continue;
                 if(enemy.Wet)WaveSprite("wet",GameVisualTokens.GrowthLayer,actor.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale,GameVisualTokens.WaveWetHeight);
                 if(enemy.Stopped)WaveSprite("stopped",GameVisualTokens.GrowthLayer+1,actor.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
                 if(enemy.Phase=="tell-charge"||enemy.Phase=="tell-water"||enemy.Phase=="water")
