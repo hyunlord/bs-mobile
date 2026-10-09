@@ -5,90 +5,282 @@
     {
       "id": "weapon",
       "label": "무기",
-      "files": [
-        "data/weapons/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/weapons/*.json"
+          ],
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "tool",
       "label": "도구",
-      "files": [
-        "data/tools/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/tools/*.json"
+          ],
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "charter",
       "label": "특허장",
-      "files": [
-        "data/charters/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/charters/*.json"
+          ],
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "item",
       "label": "물품",
-      "files": [
-        "data/items/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/items/*.json"
+          ],
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "evolution",
       "label": "진화",
-      "files": [
-        "data/evolutions/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/evolutions/*.json"
+          ],
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "enemy",
       "label": "적",
-      "files": [
-        "data/enemies/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/enemies/*.json"
+          ],
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "vassal",
       "label": "가신",
-      "files": [
-        "data/vassals/*.json"
-      ],
+      "files": [],
       "columns": [
         "name",
         "concept"
+      ],
+      "selections": [
+        {
+          "files": [
+            "data/vassals/*.json"
+          ],
+          "layer": "candidate"
+        },
+        {
+          "files": [
+            "data/meta/progression.json"
+          ],
+          "records": "/vassals",
+          "layer": "runtime"
+        }
       ]
     },
     {
       "id": "profile",
       "label": "실행 프로필",
-      "files": [
-        "data/profiles/first-playable.json"
+      "files": [],
+      "hidden": true,
+      "selections": [
+        {
+          "files": [
+            "data/profiles/first-playable.json"
+          ],
+          "layer": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "material",
+      "label": "재료",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/meta/progression.json"
+          ],
+          "records": "/materials",
+          "layer": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "chapter",
+      "label": "챕터",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/meta/progression.json"
+          ],
+          "records": "/chapters",
+          "layer": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "manor",
+      "label": "장원",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/meta/progression.json"
+          ],
+          "records": "/manorBuildings",
+          "layer": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "challenge",
+      "label": "도전",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/meta/progression.json"
+          ],
+          "records": "/challenges",
+          "layer": "runtime"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "label": "설계 콘텐츠",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/system-design-v1.json"
+          ],
+          "records": "/content",
+          "kindField": "kind",
+          "layer": "designed-v1",
+          "references": false,
+          "namespaceFrom": "/revision"
+        }
+      ],
+      "hidden": true
+    },
+    {
+      "id": "system",
+      "label": "시스템",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/system-design-v1.json"
+          ],
+          "records": "/systems",
+          "layer": "designed-v1",
+          "references": false,
+          "namespaceFrom": "/revision"
+        }
+      ]
+    },
+    {
+      "id": "wave",
+      "label": "구현 웨이브",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/system-design-v1.json"
+          ],
+          "records": "/implementationWaves",
+          "layer": "designed-v1",
+          "references": false,
+          "namespaceFrom": "/revision"
+        }
+      ],
+      "hidden": true
+    },
+    {
+      "id": "catalog",
+      "label": "카탈로그 원본",
+      "files": [],
+      "selections": [
+        {
+          "files": [
+            "data/system-design-v1.json"
+          ],
+          "records": "",
+          "layer": "designed-v1",
+          "references": false,
+          "idField": "revision",
+          "namespaceFrom": "/revision"
+        }
       ],
       "hidden": true
     }
   ],
   "derived": [
+    {
+      "id": "catalog",
+      "scope": "graph",
+      "value": {
+        "op": "lookup",
+        "kind": "catalog",
+        "field": [
+          "layer"
+        ],
+        "equals": "designed-v1"
+      }
+    },
     {
       "id": "profile",
       "scope": "graph",
@@ -96,7 +288,7 @@
         "op": "lookup",
         "kind": "profile",
         "field": [
-          "id"
+          "originalId"
         ],
         "equals": "core:first_playable"
       }
@@ -134,7 +326,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -166,7 +358,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -198,7 +390,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -230,7 +422,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -262,7 +454,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -294,7 +486,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -326,7 +518,7 @@
                 "op": "get",
                 "from": "node",
                 "path": [
-                  "id"
+                  "originalId"
                 ]
               },
               "collection": {
@@ -461,6 +653,85 @@
         ],
         "default": "design"
       }
+    },
+    {
+      "id": "waveIndex",
+      "scope": "node",
+      "value": {
+        "op": "indexOf",
+        "input": {
+          "op": "map",
+          "input": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "catalog",
+              "implementationWaves"
+            ]
+          },
+          "value": {
+            "op": "get",
+            "from": "item",
+            "path": [
+              "id"
+            ]
+          }
+        },
+        "value": {
+          "op": "at",
+          "object": {
+            "op": "map",
+            "input": {
+              "op": "filter",
+              "input": {
+                "op": "get",
+                "from": "vars",
+                "path": [
+                  "catalog",
+                  "implementationWaves"
+                ]
+              },
+              "where": {
+                "op": "in",
+                "value": {
+                  "op": "get",
+                  "from": "node",
+                  "path": [
+                    "originalId"
+                  ]
+                },
+                "collection": {
+                  "op": "concat",
+                  "values": [
+                    {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "contentIds"
+                      ]
+                    },
+                    {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "systemIds"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "value": {
+              "op": "get",
+              "from": "item",
+              "path": [
+                "id"
+              ]
+            }
+          },
+          "key": 0
+        }
+      }
     }
   ],
   "facets": [
@@ -477,12 +748,32 @@
         "vassal"
       ],
       "value": {
-        "op": "get",
-        "from": "vars",
-        "path": [
-          "selected"
-        ]
-      }
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "eq",
+              "left": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "layer"
+                ]
+              },
+              "right": "runtime"
+            },
+            "value": {
+              "op": "get",
+              "from": "vars",
+              "path": [
+                "selected"
+              ]
+            }
+          }
+        ],
+        "default": null
+      },
+      "layer": "runtime"
     },
     {
       "id": "reference-depth",
@@ -497,11 +788,208 @@
         "vassal"
       ],
       "value": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "eq",
+              "left": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "layer"
+                ]
+              },
+              "right": "runtime"
+            },
+            "value": {
+              "op": "get",
+              "from": "vars",
+              "path": [
+                "depth"
+              ]
+            }
+          }
+        ],
+        "default": null
+      },
+      "layer": "runtime"
+    },
+    {
+      "id": "layer",
+      "key": "layer",
+      "value": {
         "op": "get",
-        "from": "vars",
+        "from": "node",
         "path": [
-          "depth"
+          "layer"
         ]
+      }
+    },
+    {
+      "id": "implementation-wave",
+      "key": "wave",
+      "value": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "eq",
+              "left": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "layer"
+                ]
+              },
+              "right": "designed-v1"
+            },
+            "value": {
+              "op": "map",
+              "input": {
+                "op": "filter",
+                "input": {
+                  "op": "get",
+                  "from": "vars",
+                  "path": [
+                    "catalog",
+                    "implementationWaves"
+                  ]
+                },
+                "where": {
+                  "op": "in",
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "originalId"
+                    ]
+                  },
+                  "collection": {
+                    "op": "concat",
+                    "values": [
+                      {
+                        "op": "get",
+                        "from": "item",
+                        "path": [
+                          "contentIds"
+                        ]
+                      },
+                      {
+                        "op": "get",
+                        "from": "item",
+                        "path": [
+                          "systemIds"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              },
+              "value": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "id"
+                ]
+              }
+            }
+          }
+        ],
+        "default": null
+      },
+      "layer": "designed-v1"
+    },
+    {
+      "id": "linked-item-count",
+      "key": "linkedItems",
+      "kinds": [
+        "weapon",
+        "tool"
+      ],
+      "value": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "eq",
+              "left": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "layer"
+                ]
+              },
+              "right": "designed-v1"
+            },
+            "value": {
+              "op": "count",
+              "value": {
+                "op": "unique",
+                "value": {
+                  "op": "map",
+                  "input": {
+                    "op": "filter",
+                    "input": {
+                      "op": "get",
+                      "from": "graph",
+                      "path": [
+                        "edges"
+                      ]
+                    },
+                    "where": {
+                      "op": "and",
+                      "values": [
+                        {
+                          "op": "eq",
+                          "left": {
+                            "op": "get",
+                            "from": "item",
+                            "path": [
+                              "target"
+                            ]
+                          },
+                          "right": {
+                            "op": "get",
+                            "from": "node",
+                            "path": [
+                              "id"
+                            ]
+                          }
+                        },
+                        {
+                          "op": "in",
+                          "value": {
+                            "op": "get",
+                            "from": "item",
+                            "path": [
+                              "kind"
+                            ]
+                          },
+                          "collection": {
+                            "op": "literal",
+                            "value": [
+                              "item-tool",
+                              "item-weapon"
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "item",
+                    "path": [
+                      "source"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "default": null
       }
     }
   ],
@@ -518,7 +1006,8 @@
           "path": [
             "selected"
           ]
-        }
+        },
+        "layer": "runtime"
       },
       "metrics": {
         "selected": {
@@ -585,7 +1074,8 @@
               ]
             }
           }
-        }
+        },
+        "layer": "runtime"
       },
       "template": "선택 물품 {selected}개 중 {stat}개는 원본 효과가 수치 덧셈입니다.",
       "severity": "warning",
@@ -605,7 +1095,8 @@
           "path": [
             "selected"
           ]
-        }
+        },
+        "layer": "runtime"
       },
       "metrics": {
         "selected": {
@@ -652,7 +1143,8 @@
               }
             }
           }
-        }
+        },
+        "layer": "runtime"
       },
       "template": "선택 도구 {selected}개 중 {unique}개에 수치 덧셈 이외의 원본 효과가 있습니다.",
       "severity": "info",
@@ -671,7 +1163,8 @@
           "path": [
             "selected"
           ]
-        }
+        },
+        "layer": "runtime"
       },
       "metrics": {
         "selected": {
@@ -720,17 +1213,1103 @@
               }
             }
           }
-        }
+        },
+        "layer": "runtime"
       },
       "template": "선택 무기 {selected}개의 기본 데이터 공격 형태는 {forms}가지입니다.",
       "severity": "info",
       "basis": "computed",
       "implementation": "growth.attackModel / activation.shape 집계입니다. 실제 firstPlayable.weapons의 10가지 form과 다른 투영이며, 연쇄 공격 부재를 뜻하지 않습니다."
+    },
+    {
+      "id": "designed-no-evolution-weapon",
+      "query": {
+        "kinds": [
+          "weapon"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "eq",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "filter",
+              "input": {
+                "op": "get",
+                "from": "graph",
+                "path": [
+                  "edges"
+                ]
+              },
+              "where": {
+                "op": "and",
+                "values": [
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "source"
+                      ]
+                    },
+                    "right": {
+                      "op": "get",
+                      "from": "node",
+                      "path": [
+                        "id"
+                      ]
+                    }
+                  },
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "kind"
+                      ]
+                    },
+                    "right": "evolution-input"
+                  }
+                ]
+              }
+            }
+          },
+          "right": 0
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "진화가 연결되지 않은 무기 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-no-item-weapon",
+      "query": {
+        "kinds": [
+          "weapon"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "eq",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "unique",
+              "value": {
+                "op": "map",
+                "input": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "edges"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "target"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "id"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "in",
+                        "value": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "collection": {
+                          "op": "literal",
+                          "value": [
+                            "item-tool",
+                            "item-weapon"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "value": {
+                  "op": "get",
+                  "from": "item",
+                  "path": [
+                    "source"
+                  ]
+                }
+              }
+            }
+          },
+          "right": 0
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "연결 물품이 없는 무기 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-many-items-weapon",
+      "query": {
+        "kinds": [
+          "weapon"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "gte",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "unique",
+              "value": {
+                "op": "map",
+                "input": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "edges"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "target"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "id"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "in",
+                        "value": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "collection": {
+                          "op": "literal",
+                          "value": [
+                            "item-tool",
+                            "item-weapon"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "value": {
+                  "op": "get",
+                  "from": "item",
+                  "path": [
+                    "source"
+                  ]
+                }
+              }
+            }
+          },
+          "right": 5
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "연결 물품이 5개 이상인 무기 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-no-evolution-tool",
+      "query": {
+        "kinds": [
+          "tool"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "eq",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "filter",
+              "input": {
+                "op": "get",
+                "from": "graph",
+                "path": [
+                  "edges"
+                ]
+              },
+              "where": {
+                "op": "and",
+                "values": [
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "source"
+                      ]
+                    },
+                    "right": {
+                      "op": "get",
+                      "from": "node",
+                      "path": [
+                        "id"
+                      ]
+                    }
+                  },
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "kind"
+                      ]
+                    },
+                    "right": "evolution-input"
+                  }
+                ]
+              }
+            }
+          },
+          "right": 0
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "진화가 연결되지 않은 도구 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-no-item-tool",
+      "query": {
+        "kinds": [
+          "tool"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "eq",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "unique",
+              "value": {
+                "op": "map",
+                "input": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "edges"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "target"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "id"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "in",
+                        "value": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "collection": {
+                          "op": "literal",
+                          "value": [
+                            "item-tool",
+                            "item-weapon"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "value": {
+                  "op": "get",
+                  "from": "item",
+                  "path": [
+                    "source"
+                  ]
+                }
+              }
+            }
+          },
+          "right": 0
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "연결 물품이 없는 도구 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-many-items-tool",
+      "query": {
+        "kinds": [
+          "tool"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "gte",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "unique",
+              "value": {
+                "op": "map",
+                "input": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "edges"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "target"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "id"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "in",
+                        "value": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "collection": {
+                          "op": "literal",
+                          "value": [
+                            "item-tool",
+                            "item-weapon"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                "value": {
+                  "op": "get",
+                  "from": "item",
+                  "path": [
+                    "source"
+                  ]
+                }
+              }
+            }
+          },
+          "right": 5
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "연결 물품이 5개 이상인 도구 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-no-xp-return",
+      "query": {
+        "kinds": [
+          "tool"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "not",
+          "value": {
+            "op": "any",
+            "input": {
+              "op": "get",
+              "from": "node",
+              "path": [
+                "returns"
+              ]
+            },
+            "where": {
+              "op": "eq",
+              "left": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "channel"
+                ]
+              },
+              "right": "xp"
+            }
+          }
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "xp 반환 경로가 없는 도구 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-later-wave-input",
+      "query": {
+        "kinds": [
+          "evolution"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "any",
+          "input": {
+            "op": "filter",
+            "input": {
+              "op": "get",
+              "from": "graph",
+              "path": [
+                "nodes"
+              ]
+            },
+            "where": {
+              "op": "and",
+              "values": [
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "get",
+                    "from": "item",
+                    "path": [
+                      "layer"
+                    ]
+                  },
+                  "right": "designed-v1"
+                },
+                {
+                  "op": "in",
+                  "value": {
+                    "op": "get",
+                    "from": "item",
+                    "path": [
+                      "originalId"
+                    ]
+                  },
+                  "collection": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "inputIds"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "where": {
+            "op": "let",
+            "bindings": {
+              "inputId": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "originalId"
+                ]
+              }
+            },
+            "value": {
+              "op": "gt",
+              "left": {
+                "op": "indexOf",
+                "input": {
+                  "op": "map",
+                  "input": {
+                    "op": "get",
+                    "from": "vars",
+                    "path": [
+                      "catalog",
+                      "implementationWaves"
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "item",
+                    "path": [
+                      "id"
+                    ]
+                  }
+                },
+                "value": {
+                  "op": "at",
+                  "object": {
+                    "op": "map",
+                    "input": {
+                      "op": "filter",
+                      "input": {
+                        "op": "get",
+                        "from": "vars",
+                        "path": [
+                          "catalog",
+                          "implementationWaves"
+                        ]
+                      },
+                      "where": {
+                        "op": "in",
+                        "value": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "inputId"
+                          ]
+                        },
+                        "collection": {
+                          "op": "concat",
+                          "values": [
+                            {
+                              "op": "get",
+                              "from": "item",
+                              "path": [
+                                "contentIds"
+                              ]
+                            },
+                            {
+                              "op": "get",
+                              "from": "item",
+                              "path": [
+                                "systemIds"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "value": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "key": 0
+                }
+              },
+              "right": {
+                "op": "get",
+                "from": "vars",
+                "path": [
+                  "waveIndex"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "입력이 더 늦은 웨이브에 있는 진화 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-wave-one-evolutions",
+      "query": {
+        "kinds": [
+          "evolution"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "eq",
+          "left": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "waveIndex"
+            ]
+          },
+          "right": 0
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "첫 구현 웨이브의 진화 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-long-card-text",
+      "query": {
+        "kinds": [
+          "weapon",
+          "tool",
+          "charter",
+          "item",
+          "evolution",
+          "enemy",
+          "chapter",
+          "vassal",
+          "manor",
+          "material"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "and",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "cardText"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "get",
+                  "from": "node",
+                  "path": [
+                    "cardText"
+                  ]
+                }
+              },
+              "right": 40
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1"
+      },
+      "template": "cardText가 40자를 넘는 콘텐츠 {count}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-missing-primitives",
+      "query": {
+        "kinds": [
+          "weapon",
+          "tool",
+          "charter",
+          "item",
+          "evolution",
+          "enemy",
+          "chapter",
+          "vassal",
+          "manor",
+          "material"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "and",
+          "values": [
+            {
+              "op": "any",
+              "input": {
+                "op": "get",
+                "from": "graph",
+                "path": [
+                  "nodes"
+                ]
+              },
+              "where": {
+                "op": "and",
+                "values": [
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "layer"
+                      ]
+                    },
+                    "right": "designed-v1"
+                  },
+                  {
+                    "op": "exists",
+                    "value": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "primitives"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "op": "or",
+              "values": [
+                {
+                  "op": "not",
+                  "value": {
+                    "op": "exists",
+                    "value": {
+                      "op": "get",
+                      "from": "node",
+                      "path": [
+                        "primitives"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "op": "eq",
+                  "left": {
+                    "op": "count",
+                    "value": {
+                      "op": "get",
+                      "from": "node",
+                      "path": [
+                        "primitives"
+                      ]
+                    }
+                  },
+                  "right": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1",
+        "primitiveReferences": {
+          "op": "sum",
+          "value": {
+            "op": "map",
+            "input": {
+              "op": "filter",
+              "input": {
+                "op": "get",
+                "from": "graph",
+                "path": [
+                  "nodes"
+                ]
+              },
+              "where": {
+                "op": "and",
+                "values": [
+                  {
+                    "op": "eq",
+                    "left": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "layer"
+                      ]
+                    },
+                    "right": "designed-v1"
+                  },
+                  {
+                    "op": "exists",
+                    "value": {
+                      "op": "get",
+                      "from": "item",
+                      "path": [
+                        "primitives"
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "value": {
+              "op": "count",
+              "value": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "primitives"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "template": "primitives가 없는 콘텐츠 {count}개 · 문법 참조 {primitiveReferences}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다."
+    },
+    {
+      "id": "designed-bespoke",
+      "query": {
+        "kinds": [
+          "weapon",
+          "tool",
+          "charter",
+          "item",
+          "evolution",
+          "enemy",
+          "chapter",
+          "vassal",
+          "manor",
+          "material"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "gt",
+          "left": {
+            "op": "count",
+            "value": {
+              "op": "get",
+              "from": "node",
+              "path": [
+                "bespoke"
+              ]
+            }
+          },
+          "right": 0
+        }
+      },
+      "metrics": {
+        "count": {
+          "op": "count",
+          "value": {
+            "op": "get",
+            "from": "vars",
+            "path": [
+              "targets"
+            ]
+          }
+        },
+        "layer": "designed-v1",
+        "entries": {
+          "op": "sum",
+          "value": {
+            "op": "map",
+            "input": {
+              "op": "get",
+              "from": "vars",
+              "path": [
+                "targets"
+              ]
+            },
+            "value": {
+              "op": "count",
+              "value": {
+                "op": "get",
+                "from": "item",
+                "path": [
+                  "bespoke"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "template": "bespoke 콘텐츠 {count}개 · 별도 행위 {entries}개",
+      "severity": "warning",
+      "basis": "computed",
+      "intent": "설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.",
+      "implementation": "bespoke 배열의 레코드 수와 id/reason 항목 수를 각각 집계합니다. primitive 사용량은 실행 지원 또는 구현률이 아닙니다."
     }
   ],
   "presentation": {
     "name": "Sow & Siege",
-    "description": "JSON 원본과 first-playable 선택을 읽은 콘텐츠 지도입니다. 구현 깊이는 원본 runtimeProjection 기준 분류이며 실기 실행 증거가 아닙니다. 프로필 override를 적용하면 특허장 4개의 분류가 달라집니다. 기본 무기 형태 4개와 프로필 형태 10개는 서로 다른 투영입니다.",
+    "description": "런타임과 designed-v1 설계를 별도 층으로 읽습니다. 같은 콘텐츠 ID의 대응은 구현·발동·사용자 승인을 증명하지 않습니다. 설계 발견은 경고이며 gate가 아닙니다.",
     "kinds": [
       {
         "id": "weapon",
@@ -792,6 +2371,36 @@
         "id": "profile",
         "label": "실행 프로필",
         "hidden": true
+      },
+      {
+        "id": "material",
+        "label": "재료"
+      },
+      {
+        "id": "chapter",
+        "label": "챕터"
+      },
+      {
+        "id": "manor",
+        "label": "장원"
+      },
+      {
+        "id": "challenge",
+        "label": "도전"
+      },
+      {
+        "id": "system",
+        "label": "시스템"
+      },
+      {
+        "id": "wave",
+        "label": "구현 웨이브",
+        "hidden": true
+      },
+      {
+        "id": "catalog",
+        "label": "카탈로그 원본",
+        "hidden": true
       }
     ],
     "facets": {
@@ -810,7 +2419,2229 @@
           "true": "선택됨",
           "false": "미선택"
         }
+      },
+      "layer": {
+        "label": "층",
+        "values": {
+          "runtime": "런타임",
+          "designed-v1": "designed-v1 설계",
+          "candidate": "이전 후보"
+        }
+      },
+      "wave": {
+        "label": "구현 웨이브"
+      },
+      "linkedItems": {
+        "label": "연결 물품 수"
       }
+    },
+    "layers": [
+      {
+        "id": "runtime",
+        "label": "런타임"
+      },
+      {
+        "id": "designed-v1",
+        "label": "designed-v1 설계"
+      },
+      {
+        "id": "candidate",
+        "label": "이전 후보"
+      }
+    ],
+    "defaultLayer": "designed-v1"
+  },
+  "edges": [
+    {
+      "id": "item-tool",
+      "source": {
+        "kinds": [
+          "item"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "ne",
+          "left": {
+            "op": "get",
+            "from": "node",
+            "path": [
+              "itemScope"
+            ]
+          },
+          "right": "universal"
+        }
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "linkedToolIds"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "tool",
+      "targetField": [
+        "id"
+      ],
+      "direction": "forward"
+    },
+    {
+      "id": "item-weapon",
+      "source": {
+        "kinds": [
+          "item"
+        ],
+        "layer": "designed-v1",
+        "where": {
+          "op": "ne",
+          "left": {
+            "op": "get",
+            "from": "node",
+            "path": [
+              "itemScope"
+            ]
+          },
+          "right": "universal"
+        }
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "linkedWeaponIds"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "weapon",
+      "targetField": [
+        "id"
+      ],
+      "direction": "forward"
+    },
+    {
+      "id": "evolution-input",
+      "source": {
+        "kinds": [
+          "evolution"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "inputIds"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetField": [
+        "id"
+      ],
+      "direction": "reverse"
+    },
+    {
+      "id": "vassal-tool",
+      "source": {
+        "kinds": [
+          "vassal"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "linkedToolIds"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "tool",
+      "targetField": [
+        "id"
+      ],
+      "direction": "forward"
+    },
+    {
+      "id": "charter-tool",
+      "source": {
+        "kinds": [
+          "charter"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "linkedToolIds"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "tool",
+      "targetField": [
+        "id"
+      ],
+      "direction": "forward"
+    },
+    {
+      "id": "material-source",
+      "source": {
+        "kinds": [
+          "material"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "map",
+        "input": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "sources"
+          ]
+        },
+        "value": {
+          "op": "get",
+          "from": "item",
+          "path": [
+            "contentId"
+          ]
+        }
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetField": [
+        "id"
+      ],
+      "direction": "reverse"
+    },
+    {
+      "id": "material-sink",
+      "source": {
+        "kinds": [
+          "material"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "map",
+        "input": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "sinks"
+          ]
+        },
+        "value": {
+          "op": "get",
+          "from": "item",
+          "path": [
+            "contentId"
+          ]
+        }
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "manor",
+      "targetField": [
+        "id"
+      ],
+      "direction": "forward"
+    },
+    {
+      "id": "manor-input",
+      "source": {
+        "kinds": [
+          "manor"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "inputIds"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "material",
+      "targetField": [
+        "id"
+      ],
+      "direction": "reverse"
+    },
+    {
+      "id": "chapter-boss",
+      "source": {
+        "kinds": [
+          "chapter"
+        ],
+        "layer": "designed-v1"
+      },
+      "target": {
+        "op": "get",
+        "from": "node",
+        "path": [
+          "bossId"
+        ]
+      },
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "targetKind": "enemy",
+      "targetField": [
+        "id"
+      ],
+      "direction": "forward"
+    },
+    {
+      "id": "system-influence",
+      "source": {
+        "kinds": [
+          "catalog"
+        ],
+        "layer": "designed-v1"
+      },
+      "targetQuery": {
+        "kinds": [
+          "system"
+        ],
+        "layer": "designed-v1"
+      },
+      "targetField": [
+        "id"
+      ],
+      "matrix": {
+        "ids": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "influenceMatrix",
+            "systemIds"
+          ]
+        },
+        "cells": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "influenceMatrix",
+            "cells"
+          ]
+        },
+        "empty": "none"
+      },
+      "direction": "forward"
+    },
+    {
+      "id": "design-correspondence-weapon",
+      "source": {
+        "kinds": [
+          "weapon"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "weapon"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "weapon",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-tool",
+      "source": {
+        "kinds": [
+          "tool"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "tool"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "tool",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-charter",
+      "source": {
+        "kinds": [
+          "charter"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "charter"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "charter",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-item",
+      "source": {
+        "kinds": [
+          "item"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "item"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "item",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-evolution",
+      "source": {
+        "kinds": [
+          "evolution"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "evolution"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "evolution",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-enemy",
+      "source": {
+        "kinds": [
+          "enemy"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "enemy"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "enemy",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-chapter",
+      "source": {
+        "kinds": [
+          "chapter"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "chapter"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "chapter",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-vassal",
+      "source": {
+        "kinds": [
+          "vassal"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "vassal"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "vassal",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-manor",
+      "source": {
+        "kinds": [
+          "manor"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "manor"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "manor",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
+    },
+    {
+      "id": "design-correspondence-material",
+      "source": {
+        "kinds": [
+          "material"
+        ],
+        "layer": "runtime",
+        "where": {
+          "op": "or",
+          "values": [
+            {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            {
+              "op": "gt",
+              "left": {
+                "op": "count",
+                "value": {
+                  "op": "filter",
+                  "input": {
+                    "op": "get",
+                    "from": "graph",
+                    "path": [
+                      "nodes"
+                    ]
+                  },
+                  "where": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "layer"
+                          ]
+                        },
+                        "right": "designed-v1"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "kind"
+                          ]
+                        },
+                        "right": "material"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "item",
+                          "path": [
+                            "originalId"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": 0
+            }
+          ]
+        }
+      },
+      "target": {
+        "op": "case",
+        "cases": [
+          {
+            "when": {
+              "op": "exists",
+              "value": {
+                "op": "get",
+                "from": "node",
+                "path": [
+                  "designRef"
+                ]
+              }
+            },
+            "value": {
+              "op": "case",
+              "cases": [
+                {
+                  "when": {
+                    "op": "and",
+                    "values": [
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "catalog"
+                          ]
+                        },
+                        "right": "data/system-design-v1.json"
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "revision"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "vars",
+                          "path": [
+                            "catalog",
+                            "revision"
+                          ]
+                        }
+                      },
+                      {
+                        "op": "eq",
+                        "left": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "designRef",
+                            "id"
+                          ]
+                        },
+                        "right": {
+                          "op": "get",
+                          "from": "node",
+                          "path": [
+                            "originalId"
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "value": {
+                    "op": "get",
+                    "from": "node",
+                    "path": [
+                      "designRef",
+                      "id"
+                    ]
+                  }
+                }
+              ],
+              "default": "INVALID-DESIGN-REFERENCE"
+            }
+          }
+        ],
+        "default": {
+          "op": "get",
+          "from": "node",
+          "path": [
+            "originalId"
+          ]
+        }
+      },
+      "targetKind": "material",
+      "targetField": [
+        "id"
+      ],
+      "targetQuery": {
+        "layer": "designed-v1"
+      },
+      "direction": "undirected",
+      "label": "설계 대응 · 구현 증거 아님"
     }
-  }
+  ],
+  "views": [
+    {
+      "id": "designed-influence",
+      "type": "matrix",
+      "label": "설계 시스템 영향 행렬",
+      "description": "행 시스템 → 열 시스템. 제안된 직접 영향이며 현재 실행 호출 관계가 아닙니다.",
+      "query": {
+        "kinds": [
+          "system"
+        ],
+        "layer": "designed-v1"
+      },
+      "edgeKinds": [
+        "system-influence"
+      ]
+    }
+  ]
 }
