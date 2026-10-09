@@ -29,6 +29,8 @@ namespace Game.P1Capture
         static long lastEvent;
         static int people;
         static string replayPath;
+        static CapturePlayerLoop playerLoop;
+        static int diagnosticFrames;
         static StreamWriter ledger;
         static readonly string[] Priority = { "core:muster_horn", "core:seed_bag", "core:ward_orbit", "core:harvest_scythe", "core:iron_blade", "core:soup_ladle", "core:rain_ladle" };
 
@@ -79,6 +81,17 @@ namespace Game.P1Capture
         static void Update()
         {
             if (!SessionState.GetBool(ActiveKey, false) || !EditorApplication.isPlaying) return;
+            if (playerLoop == null)
+            {
+                var host = new GameObject("P1 editor capture player loop");
+                UnityEngine.Object.DontDestroyOnLoad(host);
+                playerLoop = host.AddComponent<CapturePlayerLoop>();
+            }
+        }
+
+        public static void PlayerLoopUpdate()
+        {
+            if (!SessionState.GetBool(ActiveKey, false)) return;
             try { Pump(); }
             catch (Exception error) { Finish("failed: " + error); }
         }
@@ -119,6 +132,11 @@ namespace Game.P1Capture
                 return;
             }
             var elapsed = Time.timeAsDouble - started;
+            if (diagnosticFrames < 20 || stage == 2)
+            {
+                Log("clock-frame", $"phase=LateUpdate;timeFloat={Time.time:R};timeDouble={Time.timeAsDouble:R};delta={Time.deltaTime:R};unscaledDelta={Time.unscaledDeltaTime:R};frame={Time.frameCount};stage={stage}");
+                diagnosticFrames++;
+            }
             clock.Validate(elapsed, Time.unscaledTimeAsDouble - unscaledStarted);
             if (elapsed > 1500) throw new TimeoutException("Capture exceeded 25 minutes of media time.");
             if (stage == 1 && elapsed >= 3)
@@ -137,6 +155,7 @@ namespace Game.P1Capture
             {
                 var unscaledElapsed = Time.unscaledTimeAsDouble - unscaledStarted;
                 clock.Arm(elapsed, unscaledElapsed);
+                diagnosticFrames = 0;
                 Log("clock-baseline", $"excludedPreRunOffsetSeconds={unscaledElapsed - elapsed:F6};mediaOriginUnchanged=true;thresholdSeconds=0.15;baselineCount=1");
                 Log("run-start", run.RecordedReplayPath);
                 replayPath = run.RecordedReplayPath;
@@ -281,6 +300,7 @@ namespace Game.P1Capture
             cardAt = -1; completedAt = -1; nextSample = 0; lastEvent = 0;
             people = 0; replayPath = null;
             clock = new CaptureClockGuard();
+            diagnosticFrames = 0;
             Debug.Log("P1 capture: " + result);
         }
     }

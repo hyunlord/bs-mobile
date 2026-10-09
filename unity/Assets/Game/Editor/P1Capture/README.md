@@ -46,3 +46,10 @@ unscaledSeconds and rendered frame alongside it. The drift guard is armed exactl
 Validate actual MP4 packet timestamps/duration and audio with ffprobe before acceptance;
 trim by timestamp without forcing `-r` or changing playback rate. Card pauses are visible
 and listed, so core tick deltas can be checked against active media intervals.
+
+Capture automation and clock checks run in an editor-only MonoBehaviour LateUpdate,
+matching Recorder's player-loop timestamp phase. EditorApplication.update only installs
+that driver; editor updates must not compare a stale game-frame clock with the editor's
+current unscaled time. The first 20 frames around recording/run startup log both scaled
+clock APIs, frame deltas, and frame index. The cumulative 0.15-second guard is unchanged;
+any remaining player-loop drift or encoder error invalidates the run and requires diagnosis.
