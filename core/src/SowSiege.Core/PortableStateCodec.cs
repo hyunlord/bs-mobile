@@ -709,7 +709,10 @@ namespace SowSiege.Core
             WriteList(value.Timeline, item => { Write(item); });
             WriteList(value.Cards, item => { Write(item); });
             if (value.FirstPlayable is not null) { WriteFirstPlayable(value.FirstPlayable); }
-            if (value.WaveRuntime is not null) WriteWave(value.WaveRuntime);
+            if (value.WaveRuntime is not null)
+            {
+                WriteWave(value.WaveRuntime);
+            }
         }
         private void Write(RunOptions? value)
         {

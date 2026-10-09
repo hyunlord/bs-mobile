@@ -30,7 +30,11 @@ namespace SowSiege.Core
 
         internal Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher, DiagnosticObserver? diagnostics, InteractiveState? interactive)
         {
-            if (options.TargetMaterial is not null && (catalog.WaveRuntime?.MaterialTargets?.ContainsKey(options.TargetMaterial) != true)) throw new ArgumentException("Unsupported target material.");
+            if (options.TargetMaterial is not null && (catalog.WaveRuntime?.MaterialTargets?.ContainsKey(options.TargetMaterial) != true))
+            {
+                throw new ArgumentException("Unsupported target material.");
+            }
+
             Interactive = interactive;
             this.diagnostics = diagnostics;
             diagnostics?.Attach(catalog, World);

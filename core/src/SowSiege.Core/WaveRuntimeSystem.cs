@@ -47,8 +47,16 @@ namespace SowSiege.Core
                 state.Emit(world.Tick, "item-selected", id, -1, world.Lord, world.Lord);
                 return true;
             }
-            if (!definition.Evolutions.TryGetValue(id, out var e)) return false;
-            if (!EligibleEvolution(e)) throw new InvalidOperationException("Evolution conditions not fulfilled.");
+            if (!definition.Evolutions.TryGetValue(id, out var e))
+            {
+                return false;
+            }
+
+            if (!EligibleEvolution(e))
+            {
+                throw new InvalidOperationException("Evolution conditions not fulfilled.");
+            }
+
             state.Evolutions.Add(id);
             state.Emit(world.Tick, "evolution-activated", id, -1, world.Lord, world.Lord);
             return true;
@@ -57,13 +65,25 @@ namespace SowSiege.Core
         public void Tick(Position previous)
         {
             state.Events.Clear();
-            foreach (var expired in state.Attacks.Where(a => a.ExpireTick <= world.Tick).Select(a => a.ActivationId).Distinct().ToArray()) state.ResolveActivation(expired);
+            foreach (var expired in state.Attacks.Where(a => a.ExpireTick <= world.Tick).Select(a => a.ActivationId).Distinct().ToArray())
+            {
+                state.ResolveActivation(expired);
+            }
+
             state.Attacks.RemoveAll(a => a.ExpireTick <= world.Tick);
-            if (world.Lord != previous) state.Facing = new(world.Lord.X - previous.X, world.Lord.Y - previous.Y);
+            if (world.Lord != previous)
+            {
+                state.Facing = new(world.Lord.X - previous.X, world.Lord.Y - previous.Y);
+            }
+
             enemies.Tick();
             foreach (var equipment in world.Equipment.ToArray())
             {
-                if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id)) continue;
+                if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
+                {
+                    continue;
+                }
+
                 var gear = AtLevel(definition.Gear[equipment.Id], equipment.Level);
                 equipment.ReadyTick = world.Tick + gear.CooldownTicks;
                 var evolution = state.Evolutions.Select(id => definition.Evolutions[id]).FirstOrDefault(e => e.InputIds[0] == gear.Id && e.Kind != WaveEvolutionKind.ShelteredPlot);
@@ -72,7 +92,11 @@ namespace SowSiege.Core
             foreach (var e in state.Evolutions.Select(id => definition.Evolutions[id]).Where(e => e.Kind == WaveEvolutionKind.ShelteredPlot))
             {
                 var first = world.Equipment.First(x => x.Id == e.InputIds[0]);
-                if (first.ReadyTick > world.Tick) continue;
+                if (first.ReadyTick > world.Tick)
+                {
+                    continue;
+                }
+
                 var gear = AtLevel(definition.Gear[e.InputIds[1]], first.Level);
                 first.ReadyTick = world.Tick + gear.CooldownTicks;
                 Attack(gear with
@@ -91,14 +115,22 @@ namespace SowSiege.Core
                 world.Experience += xp;
                 world.KillExperience += xp;
                 state.Emit(world.Tick, "enemy-killed", enemy.Definition, enemy.Id, enemy.Position, enemy.Position, xp);
-                if (enemy.Definition == definition.BossId) state.BossDefeated = true;
+                if (enemy.Definition == definition.BossId)
+                {
+                    state.BossDefeated = true;
+                }
+
                 state.EnemyActions.Remove(enemy.Id);
             }
             world.Enemies.RemoveAll(e => e.Health <= 0);
         }
         private static WaveGearDefinition AtLevel(WaveGearDefinition gear, int level)
         {
-            if (gear.Levels is null || gear.Levels.Length == 0) return gear;
+            if (gear.Levels is null || gear.Levels.Length == 0)
+            {
+                return gear;
+            }
+
             var p = gear.Levels[Math.Min(level, gear.Levels.Length) - 1];
             return gear with
             {
@@ -114,23 +146,33 @@ namespace SowSiege.Core
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
-            if (gear.Kind == WaveAttackKind.WaterFan && state.Water <= 0) gear = gear with
+            if (gear.Kind == WaveAttackKind.WaterFan && state.Water <= 0)
             {
-                Damage = Math.Max(1, gear.Damage / definition.Behavior.DryDamageDivisor),
-                Knockback = 0
-            }
+                gear = gear with
+                {
+                    Damage = Math.Max(1, gear.Damage / definition.Behavior.DryDamageDivisor),
+                    Knockback = 0
+                }
 ;
+            }
+
             var origin = world.Lord;
             var facing = state.Facing;
             if (evolution?.Kind == WaveEvolutionKind.RepairOrbit)
             {
                 var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
-                if (building != null) origin = building.Position;
+                if (building != null)
+                {
+                    origin = building.Position;
+                }
             }
             if (gear.Kind == WaveAttackKind.Arc && HasItem(WaveItemKind.RaiderAim))
             {
                 var raider = world.Enemies.Where(e => e.Health > 0 && definition.Enemies[e.Definition].Kind is WaveEnemyKind.SeedThief or WaveEnemyKind.RipeGrazer && Within(e.Position, origin, gear.Range)).OrderBy(e => e.Position.DistanceSquared(origin)).ThenBy(e => e.Id).FirstOrDefault();
-                if (raider != null) facing = new(raider.Position.X - origin.X, raider.Position.Y - origin.Y);
+                if (raider != null)
+                {
+                    facing = new(raider.Position.X - origin.X, raider.Position.Y - origin.Y);
+                }
             }
             var source = evolution?.Id ?? gear.Id;
             var targets = world.Enemies.Where(e => e.Health > 0 && Within(e.Position, origin, gear.Range)).OrderBy(e => e.Position.DistanceSquared(origin)).ThenBy(e => e.Id).ToArray();
@@ -164,11 +206,19 @@ namespace SowSiege.Core
                 for (int i = 0; i < gear.Count; i++)
                 {
                     var next = world.Enemies.Where(e => e.Health > 0 && !visited.Contains(e.Id) && Within(e.Position, from, gear.Range)).OrderByDescending(e => i > 0 && state.EnemyActions.TryGetValue(e.Id, out var a) && a.WetUntil > world.Tick).ThenBy(e => e.Position.DistanceSquared(from)).ThenBy(e => e.Id).FirstOrDefault();
-                    if (next == null) break;
+                    if (next == null)
+                    {
+                        break;
+                    }
+
                     visited.Add(next.Id);
                     state.Emit(world.Tick, "chain-link", source, next.Id, from, next.Position);
                     Hit(next, gear.Damage, source, origin, gear.Knockback, activation);
-                    if (state.EnemyActions.TryGetValue(next.Id, out var action)) action.StopUntil = world.Tick + definition.StopTicks;
+                    if (state.EnemyActions.TryGetValue(next.Id, out var action))
+                    {
+                        action.StopUntil = world.Tick + definition.StopTicks;
+                    }
+
                     hits.Add(next);
                     from = next.Position;
                 }
@@ -195,31 +245,57 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                     hits.Add(enemy);
                 }
                 state.Emit(world.Tick, "attack", source, -1, origin, new(origin.X + facing.X, origin.Y + facing.Y), gear.Range);
-                if (gear.Kind == WaveAttackKind.HarvestArc) foreach (var plot in state.Work.Where(w => w.Kind == "grain" && w.Complete && w.Health > 0 && InArc(origin, facing, w.Position, gear.Range)).ToArray())
+                if (gear.Kind == WaveAttackKind.HarvestArc)
+                {
+                    foreach (var plot in state.Work.Where(w => w.Kind == "grain" && w.Complete && w.Health > 0 && InArc(origin, facing, w.Position, gear.Range)).ToArray())
                     {
                         work.Harvest(plot);
-                        foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor)).OrderBy(e => e.Id).Take(gear.Count)) Hit(enemy, gear.Damage, source, plot.Position, 0, activation);
+                        foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor)).OrderBy(e => e.Id).Take(gear.Count))
+                        {
+                            Hit(enemy, gear.Damage, source, plot.Position, 0, activation);
+                        }
+
                         state.Emit(world.Tick, "harvest-fragments", source, plot.Id, plot.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor);
                     }
+                }
             }
-            if (world.Tools.TryGetValue(gear.Id, out var ledger)) ledger.Activations++;
+            if (world.Tools.TryGetValue(gear.Id, out var ledger))
+            {
+                ledger.Activations++;
+            }
+
             if (evolution?.Kind == WaveEvolutionKind.PlantingArc)
             {
                 work.PlantSweep(evolution.InputIds[1], origin, facing, gear.Range, Math.Max(WaveGeometry.MinimumFanSamples, gear.Count));
             }
             else if (gear.Kind >= WaveAttackKind.SeedFan) { work.Activate(gear, origin, facing); }
-            if (gear.Kind != WaveAttackKind.Orbit && (gear.Kind != WaveAttackKind.Homing || children == 0)) state.ResolveActivation(activation);
+            if (gear.Kind != WaveAttackKind.Orbit && (gear.Kind != WaveAttackKind.Homing || children == 0))
+            {
+                state.ResolveActivation(activation);
+            }
         }
 
         private void Hit(EnemyState enemy, int damage, string source, Position origin, int knockback, int activation)
         {
             var actual = Math.Min(enemy.Health, damage);
-            if (actual <= 0) return;
+            if (actual <= 0)
+            {
+                return;
+            }
+
             enemy.Health -= actual;
             world.WeaponDamage += actual;
             state.RecordDamage(activation, damage, actual);
-            if (knockback > 0) enemy.Position = new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height));
-            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && gear.Kind == WaveAttackKind.Arc && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing))) state.BladePlotKill = true;
+            if (knockback > 0)
+            {
+                enemy.Position = new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height));
+            }
+
+            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && gear.Kind == WaveAttackKind.Arc && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
+            {
+                state.BladePlotKill = true;
+            }
+
             state.Emit(world.Tick, "hit", source, enemy.Id, enemy.Position, enemy.Position, actual);
         }
         private void TickOrbits()
@@ -235,7 +311,10 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 if (evolution?.Kind == WaveEvolutionKind.RepairOrbit)
                 {
                     var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
-                    if (building is not null) anchor = building.Position;
+                    if (building is not null)
+                    {
+                        anchor = building.Position;
+                    }
                 }
                 var index = 0;
                 var dirs = new[]{
@@ -256,7 +335,10 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                     state.Attacks[state.Attacks.IndexOf(old)] = next;
                     foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, point, next.Radius)))
                     {
-                        if (state.Activations[old.ActivationId].HitTargets.Add(enemy.Id)) Hit(enemy, gear.Damage, group.Key, anchor, gear.Knockback, old.ActivationId);
+                        if (state.Activations[old.ActivationId].HitTargets.Add(enemy.Id))
+                        {
+                            Hit(enemy, gear.Damage, group.Key, anchor, gear.Knockback, old.ActivationId);
+                        }
                     }
                     index++;
                 }

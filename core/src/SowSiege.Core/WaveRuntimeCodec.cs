@@ -24,11 +24,14 @@ namespace SowSiege.Core
             Write(d.Behavior.WetSpeedDivisor); Write(d.Behavior.DryDamageDivisor); Write(d.Behavior.RangedRangeMultiplier); Write(d.Behavior.PathConnectionMultiplier); Write(d.DryAfterTicks);
             WriteMap(d.Gear, g =>
             {
-                Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null) WriteList(g.Levels, l =>
+                Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null)
+                {
+                    WriteList(g.Levels, l =>
                 {
                     Write(l.Damage); Write(l.Range); Write(l.CooldownTicks); Write(l.Speed); Write(l.Count); Write(l.LifetimeTicks); Write(l.Knockback);
                 }
                 );
+                }
             }
 );
             WriteMap(d.Items, i =>
@@ -47,7 +50,10 @@ namespace SowSiege.Core
             }
 );
             Write(d.MaterialTargets is not null);
-            if (d.MaterialTargets is not null) WriteMap(d.MaterialTargets, Write);
+            if (d.MaterialTargets is not null)
+            {
+                WriteMap(d.MaterialTargets, Write);
+            }
         }
         private void WriteWave(WaveRuntimeState s)
         {

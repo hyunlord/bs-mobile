@@ -105,9 +105,14 @@ public static class InteractiveCli
             var phase = tick / 180 % 8;
             var input = phase switch
             {
-                0 => new PlayerInput(1000, 0), 1 => new PlayerInput(1000, 1000), 2 => new PlayerInput(0, 1000),
-                3 => new PlayerInput(-1000, 1000), 4 => new PlayerInput(-1000, 0), 5 => new PlayerInput(-1000, -1000),
-                6 => new PlayerInput(0, -1000), _ => new PlayerInput(1000, -1000)
+                0 => new PlayerInput(1000, 0),
+                1 => new PlayerInput(1000, 1000),
+                2 => new PlayerInput(0, 1000),
+                3 => new PlayerInput(-1000, 1000),
+                4 => new PlayerInput(-1000, 0),
+                5 => new PlayerInput(-1000, -1000),
+                6 => new PlayerInput(0, -1000),
+                _ => new PlayerInput(1000, -1000)
             };
             Send(ReplayCommandKind.Advance, input); tick++;
             if (tick % 1800 == 0) { ReplayCodec.WriteCheckpoint(output, new(session.NextSequence, tick, session.ComputeStateHash())); }
