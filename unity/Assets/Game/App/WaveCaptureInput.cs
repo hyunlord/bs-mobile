@@ -8,6 +8,12 @@ namespace Game.App
     {
         static readonly string[] Priority={"core:sowing_sworddance","core:warded_masonry","core:sheltered_sowing","core:seed_bag","core:rain_ladle","core:carpenter_hammer","core:muster_horn","core:iron_blade","core:ward_orbit","core:storm_fork","core:ember_wand","core:harvest_scythe"};
         static string[] preferred;
+        static bool evasive;
+        public static void ConfigureMovement(string value)
+        {
+            if(!string.IsNullOrEmpty(value)&&value!="default"&&value!="evasive")throw new ArgumentException("Capture movement must be default or evasive.",nameof(value));
+            evasive=value=="evasive";
+        }
         public static void ConfigurePriority(string value) => preferred=string.IsNullOrWhiteSpace(value)?null:value.Split(',');
         public static int CardRank(string id) { var selection=preferred??Priority;var index=Array.IndexOf(selection,id);return index<0?100:index; }
         public static string ChooseCard(CardOfferView offers,RunFrame frame,ContentCatalog catalog,string targetMaterial=null)
@@ -25,6 +31,11 @@ namespace Game.App
         }
         public static WorldPoint Target(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog=null)
         {
+            var target=GrowthTarget(frame,wave,fallback,catalog);
+            return evasive?EvasiveTarget(frame,wave,target,catalog):target;
+        }
+        static WorldPoint GrowthTarget(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog)
+        {
             var reward=wave.Rewards.OrderBy(r=>Distance(r.Position,frame.Lord.Position)).FirstOrDefault();if(reward!=null)return reward.Position;
             var ripe=wave.Work.Where(w=>w.Kind=="grain"&&w.Complete&&w.Health>0).OrderBy(w=>Distance(w.Position,frame.Lord.Position)).FirstOrDefault();if(ripe!=null)return ripe.Position;
             var carpenter=catalog?.WaveRuntime?.Gear.Values.FirstOrDefault(g=>g.Kind==WaveAttackKind.ConstructionSlam);
@@ -32,6 +43,45 @@ namespace Game.App
             var building=wave.Work.Where(w=>w.Kind=="building"&&!w.Complete&&w.Health>0).OrderBy(w=>Distance(w.Position,frame.Lord.Position)).FirstOrDefault();
             if(building!=null)return new WorldPoint(building.Position.X+(int)(Math.Cos(frame.Tick/30d)*100),building.Position.Y+(int)(Math.Sin(frame.Tick/30d)*100));
             return fallback;
+        }
+        static WorldPoint EvasiveTarget(RunFrame frame,WaveRuntimeFrame wave,WorldPoint target,ContentCatalog catalog)
+        {
+            const int step=450, observationRadius=1800, clearance=200;
+            var origin=frame.Lord.Position;
+            var nearby=frame.Enemies.Where(e=>e.Health>0&&Distance(e.Position,origin)<=(long)observationRadius*observationRadius).ToArray();
+            WorldPoint Clamp(WorldPoint point)=>new WorldPoint(Math.Max(0,Math.Min(frame.MapWidth,point.X)),Math.Max(0,Math.Min(frame.MapHeight,point.Y)));
+            WorldPoint Toward(WorldPoint point)
+            {
+                var length=Math.Sqrt(Distance(origin,point));
+                return length<=step?Clamp(point):Clamp(new WorldPoint(origin.X+(int)((point.X-origin.X)*step/length),origin.Y+(int)((point.Y-origin.Y)*step/length)));
+            }
+            double Risk(WorldPoint point)
+            {
+                double risk=0;
+                foreach(var enemy in nearby)
+                {
+                    var radius=clearance+(catalog!=null&&catalog.Enemies.TryGetValue(enemy.DefinitionId,out var rule)?rule.Range:0);
+                    risk+=Math.Max(0,1-Math.Sqrt(Distance(point,enemy.Position))/Math.Max(1,radius));
+                    var tell=wave.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);
+                    if(tell==null||(tell.Phase!="tell-charge"&&tell.Phase!="charge"&&tell.Phase!="tell-water"&&tell.Phase!="water"))continue;
+                    var dx=(double)tell.Target.X-tell.Origin.X;var dy=(double)tell.Target.Y-tell.Origin.Y;
+                    var denominator=dx*dx+dy*dy;
+                    var t=denominator==0?0:Math.Max(0,Math.Min(1,((point.X-tell.Origin.X)*dx+(point.Y-tell.Origin.Y)*dy)/denominator));
+                    var x=point.X-(tell.Origin.X+t*dx);var y=point.Y-(tell.Origin.Y+t*dy);
+                    risk+=2*Math.Max(0,1-Math.Sqrt(x*x+y*y)/Math.Max(1,radius));
+                }
+                return risk;
+            }
+            double RouteRisk(WorldPoint point)=>Risk(point)*2+Risk(new WorldPoint((origin.X+point.X)/2,(origin.Y+point.Y)/2));
+            var direct=Toward(target);var best=direct;var bestRisk=RouteRisk(direct);
+            if(bestRisk==0)return target;
+            for(var i=0;i<8;i++)
+            {
+                var angle=i*Math.PI/4;var candidate=Clamp(new WorldPoint(origin.X+(int)(Math.Cos(angle)*step),origin.Y+(int)(Math.Sin(angle)*step)));
+                var risk=RouteRisk(candidate);
+                if(risk<bestRisk||(risk==bestRisk&&Distance(candidate,target)<Distance(best,target))){best=candidate;bestRisk=risk;}
+            }
+            return best;
         }
         static long Distance(WorldPoint a,WorldPoint b){var x=(long)a.X-b.X;var y=(long)a.Y-b.Y;return x*x+y*y;}
     }

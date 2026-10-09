@@ -137,6 +137,7 @@ namespace Game.P1Capture
             if (stage == 0)
             {
                 WaveCaptureInput.ConfigurePriority(Environment.GetEnvironmentVariable("P1_CAPTURE_PRIORITY"));
+                WaveCaptureInput.ConfigureMovement(Environment.GetEnvironmentVariable("P1_CAPTURE_MOVEMENT"));
                 output = SessionState.GetString("SowSiege.P1Capture.Output", "");
                 ledger = new StreamWriter(Path.Combine(output, "capture-ledger.tsv"), false) { AutoFlush = true };
                 ledger.WriteLine("mediaSeconds\ttick\tkind\tdetail\tunscaledSeconds\trenderFrame");

@@ -133,6 +133,9 @@ namespace Game.App
             var args=Environment.GetCommandLineArgs();
             var seedArgument=Array.IndexOf(args,"--capture-seed");
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
+            var movementArgument=Array.IndexOf(args,"--capture-movement");
+            if(movementArgument>=0&&movementArgument+1>=args.Length)throw new ArgumentException("--capture-movement requires default or evasive.");
+            WaveCaptureInput.ConfigureMovement(movementArgument<0?null:args[movementArgument+1]);
             var priorityArgument=Array.IndexOf(args,"--capture-priority");
             if(priorityArgument>=0){if(priorityArgument+1>=args.Length)throw new ArgumentException("--capture-priority requires comma-separated card IDs.");WaveCaptureInput.ConfigurePriority(args[priorityArgument+1]);}
             var targetArgument=Array.IndexOf(args,"--capture-target-material");

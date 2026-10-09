@@ -46,6 +46,34 @@ namespace Game.Tests
             finally{WaveCaptureInput.ConfigurePriority(null);}
         }
         [Test]
+        public void EvasiveCaptureChangesOnlyBoundedMovementTargetsAndIsOptIn()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Wave catalog required.");
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var hash=session.ComputeStateHash();var original=session.View.CaptureFrame();
+            var frame=original with {Lord=original.Lord with {Position=new WorldPoint(2000,2000)},Enemies=new[]{new EnemyView(7,catalog.Enemies.Keys.First(),new WorldPoint(2300,2000),100,100)}};
+            var wave=((IWaveRunView)session.View).CaptureWaveRuntime() with {Timber=0};
+            var target=new WorldPoint(2600,2000);
+            try
+            {
+                WaveCaptureInput.ConfigureMovement(null);
+                Assert.That(WaveCaptureInput.Target(frame,wave,target,catalog),Is.EqualTo(target));
+                WaveCaptureInput.ConfigureMovement("evasive");
+                var result=WaveCaptureInput.Target(frame,wave,target,catalog);
+                Assert.That(result,Is.Not.EqualTo(target));
+                Assert.That(result.X,Is.InRange(0,frame.MapWidth));Assert.That(result.Y,Is.InRange(0,frame.MapHeight));
+                Assert.That((long)(result.X-2000)*(result.X-2000)+(long)(result.Y-2000)*(result.Y-2000),Is.LessThanOrEqualTo(450L*450));
+                Assert.That(WaveCaptureInput.Target(frame,wave,target,catalog),Is.EqualTo(result),"Same observations select the same ordinary target.");
+                Assert.That(WaveCaptureInput.Target(frame with {Enemies=Array.Empty<EnemyView>()},wave,target,catalog),Is.EqualTo(target),"Safe growth direction is retained.");
+                var telegraph=wave with {Enemies=new[]{new WaveEnemyView(7,"tell-charge",new WorldPoint(0,2000),new WorldPoint(4000,2000),100,false,false,0)}};
+                Assert.That(WaveCaptureInput.Target(frame,telegraph,target,catalog).Y,Is.Not.EqualTo(2000),"Observed charge lane should favor a lateral ordinary input.");
+                Assert.That(session.ComputeStateHash(),Is.EqualTo(hash),"Movement selector must not mutate simulation state.");
+                Assert.Throws<ArgumentException>(()=>WaveCaptureInput.ConfigureMovement("invulnerable"));
+            }
+            finally{WaveCaptureInput.ConfigureMovement(null);}
+        }
+        [Test]
         public void WaveProfileFeedsSharedWidgetsFromItsOwnState()
         {
             if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Run this profile integration with UNITY_CONTENT_PROFILE=wave-1a.");
