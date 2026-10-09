@@ -12,7 +12,7 @@ public sealed class WaveWorkTests
             new WaveGearDefinition("test:hammer", "design", WaveAttackKind.ConstructionSlam, 1, 20, 2, 10, 1, 10, 0, 3, 20, 9, 2),
             new WaveGearDefinition("test:horn", "design", WaveAttackKind.MusterWave, 2, 40, 2, 10, 1, 10, 0, 3, 20, 11, 4)
         }.ToDictionary(g => g.Id);
-        var definition = new WaveRuntimeDefinition("test", "test:chapter", "design", "test:boss", 1000, 1, workers, timber, 2, rainTicks, 2, 10, 5, 20, 10, gear,
+        var definition = new WaveRuntimeDefinition("test", "test:chapter", "design", "test:boss", 1000, 1, workers, timber, 2, rainTicks, 2, 10, 5, 20, 10, new(2, 2, 4, 2), gear,
             new Dictionary<string, WaveItemDefinition>(), new Dictionary<string, WaveEvolutionDefinition>(), new Dictionary<string, WaveEnemyDefinition>(), DryAfterTicks: dryAfter);
         var catalog = InteractiveTests.Catalog() with { WaveRuntime = definition };
         var world = new WorldState { Lord = new(100, 100), WaveRuntime = new() { Water = 2, Timber = timber, TimberOrigin = new(100, 100), AvailableWorkers = workers } };

@@ -53,8 +53,8 @@ namespace SowSiege.Core
                     world.Enemies.Remove(displaced); State.EnemyActions.Remove(displaced.Id);
                 }
                 var map = catalog.Tuning.World.Map;
-                var edge = random.Next(4);
-                var position = edge switch { 0 => new Position(0, random.Next(map.Height)), 1 => new Position(map.Width, random.Next(map.Height)), 2 => new Position(random.Next(map.Width), 0), _ => new Position(random.Next(map.Width), map.Height) };
+                var edge = random.Next(WaveGeometry.RectangleSides);
+                var position = edge switch { 0 => new Position(0, random.Next(map.Height)), 1 => new Position(map.Width, random.Next(map.Height)), WaveGeometry.TopEdge => new Position(random.Next(map.Width), 0), _ => new Position(random.Next(map.Width), map.Height) };
                 var enemy = new EnemyState { Id = world.AllocateId(), Definition = rule.Id, Position = position, Health = catalog.Enemies[rule.Id].Health };
                 world.Enemies.Add(enemy); world.SpawnedEnemies++;
                 if (rule.Kind == WaveEnemyKind.FloodBoss) { State.BossSpawned = true; }
@@ -65,10 +65,10 @@ namespace SowSiege.Core
         private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action)
         {
             var body = catalog.Enemies[enemy.Definition];
-            var speed = action.WetUntil > world.Tick ? Math.Max(1, body.Speed / 2) : body.Speed;
+            var speed = action.WetUntil > world.Tick ? Math.Max(1, body.Speed / Definition.Behavior.WetSpeedDivisor) : body.Speed;
             if (action.Phase == "recovery")
             {
-                if (rule.Kind == WaveEnemyKind.Ranged) { enemy.Position = Clamp(enemy.Position.MoveToward(new Position(enemy.Position.X * 2 - world.Lord.X, enemy.Position.Y * 2 - world.Lord.Y), speed)); }
+                if (rule.Kind == WaveEnemyKind.Ranged) { enemy.Position = Clamp(enemy.Position.MoveToward(new Position(enemy.Position.X * WaveGeometry.MidpointDivisor - world.Lord.X, enemy.Position.Y * WaveGeometry.MidpointDivisor - world.Lord.Y), speed)); }
                 if (world.Tick < action.UntilTick) { return; }
                 action.Phase = "approach";
             }
@@ -153,11 +153,11 @@ namespace SowSiege.Core
             }
             if (rule.Kind == WaveEnemyKind.FloodBoss)
             {
-                if (action.BossPhase < 2)
+                if (action.BossPhase < WaveGeometry.WaterLaneCount)
                 {
                     var map = catalog.Tuning.World.Map;
                     // A finite lane through the center leaves both edge exits open.
-                    Tell(enemy, action, rule, "water", new Position(map.Width * 3 / 4, map.Height * (action.BossPhase + 1) / 3), new Position(map.Width / 4, map.Height * (action.BossPhase + 1) / 3));
+                    Tell(enemy, action, rule, "water", new Position(map.Width * WaveGeometry.FarLaneQuarter / WaveGeometry.RectangleSides, map.Height * (action.BossPhase + 1) / WaveGeometry.LanePartitions), new Position(map.Width / WaveGeometry.RectangleSides, map.Height * (action.BossPhase + 1) / WaveGeometry.LanePartitions));
                 }
                 else { Tell(enemy, action, rule, "charge", world.Lord); }
                 return;
@@ -181,7 +181,7 @@ namespace SowSiege.Core
             }
             if (rule.Kind == WaveEnemyKind.Ranged)
             {
-                if (enemy.Position.DistanceSquared(world.Lord) > (long)body.Range * body.Range * 16)
+                if (enemy.Position.DistanceSquared(world.Lord) > (long)body.Range * body.Range * Definition.Behavior.RangedRangeMultiplier * Definition.Behavior.RangedRangeMultiplier)
                 { enemy.Position = enemy.Position.MoveToward(world.Lord, speed); }
                 else if (State.Work.Any(w => w.Kind == "grain" && w.Health > 0 && w.Complete
                     && OnSegment(world.Lord, w.Position, w.Position, catalog.Tuning.World.Farms.Spacing)))
@@ -191,7 +191,7 @@ namespace SowSiege.Core
             if (enemy.Position.DistanceSquared(target) <= (long)body.Range * body.Range) { Tell(enemy, action, rule, "strike", target); return; }
             if (action.TargetId < 0 && (rule.Kind == WaveEnemyKind.Pursuer || rule.Kind == WaveEnemyKind.SeedThief) && State.Paths.Count > 1)
             {
-                var connected = State.Paths.Where(p => State.Paths.Any(other => other != p && other.DistanceSquared(p) <= 4L * Definition.PathSpacing * Definition.PathSpacing)).OrderBy(p => p.DistanceSquared(enemy.Position)).ToArray();
+                var connected = State.Paths.Where(p => State.Paths.Any(other => other != p && other.DistanceSquared(p) <= (long)Definition.Behavior.PathConnectionMultiplier * Definition.Behavior.PathConnectionMultiplier * Definition.PathSpacing * Definition.PathSpacing)).OrderBy(p => p.DistanceSquared(enemy.Position)).ToArray();
                 if (connected.Length > 0)
                 {
                     var path = connected[0];

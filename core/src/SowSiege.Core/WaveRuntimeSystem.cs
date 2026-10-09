@@ -21,7 +21,8 @@ namespace SowSiege.Core
             state = world.WaveRuntime = new()
             {
                 Water = definition.WaterCapacity,
-                Timber = definition.InitialTimber, TimberOrigin=world.Estate,
+                Timber = definition.InitialTimber,
+                TimberOrigin = world.Estate,
                 AvailableWorkers = definition.InitialWorkers
             };
             enemies = new(catalog, world, random, interactive);
@@ -115,7 +116,7 @@ namespace SowSiege.Core
         {
             if (gear.Kind == WaveAttackKind.WaterFan && state.Water <= 0) gear = gear with
             {
-                Damage = Math.Max(1, gear.Damage / 2),
+                Damage = Math.Max(1, gear.Damage / definition.Behavior.DryDamageDivisor),
                 Knockback = 0
             }
 ;
@@ -174,13 +175,13 @@ namespace SowSiege.Core
             }
             else if (gear.Kind == WaveAttackKind.Orbit)
             {
-                var phase = (world.Tick / Math.Max(1, gear.CooldownTicks)) % 8;
+                var phase = (world.Tick / Math.Max(1, gear.CooldownTicks)) % WaveGeometry.OrbitDirections;
                 var dirs = new[]{
 new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Position(-1,0),new Position(-1,-1),new Position(0,-1),new Position(1,-1)}
                 ;
                 for (int i = 0; i < gear.Count; i++)
                 {
-                    var direction = HasItem(WaveItemKind.FrontOrbit) && FrontEnemy(origin, facing, gear.Range) ? new Position(facing.X + (i % 2 == 0 ? -facing.Y : facing.Y), facing.Y + (i % 2 == 0 ? facing.X : -facing.X)) : dirs[(phase + i * 8 / gear.Count) % 8];
+                    var direction = HasItem(WaveItemKind.FrontOrbit) && FrontEnemy(origin, facing, gear.Range) ? new Position(facing.X + (i % WaveGeometry.MidpointDivisor == 0 ? -facing.Y : facing.Y), facing.Y + (i % WaveGeometry.MidpointDivisor == 0 ? facing.X : -facing.X)) : dirs[(phase + i * WaveGeometry.OrbitDirections / gear.Count) % WaveGeometry.OrbitDirections];
                     var point = origin.MoveToward(new(origin.X + direction.X * gear.Range, origin.Y + direction.Y * gear.Range), gear.Range);
                     state.Attacks.Add(new(source, "orbit", new(origin.X, origin.Y), new(point.X, point.Y), Math.Max(1, gear.Speed), world.Tick + gear.CooldownTicks, activation));
                     state.Emit(world.Tick, "orbit-fragment", source, -1, origin, point, Math.Max(1, gear.Speed));
@@ -197,14 +198,14 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 if (gear.Kind == WaveAttackKind.HarvestArc) foreach (var plot in state.Work.Where(w => w.Kind == "grain" && w.Complete && w.Health > 0 && InArc(origin, facing, w.Position, gear.Range)).ToArray())
                     {
                         work.Harvest(plot);
-                        foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, plot.Position, gear.Range / 2)).OrderBy(e => e.Id).Take(gear.Count)) Hit(enemy, gear.Damage, source, plot.Position, 0, activation);
-                        state.Emit(world.Tick, "harvest-fragments", source, plot.Id, plot.Position, plot.Position, gear.Range / 2);
+                        foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor)).OrderBy(e => e.Id).Take(gear.Count)) Hit(enemy, gear.Damage, source, plot.Position, 0, activation);
+                        state.Emit(world.Tick, "harvest-fragments", source, plot.Id, plot.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor);
                     }
             }
             if (world.Tools.TryGetValue(gear.Id, out var ledger)) ledger.Activations++;
             if (evolution?.Kind == WaveEvolutionKind.PlantingArc)
             {
-                work.PlantSweep(evolution.InputIds[1], origin, facing, gear.Range, Math.Max(3, gear.Count));
+                work.PlantSweep(evolution.InputIds[1], origin, facing, gear.Range, Math.Max(WaveGeometry.MinimumFanSamples, gear.Count));
             }
             else if (gear.Kind >= WaveAttackKind.SeedFan) { work.Activate(gear, origin, facing); }
             if (gear.Kind != WaveAttackKind.Orbit && (gear.Kind != WaveAttackKind.Homing || children == 0)) state.ResolveActivation(activation);
@@ -242,9 +243,9 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
 ;
                 foreach (var old in group)
                 {
-                    var phase = (world.Tick / Math.Max(1, gear.CooldownTicks / 8) + index * 8 / gear.Count) % 8;
+                    var phase = (world.Tick / Math.Max(1, gear.CooldownTicks / WaveGeometry.OrbitDirections) + index * WaveGeometry.OrbitDirections / gear.Count) % WaveGeometry.OrbitDirections;
                     var facing = state.Facing;
-                    var direction = HasItem(WaveItemKind.FrontOrbit) && FrontEnemy(anchor, facing, gear.Range) ? new Position(facing.X + (index % 2 == 0 ? -facing.Y : facing.Y), facing.Y + (index % 2 == 0 ? facing.X : -facing.X)) : dirs[phase];
+                    var direction = HasItem(WaveItemKind.FrontOrbit) && FrontEnemy(anchor, facing, gear.Range) ? new Position(facing.X + (index % WaveGeometry.MidpointDivisor == 0 ? -facing.Y : facing.Y), facing.Y + (index % WaveGeometry.MidpointDivisor == 0 ? facing.X : -facing.X)) : dirs[phase];
                     var point = anchor.MoveToward(new(anchor.X + direction.X * gear.Range, anchor.Y + direction.Y * gear.Range), gear.Range);
                     var next = old with
                     {
@@ -280,7 +281,7 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                     state.ResolveChild(p.ActivationId);
                     continue;
                 }
-                if (Within(p.Position, target.Position, Math.Max(1, p.Speed / 2)))
+                if (Within(p.Position, target.Position, Math.Max(1, p.Speed / WaveGeometry.MidpointDivisor)))
                 {
                     Hit(target, p.Damage, p.Source, p.Previous, 0, p.ActivationId);
                     state.Projectiles.Remove(p);
@@ -293,7 +294,7 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
         internal static bool InArc(Position origin, Position facing, Position point, int radius)
         {
             long x = point.X - origin.X, y = point.Y - origin.Y, dot = x * facing.X + y * facing.Y;
-            return Within(origin, point, radius) && dot >= 0 && 2 * dot * dot >= (x * x + y * y) * ((long)facing.X * facing.X + (long)facing.Y * facing.Y);
+            return Within(origin, point, radius) && dot >= 0 && WaveGeometry.FanSquaredDotFactor * dot * dot >= (x * x + y * y) * ((long)facing.X * facing.X + (long)facing.Y * facing.Y);
         }
     }
 }

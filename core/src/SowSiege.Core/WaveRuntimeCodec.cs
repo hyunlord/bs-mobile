@@ -20,7 +20,8 @@ namespace SowSiege.Core
             Write(d.WetTicks);
             Write(d.StopTicks);
             Write(d.PathSpacing);
-            Write(d.PathCapacity); Write(d.DryAfterTicks);
+            Write(d.PathCapacity);
+            Write(d.Behavior.WetSpeedDivisor); Write(d.Behavior.DryDamageDivisor); Write(d.Behavior.RangedRangeMultiplier); Write(d.Behavior.PathConnectionMultiplier); Write(d.DryAfterTicks);
             WriteMap(d.Gear, g =>
             {
                 Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null) WriteList(g.Levels, l =>
@@ -52,7 +53,7 @@ namespace SowSiege.Core
         {
             Write("wave-runtime-state-v1");
             Write(s.Water);
-            Write(s.Timber);Write(s.TimberOrigin);Write(s.ProcessedTimber);
+            Write(s.Timber); Write(s.TimberOrigin); Write(s.ProcessedTimber);
             Write(s.AvailableWorkers);
             Write(s.CarriedWater);
             Write(s.NextMission);

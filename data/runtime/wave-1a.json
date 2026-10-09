@@ -1879,7 +1879,13 @@
       "meta:timber": "core:carpenter_hammer",
       "meta:charter": "core:muster_horn"
     },
-    "dryAfterTicks": 45
+    "dryAfterTicks": 45,
+    "behavior": {
+      "wetSpeedDivisor": 2,
+      "dryDamageDivisor": 2,
+      "rangedRangeMultiplier": 4,
+      "pathConnectionMultiplier": 2
+    }
   },
   "provenance": [
     {

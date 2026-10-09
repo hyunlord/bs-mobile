@@ -195,15 +195,37 @@ public static partial class ContentLoader
         Require(wave.ChapterId == "meta:chapter_1" && wave.ChapterDesignRef == Reference(wave.ChapterId) && wave.BossId == "core:flood_tusk", "Unsupported wave chapter or boss.");
         Require(wave.BossSpawnTick > 0 && wave.BossSpawnTick < file.Tuning.DurationTicks && wave.GroupCap is > 0 and <= 16
             && wave.InitialWorkers >= wave.GroupCap && wave.InitialTimber > 0 && wave.WaterCapacity > 0 && wave.WaterRefillTicks > 0
+            && wave.Behavior is not null && wave.Behavior.WetSpeedDivisor is > 0 and <= 16 && wave.Behavior.DryDamageDivisor is > 0 and <= 16 && wave.Behavior.RangedRangeMultiplier is > 0 and <= 16 && wave.Behavior.PathConnectionMultiplier is > 0 and <= 16
             && wave.DryAfterTicks > 0 && wave.DryAfterTicks < wave.WaterRefillTicks && wave.PickupRadius > 0 && wave.WetTicks > 0 && wave.StopTicks > 0 && wave.PathSpacing > 0 && wave.PathCapacity is > 0 and <= 1024, "Invalid bounded wave work configuration.");
         var kindIds = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["core:iron_blade"] = "Arc", ["core:ward_orbit"] = "Orbit", ["core:storm_fork"] = "Chain", ["core:ember_wand"] = "Homing", ["core:harvest_scythe"] = "HarvestArc",
-            ["core:seed_bag"] = "SeedFan", ["core:rain_ladle"] = "WaterFan", ["core:carpenter_hammer"] = "ConstructionSlam", ["core:muster_horn"] = "MusterWave",
-            ["core:bitter_seed_dust"] = "SeedDetour", ["core:clay_water_bead"] = "CarryWater", ["core:crop_guard_signet"] = "HarvestGuard", ["core:joiner_square"] = "FrontOrbit",
-            ["core:meadow_buckle"] = "RaiderAim", ["core:levy_bread_wrap"] = "FieldMeal", ["core:gathering_loop"] = "PickupRadius", ["core:wayfarer_boots"] = "MoveSpeed",
-            ["core:sowing_sworddance"] = "PlantingArc", ["core:warded_masonry"] = "RepairOrbit", ["core:sheltered_sowing"] = "ShelteredPlot",
-            ["core:raider"] = "Pursuer", ["core:seed_mite"] = "SeedThief", ["core:crop_grazer"] = "RipeGrazer", ["core:ram_runner"] = "Charger", ["core:shield_raider"] = "Shield", ["core:wine_wasp"] = "Ranged", ["core:flood_tusk"] = "FloodBoss"
+            ["core:iron_blade"] = "Arc",
+            ["core:ward_orbit"] = "Orbit",
+            ["core:storm_fork"] = "Chain",
+            ["core:ember_wand"] = "Homing",
+            ["core:harvest_scythe"] = "HarvestArc",
+            ["core:seed_bag"] = "SeedFan",
+            ["core:rain_ladle"] = "WaterFan",
+            ["core:carpenter_hammer"] = "ConstructionSlam",
+            ["core:muster_horn"] = "MusterWave",
+            ["core:bitter_seed_dust"] = "SeedDetour",
+            ["core:clay_water_bead"] = "CarryWater",
+            ["core:crop_guard_signet"] = "HarvestGuard",
+            ["core:joiner_square"] = "FrontOrbit",
+            ["core:meadow_buckle"] = "RaiderAim",
+            ["core:levy_bread_wrap"] = "FieldMeal",
+            ["core:gathering_loop"] = "PickupRadius",
+            ["core:wayfarer_boots"] = "MoveSpeed",
+            ["core:sowing_sworddance"] = "PlantingArc",
+            ["core:warded_masonry"] = "RepairOrbit",
+            ["core:sheltered_sowing"] = "ShelteredPlot",
+            ["core:raider"] = "Pursuer",
+            ["core:seed_mite"] = "SeedThief",
+            ["core:crop_grazer"] = "RipeGrazer",
+            ["core:ram_runner"] = "Charger",
+            ["core:shield_raider"] = "Shield",
+            ["core:wine_wasp"] = "Ranged",
+            ["core:flood_tusk"] = "FloodBoss"
         };
         void Identity(string key, string id, string reference, string kind)
         {

@@ -546,6 +546,38 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 1000000
+        },
+        "behavior": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "wetSpeedDivisor",
+            "dryDamageDivisor",
+            "rangedRangeMultiplier",
+            "pathConnectionMultiplier"
+          ],
+          "properties": {
+            "wetSpeedDivisor": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "dryDamageDivisor": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "rangedRangeMultiplier": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "pathConnectionMultiplier": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            }
+          }
         }
       },
       "required": [
@@ -569,7 +601,8 @@
         "evolutions",
         "enemies",
         "materialTargets",
-        "dryAfterTicks"
+        "dryAfterTicks",
+        "behavior"
       ],
       "additionalProperties": false
     },

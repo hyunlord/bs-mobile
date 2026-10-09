@@ -10,7 +10,7 @@ public sealed class WaveEnemyTests
         var id = c.Enemies.Keys.First();
         var enemies = new Dictionary<string, EnemyDefinition> { [id] = new(id, "lord", 100, 10, 7, 20, 20, 1) };
         var rules = new Dictionary<string, WaveEnemyDefinition> { [id] = new(id, "design:test", kind, 3, 10, 4, 30, 10000) };
-        c = c with { Enemies = enemies, WaveRuntime = new("test", "test:chapter", "design:test", id, 10000, 3, 2, 10, 5, 10, 20, 10, 10, 20, 5, new Dictionary<string, WaveGearDefinition>(), new Dictionary<string, WaveItemDefinition>(), new Dictionary<string, WaveEvolutionDefinition>(), rules) };
+        c = c with { Enemies = enemies, WaveRuntime = new("test", "test:chapter", "design:test", id, 10000, 3, 2, 10, 5, 10, 20, 10, 10, 20, 5, new(2, 2, 4, 2), new Dictionary<string, WaveGearDefinition>(), new Dictionary<string, WaveItemDefinition>(), new Dictionary<string, WaveEvolutionDefinition>(), rules) };
         var world = new WorldState { Lord = new(200, 100), LordHealth = 100, WaveRuntime = new(), NextId = 10 };
         var enemy = new EnemyState { Id = 1, Definition = id, Position = new(100, 100), Health = 100 };
         world.Enemies.Add(enemy);

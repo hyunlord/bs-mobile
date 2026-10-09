@@ -27,14 +27,14 @@ namespace SowSiege.Core
 
         internal void Activate(WaveGearDefinition gear, Position position, Position direction)
         {
-            var at = Clamp(position.MoveToward(new(position.X + direction.X * gear.Range, position.Y + direction.Y * gear.Range), Math.Max(1, gear.Range / 2)));
+            var at = Clamp(position.MoveToward(new(position.X + direction.X * gear.Range, position.Y + direction.Y * gear.Range), Math.Max(1, gear.Range / WaveGeometry.MidpointDivisor)));
             if (Definition.Evolutions.TryGetValue(gear.Id, out var evolution) && evolution.Kind == WaveEvolutionKind.ShelteredPlot)
             {
                 var builder = Definition.Gear[evolution.InputIds.First(id => Definition.Gear[id].Kind == WaveAttackKind.ConstructionSlam)];
                 var seed = Definition.Gear[evolution.InputIds.First(id => Definition.Gear[id].Kind == WaveAttackKind.SeedFan)];
                 var building = Build(builder, at);
                 if (building is not null && !State.Work.Any(w => w.Kind == "grain" && w.Health > 0 && w.ParentId == building.Id))
-                { var plot = Plant(seed, Clamp(new(building.Position.X + Math.Max(1, seed.WorkRadius / 2), building.Position.Y))); if (plot is not null) { plot.ParentId = building.Id; } }
+                { var plot = Plant(seed, Clamp(new(building.Position.X + Math.Max(1, seed.WorkRadius / WaveGeometry.MidpointDivisor), building.Position.Y))); if (plot is not null) { plot.ParentId = building.Id; } }
                 return;
             }
             switch (gear.Kind)
@@ -56,11 +56,11 @@ namespace SowSiege.Core
         internal void PlantSweep(string seedSource, Position origin, Position direction, int range, int count)
         {
             var gear = Gear(seedSource);
-            var forward = origin.MoveToward(new(origin.X + direction.X * range, origin.Y + direction.Y * range), Math.Max(1, range / 2));
+            var forward = origin.MoveToward(new(origin.X + direction.X * range, origin.Y + direction.Y * range), Math.Max(1, range / WaveGeometry.MidpointDivisor));
             var dx = forward.X - origin.X; var dy = forward.Y - origin.Y;
             for (var i = 0; i < Math.Max(1, count); i++)
             {
-                var offset = count <= 1 ? 0 : (i * 2 - count + 1);
+                var offset = count <= 1 ? 0 : (i * WaveGeometry.MidpointDivisor - count + 1);
                 var denominator = Math.Max(1, count - 1);
                 Plant(gear, Clamp(new(forward.X - (int)((long)dy * offset / denominator), forward.Y + (int)((long)dx * offset / denominator))));
             }
@@ -257,7 +257,7 @@ namespace SowSiege.Core
                     group.Formation = "cover";
                     var returning = State.Groups.Where(g => g.Id != group.Id && g.Health > 0 && g.Phase == "returning").OrderBy(g => g.Position.DistanceSquared(group.Position)).ThenBy(g => g.Id).FirstOrDefault();
                     var defended = returning?.Position ?? anchor;
-                    var cover = defended.MoveToward(enemy.Position, Math.Max(1, gear.WorkRadius / 2));
+                    var cover = defended.MoveToward(enemy.Position, Math.Max(1, gear.WorkRadius / WaveGeometry.MidpointDivisor));
                     group.Position = group.Position.MoveToward(cover, Math.Max(1, gear.Speed));
                     continue;
                 }

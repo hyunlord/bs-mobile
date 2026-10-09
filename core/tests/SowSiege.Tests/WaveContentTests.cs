@@ -41,6 +41,9 @@ public sealed class WaveContentTests : IDisposable
     [InlineData("enum-number")]
     [InlineData("missing-field")]
     [InlineData("zero-cadence")]
+    [InlineData("missing-behavior")]
+    [InlineData("zero-behavior")]
+    [InlineData("oversized-behavior")]
     [InlineData("foreign-selection")]
     [InlineData("legacy-mix")]
     [InlineData("recipe")]
@@ -64,6 +67,9 @@ public sealed class WaveContentTests : IDisposable
             case "enum-number": gear["kind"] = 0; break;
             case "missing-field": gear.AsObject().Remove("damage"); break;
             case "zero-cadence": gear["cooldownTicks"] = 0; break;
+            case "missing-behavior": data["definition"]!.AsObject().Remove("behavior"); break;
+            case "zero-behavior": data["definition"]!["behavior"]!["wetSpeedDivisor"] = 0; break;
+            case "oversized-behavior": data["definition"]!["behavior"]!["rangedRangeMultiplier"] = 17; break;
             case "foreign-selection": profile["selection"]!["weapons"]![0] = "core:canal_bow"; break;
             case "legacy-mix": profile["tuningFile"] = "first-playable-tuning.json"; break;
             case "flat-growth": foreach (var level in gear["levels"]!.AsArray()) { level!["range"] = gear["range"]!.DeepClone(); level["cooldownTicks"] = gear["cooldownTicks"]!.DeepClone(); } break;
