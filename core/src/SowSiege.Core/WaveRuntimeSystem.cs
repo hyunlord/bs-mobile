@@ -21,7 +21,7 @@ namespace SowSiege.Core
             state = world.WaveRuntime = new()
             {
                 Water = definition.WaterCapacity,
-                Timber = definition.InitialTimber,
+                Timber = definition.InitialTimber, TimberOrigin=world.Estate,
                 AvailableWorkers = definition.InitialWorkers
             };
             enemies = new(catalog, world, random, interactive);
@@ -123,7 +123,7 @@ namespace SowSiege.Core
             var facing = state.Facing;
             if (evolution?.Kind == WaveEvolutionKind.RepairOrbit)
             {
-                var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
+                var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
                 if (building != null) origin = building.Position;
             }
             if (gear.Kind == WaveAttackKind.Arc && HasItem(WaveItemKind.RaiderAim))
@@ -233,7 +233,7 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 var anchor = world.Lord;
                 if (evolution?.Kind == WaveEvolutionKind.RepairOrbit)
                 {
-                    var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
+                    var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
                     if (building is not null) anchor = building.Position;
                 }
                 var index = 0;

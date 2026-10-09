@@ -115,14 +115,7 @@ namespace SowSiege.Core
         }
         private void TickBuilding(WaveWork w, WaveGearDefinition gear)
         {
-            if (w.Complete && world.Tick >= w.ReadyTick)
-            {
-                var target = world.Enemies.Where(e => e.Health > 0 && Near(e.Position, w.Position, gear.Range)).OrderBy(e => e.Id).FirstOrDefault();
-                if (target is not null)
-                { var activation = State.BeginActivation("building:" + w.Source, 0, world.Tick); var damage = Math.Min(target.Health, gear.Damage); target.Health -= damage; world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage); State.ResolveActivation(activation);
-                    if (gear.Knockback > 0) { target.Position = Clamp(new(target.Position.X + Math.Sign(target.Position.X - w.Position.X) * gear.Knockback, target.Position.Y + Math.Sign(target.Position.Y - w.Position.Y) * gear.Knockback)); }
-                    Emit("building-brace-hit", w.Source, target.Id, target.Position, damage); w.ReadyTick = world.Tick + gear.CooldownTicks; }
-            }
+            if (w.Complete && world.Tick >= w.ReadyTick) { Brace(w, gear); }
             if (!Near(world.Lord, w.Position, gear.WorkRadius)) { return; }
             if (!w.Complete)
             {
@@ -131,12 +124,29 @@ namespace SowSiege.Core
                 if (w.ReadyTick == -1) { State.RepairCompleted = true; State.Completed.Remove("roof-used:" + w.Id); }
                 w.ReadyTick = world.Tick; Emit("building-complete", w.Source, w.Id, w.Position);
             }
-            if (!w.ShipmentActive && State.Timber > 0)
+            if (!w.ShipmentActive && State.Timber > 0 && Near(w.Position, State.TimberOrigin, gear.WorkRadius))
             { State.Timber--; w.ShipmentActive = true; Emit("timber-reserved", w.Source, w.Id, w.Position, 1); }
             if (!w.ShipmentActive || ++w.Progress < w.Required) { return; }
-            Reward(w.Source, w.Id, w.Cycle, "shipment", w.Position, gear.RewardExperience);
+            if (Reward(w.Source, w.Id, w.Cycle, "shipment", w.Position, gear.RewardExperience)) { State.ProcessedTimber++; }
             w.ShipmentActive = false; w.Progress = 0; w.Cycle = State.NextCycle++;
             Emit("shipment-complete", w.Source, w.Id, w.Position);
+        }
+        private void Brace(WaveWork building, WaveGearDefinition gear)
+        {
+            var nearest = world.Enemies.Where(e => e.Health > 0 && Near(e.Position, building.Position, gear.Range)).OrderBy(e => e.Position.DistanceSquared(building.Position)).ThenBy(e => e.Id).FirstOrDefault();
+            if (nearest is null) { return; }
+            var aim = new Position(nearest.Position.X - building.Position.X, nearest.Position.Y - building.Position.Y);
+            if (aim == new Position(0, 0)) { aim = State.Facing; }
+            var targets = world.Enemies.Where(e => e.Health > 0 && WaveRuntimeSystem.InArc(building.Position, aim, e.Position, gear.Range)).OrderBy(e => e.Id).ToArray();
+            var activation = State.BeginActivation("building:" + building.Source, 0, world.Tick);
+            State.Emit(world.Tick, "building-brace-swing", building.Source, building.Id, building.Position, nearest.Position, gear.Range);
+            foreach (var target in targets)
+            {
+                var damage = Math.Min(target.Health, gear.Damage); target.Health -= damage; world.WeaponDamage += damage; State.RecordDamage(activation, gear.Damage, damage);
+                if (gear.Knockback > 0) { target.Position = Clamp(new(target.Position.X + Math.Sign(target.Position.X - building.Position.X) * gear.Knockback, target.Position.Y + Math.Sign(target.Position.Y - building.Position.Y) * gear.Knockback)); }
+                Emit("building-brace-hit", building.Source, target.Id, target.Position, damage);
+            }
+            State.ResolveActivation(activation); building.ReadyTick = world.Tick + gear.CooldownTicks;
         }
         private void TickRain()
         {

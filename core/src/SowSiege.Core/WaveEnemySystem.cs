@@ -179,8 +179,15 @@ namespace SowSiege.Core
                 var crop = State.Work.Where(w => w.Kind == "grain" && w.Health > 0 && (rule.Kind == WaveEnemyKind.SeedThief ? !w.Complete : w.Complete)).OrderBy(w => w.Position.DistanceSquared(enemy.Position)).ThenBy(w => w.Id).FirstOrDefault();
                 if (crop is not null) { target = crop.Position; action.TargetId = crop.Id; }
             }
-            if (rule.Kind == WaveEnemyKind.Ranged && enemy.Position.DistanceSquared(world.Lord) <= (long)body.Range * body.Range * 16)
-            { Tell(enemy, action, rule, "shot", world.Lord); return; }
+            if (rule.Kind == WaveEnemyKind.Ranged)
+            {
+                if (enemy.Position.DistanceSquared(world.Lord) > (long)body.Range * body.Range * 16)
+                { enemy.Position = enemy.Position.MoveToward(world.Lord, speed); }
+                else if (State.Work.Any(w => w.Kind == "grain" && w.Health > 0 && w.Complete
+                    && OnSegment(world.Lord, w.Position, w.Position, catalog.Tuning.World.Farms.Spacing)))
+                { Tell(enemy, action, rule, "shot", world.Lord); }
+                return;
+            }
             if (enemy.Position.DistanceSquared(target) <= (long)body.Range * body.Range) { Tell(enemy, action, rule, "strike", target); return; }
             if (action.TargetId < 0 && (rule.Kind == WaveEnemyKind.Pursuer || rule.Kind == WaveEnemyKind.SeedThief) && State.Paths.Count > 1)
             {

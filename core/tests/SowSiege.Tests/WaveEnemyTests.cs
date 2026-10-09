@@ -91,7 +91,9 @@ public sealed class WaveEnemyTests
     public void RangedShotFollowsLockedAimWhileShooterRetreats()
     {
         var (system, world, enemy, _) = Arena(WaveEnemyKind.Ranged);
-        world.Lord = new(160, 100); Tick(system, world);
+        world.Lord = new(160, 100);
+        world.WaveRuntime!.Work.Add(new WaveWork { Id = 2, Kind = "grain", Position = world.Lord, Health = 1, Complete = true });
+        Tick(system, world);
         world.Lord = new(160, 200); Tick(system, world, 3);
         var before = enemy.Position;
         Tick(system, world, 3);
@@ -227,6 +229,36 @@ public sealed class WaveEnemyTests
         Tick(system, world); cover.Position = new(110, 130); Tick(system, world, 3);
         Assert.Equal(13, returning.Health); Assert.Equal(20, cover.Health);
         Assert.DoesNotContain(world.WaveRuntime.Events, e => e.Kind == "group-cover-intercept");
+    }
+
+    [Theory]
+    [InlineData(false, 1, false)]
+    [InlineData(true, 0, false)]
+    [InlineData(true, 1, true)]
+    public void RangedEnemyCannotShootWithoutNearbyLivingRipePlot(bool complete, int health, bool distant)
+    {
+        var (system, world, enemy, catalog) = Arena(WaveEnemyKind.Ranged);
+        world.Lord = new(110, 100);
+        world.WaveRuntime!.Work.Add(new WaveWork { Id = 2, Kind = "grain", Position = distant ? new Position(world.Lord.X + catalog.Tuning.World.Farms.Spacing + 1, world.Lord.Y) : world.Lord, Health = health, Complete = complete });
+        Tick(system, world, 10);
+        Assert.Equal(100, world.LordHealth);
+        Assert.Empty(world.WaveRuntime.Projectiles);
+        Assert.Equal("approach", world.WaveRuntime.EnemyActions[enemy.Id].Phase);
+        Assert.DoesNotContain(world.WaveRuntime.Events, e => e.Kind == "enemy-tell");
+    }
+
+    [Fact]
+    public void RangedTellRequiresRipePlotButCommittedShotSurvivesHarvest()
+    {
+        var (system, world, _, _) = Arena(WaveEnemyKind.Ranged);
+        world.Lord = new(160, 100);
+        Tick(system, world); Assert.Empty(world.WaveRuntime!.Events);
+        var crop = new WaveWork { Id = 2, Kind = "grain", Position = world.Lord, Health = 1, Complete = true };
+        world.WaveRuntime.Work.Add(crop); Tick(system, world);
+        Assert.Contains(world.WaveRuntime.Events, e => e.Kind == "enemy-tell");
+        crop.Health = 0;
+        Tick(system, world, 4);
+        Assert.Equal(93, world.LordHealth);
     }
 
 }

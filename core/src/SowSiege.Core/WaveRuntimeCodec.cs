@@ -52,7 +52,7 @@ namespace SowSiege.Core
         {
             Write("wave-runtime-state-v1");
             Write(s.Water);
-            Write(s.Timber);
+            Write(s.Timber);Write(s.TimberOrigin);Write(s.ProcessedTimber);
             Write(s.AvailableWorkers);
             Write(s.CarriedWater);
             Write(s.NextMission);

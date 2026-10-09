@@ -15,7 +15,7 @@ public sealed class WaveWorkTests
         var definition = new WaveRuntimeDefinition("test", "test:chapter", "design", "test:boss", 1000, 1, workers, timber, 2, rainTicks, 2, 10, 5, 20, 10, gear,
             new Dictionary<string, WaveItemDefinition>(), new Dictionary<string, WaveEvolutionDefinition>(), new Dictionary<string, WaveEnemyDefinition>(), DryAfterTicks: dryAfter);
         var catalog = InteractiveTests.Catalog() with { WaveRuntime = definition };
-        var world = new WorldState { Lord = new(100, 100), WaveRuntime = new() { Water = 2, Timber = timber, AvailableWorkers = workers } };
+        var world = new WorldState { Lord = new(100, 100), WaveRuntime = new() { Water = 2, Timber = timber, TimberOrigin = new(100, 100), AvailableWorkers = workers } };
         return (new(catalog, world, null), world, definition);
     }
     private static void Advance(WaveWorkSystem system, WorldState world, int count)
@@ -285,11 +285,35 @@ public sealed class WaveWorkTests
         var hammer = definition.Gear["test:hammer"] with { Knockback = 1000 };
         ((Dictionary<string, WaveGearDefinition>)definition.Gear)[hammer.Id] = hammer;
         system.Activate(hammer, world.Lord, new(0, 0)); Advance(system, world, 3);
-        var building = Assert.Single(world.WaveRuntime!.Work); building.Position = new(20, 100); world.Lord = new(20, 100);
-        var enemy = new EnemyState { Id = 100, Health = 5, Position = new(20 - offset, 100) }; world.Enemies.Add(enemy);
+        var building = Assert.Single(world.WaveRuntime!.Work); building.Position = new(40, 100); world.Lord = new(40, 100);
+        var enemy = new EnemyState { Id = 100, Health = 5, Position = new(40 - offset, 100) }; world.Enemies.Add(enemy);
         var before = enemy.Position; Advance(system, world, 1);
         Assert.Equal(hit ? 4 : 5, enemy.Health); Assert.Equal(hit ? new Position(0, 100) : before, enemy.Position);
         Assert.Equal(hit ? 1 : 0, world.WeaponDamage);
         Assert.Equal(hit, world.WaveRuntime.Events.Any(e => e.Kind == "building-brace-hit"));
+    }
+
+    [Fact]
+    public void BuildingFanHitsFrontNeighborsButNotRearInOneActivation()
+    {
+        var (system, world, definition) = Arena(timber: 0);
+        system.Activate(definition.Gear["test:hammer"], world.Lord, new(0, 0)); Advance(system, world, 3);
+        world.Enemies.AddRange(new[] { new EnemyState { Id = 100, Health = 5, Position = new(105, 100) }, new EnemyState { Id = 101, Health = 5, Position = new(110, 105) }, new EnemyState { Id = 102, Health = 5, Position = new(90, 100) } });
+        Advance(system, world, 1);
+        Assert.Equal(new[] { 4, 4, 5 }, world.Enemies.Select(e => e.Health));
+        Assert.Single(world.WaveRuntime!.Events, e => e.Kind == "building-brace-swing");
+    }
+
+    [Fact]
+    public void ShipmentRequiresOriginalNearbyStockAndRepairNeverRefillsIt()
+    {
+        var (system, world, definition) = Arena(); var origin = world.WaveRuntime!.TimberOrigin;
+        world.Lord = new(500, 500); system.Activate(definition.Gear["test:hammer"], world.Lord, new(0, 0)); Advance(system, world, 9);
+        Assert.Equal(1, world.WaveRuntime.Timber); Assert.Equal(0, world.WaveRuntime.ProcessedTimber);
+        world.Lord = origin; system.Activate(definition.Gear["test:hammer"], world.Lord, new(0, 0)); Advance(system, world, 5);
+        Assert.Equal(0, world.WaveRuntime.Timber); Assert.Equal(1, world.WaveRuntime.ProcessedTimber);
+        var local = world.WaveRuntime.Work.Single(w => w.Position == origin); local.Health = 0;
+        system.Activate(definition.Gear["test:hammer"], origin, new(0, 0)); Advance(system, world, 10);
+        Assert.Equal(origin, world.WaveRuntime.TimberOrigin); Assert.Equal(0, world.WaveRuntime.Timber); Assert.Equal(1, world.WaveRuntime.ProcessedTimber);
     }
 }

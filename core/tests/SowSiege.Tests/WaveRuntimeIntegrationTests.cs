@@ -58,4 +58,24 @@ public sealed class WaveRuntimeIntegrationTests
         }
         Assert.Equal(Points(false,false),Points(true,false));Assert.NotEqual(Points(false,true),Points(true,true));
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RepairOrbitAnchorsOnlyToActualRepairNotNewConstruction(bool repairing)
+    {
+        var s=Session();var w=s.Simulation.World;var d=s.Catalog.WaveRuntime!;
+        var recipe=d.Evolutions.Values.Single(e=>e.Kind==WaveEvolutionKind.RepairOrbit);
+        w.Equipment.Clear();w.Equipment.Add(new(){Id=recipe.InputIds[0]});
+        w.WaveRuntime!.Evolutions.Add(recipe.Id);
+        var building=new WaveWork{Id=100,Source=recipe.InputIds[1],Kind="building",Position=new(w.Lord.X+500,w.Lord.Y),Health=10,Required=1000,ReadyTick=repairing?-1:0};
+        w.WaveRuntime.Work.Add(building);
+        s.Simulation.Wave!.Tick(w.Lord);
+        var expected=repairing?building.Position:w.Lord;
+        Assert.All(w.WaveRuntime.Attacks,a=>Assert.Equal(new WorldPoint(expected.X,expected.Y),a.Origin));
+        Assert.NotEmpty(w.WaveRuntime.Attacks);
+        building.ReadyTick=repairing?0:-1;w.Tick++;
+        s.Simulation.Wave.Tick(w.Lord);
+        expected=repairing?w.Lord:building.Position;
+        Assert.All(w.WaveRuntime.Attacks,a=>Assert.Equal(new WorldPoint(expected.X,expected.Y),a.Origin));
+    }
 }
