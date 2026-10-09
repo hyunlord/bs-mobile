@@ -13,6 +13,8 @@
 
 정본 데이터: [system-design-v1.json](../../data/system-design-v1.json). [형식·ID·designRef·Lattice 읽기 계약](designed-v1-catalog-contract.md), [ADR0039](../adr/0039-versioned-design-catalog.md), [조사 근거](../research/mechanics-catalog.md), [D3 #135](https://github.com/hyunlord/bs-mobile/issues/135).
 
+[기존 콘텐츠 Lattice 지도](https://hyunlord.github.io/bs-mobile/)는 별도 세션의 [PR #139](https://github.com/hyunlord/bs-mobile/pull/139)로 공개됐다. 현재 렌즈는 이 D3 카탈로그와 중첩 메타 전체를 읽지 않으므로 제안 로스터의 완전한 지도나 구현 증거로 보지 않는다. 표시 범위 후속 사항은 [#141](https://github.com/hyunlord/bs-mobile/issues/141)에 남겼다.
+
 모든 아래 동작은 **제안된 행동**이다. 현재 실행되는 기능과 합쳐 집계하지 않는다. 기본 영웅1·기본 영지1로 전체 판을 먼저 완성하되 코어에 고유 ID를 박는 구현 제안은 없다. 수치·밸런스·난이도·경제 조정, 실제 게임 메커니즘 구현, 새 아트 대량 제작, Fold7 작업은 하지 않는다. #126의 기존 실패는 이 설계로 통과 판정을 받지 않는다.
 
 ## 중심 경험과 결정
