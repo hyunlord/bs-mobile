@@ -121,21 +121,21 @@ namespace SowSiege.Core
         internal long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
         private IEnumerable<string> WaveCards()
         {
-            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) return Enumerable.Empty<string>();
+            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) { return Enumerable.Empty<string>(); }
             return d.Items.Values.Where(i => !w.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(d.Evolutions.Values.Where(e => !w.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) && (e.Kind switch { WaveEvolutionKind.PlantingArc => w.BladePlotKill, WaveEvolutionKind.RepairOrbit => w.RepairCompleted, WaveEvolutionKind.ShelteredPlot => w.HarvestNearBuilding, _ => false })).Select(e => e.Id));
         }
         private bool SelectWave(string id)
         {
-            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) return false;
+            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) { return false; }
             if (d.Items.ContainsKey(id)) { w.Items.Add(id); w.Emit(world.Tick, "item-selected", id, -1, world.Lord, world.Lord); return true; }
-            if (d.Evolutions.TryGetValue(id,out var evolution))
+            if (d.Evolutions.TryGetValue(id, out var evolution))
             {
                 w.Evolutions.Add(id);
-                if(evolution.Kind == WaveEvolutionKind.RepairOrbit)
+                if (evolution.Kind == WaveEvolutionKind.RepairOrbit)
                 {
-                    for(var i=0;i<w.Attacks.Count;i++)
+                    for (var i = 0; i < w.Attacks.Count; i++)
                     {
-                        if(w.Attacks[i].Source==evolution.InputIds[0]) w.Attacks[i]=w.Attacks[i] with {Source=id};
+                        if (w.Attacks[i].Source == evolution.InputIds[0]) { w.Attacks[i] = w.Attacks[i] with { Source = id }; }
                     }
                 }
                 w.Emit(world.Tick, "evolution-activated", id, -1, world.Lord, world.Lord);
@@ -145,7 +145,7 @@ namespace SowSiege.Core
         }
         private bool CanOffer(string id)
         {
-            if (catalog.WaveRuntime is { } wave && (wave.Items.ContainsKey(id) || wave.Evolutions.ContainsKey(id))) return WaveCards().Contains(id);
+            if (catalog.WaveRuntime is { } wave && (wave.Items.ContainsKey(id) || wave.Evolutions.ContainsKey(id))) { return WaveCards().Contains(id); }
             if (catalog.Runtime?.Charters.ContainsKey(id) == true) { var allowed = world.Runtime!.Charters.ContainsKey(id) || world.Runtime.Charters.Count < catalog.Runtime.Tuning.CharterSlots; if (!allowed) { diagnostics?.SlotExcluded("charter"); } return allowed; }
             var owned = world.Equipment.FirstOrDefault(equipment => equipment.Id == id);
             if (owned is not null && catalog.WaveRuntime?.Gear.TryGetValue(id, out var waveGear) == true) { return waveGear.Levels is null || owned.Level < waveGear.Levels.Length; }

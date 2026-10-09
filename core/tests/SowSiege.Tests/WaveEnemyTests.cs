@@ -133,7 +133,9 @@ public sealed class WaveEnemyTests
             Tick(system, world);
             var action = world.WaveRuntime!.EnemyActions[enemy.Id];
             if (action.Phase.StartsWith("tell-", StringComparison.Ordinal) && (tells.Count == 0 || tells[^1].Target != action.Target || tells[^1].Phase != action.Phase))
+            {
                 tells.Add((action.Phase, action.Target));
+            }
         }
         Assert.Equal("tell-water", tells[0].Phase);
         Assert.Equal("tell-water", tells[1].Phase);

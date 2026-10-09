@@ -101,5 +101,11 @@ public sealed class WaveContentTests : IDisposable
         Assert.Contains("core:gathering_loop", source);
         Assert.DoesNotContain("core:winter_hart\", \"", source.Split("public static global::SowSiege.Core.MetaCatalog")[0]);
     }
-    public void Dispose() { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(root))
+        {
+            Directory.Delete(root, true);
+        }
+    }
 }

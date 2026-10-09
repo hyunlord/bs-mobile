@@ -75,7 +75,10 @@ namespace SowSiege.Core
         {
             ValidateHeader(header); using var w = Writer(output); Text(w, Magic); w.Write(header.FormatVersion); w.Write(header.RulesVersion); w.Write(header.StateCodecVersion); Text(w, header.RngAlgorithm);
             var o = header.Options; var r = o.Run;
-            w.Write(r.Seed); Text(w, r.HeroId); Text(w, r.EstateId); Text(w, r.Policy); Text(w, r.PeopleRule); Text(w, r.Scenario); w.Write(r.ManualCards); Text(w, r.Movement); w.Write((int)o.InitialAimMode); Text(w, o.DataHash); if (header.FormatVersion == MaterialTargetVersion) Text(w, r.TargetMaterial);
+            w.Write(r.Seed); Text(w, r.HeroId); Text(w, r.EstateId); Text(w, r.Policy); Text(w, r.PeopleRule); Text(w, r.Scenario); w.Write(r.ManualCards); Text(w, r.Movement); w.Write((int)o.InitialAimMode); Text(w, o.DataHash); if (header.FormatVersion == MaterialTargetVersion)
+            {
+                Text(w, r.TargetMaterial);
+            }
         }
         public static void WriteCommand(Stream output, ReplayCommand command)
         {
@@ -98,7 +101,11 @@ namespace SowSiege.Core
                 if (RequiredText(r) != Magic) { throw new InvalidDataException("Replay magic mismatch."); }
                 var format = r.ReadInt32(); var rules = r.ReadInt32(); var state = r.ReadInt32(); var rng = RequiredText(r);
                 var run = new RunOptions(r.ReadInt32(), RequiredText(r), RequiredText(r), RequiredText(r), Text(r), RequiredText(r), Boolean(r), Text(r));
-                var aim = (AimMode)r.ReadInt32(); var hash = RequiredText(r); if (format == MaterialTargetVersion) run = run with { TargetMaterial = RequiredText(r) };
+                var aim = (AimMode)r.ReadInt32(); var hash = RequiredText(r); if (format == MaterialTargetVersion)
+                {
+                    run = run with { TargetMaterial = RequiredText(r) };
+                }
+
                 var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash)); ValidateHeader(header);
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
