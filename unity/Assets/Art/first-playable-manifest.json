@@ -77,6 +77,27 @@
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/ui-atlas-v1-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "meta-river",
+      "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
+      "source": "image_gen output exec-66ee4ba6-3aca-48c9-b033-3e7fa0c0ccab.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Quiet shallow north-south winding stream with low grassy banks and rounded stones; top-down slight three-quarter medieval fantasy ink and gouache; sage #8B9874, turquoise #8DC7CB, soil #A99164, warm ink #292822; broad quiet world terrain, organic alpha edges, no text/frame/characters. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
+      "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
+    },
+    {
+      "id": "meta-forest",
+      "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
+      "source": "image_gen output exec-647eb68f-7eaf-44da-9ab5-0cd1ef4bf4f1.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Low cluster of three rounded broadleaf canopies and short trunks with moss and ferns; high top-down slight three-quarter ink and gouache; muted sage/olive #8B9874/#778B62, soil #A99164, ink #292822; sparse low-contrast terrain under characters, genuine alpha, no icon frame or text. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
+      "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
+    },
+    {
+      "id": "meta-hill",
+      "origin": "OpenAI image_gen generated for Sow & Siege on 2026-10-09",
+      "source": "image_gen output exec-15b5a860-9943-47b6-9002-ae103f593574.png; original RGBA preserved without resampling; sprite rectangles select zero-alpha gutters",
+      "prompt": "Low rolling grassy hill, broad weathered gray sandstone ledges, rounded summit and gentle slopes; high top-down slight three-quarter ink and gouache; muted sage/olive, tan soil, warm ink outlines; organic grassy alpha edges, no mountain peak/tree/structure/frame/text. Padding edit: keep subjects and style; transparent margins on all sides, no haze or edge crossings.",
+      "commercialUse": "Project-generated output; use subject to applicable OpenAI terms. No claim of third-party rights clearance or exclusive copyright."
     }
   ],
   "atlases": [
@@ -167,6 +188,30 @@
       "height": 1254,
       "padding": 2,
       "license": "generated-ui"
+    },
+    {
+      "id": "meta-river",
+      "path": "Assets/Art/meta-river.png",
+      "width": 1254,
+      "height": 1254,
+      "padding": 2,
+      "license": "meta-river"
+    },
+    {
+      "id": "meta-forest",
+      "path": "Assets/Art/meta-forest.png",
+      "width": 1254,
+      "height": 1254,
+      "padding": 2,
+      "license": "meta-forest"
+    },
+    {
+      "id": "meta-hill",
+      "path": "Assets/Art/meta-hill.png",
+      "width": 1254,
+      "height": 1254,
+      "padding": 2,
+      "license": "meta-hill"
     }
   ],
   "roles": [
@@ -7759,6 +7804,72 @@
       },
       "frameMs": 350,
       "tween": "none"
+    },
+    {
+      "id": "terrain.meta.river",
+      "atlas": "meta-river",
+      "frames": [
+        {
+          "x": 4,
+          "y": 2,
+          "width": 1248,
+          "height": 1250
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 4,
+        "y": 4
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "terrain.meta.forest",
+      "atlas": "meta-forest",
+      "frames": [
+        {
+          "x": 2,
+          "y": 2,
+          "width": 1250,
+          "height": 1250
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 4,
+        "y": 4
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "terrain.meta.hill",
+      "atlas": "meta-hill",
+      "frames": [
+        {
+          "x": 2,
+          "y": 2,
+          "width": 1250,
+          "height": 1250
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 4,
+        "y": 4
+      },
+      "frameMs": 1000,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -9735,6 +9846,24 @@
       "contentId": "threat-cluster",
       "state": "default",
       "roleId": "feedback.threat-cluster.default"
+    },
+    {
+      "kind": "metaTerrain",
+      "contentId": "river",
+      "state": "default",
+      "roleId": "terrain.meta.river"
+    },
+    {
+      "kind": "metaTerrain",
+      "contentId": "forest",
+      "state": "default",
+      "roleId": "terrain.meta.forest"
+    },
+    {
+      "kind": "metaTerrain",
+      "contentId": "hill",
+      "state": "default",
+      "roleId": "terrain.meta.hill"
     }
   ]
 }
