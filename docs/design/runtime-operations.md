@@ -50,13 +50,17 @@
 
 D1 정규화에서 최상위 `kind`는 콘텐츠 종류(예: `evolution`)로 통일하고 종전 진화 조합 종류는 `evolutionKind`로 분리한다. `weapon-tool`/`tool-tool`/`tool-growth`의 의미는 유지하며 [Sim 진화 로딩](../../core/src/SowSiege.Sim/RuntimeContentLoader.cs#L44)에서 Core의 진화 종류로 전달한다. 중첩 조건의 `kind`, 이벤트 종류 등 서로 다른 의미의 필드를 일괄 치환하지 않는다. `designStatus`는 설계/제작 상태이지 실행 증명 플래그가 아니다.
 
-## Lattice용 기계 판정 계약 권고
+## Lattice용 기계 판정 계약
 
-다음은 **권고 모델**이며 현재 구현된 필드나 검증 결과가 아니다. 기존 콘텐츠에 추정 `implemented: true`를 추가하지 않는다.
+D3 v1.1부터 [설계 카탈로그](../../data/system-design-v1.json)의 `primitiveContract.operationSupport`가 아래 14종의 정적 지원 근거를 저장한다. [공통 동작 단위](mechanic-primitives.md)의 `operationSupportIds`로 연결하며, 이는 설계 메커니즘 전체 구현이나 실행 관찰 판정이 아니다. 기존 콘텐츠에 추정 `implemented: true`를 추가하지 않는다.
 
-- `operationSupport`: 연산, subject 문법(`enum` 또는 `content-id`와 대상 kind), 처리 함수/경로, 필요한 문맥, profile 제약을 저장한다. 허용 문법과 코드 소비 여부를 분리한다.
+- `operationSupport`: `id`, `operation`, `syntax`, `handler`, `profiles`, `observed`, `semantic`을 저장한다. 문법 허용, 처리기 존재, 프로필 선택을 분리한다. 설계 v1.1의 관찰은 `not-assessed`, 의미 구현은 `not-established`이다. 단위가 여러 기존 연산을 참조해도 단위 전체를 지원한다고 셈하지 않는다.
+다음 세 모델은 여전히 향후 렌즈의 권고이며 이번 변경으로 실행 추적 필드가 추가되지는 않는다.
+
 - `effectiveProjection`: profile id와 콘텐츠 id를 키로 원본/override 출처를 남긴다. `selected`, `owned`, `eligible`, `observedNonzeroEffect`를 서로 다른 사실로 관리한다. 소유·관찰은 실행 provenance 없이는 미확인이다.
 - `semanticReview`: concept/effect의 주장과 실제 작동을 사람이 대조한 별도 판정으로 둔다. handler 존재·카운터·`designed-v1`만으로 자동 승인하지 않는다.
 - `referenceRole`: 콘텐츠 참조, 태그, 분류 enum, 내부 effect/channel id를 필드 경로별로 구별한다. raw 문자열에 콜론이 있는지만으로 간선을 만들지 않는다.
 
 이 문서의 검증 범위는 14종 enum·Sim 허용 조합·Core 분기/소비자·두 프로필의 선택과 override 정적 대조다. 플레이 실행·Unity 시각성·실기 성능·설계 고유성 승인은 증명하지 않는다.
+
+규칙 비교는 `node tools/design-rules-report.mjs`의 안정된 rule ID별 `expected`·`actual`·`violatingIds`를 기준으로 한다. 카탈로그 개정과 원본 파일이 같을 때만 Lattice 렌즈 값과 비교한다. 생성 가능한 보고서 사본은 커밋하지 않는다.
