@@ -77,10 +77,8 @@ namespace SowSiege.Core
                 int fragments = facts.Tick < catalog.Economy.MinimumRewardTicks || facts.Abandoned ? 0 : cleared ? catalog.Economy.FragmentsPerClear : catalog.Economy.FragmentsPerDeath;
                 next.Vassals[id] = vassal with { Fragments = (int)Math.Min(definition.FragmentCap, (long)vassal.Fragments + fragments) };
             }
-            var grown = Grow(catalog, next);
-            next = CompleteChallenges(catalog, next, out var completed);
-            grown.AddRange(Grow(catalog, next));
-            return new MetaSettlement(next, cleared, awarded, overflow, grown.ToArray(), completed);
+            next = CompleteProgression(catalog, next, out var grown, out var completed);
+            return new MetaSettlement(next, cleared, awarded, overflow, grown, completed);
         }
 
         public static MetaIdleResult AdvanceIdle(MetaCatalog catalog, MetaState state, long observedMonotonicSeconds, long observedWallSeconds)
@@ -102,10 +100,8 @@ namespace SowSiege.Core
             next = next with { IdleRemainderSeconds = available % catalog.Economy.IdleStepSeconds };
             var requested = catalog.Economy.IdlePerStep.ToDictionary(x => x.Key, x => (int)Math.Min(int.MaxValue, steps * x.Value));
             var awarded = Credit(catalog, next, requested, out _);
-            var grown = Grow(catalog, next);
-            next = CompleteChallenges(catalog, next, out _);
-            grown.AddRange(Grow(catalog, next));
-            return new MetaIdleResult(next, seconds, initial ? "initialized" : valid ? "accepted" : "clock-mismatch", awarded, grown.ToArray());
+            next = CompleteProgression(catalog, next, out var grown, out _);
+            return new MetaIdleResult(next, seconds, initial ? "initialized" : valid ? "accepted" : "clock-mismatch", awarded, grown);
         }
 
         public static MetaState SetManorPriority(MetaCatalog catalog, MetaState state, string buildingId)
@@ -115,8 +111,8 @@ namespace SowSiege.Core
                 throw new ArgumentException("Unknown manor building.", nameof(buildingId));
             }
 
-            var next = Clone(state) with { ManorPriority = buildingId }; Grow(catalog, next);
-            return CompleteChallenges(catalog, next, out _);
+            var next = Clone(state) with { ManorPriority = buildingId };
+            return CompleteProgression(catalog, next, out _, out _);
         }
 
         public static MetaState UpgradeVassal(MetaCatalog catalog, MetaState state, string id)
@@ -131,7 +127,7 @@ namespace SowSiege.Core
             var next = Clone(state); Pay(next, Cost(definition.LevelCostBase, definition.LevelCostStep, current.Level - 1));
             next.Vassals[id] = current with { Level = current.Level + 1 };
             next.Metrics[MetaMetric.VassalLevel.ToString()] = next.Vassals.Values.Max(x => (long)x.Level);
-            return CompleteChallenges(catalog, next, out _);
+            return CompleteProgression(catalog, next, out _, out _);
         }
 
         public static MetaState RankUpVassal(MetaCatalog catalog, MetaState state, string id)
@@ -235,6 +231,22 @@ namespace SowSiege.Core
                 }
             } while (changed);
             return grown;
+        }
+        private static MetaState CompleteProgression(MetaCatalog catalog, MetaState state, out string[] buildingsGrown, out string[] challengesCompleted)
+        {
+            var grown = new List<string>();
+            var completed = new List<string>();
+            string[] newlyCompleted;
+            do
+            {
+                grown.AddRange(Grow(catalog, state));
+                state = CompleteChallenges(catalog, state, out newlyCompleted);
+                completed.AddRange(newlyCompleted);
+                // Each repeat consumes previously unclaimed challenges; building levels are also bounded.
+            } while (newlyCompleted.Length > 0);
+            buildingsGrown = grown.ToArray();
+            challengesCompleted = completed.ToArray();
+            return state;
         }
         private static MetaState CompleteChallenges(MetaCatalog catalog, MetaState state, out string[] newlyCompleted)
         {
