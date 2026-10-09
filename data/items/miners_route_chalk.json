@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:miner_whistle"
-  ]
+  ],
+  "kind": "item"
 }

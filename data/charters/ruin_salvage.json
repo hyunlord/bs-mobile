@@ -24,5 +24,6 @@
   },
   "requirements": [
     "건물이 파괴된 뒤 자재를 회수하면"
-  ]
+  ],
+  "kind": "charter"
 }

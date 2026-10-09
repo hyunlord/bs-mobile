@@ -16,7 +16,7 @@
       "reason": "돌아온 부대의 구성원을 파손된 경작 구역에 먼저 배치해 생산 공백을 메운다."
     }
   ],
-  "kind": "tool-growth",
+  "kind": "evolution",
   "inputIds": [
     "core:muster_horn"
   ],
@@ -29,6 +29,12 @@
     "baseId": "core:muster_horn",
     "name": "귀농 호령",
     "effect": "돌아온 부대의 구성원을 파손된 경작 구역에 먼저 배치해 생산 공백을 메운다.",
+    "cost": "귀환 인원을 바로 재징집할 수 없어 전선 보충이 늦어진다."
+  },
+  "evolutionKind": "tool-growth",
+  "effect": {
+    "trigger": "people/returned 5 및 inputIds 조건 충족",
+    "benefit": "돌아온 부대의 구성원을 파손된 경작 구역에 먼저 배치해 생산 공백을 메운다.",
     "cost": "귀환 인원을 바로 재징집할 수 없어 전선 보충이 늦어진다."
   }
 }

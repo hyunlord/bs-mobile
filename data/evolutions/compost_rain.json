@@ -16,7 +16,7 @@
       "reason": "처치 자리에서 모은 거름을 물에 타 성장 중인 밭에 나누어 준다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:compost_sack",
     "core:rain_ladle"
@@ -26,6 +26,12 @@
     "baseId": "core:compost_sack",
     "name": "거름비 순환",
     "effect": "처치 자리에서 모은 거름을 물에 타 성장 중인 밭에 나누어 준다.",
+    "cost": "여러 밭에 분산하므로 한 밭을 빠르게 익히는 집중 성장이 약해진다."
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "처치 자리에서 모은 거름을 물에 타 성장 중인 밭에 나누어 준다.",
     "cost": "여러 밭에 분산하므로 한 밭을 빠르게 익히는 집중 성장이 약해진다."
   }
 }

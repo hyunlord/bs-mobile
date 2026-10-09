@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:stone_seed"
-  ]
+  ],
+  "kind": "item"
 }

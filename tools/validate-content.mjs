@@ -290,29 +290,29 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
         }
       }
       if(kind==='evolution') {
-        const inputs=list(r.inputIds); const kinds=r.kind==='weapon-tool'?['weapon','tool']:r.kind==='tool-tool'?['tool','tool']:['tool'];
+        const inputs=list(r.inputIds); const kinds=r.evolutionKind==='weapon-tool'?['weapon','tool']:r.evolutionKind==='tool-tool'?['tool','tool']:['tool'];
         expect(inputs.length===kinds.length,`${relative}: evolution input arity mismatch`);
         inputs.forEach((id,index)=>ref(entry,`inputIds[${index}]`,id,kinds[index]));
         expect(new Set(inputs).size===inputs.length,`${relative}: evolution inputs must be distinct`);
         expect(inputs.includes(r.result?.baseId),`${relative}: evolution result base must be an input`);
         const condition=r.growthCondition;
-        if(r.kind==='tool-growth') {
+        if(r.evolutionKind==='tool-growth') {
           const states={land:['seeded','growing','ripe'],building:['built','ruined','rebuilt'],people:['staffed','mobilized','returned']};
           expect(isRecord(condition) && condition.target===byId.get(inputs[0])?.record.growth?.target && states[condition.target]?.includes(condition.state),`${relative}: invalid evolution growth condition`);
         } else expect(condition===null,`${relative}: non-growth evolution condition must be null`);
-        const signature=JSON.stringify([r.kind,[...inputs].sort(),condition ? [condition.target,condition.state,condition.minimum] : null]);
+        const signature=JSON.stringify([r.evolutionKind,[...inputs].sort(),condition ? [condition.target,condition.state,condition.minimum] : null]);
         expect(!recipes.has(signature),`${relative}: duplicate evolution recipe`); recipes.add(signature);
       }
     }
     for(const [tag,count] of tags) expect(count>=3,`Tag ${tag} needs at least 3 distinct canonical records; got ${count}`);
     expect(pairs.size>=8,`At least 8 distinct anti-synergy pairs required; got ${pairs.size}`);
     expect(loopLinked>=15,`At least 15 base-loop-linked weapon/tool/item records required; got ${loopLinked}`);
-    for(const kind of ['weapon-tool','tool-tool','tool-growth']) expect(canonical.filter(e=>e.kind==='evolution' && e.record.kind===kind).length===10,`Evolution kind ${kind} count must equal 10`);
+    for(const kind of ['weapon-tool','tool-tool','tool-growth']) expect(canonical.filter(e=>e.kind==='evolution' && e.record.evolutionKind===kind).length===10,`Evolution kind ${kind} count must equal 10`);
     gateCounts = {
       canonicalCounts: Object.fromEntries([...Object.keys(counts),'skin'].map(kind=>[kind,canonical.filter(e=>e.kind===kind).length])),
       minTagDistinctCount: Math.min(...tags.values()),
       noGrowthTools: canonical.filter(e=>e.kind==='tool' && !isRecord(e.record.growth)).length,
-      evolutionCounts: Object.fromEntries(['weapon-tool','tool-tool','tool-growth'].map(kind=>[kind,canonical.filter(e=>e.kind==='evolution' && e.record.kind===kind).length])),
+      evolutionCounts: Object.fromEntries(['weapon-tool','tool-tool','tool-growth'].map(kind=>[kind,canonical.filter(e=>e.kind==='evolution' && e.record.evolutionKind===kind).length])),
       unorderedAntiSynergyPairs:pairs.size,
       skinNumericCount:canonical.filter(e=>e.kind==='skin' && containsNumber(e.record)).length,
       loopLinkedDistinct:loopLinked

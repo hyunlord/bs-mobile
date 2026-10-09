@@ -26,7 +26,7 @@ export function validateMeta(c, root = process.cwd(), dataRoot = path.join(root,
     money(ch.rewardCaps); assert.deepEqual(Object.keys(ch.rewardCaps).sort(), [...materials].sort()); assert.ok(Object.values(ch.rewardCaps).every(x => x > 0));
   }
   for (const m of c.materials) assert.ok(m.walletCap > 0);
-  assert.deepEqual(c.manorBuildings.map(x => x.effect).sort(), ['IdleCapacity','Research','VassalLevelCap','VassalSlots']);
+  assert.deepEqual(c.manorBuildings.map(x => x.manorEffect).sort(), ['IdleCapacity','Research','VassalLevelCap','VassalSlots']);
   for (const b of c.manorBuildings) { money(b.baseCost); money(b.costPerLevel); assert.ok(b.maxLevel > 0 && b.maxLevel <= 20 && Object.values(b.baseCost).some(x => x > 0)); }
   const canonicalVassals = new Set(fs.readdirSync(path.join(dataRoot,'vassals')).filter(x => x.endsWith('.json')).map(x => read(path.join(dataRoot,'vassals',x)).id));
   assert.equal(c.vassals.filter(x => x.initiallyUnlocked).length, 1);
@@ -41,7 +41,7 @@ export function validateMeta(c, root = process.cwd(), dataRoot = path.join(root,
   const tuning = read(path.join(dataRoot,'first-playable-tuning.json'));
   assert.ok(c.initialContentIds.includes(tuning.world.progression.startingWeapon));
   for (const file of fs.readdirSync(path.join(dataRoot,'heroes'))) { const h=read(path.join(dataRoot,'heroes',file)); if(p.selection.heroes.includes(h.id)) assert.ok(c.initialContentIds.includes(h.startingTool)); }
-  const research = c.manorBuildings.find(x => x.effect === 'Research').maxLevel;
+  const research = c.manorBuildings.find(x => x.manorEffect === 'Research').maxLevel;
   for (const ch of c.challenges) { assert.ok(['Runs','Clears','HighestChapter','Kills','Harvests','Buildings','People','Bosses','SurvivalTicks','VassalLevel'].includes(ch.metric)); assert.ok(ch.target > 0 && ch.researchLevel <= research && ch.unlockContentIds.length+ch.unlockVassalIds.length > 0); money(ch.rewards); }
   const vUnlock=c.challenges.flatMap(x => x.unlockVassalIds); unique(vUnlock); assert.deepEqual(vUnlock.sort(),c.vassals.filter(x => !x.initiallyUnlocked).map(x => x.id).sort());
   const e=c.economy; assert.ok([e.repeatPermille,e.deathPermille,e.abandonPermille].every(x => x <= 1000)); assert.ok(e.minimumRewardTicks > 0 && e.minimumRewardTicks <= tuning.durationTicks);

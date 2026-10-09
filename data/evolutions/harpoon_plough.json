@@ -16,7 +16,7 @@
       "reason": "작살에 걸린 적을 고랑 방향으로 끌며 쟁기가 비옥한 처치 터를 이어 간다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:root_harpoon",
     "core:plough"
@@ -26,6 +26,12 @@
     "baseId": "core:root_harpoon",
     "name": "견인 쟁기창",
     "effect": "작살에 걸린 적을 고랑 방향으로 끌며 쟁기가 비옥한 처치 터를 이어 간다.",
+    "cost": "무거운 적을 끄는 동안 영주의 이동이 제한되어 포위 위험이 커진다."
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "작살에 걸린 적을 고랑 방향으로 끌며 쟁기가 비옥한 처치 터를 이어 간다.",
     "cost": "무거운 적을 끄는 동안 영주의 이동이 제한되어 포위 위험이 커진다."
   }
 }

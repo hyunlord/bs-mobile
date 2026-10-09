@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:herb_basket"
-  ]
+  ],
+  "kind": "item"
 }

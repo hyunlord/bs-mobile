@@ -16,7 +16,7 @@
       "reason": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:canal_bow",
     "core:rain_ladle"
@@ -53,5 +53,11 @@
         ]
       }
     ]
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "물뿌리개가 적신 밭 사이를 화살이 따라가 멀리 있는 약탈자를 관통한다.",
+    "cost": "물길 밖에서는 관통하지 못하고 관개를 공격 경로에 맞춰야 한다."
   }
 }

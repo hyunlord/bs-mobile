@@ -267,6 +267,10 @@
         "effects"
       ],
       "additionalProperties": false
+    },
+    "kind": {
+      "type": "string",
+      "const": "item"
     }
   },
   "required": [
@@ -278,7 +282,8 @@
     "implementationNote",
     "loopLinks",
     "effect",
-    "linkedToolIds"
+    "linkedToolIds",
+    "kind"
   ],
   "additionalProperties": false
 }

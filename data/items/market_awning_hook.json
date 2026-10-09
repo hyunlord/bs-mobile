@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:market_pole"
-  ]
+  ],
+  "kind": "item"
 }

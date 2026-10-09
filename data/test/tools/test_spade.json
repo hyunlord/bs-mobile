@@ -26,5 +26,11 @@
   "designStatus": "s2-runtime",
   "implementationNote": "S2 더미의 기존 숫자 동작만 구현되었다. 신규 기획 필드는 검증용 설명이다.",
   "loopLinks": [],
-  "antiSynergyNotes": []
+  "antiSynergyNotes": [],
+  "kind": "tool",
+  "effect": {
+    "trigger": "검사용 타격을 발생시킨다.",
+    "benefit": "검사용 밭 생산",
+    "cost": "별도 비용은 기존 설계에 명시되지 않았다."
+  }
 }

@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:plough"
-  ]
+  ],
+  "kind": "item"
 }

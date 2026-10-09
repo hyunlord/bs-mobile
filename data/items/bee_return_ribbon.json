@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:bee_hive"
-  ]
+  ],
+  "kind": "item"
 }

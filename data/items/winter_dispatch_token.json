@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:muster_horn"
-  ]
+  ],
+  "kind": "item"
 }

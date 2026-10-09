@@ -275,6 +275,10 @@
         "effects"
       ],
       "additionalProperties": false
+    },
+    "kind": {
+      "type": "string",
+      "const": "charter"
     }
   },
   "required": [
@@ -286,7 +290,8 @@
     "implementationNote",
     "loopLinks",
     "effect",
-    "requirements"
+    "requirements",
+    "kind"
   ],
   "additionalProperties": false
 }

@@ -16,7 +16,7 @@
       "reason": "귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다."
     }
   ],
-  "kind": "tool-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:muster_horn",
     "core:soup_ladle"
@@ -42,5 +42,11 @@
         "conditions": []
       }
     ]
+  },
+  "evolutionKind": "tool-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "귀환 집결지에서 급식한 분대의 구성원을 경작 인력으로 차례로 돌려보낸다.",
+    "cost": "전선에서 멀어진 부대는 재동원까지 시간이 걸리고 식량을 추가 소모한다."
   }
 }

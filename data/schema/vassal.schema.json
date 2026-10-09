@@ -116,6 +116,33 @@
         "cost"
       ],
       "additionalProperties": false
+    },
+    "kind": {
+      "type": "string",
+      "const": "vassal"
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "benefit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trigger",
+        "benefit",
+        "cost"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -128,7 +155,9 @@
     "loopLinks",
     "heroId",
     "role",
-    "ability"
+    "ability",
+    "kind",
+    "effect"
   ],
   "additionalProperties": false
 }

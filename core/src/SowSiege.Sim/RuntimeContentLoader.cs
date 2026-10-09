@@ -46,16 +46,17 @@ public static partial class ContentLoader
         {
             var projection = overrides?.Evolutions.GetValueOrDefault(record.Id) ?? record.RuntimeProjection ?? throw new InvalidDataException($"Missing evolution runtime projection: {record.Id}");
             Require(record.InputIds.Distinct(StringComparer.Ordinal).Count() == record.InputIds.Length, "Duplicate evolution input.");
-            var valid = record.Kind switch
+            var evolutionKind = record.EvolutionKind ?? record.Kind ?? throw new InvalidDataException("Missing evolution subtype.");
+            var valid = evolutionKind switch
             {
                 "weapon-tool" => record.InputIds.Length == 2 && weapons.ContainsKey(record.InputIds[0]) && tools.ContainsKey(record.InputIds[1]),
                 "tool-tool" => record.InputIds.Length == 2 && record.InputIds.All(tools.ContainsKey),
                 "tool-growth" => firstPlayable is not null && record.InputIds.Length == 1 && record.InputIds.All(tools.ContainsKey) && record.GrowthCondition is { Target: "land", State: "ripe" } growth && firstPlayable.EvolutionGrowthRequirements?.TryGetValue(record.Id, out var required) == true && required.Target == "ripe" && required.Minimum == growth.Minimum,
                 _ => false
             };
-            Require(valid && (record.GrowthCondition is null || record.Kind == "tool-growth" && firstPlayable is not null), "S4 runtime supports only selected cross-equipment evolutions.");
+            Require(valid && (record.GrowthCondition is null || evolutionKind == "tool-growth" && firstPlayable is not null), "S4 runtime supports only selected cross-equipment evolutions.");
             Require(record.InputIds.Contains(record.Result.BaseId, StringComparer.Ordinal) && projection.Effects.Length > 0, "Invalid evolution base or effects.");
-            evolutions.Add(record.Id, new(record.Id, record.Kind, record.InputIds, record.Result.BaseId, projection.Effects));
+            evolutions.Add(record.Id, new(record.Id, evolutionKind, record.InputIds, record.Result.BaseId, projection.Effects));
         }
         var effects = equipment.Values.SelectMany(e => e.Effects).Concat(charters.Values.SelectMany(e => e.Effects))
             .Concat(items.Values.SelectMany(e => e.Effects)).Concat(evolutions.Values.SelectMany(e => e.Effects)).ToArray();

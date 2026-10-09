@@ -119,6 +119,33 @@
         "effects"
       ],
       "additionalProperties": false
+    },
+    "kind": {
+      "type": "string",
+      "const": "skin"
+    },
+    "effect": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1
+        },
+        "benefit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trigger",
+        "benefit",
+        "cost"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -131,7 +158,9 @@
     "loopLinks",
     "targetKind",
     "targetId",
-    "appearance"
+    "appearance",
+    "kind",
+    "effect"
   ],
   "additionalProperties": false
 }

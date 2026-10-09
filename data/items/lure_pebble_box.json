@@ -22,5 +22,6 @@
   },
   "linkedToolIds": [
     "core:shepherd_staff"
-  ]
+  ],
+  "kind": "item"
 }

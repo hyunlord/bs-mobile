@@ -16,7 +16,7 @@
       "reason": "묘지 삽으로 모은 처치 잔여물을 등불의 짧은 방어 광원으로 바꾼 뒤 밭에 돌려준다."
     }
   ],
-  "kind": "weapon-tool",
+  "kind": "evolution",
   "inputIds": [
     "core:grave_lantern",
     "core:grave_spade"
@@ -26,6 +26,12 @@
     "baseId": "core:grave_lantern",
     "name": "묘광 경작등",
     "effect": "묘지 삽으로 모은 처치 잔여물을 등불의 짧은 방어 광원으로 바꾼 뒤 밭에 돌려준다.",
+    "cost": "광원이 꺼질 때까지 거름이 묶여 성장 보상이 뒤로 밀린다."
+  },
+  "evolutionKind": "weapon-tool",
+  "effect": {
+    "trigger": "inputIds 조합 조건 충족",
+    "benefit": "묘지 삽으로 모은 처치 잔여물을 등불의 짧은 방어 광원으로 바꾼 뒤 밭에 돌려준다.",
     "cost": "광원이 꺼질 때까지 거름이 묶여 성장 보상이 뒤로 밀린다."
   }
 }
