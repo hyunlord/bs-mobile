@@ -18,6 +18,8 @@ namespace Game.P1Capture
     [InitializeOnLoad]
     public static class P1Capture
     {
+        static int evasionAfterTick;
+        static string configuredMovement, activeMovement;
         static int CaptureSeed => int.TryParse(Environment.GetEnvironmentVariable("P1_CAPTURE_SEED"),out var seed)?seed:30000;
         const string ActiveKey = "SowSiege.P1Capture.Active";
         const string PreferencesKey = "SowSiege.P1Capture.Preferences";
@@ -137,10 +139,17 @@ namespace Game.P1Capture
             if (stage == 0)
             {
                 WaveCaptureInput.ConfigurePriority(Environment.GetEnvironmentVariable("P1_CAPTURE_PRIORITY"));
-                WaveCaptureInput.ConfigureMovement(Environment.GetEnvironmentVariable("P1_CAPTURE_MOVEMENT"));
+                configuredMovement=Environment.GetEnvironmentVariable("P1_CAPTURE_MOVEMENT");
+                var threshold=Environment.GetEnvironmentVariable("P1_CAPTURE_EVASION_AFTER_TICK");
+                evasionAfterTick=0;
+                if(threshold!=null&&(!int.TryParse(threshold,out evasionAfterTick)||evasionAfterTick<0))throw new ArgumentException("P1_CAPTURE_EVASION_AFTER_TICK requires a nonnegative integer.");
+                WaveCaptureInput.ConfigureMovement(configuredMovement);
+                activeMovement=evasionAfterTick>0?"default":configuredMovement;
+                WaveCaptureInput.ConfigureMovement(activeMovement);
                 output = SessionState.GetString("SowSiege.P1Capture.Output", "");
                 ledger = new StreamWriter(Path.Combine(output, "capture-ledger.tsv"), false) { AutoFlush = true };
                 ledger.WriteLine("mediaSeconds\ttick\tkind\tdetail\tunscaledSeconds\trenderFrame");
+                Log("capture-movement-plan",$"beforeTick={evasionAfterTick};before=default;after={configuredMovement??"default"};ordinary pointer inputs only; scene-coverage sample, not survival-policy evaluation");
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
                 preparationAt = Time.unscaledTimeAsDouble;
                 Log("preparation-title", "outside movie; preserve initial title before neutral run scene loading");
@@ -343,7 +352,16 @@ namespace Game.P1Capture
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Math.Pow(f.Position.X-frame.Lord.Position.X,2)+Math.Pow(f.Position.Y-frame.Lord.Position.Y,2)).FirstOrDefault();
             var angle = frame.Tick / 180d;
             var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
-            if(run.Wave!=null)target=WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog);
+            if(run.Wave!=null)
+            {
+                var desiredMovement=frame.Tick<evasionAfterTick?"default":configuredMovement;
+                if(activeMovement!=desiredMovement)
+                {
+                    WaveCaptureInput.ConfigureMovement(desiredMovement);activeMovement=desiredMovement;
+                    Log("capture-movement-switch",$"tick={frame.Tick};mode={activeMovement??"default"};threshold={evasionAfterTick}");
+                }
+                target=WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog);
+            }
             var direction = new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y).normalized;
             var origin = new Vector2(Screen.width * .25f, Screen.height * .2f);
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = origin };
