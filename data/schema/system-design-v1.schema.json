@@ -1,0 +1,2067 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "revision": {
+      "const": "designed-v1"
+    },
+    "approvalStatus": {
+      "const": "needs-decision"
+    },
+    "content": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/weapon"
+          },
+          {
+            "$ref": "#/$defs/tool"
+          },
+          {
+            "$ref": "#/$defs/item"
+          },
+          {
+            "$ref": "#/$defs/charter"
+          },
+          {
+            "$ref": "#/$defs/evolution"
+          },
+          {
+            "$ref": "#/$defs/enemy"
+          },
+          {
+            "$ref": "#/$defs/chapter"
+          },
+          {
+            "$ref": "#/$defs/vassal"
+          },
+          {
+            "$ref": "#/$defs/material"
+          },
+          {
+            "$ref": "#/$defs/manor"
+          }
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "systems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^core:system_[a-z0-9_]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "purpose",
+          "inputs",
+          "outputs",
+          "decision"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "influenceMatrix": {
+      "type": "object",
+      "properties": {
+        "systemIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "minItems": 1
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "systemIds",
+        "cells"
+      ],
+      "additionalProperties": false
+    },
+    "visualLanguage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "weapon",
+              "tool",
+              "item",
+              "charter",
+              "evolution",
+              "enemy",
+              "chapter",
+              "vassal",
+              "material",
+              "manor",
+              "ally",
+              "ripe-complete",
+              "background"
+            ]
+          },
+          "silhouette": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "effectColor": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "sound": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          }
+        },
+        "required": [
+          "kind",
+          "silhouette",
+          "effectColor",
+          "sound",
+          "priority"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "implementationWaves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "contentIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "systemIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "playChange": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "acceptance": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "contentIds",
+          "systemIds",
+          "playChange",
+          "acceptance"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 3,
+      "maxItems": 4,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "contractVersion",
+    "revision",
+    "approvalStatus",
+    "content",
+    "systems",
+    "influenceMatrix",
+    "visualLanguage",
+    "implementationWaves"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "weapon": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "weapon"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "form": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "primaryRole": {
+          "enum": [
+            "crowd",
+            "single",
+            "control",
+            "survival",
+            "estate"
+          ]
+        },
+        "growthAxes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "count",
+              "range",
+              "pierce",
+              "frequency"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "uniqueMechanic": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "estateLink": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "visual": {
+          "type": "object",
+          "properties": {
+            "silhouette": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "effectColor": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "sound": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "silhouette",
+            "effectColor",
+            "sound"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "form",
+        "primaryRole",
+        "growthAxes",
+        "uniqueMechanic",
+        "estateLink",
+        "visual"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "tool": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "tool"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "targetKind": {
+          "enum": [
+            "land",
+            "building",
+            "people"
+          ]
+        },
+        "activation": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "remnant": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "key",
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        "growth": {
+          "type": "object",
+          "properties": {
+            "responses": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "time",
+                  "kill",
+                  "adjacency",
+                  "season"
+                ]
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "mechanism": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "responses",
+            "mechanism"
+          ],
+          "additionalProperties": false
+        },
+        "returns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "channel": {
+                "enum": [
+                  "xp",
+                  "combat",
+                  "gold",
+                  "buff"
+                ]
+              },
+              "mechanism": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "channel",
+              "mechanism"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "recovery": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "targetKind",
+        "activation",
+        "remnant",
+        "growth",
+        "returns",
+        "recovery"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "item"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "behaviorClass": {
+          "enum": [
+            "action",
+            "numeric-only"
+          ]
+        },
+        "linkedToolIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "mechanism": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "linkedWeaponIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "behaviorClass",
+        "linkedToolIds",
+        "mechanism",
+        "linkedWeaponIds"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "charter": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "charter"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "ruleChange": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "forfeiture": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "linkedToolIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "ruleChange",
+        "forfeiture",
+        "linkedToolIds"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evolution": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "evolution"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "inputIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "transformation": {
+          "type": "object",
+          "properties": {
+            "before": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "after": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "visibleChange": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "before",
+            "after",
+            "visibleChange"
+          ],
+          "additionalProperties": false
+        },
+        "inputDisposition": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "linkedToolIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "inputIds",
+        "transformation",
+        "inputDisposition",
+        "linkedToolIds"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "enemy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "enemy"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "tier": {
+          "enum": [
+            "normal",
+            "elite",
+            "boss"
+          ]
+        },
+        "archetype": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "behavior": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "tell": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "counterplay": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "estateThreat": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "phasePatterns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cue": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "response": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "cue",
+              "action",
+              "response"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "tier",
+        "archetype",
+        "behavior",
+        "tell",
+        "counterplay",
+        "estateThreat"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tier": {
+                "const": "boss"
+              }
+            },
+            "required": [
+              "tier"
+            ]
+          },
+          "then": {
+            "required": [
+              "phasePatterns"
+            ],
+            "properties": {
+              "phasePatterns": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "phasePatterns"
+              ],
+              "properties": {
+                "phasePatterns": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "chapter": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "chapter"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "device": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "rule": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "decision": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "key",
+            "rule",
+            "decision"
+          ],
+          "additionalProperties": false
+        },
+        "bossId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "encounterChange": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "order",
+        "device",
+        "bossId",
+        "encounterChange"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "vassal": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "vassal"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "ability": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "action": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "deployment": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "linkedToolIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "role",
+        "ability",
+        "cost",
+        "deployment",
+        "linkedToolIds"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "material": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "material"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "contentId": {
+                "type": "string",
+                "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "contentId",
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "sinks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "contentId": {
+                "type": "string",
+                "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "contentId",
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "choiceOutcome": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "sources",
+        "sinks",
+        "choiceOutcome"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "manor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "kind": {
+          "const": "manor"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "designStatus": {
+          "const": "designed-v1"
+        },
+        "origin": {
+          "enum": [
+            "revised",
+            "new"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+        },
+        "concept": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "effect": {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "benefit": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "cost": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "trigger",
+            "benefit",
+            "cost"
+          ],
+          "additionalProperties": false
+        },
+        "researchRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^R-[A-Z0-9]+-[0-9]+$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "function": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "inputIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "unlockBehavior": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "runConnection": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "tags",
+        "designStatus",
+        "origin",
+        "concept",
+        "effect",
+        "researchRefs",
+        "function",
+        "inputIds",
+        "unlockBehavior",
+        "runConnection"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "revised"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "sourceId"
+            ],
+            "properties": {
+              "sourceId": {}
+            }
+          },
+          "else": {
+            "not": {
+              "required": [
+                "sourceId"
+              ],
+              "properties": {
+                "sourceId": {}
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

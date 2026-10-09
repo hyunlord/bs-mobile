@@ -1,3 +1,4 @@
+import { validateSystemDesign } from './system-design-v1.mjs';
 import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
@@ -9,7 +10,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -66,7 +67,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     try {
       const text = await readFile(file, 'utf8');
       parsed.set(file, JSON.parse(text));
-      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta'].includes(inferKind(path.relative(dataRoot, file)))) {
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1'].includes(inferKind(path.relative(dataRoot, file)))) {
         for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
       }
     } catch (error) {
@@ -117,7 +118,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -428,6 +429,11 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       if (entry.relative !== path.join('meta', 'progression.json')) throw new Error('Meta catalog must use meta/progression.json');
       validateMeta(entry.record, path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), dataRoot);
     } catch (error) { errors.push(`${entry.relative}: meta validation: ${error.message}`); }
+  }
+  for (const entry of records.filter(record => record.kind === 'system-design-v1' && record.schemaValid)) {
+    const research = await readFile(new URL('../docs/research/mechanics-catalog.md', import.meta.url), 'utf8');
+    const researchIds = new Set([...research.matchAll(/<a id="(r-[a-z0-9]+-[0-9]+)">/g)].map(match => match[1].toUpperCase()));
+    errors.push(...validateSystemDesign(entry.record, records, researchIds));
   }
   errors.push(...validateWeaponGrowth(records));
   if (schemas.size === 0) errors.push('No valid schemas found');

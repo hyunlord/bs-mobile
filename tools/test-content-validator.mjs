@@ -1,3 +1,4 @@
+import './test-system-design-v1.mjs';
 import './test-normalized-content.mjs';
 import './test-weapon-growth.mjs';
 import './test-production-content.mjs';
