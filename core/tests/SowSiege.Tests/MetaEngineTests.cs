@@ -83,7 +83,7 @@ public sealed class MetaEngineTests
     [Fact]
     public void VassalSlotsAndLevelCapCannotBeBypassed()
     {
-        var catalog = Catalog(); var state = MetaEngine.NewGame(catalog); state.Wallet["wood"] = 1000;
+        var catalog = Catalog(); var state = MetaEngine.NewGame(catalog); state.Wallet["wood"] = 20;
         Assert.Throws<InvalidOperationException>(() => MetaEngine.ToggleVassal(catalog, state, "vassal-1"));
         for (int i = 1; i < 5; i++)
         {
@@ -149,5 +149,57 @@ public sealed class MetaEngineTests
         var clock = MetaEngine.AdvanceIdle(catalog, upgraded, 1, 1000).State;
         var idle = MetaEngine.AdvanceIdle(catalog, clock, 10001, 11000);
         Assert.Equal(120, idle.CreditedSeconds); Assert.All(idle.Awarded.Values, x => Assert.True(x >= 0));
+    }
+    [Theory]
+    [InlineData("priority")]
+    [InlineData("upgrade")]
+    [InlineData("settlement")]
+    [InlineData("idle")]
+    public void AutomaticGrowthAndResearchRewardsReachStableStateBeforeReturning(string operation)
+    {
+        var catalog = Catalog();
+        catalog = catalog with
+        {
+            ManorBuildings = catalog.ManorBuildings.Select(b => b with
+            {
+                BaseCost = new() { ["wood"] = b.Effect == ManorEffect.Research ? 200 : 1000 },
+                CostPerLevel = new() { ["wood"] = 0 }
+            }).ToArray(),
+            Challenges = Enumerable.Range(1, 3).Select(level => new MetaChallenge(
+                "research-" + level, "Research", MetaMetric.Runs, 1, level,
+                ["unlock-" + level], [], new() { ["wood"] = 200 })).ToArray()
+        };
+        var state = MetaEngine.NewGame(catalog) with { ManorPriority = "building-1" };
+        state.Metrics[MetaMetric.Runs.ToString()] = 1;
+        state.Wallet["wood"] = operation == "upgrade" ? 202 : operation == "settlement" ? 100 : 200;
+        var before = MetaSaveCodec.Encode(state);
+        MetaState result;
+        if (operation == "priority")
+        {
+            result = MetaEngine.SetManorPriority(catalog, state, "building-1");
+        }
+        else if (operation == "upgrade")
+        {
+            result = MetaEngine.UpgradeVassal(catalog, state, "vassal-0");
+        }
+        else if (operation == "idle")
+        {
+            var idle = MetaEngine.AdvanceIdle(catalog, state, 100, 1000);
+            result = idle.State;
+            Assert.Equal(3, idle.BuildingsGrown.Length);
+        }
+        else
+        {
+            var plan = MetaEngine.BeginRun(catalog, state, "chapter-1", 7);
+            var settlement = MetaEngine.SettleRun(catalog, plan.State, plan.Run, Success);
+            result = settlement.State;
+            Assert.Equal(3, settlement.BuildingsGrown.Length);
+            Assert.Equal(3, settlement.ChallengesCompleted.Length);
+        }
+        Assert.Equal(3, result.ManorLevels["building-1"]);
+        Assert.Equal(3, result.CompletedChallenges.Length);
+        Assert.Equal(200, result.Wallet["wood"]);
+        Assert.Equal(before, MetaSaveCodec.Encode(state));
+        Assert.Equal(MetaSaveCodec.Encode(result), MetaSaveCodec.Encode(MetaEngine.SetManorPriority(catalog, result, "building-1")));
     }
 }
