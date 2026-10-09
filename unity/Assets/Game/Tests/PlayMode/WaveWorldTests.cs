@@ -52,6 +52,66 @@ namespace Tests.PlayMode
             }
             finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }
+        [UnityTest]
+        public IEnumerator EvolutionCuesRequireActualBirthAndRelocatedRepairAnchor()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName=CanonicalContent.ProfileName;
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var frame=session.View.CaptureFrame();var source=((IWaveRunView)session.View).CaptureWaveRuntime();
+            var planting=catalog.WaveRuntime.Evolutions.Values.Single(e=>e.Kind==WaveEvolutionKind.PlantingArc);
+            var repair=catalog.WaveRuntime.Evolutions.Values.Single(e=>e.Kind==WaveEvolutionKind.RepairOrbit);
+            var point=new WorldPoint(frame.Lord.Position.X+400,frame.Lord.Position.Y);
+            var plot=new WaveWorkView(900,planting.InputIds[1],"grain",point,0,100,false,100,-1,false,false,false,false,false);
+            var state=source with {Work=new[]{plot},Events=System.Array.Empty<WaveEvent>()};
+            var owner=new GameObject("Evolution cue contract QA");var cameraOwner=new GameObject("Evolution cue camera");
+            var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1280,24);camera.targetTexture=texture;
+            try
+            {
+                var world=owner.AddComponent<WorldRenderer>();var config=CanonicalContent.Presentation.Camera;
+                world.Initialize(camera,new WorldCameraSettings(config.WorldUnitsPerUnityUnit,config.MinHalfHeight,config.MaxHalfHeight,config.EstatePadding,config.FollowMilliseconds,config.ZoomMilliseconds),catalog.Tuning.DefaultEstate,frame.MapWidth,frame.MapHeight);
+                void Present(WaveRuntimeFrame snapshot,float delta=0)
+                {
+                    world.AcceptWave(catalog,snapshot);
+                    world.Present(frame,frame,WavePresentation.Envelope(catalog,frame,session.View.CaptureCards(),snapshot),1,delta,new Rect(0,0,720,1280));
+                }
+                Present(state);yield return null;var baseline=world.SubmittedInstances;
+                var attack=new WaveEvent(1,frame.Tick,"attack",planting.Id,-1,frame.Lord.Position,point,400);
+                Present(state with {Events=new[]{attack}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"An evolved arc alone never fabricates a seed-birth cue when planting is capacity-rejected.");
+                Present(state,1);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline));
+                var birth=new WaveEvent(2,frame.Tick,"work-created",plot.Source,999,point,point,0);
+                Present(state with {Events=new[]{birth}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline),"Missing live grain cannot be highlighted as a new seed.");
+                var planted=state with {Events=new[]{birth with {Id=3,SubjectId=plot.Id}}};
+                Present(planted);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1));
+                Present(planted);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"Repeated frames cannot duplicate a birth pulse.");
+                Present(state with {Work=new[]{plot with {Health=0}}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline-1),"An admitted birth pulse disappears when its actual grain dies.");
+                Present(state,1);yield return null;
+                var building=plot with {Id=901,Source=repair.InputIds[1],Kind="building"};
+                var work=state with {Work=new[]{building}};
+                Present(work);yield return null;var construction=world.SubmittedInstances;
+                var orbit=new WaveAttackView(repair.Id,"orbit",point,new WorldPoint(point.X+300,point.Y),100,frame.Tick+100);
+                Present(work with {Attacks=new[]{orbit}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"Only the actual off-hero repair origin gets one anchor badge alongside its fragment.");
+                Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+1),"The regular hero-centered orbit must not imply a building anchor.");
+                Present(work with {Work=new[]{building with {Complete=true}},Attacks=new[]{orbit}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+1),"Completed work is no longer a repair anchor.");
+                Present(work with {Work=System.Array.Empty<WaveWorkView>(),Attacks=new[]{orbit}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction),"Removed work cannot retain an anchor cue.");
+                Present(work);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction),"No active orbit means no anchor cue.");
+                Present(work with {Attacks=new[]{orbit}});yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"A returning real orbit displays its current anchor again.");
+            }
+            finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
+        }
         [UnityTest, Timeout(300000)]
         public IEnumerator ActualWaveSnapshotDrawsAuthoredPixels()
         {
