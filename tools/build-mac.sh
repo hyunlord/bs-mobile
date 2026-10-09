@@ -6,6 +6,10 @@ export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 EDITOR="${UNITY_EDITOR:-/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity}"
 OUT="${UNITY_MAC_OUTPUT:-$ROOT/artifacts/phase2a/mac}"
+if [[ -d "$OUT" && -n "$(ls -A "$OUT")" ]]; then
+  echo 'Use an empty UNITY_MAC_OUTPUT to preserve all prior build evidence.' >&2
+  exit 1
+fi
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 export UNITY_MAC_PATH="$OUT/Sow and Siege.app"
