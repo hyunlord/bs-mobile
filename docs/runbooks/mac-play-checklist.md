@@ -30,4 +30,14 @@ Gatekeeper 경고가 나오면 `.app`을 우클릭 → **열기**로 실행합�
 
 ## 검증 범위
 
-맥 에디터 영상의 자동 입력 여부와 실제 맥 Release 실행 결과는 각 Release 설명에 별도로 적습니다. 깨끗한 macOS 사용자 계정 관문은 [#114](https://github.com/hyunlord/bs-mobile/issues/114)에서 추적합니다. 폴드7 실기 [M4 #98](https://github.com/hyunlord/bs-mobile/issues/98)은 계속 보류 중입니다.
+맥 에디터 영상의 자동 입력 여부와 실제 맥 Release 실행 결과는 각 Release 설명에 별도로 적습니다. 사용자 결정으로 깨끗한 OS 계정·외부 입력 관문은 [앱 내부 자동 실행 관문 #129](https://github.com/hyunlord/bs-mobile/issues/129)으로 대체했습니다. 과거 [#114](https://github.com/hyunlord/bs-mobile/issues/114)의 미검증 기록은 통과로 바꾸지 않습니다. 사람이 클릭하고 조작하는 확인은 사용자가 맡습니다. 폴드7 실기 [M4 #98](https://github.com/hyunlord/bs-mobile/issues/98)은 계속 보류 중입니다.
+
+## 앱 자체 자동 실행 증거
+
+다음 옵션은 게임 자신의 입력과 렌더 화면만 사용하며 macOS 화면 기록·손쉬운 사용 권한을 요구하지 않습니다. 일반 실행에는 자동 조작이 없습니다.
+
+```sh
+"Sow and Siege.app/Contents/MacOS/Sow and Siege" --autoplay-capture --capture-output "$PWD/new-capture"
+```
+
+출력 폴더는 새 경로 또는 빈 폴더여야 합니다. 독립 저장으로 타이틀→정상 속도 한 판→결산→재시작을 실행하고 화면 네 장과 실행 결과를 저장합니다. 성공 종료 코드 0은 생존·겨울 보스 격파·결산·재시작과 리플레이 검사가 모두 끝났다는 뜻입니다. 실패 기록을 성공으로 대체하지 않습니다. 이 옵션에서는 포커스가 없어도 진행하며, 사람 조작이나 폴드7 성능을 검증하지 않습니다.

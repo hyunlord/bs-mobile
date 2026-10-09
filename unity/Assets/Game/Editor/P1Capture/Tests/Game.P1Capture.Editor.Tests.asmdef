@@ -1,0 +1,14 @@
+{
+  "name": "Game.P1Capture.Editor.Tests",
+  "references": [
+    "Game.P1Capture.Editor",
+    "Game.App"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}
