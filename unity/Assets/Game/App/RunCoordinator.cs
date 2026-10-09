@@ -45,6 +45,7 @@ namespace Game.App
         {
             get
             {
+                if(AutoplayCapture.Active!=null)return AutoplayCapture.Active.ProfileDirectory;
 #if UNITY_EDITOR
                 if(!string.IsNullOrEmpty(MetaDirectoryOverride))return MetaDirectoryOverride;
 #endif
@@ -88,7 +89,7 @@ namespace Game.App
             try
             {
                 foreach(var item in CanonicalContent.Displays) displays.Add(item.Id,item);
-                preferences=RunPreferences.Load();Aim=preferences.Aim;
+                preferences=RunPreferences.Load(AutoplayCapture.Active?.PreferencesPrefix??RunPreferences.Prefix);Aim=preferences.Aim;
                 Progression=new MetaProgression(CanonicalContent.CreateMetaCatalog(),FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,MetaDirectory);
                 selectedChapter=Progression.Catalog.Chapters.OrderBy(c=>c.Index).First().Id;
                 recentIdle=Progression.LastIdle;if(recentIdle!=null)recentGrowth.UnionWith(recentIdle.BuildingsGrown);
@@ -158,7 +159,7 @@ namespace Game.App
         }
         public void StartRun(int? requestedSeed=null)
         {
-            if(loading)return;if(Session?.View.Status==RunStatus.Completed&&!finished){RetryCompleteRun();return;}StartCoroutine(BeginRun(requestedSeed ?? (int)(DateTime.UtcNow.Ticks & int.MaxValue)));
+            if(loading)return;if(Session?.View.Status==RunStatus.Completed&&!finished){RetryCompleteRun();return;}StartCoroutine(BeginRun(requestedSeed ?? AutoplayCapture.Active?.RunSeed ?? (int)(DateTime.UtcNow.Ticks & int.MaxValue)));
         }
         public void StartNeutralRun(int requestedSeed)
         {
@@ -178,7 +179,7 @@ namespace Game.App
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true),Aim,FoundationBoot.VerifiedDataHash);
                 Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsIdentity=null;MenuOpen=false;completedSummary=null;
-                recording=new RunRecording(Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
+                recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
                 world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,Frame.MapWidth,Frame.MapHeight);if(useMeta)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptFrame(Frame,FirstPlayable);ApplyPreferences();sound.ResetRun();sound.AcceptFrame(Frame,FirstPlayable);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -408,7 +409,7 @@ namespace Game.App
         private void OnApplicationFocus(bool focus)
         {
             desktopControls.Reset();
-            suspendedInterval=true;focusLost=!focus;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
+            suspendedInterval=true;focusLost=!focus&&AutoplayCapture.Active==null;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
             if(!focus)StopDiagnosticTrace("focus-lost");
         }
         private void OnApplicationQuit(){preferences?.Save();StopRecording();}

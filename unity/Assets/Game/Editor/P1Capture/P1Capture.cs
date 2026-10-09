@@ -24,6 +24,7 @@ namespace Game.P1Capture
         static string output;
         static double started, cardAt = -1, completedAt = -1, nextSample;
         static double unscaledStarted;
+        static CaptureClockGuard clock = new CaptureClockGuard();
         static int stage;
         static long lastEvent;
         static int people;
@@ -85,6 +86,7 @@ namespace Game.P1Capture
         static void Pump()
         {
             if (run == null) run = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
+            if (run != null && run.Error != null) throw new InvalidOperationException(run.Error);
             if (run == null || run.Ui == null) return;
             if (stage == 0)
             {
@@ -110,17 +112,15 @@ namespace Game.P1Capture
                 if (!recorder.StartRecording()) throw new InvalidOperationException("Recorder refused capture.");
                 started = Time.timeAsDouble;
                 unscaledStarted = Time.unscaledTimeAsDouble;
-                Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; unchanged rules; seed=30000");
+                Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; neutral first-playable rules without meta injection; seed=30000");
                 Log("identity", $"commit={BuildIdentity.Commit};sourceHash={BuildIdentity.SourceHash};dirty={BuildIdentity.SourceDirty};dataHash={FoundationBoot.VerifiedDataHash};profile=first-playable;unity={Application.unityVersion}");
                 Log("selection-rule", "early=start at run-start for180 seconds; late=end at run-complete+8 seconds for180 seconds; continuous clips at1x with no omitted in-clip frames");
                 stage = 1;
                 return;
             }
             var elapsed = Time.timeAsDouble - started;
-            var clockDrift = Math.Abs(elapsed - (Time.unscaledTimeAsDouble - unscaledStarted));
-            if (clockDrift > .15) throw new InvalidOperationException($"Media/game clock drift {clockDrift:F4}s exceeds 0.15s; normal playback is not proven.");
+            clock.Validate(elapsed, Time.unscaledTimeAsDouble - unscaledStarted);
             if (elapsed > 1500) throw new TimeoutException("Capture exceeded 25 minutes of media time.");
-            if (run.Error != null) throw new InvalidOperationException(run.Error);
             if (stage == 1 && elapsed >= 3)
             {
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
@@ -129,12 +129,15 @@ namespace Game.P1Capture
             }
             if (stage == 8 && elapsed >= 4)
             {
-                run.StartRun(30000);
+                run.StartNeutralRun(30000);
                 stage = 2;
                 return;
             }
             if (stage == 2 && run.Frame != null)
             {
+                var unscaledElapsed = Time.unscaledTimeAsDouble - unscaledStarted;
+                clock.Arm(elapsed, unscaledElapsed);
+                Log("clock-baseline", $"excludedPreRunOffsetSeconds={unscaledElapsed - elapsed:F6};mediaOriginUnchanged=true;thresholdSeconds=0.15;baselineCount=1");
                 Log("run-start", run.RecordedReplayPath);
                 replayPath = run.RecordedReplayPath;
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "02-editor-run.png"));
@@ -191,7 +194,7 @@ namespace Game.P1Capture
             }
             if (stage == 5 && elapsed - completedAt >= 10)
             {
-                run.StartRun(30001);
+                run.StartNeutralRun(30001);
                 Log("restart-request", "seed=30001");
                 stage = 6;
             }
@@ -205,6 +208,7 @@ namespace Game.P1Capture
             {
                 using (var stream = File.OpenRead(replayPath))
                 {
+                    if (File.Exists(replayPath + ".meta")) throw new InvalidOperationException("Neutral evidence must not contain a meta replay context.");
                     var replay = ReplayCodec.Read(stream);
                     if (replay.Commands.Any(c => c.Kind != ReplayCommandKind.Advance && c.Kind != ReplayCommandKind.ChooseCard && c.Kind != ReplayCommandKind.SetAimMode))
                         throw new InvalidOperationException("Replay contains a command outside normal movement, card choice, or aim setting.");
@@ -276,6 +280,7 @@ namespace Game.P1Capture
             recorder = null; run = null; ledger = null; stage = 0;
             cardAt = -1; completedAt = -1; nextSample = 0; lastEvent = 0;
             people = 0; replayPath = null;
+            clock = new CaptureClockGuard();
             Debug.Log("P1 capture: " + result);
         }
     }
