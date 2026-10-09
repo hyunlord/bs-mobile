@@ -21,7 +21,7 @@ namespace Game.App
         string output, replayPath;
         RunCoordinator run;
         StreamWriter ledger;
-        double started, nextAction, cardAt = -1, nextSample;
+        double started, nextAction, cardAt = -1, nextSample, restartAt;
         int stage;
         bool capturing, ended;
         Result result;
@@ -128,10 +128,10 @@ namespace Game.App
                 case 7:
                     if (!run.MenuOpen) return;
                     Capture("03-native-summary.png"); stage = 8; nextAction = Elapsed + 2; break;
-                case 8: Click("다시 하기"); stage = 9; nextAction = Elapsed + 3; break;
+                case 8: restartAt = Elapsed; Click("다시 하기"); stage = 9; nextAction = Elapsed + 3; break;
                 case 9:
-                    if (run.Frame == null || run.Frame.Status != RunStatus.Running || run.Frame.Tick <= 0 || run.RecordedReplayPath == replayPath)
-                        throw new InvalidOperationException("Restart did not advance a new normal run.");
+                    if (!CaptureRestartGate.IsReady(Elapsed - restartAt, replayPath, run.RecordedReplayPath,
+                        run.Frame?.Status == RunStatus.Running, run.Frame?.Tick ?? 0)) return;
                     result.restartReplay = run.RecordedReplayPath;
                     Log("restart-running", result.restartReplay); Capture("04-native-restart.png"); stage = 10; nextAction = Elapsed + 1; break;
                 case 10: Verify(); Finish(true, "survived duration, defeated winter boss, summary displayed, restart advanced"); break;
@@ -222,16 +222,34 @@ namespace Game.App
         {
             if (ended) return;
             ended = true;
-            result.status = success ? "complete" : "failed"; result.detail = detail; result.elapsedSeconds = Elapsed;
-            Log(result.status, detail); WriteResult(); ledger?.Dispose(); ledger = null;
-            UnityEngine.Debug.Log("AUTOPLAY_CAPTURE_" + (success ? "COMPLETE " : "FAILED ") + output);
-            Application.Quit(success ? 0 : 1);
+            FinalizeCapture(success, detail, code =>
+            {
+                try { UnityEngine.Debug.Log("AUTOPLAY_CAPTURE_" + (code == 0 ? "COMPLETE " : "FAILED ") + output); }
+                finally { Application.Quit(code); }
+            });
+        }
+
+        void FinalizeCapture(bool success, string detail, Action<int> exit)
+        {
+            CaptureCompletion.Run(success,
+                () => Log("capture-stop-request", "requestedSuccess=" + success + "; " + detail + "; final result and exit code are authoritative"),
+                () => { try { ledger?.Dispose(); } finally { ledger = null; } },
+                (accepted, error) =>
+                {
+                    result.status = accepted ? "complete" : "failed";
+                    result.detail = error == null ? detail : detail + "\n" + error;
+                    result.elapsedSeconds = Elapsed;
+                    WriteResult();
+                }, exit);
         }
 
         void OnApplicationQuit()
         {
-            if (!ended && result != null) { result.status = "failed"; result.detail = "Application quit before capture completed"; result.elapsedSeconds = Elapsed; WriteResult(); }
-            ledger?.Dispose(); ledger = null;
+            if (!ended && result != null)
+            {
+                ended = true;
+                FinalizeCapture(false, "Application quit before capture completed", _ => { });
+            }
         }
 
         [Serializable] sealed class Entry { public double seconds; public int tick, renderFrame; public string kind, detail; }

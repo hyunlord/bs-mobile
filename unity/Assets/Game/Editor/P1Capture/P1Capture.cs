@@ -27,6 +27,7 @@ namespace Game.P1Capture
         static double started, cardAt = -1, completedAt = -1, nextSample;
         static double unscaledStarted;
         static double preparationAt;
+        static double restartAt, restartCapturedAt;
         static bool movieStarted, movieStopped;
         static bool lifecycleAttached;
         static CaptureClockGuard clock = new CaptureClockGuard();
@@ -269,17 +270,20 @@ namespace Game.P1Capture
                 recorder = null;
                 movieStopped = true;
                 if (recordingError != null) throw new InvalidOperationException("Recorder finalization failed: " + recordingError);
+                restartAt = Time.realtimeSinceStartupAsDouble;
                 run.StartNeutralRun(30001);
                 Log("restart-request", "seed=30001; outside movie; screenshot evidence only");
                 stage = 6;
             }
-            if (stage == 6 && elapsed - completedAt >= 14)
+            if (stage == 6 && Time.realtimeSinceStartupAsDouble - restartAt >= 3)
             {
-                if (run.Frame == null || run.Frame.Status == RunStatus.Completed) throw new InvalidOperationException("Restart did not reach a new run.");
+                if (!CaptureRestartGate.IsReady(Time.realtimeSinceStartupAsDouble - restartAt, replayPath, run.RecordedReplayPath,
+                    run.Frame?.Status == RunStatus.Running, run.Frame?.Tick ?? 0)) return;
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "04-editor-restart.png"));
+                restartCapturedAt = Time.realtimeSinceStartupAsDouble;
                 stage = 7;
             }
-            if (stage == 7 && elapsed - completedAt >= 16)
+            if (stage == 7 && Time.realtimeSinceStartupAsDouble - restartCapturedAt >= 2)
             {
                 using (var stream = File.OpenRead(replayPath))
                 {
