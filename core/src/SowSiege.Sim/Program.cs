@@ -34,7 +34,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var valueOptions = new HashSet<string>(StringComparer.Ordinal)
 {
     "--data", "--seed", "--iterations", "--hero", "--estate", "--policy", "--output", "--metrics",
-        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement", "--diagnostic-variant", "--diagnostic-output", "--diagnostic-raw-output"
+        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement", "--target-material", "--diagnostic-variant", "--diagnostic-output", "--diagnostic-raw-output"
 };
     var options = new Dictionary<string, string>(StringComparer.Ordinal);
     for (var index = 0; index < args.Length; index++)
@@ -47,6 +47,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var diagnostic = DiagnosticRequest.Parse(options, int.Parse(options.GetValueOrDefault("--iterations", "3"), CultureInfo.InvariantCulture));
     var diagnosticResults = new List<DiagnosticResult>();
     var firstPlayableCoverage = new List<IReadOnlyDictionary<string, long>>();
+    var waveCoverage = new List<IReadOnlyDictionary<string, long>>();
     var data = options.GetValueOrDefault("--data", "data");
     var includeTest = options.ContainsKey("--include-test");
     var profileName = options.GetValueOrDefault("--profile", "s2-baseline");
@@ -69,12 +70,13 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var peopleRule = options.GetValueOrDefault("--people-rule", catalog.Tuning.World.DefaultPeopleRule);
     var scenario = options.GetValueOrDefault("--scenario", "normal");
     var policy = options.GetValueOrDefault("--policy", "mixed");
+    if (catalog.WaveRuntime is not null && scenario != "normal") { throw new ArgumentException("Wave-1a supports normal deterministic runs; historical load fixture is not a wave scenario."); }
     var heroId = options.GetValueOrDefault("--hero", catalog.Tuning.DefaultHero);
     var estateId = options.GetValueOrDefault("--estate", catalog.Tuning.DefaultEstate);
     if (peopleRule is not ("A" or "B" or "C") || scenario is not ("normal" or "load")) { throw new ArgumentException("people-rule must be A/B/C; scenario must be normal/load."); }
     if (!catalog.Tuning.Policies.ContainsKey(policy) || !catalog.Heroes.ContainsKey(heroId) || !catalog.Estates.ContainsKey(estateId)) { throw new ArgumentException("Unknown policy, hero, or estate."); }
     var movement = options.TryGetValue("--movement", out var requestedMovement) ? requestedMovement : catalog.Experiment is null ? null : "circuit";
-    var run = new RunOptions(seed, heroId, estateId, policy, peopleRule, scenario, Movement: movement);
+    var run = new RunOptions(seed, heroId, estateId, policy, peopleRule, scenario, Movement: movement, TargetMaterial: options.GetValueOrDefault("--target-material"));
     var samples = new List<double>();
     var results = new List<SimulationResult>();
     var loadExpected = catalog.Tuning.World.Load;
@@ -111,6 +113,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
             timingCsv?.Append(CultureInfo.InvariantCulture, $"{repeat},{after.Tick},{elapsed:R},{before.ActiveEnemies},{before.Farms},{before.Buildings},{before.People},{after.ActiveEnemies},{after.Farms},{after.Buildings},{after.People},{before.PopulationMembers},{after.PopulationMembers}\n");
         }
         results.Add(simulation.Result());
+        if (simulation is IWaveRunView waveView && waveView.CaptureWaveRuntime() is { } frame) { waveCoverage.Add(frame.Counters); }
         if (observer is not null) { diagnosticResults.Add(observer.Result()); if (catalog.FirstPlayable is not null) { firstPlayableCoverage.Add(simulation.FirstPlayableCoverage); } }
     }
     if (samples.Count == 0) { throw new InvalidOperationException("No simulation ticks measured."); }
@@ -124,10 +127,10 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var gitHead = Git("rev-parse", "HEAD");
     var gitStatus = Git("status", "--porcelain");
     var sourceHash = ContentProvenance.SourceHash(gitRoot);
-    var stage = catalog.Experiment is not null ? "S4b" : catalog.Runtime is null ? "S2" : "S4";
+    var stage = catalog.WaveRuntime is not null ? "wave-1a" : catalog.Experiment is not null ? "S4b" : catalog.Runtime is null ? "S2" : "S4";
     var scope = scenario == "load" ? "S2 exact-load mechanics fixture; maintenance included; not natural gameplay" : shortened ? "S2 truncated headless mechanics fixture; not a full game" : "S2 full-duration headless gameplay simulation; balance not approved";
     scope = scope.Replace("S2", stage, StringComparison.Ordinal);
-    var tuningSource = profile.Experiment?.TuningFile ?? profile.TuningFile ?? (profile.Gameplay is null ? null : "tuning.json");
+    var tuningSource = profile.WaveRuntimeFile ?? profile.Experiment?.TuningFile ?? profile.TuningFile ?? (profile.Gameplay is null ? null : "tuning.json");
     var tuningHash = tuningSource is null ? null : Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(data, tuningSource))));
     var metadata = new
     {
@@ -154,8 +157,8 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
             selection.Heroes,
             selection.Estates,
             charters = profile.Runtime?.Charters ?? [],
-            items = profile.Runtime?.Items ?? [],
-            evolutions = profile.Runtime?.Evolutions ?? []
+            items = catalog.WaveRuntime?.Items.Keys.ToArray() ?? profile.Runtime?.Items ?? [],
+            evolutions = catalog.WaveRuntime?.Evolutions.Keys.ToArray() ?? profile.Runtime?.Evolutions ?? []
         },
         runtimeContractVersion = profile.Runtime?.ContractVersion,
         cardCatalog = ContentLoader.CardCatalog(data, profile, includeTest, catalog),
@@ -163,7 +166,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         acquisitionCatalog = catalog.Runtime?.Tuning,
         timelineSampleIntervalTicks = catalog.Tuning.World.TelemetryPeriodTicks,
         charterSlots = catalog.Runtime?.Tuning.CharterSlots ?? 0,
-        designMetadataPolicy = catalog.Runtime is null ? "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning" : "Only explicit runtimeProjection executes; candidate prose and design damage coefficients are not executable rules",
+        designMetadataPolicy = catalog.WaveRuntime is not null ? "Reviewed designed-v1.1 typed handlers; designRef is linkage, counters are observed behavior, not semantic or visual acceptance" : catalog.Runtime is null ? "Candidate effects and design damage coefficients are not applied to unchanged S2 runtime tuning" : "Only explicit runtimeProjection executes; candidate prose and design damage coefficients are not executable rules",
         contentSha256 = contentHash,
         commit = gitHead ?? Environment.GetEnvironmentVariable("GITHUB_SHA") ?? "unavailable",
         gitDirty = gitStatus is null ? (bool?)null : gitStatus.Length != 0,
@@ -291,6 +294,13 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
         artifact["artifactVersion"] = 2;
         artifact["scope"] = scope;
         artifact["runMetadata"] = JsonSerializer.SerializeToNode(metadata, jsonOptions);
+        if (catalog.WaveRuntime is not null)
+        {
+            artifact["runMetadata"]!["waveDesignRevision"] = catalog.WaveRuntime.Revision;
+            artifact["runMetadata"]!["targetMaterial"] = run.TargetMaterial;
+            artifact["runMetadata"]!["acceptanceScope"] = "determinism-and-no-crash-only; balance/economy held #126";
+            artifact["runMetadata"]!["waveBehaviorCounters"] = JsonSerializer.SerializeToNode(waveCoverage[artifacts.Count], jsonOptions);
+        }
         if (shortened && result.EndReason == "duration")
         {
             artifact["endReason"] = "fixture-duration";

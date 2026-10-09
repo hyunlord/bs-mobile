@@ -5,7 +5,7 @@ namespace SowSiege.Core
 {
 
     /// <summary>Seeded fixed-tick world. IO, clocks, rendering and meta progression belong to adapters.</summary>
-    public sealed class Simulation
+    public sealed class Simulation : IWaveRunView
     {
         private readonly DiagnosticObserver? diagnostics;
         private readonly IStateHasher stateHasher;
@@ -16,6 +16,7 @@ namespace SowSiege.Core
         private readonly CombatSystem combat;
         private readonly EstateSystem estate;
         private readonly ProgressionSystem progression;
+        internal WaveRuntimeSystem? Wave { get; }
         internal RuntimeSystem? Runtime { get; }
         internal ExperimentSystem? Experiment { get; }
         internal WorldState World { get; } = new();
@@ -29,6 +30,11 @@ namespace SowSiege.Core
 
         internal Simulation(ContentCatalog catalog, RunOptions options, IStateHasher stateHasher, DiagnosticObserver? diagnostics, InteractiveState? interactive)
         {
+            if (options.TargetMaterial is not null && (catalog.WaveRuntime?.MaterialTargets?.ContainsKey(options.TargetMaterial) != true))
+            {
+                throw new ArgumentException("Unsupported target material.");
+            }
+
             Interactive = interactive;
             this.diagnostics = diagnostics;
             diagnostics?.Attach(catalog, World);
@@ -61,7 +67,8 @@ namespace SowSiege.Core
             World.Bans = catalog.Tuning.World.Progression.Bans;
             World.Locks = catalog.Tuning.World.Progression.Locks;
             if (catalog.Estates[options.EstateId].RemainsLoop is { } loop) { World.Remains = new(loop); }
-            estate.Initialize();
+            if (catalog.WaveRuntime is null) { estate.Initialize(); }
+            else { Wave = new(catalog, World, random, interactive); }
             if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
             if (options.Scenario == "load") { PrepareLoadTick(); }
             Experiment?.Trace();
@@ -71,6 +78,7 @@ namespace SowSiege.Core
         }
 
         public IReadOnlyDictionary<string, long> FirstPlayableCoverage => new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(World.FirstPlayable?.Coverage ?? new SortedDictionary<string, long>(), StringComparer.Ordinal));
+        public WaveRuntimeFrame? CaptureWaveRuntime() => catalog.WaveRuntime is { } d ? World.WaveRuntime!.Capture(d, World.Tick) : null;
         public CardOfferSnapshot PendingCards => new(World.PendingCards.ToArray(), World.LockedCard, World.Rerolls, World.Bans, World.Locks);
         public void RerollCards() => progression.Reroll();
         public void BanCard(string id) => progression.Ban(id);
@@ -108,6 +116,7 @@ namespace SowSiege.Core
                 World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);
             }
             if (Runtime is not null && wasInside != RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius)) { Runtime.Emit("estate-cross", new(World.Lord)); }
+            if (Wave is not null) { Wave.Tick(previousLord); progression.Tick(); World.Tick++; if (World.Tick % catalog.Tuning.World.TelemetryPeriodTicks == 0 || IsComplete) { RecordSample(); } return; }
             Runtime?.Tick();
             combat.SpawnAndMoveEnemies();
             spatial.Rebuild(World.Enemies);
@@ -143,9 +152,10 @@ namespace SowSiege.Core
         private void MoveManual(PlayerInput input)
         {
             var map = catalog.Tuning.World.Map;
+            var speed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
             var scale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
-            World.Lord = new(Math.Clamp(World.Lord.X + (int)((long)input.X * map.LordSpeed / scale), 0, map.Width),
-                Math.Clamp(World.Lord.Y + (int)((long)input.Y * map.LordSpeed / scale), 0, map.Height));
+            World.Lord = new(Math.Clamp(World.Lord.X + (int)((long)input.X * speed / scale), 0, map.Width),
+                Math.Clamp(World.Lord.Y + (int)((long)input.Y * speed / scale), 0, map.Height));
             World.Destination = new(Math.Clamp(World.Lord.X + input.X, 0, map.Width), Math.Clamp(World.Lord.Y + input.Y, 0, map.Height));
         }
 

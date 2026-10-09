@@ -6,7 +6,7 @@ namespace SowSiege.Core
 {
 
     // PeopleRule null resolves from JSON World.DefaultPeopleRule. Scenario must be normal or load.
-    public sealed record RunOptions(int Seed, string HeroId, string EstateId, string Policy, string? PeopleRule = null, string Scenario = "normal", bool ManualCards = false, [property: OmitWhenNull] string? Movement = null);
+    public sealed record RunOptions(int Seed, string HeroId, string EstateId, string Policy, string? PeopleRule = null, string Scenario = "normal", bool ManualCards = false, [property: OmitWhenNull] string? Movement = null, [property: OmitWhenNull] string? TargetMaterial = null);
     public sealed record ToolTelemetry(long ActivationDamage, long GrowthProduced, long GrowthDamage, long Activations);
     public sealed record TimeSample(int Tick, int Season, int Level, int Enemies, int Farms, int Buildings, int People, long WeaponDamage, long ToolDamage, long GrowthDamage, long KillExperience, long HarvestExperience, long TaxExperience, int Food, int LordHealth, long AllyDamage);
     public sealed record CardChoice(int Tick, string[] Offered, string Chosen, string Rarity, int Level);

@@ -19,6 +19,7 @@ public static partial class ContentLoader
     public static ContentCatalog Load(string directory, bool includeTest = false, string profileName = "s2-baseline")
     {
         var profile = LoadProfile(directory, profileName);
+        if (profile.WaveRuntimeFile is not null) { return LoadWaveRuntime(directory, profile, includeTest); }
         var baseline = Read<Tuning>(ConfigurationPath(directory, profile.TuningFile ?? "tuning.json", profile.FirstPlayable is null ? @"\A(?:tuning\.json|experiments/tuning-s2-baseline\.json)\z" : @"\Afirst-playable-tuning\.json\z"));
         var experiment = LoadExperiment(directory, profile, baseline);
         var tuning = experiment?.Tuning ?? baseline;
@@ -230,7 +231,7 @@ public static partial class ContentLoader
                 if (typeof(ContentRecord).IsAssignableFrom(type) && name is "kind" or "evolutionKind"
                     || name == "effect" && type != typeof(CharterContent) && type != typeof(ItemContent) && typeof(ContentRecord).IsAssignableFrom(type)
                     || name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent)
-                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" && type == typeof(RuntimeProfile)
+                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" or "waveRuntimeFile" && type == typeof(RuntimeProfile)
                     || name == "evolutionGrowthRequirements" && type == typeof(FirstPlayableDefinition)
                     || name == "growth" && type == typeof(WeaponContent)
                     || name is "damage" or "range" or "cooldownTicks" or "knockback" && type == typeof(WeaponActivationContent)
@@ -242,7 +243,7 @@ public static partial class ContentLoader
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
             Require(!(type == typeof(EstateContent) && name == "remainsLoop" && member.ValueKind == JsonValueKind.Null), "Remains loop must be omitted or a complete object.");
-            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
+            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" or "waveRuntimeFile" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
             Require(!(type == typeof(WeaponContent) && name == "growth" && member.ValueKind == JsonValueKind.Null), "Weapon growth must be omitted or complete.");
             Require(!(type == typeof(WeaponActivationContent) && member.ValueKind == JsonValueKind.Null), "Activation members cannot be null.");
             Require(!(type == typeof(WeaponCombatProfileExtension) && member.ValueKind == JsonValueKind.Null), "Weapon combat members cannot be null.");

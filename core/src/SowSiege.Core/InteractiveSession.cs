@@ -61,13 +61,14 @@ namespace SowSiege.Core
         {
             var w = Simulation.World;
             return new(Options.Run.Seed, w.Tick, w.LordHealth > 0, w.LordHealth <= 0 ? "death" : Simulation.IsComplete ? "duration" : "running", w.Level,
-                w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w));
+                w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), w.WaveRuntime is not null ? w.WaveRuntime.BossDefeated : Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w));
         }
-        private sealed class SessionView : IReadOnlyRunView
+        private sealed class SessionView : IReadOnlyRunView, IWaveRunView
         {
             private readonly InteractiveSession session;
             internal SessionView(InteractiveSession session) { this.session = session; }
             public RunStatus Status => session.Status;
+            public WaveRuntimeFrame? CaptureWaveRuntime() => session.Catalog.WaveRuntime is { } definition ? session.Simulation.World.WaveRuntime!.Capture(definition, session.Simulation.World.Tick) : null;
             public FirstPlayableFrame? CaptureFirstPlayable() => FirstPlayableView.Capture(session.Catalog, session.Simulation.World, session.Options.Run.HeroId);
             public CardOfferView CaptureCards()
             {
@@ -85,7 +86,7 @@ namespace SowSiege.Core
                 var remains = w.Remains?.Live.Select(r => new RemainView(r.Id, InteractiveState.Point(r.Position))).ToArray() ?? Array.Empty<RemainView>();
                 var extent = Math.Max(map.EstateRadius, w.Farms.Select(f => Math.Max(Math.Abs(f.Position.X - w.Estate.X), Math.Abs(f.Position.Y - w.Estate.Y))).Concat(w.Buildings.Select(b => Math.Max(Math.Abs(b.Position.X - w.Estate.X), Math.Abs(b.Position.Y - w.Estate.Y)))).DefaultIfEmpty(0).Max());
                 return new(w.Tick, Status, w.Season, Math.Max(0, c.Tuning.World.Seasons.Take(w.Season + 1).Sum(s => s.DurationTicks) - w.Tick), c.Tuning.DurationTicks, c.Tuning.TickRate, map.Width, map.Height,
-                    new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, map.LordHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
+                    new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, map.LordHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
                     new(enemies.Length, people.Length, farms.Length, buildings.Length, session.State.Events.Count(e => e.Kind == PresentationKind.Attack && (e.Shape == "projectile" || e.Shape == "rays"))),
                     Array.AsReadOnly(enemies), Array.AsReadOnly(farms), Array.AsReadOnly(buildings), Array.AsReadOnly(people), Array.AsReadOnly(loot), Array.AsReadOnly(remains), Array.AsReadOnly(w.Equipment.Select(e => new EquipmentView(e.Id, e.Level)).ToArray()), Array.AsReadOnly(session.State.Events.ToArray()));
             }

@@ -1,0 +1,42 @@
+{
+  "id": "core:wave_1a",
+  "name": "새싹 들판 · 수확과 진화",
+  "selection": {
+    "weapons": [
+      "core:iron_blade",
+      "core:ward_orbit",
+      "core:storm_fork",
+      "core:ember_wand",
+      "core:harvest_scythe"
+    ],
+    "tools": [
+      "core:seed_bag",
+      "core:rain_ladle",
+      "core:carpenter_hammer",
+      "core:muster_horn"
+    ],
+    "enemies": [
+      "core:raider",
+      "core:seed_mite",
+      "core:crop_grazer",
+      "core:ram_runner",
+      "core:shield_raider",
+      "core:wine_wasp",
+      "core:flood_tusk"
+    ],
+    "heroes": [
+      "core:frontier_knight"
+    ],
+    "estates": [
+      "core:sprout_march"
+    ]
+  },
+  "testSelection": {
+    "weapons": [],
+    "tools": [],
+    "enemies": [],
+    "heroes": [],
+    "estates": []
+  },
+  "waveRuntimeFile": "runtime/wave-1a.json"
+}

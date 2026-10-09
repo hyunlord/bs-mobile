@@ -64,3 +64,62 @@ D3 v1.1부터 [설계 카탈로그](../../data/system-design-v1.json)의 `primit
 이 문서의 검증 범위는 14종 enum·Sim 허용 조합·Core 분기/소비자·두 프로필의 선택과 override 정적 대조다. 플레이 실행·Unity 시각성·실기 성능·설계 고유성 승인은 증명하지 않는다.
 
 규칙 비교는 `node tools/design-rules-report.mjs`의 안정된 rule ID별 `expected`·`actual`·`violatingIds`를 기준으로 한다. 카탈로그 개정과 원본 파일이 같을 때만 Lattice 렌즈 값과 비교한다. 생성 가능한 보고서 사본은 커밋하지 않는다.
+
+## wave-1a: 승인 설계와 typed 실행 처리기의 대조
+
+확인일: 2026-10-10 · 추적: #152 · 기준 파일: [wave-1a 바인딩](../../data/runtime/wave-1a.json), [승인 설계](../../data/system-design-v1.json). 이 절은 위의 역사적 14종 effects 표를 대체하지 않는다. wave는 별도의 `WaveAttackKind`/`WaveItemKind`/`WaveEvolutionKind`/`WaveEnemyKind`와 작업 상태를 사용한다.
+
+### 수치의 분모와 증거 단계
+
+| 단계 | 정적 대조 결과 | 해석 경계 |
+|---|---|---|
+| 설계 문법 | 전체 레지스트리 38 primitive ID | enum/paramSchema 허용 수이며 실행 처리기 수가 아니다. |
+| 선택 | 바인딩 28개: 무기5·도구4·진화3·물품8·일반적6·보스1·챕터1 | 프로필에서 선택 가능함. 소유·실행·성공 횟수가 아니다. |
+| 선택된 문법 | 고유 primitive 28종, 레코드별 참조 합계 87개 | 동일 단위가 여러 레코드에 쓰인 참조를 구현 건수로 더하지 않는다. |
+| 소스 연결 | 아래 28종 모두 typed 처리기 또는 선택/표현 경계에 대조 위치가 있음 | 28개 범용 primitive interpreter 또는 28/28 전체 의미 구현을 뜻하지 않는다. `equipment-scope`/`chapter-route`는 선택·로딩 경계이며 공격 처리기가 아니다. |
+| bespoke | 선택 28개에서 0개; 전체 설계에는 44개 레코드의 잔여 bespoke가 있음 | 선택 밖 44개를 이 실행판이 지원한다는 뜻이 아니다. bespoke 0도 완전한 의미 동등성 증명이 아니다. |
+| 실행 관찰 | 이 문서 편집에서는 실행하지 않음: 미확인 | 아래 테스트 이름은 작성된 검증 경로다. 통과 여부는 해당 commit의 실제 테스트 로그/CI에 연결한다. |
+| Unity 관찰 | 이 절에서는 미확인 | Core event/snapshot 존재를 화면 표시·소리·시인성·정상 완주로 승격하지 않는다. |
+
+[WaveContentLoader.ValidateWaveBindings](../../core/src/SowSiege.Sim/WaveContentLoader.cs)는 정확한 28개 ID·kind·revision·승인 상태·선택 집합·물품 연결을 검사한다. `semanticSha256`는 `primitives/params/bespoke`의 정규화 서명을 고정해 미검토 변경을 거부하는 장치다. **서명 일치가 고유 메커니즘 구현 또는 테스트 통과를 증명하지 않는다.** 실제 실행은 [WaveRuntimeContract](../../core/src/SowSiege.Core/WaveRuntimeContract.cs)의 typed 정의를 [WaveRuntimeSystem](../../core/src/SowSiege.Core/WaveRuntimeSystem.cs), [WaveWorkSystem](../../core/src/SowSiege.Core/WaveWorkSystem.cs), [WaveEnemySystem](../../core/src/SowSiege.Core/WaveEnemySystem.cs)이 소비한다. 임의의 승인 카탈로그 primitive를 추가하는 것만으로 새 동작이 실행되지 않는다.
+
+### 선택 primitive → 실제 소비 위치 → 검증 경로
+
+아래 `unit:` 접두사는 표에서 생략했다. `WR`/`WW`/`WE`는 각각 위 링크의 `WaveRuntimeSystem`/`WaveWorkSystem`/`WaveEnemySystem`이다. 테스트 파일 링크의 메서드 이름은 정적 확인한 검증 경로이며 실행 관찰 카운터가 아니다.
+
+| primitive (선택 참조 수) | typed 분기·실제 소비 | 작성된 검증 경로 및 제한 |
+|---|---|---|
+| `attack-shape` (12) | WR `Attack`, `InArc`, `TickOrbits`, `TickProjectiles`; Arc/Orbit/Chain/Homing/HarvestArc와 도구 공격 | [WaveRuntimeTests](../../core/tests/SowSiege.Tests/WaveRuntimeTests.cs) `FacingArcDoesNotHitBehindLord`, `OrbitLeavesCenterEmpty`; [WaveRuntimeMetricTests](../../core/tests/SowSiege.Tests/WaveRuntimeMetricTests.cs) `ConstructionSlamDoesNotDamageBehindLord`. 승인된 형태 일부만 typed 구현. |
+| `visible-marker` (9) | `WaveRuntimeState.Emit/Capture`, `WaveAttackView`, `WaveWorkView` | [상태·view 투영](../../core/src/SowSiege.Core/WaveRuntimeState.cs). 데이터 생성 경로이며 Unity 판독성 판정은 별도. |
+| `attack-variant` (3) | WR `Attack`: WetUntil 우선 연쇄, HarvestArc 수확 파편, 저장수 0의 약한 타격 | [WaveRuntimeTests](../../core/tests/SowSiege.Tests/WaveRuntimeTests.cs) `ChainNeverHitsSameTargetTwice`; [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `WaterAttackAndEmptyPoolDoNotProduceExperienceAndRepairDoesNotRefill`. 모든 variant의 별도 양성·음성 실행 증거와 동일하지 않음. |
+| `status-apply` (2) | WR Chain의 `StopUntil`; WW `TickWater`의 `WetUntil`, WE `Tick` 상태 소비 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) 물 소비/건조 관련 검사. 젖음과 정지의 실제 틱별 화면 표시는 별도. |
+| `projectile-lifecycle` (1) | WR `TickProjectiles`: 실제 이동·고정 표적·표적 소멸/기한 종료 | [WaveRuntimeTests](../../core/tests/SowSiege.Tests/WaveRuntimeTests.cs) `HomingProjectileTravelsAndExpiresWhenLockedTargetDies`. |
+| `harvest-contact` (1) | WR HarvestArc → WW `Harvest`: 살아 있는 성숙 grain, 실제 호 안 접촉 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `SeedNeedsMaturityAndContactAndClaimsOriginalCycleOnce`. 처리기는 `grain` 조건이며 임의 `sourceIds` 필터 해석기가 아니다. |
+| `remnant-create` (6) | WW `Activate`, `Plant`, `Build`, `PlantSweep`; typed SeedFan/WaterFan/ConstructionSlam/MusterWave | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `PlantingSweepCreatesDistinctPlotsInsideRealFacingArcAndRespectsCapacity`, `HornRequiresRealEnemyAndAvailableWorkersAndOneGroupCannotMultiply`. |
+| `growth-cycle` (5) | WW `Tick`, `TickBuilding`, `TickWater`, `TickGroups`; 반경·건조·부모 상태·임무 상태 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `ConstructionProgressesWhileMovingInRadiusAndFiniteStockCannotRegenerateByRepair`, `DryPlotActuallyPausesUntilDeliveryAndRepeatedDrynessCannotPaySameCycleAgain`. |
+| `completion-ledger` (4) | WW `Reward`의 kind/source/instance/cycle 키와 `Completed`, `Collect` 분리 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `SeedNeedsMaturityAndContactAndClaimsOriginalCycleOnce`, `InterruptedShipmentRetainsReservationAndIdentityUntilRepairFinishes`; [WaveRuntimeIntegrationTests](../../core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs) `HiddenWorkReservationsAndCompletionHistoryChangeHash`. |
+| `stock-cycle` (2) | WW `TickRain`, `TickWater`, `TickBuilding`: 실제 water 차감; 영지의 원본 유한 목재 더미 `TimberOrigin` 반경 안에서만 timber 예약, 완료 때 `ProcessedTimber` 후보 원장 증가 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `IrrigationSpendsActualStockAndDoesNotRepeatForSamePlot`, `ConstructionProgressesWhileMovingInRadiusAndFiniteStockCannotRegenerateByRepair`. `ShipmentRequiresOriginalNearbyStockAndRepairNeverRefillsIt`도 참조. 선택된 목재 가공·출고는 처리하지만 `sale`/`meta-export` 소비는 미구현·보류이며 후보 원장은 금화/메타 지급이 아니다. #126 가격·환산 관문을 유지한다. |
+| `completed-structure-attack` (1) | WW `TickBuilding/Brace`: 완성 건물이 가까운 적을 향한 호 안의 적을 타격·밀침; 작업 반경 이탈 후에도 동작 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `MatureBuildingStillDefendsWhenLordLeavesWorkRadius`. `BuildingBraceKnocksOnlyActualInRangeHitAwayAndClampsToMap`, `BuildingFanHitsFrontNeighborsButNotRearInOneActivation`가 실제 호·밀침·지도 경계를 검사하도록 추가됐다. |
+| `ally-task` (1) | WW `Recruit/TickGroups`: 가용 인력·공유 상한·기존 집단 재사용 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `HornRequiresRealEnemyAndAvailableWorkersAndOneGroupCannotMultiply`, `HarvestCannotDispatchIdleReturnedWorkerOrMultiplyAvailableWorkers`. |
+| `mission-cycle` (1) | WW `OnKill/TickGroups`: 실제 참여 처치, 임무별 키, 귀환, 교대 전열 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `EarlierTrainingDoesNotRewardLaterMissionWithoutItsOwnParticipatingKill`, `TrainedCompanyAlternatesFrontRankAndPhysicallyCoversWithoutDamageBonus`; [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `CoverMovingAwayDuringTellCannotRemotelyProtectReturner`. |
+| `evolution-replace` (3) | WR `EligibleEvolution`, `Select`, `Suppressed`, `Tick`; PlantingArc/RepairOrbit/ShelteredPlot | [WaveRuntimeIntegrationTests](../../core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs) `EvolutionIsOfferedOnlyAfterActualHistoryAndRequiresSelection`, `ShelteredEvolutionSuppressesBothInputsAndCreatesLinkedWork`. |
+| `attack-anchor` (1) | WR RepairOrbit의 살아 있는 미완성 건물 중 `ReadyTick == -1`인 실제 수리 대상만 선택하고 공전 갱신; 새 건설은 제외 | [WaveRuntimeIntegrationTests](../../core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs) `RepairOrbitAnchorsOnlyToActualRepairNotNewConstruction` 및 공전 관련 검사. 새 건설/실제 수리 분기를 구별하며 화면 관찰은 별도. |
+| `growth-protect` (1) | WE seed/ripe 공격의 roof 보호 소비; WW 수리 완료의 roof-used 해제 | [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `RoofStopsOneRaidThenLosesProtectionUntilRepair`. |
+| `paired-growth` (1) | WW ShelteredPlot 생성과 `ParentId`, 부모 손상 시 grain 중지 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `ShelteredPlotPausesWhenParentIsRuinedAndResumesSameCycleAfterRepair`. |
+| `equipment-scope` (8) | WR `ExtraCards`의 `EquipmentIds`; loader의 승인 linked ID 일치 검사 | [WaveContentTests](../../core/tests/SowSiege.Tests/WaveContentTests.cs) `InvalidReferenceOrUnsupportedMappingFailsClosed`. 선택 자격 경계이지 자체 타격 효과가 아님. |
+| `target-routing` (3) | SeedDetour → WE 우회, RaiderAim → WR 다음 호 방향, CarryWater → WW 첫 어린 마른 밭 | [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `SeedTheftCreatesLinkedDetourAndFollowingEnemyWalksAroundIt`; [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `CarryWaterMovesExistingStockOnlyToFirstYoungPlot`. |
+| `resource-routing` (2) | WW `TickCarriedWater`, `Recruit/TickGroups`: 물 이동·FieldMeal 식량 예약/현장 소비/미사용 반환 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `PackedFoodIsReservedAndUnspentFoodReturnsAfterEmptyTrip`, `MoistPlotDoesNotConsumeIrrigationStockOrPayWaterExperience`. |
+| `group-formation` (1) | WW `Harvest`: HarvestGuard가 이미 교전/엄호 중인 집단의 목적지만 변경 | [WaveWorkTests](../../core/tests/SowSiege.Tests/WaveWorkTests.cs) `HarvestGuardRepositionsExistingGroupWithoutInventingPeople`. |
+| `geometry-modifier` (1) | WR FrontOrbit: 정면 적 조건을 확인한 공전 조각 위치 변경 | [WaveRuntimeIntegrationTests](../../core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs) `FrontOrbitItemDoesNotReshapeWithoutVisibleFrontalEnemy`. |
+| `stat-modifier` (2) | WR `MovementSpeed`, WW `Collect`의 MoveSpeed/PickupRadius | [WaveRuntimeContract](../../core/src/SowSiege.Core/WaveRuntimeContract.cs)의 typed item amount. 별도 이동/수거 반례 실행은 이 문서에서 미확인. |
+| `enemy-tell` (7) | WE `Tell/Advance`: 표적·좌표 잠금과 tell/active/recovery 상태 | [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `ChargeLocksItsTellAndMissesASidestep`, `MissingCropDuringTellDoesNotDamageLordOrConsumeAnotherCrop`. |
+| `enemy-pressure` (6) | WE Pursuer/SeedThief/RipeGrazer/Charger/Shield/Ranged typed 분기. Ranged는 영주 가까이에 살아 있는 성숙 grain이 있을 때만 사격 예고 시작 | [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `RipeGrazerWaitsThenConsumesOnlyTheLockedRipeCrop`, `ShieldBlocksFrontButExposesRearAndTurningBody`, `RangedShotFollowsLockedAimWhileShooterRetreats`, `RangedEnemyCannotShootWithoutNearbyLivingRipePlot`, `RangedTellRequiresRipePlotButCommittedShotSurvivesHarvest`. |
+| `boss-phases` (1) | WE FloodBoss: 두 범람선 뒤 고정 돌진, 끝 회복, 어린 밭 휴면 | [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `BossCyclesTwoSequentialLanesBeforeItsLockedCharge`, `BossLaneHasARealEscapeAndDormancyExcludesRipeAndOffLaneCrops`. |
+| `chapter-route` (1) | loader `ChapterId/ChapterDesignRef/BossId`, WE 보스 출현·종료 상태 | [WaveContentTests](../../core/tests/SowSiege.Tests/WaveContentTests.cs) `NewProfileHasExactApprovedScopeAndLeavesHistoricalProfilesIsolated`. 챕터1 선택 경계이며 챕터10 전체 해금/결산 규칙 구현 수가 아님. |
+| `map-route-trace` (1) | WW `TraceWorkPath`; WE Pursuer의 연결 작업 경로 접근 | [WaveEnemyTests](../../core/tests/SowSiege.Tests/WaveEnemyTests.cs) `ConnectedWorkTraceChangesPursuerApproach`. |
+
+### 실행 계측을 보고할 때
+
+[WaveActivationMetrics](../../core/src/SowSiege.Core/WaveActivationMetrics.cs)는 발동과 자식 투사체/공전 만료를 분리한다. 발사 순간 0회 명중을 곧바로 빈 공격으로 확정하지 않는다. [WaveRuntimeMetricTests](../../core/tests/SowSiege.Tests/WaveRuntimeMetricTests.cs)의 `MultipleProjectilesResolveOneActivationOnlyAfterLastChild`, `LateOrbitHitCountsSuccessAtExpiryNotAtLaunch`, `OrbitWithNoHitsResolvesEmptyOnceAndPendingIsSeparate`가 이 구분을 검사하도록 작성됐다. 처리기 연결 수와 실제 발동/해결/대기/명중/과잉피해 수는 서로 다른 분모다.
+
+관찰 보고에는 commit·profile·seed·입력/리플레이·실행 시간 구간을 붙이고 `selected`, `owned`, `eligible`, `observedNonzeroEffect`, `semanticReview`, `presentationObserved`를 분리한다. 28개 서명 통과나 87개 설계 참조를 28개 고유 동작·화면 검증 완료로 표현하지 않는다. 나머지 10개 미선택 primitive와 44개 bespoke 잔여는 후속 웨이브 범위이며 이 표로 지원 상태를 올리지 않는다.

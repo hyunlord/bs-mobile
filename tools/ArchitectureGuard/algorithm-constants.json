@@ -143,5 +143,55 @@
     "Symbol": "SowSiege.Core.MetaValidation.MaximumMetricValue",
     "Value": "1000000000000",
     "Reason": "Finite cumulative telemetry counter saturation bound; challenge targets and rewards remain catalog data."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.MaterialTargetVersion",
+    "Value": "2",
+    "Reason": "Binary replay schema discriminator for explicit pre-run target material; original version 1 wire bytes are unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.RectangleSides",
+    "Value": "4",
+    "Reason": "Four edges of a rectangular spawn boundary; exact geometry topology, not spawn rate."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.TopEdge",
+    "Value": "2",
+    "Reason": "Third edge discriminator in the ordered left/right/top/bottom spawn choice; maintains existing seeded edge mapping."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.MidpointDivisor",
+    "Value": "2",
+    "Reason": "Exact midpoint, reflection and symmetric two-sided geometry arithmetic; damage and slowdown coefficients remain runtime data."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.OrbitDirections",
+    "Value": "8",
+    "Reason": "Octant count of the existing integer unit-direction lookup; cadence, count, radius and collision width remain gear data."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.MinimumFanSamples",
+    "Value": "3",
+    "Reason": "Center and both endpoints required to represent a swept fan; plot capacity and spacing remain data."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.FanSquaredDotFactor",
+    "Value": "2",
+    "Reason": "Squared cosine denominator for the approved 90-degree fan collision predicate."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.WaterLaneCount",
+    "Value": "2",
+    "Reason": "Ordered boss action topology has two water lanes before its charge; phase timing and damage remain enemy data."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.FarLaneQuarter",
+    "Value": "3",
+    "Reason": "Far endpoint of the symmetric quarter-to-three-quarter lane geometry, preserving the two edge escape regions."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveGeometry.LanePartitions",
+    "Value": "3",
+    "Reason": "Partitions placing the two boss water lanes at the interior thirds; geometric layout, not phase timing."
   }
 ]

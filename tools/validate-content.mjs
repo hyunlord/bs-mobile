@@ -1,3 +1,4 @@
+import { validateWaveContent } from './wave1a-content.mjs';
 import { validateSystemDesign } from './system-design-v1.mjs';
 import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
@@ -10,7 +11,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -19,6 +20,7 @@ const directoryKinds = new Map([
 ]);
 
 function inferKind(relative) {
+  if (relative === 'runtime/wave-1a.json') return 'wave-runtime';
   if (weaponGrowthFilename.test(relative)) return 'weapon-growth';
   if (relative === 'experiments/tuning-s2-baseline.json') return 'tuning';
   if (relative === 'first-playable-tuning.json') return 'tuning';
@@ -118,7 +120,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -245,6 +247,10 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       }
     }
   }
+  for (const { record, relative } of records.filter(entry => entry.kind === 'profile' && entry.record.waveRuntimeFile !== undefined)) {
+    try { validateWaveContent(record, records.find(entry => entry.relative === record.waveRuntimeFile)?.record, records.find(entry => entry.kind === 'system-design-v1')?.record); }
+    catch (error) { errors.push(relative + ': ' + error.message); }
+  }
   let gateCounts;
   if (fullPool) {
     const canonical = records.filter(({relative,kind}) => !relative.startsWith(`test${path.sep}`) && !configurationKinds.has(kind));
@@ -370,6 +376,15 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     expect(profiles.some(entry=>entry.relative===path.join('profiles','s2-baseline.json')), 'Explicit s2-baseline runtime profile required');
     const allSelected = new Set();
     for(const {record:r,relative} of profiles) {
+      if (r.waveRuntimeFile !== undefined) {
+        try {
+          for (const [group, kind] of [['heroes', 'hero'], ['estates', 'estate']]) for (const id of r.selection[group]) {
+            reference(relative, 'selection.' + group, id, kind);
+            allSelected.add(id);
+          }
+        } catch (error) { errors.push(relative + ': ' + error.message); }
+        continue;
+      }
       const projection = id => {
         const kind = byId.get(id)?.kind;
         const group = kind === 'weapon' || kind === 'tool' ? 'equipment' : `${kind}s`;

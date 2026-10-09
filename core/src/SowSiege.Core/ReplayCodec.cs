@@ -16,6 +16,7 @@ namespace SowSiege.Core
     public static class ReplayCodec
     {
         public const int Version = 1;
+        private const int MaterialTargetVersion = 2;
         private const int CommandTag = 1;
         private const int CheckpointTag = 2;
         private const int EndTag = 3;
@@ -24,7 +25,7 @@ namespace SowSiege.Core
         private const int MaximumCommands = 1000000;
         private const string Magic = "SowSiege-replay";
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
-        public static ReplayHeader Header(InteractiveOptions options) => new(Version, Version, Version, PortableRandom.Algorithm, options);
+        public static ReplayHeader Header(InteractiveOptions options) => new(options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
         internal static void ValidateHash(string hash)
         {
             if (hash is null || hash.Length != HashLength || hash.Any(c => !Uri.IsHexDigit(c))) { throw new ArgumentException("Expected SHA-256 hexadecimal hash."); }
@@ -46,7 +47,7 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
-            if (h.FormatVersion != Version || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
+            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
             ValidateHash(h.Options.DataHash);
             if (!h.Options.Run.ManualCards || h.Options.Run.Scenario != "normal" || h.Options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), h.Options.InitialAimMode)) { throw new ArgumentException("Invalid interactive options."); }
         }
@@ -74,7 +75,10 @@ namespace SowSiege.Core
         {
             ValidateHeader(header); using var w = Writer(output); Text(w, Magic); w.Write(header.FormatVersion); w.Write(header.RulesVersion); w.Write(header.StateCodecVersion); Text(w, header.RngAlgorithm);
             var o = header.Options; var r = o.Run;
-            w.Write(r.Seed); Text(w, r.HeroId); Text(w, r.EstateId); Text(w, r.Policy); Text(w, r.PeopleRule); Text(w, r.Scenario); w.Write(r.ManualCards); Text(w, r.Movement); w.Write((int)o.InitialAimMode); Text(w, o.DataHash);
+            w.Write(r.Seed); Text(w, r.HeroId); Text(w, r.EstateId); Text(w, r.Policy); Text(w, r.PeopleRule); Text(w, r.Scenario); w.Write(r.ManualCards); Text(w, r.Movement); w.Write((int)o.InitialAimMode); Text(w, o.DataHash); if (header.FormatVersion == MaterialTargetVersion)
+            {
+                Text(w, r.TargetMaterial);
+            }
         }
         public static void WriteCommand(Stream output, ReplayCommand command)
         {
@@ -97,7 +101,12 @@ namespace SowSiege.Core
                 if (RequiredText(r) != Magic) { throw new InvalidDataException("Replay magic mismatch."); }
                 var format = r.ReadInt32(); var rules = r.ReadInt32(); var state = r.ReadInt32(); var rng = RequiredText(r);
                 var run = new RunOptions(r.ReadInt32(), RequiredText(r), RequiredText(r), RequiredText(r), Text(r), RequiredText(r), Boolean(r), Text(r));
-                var header = new ReplayHeader(format, rules, state, rng, new(run, (AimMode)r.ReadInt32(), RequiredText(r))); ValidateHeader(header);
+                var aim = (AimMode)r.ReadInt32(); var hash = RequiredText(r); if (format == MaterialTargetVersion)
+                {
+                    run = run with { TargetMaterial = RequiredText(r) };
+                }
+
+                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash)); ValidateHeader(header);
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
                 {

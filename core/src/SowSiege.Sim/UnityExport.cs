@@ -34,9 +34,10 @@ public static partial class UnityExport
         source.AppendLine("        };\n        public static readonly ContentDisplay[] Displays = new ContentDisplay[] {");
         var displays = Displays(directory, snapshot, catalog).ToArray();
         var names = displays.ToDictionary(display => display.Id, display => display.Name, StringComparer.Ordinal);
+        var waveCards = catalog.WaveRuntime is null ? null : WaveDisplayCards(directory);
         foreach (var display in displays)
         {
-            source.AppendLine($"            new ContentDisplay({Literal(display.Id)}, {Literal(display.Name)}, {Literal(display.Category)}, {Literal(DisplayDescription(catalog, display.Id, names))}, {Literal(GrowthDescription(catalog, display.Id, names))}, {Literal(EvolutionHint(directory, catalog, display.Id))}),");
+            source.AppendLine($"            new ContentDisplay({Literal(display.Id)}, {Literal(display.Name)}, {Literal(display.Category)}, {Literal(waveCards?.GetValueOrDefault(display.Id) ?? DisplayDescription(catalog, display.Id, names))}, {Literal(catalog.WaveRuntime is null ? GrowthDescription(catalog, display.Id, names) : "")}, {Literal(catalog.WaveRuntime is null ? EvolutionHint(directory, catalog, display.Id) : WaveEvolutionHint(catalog, display.Id, names))}),");
         }
         source.AppendLine("        };");
         source.AppendLine("        public static readonly UpgradeStat[] UpgradeStats = new UpgradeStat[] {");
@@ -64,10 +65,43 @@ public static partial class UnityExport
         }
     }
 
+    private static Dictionary<string, string> WaveDisplayCards(string directory)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory, "system-design-v1.json")));
+        return document.RootElement.GetProperty("content").EnumerateArray().ToDictionary(record => record.GetProperty("id").GetString()!, record => record.GetProperty("cardText").GetString()!, StringComparer.Ordinal);
+    }
+
+    private static string WaveEvolutionHint(ContentCatalog catalog, string id, IReadOnlyDictionary<string, string> names) =>
+        string.Join(" / ", catalog.WaveRuntime!.Evolutions.Values.Where(e => e.Id == id || e.InputIds.Contains(id, StringComparer.Ordinal))
+            .Select(e => names[e.Id] + ": " + string.Join(" + ", e.InputIds.Select(input => names[input]))));
+
     private static string Literal(string value) => JsonSerializer.Serialize(value);
 
     private static IEnumerable<(string Id, string Name, string Category)> Displays(string directory, UnityExportSnapshot snapshot, ContentCatalog catalog)
     {
+        if (catalog.WaveRuntime is not null)
+        {
+            using var document = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory, "system-design-v1.json")));
+            var bindings = ContentLoader.ReadWaveFile(directory).Bindings.Select(b => b.Id).ToHashSet(StringComparer.Ordinal);
+            foreach (var record in document.RootElement.GetProperty("content").EnumerateArray())
+            {
+                var id = record.GetProperty("id").GetString()!;
+                if (!bindings.Remove(id)) { continue; }
+                var kind = record.GetProperty("kind").GetString()!;
+                yield return (id, record.GetProperty("name").GetString()!, kind == "tool" ? catalog.Tools[id].Growth.Target : kind);
+            }
+            foreach (var id in catalog.Heroes.Keys.Concat(catalog.Estates.Keys))
+            {
+                var kind = catalog.Heroes.ContainsKey(id) ? "heroes" : "estates";
+                foreach (var file in snapshot.Files.Where(f => f.RelativePath.StartsWith(kind + "/", StringComparison.Ordinal)))
+                {
+                    using var source = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory, file.RelativePath)));
+                    if (source.RootElement.GetProperty("id").GetString() == id) { yield return (id, source.RootElement.GetProperty("name").GetString()!, kind == "heroes" ? "hero" : "estate"); break; }
+                }
+            }
+            if (bindings.Count != 0) { throw new InvalidDataException("Missing wave displays."); }
+            yield break;
+        }
         var selected = catalog.Tools.Keys.Concat(catalog.Weapons.Keys).Concat(catalog.Heroes.Keys).Concat(catalog.Estates.Keys).Concat(catalog.Enemies.Keys)
             .Concat(catalog.Runtime!.Charters.Keys).Concat(catalog.Runtime.Items.Keys).Concat(catalog.Runtime.Evolutions.Keys).ToHashSet(StringComparer.Ordinal);
         foreach (var file in snapshot.Files)

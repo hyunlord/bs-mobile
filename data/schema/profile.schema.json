@@ -1347,6 +1347,9 @@
         "evolutions"
       ],
       "additionalProperties": false
+    },
+    "waveRuntimeFile": {
+      "const": "runtime/wave-1a.json"
     }
   },
   "required": [
