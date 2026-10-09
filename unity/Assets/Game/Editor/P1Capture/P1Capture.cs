@@ -11,6 +11,7 @@ using UnityEditor.Recorder.Encoder;
 using UnityEditor.Recorder.Input;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Game.P1Capture
 {
@@ -24,11 +25,14 @@ namespace Game.P1Capture
         static string output;
         static double started, cardAt = -1, completedAt = -1, nextSample;
         static double unscaledStarted;
+        static double preparationAt;
+        static bool movieStarted, movieStopped;
         static CaptureClockGuard clock = new CaptureClockGuard();
         static int stage;
         static long lastEvent;
         static int people;
         static string replayPath;
+        static string recordingError;
         static bool playerLoopInstalled;
         static int diagnosticFrames;
         static StreamWriter ledger;
@@ -43,6 +47,10 @@ namespace Game.P1Capture
         static P1Capture()
         {
             EditorApplication.update += Update;
+            Application.logMessageReceived += (message, stack, type) =>
+            {
+                if (movieStarted && !movieStopped && (type == LogType.Error || type == LogType.Exception)) recordingError = message;
+            };
             EditorApplication.playModeStateChanged += state =>
             {
                 if (state != PlayModeStateChange.EnteredEditMode) return;
@@ -103,6 +111,7 @@ namespace Game.P1Capture
 
         static void Pump()
         {
+            if (recordingError != null) throw new InvalidOperationException("Recording emitted an error: " + recordingError);
             if (run == null) run = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
             if (run != null && run.Error != null) throw new InvalidOperationException(run.Error);
             if (run == null || run.Ui == null) return;
@@ -111,6 +120,34 @@ namespace Game.P1Capture
                 output = SessionState.GetString("SowSiege.P1Capture.Output", "");
                 ledger = new StreamWriter(Path.Combine(output, "capture-ledger.tsv"), false) { AutoFlush = true };
                 ledger.WriteLine("mediaSeconds\ttick\tkind\tdetail\tunscaledSeconds\trenderFrame");
+                ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
+                preparationAt = Time.unscaledTimeAsDouble;
+                Log("preparation-title", "outside movie; preserve initial title before neutral run scene loading");
+                stage = -1;
+                return;
+            }
+            if (stage == -1)
+            {
+                if (Time.unscaledTimeAsDouble - preparationAt < 1) return;
+                run.StartNeutralRun(30000);
+                stage = -2;
+                return;
+            }
+            if (stage == -2)
+            {
+                if (run.Frame == null) return;
+                if (run.Frame.Tick != 0) throw new InvalidOperationException("Initial run advanced before capture preparation: " + run.Frame.Tick);
+                ClickButton("설정");
+                CaptureRunGate.RequirePausedAtZero(run.Frame.Tick, run.MenuOpen);
+                preparationAt = Time.unscaledTimeAsDouble;
+                Log("preparation-pause", "ordinary settings button; tick=0; no gameplay skipped");
+                stage = -3;
+                return;
+            }
+            if (stage == -3)
+            {
+                CaptureRunGate.RequirePausedAtZero(run.Frame.Tick, run.MenuOpen);
+                if (Time.unscaledTimeAsDouble - preparationAt < 1) return;
                 var settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
                 settings.FrameRate = 30;
                 settings.FrameRatePlayback = FrameRatePlayback.Variable;
@@ -130,6 +167,7 @@ namespace Game.P1Capture
                 if (!recorder.StartRecording()) throw new InvalidOperationException("Recorder refused capture.");
                 started = Time.timeAsDouble;
                 unscaledStarted = Time.unscaledTimeAsDouble;
+                movieStarted = true;
                 Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; neutral first-playable rules without meta injection; seed=30000");
                 Log("identity", $"commit={BuildIdentity.Commit};sourceHash={BuildIdentity.SourceHash};dirty={BuildIdentity.SourceDirty};dataHash={FoundationBoot.VerifiedDataHash};profile=first-playable;unity={Application.unityVersion}");
                 Log("selection-rule", "early=start at run-start for180 seconds; late=end at run-complete+8 seconds for180 seconds; continuous clips at1x with no omitted in-clip frames");
@@ -142,22 +180,15 @@ namespace Game.P1Capture
                 Log("clock-frame", $"phase=LateUpdate;timeFloat={Time.time:R};timeDouble={Time.timeAsDouble:R};delta={Time.deltaTime:R};unscaledDelta={Time.unscaledDeltaTime:R};frame={Time.frameCount};stage={stage}");
                 diagnosticFrames++;
             }
-            clock.Validate(elapsed, Time.unscaledTimeAsDouble - unscaledStarted);
+            if (!movieStopped) clock.Validate(elapsed, Time.unscaledTimeAsDouble - unscaledStarted);
             if (elapsed > 1500) throw new TimeoutException("Capture exceeded 25 minutes of media time.");
-            if (stage == 1 && elapsed >= 3)
+            if (stage == 1)
             {
-                ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
-                stage = 8;
-                return;
-            }
-            if (stage == 8 && elapsed >= 4)
-            {
-                run.StartNeutralRun(30000);
-                stage = 2;
-                return;
-            }
-            if (stage == 2 && run.Frame != null)
-            {
+                CaptureRunGate.RequirePausedAtZero(run.Frame.Tick, run.MenuOpen);
+                if (elapsed < 3) return;
+                run.Send(ReplayCommandKind.SetAimMode, value: (int)AimMode.NearestEnemy);
+                ClickButton("돌아가기");
+                if (run.MenuOpen || run.Frame.Tick != 0) throw new InvalidOperationException("Normal settings return did not resume at tick zero.");
                 var unscaledElapsed = Time.unscaledTimeAsDouble - unscaledStarted;
                 clock.Arm(elapsed, unscaledElapsed);
                 diagnosticFrames = 0;
@@ -165,7 +196,6 @@ namespace Game.P1Capture
                 Log("run-start", run.RecordedReplayPath);
                 replayPath = run.RecordedReplayPath;
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "02-editor-run.png"));
-                run.Send(ReplayCommandKind.SetAimMode, value: (int)AimMode.NearestEnemy);
                 stage = 3;
             }
             if (stage == 3)
@@ -218,8 +248,13 @@ namespace Game.P1Capture
             }
             if (stage == 5 && elapsed - completedAt >= 10)
             {
+                Log("movie-stop", "summary retained; movie stops before restart scene; strict clock guard covered all recorded gameplay and summary");
+                recorder.StopRecording();
+                recorder = null;
+                movieStopped = true;
+                if (recordingError != null) throw new InvalidOperationException("Recorder finalization failed: " + recordingError);
                 run.StartNeutralRun(30001);
-                Log("restart-request", "seed=30001");
+                Log("restart-request", "seed=30001; outside movie; screenshot evidence only");
                 stage = 6;
             }
             if (stage == 6 && elapsed - completedAt >= 14)
@@ -246,6 +281,13 @@ namespace Game.P1Capture
 
         static int CardRank(string id) { var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
 
+        static void ClickButton(string label)
+        {
+            var button = run.Ui.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>()?.text == label);
+            if (!button.interactable) throw new InvalidOperationException("Normal UI button is unavailable: " + label);
+            button.onClick.Invoke();
+        }
+
         static void Move(RunFrame frame)
         {
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Math.Pow(f.Position.X-frame.Lord.Position.X,2)+Math.Pow(f.Position.Y-frame.Lord.Position.Y,2)).FirstOrDefault();
@@ -261,7 +303,7 @@ namespace Game.P1Capture
 
         static void Log(string kind, string detail)
         {
-            ledger?.WriteLine($"{Time.timeAsDouble - started:F3}\t{run?.Frame?.Tick ?? 0}\t{kind}\t{detail?.Replace('\n', ' ').Replace('\t', ' ')}\t{Time.unscaledTimeAsDouble - unscaledStarted:F3}\t{Time.renderedFrameCount}");
+            ledger?.WriteLine($"{(movieStarted ? Time.timeAsDouble - started : -1):F3}\t{run?.Frame?.Tick ?? 0}\t{kind}\t{detail?.Replace('\n', ' ').Replace('\t', ' ')}\t{(movieStarted ? Time.unscaledTimeAsDouble - unscaledStarted : -1):F3}\t{Time.renderedFrameCount}");
         }
 
         static void RestorePreferences()
@@ -308,6 +350,8 @@ namespace Game.P1Capture
             people = 0; replayPath = null;
             clock = new CaptureClockGuard();
             diagnosticFrames = 0;
+            movieStarted = false; movieStopped = false;
+            recordingError = null;
             Debug.Log("P1 capture: " + result);
         }
     }

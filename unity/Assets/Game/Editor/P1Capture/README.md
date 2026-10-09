@@ -16,7 +16,7 @@ It starts seed 30000 through `StartNeutralRun` without P2 chapter or retainer in
 waits two seconds on every naturally earned card offer, and chooses a card through `Send`.
 It selects the ordinary nearest-enemy aim setting. It never advances ticks directly,
 changes health/spawns, grants levels, or changes playback speed. RunCoordinator owns its normal update clock.
-The title is recorded before invoking StartNeutralRun; the introductory page is bypassed.
+The title is captured as a screenshot before invoking StartNeutralRun; the introductory page is bypassed. At tick zero, the ordinary settings button pauses the run while the scene and Recorder initialize. Every warmup frame must remain paused at tick zero. The ordinary return button resumes play and arms the one drift baseline; the early clip starts there. Recorder stops after the summary and before loading the restart scene. Restart is separate screenshot evidence.
 Existing user sound settings apply. The helper snapshots every RunPreferences key before play and restores their exact prior values and absence after exiting play mode, because normal hint progression saves preferences. preferences-before.json and preferences-after.json must match.
 
 Selection rules are fixed before recording:
@@ -42,7 +42,7 @@ Constant Recorder captureDeltaTime does not affect the game's unscaled clock:
 https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Time-captureDeltaTime.html
 Recorder 5.1.7 MovieRecorder.ComputeMediaTime uses session time for VFR; its CoreEncoder
 supports VFR H.264 and audio. Ledger mediaSeconds uses the same Time.time clock, with
-unscaledSeconds and rendered frame alongside it. The drift guard is armed exactly once at actual run-start. The pre-run encoder/scene startup offset is logged and excluded, while the media timestamp origin is unchanged. A cumulative drift over 0.15 seconds after that baseline fails capture, including across card pauses, summary, and restart.
+unscaledSeconds and rendered frame alongside it. The drift guard is armed exactly once at actual run-start. The pre-run encoder/scene startup offset is logged and excluded, while the media timestamp origin is unchanged. A cumulative drift over 0.15 seconds after that baseline fails capture, including across card pauses and summary until the movie stops.
 Validate actual MP4 packet timestamps/duration and audio with ffprobe before acceptance;
 trim by timestamp without forcing `-r` or changing playback rate. Card pauses are visible
 and listed, so core tick deltas can be checked against active media intervals.
@@ -53,3 +53,18 @@ that delegate; editor updates must not compare a stale game-frame clock with the
 current unscaled time. The first 20 frames around recording/run startup log both scaled
 clock APIs, frame deltas, and frame index. The cumulative 0.15-second guard is unchanged;
 any remaining player-loop drift or encoder error invalidates the run and requires diagnosis.
+
+Recorder04 failure provenance (retained under artifacts/phase2a/capture/recorder-04):
+frame386 began at tick0/media4.085/unscaled4.537; frame387 advanced to tick4 while
+media stayed4.085; frame388 reached tick5/media4.105/unscaled4.724. The unchanged
+0.15s guard rejected cumulative0.1663s drift. Both scaled clock APIs agreed, so changing
+the polling phase alone did not fix it. The log also reported AVAssetWriter -11800/-16364;
+ffprobe found no moov atom. Duplicate VFR timestamps around the scene transition are a
+supported diagnosis, not a successfully encoded or accepted video.
+
+Installed Recorder _FrameRequestComponent pauses Time.timeScale during initial GPU
+warmup, while game rules use unscaled time. Recording now contains no scene transitions:
+load and pause at actual tick0 first, warm Recorder, resume normally, stop Recorder before
+restart. No ticks may be consumed or omitted during preparation. Logged preparation
+rows use mediaSeconds=-1; they are outside the movie. Root must still verify actual MP4
+packet timestamps/audio and all clip content. Encoder errors now fail capture explicitly.
