@@ -11,6 +11,7 @@ using UnityEditor.Recorder.Encoder;
 using UnityEditor.Recorder.Input;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Game.P1Capture
 {
@@ -19,15 +20,24 @@ namespace Game.P1Capture
     {
         const string ActiveKey = "SowSiege.P1Capture.Active";
         const string PreferencesKey = "SowSiege.P1Capture.Preferences";
+        const string BackgroundKey = "SowSiege.P1Capture.Background";
         static RecorderController recorder;
         static RunCoordinator run;
         static string output;
         static double started, cardAt = -1, completedAt = -1, nextSample;
         static double unscaledStarted;
+        static double preparationAt;
+        static double restartAt, restartCapturedAt;
+        static bool movieStarted, movieStopped;
+        static bool lifecycleAttached;
+        static CaptureClockGuard clock = new CaptureClockGuard();
         static int stage;
         static long lastEvent;
         static int people;
         static string replayPath;
+        static string recordingError;
+        static bool playerLoopInstalled;
+        static int diagnosticFrames;
         static StreamWriter ledger;
         static readonly string[] Priority = { "core:muster_horn", "core:seed_bag", "core:ward_orbit", "core:harvest_scythe", "core:iron_blade", "core:soup_ladle", "core:rain_ladle" };
 
@@ -40,11 +50,20 @@ namespace Game.P1Capture
         static P1Capture()
         {
             EditorApplication.update += Update;
+            Application.logMessageReceived += (message, stack, type) =>
+            {
+                if (movieStarted && !movieStopped && (type == LogType.Error || type == LogType.Exception)) recordingError = message;
+            };
             EditorApplication.playModeStateChanged += state =>
             {
                 if (state != PlayModeStateChange.EnteredEditMode) return;
-                RestorePreferences();
-                if (SessionState.GetBool(ActiveKey, false)) Finish("failed: play mode exited before completion");
+                var cleanupError = CaptureCleanup.Run(
+                    CapturePlayerLoop.Uninstall,
+                    () => playerLoopInstalled = false,
+                    RestorePreferences,
+                    RestoreBackground);
+                if (cleanupError != null) Finish("failed: " + cleanupError);
+                else if (SessionState.GetBool(ActiveKey, false)) Finish("failed: play mode exited before completion");
                 if (Environment.GetEnvironmentVariable("P1_CAPTURE_EXIT") == "1" && !string.IsNullOrEmpty(SessionState.GetString("SowSiege.P1Capture.Output", "")))
                     EditorApplication.delayCall += () => EditorApplication.Exit(SessionState.GetString("SowSiege.P1Capture.Result", "") == "complete" ? 0 : 1);
             };
@@ -70,6 +89,10 @@ namespace Game.P1Capture
             File.WriteAllText(Path.Combine(output, "preferences-before.json"), preferencesJson);
             SessionState.SetString("SowSiege.P1Capture.Output", output);
             SessionState.SetBool(ActiveKey, true);
+            SessionState.SetBool(BackgroundKey, Application.runInBackground);
+            File.WriteAllText(Path.Combine(output, "background-before.txt"), Application.runInBackground.ToString());
+            SessionState.SetBool(BackgroundKey + ".saved", true);
+            Application.runInBackground = true;
             EditorSceneManager.OpenScene("Assets/Scenes/Boot.unity");
             EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
             EditorApplication.isPlaying = true;
@@ -78,19 +101,69 @@ namespace Game.P1Capture
         static void Update()
         {
             if (!SessionState.GetBool(ActiveKey, false) || !EditorApplication.isPlaying) return;
+            if (!playerLoopInstalled)
+            {
+                try
+                {
+                    CapturePlayerLoop.Install(PlayerLoopUpdate);
+                    playerLoopInstalled = true;
+                }
+                catch (Exception error) { Finish("failed: " + error); }
+            }
+        }
+
+        public static void PlayerLoopUpdate()
+        {
+            if (!SessionState.GetBool(ActiveKey, false)) return;
             try { Pump(); }
             catch (Exception error) { Finish("failed: " + error); }
         }
 
         static void Pump()
         {
+            if (recordingError != null) throw new InvalidOperationException("Recording emitted an error: " + recordingError);
             if (run == null) run = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
+            if (run != null && !lifecycleAttached)
+            {
+                run.EditorCaptureLifecycle += OnLifecycle;
+                run.SetEditorCaptureActive(true);
+                lifecycleAttached = true;
+            }
+            if (run != null && run.Error != null) throw new InvalidOperationException(run.Error);
             if (run == null || run.Ui == null) return;
             if (stage == 0)
             {
                 output = SessionState.GetString("SowSiege.P1Capture.Output", "");
                 ledger = new StreamWriter(Path.Combine(output, "capture-ledger.tsv"), false) { AutoFlush = true };
                 ledger.WriteLine("mediaSeconds\ttick\tkind\tdetail\tunscaledSeconds\trenderFrame");
+                ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
+                preparationAt = Time.unscaledTimeAsDouble;
+                Log("preparation-title", "outside movie; preserve initial title before neutral run scene loading");
+                stage = -1;
+                return;
+            }
+            if (stage == -1)
+            {
+                if (Time.unscaledTimeAsDouble - preparationAt < 1) return;
+                run.StartNeutralRun(30000);
+                stage = -2;
+                return;
+            }
+            if (stage == -2)
+            {
+                if (run.Frame == null) return;
+                if (run.Frame.Tick != 0) throw new InvalidOperationException("Initial run advanced before capture preparation: " + run.Frame.Tick);
+                ClickButton("설정");
+                CaptureRunGate.RequirePausedAtZero(run.Frame.Tick, run.MenuOpen);
+                preparationAt = Time.unscaledTimeAsDouble;
+                Log("preparation-pause", "ordinary settings button; tick=0; no gameplay skipped");
+                stage = -3;
+                return;
+            }
+            if (stage == -3)
+            {
+                CaptureRunGate.RequirePausedAtZero(run.Frame.Tick, run.MenuOpen);
+                if (Time.unscaledTimeAsDouble - preparationAt < 1) return;
                 var settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
                 settings.FrameRate = 30;
                 settings.FrameRatePlayback = FrameRatePlayback.Variable;
@@ -110,35 +183,36 @@ namespace Game.P1Capture
                 if (!recorder.StartRecording()) throw new InvalidOperationException("Recorder refused capture.");
                 started = Time.timeAsDouble;
                 unscaledStarted = Time.unscaledTimeAsDouble;
-                Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; unchanged rules; seed=30000");
+                movieStarted = true;
+                Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; neutral first-playable rules without meta injection; seed=30000");
+                Log("capture-lifecycle-policy", "editor-only opt-in; focus/pause notifications logged but ignored for simulation/input/audio; runInBackground=true; ordinary launch unchanged");
                 Log("identity", $"commit={BuildIdentity.Commit};sourceHash={BuildIdentity.SourceHash};dirty={BuildIdentity.SourceDirty};dataHash={FoundationBoot.VerifiedDataHash};profile=first-playable;unity={Application.unityVersion}");
                 Log("selection-rule", "early=start at run-start for180 seconds; late=end at run-complete+8 seconds for180 seconds; continuous clips at1x with no omitted in-clip frames");
                 stage = 1;
                 return;
             }
             var elapsed = Time.timeAsDouble - started;
-            var clockDrift = Math.Abs(elapsed - (Time.unscaledTimeAsDouble - unscaledStarted));
-            if (clockDrift > .15) throw new InvalidOperationException($"Media/game clock drift {clockDrift:F4}s exceeds 0.15s; normal playback is not proven.");
+            if (diagnosticFrames < 20 || stage == 2)
+            {
+                Log("clock-frame", $"phase=LateUpdate;timeFloat={Time.time:R};timeDouble={Time.timeAsDouble:R};delta={Time.deltaTime:R};unscaledDelta={Time.unscaledDeltaTime:R};frame={Time.frameCount};stage={stage}");
+                diagnosticFrames++;
+            }
+            if (!movieStopped) clock.Validate(elapsed, Time.unscaledTimeAsDouble - unscaledStarted);
             if (elapsed > 1500) throw new TimeoutException("Capture exceeded 25 minutes of media time.");
-            if (run.Error != null) throw new InvalidOperationException(run.Error);
-            if (stage == 1 && elapsed >= 3)
+            if (stage == 1)
             {
-                ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
-                stage = 8;
-                return;
-            }
-            if (stage == 8 && elapsed >= 4)
-            {
-                run.StartRun(30000);
-                stage = 2;
-                return;
-            }
-            if (stage == 2 && run.Frame != null)
-            {
+                CaptureRunGate.RequirePausedAtZero(run.Frame.Tick, run.MenuOpen);
+                if (elapsed < 3) return;
+                run.Send(ReplayCommandKind.SetAimMode, value: (int)AimMode.NearestEnemy);
+                ClickButton("돌아가기");
+                if (run.MenuOpen || run.Frame.Tick != 0) throw new InvalidOperationException("Normal settings return did not resume at tick zero.");
+                var unscaledElapsed = Time.unscaledTimeAsDouble - unscaledStarted;
+                clock.Arm(elapsed, unscaledElapsed);
+                diagnosticFrames = 0;
+                Log("clock-baseline", $"excludedPreRunOffsetSeconds={unscaledElapsed - elapsed:F6};mediaOriginUnchanged=true;thresholdSeconds=0.15;baselineCount=1");
                 Log("run-start", run.RecordedReplayPath);
                 replayPath = run.RecordedReplayPath;
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "02-editor-run.png"));
-                run.Send(ReplayCommandKind.SetAimMode, value: (int)AimMode.NearestEnemy);
                 stage = 3;
             }
             if (stage == 3)
@@ -191,20 +265,29 @@ namespace Game.P1Capture
             }
             if (stage == 5 && elapsed - completedAt >= 10)
             {
-                run.StartRun(30001);
-                Log("restart-request", "seed=30001");
+                Log("movie-stop", "summary retained; movie stops before restart scene; strict clock guard covered all recorded gameplay and summary");
+                recorder.StopRecording();
+                recorder = null;
+                movieStopped = true;
+                if (recordingError != null) throw new InvalidOperationException("Recorder finalization failed: " + recordingError);
+                restartAt = Time.realtimeSinceStartupAsDouble;
+                run.StartNeutralRun(30001);
+                Log("restart-request", "seed=30001; outside movie; screenshot evidence only");
                 stage = 6;
             }
-            if (stage == 6 && elapsed - completedAt >= 14)
+            if (stage == 6 && Time.realtimeSinceStartupAsDouble - restartAt >= 3)
             {
-                if (run.Frame == null || run.Frame.Status == RunStatus.Completed) throw new InvalidOperationException("Restart did not reach a new run.");
+                if (!CaptureRestartGate.IsReady(Time.realtimeSinceStartupAsDouble - restartAt, replayPath, run.RecordedReplayPath,
+                    run.Frame?.Status == RunStatus.Running, run.Frame?.Tick ?? 0)) return;
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "04-editor-restart.png"));
+                restartCapturedAt = Time.realtimeSinceStartupAsDouble;
                 stage = 7;
             }
-            if (stage == 7 && elapsed - completedAt >= 16)
+            if (stage == 7 && Time.realtimeSinceStartupAsDouble - restartCapturedAt >= 2)
             {
                 using (var stream = File.OpenRead(replayPath))
                 {
+                    if (File.Exists(replayPath + ".meta")) throw new InvalidOperationException("Neutral evidence must not contain a meta replay context.");
                     var replay = ReplayCodec.Read(stream);
                     if (replay.Commands.Any(c => c.Kind != ReplayCommandKind.Advance && c.Kind != ReplayCommandKind.ChooseCard && c.Kind != ReplayCommandKind.SetAimMode))
                         throw new InvalidOperationException("Replay contains a command outside normal movement, card choice, or aim setting.");
@@ -217,6 +300,18 @@ namespace Game.P1Capture
         }
 
         static int CardRank(string id) { var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
+
+        static void ClickButton(string label)
+        {
+            var button = run.Ui.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>()?.text == label);
+            if (!button.interactable) throw new InvalidOperationException("Normal UI button is unavailable: " + label);
+            button.onClick.Invoke();
+        }
+
+        static void OnLifecycle(string kind, bool value, bool ignored)
+        {
+            Log("lifecycle", $"event={kind};value={value};ignoredForEditorCapture={ignored};applicationFocused={Application.isFocused};runInBackground={Application.runInBackground}");
+        }
 
         static void Move(RunFrame frame)
         {
@@ -233,7 +328,7 @@ namespace Game.P1Capture
 
         static void Log(string kind, string detail)
         {
-            ledger?.WriteLine($"{Time.timeAsDouble - started:F3}\t{run?.Frame?.Tick ?? 0}\t{kind}\t{detail?.Replace('\n', ' ').Replace('\t', ' ')}\t{Time.unscaledTimeAsDouble - unscaledStarted:F3}\t{Time.renderedFrameCount}");
+            ledger?.WriteLine($"{(movieStarted ? Time.timeAsDouble - started : -1):F3}\t{run?.Frame?.Tick ?? 0}\t{kind}\t{detail?.Replace('\n', ' ').Replace('\t', ' ')}\t{(movieStarted ? Time.unscaledTimeAsDouble - unscaledStarted : -1):F3}\t{Time.renderedFrameCount}");
         }
 
         static void RestorePreferences()
@@ -258,25 +353,51 @@ namespace Game.P1Capture
             }
             var restoredJson = JsonUtility.ToJson(restored);
             var folder = SessionState.GetString("SowSiege.P1Capture.Output", "");
-            if (!string.IsNullOrEmpty(folder)) File.WriteAllText(Path.Combine(folder, "preferences-after.json"), restoredJson);
             if (restoredJson != json) throw new InvalidOperationException("Preferences restoration verification failed.");
-            SessionState.EraseString(PreferencesKey);
+            try { if (!string.IsNullOrEmpty(folder)) File.WriteAllText(Path.Combine(folder, "preferences-after.json"), restoredJson); }
+            finally { SessionState.EraseString(PreferencesKey); }
         }
 
         static void Finish(string result)
         {
             output = output ?? SessionState.GetString("SowSiege.P1Capture.Output", "");
-            Log("capture-end", result);
-            recorder?.StopRecording();
-            ledger?.Dispose();
+            var cleanupError = CaptureCleanup.Run(
+                () => Log("capture-stop-request", "requestedResult=" + result + "; not final acceptance; capture-result.txt and SessionState after cleanup are authoritative"),
+                () => recorder?.StopRecording(),
+                () => { if (run != null && lifecycleAttached) run.SetEditorCaptureActive(false); },
+                () => { if (run != null && lifecycleAttached) run.EditorCaptureLifecycle -= OnLifecycle; },
+                () => ledger?.Dispose(),
+                CapturePlayerLoop.Uninstall);
+            if (cleanupError != null) result = "failed: " + cleanupError;
+            lifecycleAttached = false;
             SessionState.SetBool(ActiveKey, false);
+            playerLoopInstalled = false;
             SessionState.SetString("SowSiege.P1Capture.Result", result);
-            File.WriteAllText(Path.Combine(output, "capture-result.txt"), result);
+            var writeError = CaptureCleanup.Run(() => File.WriteAllText(Path.Combine(output, "capture-result.txt"), result));
+            if (writeError != null) { result = "failed: " + writeError; SessionState.SetString("SowSiege.P1Capture.Result", result); }
             EditorApplication.isPlaying = false;
             recorder = null; run = null; ledger = null; stage = 0;
             cardAt = -1; completedAt = -1; nextSample = 0; lastEvent = 0;
             people = 0; replayPath = null;
+            clock = new CaptureClockGuard();
+            diagnosticFrames = 0;
+            movieStarted = false; movieStopped = false;
+            recordingError = null;
             Debug.Log("P1 capture: " + result);
+        }
+
+        static void RestoreBackground()
+        {
+            if (!SessionState.GetBool(BackgroundKey + ".saved", false)) return;
+            var error = CaptureCleanup.Run(
+                () => Application.runInBackground = SessionState.GetBool(BackgroundKey, false),
+                () =>
+                {
+                    var folder = SessionState.GetString("SowSiege.P1Capture.Output", "");
+                    if (!string.IsNullOrEmpty(folder)) File.WriteAllText(Path.Combine(folder, "background-after.txt"), Application.runInBackground.ToString());
+                },
+                () => SessionState.EraseBool(BackgroundKey + ".saved"));
+            if (error != null) throw error;
         }
     }
 }
