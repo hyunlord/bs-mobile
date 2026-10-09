@@ -38,8 +38,11 @@ namespace Game.View
             if(kind==WaveEnemyKind.Pursuer&&view.Phase.StartsWith("tell-",StringComparison.Ordinal))return "windup";
             return fallback;
         }
-        void WaveSprite(string id,int layer,WorldPoint position,float opacity=1)
-            =>Draw(Resolve("wave",id,"default"),layer,Point(position),visualTime,opacity:opacity);
+        void WaveSprite(string id,int layer,WorldPoint position,float opacity=1,float scale=1,float heightScale=1)
+        {
+            var visual=Resolve("wave",id,"default");
+            Draw(visual,layer,Point(position),visualTime,Vector2.Scale(visual.WorldSize,new Vector2(scale,scale*heightScale)),opacity:opacity);
+        }
         void DrawWave(RunFrame current)
         {
             if(wave==null)return;
@@ -47,7 +50,7 @@ namespace Game.View
             {
                 var pile=Resolve("wave","timber-source","default");
                 var fraction=Mathf.Sqrt(Mathf.Clamp01((float)wave.Timber/Mathf.Max(1,waveDefinition.InitialTimber)));
-                Draw(pile,GameVisualTokens.GrowthLayer,Point(wave.TimberOrigin),visualTime,pile.WorldSize*fraction);
+                Draw(pile,GameVisualTokens.GrowthLayer,Point(wave.TimberOrigin),visualTime,pile.WorldSize*(fraction*GameVisualTokens.WaveTimberSourceScale));
             }
             var cargo=Resolve("wave","timber-bundle","default");
             var cargoSize=cargo.WorldSize*GameVisualTokens.StockBundleScale;
@@ -73,13 +76,15 @@ namespace Game.View
                     position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
                     Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:GameVisualTokens.WaveCropOpacity);
                 }
-                else WaveSprite(id,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,work.Position,work.Dormant || work.Dry ? GameVisualTokens.TerrainOpacity : 1);
+                else WaveSprite(id,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,work.Position,
+                    work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:work.Kind=="water"?GameVisualTokens.WavePoolOpacity:1,
+                    work.Kind=="water"?GameVisualTokens.WavePoolScale:GameVisualTokens.WaveWorkshopScale);
                 if(work.ParentId>=0)
                 { var parent=wave.Work.FirstOrDefault(w=>w.Id==work.ParentId);
-                  WaveSprite(parent!=null&&parent.Health>0&&parent.Complete&&work.Protected?"roof-intact":"roof-broken",GameVisualTokens.ReadyLayer,work.Position); }
-                if(work.ShipmentActive)WaveSprite("timber-bundle",GameVisualTokens.ReadyLayer+1,work.Position);
+                  WaveSprite(parent!=null&&parent.Health>0&&parent.Complete&&work.Protected?"roof-intact":"roof-broken",GameVisualTokens.ReadyLayer,work.Position,scale:GameVisualTokens.WaveWorkshopScale); }
+                if(work.ShipmentActive)WaveSprite("timber-bundle",GameVisualTokens.ReadyLayer+1,work.Position,scale:GameVisualTokens.StockBundleScale);
             }
-            if(wave.CarriedWater>0)WaveSprite("water-carry",GameVisualTokens.AllyLayer+1,current.Lord.Position);
+            if(wave.CarriedWater>0)WaveSprite("water-carry",GameVisualTokens.AllyLayer+1,current.Lord.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
             foreach(var reward in wave.Rewards)
             {
                 var source=reward.Source;
@@ -103,7 +108,13 @@ namespace Game.View
                 if(group.ReservedFood>0)WaveSprite("ration",GameVisualTokens.AllyLayer+1,group.Position);
             }
             foreach(var attack in wave.Attacks)
-                if(attack.ExpireTick>current.Tick)WaveSprite("shield-fragment",GameVisualTokens.AttackLayer,attack.Position);
+                if(attack.ExpireTick>current.Tick)
+                {
+                    var fragment=Resolve("wave","shield-fragment","default");
+                    var diameter=2f*attack.Radius/settings.WorldUnitsPerUnityUnit;
+                    var scale=Mathf.Min(GameVisualTokens.WaveFragmentScale,diameter/Mathf.Max(fragment.WorldSize.x,fragment.WorldSize.y));
+                    Draw(fragment,GameVisualTokens.AttackLayer,Point(attack.Position),visualTime,fragment.WorldSize*scale);
+                }
             foreach(var projectile in wave.Projectiles)
             {
                 var visual=Resolve("attack",projectile.Source,"projectile");
@@ -112,8 +123,8 @@ namespace Game.View
             foreach(var enemy in wave.Enemies)
             {
                 var actor=current.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);if(actor==null)continue;
-                if(enemy.Wet)WaveSprite("wet",GameVisualTokens.GrowthLayer,actor.Position);
-                if(enemy.Stopped)WaveSprite("stopped",GameVisualTokens.AllyLayer,actor.Position);
+                if(enemy.Wet)WaveSprite("wet",GameVisualTokens.GrowthLayer,actor.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale,GameVisualTokens.WaveWetHeight);
+                if(enemy.Stopped)WaveSprite("stopped",GameVisualTokens.GrowthLayer+1,actor.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
                 if(enemy.Phase=="tell-charge"||enemy.Phase=="tell-water"||enemy.Phase=="water")
                 {
                     var a=Point(enemy.Origin);var b=Point(enemy.Target);var visual=Resolve("wave",enemy.Phase.Contains("water")?"water-lane":"charge-tell","default");
@@ -125,7 +136,7 @@ namespace Game.View
                 var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:WorldEffects.AttackLifetimeSeconds;
                 if(age>=duration){waveEffects.RemoveAt(i);continue;}
                 var value=effect.value;var a=Point(value.Position);var b=Point(value.Target);var opacity=1-age/duration;
-                if(value.Kind=="evolution-activated"){Feedback("evolution",GameVisualTokens.ExperienceLayer,a,age/duration);continue;}
+                if(value.Kind=="evolution-activated"){Feedback("evolution",GameVisualTokens.LordLayer-2,a,age/duration);continue;}
                 if(value.Kind=="reward-collected"){Feedback("harvest",GameVisualTokens.ExperienceLayer,a,age/duration);continue;}
                 if(value.Kind=="harvest-fragments"){WaveSprite("grain-fragment",GameVisualTokens.AttackLayer,value.Position,opacity);continue;}
                 if(value.Kind=="building-brace-swing"){Draw(Resolve("wave","wood-brace","default"),GameVisualTokens.AttackLayer,a,age,Vector2.one*value.Amount*2/settings.WorldUnitsPerUnityUnit,Angle(b-a),opacity*GameVisualTokens.AreaAttackOpacity);continue;}

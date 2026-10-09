@@ -143,12 +143,12 @@ namespace Game.App
             var panel=Ui.Panel("Meta");Ui.Label(panel,"씨앗과 공성",UiTokens.Title,72);
             if(!IsWave)Ui.Label(panel,"새싹 변경의 한 해\n적을 물리치고 영지를 키우세요.",UiTokens.Body,96);
             if(IsWave) { Ui.Label(panel,"새싹 들판 · 도구의 흔적을 키워 수확하세요",UiTokens.Body,96);
-                Ui.Label(panel,"목표 재료 · 초반 도구 선택에 등장합니다",UiTokens.Small,48);
+                Ui.Label(panel,selectedTarget==null?"목표 재료 미선택 · 아래에서 골라 주세요":"목표 재료 선택됨 · 초반 도구 선택에 등장합니다",UiTokens.Small,48);
                 foreach(var target in FoundationBoot.Catalog.WaveRuntime.MaterialTargets)
                 {
                     var material=target.Key; var tool=target.Value;
                     var materialName=material=="meta:grain"?"곡물":material=="meta:timber"?"목재":material=="meta:charter"?"특허장":material;
-                    Ui.Button(panel,(selectedTarget==material?"선택 · ":"")+materialName+" · "+displays[tool].DisplayName,()=>{selectedTarget=material;ShowMeta();});
+                    Ui.Button(panel,(selectedTarget==material?"선택됨 · ":"")+materialName+" · "+displays[tool].DisplayName,()=>{selectedTarget=material;ShowMeta();});
                 }
                 Ui.Button(panel,"시작",()=>{if(preferences.IntroductionSeen)StartRun();else ShowIntroduction();}); Ui.Button(panel,"설정",()=>ShowSettings(false)); return; }
             try
@@ -223,6 +223,8 @@ namespace Game.App
         }
         private void ClearUi(){desktopControls.Reset();Ui.Clear();activeHint=null;}
         private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));MenuOpen=false;cardsIdentity=null;Stick.ResetStick();}
+        // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
+        public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             || debug!=null && debug.IsOpen

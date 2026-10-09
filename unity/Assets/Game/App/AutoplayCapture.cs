@@ -27,6 +27,64 @@ namespace Game.App
         bool capturing, ended, waveAttached;
         long lastWaveEvent=-1;
         Result result;
+        long clockPreviousStamp;
+        double clockPreviousRealtime, clockPreviousUnscaled, clockNextReport, clockStopwatchSum, clockUnitySum;
+        double clockMinInterval = double.MaxValue, clockMaxInterval;
+        int clockFrames, clockPausedFrames;
+        bool clockInitialized;
+
+        [Serializable]
+        sealed class ClockDiagnostic
+        {
+            public double stopwatchSeconds, realtimeSeconds, realtimeIntervalSeconds;
+            public double stopwatchIntervalSeconds, unscaledDeltaSeconds, unscaledTimeSeconds, unscaledTimeIntervalSeconds;
+            public double windowStopwatchSeconds, windowUnitySeconds, minimumIntervalSeconds, maximumIntervalSeconds;
+            public float captureDeltaSeconds, timeScale, maximumDeltaTime;
+            public int targetFrameRate, vSyncCount;
+            public int captureFramerate, frame, renderedFrame, stage, tick, samples, pausedSamples;
+            public bool paused, menuOpen, capturing, inFixedTimeStep;
+            public string runStatus;
+        }
+
+        void RecordClockDiagnostic()
+        {
+            var stamp = System.Diagnostics.Stopwatch.GetTimestamp();
+            var realtime = Time.realtimeSinceStartupAsDouble;
+            var unscaled = Time.unscaledTimeAsDouble;
+            if (!clockInitialized)
+            {
+                clockInitialized = true; clockPreviousStamp = stamp; clockPreviousRealtime = realtime; clockPreviousUnscaled = unscaled;
+                clockNextReport = realtime + 1; return;
+            }
+            var interval = (stamp - clockPreviousStamp) / (double)System.Diagnostics.Stopwatch.Frequency;
+            var realtimeInterval = realtime - clockPreviousRealtime;
+            var unscaledInterval = unscaled - clockPreviousUnscaled;
+            clockPreviousUnscaled = unscaled;
+            clockPreviousStamp = stamp; clockPreviousRealtime = realtime;
+            var paused = run == null || run.CaptureClockPaused;
+            clockFrames++; if (paused) clockPausedFrames++;
+            clockStopwatchSum += interval; clockUnitySum += Time.unscaledDeltaTime;
+            clockMinInterval = Math.Min(clockMinInterval, interval); clockMaxInterval = Math.Max(clockMaxInterval, interval);
+            if (realtime < clockNextReport) return;
+            Log("clock-diagnostic", JsonUtility.ToJson(new ClockDiagnostic {
+                stopwatchSeconds = stamp / (double)System.Diagnostics.Stopwatch.Frequency,
+                realtimeSeconds = realtime, realtimeIntervalSeconds = realtimeInterval,
+                stopwatchIntervalSeconds = interval, unscaledDeltaSeconds = Time.unscaledDeltaTime,
+                unscaledTimeSeconds = unscaled, unscaledTimeIntervalSeconds = unscaledInterval,
+                inFixedTimeStep = Time.inFixedTimeStep, timeScale = Time.timeScale,
+                maximumDeltaTime = Time.maximumDeltaTime, targetFrameRate = Application.targetFrameRate,
+                vSyncCount = QualitySettings.vSyncCount,
+                windowStopwatchSeconds = clockStopwatchSum, windowUnitySeconds = clockUnitySum,
+                minimumIntervalSeconds = clockMinInterval, maximumIntervalSeconds = clockMaxInterval,
+                captureDeltaSeconds = Time.captureDeltaTime, captureFramerate = Time.captureFramerate,
+                frame = Time.frameCount, renderedFrame = Time.renderedFrameCount, stage = stage,
+                tick = run?.Frame?.Tick ?? 0, samples = clockFrames, pausedSamples = clockPausedFrames,
+                paused = paused, menuOpen = run != null && run.MenuOpen, capturing = capturing,
+                runStatus = run?.Frame?.Status.ToString() ?? "no-session"
+            }));
+            clockNextReport = realtime + 1; clockStopwatchSum = clockUnitySum = 0;
+            clockFrames = clockPausedFrames = 0; clockMinInterval = double.MaxValue; clockMaxInterval = 0;
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Bootstrap()
@@ -99,6 +157,7 @@ namespace Game.App
             if (ended || ledger == null) return;
             try
             {
+                RecordClockDiagnostic();
                 if (Elapsed > 1800) throw new TimeoutException("Normal capture exceeded 30 minutes.");
                 if (!capturing) Pump();
             }
