@@ -6,10 +6,10 @@
       "const": 1
     },
     "revision": {
-      "const": "designed-v1"
+      "const": "designed-v1.1"
     },
     "approvalStatus": {
-      "const": "needs-decision"
+      "const": "approved"
     },
     "content": {
       "type": "array",
@@ -254,9 +254,167 @@
         ],
         "additionalProperties": false
       },
-      "minItems": 3,
-      "maxItems": 4,
+      "minItems": 5,
+      "maxItems": 5,
       "uniqueItems": true
+    },
+    "primitiveContract": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": "1.1.0"
+        },
+        "units": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^unit:[a-z][a-z0-9-]*$"
+              },
+              "category": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "paramSchema": {
+                "type": "object"
+              },
+              "operationSupportIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^legacy:[a-z][a-z0-9-]*$"
+                },
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "id",
+              "category",
+              "paramSchema",
+              "operationSupportIds"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "operationSupport": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^legacy:[a-z][a-z0-9-]*$"
+              },
+              "operation": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "syntax": {
+                "type": "object",
+                "properties": {
+                  "subjects": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "uniqueItems": true
+                  },
+                  "triggerRestriction": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "subjects",
+                  "triggerRestriction"
+                ],
+                "additionalProperties": false
+              },
+              "handler": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S"
+                  },
+                  "restrictions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "path",
+                  "symbol",
+                  "restrictions"
+                ],
+                "additionalProperties": false
+              },
+              "profiles": {
+                "type": "object",
+                "properties": {
+                  "production": {
+                    "const": "selected"
+                  },
+                  "firstPlayable": {
+                    "enum": [
+                      "selected",
+                      "not-selected"
+                    ]
+                  }
+                },
+                "required": [
+                  "production",
+                  "firstPlayable"
+                ],
+                "additionalProperties": false
+              },
+              "observed": {
+                "const": "not-assessed"
+              },
+              "semantic": {
+                "const": "not-established"
+              }
+            },
+            "required": [
+              "id",
+              "operation",
+              "syntax",
+              "handler",
+              "profiles",
+              "observed",
+              "semantic"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "version",
+        "units",
+        "operationSupport"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -267,7 +425,8 @@
     "systems",
     "influenceMatrix",
     "visualLanguage",
-    "implementationWaves"
+    "implementationWaves",
+    "primitiveContract"
   ],
   "additionalProperties": false,
   "$defs": {
@@ -410,6 +569,97 @@
             "sound"
           ],
           "additionalProperties": false
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "readability": {
+          "type": "object",
+          "properties": {
+            "baseAction": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "conditionalVariant": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "visibleState": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "action": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    }
+                  },
+                  "required": [
+                    "visibleState",
+                    "action"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "baseAction",
+            "conditionalVariant"
+          ],
+          "additionalProperties": false
+        },
+        "costKind": {
+          "const": "shape-gap"
         }
       },
       "required": [
@@ -427,7 +677,13 @@
         "growthAxes",
         "uniqueMechanic",
         "estateLink",
-        "visual"
+        "visual",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke",
+        "readability",
+        "costKind"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -633,6 +889,127 @@
           "type": "string",
           "minLength": 1,
           "pattern": "\\S"
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "readability": {
+          "type": "object",
+          "properties": {
+            "baseAction": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "conditionalVariant": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "visibleState": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "action": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    }
+                  },
+                  "required": [
+                    "visibleState",
+                    "action"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "baseAction",
+            "conditionalVariant"
+          ],
+          "additionalProperties": false
+        },
+        "harvest": {
+          "type": "object",
+          "properties": {
+            "event": {
+              "enum": [
+                "growth-complete",
+                "shipment-complete",
+                "mission-return"
+              ]
+            },
+            "visibleMoment": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "oncePer": {
+              "enum": [
+                "growth-cycle",
+                "shipment",
+                "mission"
+              ]
+            }
+          },
+          "required": [
+            "event",
+            "visibleMoment",
+            "oncePer"
+          ],
+          "additionalProperties": false
+        },
+        "allyGroup": {
+          "$ref": "#/$defs/allyGroup"
         }
       },
       "required": [
@@ -650,7 +1027,13 @@
         "remnant",
         "growth",
         "returns",
-        "recovery"
+        "recovery",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke",
+        "readability",
+        "harvest"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -743,9 +1126,16 @@
               "pattern": "\\S"
             },
             "cost": {
-              "type": "string",
-              "minLength": 1,
-              "pattern": "\\S"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             }
           },
           "required": [
@@ -792,6 +1182,58 @@
           },
           "minItems": 0,
           "uniqueItems": true
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "itemScope": {
+          "enum": [
+            "linked",
+            "universal"
+          ]
         }
       },
       "required": [
@@ -807,7 +1249,12 @@
         "behaviorClass",
         "linkedToolIds",
         "mechanism",
-        "linkedWeaponIds"
+        "linkedWeaponIds",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke",
+        "itemScope"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -939,6 +1386,52 @@
           },
           "minItems": 0,
           "uniqueItems": true
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -953,7 +1446,11 @@
         "researchRefs",
         "ruleChange",
         "forfeiture",
-        "linkedToolIds"
+        "linkedToolIds",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1116,6 +1613,55 @@
           },
           "minItems": 0,
           "uniqueItems": true
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "allyGroup": {
+          "$ref": "#/$defs/allyGroup"
         }
       },
       "required": [
@@ -1131,7 +1677,11 @@
         "inputIds",
         "transformation",
         "inputDisposition",
-        "linkedToolIds"
+        "linkedToolIds",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1307,6 +1857,52 @@
           },
           "minItems": 2,
           "uniqueItems": true
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -1324,7 +1920,11 @@
         "behavior",
         "tell",
         "counterplay",
-        "estateThreat"
+        "estateThreat",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1507,6 +2107,52 @@
           "type": "string",
           "minLength": 1,
           "pattern": "\\S"
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -1522,7 +2168,11 @@
         "order",
         "device",
         "bossId",
-        "encounterChange"
+        "encounterChange",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1679,6 +2329,81 @@
           },
           "minItems": 0,
           "uniqueItems": true
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "allyGroup": {
+          "$ref": "#/$defs/allyGroup"
+        },
+        "signatureScene": {
+          "type": "object",
+          "properties": {
+            "setup": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "action": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "visibleResult": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "required": [
+            "setup",
+            "action",
+            "visibleResult"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1695,7 +2420,13 @@
         "ability",
         "cost",
         "deployment",
-        "linkedToolIds"
+        "linkedToolIds",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke",
+        "allyGroup",
+        "signatureScene"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1861,6 +2592,89 @@
           "type": "string",
           "minLength": 1,
           "pattern": "\\S"
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
+        },
+        "guarantee": {
+          "type": "object",
+          "properties": {
+            "targetSelection": {
+              "const": "before-run"
+            },
+            "earlyToolId": {
+              "type": "string",
+              "pattern": "^(core|meta):[a-z][a-z0-9_]*$"
+            },
+            "earlyOffer": {
+              "const": "first-equipment-offer"
+            },
+            "clearGrant": {
+              "const": "chapter-clear-base"
+            },
+            "quantity": {
+              "type": "null"
+            },
+            "clearGrantScope": {
+              "const": "all-catalog-materials"
+            },
+            "targetAvailability": {
+              "const": "profile-supports-early-tool"
+            }
+          },
+          "required": [
+            "targetSelection",
+            "earlyToolId",
+            "earlyOffer",
+            "clearGrant",
+            "quantity",
+            "clearGrantScope",
+            "targetAvailability"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -1875,7 +2689,12 @@
         "researchRefs",
         "sources",
         "sinks",
-        "choiceOutcome"
+        "choiceOutcome",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke",
+        "guarantee"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -2012,6 +2831,52 @@
           "type": "string",
           "minLength": 1,
           "pattern": "\\S"
+        },
+        "cardText": {
+          "type": "string",
+          "maxLength": 40,
+          "pattern": "^[^→]*[가-힣][^→]*→[^→]*[가-힣][^→]*$"
+        },
+        "primitives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "params": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^unit:[a-z][a-z0-9-]*$"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "bespoke": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^bespoke:[a-z][a-z0-9_-]*$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            },
+            "required": [
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -2027,7 +2892,11 @@
         "function",
         "inputIds",
         "unlockBehavior",
-        "runConnection"
+        "runConnection",
+        "cardText",
+        "primitives",
+        "params",
+        "bespoke"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -2062,6 +2931,41 @@
           }
         }
       ]
+    },
+    "allyGroup": {
+      "type": "object",
+      "properties": {
+        "entityUnit": {
+          "const": "group"
+        },
+        "capPolicy": {
+          "const": "shared-active-group-budget"
+        },
+        "onCap": {
+          "enum": [
+            "reuse-existing",
+            "do-not-spawn"
+          ]
+        },
+        "representation": {
+          "const": "representative-sprites"
+        },
+        "capValue": {
+          "type": "null"
+        },
+        "spriteCount": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "entityUnit",
+        "capPolicy",
+        "onCap",
+        "representation",
+        "capValue",
+        "spriteCount"
+      ],
+      "additionalProperties": false
     }
   }
 }
