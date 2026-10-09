@@ -68,3 +68,23 @@ load and pause at actual tick0 first, warm Recorder, resume normally, stop Recor
 restart. No ticks may be consumed or omitted during preparation. Logged preparation
 rows use mediaSeconds=-1; they are outside the movie. Root must still verify actual MP4
 packet timestamps/audio and all clip content. Encoder errors now fail capture explicitly.
+
+Editor capture explicitly opts into background operation. RunCoordinator's opt-in API
+and lifecycle event exist only under UNITY_EDITOR; ordinary launches and player builds
+retain their existing focus/pause policy. While this helper is active, actual focus and
+application-pause notifications are logged separately with their values and ignored-policy
+flag; they do not reset input/accumulators or pause simulation/audio. This allows editor
+capture to continue without OS accessibility or screen-recording permission. It does not
+change speed, rules, or the cumulative 0.15s guard. Application.runInBackground is set
+only for this session and restored after Play mode. background-before.txt and
+background-after.txt must match, alongside the preference snapshots.
+
+The ledger's capture-stop-request records only the requested result, before cleanup.
+Final acceptance requires capture-result.txt and the session result after Play mode
+cleanup; restoration or output-write failures downgrade the session result to failed.
+An earlier requestedResult=complete ledger row is never final acceptance.
+
+Recorder05 evidence: frame19134/tick17079 carried suspended=1; frames19135–20873
+remained paused for59.631915s. That proves an application lifecycle transition, but the
+old telemetry could not distinguish focus from application pause. Subsequent clock drift
+0.2879 failed the capture. Its valid695.7s movie is incomplete evidence, not a completed run.

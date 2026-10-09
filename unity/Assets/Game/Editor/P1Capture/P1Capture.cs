@@ -20,6 +20,7 @@ namespace Game.P1Capture
     {
         const string ActiveKey = "SowSiege.P1Capture.Active";
         const string PreferencesKey = "SowSiege.P1Capture.Preferences";
+        const string BackgroundKey = "SowSiege.P1Capture.Background";
         static RecorderController recorder;
         static RunCoordinator run;
         static string output;
@@ -27,6 +28,7 @@ namespace Game.P1Capture
         static double unscaledStarted;
         static double preparationAt;
         static bool movieStarted, movieStopped;
+        static bool lifecycleAttached;
         static CaptureClockGuard clock = new CaptureClockGuard();
         static int stage;
         static long lastEvent;
@@ -54,10 +56,13 @@ namespace Game.P1Capture
             EditorApplication.playModeStateChanged += state =>
             {
                 if (state != PlayModeStateChange.EnteredEditMode) return;
-                CapturePlayerLoop.Uninstall();
-                playerLoopInstalled = false;
-                RestorePreferences();
-                if (SessionState.GetBool(ActiveKey, false)) Finish("failed: play mode exited before completion");
+                var cleanupError = CaptureCleanup.Run(
+                    CapturePlayerLoop.Uninstall,
+                    () => playerLoopInstalled = false,
+                    RestorePreferences,
+                    RestoreBackground);
+                if (cleanupError != null) Finish("failed: " + cleanupError);
+                else if (SessionState.GetBool(ActiveKey, false)) Finish("failed: play mode exited before completion");
                 if (Environment.GetEnvironmentVariable("P1_CAPTURE_EXIT") == "1" && !string.IsNullOrEmpty(SessionState.GetString("SowSiege.P1Capture.Output", "")))
                     EditorApplication.delayCall += () => EditorApplication.Exit(SessionState.GetString("SowSiege.P1Capture.Result", "") == "complete" ? 0 : 1);
             };
@@ -83,6 +88,10 @@ namespace Game.P1Capture
             File.WriteAllText(Path.Combine(output, "preferences-before.json"), preferencesJson);
             SessionState.SetString("SowSiege.P1Capture.Output", output);
             SessionState.SetBool(ActiveKey, true);
+            SessionState.SetBool(BackgroundKey, Application.runInBackground);
+            File.WriteAllText(Path.Combine(output, "background-before.txt"), Application.runInBackground.ToString());
+            SessionState.SetBool(BackgroundKey + ".saved", true);
+            Application.runInBackground = true;
             EditorSceneManager.OpenScene("Assets/Scenes/Boot.unity");
             EditorWindow.GetWindow(Type.GetType("UnityEditor.GameView,UnityEditor")).Focus();
             EditorApplication.isPlaying = true;
@@ -113,6 +122,12 @@ namespace Game.P1Capture
         {
             if (recordingError != null) throw new InvalidOperationException("Recording emitted an error: " + recordingError);
             if (run == null) run = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
+            if (run != null && !lifecycleAttached)
+            {
+                run.EditorCaptureLifecycle += OnLifecycle;
+                run.SetEditorCaptureActive(true);
+                lifecycleAttached = true;
+            }
             if (run != null && run.Error != null) throw new InvalidOperationException(run.Error);
             if (run == null || run.Ui == null) return;
             if (stage == 0)
@@ -169,6 +184,7 @@ namespace Game.P1Capture
                 unscaledStarted = Time.unscaledTimeAsDouble;
                 movieStarted = true;
                 Log("capture-start", "Unity Recorder 5.1.7; automated pointer/card inputs; 1x; neutral first-playable rules without meta injection; seed=30000");
+                Log("capture-lifecycle-policy", "editor-only opt-in; focus/pause notifications logged but ignored for simulation/input/audio; runInBackground=true; ordinary launch unchanged");
                 Log("identity", $"commit={BuildIdentity.Commit};sourceHash={BuildIdentity.SourceHash};dirty={BuildIdentity.SourceDirty};dataHash={FoundationBoot.VerifiedDataHash};profile=first-playable;unity={Application.unityVersion}");
                 Log("selection-rule", "early=start at run-start for180 seconds; late=end at run-complete+8 seconds for180 seconds; continuous clips at1x with no omitted in-clip frames");
                 stage = 1;
@@ -288,6 +304,11 @@ namespace Game.P1Capture
             button.onClick.Invoke();
         }
 
+        static void OnLifecycle(string kind, bool value, bool ignored)
+        {
+            Log("lifecycle", $"event={kind};value={value};ignoredForEditorCapture={ignored};applicationFocused={Application.isFocused};runInBackground={Application.runInBackground}");
+        }
+
         static void Move(RunFrame frame)
         {
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Math.Pow(f.Position.X-frame.Lord.Position.X,2)+Math.Pow(f.Position.Y-frame.Lord.Position.Y,2)).FirstOrDefault();
@@ -328,22 +349,28 @@ namespace Game.P1Capture
             }
             var restoredJson = JsonUtility.ToJson(restored);
             var folder = SessionState.GetString("SowSiege.P1Capture.Output", "");
-            if (!string.IsNullOrEmpty(folder)) File.WriteAllText(Path.Combine(folder, "preferences-after.json"), restoredJson);
             if (restoredJson != json) throw new InvalidOperationException("Preferences restoration verification failed.");
-            SessionState.EraseString(PreferencesKey);
+            try { if (!string.IsNullOrEmpty(folder)) File.WriteAllText(Path.Combine(folder, "preferences-after.json"), restoredJson); }
+            finally { SessionState.EraseString(PreferencesKey); }
         }
 
         static void Finish(string result)
         {
             output = output ?? SessionState.GetString("SowSiege.P1Capture.Output", "");
-            Log("capture-end", result);
-            recorder?.StopRecording();
-            ledger?.Dispose();
+            var cleanupError = CaptureCleanup.Run(
+                () => Log("capture-stop-request", "requestedResult=" + result + "; not final acceptance; capture-result.txt and SessionState after cleanup are authoritative"),
+                () => recorder?.StopRecording(),
+                () => { if (run != null && lifecycleAttached) run.SetEditorCaptureActive(false); },
+                () => { if (run != null && lifecycleAttached) run.EditorCaptureLifecycle -= OnLifecycle; },
+                () => ledger?.Dispose(),
+                CapturePlayerLoop.Uninstall);
+            if (cleanupError != null) result = "failed: " + cleanupError;
+            lifecycleAttached = false;
             SessionState.SetBool(ActiveKey, false);
-            CapturePlayerLoop.Uninstall();
             playerLoopInstalled = false;
             SessionState.SetString("SowSiege.P1Capture.Result", result);
-            File.WriteAllText(Path.Combine(output, "capture-result.txt"), result);
+            var writeError = CaptureCleanup.Run(() => File.WriteAllText(Path.Combine(output, "capture-result.txt"), result));
+            if (writeError != null) { result = "failed: " + writeError; SessionState.SetString("SowSiege.P1Capture.Result", result); }
             EditorApplication.isPlaying = false;
             recorder = null; run = null; ledger = null; stage = 0;
             cardAt = -1; completedAt = -1; nextSample = 0; lastEvent = 0;
@@ -353,6 +380,20 @@ namespace Game.P1Capture
             movieStarted = false; movieStopped = false;
             recordingError = null;
             Debug.Log("P1 capture: " + result);
+        }
+
+        static void RestoreBackground()
+        {
+            if (!SessionState.GetBool(BackgroundKey + ".saved", false)) return;
+            var error = CaptureCleanup.Run(
+                () => Application.runInBackground = SessionState.GetBool(BackgroundKey, false),
+                () =>
+                {
+                    var folder = SessionState.GetString("SowSiege.P1Capture.Output", "");
+                    if (!string.IsNullOrEmpty(folder)) File.WriteAllText(Path.Combine(folder, "background-after.txt"), Application.runInBackground.ToString());
+                },
+                () => SessionState.EraseBool(BackgroundKey + ".saved"));
+            if (error != null) throw error;
         }
     }
 }

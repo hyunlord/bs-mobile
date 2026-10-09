@@ -78,6 +78,16 @@ namespace Game.App
         private bool finished,loading,parityRunning,applicationPaused,focusLost,discardResumeDelta,telemetryClosed,suspendedInterval;
         private double intervalStarted;
         private int seed;
+#if UNITY_EDITOR
+        private bool editorCaptureActive, editorLastPause, editorLastFocus = true;
+        public event Action<string,bool,bool> EditorCaptureLifecycle;
+        public void SetEditorCaptureActive(bool active)
+        {
+            editorCaptureActive=active;
+            if(active){applicationPaused=false;focusLost=false;}
+            else{applicationPaused=editorLastPause;focusLost=!editorLastFocus&&AutoplayCapture.Active==null;}
+        }
+#endif
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private DebugOverlay debug;
         private bool invulnerable;
@@ -401,6 +411,11 @@ namespace Game.App
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
+#if UNITY_EDITOR
+            editorLastPause=pause;
+            EditorCaptureLifecycle?.Invoke("application-pause",pause,editorCaptureActive);
+            if(editorCaptureActive)return;
+#endif
             desktopControls.Reset();
             suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);preferences?.Save();
             if(pause&&Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording?.Checkpoint(Session);
@@ -408,6 +423,11 @@ namespace Game.App
         }
         private void OnApplicationFocus(bool focus)
         {
+#if UNITY_EDITOR
+            editorLastFocus=focus;
+            EditorCaptureLifecycle?.Invoke("application-focus",focus,editorCaptureActive);
+            if(editorCaptureActive)return;
+#endif
             desktopControls.Reset();
             suspendedInterval=true;focusLost=!focus&&AutoplayCapture.Active==null;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
             if(!focus)StopDiagnosticTrace("focus-lost");
