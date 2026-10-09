@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-node --test tools/test-repository-budget.mjs
+node --test tools/test-ci-scope.mjs tools/test-repository-budget.mjs
 node tools/repository-budget.mjs
 export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1

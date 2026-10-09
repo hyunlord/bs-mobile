@@ -84,14 +84,31 @@ jobs:
           fs.writeFileSync(eventPath,JSON.stringify({pull_request:pr,number:pr.number}));
           fs.appendFileSync(process.env.GITHUB_ENV,'DEPENDENCY_EVENT_PATH='+eventPath+'\n');
           NODE
+      - name: Select conservative validation scope
+        id: scope
+        run: node tools/ci-scope.mjs
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        if: steps.scope.outputs.scope != 'docs'
         with:
           global-json-file: global.json
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
           cache: npm
+      - name: Document gate
+        if: steps.scope.outputs.scope == 'docs'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifacts/logs
+          set -o pipefail
+          {
+            node tools/pr-policy.mjs
+            node tools/repository-budget.mjs
+            node tools/check-docs.mjs
+          } 2>&1 | tee artifacts/logs/docs-gate.log
       - name: Full gate
+        if: steps.scope.outputs.scope != 'docs'
         run: |
           mkdir -p artifacts/logs
           set -o pipefail
@@ -99,7 +116,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
+        if: always() && steps.scope.outputs.scope != 'docs'
         with:
           name: evidence-${{ github.sha }}
           path: |
@@ -112,7 +129,7 @@ jobs:
         if: failure()
         with:
           name: failure-${{ github.sha }}
-          path: artifacts/logs/full-gate.log
+          path: artifacts/logs/*-gate.log
           retention-days: 90
           if-no-files-found: ignore
   secrets:
