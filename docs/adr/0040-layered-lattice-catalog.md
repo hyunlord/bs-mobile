@@ -118,3 +118,5 @@ Lattice는 설정 없는 언어별 정적 코드 분석, 원본 해시와 결합
 워크플로 호출과 도구 checkout은 이번 Lattice PR의 Node20·22·24 및 필수 CI를 통과한 동일한 불변 main 커밋으로 함께 갱신한다. 기존 자동 갱신·PR 차이 댓글·warning 정책을 유지한다. 새 ADR 번호는 점유하지 않으며 병합 직전 origin/main과 열린 PR의 ADR 경로를 재확인한다. 기존 시안 게시, CI 우회, 게임 전용 뷰어 분기를 대안으로 채택하지 않는다. 사용자는 공개 Pages에서 승인 시안과 같은 경험인지 직접 판정하며 자동 검사 통과를 그 판정으로 대체하지 않는다.
 
 이번 적용의 최종 고정은 Lattice [PR69](https://github.com/hyunlord/lattice/pull/69)의 검증된 main `bb89fb0d13b52d2a2da1db4d918f2c6f8a6f7977`다. Node20·22·24, artifact, contracts CI가 모두 통과했다.
+
+CI가 LFS 포인터를 이미지로 내보내는 차이가 발견되어 Lattice [PR71](https://github.com/hyunlord/lattice/pull/71)의 검증된 main `69151e60ebfba39a83933f11892f224357540c17`로 두 고정을 갱신하고 재사용 워크플로의 `lfs: true`를 선택한다. 저장소의 기존 LFS 이미지·음원을 내려받는 checkout 비용이 추가된다. 이미지가 내려받아지지 않았으면 도구는 포인터를 PNG로 내보내지 않고 미확보로 표시한다. 댓글 HTTP403은 같은 작업 재실행으로 통과했으며 원인은 확정하지 않는다. 댓글 권한은 넓히지 않았다.
