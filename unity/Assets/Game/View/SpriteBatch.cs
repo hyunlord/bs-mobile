@@ -82,6 +82,22 @@ namespace Game.View
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
 #if UNITY_EDITOR
+        public void MoveHeroRigUniformsToMaterialForTesting()
+        {
+            if (count != 0 || DrawCalls != 0) throw new InvalidOperationException("Uniform inspection requires an unsubmitted batch.");
+            foreach (var id in new[] { RigFrameId, RigUpperFrameId, RigFarId, RigNearId, RigWarpId, RigCanvasId })
+                if (properties.HasVector(id)) material.SetVector(id, properties.GetVector(id));
+            properties.Clear();
+        }
+
+        public void DrawSingleInstanceForTesting(CommandBuffer commands)
+        {
+            if (commands == null) throw new ArgumentNullException(nameof(commands));
+            if (count != 0 || DrawCalls != 1 || SubmittedInstances != 1)
+                throw new InvalidOperationException("GPU inspection requires one completed single-instance draw.");
+            commands.DrawMeshInstanced(mesh, 0, material, 0, matrices, 1, properties);
+        }
+
         internal Vector4[] CaptureSingleDrawUvsForTesting()
         {
             if(DrawCalls>1||count!=0)throw new InvalidOperationException("UV inspection requires a completed single draw.");
