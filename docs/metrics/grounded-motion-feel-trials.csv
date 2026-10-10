@@ -2,3 +2,4 @@ mode,commit,seed,policy,durationSeconds,survived,hitCount,actualHealthLost,remai
 speed,019c5e395906d5a68d3b93a0b37863cadd6e1cfe,30001,growth-evasive-policy-v1,180,true,35,420,1380,1800,b4d4010efde27a48257a9c97f6d6723320b248bab79e830bdccd4ece520106f2,true,2
 all,019c5e395906d5a68d3b93a0b37863cadd6e1cfe,30001,growth-evasive-policy-v1,14.833333333333334,false,9,100,0,100,c9c62583c80b4bc8127ecb7f02f28752001a07270efe136b93f51ad1b4460465,true,0
 speed-feedback,019c5e395906d5a68d3b93a0b37863cadd6e1cfe,30001,growth-evasive-policy-v1,180,true,35,420,1380,1800,b4d4010efde27a48257a9c97f6d6723320b248bab79e830bdccd4ece520106f2,true,0
+speed-contact,019c5e395906d5a68d3b93a0b37863cadd6e1cfe,30001,growth-evasive-policy-v1,103.83333333333333,false,151,1800,0,1800,5a8830d531218d4fd33e7fc7789c4125e527a54515e42afa44b99485e322ad6a,true,0
