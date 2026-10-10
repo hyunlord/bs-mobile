@@ -13,9 +13,11 @@ open -a '/path/Sow and Siege.app' --args \
   --smoothness-profile /path/new-profile --smoothness-trace-quit
 ```
 
-합성 입력은 가상 Mouse → InputSystem → EventSystem → 실제 버튼/조이스틱 경로를 사용한다. 실제 손 조작이나 물리 입력-광자 지연의 증거가 아니다. 캡처 모드, Core 예열, 프레임 상한 변경, 상태·자원 주입을 사용하지 않는다. 합성 입력 인자를 빼면 사용자가 직접 조작한 동일 좌표를 기록한다.
+합성 입력은 가상 Mouse → InputSystem → EventSystem → 실제 버튼/조이스틱 경로를 사용한다. 후속 scripted trace는 복제한 UI action asset을 합성 Mouse에만 연결하고 끝나면 원래 action/device 상태를 복원한다. 일반 실행에는 이 격리를 켜지 않는다. 이 구현의 존재만으로 실제 입력 크기·정속 구간이 검증되었다고 하지 않는다. 실제 손 조작이나 물리 입력-광자 지연의 증거가 아니다. 캡처 모드, Core 예열, 프레임 상한 변경, 상태·자원 주입을 사용하지 않는다. 합성 입력 인자를 빼면 사용자가 직접 조작한 동일 좌표를 기록한다.
 
-실제 저속 입력을 관측한 뒤 저속·정지·고속·정지 각4초를 시작하고 총18초를 기록한다. 기본 방향은 오른쪽이며 `--smoothness-oblique`는 같은 크기의 대각선 입력(저속0.2/0.15, 고속0.8/0.6)을 사용한다. 서로 다른 방향의 실행을 개선율로 직접 비교하지 않는다. 실제 일정 입력 구간 전체와 시작 과도 구간을 보존하고, 앞선0.5초 이상이 있는 마지막3초 이상을 별도 정상 구간 후보로 분석한다. 피격 화면 흔들림을 빼서 통과시키지 않는다.
+실제 저속 입력을 관측한 뒤 저속·정지·고속·정지 각4초를 시작하고 총18초를 기록한다. 기본 방향은 오른쪽이며 `--smoothness-oblique`는 같은 크기의 대각선 입력(저속0.2/0.15, 고속0.8/0.6)을 사용한다. `--smoothness-left`는 선택한 방향을 반대로 하며 오른쪽 기본값에서는 왼쪽으로 이동한다(사선과 함께 쓰면 반대 사선). 지도 안쪽을 향하는 방향으로 경계 클램프와 보행 변동을 구별하는 진단에 쓸 수 있다. 경계 클램프를 제거하거나 경계에 닿은 원자료를 삭제하지 않는다. 서로 다른 방향의 실행을 개선율로 직접 비교하지 않는다. 실제 일정 입력 구간 전체와 시작 과도 구간을 보존하고, 앞선0.5초 이상이 있는 마지막3초 이상을 별도 정상 구간 후보로 분석한다. 피격 화면 흔들림을 빼서 통과시키지 않는다.
+
+후속 계측의 `engineFrameTimeSeconds`는 Unity unscaled frame 시각, 기존 `wallSeconds`는 BeginFrame 실시간 시각(세션 상대), `callbackEndWallSeconds`는 EndFrame 실시간 시각(세션 상대)이다. 서로 다른 callback 위치의 시각을 비교해 관측 지연을 진단하되 분석기의 실제 dt 관문 시계를 조용히 교체하지 않는다. 어느 열도 디스플레이 present 시각이나 물리 입력 지연이 아니다.
 
 `normal-frames.csv`는 실제 프레임 시각·입력·틱·누산 잔여·권위/예측 위치·카메라 위치/배율을, `normal-entities.csv`는 RenderedEntitySample의 영주·고정된 첫 적 5 ID·투사체/궤도 파편 좌표를 보존한다. 죽은 적을 다른 ID로 바꾸지 않으며 실제로 관측되지 않은 개체는 검증했다고 하지 않는다. `normal-trace.txt`에 commit/sourceHash와 합성 입력·드롭 수를 남긴다.
 
@@ -27,6 +29,34 @@ node tools/plot-motion-comparison.mjs /path/pairs.json /path/comparison.svg
 `pairs.json`은 `[{"label":"normal cardinal","before":"/path/before-analysis","after":"/path/after-analysis"}]` 형식이다. Node 표준 라이브러리만 사용하며 영상 디코딩에는 이미 설치된 ffmpeg/ffprobe를 사용한다. 저장소 의존성을 추가하지 않는다. `analyze-motion-video.mjs`는 영상·시작초·길이초·ROI의 x/y/폭/높이·출력폴더를 순서대로 받는다. 위상 상관의 ROI·PTS·신뢰도를 함께 보존한다. 입력·장면·ROI가 다른 영상의 수치를 원인 개선율로 해석하지 않는다. 영상 추정과 네이티브 좌표는 같은 그래프 패널에 섞지 않는다.
 
 저속/고속 일정 입력 각각 3초 이상에서 이동량/실제 프레임 시간 CV ≤0.10, lag 2–12 자기상관 ≤0.3, 영주 화면 위치의 15프레임 이동평균 대비 RMS ≤0.5px(1080p 환산)를 확인한다. 정지·카메라 수렴 구간은 평균 속도 0의 CV를 억지로 계산하지 않고 별도 원자료와 RMS를 남긴다. 자동 분석은 사용자 직접 플레이 판정을 대체하지 않는다.
+
+## 투사체가 실제 나온 정상 실행 표본
+
+기본 18초 실행에서 투사체가 없으면 기록 코드의 존재만으로 투사체 관문을 통과 처리하지 않는다. 별도 빈 저장·출력 경로에서 다음 옵션을 사용한다.
+
+```sh
+open -a '/path/Sow and Siege.app' --args \
+  --smoothness-trace --smoothness-scripted-input --smoothness-await-projectile \
+  --smoothness-seed 1078312934 \
+  --smoothness-trace-output /path/new-projectile-trace \
+  --smoothness-profile /path/new-projectile-profile --smoothness-trace-quit
+```
+
+`--smoothness-seed 1078312934`는 재현용 선택 사항이며 새 세션의 초기 seed만 지정한다. 생략하면 일반 기본값을 유지한다. 실행 중 상태·카드 제시·성장을 주입하지 않으며 `normal-trace.txt`의 `requestedSeed`를 보고한다. 서로 다른 seed를 같은 조건의 개선율로 비교하지 않는다.
+
+이 옵션은 실제 출정 준비 UI에서 곡물/씨앗 자루를 고르고, 실제 제시된 레벨업 카드 선택과 이동으로 비적대 투사체가 생기기를 기다린 뒤 같은 18초 입력 순서를 시작한다. 준비 제한은 단조 증가하는 Stopwatch 기준120초이며 player callback에서 확인한다(앱 자체가 멈춘 시간에 강제 종료를 보장하는 외부 watchdog은 아니다). 상태·장비·경험치를 직접 주입하거나 빠르게 감지 않는다. 준비 실패·카드 대기·포커스 상실을 보존한다. 카드 선택으로 잠시 멈춘 구간을 이어 붙여 정속 3초를 만들지 않는다.
+
+`normal-trace.txt`의 `projectilePreparation`, `projectileObserved`, `projectileCardClicks`, `projectileReadyWallSeconds`와 **실제로 저장한** `recordedProjectileSamples`·`recordedFriendlyProjectileSamples`를 확인한다. `normal-entities.csv`의 `friendlyProjectile`로 적대/비적대 표본을 구별하며, 비적대 저장 행이 0이면 실패다. 사용자의3초 조건은 일정 입력의 저속·고속 보행 구간에 적용하며 개별 투사체 수명에 적용하지 않는다. 실제 투사체의 생존 길이·ID별 연속성·입력/카드 정지를 보고한다. 짧은 수명은 ACF 통계의 신뢰도 한계로 명시하고 서로 다른 ID나 분절 구간을 이어 붙이지 않는다. 기록0행은 미관측으로 남기며 기록 기능의 존재를 실제 관측 증거로 대신하지 않는다. 새로운 수명·표본수 관문을 추가하지 않는다.
+
+## 캡처 파이프라인 진단
+
+후속 네이티브 캡처의 `capture-pipeline.csv`는 프레임별 `readback_ms`, `ready_wait_ms`, `flip_ms`, `jpeg_ms`, `file_write_ms`, `screenshot_ms`, `writer_total_ms`를 남긴다. 읽기 완료·대기·행 뒤집기·JPEG 인코딩·파일 쓰기·스크린샷·writer 비용을 구분하는 진단이며 링 크기나 실패 기준을 완화한 수정이 아니다. 이를 게임 프레임 전체 비용이나 물리 입력 지연으로 해석하지 않는다. ring overflow와 누락 슬롯은 manifest 실패로 보존하며, 진단 열이 생겼다는 이유만으로 실패 원인이 확인되었다거나 다음 실행이 통과했다고 하지 않는다. 계측 실행 동안 다른 게임 앱·벤치마크·무거운 분석을 병행하지 않는다.
+
+## 지연된 FrameTiming 원자료
+
+`normal-frame-timings.csv`는 FrameTimingManager가 반환한 CPU/GPU 비용과 raw timestamp를 기존 좌표 CSV와 **별도** 저장한다. `normal-frame-timing-boundary.txt`의 feature 활성 여부, CPU timer frequency, 반환/빈 poll·중복/오래된 값·zero-start/zero-present·저장 초과 수를 함께 확인한다. 0은 사용할 수 없는 값이며 비용0으로 해석하지 않는다.
+
+`observedUnityFrame`은 값을 꺼내 온 프레임이고 `sourceUnityFrame`은 unknown이다. 일정 지연을 가정하거나4프레임을 빼서 좌표 CSV와 연결하지 않는다. raw CPU ticks는 frequency가0이 아닐 때만 초로 바꾸며 retrieval 시각과 공통 epoch라고 가정하지 않는다. `cpuTimePresentCalled`는 Present 호출 시각이지 실제 디스플레이 표시 시각이 아니다. 마지막 지연 tail과 반환되지 않은 source frame은 미확인으로 남기고 기존 모션 관문의 dt를 교체하지 않는다.
 
 ## 마스크와 경험치
 
