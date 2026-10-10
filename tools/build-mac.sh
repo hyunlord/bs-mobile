@@ -49,9 +49,11 @@ restore_urp_authoring
   -executeMethod "Game.Editor.FoundationBuild.$BUILD_METHOD" -logFile "$OUT/build.log"
 restore_urp_authoring
 [[ -s "$OUT/mac-build-result.json" && -d "$UNITY_MAC_PATH" ]] || { echo 'Missing Mac build result.' >&2; exit 1; }
-node --input-type=module - "$OUT/mac-build-result.json" "$UNITY_MAC_DEVELOPMENT" <<'JS'
+node --input-type=module - "$OUT/mac-build-result.json" "$UNITY_MAC_DEVELOPMENT" "$OUT/build.log" <<'JS'
 import fs from 'node:fs';
 const result = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+const buildLog = fs.readFileSync(process.argv[4], 'utf8');
+if (/^Shader error in /m.test(buildLog)) throw new Error('Native shader compilation failed despite Unity build result; inspect build.log.');
 if (result.result !== 'Succeeded' || result.development !== (process.argv[3] === '1')) {
   throw new Error('Mac build kind/result does not match requested mode.');
 }

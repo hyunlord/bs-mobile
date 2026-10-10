@@ -45,13 +45,13 @@ Shader "Game/View/HeroRig"
                 output.positionCS=TransformObjectToHClip(input.positionOS);
                 output.local=float2(input.uv.x,input.uv.y*_RigCanvas.y+_RigCanvas.x);return output;
             }
-            float2 InverseWarp(float2 point,float2 delta)
+            float2 InverseWarp(float2 coordinate,float2 delta)
             {
                 float h=_RigWarp.x,f=_RigWarp.y,r=h-f;
-                if(point.y>=h)return point;
-                if(point.y<=f+delta.y)return point-delta;
-                float y=(point.y-h*delta.y/r)/(1-delta.y/r);
-                return float2(point.x-(h-y)/r*delta.x,y);
+                if(coordinate.y>=h)return coordinate;
+                if(coordinate.y<=f+delta.y)return coordinate-delta;
+                float y=(coordinate.y-h*delta.y/r)/(1-delta.y/r);
+                return float2(coordinate.x-(h-y)/r*delta.x,y);
             }
             half4 Layer(float2 local,float2 sheet,float4 frame)
             {
