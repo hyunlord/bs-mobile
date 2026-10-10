@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "id": "core:stone_maul",
+      "kind": "weapon",
+      "designRef": "data/system-design-v1.json@designed-v1.1#core:stone_maul",
+      "copyParametersFrom": "core:carpenter_hammer",
+      "linkedIds": [],
+      "program": {
+        "params": {
+          "unit:attack-shape": {
+            "shape": "ground-slam",
+            "anchor": "lord",
+            "aim": "facing",
+            "collision": "damage-knockback",
+            "repeatTarget": "per-activation",
+            "on": "automatic-attack"
+          },
+          "unit:visible-marker": {
+            "channel": "ground",
+            "state": "attack-footprint",
+            "bind": "self"
+          }
+        }
+      }
+    },
+    {
+      "id": "core:lure_pebble_box",
+      "kind": "item",
+      "designRef": "data/system-design-v1.json@designed-v1.1#core:lure_pebble_box",
+      "copyParametersFrom": "core:bitter_seed_dust",
+      "linkedIds": [
+        "core:ember_wand"
+      ],
+      "program": {
+        "params": {
+          "unit:equipment-scope": {
+            "scope": "linked",
+            "toolIds": "none",
+            "weaponIds": "none"
+          },
+          "unit:target-routing": {
+            "on": "hit",
+            "actor": "enemy",
+            "selection": "side-route",
+            "fallback": "default",
+            "persistent": "false"
+          }
+        }
+      }
+    }
+  ]
+}
