@@ -15,7 +15,7 @@ namespace Game.App
     public sealed partial class RunCoordinator
     {
         static partial void LoadFrozenWaveBenchmark(ref ContentCatalog catalog, ref string dataHash);
-        bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture;
+        bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture, benchmarkInterrupted;
         ReplayDocument benchmarkReplay;
         string benchmarkOutput, benchmarkReplaySha;
         int benchmarkCommand, benchmarkWarmFrames = 120;
@@ -39,7 +39,7 @@ namespace Game.App
         [Serializable] sealed class BenchmarkResult
         {
             public string commit, sourceHash, dataHash, replaySha256, stateHash, expectedStateHash, error, graphicsApi, quality, platform;
-            public bool sourceDirty, verified, developmentBuild, frameTimingEnabled;
+            public bool sourceDirty, verified, developmentBuild, frameTimingEnabled, interrupted;
             public int tick, commands, frames, renderTimingSamples, width, height, targetFrameRate, vSyncCount, renderWarmupFrames = 120;
             public string windows = "7200-9900,10200-12900,13200-14400", timingContract = "frames.csv: Update-to-next-Update wall includes rendering and pacing; CPU scopes disjoint. render-timings.csv: delayed FrameTimingManager observations, timestamped separately, not joined to density. Allocation delta is main-thread managed allocation; GC count is process-wide generation 0.";
         }
@@ -82,7 +82,7 @@ namespace Game.App
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
-                while (Session.Simulation.World.Tick < 7200) ApplyBenchmarkCommand(false, ref benchmarkPending);
+                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < 7200) ApplyBenchmarkCommand(false, ref benchmarkPending);
                 CaptureSnapshots(); previous = Frame;
                 world = new GameObject("World renderer").AddComponent<WorldRenderer>();
                 var settings = CanonicalContent.Presentation.Camera;
@@ -102,14 +102,17 @@ namespace Game.App
         static bool BenchmarkWindow(int tick) => tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
         void UpdateWaveBenchmark()
         {
+            var entryTimestamp = Stopwatch.GetTimestamp();
+            var entryAllocated = GC.GetAllocatedBytesForCurrentThread();
+            var entryGc = GC.CollectionCount(0);
             if (!waveBenchmarkReady || waveBenchmarkEnded) return;
             try
             {
                 if (benchmarkHasPending)
                 {
-                    benchmarkPending.wallMs = BenchmarkMilliseconds(benchmarkFrameStart);
-                    benchmarkPending.allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - benchmarkAllocatedStart;
-                    benchmarkPending.gcCollections = GC.CollectionCount(0) - benchmarkGcStart;
+                    benchmarkPending.wallMs = (entryTimestamp - benchmarkFrameStart) * 1000d / Stopwatch.Frequency;
+                    benchmarkPending.allocatedBytes = entryAllocated - benchmarkAllocatedStart;
+                    benchmarkPending.gcCollections = entryGc - benchmarkGcStart;
                     benchmarkFrames.Add(benchmarkPending); benchmarkHasPending = false;
                 }
                 if (FrameTimingManager.GetLatestTimings(1, benchmarkTimingBuffer) > 0 && benchmarkTimingBuffer[0].frameStartTimestamp != benchmarkLastTiming)
@@ -118,7 +121,7 @@ namespace Game.App
                     benchmarkTimings.Add(new BenchmarkTiming { observedFrame = Time.frameCount, value = benchmarkTimingBuffer[0] });
                 }
                 if (benchmarkCommand == benchmarkReplay.Commands.Count) { EndWaveBenchmark(null); return; }
-                ResetBenchmarkClock();
+                benchmarkFrameStart = entryTimestamp; benchmarkAllocatedStart = entryAllocated; benchmarkGcStart = entryGc;
                 var sample = new BenchmarkFrame { frame = Time.frameCount, focused = Application.isFocused };
                 var warming = benchmarkWarmFrames > 0;
                 if (warming)
@@ -174,7 +177,7 @@ namespace Game.App
         {
             if (waveBenchmarkEnded) return;
             waveBenchmarkEnded = true;
-            var result = new BenchmarkResult { commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
+            var result = new BenchmarkResult { commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), interrupted = benchmarkInterrupted, frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
             try
             {
                 if (exception == null)

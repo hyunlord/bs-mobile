@@ -47,13 +47,19 @@ UNITY_WAVE_BENCHMARK=1 UNITY_CONTENT_PROFILE=wave-1a \
 
 "$PWD/artifacts/wave-density/before-build/Sow and Siege.app/Contents/MacOS/Sow and Siege" \
   --wave-benchmark "$PWD/benchmarks/wave-c05/run.ssreplay" \
-  --wave-benchmark-output "$PWD/artifacts/wave-density/before-01" \
+  --wave-benchmark-output "$PWD/artifacts/wave-density/before/run-1" \
   -screen-width 1600 -screen-height 900
 ```
 
-`before-02`, `before-03`도 별도 프로세스와 새 디렉터리에서 실행한다. 최적화 후에는 `after-build`와 `after-01`~`after-03`을 사용한다. 이미 존재하는 결과 디렉터리를 덮어쓰지 않는다. 빌드 성공만으로 측정 완료를 기록하지 않고, 각 실행의 종료·계약·실제 뷰포트·종결 해시를 확인한다.
+`before/run-2`, `before/run-3`도 별도 프로세스와 새 디렉터리에서 실행한다. 최적화 후에는 `after-build`와 `after/run-1`~`after/run-3`을 사용한다. 이미 존재하는 결과 디렉터리를 덮어쓰지 않는다. 빌드 성공만으로 측정 완료를 기록하지 않고, 각 실행의 종료·계약·실제 뷰포트·종결 해시를 확인한다.
 
-**분석 명령: 하네스 분석기 통합 후 확정 예정.** 임의 명령이나 통과 결과를 채우지 않는다. 통합 시3회 입력을 받는 실제 분석 명령과 결과 파일 계약을 이 위치에 추가한다.
+각 루트에 `run-1`, `run-2`, `run-3`의 실제 실행 결과가 모두 생성된 뒤 분석한다.
+
+```sh
+node tools/summarize-wave-benchmark.mjs \
+  "$PWD/artifacts/wave-density/before" \
+  "$PWD/artifacts/wave-density/after"
+```
 
 ## 판정과 비용 분해
 

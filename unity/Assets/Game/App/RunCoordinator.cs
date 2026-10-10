@@ -440,6 +440,7 @@ namespace Game.App
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
+            if (waveBenchmarkReady && benchmarkWarmFrames == 0 && pause) benchmarkInterrupted = true;
 #if UNITY_EDITOR
             editorLastPause=pause;
             EditorCaptureLifecycle?.Invoke("application-pause",pause,editorCaptureActive);
@@ -452,6 +453,7 @@ namespace Game.App
         }
         private void OnApplicationFocus(bool focus)
         {
+            if (waveBenchmarkReady && benchmarkWarmFrames == 0 && !focus) benchmarkInterrupted = true;
 #if UNITY_EDITOR
             editorLastFocus=focus;
             EditorCaptureLifecycle?.Invoke("application-focus",focus,editorCaptureActive);
