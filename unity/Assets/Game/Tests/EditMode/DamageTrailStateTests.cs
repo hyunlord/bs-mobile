@@ -33,6 +33,37 @@ namespace Tests.EditMode
         }
 
         [Test]
+        public void WhiteTrailOnlyCoversLostIntervalAndDisappearsAtFullHealth()
+        {
+            var owner=new GameObject("Trail interval UI",typeof(RectTransform));
+            var font=FontProvider.Create(System.Array.Empty<string>());
+            try
+            {
+                var ui=owner.AddComponent<UiShell>();ui.Initialize(font);
+                var rail=UiShell.Rect("Rail",ui.Content);rail.sizeDelta=new Vector2(300,30);
+                var fill=UiShell.Rect("Fill",rail);UiShell.Stretch(fill,3);fill.gameObject.AddComponent<Image>();
+                var feedback=new UiDamageFeedback(ui,fill);
+                var trail=(RectTransform)rail.Find("Damage trail");var image=trail.GetComponent<Image>();
+                Assert.That(image.enabled,Is.False);
+                var catalog=Game.App.Generated.CanonicalContent.CreateCatalog();
+                var session=new SowSiege.Core.InteractiveSession(catalog,new(new(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),SowSiege.Core.AimMode.Movement,Game.App.Generated.CanonicalContent.DataHash));
+                var frame=session.View.CaptureFrame();frame=frame with {Lord=frame.Lord with {Health=100,MaxHealth=100}};
+                feedback.Present(frame);Assert.That(image.enabled,Is.False);
+                feedback.Present(frame with {Tick=1,Lord=frame.Lord with {Health=88}});
+                Assert.That(image.enabled,Is.True);
+                Assert.That(trail.anchorMin.x,Is.EqualTo(.88f).Within(.00001));
+                Assert.That(trail.anchorMax.x,Is.EqualTo(1));
+                Assert.That(trail.offsetMin.x,Is.EqualTo(fill.offsetMax.x).Within(.00001),"The trail starts at the surviving fill's right edge.");
+                Assert.That(trail.offsetMax.x,Is.EqualTo(fill.offsetMax.x).Within(.00001));
+                feedback.Present(frame with {Tick=2});Assert.That(image.enabled,Is.False);
+                feedback.Present(frame with {Tick=3,Lord=frame.Lord with {Health=0}});
+                Assert.That(image.enabled,Is.True);
+                Assert.That(trail.offsetMin.x,Is.EqualTo(fill.offsetMin.x).Within(.00001),"Zero health must not paint outside the rail inset.");
+            }
+            finally{Object.DestroyImmediate(owner);Object.DestroyImmediate(font);}
+        }
+
+        [Test]
         public void LostHealthIsExactThenHeldAndSmoothlyDecayed()
         {
             var state=new DamageTrailState();state.Present(100,100,0,0);state.Present(70,100,1,.016f);
