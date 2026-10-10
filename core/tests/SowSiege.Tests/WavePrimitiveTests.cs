@@ -8,6 +8,19 @@ namespace SowSiege.Tests;
 public sealed class WavePrimitiveTests
 {
     [Theory]
+    [InlineData("core:carpenter_hammer", "core:seed_bag", "unit:growth-cycle")]
+    [InlineData("core:sheltered_sowing", "core:seed_bag", "unit:growth-cycle")]
+    [InlineData("core:raider", "core:ram_runner", "unit:enemy-tell")]
+    public void ValidTupleWithUnsupportedSubstrateCombinationIsRejected(string id, string donor, string unit)
+    {
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "wave-1a");
+        var programs = catalog.WaveRuntime!.Programs!;
+        var units = programs[id].Params.ToDictionary(p => p.Key, p => p.Value);
+        units[unit] = programs[donor].Params[unit];
+        Assert.Throws<ArgumentException>(() => WavePrimitiveSupport.Validate(new(units)));
+    }
+
+    [Theory]
     [InlineData("core:rain_ladle", "unit:stock-cycle")]
     [InlineData("core:rain_ladle", "unit:growth-cycle")]
     [InlineData("core:carpenter_hammer", "unit:stock-cycle")]

@@ -166,6 +166,7 @@ namespace SowSiege.Core
             {
                 Require("unit:stock-cycle", "unit:growth-cycle");
                 Expect("unit:stock-cycle", "resource", "timber"); Expect("unit:growth-cycle", "drivers", "time");
+                Expect("unit:growth-cycle", "workGate", "within-work-radius");
             }
             if (remnant == "levy-company" || program.Has("unit:ally-task") || program.Has("unit:mission-cycle"))
             {
@@ -176,8 +177,16 @@ namespace SowSiege.Core
             {
                 Require("unit:remnant-create", "unit:paired-growth", "unit:growth-protect", "unit:growth-cycle", "unit:evolution-replace");
                 Expect("unit:remnant-create", "remnantKey", "sheltered-frame");
+                Expect("unit:growth-cycle", "workGate", "linked-building-complete");
             }
-            if (program.Has("unit:enemy-pressure") || program.Has("unit:boss-phases")) { Require("unit:enemy-tell"); }
+            if (program.Has("unit:enemy-pressure") || program.Has("unit:boss-phases"))
+            {
+                Require("unit:enemy-tell");
+                var charged = program.Has("unit:boss-phases") || program.Is("unit:enemy-pressure", "movement", "charge-locked-line");
+                var target = program.Has("unit:boss-phases") ? "lord" : program.Value("unit:enemy-pressure", "target");
+                Expect("unit:enemy-tell", "target", target);
+                Expect("unit:enemy-tell", "before", charged ? "charge" : target == "lord" ? "strike" : "theft");
+            }
             if (program.Has("unit:evolution-replace")) { Require("unit:event-gate", "unit:attack-shape"); }
         }
         public static void Validate(WavePrimitiveProgram program)
