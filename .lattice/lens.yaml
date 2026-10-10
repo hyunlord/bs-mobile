@@ -1,0 +1,4709 @@
+schemaVersion: 1
+name: Sow & Siege · 콘텐츠 지도
+kinds:
+  - id: weapon
+    label: 무기
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/weapons/*.json
+        layer: runtime
+  - id: tool
+    label: 도구
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/tools/*.json
+        layer: runtime
+  - id: charter
+    label: 특허장
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/charters/*.json
+        layer: runtime
+  - id: item
+    label: 물품
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/items/*.json
+        layer: runtime
+  - id: evolution
+    label: 진화
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/evolutions/*.json
+        layer: runtime
+  - id: enemy
+    label: 적
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/enemies/*.json
+        layer: runtime
+  - id: vassal
+    label: 가신
+    files: []
+    columns:
+      - name
+      - concept
+    selections:
+      - files:
+          - data/vassals/*.json
+        layer: candidate
+        references: false
+      - files:
+          - data/meta/progression.json
+        records: /vassals
+        layer: runtime
+  - id: profile
+    label: 실행 프로필
+    files: []
+    hidden: true
+    selections:
+      - files:
+          - data/profiles/first-playable.json
+        layer: runtime
+  - id: material
+    label: 재료
+    files: []
+    selections:
+      - files:
+          - data/meta/progression.json
+        records: /materials
+        layer: runtime
+  - id: chapter
+    label: 챕터
+    files: []
+    selections:
+      - files:
+          - data/meta/progression.json
+        records: /chapters
+        layer: runtime
+  - id: manor
+    label: 장원
+    files: []
+    selections:
+      - files:
+          - data/meta/progression.json
+        records: /manorBuildings
+        layer: runtime
+  - id: challenge
+    label: 도전
+    files: []
+    selections:
+      - files:
+          - data/meta/progression.json
+        records: /challenges
+        layer: runtime
+  - id: content
+    label: 설계 콘텐츠
+    files: []
+    selections:
+      - files:
+          - data/system-design-v1.json
+        records: /content
+        kindField: kind
+        layer: designed-v1
+        references: false
+        namespaceFrom: /revision
+    hidden: true
+  - id: system
+    label: 시스템
+    files: []
+    selections:
+      - files:
+          - data/system-design-v1.json
+        records: /systems
+        layer: designed-v1
+        references: false
+        namespaceFrom: /revision
+  - id: wave
+    label: 구현 웨이브
+    files: []
+    selections:
+      - files:
+          - data/system-design-v1.json
+        records: /implementationWaves
+        layer: designed-v1
+        references: false
+        namespaceFrom: /revision
+    hidden: true
+  - id: catalog
+    label: 카탈로그 원본
+    files: []
+    selections:
+      - files:
+          - data/system-design-v1.json
+        records: ""
+        layer: designed-v1
+        references: false
+        idField: revision
+        namespaceFrom: /revision
+    hidden: true
+  - id: reward-source
+    label: 결산 보상 규칙
+    files: []
+    selections:
+      - files:
+          - data/meta/progression.json
+        records: /economy/rewardRules
+        layer: runtime
+        references: false
+        nameField: materialId
+  - id: estate
+    label: 영지
+    files: []
+    selections:
+      - files:
+          - data/estates/*.json
+        layer: runtime
+  - id: hero
+    label: 영웅
+    files: []
+    selections:
+      - files:
+          - data/heroes/*.json
+        layer: runtime
+derived:
+  - id: catalog
+    scope: graph
+    value:
+      op: lookup
+      kind: catalog
+      field:
+        - layer
+      equals: designed-v1
+  - id: profile
+    scope: graph
+    value:
+      op: lookup
+      kind: profile
+      field:
+        - originalId
+      equals: core:first_playable
+  - id: selected
+    scope: node
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: weapon
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: get
+              from: vars
+              path:
+                - profile
+                - selection
+                - weapons
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: tool
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: get
+              from: vars
+              path:
+                - profile
+                - selection
+                - tools
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: charter
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: get
+              from: vars
+              path:
+                - profile
+                - runtime
+                - charters
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: item
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: get
+              from: vars
+              path:
+                - profile
+                - runtime
+                - items
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: evolution
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: get
+              from: vars
+              path:
+                - profile
+                - runtime
+                - evolutions
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: enemy
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: get
+              from: vars
+              path:
+                - profile
+                - selection
+                - enemies
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - kind
+            right: vassal
+          value:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - originalId
+            collection:
+              op: literal
+              value: []
+      default: false
+  - id: depth
+    scope: node
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    value:
+      op: case
+      cases:
+        - when:
+            op: not
+            value:
+              op: get
+              from: vars
+              path:
+                - selected
+          value: design
+        - when:
+            op: any
+            input:
+              op: get
+              from: node
+              path:
+                - runtimeProjection
+                - effects
+            where:
+              op: ne
+              left:
+                op: get
+                from: item
+                path:
+                  - operation
+              right: stat-add
+          value: unique
+        - when:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - kind
+            collection:
+              op: literal
+              value:
+                - weapon
+                - tool
+                - enemy
+          value: base
+        - when:
+            op: and
+            values:
+              - op: gt
+                left:
+                  op: count
+                  value:
+                    op: get
+                    from: node
+                    path:
+                      - runtimeProjection
+                      - effects
+                right: 0
+              - op: all
+                input:
+                  op: get
+                  from: node
+                  path:
+                    - runtimeProjection
+                    - effects
+                where:
+                  op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - operation
+                  right: stat-add
+          value: stat
+      default: design
+  - id: effectiveProjection
+    scope: node
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    layer: runtime
+    value:
+      op: coalesce
+      values:
+        - op: at
+          object:
+            op: get
+            from: vars
+            path:
+              - profile
+              - runtimeOverrides
+              - equipment
+          key:
+            op: get
+            from: node
+            path:
+              - originalId
+        - op: at
+          object:
+            op: get
+            from: vars
+            path:
+              - profile
+              - runtimeOverrides
+              - charters
+          key:
+            op: get
+            from: node
+            path:
+              - originalId
+        - op: at
+          object:
+            op: get
+            from: vars
+            path:
+              - profile
+              - runtimeOverrides
+              - items
+          key:
+            op: get
+            from: node
+            path:
+              - originalId
+        - op: at
+          object:
+            op: get
+            from: vars
+            path:
+              - profile
+              - runtimeOverrides
+              - evolutions
+          key:
+            op: get
+            from: node
+            path:
+              - originalId
+        - op: get
+          from: node
+          path:
+            - runtimeProjection
+  - id: waveIndex
+    scope: node
+    value:
+      op: indexOf
+      input:
+        op: map
+        input:
+          op: get
+          from: vars
+          path:
+            - catalog
+            - implementationWaves
+        value:
+          op: get
+          from: item
+          path:
+            - id
+      value:
+        op: at
+        object:
+          op: map
+          input:
+            op: filter
+            input:
+              op: get
+              from: vars
+              path:
+                - catalog
+                - implementationWaves
+            where:
+              op: in
+              value:
+                op: get
+                from: node
+                path:
+                  - originalId
+              collection:
+                op: concat
+                values:
+                  - op: get
+                    from: item
+                    path:
+                      - contentIds
+                  - op: get
+                    from: item
+                    path:
+                      - systemIds
+          value:
+            op: get
+            from: item
+            path:
+              - id
+        key: 0
+    layer: designed-v1
+  - id: effectiveDepth
+    scope: node
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    layer: runtime
+    value:
+      op: case
+      cases:
+        - when:
+            op: not
+            value:
+              op: get
+              from: vars
+              path:
+                - selected
+          value: design
+        - when:
+            op: any
+            input:
+              op: get
+              from: vars
+              path:
+                - effectiveProjection
+                - effects
+            where:
+              op: ne
+              left:
+                op: get
+                from: item
+                path:
+                  - operation
+              right: stat-add
+          value: unique
+        - when:
+            op: in
+            value:
+              op: get
+              from: node
+              path:
+                - kind
+            collection:
+              op: literal
+              value:
+                - weapon
+                - tool
+                - enemy
+          value: base
+        - when:
+            op: and
+            values:
+              - op: gt
+                left:
+                  op: count
+                  value:
+                    op: get
+                    from: vars
+                    path:
+                      - effectiveProjection
+                      - effects
+                right: 0
+              - op: all
+                input:
+                  op: get
+                  from: vars
+                  path:
+                    - effectiveProjection
+                    - effects
+                where:
+                  op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - operation
+                  right: stat-add
+          value: stat
+      default: design
+facets:
+  - id: selected
+    key: selected
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - layer
+            right: runtime
+          value:
+            op: get
+            from: vars
+            path:
+              - selected
+      default: null
+    layer: runtime
+  - id: reference-depth
+    key: referenceDepth
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - layer
+            right: runtime
+          value:
+            op: get
+            from: vars
+            path:
+              - depth
+      default: null
+    layer: runtime
+  - id: layer
+    key: layer
+    value:
+      op: get
+      from: node
+      path:
+        - layer
+  - id: implementation-wave
+    key: wave
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - layer
+            right: designed-v1
+          value:
+            op: map
+            input:
+              op: filter
+              input:
+                op: get
+                from: vars
+                path:
+                  - catalog
+                  - implementationWaves
+              where:
+                op: in
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - originalId
+                collection:
+                  op: concat
+                  values:
+                    - op: get
+                      from: item
+                      path:
+                        - contentIds
+                    - op: get
+                      from: item
+                      path:
+                        - systemIds
+            value:
+              op: get
+              from: item
+              path:
+                - id
+      default: null
+    layer: designed-v1
+  - id: linked-item-count
+    key: linkedItems
+    kinds:
+      - weapon
+      - tool
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - layer
+            right: designed-v1
+          value:
+            op: count
+            value:
+              op: unique
+              value:
+                op: map
+                input:
+                  op: filter
+                  input:
+                    op: get
+                    from: graph
+                    path:
+                      - edges
+                  where:
+                    op: and
+                    values:
+                      - op: eq
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - target
+                        right:
+                          op: get
+                          from: node
+                          path:
+                            - id
+                      - op: in
+                        value:
+                          op: get
+                          from: item
+                          path:
+                            - kind
+                        collection:
+                          op: literal
+                          value:
+                            - item-tool
+                            - item-weapon
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - source
+      default: null
+    layer: designed-v1
+  - id: candidate-reference-depth
+    key: referenceDepth
+    kinds:
+      - vassal
+    layer: candidate
+    value:
+      op: get
+      from: vars
+      path:
+        - depth
+  - id: candidate-selected
+    key: selected
+    kinds:
+      - vassal
+    layer: candidate
+    value:
+      op: get
+      from: vars
+      path:
+        - selected
+  - id: effective-depth
+    key: effectiveDepth
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    layer: runtime
+    value:
+      op: get
+      from: vars
+      path:
+        - effectiveDepth
+  - id: effective-effects
+    key: effectiveEffects
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    layer: runtime
+    value:
+      op: get
+      from: vars
+      path:
+        - effectiveProjection
+        - effects
+  - id: design-intent
+    key: designIntent
+    kinds:
+      - weapon
+      - tool
+      - charter
+      - item
+      - evolution
+      - enemy
+      - vassal
+    value:
+      op: get
+      from: node
+      path:
+        - effect
+findings:
+  - id: item-stat-projection
+    query:
+      kinds:
+        - item
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+      layer: runtime
+    metrics:
+      selected:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      stat:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: and
+            values:
+              - op: gt
+                left:
+                  op: count
+                  value:
+                    op: get
+                    from: item
+                    path:
+                      - runtimeProjection
+                      - effects
+                right: 0
+              - op: all
+                input:
+                  op: get
+                  from: item
+                  path:
+                    - runtimeProjection
+                    - effects
+                where:
+                  op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - operation
+                  right: stat-add
+      layer: runtime
+      content:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: graph
+            path:
+              - nodes
+          where:
+            op: and
+            values:
+              - op: in
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - kind
+                collection:
+                  op: literal
+                  value:
+                    - weapon
+                    - tool
+                    - charter
+                    - item
+                    - evolution
+                    - enemy
+                    - vassal
+              - op: or
+                values:
+                  - op: and
+                    values:
+                      - op: eq
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - layer
+                        right: runtime
+                      - op: ne
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - kind
+                        right: vassal
+                  - op: and
+                    values:
+                      - op: eq
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - layer
+                        right: candidate
+                      - op: eq
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - kind
+                        right: vassal
+      profileSelected:
+        op: count
+        value:
+          op: concat
+          values:
+            - op: get
+              from: vars
+              path:
+                - profile
+                - selection
+                - weapons
+            - op: get
+              from: vars
+              path:
+                - profile
+                - selection
+                - tools
+            - op: get
+              from: vars
+              path:
+                - profile
+                - selection
+                - enemies
+            - op: get
+              from: vars
+              path:
+                - profile
+                - runtime
+                - charters
+            - op: get
+              from: vars
+              path:
+                - profile
+                - runtime
+                - items
+            - op: get
+              from: vars
+              path:
+                - profile
+                - runtime
+                - evolutions
+      referenceUnique:
+        op: count
+        value:
+          op: filter
+          input:
+            op: filter
+            input:
+              op: get
+              from: graph
+              path:
+                - nodes
+            where:
+              op: and
+              values:
+                - op: in
+                  value:
+                    op: get
+                    from: item
+                    path:
+                      - kind
+                  collection:
+                    op: literal
+                    value:
+                      - weapon
+                      - tool
+                      - charter
+                      - item
+                      - evolution
+                      - enemy
+                      - vassal
+                - op: or
+                  values:
+                    - op: and
+                      values:
+                        - op: eq
+                          left:
+                            op: get
+                            from: item
+                            path:
+                              - layer
+                          right: runtime
+                        - op: ne
+                          left:
+                            op: get
+                            from: item
+                            path:
+                              - kind
+                          right: vassal
+                    - op: and
+                      values:
+                        - op: eq
+                          left:
+                            op: get
+                            from: item
+                            path:
+                              - layer
+                          right: candidate
+                        - op: eq
+                          left:
+                            op: get
+                            from: item
+                            path:
+                              - kind
+                          right: vassal
+          where:
+            op: and
+            values:
+              - op: case
+                cases:
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: weapon
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: get
+                        from: vars
+                        path:
+                          - profile
+                          - selection
+                          - weapons
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: tool
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: get
+                        from: vars
+                        path:
+                          - profile
+                          - selection
+                          - tools
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: charter
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: get
+                        from: vars
+                        path:
+                          - profile
+                          - runtime
+                          - charters
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: item
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: get
+                        from: vars
+                        path:
+                          - profile
+                          - runtime
+                          - items
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: evolution
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: get
+                        from: vars
+                        path:
+                          - profile
+                          - runtime
+                          - evolutions
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: enemy
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: get
+                        from: vars
+                        path:
+                          - profile
+                          - selection
+                          - enemies
+                  - when:
+                      op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: vassal
+                    value:
+                      op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      collection:
+                        op: literal
+                        value: []
+                default: false
+              - op: any
+                input:
+                  op: get
+                  from: item
+                  path:
+                    - runtimeProjection
+                    - effects
+                where:
+                  op: ne
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - operation
+                  right: stat-add
+    template: 선택 물품 {selected}개 중 {stat}개는 원본 효과가 수치 덧셈입니다.
+    severity: warning
+    basis: authored-interpretation
+    intent: "저자 해석: 장원 장치라는 이름과 의도에 비해 수치 덧셈은 플레이를 바꾸지 못한다는 비평이다. 예: 재 모으는 부적은 죽음의 흔적→비옥도라는 의도지만 원본 투영은 원거리 장비 조건의 공격력 +3이다. 재미 또는 실행 결과의 측정값은 아니다."
+    implementation: 원본 runtimeProjection과 first-playable 선택을 집계한다. effectiveEffects와 codeSupport:runtime-operations는 프로필 우선 적용 및 실제 처리기 정적 근거를 별도로 표시한다.
+  - id: tool-unique-projection
+    query:
+      kinds:
+        - tool
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+      layer: runtime
+    metrics:
+      selected:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      unique:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: any
+            input:
+              op: get
+              from: item
+              path:
+                - runtimeProjection
+                - effects
+            where:
+              op: ne
+              left:
+                op: get
+                from: item
+                path:
+                  - operation
+              right: stat-add
+      layer: runtime
+      land:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - growth
+                - target
+            right: land
+      building:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - growth
+                - target
+            right: building
+      people:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - growth
+                - target
+            right: people
+    template: 선택 도구 {selected}개 중 {unique}개에 수치 덧셈 이외의 원본 효과가 있습니다.
+    severity: warning
+    basis: authored-interpretation
+    implementation: 원본 runtimeProjection 투영이며 코드 지원 또는 실행 빈도를 증명하지 않습니다.
+    intent: "저자 해석: 독자적인 산출물·성장 행동이 있어야 도구가 곧 무기라는 전제가 화면에서 읽힌다. 고유 원본 효과는 독낫·비국자·수프국자 3개이며 토지3/건물3/사람2는 선택 도구 전체 8개의 대상이다."
+  - id: weapon-base-shapes
+    query:
+      kinds:
+        - weapon
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+      layer: runtime
+    metrics:
+      selected:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      forms:
+        op: count
+        value:
+          op: unique
+          value:
+            op: map
+            input:
+              op: get
+              from: vars
+              path:
+                - targets
+            value:
+              op: coalesce
+              values:
+                - op: get
+                  from: item
+                  path:
+                    - growth
+                    - attackModel
+                - op: get
+                  from: item
+                  path:
+                    - activation
+                    - shape
+      layer: runtime
+      effectiveForms:
+        op: count
+        value:
+          op: unique
+          value:
+            op: map
+            input:
+              op: get
+              from: vars
+              path:
+                - targets
+            value:
+              op: at
+              object:
+                op: at
+                object:
+                  op: get
+                  from: vars
+                  path:
+                    - profile
+                    - firstPlayable
+                    - weapons
+                key:
+                  op: get
+                  from: item
+                  path:
+                    - originalId
+              key: form
+      rays:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: coalesce
+              values:
+                - op: get
+                  from: item
+                  path:
+                    - growth
+                    - attackModel
+                - op: get
+                  from: item
+                  path:
+                    - activation
+                    - shape
+            right: rays
+      disk:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: coalesce
+              values:
+                - op: get
+                  from: item
+                  path:
+                    - growth
+                    - attackModel
+                - op: get
+                  from: item
+                  path:
+                    - activation
+                    - shape
+            right: disk
+      sector90:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: coalesce
+              values:
+                - op: get
+                  from: item
+                  path:
+                    - growth
+                    - attackModel
+                - op: get
+                  from: item
+                  path:
+                    - activation
+                    - shape
+            right: sector90
+      sector180:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: coalesce
+              values:
+                - op: get
+                  from: item
+                  path:
+                    - growth
+                    - attackModel
+                - op: get
+                  from: item
+                  path:
+                    - activation
+                    - shape
+            right: sector180
+    template: 선택 무기 {selected}개의 기본 데이터 공격 형태는 {forms}가지입니다.
+    severity: warning
+    basis: authored-interpretation
+    implementation: growth.attackModel / activation.shape 집계입니다. 실제 firstPlayable.weapons의 10가지 form과 다른 투영이며, 연쇄 공격 부재를 뜻하지 않습니다.
+    intent: "저자 해석: 기본 공격 형태가 비슷하고 원본 고유 효과는 수확낫뿐이다. 단, 원본 4형태 지표와 실제 first-playable의 10형태는 다르며 코드에는 연쇄 경로도 있다."
+  - id: vassal-design-gap
+    query:
+      kinds:
+        - vassal
+      where:
+        op: ne
+        left:
+          op: get
+          from: node
+          path:
+            - layer
+        right: designed-v1
+    metrics:
+      designed:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - layer
+            right: candidate
+      selected:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targetValues
+          where:
+            op: and
+            values:
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - node
+                    - layer
+                right: candidate
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - derived
+                    - selected
+                right: true
+      meta:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: graph
+            path:
+              - nodes
+          where:
+            op: and
+            values:
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - kind
+                right: vassal
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - layer
+                right: runtime
+    template: 이전 가신 설계 {designed}명 · 프로필 선택 {selected}명 · 별도 판 밖 가신 {meta}명
+    intent: "저자 해석: 잿불 운반꾼이 군주를 떠나 처치 현장을 지키는 역할·대가 등 개성 있는 설계와 판 밖 백분율 강화 사이의 차이다. 개성과 수익화의 관계에 대한 비평은 저자 관점이다."
+    implementation: candidate의 effect.trigger/benefit/cost와 runtime 가신의 ability·basePermille·perLevelPermille을 비교한다. 슬롯 선택/실제 발동 또는 수익을 측정하지 않는다.
+    severity: warning
+    basis: authored-interpretation
+  - id: chapter-repetition
+    query:
+      kinds:
+        - chapter
+      layer: runtime
+    metrics:
+      chapters:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      bosses:
+        op: count
+        value:
+          op: unique
+          value:
+            op: map
+            input:
+              op: get
+              from: vars
+              path:
+                - targets
+            value:
+              op: get
+              from: item
+              path:
+                - bossId
+      terrains:
+        op: count
+        value:
+          op: unique
+          value:
+            op: map
+            input:
+              op: get
+              from: vars
+              path:
+                - targets
+            value:
+              op: join
+              input:
+                op: map
+                input:
+                  op: get
+                  from: item
+                  path:
+                    - terrain
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - kind
+              separator: +
+    template: 챕터 {chapters}개 · 보스 종류 {bosses}개 · 순서 있는 지형 종류 조합 {terrains}개
+    intent: "저자 해석: 동일한 보스와 지형 종류 조합의 반복이 챕터의 차이를 약하게 한다."
+    implementation: bossId와 terrain[].kind의 순서 있는 조합을 집계한다. 체력·위협뿐 아니라 적 ID, 피해, 지도 크기와 배치도 달라지므로 그 차이가 없다고 해석하지 않는다.
+    severity: warning
+    basis: authored-interpretation
+  - id: economy-shared-costs
+    query:
+      kinds:
+        - manor
+        - vassal
+      layer: runtime
+    metrics:
+      sinks:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      materials:
+        op: count
+        value:
+          op: map
+          input:
+            op: filter
+            input:
+              op: get
+              from: graph
+              path:
+                - nodes
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - kind
+                  right: material
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - layer
+                  right: runtime
+          value:
+            op: get
+            from: item
+            path:
+              - originalId
+      allMaterials:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: let
+            bindings:
+              cost:
+                op: coalesce
+                values:
+                  - op: get
+                    from: item
+                    path:
+                      - baseCost
+                  - op: get
+                    from: item
+                    path:
+                      - levelCostBase
+            value:
+              op: all
+              input:
+                op: map
+                input:
+                  op: filter
+                  input:
+                    op: get
+                    from: graph
+                    path:
+                      - nodes
+                  where:
+                    op: and
+                    values:
+                      - op: eq
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - kind
+                        right: material
+                      - op: eq
+                        left:
+                          op: get
+                          from: item
+                          path:
+                            - layer
+                        right: runtime
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - originalId
+              where:
+                op: gt
+                left:
+                  op: at
+                  object:
+                    op: get
+                    from: vars
+                    path:
+                      - cost
+                  key:
+                    op: get
+                    from: item
+                    path: []
+                right: 0
+    template: 장원·가신 소비처 {sinks}개 중 {allMaterials}개가 재료 {materials}종 모두 요구
+    intent: "저자 해석: 목재 병목과 곡물 적체가 우려된다. 이는 제공된 분석이며 비용 행렬만으로 실제 경제 시뮬레이션 결과를 증명하지 않는다."
+    implementation: baseCost와 levelCostBase의 양수 여부다. 비용 행렬과 보상 원천 행렬을 함께 읽고 레벨별 추가 비용은 별도로 확인한다.
+    severity: warning
+    basis: authored-interpretation
+  - id: estate-loop-membership
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - vassal
+      layer: runtime
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+    metrics:
+      combat:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: in
+            value: combat
+            collection:
+              op: map
+              input:
+                op: get
+                from: item
+                path:
+                  - loopLinks
+              value:
+                op: get
+                from: item
+                path:
+                  - stage
+      growth:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: in
+            value: growth
+            collection:
+              op: map
+              input:
+                op: get
+                from: item
+                path:
+                  - loopLinks
+              value:
+                op: get
+                from: item
+                path:
+                  - stage
+      people:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: in
+            value: people
+            collection:
+              op: map
+              input:
+                op: get
+                from: item
+                path:
+                  - loopLinks
+              value:
+                op: get
+                from: item
+                path:
+                  - stage
+      harvest:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: in
+            value: harvest
+            collection:
+              op: map
+              input:
+                op: get
+                from: item
+                path:
+                  - loopLinks
+              value:
+                op: get
+                from: item
+                path:
+                  - stage
+      food:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: in
+            value: food
+            collection:
+              op: map
+              input:
+                op: get
+                from: item
+                path:
+                  - loopLinks
+              value:
+                op: get
+                from: item
+                path:
+                  - stage
+      fertility:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: in
+            value: fertility
+            collection:
+              op: map
+              input:
+                op: get
+                from: item
+                path:
+                  - loopLinks
+              value:
+                op: get
+                from: item
+                path:
+                  - stage
+    template: "저자 순환 연결: 전투 {combat} · 성장 {growth} · 사람 {people} · 수확 {harvest} · 식량 {food} · 비옥도 {fertility}"
+    intent: "저자 해석: 영지 특유의 비옥도 연결이 얇다."
+    implementation: 선택 콘텐츠에 작성된 loopLinks 소속 수이며 실제 발동·기여량·효과 세기가 아니다.
+    severity: warning
+    basis: authored-interpretation
+  - id: enemy-target-diversity
+    query:
+      kinds:
+        - enemy
+      layer: runtime
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+    metrics:
+      selected:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      building:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - target
+            right: building
+      ripe:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - target
+            right: ripe
+      lord:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - target
+            right: lord
+      seed:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - target
+            right: seed
+      people:
+        op: count
+        value:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - target
+            right: people
+    template: "적 {selected}개: 건물 {building} · 익은 작물 {ripe} · 군주 {lord} · 씨앗 {seed} · 사람 {people}"
+    intent: "저자 해석: 다양한 표적은 장점이지만 설명된 특수 행동과 실제 동작의 간극을 검토해야 한다."
+    implementation: target 필드의 정적 분포다. RuntimeSystem 정적 처리기 근거를 별도로 표시하며 모든 적 특수 행동이 없다는 주장은 하지 않는다.
+    severity: warning
+    basis: authored-interpretation
+  - id: designed-no-evolution-weapon
+    query:
+      kinds:
+        - weapon
+      layer: designed-v1
+      where:
+        op: eq
+        left:
+          op: count
+          value:
+            op: filter
+            input:
+              op: get
+              from: graph
+              path:
+                - edges
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - source
+                  right:
+                    op: get
+                    from: node
+                    path:
+                      - id
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - kind
+                  right: evolution-input
+        right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 진화가 연결되지 않은 무기 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-no-item-weapon
+    query:
+      kinds:
+        - weapon
+      layer: designed-v1
+      where:
+        op: eq
+        left:
+          op: count
+          value:
+            op: unique
+            value:
+              op: map
+              input:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - edges
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - target
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - id
+                    - op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      collection:
+                        op: literal
+                        value:
+                          - item-tool
+                          - item-weapon
+              value:
+                op: get
+                from: item
+                path:
+                  - source
+        right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 연결 물품이 없는 무기 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-many-items-weapon
+    query:
+      kinds:
+        - weapon
+      layer: designed-v1
+      where:
+        op: gte
+        left:
+          op: count
+          value:
+            op: unique
+            value:
+              op: map
+              input:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - edges
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - target
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - id
+                    - op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      collection:
+                        op: literal
+                        value:
+                          - item-tool
+                          - item-weapon
+              value:
+                op: get
+                from: item
+                path:
+                  - source
+        right: 5
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 연결 물품이 5개 이상인 무기 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-no-evolution-tool
+    query:
+      kinds:
+        - tool
+      layer: designed-v1
+      where:
+        op: eq
+        left:
+          op: count
+          value:
+            op: filter
+            input:
+              op: get
+              from: graph
+              path:
+                - edges
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - source
+                  right:
+                    op: get
+                    from: node
+                    path:
+                      - id
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - kind
+                  right: evolution-input
+        right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 진화가 연결되지 않은 도구 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-no-item-tool
+    query:
+      kinds:
+        - tool
+      layer: designed-v1
+      where:
+        op: eq
+        left:
+          op: count
+          value:
+            op: unique
+            value:
+              op: map
+              input:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - edges
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - target
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - id
+                    - op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      collection:
+                        op: literal
+                        value:
+                          - item-tool
+                          - item-weapon
+              value:
+                op: get
+                from: item
+                path:
+                  - source
+        right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 연결 물품이 없는 도구 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-many-items-tool
+    query:
+      kinds:
+        - tool
+      layer: designed-v1
+      where:
+        op: gte
+        left:
+          op: count
+          value:
+            op: unique
+            value:
+              op: map
+              input:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - edges
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - target
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - id
+                    - op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      collection:
+                        op: literal
+                        value:
+                          - item-tool
+                          - item-weapon
+              value:
+                op: get
+                from: item
+                path:
+                  - source
+        right: 5
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 연결 물품이 5개 이상인 도구 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-no-xp-return
+    query:
+      kinds:
+        - tool
+      layer: designed-v1
+      where:
+        op: not
+        value:
+          op: any
+          input:
+            op: get
+            from: node
+            path:
+              - returns
+          where:
+            op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - channel
+            right: xp
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: xp 반환 경로가 없는 도구 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-later-wave-input
+    query:
+      kinds:
+        - evolution
+      layer: designed-v1
+      where:
+        op: any
+        input:
+          op: filter
+          input:
+            op: get
+            from: graph
+            path:
+              - nodes
+          where:
+            op: and
+            values:
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - layer
+                right: designed-v1
+              - op: in
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - originalId
+                collection:
+                  op: get
+                  from: node
+                  path:
+                    - inputIds
+        where:
+          op: let
+          bindings:
+            inputId:
+              op: get
+              from: item
+              path:
+                - originalId
+          value:
+            op: gt
+            left:
+              op: indexOf
+              input:
+                op: map
+                input:
+                  op: get
+                  from: vars
+                  path:
+                    - catalog
+                    - implementationWaves
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - id
+              value:
+                op: at
+                object:
+                  op: map
+                  input:
+                    op: filter
+                    input:
+                      op: get
+                      from: vars
+                      path:
+                        - catalog
+                        - implementationWaves
+                    where:
+                      op: in
+                      value:
+                        op: get
+                        from: vars
+                        path:
+                          - inputId
+                      collection:
+                        op: concat
+                        values:
+                          - op: get
+                            from: item
+                            path:
+                              - contentIds
+                          - op: get
+                            from: item
+                            path:
+                              - systemIds
+                  value:
+                    op: get
+                    from: item
+                    path:
+                      - id
+                key: 0
+            right:
+              op: get
+              from: vars
+              path:
+                - waveIndex
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 입력이 더 늦은 웨이브에 있는 진화 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-wave-one-evolutions
+    query:
+      kinds:
+        - evolution
+      layer: designed-v1
+      where:
+        op: eq
+        left:
+          op: get
+          from: vars
+          path:
+            - waveIndex
+        right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: 첫 구현 웨이브의 진화 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-long-card-text
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - chapter
+        - vassal
+        - manor
+        - material
+      layer: designed-v1
+      where:
+        op: and
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - cardText
+          - op: gt
+            left:
+              op: count
+              value:
+                op: get
+                from: node
+                path:
+                  - cardText
+            right: 40
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+    template: cardText가 40자를 넘는 콘텐츠 {count}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-missing-primitives
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - chapter
+        - vassal
+        - manor
+        - material
+      layer: designed-v1
+      where:
+        op: and
+        values:
+          - op: any
+            input:
+              op: get
+              from: graph
+              path:
+                - nodes
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - layer
+                  right: designed-v1
+                - op: exists
+                  value:
+                    op: get
+                    from: item
+                    path:
+                      - primitives
+          - op: or
+            values:
+              - op: not
+                value:
+                  op: exists
+                  value:
+                    op: get
+                    from: node
+                    path:
+                      - primitives
+              - op: eq
+                left:
+                  op: count
+                  value:
+                    op: get
+                    from: node
+                    path:
+                      - primitives
+                right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+      primitiveReferences:
+        op: sum
+        value:
+          op: map
+          input:
+            op: filter
+            input:
+              op: get
+              from: graph
+              path:
+                - nodes
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - layer
+                  right: designed-v1
+                - op: exists
+                  value:
+                    op: get
+                    from: item
+                    path:
+                      - primitives
+          value:
+            op: count
+            value:
+              op: get
+              from: item
+              path:
+                - primitives
+    template: primitives가 없는 콘텐츠 {count}개 · 문법 참조 {primitiveReferences}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+  - id: designed-bespoke
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - chapter
+        - vassal
+        - manor
+        - material
+      layer: designed-v1
+      where:
+        op: gt
+        left:
+          op: count
+          value:
+            op: get
+            from: node
+            path:
+              - bespoke
+        right: 0
+    metrics:
+      count:
+        op: count
+        value:
+          op: get
+          from: vars
+          path:
+            - targets
+      layer: designed-v1
+      entries:
+        op: sum
+        value:
+          op: map
+          input:
+            op: get
+            from: vars
+            path:
+              - targets
+          value:
+            op: count
+            value:
+              op: get
+              from: item
+              path:
+                - bespoke
+    template: bespoke 콘텐츠 {count}개 · 별도 행위 {entries}개
+    severity: warning
+    basis: computed
+    intent: 설계 검토용 경고입니다. 사용자 승인 전에는 gate로 사용하지 않습니다.
+    implementation: bespoke 배열의 레코드 수와 id/reason 항목 수를 각각 집계합니다. primitive 사용량은 실행 지원 또는 구현률이 아닙니다.
+presentation:
+  name: Sow & Siege
+  description: 런타임과 designed-v1 설계를 별도 층으로 읽습니다. 같은 콘텐츠 ID의 대응은 구현·발동·사용자 승인을 증명하지 않습니다. 설계 발견은 경고이며 gate가 아닙니다.
+  kinds:
+    - id: weapon
+      label: 무기
+      columns:
+        - name
+        - concept
+    - id: tool
+      label: 도구
+      columns:
+        - name
+        - concept
+    - id: charter
+      label: 특허장
+      columns:
+        - name
+        - concept
+    - id: item
+      label: 물품
+      columns:
+        - name
+        - concept
+    - id: evolution
+      label: 진화
+      columns:
+        - name
+        - concept
+    - id: enemy
+      label: 적
+      columns:
+        - name
+        - concept
+    - id: vassal
+      label: 가신
+      columns:
+        - name
+        - concept
+    - id: profile
+      label: 실행 프로필
+      hidden: true
+    - id: material
+      label: 재료
+    - id: chapter
+      label: 챕터
+    - id: manor
+      label: 장원
+    - id: challenge
+      label: 도전
+    - id: system
+      label: 시스템
+    - id: wave
+      label: 구현 웨이브
+      hidden: true
+    - id: catalog
+      label: 카탈로그 원본
+      hidden: true
+    - id: reward-source
+      label: 결산 보상 규칙
+    - id: estate
+      label: 영지
+    - id: hero
+      label: 영웅
+  facets:
+    referenceDepth:
+      label: 원본 구현 깊이
+      values:
+        design: 설계
+        stat: 수치 효과
+        base: 기본 동작
+        unique: 고유 효과
+    selected:
+      label: 첫 플레이 선택
+      values:
+        "true": 선택됨
+        "false": 미선택
+    layer:
+      label: 층
+      values:
+        runtime: 런타임
+        designed-v1: designed-v1 설계
+        candidate: 이전 후보
+    wave:
+      label: 구현 웨이브
+    linkedItems:
+      label: 연결 물품 수
+    effectiveDepth:
+      label: 프로필 우선 적용 깊이 · 정적 투영
+      values:
+        design: 설계
+        stat: 수치 효과
+        base: 기본 동작
+        unique: 고유 효과
+    effectiveEffects:
+      label: 프로필 우선 적용 효과 · 실행 관측 아님
+    designIntent:
+      label: 저자 설계 의도
+    codeSupport:runtime-operations:
+      label: 정적 처리기 지원 · 실행 증거 아님
+  layers:
+    - id: runtime
+      label: 런타임
+    - id: designed-v1
+      label: designed-v1 설계
+    - id: candidate
+      label: 이전 후보
+  defaultLayer: designed-v1
+edges:
+  - id: item-tool
+    source:
+      kinds:
+        - item
+      layer: designed-v1
+      where:
+        op: not
+        value:
+          op: eq
+          left:
+            op: get
+            from: node
+            path:
+              - itemScope
+          right: universal
+    target:
+      op: get
+      from: node
+      path:
+        - linkedToolIds
+    targetQuery:
+      layer: designed-v1
+    targetKind: tool
+    targetField:
+      - id
+    direction: forward
+  - id: item-weapon
+    source:
+      kinds:
+        - item
+      layer: designed-v1
+      where:
+        op: not
+        value:
+          op: eq
+          left:
+            op: get
+            from: node
+            path:
+              - itemScope
+          right: universal
+    target:
+      op: get
+      from: node
+      path:
+        - linkedWeaponIds
+    targetQuery:
+      layer: designed-v1
+    targetKind: weapon
+    targetField:
+      - id
+    direction: forward
+  - id: evolution-input
+    source:
+      kinds:
+        - evolution
+      layer: designed-v1
+    target:
+      op: get
+      from: node
+      path:
+        - inputIds
+    targetQuery:
+      layer: designed-v1
+    targetField:
+      - id
+    direction: reverse
+  - id: vassal-tool
+    source:
+      kinds:
+        - vassal
+      layer: designed-v1
+    target:
+      op: get
+      from: node
+      path:
+        - linkedToolIds
+    targetQuery:
+      layer: designed-v1
+    targetKind: tool
+    targetField:
+      - id
+    direction: forward
+  - id: charter-tool
+    source:
+      kinds:
+        - charter
+      layer: designed-v1
+    target:
+      op: get
+      from: node
+      path:
+        - linkedToolIds
+    targetQuery:
+      layer: designed-v1
+    targetKind: tool
+    targetField:
+      - id
+    direction: forward
+  - id: material-source
+    source:
+      kinds:
+        - material
+      layer: designed-v1
+    target:
+      op: map
+      input:
+        op: get
+        from: node
+        path:
+          - sources
+      value:
+        op: get
+        from: item
+        path:
+          - contentId
+    targetQuery:
+      layer: designed-v1
+    targetField:
+      - id
+    direction: reverse
+  - id: material-sink
+    source:
+      kinds:
+        - material
+      layer: designed-v1
+    target:
+      op: map
+      input:
+        op: get
+        from: node
+        path:
+          - sinks
+      value:
+        op: get
+        from: item
+        path:
+          - contentId
+    targetQuery:
+      layer: designed-v1
+    targetKind: manor
+    targetField:
+      - id
+    direction: forward
+  - id: manor-input
+    source:
+      kinds:
+        - manor
+      layer: designed-v1
+    target:
+      op: get
+      from: node
+      path:
+        - inputIds
+    targetQuery:
+      layer: designed-v1
+    targetKind: material
+    targetField:
+      - id
+    direction: reverse
+  - id: chapter-boss
+    source:
+      kinds:
+        - chapter
+      layer: designed-v1
+    target:
+      op: get
+      from: node
+      path:
+        - bossId
+    targetQuery:
+      layer: designed-v1
+    targetKind: enemy
+    targetField:
+      - id
+    direction: forward
+  - id: system-influence
+    source:
+      kinds:
+        - catalog
+      layer: designed-v1
+    targetQuery:
+      kinds:
+        - system
+      layer: designed-v1
+    targetField:
+      - id
+    matrix:
+      ids:
+        op: get
+        from: node
+        path:
+          - influenceMatrix
+          - systemIds
+      cells:
+        op: get
+        from: node
+        path:
+          - influenceMatrix
+          - cells
+      empty: none
+    direction: forward
+  - id: design-correspondence-weapon
+    source:
+      kinds:
+        - weapon
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: weapon
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: weapon
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-tool
+    source:
+      kinds:
+        - tool
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: tool
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: tool
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-charter
+    source:
+      kinds:
+        - charter
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: charter
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: charter
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-item
+    source:
+      kinds:
+        - item
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: item
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: item
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-evolution
+    source:
+      kinds:
+        - evolution
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: evolution
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: evolution
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-enemy
+    source:
+      kinds:
+        - enemy
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: enemy
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: enemy
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-chapter
+    source:
+      kinds:
+        - chapter
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: chapter
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: chapter
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-vassal
+    source:
+      kinds:
+        - vassal
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: vassal
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: vassal
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-manor
+    source:
+      kinds:
+        - manor
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: manor
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: manor
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: design-correspondence-material
+    source:
+      kinds:
+        - material
+      layer: runtime
+      where:
+        op: or
+        values:
+          - op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: graph
+                  path:
+                    - nodes
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - layer
+                      right: designed-v1
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: material
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - originalId
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+            right: 0
+    target:
+      op: case
+      cases:
+        - when:
+            op: exists
+            value:
+              op: get
+              from: node
+              path:
+                - designRef
+          value:
+            op: case
+            cases:
+              - when:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - catalog
+                      right: data/system-design-v1.json
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - revision
+                      right:
+                        op: get
+                        from: vars
+                        path:
+                          - catalog
+                          - revision
+                    - op: eq
+                      left:
+                        op: get
+                        from: node
+                        path:
+                          - designRef
+                          - id
+                      right:
+                        op: get
+                        from: node
+                        path:
+                          - originalId
+                value:
+                  op: get
+                  from: node
+                  path:
+                    - designRef
+                    - id
+            default: INVALID-DESIGN-REFERENCE
+      default:
+        op: get
+        from: node
+        path:
+          - originalId
+    targetKind: material
+    targetField:
+      - id
+    targetQuery:
+      layer: designed-v1
+    direction: undirected
+    label: 설계 대응 · 구현 증거 아님
+  - id: candidate-estate
+    source:
+      kinds:
+        - vassal
+      layer: candidate
+    target:
+      op: map
+      input:
+        op: get
+        from: node
+        path:
+          - loopLinks
+      value:
+        op: get
+        from: item
+        path:
+          - estateId
+    targetKind: estate
+    targetField:
+      - id
+    targetQuery:
+      layer: runtime
+    direction: forward
+    label: 저자 참조 · 실행 증거 아님
+  - id: candidate-hero
+    source:
+      kinds:
+        - vassal
+      layer: candidate
+    target:
+      op: get
+      from: node
+      path:
+        - heroId
+    targetKind: hero
+    targetField:
+      - id
+    targetQuery:
+      layer: runtime
+    direction: forward
+    label: 저자 참조 · 실행 증거 아님
+views:
+  - id: designed-influence
+    type: matrix
+    label: 설계 시스템 영향 행렬
+    description: 행 시스템 → 열 시스템. 제안된 직접 영향이며 현재 실행 호출 관계가 아닙니다.
+    query:
+      kinds:
+        - system
+      layer: designed-v1
+    edgeKinds:
+      - system-influence
+  - id: sink-cost-matrix
+    type: table
+    label: 소비처 × 재료 기본 비용 행렬
+    description: 숫자는 기본 비용이다. 레벨별 추가 비용과 실제 경제 결과는 별도다.
+    query:
+      kinds:
+        - manor
+        - vassal
+      layer: runtime
+    columns:
+      - id: name
+        label: 소비처
+        value:
+          op: get
+          from: node
+          path:
+            - name
+      - id: grain
+        label: grain
+        value:
+          op: at
+          object:
+            op: coalesce
+            values:
+              - op: get
+                from: node
+                path:
+                  - baseCost
+              - op: get
+                from: node
+                path:
+                  - levelCostBase
+          key: meta:grain
+      - id: timber
+        label: timber
+        value:
+          op: at
+          object:
+            op: coalesce
+            values:
+              - op: get
+                from: node
+                path:
+                  - baseCost
+              - op: get
+                from: node
+                path:
+                  - levelCostBase
+          key: meta:timber
+      - id: iron
+        label: iron
+        value:
+          op: at
+          object:
+            op: coalesce
+            values:
+              - op: get
+                from: node
+                path:
+                  - baseCost
+              - op: get
+                from: node
+                path:
+                  - levelCostBase
+          key: meta:iron
+      - id: charter
+        label: charter
+        value:
+          op: at
+          object:
+            op: coalesce
+            values:
+              - op: get
+                from: node
+                path:
+                  - baseCost
+              - op: get
+                from: node
+                path:
+                  - levelCostBase
+          key: meta:charter
+  - id: reward-source-matrix
+    type: table
+    label: 재료 × 보상 원천 행렬
+    description: 숫자는 economy.rewardRules의 환산 계수다. 실제 보상은 상한·조건의 영향을 받는다.
+    query:
+      kinds:
+        - reward-source
+      layer: runtime
+    columns:
+      - id: material
+        label: 재료
+        value:
+          op: get
+          from: node
+          path:
+            - materialId
+      - id: perFarm
+        label: perFarm
+        value:
+          op: get
+          from: node
+          path:
+            - perFarm
+      - id: perBuilding
+        label: perBuilding
+        value:
+          op: get
+          from: node
+          path:
+            - perBuilding
+      - id: perPerson
+        label: perPerson
+        value:
+          op: get
+          from: node
+          path:
+            - perPerson
+      - id: perHarvest
+        label: perHarvest
+        value:
+          op: get
+          from: node
+          path:
+            - perHarvest
+      - id: perLevel
+        label: perLevel
+        value:
+          op: get
+          from: node
+          path:
+            - perLevel
+      - id: perBoss
+        label: perBoss
+        value:
+          op: get
+          from: node
+          path:
+            - perBoss
+  - id: runtime-reference-depth
+    type: distribution
+    label: 원본 구현 깊이
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - vassal
+      where:
+        op: and
+        values:
+          - op: in
+            value:
+              op: get
+              from: node
+              path:
+                - kind
+            collection:
+              op: literal
+              value:
+                - weapon
+                - tool
+                - charter
+                - item
+                - evolution
+                - enemy
+                - vassal
+          - op: or
+            values:
+              - op: and
+                values:
+                  - op: eq
+                    left:
+                      op: get
+                      from: node
+                      path:
+                        - layer
+                    right: runtime
+                  - op: ne
+                    left:
+                      op: get
+                      from: node
+                      path:
+                        - kind
+                    right: vassal
+              - op: and
+                values:
+                  - op: eq
+                    left:
+                      op: get
+                      from: node
+                      path:
+                        - layer
+                    right: candidate
+                  - op: eq
+                    left:
+                      op: get
+                      from: node
+                      path:
+                        - kind
+                    right: vassal
+    groupBy:
+      op: get
+      from: vars
+      path:
+        - depth
+  - id: runtime-effective-depth
+    type: distribution
+    label: 프로필 우선 적용 깊이
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - vassal
+      layer: runtime
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+    groupBy:
+      op: get
+      from: vars
+      path:
+        - effectiveDepth
+codeLinks:
+  - id: runtime-operations
+    query:
+      kinds:
+        - weapon
+        - tool
+        - charter
+        - item
+        - evolution
+        - enemy
+        - vassal
+      layer: runtime
+      where:
+        op: get
+        from: vars
+        path:
+          - selected
+    values:
+      op: map
+      input:
+        op: get
+        from: vars
+        path:
+          - effectiveProjection
+          - effects
+      value:
+        op: get
+        from: item
+        path:
+          - operation
+    language: csharp
+    files:
+      - core/src/SowSiege.Core/RuntimeSystem.cs
+    selectors:
+      - kind: switch-case
+        within: Apply
+        expression: effect.Operation
+      - kind: call-argument
+        within: Modify
+        callee: OwnedEffects
+        argumentIndex: 1
+      - kind: call-argument
+        within: PlantingPosition
+        callee: OwnedEffects
+        argumentIndex: 1
