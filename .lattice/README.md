@@ -44,3 +44,11 @@ node .lattice/verify-primitive-support.mjs <graph.json> [source-root]
 `designReferences`는 선택된 wave-1a 설계의 단위 사용 수이고 `runtimeProgramReferences`는 `data/runtime/wave-1a.json#/definition/programs`의 실제 사용 수다. 각각 87/90이며 분모를 합치지 않는다. 별도 `runtime-programs` 층의 28개 binding 노드에서 단위로 향하는 90개 간선은 실행 프로그램 원본에서 읽는다. 전체 카탈로그의 설계 사용 간선 400개는 그대로 유지한다.
 
 실행 전용 차이는 `runtimeOnlyMappings`의 진화 3개 `unit:event-gate`뿐이다. 기존 `BladePlotKill`·`RepairCompleted`·`HarvestNearBuilding` 자격 이력을 명시한 것이며 승인 설계 변경이나 새 게임 규칙이 아니다. 설계 params와 실행 토큰의 문법은 다르므로 문자 그대로 같다고 검사하지 않는다. 대신 선택 설계 단위 누락, 미등록/처리기 없는 실행 단위, 선언하지 않은 실행 전용 단위를 거부한다. 원장 숫자 위조·실행 간선 누락·실행 원본의 미신고 단위 추가도 회귀 검사한다.
+
+## L6 사람용 지도 (#176)
+
+홈의 무기·도구·재료 카드, 층 대응 상태판, 문장 영향 행렬과 개별 진화 그래프는 범용 Lattice 보기로 구성한다. 상세 요약과 관계 이름도 렌즈가 정하며 원시 속성은 접는다. 빈 입력 보기는 해당 층에서 숨기고 직접 주소는 맞는 층을 안내한다.
+
+wave-1a 프로그램 유무는 실제 bindings의 catalog/revision/ID/kind와 definition.programs를 대조한다. 프로그램 있음은 실행 구성의 존재이며 실제 발동·의미·화면 완성을 뜻하지 않는다. 없음은 이 프로필에만 해당한다. 정적 단위 지원과 관측 미판정을 분리한다. 재료 출처·소비처 문장은 원본 행동과 이름을 함께 표시하며 미정 수량을 추정하지 않는다.
+
+로컬 Playwright에서 홈→무기→철날 검, 홈→재료→목재, 홈→도구→씨앗 자루, 홈→상태판, 홈→영향 행렬→땅 성장 경로를 375/768/1280에서 검증했다. 현재 결과는 프로그램28/나머지135이며 수량을 렌즈에 고정하지 않는다. 역사 재현값6/15/11/7/12/0은 기존 검증기가 보존한다. 최종 공개 결과는 연결 PR의 Pages 배포로 확인한다.

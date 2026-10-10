@@ -5,7 +5,8 @@ kinds:
     label: wave-1a 실행 프로그램
     files: []
     selections:
-      - files: [data/runtime/wave-1a.json]
+      - files:
+          - data/runtime/wave-1a.json
         records: /bindings
         layer: runtime-programs
         references: false
@@ -14,7 +15,8 @@ kinds:
     files: []
     hidden: true
     selections:
-      - files: [data/runtime/wave-1a.json]
+      - files:
+          - data/runtime/wave-1a.json
         records: /definition
         idField: revision
         layer: runtime-programs
@@ -22,9 +24,13 @@ kinds:
   - id: runtimePrimitive
     label: 실행 동작 단위
     files: []
-    columns: [name, staticSupport, limitation]
+    columns:
+      - name
+      - staticSupport
+      - limitation
     selections:
-      - files: [docs/design/runtime-primitive-support.json]
+      - files:
+          - docs/design/runtime-primitive-support.json
         records: /units
         layer: runtime-support
         references: false
@@ -212,17 +218,30 @@ kinds:
       - files:
           - data/heroes/*.json
         layer: runtime
+  - id: waveRuntime
+    label: 실행 원본
+    files: []
+    hidden: true
+    selections:
+      - files:
+          - data/runtime/wave-1a.json
+        records: ""
+        idField: designRevision
+        layer: runtime-programs
+        references: false
 derived:
   - id: waveProgramCatalog
     scope: graph
     value:
       op: lookup
       kind: waveProgramCatalog
-      field: [layer]
+      field:
+        - layer
       equals: runtime-programs
   - id: executableParams
     scope: node
-    kinds: [waveProgram]
+    kinds:
+      - waveProgram
     layer: runtime-programs
     value:
       op: at
@@ -231,11 +250,14 @@ derived:
         object:
           op: get
           from: vars
-          path: [waveProgramCatalog, programs]
+          path:
+            - waveProgramCatalog
+            - programs
         key:
           op: get
           from: node
-          path: [originalId]
+          path:
+            - originalId
       key: params
   - id: catalog
     scope: graph
@@ -706,15 +728,411 @@ derived:
                   right: stat-add
           value: stat
       default: design
+  - id: waveRuntime
+    scope: graph
+    value:
+      op: lookup
+      kind: waveRuntime
+      field:
+        - layer
+      equals: runtime-programs
+  - id: humanBindings
+    scope: node
+    kinds: &a1
+      - weapon
+      - tool
+      - item
+      - evolution
+      - enemy
+      - chapter
+      - charter
+      - vassal
+      - material
+      - manor
+    layer: designed-v1
+    value:
+      op: filter
+      input:
+        op: get
+        from: vars
+        path:
+          - waveRuntime
+          - bindings
+      where:
+        op: and
+        values:
+          - op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - kind
+            right:
+              op: get
+              from: node
+              path:
+                - kind
+          - op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - designRef
+                - catalog
+            right: data/system-design-v1.json
+          - op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - designRef
+                - revision
+            right:
+              op: get
+              from: vars
+              path:
+                - catalog
+                - revision
+          - op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - designRef
+                - id
+            right:
+              op: get
+              from: node
+              path:
+                - originalId
+          - op: eq
+            left:
+              op: get
+              from: item
+              path:
+                - id
+            right:
+              op: get
+              from: node
+              path:
+                - originalId
+          - op: exists
+            value:
+              op: at
+              object:
+                op: get
+                from: vars
+                path:
+                  - waveRuntime
+                  - definition
+                  - programs
+              key:
+                op: get
+                from: item
+                path:
+                  - id
+  - id: humanProgramState
+    scope: node
+    kinds: *a1
+    layer: designed-v1
+    value:
+      op: case
+      cases:
+        - when:
+            op: gt
+            left:
+              op: count
+              value:
+                op: get
+                from: vars
+                path:
+                  - humanBindings
+            right: 0
+          value: wave-1a 실행 프로그램 있음
+      default: wave-1a 실행 프로그램 없음
+  - id: humanEvolutions
+    scope: node
+    kinds: *a1
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: filter
+        input:
+          op: get
+          from: vars
+          path:
+            - catalog
+            - content
+        where:
+          op: and
+          values:
+            - op: eq
+              left:
+                op: get
+                from: item
+                path:
+                  - kind
+              right: evolution
+            - op: in
+              value:
+                op: get
+                from: node
+                path:
+                  - originalId
+              collection:
+                op: coalesce
+                values:
+                  - op: get
+                    from: item
+                    path:
+                      - inputIds
+                  - op: literal
+                    value: []
+      value:
+        op: let
+        bindings:
+          evolution:
+            op: get
+            from: item
+            path:
+              - name
+          inputs:
+            op: get
+            from: item
+            path:
+              - inputIds
+        value:
+          op: concat
+          values:
+            - op: get
+              from: vars
+              path:
+                - evolution
+            - " ← "
+            - op: join
+              input:
+                op: map
+                input:
+                  op: filter
+                  input:
+                    op: get
+                    from: vars
+                    path:
+                      - catalog
+                      - content
+                  where:
+                    op: in
+                    value:
+                      op: get
+                      from: item
+                      path:
+                        - id
+                    collection:
+                      op: get
+                      from: vars
+                      path:
+                        - inputs
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - name
+              separator: " + "
+  - id: humanItems
+    scope: node
+    kinds: *a1
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: filter
+        input:
+          op: get
+          from: vars
+          path:
+            - catalog
+            - content
+        where:
+          op: and
+          values:
+            - op: eq
+              left:
+                op: get
+                from: item
+                path:
+                  - kind
+              right: item
+            - op: or
+              values:
+                - op: in
+                  value:
+                    op: get
+                    from: node
+                    path:
+                      - originalId
+                  collection:
+                    op: coalesce
+                    values:
+                      - op: get
+                        from: item
+                        path:
+                          - linkedToolIds
+                      - op: literal
+                        value: []
+                - op: in
+                  value:
+                    op: get
+                    from: node
+                    path:
+                      - originalId
+                  collection:
+                    op: coalesce
+                    values:
+                      - op: get
+                        from: item
+                        path:
+                          - linkedWeaponIds
+                      - op: literal
+                        value: []
+      value:
+        op: get
+        from: item
+        path:
+          - name
+  - id: humanSources
+    scope: node
+    kinds:
+      - material
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: coalesce
+        values:
+          - op: get
+            from: node
+            path:
+              - sources
+          - op: literal
+            value: []
+      value:
+        op: let
+        bindings:
+          endpoint:
+            op: get
+            from: item
+            path:
+              - contentId
+        value:
+          op: concat
+          values:
+            - op: join
+              input:
+                op: map
+                input:
+                  op: filter
+                  input:
+                    op: get
+                    from: vars
+                    path:
+                      - catalog
+                      - content
+                  where:
+                    op: eq
+                    left:
+                      op: get
+                      from: item
+                      path:
+                        - id
+                    right:
+                      op: get
+                      from: vars
+                      path:
+                        - endpoint
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - name
+              separator: ""
+            - " · "
+            - op: get
+              from: item
+              path:
+                - action
+  - id: humanSinks
+    scope: node
+    kinds:
+      - material
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: coalesce
+        values:
+          - op: get
+            from: node
+            path:
+              - sinks
+          - op: literal
+            value: []
+      value:
+        op: let
+        bindings:
+          endpoint:
+            op: get
+            from: item
+            path:
+              - contentId
+        value:
+          op: concat
+          values:
+            - op: join
+              input:
+                op: map
+                input:
+                  op: filter
+                  input:
+                    op: get
+                    from: vars
+                    path:
+                      - catalog
+                      - content
+                  where:
+                    op: eq
+                    left:
+                      op: get
+                      from: item
+                      path:
+                        - id
+                    right:
+                      op: get
+                      from: vars
+                      path:
+                        - endpoint
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - name
+              separator: ""
+            - " · "
+            - op: get
+              from: item
+              path:
+                - action
 facets:
   - id: primitive-static-support
     key: primitiveStaticSupport
-    kinds: [runtimePrimitive]
+    kinds:
+      - runtimePrimitive
     layer: runtime-support
     value:
       op: get
       from: node
-      path: [staticSupport]
+      path:
+        - staticSupport
   - id: selected
     key: selected
     kinds:
@@ -992,6 +1410,83 @@ facets:
       from: node
       path:
         - effect
+  - id: human-programState
+    key: human:programState
+    kinds: &a2
+      - weapon
+      - tool
+      - item
+      - evolution
+      - enemy
+      - chapter
+      - charter
+      - vassal
+      - material
+      - manor
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: get
+          from: vars
+          path:
+            - humanProgramState
+        - op: literal
+          value: []
+  - id: human-evolutions
+    key: human:evolutions
+    kinds: *a2
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: get
+          from: vars
+          path:
+            - humanEvolutions
+        - op: literal
+          value: []
+  - id: human-items
+    key: human:items
+    kinds: *a2
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: get
+          from: vars
+          path:
+            - humanItems
+        - op: literal
+          value: []
+  - id: human-materialSources
+    key: human:materialSources
+    kinds:
+      - material
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: get
+          from: vars
+          path:
+            - humanSources
+        - op: literal
+          value: []
+  - id: human-materialSinks
+    key: human:materialSinks
+    kinds:
+      - material
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: get
+          from: vars
+          path:
+            - humanSinks
+        - op: literal
+          value: []
 findings:
   - id: item-stat-projection
     query:
@@ -1390,8 +1885,10 @@ findings:
     template: 선택 물품 {selected}개 중 {stat}개는 원본 효과가 수치 덧셈입니다.
     severity: warning
     basis: authored-interpretation
-    intent: "저자 해석: 장원 장치라는 이름과 의도에 비해 수치 덧셈은 플레이를 바꾸지 못한다는 비평이다. 예: 재 모으는 부적은 죽음의 흔적→비옥도라는 의도지만 원본 투영은 원거리 장비 조건의 공격력 +3이다. 재미 또는 실행 결과의 측정값은 아니다."
-    implementation: 원본 runtimeProjection과 first-playable 선택을 집계한다. effectiveEffects와 codeSupport:runtime-operations는 프로필 우선 적용 및 실제 처리기 정적 근거를 별도로 표시한다.
+    intent: "저자 해석: 장원 장치라는 이름과 의도에 비해 수치 덧셈은 플레이를 바꾸지 못한다는 비평이다. 예: 재 모으는 부적은 죽음의 흔적→비옥도라는 의도지만 원본 투영은 원거리 장비 조건의
+      공격력 +3이다. 재미 또는 실행 결과의 측정값은 아니다."
+    implementation: 원본 runtimeProjection과 first-playable 선택을 집계한다. effectiveEffects와
+      codeSupport:runtime-operations는 프로필 우선 적용 및 실제 처리기 정적 근거를 별도로 표시한다.
   - id: tool-unique-projection
     query:
       kinds:
@@ -1494,7 +1991,8 @@ findings:
     severity: warning
     basis: authored-interpretation
     implementation: 원본 runtimeProjection 투영이며 코드 지원 또는 실행 빈도를 증명하지 않습니다.
-    intent: "저자 해석: 독자적인 산출물·성장 행동이 있어야 도구가 곧 무기라는 전제가 화면에서 읽힌다. 고유 원본 효과는 독낫·비국자·수프국자 3개이며 토지3/건물3/사람2는 선택 도구 전체 8개의 대상이다."
+    intent: "저자 해석: 독자적인 산출물·성장 행동이 있어야 도구가 곧 무기라는 전제가 화면에서 읽힌다. 고유 원본 효과는 독낫·비국자·수프국자 3개이며 토지3/건물3/사람2는 선택 도구 전체
+      8개의 대상이다."
   - id: weapon-base-shapes
     query:
       kinds:
@@ -1669,7 +2167,8 @@ findings:
     template: 선택 무기 {selected}개의 기본 데이터 공격 형태는 {forms}가지입니다.
     severity: warning
     basis: authored-interpretation
-    implementation: growth.attackModel / activation.shape 집계입니다. 실제 firstPlayable.weapons의 10가지 form과 다른 투영이며, 연쇄 공격 부재를 뜻하지 않습니다.
+    implementation: growth.attackModel / activation.shape 집계입니다. 실제 firstPlayable.weapons의 10가지 form과 다른 투영이며, 연쇄
+      공격 부재를 뜻하지 않습니다.
     intent: "저자 해석: 기본 공격 형태가 비슷하고 원본 고유 효과는 수확낫뿐이다. 단, 원본 4형태 지표와 실제 first-playable의 10형태는 다르며 코드에는 연쇄 경로도 있다."
   - id: vassal-design-gap
     query:
@@ -1757,7 +2256,8 @@ findings:
                 right: runtime
     template: 이전 가신 설계 {designed}명 · 프로필 선택 {selected}명 · 별도 판 밖 가신 {meta}명
     intent: "저자 해석: 잿불 운반꾼이 군주를 떠나 처치 현장을 지키는 역할·대가 등 개성 있는 설계와 판 밖 백분율 강화 사이의 차이다. 개성과 수익화의 관계에 대한 비평은 저자 관점이다."
-    implementation: candidate의 effect.trigger/benefit/cost와 runtime 가신의 ability·basePermille·perLevelPermille을 비교한다. 슬롯 선택/실제 발동 또는 수익을 측정하지 않는다.
+    implementation: candidate의 effect.trigger/benefit/cost와 runtime 가신의 ability·basePermille·perLevelPermille을
+      비교한다. 슬롯 선택/실제 발동 또는 수익을 측정하지 않는다.
     severity: warning
     basis: authored-interpretation
   - id: chapter-repetition
@@ -3068,10 +3568,85 @@ presentation:
     - id: candidate
       label: 이전 후보
   defaultLayer: designed-v1
+  home:
+    viewIds:
+      - weapon-cards
+      - tool-cards
+      - material-cards
+      - layer-status
+      - designed-influence
+      - evolution-graph
+      - content-cards
+      - primitive-support
+      - runtime-reference-depth
+    findings: true
+    inventory: false
+    distributions: false
+  detail:
+    summaryFields:
+      - label: 카드 문구
+        path:
+          - cardText
+      - label: 설명
+        path:
+          - concept
+      - label: wave-1a
+        path:
+          - facet
+          - human:programState
+      - label: 진화 짝
+        path:
+          - facet
+          - human:evolutions
+      - label: 연결 물품
+        path:
+          - facet
+          - human:items
+      - label: 얻는 곳과 행동
+        path:
+          - facet
+          - human:materialSources
+      - label: 쓰는 곳과 행동
+        path:
+          - facet
+          - human:materialSinks
+    relationships:
+      - label: 진화와 입력 장비
+        edgeKinds:
+          - evolution-input
+        direction: both
+      - label: 연결 물품
+        edgeKinds:
+          - item-tool
+          - item-weapon
+        direction: incoming
+      - label: 얻는 곳
+        edgeKinds:
+          - material-source
+        direction: incoming
+      - label: 쓰는 곳
+        edgeKinds:
+          - material-sink
+          - manor-input
+        direction: outgoing
+      - label: 실행 프로그램 대응 · 관측 미판정
+        edgeKinds:
+          - wave-program-design
+        direction: both
+      - label: 이 시스템에 영향을 주는 시스템
+        edgeKinds:
+          - system-influence
+        direction: incoming
+      - label: 설계 단위 지원 · 정적 근거
+        edgeKinds:
+          - designed-primitive-support
+        direction: outgoing
+    rawAttributes: collapsed
 edges:
   - id: runtime-program-primitive-support
     source:
-      kinds: [waveProgram]
+      kinds:
+        - waveProgram
       layer: runtime-programs
     target:
       op: map
@@ -3080,7 +3655,8 @@ edges:
         input:
           op: get
           from: graph
-          path: [nodes]
+          path:
+            - nodes
         where:
           op: and
           values:
@@ -3088,7 +3664,8 @@ edges:
               left:
                 op: get
                 from: item
-                path: [kind]
+                path:
+                  - kind
               right: runtimePrimitive
             - op: exists
               value:
@@ -3096,39 +3673,57 @@ edges:
                 object:
                   op: get
                   from: vars
-                  path: [executableParams]
+                  path:
+                    - executableParams
                 key:
                   op: get
                   from: item
-                  path: [originalId]
+                  path:
+                    - originalId
       value:
         op: get
         from: item
-        path: [originalId]
+        path:
+          - originalId
     targetQuery:
       layer: runtime-support
     targetKind: runtimePrimitive
-    targetField: [id]
+    targetField:
+      - id
     direction: forward
   - id: designed-primitive-support
     source:
-      kinds: [weapon, tool, item, evolution, enemy, chapter, charter, vassal, material, manor]
+      kinds:
+        - weapon
+        - tool
+        - item
+        - evolution
+        - enemy
+        - chapter
+        - charter
+        - vassal
+        - material
+        - manor
       layer: designed-v1
       where:
         op: exists
         value:
           op: get
           from: node
-          path: [primitives]
+          path:
+            - primitives
     target:
       op: get
       from: node
-      path: [primitives]
+      path:
+        - primitives
     targetQuery:
       layer: runtime-support
     targetKind: runtimePrimitive
-    targetField: [id]
+    targetField:
+      - id
     direction: forward
+    label: 설계 동작 단위의 정적 지원
   - id: item-tool
     source:
       kinds:
@@ -3155,6 +3750,7 @@ edges:
     targetField:
       - id
     direction: forward
+    label: 도구에 연결된 물품
   - id: item-weapon
     source:
       kinds:
@@ -3181,6 +3777,7 @@ edges:
     targetField:
       - id
     direction: forward
+    label: 무기에 연결된 물품
   - id: evolution-input
     source:
       kinds:
@@ -3196,6 +3793,7 @@ edges:
     targetField:
       - id
     direction: reverse
+    label: 진화 입력
   - id: vassal-tool
     source:
       kinds:
@@ -3250,6 +3848,7 @@ edges:
     targetField:
       - id
     direction: reverse
+    label: 재료를 얻는 곳
   - id: material-sink
     source:
       kinds:
@@ -3273,6 +3872,7 @@ edges:
     targetField:
       - id
     direction: forward
+    label: 재료를 쓰는 곳
   - id: manor-input
     source:
       kinds:
@@ -3289,6 +3889,7 @@ edges:
     targetField:
       - id
     direction: reverse
+    label: 장원 성장 재료
   - id: chapter-boss
     source:
       kinds:
@@ -4522,13 +5123,379 @@ edges:
       layer: runtime
     direction: forward
     label: 저자 참조 · 실행 증거 아님
+  - id: wave-program-design
+    source:
+      kinds:
+        - waveProgram
+      layer: runtime-programs
+      where:
+        op: and
+        values:
+          - op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - designRef
+                - catalog
+            right: data/system-design-v1.json
+          - op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - designRef
+                - revision
+            right:
+              op: get
+              from: vars
+              path:
+                - catalog
+                - revision
+          - op: exists
+            value:
+              op: at
+              object:
+                op: get
+                from: vars
+                path:
+                  - waveRuntime
+                  - definition
+                  - programs
+              key:
+                op: get
+                from: node
+                path:
+                  - originalId
+    target:
+      op: get
+      from: node
+      path:
+        - designRef
+        - id
+    targetQuery:
+      layer: designed-v1
+      kinds:
+        - weapon
+        - tool
+        - item
+        - evolution
+        - enemy
+        - chapter
+        - charter
+        - vassal
+        - material
+        - manor
+    targetField:
+      - id
+    direction: forward
+    label: wave-1a 실행 프로그램 대응 · 실행 관측 아님
 views:
+  - id: content-cards
+    type: gallery
+    label: 콘텐츠 카드 · 이름과 관계
+    description: 이름으로 찾고 카드 문구, 진화 짝, 연결 물품과 wave-1a 프로그램 유무를 확인합니다.
+    query:
+      kinds: &a3
+        - weapon
+        - tool
+        - item
+        - evolution
+        - enemy
+        - chapter
+        - charter
+        - vassal
+        - material
+        - manor
+      layer: designed-v1
+    columns: &a1
+      - &a2
+        id: card
+        label: 카드 문구
+        value:
+          op: coalesce
+          values:
+            - op: get
+              from: node
+              path:
+                - cardText
+            - op: get
+              from: node
+              path:
+                - concept
+            - 미기재
+        role: summary
+      - id: wave
+        label: 실행 층
+        value:
+          op: get
+          from: vars
+          path:
+            - humanProgramState
+        role: status
+      - id: evolution
+        label: 진화 짝
+        value:
+          op: get
+          from: vars
+          path:
+            - humanEvolutions
+        role: summary
+      - id: items
+        label: 연결 물품
+        value:
+          op: get
+          from: vars
+          path:
+            - humanItems
+        role: summary
+      - id: cost
+        label: 비용·제약
+        value:
+          op: coalesce
+          values:
+            - op: get
+              from: node
+              path:
+                - costKind
+            - op: get
+              from: node
+              path:
+                - effect
+                - cost
+            - 미기재
+        role: badge
+    edgeKinds:
+      - evolution-input
+      - item-tool
+      - item-weapon
+      - wave-program-design
+  - id: weapon-cards
+    type: gallery
+    label: 무기 · 무엇과 진화하나
+    description: 철날 검을 비롯한 무기의 진화 짝과 실행 프로그램을 봅니다.
+    query:
+      kinds:
+        - weapon
+      layer: designed-v1
+    columns: *a1
+    edgeKinds:
+      - evolution-input
+      - item-tool
+      - item-weapon
+      - wave-program-design
+  - id: tool-cards
+    type: gallery
+    label: 도구 · 어떤 물품이 붙나
+    description: 도구의 카드 문구와 연결 물품을 봅니다.
+    query:
+      kinds:
+        - tool
+      layer: designed-v1
+    columns: *a1
+    edgeKinds:
+      - evolution-input
+      - item-tool
+      - item-weapon
+      - wave-program-design
+  - id: material-cards
+    type: gallery
+    label: 재료 · 어디서 얻고 어디에 쓰나
+    query:
+      kinds:
+        - material
+      layer: designed-v1
+    columns:
+      - *a2
+      - id: sources
+        label: 얻는 곳과 행동
+        value:
+          op: get
+          from: vars
+          path:
+            - humanSources
+        role: summary
+      - id: sinks
+        label: 쓰는 곳과 행동
+        value:
+          op: get
+          from: vars
+          path:
+            - humanSinks
+        role: summary
+      - id: quantity
+        label: 보장 수량
+        value:
+          op: coalesce
+          values:
+            - op: get
+              from: node
+              path:
+                - guarantee
+                - quantity
+            - 미정
+        role: summary
+    edgeKinds:
+      - material-source
+      - material-sink
+  - id: layer-status
+    type: status
+    label: 설계 → wave-1a → 단위 지원
+    description: 프로그램 있음은 구성과 정적 지원 근거입니다. 실행·의미·화면의 완성 판정은 아닙니다. 없음은 이 프로필에 한정합니다.
+    query:
+      kinds: *a3
+      layer: designed-v1
+    columns:
+      - id: design
+        label: 설계
+        value:
+          op: coalesce
+          values:
+            - op: get
+              from: node
+              path:
+                - designStatus
+            - 설계 기록
+        role: status
+      - id: program
+        label: wave-1a
+        value:
+          op: get
+          from: vars
+          path:
+            - humanProgramState
+        role: status
+      - id: reference
+        label: 실행 프로그램 근거
+        value:
+          op: map
+          input:
+            op: filter
+            input: &a4
+              op: get
+              from: graph
+              path:
+                - nodes
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - kind
+                  right: waveProgram
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - designRef
+                      - catalog
+                  right: data/system-design-v1.json
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - designRef
+                      - revision
+                  right:
+                    op: get
+                    from: vars
+                    path:
+                      - catalog
+                      - revision
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - designRef
+                      - id
+                  right:
+                    op: get
+                    from: node
+                    path:
+                      - originalId
+          value:
+            op: get
+            from: item
+            path:
+              - id
+        role: summary
+      - id: units
+        label: 설계 단위의 정적 지원
+        value:
+          op: map
+          input:
+            op: filter
+            input: *a4
+            where:
+              op: and
+              values:
+                - op: eq
+                  left:
+                    op: get
+                    from: item
+                    path:
+                      - kind
+                  right: runtimePrimitive
+                - op: in
+                  value:
+                    op: get
+                    from: item
+                    path:
+                      - originalId
+                  collection:
+                    op: coalesce
+                    values:
+                      - op: get
+                        from: node
+                        path:
+                          - primitives
+                      - op: literal
+                        value: []
+          value:
+            op: concat
+            values:
+              - op: get
+                from: item
+                path:
+                  - name
+              - " · "
+              - op: get
+                from: item
+                path:
+                  - staticSupport
+        role: summary
+      - id: observed
+        label: 실행 관측
+        value: 미판정
+        role: summary
+    edgeKinds:
+      - wave-program-design
+      - designed-primitive-support
+  - id: evolution-graph
+    type: graph
+    label: 개별 무기·도구와 진화
+    description: 중심 노드를 고르면 직접 연결된 진화와 입력을 이름으로 살펴봅니다.
+    query:
+      kinds:
+        - weapon
+        - tool
+        - evolution
+      layer: designed-v1
+    edgeKinds:
+      - evolution-input
   - id: primitive-support
     type: table
     label: 공통 동작 단위 지원
     description: 지정 조합의 정적 지원만 표시합니다. 실행·의미·화면은 미판정입니다. 노드를 누르면 정확한 파라미터·처리기·검사 경로를 읽을 수 있습니다.
     query:
-      kinds: [runtimePrimitive]
+      kinds:
+        - runtimePrimitive
       layer: runtime-support
     columns:
       - id: staticSupport
@@ -4536,35 +5503,41 @@ views:
         value:
           op: get
           from: node
-          path: [staticSupport]
+          path:
+            - staticSupport
       - id: referenceSummary
         label: 선택 설계 / 실행 참조
         value:
           op: get
           from: node
-          path: [referenceSummary]
+          path:
+            - referenceSummary
       - id: parameterSummary
         label: 허용 조합
         value:
           op: get
           from: node
-          path: [parameterSummary]
+          path:
+            - parameterSummary
       - id: limitation
         label: 지원 제한
         value:
           op: get
           from: node
-          path: [limitation]
+          path:
+            - limitation
   - id: primitive-support-counts
     type: distribution
     label: 단위별 정적 지원 경계
     query:
-      kinds: [runtimePrimitive]
+      kinds:
+        - runtimePrimitive
       layer: runtime-support
     groupBy:
       op: get
       from: node
-      path: [staticSupport]
+      path:
+        - staticSupport
   - id: designed-influence
     type: matrix
     label: 설계 시스템 영향 행렬
@@ -4575,6 +5548,7 @@ views:
       layer: designed-v1
     edgeKinds:
       - system-influence
+    cellDisplay: label
   - id: sink-cost-matrix
     type: table
     label: 소비처 × 재료 기본 비용 행렬
