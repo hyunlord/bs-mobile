@@ -134,7 +134,8 @@ namespace Game.View
                     var crop=Resolve("wave",id,"default");
                     var maxWidth=waveCatalog.Tuning.World.Farms.Spacing*GameVisualTokens.WaveCropSpacingFraction/settings.WorldUnitsPerUnityUnit;
                     if(FallowActive) maxWidth=Mathf.Max(maxWidth,work.Complete?GameVisualTokens.FallowRipeWidth:work.Progress==0?GameVisualTokens.FallowSeedWidth:GameVisualTokens.FallowSproutWidth);
-                    var cropSize=crop.WorldSize*Mathf.Min(1,maxWidth/crop.WorldSize.x);
+                    var cropScale=maxWidth/crop.WorldSize.x;
+                    var cropSize=crop.WorldSize*(FallowActive?cropScale:Mathf.Min(1,cropScale));
                     var position=Point(work.Position);
                     position.x=Mathf.Clamp(position.x,cropSize.x*crop.Pivot.x,(float)mapWidth/settings.WorldUnitsPerUnityUnit-cropSize.x*(1-crop.Pivot.x));
                     position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
