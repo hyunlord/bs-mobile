@@ -12,6 +12,18 @@ namespace Game.App
     public sealed class DevelopmentProfilerTrace
     {
         const double MaximumSeconds = 10;
+        public const string NormalScope = "diagnostic-profiler-on-not-performance-acceptance";
+        public const string BenchmarkScope = "wave-benchmark-profiler-on-not-performance-acceptance";
+        public static readonly Guid BenchmarkMetadataId = new Guid("5c6c4987-c51b-41d5-b213-729f357d1690");
+        public const int BenchmarkMetadataTag = 1;
+        readonly int[] frameMetadata = new int[4];
+        public void EmitBenchmarkFrame(int tick, int enemies, int phase)
+        {
+            if (!Active) return;
+            frameMetadata[0] = Time.frameCount; frameMetadata[1] = tick;
+            frameMetadata[2] = enemies; frameMetadata[3] = phase;
+            Profiler.EmitFrameMetaData(BenchmarkMetadataId, BenchmarkMetadataTag, frameMetadata);
+        }
         readonly int? requestedTick;
         bool scheduledConsumed;
         public DevelopmentProfilerTrace() : this(Environment.GetCommandLineArgs()) { }
@@ -48,19 +60,26 @@ namespace Game.App
 
         public bool Start(RunRecording recording, int tick, string dataHash)
         {
-            if (Active || recording == null || Profiler.enabled || Profiler.enableBinaryLog)
+            if (recording == null) return false;
+            return Start(recording.DirectoryPath, recording.SessionId, tick, dataHash, NormalScope);
+        }
+
+        public bool Start(string directory, string sessionId, int tick, string dataHash, string scope)
+        {
+            if (scope != NormalScope && scope != BenchmarkScope) throw new ArgumentException("Unknown trace scope.", nameof(scope));
+            if (Active || string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(sessionId) || Profiler.enabled || Profiler.enableBinaryLog)
             {
                 UnityEngine.Debug.LogWarning("Diagnostic trace refused: recording is unavailable or a profiler already owns capture.");
                 return false;
             }
             try
             {
-                var path = Path.Combine(recording.DirectoryPath, "diagnostic-" + Guid.NewGuid().ToString("N") + ".raw");
+                var path = Path.Combine(directory, "diagnostic-" + Guid.NewGuid().ToString("N") + ".raw");
                 metadataPath = path + ".json";
                 lock (warningLock) { warnings.Clear(); warningCount = 0; }
                 metadata = new TraceMetadata
                 {
-                    sessionId = recording.SessionId, build = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash,
+                    scope = scope, sessionId = sessionId, build = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash,
                     sourceDirty = BuildIdentity.SourceDirty, dataHash = dataHash, rawFile = Path.GetFileName(path),
                     startedUtc = DateTime.UtcNow.ToString("O"), startFrame = Time.frameCount, startTick = tick,
                     startRealtime = Time.realtimeSinceStartupAsDouble, unityVersion = Application.unityVersion,

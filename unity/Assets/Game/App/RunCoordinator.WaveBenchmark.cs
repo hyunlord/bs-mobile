@@ -16,6 +16,34 @@ namespace Game.App
     {
         static partial void LoadFrozenWaveBenchmark(ref ContentCatalog catalog, ref string dataHash);
         bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture, benchmarkInterrupted;
+        string benchmarkMode = "capped";
+        bool benchmarkProfileRequested, benchmarkProfilerEnabled;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        int benchmarkTraceWindow;
+        readonly int[] benchmarkTraceTicks = { 8900, 11100, 13500 };
+#endif
+        public static string ParseWaveBenchmarkMode(string[] arguments)
+        {
+            string result = null;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i] != "--wave-benchmark-mode") continue;
+                if (result != null || ++i >= arguments.Length || (arguments[i] != "capped" && arguments[i] != "uncapped"))
+                    throw new ArgumentException("--wave-benchmark-mode requires capped or uncapped and may appear once.");
+                result = arguments[i];
+            }
+            return result ?? "capped";
+        }
+        public static bool ParseWaveBenchmarkProfile(string[] arguments, bool development)
+        {
+            var first = Array.IndexOf(arguments, "--wave-benchmark-profile");
+            if (first < 0) return false;
+            if (!development || Array.LastIndexOf(arguments, "--wave-benchmark-profile") != first)
+                throw new ArgumentException("--wave-benchmark-profile requires a Development build and may appear once.");
+            return true;
+        }
+        const int BenchmarkMaximumRows = 200000;
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkSnapshot = new Unity.Profiling.ProfilerMarker("SowSiege.BenchmarkSnapshot");
         ReplayDocument benchmarkReplay;
         string benchmarkOutput, benchmarkReplaySha;
         int benchmarkCommand, benchmarkWarmFrames = 120;
@@ -39,7 +67,9 @@ namespace Game.App
         [Serializable] sealed class BenchmarkResult
         {
             public string commit, sourceHash, dataHash, replaySha256, stateHash, expectedStateHash, error, graphicsApi, quality, platform;
-            public bool sourceDirty, verified, developmentBuild, frameTimingEnabled, interrupted;
+            public bool sourceDirty, verified, developmentBuild, frameTimingEnabled, interrupted, profilerEnabled;
+            public string benchmarkMode, gcMode;
+            public int frameCapacity, timingCapacity;
             public int tick, commands, frames, renderTimingSamples, width, height, targetFrameRate, vSyncCount, renderWarmupFrames = 120;
             public string windows = "7200-9900,10200-12900,13200-14400", timingContract = "frames.csv: Update-to-next-Update wall includes rendering and pacing; CPU scopes disjoint. render-timings.csv: delayed FrameTimingManager observations, timestamped separately, not joined to density. Allocation delta is main-thread managed allocation; GC count is process-wide generation 0.";
         }
@@ -58,6 +88,18 @@ namespace Game.App
                 if (Directory.Exists(destination) && Directory.GetFileSystemEntries(destination).Length != 0) throw new IOException("Benchmark output must be empty.");
                 Directory.CreateDirectory(destination);
                 benchmarkOutput = destination;
+                benchmarkMode = ParseWaveBenchmarkMode(args);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, true);
+#else
+                benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, false);
+#endif
+                benchmarkProfilerEnabled = benchmarkProfileRequested;
+                if (benchmarkMode == "uncapped")
+                {
+                    benchmarkFrames.Capacity = BenchmarkMaximumRows;
+                    benchmarkTimings.Capacity = BenchmarkMaximumRows;
+                }
                 var bytes = File.ReadAllBytes(args[index + 1]);
                 using (var sha = SHA256.Create()) benchmarkReplaySha = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
                 if (benchmarkReplaySha != "f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5") throw new InvalidDataException("C05 fixture identity mismatch.");
@@ -67,7 +109,7 @@ namespace Game.App
                 if (frozen == null || hash != benchmarkReplay.Header.Options.DataHash) throw new InvalidDataException("Frozen benchmark catalog absent or mismatched; prepare the benchmark build.");
                 benchmarkCapture = Array.IndexOf(args, "--wave-benchmark-capture") >= 0;
                 Screen.SetResolution(1600, 900, FullScreenMode.Windowed);
-                Application.targetFrameRate = 60; QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = benchmarkMode == "uncapped" ? -1 : 60; QualitySettings.vSyncCount = 0;
                 runCatalog = frozen;
                 StartCoroutine(BeginWaveBenchmark());
             }
@@ -113,14 +155,27 @@ namespace Game.App
                     benchmarkPending.wallMs = (entryTimestamp - benchmarkFrameStart) * 1000d / Stopwatch.Frequency;
                     benchmarkPending.allocatedBytes = entryAllocated - benchmarkAllocatedStart;
                     benchmarkPending.gcCollections = entryGc - benchmarkGcStart;
+                    if (benchmarkFrames.Count == benchmarkFrames.Capacity) throw new InvalidOperationException("Benchmark frame capacity exceeded; no measured rows were dropped.");
                     benchmarkFrames.Add(benchmarkPending); benchmarkHasPending = false;
                 }
                 if (FrameTimingManager.GetLatestTimings(1, benchmarkTimingBuffer) > 0 && benchmarkTimingBuffer[0].frameStartTimestamp != benchmarkLastTiming)
                 {
                     benchmarkLastTiming = benchmarkTimingBuffer[0].frameStartTimestamp;
+                    if (benchmarkTimings.Count == benchmarkTimings.Capacity) throw new InvalidOperationException("Benchmark timing capacity exceeded; no observations were dropped.");
                     benchmarkTimings.Add(new BenchmarkTiming { observedFrame = Time.frameCount, value = benchmarkTimingBuffer[0] });
                 }
                 if (benchmarkCommand == benchmarkReplay.Commands.Count) { EndWaveBenchmark(null); return; }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
+                profilerTrace.Pump(Frame.Tick);
+                if (benchmarkProfileRequested && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < benchmarkTraceTicks.Length && Frame.Tick >= benchmarkTraceTicks[benchmarkTraceWindow])
+                {
+                    benchmarkTraceWindow++;
+                    if (!profilerTrace.Start(benchmarkOutput, "wave-c05-" + benchmarkTraceWindow, Frame.Tick, benchmarkReplay.Header.Options.DataHash, DevelopmentProfilerTrace.BenchmarkScope))
+                        throw new InvalidOperationException("Could not start requested benchmark profiler window.");
+                    benchmarkProfilerEnabled = true;
+                }
+#endif
                 benchmarkFrameStart = entryTimestamp; benchmarkAllocatedStart = entryAllocated; benchmarkGcStart = entryGc;
                 var sample = new BenchmarkFrame { frame = Time.frameCount, focused = Application.isFocused };
                 var warming = benchmarkWarmFrames > 0;
@@ -142,7 +197,7 @@ namespace Game.App
                         if (command.Kind == ReplayCommandKind.Advance) accumulator -= step;
                     }
                 }
-                var started = Stopwatch.GetTimestamp(); hud?.Present(Frame, FirstPlayable); sample.hudMs = BenchmarkMilliseconds(started);
+                var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.Hud.Auto()) hud?.Present(Frame, FirstPlayable); sample.hudMs = BenchmarkMilliseconds(started);
                 var visible = Screen.safeArea;
                 if (hud != null)
                 {
@@ -151,9 +206,12 @@ namespace Game.App
                 }
                 world.ShowAnnouncements = true;
                 started = Stopwatch.GetTimestamp();
-                world.Present(previous, Frame, FirstPlayable, warming ? 1 : (float)(accumulator * Frame.TickRate), Time.unscaledDeltaTime, visible);
+                using (RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous, Frame, FirstPlayable, warming ? 1 : (float)(accumulator * Frame.TickRate), Time.unscaledDeltaTime, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 sample.tick = Frame.Tick; sample.enemies = Frame.Counts.Enemies;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                profilerTrace.EmitBenchmarkFrame(sample.tick, sample.enemies, warming ? 0 : BenchmarkWindow(sample.tick) ? 1 : 2);
+#endif
                 benchmarkPending = sample;
                 benchmarkHasPending = !warming && BenchmarkWindow(Frame.Tick);
                 FrameTimingManager.CaptureFrameTimings();
@@ -163,21 +221,28 @@ namespace Game.App
         void ApplyBenchmarkCommand(bool present, ref BenchmarkFrame sample)
         {
             var command = benchmarkReplay.Commands[benchmarkCommand++];
-            var started = Stopwatch.GetTimestamp(); Session.Apply(command); sample.simulationMs += BenchmarkMilliseconds(started);
+            var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.CoreApply.Auto()) Session.Apply(command); sample.simulationMs += BenchmarkMilliseconds(started);
             foreach (var checkpoint in benchmarkReplay.Checkpoints)
                 if (checkpoint.AppliedCommands == Session.NextSequence && checkpoint.StateHash != Session.ComputeStateHash()) throw new InvalidDataException("Benchmark checkpoint mismatch.");
             if (!present) return;
-            started = Stopwatch.GetTimestamp(); previous = Frame; CaptureSnapshots(); sample.snapshotMs += BenchmarkMilliseconds(started);
+            started = Stopwatch.GetTimestamp(); previous = Frame; using (BenchmarkSnapshot.Auto()) CaptureSnapshots(); sample.snapshotMs += BenchmarkMilliseconds(started);
             started = Stopwatch.GetTimestamp();
-            world.AcceptWave(runCatalog, Wave); world.AcceptFrame(Frame, FirstPlayable);
-            sound.AcceptCommonFeedback(Frame, waveSound.PlayCommon); AcceptWaveAudio();
+            using (RunProfilerMarkers.AcceptPresentation.Auto())
+            {
+                world.AcceptWave(runCatalog, Wave); world.AcceptFrame(Frame, FirstPlayable);
+                sound.AcceptCommonFeedback(Frame, waveSound.PlayCommon); AcceptWaveAudio();
+            }
             sample.acceptMs += BenchmarkMilliseconds(started);
         }
         void EndWaveBenchmark(Exception exception)
         {
             if (waveBenchmarkEnded) return;
             waveBenchmarkEnded = true;
-            var result = new BenchmarkResult { commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), interrupted = benchmarkInterrupted, frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
+            profilerTrace.Stop(Frame?.Tick ?? 0, exception == null ? "run-complete" : "error");
+#endif
+            var result = new BenchmarkResult { frameCapacity = benchmarkFrames.Capacity, timingCapacity = benchmarkTimings.Capacity, benchmarkMode = benchmarkMode, profilerEnabled = benchmarkProfilerEnabled, gcMode = UnityEngine.Scripting.GarbageCollector.GCMode.ToString(), commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), interrupted = benchmarkInterrupted, frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
             try
             {
                 if (exception == null)
