@@ -16,6 +16,7 @@ namespace Game.App
         float presentationUnits = 1000;
         public Vector2 PresentedLordPosition => world != null ? world.RenderedLordPosition : Vector2.zero;
         public void BeginSmoothnessDiagnostics() => smoothness.Begin();
+        public void SuspendSmoothnessDiagnostics() => smoothness.Suspend();
         public void NotifySmoothnessEndOfFrame() => smoothness.EndOfFrame();
         public void WriteSmoothnessDiagnostics(string folder) => smoothness.Write(folder);
         public void RefreshCapturePresentation()

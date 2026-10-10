@@ -293,20 +293,22 @@ namespace Game.App
         bool PreparePortraitWindow()
         {
             if (portraitReady) return true;
+            var landscape = CaptureSegmentWindow.Parse(Environment.GetCommandLineArgs()).Landscape;
             // RunCoordinator has now applied its ordinary desktop preset; capture can override it once.
             if (portraitAttempt == 0)
             {
-                Screen.SetResolution(900, 1600, FullScreenMode.Windowed);
+                Screen.SetResolution(landscape ? 1920 : 900, landscape ? 1080 : 1600, FullScreenMode.Windowed);
                 portraitAttempt = 1; portraitFrame = Time.frameCount; portraitSettleAt = Elapsed + 1;
                 return false;
             }
             if (Time.frameCount < portraitFrame + 3 || Elapsed < portraitSettleAt) return false;
-            if (Screen.width * 16 == Screen.height * 9)
+            if (landscape ? Screen.width == 1920 && Screen.height == 1080 : Screen.width * 16 == Screen.height * 9)
             {
                 portraitReady = true;
-                Log("portrait-ready", $"width={Screen.width};height={Screen.height};attempt={portraitAttempt}");
+                Log(landscape ? "landscape-ready" : "portrait-ready", $"width={Screen.width};height={Screen.height};attempt={portraitAttempt}");
                 return true;
             }
+            if (landscape) throw new InvalidOperationException($"Native landscape capture requires 1920x1080, observed {Screen.width}x{Screen.height}.");
             if (portraitAttempt == 1)
             {
                 // macOS can constrain oversized windows. Fit the observed drawable bounds exactly to 9:16.

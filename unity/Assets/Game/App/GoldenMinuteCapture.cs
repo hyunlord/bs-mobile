@@ -18,6 +18,8 @@ namespace Game.App
         readonly GoldenCaptureFrame[] frames = new GoldenCaptureFrame[RingSize];
         readonly GpuSlot[] gpu = new GpuSlot[RingSize];
         RunCoordinator run;
+        CaptureSegmentWindow segment;
+        int actualStartTick = -1, captureSeed;
         string folder, failure;
         GoldenCaptureWriter writer;
         GoldenMinuteAudio audio;
@@ -42,6 +44,8 @@ namespace Game.App
 
         public void Initialize(RunCoordinator coordinator, string output, Action<bool, string> completion)
         {
+            segment = CaptureSegmentWindow.Parse(Environment.GetCommandLineArgs());
+            captureSeed = AutoplayCapture.Active.RunSeed;
             run = coordinator; folder = output; complete = completion;
             submissionCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
             if (submissionCounterAvailable) submissionAllocations = 0;
@@ -82,6 +86,7 @@ namespace Game.App
         {
             if (!ReadyToStart || armed || run.Frame == null || run.Frame.Tick != 0 || run.CaptureClockPaused)
                 throw new InvalidOperationException("Recording requires a warmed, normally resumed run at tick zero.");
+            if (segment.StartSeconds > 0) run.SuspendSmoothnessDiagnostics();
             armed = true;
         }
 
@@ -99,7 +104,7 @@ namespace Game.App
                     }
                     catch (Exception exception) { failure = exception.ToString(); StopCapture(); }
                 }
-                if (!stopping && warmed && armed && run.Frame != null) run.NotifySmoothnessEndOfFrame();
+                if (!stopping && warmed && armed && run.Frame != null && (segment.StartSeconds == 0 || actualStartTick >= 0)) run.NotifySmoothnessEndOfFrame();
                 if (!stopping && warmed && armed && run.Frame != null)
                 {
                     try { SubmitFrame(); }
@@ -131,8 +136,9 @@ namespace Game.App
             {
                 if (Time.timeScale != 1 || run.Speed != 1) throw new InvalidOperationException("Golden minute requires normal speed.");
                 if (Screen.width != width || Screen.height != height) throw new InvalidOperationException("Capture dimensions changed during the run.");
-                if (run.Frame.Status == RunStatus.Completed && run.Frame.Tick < run.Frame.TickRate * 60)
-                    throw new InvalidOperationException("Run ended before sixty gameplay seconds.");
+                if (!segment.Ready(run.Frame.Tick, run.Frame.TickRate, run.Frame.Status == RunStatus.Completed)) return;
+                if (submitted == 0 && run.Frame.Tick != segment.StartSeconds * run.Frame.TickRate)
+                    throw new InvalidOperationException("Requested capture start tick was not presented; no skipped start is accepted.");
                 var now = System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency;
                 // Synchronized 60/120 Hz uses a stable render phase; timestamp jitter must not alternate 8/25 ms selection.
                 // Unknown presentation rates retain accumulated deadlines and the same strict elapsed-time evidence.
@@ -148,7 +154,7 @@ namespace Game.App
                         ", submitted=" + submitted + ", written=" + writer.Written +
                         ", completedReadbacks=" + completedReadbacks);
                 }
-                if (submitted == 0) { firstRenderFrame = Time.renderedFrameCount; initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
+                if (submitted == 0) { if (segment.StartSeconds > 0) run.BeginSmoothnessDiagnostics(); actualStartTick = run.Frame.Tick; firstRenderFrame = Time.renderedFrameCount; initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
                 else
                 {
                     var interval = now - lastTime;
@@ -160,9 +166,9 @@ namespace Game.App
                 slot.CardPause = run.Frame.Status == RunStatus.AwaitingCard ? 1 : 0;
                 slot.WallSeconds = now - firstTime; slot.DspSeconds = AudioSettings.dspTime - firstDsp;
                 slot.CapturedTimestamp = now;
-                slot.InitialRun = !initialRunSelected && run.Frame.Tick >= run.Frame.TickRate * 2;
+                slot.InitialRun = !initialRunSelected && run.Frame.Tick >= run.Frame.TickRate * (segment.StartSeconds + 2);
                 if (slot.InitialRun) initialRunSelected = true;
-                slot.Battle = !battleSelected && run.Frame.Tick >= run.Frame.TickRate * 55 && run.Frame.Status == RunStatus.Running;
+                slot.Battle = !battleSelected && run.Frame.Tick >= run.Frame.TickRate * (segment.EndSeconds - 5) && run.Frame.Status == RunStatus.Running;
                 if (slot.Battle) battleSelected = true;
                 Volatile.Write(ref slot.State, 1);
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(buffer.Texture);
@@ -171,7 +177,7 @@ namespace Game.App
                 maximumQueueDepth = Math.Max(maximumQueueDepth, submitted - writer.Written);
                 try { AsyncGPUReadback.RequestIntoNativeArray(ref buffer.Native, buffer.Texture, 0, TextureFormat.RGBA32, buffer.Callback); }
                 catch { pending--; gpuErrors++; Volatile.Write(ref slot.State, 0); throw; }
-                if (run.Frame.Tick >= run.Frame.TickRate * 60) StopCapture();
+                if (segment.Complete(run.Frame.Tick, run.Frame.TickRate)) StopCapture();
             }
             finally { if (submissionCounterAvailable) submissionAllocations += GC.GetAllocatedBytesForCurrentThread() - allocationStart; }
         }
@@ -249,6 +255,9 @@ namespace Game.App
             File.WriteAllText(Path.Combine(folder, "golden-minute.json"), JsonUtility.ToJson(new Evidence {
                 commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty,
                 profile = CanonicalContent.ProfileName, dataHash = CanonicalContent.DataHash,
+                seed = captureSeed, requestedStartSeconds = segment.StartSeconds, requestedDurationSeconds = segment.DurationSeconds, actualStartTick = actualStartTick,
+                requestedEndSeconds = segment.EndSeconds, actualEndTick = submitted == 0 ? -1 : finalTick,
+                segmentBoundary = "Normal live autoplay from tick zero; no skipped simulation, replay, acceleration or grants. Audio and image recording begin at the requested start tick.",
                 frames = writer?.Written ?? 0, submittedFrames = submitted, completedReadbacks = completedReadbacks, maximumQueueDepth = maximumQueueDepth,
                 globalGcCollections = GC.CollectionCount(0) - initialGcCount, gpuErrors = gpuErrors, ringOverflows = ringOverflows,
                 missed60HzSlots = missedSlots, finalTick = finalTick, tickRate = run?.Frame?.TickRate ?? 0,
@@ -289,7 +298,8 @@ namespace Game.App
 
         [Serializable] sealed class Evidence
         {
-            public string commit, sourceHash, profile, dataHash, failure;
+            public string commit, sourceHash, profile, dataHash, failure, segmentBoundary;
+            public int seed, requestedStartSeconds, requestedDurationSeconds, requestedEndSeconds, actualStartTick, actualEndTick;
             public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
             public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;
             public double displayRefreshHz;
