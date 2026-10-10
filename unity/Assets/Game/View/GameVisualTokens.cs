@@ -25,7 +25,7 @@ namespace Game.View
         public const float WaveCropSpacingFraction = .8f, WaveCropOpacity = .8f, WaveTerrainOpacity = .18f, WaveHeroOutline = .045f, WaveFenceOpacity = .65f;
         public const int WaveAttackEdgeLayer = 70, WaveDangerLayer = 72;
         public const float WaveEdgeTexels = 2f, WaveEdgePixels = 1.25f, WaveEdgeOpacity = .72f, WavePlantingInnerScale = .78f;
-        public const float WaveEnemyMaxSize = .64f, WaveWaspScale = .82f, WaveEnemyUpperOpacity = .55f;
+        public const float WaveEnemyMaxSize = .64f, WaveWaspScale = .55f, WaveEnemyUpperOpacity = .55f;
         public const float WaveLordRingRadius = .34f, WaveLordRingHeight = .55f, WaveLordRingInner = .82f, WaveLordRingAccentScale = .94f, WaveLordRingAccentInner = .9f;
         public const float WaveRewardOpacity = .55f, WaveRipeEdgeOpacity = .55f;
         public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
