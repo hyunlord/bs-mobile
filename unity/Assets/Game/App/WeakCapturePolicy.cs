@@ -6,7 +6,7 @@ namespace Game.App
     public static class WeakCapturePolicy
     {
         public static int Preference(bool item, bool evolution, bool weapon, bool owned, int weaponCount)
-            => evolution || weapon && !owned && weaponCount >= 2 ? int.MaxValue : item ? 0 : owned ? 10 : weapon ? 30 : 20;
+            => evolution || weapon && !owned && weaponCount >= 2 ? int.MaxValue : item ? 0 : weapon && !owned && weaponCount == 1 ? 5 : owned ? 10 : weapon ? 30 : 20;
 
         public static string Choose(CardOfferView offer, RunFrame frame, ContentCatalog catalog)
         {
