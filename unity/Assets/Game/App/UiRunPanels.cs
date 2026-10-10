@@ -22,9 +22,12 @@ namespace Game.App
             foreach(var id in offer.Cards)
             {
                 var detail=firstPlayable.Cards.Single(c=>c.Id==id);var display=displays[id];
-                var card=UiShell.Rect("Card "+id,cards);ui.Surface(card,"ui.card."+detail.Rarity).raycastTarget=true;
+                var container=UiShell.Rect("Card "+id,cards);
+                var stack=container.gameObject.AddComponent<VerticalLayoutGroup>();stack.spacing=8;stack.childControlWidth=true;stack.childForceExpandWidth=true;stack.childControlHeight=true;stack.childForceExpandHeight=false;
+                var card=UiShell.Rect("Choose "+id,container);var surface=ui.Surface(card,"ui.card."+detail.Rarity);surface.raycastTarget=true;
+                var choose=card.gameObject.AddComponent<Button>();choose.targetGraphic=surface;choose.onClick.AddListener(()=>send(ReplayCommandKind.ChooseCard,id));
                 var vertical=card.gameObject.AddComponent<VerticalLayoutGroup>();vertical.padding=new RectOffset(wide?24:36,wide?24:36,36,36);vertical.spacing=8;vertical.childControlWidth=true;vertical.childForceExpandWidth=true;vertical.childControlHeight=true;vertical.childForceExpandHeight=false;
-                var cardSize=card.gameObject.AddComponent<LayoutElement>();cardSize.flexibleWidth=1;
+                var cardSize=container.gameObject.AddComponent<LayoutElement>();cardSize.flexibleWidth=1;
                 if(wide){cardSize.minWidth=0;cardSize.preferredWidth=0;}
                 var heading=UiShell.Rect("Card heading",card);var headingLayout=heading.gameObject.AddComponent<HorizontalLayoutGroup>();headingLayout.spacing=8;headingLayout.childControlWidth=true;headingLayout.childForceExpandWidth=false;headingLayout.childControlHeight=true;headingLayout.childForceExpandHeight=false;
                 ui.Icon(heading,id,48);ui.Label(heading,display.DisplayName,UiTokens.Heading,48).gameObject.GetComponent<LayoutElement>().flexibleWidth=1;
@@ -34,9 +37,8 @@ namespace Game.App
                 if(catalog.Tools.ContainsKey(id)&&!string.IsNullOrWhiteSpace(display.GrowthDescription))ui.Label(card,display.GrowthDescription,UiTokens.Small,32);
                 var changes=catalog.WaveRuntime==null?UpgradeChanges(detail):WaveUpgradeChanges(detail,catalog.WaveRuntime,frame.TickRate);if(changes.Length>0)ui.Label(card,changes,UiTokens.Small,32);
                 var clues=catalog.WaveRuntime==null?EvolutionClues(detail,firstPlayable,displays):WaveEvolutionClues(detail,firstPlayable,catalog.WaveRuntime,displays);if(clues.Length>0)ui.Label(card,clues,UiTokens.Caption,32);
-                if(wide)ui.Button(card,"선택",()=>send(ReplayCommandKind.ChooseCard,id));
-                var actions=UiShell.Rect("Card actions",card);var row=actions.gameObject.AddComponent<HorizontalLayoutGroup>();row.spacing=4;row.childControlWidth=true;row.childForceExpandWidth=true;row.childControlHeight=true;row.childForceExpandHeight=false;actions.gameObject.AddComponent<LayoutElement>().minHeight=UiTokens.MinTouchHeight;
-                if(!wide)ui.Button(actions,"선택",()=>send(ReplayCommandKind.ChooseCard,id));
+                ui.Label(card,"카드를 눌러 선택",UiTokens.Caption,32);
+                var actions=UiShell.Rect("Card actions",container);var row=actions.gameObject.AddComponent<HorizontalLayoutGroup>();row.spacing=4;row.childControlWidth=true;row.childForceExpandWidth=true;row.childControlHeight=true;row.childForceExpandHeight=false;actions.gameObject.AddComponent<LayoutElement>().minHeight=UiTokens.MinTouchHeight;
                 ui.Button(actions,"금지",()=>send(ReplayCommandKind.BanCard,id),offer.Bans>0);
                 ui.Button(actions,offer.LockedCardId==id?"고정됨":"고정",()=>send(ReplayCommandKind.LockCard,id),offer.Locks>0&&offer.LockedCardId!=id);
                 if(wide)foreach(Transform action in actions)
@@ -64,14 +66,22 @@ namespace Game.App
             if(!definition.Gear.TryGetValue(detail.Id,out var gear)||gear.Levels==null||gear.Levels.Length==0||detail.CurrentLevel==0)return "";
             var before=gear.Levels[Math.Min(detail.CurrentLevel,gear.Levels.Length)-1];
             var after=gear.Levels[Math.Min(detail.CurrentLevel+1,gear.Levels.Length)-1];
-            var values=new List<string>();
-            void Delta(string label,int a,int b,string suffix=""){if(a!=b)values.Add($"{label} {a}{suffix}→{b}{suffix}");}
-            Delta("피해",before.Damage,after.Damage);Delta("범위",before.Range,after.Range);Delta("타격 수",before.Count,after.Count);
-            if(before.CooldownTicks!=after.CooldownTicks)values.Add($"공격 간격 {(before.CooldownTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초→{(after.CooldownTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초");
-            Delta("속도",before.Speed,after.Speed);Delta("밀치기",before.Knockback,after.Knockback);
-            if(before.LifetimeTicks!=after.LifetimeTicks)values.Add($"지속 {(before.LifetimeTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초→{(after.LifetimeTicks/(float)tickRate).ToString("0.##",CultureInfo.InvariantCulture)}초");
-            return values.Count==0?"성장표 상한": "다음 1레벨 기준 · "+string.Join(" · ",values);
+            return WaveGrowthDescription(before,after);
         }
+        public static string WaveGrowthDescription(WaveGearLevel before,WaveGearLevel after)
+        {
+            var values=new List<string>();
+            void Change(int a,int b,string increase,string decrease){if(a!=b)values.Add(b>a?increase:decrease);}
+            Change(before.Damage,after.Damage,"더 강하게 타격","피해 감소");
+            Change(before.Range,after.Range,"더 넓게 공격","더 좁게 공격");
+            Change(before.Count,after.Count,"한 번에 더 많이 타격","한 번에 적게 타격");
+            Change(before.CooldownTicks,after.CooldownTicks,"공격 사이의 대기 증가","더 자주 공격");
+            Change(before.Speed,after.Speed,"공격이 더 빠르게 이동","공격이 더 느리게 이동");
+            Change(before.Knockback,after.Knockback,"더 세게 밀치기","밀치는 힘 감소");
+            Change(before.LifetimeTicks,after.LifetimeTicks,"공격이 더 오래 유지","공격 유지 시간 감소");
+            return values.Count==0?"성장표 상한":"다음 성장 · "+string.Join(" · ",values);
+        }
+
         static string WaveEvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,WaveRuntimeDefinition definition,IReadOnlyDictionary<string,ContentDisplay> displays)
         {
             return string.Join("\n",frame.Evolutions.Where(e=>card.EvolutionIds.Contains(e.Id)).Select(e=>

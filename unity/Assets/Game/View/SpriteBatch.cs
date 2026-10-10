@@ -34,7 +34,7 @@ namespace Game.View
             mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 }; mesh.RecalculateBounds();
         }
         public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; }
-        public void Add(Vector2 position, Vector2 size, Vector2 pivot, Rect uv, float degrees, Color color, float flash = 0)
+        public void Add(Vector2 position, Vector2 size, Vector2 pivot, Rect uv, float degrees, Color color, float flash = 0, float edgeTexels = 0, float upperOpacity = 1)
         {
             if (count == MaximumInstances) Flush();
             var rotation = Quaternion.Euler(0, 0, degrees);
@@ -42,7 +42,7 @@ namespace Game.View
             matrices[count] = Matrix4x4.TRS(new Vector3(position.x, position.y, 0) + offset, rotation, new Vector3(size.x, size.y, 1));
             colors[count] = QualitySettings.activeColorSpace == ColorSpace.Linear ? color.linear : color;
             uvs[count] = new Vector4(uv.x, uv.y, uv.width, uv.height);
-            flashes[count] = new Vector4(Mathf.Clamp01(flash), 0, 0, 0); count++;
+            flashes[count] = new Vector4(Mathf.Clamp01(flash), Mathf.Max(0, edgeTexels), Mathf.Clamp01(upperOpacity), edgeTexels>0?GameVisualTokens.WaveEdgePixels:0); count++;
         }
         public void Flush()
         {
