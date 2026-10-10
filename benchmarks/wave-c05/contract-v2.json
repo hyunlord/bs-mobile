@@ -1,0 +1,64 @@
+{
+  "version": 2,
+  "sourceCommit": "5118e2c2a06f6449be672a77a64b61c9a349d69b",
+  "replaySha256": "f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5",
+  "dataHash": "942CFEA33A25F90CBD5053D711C9BBFF1279DBE481950F2081C765B6093C3FDC",
+  "endTick": 14400,
+  "endHash": "B056B090575693A13CEEAB514E909F5C2C346FF2B1007598A4EE6E9B2DE8AEE8",
+  "windows": [
+    [
+      7200,
+      9900
+    ],
+    [
+      10200,
+      12900
+    ],
+    [
+      13200,
+      14400
+    ]
+  ],
+  "densityBins": [
+    [
+      400,
+      599
+    ],
+    [
+      600,
+      799
+    ],
+    [
+      800,
+      null
+    ]
+  ],
+  "selection": "Windows selected from original C05 CSV before new measurements; only original closed replay inputs through tick 14400 are used. Historical frame times are not the new baseline.",
+  "viewport": {
+    "width": 1600,
+    "height": 900
+  },
+  "repetitions": 3,
+  "modes": {
+    "uncapped": {
+      "targetFrameRate": -1,
+      "vSyncCount": 0
+    },
+    "capped": {
+      "targetFrameRate": 60,
+      "vSyncCount": 0
+    }
+  },
+  "regression": {
+    "maximumIncreaseRatio": 0.2,
+    "statistic": "pooled nearest-rank wall p95 per density across three repetitions",
+    "acceptance": "warning only; Mac has no absolute p95 pass threshold"
+  },
+  "stutter": {
+    "thresholdMilliseconds": 33,
+    "maximumRatio": 0.001,
+    "severeThresholdMilliseconds": 100,
+    "maximumSevereFrames": 0,
+    "comparison": "strictly greater; each density in each repetition"
+  }
+}

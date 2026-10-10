@@ -131,3 +131,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     console.log(JSON.stringify(compareWaveBenchmarks(before, after), null, 2));
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
+
+// Shared validation preserves the original v1 CLI and adjudication unchanged.
+export { loadRun, summarizePooled, configFields, deviceFields };
