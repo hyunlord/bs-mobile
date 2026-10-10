@@ -88,6 +88,8 @@ namespace Game.App
         private float cardsCanvasScale;
         private readonly Vector3[] hintCorners=new Vector3[4];
         private Text pooledHint;
+        private Vector2 hintViewportSize,hintSafeSize;
+        private float hintCanvasScale;
         private bool finished,loading,parityRunning,applicationPaused,focusLost,discardResumeDelta,telemetryClosed,suspendedInterval;
         private double intervalStarted;
         private int seed;
@@ -451,6 +453,7 @@ namespace Game.App
             if(activeHint!=null)
             {
                 if(screen!=hintScreen){ReleaseHint();return;}
+                if(hintViewportSize!=new Vector2(Screen.width,Screen.height)||hintSafeSize!=Ui.SafeRoot.rect.size||hintCanvasScale!=Ui.Canvas.scaleFactor)LayoutActiveHint();
                 if(!hintRecorded&&!applicationPaused&&!focusLost&&Time.frameCount>hintStartedFrame&&activeHint.gameObject.activeInHierarchy&&!activeHint.canvasRenderer.cull)
                 {
                     activeHint.rectTransform.GetWorldCorners(hintCorners);
@@ -473,19 +476,12 @@ namespace Game.App
             activeHintKind=next.Value;hintScreen=screen;hintRecorded=false;hintStartedFrame=Time.frameCount;hintRemaining=5;
             if(pooledHint==null)pooledHint=Ui.Hint(HintText(activeHintKind));
             activeHint=pooledHint;activeHint.text=HintText(activeHintKind);
-            activeHint.fontSize=UiTokens.Body;activeHint.lineSpacing=1.25f;UiShell.Stretch(activeHint.rectTransform,UiTokens.Padding);
-            var hintContainer=(RectTransform)activeHint.transform.parent;hintContainer.SetParent(Ui.Content,false);hintContainer.gameObject.SetActive(true);
-            hintContainer.anchorMin=hintContainer.anchorMax=new Vector2(.5f,.18f);hintContainer.anchoredPosition=Vector2.zero;hintContainer.sizeDelta=new Vector2(720,120);
-            var hintLayout=hintContainer.GetComponent<LayoutElement>();if(hintLayout!=null)hintLayout.enabled=false;
-            if(screen==UiScreen.Run&&Screen.width>Screen.height)UiRunPanels.PlaceLandscapeBattleHint(Ui,activeHint);
-            if(screen==UiScreen.Cards&&!UiRunPanels.PlaceLandscapeCardHint(Ui,activeHint))
-            {
-                var container=(RectTransform)activeHint.transform.parent;
-                container.SetParent(Ui.Content.GetComponentInChildren<ScrollRect>().content,false);
-                container.SetSiblingIndex(2);
-                var layout=hintLayout??container.gameObject.AddComponent<LayoutElement>();layout.enabled=true;
-                layout.minHeight=layout.preferredHeight=96;layout.flexibleHeight=0;
-            }
+            LayoutActiveHint();
+        }
+        private void LayoutActiveHint()
+        {
+            UiRunPanels.LayoutHint(Ui,activeHint,screen==UiScreen.Cards,Screen.width>Screen.height);
+            hintViewportSize=new Vector2(Screen.width,Screen.height);hintSafeSize=Ui.SafeRoot.rect.size;hintCanvasScale=Ui.Canvas.scaleFactor;
         }
         private bool HasRipeFarm()
         {for(var i=0;i<Frame.Farms.Count;i++)if(Frame.Farms[i].Ripe)return true;return false;}

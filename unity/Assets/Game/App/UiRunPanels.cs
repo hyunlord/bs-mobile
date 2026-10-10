@@ -94,6 +94,21 @@ namespace Game.App
             LandscapeCardButton(ui,reroll,width-210,height-40,192,32);
             var note=ui.Label(panel,$"금지 {offer.Bans} · 고정 {offer.Locks} · 선택하면 계속됩니다",14,32);CardPosition(note.rectTransform,18,height-40,width-240,32);
         }
+        public static void LayoutHint(UiShell ui,Text hint,bool cards,bool landscape)
+        {
+            hint.fontSize=UiTokens.Body;hint.lineSpacing=1.25f;UiShell.Stretch(hint.rectTransform,UiTokens.Padding);
+            var container=(RectTransform)hint.transform.parent;container.SetParent(ui.Content,false);container.gameObject.SetActive(true);
+            container.anchorMin=container.anchorMax=new Vector2(.5f,.18f);container.pivot=new Vector2(.5f,.5f);
+            container.anchoredPosition=Vector2.zero;container.sizeDelta=new Vector2(720,120);
+            var layout=container.GetComponent<LayoutElement>();if(layout!=null)layout.enabled=false;
+            if(!cards){if(landscape)PlaceLandscapeBattleHint(ui,hint);return;}
+            if(PlaceLandscapeCardHint(ui,hint))return;
+            var scroll=ui.Content.GetComponentInChildren<ScrollRect>();
+            if(scroll==null)throw new InvalidOperationException("Card hint requires a reserved header or scroll layout.");
+            container.SetParent(scroll.content,false);container.SetSiblingIndex(2);
+            if(layout==null)layout=container.gameObject.AddComponent<LayoutElement>();layout.enabled=true;
+            layout.minHeight=layout.preferredHeight=96;layout.flexibleHeight=0;
+        }
         public static bool PlaceLandscapeBattleHint(UiShell ui,Text hint)
         {
             var hud=ui.Content.Find("HUD") as RectTransform;

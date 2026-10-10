@@ -36,6 +36,20 @@ namespace Tests.EditMode
                 Assert.That(container.parent,Is.SameAs(hud));
                 Assert.That(container.anchoredPosition.y+container.rect.height,Is.LessThanOrEqualTo(hud.rect.height));
                 Assert.That(hint.preferredHeight,Is.LessThanOrEqualTo(hint.rectTransform.rect.height+.5f));
+                UiRunPanels.LayoutHint(ui,hint,false,false);
+                Assert.That(hint.transform.parent.parent,Is.SameAs(ui.Content));
+                Assert.That(container.sizeDelta,Is.EqualTo(new Vector2(720,120)));
+                Assert.That(hint.fontSize,Is.EqualTo(UiTokens.Body));
+                Assert.That(container.pivot,Is.EqualTo(new Vector2(.5f,.5f)));
+                UiRunPanels.LayoutHint(ui,hint,false,true);
+                Assert.That(container.parent,Is.SameAs(hud));
+                Assert.That(container.sizeDelta.y,Is.EqualTo(18));
+                Assert.That(hint.fontSize,Is.EqualTo(12));
+                foreach(var message in new[]{"화면 빈 곳을 끌어 이동하세요. 공격은 자동입니다.","황금빛으로 익은 밭에 다가가 수확하세요.","징집된 백성이 적과 싸웁니다. 다시 일터로 돌아오는 것도 지켜보세요."})
+                {
+                    hint.text=message;UiRunPanels.LayoutHint(ui,hint,false,true);Canvas.ForceUpdateCanvases();
+                    Assert.That(hint.preferredHeight,Is.LessThanOrEqualTo(hint.rectTransform.rect.height+.5f),message);
+                }
             }
             finally{UnityEngine.Object.DestroyImmediate(owner);UnityEngine.Object.DestroyImmediate(font);}
         }
