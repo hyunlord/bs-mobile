@@ -4,10 +4,10 @@ namespace Game.App
 {
     public sealed class LordPresentationPredictor
     {
-        Vector2 authoritative, rendered, bounds;
+        Vector2 authoritative, rendered, bounds, measuredVelocity, measuredInput;
         float speed, tickSeconds;
         int tick;
-        bool initialized, wasPaused;
+        bool initialized, wasPaused, hasMeasuredVelocity;
         public Vector2 Position => rendered;
         public float Speed => speed;
         public bool ResetThisFrame { get; private set; }
@@ -16,18 +16,22 @@ namespace Game.App
         {
             authoritative = rendered = position; bounds = mapBounds; speed = baseSpeed;
             tickSeconds = secondsPerTick; tick = currentTick; initialized = true; wasPaused = true;
+            measuredVelocity = measuredInput = Vector2.zero; hasMeasuredVelocity = false;
         }
 
         public void Observe(Vector2 position, int currentTick, Vector2 appliedInput)
         {
             var elapsed = (currentTick - tick) * tickSeconds;
-            if(initialized && elapsed > 0 && appliedInput.sqrMagnitude > .001f)
+            if(initialized && elapsed > 0 && appliedInput.sqrMagnitude > .00000001f)
             {
-                var delta = position - authoritative;
-                var along = Vector2.Dot(delta, appliedInput.normalized);
-                var observed = along / (elapsed * appliedInput.magnitude);
+                var velocity = (position - authoritative) / elapsed;
                 var onEdge = position.x <= 0 || position.y <= 0 || position.x >= bounds.x || position.y >= bounds.y;
-                if(observed > 0 && !onEdge) speed = observed;
+                if(!onEdge)
+                {
+                    measuredVelocity = velocity; measuredInput = appliedInput; hasMeasuredVelocity = true;
+                    if(velocity.sqrMagnitude > 0) speed = velocity.magnitude / appliedInput.magnitude;
+                }
+                else hasMeasuredVelocity = false;
             }
             authoritative = position; tick = currentTick;
         }
@@ -44,9 +48,13 @@ namespace Game.App
             if(!paused)
             {
                 var dt = Mathf.Max(0, elapsedSeconds);
-                var target = Clamp(authoritative + input * speed * Mathf.Clamp(residualSeconds, 0, tickSeconds));
-                var integrated = Clamp(rendered + input * speed * dt);
-                rendered = Vector2.MoveTowards(integrated, target, speed * dt * .35f);
+                var velocity = hasMeasuredVelocity && (input - measuredInput).sqrMagnitude < .00000001f
+                    ? measuredVelocity : input * speed;
+                var target = Clamp(authoritative + velocity * Mathf.Clamp(residualSeconds, 0, tickSeconds));
+                var integrated = Clamp(rendered + velocity * dt);
+                var correction = 1 - Mathf.Exp(-dt / .06f);
+                rendered = Vector2.Lerp(integrated, target, correction);
+                if((rendered - target).sqrMagnitude < .000000000001f) rendered = target;
                 rendered = Clamp(authoritative + Vector2.ClampMagnitude(rendered - authoritative, speed * tickSeconds));
             }
             wasPaused = paused;

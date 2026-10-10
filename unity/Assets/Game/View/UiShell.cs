@@ -24,8 +24,8 @@ namespace Game.View
             TouchSurface = Rect("Movement surface", transform); Stretch(TouchSurface); var hit = TouchSurface.gameObject.AddComponent<Image>(); hit.color = Color.clear;
             SafeRoot = Rect("Safe area", transform); Stretch(SafeRoot);
             Content = Rect("Content", SafeRoot); Stretch(Content);
-            stickBase = Rect("Joystick", transform); stickBase.sizeDelta = Vector2.one * UiTokens.StickRadius * 2; Surface(stickBase, "ui.joystick.base");
-            stickKnob = Rect("Knob", stickBase); stickKnob.sizeDelta = Vector2.one * 80; Surface(stickKnob, "ui.joystick.thumb");
+            stickBase = Rect("Joystick", transform); stickBase.sizeDelta = Vector2.one * UiTokens.StickRadius * 2; StickSurface(stickBase, "ui.joystick.base", new Rect(4,36,174,174));
+            stickKnob = Rect("Knob", stickBase); stickKnob.sizeDelta = Vector2.one * UiTokens.StickThumbDiameter; StickSurface(stickKnob, "ui.joystick.thumb", new Rect(6,5,153,153));
             foreach (var graphic in stickBase.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
             stickBase.gameObject.SetActive(false); RefreshSafeArea();
         }
@@ -41,7 +41,20 @@ namespace Game.View
         public void ShowStick(bool active, Vector2 origin, Vector2 offset)
         {
             stickBase.gameObject.SetActive(active); if (!active) return;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform, origin, null, out var point); stickBase.anchoredPosition = point; stickKnob.anchoredPosition = offset / Canvas.scaleFactor;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform, origin, null, out var point); stickBase.anchoredPosition = point; stickKnob.anchoredPosition = StickVisualOffset(offset, Canvas.scaleFactor);
+        }
+        public static Vector2 StickVisualOffset(Vector2 screenOffset, float canvasScale)
+        {
+            var normalized = Vector2.ClampMagnitude(screenOffset / Mathf.Max(.001f, canvasScale) / UiTokens.StickRadius, 1);
+            return normalized * (UiTokens.StickRadius - UiTokens.StickThumbDiameter * .5f);
+        }
+        void StickSurface(RectTransform parent, string role, Rect inkBounds)
+        {
+            var source = ArtCatalog.Load().ResolveRole(role).Sprite;
+            var rect = new Rect(source.rect.x + inkBounds.x, source.rect.y + inkBounds.y, inkBounds.width, inkBounds.height);
+            var sprite = Sprite.Create(source.texture, rect, new Vector2(.5f,.5f), 100);
+            slicedSprites.Add(role + " centered", sprite);
+            var image = parent.gameObject.AddComponent<Image>(); image.sprite = sprite; image.preserveAspect = true; image.raycastTarget = false;
         }
         public void Clear() { foreach (Transform child in Content) { child.gameObject.SetActive(false); Destroy(child.gameObject); } }
         public RectTransform Panel(string name)

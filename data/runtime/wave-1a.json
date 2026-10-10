@@ -2611,6 +2611,17 @@
           }
         }
       }
+    },
+    "enemySeparation": {
+      "version": 1,
+      "bodyWidths": {
+        "core:raider": 475,
+        "core:seed_mite": 489,
+        "core:crop_grazer": 412,
+        "core:ram_runner": 446,
+        "core:shield_raider": 528,
+        "core:wine_wasp": 258
+      }
     }
   },
   "provenance": [

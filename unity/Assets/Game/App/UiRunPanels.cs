@@ -37,7 +37,7 @@ namespace Game.App
                 ui.Label(card,"기본 효과 · "+display.EffectDescription,UiTokens.Body,36);
                 if(catalog.Tools.ContainsKey(id)&&!string.IsNullOrWhiteSpace(display.GrowthDescription))ui.Label(card,display.GrowthDescription,UiTokens.Small,32);
                 var changes=catalog.WaveRuntime==null?UpgradeChanges(detail):WaveUpgradeChanges(detail,catalog.WaveRuntime,frame.TickRate);if(changes.Length>0)ui.Label(card,changes,UiTokens.Small,32);
-                var clues=catalog.WaveRuntime==null?EvolutionClues(detail,firstPlayable,displays):WaveEvolutionClues(detail,firstPlayable,catalog.WaveRuntime,displays);if(clues.Length>0)ui.Label(card,clues,UiTokens.Caption,32);
+                var clues=catalog.WaveRuntime==null?EvolutionClues(detail,firstPlayable,displays):WaveEvolutionClues(detail,firstPlayable,catalog.WaveRuntime,displays,fallow);if(clues.Length>0)ui.Label(card,clues,fallow?UiTokens.FallowEvolution:UiTokens.Caption,32);
                 ui.Label(card,"카드를 눌러 선택",UiTokens.Caption,32);
                 var actions=UiShell.Rect("Card actions",container);var row=actions.gameObject.AddComponent<HorizontalLayoutGroup>();row.spacing=4;row.childControlWidth=true;row.childForceExpandWidth=true;row.childControlHeight=true;row.childForceExpandHeight=false;actions.gameObject.AddComponent<LayoutElement>().minHeight=UiTokens.MinTouchHeight;
                 var ban=ui.Button(actions,"금지",()=>send(ReplayCommandKind.BanCard,id),offer.Bans>0);
@@ -85,12 +85,13 @@ namespace Game.App
             return values.Count==0?"성장표 상한":"다음 성장 · "+string.Join(" · ",values);
         }
 
-        static string WaveEvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,WaveRuntimeDefinition definition,IReadOnlyDictionary<string,ContentDisplay> displays)
+        static string WaveEvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,WaveRuntimeDefinition definition,IReadOnlyDictionary<string,ContentDisplay> displays,bool readable=false)
         {
             return string.Join("\n",frame.Evolutions.Where(e=>card.EvolutionIds.Contains(e.Id)).Select(e=>
             {
                 var gate=definition.Evolutions[e.Id].Kind switch {WaveEvolutionKind.PlantingArc=>"밭 위의 적을 검으로 처치",WaveEvolutionKind.RepairOrbit=>"건물 수리 완료",WaveEvolutionKind.ShelteredPlot=>"건물 곁에서 수확",_=>throw new InvalidOperationException("Unknown evolution gate")};
-                return "진화 · "+displays[e.Id].DisplayName+" · "+(e.Activated?"완료":e.Available?"선택 가능":"조건")+" · "+string.Join(" + ",e.Requirements.Select(r=>displays[r.EquipmentId].DisplayName))+" · "+gate;
+                var separator=readable?"\n":" · ";
+                return "진화 · "+displays[e.Id].DisplayName+" · "+(e.Activated?"완료":e.Available?"선택 가능":"조건")+separator+string.Join(" + ",e.Requirements.Select(r=>displays[r.EquipmentId].DisplayName))+separator+gate;
             }));
         }
         static string EvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,IReadOnlyDictionary<string,ContentDisplay> displays)

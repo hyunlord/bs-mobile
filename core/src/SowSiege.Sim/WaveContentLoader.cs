@@ -193,6 +193,11 @@ public static partial class ContentLoader
     private static void ValidateWaveDefinition(WaveContentFile file)
     {
         var wave = file.Definition;
+        if (wave.EnemySeparation is { } separation)
+        {
+            Require(separation.Version == 1 && SameIds(separation.BodyWidths.Keys, wave.Enemies.Values.Where(e => e.Kind != WaveEnemyKind.FloodBoss).Select(e => e.Id))
+                && separation.BodyWidths.Values.All(width => width > 0 && width <= 1000000), "Invalid wave enemy separation contract.");
+        }
         string Reference(string id) => "data/system-design-v1.json@" + WaveRevision + "#" + id;
         Require(wave.ChapterId == "meta:chapter_1" && wave.ChapterDesignRef == Reference(wave.ChapterId) && wave.BossId == "core:flood_tusk", "Unsupported wave chapter or boss.");
         Require(wave.BossSpawnTick > 0 && wave.BossSpawnTick < file.Tuning.DurationTicks && wave.GroupCap is > 0 and <= 16
