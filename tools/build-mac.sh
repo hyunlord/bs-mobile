@@ -19,10 +19,25 @@ export UNITY_MAC_PATH="$OUT/Sow and Siege.app"
 [[ "$("$EDITOR" -version)" == "6000.6.4f1" ]] || { echo 'Unity version mismatch' >&2; exit 1; }
 [[ ! -e "$UNITY_MAC_PATH" ]] || { echo 'Use a fresh UNITY_MAC_OUTPUT to preserve prior build evidence.' >&2; exit 1; }
 bash tools/prepare-unity.sh
+URP_ASSET="$ROOT/unity/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset"
+URP_SNAPSHOT="$OUT/urp-authoring-before-build.asset"
+cp "$URP_ASSET" "$URP_SNAPSHOT"
+restore_urp_authoring() {
+  node tools/restore-urp-authoring.mjs "$URP_ASSET" "$URP_SNAPSHOT"
+}
+finish_build() {
+  local result=$?
+  trap - EXIT
+  restore_urp_authoring || result=1
+  exit "$result"
+}
+trap finish_build EXIT
 "$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -buildTarget OSXUniversal \
   -executeMethod Game.Editor.FoundationBuild.ConfigureMac -logFile "$OUT/configure.log"
+restore_urp_authoring
 "$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -buildTarget OSXUniversal \
   -executeMethod Game.Editor.FoundationBuild.MacRelease -logFile "$OUT/build.log"
+restore_urp_authoring
 [[ -s "$OUT/mac-build-result.json" && -d "$UNITY_MAC_PATH" ]] || { echo 'Missing Mac build result.' >&2; exit 1; }
 dotnet run --project tools/UnityResultCheck -- --release "$UNITY_MAC_PATH/Contents/Resources/Data/Managed"
 bash tools/prepare-unity.sh --verify
