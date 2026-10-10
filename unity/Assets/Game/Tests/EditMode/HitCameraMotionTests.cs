@@ -1,5 +1,8 @@
+using System;
+using System.Reflection;
 using Game.View;
 using NUnit.Framework;
+using SowSiege.Core;
 using UnityEngine;
 
 namespace Tests.EditMode
@@ -10,46 +13,36 @@ namespace Tests.EditMode
         [TestCase(1080,5.2f)]
         [TestCase(1818,5.2f)]
         [TestCase(2560,8f)]
-        public void ActualScreenImpulseIsBoundedAtEveryZoomAndResolution(int height,float halfHeight)
+        public void RepeatedDamageKeepsCameraStationaryAndRetainsLocalHeroFlash(int height,float halfHeight)
         {
-            var motion=new HitCameraMotion(); motion.Trigger(1);
-            for(var i=0;i<=120;i++)
+            var owner=new GameObject("Damage camera regression");
+            try
             {
-                var offset=motion.Sample(1+i/120f,halfHeight,height);
-                var normalizedPixels=offset.magnitude*height/(2*halfHeight)*1080/height;
-                Assert.That(normalizedPixels,Is.LessThanOrEqualTo(.250001f));
-                Assert.That(offset.x,Is.Zero);
-                Assert.That(offset.y,Is.LessThanOrEqualTo(0));
+                var renderer=owner.AddComponent<WorldRenderer>();
+                var camera=owner.AddComponent<Camera>();camera.orthographic=true;camera.orthographicSize=halfHeight;
+                camera.pixelRect=new Rect(0,0,height*.6f,height);
+                var follow=new RunCamera(camera,new WorldCameraSettings(1000,2400,6000,600,120,800));
+                var lord=new Vector2(4,7);follow.Present(lord,2000,0);
+                var original=camera.transform.position;
+                var onEvent=typeof(WorldRenderer).GetMethod("OnEvent",BindingFlags.Instance|BindingFlags.NonPublic);
+                var clock=typeof(WorldRenderer).GetField("visualTime",BindingFlags.Instance|BindingFlags.NonPublic);
+                var flash=typeof(WorldRenderer).GetField("heroHitUntil",BindingFlags.Instance|BindingFlags.NonPublic);
+                for(var i=0;i<600;i++)
+                {
+                    var time=i/60f;clock.SetValue(renderer,time);
+                    if(i%4==0)
+                    {
+                        var hit=new PresentationEvent(i,i,PresentationKind.LordHit,"test",new WorldPoint(4000,7000),new WorldPoint(0,0),"hit",0,1,Array.Empty<WorldPoint>(),Array.Empty<int>());
+                        onEvent.Invoke(renderer,new object[]{hit});
+                        Assert.That((float)flash.GetValue(renderer),Is.GreaterThan(time),"Damage must still trigger the local hero flash.");
+                    }
+                    renderer.ShakeEnabled=i%2==0;
+                    follow.Present(lord,2000,1f/60);follow.SetVisualOffset(renderer.CameraShakeOffset);
+                    Assert.That(renderer.CameraShakeOffset,Is.EqualTo(Vector2.zero));
+                    Assert.That(camera.transform.position,Is.EqualTo(original));
+                }
             }
-        }
-        [Test]
-        public void RepeatedHitsDoNotRestartAnActiveImpulseOrJumpItsPosition()
-        {
-            var motion=new HitCameraMotion(); motion.Trigger(1);
-            Assert.That(motion.Sample(1,5,1080),Is.EqualTo(Vector2.zero));
-            var before=motion.Sample(1.07f,5,1080);
-            motion.Trigger(1.07f);
-            Assert.That(motion.Sample(1.07f,5,1080),Is.EqualTo(before));
-            Assert.That(motion.Sample(1.18f,5,1080).magnitude,Is.LessThan(.000001f));
-            motion.Trigger(2);
-            Assert.That(motion.Sample(2,5,1080),Is.EqualTo(Vector2.zero));
-        }
-        [Test]
-        public void FifteenFrameActualScreenResidualStaysBelowHalfAPixelWithRepeatedHits()
-        {
-            var motion=new HitCameraMotion(); var y=new float[600];
-            for(var i=0;i<y.Length;i++)
-            {
-                var time=i/60f;if(i%4==0)motion.Trigger(time);
-                y[i]=motion.Sample(time,5.2f,1818).y*1080/(2*5.2f);
-            }
-            var squares=0f;var count=0;
-            for(var i=7;i<y.Length-7;i++)
-            {
-                var mean=0f;for(var j=i-7;j<=i+7;j++)mean+=y[j]/15;
-                squares+=(y[i]-mean)*(y[i]-mean);count++;
-            }
-            Assert.That(Mathf.Sqrt(squares/count),Is.LessThan(.5f));
+            finally { UnityEngine.Object.DestroyImmediate(owner); }
         }
     }
 }

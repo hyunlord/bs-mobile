@@ -48,11 +48,10 @@ namespace Game.View
         }
         int mapWidth, mapHeight, season, previousSeason, level;
         float visualTime, seasonAge, heroHitUntil, levelAge = 10;
-        HitCameraMotion hitCamera;
         public bool ShowAnnouncements { get; set; } = true;
         public bool ShowDamageNumbers { get; set; } = true;
         public bool ShakeEnabled { get; set; } = true;
-        public Vector2 CameraShakeOffset { get; private set; }
+        public Vector2 CameraShakeOffset => Vector2.zero;
         public string WarningSourceId { get; private set; } = "";
         public string WarningRank { get; private set; } = "";
         public float WarningRemainingSeconds { get; private set; }
@@ -124,7 +123,6 @@ namespace Game.View
             if (effect.Kind == PresentationKind.LordHit)
             {
                 heroHitUntil = visualTime + GameVisualTokens.HitFlashSeconds;
-                hitCamera.Trigger(visualTime);
             }
             if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
             if (effect.Kind == PresentationKind.BossWarning)
@@ -164,7 +162,6 @@ namespace Game.View
             followCamera.LordViewportAnchor = FallowActive ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
-            CameraShakeOffset = ShakeEnabled ? hitCamera.Sample(visualTime, renderCamera.orthographicSize, renderCamera.pixelHeight) : Vector2.zero;
             followCamera.SetVisualOffset(CameraShakeOffset);
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
