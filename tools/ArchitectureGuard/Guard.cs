@@ -49,9 +49,10 @@ internal static partial class Guard
         {
             using var json = JsonDocument.Parse(File.ReadAllText(path));
             CollectIds(json.RootElement, ids, path.Contains("hero", StringComparison.OrdinalIgnoreCase)
-                || path.Contains("estate", StringComparison.OrdinalIgnoreCase));
+                || path.Contains("estate", StringComparison.OrdinalIgnoreCase),
+                path == Path.Combine(root, "data/system-design-v1.json"));
         }
-        var results = CheckSources(files, ids, allowlist);
+        var results = CheckSources(files, ids, allowlist, ReadMechanicUnits(root));
         var projects = Directory.GetFiles(directory, "*.csproj", SearchOption.AllDirectories);
         if (projects.Length == 0)
         {
@@ -80,6 +81,22 @@ internal static partial class Guard
         return results;
     }
 
+    private static HashSet<string> ReadMechanicUnits(string root)
+    {
+        var units = new HashSet<string>(StringComparer.Ordinal);
+        var path = Path.Combine(root, "data/system-design-v1.json");
+        if (!File.Exists(path)) { return units; }
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+        foreach (var unit in document.RootElement.GetProperty("primitiveContract").GetProperty("units").EnumerateArray())
+        {
+            var id = unit.GetProperty("id").GetString();
+            if (id is null || !Regex.IsMatch(id, "^unit:[a-z][a-z0-9-]*$", RegexOptions.CultureInvariant)
+                || unit.GetProperty("paramSchema").ValueKind != JsonValueKind.Object || !units.Add(id))
+            { throw new IOException("Invalid or duplicate declared mechanic grammar unit."); }
+        }
+        return units;
+    }
+
     private static IEnumerable<string> Ancestors(string directory, string root)
     {
         for (var current = new DirectoryInfo(directory); current != null; current = current.Parent)
@@ -92,7 +109,7 @@ internal static partial class Guard
         }
     }
 
-    private static void CollectIds(JsonElement element, HashSet<string> ids, bool context)
+    private static void CollectIds(JsonElement element, HashSet<string> ids, bool context, bool hasGrammarRegistry = false, bool insideGrammarRegistry = false)
     {
         if (element.ValueKind == JsonValueKind.Object)
         {
@@ -100,6 +117,9 @@ internal static partial class Guard
             {
                 var related = property.Name.Contains("hero", StringComparison.OrdinalIgnoreCase)
                     || property.Name.Contains("estate", StringComparison.OrdinalIgnoreCase);
+                if (!insideGrammarRegistry && property.Name.Equals("id", StringComparison.OrdinalIgnoreCase)
+                    && property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() is { } concrete && ContentId().IsMatch(concrete))
+                { ids.Add(concrete); }
                 if (((context && property.Name.Equals("id", StringComparison.OrdinalIgnoreCase))
                         || (related && property.Name.EndsWith("id", StringComparison.OrdinalIgnoreCase)))
                     && property.Value.ValueKind == JsonValueKind.String && property.Value.GetString() is { Length: > 0 } id)
@@ -107,20 +127,20 @@ internal static partial class Guard
                     ids.Add(id);
                 }
 
-                CollectIds(property.Value, ids, related);
+                CollectIds(property.Value, ids, related, hasGrammarRegistry, insideGrammarRegistry || (hasGrammarRegistry && property.Name == "primitiveContract"));
             }
         }
         else if (element.ValueKind == JsonValueKind.Array)
         {
             foreach (var child in element.EnumerateArray())
             {
-                CollectIds(child, ids, context);
+                CollectIds(child, ids, context, hasGrammarRegistry, insideGrammarRegistry);
             }
         }
     }
 
     internal static List<string> CheckSources(IReadOnlyDictionary<string, string> files, HashSet<string> ids,
-        IReadOnlyList<AlgorithmConstant> allowlist)
+        IReadOnlyList<AlgorithmConstant> allowlist, IReadOnlySet<string>? mechanicUnits = null)
     {
         var trees = files.SelectMany(file => ParseEveryBranch(file.Key, file.Value)).ToArray();
         var implicitUsings = CSharpSyntaxTree.ParseText("global using System; global using System.Collections.Generic; global using System.Linq;");
@@ -142,7 +162,7 @@ internal static partial class Guard
                 if (node is ExpressionSyntax expression)
                 {
                     var constant = model.GetConstantValue(expression);
-                    if (constant.HasValue && constant.Value is string text && (ids.Contains(text) || ContentId().IsMatch(text)))
+                    if (constant.HasValue && constant.Value is string text && (ids.Contains(text) || (ContentId().IsMatch(text) && mechanicUnits?.Contains(text) != true)))
                     {
                         Report("AG002", "Concrete content ID belongs in data, not Core.", node);
                     }

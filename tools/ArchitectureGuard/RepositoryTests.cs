@@ -41,6 +41,37 @@ internal static class RepositoryTests
             File.WriteAllText(Path.Combine(root, "data/heroes/generic.json"), "{\"id\":\"people\"}");
             File.WriteAllText(source, "class C { string Id => \"people\"; }");
             Expect("generic word used as actual hero identity remains protected", "AG002");
+            File.WriteAllText(Path.Combine(root, "data/system-design-v1.json"), "{\"primitiveContract\":{\"units\":[{\"id\":\"unit:attack-shape\",\"paramSchema\":{\"type\":\"object\"}}]}}");
+            File.WriteAllText(source, "class C { string Unit => \"unit:attack-shape\"; }");
+            Expect("declared mechanic grammar unit", "AG002", false);
+            File.WriteAllText(source, "class C { string Unit => \"unit\\u003aattack-shape\"; }");
+            Expect("escaped declared mechanic grammar unit", "AG002", false);
+            File.WriteAllText(source, "class C { const string Unit = \"unit\" + \":attack-shape\"; }");
+            Expect("constant folded declared mechanic grammar unit", "AG002", false);
+            File.WriteAllText(source, "class C { string Unit => \"unit:unknown\"; }");
+            Expect("unknown unit namespace is not blanket exempt", "AG002");
+            File.WriteAllText(source, "class C { string Unit => \"unit\\u003aunknown\"; }");
+            Expect("escaped unknown unit", "AG002");
+            File.WriteAllText(source, "class C { const string Unit = \"unit\" + \":unknown\"; }");
+            Expect("concatenated unknown unit", "AG002");
+            File.WriteAllText(source, "class C { string Id => \"unit:attack-shape core:seed_bag\"; }");
+            Expect("known grammar cannot hide concrete content", "AG002");
+            File.WriteAllText(Path.Combine(root, "data/items.json"), "{\"items\":[{\"id\":\"unit:attack-shape\"}]}");
+            File.WriteAllText(source, "class C { string Id => \"unit:attack-shape\"; }");
+            Expect("actual item identity overrides grammar exemption", "AG002");
+            File.Delete(Path.Combine(root, "data/items.json"));
+            File.WriteAllText(Path.Combine(root, "data/heroes/collision.json"), "{\"id\":\"unit:attack-shape\"}");
+            File.WriteAllText(source, "class C { string Id => \"unit:attack-shape\"; }");
+            Expect("actual hero identity overrides grammar exemption", "AG002");
+            var registry = Path.Combine(root, "data/system-design-v1.json");
+            var validRegistry = File.ReadAllText(registry);
+            File.WriteAllText(registry, validRegistry.Replace("unit:attack-shape", "core:seed_bag", StringComparison.Ordinal));
+            var rejectedRegistry = false;
+            try { Guard.CheckRepository(root); }
+            catch (IOException) { rejectedRegistry = true; }
+            Console.WriteLine($"{(rejectedRegistry ? "PASS" : "FAIL")} repository concrete content cannot register as grammar");
+            if (!rejectedRegistry) { failures++; }
+            File.WriteAllText(registry, validRegistry);
             File.WriteAllText(source, "class C {} ");
             File.WriteAllText(Path.Combine(root, "Directory.Build.props"),
                 "<Project><ItemGroup><PackageReference Include=\"Engine\" /></ItemGroup></Project>");

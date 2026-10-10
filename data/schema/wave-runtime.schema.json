@@ -578,6 +578,2110 @@
               "maximum": 16
             }
           }
+        },
+        "programs": {
+          "type": "object",
+          "minProperties": 28,
+          "maxProperties": 28,
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "params": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "properties": {
+                  "unit:attack-shape": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "melee-fan"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "damage"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "orbit"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "knockback"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "chain"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "nearest-enemy"
+                          },
+                          "collision": {
+                            "const": "damage"
+                          },
+                          "repeatTarget": {
+                            "const": "never-in-chain"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "homing-projectile"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "nearest-enemy"
+                          },
+                          "collision": {
+                            "const": "damage"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "melee-fan"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "damage-knockback"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "ground-slam"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "damage-knockback"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "expanding-wave"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "damage-knockback"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "orbit"
+                          },
+                          "anchor": {
+                            "const": "building"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "knockback"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "anchor",
+                          "aim",
+                          "collision",
+                          "repeatTarget",
+                          "on"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "ground-slam"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "aim": {
+                            "const": "facing"
+                          },
+                          "collision": {
+                            "const": "damage"
+                          },
+                          "repeatTarget": {
+                            "const": "per-activation"
+                          },
+                          "on": {
+                            "const": "automatic-attack"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:visible-marker": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "channel",
+                          "state",
+                          "bind"
+                        ],
+                        "properties": {
+                          "channel": {
+                            "const": "ground"
+                          },
+                          "state": {
+                            "const": "attack-footprint"
+                          },
+                          "bind": {
+                            "const": "self"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:attack-variant": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "condition",
+                          "action",
+                          "anchor",
+                          "consumeCondition"
+                        ],
+                        "properties": {
+                          "condition": {
+                            "const": "wet-target"
+                          },
+                          "action": {
+                            "const": "wet-priority-chain"
+                          },
+                          "anchor": {
+                            "const": "target"
+                          },
+                          "consumeCondition": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "condition",
+                          "action",
+                          "anchor",
+                          "consumeCondition"
+                        ],
+                        "properties": {
+                          "condition": {
+                            "const": "ripe-contact"
+                          },
+                          "action": {
+                            "const": "emit-fragments"
+                          },
+                          "anchor": {
+                            "const": "contact"
+                          },
+                          "consumeCondition": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "condition",
+                          "action",
+                          "anchor",
+                          "consumeCondition"
+                        ],
+                        "properties": {
+                          "condition": {
+                            "const": "water-empty"
+                          },
+                          "action": {
+                            "const": "dry-strike"
+                          },
+                          "anchor": {
+                            "const": "lord"
+                          },
+                          "consumeCondition": {
+                            "const": "false"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:status-apply": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "status",
+                          "scope",
+                          "expire"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "hit"
+                          },
+                          "target": {
+                            "const": "enemy"
+                          },
+                          "status": {
+                            "const": "brief-stop"
+                          },
+                          "scope": {
+                            "const": "attack-target"
+                          },
+                          "expire": {
+                            "const": "duration"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "status",
+                          "scope",
+                          "expire"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "enter"
+                          },
+                          "target": {
+                            "const": "enemy"
+                          },
+                          "status": {
+                            "const": "wet"
+                          },
+                          "scope": {
+                            "const": "water-path"
+                          },
+                          "expire": {
+                            "const": "duration"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:projectile-lifecycle": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "growthCollision",
+                          "onTargetLost",
+                          "tracking"
+                        ],
+                        "properties": {
+                          "growthCollision": {
+                            "const": "ignore"
+                          },
+                          "onTargetLost": {
+                            "const": "expire"
+                          },
+                          "tracking": {
+                            "const": "locked-target"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:harvest-contact": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "scope",
+                          "sourceFilter",
+                          "sourceIds"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "hit"
+                          },
+                          "target": {
+                            "const": "ripe-land"
+                          },
+                          "scope": {
+                            "const": "attack-footprint"
+                          },
+                          "sourceFilter": {
+                            "const": "owned-source"
+                          },
+                          "sourceIds": {
+                            "const": "$seed"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:remnant-create": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "placement",
+                          "stock",
+                          "remnantKey"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "automatic-attack"
+                          },
+                          "target": {
+                            "const": "land"
+                          },
+                          "placement": {
+                            "const": "impact"
+                          },
+                          "stock": {
+                            "const": "new-cycle"
+                          },
+                          "remnantKey": {
+                            "const": "grain-patch"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "placement",
+                          "stock",
+                          "remnantKey"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "automatic-attack"
+                          },
+                          "target": {
+                            "const": "land"
+                          },
+                          "placement": {
+                            "const": "impact"
+                          },
+                          "stock": {
+                            "const": "new-cycle"
+                          },
+                          "remnantKey": {
+                            "const": "seasonal-pool"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "placement",
+                          "stock",
+                          "remnantKey"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "automatic-attack"
+                          },
+                          "target": {
+                            "const": "building"
+                          },
+                          "placement": {
+                            "const": "near-empty-ground"
+                          },
+                          "stock": {
+                            "const": "new-cycle"
+                          },
+                          "remnantKey": {
+                            "const": "joinery-frame"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "placement",
+                          "stock",
+                          "remnantKey"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "automatic-attack"
+                          },
+                          "target": {
+                            "const": "people"
+                          },
+                          "placement": {
+                            "const": "impact"
+                          },
+                          "stock": {
+                            "const": "available-workers"
+                          },
+                          "remnantKey": {
+                            "const": "levy-company"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "placement",
+                          "stock",
+                          "remnantKey"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "automatic-attack"
+                          },
+                          "target": {
+                            "const": "land"
+                          },
+                          "placement": {
+                            "const": "attack-footprint"
+                          },
+                          "stock": {
+                            "const": "new-cycle"
+                          },
+                          "remnantKey": {
+                            "const": "grain-patch"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "placement",
+                          "stock",
+                          "remnantKey"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "automatic-attack"
+                          },
+                          "target": {
+                            "const": "building"
+                          },
+                          "placement": {
+                            "const": "existing-first"
+                          },
+                          "stock": {
+                            "const": "new-cycle"
+                          },
+                          "remnantKey": {
+                            "const": "sheltered-frame"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:growth-cycle": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "drivers",
+                          "workGate",
+                          "completion",
+                          "restart",
+                          "restore"
+                        ],
+                        "properties": {
+                          "drivers": {
+                            "const": "time"
+                          },
+                          "workGate": {
+                            "const": "always"
+                          },
+                          "completion": {
+                            "const": "growth-complete"
+                          },
+                          "restart": {
+                            "const": "replant"
+                          },
+                          "restore": {
+                            "const": "restart"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "drivers",
+                          "workGate",
+                          "completion",
+                          "restart",
+                          "restore"
+                        ],
+                        "properties": {
+                          "drivers": {
+                            "const": "season"
+                          },
+                          "workGate": {
+                            "const": "always"
+                          },
+                          "completion": {
+                            "const": "growth-complete"
+                          },
+                          "restart": {
+                            "const": "new-input"
+                          },
+                          "restore": {
+                            "const": "restart"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "drivers",
+                          "workGate",
+                          "completion",
+                          "restart",
+                          "restore"
+                        ],
+                        "properties": {
+                          "drivers": {
+                            "const": "time"
+                          },
+                          "workGate": {
+                            "const": "within-work-radius"
+                          },
+                          "completion": {
+                            "const": "shipment-complete"
+                          },
+                          "restart": {
+                            "const": "new-input"
+                          },
+                          "restore": {
+                            "const": "remaining-foundation"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "drivers",
+                          "workGate",
+                          "completion",
+                          "restart",
+                          "restore"
+                        ],
+                        "properties": {
+                          "drivers": {
+                            "const": "kill"
+                          },
+                          "workGate": {
+                            "const": "participating-kill"
+                          },
+                          "completion": {
+                            "const": "mission-return"
+                          },
+                          "restart": {
+                            "const": "after-return"
+                          },
+                          "restore": {
+                            "const": "survivors-only"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "drivers",
+                          "workGate",
+                          "completion",
+                          "restart",
+                          "restore"
+                        ],
+                        "properties": {
+                          "drivers": {
+                            "const": "time"
+                          },
+                          "workGate": {
+                            "const": "linked-building-complete"
+                          },
+                          "completion": {
+                            "const": "growth-complete"
+                          },
+                          "restart": {
+                            "const": "replant"
+                          },
+                          "restore": {
+                            "const": "remaining-foundation"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:completion-ledger": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "oncePer",
+                          "channels",
+                          "dedupeKey",
+                          "rewardTiming",
+                          "identityPersistence",
+                          "claimGate"
+                        ],
+                        "properties": {
+                          "event": {
+                            "const": "growth-complete"
+                          },
+                          "oncePer": {
+                            "const": "growth-cycle"
+                          },
+                          "channels": {
+                            "const": "xp"
+                          },
+                          "dedupeKey": {
+                            "const": "source-cycle"
+                          },
+                          "rewardTiming": {
+                            "const": "completed-work-only"
+                          },
+                          "identityPersistence": {
+                            "const": "retry-repair-recovery-save-load"
+                          },
+                          "claimGate": {
+                            "const": "ripe-contact"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "oncePer",
+                          "channels",
+                          "dedupeKey",
+                          "rewardTiming",
+                          "identityPersistence",
+                          "claimGate"
+                        ],
+                        "properties": {
+                          "event": {
+                            "const": "growth-complete"
+                          },
+                          "oncePer": {
+                            "const": "growth-cycle"
+                          },
+                          "channels": {
+                            "const": "xp"
+                          },
+                          "dedupeKey": {
+                            "const": "source-cycle"
+                          },
+                          "rewardTiming": {
+                            "const": "completed-work-only"
+                          },
+                          "identityPersistence": {
+                            "const": "retry-repair-recovery-save-load"
+                          },
+                          "claimGate": {
+                            "const": "work-complete"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "oncePer",
+                          "channels",
+                          "dedupeKey",
+                          "rewardTiming",
+                          "identityPersistence",
+                          "claimGate"
+                        ],
+                        "properties": {
+                          "event": {
+                            "const": "shipment-complete"
+                          },
+                          "oncePer": {
+                            "const": "shipment"
+                          },
+                          "channels": {
+                            "const": "xp"
+                          },
+                          "dedupeKey": {
+                            "const": "source-shipment"
+                          },
+                          "rewardTiming": {
+                            "const": "completed-work-only"
+                          },
+                          "identityPersistence": {
+                            "const": "retry-repair-recovery-save-load"
+                          },
+                          "claimGate": {
+                            "const": "cargo-arrival"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "event",
+                          "oncePer",
+                          "channels",
+                          "dedupeKey",
+                          "rewardTiming",
+                          "identityPersistence",
+                          "claimGate"
+                        ],
+                        "properties": {
+                          "event": {
+                            "const": "mission-return"
+                          },
+                          "oncePer": {
+                            "const": "mission"
+                          },
+                          "channels": {
+                            "const": "xp"
+                          },
+                          "dedupeKey": {
+                            "const": "group-mission"
+                          },
+                          "rewardTiming": {
+                            "const": "completed-work-only"
+                          },
+                          "identityPersistence": {
+                            "const": "retry-repair-recovery-save-load"
+                          },
+                          "claimGate": {
+                            "const": "mission-return"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:stock-cycle": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "resource",
+                          "supply",
+                          "consumers",
+                          "exclusive",
+                          "empty",
+                          "repairCreatesStock"
+                        ],
+                        "properties": {
+                          "resource": {
+                            "const": "water"
+                          },
+                          "supply": {
+                            "const": "rain-or-finite-source"
+                          },
+                          "consumers": {
+                            "const": "attack|growth"
+                          },
+                          "exclusive": {
+                            "const": "true"
+                          },
+                          "empty": {
+                            "const": "dry-strike"
+                          },
+                          "repairCreatesStock": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "resource",
+                          "supply",
+                          "consumers",
+                          "exclusive",
+                          "empty",
+                          "repairCreatesStock"
+                        ],
+                        "properties": {
+                          "resource": {
+                            "const": "timber"
+                          },
+                          "supply": {
+                            "const": "original-finite-ruin"
+                          },
+                          "consumers": {
+                            "const": "shipment|sale|meta-export"
+                          },
+                          "exclusive": {
+                            "const": "true"
+                          },
+                          "empty": {
+                            "const": "wait"
+                          },
+                          "repairCreatesStock": {
+                            "const": "false"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:completed-structure-attack": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "on",
+                          "anchor",
+                          "collision",
+                          "requires"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "melee-fan"
+                          },
+                          "on": {
+                            "const": "enemy-approach"
+                          },
+                          "anchor": {
+                            "const": "completed-building"
+                          },
+                          "collision": {
+                            "const": "damage-knockback"
+                          },
+                          "requires": {
+                            "const": "live-complete"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:ally-task": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "task",
+                          "target",
+                          "source",
+                          "entityUnit",
+                          "capPolicy",
+                          "onCap"
+                        ],
+                        "properties": {
+                          "task": {
+                            "const": "recruit"
+                          },
+                          "target": {
+                            "const": "lord"
+                          },
+                          "source": {
+                            "const": "available-workers"
+                          },
+                          "entityUnit": {
+                            "const": "group"
+                          },
+                          "capPolicy": {
+                            "const": "shared-active-group-budget"
+                          },
+                          "onCap": {
+                            "const": "reuse-existing"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:mission-cycle": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "start",
+                          "progress",
+                          "finish",
+                          "returnTarget",
+                          "emptyTripReward",
+                          "training"
+                        ],
+                        "properties": {
+                          "start": {
+                            "const": "actual-enemy-engagement"
+                          },
+                          "progress": {
+                            "const": "participating-kills"
+                          },
+                          "finish": {
+                            "const": "engagement-ended-and-returned"
+                          },
+                          "returnTarget": {
+                            "const": "lord"
+                          },
+                          "emptyTripReward": {
+                            "const": "false"
+                          },
+                          "training": {
+                            "const": "alternating-front-rank"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:equipment-scope": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "scope",
+                          "toolIds",
+                          "weaponIds"
+                        ],
+                        "properties": {
+                          "scope": {
+                            "const": "linked"
+                          },
+                          "toolIds": {
+                            "const": "none"
+                          },
+                          "weaponIds": {
+                            "const": "none"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "scope",
+                          "toolIds",
+                          "weaponIds"
+                        ],
+                        "properties": {
+                          "scope": {
+                            "const": "universal"
+                          },
+                          "toolIds": {
+                            "const": "none"
+                          },
+                          "weaponIds": {
+                            "const": "none"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:target-routing": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "actor",
+                          "selection",
+                          "fallback",
+                          "persistent"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "seed-eaten"
+                          },
+                          "actor": {
+                            "const": "enemy"
+                          },
+                          "selection": {
+                            "const": "side-route"
+                          },
+                          "fallback": {
+                            "const": "default"
+                          },
+                          "persistent": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "actor",
+                          "selection",
+                          "fallback",
+                          "persistent"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "water-contact"
+                          },
+                          "actor": {
+                            "const": "remnant"
+                          },
+                          "selection": {
+                            "const": "first-young-plot"
+                          },
+                          "fallback": {
+                            "const": "wait"
+                          },
+                          "persistent": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "actor",
+                          "selection",
+                          "fallback",
+                          "persistent"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "attack-ready"
+                          },
+                          "actor": {
+                            "const": "attack"
+                          },
+                          "selection": {
+                            "const": "raider-in-range"
+                          },
+                          "fallback": {
+                            "const": "default"
+                          },
+                          "persistent": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "actor",
+                          "selection",
+                          "fallback",
+                          "persistent"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "hit"
+                          },
+                          "actor": {
+                            "const": "enemy"
+                          },
+                          "selection": {
+                            "const": "side-route"
+                          },
+                          "fallback": {
+                            "const": "default"
+                          },
+                          "persistent": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "actor",
+                          "selection",
+                          "fallback",
+                          "persistent"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "recruit"
+                          },
+                          "actor": {
+                            "const": "group"
+                          },
+                          "selection": {
+                            "const": "available-returned-group"
+                          },
+                          "fallback": {
+                            "const": "wait"
+                          },
+                          "persistent": {
+                            "const": "false"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:resource-routing": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "resource",
+                          "source",
+                          "destination",
+                          "transform",
+                          "exclusive"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "enter"
+                          },
+                          "resource": {
+                            "const": "water"
+                          },
+                          "source": {
+                            "const": "carried-stock"
+                          },
+                          "destination": {
+                            "const": "first-young-plot"
+                          },
+                          "transform": {
+                            "const": "none"
+                          },
+                          "exclusive": {
+                            "const": "true"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "resource",
+                          "source",
+                          "destination",
+                          "transform",
+                          "exclusive"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "mission-start"
+                          },
+                          "resource": {
+                            "const": "food"
+                          },
+                          "source": {
+                            "const": "existing-storage"
+                          },
+                          "destination": {
+                            "const": "field-meal"
+                          },
+                          "transform": {
+                            "const": "none"
+                          },
+                          "exclusive": {
+                            "const": "true"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:group-formation": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "action",
+                          "anchor",
+                          "newMembers",
+                          "deadMembers"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "harvest-complete"
+                          },
+                          "action": {
+                            "const": "reposition-existing-guard"
+                          },
+                          "anchor": {
+                            "const": "harvest-site"
+                          },
+                          "newMembers": {
+                            "const": "none"
+                          },
+                          "deadMembers": {
+                            "const": "never-revive"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:geometry-modifier": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "change",
+                          "source",
+                          "preserveGrowthIdentity"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "enemy-front"
+                          },
+                          "change": {
+                            "const": "front-corner-orbit"
+                          },
+                          "source": {
+                            "const": "attack"
+                          },
+                          "preserveGrowthIdentity": {
+                            "const": "true"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:stat-modifier": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "stat",
+                          "direction",
+                          "amount"
+                        ],
+                        "properties": {
+                          "stat": {
+                            "const": "pickup-radius"
+                          },
+                          "direction": {
+                            "const": "increase"
+                          },
+                          "amount": {
+                            "const": "inherit"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "stat",
+                          "direction",
+                          "amount"
+                        ],
+                        "properties": {
+                          "stat": {
+                            "const": "move-speed"
+                          },
+                          "direction": {
+                            "const": "increase"
+                          },
+                          "amount": {
+                            "const": "inherit"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:evolution-replace": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "inputIds",
+                          "replace",
+                          "slot",
+                          "preserveRemnants",
+                          "resourcePriority",
+                          "duplicateRewards"
+                        ],
+                        "properties": {
+                          "inputIds": {
+                            "const": "$input0|$input1"
+                          },
+                          "replace": {
+                            "const": "weapon-attack"
+                          },
+                          "slot": {
+                            "const": "weapon-input"
+                          },
+                          "preserveRemnants": {
+                            "const": "true"
+                          },
+                          "resourcePriority": {
+                            "const": "evolution-first"
+                          },
+                          "duplicateRewards": {
+                            "const": "false"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "inputIds",
+                          "replace",
+                          "slot",
+                          "preserveRemnants",
+                          "resourcePriority",
+                          "duplicateRewards"
+                        ],
+                        "properties": {
+                          "inputIds": {
+                            "const": "$input0|$input1"
+                          },
+                          "replace": {
+                            "const": "both-tool-activations"
+                          },
+                          "slot": {
+                            "const": "first-tool-input"
+                          },
+                          "preserveRemnants": {
+                            "const": "true"
+                          },
+                          "resourcePriority": {
+                            "const": "evolution-first"
+                          },
+                          "duplicateRewards": {
+                            "const": "false"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:attack-anchor": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "when",
+                          "anchor",
+                          "fallback",
+                          "transfer"
+                        ],
+                        "properties": {
+                          "when": {
+                            "const": "repair-in-progress"
+                          },
+                          "anchor": {
+                            "const": "nearest-repair-building"
+                          },
+                          "fallback": {
+                            "const": "lord"
+                          },
+                          "transfer": {
+                            "const": "move-existing-no-duplicate"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:growth-protect": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "target",
+                          "anchor",
+                          "protection",
+                          "requires",
+                          "afterUse"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "enter"
+                          },
+                          "target": {
+                            "const": "adjacent-land"
+                          },
+                          "anchor": {
+                            "const": "building"
+                          },
+                          "protection": {
+                            "const": "first-raid-block"
+                          },
+                          "requires": {
+                            "const": "completed-live-building"
+                          },
+                          "afterUse": {
+                            "const": "repair-before-reuse"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:paired-growth": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "first",
+                          "second",
+                          "placement",
+                          "workGate",
+                          "secondGate",
+                          "destroyFirst",
+                          "reward"
+                        ],
+                        "properties": {
+                          "first": {
+                            "const": "building-frame"
+                          },
+                          "second": {
+                            "const": "seed-plot"
+                          },
+                          "placement": {
+                            "const": "existing-first-else-empty"
+                          },
+                          "workGate": {
+                            "const": "within-work-radius"
+                          },
+                          "secondGate": {
+                            "const": "first-complete-alive"
+                          },
+                          "destroyFirst": {
+                            "const": "pause-second-until-repair"
+                          },
+                          "reward": {
+                            "const": "original-source-cycle-once"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:enemy-tell": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "before",
+                          "target",
+                          "locksTarget",
+                          "escape"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "entity-pose"
+                          },
+                          "before": {
+                            "const": "strike"
+                          },
+                          "target": {
+                            "const": "lord"
+                          },
+                          "locksTarget": {
+                            "const": "false"
+                          },
+                          "escape": {
+                            "const": "intercept"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "before",
+                          "target",
+                          "locksTarget",
+                          "escape"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "entity-pose"
+                          },
+                          "before": {
+                            "const": "theft"
+                          },
+                          "target": {
+                            "const": "seed"
+                          },
+                          "locksTarget": {
+                            "const": "false"
+                          },
+                          "escape": {
+                            "const": "intercept"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "before",
+                          "target",
+                          "locksTarget",
+                          "escape"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "entity-pose"
+                          },
+                          "before": {
+                            "const": "theft"
+                          },
+                          "target": {
+                            "const": "ripe"
+                          },
+                          "locksTarget": {
+                            "const": "false"
+                          },
+                          "escape": {
+                            "const": "intercept"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "shape",
+                          "before",
+                          "target",
+                          "locksTarget",
+                          "escape"
+                        ],
+                        "properties": {
+                          "shape": {
+                            "const": "line"
+                          },
+                          "before": {
+                            "const": "charge"
+                          },
+                          "target": {
+                            "const": "lord"
+                          },
+                          "locksTarget": {
+                            "const": "true"
+                          },
+                          "escape": {
+                            "const": "side-step"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:enemy-pressure": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "target",
+                          "movement",
+                          "action",
+                          "exit",
+                          "counter"
+                        ],
+                        "properties": {
+                          "target": {
+                            "const": "lord"
+                          },
+                          "movement": {
+                            "const": "pursue"
+                          },
+                          "action": {
+                            "const": "melee"
+                          },
+                          "exit": {
+                            "const": "none"
+                          },
+                          "counter": {
+                            "const": "kite"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "target",
+                          "movement",
+                          "action",
+                          "exit",
+                          "counter"
+                        ],
+                        "properties": {
+                          "target": {
+                            "const": "seed"
+                          },
+                          "movement": {
+                            "const": "pursue"
+                          },
+                          "action": {
+                            "const": "consume-seed"
+                          },
+                          "exit": {
+                            "const": "none"
+                          },
+                          "counter": {
+                            "const": "intercept"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "target",
+                          "movement",
+                          "action",
+                          "exit",
+                          "counter"
+                        ],
+                        "properties": {
+                          "target": {
+                            "const": "ripe"
+                          },
+                          "movement": {
+                            "const": "pursue"
+                          },
+                          "action": {
+                            "const": "consume-ripe"
+                          },
+                          "exit": {
+                            "const": "none"
+                          },
+                          "counter": {
+                            "const": "intercept"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "target",
+                          "movement",
+                          "action",
+                          "exit",
+                          "counter"
+                        ],
+                        "properties": {
+                          "target": {
+                            "const": "lord"
+                          },
+                          "movement": {
+                            "const": "charge-locked-line"
+                          },
+                          "action": {
+                            "const": "melee"
+                          },
+                          "exit": {
+                            "const": "after-attack"
+                          },
+                          "counter": {
+                            "const": "side-step"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "target",
+                          "movement",
+                          "action",
+                          "exit",
+                          "counter"
+                        ],
+                        "properties": {
+                          "target": {
+                            "const": "lord"
+                          },
+                          "movement": {
+                            "const": "hold-front"
+                          },
+                          "action": {
+                            "const": "frontal-block"
+                          },
+                          "exit": {
+                            "const": "none"
+                          },
+                          "counter": {
+                            "const": "rear-attack"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "target",
+                          "movement",
+                          "action",
+                          "exit",
+                          "counter"
+                        ],
+                        "properties": {
+                          "target": {
+                            "const": "lord"
+                          },
+                          "movement": {
+                            "const": "standoff"
+                          },
+                          "action": {
+                            "const": "shoot-lane"
+                          },
+                          "exit": {
+                            "const": "none"
+                          },
+                          "counter": {
+                            "const": "close-range"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:boss-phases": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "transitions",
+                          "actions",
+                          "leaveEscapeLane",
+                          "recoveryWindow"
+                        ],
+                        "properties": {
+                          "transitions": {
+                            "const": "ordered-cycle"
+                          },
+                          "actions": {
+                            "const": "water-lanes|locked-charge"
+                          },
+                          "leaveEscapeLane": {
+                            "const": "true"
+                          },
+                          "recoveryWindow": {
+                            "const": "true"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:chapter-route": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "bossId",
+                          "order",
+                          "entry",
+                          "completion"
+                        ],
+                        "properties": {
+                          "bossId": {
+                            "const": "$boss"
+                          },
+                          "order": {
+                            "const": "1"
+                          },
+                          "entry": {
+                            "const": "before-run"
+                          },
+                          "completion": {
+                            "const": "chapter-clear"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:map-route-trace": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "on",
+                          "trace",
+                          "connect",
+                          "enemyResponse",
+                          "playerChoice"
+                        ],
+                        "properties": {
+                          "on": {
+                            "const": "lord-work-path"
+                          },
+                          "trace": {
+                            "const": "sprout-track"
+                          },
+                          "connect": {
+                            "const": "adjacent-work-segments"
+                          },
+                          "enemyResponse": {
+                            "const": "attract-to-connected-region"
+                          },
+                          "playerChoice": {
+                            "const": "finish-region-or-move-out"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "unit:event-gate": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "on",
+                      "condition",
+                      "scope",
+                      "consume"
+                    ],
+                    "properties": {
+                      "on": {
+                        "const": "equipment-offer"
+                      },
+                      "condition": {
+                        "enum": [
+                          "attack-kill-near-growth",
+                          "repair-completed",
+                          "harvest-near-building"
+                        ]
+                      },
+                      "scope": {
+                        "const": "self"
+                      },
+                      "consume": {
+                        "const": "none"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "required": [
