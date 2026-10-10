@@ -26,11 +26,13 @@ namespace SowSiege.Core
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
         internal WaveEnemySystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null, WaveEnemyQueries? queries = null)
-        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); separation = catalog.WaveRuntime!.EnemySeparation is { } contract ? new(world, catalog.Tuning.World.Map, contract) : null; ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); foreach (var enemy in catalog.Enemies.Values) { interceptRange = Math.Max(interceptRange, enemy.Range); } }
+        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); separation = catalog.WaveRuntime!.EnemySeparation is { } contract ? new(world, catalog.Tuning.World.Map, contract, interactive?.Field) : null; ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null); foreach (var enemy in catalog.Enemies.Values) { interceptRange = Math.Max(interceptRange, enemy.Range); } }
 
         internal void Tick()
         {
+            RecycleFieldEnemies();
             Spawn();
+            if (interactive?.Field?.ArenaActive == true) { RecycleFieldEnemies(); }
             var pathsCollected = false;
             State.Detours.RemoveAll(d => d.UntilTick <= world.Tick);
             liveEnemies.Clear();
@@ -48,6 +50,7 @@ namespace SowSiege.Core
                     continue;
                 }
                 Advance(enemy, rule, action, ref pathsCollected);
+                if (interactive?.Field is { } field) { enemy.Position = field.Constrain(enemy.Position); }
                 Contact(enemy, rule);
             }
             separation?.Resolve(liveEnemies);
@@ -63,6 +66,59 @@ namespace SowSiege.Core
                 else if (shot.Position == shot.Direction || world.Tick >= shot.ExpireTick) { State.Projectiles.RemoveAt(index); }
                 else { index++; }
             }
+        }
+
+        internal void FinishFieldTick()
+        {
+            if (interactive?.Field is not { } field) { return; }
+            if (field.ArenaActive && State.BossDefeated) { field.CloseArena(); }
+            RecycleFieldEnemies();
+        }
+
+        private bool ContactingProsperity(EnemyState enemy)
+        {
+            if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule) || !State.EnemyActions.TryGetValue(enemy.Id, out var action) || action.TargetId < 0) { return false; }
+            var operation = modules.Enemy(rule.Id).Action;
+            if (operation != "consume-seed" && operation != "consume-ripe") { return false; }
+            foreach (var work in State.Work)
+            {
+                if (work.Id != action.TargetId || work.Kind != "grain" || work.Health <= 0 || (operation == "consume-seed" ? work.Complete : !work.Complete)) { continue; }
+                var range = catalog.Enemies[enemy.Definition].Range;
+                return work.Position.DistanceSquared(enemy.Position) <= (long)range * range;
+            }
+            return false;
+        }
+
+        private void RecycleFieldEnemies()
+        {
+            if (interactive?.Field is not { } field) { return; }
+            liveEnemies.Clear();
+            foreach (var enemy in world.Enemies) { if (enemy.Health > 0) { liveEnemies.Add(enemy); } }
+            liveEnemies.Sort(EnemyOrder);
+            foreach (var enemy in liveEnemies)
+            {
+                if (field.ArenaActive)
+                {
+                    var projected = field.Constrain(enemy.Position);
+                    if (projected != enemy.Position) { Relocate(enemy, projected); }
+                    continue;
+                }
+                if (modules.Enemy(enemy.Definition).Boss || enemy.Position.DistanceSquared(world.Lord) <= (long)FieldRules.RecycleRadius * FieldRules.RecycleRadius || ContactingProsperity(enemy)) { continue; }
+                Relocate(enemy, field.Recycle(world.Lord, world.Tick, enemy.Id));
+            }
+        }
+
+        private void Relocate(EnemyState enemy, Position destination)
+        {
+            var previous = enemy.Position;
+            // The shared index is rebuilt after enemy movement and is live at the final tick pass.
+            queries.Move(enemy, destination);
+            if (State.EnemyActions.TryGetValue(enemy.Id, out var action))
+            {
+                action.Phase = "recovery"; action.Origin = destination; action.Target = world.Lord;
+                action.TargetId = -1; action.Hit = false;
+            }
+            State.Emit(world.Tick, "enemy-relocated", enemy.Definition, enemy.Id, destination, previous);
         }
 
         private void Spawn()
@@ -86,9 +142,19 @@ namespace SowSiege.Core
                     world.Enemies.Remove(displaced); State.EnemyActions.Remove(displaced.Id);
                 }
                 var map = catalog.Tuning.World.Map;
-                var edge = random.Next(WaveGeometry.RectangleSides);
-                var position = edge switch { 0 => new Position(0, random.Next(map.Height)), 1 => new Position(map.Width, random.Next(map.Height)), WaveGeometry.TopEdge => new Position(random.Next(map.Width), 0), _ => new Position(random.Next(map.Width), map.Height) };
-                var enemy = new EnemyState { Id = world.AllocateId(), Definition = rule.Id, Position = position, Health = catalog.Enemies[rule.Id].Health };
+                Position position;
+                var id = world.AllocateId();
+                if (interactive?.Field is { } field)
+                {
+                    if (operations.Boss) { field.OpenArena(id, world.Lord); }
+                    position = field.Spawn(world.Lord, random.Next(16));
+                }
+                else
+                {
+                    var edge = random.Next(WaveGeometry.RectangleSides);
+                    position = edge switch { 0 => new Position(0, random.Next(map.Height)), 1 => new Position(map.Width, random.Next(map.Height)), WaveGeometry.TopEdge => new Position(random.Next(map.Width), 0), _ => new Position(random.Next(map.Width), map.Height) };
+                }
+                var enemy = new EnemyState { Id = id, Definition = rule.Id, Position = position, Health = catalog.Enemies[rule.Id].Health };
                 world.Enemies.Add(enemy); world.SpawnedEnemies++;
                 if (operations.Boss) { State.BossSpawned = true; }
                 State.Emit(world.Tick, "enemy-spawn", rule.Id, enemy.Id, position, position, 1);
@@ -185,7 +251,15 @@ namespace SowSiege.Core
                 {
                     var map = catalog.Tuning.World.Map;
                     // A finite lane through the center leaves both edge exits open.
-                    Tell(enemy, action, rule, "water", new Position(map.Width * WaveGeometry.FarLaneQuarter / WaveGeometry.RectangleSides, map.Height * (action.BossPhase + 1) / WaveGeometry.LanePartitions), new Position(map.Width / WaveGeometry.RectangleSides, map.Height * (action.BossPhase + 1) / WaveGeometry.LanePartitions));
+                    var waterTarget = new Position(map.Width * WaveGeometry.FarLaneQuarter / WaveGeometry.RectangleSides, map.Height * (action.BossPhase + 1) / WaveGeometry.LanePartitions);
+                    var origin = new Position(map.Width / WaveGeometry.RectangleSides, waterTarget.Y);
+                    if (interactive?.Field is { ArenaActive: true } arena)
+                    {
+                        var y = arena.ArenaCenter.Y - FieldRules.ArenaRadius + FieldRules.ArenaRadius * 2 * (action.BossPhase + 1) / WaveGeometry.LanePartitions;
+                        waterTarget = arena.Constrain(new(arena.ArenaCenter.X + FieldRules.ArenaRadius / 2, y));
+                        origin = arena.Constrain(new(arena.ArenaCenter.X - FieldRules.ArenaRadius / 2, y));
+                    }
+                    Tell(enemy, action, rule, "water", waterTarget, origin);
                 }
                 else { Tell(enemy, action, rule, "charge", world.Lord); }
                 return;
@@ -301,7 +375,7 @@ namespace SowSiege.Core
         { action.Phase = "tell-" + kind; action.Origin = origin ?? enemy.Position; action.Target = target; action.UntilTick = world.Tick + rule.TellTicks; State.Emit(world.Tick, "enemy-tell", rule.Id, enemy.Id, action.Origin, target, rule.TellTicks); }
         private void Recover(WaveEnemyDefinition rule, WaveEnemyAction action)
         { action.Phase = "recovery"; action.UntilTick = world.Tick + rule.RecoveryTicks; }
-        private Position Clamp(Position p) => new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
+        private Position Clamp(Position p) => interactive?.Field is { } field ? field.Constrain(p) : new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
         private bool ImmediateContact(WaveEnemyDefinition rule)
         {
             return interactive?.Feel?.Options.ImmediateContact == true && ContactEligible(catalog, rule, modules.Enemy(rule.Id));

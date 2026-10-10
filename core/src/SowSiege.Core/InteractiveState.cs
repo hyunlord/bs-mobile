@@ -10,6 +10,7 @@ namespace SowSiege.Core
         public int SpawnPermille = PlayerInput.Scale;
         public long NextEventId;
         public FeelExperimentState? Feel;
+        public FieldState? Field;
         public List<PresentationEvent> Events = new();
         public void Attack(int tick, string source, Position origin, Position direction, string shape, int range, IEnumerable<EnemyState> hits, AttackGeometry? geometry = null)
         {

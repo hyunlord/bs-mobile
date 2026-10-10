@@ -70,3 +70,46 @@ public sealed class FeelComparisonCaptureTests
         Assert.Throws<InvalidOperationException>(() => on.Direction(900, 30));
     }
 }
+
+public sealed class FieldVideoCaptureTests
+{
+    [Test] public void FieldVideoIsSeparateFromFiveSecondWalkComparison()
+    {
+        var field = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "straight" });
+        Assert.That(field.Window.DurationSeconds, Is.EqualTo(60));
+        Assert.That(field.Topology, Is.EqualTo("field"));
+        var walk = FeelComparisonCapture.Parse(new[] { "--autoplay-capture", "--feel-comparison", "walk-b" });
+        Assert.That(walk.Window.DurationSeconds, Is.EqualTo(5));
+    }
+    [Test] public void ReturnRouteWalksOutForSixtyActualGameplaySeconds()
+    {
+        var value = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return", "--field-topology", "old" });
+        Assert.That(value.Topology, Is.EqualTo("old"));
+        Assert.That(value.Window.EndSeconds, Is.EqualTo(120));
+        Assert.That(value.Direction(1799, 30), Is.EqualTo(Vector2.right));
+        Assert.That(value.Direction(1800, 30), Is.EqualTo(Vector2.left));
+        Assert.That(value.Direction(3599, 30), Is.EqualTo(Vector2.left));
+        Assert.Throws<InvalidOperationException>(() => value.Window.Ready(2000, 30, true));
+        Assert.That(value.InputProtocol, Is.EqualTo("field-right-60s-left-60s-v1"));
+    }
+    [Test] public void FieldWindowDoesNotRelaxOrdinaryCaptureDurationLimit()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new CaptureSegmentWindow(0, 120));
+        var args = new[] { "--autoplay-capture", "--field-video", "out-return" };
+        Assert.That(FeelComparisonCapture.ResolveWindow(args).DurationSeconds, Is.EqualTo(120));
+        Assert.That(AutoplayCapture.IsGoldenMinuteRequested(args), Is.True);
+    }
+    [TestCase("--capture-duration-seconds")]
+    [TestCase("--capture-movement")]
+    [TestCase("--feel-comparison")]
+    [TestCase("--capture-target-material")]
+    public void FieldVideoRejectsConflictingRouteOwnership(string flag)
+        => Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "straight", flag, "anything" }));
+    [Test] public void FieldVideoRequiresIsolatedCaptureAndKnownTopology()
+    {
+        Assert.That(FieldVideoCapture.Parse(Array.Empty<string>()), Is.Null);
+        Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--field-video", "straight" }));
+        Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "straight", "--field-topology", "unknown" }));
+        Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-topology", "old" }));
+    }
+}

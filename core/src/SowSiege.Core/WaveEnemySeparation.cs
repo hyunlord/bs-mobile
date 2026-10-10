@@ -16,6 +16,7 @@ namespace SowSiege.Core
         private const int NegativeYDirection = 3;
         private const int ResidualGridDivisions = 8;
         private readonly WorldState world;
+        private readonly FieldState? field;
         private readonly MapTuning map;
         private readonly IReadOnlyDictionary<string, int> widths;
         private readonly SpatialHash spatial;
@@ -24,12 +25,12 @@ namespace SowSiege.Core
         private readonly Dictionary<int, (int Width, bool Charging)> bodies = new();
         private static readonly Comparison<EnemyState> IdOrder = (a, b) => a.Id.CompareTo(b.Id);
 
-        internal WaveEnemySeparation(WorldState world, MapTuning map, WaveEnemySeparationDefinition definition)
+        internal WaveEnemySeparation(WorldState world, MapTuning map, WaveEnemySeparationDefinition definition, FieldState? field = null)
         {
             if (definition.Version != 1) { throw new ArgumentException("Unsupported enemy separation version."); }
-            this.world = world; this.map = map; widths = definition.BodyWidths;
+            this.world = world; this.map = map; this.field = field; widths = definition.BodyWidths;
             foreach (var width in widths.Values) { maximumWidth = Math.Max(maximumWidth, width); }
-            spatial = new(Math.Max(1, maximumWidth));
+            spatial = new(Math.Max(1, maximumWidth), field is not null);
         }
 
         internal void Resolve(List<EnemyState> ordered)
@@ -97,7 +98,7 @@ namespace SowSiege.Core
         private void SettleResiduals(List<EnemyState> ordered)
         {
             var step = Math.Max(1, maximumWidth / ResidualGridDivisions);
-            var limit = (Math.Max(map.Width, map.Height) + step - 1) / step;
+            var limit = ((field is null ? Math.Max(map.Width, map.Height) : FieldRules.SectorSize) + step - 1) / step;
             foreach (var enemy in ordered)
             {
                 if (enemy.Health <= 0 || !bodies.ContainsKey(enemy.Id) || Charging(enemy) || Clear(enemy, enemy.Position)) { continue; }
@@ -128,7 +129,7 @@ namespace SowSiege.Core
         private bool TryPlace(EnemyState enemy, Position origin, int dx, int dy)
         {
             var candidate = new Position(origin.X + dx, origin.Y + dy);
-            if (candidate.X < 0 || candidate.X > map.Width || candidate.Y < 0 || candidate.Y > map.Height || !Clear(enemy, candidate)) { return false; }
+            if ((field is null ? candidate.X < 0 || candidate.X > map.Width || candidate.Y < 0 || candidate.Y > map.Height : field.Constrain(candidate) != candidate) || !Clear(enemy, candidate)) { return false; }
             Move(enemy, candidate.X - enemy.Position.X, candidate.Y - enemy.Position.Y);
             return true;
         }
@@ -149,7 +150,8 @@ namespace SowSiege.Core
         private void Move(EnemyState enemy, int dx, int dy)
         {
             if (dx == 0 && dy == 0) { return; }
-            var position = new Position(Math.Clamp(enemy.Position.X + dx, 0, map.Width), Math.Clamp(enemy.Position.Y + dy, 0, map.Height));
+            var position = field is null ? new Position(Math.Clamp(enemy.Position.X + dx, 0, map.Width), Math.Clamp(enemy.Position.Y + dy, 0, map.Height))
+                : field.Constrain(new(checked(enemy.Position.X + dx), checked(enemy.Position.Y + dy)));
             spatial.Move(enemy, position);
             if (world.WaveRuntime!.EnemyActions.TryGetValue(enemy.Id, out var action) && action.Phase.StartsWith("tell-", StringComparison.Ordinal))
             {

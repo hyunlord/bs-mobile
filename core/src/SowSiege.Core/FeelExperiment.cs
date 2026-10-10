@@ -26,13 +26,13 @@ namespace SowSiege.Core
         internal FeelExperimentState(FeelExperimentOptions options) { Options = options; }
         internal int MaximumHealth(int original) => Options.ReadableHealth ? Health : original;
         internal int Damage(int original) => Options.ReadableHealth ? Math.Clamp(original, MinimumDamage, MaximumDamage) : original;
-        internal Position Move(Position current, PlayerInput input, int speed, MapTuning map)
+        internal Position Move(Position current, PlayerInput input, int speed, MapTuning map, bool unbounded = false)
         {
-            var x = Axis(current.X, input.X, speed, map.Width, ref RemainderX, ref PreviousX);
-            var y = Axis(current.Y, input.Y, speed, map.Height, ref RemainderY, ref PreviousY);
+            var x = Axis(current.X, input.X, speed, map.Width, ref RemainderX, ref PreviousX, unbounded);
+            var y = Axis(current.Y, input.Y, speed, map.Height, ref RemainderY, ref PreviousY, unbounded);
             return new(x, y);
         }
-        private static int Axis(int position, int input, int speed, int maximum, ref long remainder, ref int previous)
+        private static int Axis(int position, int input, int speed, int maximum, ref long remainder, ref int previous, bool unbounded)
         {
             if (input == 0 || Math.Sign(input) != Math.Sign(previous)) { remainder = 0; }
             previous = input;
@@ -40,6 +40,7 @@ namespace SowSiege.Core
             const int denominator = PlayerInput.Scale * SpeedDenominator;
             var delta = numerator / denominator;
             remainder = numerator % denominator;
+            if (unbounded) { return checked((int)(position + delta)); }
             var target = Math.Clamp(position + delta, 0, maximum);
             if (target == 0 || target == maximum) { remainder = 0; }
             return (int)target;

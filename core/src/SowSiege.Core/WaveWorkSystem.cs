@@ -20,7 +20,7 @@ namespace SowSiege.Core
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
         internal WaveWorkSystem(ContentCatalog catalog, WorldState world, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null, WaveEnemyQueries? queries = null)
-        { this.catalog = catalog; this.world = world; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); growth = new(world, this.modules); completions = new(world, this.modules); }
+        { this.catalog = catalog; this.world = world; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null); growth = new(world, this.modules); completions = new(world, this.modules); }
 
         private WaveGearDefinition Gear(string source)
         {
@@ -29,7 +29,7 @@ namespace SowSiege.Core
             return Definition.Gear[evolution.InputIds.First(id => modules.Has(id, "unit:remnant-create"))];
         }
         private bool Near(Position a, Position b, int radius) => a.DistanceSquared(b) <= (long)radius * radius;
-        private Position Clamp(Position p) => new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
+        private Position Clamp(Position p) => interactive?.Field is { } field ? field.Constrain(p) : new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
         private void Emit(string kind, string source, int id, Position at, int amount = 0) => State.Emit(world.Tick, kind, source, id, at, at, amount);
 
         internal void Activate(WaveGearDefinition gear, Position position, Position direction)

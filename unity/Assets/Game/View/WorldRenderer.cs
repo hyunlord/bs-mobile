@@ -88,6 +88,7 @@ namespace Game.View
             if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D sprite shader is unavailable.");
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
+            followCamera.EndlessField = acceptedFrame?.Field != null;
             estateId = estate; mapWidth = width; mapHeight = height;
             art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
             InitializeThreatWarnings();
@@ -109,6 +110,7 @@ namespace Game.View
             }
             if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) heroGaitDiscontinuity = true;
             acceptedFrame = frame;
+            if (followCamera != null) followCamera.EndlessField = frame.Field != null;
             for(var i=0;i<frame.Farms.Count;i++)
             {
                 var stage=frame.Farms[i].Stage;
@@ -226,7 +228,7 @@ namespace Game.View
             {
                 var enemy = current.Enemies[enemyIndex];
                 var flashing = hitUntil.ContainsKey(enemy.Id);
-                var moved = previousEnemies.TryGetValue(enemy.Id, out var before) && before != Point(enemy.Position);
+                var moved = previousEnemies.TryGetValue(enemy.Id, out var before) && before != Point(enemy.Position) && !relocatedEnemies.Contains(enemy.Id);
                 var state = enemy.Health <= 0 ? "death" : flashing ? "hit" : moved ? "walk" : "idle";
                 state = WaveEnemyState(enemy.Id, enemy.DefinitionId, state);
                 var enemyArt=Resolve("enemy",enemy.DefinitionId,state);
@@ -248,9 +250,10 @@ namespace Game.View
                 var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
                 var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
+                if(FieldActive)enemyLayer=GameVisualTokens.EnemyLayer+Mathf.Clamp(19-Mathf.FloorToInt(20f*renderCamera.WorldToViewportPoint(position).y),0,19);
                 var actorTime=visualTime+enemy.Id*.13f;
                 var actorPose=ActorMotion.SampleEnemy(actorKind,actorTime,moved);
-                DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind);
+                if(!FieldActive||FieldVisible(position,dimensions))DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind);
                 DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose);
                 if(wave!=null)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
@@ -307,6 +310,7 @@ namespace Game.View
         }
         Vector2 Interpolate(Dictionary<int, Vector2> positions, int id, WorldPoint current, float alpha)
         {
+            if (ReferenceEquals(positions, previousEnemies) && relocatedEnemies.Contains(id)) return Point(current);
             var point = Point(current); return positions.TryGetValue(id, out var before) ? Vector2.Lerp(before, point, alpha) : point;
         }
         Vector2 Point(WorldPoint value) => followCamera.Point(value);
@@ -327,12 +331,20 @@ namespace Game.View
             var halfHeight = renderCamera.orthographicSize; var halfWidth = halfHeight * renderCamera.aspect; var center = renderCamera.transform.position;
             var xMin = Mathf.Max(-1, Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1); var xMax = Mathf.Min(Mathf.CeilToInt(width / stride.x), Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1);
             var yMin = Mathf.Max(-1, Mathf.FloorToInt((center.y - halfHeight) / stride.y) - 1); var yMax = Mathf.Min(Mathf.CeilToInt(height / stride.y), Mathf.FloorToInt((center.y + halfHeight) / stride.y) + 1);
+            if (FieldActive)
+            {
+                xMin = Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1;
+                xMax = Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1;
+                yMin = Mathf.FloorToInt((center.y - halfHeight) / stride.y) - 1;
+                yMax = Mathf.FloorToInt((center.y + halfHeight) / stride.y) + 1;
+            }
             for (var y = yMin; y <= yMax; y++) for (var x = xMin; x <= xMax; x++)
             {
                 var left = x * stride.x; var bottom = y * stride.y;
                 var exterior=wave==null?0:followCamera.EdgeActorMargin;
                 var x0 = Mathf.Max(-exterior, left); var y0 = Mathf.Max(-exterior, bottom);
                 var x1 = Mathf.Min(width+exterior, left + size.x); var y1 = Mathf.Min(height+exterior, bottom + size.y);
+                if (FieldActive) { x0 = left; y0 = bottom; x1 = left + size.x; y1 = bottom + size.y; }
                 if (x1 <= x0 || y1 <= y0) continue;
                 var cell = new Vector2(x1 - x0, y1 - y0);
                 var position = new Vector2(x0, y0) + Vector2.Scale(visual.Pivot, cell);
@@ -354,6 +366,7 @@ namespace Game.View
                     Draw(patch,GameVisualTokens.TerrainLayer+2,position,0,cell,opacity:GameVisualTokens.TerrainOpacity);
                 }
             }
+            if (FieldActive) { DrawFieldArena(); return; }
             var edge = Resolve("boundary", "edge", "default"); var corner = Resolve("boundary", "corner", "default");
             if(wave!=null)
             {
@@ -513,6 +526,7 @@ namespace Game.View
         void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true)
         {
             var dimensions = size ?? visual.WorldSize;
+            if (FieldActive && !FieldVisible(position, dimensions)) return;
             var phase = time * Mathf.PI * 2 / GameVisualTokens.WalkSeconds;
             switch (applyTween ? visual.Tween : "none")
             {

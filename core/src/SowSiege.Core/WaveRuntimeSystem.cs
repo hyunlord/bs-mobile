@@ -39,7 +39,7 @@ namespace SowSiege.Core
                 AvailableWorkers = definition.InitialWorkers
             };
             modules = new(definition);
-            queries = new(world, catalog.Tuning.World.Farms.Spacing);
+            queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
             subscriptions = new(catalog, world, modules, queries);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
@@ -149,6 +149,7 @@ namespace SowSiege.Core
                 state.EnemyActions.Remove(enemy.Id);
             }
             world.Enemies.RemoveAll(e => e.Health <= 0);
+            enemies.FinishFieldTick();
         }
         private WaveGearDefinition AtLevel(WaveGearDefinition gear, int level)
         {
@@ -328,7 +329,8 @@ namespace SowSiege.Core
             state.RecordDamage(activation, damage, actual);
             if (knockback > 0)
             {
-                queries.Move(enemy, new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height)));
+                var target = new Position(checked(enemy.Position.X + Math.Sign((long)enemy.Position.X - origin.X) * knockback), checked(enemy.Position.Y + Math.Sign((long)enemy.Position.Y - origin.Y) * knockback));
+                queries.Move(enemy, interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
             }
 
             if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))

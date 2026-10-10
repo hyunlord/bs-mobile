@@ -30,6 +30,7 @@ namespace Game.App
         bool goldenMinute, goldenWorldPaused, goldenRecordingStarted, weakBuild;
         GoldenMinuteCapture minuteCapture;
         public FeelComparisonCapture FeelComparison { get; private set; }
+        public FieldVideoCapture FieldVideo { get; private set; }
         int portraitAttempt, portraitFrame;
         double portraitSettleAt;
         bool portraitReady;
@@ -129,7 +130,7 @@ namespace Game.App
         }
 
         public static bool IsRequested(string[] args) => args.Contains("--autoplay-capture");
-        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && (args.Contains("--golden-minute") || args.Contains("--feel-comparison"));
+        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && (args.Contains("--golden-minute") || args.Contains("--feel-comparison") || args.Contains("--field-video"));
 
         public static string ParseOutput(string[] args, string defaultRoot)
         {
@@ -153,9 +154,11 @@ namespace Game.App
             RequireEmptyOutput(folder);
             var args=Environment.GetCommandLineArgs();
             FeelComparison = FeelComparisonCapture.Parse(args);
+            FieldVideo = FieldVideoCapture.Parse(args);
             goldenMinute = IsGoldenMinuteRequested(args);
             weakBuild = Array.IndexOf(args,"--capture-weak-build") >= 0;
             if(weakBuild&&!goldenMinute)throw new ArgumentException("Weak-build capture requires the explicit golden-minute capture mode.");
+            if (FieldVideo != null) captureSeed = 30001;
             var seedArgument=Array.IndexOf(args,"--capture-seed");
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
             var movementArgument=Array.IndexOf(args,"--capture-movement");
@@ -178,6 +181,7 @@ namespace Game.App
             WriteResult();
             Log("capture-start", "automated pointer and UI button input; 1x; fresh chapter1 profile; focus-independent capture; no OS-user or human-input claim");
             if (FeelComparison != null) Log("feel-comparison", FeelComparison.Mode + ";input=" + FeelComparison.InputProtocol + ";walk uses fixed direction; rules share growth/evasion policy, not identical movement commands; actual movement, legal card choices and resulting state may diverge; gameplay seconds, card pauses extend wall duration");
+            if (FieldVideo != null) Log("field-video", FieldVideo.InputProtocol + ";topology=" + FieldVideo.Topology + ";actual normal pointer route; ordinary cards; 60 gameplay seconds outbound before return; no forced survival or position override");
             if (FeelComparison?.FailurePreview == true) Log("feel-failure-preview", "Diagnostic 0-30 seconds only; not the 360-390 second comparison; death preserves failure and partial frames.");
             if(weakBuild)Log("weak-build-policy","ordinary perimeter movement avoiding reward/estate farming; prefer items then owned gear; at most two weapons; no evolution; only required card choices; no level or experience override");
             nextAction = 3;
@@ -300,7 +304,7 @@ namespace Game.App
         bool PreparePortraitWindow()
         {
             if (portraitReady) return true;
-            var landscape = FeelComparison?.Landscape ?? FeelComparisonCapture.ResolveWindow(Environment.GetCommandLineArgs()).Landscape;
+            var landscape = FieldVideo != null || (FeelComparison?.Landscape ?? FeelComparisonCapture.ResolveWindow(Environment.GetCommandLineArgs()).Landscape);
             // RunCoordinator has now applied its ordinary desktop preset; capture can override it once.
             if (portraitAttempt == 0)
             {
@@ -361,7 +365,8 @@ namespace Game.App
                 Log("card-click", card); cardAt = -1; return;
             }
             Vector2 direction;
-            if (FeelComparison != null && FeelComparison.Walk) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
+            if (FieldVideo != null) direction = FieldVideo.Direction(frame.Tick, frame.TickRate);
+            else if (FeelComparison != null && FeelComparison.Walk) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
             else
             {
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();

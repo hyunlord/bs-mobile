@@ -29,6 +29,12 @@ namespace Game.App
                 activeHitFeedback = comparison.RequestedFeedback;
                 activeHeroRig = comparison.RequestedHeroB;
             }
+            if(IsWave && (NormalGcProbe.PreferencesPrefix != null || AutoplayCapture.Active?.FieldVideo != null))
+            {
+                activeFeelRules = null;
+                activeHitFeedback = false;
+                activeHeroRig = true;
+            }
         }
 
         public void FinishFeelTrialRecording()

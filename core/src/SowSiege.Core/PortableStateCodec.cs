@@ -734,6 +734,7 @@ namespace SowSiege.Core
             Write((int)value.InitialAimMode);
             Write(value.DataHash);
             if (FeelExperimentOptions.Normalize(value.Feel) is { } feel) { Write("feel-experiment-v1"); Write(feel); }
+            if (value.Field is { } field) { Write("field-options-v1"); Write(field.Version); }
         }
         private void Write(FeelExperimentOptions? value)
         {
@@ -782,6 +783,11 @@ namespace SowSiege.Core
             Write(value.NextEventId);
             WriteList(value.Events, item => { Write(item); });
             if (value.Feel is not null) { Write(value.Feel); }
+            if (value.Field is { } field)
+            {
+                Write("field-state-v1"); Write(field.Seed); Write(field.Travel.X); Write(field.Travel.Y);
+                Write(field.ArenaBossId); Write(field.ArenaCenter.X); Write(field.ArenaCenter.Y);
+            }
         }
         private void Write(PortableRandom? value)
         {

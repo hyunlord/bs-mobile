@@ -18,6 +18,7 @@ namespace SowSiege.Core
         public const int Version = 1;
         private const int MaterialTargetVersion = 2;
         private const int FeelVersion = 3;
+        private const int FieldVersion = 4;
         private const int ContactFlag = 2;
         private const int HealthFlag = 4;
         private const int FeelFlags = 7;
@@ -32,7 +33,7 @@ namespace SowSiege.Core
         public static ReplayHeader Header(InteractiveOptions options)
         {
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
-            return new(options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
+            return new(options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
         }
         internal static void ValidateHash(string hash)
         {
@@ -55,8 +56,9 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
-            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
-            if ((FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
+            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion && h.FormatVersion != FieldVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
+            if (h.FormatVersion != FieldVersion && (FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
+            if ((h.Options.Field is not null) != (h.FormatVersion == FieldVersion) || h.Options.Field is { Version: not FieldRules.Version }) { throw new ArgumentException("Replay field format mismatch."); }
             ValidateHash(h.Options.DataHash);
             if (!h.Options.Run.ManualCards || h.Options.Run.Scenario != "normal" || h.Options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), h.Options.InitialAimMode)) { throw new ArgumentException("Invalid interactive options."); }
         }
@@ -88,11 +90,12 @@ namespace SowSiege.Core
             {
                 Text(w, r.TargetMaterial);
             }
-            if (header.FormatVersion == FeelVersion)
+            if (header.FormatVersion == FeelVersion || header.FormatVersion == FieldVersion)
             {
                 Text(w, r.TargetMaterial); w.Write(1);
-                var feel = o.Feel!;
-                w.Write((feel.FasterLord ? 1 : 0) | (feel.ImmediateContact ? ContactFlag : 0) | (feel.ReadableHealth ? HealthFlag : 0));
+                var feel = o.Feel;
+                w.Write((feel?.FasterLord == true ? 1 : 0) | (feel?.ImmediateContact == true ? ContactFlag : 0) | (feel?.ReadableHealth == true ? HealthFlag : 0));
+                if (header.FormatVersion == FieldVersion) { w.Write(1); w.Write(o.Field!.Version); }
             }
         }
         public static void WriteCommand(Stream output, ReplayCommand command)
@@ -122,15 +125,21 @@ namespace SowSiege.Core
                 }
 
                 FeelExperimentOptions? feel = null;
-                if (format == FeelVersion)
+                FieldOptions? field = null;
+                if (format == FeelVersion || format == FieldVersion)
                 {
                     run = run with { TargetMaterial = Text(r) };
                     if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported feel experiment version."); }
                     var flags = r.ReadInt32();
-                    if (flags <= 0 || (flags & ~FeelFlags) != 0) { throw new InvalidDataException("Invalid feel experiment flags."); }
-                    feel = new((flags & 1) != 0, (flags & ContactFlag) != 0, (flags & HealthFlag) != 0);
+                    if (flags < 0 || flags == 0 && format == FeelVersion || (flags & ~FeelFlags) != 0) { throw new InvalidDataException("Invalid feel experiment flags."); }
+                    feel = flags == 0 ? null : new((flags & 1) != 0, (flags & ContactFlag) != 0, (flags & HealthFlag) != 0);
+                    if (format == FieldVersion)
+                    {
+                        if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported field schema."); }
+                        field = new(r.ReadInt32());
+                    }
                 }
-                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel)); ValidateHeader(header);
+                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel, field)); ValidateHeader(header);
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
                 {

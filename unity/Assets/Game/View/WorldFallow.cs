@@ -14,6 +14,7 @@ namespace Game.View
         Shader fallowShader;
         Shader fallowGroundShader;
         float fallowMaskAt = -1;
+        Rect fallowWindow;
         bool fallowChapter;
         bool FallowActive => fallowChapter && wave != null && ArtCatalog.ProfileName == "wave-1a";
 
@@ -68,6 +69,7 @@ namespace Game.View
         {
             fallowHarvests.Clear();
             fallowMaskAt = -1;
+            fallowWindow = default;
         }
 
         void AcceptFallowEvent(WaveEvent value)
@@ -84,7 +86,7 @@ namespace Game.View
                 fallowGroundShader = Resources.Load<Shader>("FallowGroundSprite");
                 if (fallowShader == null || !fallowShader.isSupported || fallowGroundShader == null || !fallowGroundShader.isSupported)
                     throw new InvalidOperationException("Fallow restoration shader is unavailable.");
-                var resolution = GameVisualTokens.FallowMaskSize;
+                var resolution = FieldActive ? 256 : GameVisualTokens.FallowMaskSize;
                 fallowMask = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false, true)
                 {
                     name = "Cared-for land presentation mask", filterMode = FilterMode.Bilinear,
@@ -92,7 +94,12 @@ namespace Game.View
                 };
                 fallowPixels = new Color32[resolution * resolution];
             }
-            if (visualTime < fallowMaskAt) return;
+            var nextWindow = FieldActive
+                ? FieldLandscape.MaskWindow(renderCamera.transform.position, renderCamera.orthographicSize * renderCamera.aspect, renderCamera.orthographicSize)
+                : new Rect(0, 0, (float)mapWidth / settings.WorldUnitsPerUnityUnit, (float)mapHeight / settings.WorldUnitsPerUnityUnit);
+            var windowChanged = nextWindow != fallowWindow;
+            if (!windowChanged && visualTime < fallowMaskAt) return;
+            fallowWindow = nextWindow;
             fallowMaskAt = visualTime + GameVisualTokens.FallowMaskInterval;
             Array.Clear(fallowPixels, 0, fallowPixels.Length);
             for (var workIndex = 0; workIndex < wave.Work.Count; workIndex++)
@@ -121,14 +128,17 @@ namespace Game.View
             fallowMask.SetPixels32(fallowPixels);
             fallowMask.Apply(false, false);
             Shader.SetGlobalTexture("_FallowMask", fallowMask);
-            Shader.SetGlobalVector("_FallowMap", new Vector4((float)settings.WorldUnitsPerUnityUnit / mapWidth, (float)settings.WorldUnitsPerUnityUnit / mapHeight, 0, 0));
+            Shader.SetGlobalVector("_FallowMap", FieldLandscape.MaskTransform(fallowWindow));
+            Shader.SetGlobalFloat("_FallowWindowed", FieldActive ? 1 : 0);
         }
 
         void PaintFallow(Vector2 center, float radius, int channel, float strength)
         {
-            var size = GameVisualTokens.FallowMaskSize;
-            var width = (float)mapWidth / settings.WorldUnitsPerUnityUnit;
-            var height = (float)mapHeight / settings.WorldUnitsPerUnityUnit;
+            var size = fallowMask.width;
+            var width = fallowWindow.width;
+            var height = fallowWindow.height;
+            center -= fallowWindow.position;
+            if (center.x + radius < 0 || center.y + radius < 0 || center.x - radius > width || center.y - radius > height) return;
             var left = Mathf.Clamp(Mathf.FloorToInt((center.x - radius) / width * size), 0, size - 1);
             var right = Mathf.Clamp(Mathf.CeilToInt((center.x + radius) / width * size), 0, size - 1);
             var bottom = Mathf.Clamp(Mathf.FloorToInt((center.y - radius) / height * size), 0, size - 1);
@@ -153,6 +163,7 @@ namespace Game.View
         void DrawFallowLandmarks()
         {
             if (!FallowActive) return;
+            if (FieldActive) { DrawFieldLandmarks(); return; }
             var width = (float)mapWidth / settings.WorldUnitsPerUnityUnit;
             var height = (float)mapHeight / settings.WorldUnitsPerUnityUnit;
             FallowProp("fallow.prop.watermill", .35f, .73f, 2.4f, 2.1f, 5);
@@ -192,6 +203,7 @@ namespace Game.View
             if (fallowMask != null)
             {
                 Shader.SetGlobalTexture("_FallowMask", Texture2D.blackTexture);
+                Shader.SetGlobalFloat("_FallowWindowed", 0);
                 if (Application.isPlaying) Destroy(fallowMask); else DestroyImmediate(fallowMask);
             }
             fallowMask = null; fallowPixels = null; fallowArt.Clear(); fallowHarvests.Clear();

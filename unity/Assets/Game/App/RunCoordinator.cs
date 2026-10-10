@@ -120,7 +120,7 @@ namespace Game.App
             try
             {
                 foreach(var item in CanonicalContent.Displays) displays.Add(item.Id,item);
-                preferences=RunPreferences.Load(AutoplayCapture.Active?.PreferencesPrefix??FeelTrialAutomation.Active?.PreferencesPrefix??RunPreferences.Prefix);Aim=preferences.Aim;
+                preferences=RunPreferences.Load(AutoplayCapture.Active?.PreferencesPrefix??FeelTrialAutomation.Active?.PreferencesPrefix??NormalGcProbe.PreferencesPrefix??RunPreferences.Prefix);Aim=preferences.Aim;
                 if(!IsWave) { Progression=new MetaProgression(CanonicalContent.CreateMetaCatalog(),FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,MetaDirectory);
                 selectedChapter=Progression.Catalog.Chapters.OrderBy(c=>c.Index).First().Id;
                 recentIdle=Progression.LastIdle;if(recentIdle!=null)recentGrowth.UnionWith(recentIdle.BuildingsGrown); }
@@ -235,7 +235,7 @@ namespace Game.App
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;
                 SnapshotFeelPreferences();
-                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules);
+                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions());
                 Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??FeelTrialAutomation.Active?.ProfileDirectory??NormalPlayTrace.ProfileDirectory??NormalGcProbe.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
@@ -292,12 +292,14 @@ namespace Game.App
                 var step=1d/Frame.TickRate;
                 while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,movement);}
             }
+            var probeHudStart=ProbeEnabled?ProbeTimestamp():0;
             using(RunProfilerMarkers.Hud.Auto())
             using(smoothness.Scope(SmoothnessScope.Hud))
             {
                 if(Session.View.Status==RunStatus.AwaitingCard&&(screen==UiScreen.Run||screen==UiScreen.Cards))ShowCards();
                 hud?.Present(Frame,FirstPlayable);UpdateHints();
             }
+            if(ProbeEnabled)probeHudMs+=ProbeElapsed(probeHudStart);
             if(world!=null)
             {
                 var visible=Screen.safeArea;
@@ -316,8 +318,10 @@ namespace Game.App
                 }
                 world.ShowAnnouncements=screen==UiScreen.Run;
                 PredictLord(movement);
+                var probeDrawStart=ProbeEnabled?ProbeTimestamp():0;
                 using(RunProfilerMarkers.WorldPresent.Auto())
                 using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,Frame,FirstPlayable,renderInterpolation.Present(Frame.Tick,(float)(accumulator*Frame.TickRate),Paused,Time.unscaledDeltaTime,Frame.TickRate),Time.unscaledDeltaTime,visible);
+                if(ProbeEnabled)probeDrawMs+=ProbeElapsed(probeDrawStart);
                 smoothness.Submit(Camera.main,Frame.Tick,Paused,lordPrediction.ResetThisFrame,lordPrediction.Speed);
             }
             if(!finished&&telemetry!=null)
@@ -338,8 +342,10 @@ namespace Game.App
             try
             {
                 var command=new ReplayCommand(Session.NextSequence,Frame.Tick,kind,input,card,value);
+                var probeCoreStart=ProbeEnabled?ProbeTimestamp():0;
                 using(RunProfilerMarkers.CoreApply.Auto())
                 using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);
+                if(ProbeEnabled){probeCoreMs+=ProbeElapsed(probeCoreStart);if(kind==ReplayCommandKind.Advance)probeCoreTicks++;}
                 using(smoothness.Scope(SmoothnessScope.Recording))recording.WriteAccepted(command);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if(kind==ReplayCommandKind.SetInvulnerable)invulnerable=value!=0;
@@ -347,6 +353,11 @@ namespace Game.App
 #endif
                 if(kind==ReplayCommandKind.SetAimMode)Aim=(AimMode)value;
                 previous=Frame;CaptureSnapshots();
+                if(ProbeEnabled&&kind==ReplayCommandKind.Advance&&Frame.Field==null)
+                {
+                    var p=Frame.Lord.Position;
+                    probeLordBlocked|=(input.X<0&&p.X<=0)||(input.X>0&&p.X>=Frame.MapWidth)||(input.Y<0&&p.Y<=0)||(input.Y>0&&p.Y>=Frame.MapHeight);
+                }
                 if(kind==ReplayCommandKind.Advance)ObserveLordMovement(input);
                 using(RunProfilerMarkers.AcceptPresentation.Auto())
                 using(smoothness.Scope(SmoothnessScope.AcceptPresentation)){world?.AcceptWave(runCatalog,Wave);world?.AcceptFrame(Frame,FirstPlayable);if(IsWave)sound?.AcceptCommonFeedback(Frame,waveSound.PlayCommon);else sound?.AcceptFrame(Frame,FirstPlayable);AcceptWaveAudio();}
@@ -358,6 +369,7 @@ namespace Game.App
         }
         private void CaptureSnapshots()
         {
+            var probeSnapshotStart=ProbeEnabled?ProbeTimestamp():0;
             using var allocationScope=smoothness.Scope(SmoothnessScope.CoreSnapshot);
             RunFrame frame;FirstPlayableFrame firstPlayable;
             using(RunProfilerMarkers.CaptureRun.Auto())frame=Session.View.CaptureFrame();
@@ -365,6 +377,7 @@ namespace Game.App
             Wave=(Session.View as IWaveRunView)?.CaptureWaveRuntime();
             Frame=frame;FirstPlayable=firstPlayable ?? WavePresentation.Envelope(runCatalog,frame,Session.View.CaptureCards(),Wave);
             if(Wave!=null)WaveFrameAccepted?.Invoke(Wave);
+            if(ProbeEnabled)probeSnapshotMs+=ProbeElapsed(probeSnapshotStart);
         }
         private void ShowCards()
         {

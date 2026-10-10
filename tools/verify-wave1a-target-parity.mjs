@@ -50,8 +50,30 @@ export async function run(output) {
     rows.push({ seed: golden.Seed, tick: golden.Tick, endKind: golden.EndKind, stateHash: golden.StateHash, inputSha256, pendingActivations, counters: observed });
     console.log(`PASS wave-1a seed ${golden.Seed}: ${golden.Tick} ticks, 2 repeats × 2 actual Core targets`);
   }
+  const fieldPath = path.resolve(output, 'field-replays');
+  await launch([targets[0].dll, 'field-fixture', 'data', fieldPath, 'wave-1a']);
+  const fieldGoldens = JSON.parse(await fs.readFile(path.join(fieldPath, 'hashes.json')));
+  const fieldObservation = JSON.parse(await fs.readFile(path.join(fieldPath, 'field-observation.json')));
+  assert.deepEqual(fieldGoldens.map(g => g.Seed), [30001]);
+  assert.equal(fieldObservation.formatVersion, 4);
+  assert.equal(fieldObservation.crossedNegativeX, true);
+  assert.equal(fieldObservation.field.Version, 1);
+  assert.ok(fieldObservation.lord.X < 0, 'Field fixture must actually cross the historical map edge');
+  const fieldFixtures = [];
+  for (const golden of fieldGoldens) {
+    assert.equal(golden.Tick, 600);
+    const replay = path.join(fieldPath, `${golden.Seed}.ssreplay`), inputSha256 = sha(await fs.readFile(replay));
+    for (const target of targets) for (let repeat = 0; repeat < 2; repeat++) {
+      const actual = JSON.parse((await launch([target.dll, 'interactive-replay', 'data', replay, 'wave-1a'])).stdout.trim());
+      assert.deepEqual(actual, golden, 'Format4 field replay differs across actual Core targets');
+      assert.equal(sha(await fs.readFile(replay)), inputSha256);
+      assert.equal(sha(await fs.readFile(target.expected.location)), target.expected.sha256);
+    }
+    fieldFixtures.push({ seed: golden.Seed, tick: golden.Tick, stateHash: golden.StateHash, inputSha256 });
+    console.log(`PASS format4 field seed ${golden.Seed}: negative edge crossed, 2 repeats × 2 actual Core targets`);
+  }
   assert.equal(canonical(await captureProvenance()), canonical(frozen), 'Source/content/DLL changed during parity');
-  const summary = { passed: true, profile: 'wave-1a', designRevision: 'designed-v1.1', bindings: targets.map(t => t.binding), fixtures: rows,
+  const summary = { passed: true, profile: 'wave-1a', designRevision: 'designed-v1.1', bindings: targets.map(t => t.binding), fixtures: rows, fieldFixtures, fieldObservation,
     scope: 'Bounded 3000-tick normal-input replay, explicit Quit at bound (or earlier natural completion), no debug grants or invulnerability; determinism and no-crash only, not full-run completion. No balance, economy, Unity or device gate.' };
   await fs.writeFile(path.join(output, 'summary.json'), JSON.stringify(summary, null, 2) + '\n');
   return summary;

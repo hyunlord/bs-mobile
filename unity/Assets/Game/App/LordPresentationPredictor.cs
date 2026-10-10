@@ -9,9 +9,17 @@ namespace Game.App
         float speed, tickSeconds, quantizationTolerance, movementQuantum;
         int tick;
         bool initialized, wasPaused, hasMeasuredVelocity, expectedLocomotion;
+        bool field;
+        Vector2? arenaCenter;
+        float arenaRadius;
         public Vector2 Position => rendered;
         public float Speed => speed;
         public bool ResetThisFrame { get; private set; }
+
+        public void SetTopology(bool endlessField, Vector2? center = null, float radius = 0)
+        {
+            field = endlessField; arenaCenter = center; arenaRadius = Mathf.Max(0, radius);
+        }
 
         public void Initialize(Vector2 position, Vector2 mapBounds, float baseSpeed, float secondsPerTick, int currentTick,
             bool useExpectedLocomotion = false, float positionQuantizationTolerance = 0, float locomotionQuantum = 0)
@@ -37,8 +45,18 @@ namespace Game.App
                 if (initialized && elapsed > 0)
                 {
                     var velocity = ExpectedVelocity(appliedInput);
-                    locomotionX = System.Math.Max(0, System.Math.Min(bounds.x, locomotionX + (double)velocity.x * elapsed));
-                    locomotionY = System.Math.Max(0, System.Math.Min(bounds.y, locomotionY + (double)velocity.y * elapsed));
+                    locomotionX += (double)velocity.x * elapsed;
+                    locomotionY += (double)velocity.y * elapsed;
+                    if (!field)
+                    {
+                        locomotionX = System.Math.Max(0, System.Math.Min(bounds.x, locomotionX));
+                        locomotionY = System.Math.Max(0, System.Math.Min(bounds.y, locomotionY));
+                    }
+                    else if (arenaCenter.HasValue)
+                    {
+                        var constrained = Clamp(new Vector2((float)locomotionX, (float)locomotionY));
+                        locomotionX = constrained.x; locomotionY = constrained.y;
+                    }
                     var projected = new Vector2((float)locomotionX, (float)locomotionY);
                     var displacement = position - projected;
                     if (displacement.sqrMagnitude > quantizationTolerance * quantizationTolerance)
@@ -54,7 +72,7 @@ namespace Game.App
             else if(initialized && elapsed > 0 && appliedInput.sqrMagnitude > .00000001f)
             {
                 var velocity = (position - authoritative) / elapsed;
-                var onEdge = position.x <= 0 || position.y <= 0 || position.x >= bounds.x || position.y >= bounds.y;
+                var onEdge = !field && (position.x <= 0 || position.y <= 0 || position.x >= bounds.x || position.y >= bounds.y);
                 if(!onEdge)
                 {
                     measuredVelocity = velocity; measuredInput = appliedInput; hasMeasuredVelocity = true;
@@ -92,7 +110,11 @@ namespace Game.App
             return rendered;
         }
 
-        Vector2 Clamp(Vector2 position) => new Vector2(Mathf.Clamp(position.x, 0, bounds.x), Mathf.Clamp(position.y, 0, bounds.y));
+        Vector2 Clamp(Vector2 position)
+        {
+            if (!field) return new Vector2(Mathf.Clamp(position.x, 0, bounds.x), Mathf.Clamp(position.y, 0, bounds.y));
+            return arenaCenter.HasValue ? arenaCenter.Value + Vector2.ClampMagnitude(position - arenaCenter.Value, arenaRadius) : position;
+        }
 
         void SetLocomotionAnchor(Vector2 position)
         {

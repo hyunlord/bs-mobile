@@ -17,6 +17,7 @@ namespace Game.View
         readonly List<string> expiredRepairAnchors = new List<string>();
         readonly List<(WaveEvent value,float started)> waveEffects = new List<(WaveEvent,float)>();
         readonly HashSet<int> liveGrainIds = new HashSet<int>();
+        readonly HashSet<int> relocatedEnemies = new HashSet<int>(1024);
         readonly Dictionary<string,(int buildingId,float started)> repairAnchors = new Dictionary<string,(int,float)>();
         readonly HashSet<string> drawnRepairAnchors = new HashSet<string>();
         long lastWaveEvent = -1;
@@ -31,6 +32,7 @@ namespace Game.View
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
             if(profileChanged||frame==null)
             {
+                relocatedEnemies.Clear();
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
@@ -54,6 +56,7 @@ namespace Game.View
             }
             if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
             {
+                relocatedEnemies.Clear();
                 waveEnemyById.Clear();
                 for(var i=0;i<frame.Enemies.Count;i++){var enemy=frame.Enemies[i];if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);}
                 liveGrainIds.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();
@@ -74,6 +77,11 @@ namespace Game.View
                 var value=frame.Events[valueIndex];
                 if(value.Id<=lastWaveEvent)continue;
                 lastWaveEvent=value.Id;
+                if(value.Kind=="enemy-relocated")
+                {
+                    relocatedEnemies.Add(value.SubjectId);
+                    actorFacing.Remove(("enemy",value.SubjectId));
+                }
                 AcceptFallowEvent(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -156,8 +164,11 @@ namespace Game.View
                     var cropScale=maxWidth/crop.WorldSize.x;
                     var cropSize=crop.WorldSize*(FallowActive?cropScale:Mathf.Min(1,cropScale));
                     var position=Point(work.Position);
-                    position.x=Mathf.Clamp(position.x,cropSize.x*crop.Pivot.x,(float)mapWidth/settings.WorldUnitsPerUnityUnit-cropSize.x*(1-crop.Pivot.x));
-                    position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
+                    if(!FieldActive)
+                    {
+                        position.x=Mathf.Clamp(position.x,cropSize.x*crop.Pivot.x,(float)mapWidth/settings.WorldUnitsPerUnityUnit-cropSize.x*(1-crop.Pivot.x));
+                        position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
+                    }
                     Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:FallowActive?1:GameVisualTokens.WaveCropOpacity);
                     if(work.Complete)
                     {

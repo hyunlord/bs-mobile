@@ -38,6 +38,7 @@ namespace Game.App
             var map = runCatalog.Tuning.World.Map;
             var expectedLocomotion = activeFeelRules != null;
             var initialSpeed = expectedLocomotion ? (float)Session.LocomotionSpeedPerTick : map.LordSpeed;
+            UpdatePredictionTopology();
             lordPrediction.Initialize(PresentationPoint(Frame.Lord.Position), new Vector2(map.Width, map.Height) / presentationUnits,
                 initialSpeed * Frame.TickRate / presentationUnits, 1f / Frame.TickRate, Frame.Tick,
                 expectedLocomotion, 2f / presentationUnits, activeFeelRules?.FasterLord == false ? 1f / presentationUnits : 0);
@@ -54,18 +55,27 @@ namespace Game.App
         static Vector2 PresentationInput(PlayerInput input) => new Vector2(input.X, input.Y) / PlayerInput.Scale;
         void ObserveLordMovement(PlayerInput input)
         {
+            UpdatePredictionTopology();
             float? expectedSpeed = activeFeelRules == null ? (float?)null : (float)Session.LocomotionSpeedPerTick * Frame.TickRate / presentationUnits;
             lordPrediction.Observe(PresentationPoint(Frame.Lord.Position), Frame.Tick, PresentationInput(input), expectedSpeed);
         }
         void PredictLord(PlayerInput input)
         {
             if(!IsWave||runCatalog.WaveRuntime?.ChapterId!="meta:chapter_1") { world.PredictedLordPosition = null; return; }
+            UpdatePredictionTopology();
             world.PredictedLordPosition = lordPrediction.Present(PresentationPoint(Frame.Lord.Position), PresentationInput(input),
                 Time.unscaledDeltaTime * Speed, (float)accumulator, Paused);
             normalTrace?.ObserveInput(PresentationInput(input), Frame.Tick, accumulator, Paused, PresentationPoint(Frame.Lord.Position), lordPrediction.Position, lordPrediction.Speed);
         }
+        void UpdatePredictionTopology()
+        {
+            var arena = Frame.Field?.Arena;
+            lordPrediction.SetTopology(Frame.Field != null, arena == null ? (Vector2?)null : PresentationPoint(arena.Center),
+                arena == null ? 0 : arena.Radius / presentationUnits);
+        }
         void Update()
         {
+            if(ProbeEnabled)BeginProbeFrame();
             if (!normalTraceChecked) { normalTraceChecked = true; normalTrace = NormalPlayTrace.Create(this); if (normalTrace != null) ConfigureNormalTrace(normalTrace); }
             normalTrace?.BeginFrame();
             smoothness.BeginFrame(Frame?.Tick ?? 0, Paused);
