@@ -11,12 +11,14 @@ namespace Game.App
         public bool RequestedHeroB => Mode == "walk-b";
         public bool Walk => Mode == "walk-a" || Mode == "walk-b";
         public bool FailurePreview { get; }
+        public bool WalkLandscape { get; }
+        public bool WalkFast { get; }
         public string MovementConfiguration { get; }
-        public bool Landscape => !Walk;
+        public bool Landscape => !Walk || WalkLandscape;
         public string InputProtocol => Walk ? "tick-walk-right-v1" : MovementConfiguration == "evasive" ? "growth-evasive-policy-v1" : "growth-policy-v1";
         public CaptureSegmentWindow Window => new CaptureSegmentWindow(Walk || FailurePreview ? 0 : 360, Walk ? 5 : 30, !Walk && !FailurePreview);
 
-        FeelComparisonCapture(string mode, bool failurePreview, string movement) { Mode = mode; FailurePreview = failurePreview; MovementConfiguration = movement; }
+        FeelComparisonCapture(string mode, bool failurePreview, string movement, bool walkLandscape, bool walkFast) { Mode = mode; FailurePreview = failurePreview; MovementConfiguration = movement; WalkLandscape=walkLandscape; WalkFast=walkFast; }
 
         public static FeelComparisonCapture Parse(string[] args)
         {
@@ -24,6 +26,7 @@ namespace Game.App
             if (index < 0)
             {
                 if (Array.IndexOf(args, "--feel-failure-preview") >= 0) throw new ArgumentException("Failure preview requires a rules comparison.");
+                if (Array.IndexOf(args,"--feel-walk-landscape")>=0 || Array.IndexOf(args,"--feel-walk-fast")>=0) throw new ArgumentException("Walk options require a walk comparison.");
                 return null;
             }
             if (Array.LastIndexOf(args, "--feel-comparison") != index || index + 1 >= args.Length)
@@ -38,6 +41,9 @@ namespace Game.App
             var preview = Array.IndexOf(args, "--feel-failure-preview");
             var movementIndex = Array.IndexOf(args, "--capture-movement");
             var walk = mode == "walk-a" || mode == "walk-b";
+            var landscape=Array.IndexOf(args,"--feel-walk-landscape");
+            var fast=Array.IndexOf(args,"--feel-walk-fast");
+            if ((!walk&&(landscape>=0||fast>=0)) || (landscape>=0&&Array.LastIndexOf(args,"--feel-walk-landscape")!=landscape) || (fast>=0&&Array.LastIndexOf(args,"--feel-walk-fast")!=fast)) throw new ArgumentException("Walk options require a walk comparison and may appear once.");
             if (walk && (preview >= 0 || movementIndex >= 0)) throw new ArgumentException("Failure preview and movement configuration are rules-only.");
             if (preview >= 0 && Array.LastIndexOf(args, "--feel-failure-preview") != preview) throw new ArgumentException("Duplicate failure preview flag.");
             var movement = "evasive";
@@ -47,7 +53,7 @@ namespace Game.App
                 movement = args[movementIndex + 1];
                 if (movement != "default" && movement != "evasive") throw new ArgumentException("Movement requires default or evasive.");
             }
-            return new FeelComparisonCapture(mode, preview >= 0, movement);
+            return new FeelComparisonCapture(mode, preview >= 0, movement, landscape>=0, fast>=0);
         }
 
         public static CaptureSegmentWindow ResolveWindow(string[] args) => Parse(args)?.Window ?? CaptureSegmentWindow.Parse(args);

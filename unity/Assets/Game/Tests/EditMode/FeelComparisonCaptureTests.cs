@@ -7,6 +7,15 @@ public sealed class FeelComparisonCaptureTests
 {
     static FeelComparisonCapture Mode(string mode) => FeelComparisonCapture.Parse(new[] { "--autoplay-capture", "--feel-comparison", mode });
     [Test] public void DefaultCaptureRemainsInactive() => Assert.That(FeelComparisonCapture.Parse(Array.Empty<string>()), Is.Null);
+    [Test] public void WalkViewportAndSpeedAreExplicitAndDoNotEnableContactOrHealth()
+    {
+        var value=FeelComparisonCapture.Parse(new[]{"--autoplay-capture","--feel-comparison","walk-b","--feel-walk-landscape","--feel-walk-fast"});
+        Assert.That(value.Landscape&&value.WalkFast&&value.RequestedHeroB,Is.True);
+        Assert.That(value.RequestedRulesOn||value.RequestedFeedback,Is.False);
+        Assert.That(value.Window.DurationSeconds,Is.EqualTo(5));
+        Assert.Throws<ArgumentException>(()=>FeelComparisonCapture.Parse(new[]{"--autoplay-capture","--feel-walk-fast"}));
+        Assert.Throws<ArgumentException>(()=>FeelComparisonCapture.Parse(new[]{"--autoplay-capture","--feel-comparison","rules-on","--feel-walk-landscape"}));
+    }
     [Test] public void FailurePreviewUsesThirtySecondsFromZeroAndLandscape()
     {
         var value = FeelComparisonCapture.Parse(new[] { "--autoplay-capture", "--feel-comparison", "rules-on", "--feel-failure-preview", "--capture-movement", "default" });

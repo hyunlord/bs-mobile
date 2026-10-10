@@ -1,4 +1,15 @@
-# Hero B articulated preview authoring (#207)
+# Hero B articulated authoring (#207, #209)
+
+The user selected B on #209. Current refinement uses twelve distance-driven walk keys and three action keys, independently layered legs, and continuous contact correction. See [CONTACT-CONTRACT.md](CONTACT-CONTRACT.md) for the authoring/runtime contract. Bake and verify with:
+
+```sh
+node tools/art-authoring/hero-b/bake.mjs
+node tools/art-authoring/hero-b/verify.mjs
+```
+
+Output is staged under `artifacts/grounded-motion/hero-new`; these commands no longer overwrite Unity atlases. An optional output-directory argument controls staging. The parent integrates the manifest and runtime assets only after native baseline capture. The preview and authored contact checks do not constitute native visual acceptance or measured zero slip. The earlier `baked-frames.json` in this source directory is the historical eleven-frame record until the final new record is installed.
+
+## Historical #207 candidate
 
 This is an **opt-in visual comparison candidate**, not a replacement approved by the user.
 The runtime draws one baked atlas quad. This source hierarchy, joint solve and Node process never execute in a player.

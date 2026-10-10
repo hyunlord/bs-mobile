@@ -16,13 +16,27 @@ namespace Game.App
             activeFeelRules = IsWave ? preferences.SnapshotFeel() : null;
             activeHitFeedback = IsWave && preferences.FeelFeedback;
             activeHeroRig = IsWave && preferences.HeroRigPreview;
+            var trial = FeelTrialAutomation.Active?.Options;
+            if (trial != null && IsWave)
+            {
+                activeFeelRules = trial.Rules;
+                activeHitFeedback = trial.Feedback;
+            }
             var comparison = AutoplayCapture.Active?.FeelComparison;
             if(comparison != null && IsWave)
             {
-                activeFeelRules = comparison.RequestedRulesOn ? new FeelExperimentOptions(true,true,true) : null;
+                activeFeelRules = comparison.RequestedRulesOn ? new FeelExperimentOptions(true,true,true) : comparison.WalkFast ? new FeelExperimentOptions(true,false,false) : null;
                 activeHitFeedback = comparison.RequestedFeedback;
                 activeHeroRig = comparison.RequestedHeroB;
             }
+        }
+
+        public void FinishFeelTrialRecording()
+        {
+            if (FeelTrialAutomation.Active == null || Session == null)
+                throw new System.InvalidOperationException("Only an active native feel trial may close its recording.");
+            if (Session.View.Status == RunStatus.Completed && !finished) CompleteRun();
+            StopRecording();
         }
 
         void AddFeelSettings(Transform panel)

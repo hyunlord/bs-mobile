@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Editor-only authored hierarchical cutout rig. Joint rotations in degrees; feet in frame pixels. Root and torso translation remain fixed. Two-bone leg IK preserves planted y=420.",
+  "description": "Twelve distance-driven walk poses. Fixed root, wider linear stance and lifted return; layered atlas supports continuous planted-sole correction.",
   "bones": [
     {
       "id": "farHip",
@@ -15,7 +15,7 @@
       "parent": "farHip",
       "offset": [
         0,
-        64
+        82
       ]
     },
     {
@@ -31,7 +31,7 @@
       "parent": "nearHip",
       "offset": [
         0,
-        64
+        82
       ]
     },
     {
@@ -40,7 +40,8 @@
       "offset": [
         0,
         -12
-      ]
+      ],
+      "angle": 7
     },
     {
       "id": "head",
@@ -48,7 +49,8 @@
       "offset": [
         3,
         -83
-      ]
+      ],
+      "angle": -5
     },
     {
       "id": "capeUpper",
@@ -128,7 +130,7 @@
         1195,
         60
       ],
-      "scale": 0.55,
+      "scale": 0.6,
       "angle": 0
     },
     {
@@ -233,7 +235,7 @@
         475,
         205
       ],
-      "scale": 0.55,
+      "scale": 0.57,
       "angle": 0
     },
     {
@@ -248,7 +250,7 @@
         171,
         278
       ],
-      "scale": 0.43,
+      "scale": 0.46,
       "angle": 0
     },
     {
@@ -331,20 +333,25 @@
   "poses": [
     {
       "id": "walk-0",
+      "phase": 0,
+      "stance": {
+        "near": true,
+        "far": false
+      },
       "feet": {
-        "far": [
-          277,
-          410
-        ],
         "near": [
-          266,
+          344,
+          420
+        ],
+        "far": [
+          216,
           420
         ]
       },
       "rotations": {
         "nearShoulder": 0,
         "farShoulder": 0,
-        "nearElbow": -8,
+        "nearElbow": -10,
         "farElbow": 8,
         "capeLower": 0,
         "capeUpper": 0
@@ -352,149 +359,288 @@
     },
     {
       "id": "walk-1",
+      "phase": 0.08333333333333333,
+      "stance": {
+        "near": true,
+        "far": false
+      },
       "feet": {
-        "far": [
-          293,
-          404
-        ],
         "near": [
-          249,
+          322.6666666666667,
           420
+        ],
+        "far": [
+          237.33333333333337,
+          406.5
         ]
       },
       "rotations": {
-        "nearShoulder": 12,
-        "farShoulder": -12,
-        "nearElbow": -14,
+        "nearShoulder": 12.499999999999998,
+        "farShoulder": -12.499999999999998,
+        "nearElbow": -14.375,
         "farElbow": 8,
-        "capeLower": -3,
-        "capeUpper": 1
+        "capeLower": -2.4999999999999996,
+        "capeUpper": 0.9999999999999999
       }
     },
     {
       "id": "walk-2",
+      "phase": 0.16666666666666666,
+      "stance": {
+        "near": true,
+        "far": false
+      },
       "feet": {
-        "far": [
-          311,
-          410
-        ],
         "near": [
-          232,
+          301.3333333333333,
           420
+        ],
+        "far": [
+          258.66666666666663,
+          396.61731409782016
         ]
       },
       "rotations": {
-        "nearShoulder": 20,
-        "farShoulder": -20,
-        "nearElbow": -18,
+        "nearShoulder": 21.650635094610966,
+        "farShoulder": -21.650635094610966,
+        "nearElbow": -17.577722283113836,
         "farElbow": 8,
-        "capeLower": -6,
-        "capeUpper": 2
+        "capeLower": -4.330127018922193,
+        "capeUpper": 1.7320508075688772
       }
     },
     {
       "id": "walk-3",
+      "phase": 0.25,
+      "stance": {
+        "near": true,
+        "far": false
+      },
       "feet": {
-        "far": [
-          305,
+        "near": [
+          280,
           420
         ],
-        "near": [
-          240,
-          406
+        "far": [
+          280,
+          393
         ]
       },
       "rotations": {
-        "nearShoulder": 12,
-        "farShoulder": -12,
-        "nearElbow": -14,
+        "nearShoulder": 25,
+        "farShoulder": -25,
+        "nearElbow": -18.75,
         "farElbow": 8,
-        "capeLower": -3,
-        "capeUpper": 1
+        "capeLower": -5,
+        "capeUpper": 2
       }
     },
     {
       "id": "walk-4",
+      "phase": 0.3333333333333333,
+      "stance": {
+        "near": true,
+        "far": false
+      },
       "feet": {
-        "far": [
-          283,
+        "near": [
+          258.6666666666667,
           420
         ],
-        "near": [
-          260,
-          410
+        "far": [
+          301.3333333333333,
+          396.61731409782016
         ]
       },
       "rotations": {
-        "nearShoulder": 0,
-        "farShoulder": 0,
-        "nearElbow": -8,
+        "nearShoulder": 21.65063509461097,
+        "farShoulder": -21.65063509461097,
+        "nearElbow": -17.57772228311384,
         "farElbow": 8,
-        "capeLower": 0,
-        "capeUpper": 0
+        "capeLower": -4.330127018922194,
+        "capeUpper": 1.7320508075688774
       }
     },
     {
       "id": "walk-5",
+      "phase": 0.4166666666666667,
+      "stance": {
+        "near": true,
+        "far": false
+      },
       "feet": {
-        "far": [
-          262,
+        "near": [
+          237.33333333333331,
           420
         ],
-        "near": [
-          281,
-          404
+        "far": [
+          322.6666666666667,
+          406.5
         ]
       },
       "rotations": {
-        "nearShoulder": -12,
-        "farShoulder": 12,
-        "nearElbow": -8,
-        "farElbow": 14,
-        "capeLower": 3,
-        "capeUpper": -1
+        "nearShoulder": 12.499999999999998,
+        "farShoulder": -12.499999999999998,
+        "nearElbow": -14.375,
+        "farElbow": 8,
+        "capeLower": -2.4999999999999996,
+        "capeUpper": 0.9999999999999999
       }
     },
     {
       "id": "walk-6",
+      "phase": 0.5,
+      "stance": {
+        "near": false,
+        "far": true
+      },
       "feet": {
-        "far": [
-          244,
+        "near": [
+          216,
           420
         ],
-        "near": [
-          298,
-          410
+        "far": [
+          344,
+          420
         ]
       },
       "rotations": {
-        "nearShoulder": -20,
-        "farShoulder": 20,
-        "nearElbow": -8,
-        "farElbow": 18,
-        "capeLower": 6,
-        "capeUpper": -2
+        "nearShoulder": 3.061616997868383e-15,
+        "farShoulder": -3.061616997868383e-15,
+        "nearElbow": -10.000000000000002,
+        "farElbow": 8,
+        "capeLower": -6.123233995736766e-16,
+        "capeUpper": 2.4492935982947064e-16
       }
     },
     {
       "id": "walk-7",
+      "phase": 0.5833333333333334,
+      "stance": {
+        "near": false,
+        "far": true
+      },
       "feet": {
-        "far": [
-          252,
-          406
-        ],
         "near": [
-          287,
+          237.33333333333337,
+          406.5
+        ],
+        "far": [
+          322.66666666666663,
           420
         ]
       },
       "rotations": {
-        "nearShoulder": -12,
-        "farShoulder": 12,
-        "nearElbow": -8,
-        "farElbow": 14,
-        "capeLower": 3,
-        "capeUpper": -1
+        "nearShoulder": -12.500000000000004,
+        "farShoulder": 12.500000000000004,
+        "nearElbow": -10,
+        "farElbow": 12.375,
+        "capeLower": 2.5000000000000004,
+        "capeUpper": -1.0000000000000002
+      }
+    },
+    {
+      "id": "walk-8",
+      "phase": 0.6666666666666666,
+      "stance": {
+        "near": false,
+        "far": true
+      },
+      "feet": {
+        "near": [
+          258.66666666666663,
+          396.61731409782016
+        ],
+        "far": [
+          301.33333333333337,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -21.650635094610962,
+        "farShoulder": 21.650635094610962,
+        "nearElbow": -10,
+        "farElbow": 15.577722283113836,
+        "capeLower": 4.330127018922193,
+        "capeUpper": -1.732050807568877
+      }
+    },
+    {
+      "id": "walk-9",
+      "phase": 0.75,
+      "stance": {
+        "near": false,
+        "far": true
+      },
+      "feet": {
+        "near": [
+          280,
+          393
+        ],
+        "far": [
+          280,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -25,
+        "farShoulder": 25,
+        "nearElbow": -10,
+        "farElbow": 16.75,
+        "capeLower": 5,
+        "capeUpper": -2
+      }
+    },
+    {
+      "id": "walk-10",
+      "phase": 0.8333333333333334,
+      "stance": {
+        "near": false,
+        "far": true
+      },
+      "feet": {
+        "near": [
+          301.33333333333337,
+          396.61731409782016
+        ],
+        "far": [
+          258.66666666666663,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -21.650635094610966,
+        "farShoulder": 21.650635094610966,
+        "nearElbow": -10,
+        "farElbow": 15.577722283113838,
+        "capeLower": 4.330127018922193,
+        "capeUpper": -1.7320508075688772
+      }
+    },
+    {
+      "id": "walk-11",
+      "phase": 0.9166666666666666,
+      "stance": {
+        "near": false,
+        "far": true
+      },
+      "feet": {
+        "near": [
+          322.66666666666663,
+          406.5
+        ],
+        "far": [
+          237.33333333333337,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -12.50000000000001,
+        "farShoulder": 12.50000000000001,
+        "nearElbow": -10,
+        "farElbow": 12.375000000000004,
+        "capeLower": 2.500000000000002,
+        "capeUpper": -1.0000000000000009
       }
     },
     {
@@ -557,5 +703,22 @@
         "capeLower": -8
       }
     }
-  ]
+  ],
+  "root": {
+    "x": 280,
+    "y": 272
+  },
+  "legLengths": {
+    "upper": 82,
+    "lower": 104
+  },
+  "gait": {
+    "frames": 12,
+    "groundY": 420,
+    "footCenterX": 280,
+    "stanceTravelPixels": 128,
+    "cycleTravelPixels": 256,
+    "hipWarpStartY": 276,
+    "soleWarpFullY": 376
+  }
 }

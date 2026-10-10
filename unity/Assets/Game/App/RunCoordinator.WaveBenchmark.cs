@@ -17,6 +17,9 @@ namespace Game.App
         static partial void LoadFrozenWaveBenchmark(ref ContentCatalog catalog, ref string dataHash);
         bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture, benchmarkInterrupted;
         string benchmarkMode = "capped";
+        CrowdReplayBenchmark crowdBenchmark;
+        bool benchmarkAllocationAvailable;
+        PlayerInput benchmarkMovement;
         bool benchmarkProfileRequested, benchmarkProfilerEnabled;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         int benchmarkTraceWindow;
@@ -58,16 +61,17 @@ namespace Game.App
 
         struct BenchmarkFrame
         {
-            public int frame, tick, enemies, commands, gcCollections;
+            public int frame, tick, enemies, commands, gcCollections, advances, drawCalls, spriteInstances;
             public long allocatedBytes;
-            public double wallMs, simulationMs, snapshotMs, acceptMs, presentMs, hudMs;
+            public double wallMs, simulationMs, snapshotMs, acceptMs, presentMs, hudMs, advanceMs;
             public bool focused;
         }
         struct BenchmarkTiming { public int observedFrame; public FrameTiming value; }
         [Serializable] sealed class BenchmarkResult
         {
             public string commit, sourceHash, dataHash, replaySha256, stateHash, expectedStateHash, error, graphicsApi, quality, platform;
-            public bool sourceDirty, verified, developmentBuild, frameTimingEnabled, interrupted, profilerEnabled;
+            public bool sourceDirty, verified, developmentBuild, frameTimingEnabled, interrupted, profilerEnabled, allocationCounterAvailable, heroRig;
+            public string fixture = "c05", playbackBoundary;
             public string benchmarkMode, gcMode;
             public int frameCapacity, timingCapacity;
             public int tick, commands, frames, renderTimingSamples, width, height, targetFrameRate, vSyncCount, renderWarmupFrames = 120;
@@ -88,7 +92,9 @@ namespace Game.App
                 if (Directory.Exists(destination) && Directory.GetFileSystemEntries(destination).Length != 0) throw new IOException("Benchmark output must be empty.");
                 Directory.CreateDirectory(destination);
                 benchmarkOutput = destination;
-                benchmarkMode = ParseWaveBenchmarkMode(args);
+                crowdBenchmark = CrowdReplayBenchmark.Parse(args);
+                benchmarkMode = crowdBenchmark == null ? ParseWaveBenchmarkMode(args) : "normal-mac-vsync";
+                benchmarkAllocationAvailable = crowdBenchmark == null || AllocationCounterProbe.CurrentThreadAvailable();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, true);
 #else
@@ -102,14 +108,16 @@ namespace Game.App
                 }
                 var bytes = File.ReadAllBytes(args[index + 1]);
                 using (var sha = SHA256.Create()) benchmarkReplaySha = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
-                if (benchmarkReplaySha != "f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5") throw new InvalidDataException("C05 fixture identity mismatch.");
+                if (benchmarkReplaySha != (crowdBenchmark == null ? "f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5" : CrowdReplayBenchmark.ReplaySha256)) throw new InvalidDataException("Benchmark fixture identity mismatch.");
                 using (var stream = new MemoryStream(bytes)) benchmarkReplay = ReplayCodec.Read(stream);
                 ContentCatalog frozen = null; string hash = null;
-                LoadFrozenWaveBenchmark(ref frozen, ref hash);
+                if (crowdBenchmark == null) LoadFrozenWaveBenchmark(ref frozen, ref hash);
+                else { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; crowdBenchmark.Validate(benchmarkReplaySha, hash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash); }
                 if (frozen == null || hash != benchmarkReplay.Header.Options.DataHash) throw new InvalidDataException("Frozen benchmark catalog absent or mismatched; prepare the benchmark build.");
                 benchmarkCapture = Array.IndexOf(args, "--wave-benchmark-capture") >= 0;
-                Screen.SetResolution(1600, 900, FullScreenMode.Windowed);
-                Application.targetFrameRate = benchmarkMode == "uncapped" ? -1 : 60; QualitySettings.vSyncCount = 0;
+                Screen.SetResolution(crowdBenchmark == null ? 1600 : 1920, crowdBenchmark == null ? 900 : 1080, FullScreenMode.Windowed);
+                if (crowdBenchmark == null) { Application.targetFrameRate = benchmarkMode == "uncapped" ? -1 : 60; QualitySettings.vSyncCount = 0; }
+                else { Application.targetFrameRate = -1; QualitySettings.vSyncCount = 1; }
                 runCatalog = frozen;
                 StartCoroutine(BeginWaveBenchmark());
             }
@@ -121,11 +129,11 @@ namespace Game.App
             try
             {
                 Session = new InteractiveSession(runCatalog, benchmarkReplay.Header.Options);
-                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=false;
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
-                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < 7200) ApplyBenchmarkCommand(false, ref benchmarkPending);
+                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < (crowdBenchmark == null ? 7200 : CrowdReplayBenchmark.StartTick)) ApplyBenchmarkCommand(false, ref benchmarkPending);
                 CaptureSnapshots(); previous = Frame;
                 world = new GameObject("World renderer").AddComponent<WorldRenderer>();
                 var settings = CanonicalContent.Presentation.Camera;
@@ -135,18 +143,19 @@ namespace Game.App
                 preferences.Shake = true; preferences.DamageNumbers = true;
                 ApplyPreferences(); sound.ResetRun(); waveSound?.ResetRun(); bossPhaseCue.Reset(); lastWaveSound = -1;
                 ShowHud(); accumulator = 0;
+                if (crowdBenchmark != null) InitializeSmoothness();
                 File.WriteAllText(Path.Combine(benchmarkOutput, "device.json"), JsonUtility.ToJson(DeviceFacts.Capture(), true));
                 ResetBenchmarkClock(); waveBenchmarkReady = true;
             }
             catch (Exception exception) { EndWaveBenchmark(exception); }
         }
-        void ResetBenchmarkClock() { benchmarkFrameStart = Stopwatch.GetTimestamp(); benchmarkAllocatedStart = GC.GetAllocatedBytesForCurrentThread(); benchmarkGcStart = GC.CollectionCount(0); }
+        void ResetBenchmarkClock() { benchmarkFrameStart = Stopwatch.GetTimestamp(); benchmarkAllocatedStart = benchmarkAllocationAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1; benchmarkGcStart = GC.CollectionCount(0); }
         static double BenchmarkMilliseconds(long start) => (Stopwatch.GetTimestamp() - start) * 1000d / Stopwatch.Frequency;
-        static bool BenchmarkWindow(int tick) => tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
+        bool BenchmarkWindow(int tick) => crowdBenchmark != null ? CrowdReplayBenchmark.InWindow(tick) : tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
         void UpdateWaveBenchmark()
         {
             var entryTimestamp = Stopwatch.GetTimestamp();
-            var entryAllocated = GC.GetAllocatedBytesForCurrentThread();
+            var entryAllocated = benchmarkAllocationAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1;
             var entryGc = GC.CollectionCount(0);
             if (!waveBenchmarkReady || waveBenchmarkEnded) return;
             try
@@ -154,7 +163,7 @@ namespace Game.App
                 if (benchmarkHasPending)
                 {
                     benchmarkPending.wallMs = (entryTimestamp - benchmarkFrameStart) * 1000d / Stopwatch.Frequency;
-                    benchmarkPending.allocatedBytes = entryAllocated - benchmarkAllocatedStart;
+                    benchmarkPending.allocatedBytes = benchmarkAllocationAvailable ? entryAllocated - benchmarkAllocatedStart : -1;
                     benchmarkPending.gcCollections = entryGc - benchmarkGcStart;
                     if (benchmarkFrames.Count == benchmarkFrames.Capacity) throw new InvalidOperationException("Benchmark frame capacity exceeded; no measured rows were dropped.");
                     benchmarkFrames.Add(benchmarkPending); benchmarkHasPending = false;
@@ -187,7 +196,7 @@ namespace Game.App
                 }
                 else
                 {
-                    if (Screen.width != 1600 || Screen.height != 900) throw new InvalidOperationException("Benchmark requires a 1600x900 render surface.");
+                    if (Screen.width != (crowdBenchmark == null ? 1600 : 1920) || Screen.height != (crowdBenchmark == null ? 900 : 1080)) throw new InvalidOperationException("Benchmark render surface changed.");
                     accumulator += Time.unscaledDeltaTime;
                     var step = 1d / Frame.TickRate;
                     while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count)
@@ -202,14 +211,29 @@ namespace Game.App
                 var visible = Screen.safeArea;
                 if (hud != null)
                 {
-                    visible.yMin += Mathf.Min(UiTokens.BottomWorldInset * Ui.Canvas.scaleFactor, visible.height * .2f);
-                    visible.yMax = Mathf.Max(visible.yMin + 1, visible.yMax - hud.ReservedTopPixels);
+                    if (crowdBenchmark != null)
+                    {
+                        var overlays = Ui.GetWorldOverlayBounds();
+                        visible = Rect.MinMaxRect(Mathf.Max(visible.xMin, overlays.xMin), Mathf.Max(visible.yMin, overlays.yMin), Mathf.Min(visible.xMax, overlays.xMax), Mathf.Min(visible.yMax, overlays.yMax));
+                    }
+                    else
+                    {
+                        visible.yMin += Mathf.Min(UiTokens.BottomWorldInset * Ui.Canvas.scaleFactor, visible.height * .2f);
+                        visible.yMax = Mathf.Max(visible.yMin + 1, visible.yMax - hud.ReservedTopPixels);
+                    }
                 }
                 world.ShowAnnouncements = true;
                 started = Stopwatch.GetTimestamp();
-                using (RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous, Frame, FirstPlayable, warming ? 1 : (float)(accumulator * Frame.TickRate), Time.unscaledDeltaTime, visible);
+                var alpha = warming ? 1 : (float)(accumulator * Frame.TickRate);
+                if (crowdBenchmark != null)
+                {
+                    if (!warming) PredictLord(benchmarkMovement);
+                    alpha = renderInterpolation.Present(Frame.Tick, alpha, warming, Time.unscaledDeltaTime, Frame.TickRate);
+                }
+                using (RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous, Frame, FirstPlayable, alpha, Time.unscaledDeltaTime, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 sample.tick = Frame.Tick; sample.enemies = Frame.Counts.Enemies;
+                sample.drawCalls = world.DrawCalls; sample.spriteInstances = world.SubmittedInstances;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 profilerTrace.EmitBenchmarkFrame(sample.tick, sample.enemies, warming ? 0 : BenchmarkWindow(sample.tick) ? 1 : 2);
 #endif
@@ -222,11 +246,13 @@ namespace Game.App
         void ApplyBenchmarkCommand(bool present, ref BenchmarkFrame sample)
         {
             var command = benchmarkReplay.Commands[benchmarkCommand++];
-            var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.CoreApply.Auto()) Session.Apply(command); sample.simulationMs += BenchmarkMilliseconds(started);
+            var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.CoreApply.Auto()) Session.Apply(command); var elapsed = BenchmarkMilliseconds(started); sample.simulationMs += elapsed;
+            if (command.Kind == ReplayCommandKind.Advance) { sample.advances++; sample.advanceMs += elapsed; benchmarkMovement = command.Input; }
             foreach (var checkpoint in benchmarkReplay.Checkpoints)
                 if (checkpoint.AppliedCommands == Session.NextSequence && checkpoint.StateHash != Session.ComputeStateHash()) throw new InvalidDataException("Benchmark checkpoint mismatch.");
             if (!present) return;
             started = Stopwatch.GetTimestamp(); previous = Frame; using (BenchmarkSnapshot.Auto()) CaptureSnapshots(); sample.snapshotMs += BenchmarkMilliseconds(started);
+            if (crowdBenchmark != null && command.Kind == ReplayCommandKind.Advance) ObserveLordMovement(command.Input);
             started = Stopwatch.GetTimestamp();
             using (RunProfilerMarkers.AcceptPresentation.Auto())
             {
@@ -244,6 +270,14 @@ namespace Game.App
             profilerTrace.Stop(Frame?.Tick ?? 0, exception == null ? "run-complete" : "error");
 #endif
             var result = new BenchmarkResult { frameCapacity = benchmarkFrames.Capacity, timingCapacity = benchmarkTimings.Capacity, benchmarkMode = benchmarkMode, profilerEnabled = benchmarkProfilerEnabled, gcMode = UnityEngine.Scripting.GarbageCollector.GCMode.ToString(), commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), interrupted = benchmarkInterrupted, frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
+            result.allocationCounterAvailable = benchmarkAllocationAvailable;
+            result.heroRig = activeHeroRig;
+            if (crowdBenchmark != null)
+            {
+                result.fixture = "rules-off-six-minute-8c94ce2";
+                result.windows = "10800-11530";
+                result.playbackBoundary = "Capture-free native replay, not live input. Original accepted commands are pre-rolled without rendering to tick10800; 120 rendered warmup frames then 1x playback until original terminal state. No JPEG, readback, audio recording or forced survival. Card commands replay immediately; original human pause durations are not encoded. Draw calls are world batch submissions, excluding Unity UI and render-pipeline passes. Allocation bytes unavailable are -1.";
+            }
             try
             {
                 if (exception == null)
@@ -259,8 +293,8 @@ namespace Game.App
                 {
                     using (var writer = new StreamWriter(Path.Combine(benchmarkOutput, "frames.csv")))
                     {
-                        writer.WriteLine("frame,tick,enemies,commands,wallMs,simulationMs,snapshotMs,acceptMs,presentMs,hudMs,allocatedBytes,gcCollections,focused");
-                        foreach (var row in benchmarkFrames) writer.WriteLine(FormattableString.Invariant($"{row.frame},{row.tick},{row.enemies},{row.commands},{row.wallMs:R},{row.simulationMs:R},{row.snapshotMs:R},{row.acceptMs:R},{row.presentMs:R},{row.hudMs:R},{row.allocatedBytes},{row.gcCollections},{(row.focused ? 1 : 0)}"));
+                        writer.WriteLine("frame,tick,enemies,commands,wallMs,simulationMs,snapshotMs,acceptMs,presentMs,hudMs,allocatedBytes,gcCollections,focused" + (crowdBenchmark == null ? "" : ",advances,advanceMs,worldBatchDrawCalls,worldInstances"));
+                        foreach (var row in benchmarkFrames) writer.WriteLine(FormattableString.Invariant($"{row.frame},{row.tick},{row.enemies},{row.commands},{row.wallMs:R},{row.simulationMs:R},{row.snapshotMs:R},{row.acceptMs:R},{row.presentMs:R},{row.hudMs:R},{row.allocatedBytes},{row.gcCollections},{(row.focused ? 1 : 0)}") + (crowdBenchmark == null ? "" : FormattableString.Invariant($",{row.advances},{row.advanceMs:R},{row.drawCalls},{row.spriteInstances}")));
                     }
                     using (var writer = new StreamWriter(Path.Combine(benchmarkOutput, "render-timings.csv")))
                     {
