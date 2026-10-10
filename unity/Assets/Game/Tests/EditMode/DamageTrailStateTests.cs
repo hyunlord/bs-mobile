@@ -25,6 +25,8 @@ namespace Tests.EditMode
                 var trail=ui.Content.Find("HUD/Vitals backing/Health/Damage trail");
                 Assert.That(trail,Is.Not.Null);Assert.That(trail.GetComponent<Image>().color,Is.EqualTo(Color.white));
                 Assert.That(trail.GetComponent<Image>().raycastTarget,Is.False);
+                Assert.That(trail.GetComponent<Image>().sprite,Is.Null,"A tinted decorative sprite would multiply white back into gold.");
+                Assert.That(trail.GetComponent<Image>().type,Is.EqualTo(Image.Type.Simple));
                 Assert.That(trail.GetSiblingIndex(),Is.LessThan(trail.parent.Find("Fill").GetSiblingIndex()));
             }
             finally{Object.DestroyImmediate(owner);Object.DestroyImmediate(font);}

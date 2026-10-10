@@ -16,8 +16,8 @@ namespace Game.View
             trail=UiShell.Rect("Damage trail",healthFill.parent);
             trail.anchorMin=healthFill.anchorMin;trail.anchorMax=healthFill.anchorMax;
             trail.offsetMin=healthFill.offsetMin;trail.offsetMax=healthFill.offsetMax;
-            var source=healthFill.GetComponent<Image>();var image=trail.gameObject.AddComponent<Image>();
-            image.sprite=source.sprite;image.type=source.type;image.pixelsPerUnitMultiplier=source.pixelsPerUnitMultiplier;
+            var image=trail.gameObject.AddComponent<Image>();
+            image.type=Image.Type.Simple;
             image.color=Color.white;image.raycastTarget=false;
             trail.SetSiblingIndex(healthFill.GetSiblingIndex());
             var edgeRoot=UiShell.Rect("Damage screen edges",ui.Content);UiShell.Stretch(edgeRoot);edgeRoot.SetAsFirstSibling();
