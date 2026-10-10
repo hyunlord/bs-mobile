@@ -27,16 +27,17 @@
 
 시작 시 12개 슬롯의 RenderTexture·지속 NativeArray·관리 픽셀 배열을 준비한다.
 900×1600 RGBA32에서는 세 사본을 합쳐 약 207MB이며 캡처 도구의 메모리다.
-실제 EndOfFrame에서 화면을 RT에 복사하고 AsyncGPUReadback으로 읽는다. 주 스레드는
+출정 소개 화면이 정지된 동안 전체 GPU 슬롯 읽기와 JPEG encoder를 예열하고, ReadyToStart 뒤에만 정상 출정 버튼을 누른다. 예열 프레임은 파일·프레임 수·첫 시각에 포함하지 않는다. 실제 EndOfFrame에서 화면을 RT에 복사하고 AsyncGPUReadback으로 읽는다. 주 스레드는
 동기 ReadPixels, Texture2D 생성, JPEG/PNG 인코딩, 프레임별 파일 쓰기를 하지 않는다.
 60Hz에서는 프레임마다 읽고, 더 빠른 화면에서는 누적 60Hz 마감 시각으로 고유 프레임을 선택한다.
 GPU 슬롯은 읽기가 완료될 때까지, 관리 버퍼는 writer가 끝날 때까지 재사용하지 않는다.
 GPU·writer를 비동기로 비운 후 정상 종료한다. 강제 앱 종료에서만 제한된 정리를 기다린다.
 
 이미지 worker는 thread-safe EncodeArrayToJPG로 인코딩하고 실제 시간 간격의 ffconcat을 만든다.
+Metal처럼 graphicsUVStartsAtTop이 true인 경우 작업 스레드에서 사전 할당 행 버퍼로 위아래 행을 교환하며 readbackRowsFlipped에 기록한다. 이는 GPU 저장 방향 교정이며 게임 구도·좌표를 바꾸지 않는다. 실제 HUD 방향을 다시 확인한다.
 JPEG 결과 배열 등 worker 할당은 존재하며 `imageWriterAllocatedBytes`로 별도 기록한다.
 worker의 할당도 전역 GC에 영향을 줄 수 있으므로 Update/draw 할당 0과 프로세스 전체 할당 0을
-혼동하지 않는다. 이 캡처 결과만으로 게임 성능 관문을 통과했다고 주장하지 않는다.
+혼동하지 않는다. 스레드별 4KB 알려진 할당으로 GC.GetAllocatedBytesForCurrentThread를 먼저 보정한다. 실제 할당에도 0을 반환하는 Mono 등의 런타임은 각 AllocationCounterAvailable=false와 해당 바이트=-1로 기록하며, 0 B 할당 증거로 쓰지 않는다. 이 캡처 결과만으로 게임 성능 관문을 통과했다고 주장하지 않는다.
 
 오디오는 소스 없는 전용 Listener의 실제 혼합 출력을 사전 할당 PCM 링에 복사한다.
 오디오 callback에는 파일 쓰기나 새 버퍼 할당이 없다. PCM writer가 WAV를 만들고,
@@ -48,7 +49,8 @@ worker의 할당도 전역 GC에 영향을 줄 수 있으므로 Update/draw 할�
 
 ## 결과와 확인
 
-- `01-native-title.png`: 실제 타이틀.
+- `01-native-title.png`: 녹화 시작 전 실제 타이틀.
+- `02-native-run.png`: 2게임초 이후 async 프레임의 worker PNG. 녹화 중 별도 동기 screenshot을 호출하지 않는다.
 - `05-native-golden-battle.png`: 55게임초 이후 선정한 실제 전투 프레임.
 - `frames.ffconcat`, `frames/*.jpg`, `frames.csv`: 실제 벽시계·DSP·렌더 프레임·게임 틱.
 - `audio.wav`: 실제 혼합 PCM.

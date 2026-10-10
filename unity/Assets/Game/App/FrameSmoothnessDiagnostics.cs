@@ -20,6 +20,7 @@ namespace Game.App
         int frameCount, sampleCount, jumpCount, droppedFrames, droppedSamples, droppedJumps;
         long updateStart, previousStart, sampleTime, allocatedStart;
         public bool Enabled { get; private set; }
+        public bool AllocationCounterAvailable { get; private set; }
         public int FrameCount => frameCount;
         static long Now => System.Diagnostics.Stopwatch.GetTimestamp();
         static double Ms(long ticks) => ticks * 1000d / System.Diagnostics.Stopwatch.Frequency;
@@ -46,13 +47,14 @@ namespace Game.App
             readonly int index;
             readonly long start;
             public AllocationScope(FrameSmoothnessDiagnostics owner, SmoothnessScope scope)
-            { this.owner = owner; index = owner.Enabled ? owner.frameCount * (int)SmoothnessScope.Count + (int)scope : -1; start = owner.Enabled ? GC.GetAllocatedBytesForCurrentThread() : 0; }
+            { this.owner = owner; index = owner.Enabled && owner.AllocationCounterAvailable ? owner.frameCount * (int)SmoothnessScope.Count + (int)scope : -1; start = index >= 0 ? GC.GetAllocatedBytesForCurrentThread() : 0; }
             public void Dispose()
             { if(owner.Enabled && index >= 0 && index < owner.scopeBytes.Length) owner.scopeBytes[index] += GC.GetAllocatedBytesForCurrentThread() - start; }
         }
         public AllocationScope Scope(SmoothnessScope scope) => new AllocationScope(this, scope);
         public void Begin()
         {
+            AllocationCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
             rows ??= new FrameRow[FrameCapacity]; jumps ??= new JumpRow[JumpCapacity]; samples ??= new EntitySample[EntityCapacity];
             tracks ??= new Dictionary<(string, int), Track>(EntityCapacity); removals ??= new (string, int)[EntityCapacity];
             scopeBytes ??= new long[FrameCapacity * (int)SmoothnessScope.Count];
@@ -63,7 +65,7 @@ namespace Game.App
         public void BeginFrame(int tick, bool paused)
         {
             if(!Enabled) return;
-            updateStart = Now; allocatedStart = GC.GetAllocatedBytesForCurrentThread(); sampleCount = 0;
+            updateStart = Now; allocatedStart = AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : 0; sampleCount = 0;
             if(!Enabled || frameCount >= FrameCapacity) return;
             rows[frameCount] = new FrameRow { Tick = tick, UnityFrame = Time.frameCount, Paused = paused,
                 Interval = previousStart == 0 ? 0 : Ms(updateStart - previousStart), SampleSubmit = -1, SampleEndOfFrame = -1 };
@@ -126,7 +128,7 @@ namespace Game.App
         {
             if(!Enabled) return;
             if(frameCount >= FrameCapacity) { droppedFrames++; return; }
-            rows[frameCount].Allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedStart;
+            rows[frameCount].Allocated = AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() - allocatedStart : -1;
             rows[frameCount].UpdateMs = Ms(Now - updateStart); frameCount++;
         }
         public void EndOfFrame()
@@ -146,8 +148,9 @@ namespace Game.App
                 {
                     var r = rows[i]; long accounted = 0;
                     file.Write(FormattableString.Invariant($"{i},{r.UnityFrame},{r.Tick},{r.Interval:F6},{r.SampleSubmit:F6},{r.SampleEndOfFrame:F6},{r.UpdateMs:F6},{r.Allocated}"));
-                    for(var scope = 0; scope < (int)SmoothnessScope.Count; scope++) { var value = scopeBytes[i * (int)SmoothnessScope.Count + scope]; accounted += value; file.Write("," + value.ToString(CultureInfo.InvariantCulture)); }
-                    file.WriteLine(FormattableString.Invariant($",{r.Allocated - accounted},{r.InputX:F6},{r.InputY:F6},{r.Speed:F6},{r.Paused},{r.Reset},{r.Entities},{r.Spawns},{r.Despawns},{r.WorldJump:F6},{r.ScreenJump:F6},{r.CameraPixels:F6},{r.ResidualPixels:F6},{r.WorstKind},{r.WorstId}"));
+                    for(var scope = 0; scope < (int)SmoothnessScope.Count; scope++) { var value = AllocationCounterAvailable ? scopeBytes[i * (int)SmoothnessScope.Count + scope] : -1; accounted += value; file.Write("," + value.ToString(CultureInfo.InvariantCulture)); }
+                    var unattributed = AllocationCounterAvailable ? r.Allocated - accounted : -1;
+                    file.WriteLine(FormattableString.Invariant($",{unattributed},{r.InputX:F6},{r.InputY:F6},{r.Speed:F6},{r.Paused},{r.Reset},{r.Entities},{r.Spawns},{r.Despawns},{r.WorldJump:F6},{r.ScreenJump:F6},{r.CameraPixels:F6},{r.ResidualPixels:F6},{r.WorstKind},{r.WorstId}"));
                 }
             }
             using(var file = new StreamWriter(Path.Combine(folder, "smoothness-jumps.csv")))
@@ -156,7 +159,7 @@ namespace Game.App
                 for(var i = 0; i < jumpCount; i++) { var r = jumps[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World:F6},{r.Screen:F6},{r.Camera:F6},{r.Residual:F6},{r.ExpectedPixels:F6},{r.Paused},{r.Reset}")); }
             }
             File.WriteAllText(Path.Combine(folder, "smoothness-boundary.txt"),
-                $"Software input sample to CPU render submission / EndOfFrame only; not physical input-to-photon.\nScope byte counters are disjoint; CoreSnapshot includes immutable snapshot allocations.\nRaw jumps retained even across pause/reset; anomalies compare camera-compensated movement to observed velocity plus 6 pixels.\nDropped frames: {droppedFrames}; entity samples: {droppedSamples}; jump rows: {droppedJumps}.\n");
+                $"Software input sample to CPU render submission / EndOfFrame only; not physical input-to-photon.\nAllocation counter: {(AllocationCounterAvailable ? "available: known allocation calibration passed" : "unavailable: known allocation calibration failed; every byte column is -1, never zero-allocation evidence")}.\nScope byte counters are disjoint when available; CoreSnapshot includes immutable snapshot allocations. No frame-global profiler value is attributed to individual scopes.\nRaw jumps retained even across pause/reset; anomalies compare camera-compensated movement to observed velocity plus 6 pixels.\nDropped frames: {droppedFrames}; entity samples: {droppedSamples}; jump rows: {droppedJumps}.\n");
         }
     }
 }

@@ -219,12 +219,13 @@ namespace Game.View
                 var representative=Resolve("person",group.Formation=="cover"?"guard":"militia",activity);
                 var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
                 RenderedEntitySample?.Invoke("group",group.Id,position);
-                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1);
+                var groupFacing=Facing("group",group.Id,waveMotion.GroupDirection(group));
+                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
                 if(group.Training>0)
                 {
                     var second=Resolve("person",group.Formation=="cover"?"militia":"guard",activity);
                     var spacing=representative.WorldSize*GameVisualTokens.GroupRepresentativeOffset;
-                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1);
+                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
                 }
                 if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
             }

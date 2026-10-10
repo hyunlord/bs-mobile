@@ -98,7 +98,7 @@ namespace Tests.EditMode
             var writer = new GoldenCaptureWriter(folder, 2, 2, slots);
             try
             {
-                slots[0].Sequence = 0; slots[0].WallSeconds = 0; slots[0].RenderFrame = 100;
+                slots[0].Sequence = 0; slots[0].WallSeconds = 0; slots[0].RenderFrame = 100; slots[0].InitialRun = true;
                 slots[1].Sequence = 1; slots[1].WallSeconds = .041; slots[1].RenderFrame = 103;
                 System.Threading.Volatile.Write(ref slots[0].State, 2);
                 System.Threading.Volatile.Write(ref slots[1].State, 2);
@@ -106,6 +106,8 @@ namespace Tests.EditMode
                 Assert.That(writer.Join(5000), Is.True);
                 Assert.That(writer.Error, Is.Null);
                 Assert.That(writer.Written, Is.EqualTo(2));
+                Assert.That(writer.InitialRunWritten, Is.True);
+                Assert.That(File.Exists(Path.Combine(folder, "02-native-run.png")), Is.True);
                 var concat = File.ReadAllText(Path.Combine(folder, "frames.ffconcat"));
                 Assert.That(concat, Does.Contain("duration 0.041000000"));
                 Assert.That(concat.Split(new[] { "file '" }, StringSplitOptions.None).Length - 1, Is.EqualTo(2));
@@ -130,6 +132,30 @@ namespace Tests.EditMode
             Assert.That(GoldenMinuteCapture.CumulativeMissingSlots(boundary - .000001, 3601), Is.Zero);
             Assert.That(GoldenMinuteCapture.CumulativeMissingSlots(boundary + .000001, 3601), Is.EqualTo(1));
             Assert.That(GoldenMinuteCapture.CumulativeMissingSlots(2d / 60, 2), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ReadbackRowCorrectionPreservesPixelsAndUsesProvidedScratch()
+        {
+            var pixels = new byte[] { 1, 2, 3, 4, 5, 6 };
+            var scratch = new byte[2];
+            GoldenCaptureWriter.FlipRows(pixels, 2, 3, scratch);
+            Assert.That(pixels, Is.EqualTo(new byte[] { 5, 6, 3, 4, 1, 2 }));
+            GoldenCaptureWriter.FlipRows(pixels, 2, 3, scratch);
+            Assert.That(pixels, Is.EqualTo(new byte[] { 1, 2, 3, 4, 5, 6 }));
+        }
+
+        [Test]
+        public void AllocationProbeReportsUnavailableInsteadOfCertifyingAZeroCounter()
+        {
+            var available = AllocationCounterProbe.CurrentThreadAvailable();
+            Assert.That(AllocationCounterProbe.CurrentThreadAvailable(), Is.EqualTo(available));
+            if (!available) return;
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var known = new byte[1024];
+            var after = GC.GetAllocatedBytesForCurrentThread();
+            GC.KeepAlive(known);
+            Assert.That(after - before, Is.GreaterThanOrEqualTo(1024));
         }
 
         [Test]

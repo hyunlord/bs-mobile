@@ -24,20 +24,26 @@ namespace Game.App
         Action<bool, string> complete;
         double firstTime, lastTime, firstDsp, nextDeadline;
         int submitted, pending, completedReadbacks, gpuErrors, ringOverflows, missedSlots, intervalCount, width, height, finalTick, maximumQueueDepth, initialGcCount;
-        long submissionAllocations, callbackAllocations;
-        bool stopping, finalized, battleSelected, writerCompleting;
+        long submissionAllocations = -1, callbackAllocations = -1;
+        bool submissionCounterAvailable, callbackCounterAvailable, callbackCounterCalibrated;
+        bool stopping, finalized, battleSelected, initialRunSelected, writerCompleting;
         int oldFrameRate;
+        bool warmupSubmitted, warmed, flipReadbackRows;
+        public bool ReadyToStart => warmed && !stopping;
 
         sealed class GpuSlot
         {
             public RenderTexture Texture;
             public NativeArray<byte> Native;
             public Action<AsyncGPUReadbackRequest> Callback;
+            public bool Warming;
         }
 
         public void Initialize(RunCoordinator coordinator, string output, Action<bool, string> completion)
         {
             run = coordinator; folder = output; complete = completion;
+            submissionCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
+            if (submissionCounterAvailable) submissionAllocations = 0;
             if (!SystemInfo.supportsAsyncGPUReadback) throw new InvalidOperationException("This native backend does not support asynchronous GPU capture.");
             width = Screen.width; height = Screen.height;
             for (var index = 0; index < RingSize; index++)
@@ -51,7 +57,8 @@ namespace Game.App
                 };
                 gpu[index].Texture.Create();
             }
-            writer = new GoldenCaptureWriter(folder, width, height, frames);
+            flipReadbackRows = SystemInfo.graphicsUVStartsAtTop;
+            writer = new GoldenCaptureWriter(folder, width, height, frames, flipReadbackRows);
             var listener = FindFirstObjectByType<AudioListener>();
             if (listener != null) audio = GoldenMinuteAudio.BeginMixedOutput(listener, Path.Combine(folder, "audio.wav"));
             oldFrameRate = Application.targetFrameRate;
@@ -64,8 +71,17 @@ namespace Game.App
             while (!finalized)
             {
                 yield return endOfFrame;
-                if (!stopping && run != null) run.NotifySmoothnessEndOfFrame();
-                if (!stopping && run.Frame != null)
+                if (!stopping && !warmed)
+                {
+                    try
+                    {
+                        if (!warmupSubmitted) PrewarmReadbacks();
+                        if (pending == 0 && writer.Prepared) warmed = true;
+                    }
+                    catch (Exception exception) { failure = exception.ToString(); StopCapture(); }
+                }
+                if (!stopping && warmed && run.Frame != null) run.NotifySmoothnessEndOfFrame();
+                if (!stopping && warmed && run.Frame != null)
                 {
                     try { SubmitFrame(); }
                     catch (Exception exception) { failure = exception.ToString(); StopCapture(); }
@@ -76,9 +92,22 @@ namespace Game.App
             }
         }
 
+        void PrewarmReadbacks()
+        {
+            warmupSubmitted = true;
+            for (var index = 0; index < RingSize; index++)
+            {
+                var buffer = gpu[index]; buffer.Warming = true;
+                ScreenCapture.CaptureScreenshotIntoRenderTexture(buffer.Texture);
+                pending++;
+                try { AsyncGPUReadback.RequestIntoNativeArray(ref buffer.Native, buffer.Texture, 0, TextureFormat.RGBA32, buffer.Callback); }
+                catch { pending--; buffer.Warming = false; throw; }
+            }
+        }
+
         void SubmitFrame()
         {
-            var allocationStart = GC.GetAllocatedBytesForCurrentThread();
+            var allocationStart = submissionCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1;
             try
             {
                 if (Time.timeScale != 1 || run.Speed != 1) throw new InvalidOperationException("Golden minute requires normal speed.");
@@ -106,6 +135,8 @@ namespace Game.App
                 slot.Sequence = submitted; slot.Tick = run.Frame.Tick; slot.RenderFrame = Time.renderedFrameCount;
                 slot.CardPause = run.Frame.Status == RunStatus.AwaitingCard ? 1 : 0;
                 slot.WallSeconds = now - firstTime; slot.DspSeconds = AudioSettings.dspTime - firstDsp;
+                slot.InitialRun = !initialRunSelected && run.Frame.Tick >= run.Frame.TickRate * 2;
+                if (slot.InitialRun) initialRunSelected = true;
                 slot.Battle = !battleSelected && run.Frame.Tick >= run.Frame.TickRate * 55 && run.Frame.Status == RunStatus.Running;
                 if (slot.Battle) battleSelected = true;
                 Volatile.Write(ref slot.State, 1);
@@ -117,7 +148,7 @@ namespace Game.App
                 catch { pending--; gpuErrors++; Volatile.Write(ref slot.State, 0); throw; }
                 if (run.Frame.Tick >= run.Frame.TickRate * 60) StopCapture();
             }
-            finally { submissionAllocations += GC.GetAllocatedBytesForCurrentThread() - allocationStart; }
+            finally { if (submissionCounterAvailable) submissionAllocations += GC.GetAllocatedBytesForCurrentThread() - allocationStart; }
         }
 
         public static int CumulativeMissingSlots(double elapsedSeconds, int capturedFrames)
@@ -132,7 +163,23 @@ namespace Game.App
 
         void Readback(int index, AsyncGPUReadbackRequest request)
         {
-            var allocationStart = GC.GetAllocatedBytesForCurrentThread();
+            if (!callbackCounterCalibrated)
+            {
+                callbackCounterCalibrated = true;
+                callbackCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
+                if (callbackCounterAvailable) callbackAllocations = 0;
+            }
+            if (gpu[index].Warming)
+            {
+                try
+                {
+                    if (request.hasError) { failure = "GPU capture prewarm failed before gameplay."; StopCapture(); }
+                    else gpu[index].Native.CopyTo(frames[index].Pixels);
+                }
+                finally { gpu[index].Warming = false; pending--; }
+                return;
+            }
+            var allocationStart = callbackCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1;
             try
             {
                 if (request.hasError)
@@ -147,7 +194,7 @@ namespace Game.App
                 Volatile.Write(ref frames[index].State, 2);
                 writer.Notify();
             }
-            finally { pending--; callbackAllocations += GC.GetAllocatedBytesForCurrentThread() - allocationStart; }
+            finally { pending--; if (callbackCounterAvailable) callbackAllocations += GC.GetAllocatedBytesForCurrentThread() - allocationStart; }
         }
 
         public void StopCapture()
@@ -165,6 +212,7 @@ namespace Game.App
             if (writer?.Error != null) failure = writer.Error;
             if (audio == null || audio.NonzeroSampleCount == 0) failure = failure ?? "Actual mixed audio is missing or silent.";
             if (audio != null && audio.DroppedBlocks > 0) failure = failure ?? "Audio capture dropped blocks.";
+            if (writer != null && (!writer.InitialRunWritten || !writer.BattleWritten)) failure = failure ?? "Required native gameplay screenshots are missing.";
             if (writer != null && writer.Written != submitted) failure = failure ?? "Submitted and encoded frame counts differ.";
             if (missedSlots > 0) failure = failure ?? "Actual live capture missed 60 Hz slots; do not label this sample a 60 fps pass.";
             finalized = true;
@@ -183,10 +231,12 @@ namespace Game.App
                 frameP95Ms = intervalCount == 0 ? 0 : intervals[Math.Min(intervalCount - 1, (int)Math.Ceiling(intervalCount * .95) - 1)] * 1000,
                 frameMaxMs = intervalCount == 0 ? 0 : intervals[intervalCount - 1] * 1000,
                 submissionAllocatedBytes = submissionAllocations, callbackAllocatedBytes = callbackAllocations,
-                imageWriterAllocatedBytes = writer?.AllocatedBytes ?? 0, audioWriterAllocatedBytes = audio?.WriterAllocatedBytes ?? 0,
+                imageWriterAllocatedBytes = writer?.AllocatedBytes ?? -1, audioWriterAllocatedBytes = audio?.WriterAllocatedBytes ?? -1,
+                submissionAllocationCounterAvailable = submissionCounterAvailable, callbackAllocationCounterAvailable = callbackCounterAvailable,
+                imageWriterAllocationCounterAvailable = writer != null && writer.AllocationCounterAvailable, audioWriterAllocationCounterAvailable = audio != null && audio.AllocationCounterAvailable,
                 audio = audio != null && audio.NonzeroSampleCount > 0, audioDroppedBlocks = audio?.DroppedBlocks ?? 0,
-                audioStartOffsetSeconds = audio?.VideoOffsetSeconds ?? 0, battleScreenshot = writer != null && writer.BattleWritten,
-                automatedNormalInput = true, failure = failure, requestedFps = 60
+                audioStartOffsetSeconds = audio?.VideoOffsetSeconds ?? 0, battleScreenshot = writer != null && writer.BattleWritten, initialRunScreenshot = writer != null && writer.InitialRunWritten,
+                automatedNormalInput = true, failure = failure, requestedFps = 60, readbackRowsFlipped = flipReadbackRows
             }, true));
             complete(failure == null, failure ?? "Live native frames captured asynchronously with actual timestamps; no synthesized frames or visual acceptance claim.");
         }
@@ -214,7 +264,8 @@ namespace Game.App
         [Serializable] sealed class Evidence
         {
             public string commit, sourceHash, profile, dataHash, failure;
-            public bool sourceDirty, audio, battleScreenshot, automatedNormalInput;
+            public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
+            public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;
             public int frames, submittedFrames, finalTick, tickRate, width, height, requestedFps, gpuErrors, ringOverflows, missed60HzSlots, audioDroppedBlocks, completedReadbacks, maximumQueueDepth, globalGcCollections;
             public long submissionAllocatedBytes, callbackAllocatedBytes, imageWriterAllocatedBytes, audioWriterAllocatedBytes;
             public double wallSeconds, measuredFps, frameP95Ms, frameMaxMs, audioStartOffsetSeconds;

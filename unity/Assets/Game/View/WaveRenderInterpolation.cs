@@ -7,13 +7,22 @@ namespace Game.View
 {
     public struct OrbitRenderMotion
     {
-        float from, target, started;
-        public OrbitRenderMotion(float angle, float time) { from = target = angle; started = time; }
+        float from, target, started, radiusFrom, radiusTarget, radiusStarted;
+        public OrbitRenderMotion(float angle, float time, float radius = 0)
+        {
+            from = target = angle; started = radiusStarted = time; radiusFrom = radiusTarget = radius;
+        }
         public float AngleAt(float time) => Mathf.LerpAngle(from, target, Mathf.Clamp01((time - started) / GameVisualTokens.OrbitRenderLag));
+        public float RadiusAt(float time) => Mathf.Lerp(radiusFrom, radiusTarget, Mathf.Clamp01((time - radiusStarted) / GameVisualTokens.OrbitRenderLag));
         public void SetTarget(float angle, float time)
         {
             if (Mathf.Abs(Mathf.DeltaAngle(target, angle)) < .001f) return;
             from = AngleAt(time); target = angle; started = time;
+        }
+        public void SetRadius(float radius, float time)
+        {
+            if (Mathf.Abs(radiusTarget - radius) < .0001f) return;
+            radiusFrom = RadiusAt(time); radiusTarget = radius; radiusStarted = time;
         }
     }
 
@@ -57,9 +66,9 @@ namespace Game.View
                 var delta = new Vector2(attack.Position.X - attack.Origin.X, attack.Position.Y - attack.Origin.Y);
                 var angle = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
                 if (!orbits.TryGetValue(key, out var state))
-                    state = new OrbitState { before = attack, current = attack, motion = new OrbitRenderMotion(angle, time), sampleId = nextSampleId++ };
+                    state = new OrbitState { before = attack, current = attack, motion = new OrbitRenderMotion(angle, time, delta.magnitude), sampleId = nextSampleId++ };
                 state.before = state.current; state.current = attack; state.generation = generation;
-                state.motion.SetTarget(angle, time); orbits[key] = state;
+                state.motion.SetTarget(angle, time); state.motion.SetRadius(delta.magnitude, time); orbits[key] = state;
             }
             expired.Clear();
             foreach (var pair in orbits) if (pair.Value.generation != generation) expired.Add(pair.Key);
@@ -73,6 +82,9 @@ namespace Game.View
             return previousGroups.TryGetValue(group.Id, out var previous) && previous.Source == group.Source
                 ? Vector2.Lerp(new Vector2(previous.Position.X, previous.Position.Y) / units, current, alpha) : current;
         }
+        public Vector2 GroupDirection(WaveGroupView group)
+            =>previousGroups.TryGetValue(group.Id,out var previous)&&previous.Source==group.Source
+                ?new Vector2(group.Position.X-previous.Position.X,group.Position.Y-previous.Position.Y):Vector2.zero;
 
         public float ProjectileAngle(WaveProjectileView projectile, float alpha)
         {
@@ -89,8 +101,7 @@ namespace Game.View
             var state = orbits[keys[index]];
             var current = state.current; var previous = state.before;
             var center = current.Origin.Equals(lord) ? renderedLord : Vector2.Lerp(new Vector2(previous.Origin.X, previous.Origin.Y), new Vector2(current.Origin.X, current.Origin.Y), alpha) / units;
-            var delta = new Vector2(current.Position.X - current.Origin.X, current.Position.Y - current.Origin.Y);
-            return RadialPoint(center, delta.magnitude / units, state.motion.AngleAt(time));
+            return RadialPoint(center, state.motion.RadiusAt(time) / units, state.motion.AngleAt(time));
         }
     }
 }

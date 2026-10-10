@@ -19,7 +19,8 @@ namespace Game.App
         readonly AutoResetEvent wake = new AutoResetEvent(false);
         Thread worker;
         int channels, sampleRate, produced, consumed, activeCallbacks, dropped;
-        long sampleCount, nonzeroSamples, writerAllocated;
+        long sampleCount, nonzeroSamples, writerAllocated = -1;
+        public bool AllocationCounterAvailable { get; private set; }
         double videoDsp, firstAudioDsp;
         volatile bool armed, completing, completed;
         string error;
@@ -99,7 +100,8 @@ namespace Game.App
 
         void Write(string path)
         {
-            var allocationStart = GC.GetAllocatedBytesForCurrentThread();
+            AllocationCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
+            var allocationStart = AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1;
             try
             {
                 using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
@@ -126,7 +128,7 @@ namespace Game.App
                 header.Write(Encoding.ASCII.GetBytes("data")); header.Write(length);
             }
             catch (Exception exception) { error = exception.ToString(); }
-            finally { Interlocked.Exchange(ref writerAllocated, GC.GetAllocatedBytesForCurrentThread() - allocationStart); completed = true; }
+            finally { Interlocked.Exchange(ref writerAllocated, AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() - allocationStart : -1); completed = true; }
         }
 
         public void StopAudio() { RestoreListener(); completing = true; wake.Set(); }

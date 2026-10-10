@@ -210,14 +210,19 @@ namespace Game.App
                 case 4:
                     if (goldenMinute)
                     {
-                        minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
-                        minuteCapture.Initialize(run, output, (success, detail) => Finish(success, detail));
+                        if (minuteCapture == null)
+                        {
+                            minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
+                            minuteCapture.Initialize(run, output, (success, detail) => Finish(success, detail));
+                            return;
+                        }
+                        if (!minuteCapture.ReadyToStart) return;
                     }
                     Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
                 case 5:
                     if (run.Frame == null) return;
                     replayPath = run.RecordedReplayPath; result.replay = replayPath;
-                    Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); Capture("02-native-run.png"); stage = 6; break;
+                    Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); if (!goldenMinute) Capture("02-native-run.png"); stage = 6; break;
                 case 6: Play(); break;
                 case 7:
                     if (!run.MenuOpen) return;
