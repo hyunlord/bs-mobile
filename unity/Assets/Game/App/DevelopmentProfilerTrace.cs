@@ -9,9 +9,36 @@ using UnityEngine.Profiling;
 
 namespace Game.App
 {
-    internal sealed class DevelopmentProfilerTrace
+    public sealed class DevelopmentProfilerTrace
     {
         const double MaximumSeconds = 10;
+        readonly int? requestedTick;
+        bool scheduledConsumed;
+        public DevelopmentProfilerTrace() : this(Environment.GetCommandLineArgs()) { }
+        public DevelopmentProfilerTrace(string[] arguments) { requestedTick = ParseRequestedTick(arguments); }
+        public static int? ParseRequestedTick(string[] arguments)
+        {
+            if (arguments == null) throw new ArgumentNullException(nameof(arguments));
+            int? result = null;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (arguments[i] != "--diagnostic-trace-tick") continue;
+                if (result.HasValue || ++i >= arguments.Length || !int.TryParse(arguments[i], System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var tick) || tick < 0)
+                    throw new ArgumentException("--diagnostic-trace-tick requires one nonnegative integer and may appear once.");
+                result = tick;
+            }
+            return result;
+        }
+        public bool TryConsumeScheduledTick(int tick, bool eligible)
+        {
+            if (!eligible || scheduledConsumed || !requestedTick.HasValue || tick < requestedTick.Value) return false;
+            scheduledConsumed = true;
+            return true;
+        }
+        public void StartScheduled(RunRecording recording, int tick, string dataHash, bool eligible)
+        {
+            if (TryConsumeScheduledTick(tick, eligible)) Start(recording, tick, dataHash);
+        }
         TraceMetadata metadata;
         string metadataPath;
         readonly List<string> warnings = new List<string>();

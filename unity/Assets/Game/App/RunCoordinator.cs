@@ -236,6 +236,8 @@ namespace Game.App
             DesktopControls.UpdateWindow();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             profilerTrace.Pump(Frame?.Tick ?? 0);
+            profilerTrace.StartScheduled(recording, Frame?.Tick ?? 0, CanonicalContent.DataHash,
+                recording != null && Session != null && !finished && !parityRunning && !Paused && Speed == 1 && Session.View.Status == RunStatus.Running);
             if(UnityEngine.InputSystem.Keyboard.current?.f12Key.wasPressedThisFrame==true)debug?.SetOpen(!debug.IsOpen);
 #endif
             if(telemetry!=null&&!telemetryClosed)

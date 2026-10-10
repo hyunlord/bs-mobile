@@ -13,6 +13,9 @@ namespace Game.View
         RunFrame indexedWaveActors;
         readonly Dictionary<int,WaveEnemyView> waveEnemyById = new Dictionary<int,WaveEnemyView>();
         readonly Dictionary<int,EnemyView> waveActorById = new Dictionary<int,EnemyView>();
+        readonly Dictionary<int,WaveWorkView> waveWorkById = new Dictionary<int,WaveWorkView>();
+        readonly Dictionary<WorldPoint,WaveWorkView> unfinishedBuildingByPosition = new Dictionary<WorldPoint,WaveWorkView>();
+        readonly List<string> expiredRepairAnchors = new List<string>();
         readonly List<(WaveEvent value,float started)> waveEffects = new List<(WaveEvent,float)>();
         readonly HashSet<int> liveGrainIds = new HashSet<int>();
         readonly Dictionary<string,(int buildingId,float started)> repairAnchors = new Dictionary<string,(int,float)>();
@@ -26,7 +29,7 @@ namespace Game.View
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
             if(profileChanged||frame==null)
             {
-                waveEnemyById.Clear();waveActorById.Clear();indexedWaveActors=null;
+                waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ripeCueId=-1;
                 collectionLabel=null;growthLabels?.Clear();
@@ -35,7 +38,13 @@ namespace Game.View
             {
                 waveEnemyById.Clear();
                 foreach(var enemy in frame.Enemies)if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);
-                liveGrainIds.Clear();foreach(var work in frame.Work)if(work.Kind=="grain"&&work.Health>0)liveGrainIds.Add(work.Id);
+                liveGrainIds.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();
+                foreach(var work in frame.Work)
+                {
+                    if(!waveWorkById.ContainsKey(work.Id))waveWorkById.Add(work.Id,work);
+                    if(work.Kind=="grain"&&work.Health>0)liveGrainIds.Add(work.Id);
+                    if(work.Kind=="building"&&work.Health>0&&!work.Complete&&!unfinishedBuildingByPosition.ContainsKey(work.Position))unfinishedBuildingByPosition.Add(work.Position,work);
+                }
             }
             waveCatalog=catalog;waveDefinition=catalog?.WaveRuntime;wave=frame;
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
@@ -141,7 +150,7 @@ namespace Game.View
                     work.Kind=="water"?GameVisualTokens.WavePoolScale:GameVisualTokens.WaveWorkshopScale);
                 if(work.ParentId>=0)
                 {
-                    var parent=wave.Work.FirstOrDefault(w=>w.Id==work.ParentId);
+                    waveWorkById.TryGetValue(work.ParentId,out var parent);
                     var roof=Resolve("wave",parent!=null&&parent.Health>0&&parent.Complete&&work.Protected?"roof-intact":"roof-broken","default");
                     var roofSize=roof.WorldSize*GameVisualTokens.WaveWorkshopScale;
                     Draw(roof,GameVisualTokens.ReadyLayer,Point(work.Position),visualTime,roofSize);
@@ -186,7 +195,8 @@ namespace Game.View
                 {
                     if(waveDefinition.Evolutions.TryGetValue(attack.Source,out var orbit)&&orbit.Kind==WaveEvolutionKind.RepairOrbit&&drawnRepairAnchors.Add(attack.Source))
                     {
-                        var anchor=!attack.Origin.Equals(current.Lord.Position)?wave.Work.FirstOrDefault(w=>w.Kind=="building"&&w.Health>0&&!w.Complete&&w.Position.Equals(attack.Origin)):null;
+                        WaveWorkView anchor=null;
+                        if(!attack.Origin.Equals(current.Lord.Position))unfinishedBuildingByPosition.TryGetValue(attack.Origin,out anchor);
                         if(anchor!=null)
                         {
                             if(!repairAnchors.TryGetValue(attack.Source,out var before)||before.buildingId!=anchor.Id)repairAnchors[attack.Source]=(anchor.Id,visualTime);
@@ -207,7 +217,9 @@ namespace Game.View
                     Draw(fragment,GameVisualTokens.AttackLayer,Point(attack.Position),visualTime,fragment.WorldSize*scale);
                     DrawWaveAttackEdge(fragment,Point(attack.Position),visualTime,fragment.WorldSize*scale,0,GameVisualTokens.Attack);
                 }
-            foreach(var source in repairAnchors.Keys.Where(source=>!drawnRepairAnchors.Contains(source)).ToArray())repairAnchors.Remove(source);
+            expiredRepairAnchors.Clear();
+            foreach(var source in repairAnchors.Keys)if(!drawnRepairAnchors.Contains(source))expiredRepairAnchors.Add(source);
+            foreach(var source in expiredRepairAnchors)repairAnchors.Remove(source);
             foreach(var projectile in wave.Projectiles)
             {
                 var visual=Resolve("attack",projectile.Source,"projectile");

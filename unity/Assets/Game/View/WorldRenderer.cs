@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using System.Linq;
+#endif
 using SowSiege.Core;
 using UnityEngine;
 
@@ -33,6 +36,11 @@ namespace Game.View
         Shader shader;
         string estateId;
         MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
+#if UNITY_EDITOR
+        public string[] CaptureLayerUvsForTesting(int layer)
+            =>batches.Where(pair=>pair.Key.layer==layer).OrderBy(pair=>pair.Key.texture.name,StringComparer.Ordinal)
+                .SelectMany(pair=>pair.Value.CaptureSingleDrawUvsForTesting().Select(uv=>pair.Key.texture.name+":"+uv.ToString("R"))).ToArray();
+#endif
         public void SetChapterTerrain(MetaTerrain[] terrain)
         {
             chapterTerrain=terrain??throw new ArgumentNullException(nameof(terrain));

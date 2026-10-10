@@ -95,6 +95,16 @@ namespace Game.Editor
             return ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, replay);
         }
 
+        public static ReplayVerification VerifyWaveReplayFixture(ReplayDocument replay, int seed)
+        {
+            VerifyProfile();
+            if (CanonicalContent.ProfileName != "wave-1a" || replay.Header.Options.DataHash != CanonicalContent.DataHash ||
+                replay.Header.Options.Run.Seed != seed || replay.End.Tick != 3000 || replay.End.Kind != ReplayEndKind.Quit ||
+                replay.Commands.Any(command => command.Kind != ReplayCommandKind.Advance && command.Kind != ReplayCommandKind.ChooseCard))
+                throw new BuildFailedException("Wave fixture must contain 3000 ordinary input ticks for the current catalog and seed.");
+            return ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, replay);
+        }
+
         public static void VerifyGenerated()
         {
             var start = new ProcessStartInfo("/bin/bash") { WorkingDirectory = RepoRoot, UseShellExecute = false };
@@ -142,6 +152,16 @@ namespace Game.Editor
 
         public static void MacRelease()
         {
+            BuildMac(false);
+        }
+
+        public static void MacDiagnostic()
+        {
+            BuildMac(true);
+        }
+
+        private static void BuildMac(bool development)
+        {
             ConfigureMac();
             VerifyGenerated();
             var output = Path.GetFullPath(Environment.GetEnvironmentVariable("UNITY_MAC_PATH")
@@ -152,12 +172,12 @@ namespace Game.Editor
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = ScenePaths, target = BuildTarget.StandaloneOSX, locationPathName = output,
-                options = BuildOptions.None
+                options = development ? BuildOptions.Development : BuildOptions.None
             });
             if (report.summary.result != BuildResult.Succeeded || !Directory.Exists(output))
-                throw new BuildFailedException("macOS Release build failed: " + report.summary.result);
+                throw new BuildFailedException("macOS build failed: " + report.summary.result);
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "mac-build-result.json"),
-                "{\"result\":\"Succeeded\",\"backend\":\"Mono\",\"architecture\":\"ARM64\",\"development\":false,\"profile\":\"" + CanonicalContent.ProfileName + "\",\"bytes\":" + report.summary.totalSize + "}");
+                "{\"result\":\"Succeeded\",\"backend\":\"Mono\",\"architecture\":\"ARM64\",\"development\":" + (development ? "true" : "false") + ",\"profile\":\"" + CanonicalContent.ProfileName + "\",\"bytes\":" + report.summary.totalSize + "}");
             UnityEngine.Debug.Log("FOUNDATION_MAC_BUILD_SUCCEEDED " + output);
         }
 
@@ -196,7 +216,8 @@ namespace Game.Editor
                     using (var input = File.OpenRead(source))
                     {
                         var replay = ReplayCodec.Read(input);
-                        FoundationBuild.VerifyReplayFixture(replay, seed);
+                        if (CanonicalContent.ProfileName == "wave-1a") FoundationBuild.VerifyWaveReplayFixture(replay, seed);
+                        else FoundationBuild.VerifyReplayFixture(replay, seed);
                     }
                     context.AddAdditionalPathToStreamingAssets(source, "replays/" + seed + ".ssreplay");
                 }

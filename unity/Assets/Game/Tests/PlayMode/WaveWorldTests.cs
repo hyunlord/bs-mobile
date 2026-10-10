@@ -171,6 +171,42 @@ namespace Tests.PlayMode
             }
             finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }
+        [UnityTest]
+        public IEnumerator WorkParentLookupKeepsFirstMatchAcrossSnapshotAndProfileChanges()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName=CanonicalContent.ProfileName;
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var frame=session.View.CaptureFrame();var source=((IWaveRunView)session.View).CaptureWaveRuntime();
+            var point=new WorldPoint(frame.Lord.Position.X+400,frame.Lord.Position.Y);
+            var dead=new WaveWorkView(900,"core:seed_bag","grain",point,0,100,false,0,-1,false,false,false,false,false);
+            var building=dead with {Kind="building",Source="core:carpenter_hammer",Health=100,Complete=true};
+            var child=dead with {Id=901,Health=100,ParentId=900,Protected=true};
+            var broken=source with {Work=new[]{dead,building,child},Events=System.Array.Empty<WaveEvent>()};
+            var intact=broken with {Work=new[]{building,dead,child}};
+            var owner=new GameObject("Work lookup QA");var cameraOwner=new GameObject("Work lookup camera");
+            var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1280,24);camera.targetTexture=texture;
+            try
+            {
+                var world=owner.AddComponent<WorldRenderer>();var config=CanonicalContent.Presentation.Camera;
+                world.Initialize(camera,new WorldCameraSettings(config.WorldUnitsPerUnityUnit,config.MinHalfHeight,config.MaxHalfHeight,config.EstatePadding,config.FollowMilliseconds,config.ZoomMilliseconds),catalog.Tuning.DefaultEstate,frame.MapWidth,frame.MapHeight);
+                void Present(ContentCatalog content,WaveRuntimeFrame snapshot)
+                {
+                    world.AcceptWave(content,snapshot);
+                    world.Present(frame,frame,WavePresentation.Envelope(content,frame,session.View.CaptureCards(),snapshot),1,0,new Rect(0,0,720,1280));
+                }
+                string[] RoofCommands()=>world.CaptureLayerUvsForTesting(GameVisualTokens.ReadyLayer);
+                Present(catalog,broken);yield return null;var brokenPixels=RoofCommands();
+                Present(catalog,broken);yield return null;CollectionAssert.AreEqual(brokenPixels,RoofCommands(),"Same immutable snapshot retains first duplicate parent.");
+                Present(catalog,intact);yield return null;var intactPixels=RoofCommands();
+                Assert.That(intactPixels.SequenceEqual(brokenPixels),Is.False,"Reversing duplicate IDs changes the roof selected by the first match, not the visible building list.");
+                Present(catalog,broken);yield return null;CollectionAssert.AreEqual(brokenPixels,RoofCommands(),"Replacement snapshot invalidates parent lookup.");
+                world.AcceptWave(null,null);Present(catalog,intact);yield return null;CollectionAssert.AreEqual(intactPixels,RoofCommands(),"Null reset rebuilds parent lookup.");
+                Present(CanonicalContent.CreateCatalog(),broken);yield return null;CollectionAssert.AreEqual(brokenPixels,RoofCommands(),"New catalog rebuilds parent lookup.");
+            }
+            finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
+        }
         [UnityTest, Timeout(600000)]
         public IEnumerator RecordedWaveRangeExportsActualTickFrames()
         {

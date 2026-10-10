@@ -46,7 +46,7 @@ namespace Game.Editor
                 || metadata.unityVersion == null || !Regex.IsMatch(metadata.unityVersion, @"^\d+\.\d+\.\d+[abfp]\d+$") || metadata.startFrame < 0 || metadata.startTick < 0 || metadata.endTick < metadata.startTick
                 || double.IsNaN(metadata.startRealtime) || double.IsInfinity(metadata.startRealtime) || metadata.startRealtime < 0
                 || double.IsNaN(metadata.endRealtime) || double.IsInfinity(metadata.endRealtime)
-                || !new[] { "Android", "OSXEditor", "WindowsEditor", "LinuxEditor" }.Contains(metadata.platform)
+                || !new[] { "Android", "OSXPlayer", "OSXEditor", "WindowsEditor", "LinuxEditor" }.Contains(metadata.platform)
                 || !new[] { "time-limit", "manual", "run-complete", "recording-closed", "application-paused", "focus-lost", "error" }.Contains(metadata.stopReason))
                 throw new InvalidDataException("Trace build/source/data identity, runtime or capture bounds are invalid.");
             if (metadata.profilerWarningCount != 0) throw new InvalidDataException("Profiler warnings require investigation before this trace can be accepted.");

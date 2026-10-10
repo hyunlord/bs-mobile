@@ -57,6 +57,14 @@ namespace Game.View
             Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
+#if UNITY_EDITOR
+        internal Vector4[] CaptureSingleDrawUvsForTesting()
+        {
+            if(DrawCalls>1||count!=0)throw new InvalidOperationException("UV inspection requires a completed single draw.");
+            if(SubmittedInstances==0)return Array.Empty<Vector4>();
+            var result=new Vector4[SubmittedInstances];Array.Copy(uvs,result,result.Length);return result;
+        }
+#endif
         public void Dispose()
         {
             if (Application.isPlaying) { UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(mesh); }
