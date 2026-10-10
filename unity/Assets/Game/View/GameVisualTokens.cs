@@ -17,6 +17,13 @@ namespace Game.View
         public const float CameraOutsideMargin = 1f, CameraReferencePixelHeight = 1600f;
         public const float TerrainUvInset = 0.16f, TerrainStride = 1f, TerrainOpacity = 0.45f;
         public const float FieldOpacity = 0.10f, AreaAttackOpacity = 0.26f, TravellingAttackOpacity = 0.72f, AttackRibbonWidth = 0.08f;
+        public const float WaveHostileTellOpacity = .55f, WaveHostileActiveOpacity = .8f;
+        public const float WaveFragmentScale = .32f, WaveWorkshopScale = .48f, WavePoolScale = .48f, WavePoolOpacity = .65f;
+        public const float WaveStatusScale = .36f, WaveWetHeight = .55f, WaveWetOpacity = .38f;
+        public const float WaveTimberSourceScale = .42f, WaveRewardScale = .25f;
+        public const float WavePathSpacingFraction = .8f, WaveEdgeActorMargin = .8f;
+        public const float WaveCropSpacingFraction = .8f, WaveCropOpacity = .8f, WaveTerrainOpacity = .18f, WaveHeroOutline = .028f, WaveFenceOpacity = .65f;
+        public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }

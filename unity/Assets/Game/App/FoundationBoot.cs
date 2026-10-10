@@ -46,6 +46,7 @@ namespace Game.App
             {
                 VerifiedDataHash = BundleVerifier.Verify(files);
                 Catalog = CanonicalContent.CreateCatalog();
+                ArtCatalog.ProfileName = CanonicalContent.ProfileName;
                 Complete = true;
                 status.Message = "준비 완료";
             }

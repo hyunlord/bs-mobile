@@ -27,6 +27,9 @@ node tools/meta-content.mjs "$PWD"
 node --test tools/test-meta-content.mjs
 node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
+node --test tools/wave1a-art.test.mjs
+node tools/wave1a-art.mjs "$PWD"
+node tools/wave1a-audio.mjs --check
 node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs

@@ -6,6 +6,7 @@ namespace Game.View
     public sealed class ArtRegistry : ScriptableObject
     {
         public TextAsset manifest;
+        public TextAsset audioManifest;
         public Texture2D[] atlases;
     }
 }

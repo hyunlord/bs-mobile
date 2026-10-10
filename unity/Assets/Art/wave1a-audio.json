@@ -1,0 +1,587 @@
+{
+  "version": 1,
+  "profile": "wave-1a",
+  "generator": "tools/wave1a-audio.mjs",
+  "sampleRate": 22050,
+  "channels": 1,
+  "bitDepth": 16,
+  "provenance": "Original deterministic additive/subtractive PCM synthesis authored for Sow & Siege; no samples, external recordings, or third-party sound assets. No CC0 claim. Repository output terms apply.",
+  "playbackBudget": {
+    "maxVoices": 6,
+    "reservedThreatVoices": 2,
+    "effectsGain": 0.7,
+    "musicGain": 0.3,
+    "musicPeak": 0.16,
+    "worstCasePeak": 0.552,
+    "steal": "Reject or replace lower-priority active cue; lower numeric priority wins. Preserve boss and enemy tells before attacks/items. No per-entity AudioSource spawning."
+  },
+  "bindings": {
+    "item-meadow-buckle": "weapon-iron-blade"
+  },
+  "validation": "Signal integrity and byte reproducibility checked by --check. Listening and in-game mix acceptance require actual Unity output review.",
+  "cues": [
+    {
+      "id": "weapon-iron-blade",
+      "recipe": [
+        "slash"
+      ],
+      "duration": 0.3,
+      "priority": 110,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/weapon-iron-blade",
+      "sha256": "5fb8ba8a68baed95f51f4c90efc2ab3aaaf5bf98b1f8c1c664460e138083a988",
+      "bytes": 13274,
+      "peak": 0.12,
+      "rms": 0.020815,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -33.63,
+      "activeFraction": 0.5212
+    },
+    {
+      "id": "weapon-ward-orbit",
+      "recipe": [
+        "tick"
+      ],
+      "duration": 0.16,
+      "priority": 120,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/weapon-ward-orbit",
+      "sha256": "7e6fd8e2434c4f503b971d9b4ef0f1fccf6bb44a46493bce356ce007288401ae",
+      "bytes": 7100,
+      "peak": 0.12,
+      "rms": 0.016772,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -35.51,
+      "activeFraction": 0.629
+    },
+    {
+      "id": "weapon-storm-fork",
+      "recipe": [
+        "spark"
+      ],
+      "duration": 0.2,
+      "priority": 105,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/weapon-storm-fork",
+      "sha256": "c7013509662bc27748792fc187af9771a0ab2d762f5728f78b3b6fea17ea6241",
+      "bytes": 8864,
+      "peak": 0.12,
+      "rms": 0.016038,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -35.9,
+      "activeFraction": 0.4864
+    },
+    {
+      "id": "weapon-ember-wand",
+      "recipe": [
+        "fire"
+      ],
+      "duration": 0.24,
+      "priority": 115,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/weapon-ember-wand",
+      "sha256": "1e4dba75810849759e5dadcc5150ae7793ccee683da5a6ebf80924c7227f2ac9",
+      "bytes": 10628,
+      "peak": 0.12,
+      "rms": 0.019455,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -34.22,
+      "activeFraction": 0.5805
+    },
+    {
+      "id": "weapon-harvest-scythe",
+      "recipe": [
+        "scythe"
+      ],
+      "duration": 0.36,
+      "priority": 110,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/weapon-harvest-scythe",
+      "sha256": "3d551c2c04da66bd65fdb49d533ee3892a5c90b6fdb7ffd623db534a925278aa",
+      "bytes": 15920,
+      "peak": 0.12,
+      "rms": 0.022419,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -32.99,
+      "activeFraction": 0.8211
+    },
+    {
+      "id": "tool-seed-bag",
+      "recipe": [
+        "seeds"
+      ],
+      "duration": 0.24,
+      "priority": 130,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/tool-seed-bag",
+      "sha256": "129ec8ef7a6b99cd244c6cfcb926dc1b08bbc60967acca8c1b84d88242c434ca",
+      "bytes": 10628,
+      "peak": 0.12,
+      "rms": 0.013027,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -37.7,
+      "activeFraction": 0.4567
+    },
+    {
+      "id": "tool-rain-ladle",
+      "recipe": [
+        "splash"
+      ],
+      "duration": 0.28,
+      "priority": 130,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/tool-rain-ladle",
+      "sha256": "ce10b9e41668029ab78a7c5ec3246a59b533775681e066da9030c61b6406b327",
+      "bytes": 12392,
+      "peak": 0.12,
+      "rms": 0.021718,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -33.26,
+      "activeFraction": 0.7324
+    },
+    {
+      "id": "tool-rain-ladle-dry",
+      "recipe": [
+        "hammer"
+      ],
+      "duration": 0.16,
+      "priority": 150,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/tool-rain-ladle-dry",
+      "sha256": "4c7a6b9ef836e30a9cf6c34e3ddeb6fd2e29f02505038a54b9622819fd5213e1",
+      "bytes": 7100,
+      "peak": 0.12,
+      "rms": 0.018149,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -34.82,
+      "activeFraction": 0.5363
+    },
+    {
+      "id": "tool-carpenter-hammer",
+      "recipe": [
+        "hammer"
+      ],
+      "duration": 0.2,
+      "priority": 130,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/tool-carpenter-hammer",
+      "sha256": "b3c57033966b2d3b12d96a21d98543033595555d08c5630bb411625a7e133872",
+      "bytes": 8864,
+      "peak": 0.12,
+      "rms": 0.016233,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -35.79,
+      "activeFraction": 0.429
+    },
+    {
+      "id": "tool-muster-horn",
+      "recipe": [
+        "horn"
+      ],
+      "duration": 0.4,
+      "priority": 120,
+      "cooldownSeconds": 0.14,
+      "resourcePath": "Audio/Wave1a/tool-muster-horn",
+      "sha256": "0fb6c014b75ea548d7d368cdef5aeb3bc57f807d6876eb57216a2cde37013078",
+      "bytes": 17684,
+      "peak": 0.12,
+      "rms": 0.04576,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -26.79,
+      "activeFraction": 0.7981
+    },
+    {
+      "id": "complete-seed-bag",
+      "recipe": [
+        "grain"
+      ],
+      "duration": 0.5,
+      "priority": 70,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/complete-seed-bag",
+      "sha256": "a0dae0d4690b67232b296c89420472a531591ab339870cc451b2882d04f38fe1",
+      "bytes": 22094,
+      "peak": 0.12,
+      "rms": 0.022557,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -32.93,
+      "activeFraction": 0.8274
+    },
+    {
+      "id": "complete-rain-ladle",
+      "recipe": [
+        "irrigation"
+      ],
+      "duration": 0.48,
+      "priority": 70,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/complete-rain-ladle",
+      "sha256": "5f54ba767b2f91d7009fb05ac1d27936439b6634ae0eb069a202f8597950da70",
+      "bytes": 21212,
+      "peak": 0.12,
+      "rms": 0.024313,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -32.28,
+      "activeFraction": 0.7774
+    },
+    {
+      "id": "complete-carpenter-hammer",
+      "recipe": [
+        "shipment"
+      ],
+      "duration": 0.6,
+      "priority": 70,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/complete-carpenter-hammer",
+      "sha256": "5d997642d5ce0886aae64673074d0ee508ca10c13b2b5a469d47d9d69def2162",
+      "bytes": 26504,
+      "peak": 0.12,
+      "rms": 0.020886,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -33.6,
+      "activeFraction": 0.7909
+    },
+    {
+      "id": "complete-muster-horn",
+      "recipe": [
+        "return"
+      ],
+      "duration": 0.65,
+      "priority": 70,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/complete-muster-horn",
+      "sha256": "bd016f8c53284f40747123165324d0b5b4ad47cf966c01d8ad0f906a63a80c90",
+      "bytes": 28710,
+      "peak": 0.12,
+      "rms": 0.04259,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -27.41,
+      "activeFraction": 0.8439
+    },
+    {
+      "id": "evolution-sowing-sworddance",
+      "recipe": [
+        "slash",
+        "seeds"
+      ],
+      "duration": 0.36,
+      "priority": 60,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/evolution-sowing-sworddance",
+      "sha256": "407d6f8364ba680eb9ef7f7915e89b7a2c3e67534b7f9fe4d2312093d0967ab3",
+      "bytes": 15920,
+      "peak": 0.12,
+      "rms": 0.014147,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -36.99,
+      "activeFraction": 0.4322
+    },
+    {
+      "id": "evolution-warded-masonry",
+      "recipe": [
+        "transfer"
+      ],
+      "duration": 0.58,
+      "priority": 60,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/evolution-warded-masonry",
+      "sha256": "06ec7a74ef6f7ef5cfa655b23cb44dc05b7faff061ae285ae8cf516c22125d7d",
+      "bytes": 25622,
+      "peak": 0.12,
+      "rms": 0.012178,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -38.29,
+      "activeFraction": 0.7795
+    },
+    {
+      "id": "evolution-sheltered-sowing",
+      "recipe": [
+        "roof",
+        "seeds"
+      ],
+      "duration": 0.5,
+      "priority": 60,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/evolution-sheltered-sowing",
+      "sha256": "778991e214fc5c97df53622a35082d074bc530c103f7fd0e31ef94b2d35c0ef2",
+      "bytes": 22094,
+      "peak": 0.12,
+      "rms": 0.01423,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -36.94,
+      "activeFraction": 0.5309
+    },
+    {
+      "id": "enemy-raider-tell",
+      "recipe": [
+        "scrape"
+      ],
+      "duration": 0.3,
+      "priority": 45,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/enemy-raider-tell",
+      "sha256": "ddd86d8a09a729e110e9f4a0bcc185a0f84d45f46ecd6e25148564048d6f7e98",
+      "bytes": 13274,
+      "peak": 0.12,
+      "rms": 0.021189,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -33.48,
+      "activeFraction": 0.759
+    },
+    {
+      "id": "enemy-seed-mite-tell",
+      "recipe": [
+        "scratch"
+      ],
+      "duration": 0.24,
+      "priority": 55,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/enemy-seed-mite-tell",
+      "sha256": "adf0ce99a543dbb6e87472bcd8e988212c0075c9fd2166b5b3b02d3fd95c568a",
+      "bytes": 10628,
+      "peak": 0.12,
+      "rms": 0.018059,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -34.87,
+      "activeFraction": 0.4609
+    },
+    {
+      "id": "enemy-crop-grazer-tell",
+      "recipe": [
+        "snort"
+      ],
+      "duration": 0.3,
+      "priority": 55,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/enemy-crop-grazer-tell",
+      "sha256": "da180dfac25817e6149d8825a0adbbd03d2615b7f71b19e89bfde8272d479a1d",
+      "bytes": 13274,
+      "peak": 0.12,
+      "rms": 0.029119,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -30.72,
+      "activeFraction": 0.7191
+    },
+    {
+      "id": "enemy-ram-runner-tell",
+      "recipe": [
+        "hoof"
+      ],
+      "duration": 0.48,
+      "priority": 40,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/enemy-ram-runner-tell",
+      "sha256": "55bb6e9c53f6646c262d37233970ee320e8c3855fbee762946cbe48a1beaab8f",
+      "bytes": 21212,
+      "peak": 0.12,
+      "rms": 0.014791,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -36.6,
+      "activeFraction": 0.6601
+    },
+    {
+      "id": "enemy-shield-raider-tell",
+      "recipe": [
+        "shield"
+      ],
+      "duration": 0.4,
+      "priority": 45,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/enemy-shield-raider-tell",
+      "sha256": "c2082fa7c4feaf1a2fd36b478ddc964f4e66545e856a0bd0c29609c750f13176",
+      "bytes": 17684,
+      "peak": 0.12,
+      "rms": 0.014258,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -36.92,
+      "activeFraction": 0.6757
+    },
+    {
+      "id": "enemy-wine-wasp-tell",
+      "recipe": [
+        "wasp"
+      ],
+      "duration": 0.38,
+      "priority": 40,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/enemy-wine-wasp-tell",
+      "sha256": "676d817f247cf5e78267b6914e649b10f90904bb9bc67d15e502154964addfc7",
+      "bytes": 16802,
+      "peak": 0.12,
+      "rms": 0.033963,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -29.38,
+      "activeFraction": 0.8118
+    },
+    {
+      "id": "boss-bank-break",
+      "recipe": [
+        "bank"
+      ],
+      "duration": 0.95,
+      "priority": 20,
+      "cooldownSeconds": 0.5,
+      "resourcePath": "Audio/Wave1a/boss-bank-break",
+      "sha256": "6d0623ddccc1fe945c57dfa326ccb4ccb7559b4d70168f2da5baddd9a24a32c2",
+      "bytes": 41940,
+      "peak": 0.12,
+      "rms": 0.015447,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -36.22,
+      "activeFraction": 0.8809
+    },
+    {
+      "id": "boss-tusk-charge",
+      "recipe": [
+        "charge"
+      ],
+      "duration": 0.8,
+      "priority": 15,
+      "cooldownSeconds": 0.5,
+      "resourcePath": "Audio/Wave1a/boss-tusk-charge",
+      "sha256": "402161b762e8da09566c574bd91e378f40c42665231bfcc5eb174e852930a4b2",
+      "bytes": 35324,
+      "peak": 0.12,
+      "rms": 0.027474,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -31.22,
+      "activeFraction": 0.8643
+    },
+    {
+      "id": "boss-tusk-stuck",
+      "recipe": [
+        "stuck"
+      ],
+      "duration": 0.4,
+      "priority": 25,
+      "cooldownSeconds": 0.4,
+      "resourcePath": "Audio/Wave1a/boss-tusk-stuck",
+      "sha256": "356037b29405bd2399867e7894faed54f1a663334bf6386941c475c398b153f0",
+      "bytes": 17684,
+      "peak": 0.12,
+      "rms": 0.017473,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -35.15,
+      "activeFraction": 0.5241
+    },
+    {
+      "id": "item-bitter-seed-dust",
+      "recipe": [
+        "puff"
+      ],
+      "duration": 0.2,
+      "priority": 160,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/item-bitter-seed-dust",
+      "sha256": "392e2d0a0f0965d1b0202e36b0e4d346bfe380486f443ef5b580304de3f65173",
+      "bytes": 8864,
+      "peak": 0.12,
+      "rms": 0.020579,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -33.73,
+      "activeFraction": 0.6356
+    },
+    {
+      "id": "item-clay-water-bead",
+      "recipe": [
+        "bead"
+      ],
+      "duration": 0.32,
+      "priority": 150,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/item-clay-water-bead",
+      "sha256": "e3fc83925550bd1ba4491c313bda8c155845adae6459e316bd77f1a16a49f58f",
+      "bytes": 14156,
+      "peak": 0.12,
+      "rms": 0.023489,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -32.58,
+      "activeFraction": 0.792
+    },
+    {
+      "id": "item-crop-guard-signet",
+      "recipe": [
+        "flag"
+      ],
+      "duration": 0.35,
+      "priority": 100,
+      "cooldownSeconds": 0.4,
+      "resourcePath": "Audio/Wave1a/item-crop-guard-signet",
+      "sha256": "2080bacb96d5016a082936b76aa8ea532d76d490166bfd63d165931de118230c",
+      "bytes": 15478,
+      "peak": 0.12,
+      "rms": 0.0393,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -28.11,
+      "activeFraction": 0.7968
+    },
+    {
+      "id": "item-joiner-square",
+      "recipe": [
+        "corner"
+      ],
+      "duration": 0.23,
+      "priority": 160,
+      "cooldownSeconds": 0.25,
+      "resourcePath": "Audio/Wave1a/item-joiner-square",
+      "sha256": "08a09426a93763c511cf5bddcde350e11c1008a073cb8aad2a64e71532f17dd8",
+      "bytes": 10188,
+      "peak": 0.12,
+      "rms": 0.016733,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -35.53,
+      "activeFraction": 0.5353
+    },
+    {
+      "id": "item-levy-bread-wrap",
+      "recipe": [
+        "ration"
+      ],
+      "duration": 0.25,
+      "priority": 160,
+      "cooldownSeconds": 0.3,
+      "resourcePath": "Audio/Wave1a/item-levy-bread-wrap",
+      "sha256": "288fb39e0a8f04bbf634474c2e114ee6b242c66c3cf0f27295e6a2b0cccf85a3",
+      "bytes": 11070,
+      "peak": 0.12,
+      "rms": 0.015315,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -36.3,
+      "activeFraction": 0.6115
+    },
+    {
+      "id": "item-gathering-loop",
+      "recipe": [
+        "pickup"
+      ],
+      "duration": 0.17,
+      "priority": 170,
+      "cooldownSeconds": 0.15,
+      "resourcePath": "Audio/Wave1a/item-gathering-loop",
+      "sha256": "9b825b929e923b6e499cc1319dc5036dfaf75a3a3323644cca76585678e23d81",
+      "bytes": 7542,
+      "peak": 0.12,
+      "rms": 0.022867,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -32.82,
+      "activeFraction": 0.6852
+    },
+    {
+      "id": "item-wayfarer-boots",
+      "recipe": [
+        "step"
+      ],
+      "duration": 0.13,
+      "priority": 190,
+      "cooldownSeconds": 0.22,
+      "resourcePath": "Audio/Wave1a/item-wayfarer-boots",
+      "sha256": "3fb1da584f09eb9c495694eb5320f0f206c51ba4a0d3b1ea91e4838eac47724a",
+      "bytes": 5778,
+      "peak": 0.12,
+      "rms": 0.012651,
+      "peakDbfs": -18.42,
+      "rmsDbfs": -37.96,
+      "activeFraction": 0.542
+    }
+  ]
+}

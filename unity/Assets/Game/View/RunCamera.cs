@@ -26,6 +26,8 @@ namespace Game.View
         private readonly Camera camera;
         private readonly WorldCameraSettings settings;
         private bool positioned;
+        public bool KeepViewportInsideMap { get; set; }
+        public float EdgeActorMargin { get; set; }
         private Vector2 visualOffset;
         private Vector2 mapSize;
         public RunCamera(Camera camera, WorldCameraSettings settings)
@@ -49,7 +51,7 @@ namespace Game.View
             var desired = Mathf.Clamp((estateExtent + settings.EstatePadding) / Mathf.Min(1, aspect), settings.MinHalfHeight, settings.MaxHalfHeight) / units;
             var maximum = Mathf.Max((float)settings.MinHalfHeight / units, (float)settings.MaxHalfHeight / units * camera.pixelHeight / GameVisualTokens.CameraReferencePixelHeight);
             if (mapSize.x > 0)
-                maximum = Mathf.Min(maximum, Mathf.Min((mapSize.x * 0.5f + GameVisualTokens.CameraOutsideMargin) / aspect, mapSize.y * 0.5f + GameVisualTokens.CameraOutsideMargin));
+                maximum = Mathf.Min(maximum, Mathf.Min((mapSize.x * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)) / aspect, mapSize.y * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)));
             desired = Mathf.Min(desired, maximum);
             var follow = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.FollowMilliseconds);
             var zoom = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.ZoomMilliseconds);
@@ -72,7 +74,10 @@ namespace Game.View
         {
             if (mapSize.x <= 0) return position;
             var halfHeight = camera.orthographicSize; var halfWidth = halfHeight * camera.aspect;
-            var margin = GameVisualTokens.CameraOutsideMargin;
+            var margin = KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin;
+            if(KeepViewportInsideMap)
+                return new Vector2(mapSize.x <= halfWidth * 2 ? mapSize.x * .5f : Mathf.Clamp(position.x, halfWidth-EdgeActorMargin, mapSize.x-halfWidth+EdgeActorMargin),
+                    mapSize.y <= halfHeight * 2 ? mapSize.y * .5f : Mathf.Clamp(position.y, halfHeight-EdgeActorMargin, mapSize.y-halfHeight+EdgeActorMargin));
             return new Vector2(Mathf.Clamp(position.x, halfWidth - margin - excluded.x, mapSize.x - halfWidth + margin + excluded.z),
                 Mathf.Clamp(position.y, halfHeight - margin - excluded.y, mapSize.y - halfHeight + margin + excluded.w));
         }

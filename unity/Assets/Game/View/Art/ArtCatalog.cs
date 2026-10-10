@@ -36,20 +36,23 @@ namespace Game.View
 
     public sealed class ArtCatalog
     {
-        static ArtCatalog cached;
+        public static string ProfileName { get; set; } = "first-playable";
+        static readonly Dictionary<string, ArtCatalog> cache = new Dictionary<string, ArtCatalog>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> roles = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> bindings = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         public static ArtCatalog Load()
         {
-            if (cached != null) return cached;
-            var registry = Resources.Load<ArtRegistry>("FirstPlayableArt");
+            var name = ProfileName == "wave-1a" ? "Wave1aArt" : "FirstPlayableArt";
+            if (cache.TryGetValue(name, out var cached)) return cached;
+            var registry = Resources.Load<ArtRegistry>(name);
             if (registry == null || registry.manifest == null) throw new InvalidOperationException("FirstPlayableArt registry missing; run ArtPreparation.Prepare.");
             cached = FromJson(registry.manifest.text, registry.atlases);
+            cache.Add(name, cached);
             return cached;
         }
 #if UNITY_EDITOR
         // Authoring changes affect future consumers; existing renderers keep their current catalog and sprites.
-        public static void InvalidateCache() => cached = null;
+        public static void InvalidateCache() => cache.Clear();
 #endif
         public ArtVisual Resolve(string kind, string contentId, string state)
         {
