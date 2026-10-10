@@ -3575,6 +3575,7 @@ presentation:
       - material-cards
       - layer-status
       - designed-influence
+      - evolution-matrix
       - evolution-graph
       - content-cards
       - primitive-support
@@ -5196,7 +5197,7 @@ views:
     label: 콘텐츠 카드 · 이름과 관계
     description: 이름으로 찾고 카드 문구, 진화 짝, 연결 물품과 wave-1a 프로그램 유무를 확인합니다.
     query:
-      kinds: &a3
+      kinds: &a6
         - weapon
         - tool
         - item
@@ -5208,8 +5209,8 @@ views:
         - material
         - manor
       layer: designed-v1
-    columns: &a1
-      - &a2
+    columns: &a4
+      - &a5
         id: card
         label: 카드 문구
         value:
@@ -5225,6 +5226,40 @@ views:
                 - concept
             - 미기재
         role: summary
+      - id: role
+        label: 역할
+        value:
+          op: coalesce
+          values:
+            - op: at
+              object:
+                op: literal
+                value:
+                  crowd: 다수 적 대응
+                  estate: 영지 연계
+                  control: 적 제어
+                  single: 단일 적 집중
+                  survival: 생존
+                  land: 땅 성장
+                  building: 건물 성장
+                  people: 사람 성장
+              key:
+                op: coalesce
+                values:
+                  - op: get
+                    from: node
+                    path:
+                      - primaryRole
+                  - op: get
+                    from: node
+                    path:
+                      - targetKind
+            - op: get
+              from: node
+              path:
+                - role
+            - 별도 역할 미기재
+        role: badge
       - id: wave
         label: 실행 층
         value:
@@ -5254,15 +5289,35 @@ views:
         value:
           op: coalesce
           values:
-            - op: get
-              from: node
-              path:
-                - costKind
-            - op: get
-              from: node
-              path:
-                - effect
-                - cost
+            - op: case
+              cases:
+                - when:
+                    op: exists
+                    value:
+                      op: get
+                      from: node
+                      path:
+                        - costKind
+                  value:
+                    op: coalesce
+                    values:
+                      - op: at
+                        object:
+                          op: literal
+                          value:
+                            shape-gap: 공격 범위의 빈틈
+                        key:
+                          op: get
+                          from: node
+                          path:
+                            - costKind
+                      - 표시명 미등록 · 원시 속성 참조
+              default:
+                op: get
+                from: node
+                path:
+                  - effect
+                  - cost
             - 미기재
         role: badge
     edgeKinds:
@@ -5278,7 +5333,7 @@ views:
       kinds:
         - weapon
       layer: designed-v1
-    columns: *a1
+    columns: *a4
     edgeKinds:
       - evolution-input
       - item-tool
@@ -5292,7 +5347,7 @@ views:
       kinds:
         - tool
       layer: designed-v1
-    columns: *a1
+    columns: *a4
     edgeKinds:
       - evolution-input
       - item-tool
@@ -5306,7 +5361,7 @@ views:
         - material
       layer: designed-v1
     columns:
-      - *a2
+      - *a5
       - id: sources
         label: 얻는 곳과 행동
         value:
@@ -5343,7 +5398,7 @@ views:
     label: 설계 → wave-1a → 단위 지원
     description: 프로그램 있음은 구성과 정적 지원 근거입니다. 실행·의미·화면의 완성 판정은 아닙니다. 없음은 이 프로필에 한정합니다.
     query:
-      kinds: *a3
+      kinds: *a6
       layer: designed-v1
     columns:
       - id: design
@@ -5351,10 +5406,16 @@ views:
         value:
           op: coalesce
           values:
-            - op: get
-              from: node
-              path:
-                - designStatus
+            - op: at
+              object:
+                op: literal
+                value:
+                  designed-v1: 설계 기록
+              key:
+                op: get
+                from: node
+                path:
+                  - designStatus
             - 설계 기록
         role: status
       - id: program
@@ -5371,7 +5432,7 @@ views:
           op: map
           input:
             op: filter
-            input: &a4
+            input: &a7
               op: get
               from: graph
               path:
@@ -5431,7 +5492,7 @@ views:
           op: map
           input:
             op: filter
-            input: *a4
+            input: *a7
             where:
               op: and
               values:
@@ -5460,15 +5521,73 @@ views:
           value:
             op: concat
             values:
-              - op: get
-                from: item
-                path:
-                  - name
+              - op: coalesce
+                values:
+                  - op: at
+                    object:
+                      op: literal
+                      value:
+                        attack-shape: 공격 모양
+                        event-gate: 발동 조건
+                        attack-variant: 조건별 공격 변화
+                        remnant-create: 성장물 생성
+                        growth-cycle: 성장 주기
+                        completion-ledger: 완료 보상 기록
+                        ally-task: 아군 작업
+                        visible-marker: 화면 표식
+                        evolution-replace: 진화 동작 교체
+                        growth-protect: 성장물 보호
+                        enemy-tell: 적 행동 예고
+                        boss-phases: 보스 단계
+                        meta-route: 판 밖 성장 경로
+                        material-guarantee: 재료 보장
+                        stat-modifier: 수치 변경
+                        harvest-contact: 접촉 수확
+                        equipment-scope: 장비 적용 범위
+                        chapter-route: 챕터 경로
+                        status-apply: 상태 적용
+                        stock-cycle: 비축 주기
+                        completed-structure-attack: 완성 건물 공격
+                        paired-growth: 연계 성장
+                        attack-anchor: 공격 기준점
+                        projectile-lifecycle: 투사체 수명
+                        mission-cycle: 임무 주기
+                        target-routing: 대상 선택
+                        resource-routing: 자원 이동
+                        prevent-transition: 상태 전환 방지
+                        triggered-geometry: 조건부 공격 모양
+                        meta-unlock: 판 밖 잠금 해제
+                        enemy-pressure: 적 압박
+                        terrain-routing: 지형 경로
+                        contact-reaction: 접촉 반응
+                        fixed-placement: 고정 배치
+                        group-formation: 집단 대형
+                        map-route-trace: 지도 경로 흔적
+                        growth-conditioning: 성장 조건
+                        geometry-modifier: 공격 모양 변경
+                    key:
+                      op: get
+                      from: item
+                      path:
+                        - name
+                  - 표시명 미등록 · 원시 속성 참조
               - " · "
-              - op: get
-                from: item
-                path:
-                  - staticSupport
+              - op: coalesce
+                values:
+                  - op: at
+                    object:
+                      op: literal
+                      value:
+                        partial-runtime: 일부 조건만 실행 지원
+                        projection-boundary: 표현 계층 경계까지 확인
+                        loader-boundary: 입력 로더 경계까지 확인
+                        unsupported: 실행 지원 없음
+                    key:
+                      op: get
+                      from: item
+                      path:
+                        - staticSupport
+                  - 표시명 미등록 · 원시 속성 참조
         role: summary
       - id: observed
         label: 실행 관측
@@ -5477,6 +5596,178 @@ views:
     edgeKinds:
       - wave-program-design
       - designed-primitive-support
+  - id: evolution-matrix
+    type: matrix
+    label: 무기 × 도구 · 진화 개요
+    description: 행의 무기와 열의 도구를 함께 사용하는 진화 이름입니다. 도구끼리의 진화는 개별 진화 탐색에서 확인합니다.
+    query:
+      kinds:
+        - evolution
+      layer: designed-v1
+      where:
+        op: and
+        values:
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: vars
+                  path:
+                    - catalog
+                    - content
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: weapon
+                    - op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - id
+                      collection:
+                        op: coalesce
+                        values:
+                          - op: get
+                            from: node
+                            path:
+                              - inputIds
+                          - op: literal
+                            value: []
+            right: 0
+          - op: gt
+            left:
+              op: count
+              value:
+                op: filter
+                input:
+                  op: get
+                  from: vars
+                  path:
+                    - catalog
+                    - content
+                where:
+                  op: and
+                  values:
+                    - op: eq
+                      left:
+                        op: get
+                        from: item
+                        path:
+                          - kind
+                      right: tool
+                    - op: in
+                      value:
+                        op: get
+                        from: item
+                        path:
+                          - id
+                      collection:
+                        op: coalesce
+                        values:
+                          - op: get
+                            from: node
+                            path:
+                              - inputIds
+                          - op: literal
+                            value: []
+            right: 0
+    row:
+      op: join
+      input:
+        op: map
+        input:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - catalog
+              - content
+          where:
+            op: and
+            values:
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - kind
+                right: weapon
+              - op: in
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - id
+                collection:
+                  op: coalesce
+                  values:
+                    - op: get
+                      from: node
+                      path:
+                        - inputIds
+                    - op: literal
+                      value: []
+        value:
+          op: get
+          from: item
+          path:
+            - name
+      separator: " + "
+    column:
+      op: join
+      input:
+        op: map
+        input:
+          op: filter
+          input:
+            op: get
+            from: vars
+            path:
+              - catalog
+              - content
+          where:
+            op: and
+            values:
+              - op: eq
+                left:
+                  op: get
+                  from: item
+                  path:
+                    - kind
+                right: tool
+              - op: in
+                value:
+                  op: get
+                  from: item
+                  path:
+                    - id
+                collection:
+                  op: coalesce
+                  values:
+                    - op: get
+                      from: node
+                      path:
+                        - inputIds
+                    - op: literal
+                      value: []
+        value:
+          op: get
+          from: item
+          path:
+            - name
+      separator: " + "
+    cellDisplay: label
   - id: evolution-graph
     type: graph
     label: 개별 무기·도구와 진화
