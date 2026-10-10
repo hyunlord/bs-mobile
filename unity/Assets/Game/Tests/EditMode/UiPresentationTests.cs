@@ -46,6 +46,29 @@ namespace Tests.EditMode
             }
             finally { UnityEngine.Object.DestroyImmediate(owner);UnityEngine.Object.DestroyImmediate(events);UnityEngine.Object.DestroyImmediate(font); }
         }
+        [TestCase(1920,1080,330,880)]
+        [TestCase(900,1600,280,1400)]
+        public void JoystickPresentationFitsUsableScreenWithoutChangingLogicalRadius(int width,int height,float bottom,float top)
+        {
+            var scale=width/900f;
+            var usable=Rect.MinMaxRect(0,bottom,width,top);
+            var visualScale=UiShell.StickPresentationScale(new Vector2(width,height),usable,scale);
+            var radius=UiTokens.StickRadius*scale*visualScale;
+            if(height>width)Assert.That(visualScale,Is.EqualTo(1),"Portrait art size stays unchanged when it fits.");
+            Assert.That(UiShell.StickPresentationCenter(usable.center,usable,radius),Is.EqualTo(usable.center),"Already safe touch origins stay in place.");
+            var center=UiShell.StickPresentationCenter(new Vector2(width*.25f,height*.2f),usable,radius);
+            Assert.That(center.x-radius,Is.GreaterThanOrEqualTo(usable.xMin-.001f));
+            Assert.That(center.x+radius,Is.LessThanOrEqualTo(usable.xMax+.001f));
+            Assert.That(center.y-radius,Is.GreaterThanOrEqualTo(usable.yMin-.001f));
+            Assert.That(center.y+radius,Is.LessThanOrEqualTo(usable.yMax+.001f));
+            for(var i=0;i<8;i++)
+            {
+                var direction=new Vector2(Mathf.Cos(i*Mathf.PI/4),Mathf.Sin(i*Mathf.PI/4));
+                var visual=UiShell.StickVisualOffset(direction*UiTokens.StickRadius*scale,scale)*scale*visualScale;
+                Assert.That(visual.magnitude+UiTokens.StickThumbDiameter*.5f*scale*visualScale,Is.LessThanOrEqualTo(radius+.001f));
+            }
+        }
+
         [Test]
         public void AuthoredSettingsDoNotEmitChangesUntilUserInteraction()
         {

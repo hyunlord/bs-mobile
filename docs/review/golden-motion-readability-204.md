@@ -114,13 +114,19 @@ fc08fd3 후속 CI는 회귀 검사의 private reflection 경계 위반으로 실
 
 초기 중앙 후속 `normal-after-06`은 요청한 저속 입력의 유효 표본이 아니었다. 실제 저속 phase 입력이146개 묶음으로 갈라졌고 정확한−0.25 입력의 최장 구간은0.450552초라 일정 입력3초 창이 없다. phase0에서 full stick으로 넘어간 원인은 아직 미확정이며 조사 중이다. 따라서 저속을 통과·실패 수치로 억지 판정하지 않고 **요청한 저속 조건 미충족**으로 보존한다. 고속 영주는CV0.090943/ACF0.077363으로 기준 안이나 카메라는 경계 클램프CV1.079385/ACF0.980053으로 실패했고 RMS0.058031px다. 투사체 준비 없는 표본의 투사체0행은 예상된 구성이다. 초기 중앙에서 두 속도 모두 통과했다고 보고하지 않는다.
 
-f797076의 capture09는4202프레임·누락 슬롯4개로 엄격 캡처 기준 실패다. 실제 소스의 `golden-motion-f797076` Release를 게시했으며 이전8112b99 배포와 구별한다. 영상은 원본4202장=출력4202프레임,70.082388초·오디오70.101초의 실제PTS 자료다.9–11초 ROI는CV0.073255/ACF6−0.067865/최대ACF0.177900/RMS0.028722px,최소response0.899260·저신뢰0/119다. 비필터2–18초는CV0.326748/ACF6 0.414678/RMS0.228512px·저신뢰15/959이며 끝ROI에 적이 들어와 순수배경·정속 보행 관문으로 해석하지 않는다.4슬롯 실패는 그대로다. 그래프의 native 패널은1085d13 표본이라고 명시하며 최신 f797076 일반 실행 통과 자료로 바꾸어 부르지 않는다. [f797076 CI](https://github.com/hyunlord/bs-mobile/actions/runs/38065222249)는 마지막 확인에서 진행 중이다.
+f797076의 capture09는4202프레임·누락 슬롯4개로 엄격 캡처 기준 실패다. 실제 소스의 `golden-motion-f797076` Release를 게시했으며 이전8112b99 배포와 구별한다. 영상은 원본4202장=출력4202프레임,70.082388초·오디오70.101초의 실제PTS 자료다.9–11초 ROI는CV0.073255/ACF6−0.067865/최대ACF0.177900/RMS0.028722px,최소response0.899260·저신뢰0/119다. 비필터2–18초는CV0.326748/ACF6 0.414678/RMS0.228512px·저신뢰15/959이며 끝ROI에 적이 들어와 순수배경·정속 보행 관문으로 해석하지 않는다.4슬롯 실패는 그대로다. 그래프의 native 패널은1085d13 표본이라고 명시하며 최신 f797076 일반 실행 통과 자료로 바꾸어 부르지 않는다. 현재 배포 소스 검증 링크: [f797076 CI](https://github.com/hyunlord/bs-mobile/actions/runs/38065222249).
 
 후속 진단 `960749e`는 scripted trace에서만 UI action asset을 복제해 합성 마우스로 제한하고 종료 때 원래 action/device 상태를 복원한다. 일반 플레이 입력의 변경이 아니다. 기존 InputSystem asmdef 참조가 빠진 첫 컴파일 실패 로그를 보존했고 참조 수정 후 집중 Unity16/16은 통과했다. 그러나 입력 간섭이06의 확정 원인이었다고 단정하지 않으며 build10/native07의 실제 입력 기록은 아래의 한정된 정상 보행 관문을 통과했다.06의 입력 이상 원인을 확정한 것은 아니다.
 
 최종 `normal-after-07`은 clean`960749e44f6acc02e02b000675dbdd70248682bc`/sourceHash `5C49F61CEF351508552B685208D74C949361DAC32566F92E2E7B97455FB8FA11`의 scripted 입력 격리 진단 실행이다. 게임 동작은 배포한f797076과 같고 차이는 trace UI action 격리뿐이다.2163행 모두 포커스 유지·비정지,드롭0이며 지도 클램프 없이 zoom5.217391을 유지했다. 실제 저속 일정 입력3.999808초 중 frame122–483의3.008313초에서 영주CV0.068715/ACF0.125847·카메라CV0.068688/ACF0.125328·RMS0.00003612px로 통과했다. 고속 일정 입력3.983384초 중 frame1081–1442의3.008631초는 영주CV0.004378/ACF0.207955·카메라CV0.004385/ACF0.204630·RMS0.00002753px로 통과했다. 기존 callback wall 시계를 그대로 쓰며 onset·정지·전체 원자료도 보존했다.
 
-이 표본은 투사체 준비 없는 기본 장비라 투사체0행이 예상되며 실제 투사체61행은 별도 `normal-projectile-05` 증거다. 두 실행을 같은 장면처럼 합치지 않는다. 입력 격리 후 정상 입력을 확인했지만06의 원인을 확정하지 않았으며 이전 실패·경계 감속은 삭제하지 않는다. 추가 네이티브 재실행을 예약하지 않는다. 남은 항목은 전체 캡처 엄격4슬롯 실패, CI 완료 확인과 사용자 직접 플레이 판정이다. [960749e CI](https://github.com/hyunlord/bs-mobile/actions/runs/38066050409)는 마지막 확인에서 대기다.
+이 표본은 투사체 준비 없는 기본 장비라 투사체0행이 예상되며 실제 투사체61행은 별도 `normal-projectile-05` 증거다. 두 실행을 같은 장면처럼 합치지 않는다. 입력 격리 후 정상 입력을 확인했지만06의 원인을 확정하지 않았으며 이전 실패·경계 감속은 삭제하지 않는다. 추가 네이티브 재실행을 예약하지 않는다. 남은 항목은 전체 캡처 엄격4슬롯 실패, CI 완료 확인과 사용자 직접 플레이 판정이다. 진단 소스 검증 링크: [960749e CI](https://github.com/hyunlord/bs-mobile/actions/runs/38066050409).
+
+후반 실시간 판독을 위한 후속 `6aa5731`은 캡처 시작240초·길이30초·가로 옵션을 추가했다.0초부터 정상 플레이하며 Core 규칙과 기본 캡처0/60초는 그대로다. 집중 Capture40/40·경계 검사 통과와 독립 검토의 버퍼 수정 확인은 구현 증거다. clean6aa5731 build11은0초부터 정상 플레이해240–270초를 실제 녹화했다.2282프레임·실제38.071116초(카드 정지482프레임),누락 슬롯3개로 엄격 판정은 실패이며 GPU/ring/audio 오류는0이다. enemy-tell66·ram39·수확42·보상93건이 기록되었다. 개체78–97은 적 외 개체를 포함하므로 과거200마리 혼잡 장면과 같은 밀도 관문으로 부르지 않는다.
+
+실제 frame1260/tick7710에서 약512px 조이스틱 그림이 화면 아래로 잘리고 장비창을 가리는 결함을 확인했다. 따라서4분 표본은 실패·제한 증거로 보존하며 판독 완료를 선언하지 않는다. 현재 수정은 UiShell의 조이스틱 그림 범위로 입력은 유지한다. 다음 build12는 같은 seed30000·곡물 목표로0초부터 정상 플레이해360–390초를 녹화할 계획이며 가속·시간 건너뛰기를 하지 않는다. 아직 수정 후 실제 결과는 없다. 명령은 [후반 캡처 런북](../runbooks/golden-readability-review.md#실제-후반-구간-녹화)에 있다.
+
+조이스틱 수정의 첫 UiPresentation 집중 실행은9개 중8통과/1실패였다. 실패는 wave-1a에서 `catalog.Runtime`이 null인 기존 first-playable 전용 `HudKeepsIconObjects…` 검사의 프로필 경계이며, 조이스틱 결함 수정과 구별해 원본 실패를 보존한다. 해당 검사를 약화하거나 전체9개 통과로 보고하지 않는다. 조이스틱 관련5개는 초기 실행과 별도 필터 실행(`editmode-landscape-stick-focused.xml`)에서 모두5/5 통과했다. 독립 코드 검토의 차단 사항은 없지만 수정 후 네이티브 영상 검증은 남아 있다.
 
 ## 재생성과 남은 증거
 
@@ -137,6 +143,6 @@ node tools/analyze-motion-video.mjs artifacts/golden-minute/motion-204/golden-mi
 node tools/plot-motion-comparison.mjs artifacts/golden-minute/motion-204/motion-pairs-final.json artifacts/golden-minute/motion-204/motion-comparison-final.svg
 ```
 
-- PR: [#205](https://github.com/hyunlord/bs-mobile/pull/205). **현재 배포 게임·영상은f797076**, 후속 scripted 입력 격리 진단은960749e로 구별한다. [8112b99 CI](https://github.com/hyunlord/bs-mobile/actions/runs/38063732480)와 [28f43fa CI](https://github.com/hyunlord/bs-mobile/actions/runs/38064307747)는 성공했으며 [현재 배포 소스f797076 CI](https://github.com/hyunlord/bs-mobile/actions/runs/38065222249)는 마지막 확인에서 진행 중이다.
+- PR: [#205](https://github.com/hyunlord/bs-mobile/pull/205). **현재 배포 게임·영상은f797076**, 후속 scripted 입력 격리 진단은960749e로 구별한다. [8112b99 CI](https://github.com/hyunlord/bs-mobile/actions/runs/38063732480)와 [28f43fa CI](https://github.com/hyunlord/bs-mobile/actions/runs/38064307747)는 성공했으며 현재 배포 소스 검증은 [f797076 CI](https://github.com/hyunlord/bs-mobile/actions/runs/38065222249)에서 확인한다.
 - 배포: [golden-motion-f797076](https://github.com/hyunlord/bs-mobile/releases/tag/golden-motion-f797076)의 검증된6개 asset. 이전8112b99·capture03/04/05/07/09와 정상 입력 실패는 보존한다. 최신 짧은 영상ROI의 수치가 기준 안이어도 전체 캡처 strict 실패와 정상 입력 문제를 상쇄하지 않는다.
 - 사용자 직접 플레이·Fold7: **미확인/보류.** 정적 캡처는 실시간 동작·성능을 증명하지 않는다. #169/C05 400+ 성능은 별도 과제이며 #204의 새 완료 조건으로 삼지 않는다.
