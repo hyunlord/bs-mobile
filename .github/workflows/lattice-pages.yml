@@ -2,59 +2,22 @@ name: Lattice map
 on:
   push:
     branches: [main]
-    paths: ['data/**', '.lattice/**', '.github/workflows/lattice-pages.yml']
   pull_request:
-    paths: ['data/**', '.lattice/**', '.github/workflows/lattice-pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
+  pull-requests: write
+  pages: write
+  id-token: write
 concurrency:
   group: lattice-pages-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  build-map:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          path: source
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          repository: hyunlord/lattice
-          ref: c4920824b2983147030f090f5127901b02fda051
-          path: lattice-tool
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: lattice-tool/package-lock.json
-      - run: npm ci --ignore-scripts && npm run build
-        working-directory: lattice-tool
-      - name: Build comparable catalog snapshots and static map
-        run: |
-          cp source/.lattice/lens.json "$RUNNER_TEMP/lens.json"
-          node lattice-tool/bin/lattice.mjs diff de2a5713ce7c9d9c9f38a663e0a1cae66bbfe5b5 --root source --lens "$RUNNER_TEMP/lens.json" --json > "$RUNNER_TEMP/lattice-diff.json"
-          node source/.lattice/verify-designed.mjs source/.lattice/cache/graph.json
-          BASELINE_GRAPH=$(node -e 'const fs=require("node:fs"); const s=JSON.parse(fs.readFileSync("source/.lattice/cache/snapshots.json","utf8")).find(s=>s.commit==="de2a5713ce7c9d9c9f38a663e0a1cae66bbfe5b5"); if(!s)process.exit(1); process.stdout.write("source/.lattice/cache/"+s.artifactPath)')
-          node source/.lattice/verify-designed.mjs "$BASELINE_GRAPH" --baseline
-          node lattice-tool/bin/lattice.mjs export "$RUNNER_TEMP/lattice-site" --root source
-      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
-        with:
-          path: ${{ runner.temp }}/lattice-site
-  deploy:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: build-map
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Publish map
-        id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+  map:
+    uses: hyunlord/lattice/.github/workflows/lattice.yml@b6e65efe6eed4771dcd220897b7ecfe06829c8cc
+    with:
+      tool-ref: b6e65efe6eed4771dcd220897b7ecfe06829c8cc
+      history-ref: de2a5713ce7c9d9c9f38a663e0a1cae66bbfe5b5
+      history-current-lens: true
+      verification-script: .lattice/verify-ci.mjs
