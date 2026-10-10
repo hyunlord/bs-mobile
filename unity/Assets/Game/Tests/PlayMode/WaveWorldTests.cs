@@ -79,7 +79,7 @@ namespace Tests.PlayMode
                 Present(state);yield return null;var baseline=world.SubmittedInstances;
                 var attack=new WaveEvent(1,frame.Tick,"attack",planting.Id,-1,frame.Lord.Position,point,400);
                 Present(state with {Events=new[]{attack}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"An evolved arc with two inner-edge passes alone never fabricates a seed-birth cue when planting is capacity-rejected.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+4),"Two evolved arc bodies and their edges never fabricate a seed-birth cue when planting is capacity-rejected.");
                 Present(state,1);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline));
                 var birth=new WaveEvent(2,frame.Tick,"work-created",plot.Source,999,point,point,0);

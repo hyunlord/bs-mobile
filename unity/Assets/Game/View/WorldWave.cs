@@ -156,7 +156,7 @@ namespace Game.View
                             if(!repairAnchors.TryGetValue(attack.Source,out var before)||before.buildingId!=anchor.Id)repairAnchors[attack.Source]=(anchor.Id,visualTime);
                             var pulse=Mathf.Clamp01(1-(visualTime-repairAnchors[attack.Source].started)/GameVisualTokens.EmphasisSeconds);
                             var badge=Resolve("attack","core:levy_banner","nova");
-                            Draw(badge,GameVisualTokens.ReadyLayer+1,Point(attack.Origin),0,badge.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.FieldOpacity+pulse*GameVisualTokens.AreaAttackOpacity);
+                            Draw(badge,GameVisualTokens.ReadyLayer+1,Point(attack.Origin),0,badge.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveRepairBannerOpacity+pulse*GameVisualTokens.AreaAttackOpacity);
                         }
                         else repairAnchors.Remove(attack.Source);
                     }
@@ -225,7 +225,7 @@ namespace Game.View
                 }
                 if(value.Kind=="chain-link")
                 {
-                    var art=Resolve("attack",value.Source,"chain");var size=new Vector2((b-a).magnitude,GameVisualTokens.AttackRibbonWidth);
+                    var art=Resolve("attack",value.Source,"chain");var size=new Vector2((b-a).magnitude,GameVisualTokens.WaveChainRibbonWidth);
                     Draw(art,GameVisualTokens.AttackLayer,(a+b)*.5f,age,size,Angle(b-a),opacity);
                     DrawWaveAttackEdge(art,(a+b)*.5f,age,size,Angle(b-a),GameVisualTokens.Attack,opacity);
                     continue;
@@ -239,13 +239,17 @@ namespace Game.View
                     var radius=(float)value.Amount/settings.WorldUnitsPerUnityUnit;
                     var size=gear.Kind==WaveAttackKind.Arc||gear.Kind==WaveAttackKind.HarvestArc?visual.WorldSize*radius:Vector2.one*radius*2;
                     var planting=evolved!=null&&evolved.Kind==WaveEvolutionKind.PlantingArc;
-                    Draw(visual,GameVisualTokens.AttackLayer,a,age,size,Angle(b-a),opacity*GameVisualTokens.AreaAttackOpacity,tint:planting?GameVisualTokens.Ready:Color.white);
+                    Draw(visual,GameVisualTokens.AttackLayer,a,age,size,Angle(b-a),opacity*GameVisualTokens.WaveAttackBodyOpacity,tint:planting?GameVisualTokens.Ready:Color.white);
                     DrawWaveAttackEdge(visual,a,age,size,Angle(b-a),planting?GameVisualTokens.Ready:GameVisualTokens.Attack,opacity);
-                    if(planting)DrawWaveAttackEdge(visual,a,age,size*GameVisualTokens.WavePlantingInnerScale,Angle(b-a),GameVisualTokens.Ready,opacity);
+                    if(planting)
+                    {
+                        Draw(visual,GameVisualTokens.AttackLayer,a,age,size*GameVisualTokens.WavePlantingInnerScale,Angle(b-a),opacity*GameVisualTokens.WaveAttackBodyOpacity,tint:GameVisualTokens.Ready);
+                        DrawWaveAttackEdge(visual,a,age,size*GameVisualTokens.WavePlantingInnerScale,Angle(b-a),GameVisualTokens.Ready,opacity);
+                    }
                 }
             }
         }
         void DrawWaveAttackEdge(ArtVisual visual,Vector2 position,float time,Vector2 size,float direction,Color color,float opacity=1)
-            =>Draw(visual,GameVisualTokens.WaveAttackEdgeLayer,position,time,size,direction,opacity*GameVisualTokens.WaveEdgeOpacity,tint:color,edgeTexels:GameVisualTokens.WaveEdgeTexels);
+            =>Draw(visual,GameVisualTokens.WaveAttackEdgeLayer,position,time,size,direction,opacity*GameVisualTokens.WaveEdgeOpacity,tint:Color.Lerp(color,GameVisualTokens.Ink,.8f),edgeTexels:GameVisualTokens.WaveEdgeTexels);
     }
 }

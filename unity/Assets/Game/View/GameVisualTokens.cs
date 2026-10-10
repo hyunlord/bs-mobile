@@ -28,6 +28,7 @@ namespace Game.View
         public const float WaveEnemyMaxSize = .64f, WaveWaspScale = .55f, WaveEnemyUpperOpacity = .55f;
         public const float WaveLordRingRadius = .34f, WaveLordRingHeight = .55f, WaveLordRingInner = .82f, WaveLordRingAccentScale = .94f, WaveLordRingAccentInner = .9f;
         public const float WaveRewardOpacity = .55f, WaveRipeEdgeOpacity = .55f;
+        public const float WaveAttackBodyOpacity = .78f, WaveChainRibbonWidth = .18f, WaveRepairBannerOpacity = .48f;
         public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
