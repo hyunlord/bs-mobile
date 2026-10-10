@@ -5,6 +5,11 @@ namespace SowSiege.Core
     {
         private void WriteWave(WaveRuntimeDefinition d)
         {
+            if (!WavePrimitiveModules.Equivalent(d))
+            {
+                Write("wave-primitive-program-v1");
+                WriteMap(d.Programs!, program => WriteMap(program.Params, parameters => WriteMap(parameters, Write)));
+            }
             Write("wave-runtime-definition-v1");
             Write(d.Revision);
             Write(d.ChapterId);

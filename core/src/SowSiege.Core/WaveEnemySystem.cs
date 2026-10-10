@@ -9,11 +9,13 @@ namespace SowSiege.Core
         private readonly WorldState world;
         private readonly TrackedRandom random;
         private readonly InteractiveState? interactive;
+        private readonly WavePrimitiveModules modules;
+        private readonly WaveItemSubscriptions subscriptions;
         private WaveRuntimeState State => world.WaveRuntime!;
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
-        internal WaveEnemySystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive)
-        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; }
+        internal WaveEnemySystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null)
+        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); }
 
         internal void Tick()
         {
@@ -44,12 +46,13 @@ namespace SowSiege.Core
             var cap = catalog.Tuning.World.Threat.EnemyCap;
             foreach (var rule in Definition.Enemies.Values.OrderBy(e => e.Id, StringComparer.Ordinal))
             {
-                var first = rule.Kind == WaveEnemyKind.FloodBoss ? Definition.BossSpawnTick : rule.FirstSpawnTick;
-                if (world.Tick < first || (rule.Kind == WaveEnemyKind.FloodBoss ? State.BossSpawned : (world.Tick - first) % catalog.Tuning.World.Threat.SpawnPeriodTicks != 0)) { continue; }
+                var operations = modules.Enemy(rule.Id);
+                var first = operations.Boss ? Definition.BossSpawnTick : rule.FirstSpawnTick;
+                if (world.Tick < first || (operations.Boss ? State.BossSpawned : (world.Tick - first) % catalog.Tuning.World.Threat.SpawnPeriodTicks != 0)) { continue; }
                 if (world.Enemies.Count >= cap)
                 {
-                    if (rule.Kind != WaveEnemyKind.FloodBoss) { continue; }
-                    var displaced = world.Enemies.OrderByDescending(e => e.Id).FirstOrDefault(e => Definition.Enemies[e.Definition].Kind != WaveEnemyKind.FloodBoss);
+                    if (!operations.Boss) { continue; }
+                    var displaced = world.Enemies.OrderByDescending(e => e.Id).FirstOrDefault(e => !modules.Enemy(e.Definition).Boss);
                     if (displaced is null) { continue; }
                     world.Enemies.Remove(displaced); State.EnemyActions.Remove(displaced.Id);
                 }
@@ -58,7 +61,7 @@ namespace SowSiege.Core
                 var position = edge switch { 0 => new Position(0, random.Next(map.Height)), 1 => new Position(map.Width, random.Next(map.Height)), WaveGeometry.TopEdge => new Position(random.Next(map.Width), 0), _ => new Position(random.Next(map.Width), map.Height) };
                 var enemy = new EnemyState { Id = world.AllocateId(), Definition = rule.Id, Position = position, Health = catalog.Enemies[rule.Id].Health };
                 world.Enemies.Add(enemy); world.SpawnedEnemies++;
-                if (rule.Kind == WaveEnemyKind.FloodBoss) { State.BossSpawned = true; }
+                if (operations.Boss) { State.BossSpawned = true; }
                 State.Emit(world.Tick, "enemy-spawn", rule.Id, enemy.Id, position, position, 1);
             }
         }
@@ -66,10 +69,11 @@ namespace SowSiege.Core
         private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action, ref Position[]? connectedPaths)
         {
             var body = catalog.Enemies[enemy.Definition];
+            var operations = modules.Enemy(rule.Id);
             var speed = action.WetUntil > world.Tick ? Math.Max(1, body.Speed / Definition.Behavior.WetSpeedDivisor) : body.Speed;
             if (action.Phase == "recovery")
             {
-                if (rule.Kind == WaveEnemyKind.Ranged) { enemy.Position = Clamp(enemy.Position.MoveToward(new Position(enemy.Position.X * WaveGeometry.MidpointDivisor - world.Lord.X, enemy.Position.Y * WaveGeometry.MidpointDivisor - world.Lord.Y), speed)); }
+                if (operations.Movement == "standoff") { enemy.Position = Clamp(enemy.Position.MoveToward(new Position(enemy.Position.X * WaveGeometry.MidpointDivisor - world.Lord.X, enemy.Position.Y * WaveGeometry.MidpointDivisor - world.Lord.Y), speed)); }
                 if (world.Tick < action.UntilTick) { return; }
                 action.Phase = "approach";
             }
@@ -82,7 +86,7 @@ namespace SowSiege.Core
             {
                 var previous = enemy.Position;
                 enemy.Position = enemy.Position.MoveToward(action.Target, rule.ProjectileSpeed);
-                if (rule.Kind == WaveEnemyKind.FloodBoss)
+                if (operations.Boss)
                 {
                     foreach (var building in State.Work.Where(w => w.Kind == "building" && w.Health > 0 && OnSegment(w.Position, previous, enemy.Position, body.Range)))
                     { if (State.Completed.Add("charge-building:" + enemy.Id + ":" + action.UntilTick + ":" + building.Id)) { DamageBuilding(building, rule.Id, body.Damage); } }
@@ -102,7 +106,7 @@ namespace SowSiege.Core
             if (action.Phase.StartsWith("tell-", StringComparison.Ordinal))
             {
                 if (world.Tick < action.UntilTick) { return; }
-                if (action.Phase == "tell-charge") { action.Phase = "charge"; action.UntilTick = world.Tick + rule.ActiveTicks; action.Hit = false; if (rule.Kind == WaveEnemyKind.FloodBoss) { action.BossPhase = 0; } return; }
+                if (action.Phase == "tell-charge") { action.Phase = "charge"; action.UntilTick = world.Tick + rule.ActiveTicks; action.Hit = false; if (operations.Boss) { action.BossPhase = 0; } return; }
                 if (action.Phase == "tell-water") { action.Phase = "water"; action.UntilTick = world.Tick + rule.ActiveTicks; action.Hit = false; return; }
                 if (action.Phase == "tell-shot")
                 {
@@ -122,7 +126,7 @@ namespace SowSiege.Core
                 }
                 else if (action.TargetId >= 0)
                 {
-                    var crop = State.Work.FirstOrDefault(w => w.Id == action.TargetId && w.Health > 0 && w.Kind == "grain" && (rule.Kind == WaveEnemyKind.SeedThief ? !w.Complete : w.Complete));
+                    var crop = State.Work.FirstOrDefault(w => w.Id == action.TargetId && w.Health > 0 && w.Kind == "grain" && (operations.Action == "consume-seed" ? !w.Complete : w.Complete));
                     if (crop is not null && crop.Position.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range)
                     {
                         if (crop.Protected && crop.ParentId >= 0)
@@ -135,16 +139,10 @@ namespace SowSiege.Core
                         }
                         else
                         {
-                            crop.Health = 0; State.Emit(world.Tick, rule.Kind == WaveEnemyKind.SeedThief ? "seed-theft" : "ripe-consumed", rule.Id, crop.Id, crop.Position, crop.Position, 1);
-                            if (rule.Kind == WaveEnemyKind.SeedThief)
+                            crop.Health = 0; State.Emit(world.Tick, operations.Action == "consume-seed" ? "seed-theft" : "ripe-consumed", rule.Id, crop.Id, crop.Position, crop.Position, 1);
+                            if (operations.Action == "consume-seed")
                             {
-                                var item = State.Items.Select(id => Definition.Items[id]).FirstOrDefault(i => i.Kind == WaveItemKind.SeedDetour && i.EquipmentIds.Contains(crop.Source));
-                                if (item is not null)
-                                {
-                                    var gear = Definition.Gear[crop.Source];
-                                    State.Detours.Add(new WaveDetour { Source = item.Id, Position = crop.Position, Radius = gear.WorkRadius, UntilTick = world.Tick + gear.WorkTicks });
-                                    State.Emit(world.Tick, "seed-detour", item.Id, crop.Id, crop.Position, crop.Position, gear.WorkRadius);
-                                }
+                                subscriptions.SeedEaten(crop);
                             }
                         }
                     }
@@ -152,7 +150,7 @@ namespace SowSiege.Core
                 else if (world.Lord.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range) { Hurt(rule.Id, body.Damage); }
                 Recover(rule, action); return;
             }
-            if (rule.Kind == WaveEnemyKind.FloodBoss)
+            if (operations.Boss)
             {
                 if (action.BossPhase < WaveGeometry.WaterLaneCount)
                 {
@@ -163,8 +161,8 @@ namespace SowSiege.Core
                 else { Tell(enemy, action, rule, "charge", world.Lord); }
                 return;
             }
-            if (rule.Kind == WaveEnemyKind.Charger) { Tell(enemy, action, rule, "charge", world.Lord); return; }
-            if (rule.Kind == WaveEnemyKind.Shield)
+            if (operations.Movement == "charge-locked-line") { Tell(enemy, action, rule, "charge", world.Lord); return; }
+            if (operations.Movement == "hold-front")
             {
                 var facing = new Position(action.Target.X - action.Origin.X, action.Target.Y - action.Origin.Y);
                 var toward = new Position(world.Lord.X - enemy.Position.X, world.Lord.Y - enemy.Position.Y);
@@ -173,14 +171,14 @@ namespace SowSiege.Core
             }
             var target = world.Lord; action.TargetId = -1;
             var defender = State.Groups.Where(g => g.Health > 0 && g.Phase != "idle" && OnSegment(g.Position, enemy.Position, enemy.Position, body.Range)).OrderBy(g => g.Phase == "returning" ? 0 : 1).ThenBy(g => g.Id).FirstOrDefault();
-            if (defender is not null && rule.Kind != WaveEnemyKind.Ranged)
+            if (defender is not null && operations.Movement != "standoff")
             { action.TargetId = defender.Id; Tell(enemy, action, rule, "intercept", defender.Position); return; }
-            if (rule.Kind == WaveEnemyKind.SeedThief || rule.Kind == WaveEnemyKind.RipeGrazer)
+            if (operations.Action == "consume-seed" || operations.Action == "consume-ripe")
             {
-                var crop = State.Work.Where(w => w.Kind == "grain" && w.Health > 0 && (rule.Kind == WaveEnemyKind.SeedThief ? !w.Complete : w.Complete)).OrderBy(w => w.Position.DistanceSquared(enemy.Position)).ThenBy(w => w.Id).FirstOrDefault();
+                var crop = State.Work.Where(w => w.Kind == "grain" && w.Health > 0 && (operations.Action == "consume-seed" ? !w.Complete : w.Complete)).OrderBy(w => w.Position.DistanceSquared(enemy.Position)).ThenBy(w => w.Id).FirstOrDefault();
                 if (crop is not null) { target = crop.Position; action.TargetId = crop.Id; }
             }
-            if (rule.Kind == WaveEnemyKind.Ranged)
+            if (operations.Movement == "standoff")
             {
                 if (enemy.Position.DistanceSquared(world.Lord) > (long)body.Range * body.Range * Definition.Behavior.RangedRangeMultiplier * Definition.Behavior.RangedRangeMultiplier)
                 { enemy.Position = enemy.Position.MoveToward(world.Lord, speed); }
@@ -190,7 +188,7 @@ namespace SowSiege.Core
                 return;
             }
             if (enemy.Position.DistanceSquared(target) <= (long)body.Range * body.Range) { Tell(enemy, action, rule, "strike", target); return; }
-            if (action.TargetId < 0 && (rule.Kind == WaveEnemyKind.Pursuer || rule.Kind == WaveEnemyKind.SeedThief) && State.Paths.Count > 1)
+            if (action.TargetId < 0 && ((operations.Target == "lord" && operations.Movement == "pursue") || operations.Action == "consume-seed") && State.Paths.Count > 1)
             {
                 // Paths change only in the work phase after all enemies advance.
                 connectedPaths ??= State.Paths.Where(p => State.Paths.Any(other => other != p && other.DistanceSquared(p) <= (long)Definition.Behavior.PathConnectionMultiplier * Definition.Behavior.PathConnectionMultiplier * Definition.PathSpacing * Definition.PathSpacing)).ToArray();
@@ -201,7 +199,7 @@ namespace SowSiege.Core
                     if (path.DistanceSquared(enemy.Position) > (long)Definition.PathSpacing * Definition.PathSpacing && path.DistanceSquared(target) < enemy.Position.DistanceSquared(target)) { target = path; }
                 }
             }
-            if (rule.Kind == WaveEnemyKind.Pursuer || rule.Kind == WaveEnemyKind.SeedThief || rule.Kind == WaveEnemyKind.RipeGrazer)
+            if ((operations.Target == "lord" && operations.Movement == "pursue") || operations.Action == "consume-seed" || operations.Action == "consume-ripe")
             {
                 var detour = State.Detours.FirstOrDefault(d => OnSegment(d.Position, enemy.Position, target, d.Radius));
                 if (detour is not null)
@@ -251,7 +249,7 @@ namespace SowSiege.Core
         {
             foreach (var enemy in world.Enemies.Where(e => e.Health > 0))
             {
-                if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule) || rule.Kind != WaveEnemyKind.Shield || !State.EnemyActions.TryGetValue(enemy.Id, out var action) || action.Phase == "turn" || action.Phase == "recovery") { continue; }
+                if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule) || modules.Enemy(rule.Id).Movement != "hold-front" || !State.EnemyActions.TryGetValue(enemy.Id, out var action) || action.Phase == "turn" || action.Phase == "recovery") { continue; }
                 var dx = action.Target.X - action.Origin.X; var dy = action.Target.Y - action.Origin.Y;
                 if ((long)(from.X - enemy.Position.X) * dx + (long)(from.Y - enemy.Position.Y) * dy > 0 && OnSegment(enemy.Position, from, to, catalog.Enemies[enemy.Definition].Range)) { return true; }
             }
