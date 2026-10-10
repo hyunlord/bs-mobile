@@ -38,6 +38,26 @@ namespace SowSiege.Core
             bucket.Add(enemy);
         }
 
+        public void Collect(Position origin, int range, List<EnemyState> result)
+        {
+            result.Clear();
+            var minX = (origin.X - range) / cellSize;
+            var minY = (origin.Y - range) / cellSize;
+            var maxX = (origin.X + range) / cellSize;
+            var maxY = (origin.Y + range) / cellSize;
+            for (var x = minX; x <= maxX; x++)
+            {
+                for (var y = minY; y <= maxY; y++)
+                {
+                    if (!cells.TryGetValue((x, y), out var bucket)) { continue; }
+                    foreach (var enemy in bucket)
+                    {
+                        if (enemy.Health > 0 && origin.DistanceSquared(enemy.Position) <= (long)range * range) { result.Add(enemy); }
+                    }
+                }
+            }
+        }
+
         public IEnumerable<EnemyState> Query(Position origin, int range)
         {
             var minX = Math.Max(0, origin.X - range) / cellSize;
