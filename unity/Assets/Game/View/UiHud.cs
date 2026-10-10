@@ -12,11 +12,13 @@ namespace Game.View
         readonly RectTransform root, hpFill, xpFill, equipment;
         readonly Text season, health, experience;
         readonly List<string> equipmentIds = new List<string>();
-        public float ReservedTopPixels => root.rect.height * ui.Canvas.scaleFactor;
+        readonly FallowHud fallow;
+        public float ReservedTopPixels => fallow != null ? fallow.ReservedTopPixels : root.rect.height * ui.Canvas.scaleFactor;
         public UiHud(UiShell ui) : this(ui,null,null) { }
         public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings)
         {
             this.ui=ui;this.catalog=catalog;
+            if(catalog?.WaveRuntime!=null){fallow=new FallowHud(ui,catalog,openSettings);return;}
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);root.sizeDelta=new Vector2(0,160);
             root.gameObject.AddComponent<Image>().color=Color.clear;
             var info=Place("Vitals backing",root,16,0,720,96);ui.Surface(info,"ui.hint");
@@ -40,6 +42,7 @@ namespace Game.View
         public void Present(RunFrame frame)=>Present(frame,null);
         public void Present(RunFrame frame,FirstPlayableFrame firstPlayable)
         {
+            if(fallow!=null){fallow.Present(frame);return;}
             var seconds=(frame.SeasonTicksRemaining+frame.TickRate-1)/frame.TickRate;
             season.text=new[]{"봄","여름","가을","겨울"}[Mathf.Clamp(frame.Season,0,3)]+$" · {seconds/60:00}:{seconds%60:00} 남음";
             health.text=$"체력 {frame.Lord.Health}/{frame.Lord.MaxHealth}";experience.text=$"레벨 {frame.Level} · {frame.Experience}/{frame.RequiredExperience}";

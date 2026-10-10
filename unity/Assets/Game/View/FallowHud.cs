@@ -1,0 +1,118 @@
+using System;
+using System.Collections.Generic;
+using SowSiege.Core;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Game.View
+{
+    public sealed class FallowHud
+    {
+        readonly UiShell ui;
+        readonly ContentCatalog catalog;
+        readonly RectTransform root, hpFill, xpFill;
+        readonly Text health, level, timer;
+        readonly RectTransform[] slots = new RectTransform[9];
+        readonly string[] shown = new string[9];
+        readonly Text[] ranks = new Text[9];
+        readonly List<EquipmentView> weapons = new List<EquipmentView>();
+        readonly List<EquipmentView> tools = new List<EquipmentView>();
+        public float ReservedTopPixels => root.rect.height * ui.Canvas.scaleFactor;
+
+        public FallowHud(UiShell ui, ContentCatalog catalog, Action pause)
+        {
+            this.ui = ui;
+            this.catalog = catalog;
+            root = UiShell.Rect("HUD", ui.Content);
+            root.anchorMin = new Vector2(0, 1); root.anchorMax = Vector2.one;
+            root.pivot = new Vector2(.5f, 1); root.sizeDelta = new Vector2(0, UiTokens.FallowHudHeight);
+            var place = Rect("Location", root, 20, 12, 256, 52);
+            ui.Surface(place, "ui.hint");
+            Label(place, "새봄의 터", UiTokens.Heading, 12, 0, 232, 52, GameVisualTokens.Ink);
+            Label(root, "휴경의 왕국", UiTokens.Caption, 32, 66, 260, 28, GameVisualTokens.Attack, true);
+            var vitals = Rect("Vitals", root, 310, 20, 334, 68);
+            hpFill = Bar(vitals, "Health", "ui.hp.rail", "ui.hp.fill", 0, 318, 26);
+            health = Label(vitals, "", UiTokens.Caption, 8, 0, 302, 26, GameVisualTokens.Ink);
+            health.alignment = TextAnchor.MiddleRight;
+            xpFill = Bar(vitals, "Experience", "ui.xp.rail", "ui.xp.fill", 36, 212, 12);
+            level = Label(vitals, "", UiTokens.Caption, 220, 28, 112, 28, GameVisualTokens.Attack, true);
+            timer = Label(root, "", UiTokens.Heading, 672, 16, 126, 50, GameVisualTokens.Attack, true);
+            timer.alignment = TextAnchor.MiddleCenter;
+            if(pause != null)
+            {
+                var button = ui.Button(root, "잠시\n멈춤", pause);
+                Position((RectTransform)button.transform, 806, 8, 80, 80);
+                button.GetComponentInChildren<Text>().fontSize = UiTokens.Caption;
+            }
+            var footer = UiShell.Rect("Loadout", ui.Content);
+            footer.anchorMin = Vector2.zero; footer.anchorMax = new Vector2(1, 0);
+            footer.pivot = new Vector2(.5f, 0); footer.sizeDelta = new Vector2(0, UiTokens.FallowFooterHeight);
+            var surface = ui.Surface(footer, "ui.panel"); surface.color = GameVisualTokens.Ink;
+            Label(footer, "무기", UiTokens.Caption, 26, 12, 280, 30, GameVisualTokens.Attack);
+            Label(footer, "도구", UiTokens.Caption, 508, 12, 280, 30, GameVisualTokens.Attack);
+            for(var i = 0; i < slots.Length; i++)
+            {
+                var x = i < 5 ? 24 + i * 86 : 506 + (i - 5) * 92;
+                slots[i] = Rect("Slot " + i, footer, x, 50, UiTokens.FallowSlotSize, UiTokens.FallowSlotSize);
+                ui.Surface(slots[i], "ui.card.common").color = UiTokens.FallowMuted;
+                var empty = Label(slots[i], "빈칸", UiTokens.Caption, 0, 0, UiTokens.FallowSlotSize, UiTokens.FallowSlotSize, UiTokens.FallowPaperShade);
+                empty.alignment = TextAnchor.MiddleCenter;
+                ranks[i] = Label(slots[i], "", UiTokens.Caption, 45, 48, 27, 26, GameVisualTokens.Attack, true);
+                ranks[i].alignment = TextAnchor.LowerRight;
+            }
+        }
+
+        public void Present(RunFrame frame)
+        {
+            var seconds = frame.Tick / frame.TickRate;
+            timer.text = $"{seconds / 60:00}:{seconds % 60:00}";
+            health.text = $"{frame.Lord.Health} / {frame.Lord.MaxHealth}";
+            level.text = $"레벨 {frame.Level}";
+            hpFill.anchorMax = new Vector2(frame.Lord.MaxHealth > 0 ? Mathf.Clamp01((float)frame.Lord.Health / frame.Lord.MaxHealth) : 0, 1);
+            xpFill.anchorMax = new Vector2(frame.RequiredExperience > 0 ? Mathf.Clamp01((float)frame.Experience / frame.RequiredExperience) : 0, 1);
+            weapons.Clear(); tools.Clear();
+            foreach(var gear in frame.Equipment)
+                if(catalog.Weapons.ContainsKey(gear.Id)) weapons.Add(gear);
+                else if(catalog.Tools.ContainsKey(gear.Id)) tools.Add(gear);
+            for(var i = 0; i < slots.Length; i++)
+            {
+                var group = i < 5 ? weapons : tools;
+                var index = i < 5 ? i : i - 5;
+                var gear = index < group.Count ? group[index] : null;
+                var id = gear?.Id;
+                if(!string.Equals(shown[i], id, StringComparison.Ordinal))
+                {
+                    var prior = slots[i].Find("Equipped");
+                    if(prior != null) { prior.gameObject.SetActive(false); UnityEngine.Object.Destroy(prior.gameObject); }
+                    if(id != null)
+                    {
+                        var icon = ui.Icon(slots[i], id, UiTokens.FallowSlotSize - 12);
+                        icon.name = "Equipped";
+                        icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(.5f, .5f);
+                        icon.rectTransform.anchoredPosition = Vector2.zero;
+                        ranks[i].transform.SetAsLastSibling();
+                    }
+                    shown[i] = id;
+                }
+                slots[i].GetChild(0).gameObject.SetActive(id == null);
+                ranks[i].text = gear == null ? "" : gear.Level.ToString();
+            }
+        }
+
+        RectTransform Bar(Transform parent, string name, string railRole, string fillRole, float y, float width, float height)
+        {
+            var rail = Rect(name, parent, 0, y, width, height); ui.Surface(rail, railRole);
+            var fill = UiShell.Rect("Fill", rail); UiShell.Stretch(fill, 3); ui.Surface(fill, fillRole); return fill;
+        }
+        Text Label(Transform parent, string value, int size, float x, float y, float width, float height, Color color, bool shadow = false)
+        {
+            var label = ui.Label(parent, value, size, height); Position(label.rectTransform, x, y, width, height); label.color = color;
+            if(shadow) { var effect = label.gameObject.AddComponent<Shadow>(); effect.effectColor = GameVisualTokens.Ink; effect.effectDistance = new Vector2(1, -2); }
+            return label;
+        }
+        static RectTransform Rect(string name, Transform parent, float x, float y, float width, float height)
+        { var rect = UiShell.Rect(name, parent); Position(rect, x, y, width, height); return rect; }
+        static void Position(RectTransform rect, float x, float y, float width, float height)
+        { rect.anchorMin = rect.anchorMax = new Vector2(0, 1); rect.pivot = new Vector2(0, 1); rect.anchoredPosition = new Vector2(x, -y); rect.sizeDelta = new Vector2(width, height); }
+    }
+}

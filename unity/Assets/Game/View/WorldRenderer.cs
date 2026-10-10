@@ -135,7 +135,9 @@ namespace Game.View
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
             lordMarker?.BeginFrame();
+            UpdateFallowMask();
             DrawTerrain();
+            DrawFallowLandmarks();
             DrawWave(current);
             foreach (var farm in current.Farms)
                 Draw(Resolve("crop", farm.SourceId, "stage" + farm.Stage), farm.Ripe ? GameVisualTokens.ReadyLayer : GameVisualTokens.GrowthLayer, Point(farm.Position), visualTime + farm.Id * 0.13f);
@@ -209,7 +211,7 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
                 foreach(var direction in HeroOutlineDirections)
-                    Draw(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline,visualTime,tint:GameVisualTokens.Ink);
+                    Draw(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline,visualTime,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink);
             }
             Draw(Resolve("hero", snapshot.HeroId, heroState), GameVisualTokens.LordLayer, lord, visualTime, flash: heroHit ? 0.8f : 0);
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
@@ -244,10 +246,12 @@ namespace Game.View
             var width = (float)mapWidth / settings.WorldUnitsPerUnityUnit; var height = (float)mapHeight / settings.WorldUnitsPerUnityUnit;
             var visual = Resolve("terrain", estateId, GameVisualTokens.SeasonNames[season]);
             var old = Resolve("terrain", estateId, GameVisualTokens.SeasonNames[previousSeason]);
+            if (FallowActive && TryFallowArt("fallow.terrain.ground", out var fallowGround)) visual = old = fallowGround;
             var blend = Mathf.Clamp01(seasonAge / GameVisualTokens.SeasonBlendSeconds);
             var tint = Color.Lerp(Color.white, Color.Lerp(GameVisualTokens.Seasons[previousSeason], GameVisualTokens.Seasons[season], blend), 0.16f);
             renderCamera.backgroundColor = Color.Lerp(GameVisualTokens.Seasons[previousSeason], GameVisualTokens.Seasons[season], blend);
             var terrainOpacity=wave==null?GameVisualTokens.TerrainOpacity:GameVisualTokens.WaveTerrainOpacity;
+            if (FallowActive) { renderCamera.backgroundColor = GameVisualTokens.FallowAsh; terrainOpacity = 1; tint = Color.white; }
             var size = visual.WorldSize; var stride = size * GameVisualTokens.TerrainStride;
             var halfHeight = renderCamera.orthographicSize; var halfWidth = halfHeight * renderCamera.aspect; var center = renderCamera.transform.position;
             var xMin = Mathf.Max(-1, Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1); var xMax = Mathf.Min(Mathf.CeilToInt(width / stride.x), Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1);
@@ -417,11 +421,12 @@ namespace Game.View
             var frame = Mathf.FloorToInt(Mathf.Max(0, time) * 1000 / visual.FrameMs) % visual.UvRects.Count;
             var color = tint ?? Color.white; color.a *= Mathf.Clamp01(opacity);
             var key = (layer, visual.Texture);
-            if (!batches.TryGetValue(key, out var batch)) { batch = new SpriteBatch(visual.Texture, shader, renderCamera, layer); batches.Add(key, batch); }
+            if (!batches.TryGetValue(key, out var batch)) { batch = new SpriteBatch(visual.Texture, FallowActive && layer < GameVisualTokens.AllyLayer && layer != GameVisualTokens.ExperienceLayer ? fallowShader : shader, renderCamera, layer); batches.Add(key, batch); }
             batch.Add(position, dimensions, visual.Pivot, uv ?? visual.UvRects[frame], degrees, color, flash, edgeTexels, upperOpacity);
         }
         void OnDestroy()
         {
+            DisposeFallow();
             foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }

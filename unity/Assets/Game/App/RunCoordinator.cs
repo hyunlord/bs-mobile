@@ -118,6 +118,7 @@ namespace Game.App
                 fontCorpus.Add("씨앗과 공성 새싹 변경의 한 해 적을 물리치고 영지를 키우세요 개척을 시작하기 전에 화면을 끌어 이동합니다 무기와 도구는 자동으로 작동합니다 카드를 골라 전투와 영지의 성장을 함께 준비하세요 개척 시작 시작 설정 돌아가기 배경음 효과음 진동 화면 흔들림 피해 숫자 자동 조준 이동 방향 가까운 적 소리와 화면 판을 잠시 멈췄습니다");
                 fontCorpus.Add(MetaScreens.Glyphs);
                 fontCorpus.Add("새싹 들판 도구의 흔적을 키워 수확하세요 목표 재료 초반 도구 선택에 등장합니다 곡물 목재 특허장 선택");
+                if(IsWave)fontCorpus.Add(FallowTitle.Glyphs);
                 if(!IsWave) { fontCorpus.AddRange(Progression.Catalog.Chapters.SelectMany(c=>new[]{c.Name,c.Description}));
                 fontCorpus.AddRange(Progression.Catalog.ManorBuildings.SelectMany(c=>new[]{c.Name,c.Description}));
                 fontCorpus.AddRange(Progression.Catalog.Vassals.SelectMany(c=>new[]{c.Name,c.Description}));
@@ -141,17 +142,15 @@ namespace Game.App
         public void ShowMeta()
         {
             screen=UiScreen.Title;MenuOpen=true;Stick.ResetStick();ClearUi();hud=null;
+            if(IsWave)
+            {
+                FallowTitle.Show(Ui,selectedTarget,FoundationBoot.Catalog.WaveRuntime.MaterialTargets,
+                    id=>displays[id].DisplayName,material=>{selectedTarget=material;ShowMeta();},
+                    ()=>{if(preferences.IntroductionSeen)StartRun();else ShowIntroduction();},()=>ShowSettings(false));
+                return;
+            }
             var panel=Ui.Panel("Meta");Ui.Label(panel,"씨앗과 공성",UiTokens.Title,72);
-            if(!IsWave)Ui.Label(panel,"새싹 변경의 한 해\n적을 물리치고 영지를 키우세요.",UiTokens.Body,96);
-            if(IsWave) { Ui.Label(panel,"새싹 들판 · 도구의 흔적을 키워 수확하세요",UiTokens.Body,96);
-                Ui.Label(panel,selectedTarget==null?"목표 재료 미선택 · 아래에서 골라 주세요":"목표 재료 선택됨 · 초반 도구 선택에 등장합니다",UiTokens.Small,48);
-                foreach(var target in FoundationBoot.Catalog.WaveRuntime.MaterialTargets)
-                {
-                    var material=target.Key; var tool=target.Value;
-                    var materialName=material=="meta:grain"?"곡물":material=="meta:timber"?"목재":material=="meta:charter"?"특허장":material;
-                    Ui.Button(panel,(selectedTarget==material?"선택됨 · ":"")+materialName+" · "+displays[tool].DisplayName,()=>{selectedTarget=material;ShowMeta();});
-                }
-                Ui.Button(panel,"시작",()=>{if(preferences.IntroductionSeen)StartRun();else ShowIntroduction();}); Ui.Button(panel,"설정",()=>ShowSettings(false)); return; }
+            Ui.Label(panel,"새싹 변경의 한 해\n적을 물리치고 영지를 키우세요.",UiTokens.Body,96);
             try
             {
                 var idle=Progression.AdvanceIdle();recentGrowth.UnionWith(idle.BuildingsGrown);
@@ -213,6 +212,7 @@ namespace Game.App
                 Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsIdentity=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
+                world.SetFallowChapter(IsWave&&c.WaveRuntime?.ChapterId=="meta:chapter_1");
                 world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,Frame.MapWidth,Frame.MapHeight);if(useMeta)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptWave(c,Wave);world.AcceptFrame(Frame,FirstPlayable);ApplyPreferences();sound.ResetRun();waveSound?.ResetRun();bossPhaseCue.Reset();lastWaveSound=-1;if(IsWave)sound.AcceptCommonFeedback(Frame,waveSound.PlayCommon);else sound.AcceptFrame(Frame,FirstPlayable);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 invulnerable=false;spawnPermille=1000;

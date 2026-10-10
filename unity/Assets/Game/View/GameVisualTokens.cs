@@ -5,6 +5,10 @@ namespace Game.View
     // Values are the runtime counterpart of unity/DESIGN.md, sections 2, 4, 6 and 7.
     public static class GameVisualTokens
     {
+        public static readonly Color FallowAsh = new Color32(0x79, 0x7B, 0x79, 255);
+        public const int FallowMaskSize = 128;
+        public const float FallowMaskInterval = .1f, FallowHarvestSeconds = 1.4f;
+        public const float FallowSeedRadius = .42f, FallowRipeRadius = .95f, FallowBuildingRadius = 1.3f;
         public static readonly Color Ink = new Color32(0x29, 0x28, 0x22, 255);
         public static readonly Color Ally = new Color32(0x37, 0x64, 0x8B, 255);
         public static readonly Color Ready = new Color32(0xEB, 0xC5, 0x62, 255);

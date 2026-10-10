@@ -18,6 +18,14 @@ namespace Tests.EditMode
         }
 
         [Test]
+        public void GoldenMinuteRequiresExplicitAutoplayOptIn()
+        {
+            Assert.That(AutoplayCapture.IsGoldenMinuteRequested(new[] { "game", "--golden-minute" }), Is.False);
+            Assert.That(AutoplayCapture.IsGoldenMinuteRequested(new[] { "game", "--autoplay-capture" }), Is.False);
+            Assert.That(AutoplayCapture.IsGoldenMinuteRequested(new[] { "game", "--autoplay-capture", "--golden-minute" }), Is.True);
+        }
+
+        [Test]
         public void ExplicitOutputPreservesSpacesAndDefaultOutputIsUnique()
         {
             var root = Path.Combine(Path.GetTempPath(), "native capture");

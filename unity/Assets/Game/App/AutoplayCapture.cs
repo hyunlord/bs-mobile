@@ -27,6 +27,11 @@ namespace Game.App
         bool capturing, ended, waveAttached;
         long lastWaveEvent=-1;
         Result result;
+        bool goldenMinute;
+        GoldenMinuteCapture minuteCapture;
+        int portraitAttempt, portraitFrame;
+        double portraitSettleAt;
+        bool portraitReady;
         long clockPreviousStamp;
         double clockPreviousRealtime, clockPreviousUnscaled, clockNextReport, clockStopwatchSum, clockUnitySum;
         double clockMinInterval = double.MaxValue, clockMaxInterval;
@@ -109,6 +114,7 @@ namespace Game.App
         }
 
         public static bool IsRequested(string[] args) => args.Contains("--autoplay-capture");
+        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && args.Contains("--golden-minute");
 
         public static string ParseOutput(string[] args, string defaultRoot)
         {
@@ -131,6 +137,7 @@ namespace Game.App
         {
             RequireEmptyOutput(folder);
             var args=Environment.GetCommandLineArgs();
+            goldenMinute = IsGoldenMinuteRequested(args);
             var seedArgument=Array.IndexOf(args,"--capture-seed");
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
             var movementArgument=Array.IndexOf(args,"--capture-movement");
@@ -179,6 +186,7 @@ namespace Game.App
                 if (boot != null && boot.Error != null) throw new InvalidOperationException(boot.Error);
                 return;
             }
+            if (goldenMinute && !PreparePortraitWindow()) return;
             if(!waveAttached){run.WaveFrameAccepted+=RecordWaveFrame;waveAttached=true;}
             if (run.Error != null) throw new InvalidOperationException(run.Error);
             if (Time.timeScale != 1 || run.Speed != 1) throw new InvalidOperationException("Capture requires normal speed.");
@@ -194,11 +202,18 @@ namespace Game.App
                     if(captureTarget!=null)
                     {
                         if(!run.IsWave||!FoundationBoot.Catalog.WaveRuntime.MaterialTargets.TryGetValue(captureTarget,out var tool))throw new InvalidOperationException("Capture target is not supported by this profile.");
+                        ClickContaining("출정 준비 · ");
                         ClickContaining(CanonicalContent.Displays.Single(d=>d.Id==tool).DisplayName);
                         Log("target-material-click",captureTarget);
                     }
-                    Click("시작"); stage = 4; nextAction = Elapsed + 1; break;
-                case 4: Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
+                    Click(run.IsWave ? "시작하기" : "시작"); stage = 4; nextAction = Elapsed + 1; break;
+                case 4:
+                    if (goldenMinute)
+                    {
+                        minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
+                        minuteCapture.Initialize(run, output, (success, detail) => Finish(success, detail));
+                    }
+                    Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
                 case 5:
                     if (run.Frame == null) return;
                     replayPath = run.RecordedReplayPath; result.replay = replayPath;
@@ -215,6 +230,35 @@ namespace Game.App
                     Log("restart-running", result.restartReplay); Capture("04-native-restart.png"); stage = 10; nextAction = Elapsed + 1; break;
                 case 10: Verify(); Finish(true, run.IsWave ? "wave-1a actual outcome recorded; summary displayed; restart advanced; no survival gate" : "survived duration, defeated winter boss, summary displayed, restart advanced"); break;
             }
+        }
+
+        bool PreparePortraitWindow()
+        {
+            if (portraitReady) return true;
+            // RunCoordinator has now applied its ordinary desktop preset; capture can override it once.
+            if (portraitAttempt == 0)
+            {
+                Screen.SetResolution(900, 1600, FullScreenMode.Windowed);
+                portraitAttempt = 1; portraitFrame = Time.frameCount; portraitSettleAt = Elapsed + 1;
+                return false;
+            }
+            if (Time.frameCount < portraitFrame + 3 || Elapsed < portraitSettleAt) return false;
+            if (Screen.width * 16 == Screen.height * 9)
+            {
+                portraitReady = true;
+                Log("portrait-ready", $"width={Screen.width};height={Screen.height};attempt={portraitAttempt}");
+                return true;
+            }
+            if (portraitAttempt == 1)
+            {
+                // macOS can constrain oversized windows. Fit the observed drawable bounds exactly to 9:16.
+                var unit = Math.Min(Screen.width / 18, Screen.height / 32);
+                if (unit < 1) throw new InvalidOperationException("No usable portrait capture window.");
+                Screen.SetResolution(unit * 18, unit * 32, FullScreenMode.Windowed);
+                portraitAttempt = 2; portraitFrame = Time.frameCount; portraitSettleAt = Elapsed + 1;
+                return false;
+            }
+            throw new InvalidOperationException($"Native capture could not settle at 9:16: {Screen.width}x{Screen.height}.");
         }
 
         void Play()
@@ -313,6 +357,7 @@ namespace Game.App
         void Finish(bool success, string detail)
         {
             if (ended) return;
+            minuteCapture?.StopCapture();
             ended = true;
             if(waveAttached&&run!=null){run.WaveFrameAccepted-=RecordWaveFrame;waveAttached=false;}
             FinalizeCapture(success, detail, code =>

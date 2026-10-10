@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-fcf062b1-257d-4291-9050-abc44b67c3f8.png
+Source SHA256: 86655d566f7394d34505fe654fe616c6210a20dd3f859ae6574531df8f56748e
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+A single isolated 2D game terrain strip: shallow gently winding horizontal irrigation stream with worn pale stone edges, tiny stones and muted sage moss, desaturated slate-teal water with sparse ivory ripples. 3/4 overhead game projection, meticulous handpainted ink and gouache, modest low contrast. Long horizontal strip, transparent background outside irregular banks, no people buildings trees bridge or text, no labels. Leave generous empty margin all sides. Warm natural subtle colors that can become gray in game. 3:1 landscape.

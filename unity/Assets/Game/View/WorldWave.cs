@@ -31,6 +31,7 @@ namespace Game.View
             {
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
+                ResetFallow();
                 ripeCueId=-1;
                 collectionLabel=null;growthLabels?.Clear();
             }
@@ -53,6 +54,7 @@ namespace Game.View
             {
                 if(value.Id<=lastWaveEvent)continue;
                 lastWaveEvent=value.Id;
+                AcceptFallowEvent(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
                     var source=value.Source;
@@ -148,6 +150,12 @@ namespace Game.View
                 else WaveSprite(id,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,work.Position,
                     work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:work.Kind=="water"?GameVisualTokens.WavePoolOpacity:1,
                     work.Kind=="water"?GameVisualTokens.WavePoolScale:GameVisualTokens.WaveWorkshopScale);
+                if(FallowActive && work.Kind=="building" && work.Health>0 && !work.Complete)
+                {
+                    var fraction=Mathf.Clamp01((float)work.Progress/Mathf.Max(1,work.Required));
+                    WaveSprite("workshop-complete",GameVisualTokens.GrowthLayer+1,work.Position,
+                        Mathf.SmoothStep(0,.75f,fraction),GameVisualTokens.WaveWorkshopScale);
+                }
                 if(work.ParentId>=0)
                 {
                     waveWorkById.TryGetValue(work.ParentId,out var parent);
