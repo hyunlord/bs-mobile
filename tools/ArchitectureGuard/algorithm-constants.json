@@ -298,5 +298,65 @@
     "Symbol": "SowSiege.Core.ReplayCodec.FeelFlags",
     "Value": "7",
     "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.SpawnRadius",
+    "Value": "16200",
+    "Reason": "ADR0051/#210 field-v1 canonical offscreen spawn geometry: reviewed 6000 half-height, 16:9 envelope, (.60,.57) anchor, follow/body/tile gutter rounded to one 600-unit cell. Frozen replay-format4 topology, not a spawn amount/rate or damage/health tuning exemption."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.RecycleRadius",
+    "Value": "32400",
+    "Reason": "ADR0051/#210 field-v1 active-region geometry: twice canonical spawn radius16200. Relocation preserves enemy ID, HP and spawn ledger; no population/stat change. A future radius change requires a field contract version."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.ArenaRadius",
+    "Value": "6000",
+    "Reason": "ADR0051/#210 temporary circular boss-boundary geometry, half the historical12000 map width; not enemy range or weapon reach. Frozen field-v1 replay rule, legacy rectangle untouched."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.SectorSize",
+    "Value": "12000",
+    "Reason": "ADR0051/#210 deterministic visual sector coordinates and bounded local separation search extent inherited from old map width; no world boundary or content identity."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.ArenaSpawnInset",
+    "Value": "600",
+    "Reason": "ADR0051/#210 one historical map-cell geometric inset from temporary arena perimeter for spawn centers; versioned topology only, not enemy speed/HP/spawn rate."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.DirectionNearAxis",
+    "Value": "924",
+    "Reason": "ADR0051 field-v1 fixed 16-direction integer lattice: rounded cos22.5 degrees scaled1000. Pair with383, then integer-normalize outward; changing sample coordinates changes replay spawn positions."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.DirectionFarAxis",
+    "Value": "383",
+    "Reason": "ADR0051 field-v1 fixed 16-direction integer lattice: rounded sin22.5 degrees scaled1000, paired with924. Pure direction geometry without floating-point runtime math."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.DirectionDiagonal",
+    "Value": "707",
+    "Reason": "ADR0051 field-v1 fixed diagonal integer lattice component: rounded sin45 degrees scaled1000; integer-normalized, not authored movement speed."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.SeedHashMultiplier",
+    "Value": "73856093",
+    "Reason": "ADR0051 field-v1 stateless relocation hash seed multiplier. Frozen integer identity mapping; does not consume gameplay RNG or encode content IDs."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.TickHashMultiplier",
+    "Value": "19349663",
+    "Reason": "ADR0051 field-v1 stateless relocation hash tick multiplier; deterministic ahead-sector selection only."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.EnemyHashMultiplier",
+    "Value": "83492791",
+    "Reason": "ADR0051 field-v1 stateless relocation hash enemy-ID multiplier; distinct existing entity placement without new entity or spawn-count allocation."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.FieldVersion",
+    "Value": "4",
+    "Reason": "ADR0051/#210 replay wire format discriminator for explicitly versioned field options plus optional feel flags. Old replay formats1-3 and global rules/state-codec versions remain unchanged."
   }
 ]

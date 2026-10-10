@@ -13,16 +13,25 @@ namespace SowSiege.Core
         public const int RecycleRadius = 32400;
         public const int ArenaRadius = 6000;
         public const int SectorSize = 12000;
+        internal const int ArenaSpawnInset = 600;
     }
 
     internal sealed class FieldState
     {
+        // ADR0051 freezes this integer direction lattice and hash mapping for field-v1 replays.
+        private const int DirectionNearAxis = 924;
+        private const int DirectionFarAxis = 383;
+        private const int DirectionDiagonal = 707;
+        private const uint SeedHashMultiplier = 73856093;
+        private const uint TickHashMultiplier = 19349663;
+        private const uint EnemyHashMultiplier = 83492791;
+        internal static int DirectionCount => Directions.Length;
         private static readonly Position[] Directions =
         {
-            new(1000, 0), new(924, 383), new(707, 707), new(383, 924),
-            new(0, 1000), new(-383, 924), new(-707, 707), new(-924, 383),
-            new(-1000, 0), new(-924, -383), new(-707, -707), new(-383, -924),
-            new(0, -1000), new(383, -924), new(707, -707), new(924, -383)
+            new(PlayerInput.Scale, 0), new(DirectionNearAxis, DirectionFarAxis), new(DirectionDiagonal, DirectionDiagonal), new(DirectionFarAxis, DirectionNearAxis),
+            new(0, PlayerInput.Scale), new(-DirectionFarAxis, DirectionNearAxis), new(-DirectionDiagonal, DirectionDiagonal), new(-DirectionNearAxis, DirectionFarAxis),
+            new(-PlayerInput.Scale, 0), new(-DirectionNearAxis, -DirectionFarAxis), new(-DirectionDiagonal, -DirectionDiagonal), new(-DirectionFarAxis, -DirectionNearAxis),
+            new(0, -PlayerInput.Scale), new(DirectionFarAxis, -DirectionNearAxis), new(DirectionDiagonal, -DirectionDiagonal), new(DirectionNearAxis, -DirectionFarAxis)
         };
         internal int Seed { get; }
         internal Position Travel = new(1, 0);
@@ -46,7 +55,7 @@ namespace SowSiege.Core
         internal Position Spawn(Position lord, int direction)
         {
             var center = ArenaActive ? ArenaCenter : lord;
-            var radius = ArenaActive ? FieldRules.ArenaRadius - 600 : FieldRules.SpawnRadius;
+            var radius = ArenaActive ? FieldRules.ArenaRadius - FieldRules.ArenaSpawnInset : FieldRules.SpawnRadius;
             var delta = Directions[direction & (Directions.Length - 1)];
             var squared = (long)delta.X * delta.X + (long)delta.Y * delta.Y;
             var length = CeilingRoot(squared);
@@ -58,10 +67,10 @@ namespace SowSiege.Core
         }
         internal Position Recycle(Position lord, int tick, int enemyId)
         {
-            var hash = unchecked((uint)Seed * 73856093u ^ (uint)tick * 19349663u ^ (uint)enemyId * 83492791u);
-            var direction = (int)(hash & 15);
+            var hash = unchecked((uint)Seed * SeedHashMultiplier ^ (uint)tick * TickHashMultiplier ^ (uint)enemyId * EnemyHashMultiplier);
+            var direction = (int)(hash & (uint)(DirectionCount - 1));
             var candidate = Directions[direction];
-            if ((long)candidate.X * Travel.X + (long)candidate.Y * Travel.Y < 0) { direction = (direction + 8) & 15; }
+            if ((long)candidate.X * Travel.X + (long)candidate.Y * Travel.Y < 0) { direction = (direction + DirectionCount / WaveGeometry.MidpointDivisor) & (DirectionCount - 1); }
             return Spawn(lord, direction);
         }
         internal static Position Project(Position point, Position center, int radius)
@@ -75,7 +84,7 @@ namespace SowSiege.Core
         internal static long CeilingRoot(long value)
         {
             if (value <= 0) { return 0; }
-            long low = 1, high = Math.Min(value, int.MaxValue * 2L);
+            long low = 1, high = Math.Min(value, (long)int.MaxValue * WaveGeometry.MidpointDivisor);
             while (low < high)
             {
                 var middle = low + ((high - low) >> 1);

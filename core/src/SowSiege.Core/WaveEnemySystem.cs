@@ -147,7 +147,7 @@ namespace SowSiege.Core
                 if (interactive?.Field is { } field)
                 {
                     if (operations.Boss) { field.OpenArena(id, world.Lord); }
-                    position = field.Spawn(world.Lord, random.Next(16));
+                    position = field.Spawn(world.Lord, random.Next(FieldState.DirectionCount));
                 }
                 else
                 {
@@ -255,9 +255,9 @@ namespace SowSiege.Core
                     var origin = new Position(map.Width / WaveGeometry.RectangleSides, waterTarget.Y);
                     if (interactive?.Field is { ArenaActive: true } arena)
                     {
-                        var y = arena.ArenaCenter.Y - FieldRules.ArenaRadius + FieldRules.ArenaRadius * 2 * (action.BossPhase + 1) / WaveGeometry.LanePartitions;
-                        waterTarget = arena.Constrain(new(arena.ArenaCenter.X + FieldRules.ArenaRadius / 2, y));
-                        origin = arena.Constrain(new(arena.ArenaCenter.X - FieldRules.ArenaRadius / 2, y));
+                        var y = arena.ArenaCenter.Y - FieldRules.ArenaRadius + FieldRules.ArenaRadius * WaveGeometry.MidpointDivisor * (action.BossPhase + 1) / WaveGeometry.LanePartitions;
+                        waterTarget = arena.Constrain(new(arena.ArenaCenter.X + FieldRules.ArenaRadius / WaveGeometry.MidpointDivisor, y));
+                        origin = arena.Constrain(new(arena.ArenaCenter.X - FieldRules.ArenaRadius / WaveGeometry.MidpointDivisor, y));
                     }
                     Tell(enemy, action, rule, "water", waterTarget, origin);
                 }
