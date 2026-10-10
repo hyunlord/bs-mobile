@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 
 namespace Game.App
 {
@@ -51,6 +52,7 @@ namespace Game.App
         readonly HashSet<int> enemyIds = new HashSet<int>(5);
         RunCoordinator run;
         Mouse syntheticMouse;
+        ScriptedUiDeviceFilter uiDeviceFilter;
         string folder;
         bool scripted, quit, begun, finished, inFrame, startupScreenshot, timingOut, phasesArmed;
         int frameCount, entityCount, sampleCount, droppedFrames, droppedEntities, uiStage, buttonPhase, inputPreparationStep;
@@ -80,6 +82,37 @@ namespace Game.App
             public double RetrievalStart, RetrievalEnd;
             public FrameTiming Value;
         }
+        public sealed class ScriptedUiDeviceFilter : IDisposable
+        {
+            readonly InputSystemUIInputModule module;
+            readonly InputActionAsset original;
+            InputActionAsset isolated;
+            public ScriptedUiDeviceFilter(InputSystemUIInputModule module, Mouse mouse)
+            {
+                if (module == null || module.actionsAsset == null || mouse == null)
+                    throw new InvalidOperationException("Scripted trace requires an initialized UI action module and synthetic mouse.");
+                this.module = module; original = module.actionsAsset;
+                isolated = Instantiate(original);
+                isolated.devices = new InputDevice[] { mouse };
+                var enabled = module.enabled;
+                module.actionsAsset = isolated;
+                module.enabled = false;
+                module.enabled = enabled;
+            }
+            public void Dispose()
+            {
+                if (isolated == null) return;
+                if (module != null && module.actionsAsset == isolated)
+                {
+                    var enabled = module.enabled;
+                    module.enabled = false;
+                    module.actionsAsset = original;
+                    module.enabled = enabled;
+                }
+                if (Application.isPlaying) Destroy(isolated); else DestroyImmediate(isolated);
+                isolated = null;
+            }
+        }
 
         public static NormalPlayTrace Create(RunCoordinator coordinator)
         {
@@ -107,6 +140,7 @@ namespace Game.App
             if (trace.scripted)
             {
                 trace.syntheticMouse = InputSystem.AddDevice<Mouse>("Smoothness diagnostic mouse");
+                trace.uiDeviceFilter = new ScriptedUiDeviceFilter(coordinator.GetComponentInChildren<InputSystemUIInputModule>(), trace.syntheticMouse);
                 InputSystem.onBeforeUpdate += trace.DriveInput;
             }
             UnityEngine.Debug.Log($"Normal trace ready: scripted={trace.scripted}; focus={Application.isFocused}; screen={Screen.width}x{Screen.height}; mouse={trace.syntheticMouse?.deviceId}; output={output}");
@@ -395,6 +429,7 @@ namespace Game.App
             finished = true;
             if(awaitProjectile&&recordedFriendlyProjectileSamples==0&&failure==null)failure="No friendly projectile render samples were stored during the measured phases.";
             if (syntheticMouse != null) { QueueMouse(stickOrigin, false); InputSystem.onBeforeUpdate -= DriveInput; }
+            uiDeviceFilter?.Dispose();
             Directory.CreateDirectory(folder);
             using (var file = new StreamWriter(Path.Combine(folder, "normal-frames.csv")))
             {
@@ -408,12 +443,15 @@ namespace Game.App
             }
             WriteDiagnostics?.Invoke(folder);
             WriteFrameTimings();
+            File.WriteAllText(Path.Combine(folder, "normal-input-isolation.txt"), FormattableString.Invariant(
+                $"scripted={scripted}\nsyntheticMouseDeviceId={syntheticMouse?.deviceId ?? -1}\nuiDeviceFilter={(scripted ? "private cloned UI action asset restricted to synthetic mouse; original asset and device filter restored at finish" : "unchanged") }\nphysicalDevices=not disabled globally; UI restriction only during opt-in scripted trace\ncausality=prevents mixed UI pointer devices; does not establish the cause of historical input deviation\n"));
             File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nframeClocks=engineFrameTimeSeconds: Unity unscaled frame clock since startup; wallSeconds: BeginFrame realtime relative to session; callbackEndWallSeconds: EndFrame realtime relative to session; not display presentation timestamps\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrequestedSeed={RequestedSeed?.ToString(CultureInfo.InvariantCulture) ?? "normal default"}\nprojectileTimeoutClock=Stopwatch monotonic wall clock; requires a player callback\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
         }
         void OnApplicationQuit() => Finish();
         void OnDestroy()
         {
             InputSystem.onBeforeUpdate -= DriveInput;
+            uiDeviceFilter?.Dispose();
             if (syntheticMouse != null && syntheticMouse.added) InputSystem.RemoveDevice(syntheticMouse);
         }
     }
