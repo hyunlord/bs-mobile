@@ -16,13 +16,14 @@ namespace Game.View
             actorWings = new ShapeBatch(actorGroundMeshes[WorldShape.Circle], shapeShader, renderCamera, GameVisualTokens.EnemyLayer - 1);
         }
 
-        void DrawActorGrounding(Vector2 position, Vector2 size, Vector2 movement, float time, WaveEnemyKind kind)
+        void DrawActorGrounding(Vector2 position, Vector2 size, Vector2 movement, float time, WaveEnemyKind kind, bool authoredWings = false)
         {
             var shadow = GameVisualTokens.Ink;
             shadow.a = GameVisualTokens.ActorShadowOpacity;
             actorGrounding.Add(position, new Vector2(size.x * .26f, size.y * .055f), 0, shadow);
             if (kind == WaveEnemyKind.Ranged)
             {
+                if (authoredWings) return;
                 var hover = ActorMotion.SampleEnemy(kind, time, movement.sqrMagnitude > .000001f).Offset;
                 var wing = GameVisualTokens.Attack;
                 wing.a = .15f + .04f * Mathf.Sin(time * 53);

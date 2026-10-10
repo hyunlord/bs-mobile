@@ -10,6 +10,7 @@ namespace Game.View
 {
     public sealed partial class WorldRenderer : MonoBehaviour
     {
+        EnemyRigAtlas enemyRigAtlas;
         readonly Dictionary<(string kind, string id, string state), ArtVisual> visuals = new Dictionary<(string, string, string), ArtVisual>();
         readonly Dictionary<(int layer, Texture2D texture), SpriteBatch> batches = new Dictionary<(int, Texture2D), SpriteBatch>();
         readonly Dictionary<int, Vector2> previousEnemies = new Dictionary<int, Vector2>();
@@ -91,6 +92,7 @@ namespace Game.View
             followCamera.EndlessField = acceptedFrame?.Field != null;
             estateId = estate; mapWidth = width; mapHeight = height;
             art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            if(ArtCatalog.ProfileName=="wave-1a")enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
             InitializeActorGrounding();
         }
@@ -232,6 +234,7 @@ namespace Game.View
                 var state = enemy.Health <= 0 ? "death" : flashing ? "hit" : moved ? "walk" : "idle";
                 state = WaveEnemyState(enemy.Id, enemy.DefinitionId, state);
                 var enemyArt=Resolve("enemy",enemy.DefinitionId,state);
+                var rigged=false; var rigUv=default(Rect); string actionPhase=null;
                 var position=Interpolate(previousEnemies,enemy.Id,enemy.Position,alpha);
                 RenderedEntitySample?.Invoke("enemy",enemy.Id,position);
                 var dimensions=enemyArt.WorldSize;
@@ -241,6 +244,11 @@ namespace Game.View
                 {
                     var kind=waveDefinition.Enemies[enemy.DefinitionId].Kind;
                     actorKind=kind;
+                    if(waveEnemyById.TryGetValue(enemy.Id,out var action))actionPhase=action.Phase;
+                    var tellTicks=waveDefinition.Enemies[enemy.DefinitionId].TellTicks;
+                    var tellProgress=action==null?0:1-(action.UntilTick-(current.Tick+alpha))/(float)Mathf.Max(1,tellTicks);
+                    rigged=enemyRigAtlas.TrySample(kind,actionPhase,moved,state,visualTime+enemy.Id*.13f,tellProgress,out var rigArt,out rigUv);
+                    if(rigged){enemyArt=rigArt;dimensions=enemyArt.WorldSize;}
                     dimensions=WaveEnemySize(dimensions,kind);
                     var body=new Rect(position-Vector2.Scale(dimensions,enemyArt.Pivot),dimensions);
                     var warning=waveEnemyById.TryGetValue(enemy.Id,out var phase)&&
@@ -252,10 +260,10 @@ namespace Game.View
                 var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
                 if(FieldActive)enemyLayer=GameVisualTokens.EnemyLayer+Mathf.Clamp(19-Mathf.FloorToInt(20f*renderCamera.WorldToViewportPoint(position).y),0,19);
                 var actorTime=visualTime+enemy.Id*.13f;
-                var actorPose=ActorMotion.SampleEnemy(actorKind,actorTime,moved);
-                if(!FieldActive||FieldVisible(position,dimensions))DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind);
-                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose);
-                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
+                var actorPose=rigged?new ActorPose(Vector2.zero,Vector2.one,0):ActorMotion.SampleEnemy(actorKind,actorTime,moved);
+                if(!FieldActive||FieldVisible(position,dimensions))DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind,rigged);
+                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:rigged&&EnemyRigAtlas.IsChargeDanger(actorKind,actionPhase,state)?GameVisualTokens.Hostile:(Color?)null,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
+                if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
                     RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));
             }
@@ -420,7 +428,7 @@ namespace Game.View
                     case PresentationKind.Attack: DrawAttack(effect, pooled.Age, progress); break;
                     case PresentationKind.Damage: Feedback("hit", GameVisualTokens.AttackLayer, origin, progress); break;
                     case PresentationKind.EnemyKilled:
-                        Draw(Resolve("enemy", effect.SourceId, "death"), GameVisualTokens.EnemyLayer, origin, pooled.Age, opacity: 1 - progress);
+                        Draw(EnemyDeathVisual(effect.SourceId), GameVisualTokens.EnemyLayer, origin, pooled.Age, opacity: 1 - progress);
                         Feedback("death", GameVisualTokens.AttackLayer, origin, progress); break;
                     case PresentationKind.KillExperience: Feedback("kill-experience", GameVisualTokens.ExperienceLayer, Vector2.Lerp(origin, lord, progress * progress), progress); break;
                     case PresentationKind.HarvestExperience:
@@ -486,6 +494,15 @@ namespace Game.View
                 if (marker.ClusterCount > 1) Draw(Resolve("feedback", "threat-cluster", "default"), GameVisualTokens.ThreatLayer, point - marker.Direction * pixelsToWorld * 18, visualTime, Vector2.one * pixelsToWorld * 12);
             }
         }
+        ArtVisual EnemyDeathVisual(string source)
+        {
+            if(wave!=null&&waveDefinition.Enemies.TryGetValue(source,out var rule)&&rule.Kind==WaveEnemyKind.Charger)
+            {
+                enemyRigAtlas.TrySample(rule.Kind,null,false,"death",0,0,out var visual,out _);
+                return visual;
+            }
+            return Resolve("enemy",source,"death");
+        }
         ArtVisual Resolve(string kind, string id, string state)
         {
             var key = (kind, id, state);
@@ -515,13 +532,13 @@ namespace Game.View
             return Rect.MinMaxRect(minimum.x,minimum.y,maximum.x,maximum.y);
         }
 
-        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0,ActorPose? poseOverride=null)
+        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0,ActorPose? poseOverride=null,Rect? uv=null)
         {
             var pose=poseOverride??ActorMotion.Sample(time,walking,attackProgress,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale);
             var angle=pose.Degrees+facing.LeanDegrees;
             dimensions.x *= facing.SignedWidth;
-            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels);
+            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels,uv:uv);
         }
         void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true)
         {

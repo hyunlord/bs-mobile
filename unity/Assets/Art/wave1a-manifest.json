@@ -217,6 +217,13 @@
       "source": "unity/Assets/Art/actors.png",
       "prompt": "unity/Assets/Art/ram-runner-charge.provenance.json",
       "commercialUse": "Project-generated output used under applicable OpenAI output terms, subject to restrictions."
+    },
+    {
+      "id": "fallow-enemy-rigs",
+      "origin": "OpenAI image_gen separated-parts drawings and project offline rig authoring",
+      "source": "tools/art-authoring/enemy-rigs/generation-provenance.json",
+      "prompt": "tools/art-authoring/enemy-rigs/generation-provenance.json",
+      "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     }
   ],
   "atlases": [
@@ -451,6 +458,14 @@
       "height": 1270,
       "padding": 4,
       "license": "feel-charger"
+    },
+    {
+      "id": "fallow-enemy-rigs",
+      "path": "Assets/Art/fallow-enemy-rigs.png",
+      "width": 2048,
+      "height": 2304,
+      "padding": 4,
+      "license": "fallow-enemy-rigs"
     }
   ],
   "roles": [
@@ -9830,6 +9845,690 @@
         "y": 0.5
       },
       "frameMs": 170,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.seed_mite.walk",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 772,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 4,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.16935483870967738
+      },
+      "worldSize": {
+        "x": 0.715248,
+        "y": 0.715248
+      },
+      "frameMs": 55,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.seed_mite.tell",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 4,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.16935483870967738
+      },
+      "worldSize": {
+        "x": 0.715248,
+        "y": 0.715248
+      },
+      "frameMs": 140,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.seed_mite.idle",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 516,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.16935483870967738
+      },
+      "worldSize": {
+        "x": 0.715248,
+        "y": 0.715248
+      },
+      "frameMs": 120,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.crop_grazer.walk",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 772,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 260,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5080645161290323,
+        "y": 0.06854838709677424
+      },
+      "worldSize": {
+        "x": 0.6042432470588235,
+        "y": 0.6042432470588235
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.crop_grazer.tell",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 772,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5080645161290323,
+        "y": 0.06854838709677424
+      },
+      "worldSize": {
+        "x": 0.6042432470588235,
+        "y": 0.6042432470588235
+      },
+      "frameMs": 140,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.crop_grazer.idle",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1284,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5080645161290323,
+        "y": 0.06854838709677424
+      },
+      "worldSize": {
+        "x": 0.6042432470588235,
+        "y": 0.6042432470588235
+      },
+      "frameMs": 120,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.raider.walk",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1540,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 516,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 772,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.6453105882352942,
+        "y": 0.6453105882352942
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.raider.tell",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1540,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 772,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.6453105882352942,
+        "y": 0.6453105882352942
+      },
+      "frameMs": 140,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.raider.idle",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 4,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.6453105882352942,
+        "y": 0.6453105882352942
+      },
+      "frameMs": 120,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.shield_raider.walk",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 260,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 772,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 1028,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.782069441860465,
+        "y": 0.782069441860465
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.shield_raider.tell",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 260,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.782069441860465,
+        "y": 0.782069441860465
+      },
+      "frameMs": 140,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.shield_raider.idle",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 772,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.782069441860465,
+        "y": 0.782069441860465
+      },
+      "frameMs": 120,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.ram_runner.walk",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1028,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 1284,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 772,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.66216,
+        "y": 0.66216
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.ram_runner.tell",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1028,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.66216,
+        "y": 0.66216
+      },
+      "frameMs": 140,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.ram_runner.idle",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1540,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5383064516129032,
+        "y": 0.12096774193548387
+      },
+      "worldSize": {
+        "x": 0.66216,
+        "y": 0.66216
+      },
+      "frameMs": 120,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.wine_wasp.walk",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1796,
+          "y": 1540,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 772,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5080645161290323,
+        "y": 0.155241935483871
+      },
+      "worldSize": {
+        "x": 0.8961508396946566,
+        "y": 0.8961508396946566
+      },
+      "frameMs": 40,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.wine_wasp.tell",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 1796,
+          "y": 1796,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 2052,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5080645161290323,
+        "y": 0.155241935483871
+      },
+      "worldSize": {
+        "x": 0.8961508396946566,
+        "y": 0.8961508396946566
+      },
+      "frameMs": 140,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.rig.wine_wasp.idle",
+      "atlas": "fallow-enemy-rigs",
+      "frames": [
+        {
+          "x": 260,
+          "y": 2052,
+          "width": 248,
+          "height": 248
+        }
+      ],
+      "pivot": {
+        "x": 0.5080645161290323,
+        "y": 0.155241935483871
+      },
+      "worldSize": {
+        "x": 0.8961508396946566,
+        "y": 0.8961508396946566
+      },
+      "frameMs": 120,
       "tween": "none"
     }
   ],

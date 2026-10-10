@@ -1,0 +1,1707 @@
+{
+  "schemaVersion": 1,
+  "canvas": 512,
+  "frameSize": 256,
+  "padding": 4,
+  "columns": 8,
+  "outlinePixels": 1,
+  "poses": [
+    "walk-0",
+    "walk-1",
+    "walk-2",
+    "walk-3",
+    "walk-4",
+    "walk-5",
+    "walk-6",
+    "walk-7",
+    "tell-0",
+    "tell-1",
+    "idle"
+  ],
+  "rigs": [
+    {
+      "slug": "seed_mite",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/mite-parts.png",
+      "family": "tripod",
+      "height": 0.44703,
+      "root": [
+        246,
+        230
+      ],
+      "ground": [
+        256,
+        420
+      ],
+      "bones": [
+        {
+          "id": "farRear",
+          "parent": "root",
+          "offset": [
+            80,
+            -43
+          ],
+          "angle": -45,
+          "gaitPhase": 1
+        },
+        {
+          "id": "farMiddle",
+          "parent": "root",
+          "offset": [
+            106,
+            9
+          ],
+          "angle": -40,
+          "gaitPhase": 0
+        },
+        {
+          "id": "farFront",
+          "parent": "root",
+          "offset": [
+            126,
+            55
+          ],
+          "angle": -25,
+          "gaitPhase": 1
+        },
+        {
+          "id": "nearRear",
+          "parent": "root",
+          "offset": [
+            -81,
+            -40
+          ],
+          "angle": 30,
+          "gaitPhase": 0
+        },
+        {
+          "id": "nearMiddle",
+          "parent": "root",
+          "offset": [
+            -102,
+            0
+          ],
+          "angle": 15,
+          "gaitPhase": 1
+        },
+        {
+          "id": "nearFront",
+          "parent": "root",
+          "offset": [
+            -89,
+            67
+          ],
+          "angle": 0,
+          "gaitPhase": 0
+        },
+        {
+          "id": "body",
+          "parent": "root",
+          "offset": [
+            0,
+            0
+          ],
+          "angle": 0
+        },
+        {
+          "id": "head",
+          "parent": "body",
+          "offset": [
+            46,
+            110
+          ],
+          "angle": -15
+        }
+      ],
+      "sprites": [
+        {
+          "bone": "farRear",
+          "rect": [
+            1040,
+            110,
+            200,
+            550
+          ],
+          "anchor": [
+            1120,
+            185
+          ],
+          "scale": 0.28,
+          "angle": 0
+        },
+        {
+          "bone": "farMiddle",
+          "rect": [
+            875,
+            660,
+            190,
+            505
+          ],
+          "anchor": [
+            966,
+            735
+          ],
+          "scale": 0.29,
+          "angle": 0
+        },
+        {
+          "bone": "farFront",
+          "rect": [
+            1080,
+            693,
+            170,
+            470
+          ],
+          "anchor": [
+            1140,
+            770
+          ],
+          "scale": 0.29,
+          "angle": 0
+        },
+        {
+          "bone": "nearRear",
+          "rect": [
+            14,
+            110,
+            210,
+            540
+          ],
+          "anchor": [
+            138,
+            186
+          ],
+          "scale": 0.29,
+          "angle": 0
+        },
+        {
+          "bone": "nearMiddle",
+          "rect": [
+            43,
+            653,
+            204,
+            495
+          ],
+          "anchor": [
+            143,
+            726
+          ],
+          "scale": 0.29,
+          "angle": 0
+        },
+        {
+          "bone": "nearFront",
+          "rect": [
+            248,
+            690,
+            205,
+            480
+          ],
+          "anchor": [
+            352,
+            765
+          ],
+          "scale": 0.31,
+          "angle": 0
+        },
+        {
+          "bone": "body",
+          "rect": [
+            339,
+            153,
+            555,
+            535
+          ],
+          "anchor": [
+            594,
+            406
+          ],
+          "scale": 0.46,
+          "angle": 0
+        },
+        {
+          "bone": "head",
+          "rect": [
+            510,
+            775,
+            348,
+            360
+          ],
+          "anchor": [
+            601,
+            840
+          ],
+          "scale": 0.33,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "slug": "crop_grazer",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/grazer-parts.png",
+      "family": "quadruped",
+      "height": 0.414199,
+      "root": [
+        240,
+        244
+      ],
+      "ground": [
+        260,
+        470
+      ],
+      "bones": [
+        {
+          "id": "farRear",
+          "parent": "root",
+          "offset": [
+            -65,
+            30
+          ],
+          "angle": 0,
+          "gaitPhase": 1
+        },
+        {
+          "id": "farFront",
+          "parent": "root",
+          "offset": [
+            102,
+            49
+          ],
+          "angle": -8,
+          "gaitPhase": 0
+        },
+        {
+          "id": "nearRear",
+          "parent": "root",
+          "offset": [
+            -97,
+            36
+          ],
+          "angle": 6,
+          "gaitPhase": 0
+        },
+        {
+          "id": "nearFront",
+          "parent": "root",
+          "offset": [
+            39,
+            75
+          ],
+          "angle": 0,
+          "gaitPhase": 1
+        },
+        {
+          "id": "body",
+          "parent": "root",
+          "offset": [
+            0,
+            0
+          ],
+          "angle": 0
+        },
+        {
+          "id": "head",
+          "parent": "body",
+          "offset": [
+            85,
+            74
+          ],
+          "angle": 0
+        },
+        {
+          "id": "crest",
+          "parent": "head",
+          "offset": [
+            -24,
+            -32
+          ],
+          "angle": 0
+        }
+      ],
+      "sprites": [
+        {
+          "bone": "farRear",
+          "rect": [
+            676,
+            803,
+            183,
+            442
+          ],
+          "anchor": [
+            799,
+            850
+          ],
+          "scale": 0.37,
+          "angle": 0
+        },
+        {
+          "bone": "farFront",
+          "rect": [
+            958,
+            812,
+            243,
+            420
+          ],
+          "anchor": [
+            1031,
+            866
+          ],
+          "scale": 0.4,
+          "angle": 0
+        },
+        {
+          "bone": "nearRear",
+          "rect": [
+            59,
+            806,
+            212,
+            426
+          ],
+          "anchor": [
+            207,
+            866
+          ],
+          "scale": 0.41,
+          "angle": 0
+        },
+        {
+          "bone": "nearFront",
+          "rect": [
+            374,
+            816,
+            226,
+            397
+          ],
+          "anchor": [
+            430,
+            864
+          ],
+          "scale": 0.44,
+          "angle": 0
+        },
+        {
+          "bone": "body",
+          "rect": [
+            40,
+            145,
+            645,
+            643
+          ],
+          "anchor": [
+            344,
+            430
+          ],
+          "scale": 0.39,
+          "angle": 0
+        },
+        {
+          "bone": "head",
+          "rect": [
+            720,
+            414,
+            395,
+            411
+          ],
+          "anchor": [
+            831,
+            471
+          ],
+          "scale": 0.41,
+          "angle": 0
+        },
+        {
+          "bone": "crest",
+          "rect": [
+            632,
+            3,
+            613,
+            475
+          ],
+          "anchor": [
+            975,
+            407
+          ],
+          "scale": 0.29,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "slug": "raider",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/raider-parts.png",
+      "family": "human",
+      "height": 0.44235,
+      "root": [
+        270,
+        300
+      ],
+      "ground": [
+        275,
+        444
+      ],
+      "bones": [
+        {
+          "id": "cape",
+          "parent": "root",
+          "offset": [
+            -14,
+            -104
+          ],
+          "angle": 0
+        },
+        {
+          "id": "farUpper",
+          "parent": "root",
+          "offset": [
+            36,
+            -94
+          ],
+          "angle": -12
+        },
+        {
+          "id": "farLower",
+          "parent": "farUpper",
+          "offset": [
+            0,
+            48
+          ],
+          "angle": -6
+        },
+        {
+          "id": "farThigh",
+          "parent": "root",
+          "offset": [
+            19,
+            0
+          ],
+          "angle": -3
+        },
+        {
+          "id": "farShin",
+          "parent": "farThigh",
+          "offset": [
+            0,
+            61
+          ],
+          "angle": 0
+        },
+        {
+          "id": "nearThigh",
+          "parent": "root",
+          "offset": [
+            -24,
+            5
+          ],
+          "angle": 3
+        },
+        {
+          "id": "nearShin",
+          "parent": "nearThigh",
+          "offset": [
+            0,
+            59
+          ],
+          "angle": 0
+        },
+        {
+          "id": "body",
+          "parent": "root",
+          "offset": [
+            0,
+            0
+          ],
+          "angle": 0
+        },
+        {
+          "id": "head",
+          "parent": "body",
+          "offset": [
+            5,
+            -113
+          ],
+          "angle": 0
+        },
+        {
+          "id": "nearUpper",
+          "parent": "root",
+          "offset": [
+            -36,
+            -88
+          ],
+          "angle": 12
+        },
+        {
+          "id": "nearLower",
+          "parent": "nearUpper",
+          "offset": [
+            0,
+            50
+          ],
+          "angle": -12
+        },
+        {
+          "id": "spear",
+          "parent": "nearLower",
+          "offset": [
+            3,
+            62
+          ],
+          "angle": -47
+        }
+      ],
+      "sprites": [
+        {
+          "bone": "cape",
+          "rect": [
+            704,
+            45,
+            530,
+            521
+          ],
+          "anchor": [
+            1129,
+            118
+          ],
+          "scale": 0.33,
+          "angle": 0
+        },
+        {
+          "bone": "farUpper",
+          "rect": [
+            686,
+            461,
+            140,
+            181
+          ],
+          "anchor": [
+            758,
+            512
+          ],
+          "scale": 0.42,
+          "angle": 0
+        },
+        {
+          "bone": "farLower",
+          "rect": [
+            732,
+            638,
+            112,
+            233
+          ],
+          "anchor": [
+            785,
+            668
+          ],
+          "scale": 0.37,
+          "angle": 0
+        },
+        {
+          "bone": "farThigh",
+          "rect": [
+            480,
+            829,
+            136,
+            251
+          ],
+          "anchor": [
+            550,
+            884
+          ],
+          "scale": 0.3,
+          "angle": 0
+        },
+        {
+          "bone": "farShin",
+          "rect": [
+            689,
+            875,
+            145,
+            334
+          ],
+          "anchor": [
+            753,
+            941
+          ],
+          "scale": 0.31,
+          "angle": 0
+        },
+        {
+          "bone": "nearThigh",
+          "rect": [
+            53,
+            829,
+            126,
+            240
+          ],
+          "anchor": [
+            127,
+            872
+          ],
+          "scale": 0.33,
+          "angle": 0
+        },
+        {
+          "bone": "nearShin",
+          "rect": [
+            237,
+            876,
+            169,
+            333
+          ],
+          "anchor": [
+            317,
+            943
+          ],
+          "scale": 0.32,
+          "angle": 0
+        },
+        {
+          "bone": "body",
+          "rect": [
+            329,
+            82,
+            349,
+            573
+          ],
+          "anchor": [
+            504,
+            333
+          ],
+          "scale": 0.37,
+          "angle": 0
+        },
+        {
+          "bone": "head",
+          "rect": [
+            42,
+            20,
+            252,
+            301
+          ],
+          "anchor": [
+            185,
+            259
+          ],
+          "scale": 0.33,
+          "angle": 0
+        },
+        {
+          "bone": "nearUpper",
+          "rect": [
+            78,
+            350,
+            145,
+            189
+          ],
+          "anchor": [
+            168,
+            401
+          ],
+          "scale": 0.43,
+          "angle": 0
+        },
+        {
+          "bone": "nearLower",
+          "rect": [
+            59,
+            542,
+            164,
+            247
+          ],
+          "anchor": [
+            113,
+            580
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "spear",
+          "rect": [
+            860,
+            559,
+            373,
+            640
+          ],
+          "anchor": [
+            1018,
+            962
+          ],
+          "scale": 0.4,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "slug": "shield_raider",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/shield-parts.png",
+      "family": "human",
+      "height": 0.542403,
+      "root": [
+        270,
+        300
+      ],
+      "ground": [
+        275,
+        444
+      ],
+      "bones": [
+        {
+          "id": "cape",
+          "parent": "root",
+          "offset": [
+            -14,
+            -104
+          ],
+          "angle": 0
+        },
+        {
+          "id": "farUpper",
+          "parent": "root",
+          "offset": [
+            36,
+            -94
+          ],
+          "angle": -12
+        },
+        {
+          "id": "farLower",
+          "parent": "farUpper",
+          "offset": [
+            0,
+            48
+          ],
+          "angle": -6
+        },
+        {
+          "id": "farThigh",
+          "parent": "root",
+          "offset": [
+            19,
+            0
+          ],
+          "angle": -3
+        },
+        {
+          "id": "farShin",
+          "parent": "farThigh",
+          "offset": [
+            0,
+            61
+          ],
+          "angle": 0
+        },
+        {
+          "id": "nearThigh",
+          "parent": "root",
+          "offset": [
+            -24,
+            5
+          ],
+          "angle": 3
+        },
+        {
+          "id": "nearShin",
+          "parent": "nearThigh",
+          "offset": [
+            0,
+            59
+          ],
+          "angle": 0
+        },
+        {
+          "id": "body",
+          "parent": "root",
+          "offset": [
+            0,
+            0
+          ],
+          "angle": 0
+        },
+        {
+          "id": "head",
+          "parent": "body",
+          "offset": [
+            5,
+            -113
+          ],
+          "angle": 0
+        },
+        {
+          "id": "nearUpper",
+          "parent": "root",
+          "offset": [
+            -36,
+            -88
+          ],
+          "angle": 12
+        },
+        {
+          "id": "nearLower",
+          "parent": "nearUpper",
+          "offset": [
+            0,
+            50
+          ],
+          "angle": -12
+        },
+        {
+          "id": "sword",
+          "parent": "farLower",
+          "offset": [
+            6,
+            66
+          ],
+          "angle": 35
+        },
+        {
+          "id": "shield",
+          "parent": "nearLower",
+          "offset": [
+            -4,
+            31
+          ],
+          "angle": -12
+        }
+      ],
+      "sprites": [
+        {
+          "bone": "cape",
+          "rect": [
+            255,
+            18,
+            560,
+            572
+          ],
+          "anchor": [
+            727,
+            136
+          ],
+          "scale": 0.32,
+          "angle": 0
+        },
+        {
+          "bone": "farUpper",
+          "rect": [
+            777,
+            495,
+            166,
+            194
+          ],
+          "anchor": [
+            840,
+            548
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "farLower",
+          "rect": [
+            859,
+            652,
+            168,
+            238
+          ],
+          "anchor": [
+            921,
+            702
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "farThigh",
+          "rect": [
+            769,
+            799,
+            163,
+            230
+          ],
+          "anchor": [
+            837,
+            857
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "farShin",
+          "rect": [
+            818,
+            970,
+            185,
+            270
+          ],
+          "anchor": [
+            879,
+            997
+          ],
+          "scale": 0.37,
+          "angle": 0
+        },
+        {
+          "bone": "nearThigh",
+          "rect": [
+            273,
+            793,
+            166,
+            219
+          ],
+          "anchor": [
+            333,
+            837
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "nearShin",
+          "rect": [
+            308,
+            960,
+            139,
+            283
+          ],
+          "anchor": [
+            372,
+            1000
+          ],
+          "scale": 0.37,
+          "angle": 0
+        },
+        {
+          "bone": "body",
+          "rect": [
+            409,
+            379,
+            391,
+            569
+          ],
+          "anchor": [
+            603,
+            663
+          ],
+          "scale": 0.34,
+          "angle": 0
+        },
+        {
+          "bone": "head",
+          "rect": [
+            135,
+            17,
+            168,
+            251
+          ],
+          "anchor": [
+            242,
+            226
+          ],
+          "scale": 0.37,
+          "angle": 0
+        },
+        {
+          "bone": "nearUpper",
+          "rect": [
+            112,
+            479,
+            185,
+            196
+          ],
+          "anchor": [
+            225,
+            534
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "nearLower",
+          "rect": [
+            76,
+            631,
+            112,
+            264
+          ],
+          "anchor": [
+            140,
+            666
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "sword",
+          "rect": [
+            1052,
+            22,
+            190,
+            520
+          ],
+          "anchor": [
+            1135,
+            154
+          ],
+          "scale": 0.34,
+          "angle": 0
+        },
+        {
+          "bone": "shield",
+          "rect": [
+            827,
+            33,
+            243,
+            586
+          ],
+          "anchor": [
+            928,
+            256
+          ],
+          "scale": 0.38,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "slug": "ram_runner",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/charger-parts.png",
+      "family": "charger",
+      "height": 0.44589,
+      "root": [
+        270,
+        300
+      ],
+      "ground": [
+        275,
+        444
+      ],
+      "bones": [
+        {
+          "id": "cape",
+          "parent": "root",
+          "offset": [
+            -14,
+            -104
+          ],
+          "angle": 0
+        },
+        {
+          "id": "farUpper",
+          "parent": "root",
+          "offset": [
+            36,
+            -94
+          ],
+          "angle": -12
+        },
+        {
+          "id": "farLower",
+          "parent": "farUpper",
+          "offset": [
+            0,
+            48
+          ],
+          "angle": -6
+        },
+        {
+          "id": "farThigh",
+          "parent": "root",
+          "offset": [
+            19,
+            0
+          ],
+          "angle": -3
+        },
+        {
+          "id": "farShin",
+          "parent": "farThigh",
+          "offset": [
+            0,
+            61
+          ],
+          "angle": 0
+        },
+        {
+          "id": "nearThigh",
+          "parent": "root",
+          "offset": [
+            -24,
+            5
+          ],
+          "angle": 3
+        },
+        {
+          "id": "nearShin",
+          "parent": "nearThigh",
+          "offset": [
+            0,
+            59
+          ],
+          "angle": 0
+        },
+        {
+          "id": "body",
+          "parent": "root",
+          "offset": [
+            0,
+            0
+          ],
+          "angle": 0
+        },
+        {
+          "id": "head",
+          "parent": "body",
+          "offset": [
+            26,
+            -92
+          ],
+          "angle": 7
+        },
+        {
+          "id": "nearUpper",
+          "parent": "root",
+          "offset": [
+            -36,
+            -88
+          ],
+          "angle": 12
+        },
+        {
+          "id": "nearLower",
+          "parent": "nearUpper",
+          "offset": [
+            0,
+            50
+          ],
+          "angle": -12
+        }
+      ],
+      "sprites": [
+        {
+          "bone": "cape",
+          "rect": [
+            15,
+            42,
+            520,
+            465
+          ],
+          "anchor": [
+            459,
+            91
+          ],
+          "scale": 0.35,
+          "angle": 0
+        },
+        {
+          "bone": "farUpper",
+          "rect": [
+            738,
+            502,
+            231,
+            283
+          ],
+          "anchor": [
+            929,
+            549
+          ],
+          "scale": 0.34,
+          "angle": 0
+        },
+        {
+          "bone": "farLower",
+          "rect": [
+            981,
+            580,
+            235,
+            285
+          ],
+          "anchor": [
+            1029,
+            623
+          ],
+          "scale": 0.34,
+          "angle": 0
+        },
+        {
+          "bone": "farThigh",
+          "rect": [
+            735,
+            775,
+            274,
+            222
+          ],
+          "anchor": [
+            805,
+            834
+          ],
+          "scale": 0.39,
+          "angle": 0
+        },
+        {
+          "bone": "farShin",
+          "rect": [
+            743,
+            951,
+            272,
+            275
+          ],
+          "anchor": [
+            838,
+            978
+          ],
+          "scale": 0.4,
+          "angle": 0
+        },
+        {
+          "bone": "nearThigh",
+          "rect": [
+            215,
+            794,
+            262,
+            219
+          ],
+          "anchor": [
+            286,
+            844
+          ],
+          "scale": 0.39,
+          "angle": 0
+        },
+        {
+          "bone": "nearShin",
+          "rect": [
+            278,
+            956,
+            218,
+            275
+          ],
+          "anchor": [
+            361,
+            996
+          ],
+          "scale": 0.4,
+          "angle": 0
+        },
+        {
+          "bone": "body",
+          "rect": [
+            548,
+            65,
+            351,
+            428
+          ],
+          "anchor": [
+            731,
+            353
+          ],
+          "scale": 0.42,
+          "angle": 0
+        },
+        {
+          "bone": "head",
+          "rect": [
+            946,
+            83,
+            300,
+            403
+          ],
+          "anchor": [
+            1080,
+            392
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "nearUpper",
+          "rect": [
+            107,
+            500,
+            279,
+            292
+          ],
+          "anchor": [
+            333,
+            548
+          ],
+          "scale": 0.34,
+          "angle": 0
+        },
+        {
+          "bone": "nearLower",
+          "rect": [
+            397,
+            542,
+            247,
+            331
+          ],
+          "anchor": [
+            447,
+            582
+          ],
+          "scale": 0.34,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "slug": "wine_wasp",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/wasp-parts.png",
+      "family": "wingbeat",
+      "height": 0.47337,
+      "root": [
+        260,
+        250
+      ],
+      "ground": [
+        260,
+        427
+      ],
+      "bones": [
+        {
+          "id": "leg0",
+          "parent": "root",
+          "offset": [
+            -25,
+            4
+          ],
+          "angle": -33,
+          "gaitPhase": 0
+        },
+        {
+          "id": "leg1",
+          "parent": "root",
+          "offset": [
+            0,
+            26
+          ],
+          "angle": -22,
+          "gaitPhase": 1
+        },
+        {
+          "id": "leg2",
+          "parent": "root",
+          "offset": [
+            27,
+            41
+          ],
+          "angle": -11,
+          "gaitPhase": 0
+        },
+        {
+          "id": "leg3",
+          "parent": "root",
+          "offset": [
+            54,
+            34
+          ],
+          "angle": 0,
+          "gaitPhase": 1
+        },
+        {
+          "id": "leg4",
+          "parent": "root",
+          "offset": [
+            67,
+            13
+          ],
+          "angle": 11,
+          "gaitPhase": 0
+        },
+        {
+          "id": "leg5",
+          "parent": "root",
+          "offset": [
+            80,
+            -3
+          ],
+          "angle": 22,
+          "gaitPhase": 1
+        },
+        {
+          "id": "abdomen",
+          "parent": "root",
+          "offset": [
+            -12,
+            1
+          ],
+          "angle": -115
+        },
+        {
+          "id": "backWingL",
+          "parent": "root",
+          "offset": [
+            -27,
+            -20
+          ],
+          "angle": 0
+        },
+        {
+          "id": "backWingR",
+          "parent": "root",
+          "offset": [
+            15,
+            -27
+          ],
+          "angle": 0
+        },
+        {
+          "id": "wingL",
+          "parent": "root",
+          "offset": [
+            -21,
+            -24
+          ],
+          "angle": 0
+        },
+        {
+          "id": "wingR",
+          "parent": "root",
+          "offset": [
+            17,
+            -29
+          ],
+          "angle": 0
+        },
+        {
+          "id": "body",
+          "parent": "root",
+          "offset": [
+            0,
+            0
+          ],
+          "angle": 0
+        },
+        {
+          "id": "antennaL",
+          "parent": "body",
+          "offset": [
+            23,
+            7
+          ],
+          "angle": -42
+        },
+        {
+          "id": "antennaR",
+          "parent": "body",
+          "offset": [
+            34,
+            1
+          ],
+          "angle": 22
+        }
+      ],
+      "sprites": [
+        {
+          "bone": "leg0",
+          "rect": [
+            42,
+            793,
+            172,
+            415
+          ],
+          "anchor": [
+            170,
+            837
+          ],
+          "scale": 0.24,
+          "angle": 0
+        },
+        {
+          "bone": "leg1",
+          "rect": [
+            255,
+            804,
+            173,
+            435
+          ],
+          "anchor": [
+            347,
+            839
+          ],
+          "scale": 0.24,
+          "angle": 0
+        },
+        {
+          "bone": "leg2",
+          "rect": [
+            488,
+            804,
+            117,
+            401
+          ],
+          "anchor": [
+            532,
+            849
+          ],
+          "scale": 0.24,
+          "angle": 0
+        },
+        {
+          "bone": "leg3",
+          "rect": [
+            690,
+            805,
+            128,
+            399
+          ],
+          "anchor": [
+            777,
+            843
+          ],
+          "scale": 0.24,
+          "angle": 0
+        },
+        {
+          "bone": "leg4",
+          "rect": [
+            882,
+            807,
+            182,
+            435
+          ],
+          "anchor": [
+            921,
+            847
+          ],
+          "scale": 0.24,
+          "angle": 0
+        },
+        {
+          "bone": "leg5",
+          "rect": [
+            1081,
+            817,
+            159,
+            386
+          ],
+          "anchor": [
+            1122,
+            864
+          ],
+          "scale": 0.24,
+          "angle": 0
+        },
+        {
+          "bone": "abdomen",
+          "rect": [
+            708,
+            429,
+            367,
+            387
+          ],
+          "anchor": [
+            771,
+            537
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "backWingL",
+          "rect": [
+            69,
+            316,
+            388,
+            143
+          ],
+          "anchor": [
+            426,
+            349
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "backWingR",
+          "rect": [
+            797,
+            315,
+            398,
+            140
+          ],
+          "anchor": [
+            825,
+            356
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "wingL",
+          "rect": [
+            17,
+            12,
+            494,
+            304
+          ],
+          "anchor": [
+            481,
+            277
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "wingR",
+          "rect": [
+            706,
+            9,
+            529,
+            303
+          ],
+          "anchor": [
+            744,
+            277
+          ],
+          "scale": 0.38,
+          "angle": 0
+        },
+        {
+          "bone": "body",
+          "rect": [
+            304,
+            375,
+            369,
+            383
+          ],
+          "anchor": [
+            463,
+            547
+          ],
+          "scale": 0.36,
+          "angle": 0
+        },
+        {
+          "bone": "antennaL",
+          "rect": [
+            34,
+            493,
+            210,
+            301
+          ],
+          "anchor": [
+            218,
+            565
+          ],
+          "scale": 0.19,
+          "angle": 0
+        },
+        {
+          "bone": "antennaR",
+          "rect": [
+            1023,
+            491,
+            208,
+            303
+          ],
+          "anchor": [
+            1050,
+            557
+          ],
+          "scale": 0.19,
+          "angle": 0
+        }
+      ]
+    }
+  ]
+}
