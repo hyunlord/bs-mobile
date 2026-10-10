@@ -35,6 +35,7 @@ namespace Game.View
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
+                ResetThreatWarnings();
                 waveMotion.Reset();
                 heroAttackUntil=0;
                 rewardSources.Clear(); attackSources.Clear();
@@ -282,18 +283,8 @@ namespace Game.View
                 var actorPosition=Interpolate(previousEnemies,enemy.Id,actor.Position,alpha);
                 if(enemy.Wet)WaveSpriteAt("wet",GameVisualTokens.GrowthLayer,actorPosition,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale,GameVisualTokens.WaveWetHeight);
                 if(enemy.Stopped)WaveSpriteAt("stopped",GameVisualTokens.GrowthLayer+1,actorPosition,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
-                if(enemy.Phase=="tell-charge"||enemy.Phase=="tell-water"||enemy.Phase=="water")
-                {
-                    var a=Point(enemy.Origin);var b=Point(enemy.Target);var visual=Resolve("wave",enemy.Phase.Contains("water")?"water-lane":"charge-tell","default");
-                    var diameter=waveCatalog.Enemies[actor.DefinitionId].Range*2f/settings.WorldUnitsPerUnityUnit;
-                    var opacity=enemy.Phase=="water"?GameVisualTokens.WaveHostileActiveOpacity:GameVisualTokens.WaveHostileTellOpacity;
-                    Draw(visual,GameVisualTokens.WaveDangerLayer,(a+b)*.5f,visualTime,new Vector2((b-a).magnitude,diameter),Angle(b-a),opacity);
-                    var cap=Resolve("attack","core:levy_banner","nova");
-                    var tint=enemy.Phase.Contains("water")?Color.white:GameVisualTokens.Hostile;
-                    Draw(cap,GameVisualTokens.WaveDangerLayer,a,0,Vector2.one*diameter,opacity:opacity,tint:tint);
-                    Draw(cap,GameVisualTokens.WaveDangerLayer,b,0,Vector2.one*diameter,opacity:opacity,tint:tint);
-                }
             }
+            DrawThreatWarnings(current,alpha,lordPoint);
             var intakeDrawn=false;var harvestCues=0;
             for(var i=waveEffects.Count-1;i>=0;i--)
             {

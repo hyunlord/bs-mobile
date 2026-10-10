@@ -47,11 +47,11 @@ namespace Game.View
             foreach(var region in chapterTerrain)art.ResolveRole(region.ArtRole);
         }
         int mapWidth, mapHeight, season, previousSeason, level;
-        float visualTime, seasonAge, heroHitUntil, shakeUntil, levelAge = 10;
+        float visualTime, seasonAge, heroHitUntil, levelAge = 10;
         public bool ShowAnnouncements { get; set; } = true;
         public bool ShowDamageNumbers { get; set; } = true;
         public bool ShakeEnabled { get; set; } = true;
-        public Vector2 CameraShakeOffset { get; private set; }
+        public Vector2 CameraShakeOffset => Vector2.zero;
         public string WarningSourceId { get; private set; } = "";
         public string WarningRank { get; private set; } = "";
         public float WarningRemainingSeconds { get; private set; }
@@ -70,6 +70,7 @@ namespace Game.View
         public Vector2? PredictedLordPosition { get; set; }
         public Vector2 RenderedLordPosition { get; private set; }
         public Action<string,int,Vector2> RenderedEntitySample { get; set; }
+        public Action<string,int,Rect> RenderedEnemyBoundsSample { get; set; }
         readonly Dictionary<int,string> farmStageNames = new Dictionary<int,string>();
         readonly Dictionary<(string kind,int id),(ActorFacingMotion motion,int generation)> actorFacing = new Dictionary<(string,int),(ActorFacingMotion,int)>(1024);
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
@@ -87,6 +88,7 @@ namespace Game.View
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
             estateId = estate; mapWidth = width; mapHeight = height;
             art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            InitializeThreatWarnings();
         }
 
         public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot)
@@ -121,7 +123,6 @@ namespace Game.View
             if (effect.Kind == PresentationKind.LordHit)
             {
                 heroHitUntil = visualTime + GameVisualTokens.HitFlashSeconds;
-                shakeUntil = visualTime + GameVisualTokens.ShakeSeconds;
             }
             if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
             if (effect.Kind == PresentationKind.BossWarning)
@@ -157,12 +158,11 @@ namespace Game.View
             previousRenderedLord=lord;hasRenderedLord=true;
             RenderedLordPosition = lord;
             RenderedEntitySample?.Invoke("lord",0,lord);
-            var shake = ShakeEnabled ? Mathf.Clamp01((shakeUntil - visualTime) / GameVisualTokens.ShakeSeconds) : 0;
-            CameraShakeOffset = new Vector2(Mathf.Sin(visualTime * 113), Mathf.Cos(visualTime * 97)) * (shake * GameVisualTokens.ShakeAmplitude);
             if(wave!=null){var heroSize=Resolve("hero",snapshot.HeroId,"idle").WorldSize;followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
             followCamera.LordViewportAnchor = FallowActive ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
-            followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels); followCamera.SetVisualOffset(CameraShakeOffset);
+            followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
+            followCamera.SetVisualOffset(CameraShakeOffset);
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
@@ -237,7 +237,11 @@ namespace Game.View
                 }
                 var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
-                DrawActor(enemyArt,GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19)),position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing);
+                var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
+                DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing);
+                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels);
+                if(RenderedEnemyBoundsSample!=null)
+                    RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,visualTime+enemy.Id*.13f,dimensions,moved,hitProgress,enemyFacing));
             }
             var heroHit = heroHitUntil > visualTime;
             var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : Point(previous.Lord.Position) != Point(current.Lord.Position) ? "walk" : "idle";
@@ -465,13 +469,30 @@ namespace Game.View
             state.motion.SetDirection(movement,visualTime);state.generation=facingGeneration;actorFacing[key]=state;
             return state.motion.Sample(visualTime);
         }
-        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default)
+        static Rect ActorBounds(ArtVisual visual,Vector2 position,float time,Vector2 size,bool walking,float hitProgress,ActorFacingPose facing)
+        {
+            var pose=ActorMotion.Sample(time,walking,-1,hitProgress);
+            var dimensions=Vector2.Scale(size,pose.Scale); dimensions.x*=facing.SignedWidth;
+            var rotation=Quaternion.Euler(0,0,pose.Degrees+facing.LeanDegrees);
+            var origin=position+pose.Offset;
+            var minimum=new Vector2(float.PositiveInfinity,float.PositiveInfinity);
+            var maximum=new Vector2(float.NegativeInfinity,float.NegativeInfinity);
+            for(var corner=0;corner<4;corner++)
+            {
+                var local=new Vector2(((corner&1)-visual.Pivot.x)*dimensions.x,((corner>>1)-visual.Pivot.y)*dimensions.y);
+                var point=origin+(Vector2)(rotation*(Vector3)local);
+                minimum=Vector2.Min(minimum,point); maximum=Vector2.Max(maximum,point);
+            }
+            return Rect.MinMaxRect(minimum.x,minimum.y,maximum.x,maximum.y);
+        }
+
+        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0)
         {
             var pose=ActorMotion.Sample(time,walking,attackProgress,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale);
             var angle=pose.Degrees+facing.LeanDegrees;
             dimensions.x *= facing.SignedWidth;
-            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false);
+            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels);
         }
         void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true)
         {
@@ -498,6 +519,7 @@ namespace Game.View
         void OnDestroy()
         {
             DisposeFallow();
+            DisposeThreatWarnings();
             foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }

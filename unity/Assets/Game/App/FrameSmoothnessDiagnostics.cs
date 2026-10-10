@@ -76,6 +76,7 @@ namespace Game.App
             }
         }
         public AllocationScope Scope(SmoothnessScope scope) => new AllocationScope(this, scope);
+        public void Suspend() { Enabled = false; inFrame = false; }
         public void Begin()
         {
             AllocationCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();

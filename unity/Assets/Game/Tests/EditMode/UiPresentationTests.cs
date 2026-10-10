@@ -11,6 +11,64 @@ namespace Tests.EditMode
 {
     public sealed class UiPresentationTests
     {
+        [TestCase(.5f)]
+        [TestCase(1f)]
+        [TestCase(2f)]
+        public void JoystickArtStaysCenteredAndThumbFitsWithoutChangingInput(float scale)
+        {
+            var owner=new GameObject("Joystick visual regression",typeof(RectTransform));
+            var events=new GameObject("Joystick test events",typeof(UnityEngine.EventSystems.EventSystem));
+            var font=FontProvider.Create(Array.Empty<string>());
+            try
+            {
+                var ui=owner.AddComponent<UiShell>();ui.Initialize(font);ui.Canvas.scaleFactor=scale;
+                var stick=ui.TouchSurface.gameObject.AddComponent<Game.Input.FloatingStick>();stick.RadiusCanvasUnits=UiTokens.StickRadius;
+                var data=new UnityEngine.EventSystems.PointerEventData(events.GetComponent<UnityEngine.EventSystems.EventSystem>()){pointerId=7,position=new Vector2(150,250)};
+                stick.OnPointerDown(data);
+                for(var i=0;i<8;i++)
+                {
+                    var direction=new Vector2(Mathf.Cos(i*Mathf.PI/4),Mathf.Sin(i*Mathf.PI/4));
+                    data.position=stick.Origin+direction*stick.Radius;stick.OnDrag(data);
+                    var expected=new SowSiege.Core.PlayerInput((short)Mathf.RoundToInt(direction.x*SowSiege.Core.PlayerInput.Scale),(short)Mathf.RoundToInt(direction.y*SowSiege.Core.PlayerInput.Scale));
+                    Assert.That(stick.Sample,Is.EqualTo(expected));
+                    ui.ShowStick(true,stick.Origin,stick.Offset);
+                    var knob=(RectTransform)owner.transform.Find("Joystick/Knob");
+                    Assert.That(knob.anchoredPosition.magnitude+UiTokens.StickThumbDiameter/2,Is.LessThanOrEqualTo(UiTokens.StickRadius+.001f));
+                }
+                var baseImage=owner.transform.Find("Joystick").GetComponent<UnityEngine.UI.Image>();
+                var thumbImage=owner.transform.Find("Joystick/Knob").GetComponent<UnityEngine.UI.Image>();
+                Assert.That(baseImage.sprite.rect.size,Is.EqualTo(new Vector2(174,174)));
+                Assert.That(thumbImage.sprite.rect.size,Is.EqualTo(new Vector2(153,153)));
+                Assert.That(baseImage.sprite.pivot,Is.EqualTo(baseImage.sprite.rect.size*.5f));
+                stick.OnPointerUp(data);ui.ShowStick(stick.Active,stick.Origin,stick.Offset);
+                Assert.That(stick.Active,Is.False);Assert.That(stick.Sample,Is.EqualTo(default(SowSiege.Core.PlayerInput)));
+                Assert.That(baseImage.gameObject.activeSelf,Is.False);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(owner);UnityEngine.Object.DestroyImmediate(events);UnityEngine.Object.DestroyImmediate(font); }
+        }
+        [TestCase(1920,1080,330,880)]
+        [TestCase(900,1600,280,1400)]
+        public void JoystickPresentationFitsUsableScreenWithoutChangingLogicalRadius(int width,int height,float bottom,float top)
+        {
+            var scale=width/900f;
+            var usable=Rect.MinMaxRect(0,bottom,width,top);
+            var visualScale=UiShell.StickPresentationScale(new Vector2(width,height),usable,scale);
+            var radius=UiTokens.StickRadius*scale*visualScale;
+            if(height>width)Assert.That(visualScale,Is.EqualTo(1),"Portrait art size stays unchanged when it fits.");
+            Assert.That(UiShell.StickPresentationCenter(usable.center,usable,radius),Is.EqualTo(usable.center),"Already safe touch origins stay in place.");
+            var center=UiShell.StickPresentationCenter(new Vector2(width*.25f,height*.2f),usable,radius);
+            Assert.That(center.x-radius,Is.GreaterThanOrEqualTo(usable.xMin-.001f));
+            Assert.That(center.x+radius,Is.LessThanOrEqualTo(usable.xMax+.001f));
+            Assert.That(center.y-radius,Is.GreaterThanOrEqualTo(usable.yMin-.001f));
+            Assert.That(center.y+radius,Is.LessThanOrEqualTo(usable.yMax+.001f));
+            for(var i=0;i<8;i++)
+            {
+                var direction=new Vector2(Mathf.Cos(i*Mathf.PI/4),Mathf.Sin(i*Mathf.PI/4));
+                var visual=UiShell.StickVisualOffset(direction*UiTokens.StickRadius*scale,scale)*scale*visualScale;
+                Assert.That(visual.magnitude+UiTokens.StickThumbDiameter*.5f*scale*visualScale,Is.LessThanOrEqualTo(radius+.001f));
+            }
+        }
+
         [Test]
         public void AuthoredSettingsDoNotEmitChangesUntilUserInteraction()
         {

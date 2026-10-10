@@ -13,17 +13,20 @@ namespace Game.View
         Material material;
         Material shadowMaterial;
         bool disposed;
+        readonly Color ink;
 
-        public WorldGrowthLabels(Transform parent)
+        public WorldGrowthLabels(Transform parent, string additionalGlyphs = "", Color? color = null)
         {
             if (parent == null) throw new ArgumentNullException(nameof(parent));
             this.parent = parent;
+            ink = color ?? GameVisualTokens.Ready;
             for (var slot = 0; slot < Capacity; slot++)
             {
                 if (font == null)
                 {
-                    font = FontProvider.Create(new[] { "익음 수확 완료 경험치 수리 중 0123456789+ XP" });
-                    font.RequestCharactersInTexture("익음 수확 완료 경험치 수리 중 0123456789+ XP",48);
+                    var glyphs = "익음 수확 완료 경험치 수리 중 0123456789+ XP" + additionalGlyphs;
+                    font = FontProvider.Create(new[] { glyphs });
+                    font.RequestCharactersInTexture(glyphs,48);
                     material = new Material(font.material)
                     {
                         name = "Growth label ink",
@@ -55,7 +58,7 @@ namespace Game.View
                 Hide(slot);
                 return;
             }
-            var color = GameVisualTokens.Ready;
+            var color = ink;
             color.a = Mathf.Clamp01(opacity);
             var shadowColor = GameVisualTokens.Ink;
             shadowColor.a = color.a;
