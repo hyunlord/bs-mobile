@@ -2460,15 +2460,18 @@
         ],
         "layer": "designed-v1",
         "where": {
-          "op": "ne",
-          "left": {
-            "op": "get",
-            "from": "node",
-            "path": [
-              "itemScope"
-            ]
-          },
-          "right": "universal"
+          "op": "not",
+          "value": {
+            "op": "eq",
+            "left": {
+              "op": "get",
+              "from": "node",
+              "path": [
+                "itemScope"
+              ]
+            },
+            "right": "universal"
+          }
         }
       },
       "target": {
@@ -2495,15 +2498,18 @@
         ],
         "layer": "designed-v1",
         "where": {
-          "op": "ne",
-          "left": {
-            "op": "get",
-            "from": "node",
-            "path": [
-              "itemScope"
-            ]
-          },
-          "right": "universal"
+          "op": "not",
+          "value": {
+            "op": "eq",
+            "left": {
+              "op": "get",
+              "from": "node",
+              "path": [
+                "itemScope"
+              ]
+            },
+            "right": "universal"
+          }
         }
       },
       "target": {
