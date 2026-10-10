@@ -146,9 +146,44 @@ namespace SowSiege.Core
             foreach (var program in programs.Values) { Validate(program); }
             return programs;
         }
+        private static void RequireDependencies(WavePrimitiveProgram program)
+        {
+            void Require(params string[] units)
+            {
+                if (units.Any(unit => !program.Has(unit))) { throw new ArgumentException("Incomplete primitive state substrate: " + string.Join(",", units)); }
+            }
+            void Expect(string unit, string parameter, string value)
+            {
+                if (!program.Is(unit, parameter, value)) { throw new ArgumentException("Unsupported substrate parameter: " + unit + "." + parameter); }
+            }
+            var remnant = program.Value("unit:remnant-create", "remnantKey");
+            if (remnant == "seasonal-pool")
+            {
+                Require("unit:stock-cycle", "unit:growth-cycle");
+                Expect("unit:stock-cycle", "resource", "water"); Expect("unit:growth-cycle", "drivers", "season");
+            }
+            if (remnant == "joinery-frame")
+            {
+                Require("unit:stock-cycle", "unit:growth-cycle");
+                Expect("unit:stock-cycle", "resource", "timber"); Expect("unit:growth-cycle", "drivers", "time");
+            }
+            if (remnant == "levy-company" || program.Has("unit:ally-task") || program.Has("unit:mission-cycle"))
+            {
+                Require("unit:remnant-create", "unit:ally-task", "unit:mission-cycle", "unit:growth-cycle");
+                Expect("unit:remnant-create", "remnantKey", "levy-company"); Expect("unit:growth-cycle", "drivers", "kill");
+            }
+            if (remnant == "sheltered-frame" || program.Has("unit:paired-growth") || program.Has("unit:growth-protect"))
+            {
+                Require("unit:remnant-create", "unit:paired-growth", "unit:growth-protect", "unit:growth-cycle", "unit:evolution-replace");
+                Expect("unit:remnant-create", "remnantKey", "sheltered-frame");
+            }
+            if (program.Has("unit:enemy-pressure") || program.Has("unit:boss-phases")) { Require("unit:enemy-tell"); }
+            if (program.Has("unit:evolution-replace")) { Require("unit:event-gate", "unit:attack-shape"); }
+        }
         public static void Validate(WavePrimitiveProgram program)
         {
             if (program.Params.Count == 0) { throw new ArgumentException("Empty primitive program."); }
+            RequireDependencies(program);
             foreach (var unit in program.Params)
             {
                 if (!Contracts.TryGetValue(unit.Key, out var shapes) || !shapes.Any(shape => shape.Count == unit.Value.Count && shape.All(p => unit.Value.TryGetValue(p.Key, out var value) && p.Value == value)))

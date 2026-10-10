@@ -203,9 +203,9 @@ namespace SowSiege.Core
             _ => throw new ArgumentException("Unknown historical enemy recipe.")
         };
         private static WavePrimitiveProgram Chapter() => new(new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal)
-            {
-                ["unit:chapter-route"] = new Dictionary<string, string>(StringComparer.Ordinal) { ["bossId"] = "$boss", ["order"] = "1", ["entry"] = "before-run", ["completion"] = "chapter-clear" },
-                ["unit:map-route-trace"] = new Dictionary<string, string>(StringComparer.Ordinal) { ["on"] = "lord-work-path", ["trace"] = "sprout-track", ["connect"] = "adjacent-work-segments", ["enemyResponse"] = "attract-to-connected-region", ["playerChoice"] = "finish-region-or-move-out" },
-            });
+        {
+            ["unit:chapter-route"] = new Dictionary<string, string>(StringComparer.Ordinal) { ["bossId"] = "$boss", ["order"] = "1", ["entry"] = "before-run", ["completion"] = "chapter-clear" },
+            ["unit:map-route-trace"] = new Dictionary<string, string>(StringComparer.Ordinal) { ["on"] = "lord-work-path", ["trace"] = "sprout-track", ["connect"] = "adjacent-work-segments", ["enemyResponse"] = "attract-to-connected-region", ["playerChoice"] = "finish-region-or-move-out" },
+        });
     }
 }

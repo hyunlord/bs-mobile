@@ -7,6 +7,61 @@ namespace SowSiege.Tests;
 
 public sealed class WavePrimitiveTests
 {
+    [Theory]
+    [InlineData("core:rain_ladle", "unit:stock-cycle")]
+    [InlineData("core:rain_ladle", "unit:growth-cycle")]
+    [InlineData("core:carpenter_hammer", "unit:stock-cycle")]
+    [InlineData("core:muster_horn", "unit:ally-task")]
+    [InlineData("core:muster_horn", "unit:mission-cycle")]
+    [InlineData("core:muster_horn", "unit:growth-cycle")]
+    [InlineData("core:sheltered_sowing", "unit:growth-protect")]
+    [InlineData("core:sheltered_sowing", "unit:paired-growth")]
+    [InlineData("core:raider", "unit:enemy-tell")]
+    public void IncompleteStateSubstrateIsRejectedBeforeExecution(string id, string missing)
+    {
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "wave-1a");
+        var units = catalog.WaveRuntime!.Programs![id].Params.ToDictionary(p => p.Key, p => p.Value);
+        Assert.True(units.Remove(missing));
+        Assert.Throws<ArgumentException>(() => WavePrimitiveSupport.Validate(new(units)));
+    }
+
+    [Theory]
+    [InlineData("core:carpenter_hammer", "unit:completed-structure-attack", "building")]
+    [InlineData("core:rain_ladle", "unit:status-apply", "water")]
+    public void RemovingWorkEffectUnitRemovesItsObservableEffect(string id, string unit, string kind)
+    {
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "wave-1a");
+        var programs = catalog.WaveRuntime!.Programs!.ToDictionary(p => p.Key, p => p.Value);
+        var units = programs[id].Params.ToDictionary(p => p.Key, p => p.Value);
+        Assert.True(units.Remove(unit)); programs[id] = new(units);
+        catalog = catalog with { WaveRuntime = catalog.WaveRuntime with { Programs = programs } };
+        var world = new WorldState { Lord = new(5000, 5000), WaveRuntime = new() };
+        world.WaveRuntime.Work.Add(new() { Id = 1, Source = id, Kind = kind, Health = 100, Complete = true, Position = world.Lord, WetUntil = 100 });
+        var enemy = new EnemyState { Id = 900, Health = 100, Position = new(5010, 5000) }; world.Enemies.Add(enemy);
+        new WaveWorkSystem(catalog, world, null).Tick();
+        Assert.Equal(100, enemy.Health);
+        Assert.False(world.WaveRuntime.EnemyActions.TryGetValue(enemy.Id, out var action) && action.WetUntil > 0);
+    }
+
+    [Fact]
+    public void EvolutionAttackShapeControlsActiveAttackInsteadOfHistoricalWeaponShape()
+    {
+        var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "wave-1a");
+        var evolution = catalog.WaveRuntime!.Evolutions.Values.First(e => e.Kind == WaveEvolutionKind.PlantingArc);
+        var programs = catalog.WaveRuntime.Programs!.ToDictionary(p => p.Key, p => p.Value);
+        var units = programs[evolution.Id].Params.ToDictionary(p => p.Key, p => p.Value);
+        units["unit:attack-shape"] = programs["core:ember_wand"].Params["unit:attack-shape"];
+        programs[evolution.Id] = new(units);
+        catalog = catalog with { WaveRuntime = catalog.WaveRuntime with { Programs = programs } };
+        var world = new WorldState { Lord = new(5000, 5000), LordHealth = 1000 };
+        world.Equipment.Add(new() { Id = evolution.InputIds[0] });
+        world.Enemies.Add(new() { Id = 900, Definition = catalog.Enemies.Keys.First(), Health = 1000, Position = new(5300, 5000) });
+        var system = new WaveRuntimeSystem(catalog, world, new(30000, true), null);
+        world.WaveRuntime!.Evolutions.Add(evolution.Id);
+        system.Tick(world.Lord);
+        Assert.Contains(world.WaveRuntime.Projectiles, p => p.Source == evolution.Id);
+    }
+
     [Fact]
     public void ComposedAttackShapeOverridesHistoricalSerializationRecipe()
     {

@@ -142,7 +142,7 @@ namespace SowSiege.Core
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
-            var program = modules[gear.Id];
+            var program = modules[evolution?.Id ?? gear.Id];
             var shape = program.Value("unit:attack-shape", "shape");
             if (program.Is("unit:attack-variant", "condition", "water-empty") && state.Water <= 0)
             {

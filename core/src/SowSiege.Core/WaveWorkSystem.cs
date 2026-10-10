@@ -119,7 +119,7 @@ namespace SowSiege.Core
         }
         private void TickBuilding(WaveWork w, WaveGearDefinition gear)
         {
-            if (w.Complete && world.Tick >= w.ReadyTick) { Brace(w, gear); }
+            if (w.Complete && world.Tick >= w.ReadyTick && modules.Has(w.Source, "unit:completed-structure-attack")) { Brace(w, gear); }
             if (!Near(world.Lord, w.Position, gear.WorkRadius)) { return; }
             if (!w.Complete)
             {
@@ -164,7 +164,7 @@ namespace SowSiege.Core
         }
         private void TickWater(WaveWork pool, WaveGearDefinition gear)
         {
-            if (pool.WetUntil > world.Tick)
+            if (pool.WetUntil > world.Tick && modules.Has(pool.Source, "unit:status-apply"))
             {
                 foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Near(e.Position, pool.Position, gear.WorkRadius)))
                 { if (!State.EnemyActions.TryGetValue(enemy.Id, out var action)) { action = new(); State.EnemyActions[enemy.Id] = action; } action.WetUntil = world.Tick + Definition.WetTicks; }
