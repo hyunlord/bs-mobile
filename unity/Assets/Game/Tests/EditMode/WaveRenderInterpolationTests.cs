@@ -15,6 +15,19 @@ namespace Tests.EditMode
             Array.Empty<string>(),Array.Empty<string>(),Array.Empty<WaveEvent>(),new Dictionary<string,long>(),
             Array.Empty<WaveAttackView>(),0,Array.Empty<WaveDetourView>(),new WorldPoint(0,0),0);
 
+        [Test] public void CardPauseSettlesTheLastTickWithoutAnEndpointSnapOrResumeRewind()
+        {
+            var interpolation=new RenderTickInterpolation();
+            Assert.That(interpolation.Present(10,.9f,false,1f/120,30),Is.EqualTo(.9f).Within(.001f));
+            Assert.That(interpolation.Present(11,0,true,1f/120,30),Is.EqualTo(.15f).Within(.001f));
+            Assert.That(interpolation.Present(11,0,true,1f/120,30),Is.EqualTo(.4f).Within(.001f));
+            for(var i=0;i<4;i++)interpolation.Present(11,0,true,1f/120,30);
+            Assert.That(interpolation.Present(11,0,false,1f/120,30),Is.EqualTo(1));
+            Assert.That(interpolation.Present(12,.25f,false,1f/120,30),Is.EqualTo(.25f).Within(.001f));
+            interpolation.Reset();
+            Assert.That(interpolation.Present(0,0,false,0,30),Is.Zero);
+        }
+
         [Test] public void ExistingGroupsInterpolateWhileNewGroupsAppearAtTheirActualPosition()
         {
             var motion=new WaveRenderInterpolation();

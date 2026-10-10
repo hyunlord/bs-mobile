@@ -1,11 +1,13 @@
 using SowSiege.Core;
 using Game.App.Generated;
+using Game.View;
 using UnityEngine;
 
 namespace Game.App
 {
     public sealed partial class RunCoordinator
     {
+        readonly RenderTickInterpolation renderInterpolation = new RenderTickInterpolation();
         readonly LordPresentationPredictor lordPrediction = new LordPresentationPredictor();
         readonly FrameSmoothnessDiagnostics smoothness = new FrameSmoothnessDiagnostics();
         float presentationUnits = 1000;
@@ -13,9 +15,21 @@ namespace Game.App
         public void BeginSmoothnessDiagnostics() => smoothness.Begin();
         public void NotifySmoothnessEndOfFrame() => smoothness.EndOfFrame();
         public void WriteSmoothnessDiagnostics(string folder) => smoothness.Write(folder);
+        public void RefreshCapturePresentation()
+        {
+            if(AutoplayCapture.Active==null||Frame==null||Frame.Tick!=0||world==null||hud==null||Paused||screen!=UiScreen.Run)
+                throw new System.InvalidOperationException("Capture presentation refresh requires the resumed tick-zero run.");
+            hud.Present(Frame,FirstPlayable);
+            Canvas.ForceUpdateCanvases();
+            var visible=Screen.safeArea;
+            var bottom=Mathf.Min(UiTokens.BottomWorldInset*Ui.Canvas.scaleFactor,visible.height*.2f);
+            visible.yMin+=bottom;visible.yMax=Mathf.Max(visible.yMin+1,visible.yMax-hud.ReservedTopPixels);
+            world.RefreshCaptureCamera(visible);
+        }
 
         void InitializeSmoothness()
         {
+            renderInterpolation.Reset();
             presentationUnits = CanonicalContent.Presentation.Camera.WorldUnitsPerUnityUnit;
             var map = runCatalog.Tuning.World.Map;
             lordPrediction.Initialize(PresentationPoint(Frame.Lord.Position), new Vector2(map.Width, map.Height) / presentationUnits,

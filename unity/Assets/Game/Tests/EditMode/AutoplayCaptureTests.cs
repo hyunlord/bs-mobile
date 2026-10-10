@@ -10,6 +10,27 @@ namespace Tests.EditMode
     public sealed class AutoplayCaptureTests
     {
         [Test]
+        public void SmoothnessScopeTimesRemainSeparateFromAllocationCapability()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "scope-timing-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var diagnostics = new FrameSmoothnessDiagnostics();
+                diagnostics.Begin(); diagnostics.BeginFrame(1, false);
+                using (diagnostics.Scope(SmoothnessScope.CoreApply)) System.Threading.Thread.SpinWait(10000);
+                using (diagnostics.Scope(SmoothnessScope.Recording)) System.Threading.Thread.SpinWait(10000);
+                diagnostics.EndFrame(); diagnostics.Write(folder);
+                var lines = File.ReadAllLines(Path.Combine(folder, "smoothness-frames.csv"));
+                var columns = lines[0].Split(','); var values = lines[1].Split(',');
+                Assert.That(values.Length, Is.EqualTo(columns.Length));
+                foreach (var name in new[] { "coreApplyMs", "recordingMs", "unattributedUpdateMs" })
+                    Assert.That(double.Parse(values[Array.IndexOf(columns, name)], System.Globalization.CultureInfo.InvariantCulture), Is.GreaterThan(0));
+                Assert.That(values[Array.IndexOf(columns, "worldMs")], Is.EqualTo("0.000000"));
+            }
+            finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+        }
+
+        [Test]
         public void GoldenRecordingCannotArmBeforeWorldAndBuffersAreReady()
         {
             var host = new GameObject("capture arming contract");

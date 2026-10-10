@@ -57,9 +57,32 @@ worker의 할당도 전역 GC에 영향을 줄 수 있으므로 Update/draw 할�
 - `golden-minute.json`: provenance, measuredFps, frameP95Ms/frameMaxMs, missed60HzSlots,
   gpuErrors/ringOverflows, 제출·기록 수, main 제출/callback/worker 할당과 audioStartOffsetSeconds.
 - 기존 `capture-result.json`, `capture-ledger.jsonl`, 격리 프로필 입력 기록.
+- `smoothness-frames.csv`: 실제 Update 간격, 소프트웨어 입력 표본부터 렌더 제출·EndOfFrame까지의 지연, 범위별 할당, 표시 개체 수·생성·제거·카메라 보정 전후 이동량.
+- `smoothness-jumps.csv`: 안정 ID별 이동 이상 후보와 당시 pause/reset 상태. 후보가 없다는 사실만으로 사용자 부드러움 관문을 통과하지 않는다.
+- `smoothness-boundary.txt`: 지연·할당 계측의 범위와 버퍼 누락 정보. 해당 실행의 CSV 및 빌드 식별자와 함께 확인한다.
 
 `golden-minute.json`의 `failure`와 실제 프레임 간격을 먼저 확인한다. 요청 fps가 60이라는
 필드나 결과 영상의 명목 프레임률만으로 60fps라고 보고하지 않는다.
+
+부드러움 CSV는 `unityFrame`·`tick`으로 실제 영상 프레임과 연결한다. 첫 프레임의
+간격0은 이전 표본이 없다는 뜻이며 지연의 음수 값은 미측정이다. 입력 지연은
+소프트웨어가 입력을 읽은 뒤 CPU 렌더 제출·EndOfFrame까지의 시간이다. 디스플레이의
+표시 완료나 물리 입력→광자 지연으로 해석하지 않는다. 프레임 간격과 지연을 따로 보고한다.
+
+점프 후보는 카메라 이동을 보정한 화면 이동량을 관측 속도 기반 예상 이동량+6픽셀과
+비교한 진단이다. `kind`·ID·생성·제거·pause/reset 상태 및 실제 영상을 함께 보고,
+의도된 전환과 비정상 이동을 구별한다. 후보 행을 임의로 지워 통과시키지 않는다.
+프레임·개체 표본·점프 기록의 버퍼 누락이 있으면 완전한 검증으로 보고하지 않는다.
+
+할당 카운터 미지원은 `-1`/unavailable이며0 B와 다르다. 가용한 범위별 수치를
+전체 Update 수치와 함께 보고하고 Core 틱·스냅샷·worker 할당을 빼서 전체0 B로
+부르지 않는다. 미지원이면 할당 관문은 미검증으로 남긴다. 캡처의 통과 여부와
+[C05 회귀 비교](wave-density-benchmark.md), 할당 관문, 사용자 판정은 각각 기록한다.
+
+실패한 네이티브 표본은 원래 판정과 함께 보존하고 재측정은 새 출력 경로를 사용한다.
+실패 영상·명목60fps 또는 CI 통과를 부드러움 통과로 바꾸지 않는다. 직접 플레이용
+Mac 빌드와 유효한 실시간 영상을 전달한 뒤에도 사용자가 확인하기 전에는 시각·손맛의
+'끊김 없음' 관문은 대기다. #126·#98과1b 보류를 해제하지 않는다.
 
 ```sh
 cd '/path/new-golden-capture'

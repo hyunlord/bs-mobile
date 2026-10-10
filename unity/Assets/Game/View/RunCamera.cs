@@ -46,6 +46,8 @@ namespace Game.View
             mapSize = new Vector2((float)width / settings.WorldUnitsPerUnityUnit, (float)height / settings.WorldUnitsPerUnityUnit);
         }
 
+        public void SnapNextPresentation() => positioned = false;
+
         public void Present(Vector2 lord, int estateExtent, float deltaTime, Rect? safeAreaPixels = null)
         {
             SetVisualOffset(Vector2.zero);

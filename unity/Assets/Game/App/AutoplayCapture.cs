@@ -198,6 +198,7 @@ namespace Game.App
                 if (!run.CaptureClockPaused) throw new InvalidOperationException("World warmup unexpectedly resumed.");
                 Click("돌아가기");
                 if (run.CaptureClockPaused) throw new InvalidOperationException("Normal resume button did not resume the run.");
+                run.RefreshCapturePresentation();
                 run.BeginSmoothnessDiagnostics();
                 minuteCapture.ArmRecording();
                 goldenRecordingStarted = true;

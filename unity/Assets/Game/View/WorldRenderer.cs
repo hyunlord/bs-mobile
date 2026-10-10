@@ -131,6 +131,14 @@ namespace Game.View
             }
         }
 
+        public void RefreshCaptureCamera(Rect safeAreaPixels)
+        {
+            if (acceptedFrame == null || followCamera == null) return;
+            followCamera.SnapNextPresentation();
+            followCamera.Present(RenderedLordPosition, acceptedFrame.EstateExtent, 0, safeAreaPixels);
+            followCamera.SetVisualOffset(CameraShakeOffset);
+        }
+
         public void Present(RunFrame previous, RunFrame current, FirstPlayableFrame snapshot, float alpha, float unscaledDeltaTime, Rect safeAreaPixels)
         {
             if (art == null) throw new InvalidOperationException("Initialize the world renderer before presenting frames.");

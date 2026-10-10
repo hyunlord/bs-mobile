@@ -297,7 +297,7 @@ namespace Game.App
                 world.ShowAnnouncements=screen==UiScreen.Run;
                 PredictLord(movement);
                 using(RunProfilerMarkers.WorldPresent.Auto())
-                using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,Frame,FirstPlayable,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
+                using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,Frame,FirstPlayable,renderInterpolation.Present(Frame.Tick,(float)(accumulator*Frame.TickRate),Paused,Time.unscaledDeltaTime,Frame.TickRate),Time.unscaledDeltaTime,visible);
                 smoothness.Submit(Camera.main,Frame.Tick,Paused,lordPrediction.ResetThisFrame,lordPrediction.Speed);
             }
             if(!finished&&telemetry!=null)
@@ -319,7 +319,8 @@ namespace Game.App
             {
                 var command=new ReplayCommand(Session.NextSequence,Frame.Tick,kind,input,card,value);
                 using(RunProfilerMarkers.CoreApply.Auto())
-                using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);recording.WriteAccepted(command);
+                using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);
+                using(smoothness.Scope(SmoothnessScope.Recording))recording.WriteAccepted(command);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if(kind==ReplayCommandKind.SetInvulnerable)invulnerable=value!=0;
                 if(kind==ReplayCommandKind.SetSpawnPermille)spawnPermille=value;
