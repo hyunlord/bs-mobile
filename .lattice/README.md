@@ -8,6 +8,8 @@
 
 발견 규칙은 모두 warning이며 gate가 없다. `cardText`는 필드가 있을 때 길이를 검사하고, `primitives` 누락은 해당 필드를 사용하는 설계 콘텐츠가 나타난 뒤 계산한다. bespoke는 `{id, reason}` 배열을 가진 레코드 수와 배열 항목 수를 따로 집계한다. primitive 참조 수는 설계 문법 사용량이며 구현률이 아니다. `itemScope: universal`로 명시된 물품만 장비별 연결 물품 수에서 제외한다. 해당 필드가 없던 역사 카탈로그의 물품 연결은 유지한다(`not(eq(..., "universal"))`). 데이터 판정 규칙은 이 렌즈에만 둔다.
 
+`linkedItems`는 설계 물품의 `linkedToolIds`·`linkedWeaponIds`에서 대상 종류에 맞는 목록을 읽고, 대상 그래프 ID 또는 원본 ID에 연결된 물품 ID를 중복 없이 센다. `item-tool`·`item-weapon` 간선과 같은 종류·층·범용 물품 제외 조건을 적용하므로 전체 간선의 관련 없는 출처를 가져오지 않는다. 카탈로그 추출에서 원본 `id`와 `originalId`가 같은 계약을 따르며, 알 수 없거나 모호한 대상은 기존 간선 검증이 계속 거부한다. 표현식이 읽은 레코드와 필드의 출처는 보존한다.
+
 ```sh
 node .lattice/verify-designed.mjs <graph.json>
 node .lattice/verify-designed.mjs <historical-de2a571-graph.json> --baseline
