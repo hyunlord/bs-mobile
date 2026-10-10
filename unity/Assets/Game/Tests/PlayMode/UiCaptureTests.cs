@@ -89,6 +89,66 @@ namespace Tests.PlayMode
             yield return null;
         }
         [UnityTest]
+        public IEnumerator WholeCardPointerSelectsWhileSecondaryActionsNeverChoose()
+        {
+            if(Game.App.Generated.CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Requires wave-1a export.");
+            Game.View.ArtCatalog.ProfileName="wave-1a";
+            var catalog=Game.App.Generated.CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,Game.App.Generated.CanonicalContent.DataHash));
+            var id=catalog.WaveRuntime.Gear.Keys.First();
+            var frame=session.View.CaptureFrame();var wave=((IWaveRunView)session.View).CaptureWaveRuntime();
+            var offer=new CardOfferView(new[]{id},null,0,1,1);
+            var envelope=WavePresentation.Envelope(catalog,frame,offer,wave) with
+                {Cards=new[]{new OfferedCardDetail(id,"common",1,0,1,Array.Empty<string>())}};
+            var displays=Game.App.Generated.CanonicalContent.Displays.ToDictionary(d=>d.Id);
+            var font=Game.View.FontProvider.Create(displays.Values.Select(d=>d.DisplayName));
+            var root=new GameObject("Whole card pointer QA",typeof(RectTransform));
+            var events=EventSystem.current;GameObject eventOwner=null;
+            if(events==null){eventOwner=new GameObject("Card QA events");events=eventOwner.AddComponent<EventSystem>();}
+            var ui=root.AddComponent<Game.View.UiShell>();ui.Initialize(font);
+            var commands=new System.Collections.Generic.List<ReplayCommandKind>();
+            try
+            {
+                foreach(var resolution in new[]{new Vector2Int(900,1600),new Vector2Int(1080,1080)})
+                {
+                    PlayModeWindow.SetCustomRenderingResolution(resolution.x,resolution.y,"Card pointer QA");yield return null;
+                    ui.Clear();yield return null;
+                    UiRunPanels.Cards(ui,frame,envelope,offer,catalog,displays,(kind,card)=>{Assert.That(card,Is.EqualTo(id));commands.Add(kind);});
+                    yield return null;Canvas.ForceUpdateCanvases();yield return null;
+                    var primary=ui.Content.GetComponentsInChildren<Button>().Single(b=>b.name=="Choose "+id);
+                    var title=primary.GetComponentsInChildren<Text>().First();
+                    var body=primary.GetComponentsInChildren<Text>().First(t=>t.text.StartsWith("기본 효과",StringComparison.Ordinal));
+                    var icon=primary.GetComponentsInChildren<Image>().Single(image=>image.name=="Icon "+id);
+                    void Pointer(RectTransform target)
+                    {
+                        var position=RectTransformUtility.WorldToScreenPoint(null,target.TransformPoint(target.rect.center));
+                        var pointer=new PointerEventData(events){button=PointerEventData.InputButton.Left,position=position};
+                        var hits=new System.Collections.Generic.List<RaycastResult>();events.RaycastAll(pointer,hits);
+                        var hit=hits.First(result=>result.gameObject.transform.IsChildOf(ui.transform));
+                        Assert.That(ExecuteEvents.ExecuteHierarchy(hit.gameObject,pointer,ExecuteEvents.pointerClickHandler),Is.Not.Null);
+                    }
+                    foreach(var target in new[]{title.rectTransform,body.rectTransform,icon.rectTransform})
+                    {
+                        commands.Clear();Pointer(target);
+                        Assert.That(commands,Is.EqualTo(new[]{ReplayCommandKind.ChooseCard}),target.name);
+                    }
+                    foreach(var action in new[]{("금지",ReplayCommandKind.BanCard),("고정",ReplayCommandKind.LockCard)})
+                    {
+                        var button=ui.Content.GetComponentsInChildren<Button>().Single(b=>b.GetComponentInChildren<Text>().text==action.Item1);
+                        Assert.That(button.transform.IsChildOf(primary.transform),Is.False,"Secondary controls are outside the primary selection surface.");
+                        commands.Clear();Pointer((RectTransform)button.transform);
+                        Assert.That(commands,Is.EqualTo(new[]{action.Item2}));
+                        button.interactable=false;commands.Clear();Pointer((RectTransform)button.transform);
+                        Assert.That(commands,Is.Empty,"Disabled footer controls must not fall through to card selection.");
+                    }
+                    commands.Clear();ExecuteEvents.Execute(primary.gameObject,new BaseEventData(events),ExecuteEvents.submitHandler);
+                    Assert.That(commands,Is.EqualTo(new[]{ReplayCommandKind.ChooseCard}),"Keyboard submit keeps the ordinary choose path.");
+                }
+            }
+            finally{UnityEngine.Object.Destroy(root);UnityEngine.Object.Destroy(font);if(eventOwner!=null)UnityEngine.Object.Destroy(eventOwner);}
+            yield return null;
+        }
+        [UnityTest]
         public IEnumerator CanonicalNamesFitNarrowCardColumns()
         {
             var names=Game.App.Generated.CanonicalContent.Displays.Select(value=>value.DisplayName).Distinct().ToArray();
@@ -113,7 +173,7 @@ namespace Tests.PlayMode
         }
         private static void Click(RunCoordinator app,string label)
         {
-            var button=app.GetComponentsInChildren<Button>().First(b=>b.interactable&&b.GetComponentInChildren<Text>().text==label);
+            var button=app.GetComponentsInChildren<Button>().First(b=>b.interactable&&(label=="선택"?b.name.StartsWith("Choose ",StringComparison.Ordinal):b.GetComponentInChildren<Text>().text==label));
             ExecuteEvents.Execute(button.gameObject,new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler);
         }
         private static IEnumerator Capture(string name)

@@ -79,7 +79,7 @@ namespace Tests.PlayMode
                 Present(state);yield return null;var baseline=world.SubmittedInstances;
                 var attack=new WaveEvent(1,frame.Tick,"attack",planting.Id,-1,frame.Lord.Position,point,400);
                 Present(state with {Events=new[]{attack}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"An evolved arc alone never fabricates a seed-birth cue when planting is capacity-rejected.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"An evolved arc with two inner-edge passes alone never fabricates a seed-birth cue when planting is capacity-rejected.");
                 Present(state,1);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline));
                 var birth=new WaveEvent(2,frame.Tick,"work-created",plot.Source,999,point,point,0);
@@ -98,17 +98,29 @@ namespace Tests.PlayMode
                 Present(work);yield return null;var construction=world.SubmittedInstances;
                 var orbit=new WaveAttackView(repair.Id,"orbit",point,new WorldPoint(point.X+300,point.Y),100,frame.Tick+100);
                 Present(work with {Attacks=new[]{orbit}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"Only the actual off-hero repair origin gets one anchor badge alongside its fragment.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+3),"Only the actual off-hero repair origin gets one anchor badge alongside its fragment.");
                 Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+1),"The regular hero-centered orbit must not imply a building anchor.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"The regular hero-centered orbit must not imply a building anchor.");
                 Present(work with {Work=new[]{building with {Complete=true}},Attacks=new[]{orbit}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+1),"Completed work is no longer a repair anchor.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"Completed work is no longer a repair anchor.");
                 Present(work with {Work=System.Array.Empty<WaveWorkView>(),Attacks=new[]{orbit}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(construction),"Removed work cannot retain an anchor cue.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+1),"Removed work cannot retain an anchor cue.");
                 Present(work);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction),"No active orbit means no anchor cue.");
                 Present(work with {Attacks=new[]{orbit}});yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"A returning real orbit displays its current anchor again.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(construction+3),"A returning real orbit displays its current anchor again.");
+                Present(state,1);yield return null;
+                var ripe=state with {Work=new[]{plot with {Complete=true}}};
+                Present(ripe);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"Only actual ripe grain receives an inner-edge readiness cue.");
+                var collected=new WaveEvent(4,frame.Tick,"reward-collected",plot.Source,plot.Id,point,point,10);
+                var uptake=ripe with {Events=new[]{collected}};
+                Present(uptake);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"One actual collection creates one uptake effect.");
+                Present(uptake);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"Repeated collection event IDs do not duplicate uptake.");
+                world.AcceptWave(null,null);Present(ripe);yield return null;
+                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"A reset clears the transient collection cue.");
             }
             finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }

@@ -241,7 +241,7 @@ namespace Game.App
                 var offers=run.Session.View.CaptureCards();
                 var card = run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,captureTarget):offers.Cards.OrderBy(CardRank).First();
                 var parent = run.Ui.GetComponentsInChildren<RectTransform>().First(t => t.name == "Card " + card);
-                ClickButton(parent.GetComponentsInChildren<Button>().Single(b => b.GetComponentInChildren<Text>().text == "선택"));
+                ClickButton(parent.GetComponentsInChildren<Button>().Single(b => b.name == "Choose " + card));
                 Log("card-click", card); cardAt = -1; return;
             }
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
