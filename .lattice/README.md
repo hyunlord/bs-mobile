@@ -30,3 +30,17 @@ node .lattice/verify-runtime.mjs <graph.json> <source-checkout> [prototype-oracl
 검증기는 각 ID·원본/프로필 우선 깊이·8개 발견·정적 코드 위치·비용/보상 행렬을 실제 소스와 독립 비교한다. 선택적 시제품 오라클 인자는 고정 시제품의 216개 ID 분류와 지정 수치를 추가 검증한다. 현재 CI는 소스와 추출 결과의 일치를 검증하며 미래 콘텐츠 수량을 고정하지 않는다.
 
 `linkedItems`는 designed-v1에만 붙이고 `waveIndex`도 designed-v1에서만 계산한다. 다른 층의 의미 없는 빈 투영을 만들지 않으며, 각 층의 `designIntent`와 원본 `effect` 속성은 그대로 보존한다.
+
+## 공통 동작 단위 지원
+
+`docs/design/runtime-primitive-support.json`은 별도 `runtime-support` 층이다. 설계 등록 단위마다 정적 지원 경계·정확한 Core 허용 파라미터 조합·처리기·작성된 테스트·제한을 표시한다. 설계 콘텐츠에서 단위로 향하는 간선은 문법 사용 관계이며 실행 증거가 아니다. `partial-runtime`, `projection-boundary`, `loader-boundary`, `unsupported`를 구별하고 실행 관측·의미 승인·화면 관찰은 별도 미판정 값으로 보존한다. 기존 `codeSupport:runtime-operations`와 역사 14-operation 계약은 유지한다.
+
+```sh
+node .lattice/verify-primitive-support.mjs <graph.json> [source-root]
+```
+
+실제 그래프의 노드·facet·지원 표·설계 사용 간선을 원장과 대조하고, 원장의 exact tuple을 Core 허용 조합과 대조한다. 코드 링크/테스트 심벌의 존재를 실행 통과로 보고하지 않는다. 현재 그래프에만 새 원장 검증을 적용하며 역사 스냅샷에 오늘의 지원 근거를 소급하지 않는다.
+
+`designReferences`는 선택된 wave-1a 설계의 단위 사용 수이고 `runtimeProgramReferences`는 `data/runtime/wave-1a.json#/definition/programs`의 실제 사용 수다. 각각 87/90이며 분모를 합치지 않는다. 별도 `runtime-programs` 층의 28개 binding 노드에서 단위로 향하는 90개 간선은 실행 프로그램 원본에서 읽는다. 전체 카탈로그의 설계 사용 간선 400개는 그대로 유지한다.
+
+실행 전용 차이는 `runtimeOnlyMappings`의 진화 3개 `unit:event-gate`뿐이다. 기존 `BladePlotKill`·`RepairCompleted`·`HarvestNearBuilding` 자격 이력을 명시한 것이며 승인 설계 변경이나 새 게임 규칙이 아니다. 설계 params와 실행 토큰의 문법은 다르므로 문자 그대로 같다고 검사하지 않는다. 대신 선택 설계 단위 누락, 미등록/처리기 없는 실행 단위, 선언하지 않은 실행 전용 단위를 거부한다. 원장 숫자 위조·실행 간선 누락·실행 원본의 미신고 단위 추가도 회귀 검사한다.
