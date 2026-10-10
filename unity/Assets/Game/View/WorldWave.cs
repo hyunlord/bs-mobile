@@ -18,6 +18,7 @@ namespace Game.View
         readonly Dictionary<string,(int buildingId,float started)> repairAnchors = new Dictionary<string,(int,float)>();
         readonly HashSet<string> drawnRepairAnchors = new HashSet<string>();
         long lastWaveEvent = -1;
+        int ripeCueId = -1;
         public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame)
         {
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
@@ -25,6 +26,7 @@ namespace Game.View
             {
                 waveEnemyById.Clear();waveActorById.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
+                ripeCueId=-1;
             }
             if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
             {
@@ -39,7 +41,7 @@ namespace Game.View
             {
                 if(value.Id<=lastWaveEvent)continue;
                 lastWaveEvent=value.Id;
-                if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="reward-collected")waveEffects.Add((value,visualTime));
+                if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))waveEffects.Add((value,visualTime));
                 if(value.Kind=="work-created"&&liveGrainIds.Contains(value.SubjectId))waveEffects.Add((value,visualTime));
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
             }
@@ -91,6 +93,9 @@ namespace Game.View
             var pathArt=Resolve("wave","sprout-path","default");
             var pathSize=pathArt.WorldSize*Mathf.Min(1,waveDefinition.PathSpacing*GameVisualTokens.WavePathSpacingFraction/settings.WorldUnitsPerUnityUnit/Mathf.Max(pathArt.WorldSize.x,pathArt.WorldSize.y));
             foreach(var path in wave.Paths)Draw(pathArt,GameVisualTokens.GrowthLayer-2,Point(path),visualTime,pathSize,opacity:GameVisualTokens.TerrainOpacity);
+            WaveWorkView nearbyRipe=null,retainedRipe=null;
+            var nearestRipeDistance=GameVisualTokens.WaveRipeCueRadius*GameVisualTokens.WaveRipeCueRadius;
+            var lordPoint=Point(current.Lord.Position);
             foreach(var work in wave.Work)
             {
                 if(work.Kind=="grain"&&work.Health<=0)continue;
@@ -106,7 +111,13 @@ namespace Game.View
                     position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
                     Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:GameVisualTokens.WaveCropOpacity);
                     if(work.Complete)
+                    {
                         Draw(crop,GameVisualTokens.ReadyLayer+1,position,visualTime,cropSize,opacity:GameVisualTokens.WaveRipeEdgeOpacity,tint:GameVisualTokens.Ready,edgeTexels:GameVisualTokens.WaveEdgeTexels);
+                        var distance=(Point(work.Position)-lordPoint).sqrMagnitude;
+                        if(distance<=GameVisualTokens.WaveRipeCueRadius*GameVisualTokens.WaveRipeCueRadius&&work.Id==ripeCueId)retainedRipe=work;
+                        if(distance<nearestRipeDistance||(distance==nearestRipeDistance&&(nearbyRipe==null||work.Id<nearbyRipe.Id)))
+                        {nearbyRipe=work;nearestRipeDistance=distance;}
+                    }
                 }
                 else WaveSprite(id,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,work.Position,
                     work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:work.Kind=="water"?GameVisualTokens.WavePoolOpacity:1,
@@ -120,6 +131,13 @@ namespace Game.View
                     DrawWaveAttackEdge(roof,Point(work.Position),visualTime,roofSize,0,GameVisualTokens.Ally);
                 }
                 if(work.ShipmentActive)WaveSprite("timber-bundle",GameVisualTokens.ReadyLayer+1,work.Position,scale:GameVisualTokens.StockBundleScale);
+            }
+            var ripeCue=retainedRipe??nearbyRipe;
+            ripeCueId=ripeCue?.Id??-1;
+            if(ripeCue!=null)
+            {
+                var ear=Resolve("wave","grain-ripe","default");
+                Draw(ear,GameVisualTokens.WaveReadinessCueLayer,Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,ear.WorldSize*GameVisualTokens.WaveRipeCueScale);
             }
             if(wave.CarriedWater>0)WaveSprite("water-carry",GameVisualTokens.AllyLayer+1,current.Lord.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
             foreach(var reward in wave.Rewards)
@@ -157,6 +175,8 @@ namespace Game.View
                             var pulse=Mathf.Clamp01(1-(visualTime-repairAnchors[attack.Source].started)/GameVisualTokens.EmphasisSeconds);
                             var badge=Resolve("attack","core:levy_banner","nova");
                             Draw(badge,GameVisualTokens.ReadyLayer+1,Point(attack.Origin),0,badge.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveRepairBannerOpacity+pulse*GameVisualTokens.AreaAttackOpacity);
+                            var shield=Resolve("wave","shield-fragment","default");
+                            Draw(shield,GameVisualTokens.WaveTransientCueLayer,Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,shield.WorldSize*GameVisualTokens.WaveRepairShieldScale);
                         }
                         else repairAnchors.Remove(attack.Source);
                     }
@@ -191,9 +211,10 @@ namespace Game.View
                     Draw(cap,GameVisualTokens.WaveDangerLayer,b,0,Vector2.one*diameter,opacity:opacity,tint:tint);
                 }
             }
+            var intakeDrawn=false;var harvestCues=0;
             for(var i=waveEffects.Count-1;i>=0;i--)
             {
-                var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:WorldEffects.AttackLifetimeSeconds;
+                var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"||effect.value.Kind=="harvest-complete"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:WorldEffects.AttackLifetimeSeconds;
                 if(age>=duration){waveEffects.RemoveAt(i);continue;}
                 var value=effect.value;var a=Point(value.Position);var b=Point(value.Target);var opacity=1-age/duration;
                 if(value.Kind=="evolution-activated"){Feedback("evolution",GameVisualTokens.LordLayer-2,a,age/duration);continue;}
@@ -205,8 +226,19 @@ namespace Game.View
                 }
                 if(value.Kind=="reward-collected")
                 {
+                    if(intakeDrawn)continue;
+                    intakeDrawn=true;
                     var uptake=Resolve("feedback","harvest-experience","default");
-                    Draw(uptake,GameVisualTokens.ReadyLayer+1,Vector2.Lerp(a,Point(current.Lord.Position),age/duration),0,uptake.WorldSize*GameVisualTokens.WaveRewardScale,opacity:opacity);
+                    var progress=age/duration;
+                    var position=Vector2.Lerp(a,lordPoint,progress)+Vector2.up*GameVisualTokens.WaveIntakeRise*(.5f+.5f*progress);
+                    Draw(uptake,GameVisualTokens.WaveTransientCueLayer,position,0,uptake.WorldSize*GameVisualTokens.WaveIntakeScale,opacity:opacity);
+                    continue;
+                }
+                if(value.Kind=="harvest-complete")
+                {
+                    if(harvestCues++>=GameVisualTokens.WaveHarvestCueLimit)continue;
+                    var ear=Resolve("wave","grain-ripe","default");
+                    Draw(ear,GameVisualTokens.WaveTransientCueLayer,a+Vector2.up*GameVisualTokens.WaveRipeCueRise*(1+age/duration),0,ear.WorldSize*GameVisualTokens.WaveRipeCueScale,opacity:opacity);
                     continue;
                 }
                 if(value.Kind=="harvest-fragments")
@@ -226,8 +258,9 @@ namespace Game.View
                 if(value.Kind=="chain-link")
                 {
                     var art=Resolve("attack",value.Source,"chain");var size=new Vector2((b-a).magnitude,GameVisualTokens.WaveChainRibbonWidth);
-                    Draw(art,GameVisualTokens.AttackLayer,(a+b)*.5f,age,size,Angle(b-a),opacity);
-                    DrawWaveAttackEdge(art,(a+b)*.5f,age,size,Angle(b-a),GameVisualTokens.Attack,opacity);
+                    var outline=renderCamera.orthographicSize*2/Mathf.Max(1,renderCamera.pixelHeight)*GameVisualTokens.WaveChainOutlinePixels*2;
+                    Draw(art,GameVisualTokens.WaveAttackEdgeLayer,(a+b)*.5f,age,new Vector2(size.x,size.y+outline),Angle(b-a),opacity,tint:GameVisualTokens.Ink);
+                    Draw(art,GameVisualTokens.WaveTransientCueLayer,(a+b)*.5f,age,size,Angle(b-a),opacity);
                     continue;
                 }
                 var attackSource=value.Source;
