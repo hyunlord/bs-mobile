@@ -169,18 +169,11 @@ namespace Game.Editor
             if (!output.EndsWith(".app", StringComparison.OrdinalIgnoreCase))
                 throw new BuildFailedException("UNITY_MAC_PATH must end in .app.");
             Directory.CreateDirectory(Path.GetDirectoryName(output));
-            var previousFrameTimingStats = PlayerSettings.enableFrameTimingStats;
-            BuildReport report;
-            try
+            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                if (Environment.GetEnvironmentVariable("UNITY_WAVE_BENCHMARK") == "1") PlayerSettings.enableFrameTimingStats = true;
-                report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
-                {
-                    scenes = ScenePaths, target = BuildTarget.StandaloneOSX, locationPathName = output,
-                    options = development ? BuildOptions.Development : BuildOptions.None
-                });
-            }
-            finally { PlayerSettings.enableFrameTimingStats = previousFrameTimingStats; }
+                scenes = ScenePaths, target = BuildTarget.StandaloneOSX, locationPathName = output,
+                options = development ? BuildOptions.Development : BuildOptions.None
+            });
             if (report.summary.result != BuildResult.Succeeded || !Directory.Exists(output))
                 throw new BuildFailedException("macOS build failed: " + report.summary.result);
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "mac-build-result.json"),
