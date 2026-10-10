@@ -137,16 +137,7 @@ namespace Tests.PlayMode
                     world.AcceptWave(content,snapshot);
                     world.Present(frame,frame,WavePresentation.Envelope(content,frame,session.View.CaptureCards(),snapshot),1,0,new Rect(0,0,720,1280));
                 }
-                string[] RoofCommands()
-                {
-                    const System.Reflection.BindingFlags flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
-                    var field=typeof(WorldRenderer).GetField("batches",flags);
-                    var batches=(System.Collections.Generic.Dictionary<(int layer,Texture2D texture),SpriteBatch>)field.GetValue(world);
-                    return batches.Where(pair=>pair.Key.layer==GameVisualTokens.ReadyLayer)
-                        .OrderBy(pair=>pair.Key.texture.name,System.StringComparer.Ordinal)
-                        .SelectMany(pair=>((Vector4[])typeof(SpriteBatch).GetField("uvs",flags).GetValue(pair.Value))
-                            .Take(pair.Value.SubmittedInstances).Select(uv=>pair.Key.texture.name+":"+uv.ToString("R"))).ToArray();
-                }
+                string[] RoofCommands()=>world.CaptureLayerUvsForTesting(GameVisualTokens.ReadyLayer);
                 Present(catalog,broken);yield return null;var brokenPixels=RoofCommands();
                 Present(catalog,broken);yield return null;CollectionAssert.AreEqual(brokenPixels,RoofCommands(),"Same immutable snapshot retains first duplicate parent.");
                 Present(catalog,intact);yield return null;var intactPixels=RoofCommands();
