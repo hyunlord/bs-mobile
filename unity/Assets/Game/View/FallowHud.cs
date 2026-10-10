@@ -27,36 +27,37 @@ namespace Game.View
             root.anchorMin = new Vector2(0, 1); root.anchorMax = Vector2.one;
             root.pivot = new Vector2(.5f, 1); root.sizeDelta = new Vector2(0, UiTokens.FallowHudHeight);
             var place = Rect("Location", root, 20, 12, 256, 52);
-            ui.Surface(place, "ui.hint");
-            Label(place, "새봄의 터", UiTokens.Heading, 12, 0, 232, 52, GameVisualTokens.Ink);
+            ui.Surface(place, "ui.hint").pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
+            Label(place, "새봄의 터", UiTokens.Heading, 28, 0, 204, 52, GameVisualTokens.Ink);
             Label(root, "휴경의 왕국", UiTokens.Caption, 32, 66, 260, 28, GameVisualTokens.Attack, true);
             var vitals = Rect("Vitals", root, 310, 20, 334, 68);
-            hpFill = Bar(vitals, "Health", "ui.hp.rail", "ui.hp.fill", 0, 318, 26);
+            hpFill = Bar(vitals, "Health", "ui.hint", "ui.hint", 0, 318, 26);
+            hpFill.GetComponent<Image>().color = GameVisualTokens.Attack;
             health = Label(vitals, "", UiTokens.Caption, 8, 0, 302, 26, GameVisualTokens.Ink);
             health.alignment = TextAnchor.MiddleRight;
-            xpFill = Bar(vitals, "Experience", "ui.xp.rail", "ui.xp.fill", 36, 212, 12);
+            xpFill = Bar(vitals, "Experience", "ui.hint", "ui.hint", 36, 212, 12);
+            xpFill.GetComponent<Image>().color = GameVisualTokens.Ally;
             level = Label(vitals, "", UiTokens.Caption, 220, 28, 112, 28, GameVisualTokens.Attack, true);
             timer = Label(root, "", UiTokens.Heading, 672, 16, 126, 50, GameVisualTokens.Attack, true);
             timer.alignment = TextAnchor.MiddleCenter;
             if(pause != null)
             {
                 var button = ui.Button(root, "잠시\n멈춤", pause);
+                FallowUiSurface.Button(ui, button, true);
                 Position((RectTransform)button.transform, 806, 8, 80, 80);
                 button.GetComponentInChildren<Text>().fontSize = UiTokens.Caption;
             }
             var footer = UiShell.Rect("Loadout", ui.Content);
             footer.anchorMin = Vector2.zero; footer.anchorMax = new Vector2(1, 0);
             footer.pivot = new Vector2(.5f, 0); footer.sizeDelta = new Vector2(0, UiTokens.FallowFooterHeight);
-            var surface = ui.Surface(footer, "ui.panel"); surface.color = GameVisualTokens.Ink;
+            var surface = ui.Surface(footer, "ui.panel"); surface.color = UiTokens.FallowCharcoal; surface.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
             Label(footer, "무기", UiTokens.Caption, 26, 12, 280, 30, GameVisualTokens.Attack);
             Label(footer, "도구", UiTokens.Caption, 508, 12, 280, 30, GameVisualTokens.Attack);
             for(var i = 0; i < slots.Length; i++)
             {
                 var x = i < 5 ? 24 + i * 86 : 506 + (i - 5) * 92;
                 slots[i] = Rect("Slot " + i, footer, x, 50, UiTokens.FallowSlotSize, UiTokens.FallowSlotSize);
-                ui.Surface(slots[i], "ui.card.common").color = UiTokens.FallowMuted;
-                var empty = Label(slots[i], "빈칸", UiTokens.Caption, 0, 0, UiTokens.FallowSlotSize, UiTokens.FallowSlotSize, UiTokens.FallowPaperShade);
-                empty.alignment = TextAnchor.MiddleCenter;
+                var slot = ui.Surface(slots[i], "ui.card.common"); slot.color = UiTokens.FallowCharcoal; slot.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
                 ranks[i] = Label(slots[i], "", UiTokens.Caption, 45, 48, 27, 26, GameVisualTokens.Attack, true);
                 ranks[i].alignment = TextAnchor.LowerRight;
             }
@@ -94,15 +95,15 @@ namespace Game.View
                     }
                     shown[i] = id;
                 }
-                slots[i].GetChild(0).gameObject.SetActive(id == null);
                 ranks[i].text = gear == null ? "" : gear.Level.ToString();
             }
         }
 
         RectTransform Bar(Transform parent, string name, string railRole, string fillRole, float y, float width, float height)
         {
-            var rail = Rect(name, parent, 0, y, width, height); ui.Surface(rail, railRole);
-            var fill = UiShell.Rect("Fill", rail); UiShell.Stretch(fill, 3); ui.Surface(fill, fillRole); return fill;
+            var rail = Rect(name, parent, 0, y, width, height); var backing = ui.Surface(rail, railRole);
+            backing.color = UiTokens.FallowCharcoal; backing.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
+            var fill = UiShell.Rect("Fill", rail); UiShell.Stretch(fill, 3); ui.Surface(fill, fillRole).pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier; return fill;
         }
         Text Label(Transform parent, string value, int size, float x, float y, float width, float height, Color color, bool shadow = false)
         {

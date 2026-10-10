@@ -54,8 +54,7 @@ namespace Game.App
                         var listener = FindFirstObjectByType<AudioListener>();
                         if (listener != null)
                         {
-                            audio = listener.gameObject.AddComponent<GoldenMinuteAudio>();
-                            audio.Begin(Path.Combine(folder, "audio.wav"));
+                            audio = GoldenMinuteAudio.BeginMixedOutput(listener, Path.Combine(folder, "audio.wav"));
                         }
                     }
                     texture = ScreenCapture.CaptureScreenshotAsTexture();
@@ -78,6 +77,7 @@ namespace Game.App
                 if (error != null || done)
                 {
                     StopCapture();
+                    if (error == null && (audio == null || audio.NonzeroSampleCount == 0)) error = "Actual mixed audio was silent or missing; capture cannot claim audible evidence.";
                     complete(error == null, error ?? "Sixty normal gameplay seconds captured live; card pauses preserved; no full-run or visual acceptance claim.");
                 }
             }
@@ -105,7 +105,7 @@ namespace Game.App
                 profile = CanonicalContent.ProfileName, dataHash = CanonicalContent.DataHash,
                 frames = frameCount, finalTick = run?.Frame?.Tick ?? 0, tickRate = run?.Frame?.TickRate ?? 0,
                 wallSeconds = frameCount == 0 ? 0 : previousTime - firstTime,
-                width = Screen.width, height = Screen.height, audio = audio != null && audio.SampleCount > 0,
+                width = Screen.width, height = Screen.height, audio = audio != null && audio.NonzeroSampleCount > 0,
                 battleScreenshot = battleCaptured, automatedNormalInput = true
             }, true));
         }

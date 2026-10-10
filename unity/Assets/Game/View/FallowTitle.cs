@@ -41,17 +41,19 @@ namespace Game.View
                 var titleShadow = title.gameObject.AddComponent<Shadow>(); titleShadow.effectColor = GameVisualTokens.Ink; titleShadow.effectDistance = new Vector2(2, -4);
             }
             var caption = ui.Label(root, "돌본 땅에 다시 봄이 깃든다", UiTokens.Small, 36);
-            Center(caption.rectTransform, logoTexture != null ? .71f : .745f, 700, 36); caption.alignment = TextAnchor.MiddleCenter; caption.color = GameVisualTokens.Attack;
+            Center(caption.rectTransform, logoTexture != null ? .71f : .745f, 700, 36); caption.alignment = TextAnchor.MiddleCenter; caption.color = GameVisualTokens.Ink;
+            var captionShadow = caption.gameObject.AddComponent<Shadow>(); captionShadow.effectColor = GameVisualTokens.Attack; captionShadow.effectDistance = new Vector2(0, -1);
             var startButton = ui.Button(root, "시작하기", start);
             Center((RectTransform)startButton.transform, .115f, 450, 100);
-            startButton.image.sprite = ArtCatalog.Load().ResolveRole("ui.hint").Sprite;
-            startButton.GetComponentInChildren<Text>().color = GameVisualTokens.Ink;
+            FallowUiSurface.Button(ui, startButton, false);
             startButton.GetComponentInChildren<Text>().fontSize = UiTokens.Title;
             var preparation = ui.Button(root, "출정 준비 · " + (selectedTarget == null ? "목표 재료 미선택" : MaterialName(selectedTarget)),
                 () => ShowPreparation(ui, root, selectedTarget, targets, toolName, selectTarget));
             Center((RectTransform)preparation.transform, .045f, 530, UiTokens.TouchHeight);
+            FallowUiSurface.Button(ui, preparation, true);
             preparation.GetComponentInChildren<Text>().fontSize = UiTokens.Caption;
             var options = ui.Button(root, "설정", settings);
+            FallowUiSurface.Button(ui, options, true);
             var optionsRect = (RectTransform)options.transform;
             optionsRect.anchorMin = optionsRect.anchorMax = new Vector2(1, 0);
             optionsRect.pivot = new Vector2(1, 0); optionsRect.anchoredPosition = new Vector2(-24, 24);
@@ -68,9 +70,11 @@ namespace Game.View
             foreach(var target in targets)
             {
                 var id = target.Key;
-                ui.Button(panel, (selectedTarget == id ? "선택됨 · " : "") + MaterialName(id) + " · " + toolName(target.Value), () => selectTarget(id));
+                var choice = ui.Button(panel, (selectedTarget == id ? "선택됨 · " : "") + MaterialName(id) + " · " + toolName(target.Value), () => selectTarget(id));
+                FallowUiSurface.Button(ui, choice, selectedTarget != id);
             }
-            ui.Button(panel, "돌아가기", () => { panel.parent.parent.gameObject.SetActive(false); UnityEngine.Object.Destroy(panel.parent.parent.gameObject); title.gameObject.SetActive(true); });
+            var back = ui.Button(panel, "돌아가기", () => { panel.parent.parent.gameObject.SetActive(false); UnityEngine.Object.Destroy(panel.parent.parent.gameObject); title.gameObject.SetActive(true); });
+            FallowUiSurface.Button(ui, back, true);
         }
 
         static string MaterialName(string id) => id == "meta:grain" ? "곡물" : id == "meta:timber" ? "목재" : id == "meta:charter" ? "특허장" : "재료";

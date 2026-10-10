@@ -39,7 +39,7 @@ ffmpeg -f concat -safe 0 -i frames.ffconcat -i audio.wav \
   -pix_fmt yuv420p -fps_mode vfr -c:a aac -b:a 192k golden-minute.mp4
 ```
 
-오디오가 기록되지 않았으면 성공으로 숨기지 말고 원인을 확인한다. 영상·PNG는 직접
+캡처 동안 기존 AudioListener와 같은 위치에 소스 없는 전용 Listener를 두고 종료 시 원래 Listener를 복원한다. 여러 AudioSource와 Listener가 함께 있는 객체에 OnAudioFilterRead를 붙이면 혼합 출력 대신 단일 소스에 연결될 수 있기 때문이다. PCM 샘플이 전부 0이면 캡처는 실패로 끝난다. 오디오가 기록되지 않았으면 성공으로 숨기지 말고 원인을 확인한다. 영상·PNG는 직접
 열어 타이틀, 이동, 성장, 수확, 카드 창 및 실제 소리를 확인한다. 기준 A-battle/A-title와
 같은 비율로 나란히 비교하되 기준 그림을 실제 화면에 합성하지 않는다. Release에는
 영상·선정한 비교 캡처만 올리고 재생성 가능한 JPEG 전체나 별도 증거 ZIP을 올리지 않는다.

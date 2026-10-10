@@ -12,6 +12,7 @@ namespace Game.View
         Texture2D fallowMask;
         Color32[] fallowPixels;
         Shader fallowShader;
+        Shader fallowGroundShader;
         float fallowMaskAt = -1;
         bool fallowChapter;
         bool FallowActive => fallowChapter && wave != null && ArtCatalog.ProfileName == "wave-1a";
@@ -48,7 +49,8 @@ namespace Game.View
             if (fallowMask == null)
             {
                 fallowShader = Resources.Load<Shader>("FallowWorldSprite");
-                if (fallowShader == null || !fallowShader.isSupported)
+                fallowGroundShader = Resources.Load<Shader>("FallowGroundSprite");
+                if (fallowShader == null || !fallowShader.isSupported || fallowGroundShader == null || !fallowGroundShader.isSupported)
                     throw new InvalidOperationException("Fallow restoration shader is unavailable.");
                 var resolution = GameVisualTokens.FallowMaskSize;
                 fallowMask = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false, true)
@@ -120,28 +122,31 @@ namespace Game.View
             if (!FallowActive) return;
             var width = (float)mapWidth / settings.WorldUnitsPerUnityUnit;
             var height = (float)mapHeight / settings.WorldUnitsPerUnityUnit;
-            FallowProp("watermill", .18f, .83f, 2.3f, 1.9f, 5);
-            FallowProp("stone", .12f, .60f, .85f, 1.3f, 6);
-            for (var i = 0; i < 6; i++)
+            FallowProp("watermill", .29f, .70f, 2.4f, 2.1f, 5);
+            FallowProp("stone", .25f, .57f, .8f, 1.3f, 6);
+            for (var i = 0; i < 10; i++)
             {
-                FallowProp("stream", .1f + i * .16f, .72f + Mathf.Sin(i * .9f) * .025f, width * .19f, .7f, 2);
-                FallowProp("path", .64f + Mathf.Sin(i * .8f) * .09f, .16f + i * .115f, .95f, height * .15f, 3);
+                FallowProp("stream", .19f + i * .075f, .68f + Mathf.Sin(i * .5f) * .013f, width * .2f, .85f, 2);
+                FallowProp("path", .64f + Mathf.Sin(i * .4f) * .05f, .18f + i * .057f, 1.5f, height * .14f, 3, -12);
             }
-            FallowProp("bridge", .73f, .73f, 1.65f, 1.15f, 4);
-            FallowProp("furrow", .26f, .36f, 1.7f, 1.15f, 3);
-            FallowProp("furrow", .37f, .25f, 1.7f, 1.15f, 3);
-            for (var i = 0; i < 5; i++)
+            FallowProp("bridge", .68f, .69f, 1.85f, 1.35f, 4);
+            FallowProp("furrow", .33f, .36f, 1.5f, 1.0f, 3);
+            FallowProp("furrow", .39f, .29f, 1.5f, 1.0f, 3);
+            for (var i = 0; i < 4; i++)
             {
-                FallowProp("dead-tree", .045f + .018f * (i % 2), .12f + i * .17f, .9f, 1.2f, 6);
-                FallowProp("dead-tree", .92f - .035f * (i % 2), .2f + i * .17f, .85f, 1.1f, 6);
+                FallowProp("dead-tree", .20f + .018f * (i % 2), .23f + i * .15f, 1.0f, 1.5f, 6);
+                FallowProp("dead-tree", .78f - .035f * (i % 2), .28f + i * .14f, .95f, 1.4f, 6);
             }
         }
 
-        void FallowProp(string name, float x, float y, float width, float height, int layer)
+        void FallowProp(string name, float x, float y, float width, float height, int layer, float degrees = 0)
         {
             if (!TryFallowArt("fallow.prop." + name, out var visual)) return;
             var position = new Vector2(x * mapWidth / settings.WorldUnitsPerUnityUnit, y * mapHeight / settings.WorldUnitsPerUnityUnit);
-            Draw(visual, layer, position, 0, new Vector2(width, height), opacity: .82f);
+            var uv = visual.UvRects[0];
+            var pixels = new Vector2(Mathf.Abs(uv.width) * visual.Texture.width, Mathf.Abs(uv.height) * visual.Texture.height);
+            var fit = Mathf.Min(width / pixels.x, height / pixels.y);
+            Draw(visual, layer, position, 0, pixels * fit, degrees, opacity: name == "path" ? .6f : 1);
         }
 
         void DisposeFallow()

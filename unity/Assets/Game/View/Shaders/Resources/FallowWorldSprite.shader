@@ -6,12 +6,14 @@ Shader "Game/View/FallowWorldSprite"
         _InstanceColor ("Color", Color) = (1,1,1,1)
         _InstanceUv ("Atlas rectangle", Vector) = (0,0,1,1)
         _InstanceFlash ("Hit flash and edge style", Vector) = (0,0,1,0)
+        _FallowContrast ("Surface contrast", Float) = 1
     }
     SubShader
     {
         Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
         Pass
         {
+            Name "FallowSprite"
             Tags { "LightMode"="Universal2D" }
             Blend SrcAlpha OneMinusSrcAlpha
             Cull Off
@@ -26,6 +28,7 @@ Shader "Game/View/FallowWorldSprite"
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
             float4 _MainTex_TexelSize;
+            float _FallowContrast;
             TEXTURE2D(_FallowMask);
             SAMPLER(sampler_FallowMask);
             float4 _FallowMap;
@@ -77,10 +80,12 @@ Shader "Game/View/FallowWorldSprite"
                 half grain = frac(sin(dot(floor(paper), float2(12.9898, 78.233))) * 43758.5453);
                 half coverage = smoothstep(.09 + grain * .12, .60 + grain * .13, restoration.a);
                 half luminance = dot(sample.rgb, half3(.2126, .7152, .0722));
-                half3 ash = luminance * half3(.91, .94, .95);
+                half3 ash = lerp(.40 + luminance * .35, luminance, _FallowContrast) * half3(.91, .94, .95);
                 half weight = max(.001, restoration.r + restoration.g + restoration.b);
                 half3 pigment = (restoration.r * half3(.66, .79, .42) + restoration.g * half3(1, .78, .32) + restoration.b * half3(.92, .66, .40)) / weight;
                 half3 restored = lerp(sample.rgb, sample.rgb * pigment * 1.3, .30);
+                half3 restoredSoil = lerp(.22 + restored * .62, pigment * (.48 + luminance * .38), .58);
+                restored = lerp(restoredSoil, restored, _FallowContrast);
                 sample.rgb = lerp(ash, restored, coverage);
                 return sample;
             }

@@ -59,7 +59,7 @@ namespace Game.View
                 {
                     var source=value.Source;
                     if(waveDefinition.Evolutions.TryGetValue(source,out var rewardEvolution))source=rewardEvolution.InputIds.First(id=>waveDefinition.Gear[id].Kind>=WaveAttackKind.SeedFan);
-                    collectionLabel=(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?"수확 +":"완료 +")+value.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)+" XP";
+                    collectionLabel=(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?"수확 +":"완료 +")+value.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)+" 경험치";
                     collectedAt=visualTime;
                 }
                 if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))waveEffects.Add((value,visualTime));
@@ -133,11 +133,12 @@ namespace Game.View
                 {
                     var crop=Resolve("wave",id,"default");
                     var maxWidth=waveCatalog.Tuning.World.Farms.Spacing*GameVisualTokens.WaveCropSpacingFraction/settings.WorldUnitsPerUnityUnit;
+                    if(FallowActive) maxWidth=Mathf.Max(maxWidth,work.Complete?GameVisualTokens.FallowRipeWidth:work.Progress==0?GameVisualTokens.FallowSeedWidth:GameVisualTokens.FallowSproutWidth);
                     var cropSize=crop.WorldSize*Mathf.Min(1,maxWidth/crop.WorldSize.x);
                     var position=Point(work.Position);
                     position.x=Mathf.Clamp(position.x,cropSize.x*crop.Pivot.x,(float)mapWidth/settings.WorldUnitsPerUnityUnit-cropSize.x*(1-crop.Pivot.x));
                     position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
-                    Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:GameVisualTokens.WaveCropOpacity);
+                    Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:FallowActive?1:GameVisualTokens.WaveCropOpacity);
                     if(work.Complete)
                     {
                         Draw(crop,GameVisualTokens.ReadyLayer+1,position,visualTime,cropSize,opacity:GameVisualTokens.WaveRipeEdgeOpacity,tint:GameVisualTokens.Ready,edgeTexels:GameVisualTokens.WaveEdgeTexels);
@@ -149,18 +150,18 @@ namespace Game.View
                 }
                 else WaveSprite(id,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,work.Position,
                     work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:work.Kind=="water"?GameVisualTokens.WavePoolOpacity:1,
-                    work.Kind=="water"?GameVisualTokens.WavePoolScale:GameVisualTokens.WaveWorkshopScale);
+                    work.Kind=="water"?GameVisualTokens.WavePoolScale:FallowActive?GameVisualTokens.FallowWorkshopScale:GameVisualTokens.WaveWorkshopScale);
                 if(FallowActive && work.Kind=="building" && work.Health>0 && !work.Complete)
                 {
                     var fraction=Mathf.Clamp01((float)work.Progress/Mathf.Max(1,work.Required));
                     WaveSprite("workshop-complete",GameVisualTokens.GrowthLayer+1,work.Position,
-                        Mathf.SmoothStep(0,.75f,fraction),GameVisualTokens.WaveWorkshopScale);
+                        Mathf.SmoothStep(0,.75f,fraction),GameVisualTokens.FallowWorkshopScale);
                 }
                 if(work.ParentId>=0)
                 {
                     waveWorkById.TryGetValue(work.ParentId,out var parent);
                     var roof=Resolve("wave",parent!=null&&parent.Health>0&&parent.Complete&&work.Protected?"roof-intact":"roof-broken","default");
-                    var roofSize=roof.WorldSize*GameVisualTokens.WaveWorkshopScale;
+                    var roofSize=roof.WorldSize*(FallowActive?GameVisualTokens.FallowWorkshopScale:GameVisualTokens.WaveWorkshopScale);
                     Draw(roof,GameVisualTokens.ReadyLayer,Point(work.Position),visualTime,roofSize);
                     DrawWaveAttackEdge(roof,Point(work.Position),visualTime,roofSize,0,GameVisualTokens.Ally);
                 }

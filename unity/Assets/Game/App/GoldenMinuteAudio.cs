@@ -12,7 +12,39 @@ namespace Game.App
         FileStream stream;
         byte[] bytes = Array.Empty<byte>();
         int channels, sampleRate;
+        AudioListener originalListener, captureListener;
+        bool originalEnabled;
+        public long NonzeroSampleCount { get; private set; }
         public long SampleCount { get; private set; }
+
+        public static GoldenMinuteAudio BeginMixedOutput(AudioListener listener, string path)
+        {
+            if (listener == null) throw new ArgumentNullException(nameof(listener));
+            var owner = new GameObject("Golden minute mixed output");
+            owner.transform.SetParent(listener.transform, false);
+            var capture = owner.AddComponent<GoldenMinuteAudio>();
+            capture.originalListener = listener;
+            capture.originalEnabled = listener.enabled;
+            listener.enabled = false;
+            try
+            {
+                capture.captureListener = owner.AddComponent<AudioListener>();
+                capture.Begin(path);
+                return capture;
+            }
+            catch
+            {
+                capture.RestoreListener();
+                Destroy(owner);
+                throw;
+            }
+        }
+
+        void RestoreListener()
+        {
+            if (captureListener != null) captureListener.enabled = false;
+            if (originalListener != null) originalListener.enabled = originalEnabled;
+        }
 
         public void Begin(string path)
         {
@@ -34,6 +66,7 @@ namespace Game.App
                 for (var index = 0; index < data.Length; index++)
                 {
                     var sample = (short)(Math.Max(-1, Math.Min(1, data[index])) * short.MaxValue);
+                    if (sample != 0) NonzeroSampleCount++;
                     bytes[index * 2] = (byte)sample; bytes[index * 2 + 1] = (byte)(sample >> 8);
                 }
                 stream.Write(bytes, 0, bytes.Length);
@@ -43,6 +76,7 @@ namespace Game.App
 
         public void StopAudio()
         {
+            RestoreListener();
             lock (gate)
             {
                 if (stream == null) return;

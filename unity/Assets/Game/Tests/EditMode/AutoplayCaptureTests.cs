@@ -3,6 +3,7 @@ using System.IO;
 using Game.App;
 using NUnit.Framework;
 using SowSiege.Core;
+using UnityEngine;
 
 namespace Tests.EditMode
 {
@@ -57,6 +58,34 @@ namespace Tests.EditMode
                 Assert.That(File.ReadAllText(Path.Combine(root, "evidence.txt")), Is.EqualTo("preserve"));
             }
             finally { Directory.Delete(root, true); }
+        }
+
+        [Test]
+        public void MixedAudioCaptureIsolatesListenerFromSourcesAndRestoresIt()
+        {
+            var root = new GameObject("Audio capture test");
+            var path = Path.Combine(Path.GetTempPath(), "mixed-audio-" + Guid.NewGuid().ToString("N") + ".wav");
+            GoldenMinuteAudio capture = null;
+            try
+            {
+                var listener = root.AddComponent<AudioListener>();
+                root.AddComponent<AudioSource>(); root.AddComponent<AudioSource>();
+                capture = GoldenMinuteAudio.BeginMixedOutput(listener, path);
+                Assert.That(capture.gameObject, Is.Not.SameAs(root));
+                Assert.That(capture.GetComponents<AudioSource>(), Is.Empty);
+                Assert.That(capture.GetComponents<AudioListener>().Length, Is.EqualTo(1));
+                Assert.That(listener.enabled, Is.False);
+                capture.StopAudio();
+                Assert.That(listener.enabled, Is.True);
+                Assert.That(capture.GetComponent<AudioListener>().enabled, Is.False);
+                Assert.That(new FileInfo(path).Length, Is.GreaterThanOrEqualTo(44));
+            }
+            finally
+            {
+                capture?.StopAudio();
+                UnityEngine.Object.DestroyImmediate(root);
+                if (File.Exists(path)) File.Delete(path);
+            }
         }
 
         [Test]

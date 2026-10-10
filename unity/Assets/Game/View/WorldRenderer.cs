@@ -421,7 +421,12 @@ namespace Game.View
             var frame = Mathf.FloorToInt(Mathf.Max(0, time) * 1000 / visual.FrameMs) % visual.UvRects.Count;
             var color = tint ?? Color.white; color.a *= Mathf.Clamp01(opacity);
             var key = (layer, visual.Texture);
-            if (!batches.TryGetValue(key, out var batch)) { batch = new SpriteBatch(visual.Texture, FallowActive && layer < GameVisualTokens.AllyLayer && layer != GameVisualTokens.ExperienceLayer ? fallowShader : shader, renderCamera, layer); batches.Add(key, batch); }
+            if (!batches.TryGetValue(key, out var batch))
+            {
+                var surfaceShader = FallowActive && layer < GameVisualTokens.AllyLayer && layer != GameVisualTokens.ExperienceLayer
+                    ? layer <= GameVisualTokens.TerrainLayer + 1 ? fallowGroundShader : fallowShader : shader;
+                batch = new SpriteBatch(visual.Texture, surfaceShader, renderCamera, layer); batches.Add(key, batch);
+            }
             batch.Add(position, dimensions, visual.Pivot, uv ?? visual.UvRects[frame], degrees, color, flash, edgeTexels, upperOpacity);
         }
         void OnDestroy()
