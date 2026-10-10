@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { copyFile, lstat, mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, readFile, readdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { buildIdentity, identitySource } from './unity-build-identity.mjs';
+import { prepareWaveBenchmark } from './prepare-wave-benchmark.mjs';
+
+const benchmarkBridge = 'unity/Assets/Game/App/Generated/FrozenWaveBenchmark.g.cs';
 
 export const outputs = Object.freeze({
   bridge: 'unity/Assets/Game/App/Generated/CanonicalContent.g.cs',
@@ -54,6 +57,7 @@ export async function inputSnapshot(root) {
     }
   }
   source.push('tools/prepare-unity.sh', 'tools/unity-export.mjs', 'tools/unity-build-identity.mjs');
+  if (process.env.UNITY_WAVE_BENCHMARK === '1') source.push('tools/prepare-wave-benchmark.mjs', 'benchmarks/wave-c05/contract.json', 'benchmarks/wave-c05/run.ssreplay');
   const data = await files(root, 'data', name => name.endsWith('.json'));
   const entries = [];
   for (const relativePath of [...source, ...data].sort()) {
@@ -65,7 +69,7 @@ export async function inputSnapshot(root) {
 
 export async function outputSnapshot(root) {
   const entries = [];
-  for (const relativePath of [outputs.bridge, outputs.core, outputs.identity]) {
+  for (const relativePath of [outputs.bridge, outputs.core, outputs.identity, ...(process.env.UNITY_WAVE_BENCHMARK === '1' ? [benchmarkBridge] : [])]) {
     const bytes = await readFile(await safeOutput(root, relativePath));
     entries.push({ relativePath, byteLength: bytes.length, sha256: digest(bytes) });
   }
@@ -104,6 +108,12 @@ export async function prepare(root, profile = selectedProfile()) {
   run(root, ['build', 'core/src/SowSiege.Sim/SowSiege.Sim.csproj', '--configuration', 'Release', '--no-incremental', '--nologo']);
   run(root, ['build', 'core/src/SowSiege.Core/SowSiege.Core.csproj', '--configuration', 'Release', '--framework', 'netstandard2.1', '--no-incremental', '--nologo']);
   run(root, ['core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll', '--export-unity', path.join(root, 'data'), bridge, profile]);
+  if (process.env.UNITY_WAVE_BENCHMARK === '1') {
+    assert.equal(profile, 'wave-1a', 'Wave benchmark requires wave-1a presentation');
+    await prepareWaveBenchmark();
+  } else {
+    await unlink(await safeOutput(root, benchmarkBridge)).catch(error => { if (error.code !== 'ENOENT') throw error; });
+  }
   assert.deepEqual(await inputSnapshot(root), before, 'Source/data changed during Unity preparation; retry after edits finish');
   await mkdir(path.dirname(core), { recursive: true });
   await copyFile(path.join(root, 'core/src/SowSiege.Core/bin/Release/netstandard2.1/SowSiege.Core.dll'), core);

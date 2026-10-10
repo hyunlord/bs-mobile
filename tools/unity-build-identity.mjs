@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { lstat, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const roots = ['core/src', 'data', 'unity/Assets', 'unity/Packages', 'unity/ProjectSettings', 'tools', 'Directory.Build.props', 'global.json', '.gitignore', '.gitattributes'];
+const roots = ['core/src', 'data', 'benchmarks', 'unity/Assets', 'unity/Packages', 'unity/ProjectSettings', 'tools', 'Directory.Build.props', 'global.json', '.gitignore', '.gitattributes'];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex').toUpperCase();
 function git(root, args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8', env: { ...process.env, DEVELOPER_DIR: process.env.DEVELOPER_DIR ?? '/Library/Developer/CommandLineTools' } });

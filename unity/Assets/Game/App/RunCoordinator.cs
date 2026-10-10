@@ -134,6 +134,7 @@ namespace Game.App
 #endif
                 gameObject.AddComponent<AudioListener>();sound=gameObject.AddComponent<FirstPlayableAudio>();sound.Initialize(FoundationBoot.Catalog);if(IsWave){waveSound=gameObject.AddComponent<WaveAudio>();waveSound.Initialize();}ApplyPreferences();
                 ShowMeta();
+                TryStartWaveBenchmark();
             }
             catch(Exception e){Fail(e);}
         }
@@ -232,6 +233,7 @@ namespace Game.App
             ;
         private void Update()
         {
+            if (waveBenchmarkRequested) { UpdateWaveBenchmark(); return; }
             if(Ui==null||Stick==null)return;
             DesktopControls.UpdateWindow();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -444,7 +446,7 @@ namespace Game.App
             if(editorCaptureActive)return;
 #endif
             desktopControls.Reset();
-            suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);preferences?.Save();
+            suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);if(!waveBenchmarkRequested)preferences?.Save();
             if(pause&&Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording?.Checkpoint(Session);
             if(pause)StopDiagnosticTrace("application-paused");
         }
@@ -459,7 +461,7 @@ namespace Game.App
             suspendedInterval=true;focusLost=!focus&&AutoplayCapture.Active==null;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
             if(!focus)StopDiagnosticTrace("focus-lost");
         }
-        private void OnApplicationQuit(){preferences?.Save();StopRecording();}
+        private void OnApplicationQuit(){if(!waveBenchmarkRequested)preferences?.Save();StopRecording();}
         private void OnDestroy(){StopRecording();if(ownsFont&&font!=null)Destroy(font);}
         private void StopDiagnosticTrace(string reason)
         {
