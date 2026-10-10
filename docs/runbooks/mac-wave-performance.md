@@ -18,6 +18,8 @@ export UNITY_MAC_PATH="$PWD/artifacts/polish/mac-diagnostic-01/Sow and Siege.app
 test ! -e "$(dirname "$UNITY_MAC_PATH")"
 mkdir -p "$(dirname "$UNITY_MAC_PATH")"
 bash tools/prepare-unity.sh
+dotnet core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll \
+  interactive-fixtures data artifacts/phase1b/replays wave-1a
 /Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity \
   -batchmode -quit -projectPath "$PWD/unity" -buildTarget OSXUniversal \
   -executeMethod Game.Editor.FoundationBuild.ConfigureMac \

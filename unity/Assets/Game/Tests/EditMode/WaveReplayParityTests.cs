@@ -25,7 +25,7 @@ namespace Tests.EditMode
             var replay = ReplayCodec.Read(input);
             Assert.That(replay.Commands.All(command => command.Kind == ReplayCommandKind.Advance
                 || command.Kind == ReplayCommandKind.ChooseCard), Is.True);
-            var result = ReplayRunner.Verify(CanonicalContent.CreateCatalog(), CanonicalContent.DataHash, replay);
+            var result = FoundationBuild.VerifyWaveReplayFixture(replay, seed);
             Assert.That(result.Seed, Is.EqualTo(seed));
             Assert.That(result.Tick, Is.EqualTo(3000));
             Assert.That(result.EndKind, Is.EqualTo(ReplayEndKind.Quit));
