@@ -98,6 +98,7 @@ namespace Game.App
         {
             hint.fontSize=UiTokens.Body;hint.lineSpacing=1.25f;UiShell.Stretch(hint.rectTransform,UiTokens.Padding);
             var container=(RectTransform)hint.transform.parent;container.SetParent(ui.Content,false);container.gameObject.SetActive(true);
+            container.GetComponent<Image>().pixelsPerUnitMultiplier=UiTokens.FramePixelsPerUnitMultiplier;
             container.anchorMin=container.anchorMax=new Vector2(.5f,.18f);container.pivot=new Vector2(.5f,.5f);
             container.anchoredPosition=Vector2.zero;container.sizeDelta=new Vector2(720,120);
             var layout=container.GetComponent<LayoutElement>();if(layout!=null)layout.enabled=false;
@@ -116,6 +117,7 @@ namespace Game.App
             var container=(RectTransform)hint.transform.parent;container.SetParent(hud,false);
             container.anchorMin=container.anchorMax=new Vector2(.5f,0);container.pivot=new Vector2(.5f,0);
             container.anchoredPosition=Vector2.zero;container.sizeDelta=new Vector2(Mathf.Min(490,hud.rect.width*.56f),18);
+            container.GetComponent<Image>().pixelsPerUnitMultiplier=UiTokens.FallowFrameMultiplier;
             UiShell.Stretch(hint.rectTransform,2);hint.fontSize=12;hint.lineSpacing=1;hint.alignment=TextAnchor.MiddleCenter;
             return true;
         }
