@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "profile": "wave-1a",
+  "sourceCommit": "5118e2c2a06f6449be672a77a64b61c9a349d69b",
+  "dataHash": "942CFEA33A25F90CBD5053D711C9BBFF1279DBE481950F2081C765B6093C3FDC",
+  "selection": "Two pre-optimization closed 27000-tick native replay samples with historical end hashes already independently verified on both Core targets. Preserve original bytes and end records; these are regression fixtures, not balance evidence.",
+  "fixtures": [
+    {
+      "name": "native-c07",
+      "file": "native-c07.ssreplay",
+      "sha256": "9ae4296cd49efe94d2fc7ce966fe72946efd1d952ce1cad3411f8cd7b24e4fbc",
+      "expected": {
+        "Seed": 30001,
+        "Tick": 27000,
+        "StateHash": "97152EB9E83B4158DB8714AAA76CE73435595B3CC3A62E918918E87480A219ED",
+        "EndKind": 0
+      }
+    },
+    {
+      "name": "a03",
+      "file": "a03.ssreplay",
+      "sha256": "be1f4308c64496ca4d9113e0a83b771a86fe4b31a77d9caab3df8a8142af03f6",
+      "expected": {
+        "Seed": 30000,
+        "Tick": 27000,
+        "StateHash": "2E394387DDE118A2F84E76419FC381474C4F071BCAF06D5E0C8A694EF8CE5FE6",
+        "EndKind": 0
+      }
+    }
+  ]
+}

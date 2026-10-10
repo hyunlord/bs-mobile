@@ -134,6 +134,7 @@ namespace Game.App
 #endif
                 gameObject.AddComponent<AudioListener>();sound=gameObject.AddComponent<FirstPlayableAudio>();sound.Initialize(FoundationBoot.Catalog);if(IsWave){waveSound=gameObject.AddComponent<WaveAudio>();waveSound.Initialize();}ApplyPreferences();
                 ShowMeta();
+                TryStartWaveBenchmark();
             }
             catch(Exception e){Fail(e);}
         }
@@ -232,6 +233,7 @@ namespace Game.App
             ;
         private void Update()
         {
+            if (waveBenchmarkRequested) { UpdateWaveBenchmark(); return; }
             if(Ui==null||Stick==null)return;
             DesktopControls.UpdateWindow();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -438,18 +440,20 @@ namespace Game.App
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
+            if (waveBenchmarkReady && benchmarkWarmFrames == 0 && pause) benchmarkInterrupted = true;
 #if UNITY_EDITOR
             editorLastPause=pause;
             EditorCaptureLifecycle?.Invoke("application-pause",pause,editorCaptureActive);
             if(editorCaptureActive)return;
 #endif
             desktopControls.Reset();
-            suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);preferences?.Save();
+            suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);if(!waveBenchmarkRequested)preferences?.Save();
             if(pause&&Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording?.Checkpoint(Session);
             if(pause)StopDiagnosticTrace("application-paused");
         }
         private void OnApplicationFocus(bool focus)
         {
+            if (waveBenchmarkReady && benchmarkWarmFrames == 0 && !focus) benchmarkInterrupted = true;
 #if UNITY_EDITOR
             editorLastFocus=focus;
             EditorCaptureLifecycle?.Invoke("application-focus",focus,editorCaptureActive);
@@ -459,7 +463,7 @@ namespace Game.App
             suspendedInterval=true;focusLost=!focus&&AutoplayCapture.Active==null;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
             if(!focus)StopDiagnosticTrace("focus-lost");
         }
-        private void OnApplicationQuit(){preferences?.Save();StopRecording();}
+        private void OnApplicationQuit(){if(!waveBenchmarkRequested)preferences?.Save();StopRecording();}
         private void OnDestroy(){StopRecording();if(ownsFont&&font!=null)Destroy(font);}
         private void StopDiagnosticTrace(string reason)
         {

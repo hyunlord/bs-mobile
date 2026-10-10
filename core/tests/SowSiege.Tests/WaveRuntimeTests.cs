@@ -24,6 +24,50 @@ public sealed class WaveRuntimeTests
     public void OrbitLeavesCenterEmpty()
     { var (_, s, w, e) = Arena(WaveAttackKind.Orbit); e.Position = w.Lord; s.Tick(w.Lord); Assert.Equal(100, e.Health); Assert.Equal(3, w.WaveRuntime!.Attacks.Count); }
     [Fact]
+    public void OrbitHitEventsFollowWorldListOrderRatherThanIdOrder()
+    {
+        var (_, system, world, first) = Arena(WaveAttackKind.Orbit);
+        first.Position = new(700, 500);
+        world.Enemies.Add(new() { Id = 5, Definition = first.Definition, Position = first.Position, Health = 100 });
+        system.Tick(world.Lord);
+        Assert.Equal(new[] { 10, 5 }, world.WaveRuntime!.Events.Where(e => e.Kind == "hit").Select(e => e.SubjectId));
+    }
+    [Fact]
+    public void ChainWetPriorityPrecedesDistanceAfterTheFirstLink()
+    {
+        var (_, system, world, first) = Arena(WaveAttackKind.Chain);
+        world.Enemies.Add(new() { Id = 11, Definition = first.Definition, Position = new(610, 500), Health = 100 });
+        world.Enemies.Add(new() { Id = 12, Definition = first.Definition, Position = new(780, 500), Health = 100 });
+        world.WaveRuntime!.EnemyActions[12] = new() { WetUntil = 10, StopUntil = 10 };
+        system.Tick(world.Lord);
+        Assert.Equal(new[] { 10, 12, 11 }, world.WaveRuntime.Events.Where(e => e.Kind == "chain-link").Select(e => e.SubjectId));
+    }
+    [Fact]
+    public void ChainContinuesFromThePostKnockbackPositionAcrossGridCells()
+    {
+        var (catalog, system, world, first) = Arena(WaveAttackKind.Chain);
+        var gear = catalog.WaveRuntime!.Gear.Values.Single();
+        ((Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear)[gear.Id] = gear with { Knockback = 100 };
+        world.Enemies.Add(new() { Id = 11, Definition = first.Definition, Position = new(900, 500), Health = 100 });
+        system.Tick(world.Lord);
+        Assert.Equal(new[] { 10, 11 }, world.WaveRuntime!.Events.Where(e => e.Kind == "chain-link").Select(e => e.SubjectId));
+        Assert.Equal(new Position(700, 500), first.Position);
+    }
+    [Fact]
+    public void LevelCacheRefreshesWhenLegacyGearOrLevelRowIsReplaced()
+    {
+        var (catalog, system, world, enemy) = Arena(WaveAttackKind.Arc);
+        var gear = catalog.WaveRuntime!.Gear.Values.Single();
+        var levels = new[] { new WaveGearLevel(10, 200, 10, 10, 3, 100, 0) };
+        var definitions = (Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear;
+        definitions[gear.Id] = gear with { Levels = levels };
+        system.Tick(world.Lord); Assert.Equal(90, enemy.Health);
+        levels[0] = levels[0] with { Damage = 20 };
+        world.Tick = 10; system.Tick(world.Lord); Assert.Equal(70, enemy.Health);
+        definitions[gear.Id] = gear with { Levels = new[] { levels[0] with { Damage = 30 } } };
+        world.Tick = 20; system.Tick(world.Lord); Assert.Equal(40, enemy.Health);
+    }
+    [Fact]
     public void MaterialTargetReplayRoundTripsWithoutChangingLegacyFormat()
     {
         var run = new RunOptions(1, "test:hero", "test:estate", "random", ManualCards: true);

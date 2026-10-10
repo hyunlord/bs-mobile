@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SowSiege.Core
@@ -11,40 +12,58 @@ namespace SowSiege.Core
         private readonly InteractiveState? interactive;
         private readonly WavePrimitiveModules modules;
         private readonly WaveItemSubscriptions subscriptions;
+        private readonly List<EnemyState> liveEnemies = new();
+        private readonly WaveEnemyQueries queries;
+        private readonly bool ownsQueries;
+        private readonly List<EnemyState> interceptCandidates = new();
+        private readonly int interceptRange;
+        private readonly List<Position> connectedPaths = new();
+        private readonly List<WaveEnemyDefinition> spawnRules = new();
+        private static readonly Comparison<WaveEnemyDefinition> SpawnOrder = (a, b) => StringComparer.Ordinal.Compare(a.Id, b.Id);
+        private static readonly Comparison<EnemyState> EnemyOrder = (a, b) => a.Id.CompareTo(b.Id);
         private WaveRuntimeState State => world.WaveRuntime!;
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
-        internal WaveEnemySystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null)
-        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); }
+        internal WaveEnemySystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null, WaveEnemyQueries? queries = null)
+        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); foreach (var enemy in catalog.Enemies.Values) { interceptRange = Math.Max(interceptRange, enemy.Range); } }
 
         internal void Tick()
         {
             Spawn();
-            Position[]? connectedPaths = null;
+            var pathsCollected = false;
             State.Detours.RemoveAll(d => d.UntilTick <= world.Tick);
-            foreach (var enemy in world.Enemies.Where(e => e.Health > 0).OrderBy(e => e.Id))
+            liveEnemies.Clear();
+            foreach (var enemy in world.Enemies) { if (enemy.Health > 0) { liveEnemies.Add(enemy); } }
+            liveEnemies.Sort(EnemyOrder);
+            foreach (var enemy in liveEnemies)
             {
                 if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule)) { continue; }
                 if (!State.EnemyActions.TryGetValue(enemy.Id, out var action))
                 { action = new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 }; State.EnemyActions.Add(enemy.Id, action); }
                 if (action.StopUntil > world.Tick) { continue; }
-                Advance(enemy, rule, action, ref connectedPaths);
+                Advance(enemy, rule, action, ref pathsCollected);
             }
-            foreach (var shot in State.Projectiles.Where(p => p.Hostile).ToArray())
+            for (var index = 0; index < State.Projectiles.Count;)
             {
+                var shot = State.Projectiles[index];
+                if (!shot.Hostile) { index++; continue; }
                 shot.Previous = shot.Position;
                 shot.Position = shot.Position.MoveToward(shot.Direction, shot.Speed);
                 var radius = catalog.Enemies[shot.Source].Range;
                 if (OnSegment(world.Lord, shot.Previous, shot.Position, radius))
-                { Hurt(shot.Source, shot.Damage); State.Projectiles.Remove(shot); }
-                else if (shot.Position == shot.Direction || world.Tick >= shot.ExpireTick) { State.Projectiles.Remove(shot); }
+                { Hurt(shot.Source, shot.Damage); State.Projectiles.RemoveAt(index); }
+                else if (shot.Position == shot.Direction || world.Tick >= shot.ExpireTick) { State.Projectiles.RemoveAt(index); }
+                else { index++; }
             }
         }
 
         private void Spawn()
         {
             var cap = catalog.Tuning.World.Threat.EnemyCap;
-            foreach (var rule in Definition.Enemies.Values.OrderBy(e => e.Id, StringComparer.Ordinal))
+            spawnRules.Clear();
+            foreach (var rule in Definition.Enemies.Values) { spawnRules.Add(rule); }
+            spawnRules.Sort(SpawnOrder);
+            foreach (var rule in spawnRules)
             {
                 var operations = modules.Enemy(rule.Id);
                 var first = operations.Boss ? Definition.BossSpawnTick : rule.FirstSpawnTick;
@@ -52,7 +71,9 @@ namespace SowSiege.Core
                 if (world.Enemies.Count >= cap)
                 {
                     if (!operations.Boss) { continue; }
-                    var displaced = world.Enemies.OrderByDescending(e => e.Id).FirstOrDefault(e => !modules.Enemy(e.Definition).Boss);
+                    EnemyState? displaced = null;
+                    foreach (var candidate in world.Enemies)
+                    { if (!modules.Enemy(candidate.Definition).Boss && (displaced is null || candidate.Id > displaced.Id)) { displaced = candidate; } }
                     if (displaced is null) { continue; }
                     world.Enemies.Remove(displaced); State.EnemyActions.Remove(displaced.Id);
                 }
@@ -66,7 +87,7 @@ namespace SowSiege.Core
             }
         }
 
-        private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action, ref Position[]? connectedPaths)
+        private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action, ref bool pathsCollected)
         {
             var body = catalog.Enemies[enemy.Definition];
             var operations = modules.Enemy(rule.Id);
@@ -170,12 +191,27 @@ namespace SowSiege.Core
                 { action.Phase = "turn"; action.UntilTick = world.Tick + rule.TellTicks; return; }
             }
             var target = world.Lord; action.TargetId = -1;
-            var defender = State.Groups.Where(g => g.Health > 0 && g.Phase != "idle" && OnSegment(g.Position, enemy.Position, enemy.Position, body.Range)).OrderBy(g => g.Phase == "returning" ? 0 : 1).ThenBy(g => g.Id).FirstOrDefault();
+            WaveGroup? defender = null;
+            foreach (var candidate in State.Groups)
+            {
+                if (candidate.Health <= 0 || candidate.Phase == "idle" || !OnSegment(candidate.Position, enemy.Position, enemy.Position, body.Range)) { continue; }
+                var priority = candidate.Phase == "returning" ? 0 : 1;
+                var bestPriority = defender?.Phase == "returning" ? 0 : 1;
+                if (defender is null || priority < bestPriority || priority == bestPriority && candidate.Id < defender.Id) { defender = candidate; }
+            }
             if (defender is not null && operations.Movement != "standoff")
             { action.TargetId = defender.Id; Tell(enemy, action, rule, "intercept", defender.Position); return; }
             if (operations.Action == "consume-seed" || operations.Action == "consume-ripe")
             {
-                var crop = State.Work.Where(w => w.Kind == "grain" && w.Health > 0 && (operations.Action == "consume-seed" ? !w.Complete : w.Complete)).OrderBy(w => w.Position.DistanceSquared(enemy.Position)).ThenBy(w => w.Id).FirstOrDefault();
+                WaveWork? crop = null;
+                var bestDistance = long.MaxValue;
+                foreach (var candidate in State.Work)
+                {
+                    if (candidate.Kind != "grain" || candidate.Health <= 0 || (operations.Action == "consume-seed" ? candidate.Complete : !candidate.Complete)) { continue; }
+                    var distance = candidate.Position.DistanceSquared(enemy.Position);
+                    if (distance < bestDistance || distance == bestDistance && (crop is null || candidate.Id < crop.Id))
+                    { crop = candidate; bestDistance = distance; }
+                }
                 if (crop is not null) { target = crop.Position; action.TargetId = crop.Id; }
             }
             if (operations.Movement == "standoff")
@@ -191,17 +227,38 @@ namespace SowSiege.Core
             if (action.TargetId < 0 && ((operations.Target == "lord" && operations.Movement == "pursue") || operations.Action == "consume-seed") && State.Paths.Count > 1)
             {
                 // Paths change only in the work phase after all enemies advance.
-                connectedPaths ??= State.Paths.Where(p => State.Paths.Any(other => other != p && other.DistanceSquared(p) <= (long)Definition.Behavior.PathConnectionMultiplier * Definition.Behavior.PathConnectionMultiplier * Definition.PathSpacing * Definition.PathSpacing)).ToArray();
-                var connected = connectedPaths.OrderBy(p => p.DistanceSquared(enemy.Position)).ToArray();
-                if (connected.Length > 0)
+                if (!pathsCollected)
                 {
-                    var path = connected[0];
-                    if (path.DistanceSquared(enemy.Position) > (long)Definition.PathSpacing * Definition.PathSpacing && path.DistanceSquared(target) < enemy.Position.DistanceSquared(target)) { target = path; }
+                    connectedPaths.Clear();
+                    var connectionRange = (long)Definition.Behavior.PathConnectionMultiplier * Definition.Behavior.PathConnectionMultiplier * Definition.PathSpacing * Definition.PathSpacing;
+                    foreach (var path in State.Paths)
+                    {
+                        foreach (var other in State.Paths)
+                        {
+                            if (other != path && other.DistanceSquared(path) <= connectionRange) { connectedPaths.Add(path); break; }
+                        }
+                    }
+                    pathsCollected = true;
+                }
+                if (connectedPaths.Count > 0)
+                {
+                    var path = connectedPaths[0];
+                    var distance = path.DistanceSquared(enemy.Position);
+                    for (var i = 1; i < connectedPaths.Count; i++)
+                    {
+                        var candidateDistance = connectedPaths[i].DistanceSquared(enemy.Position);
+                        if (candidateDistance < distance) { path = connectedPaths[i]; distance = candidateDistance; }
+                    }
+                    if (distance > (long)Definition.PathSpacing * Definition.PathSpacing && path.DistanceSquared(target) < enemy.Position.DistanceSquared(target)) { target = path; }
                 }
             }
             if ((operations.Target == "lord" && operations.Movement == "pursue") || operations.Action == "consume-seed" || operations.Action == "consume-ripe")
             {
-                var detour = State.Detours.FirstOrDefault(d => OnSegment(d.Position, enemy.Position, target, d.Radius));
+                WaveDetour? detour = null;
+                foreach (var candidate in State.Detours)
+                {
+                    if (OnSegment(candidate.Position, enemy.Position, target, candidate.Radius)) { detour = candidate; break; }
+                }
                 if (detour is not null)
                 {
                     var side = enemy.Position.Y <= detour.Position.Y ? -1 : 1;
@@ -247,7 +304,11 @@ namespace SowSiege.Core
         }
         internal bool Intercepts(Position from, Position to)
         {
-            foreach (var enemy in world.Enemies.Where(e => e.Health > 0))
+            if (ownsQueries) { queries.Rebuild(); }
+            var center = new Position(from.X + (to.X - from.X) / WaveGeometry.MidpointDivisor, from.Y + (to.Y - from.Y) / WaveGeometry.MidpointDivisor);
+            var radius = (Math.Abs(to.X - from.X) + Math.Abs(to.Y - from.Y) + WaveGeometry.MidpointDivisor) / WaveGeometry.MidpointDivisor + interceptRange;
+            queries.Collect(interceptCandidates, center, radius);
+            foreach (var enemy in interceptCandidates)
             {
                 if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule) || modules.Enemy(rule.Id).Movement != "hold-front" || !State.EnemyActions.TryGetValue(enemy.Id, out var action) || action.Phase == "turn" || action.Phase == "recovery") { continue; }
                 var dx = action.Target.X - action.Origin.X; var dy = action.Target.Y - action.Origin.Y;

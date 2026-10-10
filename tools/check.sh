@@ -35,6 +35,7 @@ node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs
 node --test tools/test-device-metrics.mjs
 node --test tools/test-mac-wave-frame-window.mjs
+node --test tools/test-wave-benchmark.mjs tools/test-restore-urp-authoring.mjs
 node tools/pr-policy.mjs
 dotnet run --project tools/ArchitectureGuard -- --self-test
 dotnet run --project tools/ArchitectureGuard -- "$PWD"
@@ -55,6 +56,8 @@ META_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/meta-parity.XXXXXX")
 node tools/verify-meta-target-parity.mjs "$META_PARITY_ROOT/run"
 WAVE1A_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/wave1a-parity.XXXXXX")
 node tools/verify-wave1a-target-parity.mjs "$WAVE1A_PARITY_ROOT/run"
+WAVE_HISTORY_PARITY_ROOT=$(mktemp -d "$PWD/artifacts/wave-history-parity.XXXXXX")
+node tools/verify-wave-history-parity.mjs "$WAVE_HISTORY_PARITY_ROOT/run" --no-build
 DIAGNOSTIC_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/diagnostic-smoke.XXXXXX")
 node tools/diagnostic-runner.mjs smoke "$DIAGNOSTIC_SMOKE_ROOT/run" 4
 WEAPON_SMOKE_ROOT=$(mktemp -d "$PWD/artifacts/weapon-smoke.XXXXXX")

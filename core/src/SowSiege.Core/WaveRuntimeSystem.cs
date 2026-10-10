@@ -14,6 +14,17 @@ namespace SowSiege.Core
         private readonly WaveWorkSystem work;
         private readonly WavePrimitiveModules modules;
         private readonly WaveItemSubscriptions subscriptions;
+        private readonly WaveEnemyQueries queries;
+        private readonly List<EnemyState> targets = new();
+        private readonly List<EnemyState> secondaryTargets = new();
+        private readonly List<EnemyState> frontTargets = new();
+        private readonly List<WaveWork> harvestPlots = new();
+        private readonly HashSet<int> visited = new();
+        private readonly HashSet<int> expiredActivations = new();
+        private readonly Dictionary<string, List<WaveAttackView>> orbitGroups = new(StringComparer.Ordinal);
+        private readonly List<string> orbitSources = new();
+        private readonly Dictionary<(string Id, int Level), (WaveGearDefinition Source, WaveGearLevel Parameters, WaveGearDefinition Value)> levels = new();
+        private static readonly Position[] OrbitDirections = { new(1, 0), new(1, 1), new(0, 1), new(-1, 1), new(-1, 0), new(-1, -1), new(0, -1), new(1, -1) };
         public WaveRuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive)
         {
             this.catalog = catalog;
@@ -28,9 +39,10 @@ namespace SowSiege.Core
                 AvailableWorkers = definition.InitialWorkers
             };
             modules = new(definition);
-            subscriptions = new(catalog, world, modules);
-            enemies = new(catalog, world, random, interactive, modules, subscriptions);
-            work = new(catalog, world, interactive, modules, subscriptions);
+            queries = new(world, catalog.Tuning.World.Farms.Spacing);
+            subscriptions = new(catalog, world, modules, queries);
+            enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
+            work = new(catalog, world, interactive, modules, subscriptions, queries);
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
         public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) &&
@@ -58,13 +70,22 @@ namespace SowSiege.Core
             state.Emit(world.Tick, "evolution-activated", id, -1, world.Lord, world.Lord);
             return true;
         }
-        public bool Suppressed(string id) => state.Evolutions.Select(e => definition.Evolutions[e]).Any(e => modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations") && e.InputIds.Contains(id));
+        public bool Suppressed(string id)
+        {
+            foreach (var evolutionId in state.Evolutions)
+            {
+                var evolution = definition.Evolutions[evolutionId];
+                if (modules.Is(evolution.Id, "unit:evolution-replace", "replace", "both-tool-activations") && Array.IndexOf(evolution.InputIds, id) >= 0) { return true; }
+            }
+            return false;
+        }
         public void Tick(Position previous)
         {
             state.Events.Clear();
-            foreach (var expired in state.Attacks.Where(a => a.ExpireTick <= world.Tick).Select(a => a.ActivationId).Distinct().ToArray())
+            expiredActivations.Clear();
+            foreach (var attack in state.Attacks)
             {
-                state.ResolveActivation(expired);
+                if (attack.ExpireTick <= world.Tick && expiredActivations.Add(attack.ActivationId)) { state.ResolveActivation(attack.ActivationId); }
             }
 
             state.Attacks.RemoveAll(a => a.ExpireTick <= world.Tick);
@@ -74,7 +95,8 @@ namespace SowSiege.Core
             }
 
             enemies.Tick();
-            foreach (var equipment in world.Equipment.ToArray())
+            queries.Rebuild();
+            foreach (var equipment in world.Equipment)
             {
                 if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
                 {
@@ -83,11 +105,18 @@ namespace SowSiege.Core
 
                 var gear = AtLevel(definition.Gear[equipment.Id], equipment.Level);
                 equipment.ReadyTick = world.Tick + gear.CooldownTicks;
-                var evolution = state.Evolutions.Select(id => definition.Evolutions[id]).FirstOrDefault(e => e.InputIds[0] == gear.Id && !modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations"));
+                WaveEvolutionDefinition? evolution = null;
+                foreach (var id in state.Evolutions)
+                {
+                    var candidate = definition.Evolutions[id];
+                    if (candidate.InputIds[0] == gear.Id && !modules.Is(candidate.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { evolution = candidate; break; }
+                }
                 Attack(gear, evolution);
             }
-            foreach (var e in state.Evolutions.Select(id => definition.Evolutions[id]).Where(e => modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations")))
+            foreach (var id in state.Evolutions)
             {
+                var e = definition.Evolutions[id];
+                if (!modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { continue; }
                 var first = world.Equipment.First(x => x.Id == e.InputIds[0]);
                 if (first.ReadyTick > world.Tick)
                 {
@@ -104,8 +133,9 @@ namespace SowSiege.Core
             TickOrbits();
             TickProjectiles();
             work.Tick();
-            foreach (var enemy in world.Enemies.Where(e => e.Health <= 0).ToArray())
+            foreach (var enemy in world.Enemies)
             {
+                if (enemy.Health > 0) { continue; }
                 work.OnKill(enemy);
                 var xp = catalog.Enemies[enemy.Definition].Experience;
                 world.Experience += xp;
@@ -120,15 +150,18 @@ namespace SowSiege.Core
             }
             world.Enemies.RemoveAll(e => e.Health <= 0);
         }
-        private static WaveGearDefinition AtLevel(WaveGearDefinition gear, int level)
+        private WaveGearDefinition AtLevel(WaveGearDefinition gear, int level)
         {
             if (gear.Levels is null || gear.Levels.Length == 0)
             {
                 return gear;
             }
 
-            var p = gear.Levels[Math.Min(level, gear.Levels.Length) - 1];
-            return gear with
+            var levelIndex = Math.Min(level, gear.Levels.Length) - 1;
+            var p = gear.Levels[levelIndex];
+            var key = (gear.Id, levelIndex);
+            if (levels.TryGetValue(key, out var cached) && ReferenceEquals(cached.Source, gear) && ReferenceEquals(cached.Parameters, p)) { return cached.Value; }
+            var value = gear with
             {
                 Damage = p.Damage,
                 Range = p.Range,
@@ -137,14 +170,16 @@ namespace SowSiege.Core
                 Count = p.Count,
                 LifetimeTicks = p.LifetimeTicks,
                 Knockback = p.Knockback
-            }
-;
+            };
+            levels[key] = (gear, p, value);
+            return value;
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
             var program = modules[evolution?.Id ?? gear.Id];
-            var shape = program.Value("unit:attack-shape", "shape");
-            if (program.Is("unit:attack-variant", "condition", "water-empty") && state.Water <= 0)
+            var operations = modules.Attack(evolution?.Id ?? gear.Id);
+            var shape = operations.Shape;
+            if (operations.DryVariant && state.Water <= 0)
             {
                 gear = gear with
                 {
@@ -158,7 +193,7 @@ namespace SowSiege.Core
             var facing = state.Facing;
             if (evolution is not null && modules.Has(evolution.Id, "unit:attack-anchor"))
             {
-                var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
+                var building = RepairAnchor();
                 if (building != null)
                 {
                     origin = building.Position;
@@ -166,14 +201,15 @@ namespace SowSiege.Core
             }
             facing = subscriptions.Aim(gear, origin, facing);
             var source = evolution?.Id ?? gear.Id;
-            var targets = world.Enemies.Where(e => e.Health > 0 && Within(e.Position, origin, gear.Range)).OrderBy(e => e.Position.DistanceSquared(origin)).ThenBy(e => e.Id).ToArray();
-            var children = shape == "homing-projectile" ? Math.Min(targets.Length, gear.Count) : 0;
+            targets.Clear();
+            if (shape != "chain" && shape != "orbit") { queries.ByDistance(targets, origin, gear.Range, origin); }
+            var children = shape == "homing-projectile" ? Math.Min(targets.Count, gear.Count) : 0;
             var activation = state.BeginActivation(source, children, world.Tick + (shape == "orbit" ? gear.CooldownTicks : gear.LifetimeTicks));
-            var hits = new List<EnemyState>();
             if (shape == "homing-projectile")
             {
-                foreach (var target in targets.Take(gear.Count))
+                for (var targetIndex = 0; targetIndex < Math.Min(targets.Count, gear.Count); targetIndex++)
                 {
+                    var target = targets[targetIndex];
                     state.Projectiles.Add(new()
                     {
                         Id = world.AllocateId(),
@@ -193,10 +229,18 @@ namespace SowSiege.Core
             else if (shape == "chain")
             {
                 var from = origin;
-                var visited = new HashSet<int>();
+                visited.Clear();
                 for (int i = 0; i < gear.Count; i++)
                 {
-                    var next = world.Enemies.Where(e => e.Health > 0 && !visited.Contains(e.Id) && Within(e.Position, from, gear.Range)).OrderByDescending(e => i > 0 && program.Is("unit:attack-variant", "condition", "wet-target") && state.EnemyActions.TryGetValue(e.Id, out var a) && a.WetUntil > world.Tick).ThenBy(e => e.Position.DistanceSquared(from)).ThenBy(e => e.Id).FirstOrDefault();
+                    queries.ByDistance(secondaryTargets, from, gear.Range, from);
+                    EnemyState? next = null;
+                    foreach (var candidate in secondaryTargets)
+                    {
+                        if (visited.Contains(candidate.Id)) { continue; }
+                        next ??= candidate;
+                        if (i == 0 || !operations.WetPriority || state.EnemyActions.TryGetValue(candidate.Id, out var wet) && wet.WetUntil > world.Tick)
+                        { next = candidate; break; }
+                    }
                     if (next == null)
                     {
                         break;
@@ -205,20 +249,18 @@ namespace SowSiege.Core
                     visited.Add(next.Id);
                     state.Emit(world.Tick, "chain-link", source, next.Id, from, next.Position);
                     Hit(next, gear.Damage, source, origin, gear.Knockback, activation);
-                    if (program.Is("unit:status-apply", "status", "brief-stop") && state.EnemyActions.TryGetValue(next.Id, out var action))
+                    if (operations.BriefStop && state.EnemyActions.TryGetValue(next.Id, out var action))
                     {
                         action.StopUntil = world.Tick + definition.StopTicks;
                     }
 
-                    hits.Add(next);
                     from = next.Position;
                 }
             }
             else if (shape == "orbit")
             {
                 var phase = (world.Tick / Math.Max(1, gear.CooldownTicks)) % WaveGeometry.OrbitDirections;
-                var dirs = new[]{
-new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Position(-1,0),new Position(-1,-1),new Position(0,-1),new Position(1,-1)}
+                var dirs = OrbitDirections
                 ;
                 for (int i = 0; i < gear.Count; i++)
                 {
@@ -230,20 +272,26 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
             }
             else if (shape is "melee-fan" or "ground-slam" or "expanding-wave")
             {
-                foreach (var enemy in targets.Where(e => shape == "expanding-wave" || InArc(origin, facing, e.Position, gear.Range)))
+                foreach (var enemy in targets)
                 {
+                    if (shape != "expanding-wave" && !InArc(origin, facing, enemy.Position, gear.Range)) { continue; }
                     Hit(enemy, gear.Damage, source, origin, gear.Knockback, activation);
-                    hits.Add(enemy);
                 }
                 state.Emit(world.Tick, "attack", source, -1, origin, new(origin.X + facing.X, origin.Y + facing.Y), gear.Range);
-                if (program.Has("unit:harvest-contact"))
+                if (operations.Harvest)
                 {
-                    foreach (var plot in state.Work.Where(w => w.Kind == "grain" && w.Complete && w.Health > 0 && HarvestSource(program, w.Source) && InArc(origin, facing, w.Position, gear.Range)).ToArray())
+                    harvestPlots.Clear();
+                    foreach (var plot in state.Work)
+                    {
+                        if (plot.Kind == "grain" && plot.Complete && plot.Health > 0 && HarvestSource(operations, plot.Source) && InArc(origin, facing, plot.Position, gear.Range)) { harvestPlots.Add(plot); }
+                    }
+                    foreach (var plot in harvestPlots)
                     {
                         work.Harvest(plot);
-                        foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor)).OrderBy(e => e.Id).Take(gear.Count))
+                        queries.ById(secondaryTargets, plot.Position, gear.Range / WaveGeometry.MidpointDivisor);
+                        for (var fragment = 0; fragment < Math.Min(secondaryTargets.Count, gear.Count); fragment++)
                         {
-                            Hit(enemy, gear.Damage, source, plot.Position, 0, activation);
+                            Hit(secondaryTargets[fragment], gear.Damage, source, plot.Position, 0, activation);
                         }
 
                         state.Emit(world.Tick, "harvest-fragments", source, plot.Id, plot.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor);
@@ -280,7 +328,7 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
             state.RecordDamage(activation, damage, actual);
             if (knockback > 0)
             {
-                enemy.Position = new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height));
+                queries.Move(enemy, new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height)));
             }
 
             if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
@@ -293,25 +341,32 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
         }
         private void TickOrbits()
         {
-            var groups = state.Attacks.GroupBy(a => a.Source).ToArray();
-            foreach (var group in groups)
+            orbitSources.Clear();
+            foreach (var group in orbitGroups.Values) { group.Clear(); }
+            foreach (var attack in state.Attacks)
             {
-                var evolution = definition.Evolutions.TryGetValue(group.Key, out var evolved) ? evolved : null;
-                var gear = definition.Gear[evolution?.InputIds[0] ?? group.Key];
+                if (!orbitGroups.TryGetValue(attack.Source, out var group)) { group = new(); orbitGroups.Add(attack.Source, group); }
+                if (group.Count == 0) { orbitSources.Add(attack.Source); }
+                group.Add(attack);
+            }
+            foreach (var source in orbitSources)
+            {
+                var group = orbitGroups[source];
+                var evolution = definition.Evolutions.TryGetValue(source, out var evolved) ? evolved : null;
+                var gear = definition.Gear[evolution?.InputIds[0] ?? source];
                 var level = world.Equipment.First(e => e.Id == gear.Id).Level;
                 gear = AtLevel(gear, level);
                 var anchor = world.Lord;
                 if (evolution is not null && modules.Has(evolution.Id, "unit:attack-anchor"))
                 {
-                    var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
+                    var building = RepairAnchor();
                     if (building is not null)
                     {
                         anchor = building.Position;
                     }
                 }
                 var index = 0;
-                var dirs = new[]{
-new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Position(-1,0),new Position(-1,-1),new Position(0,-1),new Position(1,-1)}
+                var dirs = OrbitDirections
 ;
                 foreach (var old in group)
                 {
@@ -326,11 +381,12 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                     }
 ;
                     state.Attacks[state.Attacks.IndexOf(old)] = next;
-                    foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, point, next.Radius)))
+                    queries.ByWorldOrder(secondaryTargets, point, next.Radius);
+                    foreach (var enemy in secondaryTargets)
                     {
                         if (state.Activations[old.ActivationId].HitTargets.Add(enemy.Id))
                         {
-                            Hit(enemy, gear.Damage, group.Key, anchor, gear.Knockback, old.ActivationId);
+                            Hit(enemy, gear.Damage, source, anchor, gear.Knockback, old.ActivationId);
                         }
                     }
                     index++;
@@ -339,12 +395,14 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
         }
         private void TickProjectiles()
         {
-            foreach (var p in state.Projectiles.Where(p => !p.Hostile).ToArray())
+            for (var index = 0; index < state.Projectiles.Count;)
             {
-                var target = world.Enemies.FirstOrDefault(e => e.Id == p.TargetId && e.Health > 0);
+                var p = state.Projectiles[index];
+                if (p.Hostile) { index++; continue; }
+                var target = queries.Find(p.TargetId);
                 if (target == null || p.ExpireTick <= world.Tick)
                 {
-                    state.Projectiles.Remove(p);
+                    state.Projectiles.RemoveAt(index);
                     state.ResolveChild(p.ActivationId);
                     continue;
                 }
@@ -352,26 +410,49 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 p.Position = p.Position.MoveToward(target.Position, p.Speed);
                 if (enemies.Intercepts(p.Previous, p.Position))
                 {
-                    state.Projectiles.Remove(p);
+                    state.Projectiles.RemoveAt(index);
                     state.ResolveChild(p.ActivationId);
                     continue;
                 }
                 if (Within(p.Position, target.Position, Math.Max(1, p.Speed / WaveGeometry.MidpointDivisor)))
                 {
                     Hit(target, p.Damage, p.Source, p.Previous, 0, p.ActivationId);
-                    state.Projectiles.Remove(p);
+                    state.Projectiles.RemoveAt(index);
                     state.ResolveChild(p.ActivationId);
+                    continue;
                 }
+                index++;
             }
         }
-        private bool HarvestSource(WavePrimitiveProgram program, string source)
+        private WaveWork? RepairAnchor()
         {
-            if (!program.Is("unit:harvest-contact", "sourceFilter", "owned-source")) { return false; }
-            var ids = program.Value("unit:harvest-contact", "sourceIds").Split('|');
-            return ids.Any(id => id == source || id == "$seed" && modules.Is(source, "unit:remnant-create", "remnantKey", "grain-patch"));
+            WaveWork? nearest = null;
+            var bestDistance = long.MaxValue;
+            foreach (var work in state.Work)
+            {
+                if (work.Kind != "building" || work.Health <= 0 || work.Complete || work.ReadyTick != -1) { continue; }
+                var distance = work.Position.DistanceSquared(world.Lord);
+                if (distance < bestDistance || distance == bestDistance && (nearest is null || work.Id < nearest.Id))
+                { nearest = work; bestDistance = distance; }
+            }
+            return nearest;
+        }
+        private bool HarvestSource(WaveAttackOperations operations, string source)
+        {
+            if (!operations.OwnedHarvestSource) { return false; }
+            foreach (var id in operations.HarvestSources)
+            {
+                if (id == source || id == "$seed" && modules.Is(source, "unit:remnant-create", "remnantKey", "grain-patch")) { return true; }
+            }
+            return false;
         }
         private bool programHasRemnant(string source) => modules.Has(source, "unit:remnant-create");
-        private bool FrontEnemy(Position origin, Position facing, int range) => world.Enemies.Any(e => e.Health > 0 && InArc(origin, facing, e.Position, range));
+        private bool FrontEnemy(Position origin, Position facing, int range)
+        {
+            queries.Collect(frontTargets, origin, range);
+            foreach (var enemy in frontTargets) { if (InArc(origin, facing, enemy.Position, range)) { return true; } }
+            return false;
+        }
         internal static bool Within(Position a, Position b, int radius) => a.DistanceSquared(b) <= (long)radius * radius;
         internal static bool InArc(Position origin, Position facing, Position point, int radius)
         {
