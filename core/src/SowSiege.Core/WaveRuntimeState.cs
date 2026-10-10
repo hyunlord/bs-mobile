@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 namespace SowSiege.Core
 {
     internal sealed class WaveWork
@@ -64,12 +63,37 @@ namespace SowSiege.Core
             Count(kind + ":" + source);
             Events.Add(new(NextEvent++, tick, kind, source, subject, new(position.X, position.Y), new(target.X, target.Y), amount));
         }
-        public WaveRuntimeFrame Capture(WaveRuntimeDefinition d, int tick) => new(d.Revision, d.ChapterId, Water, Timber, AvailableWorkers, BossDefeated,
-            Array.AsReadOnly(Work.Select(w => new WaveWorkView(w.Id, w.Source, w.Kind, new(w.Position.X, w.Position.Y), w.Progress, w.Required, w.Complete, w.Health, w.ParentId, w.Protected, w.DormantUntil > tick, w.WetUntil > tick, w.ShipmentActive, w.Dry)).ToArray()),
-            Array.AsReadOnly(Rewards.Select(r => new WaveRewardView(r.Id, r.Source, new(r.Position.X, r.Position.Y), r.Experience, r.CompletionKey)).ToArray()),
-            Array.AsReadOnly(Projectiles.Select(p => new WaveProjectileView(p.Id, p.Source, new(p.Position.X, p.Position.Y), new(p.Previous.X, p.Previous.Y), p.TargetId, p.Hostile)).ToArray()),
-            Array.AsReadOnly(EnemyActions.OrderBy(p => p.Key).Select(p => new WaveEnemyView(p.Key, p.Value.Phase, new(p.Value.Origin.X, p.Value.Origin.Y), new(p.Value.Target.X, p.Value.Target.Y), p.Value.UntilTick, p.Value.WetUntil > tick, p.Value.StopUntil > tick, p.Value.BossPhase)).ToArray()),
-            Array.AsReadOnly(Groups.Select(g => new WaveGroupView(g.Id, g.Source, new(g.Position.X, g.Position.Y), g.Phase, g.Mission, g.Training, g.ReservedFood, g.FrontRank, g.Formation)).ToArray()),
-            Array.AsReadOnly(Paths.Select(p => new WorldPoint(p.X, p.Y)).ToArray()), Array.AsReadOnly(Items.ToArray()), Array.AsReadOnly(Evolutions.ToArray()), Array.AsReadOnly(Events.ToArray()), new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)), Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(Detours.Select(d => new WaveDetourView(new(d.Position.X, d.Position.Y), d.Radius, d.UntilTick, d.Source)).ToArray()), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
+        private static readonly Comparison<WaveEnemyView> EnemyViewOrder = (a, b) => a.Id.CompareTo(b.Id);
+        public WaveRuntimeFrame Capture(WaveRuntimeDefinition d, int tick)
+        {
+            var work = new WaveWorkView[Work.Count];
+            for (var i = 0; i < work.Length; i++)
+            {
+                var w = Work[i];
+                work[i] = new(w.Id, w.Source, w.Kind, new(w.Position.X, w.Position.Y), w.Progress, w.Required, w.Complete, w.Health, w.ParentId, w.Protected, w.DormantUntil > tick, w.WetUntil > tick, w.ShipmentActive, w.Dry);
+            }
+            var rewards = new WaveRewardView[Rewards.Count];
+            for (var i = 0; i < rewards.Length; i++) { var r = Rewards[i]; rewards[i] = new(r.Id, r.Source, new(r.Position.X, r.Position.Y), r.Experience, r.CompletionKey); }
+            var projectiles = new WaveProjectileView[Projectiles.Count];
+            for (var i = 0; i < projectiles.Length; i++) { var p = Projectiles[i]; projectiles[i] = new(p.Id, p.Source, new(p.Position.X, p.Position.Y), new(p.Previous.X, p.Previous.Y), p.TargetId, p.Hostile); }
+            var enemies = new WaveEnemyView[EnemyActions.Count];
+            var index = 0;
+            foreach (var pair in EnemyActions)
+            {
+                var e = pair.Value;
+                enemies[index++] = new(pair.Key, e.Phase, new(e.Origin.X, e.Origin.Y), new(e.Target.X, e.Target.Y), e.UntilTick, e.WetUntil > tick, e.StopUntil > tick, e.BossPhase);
+            }
+            Array.Sort(enemies, EnemyViewOrder);
+            var groups = new WaveGroupView[Groups.Count];
+            for (var i = 0; i < groups.Length; i++) { var g = Groups[i]; groups[i] = new(g.Id, g.Source, new(g.Position.X, g.Position.Y), g.Phase, g.Mission, g.Training, g.ReservedFood, g.FrontRank, g.Formation); }
+            var paths = new WorldPoint[Paths.Count];
+            for (var i = 0; i < paths.Length; i++) { var p = Paths[i]; paths[i] = new(p.X, p.Y); }
+            var detours = new WaveDetourView[Detours.Count];
+            for (var i = 0; i < detours.Length; i++) { var v = Detours[i]; detours[i] = new(new(v.Position.X, v.Position.Y), v.Radius, v.UntilTick, v.Source); }
+            var items = new string[Items.Count]; Items.CopyTo(items);
+            var evolutions = new string[Evolutions.Count]; Evolutions.CopyTo(evolutions);
+            return new(d.Revision, d.ChapterId, Water, Timber, AvailableWorkers, BossDefeated,
+                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), Array.AsReadOnly(enemies), Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)), Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
+        }
     }
 }

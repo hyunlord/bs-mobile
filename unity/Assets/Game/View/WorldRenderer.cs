@@ -35,7 +35,6 @@ namespace Game.View
         ArtCatalog art;
         ShapeMeshes lordMarkerMeshes;
         ShapeBatch lordMarker;
-        static readonly Vector2[] HeroOutlineDirections = {Vector2.left,Vector2.right,Vector2.up,Vector2.down};
         Shader shader;
         string estateId;
         MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
@@ -79,7 +78,7 @@ namespace Game.View
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
         int facingGeneration;
         Vector2 previousRenderedLord;
-        bool hasRenderedLord;
+        bool hasRenderedLord, heroGaitDiscontinuity;
 
         public void Initialize(Camera camera, WorldCameraSettings cameraSettings, string estate, int width, int height)
         {
@@ -108,6 +107,7 @@ namespace Game.View
                 if (frame.Level > level) levelAge = 0;
                 level = frame.Level;
             }
+            if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) heroGaitDiscontinuity = true;
             acceptedFrame = frame;
             for(var i=0;i<frame.Farms.Count;i++)
             {
@@ -126,6 +126,7 @@ namespace Game.View
                 foreach (var id in effect.HitEntityIds) hitUntil[id] = visualTime + GameVisualTokens.HitFlashSeconds;
             if (effect.Kind == PresentationKind.LordHit)
             {
+                heroGaitDiscontinuity = true;
                 heroHitUntil = visualTime + (HitFeedbackEnabled ? .2f : GameVisualTokens.HitFlashSeconds);
                 if(HitFeedbackEnabled)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
             }
@@ -263,7 +264,6 @@ namespace Game.View
             var heroVisual=HeroVisual(snapshot.HeroId,heroState,heroWalking,heroAttackProgress,seconds,out var heroAnimationTime);
             if(wave!=null)
             {
-                var heroArt=heroVisual;
                 if(lordMarker==null)
                 {
                     lordMarkerMeshes=new ShapeMeshes();
@@ -273,14 +273,12 @@ namespace Game.View
                 var radius=GameVisualTokens.WaveLordRingRadius;
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
-                foreach(var direction in HeroOutlineDirections)
-                {
-                    if(FallowActive)DrawActor(heroArt,GameVisualTokens.LordLayer-2,lord+direction*GameVisualTokens.WaveHeroOutline*1.8f,heroAnimationTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:GameVisualTokens.Ink,facing:heroFacing);
-                    DrawActor(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline*(FallowActive?1.25f:1),heroAnimationTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink,facing:heroFacing);
-                }
             }
             DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
-            DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
+            if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
+                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity))
+                DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
+            heroGaitDiscontinuity=false;
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
             threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
             SubmittedInstances = 0; DrawCalls = 0;

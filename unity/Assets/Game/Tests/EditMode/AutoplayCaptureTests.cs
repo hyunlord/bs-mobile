@@ -9,6 +9,16 @@ namespace Tests.EditMode
 {
     public sealed class AutoplayCaptureTests
     {
+        [TestCase(60,1)]
+        [TestCase(120,2)]
+        [TestCase(119.88,2)]
+        [TestCase(144,0)]
+        [TestCase(180,3)]
+        [TestCase(240,4)]
+        [TestCase(0,0)]
+        public void ExplicitRecordingPresentsAtSixtyInsteadOfDiscardingHalfOfOverloadedRendering(double hz,int divisor)
+            => Assert.That(GoldenMinuteCapture.CaptureVSync(hz),Is.EqualTo(divisor));
+
         [TestCase(120, 1, 2)]
         [TestCase(60, 1, 1)]
         [TestCase(120, 2, 1)]

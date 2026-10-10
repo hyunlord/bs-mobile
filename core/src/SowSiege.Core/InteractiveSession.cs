@@ -100,13 +100,26 @@ namespace SowSiege.Core
             public RunFrame CaptureFrame()
             {
                 var w = session.Simulation.World; var c = session.Catalog; var map = c.Tuning.World.Map;
-                var enemies = w.Enemies.Where(e => e.Health > 0).Select(e => new EnemyView(e.Id, e.Definition, InteractiveState.Point(e.Position), e.Health, c.Enemies[e.Definition].Health)).ToArray();
-                var farms = w.Farms.Select(f => new FarmView(f.Id, f.Source, InteractiveState.Point(f.Position), f.Stage, f.Stage == c.Tuning.World.Farms.StageTicks.Length - 1)).ToArray();
-                var buildings = w.Buildings.Select(b => new BuildingView(b.Id, b.Source, InteractiveState.Point(b.Position), b.Built, b.Health)).ToArray();
-                var people = w.People.Select(p => new PersonView(p.Id, p.Source, InteractiveState.Point(p.Position), p.Role, p.Members, p.Health)).ToArray();
+                var living = 0;
+                for (var i = 0; i < w.Enemies.Count; i++) { if (w.Enemies[i].Health > 0) { living++; } }
+                var enemies = new EnemyView[living];
+                var enemyIndex = 0;
+                for (var i = 0; i < w.Enemies.Count; i++)
+                {
+                    var e = w.Enemies[i];
+                    if (e.Health > 0) { enemies[enemyIndex++] = new(e.Id, e.Definition, InteractiveState.Point(e.Position), e.Health, c.Enemies[e.Definition].Health); }
+                }
+                var farms = new FarmView[w.Farms.Count];
+                for (var i = 0; i < farms.Length; i++) { var f = w.Farms[i]; farms[i] = new(f.Id, f.Source, InteractiveState.Point(f.Position), f.Stage, f.Stage == c.Tuning.World.Farms.StageTicks.Length - 1); }
+                var buildings = new BuildingView[w.Buildings.Count];
+                for (var i = 0; i < buildings.Length; i++) { var b = w.Buildings[i]; buildings[i] = new(b.Id, b.Source, InteractiveState.Point(b.Position), b.Built, b.Health); }
+                var people = new PersonView[w.People.Count];
+                for (var i = 0; i < people.Length; i++) { var person = w.People[i]; people[i] = new(person.Id, person.Source, InteractiveState.Point(person.Position), person.Role, person.Members, person.Health); }
                 var loot = w.Runtime?.GroundLoot.Select(l => new GroundLootView(l.Id, l.Item, InteractiveState.Point(l.Position))).ToArray() ?? Array.Empty<GroundLootView>();
                 var remains = w.Remains?.Live.Select(r => new RemainView(r.Id, InteractiveState.Point(r.Position))).ToArray() ?? Array.Empty<RemainView>();
-                var extent = Math.Max(map.EstateRadius, w.Farms.Select(f => Math.Max(Math.Abs(f.Position.X - w.Estate.X), Math.Abs(f.Position.Y - w.Estate.Y))).Concat(w.Buildings.Select(b => Math.Max(Math.Abs(b.Position.X - w.Estate.X), Math.Abs(b.Position.Y - w.Estate.Y)))).DefaultIfEmpty(0).Max());
+                var extent = map.EstateRadius;
+                for (var i = 0; i < w.Farms.Count; i++) { var p = w.Farms[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
+                for (var i = 0; i < w.Buildings.Count; i++) { var p = w.Buildings[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
                 return new(w.Tick, Status, w.Season, Math.Max(0, c.Tuning.World.Seasons.Take(w.Season + 1).Sum(s => s.DurationTicks) - w.Tick), c.Tuning.DurationTicks, c.Tuning.TickRate, map.Width, map.Height,
                     new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, session.State.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
                     new(enemies.Length, people.Length, farms.Length, buildings.Length, session.State.Events.Count(e => e.Kind == PresentationKind.Attack && (e.Shape == "projectile" || e.Shape == "rays"))),

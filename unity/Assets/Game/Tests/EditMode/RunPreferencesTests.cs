@@ -50,11 +50,22 @@ namespace Tests.EditMode
             Assert.That(loaded.HasSeen(FirstRunHint.Muster), Is.False);
         }
 
+        [Test] public void SelectedRigMigratesOldPreviewWithoutEnablingRuleExperiments()
+        {
+            PlayerPrefs.SetInt(prefix + "heroRigPreview", 0);
+            var settings = RunPreferences.Load(prefix);
+            Assert.That(settings.HeroRigPreview, Is.True);
+            Assert.That(settings.SnapshotFeel(), Is.Null);
+            settings.HeroRigPreview = false; settings.Save();
+            Assert.That(RunPreferences.Load(prefix).HeroRigPreview, Is.False);
+        }
+
         [Test] public void FeelTrialsDefaultOffAndSnapshotDoesNotFollowLaterPreferenceChanges()
         {
             var settings = RunPreferences.Load(prefix);
             Assert.That(settings.SnapshotFeel(), Is.Null);
-            Assert.That(settings.FeelFeedback || settings.HeroRigPreview, Is.False);
+            Assert.That(settings.FeelFeedback, Is.False);
+            Assert.That(settings.HeroRigPreview, Is.True);
             settings.FeelSpeed = true; settings.FeelContact = true; settings.FeelHealth = true;
             settings.FeelFeedback = true; settings.HeroRigPreview = true;
             var snapshot = settings.SnapshotFeel();

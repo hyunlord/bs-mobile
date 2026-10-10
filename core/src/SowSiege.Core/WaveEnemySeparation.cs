@@ -21,6 +21,7 @@ namespace SowSiege.Core
         private readonly SpatialHash spatial;
         private readonly List<EnemyState> candidates = new();
         private readonly int maximumWidth;
+        private readonly Dictionary<int, (int Width, bool Charging)> bodies = new();
         private static readonly Comparison<EnemyState> IdOrder = (a, b) => a.Id.CompareTo(b.Id);
 
         internal WaveEnemySeparation(WorldState world, MapTuning map, WaveEnemySeparationDefinition definition)
@@ -34,20 +35,29 @@ namespace SowSiege.Core
         internal void Resolve(List<EnemyState> ordered)
         {
             ordered.Sort(IdOrder);
+            bodies.Clear();
+            foreach (var enemy in ordered)
+            {
+                if (widths.TryGetValue(enemy.Definition, out var width))
+                {
+                    var charging = world.WaveRuntime!.EnemyActions.TryGetValue(enemy.Id, out var action) && action.Phase == "charge" && world.Tick < action.UntilTick;
+                    bodies.Add(enemy.Id, (width, charging));
+                }
+            }
             spatial.Rebuild(ordered);
             for (var sweep = 0; sweep < RelaxationSweeps; sweep++)
             {
                 var changed = false;
                 foreach (var first in ordered)
                 {
-                    if (first.Health <= 0 || !widths.TryGetValue(first.Definition, out var firstWidth)) { continue; }
+                    if (first.Health <= 0 || !bodies.TryGetValue(first.Id, out var firstBody)) { continue; }
                     spatial.Collect(first.Position, maximumWidth, candidates);
                     candidates.Sort(IdOrder);
                     foreach (var second in candidates)
                     {
-                        if (second.Id <= first.Id || !widths.TryGetValue(second.Definition, out var secondWidth)) { continue; }
+                        if (second.Id <= first.Id || !bodies.TryGetValue(second.Id, out var secondBody)) { continue; }
                         // 0.6 times mean width; integer padding prevents a rounding-only residual.
-                        var minimum = (MinimumDistanceWidthSumNumerator * (firstWidth + secondWidth) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + IntegerResolutionPadding;
+                        var minimum = (MinimumDistanceWidthSumNumerator * (firstBody.Width + secondBody.Width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + IntegerResolutionPadding;
                         var dx = (long)second.Position.X - first.Position.X;
                         var dy = (long)second.Position.Y - first.Position.Y;
                         var squared = dx * dx + dy * dy;
@@ -90,7 +100,7 @@ namespace SowSiege.Core
             var limit = (Math.Max(map.Width, map.Height) + step - 1) / step;
             foreach (var enemy in ordered)
             {
-                if (enemy.Health <= 0 || !widths.ContainsKey(enemy.Definition) || Charging(enemy) || Clear(enemy, enemy.Position)) { continue; }
+                if (enemy.Health <= 0 || !bodies.ContainsKey(enemy.Id) || Charging(enemy) || Clear(enemy, enemy.Position)) { continue; }
                 var origin = enemy.Position;
                 var settled = false;
                 for (var ring = 1; ring <= limit && !settled; ring++)
@@ -128,14 +138,14 @@ namespace SowSiege.Core
             spatial.Collect(candidate, maximumWidth, candidates);
             foreach (var other in candidates)
             {
-                if (other.Id == enemy.Id || other.Id > enemy.Id && !Charging(other) || !widths.TryGetValue(other.Definition, out var width)) { continue; }
-                var minimum = (MinimumDistanceWidthSumNumerator * (widths[enemy.Definition] + width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + 1;
+                if (other.Id == enemy.Id || other.Id > enemy.Id && !Charging(other) || !bodies.TryGetValue(other.Id, out var body)) { continue; }
+                var minimum = (MinimumDistanceWidthSumNumerator * (bodies[enemy.Id].Width + body.Width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + 1;
                 if (candidate.DistanceSquared(other.Position) < (long)minimum * minimum) { return false; }
             }
             return true;
         }
 
-        private bool Charging(EnemyState enemy) => world.WaveRuntime!.EnemyActions.TryGetValue(enemy.Id, out var action) && action.Phase == "charge" && world.Tick < action.UntilTick;
+        private bool Charging(EnemyState enemy) => bodies.TryGetValue(enemy.Id, out var body) && body.Charging;
         private void Move(EnemyState enemy, int dx, int dy)
         {
             if (dx == 0 && dy == 0) { return; }

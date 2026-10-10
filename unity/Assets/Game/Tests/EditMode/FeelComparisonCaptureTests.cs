@@ -6,6 +6,20 @@ using UnityEngine;
 public sealed class FeelComparisonCaptureTests
 {
     static FeelComparisonCapture Mode(string mode) => FeelComparisonCapture.Parse(new[] { "--autoplay-capture", "--feel-comparison", mode });
+    [TestCase("up",0,1)]
+    [TestCase("down",0,-1)]
+    [TestCase("right",1,0)]
+    public void CardinalWalkEvidenceUsesDeclaredHeading(string heading,float x,float y)
+    {
+        var options=FeelComparisonCapture.Parse(new[]{"--autoplay-capture","--feel-comparison","walk-b","--feel-walk-heading",heading});
+        Assert.That(options.Direction(30,30),Is.EqualTo(new Vector2(x,y)));
+        Assert.That(options.InputProtocol,Does.Contain(heading));
+    }
+    [Test] public void HeadingCannotChangeRulesTrialMovement()
+    {
+        Assert.Throws<ArgumentException>(()=>FeelComparisonCapture.Parse(new[]{"--autoplay-capture","--feel-comparison","rules-off","--feel-walk-heading","up"}));
+    }
+
     [Test] public void DefaultCaptureRemainsInactive() => Assert.That(FeelComparisonCapture.Parse(Array.Empty<string>()), Is.Null);
     [Test] public void WalkViewportAndSpeedAreExplicitAndDoNotEnableContactOrHealth()
     {

@@ -28,13 +28,13 @@ function transform(parent, offset, angle) { const c = Math.cos(parent.angle), s 
 function composite(target, width, height, sprite, joint) {
   const image = sprite.source === 'cleanSword' ? sword : source;
   const [sx, sy, sw, sh] = sprite.rect, [ax, ay] = sprite.anchor;
-  const angle = joint.angle + rad(sprite.angle || 0), c = Math.cos(angle), s = Math.sin(angle), scale = sprite.scale;
-  const corners = [[sx,sy],[sx+sw,sy],[sx,sy+sh],[sx+sw,sy+sh]].map(([x,y]) => [joint.x + ((x-ax)*c-(y-ay)*s)*scale, joint.y+((x-ax)*s+(y-ay)*c)*scale]);
+  const angle = joint.angle + rad(sprite.angle || 0), c = Math.cos(angle), s = Math.sin(angle), scale = sprite.scale, scaleX=sprite.scaleX??scale, scaleY=sprite.scaleY??scale;
+  const corners = [[sx,sy],[sx+sw,sy],[sx,sy+sh],[sx+sw,sy+sh]].map(([x,y]) => [joint.x + (x-ax)*c*scaleX-(y-ay)*s*scaleY, joint.y+(x-ax)*s*scaleX+(y-ay)*c*scaleY]);
   const minX = Math.max(4, Math.floor(Math.min(...corners.map(p=>p[0])))), maxX = Math.min(width-4, Math.ceil(Math.max(...corners.map(p=>p[0]))));
   const minY = Math.max(4, Math.floor(Math.min(...corners.map(p=>p[1])))), maxY = Math.min(height-4, Math.ceil(Math.max(...corners.map(p=>p[1]))));
   for (let y=minY;y<maxY;y++) for(let x=minX;x<maxX;x++) {
-    const dx=(x+.5-joint.x)/scale, dy=(y+.5-joint.y)/scale;
-    const u=ax+dx*c+dy*s, v=ay-dx*s+dy*c;
+    const dx=x+.5-joint.x, dy=y+.5-joint.y;
+    const u=ax+(dx*c+dy*s)/scaleX, v=ay+(-dx*s+dy*c)/scaleY;
     if(u<sx||v<sy||u>=sx+sw-1||v>=sy+sh-1)continue;
     const ix=Math.floor(u),iy=Math.floor(v),fx=u-ix,fy=v-iy;
     let a=0,r=0,g=0,b=0;
@@ -94,7 +94,7 @@ for (const [index, pose] of rig.poses.entries()) {
     for(let y=bottom-1;y<=bottom;y++)for(let x=0;x<W;x++)if(layers[layer][(y*W+x)*4+3]>127){left=Math.min(left,x);right=Math.max(right,x);}
     soles[side]={x:(left+right)/2,y:bottom};
   }
-  frames.push({id:pose.id,x:ox,y:oy,width:W,height:H,pivot:{x:280/W,y:1-420/H},phase:pose.phase??0,stance:pose.stance??{near:false,far:false},feet:pose.feet,soles,joints});
+  frames.push({id:pose.id,x:ox,y:oy,width:W,height:H,pivot:{x:rig.root.x/W,y:1-420/H},phase:pose.phase??0,stance:pose.stance??{near:false,far:false},feet:pose.feet,soles,joints});
 }
 const output=path.join(outputDirectory,'fallow-hero-b.png');
 fs.writeFileSync(output,png(atlasW,atlasH,atlas));
@@ -108,11 +108,24 @@ for(let layer=0;layer<4;layer++)for(let y=0;y<atlasH/2;y++)for(let x=0;x<atlasW/
   if(alpha>0){packed[target]=Math.round(r/alpha);packed[target+1]=Math.round(g/alpha);packed[target+2]=Math.round(b/alpha);packed[target+3]=Math.round(alpha*255/4);}
 }
 fs.writeFileSync(path.join(outputDirectory,'fallow-hero-b-layers.png'),png(packedW,packedH,packed));
+// Runtime pins the actual downsampled sole pixel centers, not ideal IK targets.
+for(const [index,frame] of frames.entries()) {
+  frame.renderSoles={};
+  for(const [side,sheetX,sheetY] of [['far',atlasW/2,0],['near',0,atlasH/2]]) {
+    const ox=sheetX+index%4*256,oy=sheetY+Math.floor(index/4)*256;
+    let bottom=0,left=256,right=0;
+    for(let y=0;y<256;y++)for(let x=0;x<256;x++)if(packed[((oy+y)*packedW+ox+x)*4+3]>127)bottom=Math.max(bottom,y);
+    for(let y=bottom-1;y<=bottom;y++)for(let x=0;x<256;x++)if(packed[((oy+y)*packedW+ox+x)*4+3]>127){left=Math.min(left,x);right=Math.max(right,x);}
+    frame.renderSoles[side]={x:left+right+1,y:bottom*2+1};
+  }
+}
 const mask=Buffer.alloc(256*256*4);
 for(let y=0;y<256;y++)for(let x=0;x<256;x++){const i=(y*256+x)*4,w=Math.round(255*Math.max(0,Math.min(1,(y*2-rig.gait.hipWarpStartY)/(rig.gait.soleWarpFullY-rig.gait.hipWarpStartY))));mask[i]=mask[i+1]=w;mask[i+3]=255;}
 fs.writeFileSync(path.join(outputDirectory,'fallow-hero-b-contact-mask.png'),png(256,256,mask));
 const metadata={schemaVersion:2,source:sourcePath,sourceSha256:createHash('sha256').update(sourceBytes).digest('hex'),swordSource:swordPath,swordSha256:createHash('sha256').update(swordBytes).digest('hex'),atlas:'fallow-hero-b.png',layeredAtlas:'fallow-hero-b-layers.png',mask:'fallow-hero-b-contact-mask.png',layers:layerNames,width:atlasW,height:atlasH,padding:4,gait:rig.gait,frameCoordinateOrigin:'top-left',pivotCoordinateOrigin:'bottom-left',runtime:'one quad, four layered samples with continuous sole correction',frames};
 fs.writeFileSync(path.join(outputDirectory,'baked-frames.json'),JSON.stringify(metadata,null,2)+'\n');
-const role=(name,indices)=>({id:`hero.preview-b.${name}`,atlas:'feel-hero-b',frames:indices.map(index=>({x:index%4*512+4,y:Math.floor(index/4)*512+4,width:504,height:504})),pivot:{x:276/504,y:88/504},worldSize:{x:.85,y:.85},frameMs:80,tween:'none'});
+const role=(name,indices)=>({id:`hero.preview-b.${name}`,atlas:'feel-hero-b',frames:indices.map(index=>({x:index%4*512+4,y:Math.floor(index/4)*512+4,width:504,height:504})),pivot:{x:(rig.root.x-4)/504,y:88/504},worldSize:{x:.785,y:.785},frameMs:80,tween:'none'});
 fs.writeFileSync(path.join(outputDirectory,'manifest-fragment.json'),JSON.stringify({atlas:{id:'feel-hero-b',path:'Assets/Art/fallow-hero-b.png',width:atlasW,height:atlasH,padding:4,license:'feel-hero-b'},roles:[role('walk',Array.from({length:12},(_,i)=>i)),role('idle',[12]),role('attack',[13]),role('hit',[14])]},null,2)+'\n');
+const layeredRole=(name,indices)=>({id:`hero.preview-b.${name}`,atlas:'feel-hero-b-layered',frames:indices.map(index=>({x:index%4*256+2,y:Math.floor(index/4)*256+2,width:252,height:252})),pivot:{x:(rig.root.x/2-2)/252,y:44/252},worldSize:{x:.785,y:.785},frameMs:80,tween:'none'});
+fs.writeFileSync(path.join(outputDirectory,'manifest-layered-fragment.json'),JSON.stringify({atlas:{id:'feel-hero-b-layered',path:'Assets/Art/fallow-hero-b-layers.png',width:packedW,height:packedH,padding:2,license:'feel-hero-b'},roles:[layeredRole('walk',Array.from({length:12},(_,i)=>i)),layeredRole('idle',[12]),layeredRole('attack',[13]),layeredRole('hit',[14])]},null,2)+'\n');
 console.log(`Baked ${count} hierarchical poses and layered contact atlas to ${outputDirectory}.`);

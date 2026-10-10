@@ -437,11 +437,11 @@
       "license": "fallow-enemies"
     },
     {
-      "id": "feel-hero-b",
-      "path": "Assets/Art/fallow-hero-b.png",
+      "id": "feel-hero-b-layered",
+      "path": "Assets/Art/fallow-hero-b-layers.png",
       "width": 2048,
-      "height": 1536,
-      "padding": 4,
+      "height": 2048,
+      "padding": 2,
       "license": "feel-hero-b"
     },
     {
@@ -9658,130 +9658,154 @@
     },
     {
       "id": "hero.preview-b.walk",
-      "atlas": "feel-hero-b",
+      "atlas": "feel-hero-b-layered",
       "frames": [
         {
-          "x": 4,
-          "y": 4,
-          "width": 504,
-          "height": 504
+          "x": 2,
+          "y": 2,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 516,
-          "y": 4,
-          "width": 504,
-          "height": 504
+          "x": 258,
+          "y": 2,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 1028,
-          "y": 4,
-          "width": 504,
-          "height": 504
+          "x": 514,
+          "y": 2,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 1540,
-          "y": 4,
-          "width": 504,
-          "height": 504
+          "x": 770,
+          "y": 2,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 4,
-          "y": 516,
-          "width": 504,
-          "height": 504
+          "x": 2,
+          "y": 258,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 516,
-          "y": 516,
-          "width": 504,
-          "height": 504
+          "x": 258,
+          "y": 258,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 1028,
-          "y": 516,
-          "width": 504,
-          "height": 504
+          "x": 514,
+          "y": 258,
+          "width": 252,
+          "height": 252
         },
         {
-          "x": 1540,
-          "y": 516,
-          "width": 504,
-          "height": 504
+          "x": 770,
+          "y": 258,
+          "width": 252,
+          "height": 252
+        },
+        {
+          "x": 2,
+          "y": 514,
+          "width": 252,
+          "height": 252
+        },
+        {
+          "x": 258,
+          "y": 514,
+          "width": 252,
+          "height": 252
+        },
+        {
+          "x": 514,
+          "y": 514,
+          "width": 252,
+          "height": 252
+        },
+        {
+          "x": 770,
+          "y": 514,
+          "width": 252,
+          "height": 252
         }
       ],
       "pivot": {
-        "x": 0.5476190476190477,
+        "x": 0.5873015873015873,
         "y": 0.1746031746031746
       },
       "worldSize": {
-        "x": 0.826875,
-        "y": 0.826875
+        "x": 0.785,
+        "y": 0.785
       },
       "frameMs": 80,
       "tween": "none"
     },
     {
       "id": "hero.preview-b.idle",
-      "atlas": "feel-hero-b",
+      "atlas": "feel-hero-b-layered",
       "frames": [
         {
-          "x": 4,
-          "y": 1028,
-          "width": 504,
-          "height": 504
+          "x": 2,
+          "y": 770,
+          "width": 252,
+          "height": 252
         }
       ],
       "pivot": {
-        "x": 0.5476190476190477,
+        "x": 0.5873015873015873,
         "y": 0.1746031746031746
       },
       "worldSize": {
-        "x": 0.826875,
-        "y": 0.826875
+        "x": 0.785,
+        "y": 0.785
       },
       "frameMs": 80,
       "tween": "none"
     },
     {
       "id": "hero.preview-b.attack",
-      "atlas": "feel-hero-b",
+      "atlas": "feel-hero-b-layered",
       "frames": [
         {
-          "x": 516,
-          "y": 1028,
-          "width": 504,
-          "height": 504
+          "x": 258,
+          "y": 770,
+          "width": 252,
+          "height": 252
         }
       ],
       "pivot": {
-        "x": 0.5476190476190477,
+        "x": 0.5873015873015873,
         "y": 0.1746031746031746
       },
       "worldSize": {
-        "x": 0.826875,
-        "y": 0.826875
+        "x": 0.785,
+        "y": 0.785
       },
       "frameMs": 80,
       "tween": "none"
     },
     {
       "id": "hero.preview-b.hit",
-      "atlas": "feel-hero-b",
+      "atlas": "feel-hero-b-layered",
       "frames": [
         {
-          "x": 1028,
-          "y": 1028,
-          "width": 504,
-          "height": 504
+          "x": 514,
+          "y": 770,
+          "width": 252,
+          "height": 252
         }
       ],
       "pivot": {
-        "x": 0.5476190476190477,
+        "x": 0.5873015873015873,
         "y": 0.1746031746031746
       },
       "worldSize": {
-        "x": 0.826875,
-        "y": 0.826875
+        "x": 0.785,
+        "y": 0.785
       },
       "frameMs": 80,
       "tween": "none"

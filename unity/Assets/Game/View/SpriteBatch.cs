@@ -10,6 +10,12 @@ namespace Game.View
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
         static readonly int FlashId = Shader.PropertyToID("_InstanceFlash");
+        static readonly int RigFrameId = Shader.PropertyToID("_RigFrame");
+        static readonly int RigUpperFrameId = Shader.PropertyToID("_RigUpperFrame");
+        static readonly int RigFarId = Shader.PropertyToID("_RigFarDelta");
+        static readonly int RigNearId = Shader.PropertyToID("_RigNearDelta");
+        static readonly int RigWarpId = Shader.PropertyToID("_RigWarp");
+        static readonly int RigCanvasId = Shader.PropertyToID("_RigCanvas");
         readonly Matrix4x4[] matrices = new Matrix4x4[MaximumInstances];
         readonly Vector4[] colors = new Vector4[MaximumInstances];
         readonly Vector4[] uvs = new Vector4[MaximumInstances];
@@ -18,6 +24,8 @@ namespace Game.View
         readonly Material material;
         readonly Mesh mesh;
         int count;
+        bool linearColorSpace;
+        bool heroRigBoundsConfigured;
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
 
@@ -32,15 +40,31 @@ namespace Game.View
             mesh.vertices = new[] { Vector3.zero, Vector3.right, new Vector3(1, 1), Vector3.up };
             mesh.uv = new[] { Vector2.zero, Vector2.right, Vector2.one, Vector2.up };
             mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 }; mesh.RecalculateBounds();
+            linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear;
         }
-        public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; }
+        public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear; }
+        public void SetHeroRigPose(Vector4 frame, Vector4 upperFrame, Vector2 farCorrection, Vector2 nearCorrection, Vector4 warp)
+        {
+            if(count!=0)throw new InvalidOperationException("The hero rig owns a single-instance batch.");
+            properties.SetVector(RigFrameId,frame);
+            properties.SetVector(RigUpperFrameId,upperFrame);
+            properties.SetVector(RigFarId,new Vector4(farCorrection.x,farCorrection.y,0,0));
+            properties.SetVector(RigNearId,new Vector4(nearCorrection.x,nearCorrection.y,0,0));
+            properties.SetVector(RigWarpId,warp);
+            properties.SetVector(RigCanvasId,new Vector4(HeroGaitState.CanvasMinimumY,1-HeroGaitState.CanvasMinimumY,0,0));
+            if(!heroRigBoundsConfigured)
+            {
+                mesh.bounds=new Bounds(new Vector3(.5f,(1+HeroGaitState.CanvasMinimumY)*.5f,0),new Vector3(1,1-HeroGaitState.CanvasMinimumY,0));
+                heroRigBoundsConfigured=true;
+            }
+        }
         public void Add(Vector2 position, Vector2 size, Vector2 pivot, Rect uv, float degrees, Color color, float flash = 0, float edgeTexels = 0, float upperOpacity = 1)
         {
             if (count == MaximumInstances) Flush();
             var rotation = Quaternion.Euler(0, 0, degrees);
             var offset = rotation * new Vector3(-pivot.x * size.x, -pivot.y * size.y, 0);
             matrices[count] = Matrix4x4.TRS(new Vector3(position.x, position.y, 0) + offset, rotation, new Vector3(size.x, size.y, 1));
-            colors[count] = QualitySettings.activeColorSpace == ColorSpace.Linear ? color.linear : color;
+            colors[count] = linearColorSpace ? color.linear : color;
             uvs[count] = new Vector4(uv.x, uv.y, uv.width, uv.height);
             flashes[count] = new Vector4(Mathf.Clamp01(flash), Mathf.Max(0, edgeTexels), Mathf.Clamp01(upperOpacity), edgeTexels>0?GameVisualTokens.WaveEdgePixels:0); count++;
         }

@@ -16,13 +16,14 @@ for (const frame of metadata.frames) {
     const alpha=image.pixels[((frame.y+y)*image.width+frame.x+x)*4+3];
     if(x<8||y<8||x>=504||y>=504)assert.equal(alpha,0,`${frame.id}: perimeter`);
   }
-  assert.deepEqual(frame.joints.root,{x:280,y:272,angle:0});
+  assert.deepEqual(frame.joints.root,{x:300,y:272,angle:0});
   if(frame.id.startsWith('walk'))for(const side of ['far','near']) {
     if(!frame.stance[side])continue;
     const sole=frame.soles[side],target=frame.feet[side];
     const error=Math.hypot(sole.x-target[0],sole.y-target[1]);
     assert.ok(error<=1.5,`${frame.id} ${side}: actual opaque sole differs from authoring target ${error}px`);
     assert.equal(mask.pixels[(Math.floor(sole.y/2)*256+128)*4],255,'stance sole must receive full continuous correction');
+    assert.equal(frame.renderSoles[side].y,421,'packed stance boot uses one consistent pixel-center ground line');
     stanceErrors.push(error);
   }
 }

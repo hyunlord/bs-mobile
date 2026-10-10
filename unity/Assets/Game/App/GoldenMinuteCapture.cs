@@ -29,7 +29,7 @@ namespace Game.App
         long submissionAllocations = -1, callbackAllocations = -1;
         bool submissionCounterAvailable, callbackCounterAvailable, callbackCounterCalibrated;
         bool stopping, finalized, battleSelected, initialRunSelected, writerCompleting;
-        int oldFrameRate, renderStride, firstRenderFrame;
+        int oldFrameRate, oldVSync, captureFrameRate, captureVSync, renderStride, firstRenderFrame;
         double displayRefreshRate;
         bool warmupSubmitted, warmed, flipReadbackRows, armed;
         public bool ReadyToStart => warmed && !stopping;
@@ -67,10 +67,20 @@ namespace Game.App
             var listener = FindFirstObjectByType<AudioListener>();
             if (listener != null) audio = GoldenMinuteAudio.BeginMixedOutput(listener, Path.Combine(folder, "audio.wav"));
             displayRefreshRate = Screen.currentResolution.refreshRateRatio.value;
-            renderStride = RefreshStride(displayRefreshRate, QualitySettings.vSyncCount);
             oldFrameRate = Application.targetFrameRate;
-            Application.targetFrameRate = 60;
+            oldVSync = QualitySettings.vSyncCount;
+            QualitySettings.vSyncCount = CaptureVSync(displayRefreshRate);
+            Application.targetFrameRate = QualitySettings.vSyncCount == 0 ? 60 : -1;
+            captureVSync=QualitySettings.vSyncCount; captureFrameRate=Application.targetFrameRate;
+            renderStride = RefreshStride(displayRefreshRate, QualitySettings.vSyncCount);
             StartCoroutine(Record());
+        }
+
+        public static int CaptureVSync(double displayHz)
+        {
+            for(var divisor=1;divisor<=4;divisor++)
+                if(Math.Abs(displayHz/divisor-60)<1)return divisor;
+            return 0;
         }
 
         public static int RefreshStride(double displayHz, int vSyncCount)
@@ -250,6 +260,7 @@ namespace Game.App
             finalized = true;
             ReleaseBuffers();
             Application.targetFrameRate = oldFrameRate;
+            QualitySettings.vSyncCount = oldVSync;
             run.WriteSmoothnessDiagnostics(folder);
             Array.Sort(intervals, 0, intervalCount);
             File.WriteAllText(Path.Combine(folder, "golden-minute.json"), JsonUtility.ToJson(new Evidence {
@@ -276,7 +287,7 @@ namespace Game.App
                 imageWriterAllocationCounterAvailable = writer != null && writer.AllocationCounterAvailable, audioWriterAllocationCounterAvailable = audio != null && audio.AllocationCounterAvailable,
                 audio = audio != null && audio.NonzeroSampleCount > 0, audioDroppedBlocks = audio?.DroppedBlocks ?? 0,
                 audioStartOffsetSeconds = audio?.VideoOffsetSeconds ?? 0, battleScreenshot = writer != null && writer.BattleWritten, initialRunScreenshot = writer != null && writer.InitialRunWritten,
-                automatedNormalInput = true, failure = failure, requestedFps = 60, displayRefreshHz = displayRefreshRate, presentationRenderStride = renderStride, readbackRowsFlipped = flipReadbackRows
+                automatedNormalInput = true, failure = failure, requestedFps = 60, displayRefreshHz = displayRefreshRate, presentationRenderStride = renderStride, captureVSyncCount=captureVSync, captureTargetFrameRate=captureFrameRate, readbackRowsFlipped = flipReadbackRows
             }, true));
             complete(failure == null, failure ?? "Live native frames captured asynchronously with actual timestamps; no synthesized frames or visual acceptance claim.");
         }
@@ -309,7 +320,7 @@ namespace Game.App
             public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
             public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;
             public double displayRefreshHz;
-            public int presentationRenderStride;
+            public int presentationRenderStride, captureVSyncCount, captureTargetFrameRate;
             public int frames, submittedFrames, finalTick, tickRate, width, height, requestedFps, gpuErrors, ringOverflows, missed60HzSlots, audioDroppedBlocks, completedReadbacks, maximumQueueDepth, globalGcCollections;
             public long submissionAllocatedBytes, callbackAllocatedBytes, imageWriterAllocatedBytes, audioWriterAllocatedBytes;
             public double wallSeconds, measuredFps, frameP95Ms, frameMaxMs, audioStartOffsetSeconds;

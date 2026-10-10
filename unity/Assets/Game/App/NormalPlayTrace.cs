@@ -185,7 +185,7 @@ namespace Game.App
                 if (!enemyIds.Contains(id) && enemyIds.Count < 5) enemyIds.Add(id);
                 if (!enemyIds.Contains(id)) return;
             }
-            else if (kind != "lord" && kind != "projectile" && kind != "orbit") return;
+            else if (kind != "lord" && kind != "projectile" && kind != "orbit" && kind != "hero-foot-near" && kind != "hero-foot-far") return;
             if (sampleCount == samples.Length) { droppedEntities++; return; }
             samples[sampleCount++] = new Sample { Kind = kind, Id = id, World = world, FriendlyProjectile=kind=="projectile"&&IsFriendlyProjectile(id) };
         }
