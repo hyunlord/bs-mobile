@@ -56,7 +56,7 @@ Mac 정상 속도 증거는 Recorder와 동시에 실행하지 않고 앱을 전
 
 ## 실제 입력의 연속 GPU 재생
 
-혼잡한 일반 영상에서 짧은 동작이 가려지면 PlayMode 검사 `Game.Tests.WaveWorldTests.RecordedWaveRangeExportsActualTickFrames`로 기존 `.ssreplay`의 연속 틱을 그릴 수 있다. `WAVE_QA_REPLAY`, `WAVE_QA_START_TICK`, `WAVE_QA_END_TICK`, 새 빈 `WAVE_QA_SEQUENCE_OUTPUT`, 예상 실행 소스 커밋 `WAVE_QA_RENDERER_COMMIT`을 지정한다. 먼저 깨끗한 실행 소스에서 Unity 준비 검사를 통과시키고, 생성된 BuildIdentity와 현재 소스 diff가 일치하는지 별도로 확인한다. 생성 메타데이터만으로 현재 소스가 같다고 판단하지 않는다.
+혼잡한 일반 영상에서 짧은 동작이 가려지면 PlayMode 검사 `Tests.PlayMode.WaveWorldTests.RecordedWaveRangeExportsActualTickFrames`로 기존 `.ssreplay`의 연속 틱을 그릴 수 있다. `WAVE_QA_REPLAY`, `WAVE_QA_START_TICK`, `WAVE_QA_END_TICK`, 새 빈 `WAVE_QA_SEQUENCE_OUTPUT`, 예상 실행 소스 커밋 `WAVE_QA_RENDERER_COMMIT`을 지정한다. 먼저 깨끗한 실행 소스에서 Unity 준비 검사를 통과시키고, 생성된 BuildIdentity와 현재 소스 diff가 일치하는지 별도로 확인한다. 생성 메타데이터만으로 현재 소스가 같다고 판단하지 않는다.
 
 최대1800개 실제 틱을 같은 입력 순서로 렌더링하며, 구간 이후도 같은 세션에서 끝까지 진행해 원본 종료 틱·명령 수·종류·해시를 검증한다. 원본에 checkpoint가 없으면 종료 해시 검증만 있다고 명시한다. 디버그 지급·생성 명령과 조립한 상태를 실제 플레이 증거로 사용하지 않는다.
 
