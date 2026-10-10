@@ -69,6 +69,7 @@ public static partial class ContentLoader
             && SameIds(profile.Selection.Enemies, wave.Enemies.Keys) && SameIds(file.EnemyStats.Keys, wave.Enemies.Keys), "Wave profile selection differs from runtime definitions.");
         ValidateWaveDefinition(file);
         Require(new CanonicalStateHasher().Compute(file.Tuning) == new CanonicalStateHasher().Compute(Read<Tuning>(Path.Combine(directory, "first-playable-tuning.json"))), "Inherited wave tuning differs from declared source; balance remains held.");
+        var programs = WavePrimitiveSupport.Resolve(wave);
         var tools = new Dictionary<string, ToolDefinition>(StringComparer.Ordinal);
         var weapons = new Dictionary<string, WeaponDefinition>(StringComparer.Ordinal);
         using var design = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory, "system-design-v1.json")));
@@ -77,11 +78,11 @@ public static partial class ContentLoader
         {
             var gear = entry.Value;
             var tags = designs[gear.Id].GetProperty("tags").EnumerateArray().Select(t => t.GetString()!).ToArray();
-            var activation = new Activation(gear.Damage, gear.Range, gear.CooldownTicks, gear.Kind is WaveAttackKind.Homing ? "projectile" : gear.Kind is WaveAttackKind.Orbit ? "orbit" : "melee", gear.Knockback);
+            var activation = new Activation(gear.Damage, gear.Range, gear.CooldownTicks, programs[gear.Id].Is("unit:attack-shape", "shape", "homing-projectile") ? "projectile" : programs[gear.Id].Is("unit:attack-shape", "shape", "orbit") ? "orbit" : "melee", gear.Knockback);
             if (profile.Selection.Weapons.Contains(gear.Id, StringComparer.Ordinal)) { weapons.Add(gear.Id, new(gear.Id, tags, activation)); }
             else
             {
-                var target = gear.Kind is WaveAttackKind.ConstructionSlam ? "building" : gear.Kind is WaveAttackKind.MusterWave ? "people" : "land";
+                var target = programs[gear.Id].Value("unit:remnant-create", "target", "land");
                 tools.Add(gear.Id, new(gear.Id, tags, activation, new(target, 1), designs[gear.Id].GetProperty("cardText").GetString()!, []));
             }
         }
@@ -124,7 +125,8 @@ public static partial class ContentLoader
         foreach (var property in type.GetProperties())
         {
             var name = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
-            Require(node.TryGetProperty(name, out var member), "Missing wave property " + location + "." + name);
+            if (!node.TryGetProperty(name, out var member) && property.IsDefined(typeof(OmitWhenNullAttribute), false)) { continue; }
+            Require(node.TryGetProperty(name, out member), "Missing wave property " + location + "." + name);
             ValidateWaveShape(member, property.PropertyType, location + "." + name);
         }
     }
