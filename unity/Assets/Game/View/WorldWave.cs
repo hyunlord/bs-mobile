@@ -193,6 +193,8 @@ namespace Game.View
                             var pulse=Mathf.Clamp01(1-(visualTime-repairAnchors[attack.Source].started)/GameVisualTokens.EmphasisSeconds);
                             var badge=Resolve("attack","core:levy_banner","nova");
                             Draw(badge,GameVisualTokens.ReadyLayer+1,Point(attack.Origin),0,badge.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveRepairBannerOpacity+pulse*GameVisualTokens.AreaAttackOpacity);
+                            var workshop=Resolve("wave","workshop-frame","default");
+                            Draw(workshop,GameVisualTokens.WaveReadinessCueLayer,Point(anchor.Position),visualTime,workshop.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveEdgeOpacity,tint:GameVisualTokens.Attack,edgeTexels:GameVisualTokens.WaveEdgeTexels);
                             var shield=Resolve("wave","shield-fragment","default");
                             Draw(shield,GameVisualTokens.WaveTransientCueLayer,Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,shield.WorldSize*GameVisualTokens.WaveRepairShieldScale);
                             growthLabels.Show(2,"수리 중",Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveGrowthLabelRise);
