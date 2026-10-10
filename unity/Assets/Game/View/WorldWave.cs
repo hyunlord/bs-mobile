@@ -19,6 +19,8 @@ namespace Game.View
         readonly HashSet<string> drawnRepairAnchors = new HashSet<string>();
         long lastWaveEvent = -1;
         int ripeCueId = -1;
+        string collectionLabel;
+        float collectedAt;
         public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame)
         {
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
@@ -27,6 +29,7 @@ namespace Game.View
                 waveEnemyById.Clear();waveActorById.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ripeCueId=-1;
+                collectionLabel=null;growthLabels?.Clear();
             }
             if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
             {
@@ -41,6 +44,13 @@ namespace Game.View
             {
                 if(value.Id<=lastWaveEvent)continue;
                 lastWaveEvent=value.Id;
+                if(value.Kind=="reward-collected"&&value.Amount>0)
+                {
+                    var source=value.Source;
+                    if(waveDefinition.Evolutions.TryGetValue(source,out var rewardEvolution))source=rewardEvolution.InputIds.First(id=>waveDefinition.Gear[id].Kind>=WaveAttackKind.SeedFan);
+                    collectionLabel=(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?"수확 +":"완료 +")+value.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)+" XP";
+                    collectedAt=visualTime;
+                }
                 if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))waveEffects.Add((value,visualTime));
                 if(value.Kind=="work-created"&&liveGrainIds.Contains(value.SubjectId))waveEffects.Add((value,visualTime));
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
@@ -76,6 +86,7 @@ namespace Game.View
         }
         void DrawWave(RunFrame current)
         {
+            growthLabels?.BeginFrame();
             if(wave==null)return;
             IndexWaveActors(current);
             if(wave.Timber>0)
@@ -96,6 +107,12 @@ namespace Game.View
             WaveWorkView nearbyRipe=null,retainedRipe=null;
             var nearestRipeDistance=GameVisualTokens.WaveRipeCueRadius*GameVisualTokens.WaveRipeCueRadius;
             var lordPoint=Point(current.Lord.Position);
+            if(collectionLabel!=null)
+            {
+                var progress=(visualTime-collectedAt)/GameVisualTokens.WaveCollectionLabelSeconds;
+                if(progress<1)growthLabels.Show(1,collectionLabel,lordPoint+Vector2.up*(GameVisualTokens.WaveCollectionLabelRise+progress*.15f),Mathf.Min(1,(1-progress)*3));
+                else collectionLabel=null;
+            }
             foreach(var work in wave.Work)
             {
                 if(work.Kind=="grain"&&work.Health<=0)continue;
@@ -138,6 +155,7 @@ namespace Game.View
             {
                 var ear=Resolve("wave","grain-ripe","default");
                 Draw(ear,GameVisualTokens.WaveReadinessCueLayer,Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,ear.WorldSize*GameVisualTokens.WaveRipeCueScale);
+                growthLabels.Show(0,"익음",Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveGrowthLabelRise);
             }
             if(wave.CarriedWater>0)WaveSprite("water-carry",GameVisualTokens.AllyLayer+1,current.Lord.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
             foreach(var reward in wave.Rewards)
@@ -177,6 +195,7 @@ namespace Game.View
                             Draw(badge,GameVisualTokens.ReadyLayer+1,Point(attack.Origin),0,badge.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveRepairBannerOpacity+pulse*GameVisualTokens.AreaAttackOpacity);
                             var shield=Resolve("wave","shield-fragment","default");
                             Draw(shield,GameVisualTokens.WaveTransientCueLayer,Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,shield.WorldSize*GameVisualTokens.WaveRepairShieldScale);
+                            growthLabels.Show(2,"수리 중",Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveGrowthLabelRise);
                         }
                         else repairAnchors.Remove(attack.Source);
                     }

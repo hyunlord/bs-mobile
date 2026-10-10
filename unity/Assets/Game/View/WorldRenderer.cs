@@ -24,6 +24,7 @@ namespace Game.View
         RunCamera followCamera;
         WorldCameraSettings settings;
         WorldDamageNumbers numbers;
+        WorldGrowthLabels growthLabels;
         WorldAnnouncements announcements;
         ArtCatalog art;
         ShapeMeshes lordMarkerMeshes;
@@ -66,7 +67,7 @@ namespace Game.View
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); announcements = new WorldAnnouncements(camera, art);
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
         }
 
         public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot)
@@ -413,7 +414,7 @@ namespace Game.View
         }
         void OnDestroy()
         {
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); announcements?.Dispose(); art = null;
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }

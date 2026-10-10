@@ -76,6 +76,7 @@ namespace Tests.PlayMode
                     world.AcceptWave(catalog,snapshot);
                     world.Present(frame,frame,WavePresentation.Envelope(catalog,frame,session.View.CaptureCards(),snapshot),1,delta,new Rect(0,0,720,1280));
                 }
+                string[] Labels()=>owner.GetComponentsInChildren<TextMesh>().Select(label=>label.text).Distinct().ToArray();
                 Present(state);yield return null;var baseline=world.SubmittedInstances;
                 var attack=new WaveEvent(1,frame.Tick,"attack",planting.Id,-1,frame.Lord.Position,point,400);
                 Present(state with {Events=new[]{attack}});yield return null;
@@ -99,8 +100,10 @@ namespace Tests.PlayMode
                 var orbit=new WaveAttackView(repair.Id,"orbit",point,new WorldPoint(point.X+300,point.Y),100,frame.Tick+100);
                 Present(work with {Attacks=new[]{orbit}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+4),"Only the actual off-hero repair origin gets an anchor sigil and shield alongside its fragment.");
+                Assert.That(Labels(),Does.Contain("수리 중"),"The actual building anchor identifies its action without relying on a blue burst.");
                 Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"The regular hero-centered orbit must not imply a building anchor.");
+                Assert.That(Labels(),Does.Not.Contain("수리 중"));
                 Present(work with {Work=new[]{building with {Complete=true}},Attacks=new[]{orbit}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"Completed work is no longer a repair anchor.");
                 Present(work with {Work=System.Array.Empty<WaveWorkView>(),Attacks=new[]{orbit}});yield return null;
@@ -113,6 +116,7 @@ namespace Tests.PlayMode
                 var ripe=state with {Work=new[]{plot with {Complete=true}}};
                 Present(ripe);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"Only actual ripe grain receives its edge and one nearby readiness ear.");
+                Assert.That(Labels(),Does.Contain("익음"));
                 Present(ripe with {Work=new[]{plot with {Complete=true},plot with {Id=901,Complete=true,Position=new WorldPoint(point.X+20,point.Y)}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+4),"Several ripe plots still have only one nearby readiness ear.");
                 Present(ripe);yield return null;
@@ -120,17 +124,21 @@ namespace Tests.PlayMode
                 var uptake=ripe with {Events=new[]{collected}};
                 Present(uptake);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"A consumed reward ID need not match a living grain ID to show actual uptake.");
+                Assert.That(Labels(),Does.Contain("수확 +10 XP"),"Real collected XP is named in the world, not only the HUD bar.");
                 Present(uptake);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"Repeated collection event IDs do not duplicate uptake.");
                 Present(ripe with {Events=new[]{collected with {Id=5,SubjectId=9902}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"Several real collections have at most one visible intake.");
                 world.AcceptWave(null,null);Present(ripe);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"A reset clears the transient collection cue.");
+                Assert.That(Labels(),Does.Not.Contain("수확 +10 XP"));
                 Present(ripe with {Events=new[]{collected with {Id=6,Amount=0}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"Zero experience cannot create an intake cue.");
+                Assert.That(Labels().Any(label=>label.Contains("XP")),Is.False);
                 var dead=state with {Work=new[]{plot with {Complete=true,Health=0}}};
                 Present(dead);yield return null;var withoutGrain=world.SubmittedInstances;
                 Assert.That(withoutGrain,Is.EqualTo(baseline-1),"Death removes readiness immediately and cannot fabricate harvesting.");
+                Assert.That(Labels(),Does.Not.Contain("익음"));
                 var harvest=new WaveEvent(7,frame.Tick,"harvest-complete",plot.Source,plot.Id,point,point,0);
                 Present(dead with {Events=new[]{harvest}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(withoutGrain+1),"Real harvest follows grain death, so its upward ear uses the event position.");
@@ -138,6 +146,19 @@ namespace Tests.PlayMode
                 Assert.That(world.SubmittedInstances,Is.EqualTo(withoutGrain+1),"Repeated harvest IDs cannot duplicate the ear.");
                 Present(dead,1);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(withoutGrain),"The actual harvest cue expires.");
+                Present(ripe with {Events=new[]{collected with {Id=8}}});yield return null;
+                Present(ripe,1);yield return null;
+                Assert.That(Labels().Any(label=>label.Contains("XP")),Is.False,"Collected XP text expires independently of later live crops.");
+                var pooledLabels=owner.GetComponentsInChildren<TextMesh>(true);
+                Assert.That(pooledLabels.Length,Is.LessThanOrEqualTo(6));
+                foreach(var label in pooledLabels)
+                {
+                    var mesh=label.GetComponent<MeshRenderer>();
+                    Assert.That(mesh.sortingOrder,Is.Zero,"Match world sprite sorting before using material queue hierarchy.");
+                    Assert.That(mesh.sharedMaterial.renderQueue,Is.InRange(3070,3071));
+                }
+                world.AcceptWave(null,null);
+                Assert.That(Labels(),Is.Empty,"Null/profile reset hides all semantic labels immediately.");
             }
             finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }
