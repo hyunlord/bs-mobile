@@ -28,7 +28,7 @@ namespace Game.App
         bool submissionCounterAvailable, callbackCounterAvailable, callbackCounterCalibrated;
         bool stopping, finalized, battleSelected, initialRunSelected, writerCompleting;
         int oldFrameRate;
-        bool warmupSubmitted, warmed, flipReadbackRows;
+        bool warmupSubmitted, warmed, flipReadbackRows, armed;
         public bool ReadyToStart => warmed && !stopping;
 
         sealed class GpuSlot
@@ -66,6 +66,13 @@ namespace Game.App
             StartCoroutine(Record());
         }
 
+        public void ArmRecording()
+        {
+            if (!ReadyToStart || armed || run.Frame == null || run.Frame.Tick != 0 || run.CaptureClockPaused)
+                throw new InvalidOperationException("Recording requires a warmed, normally resumed run at tick zero.");
+            armed = true;
+        }
+
         IEnumerator Record()
         {
             while (!finalized)
@@ -80,8 +87,8 @@ namespace Game.App
                     }
                     catch (Exception exception) { failure = exception.ToString(); StopCapture(); }
                 }
-                if (!stopping && warmed && run.Frame != null) run.NotifySmoothnessEndOfFrame();
-                if (!stopping && warmed && run.Frame != null)
+                if (!stopping && warmed && armed && run.Frame != null) run.NotifySmoothnessEndOfFrame();
+                if (!stopping && warmed && armed && run.Frame != null)
                 {
                     try { SubmitFrame(); }
                     catch (Exception exception) { failure = exception.ToString(); StopCapture(); }

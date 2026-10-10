@@ -10,6 +10,31 @@ namespace Tests.EditMode
     public sealed class AutoplayCaptureTests
     {
         [Test]
+        public void GoldenRecordingCannotArmBeforeWorldAndBuffersAreReady()
+        {
+            var host = new GameObject("capture arming contract");
+            try
+            {
+                var capture = host.AddComponent<GoldenMinuteCapture>();
+                Assert.That(capture.ReadyToStart, Is.False);
+                Assert.Throws<InvalidOperationException>(() => capture.ArmRecording());
+            }
+            finally { UnityEngine.Object.DestroyImmediate(host); }
+        }
+
+        [Test]
+        public void OrdinaryCaptureIgnoresGoldenWorldReadyNotification()
+        {
+            var host = new GameObject("ordinary capture notification");
+            try
+            {
+                var capture = host.AddComponent<AutoplayCapture>();
+                Assert.DoesNotThrow(() => capture.OnRunReady(null));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(host); }
+        }
+
+        [Test]
         public void OrdinaryLaunchAndOutputFlagAloneNeverActivateAutomation()
         {
             Assert.That(AutoplayCapture.IsRequested(new[] { "game" }), Is.False);

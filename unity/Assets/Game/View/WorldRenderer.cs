@@ -462,8 +462,8 @@ namespace Game.View
             var pose=ActorMotion.Sample(time,walking,attackProgress,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale);
             var angle=pose.Degrees+facing.LeanDegrees;
-            if(facing.MirrorBlend<.999f)Draw(visual,layer,position+pose.Offset,time,dimensions,angle,opacity:1-facing.MirrorBlend,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false);
-            if(facing.MirrorBlend>.001f)Draw(visual,layer,position+pose.Offset,time,new Vector2(-dimensions.x,dimensions.y),angle,opacity:facing.MirrorBlend,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false);
+            dimensions.x *= facing.SignedWidth;
+            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false);
         }
         void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true)
         {

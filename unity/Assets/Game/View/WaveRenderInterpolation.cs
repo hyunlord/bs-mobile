@@ -7,23 +7,32 @@ namespace Game.View
 {
     public struct OrbitRenderMotion
     {
-        float from, target, started, radiusFrom, radiusTarget, radiusStarted;
+        float angle, target, angularVelocity, radius, radiusTarget, radialVelocity, sampledAt, radiusSpeed;
+        public float AngularVelocity => angularVelocity;
+        public float MaximumAngularLag { get; private set; }
         public OrbitRenderMotion(float angle, float time, float radius = 0)
         {
-            from = target = angle; started = radiusStarted = time; radiusFrom = radiusTarget = radius;
+            this.angle = target = angle; this.radius = radiusTarget = radius;
+            sampledAt = time; angularVelocity = radialVelocity = 0;
+            radiusSpeed = Mathf.Max(1, radius) * 4; MaximumAngularLag = 0;
         }
-        public float AngleAt(float time) => Mathf.LerpAngle(from, target, Mathf.Clamp01((time - started) / GameVisualTokens.OrbitRenderLag));
-        public float RadiusAt(float time) => Mathf.Lerp(radiusFrom, radiusTarget, Mathf.Clamp01((time - radiusStarted) / GameVisualTokens.OrbitRenderLag));
-        public void SetTarget(float angle, float time)
+        void Advance(float time)
         {
-            if (Mathf.Abs(Mathf.DeltaAngle(target, angle)) < .001f) return;
-            from = AngleAt(time); target = angle; started = time;
+            var delta = time - sampledAt;
+            if (delta <= 0) return;
+            angle = Mathf.SmoothDampAngle(angle, target, ref angularVelocity, GameVisualTokens.OrbitSmoothSeconds, GameVisualTokens.OrbitMaxDegreesPerSecond, delta);
+            radius = Mathf.SmoothDamp(radius, radiusTarget, ref radialVelocity, GameVisualTokens.OrbitSmoothSeconds, radiusSpeed, delta);
+            sampledAt = time;
+            MaximumAngularLag = Mathf.Max(MaximumAngularLag, Mathf.Abs(Mathf.DeltaAngle(angle, target)));
         }
-        public void SetRadius(float radius, float time)
+        public float AngleAt(float time) { Advance(time); return angle; }
+        public float RadiusAt(float time) { Advance(time); return radius; }
+        public void SetTarget(float value, float time)
         {
-            if (Mathf.Abs(radiusTarget - radius) < .0001f) return;
-            radiusFrom = RadiusAt(time); radiusTarget = radius; radiusStarted = time;
+            Advance(time); target = value;
+            MaximumAngularLag = Mathf.Max(MaximumAngularLag, Mathf.Abs(Mathf.DeltaAngle(angle, target)));
         }
+        public void SetRadius(float value, float time) { Advance(time); radiusTarget = value; }
     }
 
     public sealed class WaveRenderInterpolation
@@ -101,7 +110,9 @@ namespace Game.View
             var state = orbits[keys[index]];
             var current = state.current; var previous = state.before;
             var center = current.Origin.Equals(lord) ? renderedLord : Vector2.Lerp(new Vector2(previous.Origin.X, previous.Origin.Y), new Vector2(current.Origin.X, current.Origin.Y), alpha) / units;
-            return RadialPoint(center, state.motion.RadiusAt(time) / units, state.motion.AngleAt(time));
+            var position = RadialPoint(center, state.motion.RadiusAt(time) / units, state.motion.AngleAt(time));
+            orbits[keys[index]] = state;
+            return position;
         }
     }
 }

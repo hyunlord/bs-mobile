@@ -238,6 +238,7 @@ namespace Game.App
             }
             catch(Exception e){Fail(e);}
             loading=false;
+            if(Error==null)AutoplayCapture.Active?.OnRunReady(this);
         }
         private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
         private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));MenuOpen=false;cardsFrame=null;Stick.ResetStick();}

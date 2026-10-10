@@ -74,7 +74,19 @@ ffmpeg -f concat -safe 0 -i frames.ffconcat \
 기준과 같은 비율로 나란히 비교하되 기준 그림을 실제 화면에 합성하지 않는다. Release에는
 영상·선정 비교 캡처만 올리고 재생성 가능한 프레임 전체나 증거 ZIP을 올리지 않는다.
 
+## 실제 월드의 시작 준비
+
+소개 화면에서 캡처 링을 준비한 뒤, 정상 `개척 시작`으로 생성한 월드의 tick 0에서
+HUD의 `잠시 멈춤` 버튼을 호출한다. RunCoordinator의 UI 준비 알림은 로딩 종료 직후
+동기적으로 전달하므로 Core가 한 번이라도 진행하기 전에 정상 설정 화면으로 멈춘다.
+그 상태에서 1초 동안 실제 월드를 렌더하고, LateUpdate에서 `돌아가기`를 눌러 재개한다.
+진단 버퍼는 이 시점에 초기화하고 캡처를 arm한다. 첫 EOF는 tick 0이며 이후 정상
+60초 전부를 녹화한다. 준비 중 JPEG·PCM·프레임 간격 표본은 기록하지 않는다.
+준비 전후 tick이 0이 아니거나 정상 일시정지/재개가 실패하면 녹화를 실패로 남긴다.
+로드 지연을 숨기려고 틱을 건너뛰거나 초기 상태를 재설정하지 않는다.
+
 ## API 근거
+
 
 - [Unity 6000.6 CaptureScreenshotIntoRenderTexture](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/ScreenCapture.CaptureScreenshotIntoRenderTexture.html)
 - [Unity 6000.6 RequestIntoNativeArray](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Rendering.AsyncGPUReadback.RequestIntoNativeArray.html)

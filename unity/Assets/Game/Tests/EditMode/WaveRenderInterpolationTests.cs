@@ -51,12 +51,15 @@ namespace Tests.EditMode
             motion.Accept(Frame() with {Attacks=new[]{diagonal}},1);
             Vector2 Position(float time)=>motion.OrbitPosition(0,1,time,1000,new WorldPoint(0,0),Vector2.zero);
             Assert.That(Position(1).magnitude,Is.EqualTo(.7f).Within(.0001f));
+            var start=Position(1);
+            Assert.That(Vector2.Distance(start,Position(1.008333f)),Is.LessThan(.06f));
             Assert.That(Position(1.05f).magnitude,Is.InRange(.71f,.98f));
-            Assert.That(Position(1.101f).magnitude,Is.EqualTo(Mathf.Sqrt(.98f)).Within(.0001f));
-            Assert.That(Vector2.Distance(Position(1),Position(1.008333f)),Is.LessThan(.06f));
+            for(var i=7;i<=60;i++)Position(1+i/120f);
+            Assert.That(Position(1.5f).magnitude,Is.EqualTo(Mathf.Sqrt(.98f)).Within(.001f));
             motion.Accept(Frame() with {Attacks=new[]{cardinal}},2);
-            Assert.That(Position(2).magnitude,Is.EqualTo(Mathf.Sqrt(.98f)).Within(.0001f));
-            Assert.That(Position(2.101f).magnitude,Is.EqualTo(.7f).Within(.0001f));
+            Assert.That(Position(2).magnitude,Is.EqualTo(Mathf.Sqrt(.98f)).Within(.001f));
+            for(var i=1;i<=60;i++)Position(2+i/120f);
+            Assert.That(Position(2.5f).magnitude,Is.EqualTo(.7f).Within(.001f));
         }
 
         [Test] public void AngleCrossesWrapByTheShortestPath()
@@ -70,8 +73,33 @@ namespace Tests.EditMode
             orbit.SetTarget(45, 1);
             Assert.That(orbit.AngleAt(1), Is.EqualTo(0));
             Assert.That(orbit.AngleAt(1.05f), Is.InRange(1, 44));
-            Assert.That(orbit.AngleAt(1.11f), Is.EqualTo(45).Within(.001f));
+            for(var i=7;i<=60;i++)orbit.AngleAt(1+i/120f);
+            Assert.That(orbit.AngleAt(1.5f), Is.EqualTo(45).Within(.001f));
             Assert.That((WaveRenderInterpolation.RadialPoint(new Vector2(3, 4), 2, 45) - new Vector2(3, 4)).magnitude, Is.EqualTo(2).Within(.001f));
+        }
+
+        [Test] public void LargeOrbitTurnRetainsVelocityAndBoundsEachRenderStep()
+        {
+            var orbit=new OrbitRenderMotion(0,0,1);
+            orbit.SetTarget(180,0);
+            Assert.That(orbit.AngularVelocity,Is.Zero);
+            var previous=orbit.AngleAt(0);
+            for(var i=1;i<=120;i++)
+            {
+                var angle=orbit.AngleAt(i/120f);
+                Assert.That(Mathf.Abs(Mathf.DeltaAngle(previous,angle)),Is.LessThanOrEqualTo(720f/120+.001f));
+                Assert.That(Mathf.Abs(orbit.AngularVelocity),Is.LessThanOrEqualTo(720));
+                previous=angle;
+            }
+            Assert.That(Mathf.Abs(Mathf.DeltaAngle(previous,180)),Is.LessThan(.001f));
+            orbit.SetTarget(90,1);
+            orbit.AngleAt(1.01f);
+            var velocity=orbit.AngularVelocity;
+            var position=orbit.AngleAt(1.01f);
+            orbit.SetTarget(-90,1.01f);
+            Assert.That(orbit.AngularVelocity,Is.EqualTo(velocity));
+            Assert.That(orbit.AngleAt(1.01f),Is.EqualTo(position));
+            Assert.That(orbit.MaximumAngularLag,Is.GreaterThanOrEqualTo(179));
         }
 
         [Test] public void WarmMotionEvaluationDoesNotAllocate()
@@ -106,12 +134,15 @@ namespace Tests.EditMode
             Assert.That(facing.Sample(1.05f).MirrorBlend,Is.EqualTo(1));
         }
 
-        [Test] public void FacingReversalCrossfadesAndVerticalNoiseDoesNotFlipAgain()
+        [Test] public void FacingReversalNarrowsOneSilhouetteAndVerticalNoiseDoesNotFlipAgain()
         {
             var facing=new ActorFacingMotion(Vector2.right,0);
             facing.SetDirection(Vector2.left,1);
             Assert.That(facing.Sample(1).MirrorBlend,Is.Zero);
             Assert.That(facing.Sample(1.05f).MirrorBlend,Is.EqualTo(.5f).Within(.001f));
+            Assert.That(Mathf.Abs(facing.Sample(1.05f).SignedWidth),Is.EqualTo(.8f).Within(.001f));
+            Assert.That(facing.Sample(1.02f).SignedWidth,Is.GreaterThan(.8f));
+            Assert.That(facing.Sample(1.08f).SignedWidth,Is.LessThan(-.8f));
             Assert.That(facing.Sample(1.101f).MirrorBlend,Is.EqualTo(1));
             facing.SetDirection(new Vector2(.01f,1),2);
             Assert.That(facing.Sample(2.2f).MirrorBlend,Is.EqualTo(1));

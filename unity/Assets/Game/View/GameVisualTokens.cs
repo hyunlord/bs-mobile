@@ -9,10 +9,10 @@ namespace Game.View
         public const int FallowMaskSize = 128;
         public const float FallowMaskInterval = .1f, FallowHarvestSeconds = 1.4f;
         public const float FallowSeedRadius = .42f, FallowRipeRadius = .95f, FallowBuildingRadius = 1.3f;
-        public const float FallowSeedWidth = .28f, FallowSproutWidth = .34f, FallowRipeWidth = .40f, FallowWorkshopScale = 1f;
+        public const float FallowSeedWidth = .56f, FallowSproutWidth = .68f, FallowRipeWidth = .80f, FallowWorkshopScale = 1f;
         public static readonly Vector2 FallowLordViewportAnchor = new Vector2(.60f, .57f);
         public const float FallowPresentationZoom = 1.15f;
-        public const float OrbitRenderLag = .10f, ActorAttackSeconds = .22f;
+        public const float OrbitSmoothSeconds = .06f, OrbitMaxDegreesPerSecond = 720f, ActorAttackSeconds = .22f;
         public const float ActorTurnSeconds = .10f, ActorHeadingLean = 3f;
         public static readonly Color Ink = new Color32(0x29, 0x28, 0x22, 255);
         public static readonly Color Ally = new Color32(0x37, 0x64, 0x8B, 255);

@@ -27,7 +27,7 @@ namespace Game.App
         bool capturing, ended, waveAttached;
         long lastWaveEvent=-1;
         Result result;
-        bool goldenMinute;
+        bool goldenMinute, goldenWorldPaused, goldenRecordingStarted;
         GoldenMinuteCapture minuteCapture;
         int portraitAttempt, portraitFrame;
         double portraitSettleAt;
@@ -174,6 +174,38 @@ namespace Game.App
             catch (Exception error) { Finish(false, error.ToString()); }
         }
 
+        public void OnRunReady(RunCoordinator coordinator)
+        {
+            if (ended || !goldenMinute || stage != 5 || coordinator != run) return;
+            try
+            {
+                if (run.Frame == null || run.Frame.Tick != 0) throw new InvalidOperationException("Golden minute world warmup missed tick zero; no gameplay may be skipped.");
+                Click(run.IsWave ? "잠시\n멈춤" : "설정");
+                if (!run.CaptureClockPaused) throw new InvalidOperationException("Normal pause button did not pause world warmup.");
+                goldenWorldPaused = true;
+                nextAction = Elapsed + 1;
+                Log("world-warmup-paused", "normal settings button; tick=0; no recording");
+            }
+            catch (Exception error) { Finish(false, error.ToString()); }
+        }
+
+        void LateUpdate()
+        {
+            if (ended || !goldenMinute || stage != 5 || !goldenWorldPaused || goldenRecordingStarted || Elapsed < nextAction) return;
+            try
+            {
+                if (run.Frame == null || run.Frame.Tick != 0) throw new InvalidOperationException("Paused world warmup advanced gameplay.");
+                if (!run.CaptureClockPaused) throw new InvalidOperationException("World warmup unexpectedly resumed.");
+                Click("돌아가기");
+                if (run.CaptureClockPaused) throw new InvalidOperationException("Normal resume button did not resume the run.");
+                run.BeginSmoothnessDiagnostics();
+                minuteCapture.ArmRecording();
+                goldenRecordingStarted = true;
+                Log("world-warmup-resumed", "normal return button; tick=0; recording armed before first gameplay advance");
+            }
+            catch (Exception error) { Finish(false, error.ToString()); }
+        }
+
         double Elapsed => Time.realtimeSinceStartupAsDouble - started;
 
         void Pump()
@@ -220,7 +252,7 @@ namespace Game.App
                     }
                     Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
                 case 5:
-                    if (run.Frame == null) return;
+                    if (run.Frame == null || goldenMinute && !goldenRecordingStarted) return;
                     replayPath = run.RecordedReplayPath; result.replay = replayPath;
                     Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); if (!goldenMinute) Capture("02-native-run.png"); stage = 6; break;
                 case 6: Play(); break;

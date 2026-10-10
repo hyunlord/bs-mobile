@@ -5,6 +5,7 @@ namespace Game.View
     public readonly struct ActorFacingPose
     {
         public readonly float MirrorBlend, LeanDegrees;
+        public float SignedWidth => (1 - .2f * Mathf.Sin(Mathf.Clamp01(MirrorBlend) * Mathf.PI)) * (MirrorBlend < .5f ? 1 : -1);
         public ActorFacingPose(float mirrorBlend,float leanDegrees) { MirrorBlend=mirrorBlend;LeanDegrees=leanDegrees; }
     }
 

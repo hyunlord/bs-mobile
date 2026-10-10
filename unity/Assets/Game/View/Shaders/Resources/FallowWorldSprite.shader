@@ -80,11 +80,11 @@ Shader "Game/View/FallowWorldSprite"
                 half grain = frac(sin(dot(floor(paper), float2(12.9898, 78.233))) * 43758.5453);
                 half coverage = smoothstep(.09 + grain * .12, .60 + grain * .13, restoration.a);
                 half luminance = dot(sample.rgb, half3(.2126, .7152, .0722));
-                half3 ash = lerp(.11 + luminance * .50, luminance, _FallowContrast) * half3(.91, .94, .95);
+                half3 ash = lerp(.16 + luminance * .28, luminance, _FallowContrast) * half3(.91, .94, .95);
                 half weight = max(.001, restoration.r + restoration.g + restoration.b);
-                half3 pigment = (restoration.r * half3(.66, .79, .42) + restoration.g * half3(1, .78, .32) + restoration.b * half3(.92, .66, .40)) / weight;
+                half3 pigment = (restoration.r * half3(.52, .73, .34) + restoration.g * half3(.92, .77, .30) + restoration.b * half3(.61, .75, .40)) / weight;
                 half3 restored = lerp(sample.rgb, sample.rgb * pigment * 1.3, .30);
-                half3 restoredSoil = lerp(.22 + restored * .62, pigment * (.48 + luminance * .38), .58);
+                half3 restoredSoil = lerp(.18 + restored * .42, pigment * (.52 + luminance * .30), .78);
                 restored = lerp(restoredSoil, restored, _FallowContrast);
                 sample.rgb = lerp(ash, restored, coverage);
                 return sample;
