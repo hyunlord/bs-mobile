@@ -15,9 +15,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   map:
-    uses: hyunlord/lattice/.github/workflows/lattice.yml@440acec5aa4307c03e62583dfa598a1aea22f069
+    uses: hyunlord/lattice/.github/workflows/lattice.yml@880c97165d1ee7c0e8a5d92b0eeebeffe2c26c92
     with:
-      tool-ref: 440acec5aa4307c03e62583dfa598a1aea22f069
+      tool-ref: 880c97165d1ee7c0e8a5d92b0eeebeffe2c26c92
       history-ref: de2a5713ce7c9d9c9f38a663e0a1cae66bbfe5b5
       history-current-lens: true
       verification-script: .lattice/verify-ci.mjs
