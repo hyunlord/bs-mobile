@@ -795,7 +795,7 @@ facets:
                     op: get
                     from: graph
                     path:
-                      - edges
+                      - nodes
                   where:
                     op: and
                     values:
@@ -804,28 +804,65 @@ facets:
                           op: get
                           from: item
                           path:
-                            - target
-                        right:
-                          op: get
-                          from: node
-                          path:
-                            - id
-                      - op: in
-                        value:
+                            - kind
+                        right: item
+                      - op: eq
+                        left:
                           op: get
                           from: item
                           path:
-                            - kind
-                        collection:
-                          op: literal
-                          value:
-                            - item-tool
-                            - item-weapon
+                            - layer
+                        right: designed-v1
+                      - op: not
+                        value:
+                          op: eq
+                          left:
+                            op: get
+                            from: item
+                            path:
+                              - itemScope
+                          right: universal
+                      - op: or
+                        values:
+                          - op: in
+                            value:
+                              op: get
+                              from: node
+                              path:
+                                - id
+                            collection: &a1
+                              op: case
+                              cases:
+                                - when:
+                                    op: eq
+                                    left:
+                                      op: get
+                                      from: node
+                                      path:
+                                        - kind
+                                    right: tool
+                                  value:
+                                    op: get
+                                    from: item
+                                    path:
+                                      - linkedToolIds
+                              default:
+                                op: get
+                                from: item
+                                path:
+                                  - linkedWeaponIds
+                          - op: in
+                            value:
+                              op: get
+                              from: node
+                              path:
+                                - originalId
+                            collection: *a1
                 value:
                   op: get
                   from: item
                   path:
-                    - source
+                    - id
       default: null
     layer: designed-v1
   - id: candidate-reference-depth
