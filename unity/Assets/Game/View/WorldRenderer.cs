@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+#if UNITY_EDITOR
+using System.Linq;
+#endif
 using SowSiege.Core;
 using UnityEngine;
 
