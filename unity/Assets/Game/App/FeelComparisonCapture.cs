@@ -10,7 +10,7 @@ namespace Game.App
         public bool RequestedFeedback => RequestedRulesOn;
         public bool RequestedHeroB => Mode == "walk-b";
         public bool Walk => Mode == "walk-a" || Mode == "walk-b";
-        public string InputProtocol => Walk ? "tick-walk-right-v1" : "tick-circle-30s-v1";
+        public string InputProtocol => Walk ? "tick-walk-right-v1" : "growth-evasive-policy-v1";
         public CaptureSegmentWindow Window => new CaptureSegmentWindow(Walk ? 0 : 360, Walk ? 5 : 30, !Walk);
 
         FeelComparisonCapture(string mode) { Mode = mode; }
@@ -37,8 +37,7 @@ namespace Game.App
         {
             if (tick < 0 || tickRate <= 0) throw new ArgumentOutOfRangeException(nameof(tick));
             if (Walk) return Vector2.right;
-            var phase = (tick % (tickRate * 30)) * (Math.PI * 2 / (tickRate * 30));
-            return new Vector2((float)Math.Cos(phase), (float)Math.Sin(phase));
+            throw new InvalidOperationException("Rules comparison uses the normal growth and evasion policy, not a fixed direction tape.");
         }
     }
 }

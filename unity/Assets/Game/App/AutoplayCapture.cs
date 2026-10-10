@@ -160,7 +160,7 @@ namespace Game.App
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
             var movementArgument=Array.IndexOf(args,"--capture-movement");
             if(movementArgument>=0&&movementArgument+1>=args.Length)throw new ArgumentException("--capture-movement requires default or evasive.");
-            WaveCaptureInput.ConfigureMovement(movementArgument<0?null:args[movementArgument+1]);
+            WaveCaptureInput.ConfigureMovement(FeelComparison != null && !FeelComparison.Walk ? "evasive" : movementArgument<0?null:args[movementArgument+1]);
             var priorityArgument=Array.IndexOf(args,"--capture-priority");
             if(priorityArgument>=0){if(priorityArgument+1>=args.Length)throw new ArgumentException("--capture-priority requires comma-separated card IDs.");WaveCaptureInput.ConfigurePriority(args[priorityArgument+1]);}
             var targetArgument=Array.IndexOf(args,"--capture-target-material");
@@ -177,7 +177,7 @@ namespace Game.App
                 automatedInput = true, timeScale = 1, isolatedProfile = ProfileDirectory, preferencesPrefix = PreferencesPrefix };
             WriteResult();
             Log("capture-start", "automated pointer and UI button input; 1x; fresh chapter1 profile; focus-independent capture; no OS-user or human-input claim");
-            if (FeelComparison != null) Log("feel-comparison", FeelComparison.Mode + ";input=" + FeelComparison.InputProtocol + ";shared target path via frame-sampled UI; actual tick commands, legal card choices and resulting state may diverge; gameplay seconds, card pauses extend wall duration");
+            if (FeelComparison != null) Log("feel-comparison", FeelComparison.Mode + ";input=" + FeelComparison.InputProtocol + ";walk uses fixed direction; rules share growth/evasion policy, not identical movement commands; actual movement, legal card choices and resulting state may diverge; gameplay seconds, card pauses extend wall duration");
             if(weakBuild)Log("weak-build-policy","ordinary perimeter movement avoiding reward/estate farming; prefer items then owned gear; at most two weapons; no evolution; only required card choices; no level or experience override");
             nextAction = 3;
         }
@@ -360,7 +360,7 @@ namespace Game.App
                 Log("card-click", card); cardAt = -1; return;
             }
             Vector2 direction;
-            if (FeelComparison != null) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
+            if (FeelComparison != null && FeelComparison.Walk) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
             else
             {
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();

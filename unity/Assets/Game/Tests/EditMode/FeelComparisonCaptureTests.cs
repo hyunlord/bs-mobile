@@ -19,13 +19,15 @@ public sealed class FeelComparisonCaptureTests
         Assert.That(b.RequestedRulesOn || a.RequestedRulesOn, Is.False);
         for (var tick = 0; tick <= 150; tick++) { Assert.That(a.Direction(tick, 30), Is.EqualTo(Vector2.right)); Assert.That(a.Direction(tick, 30), Is.EqualTo(b.Direction(tick, 30))); }
     }
-    [Test] public void RulesPairHasSameTickTapeAndOnlyOnEnablesRulesAndFeedback()
+    [Test] public void RulesPairSharesReactivePolicyAndRejectsFixedDirectionTape()
     {
         var off = Mode("rules-off"); var on = Mode("rules-on");
         Assert.That(on.Window.StartSeconds, Is.EqualTo(360)); Assert.That(on.Window.EndSeconds, Is.EqualTo(390));
         Assert.That(on.Window.Landscape, Is.True); Assert.That(off.RequestedRulesOn, Is.False);
         Assert.That(on.RequestedRulesOn && on.RequestedFeedback, Is.True); Assert.That(on.RequestedHeroB, Is.False);
-        for (var tick = 0; tick <= 11700; tick += 13) { Assert.That(off.Direction(tick, 30), Is.EqualTo(on.Direction(tick, 30))); Assert.That(on.Direction(tick, 30).magnitude, Is.EqualTo(1).Within(.000001)); }
-        Assert.That(on.Direction(900, 30), Is.EqualTo(on.Direction(0, 30)));
+        Assert.That(off.InputProtocol, Is.EqualTo("growth-evasive-policy-v1"));
+        Assert.That(on.InputProtocol, Is.EqualTo(off.InputProtocol));
+        Assert.Throws<InvalidOperationException>(() => off.Direction(0, 30));
+        Assert.Throws<InvalidOperationException>(() => on.Direction(900, 30));
     }
 }

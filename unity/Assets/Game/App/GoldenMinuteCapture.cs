@@ -257,7 +257,7 @@ namespace Game.App
                 profile = CanonicalContent.ProfileName, dataHash = CanonicalContent.DataHash,
                 feelComparison = AutoplayCapture.Active.FeelComparison?.Mode,
                 movementProtocol = AutoplayCapture.Active.FeelComparison?.InputProtocol,
-                comparisonBoundary = AutoplayCapture.Active.FeelComparison == null ? null : "Shared tick-indexed target path through frame-sampled UI input; actual per-tick commands and legal card choices may differ. Gameplay-second window at 1x, card pauses extend actual wall duration. No forced survival.",
+                comparisonBoundary = AutoplayCapture.Active.FeelComparison == null ? null : "Walk uses fixed rightward input; rules share the normal growth/evasion policy, not identical movement commands. Actual movement and legal card choices may diverge with state. Gameplay-second window at 1x, card pauses extend actual wall duration. No forced survival.",
                 seed = captureSeed, requestedStartSeconds = segment.StartSeconds, requestedDurationSeconds = segment.DurationSeconds, actualStartTick = actualStartTick,
                 requestedEndSeconds = segment.EndSeconds, actualEndTick = submitted == 0 ? -1 : finalTick,
                 segmentBoundary = "Normal live autoplay from tick zero; no skipped simulation, replay, acceleration or grants. Audio and image recording begin at the requested start tick.",
