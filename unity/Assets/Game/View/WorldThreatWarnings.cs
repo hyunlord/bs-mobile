@@ -9,7 +9,7 @@ namespace Game.View
         readonly List<ThreatCorridor> warningSelection = new List<ThreatCorridor>(3);
         readonly HashSet<(int, int)> explainedCharges = new HashSet<(int, int)>(2);
         ShapeMeshes warningMeshes;
-        ShapeBatch warningLines, warningArrows;
+        ShapeBatch warningLines, warningArrowBacking, warningArrows;
         WorldGrowthLabels warningLabels;
         float warningCaptionUntil;
 
@@ -20,7 +20,8 @@ namespace Game.View
                 warningMeshes = new ShapeMeshes();
                 var shader = Resources.Load<Shader>("WorldShape");
                 warningLines = new ShapeBatch(warningMeshes[WorldShape.Square], shader, renderCamera, GameVisualTokens.WaveDangerLayer);
-                warningArrows = new ShapeBatch(warningMeshes[WorldShape.Triangle], shader, renderCamera, GameVisualTokens.WaveDangerLayer + 1);
+                warningArrowBacking = new ShapeBatch(warningMeshes[WorldShape.Triangle], shader, renderCamera, GameVisualTokens.ThreatLayer - 1);
+                warningArrows = new ShapeBatch(warningMeshes[WorldShape.Triangle], shader, renderCamera, GameVisualTokens.ThreatLayer);
                 warningLabels = new WorldGrowthLabels(transform, "돌진 — 옆으로 피하세요", GameVisualTokens.Hostile);
                 warningLabels.Show(0, "돌진 — 옆으로 피하세요", Vector2.zero);
                 warningLabels.Clear();
@@ -29,7 +30,7 @@ namespace Game.View
 
         void DrawThreatWarnings(RunFrame current, float alpha, Vector2 lord)
         {
-            warningLines.BeginFrame(); warningArrows.BeginFrame(); warningLabels.BeginFrame(); warningSelection.Clear();
+            warningLines.BeginFrame(); warningArrowBacking.BeginFrame(); warningArrows.BeginFrame(); warningLabels.BeginFrame(); warningSelection.Clear();
             var cameraPosition = (Vector2)renderCamera.transform.position;
             var halfHeight = renderCamera.orthographicSize; var halfWidth = halfHeight * renderCamera.aspect;
             var visible = new Rect(cameraPosition - new Vector2(halfWidth, halfHeight), new Vector2(halfWidth * 2, halfHeight * 2));
@@ -64,22 +65,25 @@ namespace Game.View
                 warningLines.Add(coveredEnd, new Vector2(lineWidth * .5f, lane.Radius), angle, color);
                 warningLines.Add(lane.Origin, new Vector2(lineWidth, Mathf.Min(lane.Radius, pixelsToWorld * 5)), angle, color);
                 var progress = ThreatCorridors.Progress(lane, current.Tick, alpha);
-                var fill = color; fill.a = lane.Active ? .2f : .1f;
+                var fill = color; fill.a = lane.Active ? .13f : .065f;
                 warningLines.Add(coveredStart + coveredVector * progress * .5f, new Vector2(coveredLength * progress * .5f, lane.Radius), angle, fill);
-                var arrowLength = Mathf.Min(length * .16f, pixelsToWorld * 11);
-                var arrowWidth = Mathf.Min(lane.Radius * .6f, pixelsToWorld * 6);
-                warningArrows.Add(lane.Origin + vector * .7f, new Vector2(arrowLength, arrowWidth), angle, color);
+                var arrowLength = Mathf.Min(length * .22f, pixelsToWorld * 15);
+                var arrowWidth = Mathf.Min(lane.Radius * .7f, pixelsToWorld * 9);
+                var arrowPosition = lane.Origin + vector * .7f;
+                var backing = pixelsToWorld * 2;
+                warningArrowBacking.Add(arrowPosition, new Vector2(arrowLength + backing, arrowWidth + backing), angle, GameVisualTokens.Ink);
+                warningArrows.Add(arrowPosition, new Vector2(arrowLength, arrowWidth), angle, Color.Lerp(GameVisualTokens.Attack, color, .15f));
                 if (!lane.Water && explainedCharges.Count < 2 && explainedCharges.Add((lane.Id, lane.ImpactTick))) warningCaptionUntil = visualTime + 2;
             }
             if (visualTime < warningCaptionUntil)
                 warningLabels.Show(0, "돌진 — 옆으로 피하세요", lord + Vector2.up * .75f);
-            warningLines.Flush(); warningArrows.Flush();
+            warningLines.Flush(); warningArrowBacking.Flush(); warningArrows.Flush();
         }
 
         void ResetThreatWarnings()
         { explainedCharges.Clear(); warningCaptionUntil = 0; warningLabels?.Clear(); warningSelection.Clear(); }
 
         void DisposeThreatWarnings()
-        { warningLines?.Dispose(); warningArrows?.Dispose(); warningMeshes?.Dispose(); warningLabels?.Dispose(); }
+        { warningLines?.Dispose(); warningArrowBacking?.Dispose(); warningArrows?.Dispose(); warningMeshes?.Dispose(); warningLabels?.Dispose(); }
     }
 }

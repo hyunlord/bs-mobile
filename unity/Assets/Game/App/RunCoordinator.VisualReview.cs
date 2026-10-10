@@ -18,6 +18,8 @@ namespace Game.App
         int visualReviewWidth, visualReviewHeight;
         string[] visualReviewEnemyIds;
         VisualReviewResult visualReviewResult;
+        Rect visualReviewUsableArea;
+        readonly List<VisualEnemySample> visualEnemyCandidates=new List<VisualEnemySample>();
         readonly Dictionary<string,VisualEnemySample> visualEnemySamples=new Dictionary<string,VisualEnemySample>(StringComparer.Ordinal);
         [Serializable] sealed class VisualReviewResult
         {
@@ -32,6 +34,7 @@ namespace Game.App
         {
             public int tick, enemies;
             public string file, stateHash;
+            public Rect usableWorldScreenArea;
             public List<string> enemyKinds = new List<string>();
             public List<string> missingRequestedEnemyKinds = new List<string>();
             public List<VisualEnemySample> actualScreenSamples = new List<VisualEnemySample>();
@@ -41,7 +44,9 @@ namespace Game.App
             public string definitionId, cropFile;
             public int entityId;
             public Rect worldBounds, screenBounds;
-            public string boundary="Actual rendered quad AABB crop at native pixels; surrounding actors and occlusion remain, not an isolated or rescaled specimen.";
+            public bool hudUnobscured, noOtherEnemyBoundsOverlap;
+            public float enemyBoundsOverlapFraction;
+            public string boundary="Actual rendered quad AABB crop at native pixels; HUD excluded using actual RectTransforms; least enemy-AABB overlap preferred. Remaining scenery/actor occlusion is not pixel-tested, not an isolated or rescaled specimen.";
         }
         void CaptureVisualEnemyBounds(string definitionId,int entityId,Rect worldBounds)
         {
@@ -50,8 +55,48 @@ namespace Game.App
             var maximum=(Vector2)camera.WorldToScreenPoint(new Vector3(worldBounds.xMax,worldBounds.yMax,0));
             var screen=Rect.MinMaxRect(minimum.x,minimum.y,maximum.x,maximum.y);
             if(screen.width<1||screen.height<1||screen.xMin<0||screen.yMin<0||screen.xMax>Screen.width||screen.yMax>Screen.height)return;
-            if(visualEnemySamples.TryGetValue(definitionId,out var prior)&&prior.entityId<=entityId)return;
-            visualEnemySamples[definitionId]=new VisualEnemySample { definitionId=definitionId,entityId=entityId,worldBounds=worldBounds,screenBounds=screen };
+            visualEnemyCandidates.Add(new VisualEnemySample { definitionId=definitionId,entityId=entityId,worldBounds=worldBounds,screenBounds=screen });
+        }
+        Rect VisualWorldUsableArea()
+        {
+            var area=Screen.safeArea;
+            var corners=new Vector3[4];
+            foreach(var name in new[]{"HUD","Loadout"})
+            {
+                var rect=Ui.Content.Find(name) as RectTransform;
+                if(rect==null||!rect.gameObject.activeInHierarchy)continue;
+                rect.GetWorldCorners(corners);
+                var bottom=RectTransformUtility.WorldToScreenPoint(null,corners[0]).y;
+                var top=RectTransformUtility.WorldToScreenPoint(null,corners[2]).y;
+                if(name=="HUD")area.yMax=Mathf.Min(area.yMax,bottom);
+                else area.yMin=Mathf.Max(area.yMin,top);
+            }
+            return area;
+        }
+        static bool ContainsEntireRect(Rect area,Rect sample)
+            => sample.xMin>=area.xMin&&sample.yMin>=area.yMin&&sample.xMax<=area.xMax&&sample.yMax<=area.yMax;
+        void SelectVisualEnemySamples()
+        {
+            visualEnemySamples.Clear();
+            foreach(var sample in visualEnemyCandidates)
+            {
+                var cropBounds=Rect.MinMaxRect(Mathf.Floor(sample.screenBounds.xMin),Mathf.Floor(sample.screenBounds.yMin),Mathf.Ceil(sample.screenBounds.xMax),Mathf.Ceil(sample.screenBounds.yMax));
+                if(!ContainsEntireRect(visualReviewUsableArea,cropBounds))continue;
+                var overlap=0f;
+                foreach(var other in visualEnemyCandidates)
+                {
+                    if(other.entityId==sample.entityId)continue;
+                    overlap+=Mathf.Max(0,Mathf.Min(sample.screenBounds.xMax,other.screenBounds.xMax)-Mathf.Max(sample.screenBounds.xMin,other.screenBounds.xMin))
+                        *Mathf.Max(0,Mathf.Min(sample.screenBounds.yMax,other.screenBounds.yMax)-Mathf.Max(sample.screenBounds.yMin,other.screenBounds.yMin));
+                }
+                sample.hudUnobscured=true;
+                sample.enemyBoundsOverlapFraction=Mathf.Clamp01(overlap/(sample.screenBounds.width*sample.screenBounds.height));
+                sample.noOtherEnemyBoundsOverlap=overlap==0;
+                if(visualEnemySamples.TryGetValue(sample.definitionId,out var prior)&&
+                    (prior.enemyBoundsOverlapFraction<sample.enemyBoundsOverlapFraction||
+                     prior.enemyBoundsOverlapFraction==sample.enemyBoundsOverlapFraction&&prior.entityId<sample.entityId))continue;
+                visualEnemySamples[sample.definitionId]=sample;
+            }
         }
         static string VisualArgument(string[] args, string name)
         {
@@ -151,7 +196,8 @@ namespace Game.App
                 var visible=Screen.safeArea;
                 visible.yMin+=Mathf.Min(UiTokens.BottomWorldInset*Ui.Canvas.scaleFactor,visible.height*.2f);
                 visible.yMax=Mathf.Max(visible.yMin+1,visible.yMax-hud.ReservedTopPixels);
-                visualEnemySamples.Clear();
+                visualEnemyCandidates.Clear();
+                visualReviewUsableArea=VisualWorldUsableArea();
                 for(var warm=0;warm<30;warm++)
                 {
                     // Resume before camera rendering; EOF is capture-only, never a draw submission phase.
@@ -163,13 +209,16 @@ namespace Game.App
                 if(Screen.width!=visualReviewWidth||Screen.height!=visualReviewHeight) throw new InvalidOperationException("Visual viewport changed before capture.");
                 var filename="tick-"+Frame.Tick+".png";
                 world.RenderedEnemyBoundsSample=null;
-                var row=new VisualReviewFrame { tick=Frame.Tick,enemies=Frame.Enemies.Count,file=filename,stateHash=Session.ComputeStateHash() };
+                SelectVisualEnemySamples();
+                var row=new VisualReviewFrame { tick=Frame.Tick,enemies=Frame.Enemies.Count,file=filename,stateHash=Session.ComputeStateHash(),usableWorldScreenArea=visualReviewUsableArea };
                 var texture=ScreenCapture.CaptureScreenshotAsTexture();
                 try
                 {
                     if(texture.width!=visualReviewWidth||texture.height!=visualReviewHeight) throw new InvalidOperationException("Captured texture dimensions differ from requested native viewport.");
                     File.WriteAllBytes(Path.Combine(visualReviewOutput,filename),texture.EncodeToPNG());
-                    var definitions=visualReviewEnemyIds == null ? new List<string>(visualEnemySamples.Keys) : new List<string>(visualReviewEnemyIds);
+                    var definitions=visualReviewEnemyIds == null ? new List<string>() : new List<string>(visualReviewEnemyIds);
+                    if(visualReviewEnemyIds==null)foreach(var candidate in visualEnemyCandidates)
+                        if(!definitions.Contains(candidate.definitionId))definitions.Add(candidate.definitionId);
                     definitions.Sort(StringComparer.Ordinal);
                     for(var index=0;index<definitions.Count;index++)
                     {
