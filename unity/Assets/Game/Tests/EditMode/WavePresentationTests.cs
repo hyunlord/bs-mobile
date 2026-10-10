@@ -85,6 +85,32 @@ namespace Game.Tests
             finally{WaveCaptureInput.ConfigurePriority(null);}
         }
         [Test]
+        public void CaptureEvolutionPhaseSelectsOnlyActualOffersAndKeepsDefaultPolicy()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Wave catalog required.");
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var hash=session.ComputeStateHash();
+            var frame=session.View.CaptureFrame() with {Tick=17999,Level=3,Equipment=new[]{new EquipmentView("core:iron_blade",1)}};
+            CardOfferView Offer(params string[] ids)=>new CardOfferView(ids,null,0,0,0);
+            WaveCaptureInput.ConfigurePriority("core:sowing_sworddance,core:ward_orbit");
+            try
+            {
+                var mixed=Offer("core:sowing_sworddance","core:ward_orbit");
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame,catalog,evolutionAfterTick:18000),Is.EqualTo("core:ward_orbit"));
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame with {Tick=18000},catalog,evolutionAfterTick:18000),Is.EqualTo("core:sowing_sworddance"));
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame,catalog),Is.EqualTo("core:sowing_sworddance"),"Omitted phase preserves the native and historical policy.");
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame,catalog,evolutionAfterTick:0),Is.EqualTo(WaveCaptureInput.ChooseCard(mixed,frame,catalog)));
+                Assert.That(WaveCaptureInput.ChooseCard(Offer("core:sheltered_sowing","core:iron_blade"),frame,catalog,evolutionAfterTick:18000),Is.EqualTo("core:iron_blade"),"Fallback must also prefer actual non-evolution offers.");
+                var evolutions=Offer("core:warded_masonry","core:sowing_sworddance");
+                Assert.That(WaveCaptureInput.ChooseCard(evolutions,frame,catalog,evolutionAfterTick:18000),Is.EqualTo(WaveCaptureInput.ChooseCard(evolutions,frame,catalog)),"An all-evolution offer cannot be skipped or replaced.");
+                Assert.That(WaveCaptureInput.ChooseCard(Offer("core:sheltered_sowing"),frame,catalog,evolutionAfterTick:18000),Is.EqualTo("core:sheltered_sowing"),"An unpreferred evolution is still the only actual choice.");
+                Assert.Throws<ArgumentOutOfRangeException>(()=>WaveCaptureInput.ChooseCard(mixed,frame,catalog,evolutionAfterTick:-1));
+                Assert.That(session.ComputeStateHash(),Is.EqualTo(hash),"Card preferences never mutate gameplay state.");
+            }
+            finally{WaveCaptureInput.ConfigurePriority(null);}
+        }
+        [Test]
         public void EvasiveCaptureChangesOnlyBoundedMovementTargetsAndIsOptIn()
         {
             if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Wave catalog required.");

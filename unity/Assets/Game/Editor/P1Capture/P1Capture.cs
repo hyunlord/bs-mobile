@@ -19,6 +19,7 @@ namespace Game.P1Capture
     public static class P1Capture
     {
         static int evasionAfterTick;
+        static int evolutionAfterTick;
         static string configuredMovement, activeMovement;
         static int CaptureSeed => int.TryParse(Environment.GetEnvironmentVariable("P1_CAPTURE_SEED"),out var seed)?seed:30000;
         const string ActiveKey = "SowSiege.P1Capture.Active";
@@ -143,6 +144,9 @@ namespace Game.P1Capture
                 var threshold=Environment.GetEnvironmentVariable("P1_CAPTURE_EVASION_AFTER_TICK");
                 evasionAfterTick=0;
                 if(threshold!=null&&(!int.TryParse(threshold,out evasionAfterTick)||evasionAfterTick<0))throw new ArgumentException("P1_CAPTURE_EVASION_AFTER_TICK requires a nonnegative integer.");
+                var evolutionThreshold=Environment.GetEnvironmentVariable("P1_CAPTURE_EVOLUTIONS_AFTER_TICK");
+                evolutionAfterTick=0;
+                if(evolutionThreshold!=null&&(!int.TryParse(evolutionThreshold,out evolutionAfterTick)||evolutionAfterTick<0))throw new ArgumentException("P1_CAPTURE_EVOLUTIONS_AFTER_TICK requires a nonnegative integer.");
                 WaveCaptureInput.ConfigureMovement(configuredMovement);
                 activeMovement=evasionAfterTick>0?"default":configuredMovement;
                 WaveCaptureInput.ConfigureMovement(activeMovement);
@@ -150,6 +154,7 @@ namespace Game.P1Capture
                 ledger = new StreamWriter(Path.Combine(output, "capture-ledger.tsv"), false) { AutoFlush = true };
                 ledger.WriteLine("mediaSeconds\ttick\tkind\tdetail\tunscaledSeconds\trenderFrame");
                 Log("capture-movement-plan",$"beforeTick={evasionAfterTick};before=default;after={configuredMovement??"default"};ordinary pointer inputs only; scene-coverage sample, not survival-policy evaluation");
+                Log("capture-card-plan",$"evolutionsAfterTick={evolutionAfterTick};before=prefer offered non-evolutions;after=original priority;all-evolution offers=original priority;actual offers only; no grants, rerolls, or skipped choices");
                 ScreenCapture.CaptureScreenshot(Path.Combine(output, "01-editor-title.png"));
                 preparationAt = Time.unscaledTimeAsDouble;
                 Log("preparation-title", "outside movie; preserve initial title before neutral run scene loading");
@@ -273,7 +278,7 @@ namespace Game.P1Capture
                     if (elapsed - cardAt >= 2)
                     {
                         var offers=run.Session.View.CaptureCards();
-                        var card = run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,Environment.GetEnvironmentVariable("P1_CAPTURE_TARGET")):offers.Cards.OrderBy(CardRank).First();
+                        var card = run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,Environment.GetEnvironmentVariable("P1_CAPTURE_TARGET"),evolutionAfterTick):offers.Cards.OrderBy(CardRank).First();
                         Log("automated-card-choice", card);
                         run.Send(ReplayCommandKind.ChooseCard, card: card);
                         cardAt = -1;
