@@ -20,11 +20,11 @@ open -a '/path/Sow and Siege.app' --args \
 `normal-frames.csv`는 실제 프레임 시각·입력·틱·누산 잔여·권위/예측 위치·카메라 위치/배율을, `normal-entities.csv`는 RenderedEntitySample의 영주·고정된 첫 적 5 ID·투사체/궤도 파편 좌표를 보존한다. 죽은 적을 다른 ID로 바꾸지 않으며 실제로 관측되지 않은 개체는 검증했다고 하지 않는다. `normal-trace.txt`에 commit/sourceHash와 합성 입력·드롭 수를 남긴다.
 
 ```sh
-python3 tools/analyze_motion_trace.py /path/new-trace /path/analysis
-python3 tools/plot_motion_comparison.py /path/before-analysis /path/after-analysis /path/comparison.png
+node tools/analyze-motion-trace.mjs /path/new-trace /path/analysis
+node tools/plot-motion-comparison.mjs /path/pairs.json /path/comparison.svg
 ```
 
-이미 설치된 numpy·matplotlib 환경을 사용한다. 영상 분석 도구는 기존 OpenCV와 ffmpeg/ffprobe를 사용하며 저장소 의존성을 추가하지 않는다. 위상 상관의 ROI·PTS·신뢰도를 함께 보존한다. 입력·장면·ROI가 다른 영상의 수치를 원인 개선율로 해석하지 않는다.
+`pairs.json`은 `[{"label":"normal cardinal","before":"/path/before-analysis","after":"/path/after-analysis"}]` 형식이다. Node 표준 라이브러리만 사용하며 영상 디코딩에는 이미 설치된 ffmpeg/ffprobe를 사용한다. 저장소 의존성을 추가하지 않는다. `analyze-motion-video.mjs`는 영상·시작초·길이초·ROI의 x/y/폭/높이·출력폴더를 순서대로 받는다. 위상 상관의 ROI·PTS·신뢰도를 함께 보존한다. 입력·장면·ROI가 다른 영상의 수치를 원인 개선율로 해석하지 않는다. 영상 추정과 네이티브 좌표는 같은 그래프 패널에 섞지 않는다.
 
 저속/고속 일정 입력 각각 3초 이상에서 이동량/실제 프레임 시간 CV ≤0.10, lag 2–12 자기상관 ≤0.3, 영주 화면 위치의 15프레임 이동평균 대비 RMS ≤0.5px(1080p 환산)를 확인한다. 정지·카메라 수렴 구간은 평균 속도 0의 CV를 억지로 계산하지 않고 별도 원자료와 RMS를 남긴다. 자동 분석은 사용자 직접 플레이 판정을 대체하지 않는다.
 

@@ -16,6 +16,7 @@ namespace Game.App
         bool visualReviewRequested;
         string visualReviewOutput;
         int visualReviewWidth, visualReviewHeight;
+        string[] visualReviewEnemyIds;
         VisualReviewResult visualReviewResult;
         readonly Dictionary<string,VisualEnemySample> visualEnemySamples=new Dictionary<string,VisualEnemySample>(StringComparer.Ordinal);
         [Serializable] sealed class VisualReviewResult
@@ -23,6 +24,7 @@ namespace Game.App
             public string mode, inputSha256, inputDataHash, renderedDataHash, historicalTerminalHash, commit, sourceHash, error;
             public bool historicalTerminalVerified, sourceDirty;
             public int width, height, requestedTick;
+            public string[] requestedEnemyIds;
             public string boundary = "Static runtime replay snapshots after 30 presentation warmup frames. No real-time motion or performance measurement. Current mode re-simulates original commands under current rules and makes no historical hash equality claim. PNGs are actual native frame captures, not actor galleries.";
             public List<VisualReviewFrame> frames = new List<VisualReviewFrame>();
         }
@@ -31,6 +33,7 @@ namespace Game.App
             public int tick, enemies;
             public string file, stateHash;
             public List<string> enemyKinds = new List<string>();
+            public List<string> missingRequestedEnemyKinds = new List<string>();
             public List<VisualEnemySample> actualScreenSamples = new List<VisualEnemySample>();
         }
         [Serializable] sealed class VisualEnemySample
@@ -74,6 +77,8 @@ namespace Game.App
                 visualReviewHeight=int.Parse(VisualArgument(args,"-screen-height"),System.Globalization.CultureInfo.InvariantCulture);
                 if(visualReviewWidth < 320 || visualReviewHeight < 320 || visualReviewWidth > 4096 || visualReviewHeight > 4096)
                     throw new ArgumentException("Visual viewport dimensions must be between 320 and 4096 pixels.");
+                if(Array.IndexOf(args,"--visual-review-enemies") >= 0)
+                    visualReviewEnemyIds=VisualArgument(args,"--visual-review-enemies").Split(',');
                 var mode = VisualArgument(args,"--visual-review-catalog");
                 if(mode != "historical" && mode != "current") throw new ArgumentException("Visual catalog must be historical or current.");
                 var tick = int.Parse(VisualArgument(args,"--visual-review-tick"),System.Globalization.CultureInfo.InvariantCulture);
@@ -85,7 +90,7 @@ namespace Game.App
                 string inputHash;
                 using(var sha = SHA256.Create()) inputHash = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
                 visualReviewResult = new VisualReviewResult { mode=mode,inputSha256=inputHash,inputDataHash=replay.Header.Options.DataHash,
-                    requestedTick=tick,commit=BuildIdentity.Commit,sourceHash=BuildIdentity.SourceHash,sourceDirty=BuildIdentity.SourceDirty };
+                    requestedTick=tick,requestedEnemyIds=visualReviewEnemyIds,commit=BuildIdentity.Commit,sourceHash=BuildIdentity.SourceHash,sourceDirty=BuildIdentity.SourceDirty };
                 ContentCatalog catalog = FoundationBoot.Catalog; var hash = FoundationBoot.VerifiedDataHash;
                 if(mode == "historical")
                 {
@@ -149,6 +154,8 @@ namespace Game.App
                 visualEnemySamples.Clear();
                 for(var warm=0;warm<30;warm++)
                 {
+                    // Resume before camera rendering; EOF is capture-only, never a draw submission phase.
+                    yield return null;
                     world.RenderedEnemyBoundsSample=warm==29?CaptureVisualEnemyBounds:null;
                     world.Present(Frame,Frame,FirstPlayable,1,1f/60,visible);
                     yield return new WaitForEndOfFrame();
@@ -162,10 +169,12 @@ namespace Game.App
                 {
                     if(texture.width!=visualReviewWidth||texture.height!=visualReviewHeight) throw new InvalidOperationException("Captured texture dimensions differ from requested native viewport.");
                     File.WriteAllBytes(Path.Combine(visualReviewOutput,filename),texture.EncodeToPNG());
-                    var definitions=new List<string>(visualEnemySamples.Keys);definitions.Sort(StringComparer.Ordinal);
-                    for(var index=0;index<Math.Min(5,definitions.Count);index++)
+                    var definitions=visualReviewEnemyIds == null ? new List<string>(visualEnemySamples.Keys) : new List<string>(visualReviewEnemyIds);
+                    definitions.Sort(StringComparer.Ordinal);
+                    for(var index=0;index<definitions.Count;index++)
                     {
-                        var sample=visualEnemySamples[definitions[index]];
+                        if(!visualEnemySamples.TryGetValue(definitions[index],out var sample))
+                        { row.missingRequestedEnemyKinds.Add(definitions[index]);continue; }
                         var x=Mathf.FloorToInt(sample.screenBounds.xMin);var y=Mathf.FloorToInt(sample.screenBounds.yMin);
                         var width=Mathf.Min(texture.width-x,Mathf.CeilToInt(sample.screenBounds.xMax)-x);
                         var height=Mathf.Min(texture.height-y,Mathf.CeilToInt(sample.screenBounds.yMax)-y);
