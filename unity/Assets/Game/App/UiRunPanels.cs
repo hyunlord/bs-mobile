@@ -13,6 +13,7 @@ namespace Game.App
     {
         public static void Cards(UiShell ui,RunFrame frame,FirstPlayableFrame firstPlayable,CardOfferView offer,ContentCatalog catalog,IReadOnlyDictionary<string,ContentDisplay> displays,Action<ReplayCommandKind,string> send)
         {
+            var fallow=CanonicalContent.ProfileName=="wave-1a"&&catalog.WaveRuntime?.ChapterId=="meta:chapter_1";
             var panel=ui.Panel("Cards");ui.Label(panel,$"레벨 {frame.Level} · 성장 선택",UiTokens.Title,56);
             ui.Label(panel,"무기와 도구를 함께 키우세요",UiTokens.Small,36);
             var cards=UiShell.Rect("Three cards",panel);
@@ -39,15 +40,17 @@ namespace Game.App
                 var clues=catalog.WaveRuntime==null?EvolutionClues(detail,firstPlayable,displays):WaveEvolutionClues(detail,firstPlayable,catalog.WaveRuntime,displays);if(clues.Length>0)ui.Label(card,clues,UiTokens.Caption,32);
                 ui.Label(card,"카드를 눌러 선택",UiTokens.Caption,32);
                 var actions=UiShell.Rect("Card actions",container);var row=actions.gameObject.AddComponent<HorizontalLayoutGroup>();row.spacing=4;row.childControlWidth=true;row.childForceExpandWidth=true;row.childControlHeight=true;row.childForceExpandHeight=false;actions.gameObject.AddComponent<LayoutElement>().minHeight=UiTokens.MinTouchHeight;
-                ui.Button(actions,"금지",()=>send(ReplayCommandKind.BanCard,id),offer.Bans>0);
-                ui.Button(actions,offer.LockedCardId==id?"고정됨":"고정",()=>send(ReplayCommandKind.LockCard,id),offer.Locks>0&&offer.LockedCardId!=id);
+                var ban=ui.Button(actions,"금지",()=>send(ReplayCommandKind.BanCard,id),offer.Bans>0);
+                var pin=ui.Button(actions,offer.LockedCardId==id?"고정됨":"고정",()=>send(ReplayCommandKind.LockCard,id),offer.Locks>0&&offer.LockedCardId!=id);
+                if(fallow){FallowUiSurface.Button(ui,ban,true);FallowUiSurface.Button(ui,pin,true);}
                 if(wide)foreach(Transform action in actions)
                 {
                     var size=action.GetComponent<LayoutElement>();size.minWidth=UiTokens.MinTouchHeight;size.preferredWidth=UiTokens.MinTouchHeight;size.flexibleWidth=1;
                     action.GetComponentInChildren<Text>().horizontalOverflow=HorizontalWrapMode.Overflow;
                 }
             }
-            ui.Button(panel,$"다시 뽑기 · {offer.Rerolls}",()=>send(ReplayCommandKind.RerollCards,null),offer.Rerolls>0);
+            var reroll=ui.Button(panel,$"다시 뽑기 · {offer.Rerolls}",()=>send(ReplayCommandKind.RerollCards,null),offer.Rerolls>0);
+            if(fallow)FallowUiSurface.Button(ui,reroll,true);
             ui.Label(panel,$"금지 {offer.Bans} · 고정 {offer.Locks} · 선택하면 계속됩니다",UiTokens.Small,40);
         }
         public static string UpgradeChanges(OfferedCardDetail detail)

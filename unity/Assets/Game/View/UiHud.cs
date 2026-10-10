@@ -18,7 +18,8 @@ namespace Game.View
         public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings)
         {
             this.ui=ui;this.catalog=catalog;
-            if(catalog?.WaveRuntime!=null){fallow=new FallowHud(ui,catalog,openSettings);return;}
+            if(ArtCatalog.ProfileName=="wave-1a"&&catalog?.WaveRuntime?.ChapterId=="meta:chapter_1")
+            {fallow=new FallowHud(ui,catalog,openSettings);return;}
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);root.sizeDelta=new Vector2(0,160);
             root.gameObject.AddComponent<Image>().color=Color.clear;
             var info=Place("Vitals backing",root,16,0,720,96);ui.Surface(info,"ui.hint");

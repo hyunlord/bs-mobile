@@ -11,6 +11,6 @@ Shader "Game/View/FallowGroundSprite"
     SubShader
     {
         Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
-        UsePass "Game/View/FallowWorldSprite/FallowSprite"
+        UsePass "Game/View/FallowWorldSprite/FALLOWSPRITE"
     }
 }

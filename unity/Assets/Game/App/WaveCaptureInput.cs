@@ -36,9 +36,21 @@ namespace Game.App
             if(newGear!=null)return newGear;
             return cards.OrderBy(CardRank).First();
         }
-        public static WorldPoint Target(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog=null)
+        public static WorldPoint Target(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog=null,bool goldenMinute=false)
         {
             var target=GrowthTarget(frame,wave,fallback,catalog);
+            if(goldenMinute&&frame.Tick>=52*frame.TickRate&&frame.Tick<60*frame.TickRate)
+            {
+                long x=0,y=0;var count=0;
+                foreach(var work in wave.Work)
+                {
+                    if(work.Kind!="building"||!work.Complete||work.Health<=0)continue;
+                    x+=work.Position.X;y+=work.Position.Y;count++;
+                }
+                // Positive world Y is screen-up. Walk northeast of actual completed buildings;
+                // do not move the estate, camera, rewards, or simulation state for the comparison.
+                if(count>0)target=new WorldPoint((int)Math.Max(0,Math.Min(frame.MapWidth,x/count+1200)),(int)Math.Max(0,Math.Min(frame.MapHeight,y/count+900)));
+            }
             return evasive?EvasiveTarget(frame,wave,target,catalog):target;
         }
         static WorldPoint GrowthTarget(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog)

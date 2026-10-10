@@ -17,8 +17,9 @@ namespace Game.View
             colors.highlightedColor = colors.normalColor * 1.15f;
             colors.pressedColor = colors.normalColor * .8f;
             colors.selectedColor = colors.normalColor;
+            colors.disabledColor = colors.normalColor * .65f;
             button.colors = colors;
-            button.GetComponentInChildren<Text>().color = dark ? GameVisualTokens.Attack : GameVisualTokens.Ink;
+            button.GetComponentInChildren<Text>().color = !button.interactable ? UiTokens.FallowMuted : dark ? GameVisualTokens.Attack : GameVisualTokens.Ink;
         }
     }
 }

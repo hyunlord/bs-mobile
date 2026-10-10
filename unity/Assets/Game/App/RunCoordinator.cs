@@ -142,7 +142,7 @@ namespace Game.App
         public void ShowMeta()
         {
             screen=UiScreen.Title;MenuOpen=true;Stick.ResetStick();ClearUi();hud=null;
-            if(IsWave)
+            if(IsWave&&FoundationBoot.Catalog.WaveRuntime?.ChapterId=="meta:chapter_1")
             {
                 FallowTitle.Show(Ui,selectedTarget,FoundationBoot.Catalog.WaveRuntime.MaterialTargets,
                     id=>displays[id].DisplayName,material=>{selectedTarget=material;ShowMeta();},
@@ -150,6 +150,19 @@ namespace Game.App
                 return;
             }
             var panel=Ui.Panel("Meta");Ui.Label(panel,"씨앗과 공성",UiTokens.Title,72);
+            if(IsWave)
+            {
+                Ui.Label(panel,"새싹 들판 · 도구의 흔적을 키워 수확하세요",UiTokens.Body,96);
+                Ui.Label(panel,selectedTarget==null?"목표 재료 미선택 · 아래에서 골라 주세요":"목표 재료 선택됨 · 초반 도구 선택에 등장합니다",UiTokens.Small,48);
+                foreach(var target in FoundationBoot.Catalog.WaveRuntime.MaterialTargets)
+                {
+                    var material=target.Key;var tool=target.Value;
+                    var materialName=material=="meta:grain"?"곡물":material=="meta:timber"?"목재":material=="meta:charter"?"특허장":material;
+                    Ui.Button(panel,(selectedTarget==material?"선택됨 · ":"")+materialName+" · "+displays[tool].DisplayName,()=>{selectedTarget=material;ShowMeta();});
+                }
+                Ui.Button(panel,"시작",()=>{if(preferences.IntroductionSeen)StartRun();else ShowIntroduction();});
+                Ui.Button(panel,"설정",()=>ShowSettings(false));return;
+            }
             Ui.Label(panel,"새싹 변경의 한 해\n적을 물리치고 영지를 키우세요.",UiTokens.Body,96);
             try
             {

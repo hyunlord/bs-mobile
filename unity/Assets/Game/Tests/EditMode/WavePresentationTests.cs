@@ -139,6 +139,33 @@ namespace Game.Tests
             finally{WaveCaptureInput.ConfigureMovement(null);}
         }
         [Test]
+        public void GoldenMinuteCompositionUsesOnlyNormalLateMovementAroundActualBuildings()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Wave catalog required.");
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var hash=session.ComputeStateHash();var original=session.View.CaptureFrame();
+            var frame=original with {Tick=52*original.TickRate,Enemies=Array.Empty<EnemyView>()};
+            var building=new WaveWorkView(91,"core:carpenter_hammer","building",new WorldPoint(4000,5000),100,100,true,100,0,false,false,false,false,false);
+            var wave=((IWaveRunView)session.View).CaptureWaveRuntime() with {Timber=0,Rewards=Array.Empty<WaveRewardView>(),Work=new[]{building,building with {Id=92,Position=new WorldPoint(6000,5000)},building with {Id=93,Position=new WorldPoint(0,0),Complete=false},building with {Id=94,Position=new WorldPoint(0,0),Health=0}}};
+            var fallback=new WorldPoint(3000,2000);
+            try
+            {
+                WaveCaptureInput.ConfigureMovement(null);
+                var ordinary=WaveCaptureInput.Target(frame,wave,fallback,catalog);
+                Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:false),Is.EqualTo(ordinary));
+                Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(new WorldPoint(6200,5900)));
+                var earlier=frame with {Tick=52*frame.TickRate-1};
+                Assert.That(WaveCaptureInput.Target(earlier,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(WaveCaptureInput.Target(earlier,wave,fallback,catalog)));
+                var later=frame with {Tick=60*frame.TickRate};
+                Assert.That(WaveCaptureInput.Target(later,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(WaveCaptureInput.Target(later,wave,fallback,catalog)));
+                var empty=wave with {Work=Array.Empty<WaveWorkView>()};
+                Assert.That(WaveCaptureInput.Target(frame,empty,fallback,catalog,goldenMinute:true),Is.EqualTo(fallback));
+                Assert.That(session.ComputeStateHash(),Is.EqualTo(hash),"Selecting a normal input target cannot mutate Core.");
+            }
+            finally{WaveCaptureInput.ConfigureMovement(null);}
+        }
+        [Test]
         public void WaveProfileFeedsSharedWidgetsFromItsOwnState()
         {
             if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Run this profile integration with UNITY_CONTENT_PROFILE=wave-1a.");
