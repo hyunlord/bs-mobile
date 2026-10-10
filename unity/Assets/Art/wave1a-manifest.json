@@ -203,6 +203,20 @@
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/fallow-enemies.txt",
       "commercialUse": "Project-generated output used under applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "feel-hero-b",
+      "origin": "OpenAI image_gen generated cutout parts; project-authored bone hierarchy baked offline",
+      "source": "unity/Assets/Game/Editor/Authoring/HeroB/hero-b-cutout-original.png",
+      "prompt": "tools/art-authoring/hero-b/README.md",
+      "commercialUse": "Project-generated output used under applicable OpenAI output terms, subject to restrictions."
+    },
+    {
+      "id": "feel-charger",
+      "origin": "OpenAI image_gen posture revision of project charger",
+      "source": "unity/Assets/Art/actors.png",
+      "prompt": "unity/Assets/Art/ram-runner-charge.provenance.json",
+      "commercialUse": "Project-generated output used under applicable OpenAI output terms, subject to restrictions."
     }
   ],
   "atlases": [
@@ -421,6 +435,22 @@
       "height": 722,
       "padding": 2,
       "license": "fallow-enemies"
+    },
+    {
+      "id": "feel-hero-b",
+      "path": "Assets/Art/fallow-hero-b.png",
+      "width": 2048,
+      "height": 1536,
+      "padding": 4,
+      "license": "feel-hero-b"
+    },
+    {
+      "id": "feel-charger",
+      "path": "Assets/Art/ram-runner-charge.png",
+      "width": 1270,
+      "height": 1270,
+      "padding": 4,
+      "license": "feel-charger"
     }
   ],
   "roles": [
@@ -9625,6 +9655,158 @@
       },
       "frameMs": 350,
       "tween": "none"
+    },
+    {
+      "id": "hero.preview-b.walk",
+      "atlas": "feel-hero-b",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 516,
+          "y": 4,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 1028,
+          "y": 4,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 1540,
+          "y": 4,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 4,
+          "y": 516,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 516,
+          "y": 516,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 1028,
+          "y": 516,
+          "width": 504,
+          "height": 504
+        },
+        {
+          "x": 1540,
+          "y": 516,
+          "width": 504,
+          "height": 504
+        }
+      ],
+      "pivot": {
+        "x": 0.5476190476190477,
+        "y": 0.1746031746031746
+      },
+      "worldSize": {
+        "x": 0.826875,
+        "y": 0.826875
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "hero.preview-b.idle",
+      "atlas": "feel-hero-b",
+      "frames": [
+        {
+          "x": 4,
+          "y": 1028,
+          "width": 504,
+          "height": 504
+        }
+      ],
+      "pivot": {
+        "x": 0.5476190476190477,
+        "y": 0.1746031746031746
+      },
+      "worldSize": {
+        "x": 0.826875,
+        "y": 0.826875
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "hero.preview-b.attack",
+      "atlas": "feel-hero-b",
+      "frames": [
+        {
+          "x": 516,
+          "y": 1028,
+          "width": 504,
+          "height": 504
+        }
+      ],
+      "pivot": {
+        "x": 0.5476190476190477,
+        "y": 0.1746031746031746
+      },
+      "worldSize": {
+        "x": 0.826875,
+        "y": 0.826875
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "hero.preview-b.hit",
+      "atlas": "feel-hero-b",
+      "frames": [
+        {
+          "x": 1028,
+          "y": 1028,
+          "width": 504,
+          "height": 504
+        }
+      ],
+      "pivot": {
+        "x": 0.5476190476190477,
+        "y": 0.1746031746031746
+      },
+      "worldSize": {
+        "x": 0.826875,
+        "y": 0.826875
+      },
+      "frameMs": 80,
+      "tween": "none"
+    },
+    {
+      "id": "enemy.core.ram_runner.sprint",
+      "atlas": "feel-charger",
+      "frames": [
+        {
+          "x": 8,
+          "y": 8,
+          "width": 1254,
+          "height": 1254
+        }
+      ],
+      "pivot": {
+        "x": 0.52,
+        "y": 0.06
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "frameMs": 170,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -11834,7 +12016,7 @@
       "kind": "enemy",
       "contentId": "core:ram_runner",
       "state": "charge",
-      "roleId": "enemy.core.ram_runner.walk"
+      "roleId": "enemy.core.ram_runner.sprint"
     },
     {
       "kind": "wave",

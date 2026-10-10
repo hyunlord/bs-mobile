@@ -36,8 +36,11 @@ namespace Game.App
             renderInterpolation.Reset();
             presentationUnits = CanonicalContent.Presentation.Camera.WorldUnitsPerUnityUnit;
             var map = runCatalog.Tuning.World.Map;
+            var expectedLocomotion = activeFeelRules != null;
+            var initialSpeed = expectedLocomotion ? (float)Session.LocomotionSpeedPerTick : map.LordSpeed;
             lordPrediction.Initialize(PresentationPoint(Frame.Lord.Position), new Vector2(map.Width, map.Height) / presentationUnits,
-                map.LordSpeed * Frame.TickRate / presentationUnits, 1f / Frame.TickRate, Frame.Tick);
+                initialSpeed * Frame.TickRate / presentationUnits, 1f / Frame.TickRate, Frame.Tick,
+                expectedLocomotion, 2f / presentationUnits, activeFeelRules?.FasterLord == false ? 1f / presentationUnits : 0);
             world.RenderedEntitySample = ObserveRenderedEntity;
             normalTrace?.BeginSession();
             if(AutoplayCapture.Active != null) BeginSmoothnessDiagnostics();
@@ -49,6 +52,11 @@ namespace Game.App
         }
         Vector2 PresentationPoint(WorldPoint point) => new Vector2(point.X, point.Y) / presentationUnits;
         static Vector2 PresentationInput(PlayerInput input) => new Vector2(input.X, input.Y) / PlayerInput.Scale;
+        void ObserveLordMovement(PlayerInput input)
+        {
+            float? expectedSpeed = activeFeelRules == null ? (float?)null : (float)Session.LocomotionSpeedPerTick * Frame.TickRate / presentationUnits;
+            lordPrediction.Observe(PresentationPoint(Frame.Lord.Position), Frame.Tick, PresentationInput(input), expectedSpeed);
+        }
         void PredictLord(PlayerInput input)
         {
             if(!IsWave||runCatalog.WaveRuntime?.ChapterId!="meta:chapter_1") { world.PredictedLordPosition = null; return; }

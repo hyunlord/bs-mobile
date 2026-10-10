@@ -232,7 +232,9 @@ namespace Game.App
             yield return SceneManager.LoadSceneAsync("Run");
             try
             {
-                seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash);
+                seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;
+                SnapshotFeelPreferences();
+                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules);
                 Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??NormalPlayTrace.ProfileDirectory??NormalGcProbe.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
@@ -249,7 +251,7 @@ namespace Game.App
             if(Error==null)AutoplayCapture.Active?.OnRunReady(this);
         }
         private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
-        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));hud.Present(Frame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
+        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true),activeHitFeedback);hud.Present(Frame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
         // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
         public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
@@ -344,7 +346,7 @@ namespace Game.App
 #endif
                 if(kind==ReplayCommandKind.SetAimMode)Aim=(AimMode)value;
                 previous=Frame;CaptureSnapshots();
-                if(kind==ReplayCommandKind.Advance)lordPrediction.Observe(PresentationPoint(Frame.Lord.Position),Frame.Tick,PresentationInput(input));
+                if(kind==ReplayCommandKind.Advance)ObserveLordMovement(input);
                 using(RunProfilerMarkers.AcceptPresentation.Auto())
                 using(smoothness.Scope(SmoothnessScope.AcceptPresentation)){world?.AcceptWave(runCatalog,Wave);world?.AcceptFrame(Frame,FirstPlayable);if(IsWave)sound?.AcceptCommonFeedback(Frame,waveSound.PlayCommon);else sound?.AcceptFrame(Frame,FirstPlayable);AcceptWaveAudio();}
                 if(kind!=ReplayCommandKind.Advance){Stick.ResetStick();accumulator=0;cardsFrame=null;}
@@ -385,6 +387,7 @@ namespace Game.App
             Ui.Toggle(panel,"진동",preferences.Haptics,v=>{preferences.Haptics=v;ApplyPreferences(true);});
             Ui.Toggle(panel,"화면 흔들림",preferences.Shake,v=>{preferences.Shake=v;ApplyPreferences(true);});
             Ui.Toggle(panel,"피해 숫자",preferences.DamageNumbers,v=>{preferences.DamageNumbers=v;ApplyPreferences(true);});
+            AddFeelSettings(panel);
             Ui.Label(panel,"자동 조준",UiTokens.Heading,48);
             Ui.Button(panel,(Aim==AimMode.Movement?"✓ ":"")+"이동 방향",()=>SetAim(AimMode.Movement,inRun));
             Ui.Button(panel,(Aim==AimMode.NearestEnemy?"✓ ":"")+"가까운 적 자동 조준",()=>SetAim(AimMode.NearestEnemy,inRun));
@@ -407,7 +410,7 @@ namespace Game.App
         }
         private void ApplyPreferences(bool save=false)
         {
-            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;}
+            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;}
             sound?.SetPreferences(preferences.MusicVolume,preferences.EffectsVolume,preferences.Haptics);waveSound?.SetVolume(preferences.EffectsVolume);
             if(save)preferences.Save();
         }

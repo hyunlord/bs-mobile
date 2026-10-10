@@ -23,7 +23,7 @@ namespace SowSiege.Core
     public enum AimMode { Movement, NearestEnemy }
     public enum RunStatus { Running, AwaitingCard, Completed }
     public enum ReplayCommandKind { Advance, ChooseCard, RerollCards, BanCard, LockCard, SetAimMode, SetInvulnerable, SetSpawnPermille, GrantLevel }
-    public sealed record InteractiveOptions(RunOptions Run, AimMode InitialAimMode, string DataHash);
+    public sealed record InteractiveOptions(RunOptions Run, AimMode InitialAimMode, string DataHash, FeelExperimentOptions? Feel = null);
     public sealed record ReplayCommand(long Sequence, int Tick, ReplayCommandKind Kind, PlayerInput Input = default, string? CardId = null, int Value = 0);
     public interface IReadOnlyRunView
     {

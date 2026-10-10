@@ -8,6 +8,7 @@ namespace Game.View
     public sealed class UiHud
     {
         readonly UiShell ui;
+        readonly UiDamageFeedback damageFeedback;
         readonly ContentCatalog catalog;
         readonly RectTransform root, hpFill, xpFill, equipment;
         readonly Text season, health, experience;
@@ -19,11 +20,11 @@ namespace Game.View
         static readonly string[] Seasons = { "봄", "여름", "가을", "겨울" };
         public float ReservedTopPixels => fallow != null ? fallow.ReservedTopPixels : root.rect.height * ui.Canvas.scaleFactor;
         public UiHud(UiShell ui) : this(ui,null,null) { }
-        public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings)
+        public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings,bool hitFeedback=false)
         {
             this.ui=ui;this.catalog=catalog;
             if(ArtCatalog.ProfileName=="wave-1a"&&catalog?.WaveRuntime?.ChapterId=="meta:chapter_1")
-            {fallow=new FallowHud(ui,catalog,openSettings);return;}
+            {fallow=new FallowHud(ui,catalog,openSettings,hitFeedback);return;}
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);root.sizeDelta=new Vector2(0,160);
             root.gameObject.AddComponent<Image>().color=Color.clear;
             var info=Place("Vitals backing",root,16,0,720,96);ui.Surface(info,"ui.hint");
@@ -42,6 +43,7 @@ namespace Game.View
                 foreach(var id in catalog.Tools.Keys) PrewarmIcon(id);
                 if(catalog.Runtime!=null)foreach(var id in catalog.Runtime.Charters.Keys) PrewarmIcon(id);
             }
+            if(hitFeedback)damageFeedback=new UiDamageFeedback(ui,hpFill);
         }
         void PrewarmIcon(string id)
         {
@@ -60,6 +62,7 @@ namespace Game.View
         public void Present(RunFrame frame,FirstPlayableFrame firstPlayable)
         {
             if(fallow!=null){fallow.Present(frame);return;}
+            damageFeedback?.Present(frame);
             var seconds=(frame.SeasonTicksRemaining+frame.TickRate-1)/frame.TickRate;
             seasonValue.Begin();seasonValue.Append(Seasons[Mathf.Clamp(frame.Season,0,3)]);seasonValue.Append(" · ");seasonValue.Append(seconds/60,2);seasonValue.Append(":");seasonValue.Append(seconds%60,2);seasonValue.Append(" 남음");seasonValue.End();
             healthValue.Begin();healthValue.Append("체력 ");healthValue.Append(frame.Lord.Health);healthValue.Append("/");healthValue.Append(frame.Lord.MaxHealth);healthValue.End();

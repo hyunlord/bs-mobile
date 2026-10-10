@@ -27,6 +27,8 @@ namespace Game.View
         RunCamera followCamera;
         WorldCameraSettings settings;
         WorldDamageNumbers numbers;
+        WorldDamageNumbers lordDamageNumbers;
+        public bool HitFeedbackEnabled { get; set; }
         WorldGrowthLabels growthLabels;
         Rect worldOverlayPixels;
         WorldAnnouncements announcements;
@@ -88,8 +90,9 @@ namespace Game.View
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
             InitializeThreatWarnings();
+            InitializeActorGrounding();
         }
 
         public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot)
@@ -123,7 +126,8 @@ namespace Game.View
                 foreach (var id in effect.HitEntityIds) hitUntil[id] = visualTime + GameVisualTokens.HitFlashSeconds;
             if (effect.Kind == PresentationKind.LordHit)
             {
-                heroHitUntil = visualTime + GameVisualTokens.HitFlashSeconds;
+                heroHitUntil = visualTime + (HitFeedbackEnabled ? .2f : GameVisualTokens.HitFlashSeconds);
+                if(HitFeedbackEnabled)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
             }
             if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
             if (effect.Kind == PresentationKind.BossWarning)
@@ -149,7 +153,7 @@ namespace Game.View
             var seconds = Mathf.Max(0, unscaledDeltaTime);
             effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
             WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);
-            numbers.Advance(seconds, ShowDamageNumbers); AcceptFrame(current, snapshot); IndexPrevious(previous);
+            numbers.Advance(seconds, ShowDamageNumbers); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled); AcceptFrame(current, snapshot); IndexPrevious(previous);
             expiredHits.Clear(); foreach (var pair in hitUntil) if (pair.Value <= visualTime) expiredHits.Add(pair.Key);
             foreach (var id in expiredHits) hitUntil.Remove(id);
             var lord = PredictedLordPosition ?? Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
@@ -169,6 +173,7 @@ namespace Game.View
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
             lordMarker?.BeginFrame();
+            actorGrounding.BeginFrame(); actorWings.BeginFrame();
             UpdateFallowMask();
             DrawTerrain();
             DrawFallowLandmarks();
@@ -228,9 +233,11 @@ namespace Game.View
                 RenderedEntitySample?.Invoke("enemy",enemy.Id,position);
                 var dimensions=enemyArt.WorldSize;
                 var upperOpacity=1f;
+                var actorKind=WaveEnemyKind.Pursuer;
                 if(wave!=null)
                 {
                     var kind=waveDefinition.Enemies[enemy.DefinitionId].Kind;
+                    actorKind=kind;
                     dimensions=WaveEnemySize(dimensions,kind);
                     var body=new Rect(position-Vector2.Scale(dimensions,enemyArt.Pivot),dimensions);
                     var warning=waveEnemyById.TryGetValue(enemy.Id,out var phase)&&
@@ -240,19 +247,23 @@ namespace Game.View
                 var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
                 var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
-                DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing);
-                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels);
+                var actorTime=visualTime+enemy.Id*.13f;
+                var actorPose=ActorMotion.SampleEnemy(actorKind,actorTime,moved);
+                DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind);
+                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose);
+                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
-                    RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,visualTime+enemy.Id*.13f,dimensions,moved,hitProgress,enemyFacing));
+                    RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));
             }
             var heroHit = heroHitUntil > visualTime;
-            var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : Point(previous.Lord.Position) != Point(current.Lord.Position) ? "walk" : "idle";
+            var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : "idle";
             var heroWalking=Point(previous.Lord.Position)!=Point(current.Lord.Position);
             var heroAttackProgress=heroAttackUntil>visualTime?1-(heroAttackUntil-visualTime)/GameVisualTokens.ActorAttackSeconds:-1;
-            var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
+            var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/(HitFeedbackEnabled?.2f:GameVisualTokens.HitFlashSeconds):-1;
+            var heroVisual=HeroVisual(snapshot.HeroId,heroState,heroWalking,heroAttackProgress,seconds,out var heroAnimationTime);
             if(wave!=null)
             {
-                var heroArt=Resolve("hero",snapshot.HeroId,heroState);
+                var heroArt=heroVisual;
                 if(lordMarker==null)
                 {
                     lordMarkerMeshes=new ShapeMeshes();
@@ -264,17 +275,20 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
                 foreach(var direction in HeroOutlineDirections)
                 {
-                    if(FallowActive)DrawActor(heroArt,GameVisualTokens.LordLayer-2,lord+direction*GameVisualTokens.WaveHeroOutline*1.8f,visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:GameVisualTokens.Ink,facing:heroFacing);
-                    DrawActor(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline*(FallowActive?1.25f:1),visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink,facing:heroFacing);
+                    if(FallowActive)DrawActor(heroArt,GameVisualTokens.LordLayer-2,lord+direction*GameVisualTokens.WaveHeroOutline*1.8f,heroAnimationTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:GameVisualTokens.Ink,facing:heroFacing);
+                    DrawActor(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline*(FallowActive?1.25f:1),heroAnimationTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink,facing:heroFacing);
                 }
             }
-            var heroVisual=Resolve("hero",snapshot.HeroId,heroState);
-            DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,visualTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit ? .8f : 0,facing:heroFacing);
+            DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
+            DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
             threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
             SubmittedInstances = 0; DrawCalls = 0;
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
+            actorGrounding.Flush(); actorWings.Flush();
+            SubmittedInstances+=actorGrounding.SubmittedInstances+actorWings.SubmittedInstances;
+            DrawCalls+=actorGrounding.DrawCalls+actorWings.DrawCalls;
             retiredFacing.Clear();
             foreach(var pair in actorFacing)if(pair.Value.generation!=facingGeneration)retiredFacing.Add(pair.Key);
             for(var i=0;i<retiredFacing.Count;i++)actorFacing.Remove(retiredFacing[i]);
@@ -474,9 +488,8 @@ namespace Game.View
             state.motion.SetDirection(movement,visualTime);state.generation=facingGeneration;actorFacing[key]=state;
             return state.motion.Sample(visualTime);
         }
-        static Rect ActorBounds(ArtVisual visual,Vector2 position,float time,Vector2 size,bool walking,float hitProgress,ActorFacingPose facing)
+        static Rect ActorBounds(ArtVisual visual,Vector2 position,Vector2 size,ActorPose pose,ActorFacingPose facing)
         {
-            var pose=ActorMotion.Sample(time,walking,-1,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale); dimensions.x*=facing.SignedWidth;
             var rotation=Quaternion.Euler(0,0,pose.Degrees+facing.LeanDegrees);
             var origin=position+pose.Offset;
@@ -491,9 +504,9 @@ namespace Game.View
             return Rect.MinMaxRect(minimum.x,minimum.y,maximum.x,maximum.y);
         }
 
-        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0)
+        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0,ActorPose? poseOverride=null)
         {
-            var pose=ActorMotion.Sample(time,walking,attackProgress,hitProgress);
+            var pose=poseOverride??ActorMotion.Sample(time,walking,attackProgress,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale);
             var angle=pose.Degrees+facing.LeanDegrees;
             dimensions.x *= facing.SignedWidth;
@@ -525,7 +538,8 @@ namespace Game.View
         {
             DisposeFallow();
             DisposeThreatWarnings();
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
+            DisposeActorGrounding();
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }

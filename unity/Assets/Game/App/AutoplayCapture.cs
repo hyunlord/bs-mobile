@@ -29,6 +29,7 @@ namespace Game.App
         Result result;
         bool goldenMinute, goldenWorldPaused, goldenRecordingStarted, weakBuild;
         GoldenMinuteCapture minuteCapture;
+        public FeelComparisonCapture FeelComparison { get; private set; }
         int portraitAttempt, portraitFrame;
         double portraitSettleAt;
         bool portraitReady;
@@ -128,7 +129,7 @@ namespace Game.App
         }
 
         public static bool IsRequested(string[] args) => args.Contains("--autoplay-capture");
-        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && args.Contains("--golden-minute");
+        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && (args.Contains("--golden-minute") || args.Contains("--feel-comparison"));
 
         public static string ParseOutput(string[] args, string defaultRoot)
         {
@@ -151,6 +152,7 @@ namespace Game.App
         {
             RequireEmptyOutput(folder);
             var args=Environment.GetCommandLineArgs();
+            FeelComparison = FeelComparisonCapture.Parse(args);
             goldenMinute = IsGoldenMinuteRequested(args);
             weakBuild = Array.IndexOf(args,"--capture-weak-build") >= 0;
             if(weakBuild&&!goldenMinute)throw new ArgumentException("Weak-build capture requires the explicit golden-minute capture mode.");
@@ -175,6 +177,7 @@ namespace Game.App
                 automatedInput = true, timeScale = 1, isolatedProfile = ProfileDirectory, preferencesPrefix = PreferencesPrefix };
             WriteResult();
             Log("capture-start", "automated pointer and UI button input; 1x; fresh chapter1 profile; focus-independent capture; no OS-user or human-input claim");
+            if (FeelComparison != null) Log("feel-comparison", FeelComparison.Mode + ";input=" + FeelComparison.InputProtocol + ";shared target path via frame-sampled UI; actual tick commands, legal card choices and resulting state may diverge; gameplay seconds, card pauses extend wall duration");
             if(weakBuild)Log("weak-build-policy","ordinary perimeter movement avoiding reward/estate farming; prefer items then owned gear; at most two weapons; no evolution; only required card choices; no level or experience override");
             nextAction = 3;
         }
@@ -296,7 +299,7 @@ namespace Game.App
         bool PreparePortraitWindow()
         {
             if (portraitReady) return true;
-            var landscape = CaptureSegmentWindow.Parse(Environment.GetCommandLineArgs()).Landscape;
+            var landscape = FeelComparisonCapture.ResolveWindow(Environment.GetCommandLineArgs()).Landscape;
             // RunCoordinator has now applied its ordinary desktop preset; capture can override it once.
             if (portraitAttempt == 0)
             {
@@ -356,11 +359,16 @@ namespace Game.App
                 ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Choose " + card));
                 Log("card-click", card); cardAt = -1; return;
             }
+            Vector2 direction;
+            if (FeelComparison != null) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
+            else
+            {
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
             var angle = frame.Tick / 180d;
             var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
             if(run.Wave!=null)target=weakBuild?WeakCapturePolicy.Target(frame,run.Wave):WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog,goldenMinute);
-            var direction = CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
+            direction = CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
+            }
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = new Vector2(Screen.width * .25f, Screen.height * .2f), button = PointerEventData.InputButton.Left };
             if (!run.Stick.Active) ExecuteEvents.Execute(run.Stick.gameObject, pointer, ExecuteEvents.pointerDownHandler);
             pointer.position = run.Stick.Origin + direction * run.Stick.Radius;

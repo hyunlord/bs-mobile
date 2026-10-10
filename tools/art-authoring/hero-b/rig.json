@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "description": "Editor-only authored hierarchical cutout rig. Joint rotations in degrees; feet in frame pixels. Root and torso translation remain fixed. Two-bone leg IK preserves planted y=420.",
+  "bones": [
+    {
+      "id": "farHip",
+      "parent": "root",
+      "offset": [
+        18,
+        2
+      ]
+    },
+    {
+      "id": "farKnee",
+      "parent": "farHip",
+      "offset": [
+        0,
+        64
+      ]
+    },
+    {
+      "id": "nearHip",
+      "parent": "root",
+      "offset": [
+        -18,
+        4
+      ]
+    },
+    {
+      "id": "nearKnee",
+      "parent": "nearHip",
+      "offset": [
+        0,
+        64
+      ]
+    },
+    {
+      "id": "torso",
+      "parent": "root",
+      "offset": [
+        0,
+        -12
+      ]
+    },
+    {
+      "id": "head",
+      "parent": "torso",
+      "offset": [
+        3,
+        -83
+      ]
+    },
+    {
+      "id": "capeUpper",
+      "parent": "torso",
+      "offset": [
+        -18,
+        -62
+      ]
+    },
+    {
+      "id": "capeLower",
+      "parent": "capeUpper",
+      "offset": [
+        -16,
+        -10
+      ]
+    },
+    {
+      "id": "farShoulder",
+      "parent": "torso",
+      "offset": [
+        29,
+        -61
+      ]
+    },
+    {
+      "id": "farElbow",
+      "parent": "farShoulder",
+      "offset": [
+        0,
+        55
+      ]
+    },
+    {
+      "id": "nearShoulder",
+      "parent": "torso",
+      "offset": [
+        -36,
+        -61
+      ]
+    },
+    {
+      "id": "nearElbow",
+      "parent": "nearShoulder",
+      "offset": [
+        0,
+        58
+      ]
+    },
+    {
+      "id": "sword",
+      "parent": "nearElbow",
+      "offset": [
+        -3,
+        54
+      ]
+    },
+    {
+      "id": "belt",
+      "parent": "torso",
+      "offset": [
+        -7,
+        4
+      ]
+    }
+  ],
+  "sprites": [
+    {
+      "bone": "capeLower",
+      "rect": [
+        952,
+        20,
+        278,
+        332
+      ],
+      "anchor": [
+        1195,
+        60
+      ],
+      "scale": 0.55,
+      "angle": 0
+    },
+    {
+      "bone": "farShoulder",
+      "rect": [
+        710,
+        362,
+        180,
+        244
+      ],
+      "anchor": [
+        769,
+        402
+      ],
+      "scale": 0.39,
+      "angle": 24
+    },
+    {
+      "bone": "farElbow",
+      "rect": [
+        980,
+        382,
+        193,
+        225
+      ],
+      "anchor": [
+        1018,
+        414
+      ],
+      "scale": 0.37,
+      "angle": 35
+    },
+    {
+      "bone": "farHip",
+      "rect": [
+        701,
+        630,
+        165,
+        272
+      ],
+      "anchor": [
+        767,
+        666
+      ],
+      "scale": 0.41,
+      "angle": 0
+    },
+    {
+      "bone": "farKnee",
+      "rect": [
+        1024,
+        638,
+        154,
+        274
+      ],
+      "anchor": [
+        1100,
+        686
+      ],
+      "scale": 0.4,
+      "angle": 4
+    },
+    {
+      "bone": "nearHip",
+      "rect": [
+        79,
+        625,
+        176,
+        267
+      ],
+      "anchor": [
+        155,
+        669
+      ],
+      "scale": 0.43,
+      "angle": 16
+    },
+    {
+      "bone": "nearKnee",
+      "rect": [
+        394,
+        647,
+        179,
+        262
+      ],
+      "anchor": [
+        454,
+        697
+      ],
+      "scale": 0.43,
+      "angle": 7
+    },
+    {
+      "bone": "torso",
+      "rect": [
+        325,
+        20,
+        294,
+        344
+      ],
+      "anchor": [
+        475,
+        205
+      ],
+      "scale": 0.55,
+      "angle": 0
+    },
+    {
+      "bone": "head",
+      "rect": [
+        60,
+        70,
+        211,
+        231
+      ],
+      "anchor": [
+        171,
+        278
+      ],
+      "scale": 0.43,
+      "angle": 0
+    },
+    {
+      "bone": "capeUpper",
+      "rect": [
+        636,
+        70,
+        301,
+        225
+      ],
+      "anchor": [
+        841,
+        206
+      ],
+      "scale": 0.39,
+      "angle": 0
+    },
+    {
+      "bone": "nearShoulder",
+      "rect": [
+        57,
+        361,
+        175,
+        238
+      ],
+      "anchor": [
+        180,
+        402
+      ],
+      "scale": 0.39,
+      "angle": -26
+    },
+    {
+      "bone": "nearElbow",
+      "rect": [
+        398,
+        381,
+        151,
+        237
+      ],
+      "anchor": [
+        494,
+        418
+      ],
+      "scale": 0.38,
+      "angle": -12
+    },
+    {
+      "bone": "belt",
+      "rect": [
+        1048,
+        995,
+        90,
+        200
+      ],
+      "anchor": [
+        1090,
+        1025
+      ],
+      "scale": 0.29,
+      "angle": 0
+    },
+    {
+      "bone": "sword",
+      "rect": [
+        70,
+        70,
+        580,
+        2004
+      ],
+      "anchor": [
+        362,
+        1840
+      ],
+      "scale": 0.083,
+      "angle": 126,
+      "source": "cleanSword"
+    }
+  ],
+  "poses": [
+    {
+      "id": "walk-0",
+      "feet": {
+        "far": [
+          277,
+          410
+        ],
+        "near": [
+          266,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": 0,
+        "farShoulder": 0,
+        "nearElbow": -8,
+        "farElbow": 8,
+        "capeLower": 0,
+        "capeUpper": 0
+      }
+    },
+    {
+      "id": "walk-1",
+      "feet": {
+        "far": [
+          293,
+          404
+        ],
+        "near": [
+          249,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": 12,
+        "farShoulder": -12,
+        "nearElbow": -14,
+        "farElbow": 8,
+        "capeLower": -3,
+        "capeUpper": 1
+      }
+    },
+    {
+      "id": "walk-2",
+      "feet": {
+        "far": [
+          311,
+          410
+        ],
+        "near": [
+          232,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": 20,
+        "farShoulder": -20,
+        "nearElbow": -18,
+        "farElbow": 8,
+        "capeLower": -6,
+        "capeUpper": 2
+      }
+    },
+    {
+      "id": "walk-3",
+      "feet": {
+        "far": [
+          305,
+          420
+        ],
+        "near": [
+          240,
+          406
+        ]
+      },
+      "rotations": {
+        "nearShoulder": 12,
+        "farShoulder": -12,
+        "nearElbow": -14,
+        "farElbow": 8,
+        "capeLower": -3,
+        "capeUpper": 1
+      }
+    },
+    {
+      "id": "walk-4",
+      "feet": {
+        "far": [
+          283,
+          420
+        ],
+        "near": [
+          260,
+          410
+        ]
+      },
+      "rotations": {
+        "nearShoulder": 0,
+        "farShoulder": 0,
+        "nearElbow": -8,
+        "farElbow": 8,
+        "capeLower": 0,
+        "capeUpper": 0
+      }
+    },
+    {
+      "id": "walk-5",
+      "feet": {
+        "far": [
+          262,
+          420
+        ],
+        "near": [
+          281,
+          404
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -12,
+        "farShoulder": 12,
+        "nearElbow": -8,
+        "farElbow": 14,
+        "capeLower": 3,
+        "capeUpper": -1
+      }
+    },
+    {
+      "id": "walk-6",
+      "feet": {
+        "far": [
+          244,
+          420
+        ],
+        "near": [
+          298,
+          410
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -20,
+        "farShoulder": 20,
+        "nearElbow": -8,
+        "farElbow": 18,
+        "capeLower": 6,
+        "capeUpper": -2
+      }
+    },
+    {
+      "id": "walk-7",
+      "feet": {
+        "far": [
+          252,
+          406
+        ],
+        "near": [
+          287,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -12,
+        "farShoulder": 12,
+        "nearElbow": -8,
+        "farElbow": 14,
+        "capeLower": 3,
+        "capeUpper": -1
+      }
+    },
+    {
+      "id": "idle",
+      "feet": {
+        "far": [
+          293,
+          416
+        ],
+        "near": [
+          255,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": 8,
+        "farShoulder": -8,
+        "nearElbow": -10
+      }
+    },
+    {
+      "id": "attack",
+      "feet": {
+        "far": [
+          316,
+          416
+        ],
+        "near": [
+          236,
+          420
+        ]
+      },
+      "rotations": {
+        "nearShoulder": -80,
+        "nearElbow": -12,
+        "farShoulder": 30,
+        "farElbow": 15,
+        "sword": -45,
+        "capeLower": 8
+      }
+    },
+    {
+      "id": "hit",
+      "feet": {
+        "far": [
+          294,
+          416
+        ],
+        "near": [
+          251,
+          420
+        ]
+      },
+      "rotations": {
+        "head": -8,
+        "nearShoulder": 24,
+        "nearElbow": -35,
+        "farShoulder": -35,
+        "farElbow": 24,
+        "capeLower": -8
+      }
+    }
+  ]
+}

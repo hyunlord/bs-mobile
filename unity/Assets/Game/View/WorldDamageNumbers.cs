@@ -14,6 +14,7 @@ namespace Game.View
         readonly TextMesh[] labels = new TextMesh[Capacity];
         readonly Vector2[] origins = new Vector2[Capacity];
         readonly float[] ages = new float[Capacity];
+        readonly Color[] colors = new Color[Capacity];
         readonly Transform parent;
         Font font;
         int next;
@@ -41,7 +42,8 @@ namespace Game.View
             }
         }
 
-        public void Add(Vector2 origin, long amount)
+        public void Add(Vector2 origin, long amount) => Add(origin, amount, GameVisualTokens.Attack);
+        public void Add(Vector2 origin, long amount, Color color)
         {
             if (amount <= 0) return;
             var index = next; next = (next + 1) % Capacity;
@@ -49,7 +51,8 @@ namespace Game.View
             labels[index].text = amount < amountText.Length ? amountText[(int)amount] : amount.ToString(CultureInfo.InvariantCulture);
             origins[index] = origin; ages[index] = 0; labels[index].gameObject.SetActive(true);
             labels[index].transform.position = new Vector3(origin.x, origin.y + 0.14f, -0.1f);
-            labels[index].color = GameVisualTokens.Attack;
+            colors[index] = color;
+            labels[index].color = color;
             if (!Place(index, origin)) labels[index].gameObject.SetActive(false);
         }
         bool Place(int index, Vector2 origin)
@@ -84,7 +87,7 @@ namespace Game.View
                 if (!visible || ages[i] >= GameVisualTokens.DamageNumberSeconds) { label.gameObject.SetActive(false); continue; }
                 var progress = ages[i] / GameVisualTokens.DamageNumberSeconds;
                 label.transform.position = new Vector3(origins[i].x, origins[i].y + 0.14f + progress * 0.25f, -0.1f);
-                var color = GameVisualTokens.Attack; color.a = 1 - progress * progress; label.color = color;
+                var color = colors[i]; color.a *= 1 - progress * progress; label.color = color;
             }
         }
         public void Dispose()

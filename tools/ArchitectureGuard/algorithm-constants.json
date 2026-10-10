@@ -238,5 +238,65 @@
     "Symbol": "SowSiege.Core.WaveEnemySeparation.ResidualGridDivisions",
     "Value": "8",
     "Reason": "ADR0049 separation-v1 search-grid subdivision of the maximum authored body width; deterministic residual search discretization, not enemy count or spawn rate."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.LordBodyWidth",
+    "Value": "300",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. Explicit experimental lord body width; physical contact only, never weapon range."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.ImmunityTicks",
+    "Value": "15",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved half-second immunity at wave 30Hz."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.Health",
+    "Value": "100",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved readable health experiment."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.MinimumDamage",
+    "Value": "5",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved experiment damage lower bound."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.MaximumDamage",
+    "Value": "15",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved experiment damage upper bound."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.SpeedNumerator",
+    "Value": "13",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved rational 1.3 movement numerator."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.SpeedDenominator",
+    "Value": "10",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved rational 1.3 movement denominator."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.KnockbackSteps",
+    "Value": "3",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. Approved short lord knockback in base walking steps."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.FeelVersion",
+    "Value": "3",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.ContactFlag",
+    "Value": "2",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.HealthFlag",
+    "Value": "4",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.FeelFlags",
+    "Value": "7",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
   }
 ]

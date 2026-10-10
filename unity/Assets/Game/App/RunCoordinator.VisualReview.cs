@@ -176,6 +176,7 @@ namespace Game.App
             if(Screen.width!=visualReviewWidth||Screen.height!=visualReviewHeight) throw new InvalidOperationException("Native visual viewport did not reach the explicitly requested dimensions.");
             Ui.RefreshSafeArea();
             Session=new InteractiveSession(runCatalog,replay.Header.Options with { DataHash=hash });
+            activeFeelRules=replay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=false;
             var commandIndex=0;
             world=new GameObject("Visual review world").AddComponent<WorldRenderer>();
             var settings=CanonicalContent.Presentation.Camera;

@@ -733,6 +733,18 @@ namespace SowSiege.Core
             Write(value.Run);
             Write((int)value.InitialAimMode);
             Write(value.DataHash);
+            if (FeelExperimentOptions.Normalize(value.Feel) is { } feel) { Write("feel-experiment-v1"); Write(feel); }
+        }
+        private void Write(FeelExperimentOptions? value)
+        {
+            if (value is null) { return; }
+            Write(value.FasterLord); Write(value.ImmediateContact); Write(value.ReadableHealth);
+        }
+        private void Write(FeelExperimentState? value)
+        {
+            if (value is null) { return; }
+            Write("feel-experiment-state-v1"); Write(value.Options);
+            Write(value.RemainderX); Write(value.RemainderY); Write(value.PreviousX); Write(value.PreviousY); Write(value.InvulnerableUntil);
         }
         private void Write(WorldPoint value)
         {
@@ -769,6 +781,7 @@ namespace SowSiege.Core
             Write(value.SpawnPermille);
             Write(value.NextEventId);
             WriteList(value.Events, item => { Write(item); });
+            if (value.Feel is not null) { Write(value.Feel); }
         }
         private void Write(PortableRandom? value)
         {

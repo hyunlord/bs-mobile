@@ -41,12 +41,14 @@ namespace SowSiege.Core
                 if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule)) { continue; }
                 if (!State.EnemyActions.TryGetValue(enemy.Id, out var action))
                 { action = new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 }; State.EnemyActions.Add(enemy.Id, action); }
+                Contact(enemy, rule);
                 if (action.StopUntil > world.Tick)
                 {
                     if (separation is not null && !modules.Enemy(rule.Id).Boss && action.Phase == "charge" && world.Tick >= action.UntilTick) { Recover(rule, action); }
                     continue;
                 }
                 Advance(enemy, rule, action, ref pathsCollected);
+                Contact(enemy, rule);
             }
             separation?.Resolve(liveEnemies);
             for (var index = 0; index < State.Projectiles.Count;)
@@ -174,7 +176,7 @@ namespace SowSiege.Core
                         }
                     }
                 }
-                else if (world.Lord.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range) { Hurt(rule.Id, body.Damage); }
+                else if (!ImmediateContact(rule) && world.Lord.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range) { Hurt(rule.Id, body.Damage); }
                 Recover(rule, action); return;
             }
             if (operations.Boss)
@@ -300,13 +302,40 @@ namespace SowSiege.Core
         private void Recover(WaveEnemyDefinition rule, WaveEnemyAction action)
         { action.Phase = "recovery"; action.UntilTick = world.Tick + rule.RecoveryTicks; }
         private Position Clamp(Position p) => new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
-        private void Hurt(string source, int damage)
+        private bool ImmediateContact(WaveEnemyDefinition rule)
         {
-            if (interactive?.Invulnerable == true) { return; }
+            return interactive?.Feel?.Options.ImmediateContact == true && ContactEligible(catalog, rule, modules.Enemy(rule.Id));
+        }
+        internal static bool ContactEligible(ContentCatalog catalog, WaveEnemyDefinition rule, WaveEnemyOperations operations)
+        {
+            if (operations.Boss || operations.Movement == "charge-locked-line") { return false; }
+            if (catalog.FirstPlayable is { } ranks && (!ranks.Enemies.TryGetValue(rule.Id, out var ranked) || ranked.Rank != "normal")) { return false; }
+            return rule.Kind is WaveEnemyKind.Pursuer or WaveEnemyKind.SeedThief or WaveEnemyKind.RipeGrazer or WaveEnemyKind.Shield or WaveEnemyKind.Ranged;
+        }
+        private void Contact(EnemyState enemy, WaveEnemyDefinition rule)
+        {
+            if (!ImmediateContact(rule) || Definition.EnemySeparation?.BodyWidths.TryGetValue(rule.Id, out var width) != true) { return; }
+            var radius = ((long)width + FeelExperimentState.LordBodyWidth) / WaveGeometry.MidpointDivisor;
+            if (world.Lord.DistanceSquared(enemy.Position) > radius * radius || !Hurt(rule.Id, catalog.Enemies[rule.Id].Damage)) { return; }
+            var away = new Position(world.Lord.X - enemy.Position.X, world.Lord.Y - enemy.Position.Y);
+            if (away == new Position(0, 0)) { away = State.Facing; }
+            if (away == new Position(0, 0)) { away = new(1, 0); }
+            var distance = catalog.Tuning.World.Map.LordSpeed * FeelExperimentState.KnockbackSteps;
+            var scale = Math.Max(Math.Abs(away.X), Math.Abs(away.Y));
+            world.Lord = Clamp(new(world.Lord.X + (int)((long)away.X * distance / scale), world.Lord.Y + (int)((long)away.Y * distance / scale)));
+            if (interactive?.Feel is { } feel) { feel.RemainderX = 0; feel.RemainderY = 0; }
+        }
+        private bool Hurt(string source, int damage)
+        {
+            var feel = interactive?.Feel;
+            if (interactive?.Invulnerable == true || feel is not null && world.LordHealth <= 0 || feel is { Options: { ImmediateContact: true } } && world.Tick < feel.InvulnerableUntil) { return false; }
+            damage = feel?.Damage(damage) ?? damage;
             var dealt = Math.Min(world.LordHealth, damage); world.LordHealth -= dealt;
+            if (feel is { Options: { ImmediateContact: true } }) { feel.InvulnerableUntil = world.Tick + FeelExperimentState.ImmunityTicks; }
             if (world.LordHealth == 0) { world.DeathCause = source; }
             State.Emit(world.Tick, "lord-hit", source, 0, world.Lord, world.Lord, dealt);
             interactive?.Experience(world.Tick, PresentationKind.LordHit, source, world.Lord, dealt);
+            return true;
         }
         internal bool Intercepts(Position from, Position to)
         {

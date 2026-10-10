@@ -44,7 +44,7 @@ namespace Game.App
 
         public void Initialize(RunCoordinator coordinator, string output, Action<bool, string> completion)
         {
-            segment = CaptureSegmentWindow.Parse(Environment.GetCommandLineArgs());
+            segment = FeelComparisonCapture.ResolveWindow(Environment.GetCommandLineArgs());
             captureSeed = AutoplayCapture.Active.RunSeed;
             run = coordinator; folder = output; complete = completion;
             submissionCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
@@ -255,6 +255,9 @@ namespace Game.App
             File.WriteAllText(Path.Combine(folder, "golden-minute.json"), JsonUtility.ToJson(new Evidence {
                 commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty,
                 profile = CanonicalContent.ProfileName, dataHash = CanonicalContent.DataHash,
+                feelComparison = AutoplayCapture.Active.FeelComparison?.Mode,
+                movementProtocol = AutoplayCapture.Active.FeelComparison?.InputProtocol,
+                comparisonBoundary = AutoplayCapture.Active.FeelComparison == null ? null : "Shared tick-indexed target path through frame-sampled UI input; actual per-tick commands and legal card choices may differ. Gameplay-second window at 1x, card pauses extend actual wall duration. No forced survival.",
                 seed = captureSeed, requestedStartSeconds = segment.StartSeconds, requestedDurationSeconds = segment.DurationSeconds, actualStartTick = actualStartTick,
                 requestedEndSeconds = segment.EndSeconds, actualEndTick = submitted == 0 ? -1 : finalTick,
                 segmentBoundary = "Normal live autoplay from tick zero; no skipped simulation, replay, acceleration or grants. Audio and image recording begin at the requested start tick.",
@@ -298,7 +301,7 @@ namespace Game.App
 
         [Serializable] sealed class Evidence
         {
-            public string commit, sourceHash, profile, dataHash, failure, segmentBoundary;
+            public string commit, sourceHash, profile, dataHash, failure, segmentBoundary, feelComparison, movementProtocol, comparisonBoundary;
             public int seed, requestedStartSeconds, requestedDurationSeconds, requestedEndSeconds, actualStartTick, actualEndTick;
             public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
             public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;

@@ -121,6 +121,7 @@ namespace Game.App
             try
             {
                 Session = new InteractiveSession(runCatalog, benchmarkReplay.Header.Options);
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=false;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.

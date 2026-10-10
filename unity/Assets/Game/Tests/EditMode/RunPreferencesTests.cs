@@ -49,5 +49,21 @@ namespace Tests.EditMode
             Assert.That(loaded.HasSeen(FirstRunHint.Harvest), Is.False);
             Assert.That(loaded.HasSeen(FirstRunHint.Muster), Is.False);
         }
+
+        [Test] public void FeelTrialsDefaultOffAndSnapshotDoesNotFollowLaterPreferenceChanges()
+        {
+            var settings = RunPreferences.Load(prefix);
+            Assert.That(settings.SnapshotFeel(), Is.Null);
+            Assert.That(settings.FeelFeedback || settings.HeroRigPreview, Is.False);
+            settings.FeelSpeed = true; settings.FeelContact = true; settings.FeelHealth = true;
+            settings.FeelFeedback = true; settings.HeroRigPreview = true;
+            var snapshot = settings.SnapshotFeel();
+            settings.Save();
+            settings.FeelSpeed = false;
+            Assert.That(snapshot.FasterLord, Is.True);
+            var loaded = RunPreferences.Load(prefix);
+            Assert.That(loaded.SnapshotFeel(), Is.EqualTo(snapshot));
+            Assert.That(loaded.FeelFeedback && loaded.HeroRigPreview, Is.True);
+        }
     }
 }

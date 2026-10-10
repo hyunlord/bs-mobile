@@ -17,6 +17,10 @@ namespace SowSiege.Core
     {
         public const int Version = 1;
         private const int MaterialTargetVersion = 2;
+        private const int FeelVersion = 3;
+        private const int ContactFlag = 2;
+        private const int HealthFlag = 4;
+        private const int FeelFlags = 7;
         private const int CommandTag = 1;
         private const int CheckpointTag = 2;
         private const int EndTag = 3;
@@ -25,7 +29,11 @@ namespace SowSiege.Core
         private const int MaximumCommands = 1000000;
         private const string Magic = "SowSiege-replay";
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
-        public static ReplayHeader Header(InteractiveOptions options) => new(options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
+        public static ReplayHeader Header(InteractiveOptions options)
+        {
+            options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
+            return new(options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
+        }
         internal static void ValidateHash(string hash)
         {
             if (hash is null || hash.Length != HashLength || hash.Any(c => !Uri.IsHexDigit(c))) { throw new ArgumentException("Expected SHA-256 hexadecimal hash."); }
@@ -47,7 +55,8 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
-            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
+            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
+            if ((FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
             ValidateHash(h.Options.DataHash);
             if (!h.Options.Run.ManualCards || h.Options.Run.Scenario != "normal" || h.Options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), h.Options.InitialAimMode)) { throw new ArgumentException("Invalid interactive options."); }
         }
@@ -79,6 +88,12 @@ namespace SowSiege.Core
             {
                 Text(w, r.TargetMaterial);
             }
+            if (header.FormatVersion == FeelVersion)
+            {
+                Text(w, r.TargetMaterial); w.Write(1);
+                var feel = o.Feel!;
+                w.Write((feel.FasterLord ? 1 : 0) | (feel.ImmediateContact ? ContactFlag : 0) | (feel.ReadableHealth ? HealthFlag : 0));
+            }
         }
         public static void WriteCommand(Stream output, ReplayCommand command)
         {
@@ -106,7 +121,16 @@ namespace SowSiege.Core
                     run = run with { TargetMaterial = RequiredText(r) };
                 }
 
-                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash)); ValidateHeader(header);
+                FeelExperimentOptions? feel = null;
+                if (format == FeelVersion)
+                {
+                    run = run with { TargetMaterial = Text(r) };
+                    if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported feel experiment version."); }
+                    var flags = r.ReadInt32();
+                    if (flags <= 0 || (flags & ~FeelFlags) != 0) { throw new InvalidDataException("Invalid feel experiment flags."); }
+                    feel = new((flags & 1) != 0, (flags & ContactFlag) != 0, (flags & HealthFlag) != 0);
+                }
+                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel)); ValidateHeader(header);
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
                 {

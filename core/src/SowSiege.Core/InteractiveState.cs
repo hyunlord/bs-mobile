@@ -9,6 +9,7 @@ namespace SowSiege.Core
         public bool Invulnerable;
         public int SpawnPermille = PlayerInput.Scale;
         public long NextEventId;
+        public FeelExperimentState? Feel;
         public List<PresentationEvent> Events = new();
         public void Attack(int tick, string source, Position origin, Position direction, string shape, int range, IEnumerable<EnemyState> hits, AttackGeometry? geometry = null)
         {

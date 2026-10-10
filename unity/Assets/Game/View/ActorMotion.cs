@@ -1,11 +1,12 @@
 using UnityEngine;
+using SowSiege.Core;
 
 namespace Game.View
 {
     public readonly struct ActorFacingPose
     {
         public readonly float MirrorBlend, LeanDegrees;
-        public float SignedWidth => (1 - .2f * Mathf.Sin(Mathf.Clamp01(MirrorBlend) * Mathf.PI)) * (MirrorBlend < .5f ? 1 : -1);
+        public float SignedWidth => MirrorBlend < .5f ? 1 : -1;
         public ActorFacingPose(float mirrorBlend,float leanDegrees) { MirrorBlend=mirrorBlend;LeanDegrees=leanDegrees; }
     }
 
@@ -27,7 +28,7 @@ namespace Game.View
             var mirror=direction.x>direction.magnitude*.15f?0:direction.x<-direction.magnitude*.15f?1:targetMirror;
             if(mirror!=targetMirror){fromMirror=MirrorAt(time);targetMirror=mirror;mirrorStarted=time;}
         }
-        public ActorFacingPose Sample(float time)=>new ActorFacingPose(MirrorAt(time),Mathf.Sin(AngleAt(time)*Mathf.Deg2Rad)*GameVisualTokens.ActorHeadingLean);
+        public ActorFacingPose Sample(float time)=>new ActorFacingPose(MirrorAt(time),0);
     }
 
     public readonly struct ActorPose
@@ -41,13 +42,28 @@ namespace Game.View
     {
         public static ActorPose Sample(float time, bool walking, float attackProgress, float hitProgress)
         {
-            var phase = time * Mathf.PI * 2 / GameVisualTokens.WalkSeconds;
-            var stride = walking ? Mathf.Sin(phase) : 0;
-            var lift = walking ? (1 - Mathf.Cos(phase * 2)) * GameVisualTokens.WalkBob * .5f : Mathf.Sin(time * 2) * .004f;
-            var attack = attackProgress >= 0 && attackProgress <= 1 ? Mathf.Sin(attackProgress * Mathf.PI) : 0;
-            var hit = hitProgress >= 0 && hitProgress <= 1 ? Mathf.Sin(hitProgress * Mathf.PI) : 0;
-            var squash = Mathf.Cos(phase * 2) * (walking ? .025f : .004f);
-            return new ActorPose(new Vector2(-attack * .025f, lift), new Vector2(1 + squash + hit * .04f, 1 - squash - hit * .04f), stride * GameVisualTokens.WalkLeanDegrees - attack * 7 + hit * 4);
+            return new ActorPose(Vector2.zero, Vector2.one, 0);
+        }
+
+        public static ActorPose SampleEnemy(WaveEnemyKind kind, float time, bool walking)
+        {
+            var offset = Vector2.zero;
+            switch (kind)
+            {
+                case WaveEnemyKind.SeedThief:
+                    if (walking) offset.x = Mathf.Sin(time * 47) * GameVisualTokens.MiteScuttle;
+                    break;
+                case WaveEnemyKind.RipeGrazer:
+                    if (walking) offset.y = Mathf.Sin(time * 9) * GameVisualTokens.GrazerUndulation;
+                    break;
+                case WaveEnemyKind.Ranged:
+                    offset.y = GameVisualTokens.WaspHoverHeight + Mathf.Sin(time * 5) * GameVisualTokens.WaspHoverDrift;
+                    break;
+                case WaveEnemyKind.Charger:
+                    if (walking) offset.y = -GameVisualTokens.ChargerLowPosture;
+                    break;
+            }
+            return new ActorPose(offset, Vector2.one, 0);
         }
     }
 }
