@@ -1,21 +1,37 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using UnityEngine;
 
 namespace Game.App
 {
-    // Listener filter records the actual mixed output, never substitutes authored audio.
+    // Real listener mix, copied into a preallocated SPSC ring. No audio-thread file writes.
     public sealed class GoldenMinuteAudio : MonoBehaviour
     {
-        readonly object gate = new object();
-        FileStream stream;
-        byte[] bytes = Array.Empty<byte>();
-        int channels, sampleRate;
+        const int RingSize = 32, MaximumSamplesPerBlock = 32768;
+        sealed class Block
+        {
+            public readonly byte[] Bytes = new byte[MaximumSamplesPerBlock * 2];
+            public int Length, Ready;
+        }
+        readonly Block[] blocks = new Block[RingSize];
+        readonly AutoResetEvent wake = new AutoResetEvent(false);
+        Thread worker;
+        int channels, sampleRate, produced, consumed, activeCallbacks, dropped;
+        long sampleCount, nonzeroSamples, writerAllocated;
+        double videoDsp, firstAudioDsp;
+        volatile bool armed, completing, completed;
+        string error;
         AudioListener originalListener, captureListener;
         bool originalEnabled;
-        public long NonzeroSampleCount { get; private set; }
-        public long SampleCount { get; private set; }
+        public long NonzeroSampleCount => Interlocked.Read(ref nonzeroSamples);
+        public long SampleCount => Interlocked.Read(ref sampleCount);
+        public long WriterAllocatedBytes => Interlocked.Read(ref writerAllocated);
+        public int DroppedBlocks => Volatile.Read(ref dropped);
+        public bool Completed => completed;
+        public string Error => error;
+        public double VideoOffsetSeconds => firstAudioDsp - videoDsp;
 
         public static GoldenMinuteAudio BeginMixedOutput(AudioListener listener, string path)
         {
@@ -23,21 +39,14 @@ namespace Game.App
             var owner = new GameObject("Golden minute mixed output");
             owner.transform.SetParent(listener.transform, false);
             var capture = owner.AddComponent<GoldenMinuteAudio>();
-            capture.originalListener = listener;
-            capture.originalEnabled = listener.enabled;
+            capture.originalListener = listener; capture.originalEnabled = listener.enabled;
             listener.enabled = false;
             try
             {
                 capture.captureListener = owner.AddComponent<AudioListener>();
-                capture.Begin(path);
-                return capture;
+                capture.Begin(path); return capture;
             }
-            catch
-            {
-                capture.RestoreListener();
-                Destroy(owner);
-                throw;
-            }
+            catch { capture.RestoreListener(); Destroy(owner); throw; }
         }
 
         void RestoreListener()
@@ -48,55 +57,81 @@ namespace Game.App
 
         public void Begin(string path)
         {
-            lock (gate)
-            {
-                sampleRate = AudioSettings.outputSampleRate;
-                stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-                stream.Write(new byte[44], 0, 44);
-            }
+            sampleRate = AudioSettings.outputSampleRate;
+            for (var index = 0; index < RingSize; index++) blocks[index] = new Block();
+            worker = new Thread(() => Write(path)) { IsBackground = true, Name = "Golden capture PCM writer" };
+            worker.Start();
+        }
+
+        public void MarkVideoStart(double wallSeconds, double dspSeconds)
+        {
+            videoDsp = dspSeconds;
+            armed = true;
         }
 
         void OnAudioFilterRead(float[] data, int channelCount)
         {
-            lock (gate)
+            if (!armed || completing) return;
+            Interlocked.Increment(ref activeCallbacks);
+            try
             {
-                if (stream == null) return;
+                if (completing) return;
+                var block = blocks[produced % RingSize];
+                if (data.Length > MaximumSamplesPerBlock || Volatile.Read(ref block.Ready) != 0 || channels != 0 && channels != channelCount)
+                {
+                    Interlocked.Increment(ref dropped); return;
+                }
                 channels = channelCount;
-                if (bytes.Length != data.Length * 2) bytes = new byte[data.Length * 2];
+                if (produced == 0) firstAudioDsp = AudioSettings.dspTime;
+                long audible = 0;
                 for (var index = 0; index < data.Length; index++)
                 {
                     var sample = (short)(Math.Max(-1, Math.Min(1, data[index])) * short.MaxValue);
-                    if (sample != 0) NonzeroSampleCount++;
-                    bytes[index * 2] = (byte)sample; bytes[index * 2 + 1] = (byte)(sample >> 8);
+                    if (sample != 0) audible++;
+                    block.Bytes[index * 2] = (byte)sample; block.Bytes[index * 2 + 1] = (byte)(sample >> 8);
                 }
-                stream.Write(bytes, 0, bytes.Length);
-                SampleCount += data.Length;
+                block.Length = data.Length * 2;
+                Interlocked.Add(ref nonzeroSamples, audible);
+                Volatile.Write(ref block.Ready, 1); produced++; wake.Set();
             }
+            finally { Interlocked.Decrement(ref activeCallbacks); }
         }
 
-        public void StopAudio()
+        void Write(string path)
         {
-            RestoreListener();
-            lock (gate)
+            var allocationStart = GC.GetAllocatedBytesForCurrentThread();
+            try
             {
-                if (stream == null) return;
-                try
+                using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+                stream.Write(new byte[44], 0, 44);
+                while (true)
                 {
-                    stream.Position = 0;
-                    using var writer = new BinaryWriter(stream, Encoding.ASCII, true);
-                    var length = checked((int)(SampleCount * 2));
-                    var count = Math.Max(1, channels);
-                    writer.Write(Encoding.ASCII.GetBytes("RIFF")); writer.Write(36 + length);
-                    writer.Write(Encoding.ASCII.GetBytes("WAVEfmt ")); writer.Write(16); writer.Write((short)1);
-                    writer.Write((short)count); writer.Write(sampleRate); writer.Write(sampleRate * count * 2);
-                    writer.Write((short)(count * 2)); writer.Write((short)16);
-                    writer.Write(Encoding.ASCII.GetBytes("data")); writer.Write(length);
+                    var block = blocks[consumed % RingSize];
+                    if (Volatile.Read(ref block.Ready) == 0)
+                    {
+                        if (completing && Volatile.Read(ref activeCallbacks) == 0) break;
+                        wake.WaitOne(10); continue;
+                    }
+                    stream.Write(block.Bytes, 0, block.Length);
+                    Interlocked.Add(ref sampleCount, block.Length / 2);
+                    Volatile.Write(ref block.Ready, 0); consumed++;
                 }
-                finally { stream.Dispose(); stream = null; }
+                stream.Position = 0;
+                using var header = new BinaryWriter(stream, Encoding.ASCII, true);
+                var length = checked((int)(SampleCount * 2)); var count = Math.Max(1, channels);
+                header.Write(Encoding.ASCII.GetBytes("RIFF")); header.Write(36 + length);
+                header.Write(Encoding.ASCII.GetBytes("WAVEfmt ")); header.Write(16); header.Write((short)1);
+                header.Write((short)count); header.Write(sampleRate); header.Write(sampleRate * count * 2);
+                header.Write((short)(count * 2)); header.Write((short)16);
+                header.Write(Encoding.ASCII.GetBytes("data")); header.Write(length);
             }
+            catch (Exception exception) { error = exception.ToString(); }
+            finally { Interlocked.Exchange(ref writerAllocated, GC.GetAllocatedBytesForCurrentThread() - allocationStart); completed = true; }
         }
 
-        void OnApplicationQuit() => StopAudio();
-        void OnDestroy() => StopAudio();
+        public void StopAudio() { RestoreListener(); completing = true; wake.Set(); }
+        public bool Join(int milliseconds) => worker == null || worker.Join(milliseconds);
+        void OnApplicationQuit() { StopAudio(); Join(5000); }
+        void OnDestroy() { StopAudio(); Join(5000); }
     }
 }

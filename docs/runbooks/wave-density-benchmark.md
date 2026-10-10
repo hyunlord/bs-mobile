@@ -67,6 +67,14 @@ node tools/summarize-wave-benchmark-v2.mjs capped artifacts/wave-density/capped
 
 ## 현재 판정과 비용 분해
 
+#200 이후 Core/View를 바꾸는 PR은 위3회 기준 비교에 아래 명령을 사용한다. 20% 초과 회귀는 기본 실패이며, 실제 측정과 추적 이슈를 포함한 명시적 사유가 있을 때만 `--reason`을 붙여 `explained-regression`으로 기록한다. 이를 성능 통과라고 부르지 않는다. 누락·설정 불일치·중단은 사유로 면제할 수 없다. 역사 보고의 warning 판정은 보존한다.
+
+```sh
+node tools/check-wave-regression.mjs artifacts/wave-density/next-uncapped artifacts/wave-density/uncapped
+# 회귀 사유를 명시한 경우에만:
+node tools/check-wave-regression.mjs artifacts/wave-density/next-uncapped artifacts/wave-density/uncapped --reason docs/review/MEASURED-REGRESSION-REASON.md
+```
+
 - 비용 추세: 상한 없는3회에서 각 밀도400–599/600–799/800+의 반복별 p95와3회 통합 p95를 기록한다. 같은 기기·설정의 기준 대비 **통합 p95 증가가20%를 초과**하면 경고한다. 정확히20%는 경고가 아니다. Mac 절대 p95 합격선은 없으며 실제 기기 성능 합격선은 보류 중인 Fold7 #98에서 다룬다.
 - 끊김: 상한60fps의 **각 반복·각 밀도**에서 **33ms 초과 프레임 비율≤0.1%**, **100ms 초과 프레임0개**를 모두 만족해야 한다. 정확히33ms/100ms는 각각 초과에 포함하지 않는다. 좋은 반복이나 통합 비율로 나쁜 반복을 숨기지 않는다.
 - 두 모드 모두 필요한 반복·밀도·종결 해시가 없으면 미완료다. 0명령·따라잡기·느린 프레임도 모두 남긴다. 유효하지 않은 포커스 이탈 실행을 필터링으로 되살리지 않는다.

@@ -15,8 +15,11 @@ namespace Game.View
         readonly RectTransform[] slots = new RectTransform[9];
         readonly string[] shown = new string[9];
         readonly Text[] ranks = new Text[9];
-        readonly List<EquipmentView> weapons = new List<EquipmentView>();
-        readonly List<EquipmentView> tools = new List<EquipmentView>();
+        readonly List<EquipmentView> weapons = new List<EquipmentView>(16);
+        readonly List<EquipmentView> tools = new List<EquipmentView>(16);
+        readonly BufferedHudText healthValue, levelValue, timerValue;
+        readonly BufferedHudText[] rankValues = new BufferedHudText[9];
+        readonly Dictionary<string, Image>[] icons = new Dictionary<string, Image>[9];
         public float ReservedTopPixels => root.rect.height * ui.Canvas.scaleFactor;
 
         public FallowHud(UiShell ui, ContentCatalog catalog, Action pause)
@@ -40,6 +43,7 @@ namespace Game.View
             level = Label(vitals, "", UiTokens.Caption, 220, 28, 112, 28, GameVisualTokens.Attack, true);
             timer = Label(root, "", UiTokens.Heading, 672, 16, 126, 50, GameVisualTokens.Attack, true);
             timer.alignment = TextAnchor.MiddleCenter;
+            healthValue = BufferedHudText.Create(health); levelValue = BufferedHudText.Create(level); timerValue = BufferedHudText.Create(timer);
             if(pause != null)
             {
                 var button = ui.Button(root, "잠시\n멈춤", pause);
@@ -60,21 +64,36 @@ namespace Game.View
                 var slot = ui.Surface(slots[i], "ui.card.common"); slot.color = UiTokens.FallowCharcoal; slot.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
                 ranks[i] = Label(slots[i], "", UiTokens.Caption, 45, 48, 27, 26, GameVisualTokens.Attack, true);
                 ranks[i].alignment = TextAnchor.LowerRight;
+                rankValues[i] = BufferedHudText.Create(ranks[i]);
+                icons[i] = new Dictionary<string, Image>(StringComparer.Ordinal);
+                foreach (var gear in catalog.WaveRuntime.Gear.Values)
+                {
+                    var isWeapon = catalog.Weapons.ContainsKey(gear.Id);
+                    if ((i < 5) != isWeapon) continue;
+                    var icon = ui.Icon(slots[i], gear.Id, UiTokens.FallowSlotSize - 12);
+                    icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(.5f, .5f);
+                    icon.rectTransform.anchoredPosition = Vector2.zero; icon.gameObject.SetActive(false);
+                    icons[i].Add(gear.Id, icon);
+                }
+                ranks[i].transform.SetAsLastSibling();
             }
         }
 
         public void Present(RunFrame frame)
         {
             var seconds = frame.Tick / frame.TickRate;
-            timer.text = $"{seconds / 60:00}:{seconds % 60:00}";
-            health.text = $"{frame.Lord.Health} / {frame.Lord.MaxHealth}";
-            level.text = $"레벨 {frame.Level}";
+            timerValue.Begin(); timerValue.Append(seconds / 60, 2); timerValue.Append(":"); timerValue.Append(seconds % 60, 2); timerValue.End();
+            healthValue.Begin(); healthValue.Append(frame.Lord.Health); healthValue.Append(" / "); healthValue.Append(frame.Lord.MaxHealth); healthValue.End();
+            levelValue.Begin(); levelValue.Append("레벨 "); levelValue.Append(frame.Level); levelValue.End();
             hpFill.anchorMax = new Vector2(frame.Lord.MaxHealth > 0 ? Mathf.Clamp01((float)frame.Lord.Health / frame.Lord.MaxHealth) : 0, 1);
             xpFill.anchorMax = new Vector2(frame.RequiredExperience > 0 ? Mathf.Clamp01((float)frame.Experience / frame.RequiredExperience) : 0, 1);
             weapons.Clear(); tools.Clear();
-            foreach(var gear in frame.Equipment)
+            for (var equipmentIndex = 0; equipmentIndex < frame.Equipment.Count; equipmentIndex++)
+            {
+                var gear = frame.Equipment[equipmentIndex];
                 if(catalog.Weapons.ContainsKey(gear.Id)) weapons.Add(gear);
                 else if(catalog.Tools.ContainsKey(gear.Id)) tools.Add(gear);
+            }
             for(var i = 0; i < slots.Length; i++)
             {
                 var group = i < 5 ? weapons : tools;
@@ -83,19 +102,11 @@ namespace Game.View
                 var id = gear?.Id;
                 if(!string.Equals(shown[i], id, StringComparison.Ordinal))
                 {
-                    var prior = slots[i].Find("Equipped");
-                    if(prior != null) { prior.gameObject.SetActive(false); UnityEngine.Object.Destroy(prior.gameObject); }
-                    if(id != null)
-                    {
-                        var icon = ui.Icon(slots[i], id, UiTokens.FallowSlotSize - 12);
-                        icon.name = "Equipped";
-                        icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(.5f, .5f);
-                        icon.rectTransform.anchoredPosition = Vector2.zero;
-                        ranks[i].transform.SetAsLastSibling();
-                    }
+                    if (shown[i] != null && icons[i].TryGetValue(shown[i], out var prior)) prior.gameObject.SetActive(false);
+                    if (id != null && icons[i].TryGetValue(id, out var icon)) icon.gameObject.SetActive(true);
                     shown[i] = id;
                 }
-                ranks[i].text = gear == null ? "" : gear.Level.ToString();
+                rankValues[i].Begin(); if (gear != null) rankValues[i].Append(gear.Level); rankValues[i].End();
             }
         }
 

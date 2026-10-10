@@ -80,7 +80,10 @@ namespace Game.App
         private Font font;
         private bool ownsFont;
         private double accumulator;
-        private string cardsIdentity;
+        private RunFrame cardsFrame;
+        private int cardsWidth,cardsHeight;
+        private readonly Vector3[] hintCorners=new Vector3[4];
+        private Text pooledHint;
         private bool finished,loading,parityRunning,applicationPaused,focusLost,discardResumeDelta,telemetryClosed,suspendedInterval;
         private double intervalStarted;
         private int seed;
@@ -222,7 +225,7 @@ namespace Game.App
             try
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash);
-                Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsIdentity=null;MenuOpen=false;completedSummary=null;
+                Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
                 world.SetFallowChapter(IsWave&&c.WaveRuntime?.ChapterId=="meta:chapter_1");
@@ -230,13 +233,14 @@ namespace Game.App
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 invulnerable=false;spawnPermille=1000;
 #endif
+                InitializeSmoothness();
                 ShowHud();
             }
             catch(Exception e){Fail(e);}
             loading=false;
         }
-        private void ClearUi(){desktopControls.Reset();Ui.Clear();activeHint=null;}
-        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));MenuOpen=false;cardsIdentity=null;Stick.ResetStick();}
+        private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
+        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
         // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
         public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
@@ -244,7 +248,7 @@ namespace Game.App
             || debug!=null && debug.IsOpen
 #endif
             ;
-        private void Update()
+        private void UpdateRunFrame()
         {
             if (waveBenchmarkRequested) { UpdateWaveBenchmark(); return; }
             if(Ui==null||Stick==null)return;
@@ -257,6 +261,7 @@ namespace Game.App
 #endif
             if(telemetry!=null&&!telemetryClosed)
             {
+                using var allocationScope=smoothness.Scope(SmoothnessScope.Telemetry);
                 using var telemetryScope=RunProfilerMarkers.Telemetry.Auto();
                 telemetry.CompleteInterval(Time.unscaledDeltaTime,suspendedInterval);suspendedInterval=false;intervalStarted=0;
                 if(finished){telemetry.Finish();telemetryClosed=true;}
@@ -264,6 +269,7 @@ namespace Game.App
             var pausedAtFrameStart=Paused;var speedAtFrameStart=Speed;
             Stick.Blocked=Paused;if(Paused){Stick.ResetStick();accumulator=0;}
             var movement=desktopControls.Sample(Stick,Paused);
+            smoothness.InputSample(PresentationInput(movement));
             Ui.ShowStick(Stick.Active,Stick.Origin,Stick.Offset);
             sound?.SetPaused(applicationPaused||focusLost);waveSound?.SetPaused(applicationPaused||focusLost);
             if(Session==null||loading||Error!=null)return;
@@ -274,6 +280,7 @@ namespace Game.App
                 while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,movement);}
             }
             using(RunProfilerMarkers.Hud.Auto())
+            using(smoothness.Scope(SmoothnessScope.Hud))
             {
                 if(Session.View.Status==RunStatus.AwaitingCard&&(screen==UiScreen.Run||screen==UiScreen.Cards))ShowCards();
                 hud?.Present(Frame,FirstPlayable);UpdateHints();
@@ -287,10 +294,14 @@ namespace Game.App
                     visible.yMin+=bottom;visible.yMax=Mathf.Max(visible.yMin+1,visible.yMax-hud.ReservedTopPixels);
                 }
                 world.ShowAnnouncements=screen==UiScreen.Run;
-                using(RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous,Frame,FirstPlayable,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
+                PredictLord(movement);
+                using(RunProfilerMarkers.WorldPresent.Auto())
+                using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,Frame,FirstPlayable,Paused?1:(float)(accumulator*Frame.TickRate),Time.unscaledDeltaTime,visible);
+                smoothness.Submit(Camera.main,Frame.Tick,Paused,lordPrediction.ResetThisFrame,lordPrediction.Speed);
             }
             if(!finished&&telemetry!=null)
             {
+                using var allocationScope=smoothness.Scope(SmoothnessScope.Telemetry);
                 using var telemetryScope=RunProfilerMarkers.Telemetry.Auto();
                 telemetry.BeginInterval(Frame,speedAtFrameStart,world!=null?world.ActiveVisualProjectiles:0,new Rect(0,0,Screen.width,Screen.height),Screen.safeArea,pausedAtFrameStart);
                 intervalStarted=Time.realtimeSinceStartupAsDouble;
@@ -306,15 +317,18 @@ namespace Game.App
             try
             {
                 var command=new ReplayCommand(Session.NextSequence,Frame.Tick,kind,input,card,value);
-                using(RunProfilerMarkers.CoreApply.Auto())Session.Apply(command);recording.WriteAccepted(command);
+                using(RunProfilerMarkers.CoreApply.Auto())
+                using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);recording.WriteAccepted(command);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if(kind==ReplayCommandKind.SetInvulnerable)invulnerable=value!=0;
                 if(kind==ReplayCommandKind.SetSpawnPermille)spawnPermille=value;
 #endif
                 if(kind==ReplayCommandKind.SetAimMode)Aim=(AimMode)value;
                 previous=Frame;CaptureSnapshots();
-                using(RunProfilerMarkers.AcceptPresentation.Auto()){world?.AcceptWave(runCatalog,Wave);world?.AcceptFrame(Frame,FirstPlayable);if(IsWave)sound?.AcceptCommonFeedback(Frame,waveSound.PlayCommon);else sound?.AcceptFrame(Frame,FirstPlayable);AcceptWaveAudio();}
-                if(kind!=ReplayCommandKind.Advance){Stick.ResetStick();accumulator=0;cardsIdentity=null;}
+                if(kind==ReplayCommandKind.Advance)lordPrediction.Observe(PresentationPoint(Frame.Lord.Position),Frame.Tick,PresentationInput(input));
+                using(RunProfilerMarkers.AcceptPresentation.Auto())
+                using(smoothness.Scope(SmoothnessScope.AcceptPresentation)){world?.AcceptWave(runCatalog,Wave);world?.AcceptFrame(Frame,FirstPlayable);if(IsWave)sound?.AcceptCommonFeedback(Frame,waveSound.PlayCommon);else sound?.AcceptFrame(Frame,FirstPlayable);AcceptWaveAudio();}
+                if(kind!=ReplayCommandKind.Advance){Stick.ResetStick();accumulator=0;cardsFrame=null;}
                 if(kind==ReplayCommandKind.Advance && Frame.Tick%1800==0 && Frame.Status!=RunStatus.Completed)recording.Checkpoint(Session);
                 if(Frame.Status==RunStatus.Running&&MenuOpen&&kind==ReplayCommandKind.ChooseCard)ShowHud();
             }
@@ -322,6 +336,7 @@ namespace Game.App
         }
         private void CaptureSnapshots()
         {
+            using var allocationScope=smoothness.Scope(SmoothnessScope.CoreSnapshot);
             RunFrame frame;FirstPlayableFrame firstPlayable;
             using(RunProfilerMarkers.CaptureRun.Auto())frame=Session.View.CaptureFrame();
             using(RunProfilerMarkers.CaptureFirstPlayable.Auto())firstPlayable=Session.View.CaptureFirstPlayable();
@@ -331,12 +346,9 @@ namespace Game.App
         }
         private void ShowCards()
         {
+            if(ReferenceEquals(cardsFrame,Frame)&&cardsWidth==Screen.width&&cardsHeight==Screen.height&&screen==UiScreen.Cards)return;
             var offer=Session.View.CaptureCards();
-            var detail=string.Join("|",FirstPlayable.Cards.Select(c=>$"{c.Id}:{c.Rarity}:{c.CurrentLevel}:{c.NextLevel}:{string.Join(",",c.EvolutionIds)}"));
-            detail+=string.Join("|",FirstPlayable.Evolutions.Select(e=>$"{e.Id}:{e.Available}:{e.Activated}"));
-            var identity=Screen.width+"x"+Screen.height+"/"+detail+"/"+offer.Rerolls+"/"+offer.Bans+"/"+offer.Locks+"/"+offer.LockedCardId;
-            if(cardsIdentity==identity&&screen==UiScreen.Cards)return;
-            cardsIdentity=identity;screen=UiScreen.Cards;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
+            cardsFrame=Frame;cardsWidth=Screen.width;cardsHeight=Screen.height;screen=UiScreen.Cards;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
             UiRunPanels.Cards(Ui,Frame,FirstPlayable,offer,runCatalog??FoundationBoot.Catalog,displays,(kind,id)=>Send(kind,card:id));
             Ui.Button(Ui.Content.GetComponentInChildren<ScrollRect>().content,"설정",()=>ShowSettings(true));
         }
@@ -368,7 +380,7 @@ namespace Game.App
             if(settingsOrigin==UiScreen.Summary){ShowSummary();return;}
             if(settingsOrigin==UiScreen.Introduction){ShowIntroduction();return;}
             if(settingsOrigin==UiScreen.Title){ShowMeta();return;}
-            if(Frame?.Status==RunStatus.AwaitingCard){cardsIdentity=null;ShowCards();return;}
+            if(Frame?.Status==RunStatus.AwaitingCard){cardsFrame=null;ShowCards();return;}
             ShowHud();
         }
         private void ApplyPreferences(bool save=false)
@@ -418,15 +430,15 @@ namespace Game.App
         {
             if(activeHint!=null)
             {
-                if(screen!=hintScreen){Destroy(activeHint.transform.parent.gameObject);activeHint=null;return;}
+                if(screen!=hintScreen){ReleaseHint();return;}
                 if(!hintRecorded&&!applicationPaused&&!focusLost&&Time.frameCount>hintStartedFrame&&activeHint.gameObject.activeInHierarchy&&!activeHint.canvasRenderer.cull)
                 {
-                    var corners=new Vector3[4];activeHint.rectTransform.GetWorldCorners(corners);
-                    var bounds=new Rect(corners[0],corners[2]-corners[0]);
+                    activeHint.rectTransform.GetWorldCorners(hintCorners);
+                    var bounds=new Rect(hintCorners[0],hintCorners[2]-hintCorners[0]);
                     if(bounds.Overlaps(Screen.safeArea)){preferences.MarkHintSeen(activeHintKind);hintRecorded=true;}
                 }
                 hintRemaining-=Time.unscaledDeltaTime;
-                if(hintRemaining<=0){Destroy(activeHint.transform.parent.gameObject);activeHint=null;}
+                if(hintRemaining<=0)ReleaseHint();
                 return;
             }
             FirstRunHint? next=null;
@@ -434,20 +446,33 @@ namespace Game.App
             else if(screen==UiScreen.Run)
             {
                 if(!preferences.HasSeen(FirstRunHint.Move))next=FirstRunHint.Move;
-                else if(!preferences.HasSeen(FirstRunHint.Harvest)&&Frame.Farms.Any(f=>f.Ripe))next=FirstRunHint.Harvest;
-                else if(!preferences.HasSeen(FirstRunHint.Muster)&&FirstPlayable.People.Any(p=>p.Activity=="muster"))next=FirstRunHint.Muster;
+                else if(!preferences.HasSeen(FirstRunHint.Harvest)&&HasRipeFarm())next=FirstRunHint.Harvest;
+                else if(!preferences.HasSeen(FirstRunHint.Muster)&&HasMuster())next=FirstRunHint.Muster;
             }
             if(!next.HasValue||applicationPaused||focusLost)return;
             activeHintKind=next.Value;hintScreen=screen;hintRecorded=false;hintStartedFrame=Time.frameCount;hintRemaining=5;
-            activeHint=Ui.Hint(HintText(activeHintKind));
+            if(pooledHint==null)pooledHint=Ui.Hint(HintText(activeHintKind));
+            activeHint=pooledHint;activeHint.text=HintText(activeHintKind);
+            var hintContainer=(RectTransform)activeHint.transform.parent;hintContainer.SetParent(Ui.Content,false);hintContainer.gameObject.SetActive(true);
+            hintContainer.anchorMin=hintContainer.anchorMax=new Vector2(.5f,.18f);hintContainer.anchoredPosition=Vector2.zero;hintContainer.sizeDelta=new Vector2(720,120);
+            var hintLayout=hintContainer.GetComponent<LayoutElement>();if(hintLayout!=null)hintLayout.enabled=false;
             if(screen==UiScreen.Cards)
             {
                 var container=(RectTransform)activeHint.transform.parent;
                 container.SetParent(Ui.Content.GetComponentInChildren<ScrollRect>().content,false);
                 container.SetSiblingIndex(2);
-                var layout=container.gameObject.AddComponent<LayoutElement>();
+                var layout=hintLayout??container.gameObject.AddComponent<LayoutElement>();layout.enabled=true;
                 layout.minHeight=layout.preferredHeight=96;layout.flexibleHeight=0;
             }
+        }
+        private bool HasRipeFarm()
+        {for(var i=0;i<Frame.Farms.Count;i++)if(Frame.Farms[i].Ripe)return true;return false;}
+        private bool HasMuster()
+        {for(var i=0;i<FirstPlayable.People.Count;i++)if(FirstPlayable.People[i].Activity=="muster")return true;return false;}
+        private void ReleaseHint()
+        {
+            if(pooledHint!=null){var container=pooledHint.transform.parent;container.SetParent(Ui.SafeRoot,false);container.gameObject.SetActive(false);}
+            activeHint=null;
         }
         private IEnumerator ReturnMeta(){if(metaRun&&Session!=null&&!finished){settlement=Progression.SettleRun(MetaRunAdapter.FromInteractive(Session.GetSummary(),Frame,FirstPlayable,true));}StopRecording();Session=null;Frame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");ShowMeta();}
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
@@ -507,7 +532,7 @@ namespace Game.App
             parityRunning=true;screen=UiScreen.Replay;MenuOpen=true;debug.SetOpen(false);ClearUi();hud=null;var panel=Ui.Panel("Replay verification");var status=Ui.Label(panel,"기록 검증 중",UiTokens.Body,240);
             var uris=Enumerable.Range(30000,5).Select(id=>Application.isEditor?new Uri(System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath,"../../artifacts/phase1b/replays",id+".ssreplay"))).AbsoluteUri:Application.streamingAssetsPath+"/replays/"+id+".ssreplay").ToArray();
             yield return DeviceParity.Run(FoundationBoot.Catalog,CanonicalContent.DataHash,uris,System.IO.Path.Combine(Application.persistentDataPath,"parity"),text=>status.text=text);
-            parityRunning=false;Ui.Button(panel,"돌아가기",()=>{if(Frame.Status==RunStatus.AwaitingCard){cardsIdentity=null;ShowCards();}else ShowHud();});
+            parityRunning=false;Ui.Button(panel,"돌아가기",()=>{if(Frame.Status==RunStatus.AwaitingCard){cardsFrame=null;ShowCards();}else ShowHud();});
         }
         private void DebugAction(DebugIntent intent)
         {

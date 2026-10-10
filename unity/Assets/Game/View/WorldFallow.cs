@@ -63,8 +63,9 @@ namespace Game.View
             if (visualTime < fallowMaskAt) return;
             fallowMaskAt = visualTime + GameVisualTokens.FallowMaskInterval;
             Array.Clear(fallowPixels, 0, fallowPixels.Length);
-            foreach (var work in wave.Work)
+            for (var workIndex = 0; workIndex < wave.Work.Count; workIndex++)
             {
+                var work = wave.Work[workIndex];
                 if ((work.Kind == "grain" || work.Kind == "building") && work.Health <= 0) continue;
                 var fraction = work.Complete ? 1 : Mathf.Clamp01((float)work.Progress / Mathf.Max(1, work.Required));
                 if (work.Kind == "grain")
@@ -122,36 +123,36 @@ namespace Game.View
             if (!FallowActive) return;
             var width = (float)mapWidth / settings.WorldUnitsPerUnityUnit;
             var height = (float)mapHeight / settings.WorldUnitsPerUnityUnit;
-            FallowProp("watermill", .35f, .73f, 2.4f, 2.1f, 5);
-            FallowProp("stone", .30f, .59f, .8f, 1.3f, 6);
+            FallowProp("fallow.prop.watermill", .35f, .73f, 2.4f, 2.1f, 5);
+            FallowProp("fallow.prop.stone", .30f, .59f, .8f, 1.3f, 6);
             for (var i = 0; i < 10; i++)
             {
-                FallowProp("stream", .19f + i * .075f, .68f + Mathf.Sin(i * .5f) * .013f, width * .2f, .85f, 2);
-                FallowProp("path", .64f + Mathf.Sin(i * .4f) * .05f, .18f + i * .057f, 1.5f, height * .14f, 3, -12);
+                FallowProp("fallow.prop.stream", .19f + i * .075f, .68f + Mathf.Sin(i * .5f) * .013f, width * .2f, .85f, 2);
+                FallowProp("fallow.prop.path", .64f + Mathf.Sin(i * .4f) * .05f, .18f + i * .057f, 1.5f, height * .14f, 3, -12);
             }
-            FallowProp("bridge", .70f, .70f, 1.85f, 1.35f, 4);
-            FallowProp("furrow", .33f, .36f, 1.5f, 1.0f, 3);
-            FallowProp("furrow", .39f, .29f, 1.5f, 1.0f, 3);
+            FallowProp("fallow.prop.bridge", .70f, .70f, 1.85f, 1.35f, 4);
+            FallowProp("fallow.prop.furrow", .33f, .36f, 1.5f, 1.0f, 3);
+            FallowProp("fallow.prop.furrow", .39f, .29f, 1.5f, 1.0f, 3);
             for (var i = 0; i < 4; i++)
             {
-                FallowProp("dead-tree", .20f + .018f * (i % 2), .23f + i * .15f, 1.0f, 1.5f, 6);
-                FallowProp("dead-tree", .78f - .035f * (i % 2), .28f + i * .14f, .95f, 1.4f, 6);
+                FallowProp("fallow.prop.dead-tree", .20f + .018f * (i % 2), .23f + i * .15f, 1.0f, 1.5f, 6);
+                FallowProp("fallow.prop.dead-tree", .78f - .035f * (i % 2), .28f + i * .14f, .95f, 1.4f, 6);
             }
-            FallowProp("dead-tree", .46f, .85f, .72f, 1.15f, 6, opacity: .72f);
-            FallowProp("dead-tree", .61f, .79f, .66f, 1.08f, 6, opacity: .72f);
-            FallowProp("dead-tree", .70f, .88f, .84f, 1.32f, 6, opacity: .68f);
-            FallowProp("stone", .56f, .85f, .45f, .73f, 6, opacity: .68f);
-            FallowProp("stone", .81f, .75f, .42f, .65f, 6, opacity: .68f);
+            FallowProp("fallow.prop.dead-tree", .46f, .85f, .72f, 1.15f, 6, opacity: .72f);
+            FallowProp("fallow.prop.dead-tree", .61f, .79f, .66f, 1.08f, 6, opacity: .72f);
+            FallowProp("fallow.prop.dead-tree", .70f, .88f, .84f, 1.32f, 6, opacity: .68f);
+            FallowProp("fallow.prop.stone", .56f, .85f, .45f, .73f, 6, opacity: .68f);
+            FallowProp("fallow.prop.stone", .81f, .75f, .42f, .65f, 6, opacity: .68f);
         }
 
         void FallowProp(string name, float x, float y, float width, float height, int layer, float degrees = 0, float opacity = 1)
         {
-            if (!TryFallowArt("fallow.prop." + name, out var visual)) return;
+            if (!TryFallowArt(name, out var visual)) return;
             var position = new Vector2(x * mapWidth / settings.WorldUnitsPerUnityUnit, y * mapHeight / settings.WorldUnitsPerUnityUnit);
             var uv = visual.UvRects[0];
             var pixels = new Vector2(Mathf.Abs(uv.width) * visual.Texture.width, Mathf.Abs(uv.height) * visual.Texture.height);
             var fit = Mathf.Min(width / pixels.x, height / pixels.y);
-            Draw(visual, layer, position, 0, pixels * fit, degrees, opacity: opacity * (name == "path" ? .6f : 1));
+            Draw(visual, layer, position, 0, pixels * fit, degrees, opacity: opacity * (name == "fallow.prop.path" ? .6f : 1));
         }
 
         void DisposeFallow()

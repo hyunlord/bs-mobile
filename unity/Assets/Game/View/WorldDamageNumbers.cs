@@ -17,21 +17,36 @@ namespace Game.View
         readonly Transform parent;
         Font font;
         int next;
-        public WorldDamageNumbers(Transform parent) { this.parent = parent; }
-        public void Add(Vector2 origin, long amount)
+        readonly string[] amountText;
+        static readonly string[] AmountText = CreateAmountText();
+        static string[] CreateAmountText()
         {
-            if (amount <= 0) return;
-            var index = next; next = (next + 1) % Capacity;
-            if (labels[index] == null)
+            var values = new string[16384];
+            for (var i = 0; i < values.Length; i++) values[i] = i.ToString(CultureInfo.InvariantCulture);
+            return values;
+        }
+        public WorldDamageNumbers(Transform parent)
+        {
+            this.parent = parent; amountText = AmountText;
+            font = FontProvider.Create(new[] { "0123456789" });
+            font.material.renderQueue = 3100;
+            font.RequestCharactersInTexture("0123456789",48);
+            for (var index = 0; index < Capacity; index++)
             {
-                if (font == null) font = FontProvider.Create(new[] { "0123456789" });
                 var owner = new GameObject("Pooled damage number"); owner.transform.SetParent(parent, false);
                 var label = owner.AddComponent<TextMesh>(); label.font = font; label.fontSize = 48; label.characterSize = 0.045f;
                 label.anchor = TextAnchor.MiddleCenter; label.alignment = TextAlignment.Center;
                 var renderer = owner.GetComponent<MeshRenderer>(); renderer.sharedMaterial = font.material; renderer.sortingOrder = GameVisualTokens.ThreatLayer + 1;
-                font.material.renderQueue = 3100; labels[index] = label; renderers[index] = renderer;
+                labels[index] = label; renderers[index] = renderer; owner.SetActive(false);
             }
-            labels[index].text = amount.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public void Add(Vector2 origin, long amount)
+        {
+            if (amount <= 0) return;
+            var index = next; next = (next + 1) % Capacity;
+            // Unusually large values remain exact; their event-only formatting is visible in acceptance allocation telemetry.
+            labels[index].text = amount < amountText.Length ? amountText[(int)amount] : amount.ToString(CultureInfo.InvariantCulture);
             origins[index] = origin; ages[index] = 0; labels[index].gameObject.SetActive(true);
             labels[index].transform.position = new Vector3(origin.x, origin.y + 0.14f, -0.1f);
             labels[index].color = GameVisualTokens.Attack;
