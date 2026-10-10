@@ -34,6 +34,7 @@ node tools/content-report.mjs --check
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs
 node --test tools/test-device-metrics.mjs
+node --test tools/test-mac-wave-frame-window.mjs
 node tools/pr-policy.mjs
 dotnet run --project tools/ArchitectureGuard -- --self-test
 dotnet run --project tools/ArchitectureGuard -- "$PWD"

@@ -8,6 +8,29 @@ Development Mac 또는 Editor에만 `--diagnostic-trace-tick 20250`을 전달한
 
 실행 소스·dataHash·seed·입력·해상도·Mac 모델·OS·Mono/Metal·targetFPS/vSync와 진단 틱 범위를 먼저 기록한다. Unity·빌드·Recorder는 한 소유자가 직렬 실행한다. Deep Profiling을 켜지 않는다. 실제 기록의 `diagnostic-*.raw`와 메타데이터를 기존 [추적 분석](phase1b-playtest.md#진단-raw의-editor-분석)으로 읽는다. 중첩 inclusive 합계를 더하거나 GC 정보 누락을0으로 취급하지 않는다.
 
+진단용 앱은 Release 전용 `tools/build-mac.sh` 대신 `FoundationBuild.MacDiagnostic`으로 만든다. 아래는 저장소 루트에서, 다른 Unity가 종료된 뒤 실행하며 출력 경로는 새 디렉터리를 쓴다. 이 Development 앱의 프레임 시간은 최종 Release 성능 승인에 사용하지 않는다.
+
+```sh
+set -e
+export PATH="$HOME/.dotnet:$PATH"
+export UNITY_CONTENT_PROFILE=wave-1a
+export UNITY_MAC_PATH="$PWD/artifacts/polish/mac-diagnostic-01/Sow and Siege.app"
+test ! -e "$(dirname "$UNITY_MAC_PATH")"
+mkdir -p "$(dirname "$UNITY_MAC_PATH")"
+bash tools/prepare-unity.sh
+/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity \
+  -batchmode -quit -projectPath "$PWD/unity" -buildTarget OSXUniversal \
+  -executeMethod Game.Editor.FoundationBuild.ConfigureMac \
+  -logFile "$(dirname "$UNITY_MAC_PATH")/configure.log"
+/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity \
+  -batchmode -quit -projectPath "$PWD/unity" -buildTarget OSXUniversal \
+  -executeMethod Game.Editor.FoundationBuild.MacDiagnostic \
+  -logFile "$(dirname "$UNITY_MAC_PATH")/build.log"
+bash tools/prepare-unity.sh --verify
+```
+
+앱 실행 인자에 `--diagnostic-trace-tick 20250`을 추가하고 기존 정상 입력 자동 실행 옵션은 그대로 유지한다. `mac-build-result.json`의 `development:true`와 해당 실행의 추적 메타데이터를 확인한다. 최종 성능 표본은 별도로 `UNITY_CONTENT_PROFILE=wave-1a tools/build-mac.sh`의 Release를 사용한다.
+
 ## 프레임 분석
 
 ```sh
