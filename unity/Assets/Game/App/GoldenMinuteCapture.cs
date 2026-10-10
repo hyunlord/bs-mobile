@@ -257,6 +257,8 @@ namespace Game.App
                 profile = CanonicalContent.ProfileName, dataHash = CanonicalContent.DataHash,
                 feelComparison = AutoplayCapture.Active.FeelComparison?.Mode,
                 movementProtocol = AutoplayCapture.Active.FeelComparison?.InputProtocol,
+                failurePreview = AutoplayCapture.Active.FeelComparison?.FailurePreview ?? false,
+                previewBoundary = AutoplayCapture.Active.FeelComparison?.FailurePreview == true ? "Diagnostic 0-30 second preview only, not the requested 360-390 second comparison. Death retains failed status and actual partial frames." : null,
                 comparisonBoundary = AutoplayCapture.Active.FeelComparison == null ? null : "Walk uses fixed rightward input; rules share the normal growth/evasion policy, not identical movement commands. Actual movement and legal card choices may diverge with state. Gameplay-second window at 1x, card pauses extend actual wall duration. No forced survival.",
                 seed = captureSeed, requestedStartSeconds = segment.StartSeconds, requestedDurationSeconds = segment.DurationSeconds, actualStartTick = actualStartTick,
                 requestedEndSeconds = segment.EndSeconds, actualEndTick = submitted == 0 ? -1 : finalTick,
@@ -301,7 +303,8 @@ namespace Game.App
 
         [Serializable] sealed class Evidence
         {
-            public string commit, sourceHash, profile, dataHash, failure, segmentBoundary, feelComparison, movementProtocol, comparisonBoundary;
+            public string commit, sourceHash, profile, dataHash, failure, segmentBoundary, feelComparison, movementProtocol, comparisonBoundary, previewBoundary;
+            public bool failurePreview;
             public int seed, requestedStartSeconds, requestedDurationSeconds, requestedEndSeconds, actualStartTick, actualEndTick;
             public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
             public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;

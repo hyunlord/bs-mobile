@@ -10,15 +10,22 @@ namespace Game.App
         public bool RequestedFeedback => RequestedRulesOn;
         public bool RequestedHeroB => Mode == "walk-b";
         public bool Walk => Mode == "walk-a" || Mode == "walk-b";
-        public string InputProtocol => Walk ? "tick-walk-right-v1" : "growth-evasive-policy-v1";
-        public CaptureSegmentWindow Window => new CaptureSegmentWindow(Walk ? 0 : 360, Walk ? 5 : 30, !Walk);
+        public bool FailurePreview { get; }
+        public string MovementConfiguration { get; }
+        public bool Landscape => !Walk;
+        public string InputProtocol => Walk ? "tick-walk-right-v1" : MovementConfiguration == "evasive" ? "growth-evasive-policy-v1" : "growth-policy-v1";
+        public CaptureSegmentWindow Window => new CaptureSegmentWindow(Walk || FailurePreview ? 0 : 360, Walk ? 5 : 30, !Walk && !FailurePreview);
 
-        FeelComparisonCapture(string mode) { Mode = mode; }
+        FeelComparisonCapture(string mode, bool failurePreview, string movement) { Mode = mode; FailurePreview = failurePreview; MovementConfiguration = movement; }
 
         public static FeelComparisonCapture Parse(string[] args)
         {
             var index = Array.IndexOf(args, "--feel-comparison");
-            if (index < 0) return null;
+            if (index < 0)
+            {
+                if (Array.IndexOf(args, "--feel-failure-preview") >= 0) throw new ArgumentException("Failure preview requires a rules comparison.");
+                return null;
+            }
             if (Array.LastIndexOf(args, "--feel-comparison") != index || index + 1 >= args.Length)
                 throw new ArgumentException("--feel-comparison requires one comparison mode.");
             var mode = args[index + 1];
@@ -26,9 +33,21 @@ namespace Game.App
                 throw new ArgumentException("Unknown feel comparison mode.");
             if (Array.IndexOf(args, "--autoplay-capture") < 0)
                 throw new ArgumentException("Feel comparison requires isolated --autoplay-capture.");
-            foreach (var flag in new[] { "--capture-start-seconds", "--capture-duration-seconds", "--capture-landscape", "--capture-weak-build", "--capture-movement" })
+            foreach (var flag in new[] { "--capture-start-seconds", "--capture-duration-seconds", "--capture-landscape", "--capture-weak-build" })
                 if (Array.IndexOf(args, flag) >= 0) throw new ArgumentException("Feel comparison owns its window and movement; incompatible flag: " + flag);
-            return new FeelComparisonCapture(mode);
+            var preview = Array.IndexOf(args, "--feel-failure-preview");
+            var movementIndex = Array.IndexOf(args, "--capture-movement");
+            var walk = mode == "walk-a" || mode == "walk-b";
+            if (walk && (preview >= 0 || movementIndex >= 0)) throw new ArgumentException("Failure preview and movement configuration are rules-only.");
+            if (preview >= 0 && Array.LastIndexOf(args, "--feel-failure-preview") != preview) throw new ArgumentException("Duplicate failure preview flag.");
+            var movement = "evasive";
+            if (movementIndex >= 0)
+            {
+                if (Array.LastIndexOf(args, "--capture-movement") != movementIndex || movementIndex + 1 >= args.Length) throw new ArgumentException("Movement requires one default or evasive value.");
+                movement = args[movementIndex + 1];
+                if (movement != "default" && movement != "evasive") throw new ArgumentException("Movement requires default or evasive.");
+            }
+            return new FeelComparisonCapture(mode, preview >= 0, movement);
         }
 
         public static CaptureSegmentWindow ResolveWindow(string[] args) => Parse(args)?.Window ?? CaptureSegmentWindow.Parse(args);
