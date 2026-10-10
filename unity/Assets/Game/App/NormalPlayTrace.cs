@@ -43,6 +43,11 @@ namespace Game.App
         readonly FrameRow[] frames = new FrameRow[FrameCapacity];
         readonly EntityRow[] entities = new EntityRow[EntityCapacity];
         readonly Sample[] samples = new Sample[SampleCapacity];
+        readonly FrameTiming[] timingBuffer = new FrameTiming[10];
+        readonly TimingRow[] timings = new TimingRow[FrameCapacity + 10];
+        int timingCount, timingPolls, timingEmptyPolls, timingZeroStarts, timingDuplicates, timingDropped, timingZeroPresents;
+        ulong timingLatestStart, timingCpuFrequency;
+        bool timingEnabled;
         readonly HashSet<int> enemyIds = new HashSet<int>(5);
         RunCoordinator run;
         Mouse syntheticMouse;
@@ -69,6 +74,12 @@ namespace Game.App
         }
         struct Sample { public string Kind; public int Id; public Vector2 World; public bool FriendlyProjectile; }
         struct EntityRow { public int Frame, Id; public string Kind; public Vector2 World, Screen; public bool FriendlyProjectile; }
+        struct TimingRow
+        {
+            public int ObservedUnityFrame;
+            public double RetrievalStart, RetrievalEnd;
+            public FrameTiming Value;
+        }
 
         public static NormalPlayTrace Create(RunCoordinator coordinator)
         {
@@ -82,6 +93,8 @@ namespace Game.App
                 throw new IOException("Normal trace output must be new or empty.");
             var trace = coordinator.gameObject.AddComponent<NormalPlayTrace>();
             trace.run = coordinator; trace.folder = output;
+            trace.timingEnabled = FrameTimingManager.IsFeatureEnabled();
+            trace.timingCpuFrequency = FrameTimingManager.GetCpuTimerFrequency();
             trace.initializedAt = Time.realtimeSinceStartupAsDouble; trace.nextUiAttempt = trace.initializedAt + 2;
             Directory.CreateDirectory(output);
             trace.scripted = Array.IndexOf(args, "--smoothness-scripted-input") >= 0;
@@ -164,6 +177,41 @@ namespace Game.App
             current.CallbackEnd = Time.realtimeSinceStartupAsDouble - beganAt;
             frames[frameCount++] = current;
             SampleDiagnostics?.Invoke();
+            ObserveFrameTimings();
+        }
+        void ObserveFrameTimings()
+        {
+            timingPolls++;
+            var start = Time.realtimeSinceStartupAsDouble - beganAt;
+            FrameTimingManager.CaptureFrameTimings();
+            var count = (int)FrameTimingManager.GetLatestTimings((uint)timingBuffer.Length, timingBuffer);
+            var end = Time.realtimeSinceStartupAsDouble - beganAt;
+            if (count == 0) timingEmptyPolls++;
+            for (var i = count - 1; i >= 0; i--)
+            {
+                var value = timingBuffer[i];
+                if (value.frameStartTimestamp == 0) { timingZeroStarts++; continue; }
+                if (value.frameStartTimestamp <= timingLatestStart) { timingDuplicates++; continue; }
+                timingLatestStart = value.frameStartTimestamp;
+                if (value.cpuTimePresentCalled == 0) timingZeroPresents++;
+                if (timingCount == timings.Length) { timingDropped++; continue; }
+                timings[timingCount++] = new TimingRow { ObservedUnityFrame = Time.frameCount,
+                    RetrievalStart = start, RetrievalEnd = end, Value = value };
+            }
+        }
+        void WriteFrameTimings()
+        {
+            using (var file = new StreamWriter(Path.Combine(folder, "normal-frame-timings.csv")))
+            {
+                file.WriteLine("observedUnityFrame,sourceUnityFrame,retrievalStartWallSeconds,retrievalEndWallSeconds,cpuTimerFrequency,frameStartTimestamp,firstSubmitTimestamp,cpuTimePresentCalled,cpuTimeFrameComplete,cpuFrameMs,cpuMainThreadMs,cpuRenderThreadMs,cpuPresentWaitMs,gpuMs");
+                for (var i = 0; i < timingCount; i++)
+                {
+                    var r = timings[i]; var v = r.Value;
+                    file.WriteLine(FormattableString.Invariant($"{r.ObservedUnityFrame},unknown,{r.RetrievalStart:F9},{r.RetrievalEnd:F9},{timingCpuFrequency},{v.frameStartTimestamp},{v.firstSubmitTimestamp},{v.cpuTimePresentCalled},{v.cpuTimeFrameComplete},{v.cpuFrameTime:R},{v.cpuMainThreadFrameTime:R},{v.cpuRenderThreadFrameTime:R},{v.cpuMainThreadPresentWaitTime:R},{v.gpuFrameTime:R}"));
+                }
+            }
+            File.WriteAllText(Path.Combine(folder, "normal-frame-timing-boundary.txt"), FormattableString.Invariant(
+                $"featureEnabledAtStart={timingEnabled}\ncpuTimerFrequency={timingCpuFrequency}\nstoredRows={timingCount}\ncapacity={timings.Length}\npolls={timingPolls}\nemptyPolls={timingEmptyPolls}\nzeroStartObservations={timingZeroStarts}\nduplicateOrOlderObservations={timingDuplicates}\nuniqueZeroPresentObservations={timingZeroPresents}\ndroppedUniqueRows={timingDropped}\nsourceUnityFrame=unknown; observedUnityFrame is retrieval frame only; no fixed-delay or minus-four join\nclocks=raw CPU ticks converted by cpuTimerFrequency only when nonzero; retrieval bounds are session-relative realtime and have no asserted common epoch\nscope=delayed FrameTimingManager observations; Present-call timestamps are not display presentation timestamps; no motion acceptance clock substitution\ncoverage=only returned valid timings; missing source frames and final delayed tail are unknown; zero values are unavailable, not zero cost; capacity overflow is explicitly counted\n"));
         }
         IEnumerator StartupTimeout()
         {
@@ -359,6 +407,7 @@ namespace Game.App
                 for (var i = 0; i < entityCount; i++) { var r = entities[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World.x:F9},{r.World.y:F9},{r.Screen.x:F6},{r.Screen.y:F6},{r.FriendlyProjectile}")); }
             }
             WriteDiagnostics?.Invoke(folder);
+            WriteFrameTimings();
             File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nframeClocks=engineFrameTimeSeconds: Unity unscaled frame clock since startup; wallSeconds: BeginFrame realtime relative to session; callbackEndWallSeconds: EndFrame realtime relative to session; not display presentation timestamps\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrequestedSeed={RequestedSeed?.ToString(CultureInfo.InvariantCulture) ?? "normal default"}\nprojectileTimeoutClock=Stopwatch monotonic wall clock; requires a player callback\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
         }
         void OnApplicationQuit() => Finish();
