@@ -7,6 +7,52 @@ namespace Tests.EditMode
 {
     public sealed class ThreatCorridorTests
     {
+        [TestCase(false)] [TestCase(true)]
+        public void GrazingCorridorKeepsArrowInsideVisibleThreatEvenWhenAxisIsOffscreen(bool reverse)
+        {
+            var viewport=new Rect(0,0,10,10);
+            var lane=Lane(1,30,-.5f);lane.Origin=new Vector2(-5,-.5f);lane.Target=new Vector2(15,-.5f);lane.Radius=1;
+            if(reverse){var swap=lane.Origin;lane.Origin=lane.Target;lane.Target=swap;}
+            var start=lane.Origin;var end=lane.Target;
+            Assert.That(ThreatCorridors.Intersects(viewport,lane),Is.True);
+            Assert.That(ThreatCorridors.ClipSegment(viewport,ref start,ref end),Is.False);
+            var arrow=ThreatCorridors.VisibleArrowPosition(viewport,lane,.2f);
+            Assert.That(viewport.Contains(arrow),Is.True);
+            Assert.That(arrow.y,Is.GreaterThan(0));
+            Assert.That(ThreatCorridors.Contains(lane,arrow),Is.True);
+            lane.Origin=new Vector2(-.3f,-.3f);lane.Target=new Vector2(-.2f,-.2f);lane.Radius=.5f;
+            arrow=ThreatCorridors.VisibleArrowPosition(viewport,lane,.1f);
+            Assert.That(viewport.Contains(arrow),Is.True);
+            Assert.That(ThreatCorridors.Contains(lane,arrow),Is.True);
+        }
+
+        [Test] public void OffscreenThreatClipsAtEdgeAndPreservesTravelDirection()
+        {
+            var viewport=new Rect(0,0,10,10);
+            var start=new Vector2(-5,5);var end=new Vector2(8,5);
+            Assert.That(ThreatCorridors.ClipSegment(viewport,ref start,ref end),Is.True);
+            Assert.That(start,Is.EqualTo(new Vector2(0,5)));Assert.That(end,Is.EqualTo(new Vector2(8,5)));
+            start=new Vector2(15,5);end=new Vector2(-5,5);
+            Assert.That(ThreatCorridors.ClipSegment(viewport,ref start,ref end),Is.True);
+            Assert.That(start,Is.EqualTo(new Vector2(10,5)));Assert.That(end,Is.EqualTo(new Vector2(0,5)));
+        }
+
+        [Test] public void CornerIntersectionAndOffscreenNonintersectionAreDistinct()
+        {
+            var viewport=new Rect(0,0,10,10);
+            var start=new Vector2(-5,-5);var end=new Vector2(5,5);
+            Assert.That(ThreatCorridors.ClipSegment(viewport,ref start,ref end),Is.True);
+            Assert.That(start,Is.EqualTo(Vector2.zero));
+            var lane=Lane(1,30,-2);lane.Origin=new Vector2(-5,-2);lane.Target=new Vector2(15,-2);
+            Assert.That(ThreatCorridors.Intersects(viewport,lane),Is.False);
+            lane.Origin=new Vector2(-.19f,-.19f);lane.Target=lane.Origin;lane.Radius=.2f;
+            Assert.That(ThreatCorridors.Intersects(viewport,lane),Is.False,"Expanded rectangle corners must not create nonexistent capsule threats.");
+            lane.Origin=new Vector2(-.1f,-.1f);lane.Target=lane.Origin;
+            Assert.That(ThreatCorridors.Intersects(viewport,lane),Is.True);
+            start=new Vector2(-5,5);end=new Vector2(-1,5);
+            Assert.That(ThreatCorridors.ClipSegment(viewport,ref start,ref end),Is.False,"Infinite forward extension is not the actual attack segment.");
+        }
+
         static ThreatCorridor Lane(int id, int impact, float y) => new ThreatCorridor
         { Id = id, ImpactTick = impact, TellTicks = 30, Origin = new Vector2(0, y), Target = new Vector2(5, y), Radius = .2f };
 

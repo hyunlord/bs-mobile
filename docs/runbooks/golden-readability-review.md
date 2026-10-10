@@ -1,5 +1,29 @@
 # 황금 1분: 정상 실행 움직임과 전투 판독
 
+## #205 가로 화면 후속
+
+사용자 정정에 따라 돌진의 출발점이 화면 밖이어도 경로가 전장을 지나가면 화면 가장자리부터 표시한다. HUD 영역에는 그리지 않는다. 이번 보고 첫 이미지는 가로 세 크기의 카드 캡처이며, 아래 이전 보고 순서는 역사 계약이다.
+
+실제 자연 카드가 뜰 때까지 정상 진행한 뒤 세 크기를 캡처한다. 아래 출력 폴더는 모두 새 경로를 사용한다.
+
+```sh
+open -n '/path/Sow and Siege.app' --args \
+  --autoplay-capture --landscape-ui-review \
+  --landscape-ui-output '/path/new-ui-review' \
+  --capture-output '/path/new-ui-input' --capture-seed 30000 \
+  --capture-target-material meta:grain
+```
+
+약한 빌드 관측은 후반 녹화 명령에 `--capture-weak-build`를 추가하고 시작을360초로 설정한다. 최대 무기2개·진화 제외·외곽 이동은 정상 입력 정책이다. 실제 도달 레벨·무기·사망 시각을 기록하며 레벨3을 강제로 만들지 않는다.
+
+```sh
+open -n '/path/Sow and Siege.app' --args \
+  --normal-gc-probe --normal-gc-output '/path/new-gc-output' \
+  --normal-gc-profile '/path/new-gc-profile'
+```
+
+GC 측정에는 캡처·좌표 trace 인자를 함께 주지 않는다. 6분 게임 진행과 카드 정지 시간을 구별한다. `normal-gc-result.json`의 실행 상태·종단 틱·포커스와 `normal-gc-frames.csv`의 `delta0/1/2`·현재/다음 프레임 간격을 확인한다. 세대 카운터를 합산해 중복 횟수를 만들지 않으며, 관측 프레임 간격을 GC 자체 정지 시간으로 해석하지 않는다. 한 줄 보고에는 횟수와 GC 관측 프레임 p95/최대를 함께 쓴다.
+
 추적: [#204](https://github.com/hyunlord/bs-mobile/issues/204). 기준판은 `533a12d`이며 C05 비용 측정, Fold7 #98, 수치·경제 #126, 1b는 계속 보류한다. 적 분리는 [ADR0049](../adr/0049-deterministic-wave-enemy-separation.md)의 설계 변경이다.
 
 ## 정상 실행 좌표 기록

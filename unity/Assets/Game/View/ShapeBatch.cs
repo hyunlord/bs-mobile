@@ -9,6 +9,8 @@ namespace Game.View
         public const int MaximumInstances = 511;
         private static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         private static readonly int StyleId = Shader.PropertyToID("_InstanceStyle");
+        private static readonly int ClipId = Shader.PropertyToID("_WorldClip");
+        private static readonly int ClipEnabledId = Shader.PropertyToID("_WorldClipEnabled");
         private readonly Matrix4x4[] matrices = new Matrix4x4[MaximumInstances];
         private readonly Vector4[] colors = new Vector4[MaximumInstances];
         private readonly Vector4[] styles = new Vector4[MaximumInstances];
@@ -28,6 +30,12 @@ namespace Game.View
         }
 
         public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; }
+
+        public void SetClipRect(Rect bounds)
+        {
+            material.SetVector(ClipId, new Vector4(bounds.xMin, bounds.yMin, bounds.xMax, bounds.yMax));
+            material.SetFloat(ClipEnabledId, 1);
+        }
 
         public void Add(Vector2 position, Vector2 scale, float degrees, Color color, float innerRadius = -1)
         {

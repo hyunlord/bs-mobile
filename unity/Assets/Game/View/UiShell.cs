@@ -15,6 +15,7 @@ namespace Game.View
         private Rect lastSafe;
         private Vector2 lastScreen;
         private RectTransform stickBase, stickKnob;
+        CanvasGroup stickOpacity;
         readonly Vector3[] stickCorners = new Vector3[4];
         RectTransform stickHud,stickLoadout;
         bool stickBoundsCached;
@@ -28,6 +29,7 @@ namespace Game.View
             SafeRoot = Rect("Safe area", transform); Stretch(SafeRoot);
             Content = Rect("Content", SafeRoot); Stretch(Content);
             stickBase = Rect("Joystick", transform); stickBase.sizeDelta = Vector2.one * UiTokens.StickRadius * 2; StickSurface(stickBase, "ui.joystick.base", new Rect(4,36,174,174));
+            stickOpacity=stickBase.gameObject.AddComponent<CanvasGroup>();
             stickKnob = Rect("Knob", stickBase); stickKnob.sizeDelta = Vector2.one * UiTokens.StickThumbDiameter; StickSurface(stickKnob, "ui.joystick.thumb", new Rect(6,5,153,153));
             foreach (var graphic in stickBase.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
             stickBase.gameObject.SetActive(false); RefreshSafeArea();
@@ -44,6 +46,17 @@ namespace Game.View
         public void ShowStick(bool active, Vector2 origin, Vector2 offset)
         {
             stickBase.gameObject.SetActive(active); if (!active) return;
+            var usable = GetWorldOverlayBounds();
+            var visualScale = StickPresentationScale(new Vector2(Screen.width,Screen.height),usable,Canvas.scaleFactor);
+            var center = StickPresentationCenter(origin,usable,UiTokens.StickRadius*Canvas.scaleFactor*visualScale);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform,center,null,out var point);
+            stickBase.localScale = Vector3.one*visualScale;
+            stickOpacity.alpha=Screen.width>Screen.height?UiTokens.LandscapeStickAlpha:1;
+            stickBase.anchoredPosition = point;
+            stickKnob.anchoredPosition = StickVisualOffset(offset,Canvas.scaleFactor);
+        }
+        public Rect GetWorldOverlayBounds()
+        {
             var usable = Screen.safeArea;
             if (usable.width <= 0 || usable.height <= 0) usable = new Rect(0,0,Screen.width,Screen.height);
             if(!stickBoundsCached)
@@ -61,12 +74,7 @@ namespace Game.View
             }
             ExcludeStickHud(ref usable,stickHud,true);
             ExcludeStickHud(ref usable,stickLoadout,false);
-            var visualScale = StickPresentationScale(new Vector2(Screen.width,Screen.height),usable,Canvas.scaleFactor);
-            var center = StickPresentationCenter(origin,usable,UiTokens.StickRadius*Canvas.scaleFactor*visualScale);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform,center,null,out var point);
-            stickBase.localScale = Vector3.one*visualScale;
-            stickBase.anchoredPosition = point;
-            stickKnob.anchoredPosition = StickVisualOffset(offset,Canvas.scaleFactor);
+            return usable;
         }
         void ExcludeStickHud(ref Rect usable,RectTransform rect,bool top)
         {
@@ -77,7 +85,7 @@ namespace Game.View
         }
         public static float StickPresentationScale(Vector2 screen,Rect usable,float canvasScale)
         {
-            var aspectScale=Mathf.Min(1,screen.y/Mathf.Max(1,screen.x));
+            var aspectScale=screen.x>screen.y ? UiTokens.LandscapeStickDiameter1080*(screen.y/1080f)/(UiTokens.StickRadius*2*Mathf.Max(.001f,canvasScale)) : 1;
             var fitScale=Mathf.Max(0,Mathf.Min(usable.width,usable.height))/(UiTokens.StickRadius*2*Mathf.Max(.001f,canvasScale));
             return Mathf.Min(aspectScale,fitScale);
         }

@@ -25,6 +25,68 @@ namespace Game.View
 
         public static bool OriginVisible(Rect viewport, Vector2 origin) => viewport.Contains(origin);
 
+        public static bool ClipSegment(Rect viewport, ref Vector2 start, ref Vector2 end)
+        {
+            var delta = end - start;
+            var entry = 0f; var exit = 1f;
+            if (!ClipAxis(start.x, delta.x, viewport.xMin, viewport.xMax, ref entry, ref exit) ||
+                !ClipAxis(start.y, delta.y, viewport.yMin, viewport.yMax, ref entry, ref exit)) return false;
+            end = start + delta * exit; start += delta * entry;
+            return true;
+        }
+
+        static bool ClipAxis(float origin, float delta, float minimum, float maximum, ref float entry, ref float exit)
+        {
+            if (Mathf.Abs(delta) < .000001f) return origin >= minimum && origin <= maximum;
+            var a = (minimum - origin) / delta; var b = (maximum - origin) / delta;
+            entry = Mathf.Max(entry, Mathf.Min(a, b)); exit = Mathf.Min(exit, Mathf.Max(a, b));
+            return entry <= exit;
+        }
+
+        public static bool Intersects(Rect viewport, ThreatCorridor lane)
+        {
+            var start = lane.Origin; var end = lane.Target;
+            if (ClipSegment(viewport, ref start, ref end)) return true;
+            if (Contains(lane, viewport.min) || Contains(lane, viewport.max) ||
+                Contains(lane, new Vector2(viewport.xMin, viewport.yMax)) || Contains(lane, new Vector2(viewport.xMax, viewport.yMin))) return true;
+            return DistanceToRect(viewport, lane.Origin) <= lane.Radius * lane.Radius || DistanceToRect(viewport, lane.Target) <= lane.Radius * lane.Radius;
+        }
+
+        static float DistanceToRect(Rect rect, Vector2 point)
+            => (point - new Vector2(Mathf.Clamp(point.x, rect.xMin, rect.xMax), Mathf.Clamp(point.y, rect.yMin, rect.yMax))).sqrMagnitude;
+
+        public static Vector2 VisibleArrowPosition(Rect viewport, ThreatCorridor lane, float inset)
+        {
+            CoveredSegment(lane, out var start, out var end);
+            if (ClipSegment(viewport, ref start, ref end)) return Vector2.Lerp(start, end, .7f);
+            // The capsule can graze the viewport while its entire centerline remains outside.
+            var preferred = Vector2.Lerp(lane.Origin, lane.Target, .7f);
+            var point = new Vector2(Mathf.Clamp(preferred.x, viewport.xMin, viewport.xMax), Mathf.Clamp(preferred.y, viewport.yMin, viewport.yMax));
+            var distance = DistanceToLane(lane, point);
+            ConsiderArrowPoint(lane, viewport.min, ref point, ref distance);
+            ConsiderArrowPoint(lane, viewport.max, ref point, ref distance);
+            ConsiderArrowPoint(lane, new Vector2(viewport.xMin, viewport.yMax), ref point, ref distance);
+            ConsiderArrowPoint(lane, new Vector2(viewport.xMax, viewport.yMin), ref point, ref distance);
+            var origin = lane.Origin; var target = lane.Target;
+            ConsiderArrowPoint(lane, new Vector2(Mathf.Clamp(origin.x, viewport.xMin, viewport.xMax), Mathf.Clamp(origin.y, viewport.yMin, viewport.yMax)), ref point, ref distance);
+            ConsiderArrowPoint(lane, new Vector2(Mathf.Clamp(target.x, viewport.xMin, viewport.xMax), Mathf.Clamp(target.y, viewport.yMin, viewport.yMax)), ref point, ref distance);
+            var slack = Mathf.Max(0, lane.Radius - Mathf.Sqrt(distance));
+            return point + (viewport.center - point).normalized * Mathf.Min(inset, slack * .5f);
+        }
+
+        static float DistanceToLane(ThreatCorridor lane, Vector2 point)
+        {
+            var delta = lane.Target - lane.Origin;
+            var t = delta.sqrMagnitude > 0 ? Mathf.Clamp01(Vector2.Dot(point - lane.Origin, delta) / delta.sqrMagnitude) : 0;
+            return (point - lane.Origin - delta * t).sqrMagnitude;
+        }
+
+        static void ConsiderArrowPoint(ThreatCorridor lane, Vector2 candidate, ref Vector2 point, ref float distance)
+        {
+            var next = DistanceToLane(lane, candidate);
+            if (next < distance) { distance = next; point = candidate; }
+        }
+
         public static bool Contains(ThreatCorridor lane, Vector2 point)
         {
             var direction = lane.Target - lane.Origin;

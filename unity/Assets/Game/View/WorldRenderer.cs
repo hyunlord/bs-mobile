@@ -28,6 +28,7 @@ namespace Game.View
         WorldCameraSettings settings;
         WorldDamageNumbers numbers;
         WorldGrowthLabels growthLabels;
+        Rect worldOverlayPixels;
         WorldAnnouncements announcements;
         ArtCatalog art;
         ShapeMeshes lordMarkerMeshes;
@@ -162,6 +163,7 @@ namespace Game.View
             followCamera.LordViewportAnchor = FallowActive ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
+            worldOverlayPixels = safeAreaPixels;
             followCamera.SetVisualOffset(CameraShakeOffset);
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
@@ -261,7 +263,10 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
                 foreach(var direction in HeroOutlineDirections)
-                    DrawActor(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline,visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink,facing:heroFacing);
+                {
+                    if(FallowActive)DrawActor(heroArt,GameVisualTokens.LordLayer-2,lord+direction*GameVisualTokens.WaveHeroOutline*1.8f,visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:GameVisualTokens.Ink,facing:heroFacing);
+                    DrawActor(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline*(FallowActive?1.25f:1),visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink,facing:heroFacing);
+                }
             }
             var heroVisual=Resolve("hero",snapshot.HeroId,heroState);
             DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,visualTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit ? .8f : 0,facing:heroFacing);

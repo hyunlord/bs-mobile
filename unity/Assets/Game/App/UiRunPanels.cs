@@ -11,9 +11,10 @@ namespace Game.App
 {
     public static class UiRunPanels
     {
-        public static void Cards(UiShell ui,RunFrame frame,FirstPlayableFrame firstPlayable,CardOfferView offer,ContentCatalog catalog,IReadOnlyDictionary<string,ContentDisplay> displays,Action<ReplayCommandKind,string> send)
+        public static void Cards(UiShell ui,RunFrame frame,FirstPlayableFrame firstPlayable,CardOfferView offer,ContentCatalog catalog,IReadOnlyDictionary<string,ContentDisplay> displays,Action<ReplayCommandKind,string> send,Action openSettings=null)
         {
             var fallow=CanonicalContent.ProfileName=="wave-1a"&&catalog.WaveRuntime?.ChapterId=="meta:chapter_1";
+            if(fallow&&Screen.width>Screen.height){LandscapeCards(ui,frame,firstPlayable,offer,catalog,displays,send,openSettings);return;}
             var panel=ui.Panel("Cards");ui.Label(panel,$"레벨 {frame.Level} · 성장 선택",UiTokens.Title,56);
             ui.Label(panel,"무기와 도구를 함께 키우세요",UiTokens.Small,36);
             var cards=UiShell.Rect("Three cards",panel);
@@ -52,6 +53,66 @@ namespace Game.App
             var reroll=ui.Button(panel,$"다시 뽑기 · {offer.Rerolls}",()=>send(ReplayCommandKind.RerollCards,null),offer.Rerolls>0);
             if(fallow)FallowUiSurface.Button(ui,reroll,true);
             ui.Label(panel,$"금지 {offer.Bans} · 고정 {offer.Locks} · 선택하면 계속됩니다",UiTokens.Small,40);
+        }
+        public static void LandscapeCards(UiShell ui,RunFrame frame,FirstPlayableFrame firstPlayable,CardOfferView offer,ContentCatalog catalog,IReadOnlyDictionary<string,ContentDisplay> displays,Action<ReplayCommandKind,string> send,Action openSettings=null)
+        {
+            var panel=UiShell.Rect("Cards",ui.Content);UiShell.Stretch(panel,12);ui.Surface(panel,"ui.panel").raycastTarget=true;
+            var width=ui.SafeRoot.rect.width-24;var height=ui.SafeRoot.rect.height-24;
+            var title=ui.Label(panel,$"레벨 {frame.Level} · 성장 선택",22,30);CardPosition(title.rectTransform,18,10,240,30);
+            var hintRegion=UiShell.Rect("Card hint region",panel);CardPosition(hintRegion,270,8,width-378,32);
+            if(openSettings!=null)
+            {
+                var settings=ui.Button(panel,"설정",openSettings);
+                LandscapeCardButton(ui,settings,width-96,8,78,32);
+            }
+            var count=offer.Cards.Count;var gap=12f;var cell=(width-36-gap*(count-1))/Math.Max(1,count);
+            var actionHeight=UiTokens.LandscapeActionHeight;var cardTop=48f;var footerHeight=52f;
+            var cardHeight=height-cardTop-footerHeight-actionHeight-8;
+            for(var i=0;i<count;i++)
+            {
+                var id=offer.Cards[i];var detail=firstPlayable.Cards.Single(c=>c.Id==id);var display=displays[id];var x=18+i*(cell+gap);
+                var card=UiShell.Rect("Choose "+id,panel);CardPosition(card,x,cardTop,cell,cardHeight);
+                var surface=ui.Surface(card,"ui.card."+detail.Rarity);surface.raycastTarget=true;surface.pixelsPerUnitMultiplier=UiTokens.FallowFrameMultiplier;
+                var choose=card.gameObject.AddComponent<Button>();choose.targetGraphic=surface;choose.onClick.AddListener(()=>send(ReplayCommandKind.ChooseCard,id));
+                var icon=ui.Icon(card,id,32);CardPosition(icon.rectTransform,14,12,32,32);
+                var name=ui.Label(card,display.DisplayName,19,36);CardPosition(name.rectTransform,52,10,cell-66,36);
+                var level=catalog.WaveRuntime.Evolutions.ContainsKey(id)?"진화 선택":detail.CurrentLevel>0?$"보유 레벨 {detail.CurrentLevel}":"새 성장 선택";
+                var parts=new List<string>{level+(offer.LockedCardId==id?" · 고정":""),"기본 효과 · "+display.EffectDescription};
+                if(catalog.Tools.ContainsKey(id)&&!string.IsNullOrWhiteSpace(display.GrowthDescription))parts.Add(display.GrowthDescription);
+                var changes=WaveUpgradeChanges(detail,catalog.WaveRuntime,frame.TickRate);if(changes.Length>0)parts.Add(changes);
+                var clues=WaveEvolutionClues(detail,firstPlayable,catalog.WaveRuntime,displays,true);if(clues.Length>0)parts.Add(clues);
+                parts.Add("카드를 눌러 선택");
+                var body=ui.Label(card,string.Join("\n\n",parts),UiTokens.LandscapeCardBody,cardHeight-64);body.name="Complete card text";body.alignment=TextAnchor.UpperLeft;body.lineSpacing=1.1f;
+                CardPosition(body.rectTransform,14,52,cell-28,cardHeight-64);
+                while(body.fontSize>UiTokens.LandscapeCardMinimum&&body.preferredHeight>body.rectTransform.rect.height)body.fontSize--;
+                var ban=ui.Button(panel,"금지",()=>send(ReplayCommandKind.BanCard,id),offer.Bans>0);
+                var pin=ui.Button(panel,offer.LockedCardId==id?"고정됨":"고정",()=>send(ReplayCommandKind.LockCard,id),offer.Locks>0&&offer.LockedCardId!=id);
+                LandscapeCardButton(ui,ban,x,cardTop+cardHeight+6,(cell-6)*.5f,actionHeight);
+                LandscapeCardButton(ui,pin,x+(cell+6)*.5f,cardTop+cardHeight+6,(cell-6)*.5f,actionHeight);
+            }
+            var reroll=ui.Button(panel,$"다시 뽑기 · {offer.Rerolls}",()=>send(ReplayCommandKind.RerollCards,null),offer.Rerolls>0);
+            LandscapeCardButton(ui,reroll,width-210,height-40,192,32);
+            var note=ui.Label(panel,$"금지 {offer.Bans} · 고정 {offer.Locks} · 선택하면 계속됩니다",14,32);CardPosition(note.rectTransform,18,height-40,width-240,32);
+        }
+        public static bool PlaceLandscapeCardHint(UiShell ui,Text hint)
+        {
+            var region=ui.Content.Find("Cards/Card hint region") as RectTransform;
+            if(region==null)return false;
+            var container=(RectTransform)hint.transform.parent;
+            container.SetParent(region,false);UiShell.Stretch(container);container.pivot=new Vector2(.5f,.5f);
+            var layout=container.GetComponent<LayoutElement>();if(layout!=null)layout.enabled=false;
+            UiShell.Stretch(hint.rectTransform,3);hint.fontSize=14;hint.lineSpacing=1;hint.alignment=TextAnchor.MiddleCenter;
+            return true;
+        }
+        static void LandscapeCardButton(UiShell ui,Button button,float x,float y,float width,float height)
+        {
+            FallowUiSurface.Button(ui,button,true);CardPosition((RectTransform)button.transform,x,y,width,height);
+            var label=button.GetComponentInChildren<Text>();label.fontSize=16;label.lineSpacing=1;UiShell.Stretch(label.rectTransform,4);
+        }
+        static void CardPosition(RectTransform rect,float x,float y,float width,float height)
+        {
+            rect.anchorMin=rect.anchorMax=new Vector2(0,1);rect.pivot=new Vector2(0,1);
+            rect.anchoredPosition=new Vector2(x,-y);rect.sizeDelta=new Vector2(width,height);
         }
         public static string UpgradeChanges(OfferedCardDetail detail)
         {
