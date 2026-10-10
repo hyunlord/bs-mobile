@@ -112,6 +112,97 @@ namespace Tests.PlayMode
             }
             finally{Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }
+        [UnityTest, Timeout(600000)]
+        public IEnumerator RecordedWaveRangeExportsActualTickFrames()
+        {
+            var rangeStart=System.Environment.GetEnvironmentVariable("WAVE_QA_START_TICK");
+            var rangeEnd=System.Environment.GetEnvironmentVariable("WAVE_QA_END_TICK");
+            if(rangeStart==null&&rangeEnd==null)Assert.Ignore("Optional recorded-input sequence export.");
+            Assert.That(CanonicalContent.ProfileName,Is.EqualTo("wave-1a"));
+            Assert.That(int.TryParse(rangeStart,out var start)&&start>0,Is.True,"Positive WAVE_QA_START_TICK required.");
+            Assert.That(int.TryParse(rangeEnd,out var end)&&end>=start&&(long)end-start+1<=1800,Is.True,"Inclusive range must contain 1..1800 ticks.");
+            var replayPath=System.Environment.GetEnvironmentVariable("WAVE_QA_REPLAY");
+            var output=System.Environment.GetEnvironmentVariable("WAVE_QA_SEQUENCE_OUTPUT");
+            var expectedRendererCommit=System.Environment.GetEnvironmentVariable("WAVE_QA_RENDERER_COMMIT");
+            Assert.That(!string.IsNullOrWhiteSpace(replayPath)&&File.Exists(replayPath),Is.True,"Recorded replay required.");
+            Assert.That(!string.IsNullOrWhiteSpace(output),Is.True,"Explicit sequence output directory required.");
+            Assert.That(expectedRendererCommit!=null&&expectedRendererCommit.Length==40&&expectedRendererCommit.All(System.Uri.IsHexDigit),Is.True,"Supply expected renderer source commit; external source verification is required.");
+            Assert.That(BuildIdentity.Commit,Is.EqualTo(expectedRendererCommit),"Generated build identity must match the externally verified expected commit.");
+            output=Path.GetFullPath(output);Directory.CreateDirectory(output);
+            Assert.That(Directory.GetFileSystemEntries(output),Is.Empty,"Use an empty directory; do not mix frame sequences.");
+            var bytes=File.ReadAllBytes(replayPath);ReplayDocument replay;
+            using(var input=new MemoryStream(bytes,false))replay=ReplayCodec.Read(input);
+            Assert.That(replay.Header.Options.DataHash,Is.EqualTo(CanonicalContent.DataHash));
+            Assert.That(replay.Header.Options.Run.Scenario,Is.EqualTo("normal"));
+            Assert.That(replay.Commands.All(c=>c.Kind==ReplayCommandKind.Advance||c.Kind==ReplayCommandKind.ChooseCard||c.Kind==ReplayCommandKind.SetAimMode),Is.True,"Only recorded movement, card choice and aim commands are accepted, including after the requested range.");
+            var expectedTick=0;
+            for(var index=0;index<replay.Commands.Count;index++)
+            {
+                var recorded=replay.Commands[index];
+                Assert.That(recorded.Sequence,Is.EqualTo((long)index));Assert.That(recorded.Tick,Is.EqualTo(expectedTick));
+                if(recorded.Kind==ReplayCommandKind.Advance)expectedTick++;
+            }
+            Assert.That(expectedTick,Is.EqualTo(replay.End.Tick));Assert.That(replay.End.AppliedCommands,Is.EqualTo((long)replay.Commands.Count));
+            Assert.That(end,Is.LessThanOrEqualTo(replay.End.Tick));
+            ArtCatalog.ProfileName=CanonicalContent.ProfileName;var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,replay.Header.Options);
+            var checkpoints=replay.Checkpoints.ToDictionary(c=>c.AppliedCommands);var checkedCheckpoints=0;
+            void VerifyCheckpoint()
+            {
+                if(!checkpoints.TryGetValue(session.NextSequence,out var cp))return;
+                Assert.That(session.View.CaptureFrame().Tick,Is.EqualTo(cp.Tick));
+                Assert.That(session.ComputeStateHash(),Is.EqualTo(cp.StateHash),"Recorded checkpoint "+cp.AppliedCommands);checkedCheckpoints++;
+            }
+            VerifyCheckpoint();
+            var owner=new GameObject("Recorded tick sequence QA");var cameraOwner=new GameObject("Recorded tick camera");
+            var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1560,24);camera.targetTexture=texture;
+            var image=new Texture2D(720,1560,TextureFormat.RGB24,false);var written=0;var warmStart=System.Math.Max(1,start-120);
+            try
+            {
+                var initial=session.View.CaptureFrame();var config=CanonicalContent.Presentation.Camera;var world=owner.AddComponent<WorldRenderer>();
+                world.Initialize(camera,new WorldCameraSettings(config.WorldUnitsPerUnityUnit,config.MinHalfHeight,config.MaxHalfHeight,config.EstatePadding,config.FollowMilliseconds,config.ZoomMilliseconds),catalog.Tuning.DefaultEstate,initial.MapWidth,initial.MapHeight);
+                using(var ledger=new StreamWriter(Path.Combine(output,"frames-local.tsv")))
+                {
+                    ledger.WriteLine("frame\ttick\tappliedCommands\tstateHash");
+                    for(var i=0;i<replay.Commands.Count;i++)
+                    {
+                        var before=session.View.CaptureFrame().Tick;var command=replay.Commands[i];
+                        session.Apply(command);VerifyCheckpoint();var frame=session.View.CaptureFrame();
+                        Assert.That(frame.Tick,Is.EqualTo(before+(command.Kind==ReplayCommandKind.Advance?1:0)),"Each movement command must advance exactly one real tick.");
+                        var wave=frame.Tick>=warmStart&&frame.Tick<=end?((IWaveRunView)session.View).CaptureWaveRuntime():null;
+                        if(frame.Tick>=warmStart&&frame.Tick<=end)world.AcceptWave(catalog,wave);
+                        var sameTickChoice=i+1<replay.Commands.Count&&replay.Commands[i+1].Tick==frame.Tick&&replay.Commands[i+1].Kind!=ReplayCommandKind.Advance;
+                        if(sameTickChoice)continue;
+                        if(frame.Tick>=warmStart&&frame.Tick<=end)
+                        {
+                            world.Present(frame,frame,WavePresentation.Envelope(catalog,frame,session.View.CaptureCards(),wave),1,1f/30,new Rect(0,0,720,1560));
+                            yield return null;
+                            Assert.That(world.UnsupportedShapeCount,Is.Zero);Assert.That(world.DrawCalls,Is.GreaterThan(0));
+                            if(frame.Tick>=start)
+                            {
+                                Assert.That(frame.Tick,Is.EqualTo(start+written),"Missing or repeated output tick.");
+                                var previous=RenderTexture.active;
+                                try{RenderTexture.active=texture;image.ReadPixels(new Rect(0,0,720,1560),0,0);image.Apply();}
+                                finally{RenderTexture.active=previous;}
+                                File.WriteAllBytes(Path.Combine(output,$"frame-{written:D6}.png"),image.EncodeToPNG());
+                                ledger.WriteLine($"{written}\t{frame.Tick}\t{session.NextSequence}\t{session.ComputeStateHash()}");written++;
+                            }
+                        }
+                        else if(session.NextSequence%300==0)yield return null;
+                    }
+                }
+                var summary=session.GetSummary();
+                var terminalKind=summary.EndReason=="death"?ReplayEndKind.Death:summary.EndReason=="duration"?ReplayEndKind.Duration:ReplayEndKind.Quit;
+                Assert.That(session.NextSequence,Is.EqualTo(replay.End.AppliedCommands));
+                Assert.That(summary.Tick,Is.EqualTo(replay.End.Tick));Assert.That(summary.StateHash,Is.EqualTo(replay.End.StateHash));
+                Assert.That(terminalKind,Is.EqualTo(replay.End.Kind));Assert.That(checkedCheckpoints,Is.EqualTo(checkpoints.Count));
+                Assert.That(written,Is.EqualTo(end-start+1),"Replay did not provide the entire requested range.");
+                Assert.That(Directory.GetFiles(output,"frame-*.png").Length,Is.EqualTo(written));
+                string replayHash;using(var sha=SHA256.Create())replayHash=System.BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-","");
+                File.WriteAllText(Path.Combine(output,"sequence-local.txt"),$"classification=deterministic actual-input GPU replay; 30 Hz simulation ticks; card waits omitted; world only; 720x1560; no audio; not native/live autoplay or performance evidence\nreplay={Path.GetFullPath(replayPath)}\nreplaySha256={replayHash}\nexpectedRendererCommit={expectedRendererCommit}\ngeneratedBuildIdentityCommit={BuildIdentity.Commit}\ngeneratedSourceHash={BuildIdentity.SourceHash}\ngeneratedSourceDirty={BuildIdentity.SourceDirty}\nsourceVerification=external git and prepare verification required; generated metadata alone does not verify current source\ndataHash={CanonicalContent.DataHash}\nstartTick={start}\nendTick={end}\nwarmStartTick={warmStart}\nframes={written}\nverifiedCheckpoints={checkedCheckpoints}\nterminalVerification=PASS\nterminalTick={summary.Tick}\nterminalKind={terminalKind}\nterminalStateHash={summary.StateHash}\nsameTickCommands=applied in recorded order before that tick frame; no extra frames\nrawFramesAndMetadata=local only; selected encoded video is review evidence\n");
+            }
+            finally{Object.Destroy(image);Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
+        }
         [UnityTest, Timeout(300000)]
         public IEnumerator ActualWaveSnapshotDrawsAuthoredPixels()
         {
