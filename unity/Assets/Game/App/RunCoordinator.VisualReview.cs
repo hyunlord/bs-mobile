@@ -54,7 +54,7 @@ namespace Game.App
             var minimum=(Vector2)camera.WorldToScreenPoint(new Vector3(worldBounds.xMin,worldBounds.yMin,0));
             var maximum=(Vector2)camera.WorldToScreenPoint(new Vector3(worldBounds.xMax,worldBounds.yMax,0));
             var screen=Rect.MinMaxRect(minimum.x,minimum.y,maximum.x,maximum.y);
-            if(screen.width<1||screen.height<1||screen.xMin<0||screen.yMin<0||screen.xMax>Screen.width||screen.yMax>Screen.height)return;
+            if(screen.width<=0||screen.height<=0)return;
             visualEnemyCandidates.Add(new VisualEnemySample { definitionId=definitionId,entityId=entityId,worldBounds=worldBounds,screenBounds=screen });
         }
         Rect VisualWorldUsableArea()
