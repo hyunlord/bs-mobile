@@ -1,4 +1,3 @@
-using System.Reflection;
 using Game.View;
 using NUnit.Framework;
 using UnityEditor;
@@ -49,21 +48,11 @@ namespace Tests.EditMode
                 target.Create(); batch.BeginFrame();
                 if(shader.name=="Game/View/HeroRig")
                     batch.SetHeroRigPose(HeroGaitState.FrameRect(frame),HeroGaitState.FrameRect(frame),Vector2.zero,Vector2.zero,HeroGaitState.Warp);
-                var material=Field<Material>(batch,"material");
-                var properties=Field<MaterialPropertyBlock>(batch,"properties");
-                if(moveUniformsToMaterial)
-                {
-                    foreach(var name in new[]{"_RigFrame","_RigUpperFrame","_RigFarDelta","_RigNearDelta","_RigWarp","_RigCanvas"})
-                    {
-                        var id=Shader.PropertyToID(name);
-                        if(properties.HasVector(id))material.SetVector(id,properties.GetVector(id));
-                    }
-                    properties.Clear();
-                }
+                if(moveUniformsToMaterial)batch.MoveHeroRigUniformsToMaterialForTesting();
                 batch.Add(Vector2.zero,Vector2.one,Vector2.zero,new Rect(0,0,1,1),0,Color.white); batch.Flush();
                 commands.SetRenderTarget(target); commands.ClearRenderTarget(false,true,Color.clear);
                 commands.SetViewProjectionMatrices(Matrix4x4.identity,GL.GetGPUProjectionMatrix(Matrix4x4.Ortho(0,1,-.125f,1,-1,1),true));
-                commands.DrawMeshInstanced(Field<Mesh>(batch,"mesh"),0,material,0,Field<Matrix4x4[]>(batch,"matrices"),1,properties);
+                batch.DrawSingleInstanceForTesting(commands);
                 Graphics.ExecuteCommandBuffer(commands);
                 RenderTexture.active=target; readback.ReadPixels(new Rect(0,0,128,128),0,0);readback.Apply();
                 var count=0;foreach(var pixel in readback.GetPixels32())if(pixel.a>64)count++;
@@ -75,6 +64,5 @@ namespace Tests.EditMode
                 Object.DestroyImmediate(target);Object.DestroyImmediate(readback);Object.DestroyImmediate(owner);
             }
         }
-        static T Field<T>(SpriteBatch batch,string name)=> (T)typeof(SpriteBatch).GetField(name,BindingFlags.Instance|BindingFlags.NonPublic).GetValue(batch);
     }
 }
