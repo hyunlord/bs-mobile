@@ -26,6 +26,17 @@ namespace Tests.EditMode
             Assert.That((direction * .25f).magnitude, Is.EqualTo(.25f).Within(.000001));
         }
 
+        [TestCase(false, -1f, 0f)]
+        [TestCase(true, -.8f, -.6f)]
+        public void LeftOptionReversesDirectionWithoutChangingMagnitude(bool oblique,float x,float y)
+        {
+            var direction=NormalPlayTrace.ScriptDirection(oblique,true);
+            Assert.That(direction.x,Is.EqualTo(x));
+            Assert.That(direction.y,Is.EqualTo(y));
+            Assert.That(direction.magnitude,Is.EqualTo(1).Within(.000001));
+            Assert.That(direction,Is.EqualTo(-NormalPlayTrace.ScriptDirection(oblique)));
+        }
+
         [Test]
         public void StartupLoggingAcceptsADestroyedSelectedUiObject()
         {

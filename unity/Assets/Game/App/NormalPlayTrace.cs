@@ -62,7 +62,7 @@ namespace Game.App
         struct FrameRow
         {
             public int UnityFrame, Tick, Phase, Width, Height;
-            public double Wall, Dt, Residual;
+            public double Wall, Dt, Residual, EngineFrameTime, CallbackEnd;
             public Vector2 Input, Authoritative, Predicted, Camera, CameraShake;
             public float CameraSize, PredictionSpeed;
             public bool Paused, Focused;
@@ -85,7 +85,7 @@ namespace Game.App
             trace.initializedAt = Time.realtimeSinceStartupAsDouble; trace.nextUiAttempt = trace.initializedAt + 2;
             Directory.CreateDirectory(output);
             trace.scripted = Array.IndexOf(args, "--smoothness-scripted-input") >= 0;
-            trace.commandedDirection = ScriptDirection(Array.IndexOf(args, "--smoothness-oblique") >= 0);
+            trace.commandedDirection = ScriptDirection(Array.IndexOf(args, "--smoothness-oblique") >= 0, Array.IndexOf(args, "--smoothness-left") >= 0);
             trace.quit = Array.IndexOf(args, "--smoothness-trace-quit") >= 0;
             trace.awaitProjectile = Array.IndexOf(args, "--smoothness-await-projectile") >= 0;
             if(trace.awaitProjectile && !coordinator.IsWave)throw new ArgumentException("Projectile setup requires the wave profile.");
@@ -114,9 +114,9 @@ namespace Game.App
             if (!inFrame) return;
             sampleCount = 0;
             current = new FrameRow { UnityFrame = Time.frameCount, Wall = Time.realtimeSinceStartupAsDouble - beganAt,
-                Width = Screen.width, Height = Screen.height, Focused = Application.isFocused, Dt = Time.unscaledDeltaTime, Phase = scripted && phasesArmed ? MovementPhase(Time.realtimeSinceStartupAsDouble - phaseBeganAt) : -1 };
+                EngineFrameTime = Time.unscaledTimeAsDouble, Width = Screen.width, Height = Screen.height, Focused = Application.isFocused, Dt = Time.unscaledDeltaTime, Phase = scripted && phasesArmed ? MovementPhase(Time.realtimeSinceStartupAsDouble - phaseBeganAt) : -1 };
         }
-        public static Vector2 ScriptDirection(bool oblique) => oblique ? new Vector2(.8f, .6f) : Vector2.right;
+        public static Vector2 ScriptDirection(bool oblique, bool left = false) => (oblique ? new Vector2(.8f, .6f) : Vector2.right) * (left ? -1 : 1);
         public static int MovementPhase(double seconds) => seconds < 0 ? -1 : Math.Min(4, (int)(seconds / 4));
         public void ObserveInput(Vector2 input, int tick, double residual, bool paused, Vector2 authoritative, Vector2 predicted, float speed)
         {
@@ -161,6 +161,7 @@ namespace Game.App
                 }
             }
             current.CameraShake = cameraShake;
+            current.CallbackEnd = Time.realtimeSinceStartupAsDouble - beganAt;
             frames[frameCount++] = current;
             SampleDiagnostics?.Invoke();
         }
@@ -349,8 +350,8 @@ namespace Game.App
             Directory.CreateDirectory(folder);
             using (var file = new StreamWriter(Path.Combine(folder, "normal-frames.csv")))
             {
-                file.WriteLine("frame,unityFrame,tick,wallSeconds,unityDtSeconds,residualSeconds,phase,inputX,inputY,paused,authoritativeX,authoritativeY,predictedX,predictedY,predictionSpeed,cameraX,cameraY,cameraHalfHeight,width,height,focused,cameraShakeX,cameraShakeY");
-                for (var i = 0; i < frameCount; i++) { var r = frames[i]; file.WriteLine(FormattableString.Invariant($"{i},{r.UnityFrame},{r.Tick},{r.Wall:F9},{r.Dt:F9},{r.Residual:F9},{r.Phase},{r.Input.x:F6},{r.Input.y:F6},{r.Paused},{r.Authoritative.x:F9},{r.Authoritative.y:F9},{r.Predicted.x:F9},{r.Predicted.y:F9},{r.PredictionSpeed:F9},{r.Camera.x:F9},{r.Camera.y:F9},{r.CameraSize:F9},{r.Width},{r.Height},{r.Focused},{r.CameraShake.x:F9},{r.CameraShake.y:F9}")); }
+                file.WriteLine("frame,unityFrame,tick,wallSeconds,unityDtSeconds,residualSeconds,phase,inputX,inputY,paused,authoritativeX,authoritativeY,predictedX,predictedY,predictionSpeed,cameraX,cameraY,cameraHalfHeight,width,height,focused,cameraShakeX,cameraShakeY,engineFrameTimeSeconds,callbackEndWallSeconds");
+                for (var i = 0; i < frameCount; i++) { var r = frames[i]; file.WriteLine(FormattableString.Invariant($"{i},{r.UnityFrame},{r.Tick},{r.Wall:F9},{r.Dt:F9},{r.Residual:F9},{r.Phase},{r.Input.x:F6},{r.Input.y:F6},{r.Paused},{r.Authoritative.x:F9},{r.Authoritative.y:F9},{r.Predicted.x:F9},{r.Predicted.y:F9},{r.PredictionSpeed:F9},{r.Camera.x:F9},{r.Camera.y:F9},{r.CameraSize:F9},{r.Width},{r.Height},{r.Focused},{r.CameraShake.x:F9},{r.CameraShake.y:F9},{r.EngineFrameTime:F9},{r.CallbackEnd:F9}")); }
             }
             using (var file = new StreamWriter(Path.Combine(folder, "normal-entities.csv")))
             {
@@ -358,7 +359,7 @@ namespace Game.App
                 for (var i = 0; i < entityCount; i++) { var r = entities[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World.x:F9},{r.World.y:F9},{r.Screen.x:F6},{r.Screen.y:F6},{r.FriendlyProjectile}")); }
             }
             WriteDiagnostics?.Invoke(folder);
-            File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrequestedSeed={RequestedSeed?.ToString(CultureInfo.InvariantCulture) ?? "normal default"}\nprojectileTimeoutClock=Stopwatch monotonic wall clock; requires a player callback\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
+            File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nframeClocks=engineFrameTimeSeconds: Unity unscaled frame clock since startup; wallSeconds: BeginFrame realtime relative to session; callbackEndWallSeconds: EndFrame realtime relative to session; not display presentation timestamps\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrequestedSeed={RequestedSeed?.ToString(CultureInfo.InvariantCulture) ?? "normal default"}\nprojectileTimeoutClock=Stopwatch monotonic wall clock; requires a player callback\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
         }
         void OnApplicationQuit() => Finish();
         void OnDestroy()
