@@ -14,6 +14,7 @@ namespace Game.View
         readonly Dictionary<string,Sprite> slicedSprites=new Dictionary<string,Sprite>(StringComparer.Ordinal);
         private Rect lastSafe;
         private Vector2 lastScreen;
+        bool viewportLayoutPending;
         private RectTransform stickBase, stickKnob;
         CanvasGroup stickOpacity;
         readonly Vector3[] stickCorners = new Vector3[4];
@@ -39,10 +40,22 @@ namespace Game.View
             if (SafeRoot == null) return;
             var safe = Screen.safeArea; if (safe.width <= 0 || safe.height <= 0) safe = new Rect(0,0,Screen.width,Screen.height);
             GetComponent<CanvasScaler>().referenceResolution = Screen.height / (float)Screen.width < 1.35f ? new Vector2(900,900) : new Vector2(900,1600);
-            lastSafe = safe; lastScreen = new Vector2(Screen.width,Screen.height);
+            lastSafe = safe; lastScreen = new Vector2(Screen.width,Screen.height);viewportLayoutPending=true;
             SafeRoot.anchorMin = new Vector2(safe.xMin / Screen.width, safe.yMin / Screen.height); SafeRoot.anchorMax = new Vector2(safe.xMax / Screen.width,safe.yMax / Screen.height); SafeRoot.offsetMin = SafeRoot.offsetMax = Vector2.zero;
         }
-        private void Update() { if (lastSafe != Screen.safeArea || lastScreen != new Vector2(Screen.width, Screen.height)) RefreshSafeArea(); }
+        private void Update() => SynchronizeViewport();
+        public void SynchronizeViewport()
+        {
+            if(lastSafe!=Screen.safeArea||lastScreen!=new Vector2(Screen.width,Screen.height))RefreshSafeArea();
+            // MatchWidthOrHeight is configured to width matching. Apply that same scale before
+            // building fixed geometry rather than waiting for CanvasScaler's next Update.
+            var expected=Screen.width/900f;
+            if(!viewportLayoutPending&&Mathf.Abs(Canvas.scaleFactor-expected)<.00001f)return;
+            Canvas.scaleFactor=expected;
+            Canvas.ForceUpdateCanvases();
+            ((RectTransform)transform).ForceUpdateRectTransforms();SafeRoot.ForceUpdateRectTransforms();Content.ForceUpdateRectTransforms();
+            viewportLayoutPending=false;
+        }
         public void ShowStick(bool active, Vector2 origin, Vector2 offset)
         {
             stickBase.gameObject.SetActive(active); if (!active) return;

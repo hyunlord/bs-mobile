@@ -94,6 +94,16 @@ namespace Game.App
             LandscapeCardButton(ui,reroll,width-210,height-40,192,32);
             var note=ui.Label(panel,$"금지 {offer.Bans} · 고정 {offer.Locks} · 선택하면 계속됩니다",14,32);CardPosition(note.rectTransform,18,height-40,width-240,32);
         }
+        public static bool PlaceLandscapeBattleHint(UiShell ui,Text hint)
+        {
+            var hud=ui.Content.Find("HUD") as RectTransform;
+            if(hud==null)return false;
+            var container=(RectTransform)hint.transform.parent;container.SetParent(hud,false);
+            container.anchorMin=container.anchorMax=new Vector2(.5f,0);container.pivot=new Vector2(.5f,0);
+            container.anchoredPosition=Vector2.zero;container.sizeDelta=new Vector2(Mathf.Min(490,hud.rect.width*.56f),18);
+            UiShell.Stretch(hint.rectTransform,2);hint.fontSize=12;hint.lineSpacing=1;hint.alignment=TextAnchor.MiddleCenter;
+            return true;
+        }
         public static bool PlaceLandscapeCardHint(UiShell ui,Text hint)
         {
             var region=ui.Content.Find("Cards/Card hint region") as RectTransform;

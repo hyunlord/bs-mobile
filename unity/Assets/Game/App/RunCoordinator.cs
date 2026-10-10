@@ -84,6 +84,8 @@ namespace Game.App
         private double accumulator;
         private RunFrame cardsFrame;
         private int cardsWidth,cardsHeight;
+        private Vector2 cardsSafeSize;
+        private float cardsCanvasScale;
         private readonly Vector3[] hintCorners=new Vector3[4];
         private Text pooledHint;
         private bool finished,loading,parityRunning,applicationPaused,focusLost,discardResumeDelta,telemetryClosed,suspendedInterval;
@@ -361,7 +363,9 @@ namespace Game.App
         }
         private void ShowCards()
         {
-            if(ReferenceEquals(cardsFrame,Frame)&&cardsWidth==Screen.width&&cardsHeight==Screen.height&&screen==UiScreen.Cards)return;
+            Ui.SynchronizeViewport();
+            if(ReferenceEquals(cardsFrame,Frame)&&cardsWidth==Screen.width&&cardsHeight==Screen.height&&cardsSafeSize==Ui.SafeRoot.rect.size&&cardsCanvasScale==Ui.Canvas.scaleFactor&&screen==UiScreen.Cards)return;
+            cardsSafeSize=Ui.SafeRoot.rect.size;cardsCanvasScale=Ui.Canvas.scaleFactor;
             var offer=Session.View.CaptureCards();
             cardsFrame=Frame;cardsWidth=Screen.width;cardsHeight=Screen.height;screen=UiScreen.Cards;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
             UiRunPanels.Cards(Ui,Frame,FirstPlayable,offer,runCatalog??FoundationBoot.Catalog,displays,(kind,id)=>Send(kind,card:id),()=>ShowSettings(true));
@@ -473,6 +477,7 @@ namespace Game.App
             var hintContainer=(RectTransform)activeHint.transform.parent;hintContainer.SetParent(Ui.Content,false);hintContainer.gameObject.SetActive(true);
             hintContainer.anchorMin=hintContainer.anchorMax=new Vector2(.5f,.18f);hintContainer.anchoredPosition=Vector2.zero;hintContainer.sizeDelta=new Vector2(720,120);
             var hintLayout=hintContainer.GetComponent<LayoutElement>();if(hintLayout!=null)hintLayout.enabled=false;
+            if(screen==UiScreen.Run&&Screen.width>Screen.height)UiRunPanels.PlaceLandscapeBattleHint(Ui,activeHint);
             if(screen==UiScreen.Cards&&!UiRunPanels.PlaceLandscapeCardHint(Ui,activeHint))
             {
                 var container=(RectTransform)activeHint.transform.parent;

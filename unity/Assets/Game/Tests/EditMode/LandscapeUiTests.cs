@@ -12,6 +12,34 @@ namespace Tests.EditMode
 {
     public sealed class LandscapeUiTests
     {
+        [Test]
+        public void PendingViewportScaleIsSynchronizedBeforeFixedCardGeometry()
+        {
+            var owner=new GameObject("Delayed CanvasScaler regression",typeof(RectTransform));
+            var font=FontProvider.Create(Array.Empty<string>());
+            try
+            {
+                var ui=owner.AddComponent<UiShell>();ui.Initialize(font);
+                ui.Canvas.scaleFactor=Screen.width/1326f;
+                Canvas.ForceUpdateCanvases();
+                ui.RefreshSafeArea();ui.SynchronizeViewport();
+                var expectedScale=Screen.width/900f;
+                Assert.That(ui.Canvas.scaleFactor,Is.EqualTo(expectedScale).Within(.00001));
+                var safe=Screen.safeArea;if(safe.width<=0||safe.height<=0)safe=new Rect(0,0,Screen.width,Screen.height);
+                Assert.That(ui.SafeRoot.rect.width,Is.EqualTo(safe.width/expectedScale).Within(.1f));
+                Assert.That(ui.SafeRoot.rect.height,Is.EqualTo(safe.height/expectedScale).Within(.1f));
+                var hud=UiShell.Rect("HUD",ui.Content);hud.sizeDelta=new Vector2(900,56);
+                var hint=ui.Hint("화면 빈 곳을 끌어 이동하세요. 공격은 자동입니다.");
+                Assert.That(UiRunPanels.PlaceLandscapeBattleHint(ui,hint),Is.True);
+                Canvas.ForceUpdateCanvases();
+                var container=(RectTransform)hint.transform.parent;
+                Assert.That(container.parent,Is.SameAs(hud));
+                Assert.That(container.anchoredPosition.y+container.rect.height,Is.LessThanOrEqualTo(hud.rect.height));
+                Assert.That(hint.preferredHeight,Is.LessThanOrEqualTo(hint.rectTransform.rect.height+.5f));
+            }
+            finally{UnityEngine.Object.DestroyImmediate(owner);UnityEngine.Object.DestroyImmediate(font);}
+        }
+
         [TestCase(1920,1080)]
         [TestCase(1440,900)]
         [TestCase(1280,800)]

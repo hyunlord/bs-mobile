@@ -137,7 +137,7 @@ namespace Game.View
                 var point=topPositions[i];var x=point.x;
                 if(wide)x=x>=650?width-(900-x)*factor:x>=300?(width-topParts[i].rect.width*factor)*.5f:x*factor;
                 topParts[i].localScale=Vector3.one*factor;
-                topParts[i].anchoredPosition=new Vector2(x,point.y*factor);
+                topParts[i].anchoredPosition=new Vector2(x,(wide&&point.x>=300&&point.x<650?point.y+8:point.y)*factor);
             }
             var footerHeight=wide?screen.y*UiTokens.LandscapeLoadoutFraction/scale:UiTokens.FallowFooterHeight;
             footer.sizeDelta=new Vector2(0,footerHeight);
