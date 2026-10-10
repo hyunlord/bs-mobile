@@ -82,3 +82,42 @@ test('rejects unfocused frames rather than filtering them', t => {
   const f = fixture(t); mutateFrames(f.run, lines => lines.map((line, i) => i === 1 ? line.replace(/"1"$/, '"0"') : line));
   assert.throws(f.compare, /Unfocused/);
 });
+
+test('all-zero allocation counter is unavailable while collection counts remain measured', t => {
+  const f = fixture(t);
+  for (let repetition = 1; repetition <= 3; repetition++) mutateFrames(path.join(f.root, 'after', `run-${repetition}`), lines => lines.map((line, i) => {
+    if (!i) return line; const cells = line.split(','); cells[10] = '"0"'; return cells.join(',');
+  }));
+  const result = f.compare().after;
+  assert.equal(result.allFrames.allocationMeasurement, 'unavailable/all-zero-counter');
+  assert.equal(result.allFrames.allocatedBytesPerFrame, null);
+  assert.equal(result.allFrames.gcCollections, 9);
+  for (const bin of result.bins) {
+    assert.equal(bin.allocatedBytesPerFrame, null);
+    assert.equal(bin.allocationMeasurement, 'unavailable/all-zero-counter');
+    for (const repeat of bin.repetitions) assert.equal(repeat.allocatedBytesPerFrame, null);
+  }
+});
+
+test('pooled allocation is unavailable if any contributing repetition counter is all zero', t => {
+  const f = fixture(t);
+  mutateFrames(path.join(f.root, 'after/run-2'), lines => lines.map((line, i) => {
+    if (!i) return line; const cells = line.split(','); cells[10] = '"0"'; return cells.join(',');
+  }));
+  mutateFrames(f.run, lines => lines.map((line, i) => {
+    if (i !== 1) return line; const cells = line.split(','); cells[10] = '"0"'; return cells.join(',');
+  }));
+  const result = f.compare().after;
+  assert.equal(result.allFrames.allocationMeasurement, 'unavailable/mixed-counter-support');
+  assert.equal(result.allFrames.allocatedBytesPerFrame, null);
+  assert.equal(result.allFrames.gcCollections, 9);
+  for (const bin of result.bins) {
+    assert.equal(bin.allocationMeasurement, 'unavailable/mixed-counter-support');
+    assert.equal(bin.allocatedBytesPerFrame, null);
+  }
+  const supported = result.bins[0].repetitions[0];
+  assert.equal(supported.allocationMeasurement, 'available');
+  assert.equal(supported.allocatedBytesPerFrame.samples, 20);
+  assert.equal(supported.allocatedBytesPerFrame.mean, 121.6);
+  assert.equal(result.bins[0].repetitions[1].allocatedBytesPerFrame, null);
+});

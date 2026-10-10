@@ -17,11 +17,21 @@ function stats(values) {
     p95: sorted.length ? sorted[Math.ceil(sorted.length * .95) - 1] : null, max: sorted.at(-1) ?? null };
 }
 function summarize(rows) {
+  const allocationAvailable = rows.some(row => row.allocatedBytes > 0);
   return { frames: rows.length, zeroCommandFrames: rows.filter(r => r.commands === 0).length,
     multiCommandFrames: rows.filter(r => r.commands > 1).length,
     ...Object.fromEntries(cpuFields.map(key => [key, stats(rows.map(row => row[key]))])),
-    allocatedBytesPerFrame: stats(rows.map(row => row.allocatedBytes)),
+    allocationMeasurement: allocationAvailable ? 'available' : rows.length ? 'unavailable/all-zero-counter' : 'unavailable/no-samples',
+    allocatedBytesPerFrame: allocationAvailable ? stats(rows.map(row => row.allocatedBytes)) : null,
     gcCollections: rows.reduce((sum, row) => sum + row.gcCollections, 0) };
+}
+function summarizePooled(repetitions) {
+  const summary = summarize(repetitions.flat());
+  if (summary.allocatedBytesPerFrame !== null && repetitions.some(rows => rows.length > 0 && !rows.some(row => row.allocatedBytes > 0))) {
+    summary.allocationMeasurement = 'unavailable/mixed-counter-support';
+    summary.allocatedBytesPerFrame = null;
+  }
+  return summary;
 }
 function parseNumbers(file, headers) {
   return parseCsv(fs.readFileSync(file, 'utf8'), headers).map(row => Object.fromEntries(headers.map(key => {
@@ -84,15 +94,15 @@ function loadRun(directory, contract) {
   return { identity, device, rows, timings };
 }
 function summarizeVariant(runs, contract) {
-  const rows = runs.flatMap(run => run.rows);
   const bins = contract.densityBins.map(([min, max]) => {
     const contains = row => row.enemies >= min && (max === null || row.enemies <= max);
-    const repetitions = runs.map((run, index) => ({ repetition: index + 1, ...summarize(run.rows.filter(contains)) }));
+    const selected = runs.map(run => run.rows.filter(contains));
+    const repetitions = selected.map((rows, index) => ({ repetition: index + 1, ...summarize(rows) }));
     const complete = repetitions.every(run => run.frames > 0);
-    return { min, max, ...summarize(rows.filter(contains)), repetitions,
+    return { min, max, ...summarizePooled(selected), repetitions,
       status: !complete ? 'incomplete' : repetitions.every(run => run.wallMs.p95 <= contract.p95LimitMilliseconds) ? 'pass' : 'fail' };
   });
-  return { commit: runs[0].identity.commit, sourceHash: runs[0].identity.sourceHash, allFrames: summarize(rows), bins,
+  return { commit: runs[0].identity.commit, sourceHash: runs[0].identity.sourceHash, allFrames: summarizePooled(runs.map(run => run.rows)), bins,
     status: bins.some(bin => bin.status === 'incomplete') ? 'incomplete' : bins.every(bin => bin.status === 'pass') ? 'pass' : 'fail',
     renderTimingScope: 'Delayed observations across warmup and measurement; not joined to density; zero GPU timings mean unavailable, not zero cost.',
     renderTimings: Object.fromEntries(timingHeaders.slice(2).map(key => [key, stats(runs.flatMap(run => run.timings.map(row => row[key]).filter(value => value > 0)))])) };
