@@ -109,9 +109,9 @@ namespace Tests.PlayMode
             var commands=new System.Collections.Generic.List<ReplayCommandKind>();
             try
             {
-                foreach(var resolution in new[]{new Vector2Int(900,1600),new Vector2Int(1080,1080)})
+                foreach(var resolution in new[]{(width:900u,height:1600u),(width:1080u,height:1080u)})
                 {
-                    PlayModeWindow.SetCustomRenderingResolution(resolution.x,resolution.y,"Card pointer QA");yield return null;
+                    PlayModeWindow.SetCustomRenderingResolution(resolution.width,resolution.height,"Card pointer QA");yield return null;
                     ui.Clear();yield return null;
                     UiRunPanels.Cards(ui,frame,envelope,offer,catalog,displays,(kind,card)=>{Assert.That(card,Is.EqualTo(id));commands.Add(kind);});
                     yield return null;Canvas.ForceUpdateCanvases();yield return null;
