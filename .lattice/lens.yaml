@@ -3114,6 +3114,12 @@ edges:
     source:
       kinds: [weapon, tool, item, evolution, enemy, chapter, charter, vassal, material, manor]
       layer: designed-v1
+      where:
+        op: exists
+        value:
+          op: get
+          from: node
+          path: [primitives]
     target:
       op: get
       from: node
