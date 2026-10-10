@@ -41,6 +41,10 @@ namespace Game.App
         int frameCount, entityCount, sampleCount, droppedFrames, droppedEntities, uiStage, buttonPhase, inputPreparationStep;
         double beganAt, phaseBeganAt, initializedAt, nextUiAttempt;
         string failure;
+        bool awaitProjectile, projectileReady;
+        int projectilePreparationTitleStage, projectileCardClicks, recordedProjectileSamples, recordedFriendlyProjectileSamples;
+        double projectileReadyAt;
+        string projectileSetupCard;
         Vector2 pendingClick, stickOrigin;
         Vector2 commandedDirection = Vector2.right;
         FrameRow current;
@@ -52,8 +56,8 @@ namespace Game.App
             public float CameraSize, PredictionSpeed;
             public bool Paused, Focused;
         }
-        struct Sample { public string Kind; public int Id; public Vector2 World; }
-        struct EntityRow { public int Frame, Id; public string Kind; public Vector2 World, Screen; }
+        struct Sample { public string Kind; public int Id; public Vector2 World; public bool FriendlyProjectile; }
+        struct EntityRow { public int Frame, Id; public string Kind; public Vector2 World, Screen; public bool FriendlyProjectile; }
 
         public static NormalPlayTrace Create(RunCoordinator coordinator)
         {
@@ -72,6 +76,9 @@ namespace Game.App
             trace.scripted = Array.IndexOf(args, "--smoothness-scripted-input") >= 0;
             trace.commandedDirection = ScriptDirection(Array.IndexOf(args, "--smoothness-oblique") >= 0);
             trace.quit = Array.IndexOf(args, "--smoothness-trace-quit") >= 0;
+            trace.awaitProjectile = Array.IndexOf(args, "--smoothness-await-projectile") >= 0;
+            if(trace.awaitProjectile && !coordinator.IsWave)throw new ArgumentException("Projectile setup requires the wave profile.");
+            if(trace.awaitProjectile && !trace.scripted) throw new ArgumentException("Projectile setup requires scripted normal input.");
             if (trace.scripted && ProfileDirectory == null) throw new ArgumentException("Scripted trace requires --smoothness-profile for isolated saves.");
             if (trace.scripted)
             {
@@ -91,7 +98,7 @@ namespace Game.App
         }
         public void BeginFrame()
         {
-            inFrame = begun && !finished;
+            inFrame = begun && !finished && (!awaitProjectile || phasesArmed);
             if (!inFrame) return;
             sampleCount = 0;
             current = new FrameRow { UnityFrame = Time.frameCount, Wall = Time.realtimeSinceStartupAsDouble - beganAt,
@@ -101,11 +108,12 @@ namespace Game.App
         public static int MovementPhase(double seconds) => seconds < 0 ? -1 : Math.Min(4, (int)(seconds / 4));
         public void ObserveInput(Vector2 input, int tick, double residual, bool paused, Vector2 authoritative, Vector2 predicted, float speed)
         {
-            if (!inFrame) return;
-            if (scripted && !phasesArmed && !paused && (input - commandedDirection * .25f).sqrMagnitude <= .0001f)
+            if (begun && scripted && (!awaitProjectile || projectileReady) && !phasesArmed && !paused && (input - commandedDirection * .25f).sqrMagnitude <= .0001f)
             {
                 phasesArmed = true; phaseBeganAt = Time.realtimeSinceStartupAsDouble; current.Phase = 0;
+                if(awaitProjectile)enemyIds.Clear();
             }
+            if (!inFrame) return;
             current.Input = input;
  current.Tick = tick; current.Residual = residual; current.Paused = paused;
             current.Authoritative = authoritative; current.Predicted = predicted; current.PredictionSpeed = speed;
@@ -120,7 +128,7 @@ namespace Game.App
             }
             else if (kind != "lord" && kind != "projectile" && kind != "orbit") return;
             if (sampleCount == samples.Length) { droppedEntities++; return; }
-            samples[sampleCount++] = new Sample { Kind = kind, Id = id, World = world };
+            samples[sampleCount++] = new Sample { Kind = kind, Id = id, World = world, FriendlyProjectile=kind=="projectile"&&IsFriendlyProjectile(id) };
         }
         public void EndFrame(Camera camera, Vector2 cameraShake)
         {
@@ -135,7 +143,9 @@ namespace Game.App
                     if (entityCount == entities.Length) { droppedEntities++; continue; }
                     var sample = samples[i];
                     entities[entityCount++] = new EntityRow { Frame = frameCount, Kind = sample.Kind, Id = sample.Id,
-                        World = sample.World, Screen = camera.WorldToScreenPoint(sample.World) };
+                        World = sample.World, Screen = camera.WorldToScreenPoint(sample.World), FriendlyProjectile=sample.FriendlyProjectile };
+                    if(sample.Kind=="projectile")recordedProjectileSamples++;
+                    if(sample.FriendlyProjectile)recordedFriendlyProjectileSamples++;
                 }
             }
             current.CameraShake = cameraShake;
@@ -181,7 +191,12 @@ namespace Game.App
                 }
                 if (scripted && Time.realtimeSinceStartupAsDouble - initializedAt >= 20) StartCoroutine(StartupTimeout());
             }
-            if (begun && !finished && scripted && !phasesArmed && Time.realtimeSinceStartupAsDouble - beganAt >= 10)
+            if (begun && !finished && awaitProjectile && !projectileReady && Time.realtimeSinceStartupAsDouble - beganAt >= 120)
+            {
+                failure="No naturally equipped projectile appeared within 120 seconds of normal UI play.";
+                Finish(); if(quit)Application.Quit(1);
+            }
+            if (begun && !finished && scripted && !phasesArmed && (!awaitProjectile || projectileReady) && Time.realtimeSinceStartupAsDouble - (awaitProjectile?projectileReadyAt:beganAt) >= 10)
             {
                 failure = "Synthetic slow drag never reached normal input sampling within ten seconds.";
                 Finish(); if (quit) Application.Quit(1);
@@ -191,7 +206,7 @@ namespace Game.App
 
             {
                 Finish();
-                if (quit) Application.Quit();
+                if (quit) Application.Quit(failure==null?0:1);
             }
         }
         void DriveInput()
@@ -205,7 +220,12 @@ namespace Game.App
                     foreach (var button in run.Ui.GetComponentsInChildren<Button>())
                     {
                         var text = button.GetComponentInChildren<Text>();
-                        if (!button.interactable || text == null || (text.text != (run.IsWave ? "시작하기" : "시작") && text.text != "개척 시작")) continue;
+                        if (!button.interactable || text == null) continue;
+                        if(awaitProjectile && projectilePreparationTitleStage==0)
+                        { if(button.name!="출정 준비")continue; projectilePreparationTitleStage=1; }
+                        else if(awaitProjectile && projectilePreparationTitleStage==1)
+                        { if(!text.text.Contains("씨앗 자루"))continue; projectilePreparationTitleStage=2; }
+                        else if(text.text != (run.IsWave ? "시작하기" : "시작") && text.text != "개척 시작")continue;
                         var rect = (RectTransform)button.transform;
                         pendingClick = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
                         LogStartupTarget(button);
@@ -215,6 +235,23 @@ namespace Game.App
                 if (buttonPhase == 1) { QueueMouse(pendingClick, false); buttonPhase = 2; }
                 else if (buttonPhase == 2) { QueueMouse(pendingClick, true); buttonPhase = 3; }
                 else if (buttonPhase == 3) { QueueMouse(pendingClick, false); buttonPhase = 0; uiStage++; nextUiAttempt = Time.realtimeSinceStartupAsDouble + .5; UnityEngine.Debug.Log("Normal trace UI release: " + StartupState()); }
+                return;
+            }
+            if(awaitProjectile && DriveProjectileCard())return;
+            if(awaitProjectile && !projectileReady)
+            {
+                if(HasFriendlyProjectile())
+                {
+                    projectileReady=true;projectileReadyAt=Time.realtimeSinceStartupAsDouble;inputPreparationStep=0;
+                    QueueMouse(stickOrigin,false);
+                    UnityEngine.Debug.Log("Normal projectile setup ready at tick "+run.Frame.Tick+"; chosen cards="+projectileCardClicks);
+                    return;
+                }
+                var angle=(float)(Time.realtimeSinceStartupAsDouble-beganAt)*.35f;
+                var target=new Vector2(run.Frame.Estate.X+Mathf.Cos(angle)*850,run.Frame.Estate.Y+Mathf.Sin(angle)*850);
+                var direction=(target-new Vector2(run.Frame.Lord.Position.X,run.Frame.Lord.Position.Y)).normalized;
+                if(!run.Stick.Active){stickOrigin=new Vector2(Screen.width*.25f,Screen.height*.28f);QueueMouse(stickOrigin,true);}
+                else QueueMouse(stickOrigin+direction*run.Stick.Radius,true);
                 return;
             }
             if (!phasesArmed)
@@ -239,12 +276,58 @@ namespace Game.App
             }
             else QueueMouse(stickOrigin, false);
         }
+        bool HasFriendlyProjectile()
+        {
+            if(run.Wave==null)return false;
+            for(var i=0;i<run.Wave.Projectiles.Count;i++)if(!run.Wave.Projectiles[i].Hostile)return true;
+            return false;
+        }
+        bool IsFriendlyProjectile(int id)
+        {
+            if(run.Wave==null)return false;
+            for(var i=0;i<run.Wave.Projectiles.Count;i++)
+            { var projectile=run.Wave.Projectiles[i];if(projectile.Id==id)return !projectile.Hostile; }
+            return false;
+        }
+        bool DriveProjectileCard()
+        {
+            if(run.Frame==null || run.Frame.Status!=SowSiege.Core.RunStatus.AwaitingCard)
+            {
+                if(buttonPhase!=0){QueueMouse(pendingClick,false);buttonPhase=0;return true;}
+                return false;
+            }
+            if(buttonPhase==0)
+            {
+                Button selected=null;var bestRank=int.MaxValue;
+                foreach(var button in run.Ui.GetComponentsInChildren<Button>())
+                {
+                    if(!button.interactable||!button.name.StartsWith("Choose ",StringComparison.Ordinal))continue;
+                    var id=button.name.Substring(7);
+                    var rank=id=="core:seed_bag"?0:id=="core:ember_wand"?1:id=="core:rain_ladle"?2:10;
+                    if(rank>=bestRank)continue;
+                    selected=button;bestRank=rank;projectileSetupCard=id;
+                }
+                if(selected==null){QueueMouse(stickOrigin,false);return true;}
+                var rect=(RectTransform)selected.transform;
+                pendingClick=RectTransformUtility.WorldToScreenPoint(null,rect.TransformPoint(rect.rect.center));
+                buttonPhase=1;
+            }
+            if(buttonPhase==1){QueueMouse(pendingClick,false);buttonPhase=2;}
+            else if(buttonPhase==2){QueueMouse(pendingClick,true);buttonPhase=3;}
+            else
+            {
+                QueueMouse(pendingClick,false);buttonPhase=0;projectileCardClicks++;
+                UnityEngine.Debug.Log("Normal projectile setup ordinary card click: "+projectileSetupCard);
+            }
+            return true;
+        }
         void QueueMouse(Vector2 position, bool down)
             => InputSystem.QueueStateEvent(syntheticMouse, new MouseState { position = position }.WithButton(MouseButton.Left, down));
         void Finish()
         {
             if (finished || folder == null) return;
             finished = true;
+            if(awaitProjectile&&recordedFriendlyProjectileSamples==0&&failure==null)failure="No friendly projectile render samples were stored during the measured phases.";
             if (syntheticMouse != null) { QueueMouse(stickOrigin, false); InputSystem.onBeforeUpdate -= DriveInput; }
             Directory.CreateDirectory(folder);
             using (var file = new StreamWriter(Path.Combine(folder, "normal-frames.csv")))
@@ -254,11 +337,11 @@ namespace Game.App
             }
             using (var file = new StreamWriter(Path.Combine(folder, "normal-entities.csv")))
             {
-                file.WriteLine("frame,kind,id,worldX,worldY,screenX,screenY");
-                for (var i = 0; i < entityCount; i++) { var r = entities[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World.x:F9},{r.World.y:F9},{r.Screen.x:F6},{r.Screen.y:F6}")); }
+                file.WriteLine("frame,kind,id,worldX,worldY,screenX,screenY,friendlyProjectile");
+                for (var i = 0; i < entityCount; i++) { var r = entities[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World.x:F9},{r.World.y:F9},{r.Screen.x:F6},{r.Screen.y:F6},{r.FriendlyProjectile}")); }
             }
             WriteDiagnostics?.Invoke(folder);
-            File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
+            File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
         }
         void OnApplicationQuit() => Finish();
         void OnDestroy()

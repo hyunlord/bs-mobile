@@ -143,7 +143,10 @@ namespace Game.App
                 var buffer = gpu[submitted % RingSize];
                 if (Volatile.Read(ref slot.State) != 0)
                 {
-                    ringOverflows++; throw new InvalidOperationException("Capture ring overflow; no frame duplication or silent drop permitted.");
+                    ringOverflows++; throw new InvalidOperationException("Capture ring overflow; no frame duplication or silent drop permitted. " +
+                        "slotState=" + Volatile.Read(ref slot.State) + ", pendingGpu=" + pending +
+                        ", submitted=" + submitted + ", written=" + writer.Written +
+                        ", completedReadbacks=" + completedReadbacks);
                 }
                 if (submitted == 0) { firstRenderFrame = Time.renderedFrameCount; initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
                 else
@@ -156,6 +159,7 @@ namespace Game.App
                 slot.Sequence = submitted; slot.Tick = run.Frame.Tick; slot.RenderFrame = Time.renderedFrameCount;
                 slot.CardPause = run.Frame.Status == RunStatus.AwaitingCard ? 1 : 0;
                 slot.WallSeconds = now - firstTime; slot.DspSeconds = AudioSettings.dspTime - firstDsp;
+                slot.CapturedTimestamp = now;
                 slot.InitialRun = !initialRunSelected && run.Frame.Tick >= run.Frame.TickRate * 2;
                 if (slot.InitialRun) initialRunSelected = true;
                 slot.Battle = !battleSelected && run.Frame.Tick >= run.Frame.TickRate * 55 && run.Frame.Status == RunStatus.Running;
@@ -210,7 +214,8 @@ namespace Game.App
                     Volatile.Write(ref frames[index].State, 0);
                     StopCapture(); return;
                 }
-                gpu[index].Native.CopyTo(frames[index].Pixels);
+                    gpu[index].Native.CopyTo(frames[index].Pixels);
+                    frames[index].ReadbackTimestamp = System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency;
                 completedReadbacks++;
                 Volatile.Write(ref frames[index].State, 2);
                 writer.Notify();
