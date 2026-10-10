@@ -63,6 +63,12 @@ namespace Game.App
             }
         }
 
+        public static void MakeScreenOpaque(byte[] pixels)
+        {
+            if (pixels == null || pixels.Length % 4 != 0) throw new ArgumentException("Expected RGBA screen pixels.");
+            for (var i = 3; i < pixels.Length; i += 4) pixels[i] = 255;
+        }
+
         void Write()
         {
             AllocationCounterAvailable = AllocationCounterProbe.CurrentThreadAvailable();
@@ -105,6 +111,8 @@ namespace Game.App
                     }
                     csv.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0},{1:F9},{2},{3},{4},{5:F9}", slot.Sequence, slot.WallSeconds, slot.Tick, slot.CardPause, slot.RenderFrame, slot.DspSeconds));
                     var screenshotStart = Timestamp();
+                    // The display is opaque; framebuffer alpha is blend bookkeeping, not screenshot transparency.
+                    if (slot.InitialRun || slot.Battle) MakeScreenOpaque(slot.Pixels);
                     if (slot.InitialRun)
                     {
                         File.WriteAllBytes(Path.Combine(folder, "02-native-run.png"), ImageConversion.EncodeArrayToPNG(slot.Pixels, GraphicsFormat.R8G8B8A8_UNorm, (uint)width, (uint)height));

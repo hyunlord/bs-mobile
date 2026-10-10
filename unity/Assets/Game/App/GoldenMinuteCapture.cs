@@ -97,7 +97,16 @@ namespace Game.App
             if (!ReadyToStart || armed || run.Frame == null || run.Frame.Tick != 0 || run.CaptureClockPaused)
                 throw new InvalidOperationException("Recording requires a warmed, normally resumed run at tick zero.");
             if (segment.StartSeconds > 0) run.SuspendSmoothnessDiagnostics();
+            ObserveFieldTraversal();
             armed = true;
+        }
+
+        void ObserveFieldTraversal()
+        {
+            if (run?.Frame == null || run.Session == null) return;
+            var frame = run.Frame;
+            AutoplayCapture.Active?.FieldVideo?.Observe(frame.Tick, frame.TickRate, frame.Lord.Position,
+                frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
         }
 
         IEnumerator Record()
@@ -242,6 +251,8 @@ namespace Game.App
         public void StopCapture()
         {
             if (stopping) return;
+            ObserveFieldTraversal();
+            AutoplayCapture.Active?.FieldVideo?.CloseObservation();
             stopping = true;
             audio?.StopAudio();
         }
@@ -270,9 +281,10 @@ namespace Game.App
                 movementProtocol = AutoplayCapture.Active.FieldVideo?.InputProtocol ?? AutoplayCapture.Active.FeelComparison?.InputProtocol,
                 fieldTopology = AutoplayCapture.Active.FieldVideo?.Topology,
                 fieldVideo = AutoplayCapture.Active.FieldVideo?.Mode,
+                fieldTraversal = AutoplayCapture.Active.FieldVideo?.Evidence,
                 failurePreview = AutoplayCapture.Active.FeelComparison?.FailurePreview ?? false,
                 previewBoundary = AutoplayCapture.Active.FeelComparison?.FailurePreview == true ? "Diagnostic 0-30 second preview only, not the requested 360-390 second comparison. Death retains failed status and actual partial frames." : null,
-                comparisonBoundary = AutoplayCapture.Active.FieldVideo != null ? "Field traversal uses actual pointer movement right for 60 gameplay seconds; out-return then uses left for 60 seconds. Opposing input is not a guaranteed exact return after collisions or knockback. Ordinary card selection; death preserved; no grants, teleports or forced survival." : AutoplayCapture.Active.FeelComparison == null ? null : "Walk uses the direction named by movementProtocol; rules share the normal growth/evasion policy, not identical movement commands. Actual movement and legal card choices may diverge with state. Gameplay-second window at 1x, card pauses extend actual wall duration. No forced survival.",
+                comparisonBoundary = AutoplayCapture.Active.FieldVideo != null ? "Field traversal uses actual pointer movement right for 60 gameplay seconds; out-return then steers toward authoritative home until 120 seconds with speed-aware easing and a small arrival deadzone. Actual arrival and final home distance are recorded; survival and arrival are not guaranteed. Ordinary card selection; death preserved; no grants, teleports or forced survival." : AutoplayCapture.Active.FeelComparison == null ? null : "Walk uses the direction named by movementProtocol; rules share the normal growth/evasion policy, not identical movement commands. Actual movement and legal card choices may diverge with state. Gameplay-second window at 1x, card pauses extend actual wall duration. No forced survival.",
                 seed = captureSeed, requestedStartSeconds = segment.StartSeconds, requestedDurationSeconds = segment.DurationSeconds, actualStartTick = actualStartTick,
                 requestedEndSeconds = segment.EndSeconds, actualEndTick = submitted == 0 ? -1 : finalTick,
                 segmentBoundary = "Normal live autoplay from tick zero; no skipped simulation, replay, acceleration or grants. Audio and image recording begin at the requested start tick.",
@@ -318,6 +330,7 @@ namespace Game.App
         {
             public string commit, sourceHash, profile, dataHash, failure, segmentBoundary, feelComparison, movementProtocol, comparisonBoundary, previewBoundary, fieldTopology, fieldVideo;
             public bool failurePreview;
+            public FieldTraversalEvidence fieldTraversal;
             public int seed, requestedStartSeconds, requestedDurationSeconds, requestedEndSeconds, actualStartTick, actualEndTick;
             public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
             public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;

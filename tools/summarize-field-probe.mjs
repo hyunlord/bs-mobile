@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const dir=process.argv[2];
+const result=JSON.parse(fs.readFileSync(`${dir}/normal-gc-result.json`,'utf8'));
+assert(result.captureOff && result.automatedNormalInput && result.rulesOff && result.replayVerified && !result.sourceDirty, 'Expected verified capture-free normal input with all rules OFF.');
+assert(result.firstTick === 0 && result.finalTick === 10800 && result.unfocusedFrames === 0 && !result.failure, 'Expected uninterrupted six-minute sample.');
+const [header,...lines]=fs.readFileSync(`${dir}/normal-gc-frames.csv`,'utf8').trim().split('\n');
+const columns=header.split(',');
+const rows=lines.map(line=>Object.fromEntries(line.split(',').map((v,i)=>[columns[i],Number(v)])));
+assert(rows.length === result.frames && rows.every(r => Object.values(r).every(Number.isFinite)), 'Invalid frame table.');
+const pct=(a,p)=>{const s=a.toSorted((a,b)=>a-b);return s[Math.max(0,Math.ceil(s.length*p)-1)];};
+const stats=a=>({p50:pct(a,.5),p95:pct(a,.95),max:Math.max(...a)});
+const active=rows.filter(r=>!r.paused&&r.focused&&r.wallDtSeconds>0);
+const end=active.filter(r=>r.tick>=9900);
+const summary=sample=>({frames:sample.length,wallMs:stats(sample.map(r=>r.wallDtSeconds*1000)),coreCommandMsPerAdvanceTick:stats(sample.filter(r=>r.coreTicks>0).map(r=>r.coreMs/r.coreTicks)),drawMs:stats(sample.map(r=>r.drawMs)),enemies:stats(sample.map(r=>r.enemies)),visibleEnemies:stats(sample.map(r=>r.visibleEnemies)),worldDrawCalls:stats(sample.map(r=>r.drawCalls)),gc0:sample.reduce((n,r)=>n+r.delta0,0),lordBlocked:sample.filter(r=>r.lordBoundaryBlocked).length,cameraClamped:sample.filter(r=>r.cameraBoundaryClamped).length});
+const coreCostScope = result.metricsVersion >= 2 ? 'Advance-only CPU span divided by Advance count' : 'All accepted command CPU spans divided by Advance count; mixed card/aim frames are not isolated tick measurements';
+console.log(JSON.stringify({result,coreCostScope,allActive:summary(active),last30GameplaySeconds:summary(end),final:rows.at(-1)},null,2));

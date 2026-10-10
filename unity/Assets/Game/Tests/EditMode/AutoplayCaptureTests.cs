@@ -277,6 +277,14 @@ namespace Tests.EditMode
         }
 
         [Test]
+        public void ScreenPngKeepsRenderedRgbAndDiscardsFramebufferTransparency()
+        {
+            var pixels = new byte[] { 12, 34, 56, 0, 78, 90, 123, 127 };
+            GoldenCaptureWriter.MakeScreenOpaque(pixels);
+            Assert.That(pixels, Is.EqualTo(new byte[] { 12, 34, 56, 255, 78, 90, 123, 255 }));
+        }
+
+        [Test]
         public void AllocationProbeReportsUnavailableInsteadOfCertifyingAZeroCounter()
         {
             var available = AllocationCounterProbe.CurrentThreadAvailable();

@@ -82,6 +82,9 @@ namespace Game.View
                 }
             }
             var home = Point(acceptedFrame.Field.Home);
+            var cottage = Resolve("wave", "workshop-complete", "default");
+            var cottageSize = cottage.WorldSize * (1.9f / cottage.WorldSize.x);
+            Draw(cottage, 5, home + new Vector2(-1, .65f), 0, cottageSize);
             FieldPropAt("fallow.prop.watermill", home + new Vector2(-1.8f, 2.76f), new Vector2(2.4f, 2.1f), 5);
             FieldPropAt("fallow.prop.stone", home + new Vector2(-2.4f, 1.08f), new Vector2(.8f, 1.3f), 6);
             FieldPropAt("fallow.prop.path", home, new Vector2(1.5f, 4), 3, -12, .6f);

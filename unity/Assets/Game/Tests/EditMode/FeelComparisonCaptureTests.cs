@@ -1,6 +1,7 @@
 using System;
 using Game.App;
 using NUnit.Framework;
+using SowSiege.Core;
 using UnityEngine;
 
 public sealed class FeelComparisonCaptureTests
@@ -86,11 +87,11 @@ public sealed class FieldVideoCaptureTests
         var value = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return", "--field-topology", "old" });
         Assert.That(value.Topology, Is.EqualTo("old"));
         Assert.That(value.Window.EndSeconds, Is.EqualTo(120));
-        Assert.That(value.Direction(1799, 30), Is.EqualTo(Vector2.right));
-        Assert.That(value.Direction(1800, 30), Is.EqualTo(Vector2.left));
-        Assert.That(value.Direction(3599, 30), Is.EqualTo(Vector2.left));
+        Assert.That(value.Direction(1799, 30, new WorldPoint(1000, 0), new WorldPoint(0, 0), 24), Is.EqualTo(Vector2.right));
+        Assert.That(value.Direction(1800, 30, new WorldPoint(1000, 0), new WorldPoint(0, 0), 24), Is.EqualTo(Vector2.left));
+        Assert.That(value.Direction(3599, 30, new WorldPoint(1000, 0), new WorldPoint(0, 0), 24), Is.EqualTo(Vector2.left));
         Assert.Throws<InvalidOperationException>(() => value.Window.Ready(2000, 30, true));
-        Assert.That(value.InputProtocol, Is.EqualTo("field-right-60s-left-60s-v1"));
+        Assert.That(value.InputProtocol, Is.EqualTo("field-right-60s-steer-home-until-120s-v2"));
     }
     [Test] public void FieldWindowDoesNotRelaxOrdinaryCaptureDurationLimit()
     {
@@ -111,5 +112,39 @@ public sealed class FieldVideoCaptureTests
         Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--field-video", "straight" }));
         Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "straight", "--field-topology", "unknown" }));
         Assert.Throws<ArgumentException>(() => FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-topology", "old" }));
+    }
+    [Test] public void ReturnSteersToActualHomeAndRecordsOnlyObservedArrival()
+    {
+        var value = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return" });
+        var home = new WorldPoint(300, 500);
+        value.Observe(0, 30, home, home, 24);
+        Assert.That(value.Evidence.arrived, Is.False);
+        var direction = value.Direction(1800, 30, new WorldPoint(1300, 900), home, 24);
+        Assert.That(direction.x, Is.LessThan(0)); Assert.That(direction.y, Is.LessThan(0));
+        Assert.That(value.Evidence.farthestHomeDistance, Is.EqualTo(Math.Sqrt(1000 * 1000 + 400 * 400)).Within(.0001));
+        Assert.That(value.Evidence.startX, Is.EqualTo(300));
+        Assert.That(value.Direction(2800, 30, new WorldPoint(308, 500), home, 24).x, Is.EqualTo(-8f / 96).Within(.0001));
+        Assert.That(value.Evidence.arrived, Is.False);
+        Assert.That(value.Direction(2801, 30, new WorldPoint(305, 500), home, 24), Is.EqualTo(Vector2.zero));
+        Assert.That(value.Evidence.arrived, Is.True); Assert.That(value.Evidence.arrivalTick, Is.EqualTo(2801));
+        Assert.That(value.Evidence.endHomeDistance, Is.EqualTo(5));
+        // A later knockback must be visible rather than retaining a false final-home claim.
+        Assert.That(value.Direction(2802, 30, new WorldPoint(500, 500), home, 24), Is.EqualTo(Vector2.left));
+        Assert.That(value.Evidence.atHomeAtEnd, Is.False); Assert.That(value.Evidence.arrivalTick, Is.EqualTo(2801));
+        value.CloseObservation();
+        value.Observe(2803, 30, home, home, 24);
+        Assert.That(value.Evidence.endTick, Is.EqualTo(2802));
+        Assert.That(value.Evidence.atHomeAtEnd, Is.False);
+    }
+    [Test] public void ArrivalEasingUsesActualLocomotionSpeedAndStraightRouteDoesNotChange()
+    {
+        var value = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return" });
+        var point = new WorldPoint(48, 0); var home = new WorldPoint(0, 0);
+        var normal = value.Direction(1800, 30, point, home, 24);
+        var fast = value.Direction(1800, 30, point, home, 31.2f);
+        Assert.That(Math.Abs(fast.x), Is.LessThan(Math.Abs(normal.x)));
+        var straight = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "straight" });
+        Assert.That(straight.Direction(1800, 30, point, home, 24), Is.EqualTo(Vector2.right));
+        Assert.That(straight.Evidence.arrived, Is.False);
     }
 }

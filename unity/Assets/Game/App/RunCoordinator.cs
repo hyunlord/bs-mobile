@@ -345,7 +345,7 @@ namespace Game.App
                 var probeCoreStart=ProbeEnabled?ProbeTimestamp():0;
                 using(RunProfilerMarkers.CoreApply.Auto())
                 using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);
-                if(ProbeEnabled){probeCoreMs+=ProbeElapsed(probeCoreStart);if(kind==ReplayCommandKind.Advance)probeCoreTicks++;}
+                if(ProbeEnabled&&kind==ReplayCommandKind.Advance){probeCoreMs+=ProbeElapsed(probeCoreStart);probeCoreTicks++;}
                 using(smoothness.Scope(SmoothnessScope.Recording))recording.WriteAccepted(command);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 if(kind==ReplayCommandKind.SetInvulnerable)invulnerable=value!=0;

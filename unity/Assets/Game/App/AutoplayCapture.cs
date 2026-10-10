@@ -365,7 +365,7 @@ namespace Game.App
                 Log("card-click", card); cardAt = -1; return;
             }
             Vector2 direction;
-            if (FieldVideo != null) direction = FieldVideo.Direction(frame.Tick, frame.TickRate);
+            if (FieldVideo != null) direction = FieldVideo.Direction(frame.Tick, frame.TickRate, frame.Lord.Position, frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
             else if (FeelComparison != null && FeelComparison.Walk) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
             else
             {
