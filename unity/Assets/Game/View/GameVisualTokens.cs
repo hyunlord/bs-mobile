@@ -20,9 +20,20 @@ namespace Game.View
         public const float WaveHostileTellOpacity = .55f, WaveHostileActiveOpacity = .8f;
         public const float WaveFragmentScale = .32f, WaveWorkshopScale = .48f, WavePoolScale = .48f, WavePoolOpacity = .65f;
         public const float WaveStatusScale = .36f, WaveWetHeight = .55f, WaveWetOpacity = .38f;
-        public const float WaveTimberSourceScale = .42f, WaveRewardScale = .25f;
+        public const float WaveTimberSourceScale = .42f, WaveRewardScale = .18f;
         public const float WavePathSpacingFraction = .8f, WaveEdgeActorMargin = .8f;
-        public const float WaveCropSpacingFraction = .8f, WaveCropOpacity = .8f, WaveTerrainOpacity = .18f, WaveHeroOutline = .028f, WaveFenceOpacity = .65f;
+        public const float WaveCropSpacingFraction = .8f, WaveCropOpacity = .8f, WaveTerrainOpacity = .18f, WaveHeroOutline = .045f, WaveFenceOpacity = .65f;
+        public const int WaveAttackEdgeLayer = 70, WaveDangerLayer = 72;
+        public const float WaveEdgeTexels = 2f, WaveEdgePixels = 1.25f, WaveEdgeOpacity = .72f, WavePlantingInnerScale = .78f;
+        public const float WaveEnemyMaxSize = .64f, WaveWaspScale = .55f, WaveEnemyUpperOpacity = .55f;
+        public const float WaveLordRingRadius = .34f, WaveLordRingHeight = .55f, WaveLordRingInner = .82f, WaveLordRingAccentScale = .94f, WaveLordRingAccentInner = .9f;
+        public const float WaveRewardOpacity = .55f, WaveRipeEdgeOpacity = .55f;
+        public const float WaveAttackBodyOpacity = .78f, WaveChainRibbonWidth = .18f, WaveRepairBannerOpacity = .48f;
+        public const int WaveReadinessCueLayer = 69, WaveTransientCueLayer = 71;
+        public const float WaveChainOutlinePixels = 1.25f, WaveRipeCueRadius = 1.2f, WaveRipeCueScale = .5f, WaveRipeCueRise = .25f;
+        public const float WaveIntakeScale = .5f, WaveIntakeRise = .3f, WaveRepairShieldScale = .25f;
+        public const int WaveHarvestCueLimit = 3;
+        public const float WaveGrowthLabelRise = .5f, WaveCollectionLabelRise = .9f, WaveCollectionLabelSeconds = .9f;
         public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }

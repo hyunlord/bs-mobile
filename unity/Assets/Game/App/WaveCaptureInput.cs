@@ -16,18 +16,25 @@ namespace Game.App
         }
         public static void ConfigurePriority(string value) => preferred=string.IsNullOrWhiteSpace(value)?null:value.Split(',');
         public static int CardRank(string id) { var selection=preferred??Priority;var index=Array.IndexOf(selection,id);return index<0?100:index; }
-        public static string ChooseCard(CardOfferView offers,RunFrame frame,ContentCatalog catalog,string targetMaterial=null)
+        public static string ChooseCard(CardOfferView offers,RunFrame frame,ContentCatalog catalog,string targetMaterial=null,int evolutionAfterTick=0)
         {
+            if(evolutionAfterTick<0)throw new ArgumentOutOfRangeException(nameof(evolutionAfterTick),"Evolution preference tick must be nonnegative.");
             if(offers==null||offers.Cards.Count==0)throw new ArgumentException("At least one actual offered card is required.",nameof(offers));
             var definition=catalog?.WaveRuntime??throw new ArgumentException("Wave capture requires a wave catalog.",nameof(catalog));
+            var cards=offers.Cards;
+            if(frame.Tick<evolutionAfterTick)
+            {
+                var ordinary=cards.Where(id=>!definition.Evolutions.ContainsKey(id)).ToArray();
+                if(ordinary.Length>0)cards=ordinary;
+            }
             var owned=frame.Equipment.Select(e=>e.Id).ToHashSet(StringComparer.Ordinal);
-            if(frame.Level==2&&targetMaterial!=null&&definition.MaterialTargets!=null&&definition.MaterialTargets.TryGetValue(targetMaterial,out var target)&&!owned.Contains(target)&&offers.Cards.Contains(target))return target;
+            if(frame.Level==2&&targetMaterial!=null&&definition.MaterialTargets!=null&&definition.MaterialTargets.TryGetValue(targetMaterial,out var target)&&!owned.Contains(target)&&cards.Contains(target))return target;
             var selection=preferred??Priority;
-            var evolution=selection.FirstOrDefault(id=>definition.Evolutions.ContainsKey(id)&&offers.Cards.Contains(id));
+            var evolution=selection.FirstOrDefault(id=>definition.Evolutions.ContainsKey(id)&&cards.Contains(id));
             if(evolution!=null)return evolution;
-            var newGear=selection.FirstOrDefault(id=>definition.Gear.ContainsKey(id)&&!owned.Contains(id)&&offers.Cards.Contains(id));
+            var newGear=selection.FirstOrDefault(id=>definition.Gear.ContainsKey(id)&&!owned.Contains(id)&&cards.Contains(id));
             if(newGear!=null)return newGear;
-            return offers.Cards.OrderBy(CardRank).First();
+            return cards.OrderBy(CardRank).First();
         }
         public static WorldPoint Target(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog=null)
         {

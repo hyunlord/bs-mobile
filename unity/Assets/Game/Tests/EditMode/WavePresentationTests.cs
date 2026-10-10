@@ -10,6 +10,31 @@ namespace Game.Tests
     public sealed class WavePresentationTests
     {
         [Test]
+        public void GrowthCopyDescribesEveryChangedDirectionWithoutWorldUnits()
+        {
+            var before=new WaveGearLevel(10,1205,30,600,1,60,100);
+            var after=new WaveGearLevel(12,1240,25,700,2,75,120);
+            var text=UiRunPanels.WaveGrowthDescription(before,after);
+            foreach(var phrase in new[]{"더 강하게 타격","더 넓게 공격","한 번에 더 많이 타격","더 자주 공격","공격이 더 빠르게 이동","더 세게 밀치기","공격이 더 오래 유지"})
+                Assert.That(text,Does.Contain(phrase));
+            Assert.That(text.Any(char.IsDigit),Is.False,"Internal world-unit values never become card copy.");
+            Assert.That(UiRunPanels.WaveGrowthDescription(before,before),Is.EqualTo("성장표 상한"));
+            var reduced=UiRunPanels.WaveGrowthDescription(after,before);
+            Assert.That(reduced,Does.Contain("더 좁게 공격"));
+            Assert.That(reduced,Does.Contain("공격 사이의 대기 증가"));
+        }
+        [Test]
+        public void EnemyArtShrinksWithoutChangingAspectOrBossSize()
+        {
+            var authored=new UnityEngine.Vector2(1.2f,1);
+            var scaled=Game.View.WorldRenderer.WaveEnemySize(authored,WaveEnemyKind.Shield);
+            Assert.That(scaled.x,Is.LessThanOrEqualTo(Game.View.GameVisualTokens.WaveEnemyMaxSize));
+            Assert.That(scaled.x/scaled.y,Is.EqualTo(authored.x/authored.y).Within(.0001f));
+            Assert.That(Game.View.WorldRenderer.WaveEnemySize(authored,WaveEnemyKind.FloodBoss),Is.EqualTo(authored));
+            var small=new UnityEngine.Vector2(.3f,.4f);
+            Assert.That(Game.View.WorldRenderer.WaveEnemySize(small,WaveEnemyKind.Pursuer),Is.EqualTo(small));
+        }
+        [Test]
         public void BossRecoveryCueRequiresActualChargeTransitionOncePerRun()
         {
             var cue=new Game.View.WaveBossPhaseCue();
@@ -56,6 +81,32 @@ namespace Game.Tests
                 Assert.That(WaveCaptureInput.ChooseCard(Offer("core:iron_blade"),frame,catalog),Is.EqualTo("core:iron_blade"),"Never invent an unavailable preferred card.");
                 Assert.That(WaveCaptureInput.ChooseCard(Offer("core:ward_orbit","core:seed_bag"),frame,catalog,"meta:grain"),Is.EqualTo("core:seed_bag"));
                 Assert.That(WaveCaptureInput.ChooseCard(Offer("core:ward_orbit"),frame,catalog,"meta:grain"),Is.EqualTo("core:ward_orbit"),"Target preference must still be offered.");
+            }
+            finally{WaveCaptureInput.ConfigurePriority(null);}
+        }
+        [Test]
+        public void CaptureEvolutionPhaseSelectsOnlyActualOffersAndKeepsDefaultPolicy()
+        {
+            if(CanonicalContent.ProfileName!="wave-1a")Assert.Ignore("Wave catalog required.");
+            var catalog=CanonicalContent.CreateCatalog();
+            var session=new InteractiveSession(catalog,new InteractiveOptions(new RunOptions(30000,catalog.Tuning.DefaultHero,catalog.Tuning.DefaultEstate,"mixed",ManualCards:true),AimMode.Movement,CanonicalContent.DataHash));
+            var hash=session.ComputeStateHash();
+            var frame=session.View.CaptureFrame() with {Tick=17999,Level=3,Equipment=new[]{new EquipmentView("core:iron_blade",1)}};
+            CardOfferView Offer(params string[] ids)=>new CardOfferView(ids,null,0,0,0);
+            WaveCaptureInput.ConfigurePriority("core:sowing_sworddance,core:ward_orbit");
+            try
+            {
+                var mixed=Offer("core:sowing_sworddance","core:ward_orbit");
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame,catalog,evolutionAfterTick:18000),Is.EqualTo("core:ward_orbit"));
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame with {Tick=18000},catalog,evolutionAfterTick:18000),Is.EqualTo("core:sowing_sworddance"));
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame,catalog),Is.EqualTo("core:sowing_sworddance"),"Omitted phase preserves the native and historical policy.");
+                Assert.That(WaveCaptureInput.ChooseCard(mixed,frame,catalog,evolutionAfterTick:0),Is.EqualTo(WaveCaptureInput.ChooseCard(mixed,frame,catalog)));
+                Assert.That(WaveCaptureInput.ChooseCard(Offer("core:sheltered_sowing","core:iron_blade"),frame,catalog,evolutionAfterTick:18000),Is.EqualTo("core:iron_blade"),"Fallback must also prefer actual non-evolution offers.");
+                var evolutions=Offer("core:warded_masonry","core:sowing_sworddance");
+                Assert.That(WaveCaptureInput.ChooseCard(evolutions,frame,catalog,evolutionAfterTick:18000),Is.EqualTo(WaveCaptureInput.ChooseCard(evolutions,frame,catalog)),"An all-evolution offer cannot be skipped or replaced.");
+                Assert.That(WaveCaptureInput.ChooseCard(Offer("core:sheltered_sowing"),frame,catalog,evolutionAfterTick:18000),Is.EqualTo("core:sheltered_sowing"),"An unpreferred evolution is still the only actual choice.");
+                Assert.Throws<ArgumentOutOfRangeException>(()=>WaveCaptureInput.ChooseCard(mixed,frame,catalog,evolutionAfterTick:-1));
+                Assert.That(session.ComputeStateHash(),Is.EqualTo(hash),"Card preferences never mutate gameplay state.");
             }
             finally{WaveCaptureInput.ConfigurePriority(null);}
         }
