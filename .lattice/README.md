@@ -6,7 +6,7 @@
 
 설계 참조는 설계 층 안에서만 해결한다. `sourceId`는 계보이며 실행 연결로 해석하지 않는다. 실행 레코드에 `designRef`가 있으면 카탈로그 경로·개정·같은 ID·종류를 확인해 우선 연결하고, 잘못된 명시적 참조를 같은 ID 추정으로 대체하지 않는다. `designRef`가 없을 때만 같은 종류·원본 ID의 설계 노드에 대응한다.
 
-발견 규칙은 모두 warning이며 gate가 없다. `cardText`는 필드가 있을 때 길이를 검사하고, `primitives` 누락은 해당 필드를 사용하는 설계 콘텐츠가 나타난 뒤 계산한다. bespoke는 `{id, reason}` 배열을 가진 레코드 수와 배열 항목 수를 따로 집계한다. primitive 참조 수는 설계 문법 사용량이며 구현률이 아니다. `itemScope: universal` 물품은 장비별 연결 물품 수에서 제외한다. 데이터 판정 규칙은 이 렌즈에만 둔다.
+발견 규칙은 모두 warning이며 gate가 없다. `cardText`는 필드가 있을 때 길이를 검사하고, `primitives` 누락은 해당 필드를 사용하는 설계 콘텐츠가 나타난 뒤 계산한다. bespoke는 `{id, reason}` 배열을 가진 레코드 수와 배열 항목 수를 따로 집계한다. primitive 참조 수는 설계 문법 사용량이며 구현률이 아니다. `itemScope: universal`로 명시된 물품만 장비별 연결 물품 수에서 제외한다. 해당 필드가 없던 역사 카탈로그의 물품 연결은 유지한다(`not(eq(..., "universal"))`). 데이터 판정 규칙은 이 렌즈에만 둔다.
 
 ```sh
 node .lattice/verify-designed.mjs <graph.json>
