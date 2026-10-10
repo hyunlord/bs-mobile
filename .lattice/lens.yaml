@@ -571,6 +571,7 @@ derived:
             path:
               - id
         key: 0
+    layer: designed-v1
   - id: effectiveDepth
     scope: node
     kinds:
@@ -826,6 +827,7 @@ facets:
                   path:
                     - source
       default: null
+    layer: designed-v1
   - id: candidate-reference-depth
     key: referenceDepth
     kinds:

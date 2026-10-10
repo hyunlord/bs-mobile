@@ -24,3 +24,5 @@ node .lattice/verify-runtime.mjs <graph.json> <source-checkout> [prototype-oracl
 ```
 
 검증기는 각 ID·원본/프로필 우선 깊이·8개 발견·정적 코드 위치·비용/보상 행렬을 실제 소스와 독립 비교한다. 선택적 시제품 오라클 인자는 고정 시제품의 216개 ID 분류와 지정 수치를 추가 검증한다. 현재 CI는 소스와 추출 결과의 일치를 검증하며 미래 콘텐츠 수량을 고정하지 않는다.
+
+`linkedItems`는 designed-v1에만 붙이고 `waveIndex`도 designed-v1에서만 계산한다. 다른 층의 의미 없는 빈 투영을 만들지 않으며, 각 층의 `designIntent`와 원본 `effect` 속성은 그대로 보존한다.
