@@ -9,7 +9,7 @@ namespace Game.App
     {
         public string Mode { get; }
         public string Topology { get; }
-        public string InputProtocol => Mode == "straight" ? "field-right-60s-v1" : "field-right-60s-steer-home-until-120s-v2";
+        public string InputProtocol => Mode == "straight" ? "field-right-60s-v1" : "field-right-60s-steer-home-until-125s-v3";
         public CaptureSegmentWindow Window => CaptureSegmentWindow.FieldTraversal(Mode == "out-return");
         public FieldTraversalEvidence Evidence { get; } = new FieldTraversalEvidence();
         bool observationClosed;
@@ -85,6 +85,6 @@ namespace Game.App
         public int arrivalTick = -1;
         public double farthestHomeDistance, endHomeDistance, arrivalDeadzone;
         public string units = "authoritative Core world units; actual positions, not commanded displacement";
-        public string boundary = "Arrival requires the observed lord position within speed-aware deadzone after 60 outbound gameplay seconds. Steering uses ordinary pointer input toward immutable home; no teleport, grants or forced survival. Arrival may be absent at death or 120-second limit.";
+        public string boundary = "Arrival requires the observed lord position within speed-aware deadzone after 60 outbound gameplay seconds. Steering uses ordinary pointer input toward immutable home; no teleport, grants or forced survival. Arrival may be absent at death or 125-second limit.";
     }
 }

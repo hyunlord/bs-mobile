@@ -86,18 +86,19 @@ public sealed class FieldVideoCaptureTests
     {
         var value = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return", "--field-topology", "old" });
         Assert.That(value.Topology, Is.EqualTo("old"));
-        Assert.That(value.Window.EndSeconds, Is.EqualTo(120));
+        Assert.That(value.Window.EndSeconds, Is.EqualTo(125));
         Assert.That(value.Direction(1799, 30, new WorldPoint(1000, 0), new WorldPoint(0, 0), 24), Is.EqualTo(Vector2.right));
         Assert.That(value.Direction(1800, 30, new WorldPoint(1000, 0), new WorldPoint(0, 0), 24), Is.EqualTo(Vector2.left));
         Assert.That(value.Direction(3599, 30, new WorldPoint(1000, 0), new WorldPoint(0, 0), 24), Is.EqualTo(Vector2.left));
         Assert.Throws<InvalidOperationException>(() => value.Window.Ready(2000, 30, true));
-        Assert.That(value.InputProtocol, Is.EqualTo("field-right-60s-steer-home-until-120s-v2"));
+        Assert.That(value.InputProtocol, Is.EqualTo("field-right-60s-steer-home-until-125s-v3"));
     }
     [Test] public void FieldWindowDoesNotRelaxOrdinaryCaptureDurationLimit()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => new CaptureSegmentWindow(0, 120));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new CaptureSegmentWindow(0, 125));
         var args = new[] { "--autoplay-capture", "--field-video", "out-return" };
-        Assert.That(FeelComparisonCapture.ResolveWindow(args).DurationSeconds, Is.EqualTo(120));
+        Assert.That(FeelComparisonCapture.ResolveWindow(args).DurationSeconds, Is.EqualTo(125));
         Assert.That(AutoplayCapture.IsGoldenMinuteRequested(args), Is.True);
     }
     [TestCase("--capture-duration-seconds")]
@@ -135,6 +136,26 @@ public sealed class FieldVideoCaptureTests
         value.Observe(2803, 30, home, home, 24);
         Assert.That(value.Evidence.endTick, Is.EqualTo(2802));
         Assert.That(value.Evidence.atHomeAtEnd, Is.False);
+    }
+    [Test] public void ReturnAllowsArrivalDuringExtraFiveSecondsButNeverAfterItsWindow()
+    {
+        var value = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return" });
+        var home = new WorldPoint(0, 0);
+        value.Observe(3600, 30, new WorldPoint(31, 0), home, 24);
+        Assert.That(value.Evidence.arrived, Is.False);
+        Assert.That(value.Window.Complete(3749, 30), Is.False);
+        value.Observe(3750, 30, new WorldPoint(5, 0), home, 24);
+        Assert.That(value.Window.Complete(3750, 30), Is.True);
+        Assert.That(value.Evidence.arrived, Is.True);
+        Assert.That(value.Evidence.arrivalTick, Is.EqualTo(3750));
+        Assert.That(value.Evidence.arrivalDeadzone, Is.EqualTo(6));
+        value.Observe(3751, 30, home, home, 24);
+        Assert.That(value.Evidence.endTick, Is.EqualTo(3750));
+        Assert.That(value.Evidence.endHomeDistance, Is.EqualTo(5));
+        var late = FieldVideoCapture.Parse(new[] { "--autoplay-capture", "--field-video", "out-return" });
+        late.Observe(3750, 30, new WorldPoint(31, 0), home, 24);
+        late.Observe(3751, 30, home, home, 24);
+        Assert.That(late.Evidence.arrived, Is.False);
     }
     [Test] public void ArrivalEasingUsesActualLocomotionSpeedAndStraightRouteDoesNotChange()
     {

@@ -14,11 +14,11 @@ namespace Game.App
         private CaptureSegmentWindow(int startSeconds, int durationSeconds, bool landscape, bool fieldTraversal)
         {
             if (startSeconds < 0 || startSeconds > 840) throw new ArgumentOutOfRangeException(nameof(startSeconds));
-            if (durationSeconds < 5 || durationSeconds > (fieldTraversal ? 120 : 60)) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
+            if (durationSeconds < 5 || durationSeconds > (fieldTraversal ? 125 : 60)) throw new ArgumentOutOfRangeException(nameof(durationSeconds));
             if (landscape && startSeconds == 0) throw new ArgumentException("--capture-landscape requires a later capture segment.");
             StartSeconds = startSeconds; DurationSeconds = durationSeconds; Landscape = landscape;
         }
-        public static CaptureSegmentWindow FieldTraversal(bool returnTrip) => new CaptureSegmentWindow(0, returnTrip ? 120 : 60, false, true);
+        public static CaptureSegmentWindow FieldTraversal(bool returnTrip) => new CaptureSegmentWindow(0, returnTrip ? 125 : 60, false, true);
         public static CaptureSegmentWindow Parse(string[] args) => new CaptureSegmentWindow(
             Read(args, "--capture-start-seconds", 0), Read(args, "--capture-duration-seconds", 60), Array.IndexOf(args, "--capture-landscape") >= 0);
         static int Read(string[] args, string flag, int fallback)
