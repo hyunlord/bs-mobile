@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using SowSiege.Core;
 using UnityEngine;
 namespace Game.View
@@ -24,6 +23,10 @@ namespace Game.View
         int ripeCueId = -1;
         string collectionLabel;
         float collectedAt;
+        readonly WaveRenderInterpolation waveMotion = new WaveRenderInterpolation();
+        readonly Dictionary<string,string> rewardSources = new Dictionary<string,string>(StringComparer.Ordinal);
+        readonly Dictionary<string,string> attackSources = new Dictionary<string,string>(StringComparer.Ordinal);
+        float heroAttackUntil;
         public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame)
         {
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
@@ -31,16 +34,32 @@ namespace Game.View
             {
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
+                ResetFallow();
+                waveMotion.Reset();
+                heroAttackUntil=0;
+                rewardSources.Clear(); attackSources.Clear();
+                if(catalog?.WaveRuntime!=null)
+                    foreach(var pair in catalog.WaveRuntime.Evolutions)
+                    {
+                        var evolution=pair.Value;
+                        for(var input=0;input<evolution.InputIds.Length;input++)
+                        {
+                            var id=evolution.InputIds[input];var kind=catalog.WaveRuntime.Gear[id].Kind;
+                            if(kind>=WaveAttackKind.SeedFan && !rewardSources.ContainsKey(pair.Key))rewardSources.Add(pair.Key,id);
+                            if(kind==(evolution.Kind==WaveEvolutionKind.ShelteredPlot?WaveAttackKind.ConstructionSlam:WaveAttackKind.Arc) && !attackSources.ContainsKey(pair.Key))attackSources.Add(pair.Key,id);
+                        }
+                    }
                 ripeCueId=-1;
                 collectionLabel=null;growthLabels?.Clear();
             }
             if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
             {
                 waveEnemyById.Clear();
-                foreach(var enemy in frame.Enemies)if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);
+                for(var i=0;i<frame.Enemies.Count;i++){var enemy=frame.Enemies[i];if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);}
                 liveGrainIds.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();
-                foreach(var work in frame.Work)
+                for(var workIndex=0;workIndex<frame.Work.Count;workIndex++)
                 {
+                    var work=frame.Work[workIndex];
                     if(!waveWorkById.ContainsKey(work.Id))waveWorkById.Add(work.Id,work);
                     if(work.Kind=="grain"&&work.Health>0)liveGrainIds.Add(work.Id);
                     if(work.Kind=="building"&&work.Health>0&&!work.Complete&&!unfinishedBuildingByPosition.ContainsKey(work.Position))unfinishedBuildingByPosition.Add(work.Position,work);
@@ -49,20 +68,24 @@ namespace Game.View
             waveCatalog=catalog;waveDefinition=catalog?.WaveRuntime;wave=frame;
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
             if(frame==null)return;
-            foreach(var value in frame.Events)
+            waveMotion.Accept(frame,visualTime);
+            for(var valueIndex=0;valueIndex<frame.Events.Count;valueIndex++)
             {
+                var value=frame.Events[valueIndex];
                 if(value.Id<=lastWaveEvent)continue;
                 lastWaveEvent=value.Id;
+                AcceptFallowEvent(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
                     var source=value.Source;
-                    if(waveDefinition.Evolutions.TryGetValue(source,out var rewardEvolution))source=rewardEvolution.InputIds.First(id=>waveDefinition.Gear[id].Kind>=WaveAttackKind.SeedFan);
-                    collectionLabel=(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?"수확 +":"완료 +")+value.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)+" XP";
+                    if(rewardSources.TryGetValue(source,out var rewardSource))source=rewardSource;
+                    collectionLabel=(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?"수확 +":"완료 +")+value.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)+" 경험치";
                     collectedAt=visualTime;
                 }
                 if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))waveEffects.Add((value,visualTime));
                 if(value.Kind=="work-created"&&liveGrainIds.Contains(value.SubjectId))waveEffects.Add((value,visualTime));
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
+                if(value.Kind=="attack")heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
             }
         }
         string WaveEnemyState(int id,string source,string fallback)
@@ -82,18 +105,20 @@ namespace Game.View
         public static string WaveBossState(WaveEnemyView view,string fallback)
             =>fallback=="death"?"death":view.Phase switch {"tell-water"=>"water-windup","tell-charge"=>"charge-windup","charge"=>"charge","water"=>"water-surge","recovery"=>view.BossPhase==0?"stuck":"recover",_=>"idle"};
         void WaveSprite(string id,int layer,WorldPoint position,float opacity=1,float scale=1,float heightScale=1)
+            =>WaveSpriteAt(id,layer,Point(position),opacity,scale,heightScale);
+        void WaveSpriteAt(string id,int layer,Vector2 position,float opacity=1,float scale=1,float heightScale=1)
         {
             var visual=Resolve("wave",id,"default");
-            Draw(visual,layer,Point(position),visualTime,Vector2.Scale(visual.WorldSize,new Vector2(scale,scale*heightScale)),opacity:opacity);
+            Draw(visual,layer,position,visualTime,Vector2.Scale(visual.WorldSize,new Vector2(scale,scale*heightScale)),opacity:opacity);
         }
         void IndexWaveActors(RunFrame current)
         {
             if(ReferenceEquals(indexedWaveActors,current))return;
             waveActorById.Clear();
-            foreach(var enemy in current.Enemies)if(!waveActorById.ContainsKey(enemy.Id))waveActorById.Add(enemy.Id,enemy);
+            for(var i=0;i<current.Enemies.Count;i++){var enemy=current.Enemies[i];if(!waveActorById.ContainsKey(enemy.Id))waveActorById.Add(enemy.Id,enemy);}
             indexedWaveActors=current;
         }
-        void DrawWave(RunFrame current)
+        void DrawWave(RunFrame current,float alpha,Vector2 lordPoint)
         {
             growthLabels?.BeginFrame();
             if(wave==null)return;
@@ -108,22 +133,25 @@ namespace Game.View
             var cargoSize=cargo.WorldSize*GameVisualTokens.StockBundleScale;
             for(var i=0;i<wave.ProcessedTimber;i++)
                 Draw(cargo,GameVisualTokens.ReadyLayer,Point(wave.TimberOrigin)+new Vector2((i%4+1)*cargoSize.x,(i/4)*cargoSize.y),visualTime,cargoSize);
-            foreach(var detour in wave.Detours)
+            for(var i=0;i<wave.Detours.Count;i++)
+            {
+                var detour=wave.Detours[i];
                 Draw(Resolve("wave","bitter-dust","default"),GameVisualTokens.GrowthLayer,Point(detour.Position),visualTime,Vector2.one*detour.Radius*2/settings.WorldUnitsPerUnityUnit,opacity:GameVisualTokens.AreaAttackOpacity);
+            }
             var pathArt=Resolve("wave","sprout-path","default");
             var pathSize=pathArt.WorldSize*Mathf.Min(1,waveDefinition.PathSpacing*GameVisualTokens.WavePathSpacingFraction/settings.WorldUnitsPerUnityUnit/Mathf.Max(pathArt.WorldSize.x,pathArt.WorldSize.y));
-            foreach(var path in wave.Paths)Draw(pathArt,GameVisualTokens.GrowthLayer-2,Point(path),visualTime,pathSize,opacity:GameVisualTokens.TerrainOpacity);
+            for(var i=0;i<wave.Paths.Count;i++)Draw(pathArt,GameVisualTokens.GrowthLayer-2,Point(wave.Paths[i]),visualTime,pathSize,opacity:GameVisualTokens.TerrainOpacity);
             WaveWorkView nearbyRipe=null,retainedRipe=null;
             var nearestRipeDistance=GameVisualTokens.WaveRipeCueRadius*GameVisualTokens.WaveRipeCueRadius;
-            var lordPoint=Point(current.Lord.Position);
             if(collectionLabel!=null)
             {
                 var progress=(visualTime-collectedAt)/GameVisualTokens.WaveCollectionLabelSeconds;
                 if(progress<1)growthLabels.Show(1,collectionLabel,lordPoint+Vector2.up*(GameVisualTokens.WaveCollectionLabelRise+progress*.15f),Mathf.Min(1,(1-progress)*3));
                 else collectionLabel=null;
             }
-            foreach(var work in wave.Work)
+            for(var workIndex=0;workIndex<wave.Work.Count;workIndex++)
             {
+                var work=wave.Work[workIndex];
                 if(work.Kind=="grain"&&work.Health<=0)continue;
                 var id=work.Kind=="grain"?(work.Complete?"grain-ripe":work.Progress==0?"grain-seed":"grain-young"):
                     work.Kind=="building"?(work.Health<=0?"workshop-ruin":work.Complete?"workshop-complete":"workshop-frame"):work.Kind=="water"?(work.Wet?"pool-full":"pool-empty"):work.Kind;
@@ -131,11 +159,13 @@ namespace Game.View
                 {
                     var crop=Resolve("wave",id,"default");
                     var maxWidth=waveCatalog.Tuning.World.Farms.Spacing*GameVisualTokens.WaveCropSpacingFraction/settings.WorldUnitsPerUnityUnit;
-                    var cropSize=crop.WorldSize*Mathf.Min(1,maxWidth/crop.WorldSize.x);
+                    if(FallowActive) maxWidth=Mathf.Max(maxWidth,work.Complete?GameVisualTokens.FallowRipeWidth:work.Progress==0?GameVisualTokens.FallowSeedWidth:GameVisualTokens.FallowSproutWidth);
+                    var cropScale=maxWidth/crop.WorldSize.x;
+                    var cropSize=crop.WorldSize*(FallowActive?cropScale:Mathf.Min(1,cropScale));
                     var position=Point(work.Position);
                     position.x=Mathf.Clamp(position.x,cropSize.x*crop.Pivot.x,(float)mapWidth/settings.WorldUnitsPerUnityUnit-cropSize.x*(1-crop.Pivot.x));
                     position.y=Mathf.Clamp(position.y,cropSize.y*crop.Pivot.y,(float)mapHeight/settings.WorldUnitsPerUnityUnit-cropSize.y*(1-crop.Pivot.y));
-                    Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:GameVisualTokens.WaveCropOpacity);
+                    Draw(crop,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,position,visualTime,cropSize,opacity:work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:FallowActive?1:GameVisualTokens.WaveCropOpacity);
                     if(work.Complete)
                     {
                         Draw(crop,GameVisualTokens.ReadyLayer+1,position,visualTime,cropSize,opacity:GameVisualTokens.WaveRipeEdgeOpacity,tint:GameVisualTokens.Ready,edgeTexels:GameVisualTokens.WaveEdgeTexels);
@@ -147,12 +177,18 @@ namespace Game.View
                 }
                 else WaveSprite(id,work.Complete?GameVisualTokens.ReadyLayer:GameVisualTokens.GrowthLayer,work.Position,
                     work.Dormant||work.Dry?GameVisualTokens.TerrainOpacity:work.Kind=="water"?GameVisualTokens.WavePoolOpacity:1,
-                    work.Kind=="water"?GameVisualTokens.WavePoolScale:GameVisualTokens.WaveWorkshopScale);
+                    work.Kind=="water"?GameVisualTokens.WavePoolScale:FallowActive?GameVisualTokens.FallowWorkshopScale:GameVisualTokens.WaveWorkshopScale);
+                if(FallowActive && work.Kind=="building" && work.Health>0 && !work.Complete)
+                {
+                    var fraction=Mathf.Clamp01((float)work.Progress/Mathf.Max(1,work.Required));
+                    WaveSprite("workshop-complete",GameVisualTokens.GrowthLayer+1,work.Position,
+                        Mathf.SmoothStep(0,.75f,fraction),GameVisualTokens.FallowWorkshopScale);
+                }
                 if(work.ParentId>=0)
                 {
                     waveWorkById.TryGetValue(work.ParentId,out var parent);
                     var roof=Resolve("wave",parent!=null&&parent.Health>0&&parent.Complete&&work.Protected?"roof-intact":"roof-broken","default");
-                    var roofSize=roof.WorldSize*GameVisualTokens.WaveWorkshopScale;
+                    var roofSize=roof.WorldSize*(FallowActive?GameVisualTokens.FallowWorkshopScale:GameVisualTokens.WaveWorkshopScale);
                     Draw(roof,GameVisualTokens.ReadyLayer,Point(work.Position),visualTime,roofSize);
                     DrawWaveAttackEdge(roof,Point(work.Position),visualTime,roofSize,0,GameVisualTokens.Ally);
                 }
@@ -166,31 +202,37 @@ namespace Game.View
                 Draw(ear,GameVisualTokens.WaveReadinessCueLayer,Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,ear.WorldSize*GameVisualTokens.WaveRipeCueScale);
                 growthLabels.Show(0,"익음",Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveGrowthLabelRise);
             }
-            if(wave.CarriedWater>0)WaveSprite("water-carry",GameVisualTokens.AllyLayer+1,current.Lord.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
-            foreach(var reward in wave.Rewards)
+            if(wave.CarriedWater>0)WaveSpriteAt("water-carry",GameVisualTokens.AllyLayer+1,lordPoint,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
+            for(var rewardIndex=0;rewardIndex<wave.Rewards.Count;rewardIndex++)
             {
+                var reward=wave.Rewards[rewardIndex];
                 var source=reward.Source;
-                if(waveDefinition.Evolutions.TryGetValue(source,out var evolution))source=evolution.InputIds.First(id=>waveDefinition.Gear[id].Kind>=WaveAttackKind.SeedFan);
+                if(rewardSources.TryGetValue(source,out var rewardSource))source=rewardSource;
                 var kind=waveDefinition.Gear[source].Kind;
                 var id=kind==WaveAttackKind.WaterFan?"xp-water":kind==WaveAttackKind.ConstructionSlam?"xp-timber":kind==WaveAttackKind.MusterWave?"xp-mission":"xp-grain";
                 WaveSprite(id,GameVisualTokens.GrowthLayer+1,reward.Position,GameVisualTokens.WaveRewardOpacity,GameVisualTokens.WaveRewardScale);
             }
-            foreach(var group in wave.Groups)
+            for(var groupIndex=0;groupIndex<wave.Groups.Count;groupIndex++)
             {
+                var group=wave.Groups[groupIndex];
                 var activity=group.Phase=="returning"?"return":group.Phase=="idle"?"idle":"muster";
                 var representative=Resolve("person",group.Formation=="cover"?"guard":"militia",activity);
-                var position=Point(group.Position);
-                Draw(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f);
+                var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
+                RenderedEntitySample?.Invoke("group",group.Id,position);
+                var groupFacing=Facing("group",group.Id,waveMotion.GroupDirection(group));
+                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
                 if(group.Training>0)
                 {
                     var second=Resolve("person",group.Formation=="cover"?"militia":"guard",activity);
                     var spacing=representative.WorldSize*GameVisualTokens.GroupRepresentativeOffset;
-                    Draw(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f);
+                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
                 }
-                if(group.ReservedFood>0)WaveSprite("ration",GameVisualTokens.AllyLayer+1,group.Position);
+                if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
             }
             drawnRepairAnchors.Clear();
-            foreach(var attack in wave.Attacks)
+            for(var attackIndex=0;attackIndex<wave.Attacks.Count;attackIndex++)
+            {
+                var attack=wave.Attacks[attackIndex];
                 if(attack.ExpireTick>current.Tick)
                 {
                     if(waveDefinition.Evolutions.TryGetValue(attack.Source,out var orbit)&&orbit.Kind==WaveEvolutionKind.RepairOrbit&&drawnRepairAnchors.Add(attack.Source))
@@ -214,24 +256,32 @@ namespace Game.View
                     var fragment=Resolve("wave","shield-fragment","default");
                     var diameter=2f*attack.Radius/settings.WorldUnitsPerUnityUnit;
                     var scale=Mathf.Min(GameVisualTokens.WaveFragmentScale,diameter/Mathf.Max(fragment.WorldSize.x,fragment.WorldSize.y));
-                    Draw(fragment,GameVisualTokens.AttackLayer,Point(attack.Position),visualTime,fragment.WorldSize*scale);
-                    DrawWaveAttackEdge(fragment,Point(attack.Position),visualTime,fragment.WorldSize*scale,0,GameVisualTokens.Attack);
+                    var position=waveMotion.OrbitPosition(attackIndex,alpha,visualTime,settings.WorldUnitsPerUnityUnit,current.Lord.Position,lordPoint);
+                    RenderedEntitySample?.Invoke("orbit",waveMotion.OrbitSampleId(attackIndex),position);
+                    Draw(fragment,GameVisualTokens.AttackLayer,position,visualTime,fragment.WorldSize*scale);
+                    DrawWaveAttackEdge(fragment,position,visualTime,fragment.WorldSize*scale,0,GameVisualTokens.Attack);
                 }
+            }
             expiredRepairAnchors.Clear();
             foreach(var source in repairAnchors.Keys)if(!drawnRepairAnchors.Contains(source))expiredRepairAnchors.Add(source);
             foreach(var source in expiredRepairAnchors)repairAnchors.Remove(source);
-            foreach(var projectile in wave.Projectiles)
+            for(var projectileIndex=0;projectileIndex<wave.Projectiles.Count;projectileIndex++)
             {
+                var projectile=wave.Projectiles[projectileIndex];
                 var visual=Resolve("attack",projectile.Source,"projectile");
-                var direction=Angle(Point(projectile.Position)-Point(projectile.Previous));
-                Draw(visual,projectile.Hostile?GameVisualTokens.WaveDangerLayer:GameVisualTokens.AttackLayer,Point(projectile.Position),visualTime,degrees:direction,opacity:GameVisualTokens.TravellingAttackOpacity);
-                if(!projectile.Hostile)DrawWaveAttackEdge(visual,Point(projectile.Position),visualTime,visual.WorldSize,direction,GameVisualTokens.Attack);
+                var direction=waveMotion.ProjectileAngle(projectile,alpha);
+                var position=Vector2.Lerp(Point(projectile.Previous),Point(projectile.Position),alpha);
+                RenderedEntitySample?.Invoke("projectile",projectile.Id,position);
+                Draw(visual,projectile.Hostile?GameVisualTokens.WaveDangerLayer:GameVisualTokens.AttackLayer,position,visualTime,degrees:direction,opacity:GameVisualTokens.TravellingAttackOpacity);
+                if(!projectile.Hostile)DrawWaveAttackEdge(visual,position,visualTime,visual.WorldSize,direction,GameVisualTokens.Attack);
             }
-            foreach(var enemy in wave.Enemies)
+            for(var enemyIndex=0;enemyIndex<wave.Enemies.Count;enemyIndex++)
             {
+                var enemy=wave.Enemies[enemyIndex];
                 if(!waveActorById.TryGetValue(enemy.Id,out var actor))continue;
-                if(enemy.Wet)WaveSprite("wet",GameVisualTokens.GrowthLayer,actor.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale,GameVisualTokens.WaveWetHeight);
-                if(enemy.Stopped)WaveSprite("stopped",GameVisualTokens.GrowthLayer+1,actor.Position,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
+                var actorPosition=Interpolate(previousEnemies,enemy.Id,actor.Position,alpha);
+                if(enemy.Wet)WaveSpriteAt("wet",GameVisualTokens.GrowthLayer,actorPosition,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale,GameVisualTokens.WaveWetHeight);
+                if(enemy.Stopped)WaveSpriteAt("stopped",GameVisualTokens.GrowthLayer+1,actorPosition,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
                 if(enemy.Phase=="tell-charge"||enemy.Phase=="tell-water"||enemy.Phase=="water")
                 {
                     var a=Point(enemy.Origin);var b=Point(enemy.Target);var visual=Resolve("wave",enemy.Phase.Contains("water")?"water-lane":"charge-tell","default");
@@ -290,14 +340,16 @@ namespace Game.View
                 }
                 if(value.Kind=="chain-link")
                 {
-                    var art=Resolve("attack",value.Source,"chain");var size=new Vector2((b-a).magnitude,GameVisualTokens.WaveChainRibbonWidth);
+                    var revealed=Vector2.Lerp(a,b,Mathf.Clamp01(age/(duration*.18f)));
+                    var art=Resolve("attack",value.Source,"chain");var size=new Vector2((revealed-a).magnitude,GameVisualTokens.WaveChainRibbonWidth);
                     var outline=renderCamera.orthographicSize*2/Mathf.Max(1,renderCamera.pixelHeight)*GameVisualTokens.WaveChainOutlinePixels*2;
-                    Draw(art,GameVisualTokens.WaveAttackEdgeLayer,(a+b)*.5f,age,new Vector2(size.x,size.y+outline),Angle(b-a),opacity,tint:GameVisualTokens.Ink);
-                    Draw(art,GameVisualTokens.WaveTransientCueLayer,(a+b)*.5f,age,size,Angle(b-a),opacity);
+                    Draw(art,GameVisualTokens.WaveAttackEdgeLayer,(a+revealed)*.5f,age,new Vector2(size.x,size.y+outline),Angle(b-a),opacity,tint:GameVisualTokens.Ink);
+                    Draw(art,GameVisualTokens.WaveTransientCueLayer,(a+revealed)*.5f,age,size,Angle(b-a),opacity);
                     continue;
                 }
                 var attackSource=value.Source;
-                if(waveDefinition.Evolutions.TryGetValue(attackSource,out var evolved))attackSource=evolved.InputIds.First(id=>waveDefinition.Gear[id].Kind==(evolved.Kind==WaveEvolutionKind.ShelteredPlot?WaveAttackKind.ConstructionSlam:WaveAttackKind.Arc));
+                waveDefinition.Evolutions.TryGetValue(attackSource,out var evolved);
+                if(attackSources.TryGetValue(attackSource,out var baseSource))attackSource=baseSource;
                 if(waveDefinition.Gear.TryGetValue(attackSource,out var gear))
                 {
                     var form=gear.Kind==WaveAttackKind.Arc?"sector90":gear.Kind==WaveAttackKind.HarvestArc?"sector90":gear.Kind==WaveAttackKind.ConstructionSlam?"melee":gear.Kind==WaveAttackKind.SeedFan?"projectile":"wave";

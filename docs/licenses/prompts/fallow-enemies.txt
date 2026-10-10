@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-8ba2fc25-f3fa-47df-bdda-9fcc4026977a.png
+Source SHA256: 825c01f0aa9a2372a2f871377f9302e9ec04f68aba66be0ab735d67898e4ac0d
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+Production 2D sprite sheet TRUEtransparent background exactly 3columns x1row equal squarecells, 3 isolated whole creatures generous transparentmargins, 3/4overhead ink andgouache medieval fallowkingdom oldseason enemies, lightupperleft. First: oldseason hunched crop-eating stag-boar beast with tangled branchback, dullgrayhide, small red foreheadsigil, thinlegs. Second: empty armor shieldbearer angular hooded ironhelmet torn darkburgundytabard, huge battered irregular shield with scarletrunic slash. Third: sinister giant winewasp insect, narrow winged silhouette, charcoalgray abdomen redmarkedthorax, transparent inkveinedwings, elongated stinger, NOT cute. Exactly3 separate silhouettes matching reference painterly enemycohort. No text UI ground shadows rectangles orlabels. All feet wings fullywithincells.

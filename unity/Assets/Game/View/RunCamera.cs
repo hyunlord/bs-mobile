@@ -28,6 +28,8 @@ namespace Game.View
         private bool positioned;
         public bool KeepViewportInsideMap { get; set; }
         public float EdgeActorMargin { get; set; }
+        public Vector2 LordViewportAnchor { get; set; } = new Vector2(.5f, .5f);
+        public float PresentationZoom { get; set; } = 1;
         private Vector2 visualOffset;
         private Vector2 mapSize;
         public RunCamera(Camera camera, WorldCameraSettings settings)
@@ -44,6 +46,8 @@ namespace Game.View
             mapSize = new Vector2((float)width / settings.WorldUnitsPerUnityUnit, (float)height / settings.WorldUnitsPerUnityUnit);
         }
 
+        public void SnapNextPresentation() => positioned = false;
+
         public void Present(Vector2 lord, int estateExtent, float deltaTime, Rect? safeAreaPixels = null)
         {
             SetVisualOffset(Vector2.zero);
@@ -52,7 +56,7 @@ namespace Game.View
             var maximum = Mathf.Max((float)settings.MinHalfHeight / units, (float)settings.MaxHalfHeight / units * camera.pixelHeight / GameVisualTokens.CameraReferencePixelHeight);
             if (mapSize.x > 0)
                 maximum = Mathf.Min(maximum, Mathf.Min((mapSize.x * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)) / aspect, mapSize.y * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)));
-            desired = Mathf.Min(desired, maximum);
+            desired = Mathf.Min(Mathf.Min(desired, maximum) / Mathf.Clamp(PresentationZoom, .5f, 2), maximum);
             var follow = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.FollowMilliseconds);
             var zoom = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.ZoomMilliseconds);
             camera.orthographicSize = positioned ? Mathf.Min(Mathf.Lerp(camera.orthographicSize, desired, zoom), maximum) : desired;
@@ -64,7 +68,9 @@ namespace Game.View
             var pixelsToWorld = camera.orthographicSize * 2 / Mathf.Max(1, viewport.height);
             var excluded = new Vector4(safe.xMin - viewport.xMin, safe.yMin - viewport.yMin,
                 viewport.xMax - safe.xMax, viewport.yMax - safe.yMax) * pixelsToWorld;
-            var target = ClampToMap(lord - (safe.center - viewport.center) * pixelsToWorld, excluded);
+            var anchorPixels = new Vector2((Mathf.Clamp01(LordViewportAnchor.x) - .5f) * safe.width,
+                (Mathf.Clamp01(LordViewportAnchor.y) - .5f) * safe.height);
+            var target = ClampToMap(lord - (safe.center - viewport.center + anchorPixels) * pixelsToWorld, excluded);
             var position = positioned ? Vector2.Lerp(camera.transform.position, target, follow) : target;
             position = ClampToMap(position, excluded);
             camera.transform.position = new Vector3(position.x, position.y, -10); positioned = true;

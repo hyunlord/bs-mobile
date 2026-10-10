@@ -5,7 +5,8 @@
     "Game.Input",
     "Game.Debug",
     "UnityEngine.UI",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "Unity.Collections"
   ],
   "autoReferenced": false,
   "overrideReferences": true,

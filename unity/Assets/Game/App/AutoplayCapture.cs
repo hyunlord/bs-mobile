@@ -27,6 +27,11 @@ namespace Game.App
         bool capturing, ended, waveAttached;
         long lastWaveEvent=-1;
         Result result;
+        bool goldenMinute, goldenWorldPaused, goldenRecordingStarted;
+        GoldenMinuteCapture minuteCapture;
+        int portraitAttempt, portraitFrame;
+        double portraitSettleAt;
+        bool portraitReady;
         long clockPreviousStamp;
         double clockPreviousRealtime, clockPreviousUnscaled, clockNextReport, clockStopwatchSum, clockUnitySum;
         double clockMinInterval = double.MaxValue, clockMaxInterval;
@@ -108,7 +113,22 @@ namespace Game.App
 #endif
         }
 
+        public static int PrewarmIsolatedCore(ContentCatalog catalog, InteractiveOptions options)
+        {
+            var isolated = new InteractiveSession(catalog, options);
+            for (var tick = 0; tick < 6 && isolated.View.Status == RunStatus.Running; tick++)
+            {
+                isolated.Apply(new ReplayCommand(isolated.NextSequence, tick, ReplayCommandKind.Advance, new PlayerInput(PlayerInput.Scale, 0)));
+                var frame = isolated.View.CaptureFrame();
+                var firstPlayable = isolated.View.CaptureFirstPlayable();
+                var wave = (isolated.View as IWaveRunView)?.CaptureWaveRuntime();
+                if (firstPlayable == null) WavePresentation.Envelope(catalog, frame, isolated.View.CaptureCards(), wave);
+            }
+            return isolated.View.CaptureFrame().Tick;
+        }
+
         public static bool IsRequested(string[] args) => args.Contains("--autoplay-capture");
+        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && args.Contains("--golden-minute");
 
         public static string ParseOutput(string[] args, string defaultRoot)
         {
@@ -131,6 +151,7 @@ namespace Game.App
         {
             RequireEmptyOutput(folder);
             var args=Environment.GetCommandLineArgs();
+            goldenMinute = IsGoldenMinuteRequested(args);
             var seedArgument=Array.IndexOf(args,"--capture-seed");
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
             var movementArgument=Array.IndexOf(args,"--capture-movement");
@@ -167,6 +188,39 @@ namespace Game.App
             catch (Exception error) { Finish(false, error.ToString()); }
         }
 
+        public void OnRunReady(RunCoordinator coordinator)
+        {
+            if (ended || !goldenMinute || stage != 5 || coordinator != run) return;
+            try
+            {
+                if (run.Frame == null || run.Frame.Tick != 0) throw new InvalidOperationException("Golden minute world warmup missed tick zero; no gameplay may be skipped.");
+                Click(run.IsWave ? "잠시\n멈춤" : "설정");
+                if (!run.CaptureClockPaused) throw new InvalidOperationException("Normal pause button did not pause world warmup.");
+                goldenWorldPaused = true;
+                nextAction = Elapsed + 1;
+                Log("world-warmup-paused", "normal settings button; tick=0; no recording");
+            }
+            catch (Exception error) { Finish(false, error.ToString()); }
+        }
+
+        void LateUpdate()
+        {
+            if (ended || !goldenMinute || stage != 5 || !goldenWorldPaused || goldenRecordingStarted || Elapsed < nextAction) return;
+            try
+            {
+                if (run.Frame == null || run.Frame.Tick != 0) throw new InvalidOperationException("Paused world warmup advanced gameplay.");
+                if (!run.CaptureClockPaused) throw new InvalidOperationException("World warmup unexpectedly resumed.");
+                Click("돌아가기");
+                if (run.CaptureClockPaused) throw new InvalidOperationException("Normal resume button did not resume the run.");
+                run.RefreshCapturePresentation();
+                run.BeginSmoothnessDiagnostics();
+                minuteCapture.ArmRecording();
+                goldenRecordingStarted = true;
+                Log("world-warmup-resumed", "normal return button; tick=0; recording armed before first gameplay advance");
+            }
+            catch (Exception error) { Finish(false, error.ToString()); }
+        }
+
         double Elapsed => Time.realtimeSinceStartupAsDouble - started;
 
         void Pump()
@@ -179,6 +233,7 @@ namespace Game.App
                 if (boot != null && boot.Error != null) throw new InvalidOperationException(boot.Error);
                 return;
             }
+            if (goldenMinute && !PreparePortraitWindow()) return;
             if(!waveAttached){run.WaveFrameAccepted+=RecordWaveFrame;waveAttached=true;}
             if (run.Error != null) throw new InvalidOperationException(run.Error);
             if (Time.timeScale != 1 || run.Speed != 1) throw new InvalidOperationException("Capture requires normal speed.");
@@ -194,15 +249,33 @@ namespace Game.App
                     if(captureTarget!=null)
                     {
                         if(!run.IsWave||!FoundationBoot.Catalog.WaveRuntime.MaterialTargets.TryGetValue(captureTarget,out var tool))throw new InvalidOperationException("Capture target is not supported by this profile.");
+                        ClickContaining("출정 준비 · ");
                         ClickContaining(CanonicalContent.Displays.Single(d=>d.Id==tool).DisplayName);
                         Log("target-material-click",captureTarget);
                     }
-                    Click("시작"); stage = 4; nextAction = Elapsed + 1; break;
-                case 4: Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
+                    Click(run.IsWave ? "시작하기" : "시작"); stage = 4; nextAction = Elapsed + 1; break;
+                case 4:
+                    if (goldenMinute)
+                    {
+                        if (minuteCapture == null)
+                        {
+                            if (run.Session != null) throw new InvalidOperationException("Core warmup must precede the fresh run.");
+                            var catalog = FoundationBoot.Catalog;
+                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash);
+                            var warmTicks = PrewarmIsolatedCore(catalog, options);
+                            Log("isolated-core-warmup", "discarded separate normal session; ticks=" + warmTicks + "; real run not created");
+                            minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
+
+                            minuteCapture.Initialize(run, output, (success, detail) => Finish(success, detail));
+                            return;
+                        }
+                        if (!minuteCapture.ReadyToStart) return;
+                    }
+                    Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
                 case 5:
-                    if (run.Frame == null) return;
+                    if (run.Frame == null || goldenMinute && !goldenRecordingStarted) return;
                     replayPath = run.RecordedReplayPath; result.replay = replayPath;
-                    Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); Capture("02-native-run.png"); stage = 6; break;
+                    Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); if (!goldenMinute) Capture("02-native-run.png"); stage = 6; break;
                 case 6: Play(); break;
                 case 7:
                     if (!run.MenuOpen) return;
@@ -215,6 +288,35 @@ namespace Game.App
                     Log("restart-running", result.restartReplay); Capture("04-native-restart.png"); stage = 10; nextAction = Elapsed + 1; break;
                 case 10: Verify(); Finish(true, run.IsWave ? "wave-1a actual outcome recorded; summary displayed; restart advanced; no survival gate" : "survived duration, defeated winter boss, summary displayed, restart advanced"); break;
             }
+        }
+
+        bool PreparePortraitWindow()
+        {
+            if (portraitReady) return true;
+            // RunCoordinator has now applied its ordinary desktop preset; capture can override it once.
+            if (portraitAttempt == 0)
+            {
+                Screen.SetResolution(900, 1600, FullScreenMode.Windowed);
+                portraitAttempt = 1; portraitFrame = Time.frameCount; portraitSettleAt = Elapsed + 1;
+                return false;
+            }
+            if (Time.frameCount < portraitFrame + 3 || Elapsed < portraitSettleAt) return false;
+            if (Screen.width * 16 == Screen.height * 9)
+            {
+                portraitReady = true;
+                Log("portrait-ready", $"width={Screen.width};height={Screen.height};attempt={portraitAttempt}");
+                return true;
+            }
+            if (portraitAttempt == 1)
+            {
+                // macOS can constrain oversized windows. Fit the observed drawable bounds exactly to 9:16.
+                var unit = Math.Min(Screen.width / 18, Screen.height / 32);
+                if (unit < 1) throw new InvalidOperationException("No usable portrait capture window.");
+                Screen.SetResolution(unit * 18, unit * 32, FullScreenMode.Windowed);
+                portraitAttempt = 2; portraitFrame = Time.frameCount; portraitSettleAt = Elapsed + 1;
+                return false;
+            }
+            throw new InvalidOperationException($"Native capture could not settle at 9:16: {Screen.width}x{Screen.height}.");
         }
 
         void Play()
@@ -247,7 +349,7 @@ namespace Game.App
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
             var angle = frame.Tick / 180d;
             var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
-            if(run.Wave!=null)target=WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog);
+            if(run.Wave!=null)target=WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog,goldenMinute);
             var direction = new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y).normalized;
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = new Vector2(Screen.width * .25f, Screen.height * .2f), button = PointerEventData.InputButton.Left };
             if (!run.Stick.Active) ExecuteEvents.Execute(run.Stick.gameObject, pointer, ExecuteEvents.pointerDownHandler);
@@ -313,6 +415,7 @@ namespace Game.App
         void Finish(bool success, string detail)
         {
             if (ended) return;
+            minuteCapture?.StopCapture();
             ended = true;
             if(waveAttached&&run!=null){run.WaveFrameAccepted-=RecordWaveFrame;waveAttached=false;}
             FinalizeCapture(success, detail, code =>

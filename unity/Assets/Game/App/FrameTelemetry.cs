@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using SowSiege.Core;
 using UnityEngine;
 
@@ -12,7 +13,23 @@ namespace Game.App
         public const string Header = "frame,tick,deltaMs,speed,paused,enemies,projectiles,visualProjectiles,people,farms,buildings,width,height,safeX,safeY,safeWidth,safeHeight,thermal,suspended,partial";
         readonly StreamWriter writer;
         readonly DeviceFacts device;
-        readonly List<double> late = new List<double>();
+        readonly List<double> late;
+        const int QueueCapacity = 4096;
+        readonly Sample[] queued = new Sample[QueueCapacity];
+        readonly object queueLock = new object();
+        readonly AutoResetEvent wake = new AutoResetEvent(false);
+        readonly Thread writerThread;
+        int readIndex, writeIndex, queuedCount;
+        bool closing;
+        Exception writeError;
+        struct Sample
+        {
+            public int frame, tick, speed, enemies, projectiles, visuals, people, farms, buildings;
+            public double ms;
+            public Rect screen, safe;
+            public string thermal;
+            public bool paused, suspended, partial;
+        }
         readonly FrameSummary summary;
         readonly int lateStart;
         readonly int duration;
@@ -32,11 +49,14 @@ namespace Game.App
             if (durationTicks <= 0) throw new ArgumentOutOfRangeException(nameof(durationTicks));
             Directory.CreateDirectory(directoryPath);
             device = facts ?? throw new ArgumentNullException(nameof(facts));
+            late = new List<double>(Math.Max(4096, checked(durationTicks * 2)));
             duration = durationTicks; lateStart = durationTicks * 3 / 4;
             summary = new FrameSummary { sessionId = sessionId, build = buildIdentity, dataHash = dataHash, durationTicks = duration, lateStartTick = lateStart };
             CsvPath = Path.Combine(directoryPath, "frames.csv"); SummaryPath = Path.Combine(directoryPath, "frame-summary.json");
             File.WriteAllText(Path.Combine(directoryPath, "device.json"), JsonUtility.ToJson(device, true));
             writer = new StreamWriter(CsvPath, false); writer.WriteLine(Header);
+            writerThread = new Thread(WriteLoop) { IsBackground = true, Name = "SowSiege frame telemetry" };
+            writerThread.Start();
         }
 
         public void BeginInterval(RunFrame frame, int speed, int activeVisualProjectiles, Rect screen, Rect safeArea, bool paused)
@@ -61,9 +81,10 @@ namespace Game.App
             device.RefreshThermal();
             var ms = (double)unscaledDeltaSeconds * 1000;
             var count = frame.Counts;
-            writer.WriteLine(string.Join(",", new[] {
-                N(summary.frames), N(frame.Tick), N(ms), N(speed), paused ? "1" : "0", N(count.Enemies), N(count.Projectiles), N(activeVisualProjectiles),
-                N(count.People), N(count.Farms), N(count.Buildings), N(screen.width), N(screen.height), N(safeArea.x), N(safeArea.y), N(safeArea.width), N(safeArea.height), device.thermal, suspended ? "1" : "0", partial ? "1" : "0" }));
+            Enqueue(new Sample { frame = summary.frames, tick = frame.Tick, ms = ms, speed = speed, paused = paused,
+                enemies = count.Enemies, projectiles = count.Projectiles, visuals = activeVisualProjectiles, people = count.People,
+                farms = count.Farms, buildings = count.Buildings, screen = screen, safe = safeArea, thermal = device.thermal,
+                suspended = suspended, partial = partial });
             if (summary.frames == 0) summary.firstTick = frame.Tick;
             summary.lastTick = frame.Tick;
             summary.frames++;
@@ -77,30 +98,83 @@ namespace Game.App
             {
                 if (summary.firstLateTick < 0) summary.firstLateTick = frame.Tick;
                 summary.lastLateTick = frame.Tick;
-                if (!paused && !suspended && !partial && speed == 1) { late.Add(ms); if (frame.Tick == duration) terminalMeasured = true; }
+                if (!paused && !suspended && !partial && speed == 1) { if (late.Count < late.Capacity) late.Add(ms); else { summary.sampleOverflow++; lateInvalid = true; } if (frame.Tick == duration) terminalMeasured = true; }
                 if (!paused && !suspended && speed != 1) lateInvalid = true;
                 if (!paused && partial) lateInvalid = true;
             }
             previousTick = frame.Tick;
-            if (summary.frames % 120 == 0 || paused) writer.Flush();
+
         }
 
         public void Finish()
         {
             if (finished) return;
-            writer.Flush(); writer.Dispose(); finished = true;
+            finished = true;
+            lock (queueLock) closing = true;
+            wake.Set(); writerThread.Join(); wake.Dispose();
+            if (writeError != null) throw new IOException("Frame telemetry writer failed.", writeError);
             late.Sort(); summary.lateSampleCount = late.Count;
             summary.hasLateSamples = late.Count > 0;
             if (late.Count > 0) { summary.frameP95Ms = late[(int)Math.Ceiling(late.Count * .95) - 1]; summary.frameMaxMs = late[late.Count - 1]; }
-            summary.lateComplete = summary.firstTick >= 0 && summary.firstTick <= lateStart && summary.lastLateTick == duration && terminalMeasured && !lateInvalid && late.Count > 0;
+            summary.lateComplete = summary.sampleOverflow == 0 && summary.firstTick >= 0 && summary.firstTick <= lateStart && summary.lastLateTick == duration && terminalMeasured && !lateInvalid && late.Count > 0;
             File.WriteAllText(SummaryPath, JsonUtility.ToJson(summary, true));
         }
         public void Dispose() => Finish();
-        static string N(IFormattable value) => value.ToString(null, CultureInfo.InvariantCulture);
+        void Enqueue(Sample sample)
+        {
+            lock (queueLock)
+            {
+                if (writeError != null) throw new IOException("Frame telemetry writer failed.", writeError);
+                if (queuedCount == queued.Length) { summary.sampleOverflow++; lateInvalid = true; return; }
+                queued[writeIndex] = sample; writeIndex = (writeIndex + 1) % queued.Length; queuedCount++;
+            }
+            wake.Set();
+        }
+        void WriteLoop()
+        {
+            try
+            {
+                while (true)
+                {
+                    Sample sample; bool available;
+                    lock (queueLock)
+                    {
+                        if (queuedCount == 0) { if (closing) break; sample = default; available = false; }
+                        else { sample = queued[readIndex]; readIndex = (readIndex + 1) % queued.Length; queuedCount--; available = true; }
+                    }
+                    if (!available) { wake.WaitOne(); continue; }
+                    WriteSample(sample);
+                    if (sample.frame % 120 == 119 || sample.paused) writer.Flush();
+                }
+                writer.Flush();
+            }
+            catch (Exception error) { lock (queueLock) writeError = error; }
+            finally { writer.Dispose(); }
+        }
+        void WriteSample(Sample sample)
+        {
+            Span<char> buffer = stackalloc char[48];
+            WriteNumber(sample.frame, buffer); WriteNumber(sample.tick, buffer); WriteNumber(sample.ms, buffer);
+            WriteNumber(sample.speed, buffer); WriteNumber(sample.paused ? 1 : 0, buffer);
+            WriteNumber(sample.enemies, buffer); WriteNumber(sample.projectiles, buffer); WriteNumber(sample.visuals, buffer);
+            WriteNumber(sample.people, buffer); WriteNumber(sample.farms, buffer); WriteNumber(sample.buildings, buffer);
+            WriteNumber(sample.screen.width, buffer); WriteNumber(sample.screen.height, buffer);
+            WriteNumber(sample.safe.x, buffer); WriteNumber(sample.safe.y, buffer); WriteNumber(sample.safe.width, buffer); WriteNumber(sample.safe.height, buffer);
+            writer.Write(sample.thermal); writer.Write(','); WriteNumber(sample.suspended ? 1 : 0, buffer);
+            writer.WriteLine(sample.partial ? "1" : "0");
+        }
+        void WriteNumber(double value, Span<char> buffer)
+        {
+            if (!value.TryFormat(buffer, out var count, provider: CultureInfo.InvariantCulture))
+                throw new InvalidOperationException("Telemetry number exceeds the formatting buffer.");
+            writer.Write(buffer.Slice(0, count)); writer.Write(',');
+        }
+
         [Serializable]
         sealed class FrameSummary
         {
             public string sessionId, build, dataHash;
+            public int sampleOverflow;
             public int durationTicks, lateStartTick, frames, pausedFrames, suspendedFrames, partialFrames, lateSampleCount;
             public int firstTick = -1, lastTick = -1, firstLateTick = -1, lastLateTick = -1;
             public bool hasLateSamples, lateComplete;
