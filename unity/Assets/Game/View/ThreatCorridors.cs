@@ -8,12 +8,15 @@ namespace Game.View
         public int Id, ImpactTick, TellTicks;
         public Vector2 Origin, Target;
         public float Radius;
+        public float SourceRadius, SourceLength;
         public bool Water, Active;
     }
 
     public static class ThreatCorridors
     {
         public const int VisibleLimit = 3;
+        public const float MaximumWidthMultiplier = 1.5f, MaximumLengthMultiplier = 1.25f;
+        const float MinimumDirectionDot = .99939f, MinimumSharedLengthFraction = .8f;
         static int Earliest(ThreatCorridor a, ThreatCorridor b)
         {
             var order = a.ImpactTick.CompareTo(b.ImpactTick);
@@ -47,6 +50,8 @@ namespace Game.View
 
         public static void Consider(ThreatCorridor candidate, List<ThreatCorridor> selected)
         {
+            if (candidate.SourceRadius <= 0) candidate.SourceRadius = candidate.Radius;
+            if (candidate.SourceLength <= 0) candidate.SourceLength = Vector2.Distance(candidate.Origin, candidate.Target);
             for (var index = 0; index < selected.Count; index++)
             {
                 var prior = selected[index];
@@ -77,18 +82,27 @@ namespace Game.View
             if (prior.Water != candidate.Water || prior.Active != candidate.Active) return false;
             var axis = (prior.Target - prior.Origin).normalized;
             var nextAxis = (candidate.Target - candidate.Origin).normalized;
-            if (Vector2.Dot(axis, nextAxis) < .985f) return false;
+            if (Vector2.Dot(axis, nextAxis) < MinimumDirectionDot) return false;
             var normal = new Vector2(-axis.y, axis.x);
             var a = candidate.Origin - prior.Origin; var b = candidate.Target - prior.Origin;
-            var lateral = Mathf.Max(Mathf.Abs(Vector2.Dot(a, normal)), Mathf.Abs(Vector2.Dot(b, normal)));
+            var lateralA = Vector2.Dot(a, normal); var lateralB = Vector2.Dot(b, normal);
             var from = Vector2.Dot(a, axis); var to = Vector2.Dot(b, axis);
             var length = Vector2.Distance(prior.Origin, prior.Target);
-            if (lateral > prior.Radius + candidate.Radius || from > length || to < 0) return false;
-            // Conservatively cover the union while retaining the earliest impact and its direction.
+            var overlap = Mathf.Min(length, to) - Mathf.Max(0, from);
+            if (overlap < Mathf.Min(length, to - from) * MinimumSharedLengthFraction) return false;
+            var lower = Mathf.Min(-prior.Radius, Mathf.Min(lateralA, lateralB) - candidate.Radius);
+            var upper = Mathf.Max(prior.Radius, Mathf.Max(lateralA, lateralB) + candidate.Radius);
+            var radius = (upper - lower) * .5f;
+            var sourceRadius = Mathf.Max(prior.SourceRadius, candidate.SourceRadius);
+            var sourceLength = Mathf.Max(prior.SourceLength, candidate.SourceLength);
+            var unionStart = Mathf.Min(0, from); var unionEnd = Mathf.Max(length, to);
+            // Caps refer to original inputs, never the enlarged union, so chains cannot widen their own eligibility.
+            if (radius > sourceRadius * MaximumWidthMultiplier || unionEnd - unionStart > sourceLength * MaximumLengthMultiplier) return false;
             var origin = prior.Origin;
-            prior.Origin = origin + axis * Mathf.Min(0, from);
-            prior.Target = origin + axis * Mathf.Max(length, to);
-            prior.Radius = Mathf.Max(prior.Radius, lateral + candidate.Radius);
+            var center = normal * ((lower + upper) * .5f);
+            prior.Origin = origin + axis * unionStart + center;
+            prior.Target = origin + axis * unionEnd + center;
+            prior.Radius = radius; prior.SourceRadius = sourceRadius; prior.SourceLength = sourceLength;
             return true;
         }
     }

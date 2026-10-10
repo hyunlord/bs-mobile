@@ -6,7 +6,15 @@ namespace SowSiege.Core
     // Version 1: integer, ID-ordered projected separation; no RNG or persistent simulation state.
     internal sealed class WaveEnemySeparation
     {
-        private const int Sweeps = 2;
+        private const int RelaxationSweeps = 2;
+        private const int MinimumDistanceWidthSumNumerator = 3;
+        private const int MinimumDistanceWidthSumDenominator = 10;
+        private const int IntegerResolutionPadding = 2;
+        private const int PairHashFirstMultiplier = 73856093;
+        private const int PairHashSecondMultiplier = 19349663;
+        private const int PositiveYDirection = 2;
+        private const int NegativeYDirection = 3;
+        private const int ResidualGridDivisions = 8;
         private readonly WorldState world;
         private readonly MapTuning map;
         private readonly IReadOnlyDictionary<string, int> widths;
@@ -27,7 +35,7 @@ namespace SowSiege.Core
         {
             ordered.Sort(IdOrder);
             spatial.Rebuild(ordered);
-            for (var sweep = 0; sweep < Sweeps; sweep++)
+            for (var sweep = 0; sweep < RelaxationSweeps; sweep++)
             {
                 var changed = false;
                 foreach (var first in ordered)
@@ -39,7 +47,7 @@ namespace SowSiege.Core
                     {
                         if (second.Id <= first.Id || !widths.TryGetValue(second.Definition, out var secondWidth)) { continue; }
                         // 0.6 times mean width; integer padding prevents a rounding-only residual.
-                        var minimum = (3 * (firstWidth + secondWidth) + 9) / 10 + 2;
+                        var minimum = (MinimumDistanceWidthSumNumerator * (firstWidth + secondWidth) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + IntegerResolutionPadding;
                         var dx = (long)second.Position.X - first.Position.X;
                         var dy = (long)second.Position.Y - first.Position.Y;
                         var squared = dx * dx + dy * dy;
@@ -50,13 +58,13 @@ namespace SowSiege.Core
                         if (distance == 0)
                         {
                             // Stable pair identity breaks exact coincidence without consuming random draws.
-                            var direction = unchecked(first.Id * 73856093 ^ second.Id * 19349663) & 3;
+                            var direction = unchecked(first.Id * PairHashFirstMultiplier ^ second.Id * PairHashSecondMultiplier) & (WaveGeometry.RectangleSides - 1);
                             dx = direction == 0 ? 1 : direction == 1 ? -1 : 0;
-                            dy = direction == 2 ? 1 : direction == 3 ? -1 : 0;
+                            dy = direction == PositiveYDirection ? 1 : direction == NegativeYDirection ? -1 : 0;
                             distance = 1;
                         }
-                        var correction = minimum - distance + 2;
-                        var firstShare = firstPinned ? 0 : secondPinned ? correction : (correction + 1) / 2;
+                        var correction = minimum - distance + IntegerResolutionPadding;
+                        var firstShare = firstPinned ? 0 : secondPinned ? correction : (correction + 1) / WaveGeometry.MidpointDivisor;
                         var secondShare = correction - firstShare;
                         var oldFirst = first.Position; var oldSecond = second.Position;
                         Move(first, -(int)(dx * firstShare / distance), -(int)(dy * firstShare / distance));
@@ -78,7 +86,7 @@ namespace SowSiege.Core
 
         private void SettleResiduals(List<EnemyState> ordered)
         {
-            var step = Math.Max(1, maximumWidth / 8);
+            var step = Math.Max(1, maximumWidth / ResidualGridDivisions);
             var limit = (Math.Max(map.Width, map.Height) + step - 1) / step;
             foreach (var enemy in ordered)
             {
@@ -121,7 +129,7 @@ namespace SowSiege.Core
             foreach (var other in candidates)
             {
                 if (other.Id == enemy.Id || other.Id > enemy.Id && !Charging(other) || !widths.TryGetValue(other.Definition, out var width)) { continue; }
-                var minimum = (3 * (widths[enemy.Definition] + width) + 9) / 10 + 1;
+                var minimum = (MinimumDistanceWidthSumNumerator * (widths[enemy.Definition] + width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + 1;
                 if (candidate.DistanceSquared(other.Position) < (long)minimum * minimum) { return false; }
             }
             return true;
@@ -145,7 +153,7 @@ namespace SowSiege.Core
             long low = 0, high = Math.Min(value, int.MaxValue);
             while (low < high)
             {
-                var middle = low + (high - low + 1) / 2;
+                var middle = low + (high - low + 1) / WaveGeometry.MidpointDivisor;
                 if (middle * middle <= value) { low = middle; } else { high = middle - 1; }
             }
             return (int)low;

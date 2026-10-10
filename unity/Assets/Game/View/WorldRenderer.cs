@@ -242,7 +242,7 @@ namespace Game.View
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
                 var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
                 DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing);
-                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Ink,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels);
+                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels);
                 if(RenderedEnemyBoundsSample!=null)
                     RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,visualTime+enemy.Id*.13f,dimensions,moved,hitProgress,enemyFacing));
             }

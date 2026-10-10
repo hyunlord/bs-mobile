@@ -50,17 +50,67 @@ namespace Tests.EditMode
         [TestCase(false)] [TestCase(true)]
         public void BridgeCollapsesExpandedOverlapsAndPreservesEarliestImpact(bool reverse)
         {
-            var candidates=new List<ThreatCorridor>{Lane(1,10,0),Lane(2,20,.7f),Lane(3,30,3)};
+            var second=Lane(2,20,0); second.Origin=new Vector2(5,0); second.Target=new Vector2(10,0);
+            var candidates=new List<ThreatCorridor>{Lane(1,10,0),second,Lane(3,30,3)};
             if(reverse)candidates.Reverse();
             var selected=new List<ThreatCorridor>(ThreatCorridors.VisibleLimit);
             foreach(var lane in candidates)ThreatCorridors.Consider(lane,selected);
-            ThreatCorridors.Consider(Lane(4,15,.35f),selected);
+            var bridge=Lane(4,15,0); bridge.Target=new Vector2(10,0);
+            ThreatCorridors.Consider(bridge,selected);
             Assert.That(selected.Count,Is.EqualTo(2)); Assert.That(selected.Capacity,Is.EqualTo(3));
             Assert.That(selected[0].Id,Is.EqualTo(1)); Assert.That(selected[0].ImpactTick,Is.EqualTo(10));
             Assert.That(selected[1].Id,Is.EqualTo(3));
-            Assert.That(ThreatCorridors.Contains(selected[0],new Vector2(3,.89f)),Is.True);
+            Assert.That(ThreatCorridors.Contains(selected[0],new Vector2(9.9f,.19f)),Is.True);
+            Assert.That(selected[0].Radius,Is.EqualTo(.2f).Within(.001f));
             ThreatCorridors.Consider(Lane(5,40,5),selected);
             Assert.That(selected.Count,Is.EqualTo(3)); Assert.That(selected[2].Id,Is.EqualTo(5));
+        }
+
+        [Test] public void OffsetBridgeDoesNotTurnDistinctHazardsIntoOneBlanket()
+        {
+            var selected=new List<ThreatCorridor>(3);
+            ThreatCorridors.Consider(Lane(1,10,0),selected);
+            ThreatCorridors.Consider(Lane(2,20,.7f),selected);
+            ThreatCorridors.Consider(Lane(3,30,3),selected);
+            ThreatCorridors.Consider(Lane(4,15,.35f),selected);
+            Assert.That(selected.Count,Is.EqualTo(3));
+            Assert.That(selected[0].Id,Is.EqualTo(1)); Assert.That(selected[1].Id,Is.EqualTo(4)); Assert.That(selected[2].Id,Is.EqualTo(2));
+            foreach(var lane in selected)Assert.That(lane.Radius,Is.EqualTo(.2f).Within(.001f));
+        }
+
+        [TestCase(false)] [TestCase(true)]
+        public void HundredsOfOffsetParallelThreatsStayWithinOriginalWidthBudget(bool reverse)
+        {
+            var selected=new List<ThreatCorridor>(3);
+            for(var step=0;step<500;step++)
+            {
+                var index=reverse?499-step:step;
+                ThreatCorridors.Consider(Lane(index,index+1,index*.025f),selected);
+            }
+            Assert.That(selected.Count,Is.EqualTo(3)); Assert.That(selected.Capacity,Is.EqualTo(3));
+            Assert.That(selected[0].ImpactTick,Is.EqualTo(1));
+            foreach(var lane in selected)
+            {
+                Assert.That(lane.SourceRadius,Is.EqualTo(.2f));
+                Assert.That(lane.Radius,Is.LessThanOrEqualTo(.30001f));
+                Assert.That(Vector2.Distance(lane.Origin,lane.Target),Is.LessThanOrEqualTo(6.25001f));
+            }
+        }
+
+        [Test] public void CollinearChainCannotGrowBeyondOriginalLengthBudget()
+        {
+            var selected=new List<ThreatCorridor>(3);
+            for(var index=0;index<200;index++)
+            {
+                var lane=Lane(index,index+1,0);
+                lane.Origin+=Vector2.right*(index*.1f); lane.Target+=Vector2.right*(index*.1f);
+                ThreatCorridors.Consider(lane,selected);
+            }
+            foreach(var lane in selected)
+            {
+                Assert.That(lane.SourceLength,Is.EqualTo(5).Within(.00001f));
+                Assert.That(Vector2.Distance(lane.Origin,lane.Target),Is.LessThanOrEqualTo(6.25001f));
+            }
         }
     }
 }
