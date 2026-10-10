@@ -15,6 +15,8 @@ for (const args of [
 ]) execFileSync(process.execPath, ['.lattice/verify-designed.mjs', ...args], { stdio: 'inherit' });
 execFileSync(process.execPath, ['.lattice/verify-runtime.mjs', join(cachePath, 'graph.json')], { stdio: 'inherit' });
 execFileSync(process.execPath, ['.lattice/test-primitive-support.mjs', join(cachePath, 'graph.json')], { stdio: 'inherit' });
+execFileSync(process.execPath, ['.lattice/verify-picture-map.mjs', join(cachePath, 'graph.json')], { stdio: 'inherit' });
+execFileSync(process.execPath, ['.lattice/verify-loop-map.mjs', join(cachePath, 'graph.json')], { stdio: 'inherit' });
 const graph = JSON.parse(readFileSync(join(cachePath, 'graph.json'), 'utf8'));
 const exported = JSON.parse(readFileSync(join(sitePath, 'graph.json'), 'utf8'));
 assert.equal(exported.hash, graph.hash, 'Published graph must be the verified current graph');
