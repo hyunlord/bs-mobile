@@ -22,7 +22,9 @@ public sealed class WaveEnemySeparationTests
         var contract = catalog.WaveRuntime!.EnemySeparation!;
         var ids = contract.BodyWidths.Keys.OrderBy(id => id, StringComparer.Ordinal).ToArray();
         for (var id = 0; id < 850; id++)
+        {
             world.Enemies.Add(new() { Id = id + 1, Definition = ids[id % ids.Length], Position = new(Math.Min(x, map.Width), Math.Min(y, map.Height)), Health = 100 });
+        }
         var separation = new WaveEnemySeparation(world, map, contract);
         var overlaps = new Dictionary<(int, int), int>();
         var maxDuration = 0;
@@ -30,6 +32,7 @@ public sealed class WaveEnemySeparationTests
         {
             separation.Resolve(world.Enemies);
             for (var a = 0; a < world.Enemies.Count; a++)
+            {
                 for (var b = a + 1; b < world.Enemies.Count; b++)
                 {
                     var first = world.Enemies[a]; var second = world.Enemies[b];
@@ -38,6 +41,7 @@ public sealed class WaveEnemySeparationTests
                     var count = first.Position.DistanceSquared(second.Position) * 100 < (long)sum * sum * 9 ? overlaps.GetValueOrDefault(key) + 1 : 0;
                     overlaps[key] = count; maxDuration = Math.Max(maxDuration, count);
                 }
+            }
         }
         output.WriteLine($"850 nonboss actors; origin={x},{y}; ticks=90; maximum consecutive overlap={maxDuration}; unresolved={world.WaveRuntime!.Counters.GetValueOrDefault("enemy-separation-unresolved")}");
         Assert.Equal(0, world.WaveRuntime!.Counters.GetValueOrDefault("enemy-separation-unresolved"));
@@ -108,7 +112,9 @@ public sealed class WaveEnemySeparationTests
         {
             var world = new WorldState { WaveRuntime = new() };
             foreach (var number in reverse ? new[] { 2, 1 } : new[] { 1, 2 })
+            {
                 world.Enemies.Add(new() { Id = number, Definition = id, Position = new(0, 0), Health = 100 });
+            }
             new WaveEnemySeparation(world, catalog.Tuning.World.Map, contract).Resolve(world.Enemies);
             return world;
         }
