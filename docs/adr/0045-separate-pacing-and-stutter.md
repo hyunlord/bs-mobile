@@ -1,6 +1,7 @@
 # ADR 0045: 프레임 상한 대기와 실제 끊김의 판정을 분리
 
 - 상태: 승인 (2026-10-10 사용자 #169 판정 정정)
+- 후속: [ADR0046](0046-close-mac-performance-with-reproducible-stutter.md)이 100ms 초과 실패 집계와 #169 종료 조건을 대체한다. 아래는 당시 결정으로 보존한다.
 - 날짜: 2026-10-10
 - 연결: [#169](https://github.com/hyunlord/bs-mobile/issues/169), [#186](https://github.com/hyunlord/bs-mobile/issues/186)
 - 대체 범위: [ADR0044](0044-fixed-native-wave-benchmark.md)의 Mac 상한60fps 프레임 p95≤16.7ms 합격 기준. 원본 입력·해시·유효성·보존 계약은 유지한다.
