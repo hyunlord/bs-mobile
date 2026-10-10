@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { verifyRuntimePrograms } from './verify-runtime-program-support.mjs';
 
 const [graphPath, rootArg = '.'] = process.argv.slice(2);
 assert(graphPath, 'Usage: verify-primitive-support.mjs <graph.json> [source-root]');
@@ -9,7 +10,7 @@ const json = path => JSON.parse(readFileSync(join(root, path), 'utf8'));
 const graph = JSON.parse(readFileSync(graphPath, 'utf8'));
 const ledger = json('docs/design/runtime-primitive-support.json');
 const catalog = json('data/system-design-v1.json');
-assert.deepEqual(Object.keys(ledger).sort(), ['designRevision', 'evidenceLevel', 'parameterSource', 'profile', 'schemaVersion', 'units']);
+assert.deepEqual(Object.keys(ledger).sort(), ['designRevision', 'evidenceLevel', 'parameterSource', 'profile', 'runtimeOnlyMappings', 'runtimeSource', 'schemaVersion', 'units']);
 assert.equal(ledger.schemaVersion, 1);
 assert.equal(ledger.designRevision, catalog.revision);
 assert.equal(ledger.evidenceLevel, 'static-source-audit');
@@ -23,14 +24,14 @@ for (const id of contracts.keys()) assert(ledger.units.some(unit => unit.id === 
 const wave = catalog.implementationWaves.find(value => value.id === ledger.profile);
 assert(wave, 'Ledger profile exists');
 const selected = catalog.content.filter(record => wave.contentIds.includes(record.id));
-const keys = ['id', 'name', 'staticSupport', 'supportedParameterSets', 'parameterSummary', 'handlers', 'handlerSummary', 'tests', 'testSummary', 'observed', 'semantic', 'visual', 'limitation', 'selectedReferences', 'operationSupportIds'].sort();
+const keys = ['id', 'name', 'staticSupport', 'supportedParameterSets', 'parameterSummary', 'handlers', 'handlerSummary', 'tests', 'testSummary', 'observed', 'semantic', 'visual', 'limitation', 'designReferences', 'runtimeProgramReferences', 'referenceSummary', 'operationSupportIds'].sort();
 for (const unit of ledger.units) {
   assert.deepEqual(Object.keys(unit).sort(), keys, `${unit.id}: strict ledger fields`);
   assert(['partial-runtime', 'projection-boundary', 'loader-boundary', 'unsupported'].includes(unit.staticSupport));
   assert.equal(unit.observed, 'not-assessed', 'Static ledger cannot assert actual runtime observations');
   assert.equal(unit.semantic, 'not-established', 'Static ledger cannot approve whole-unit semantics');
   assert.equal(unit.visual, 'not-assessed', 'Static ledger cannot approve readability');
-  assert.equal(unit.selectedReferences, selected.filter(record => record.primitives.includes(unit.id)).length);
+  assert.equal(unit.designReferences, selected.filter(record => record.primitives.includes(unit.id)).length);
   assert.deepEqual(unit.operationSupportIds, catalog.primitiveContract.units.find(value => value.id === unit.id).operationSupportIds, 'Legacy links preserved');
   assert.deepEqual(unit.supportedParameterSets, contracts.get(unit.id) ?? [], `${unit.id}: exact Core accepted tuples`);
   assert.equal(unit.parameterSummary, `${unit.supportedParameterSets.length}개 조합 · 상세에서 확인`);
@@ -54,7 +55,7 @@ for (const unit of ledger.units) {
 assert.equal(graph.nodes.filter(value => value.kind === 'runtimePrimitive').length, ledger.units.length);
 const table = graph.views.find(view => view.id === 'primitive-support');
 assert.equal(table?.query.rows.length, ledger.units.length);
-assert.deepEqual(table.query.columns.map(column => column.id), ['staticSupport', 'parameterSummary', 'limitation']);
+assert.deepEqual(table.query.columns.map(column => column.id), ['staticSupport', 'referenceSummary', 'parameterSummary', 'limitation']);
 for (const row of table.query.rows) {
   const unit = ledger.units.find(unit => row.nodeId === `runtime-support:${unit.id}`);
   assert(unit);
@@ -70,4 +71,5 @@ const expectedEdges = catalog.content.flatMap(record => record.primitives.map(un
 const actualEdges = graph.edges.filter(edge => edge.kind === 'designed-primitive-support').map(edge => `${edge.source}>${edge.target}`).sort();
 assert.deepEqual(actualEdges, expectedEdges, 'Design usages link to support boundaries without claiming implementation');
 assert(graph.facets.some(facet => facet.key === 'codeSupport:runtime-operations'), 'Historical operation code links remain');
-console.log(JSON.stringify({ evidence: ledger.evidenceLevel, units: ledger.units.length, staticSupport: Object.fromEntries([...new Set(ledger.units.map(unit => unit.staticSupport))].map(status => [status, ledger.units.filter(unit => unit.staticSupport === status).length])), designReferences: actualEdges.length, graphHash: graph.hash }));
+const runtimeCoverage = verifyRuntimePrograms({ graph, catalog, ledger, root });
+console.log(JSON.stringify({ ...runtimeCoverage, evidence: ledger.evidenceLevel, units: ledger.units.length, staticSupport: Object.fromEntries([...new Set(ledger.units.map(unit => unit.staticSupport))].map(status => [status, ledger.units.filter(unit => unit.staticSupport === status).length])), designReferences: actualEdges.length, graphHash: graph.hash }));

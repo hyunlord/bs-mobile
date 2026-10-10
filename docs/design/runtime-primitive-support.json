@@ -102,10 +102,12 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "현재 정확한 형태·앵커 조합만 소비한다. 설계의 16형태 전체나 임의 단위 결합을 지원하지 않는다.",
-      "selectedReferences": 12,
       "operationSupportIds": [
         "legacy:damage-pulse"
-      ]
+      ],
+      "designReferences": 12,
+      "runtimeProgramReferences": 12,
+      "referenceSummary": "12 / 12"
     },
     {
       "id": "unit:event-gate",
@@ -149,9 +151,11 @@
       "observed": "not-assessed",
       "semantic": "not-established",
       "visual": "not-assessed",
-      "limitation": "진화 카드 자격의 세 가지 실제 이력 조건만 지원한다. 모든 사건·소비·범위 또는 범용 불리언 조건식을 지원하지 않는다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "limitation": "설계0/실행3: 기존 1a 진화 자격 이력(BladePlotKill·RepairCompleted·HarvestNearBuilding)을 명시한 실행 전용 대응이다. 설계 원문 변경 없음. 이 세 조건 외 범용 사건 조건식은 미지원이다.",
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 3,
+      "referenceSummary": "0 / 3"
     },
     {
       "id": "unit:attack-variant",
@@ -196,8 +200,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "젖은 대상 우선·수확 파편·물 소진 타격만 지원한다. 새 조건과 효과는 명시적 지원 추가가 필요하다.",
-      "selectedReferences": 3,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 3,
+      "runtimeProgramReferences": 3,
+      "referenceSummary": "3 / 3"
     },
     {
       "id": "unit:remnant-create",
@@ -266,11 +272,13 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "grain·water·building·group의 승인된 배치와 수명만 지원한다. 모든 remnantKey가 생성 가능하지 않다.",
-      "selectedReferences": 6,
       "operationSupportIds": [
         "legacy:plant-path",
         "legacy:planting-bias"
-      ]
+      ],
+      "designReferences": 6,
+      "runtimeProgramReferences": 6,
+      "referenceSummary": "6 / 6"
     },
     {
       "id": "unit:growth-cycle",
@@ -336,11 +344,13 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "시간·관개·건설·참여 처치·귀환의 기존 주기만 처리한다. season 토큰은 임의 계절 시뮬레이터를 뜻하지 않는다.",
-      "selectedReferences": 5,
       "operationSupportIds": [
         "legacy:repair-nearest",
         "legacy:worker-buff"
-      ]
+      ],
+      "designReferences": 5,
+      "runtimeProgramReferences": 5,
+      "referenceSummary": "5 / 5"
     },
     {
       "id": "unit:completion-ledger",
@@ -403,8 +413,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "기존 원본·주기·임무 XP 중복 방지와 수거를 분리한다. 금화·메타 반출 채널은 이 원장 지원에 포함하지 않는다.",
-      "selectedReferences": 4,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 4,
+      "runtimeProgramReferences": 4,
+      "referenceSummary": "4 / 4"
     },
     {
       "id": "unit:ally-task",
@@ -439,13 +451,15 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "기존 인력·공유 상한을 사용한 모집과 재사용만 지원한다. 다른 아군 작업 종류는 미지원이다.",
-      "selectedReferences": 1,
       "operationSupportIds": [
         "legacy:extend-duty",
         "legacy:guard-return",
         "legacy:rally-returners",
         "legacy:return-via-building"
-      ]
+      ],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:visible-marker",
@@ -472,8 +486,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "표시용 상태·공격 view를 투영한다. 모든 설계 marker 토큰을 렌더러가 해석하거나 혼잡 판독성을 보장하지 않는다.",
-      "selectedReferences": 9,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 9,
+      "runtimeProgramReferences": 9,
+      "referenceSummary": "9 / 9"
     },
     {
       "id": "unit:evolution-replace",
@@ -516,8 +532,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "승인된 두 입력의 공격/활성 대체·기존 잔류물 보존만 지원한다. 임의 개수 입력·교체 순서는 미지원이다.",
-      "selectedReferences": 3,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 3,
+      "runtimeProgramReferences": 3,
+      "referenceSummary": "3 / 3"
     },
     {
       "id": "unit:growth-protect",
@@ -552,10 +570,12 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "완성된 살아 있는 지붕의 첫 약탈 차단 후 수리 재무장만 지원한다. 모든 보호 대상과 소비 규칙은 미지원이다.",
-      "selectedReferences": 1,
       "operationSupportIds": [
         "legacy:shield-farms"
-      ]
+      ],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:enemy-tell",
@@ -610,8 +630,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "기존 자세·직선·범람선의 예고/잠금 상태만 처리한다. 모든 설계 shape 조합은 미지원이다.",
-      "selectedReferences": 7,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 7,
+      "runtimeProgramReferences": 7,
+      "referenceSummary": "7 / 7"
     },
     {
       "id": "unit:boss-phases",
@@ -644,8 +666,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "두 범람선 뒤 고정 돌진의 기존 순환만 지원한다. 임의 actions 순서 또는 모든 보스 국면은 미지원이다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:meta-route",
@@ -661,8 +685,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:material-guarantee",
@@ -678,8 +704,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:stat-modifier",
@@ -711,10 +739,12 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "이동 속도와 회수 반경의 기존 수치 입력만 지원한다. 모든 설계 stat 또는 amount 표현을 처리하지 않는다.",
-      "selectedReferences": 2,
       "operationSupportIds": [
         "legacy:stat-add"
-      ]
+      ],
+      "designReferences": 2,
+      "runtimeProgramReferences": 2,
+      "referenceSummary": "2 / 2"
     },
     {
       "id": "unit:harvest-contact",
@@ -748,10 +778,12 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "성숙 grain의 실제 공격 접촉만 처리한다. sourceIds는 승인 참조 역할이며 임의 소스 필터 해석기가 아니다.",
-      "selectedReferences": 1,
       "operationSupportIds": [
         "legacy:harvest-near"
-      ]
+      ],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:equipment-scope",
@@ -788,8 +820,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "카드 자격 및 연결 장비 선택 경계다. 자체 효과나 모든 사건에서 동적 장비 필터를 지원한다는 뜻이 아니다.",
-      "selectedReferences": 8,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 8,
+      "runtimeProgramReferences": 8,
+      "referenceSummary": "8 / 8"
     },
     {
       "id": "unit:chapter-route",
@@ -822,8 +856,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "현재 챕터/보스 선택과 출현 경계다. 10챕터 경로·해금·메타 결산 전체의 공통 구현이 아니다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:status-apply",
@@ -859,8 +895,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "젖음·잠깐 정지만 지원한다. 상태 종류·대상·만료 방식의 임의 조합은 지원하지 않는다.",
-      "selectedReferences": 2,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 2,
+      "runtimeProgramReferences": 2,
+      "referenceSummary": "2 / 2"
     },
     {
       "id": "unit:stock-cycle",
@@ -903,8 +941,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "유한 물·목재 예약과 출고 후보 원장을 처리한다. 승인 tuple의 sale/meta-export는 실제 판매·반출 지원이 아니다.",
-      "selectedReferences": 2,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 2,
+      "runtimeProgramReferences": 2,
+      "referenceSummary": "2 / 2"
     },
     {
       "id": "unit:completed-structure-attack",
@@ -938,8 +978,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "살아 있는 완성 건물의 근접 호 타격만 지원한다. 건물 임의 공격 형태는 지원하지 않는다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:paired-growth",
@@ -975,8 +1017,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "부모 건물 손상 시 연결 grain 중지·동일 주기 복구만 지원한다. 임의 의존 그래프는 미지원이다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:attack-anchor",
@@ -1009,8 +1053,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "실제 수리 중인 미완성 건물로 기존 공전을 옮긴다. 새 건설·모든 동적 앵커 종류를 처리하지 않는다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:projectile-lifecycle",
@@ -1042,8 +1088,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "고정 표적 추적과 표적 소멸/수명 종료만 지원한다. 관통·도탄·회수 등의 생명주기는 미지원이다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:mission-cycle",
@@ -1078,8 +1126,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "참여 처치·전열 교대·귀환 원장의 기존 경로만 지원한다. 임의 임무 상태기계가 아니다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:target-routing",
@@ -1141,8 +1191,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "구독된 사건의 우회·범위 내 약탈자·첫 어린 밭 등 명시 조합만 처리한다. 일반 조건/효과 인터프리터가 아니다.",
-      "selectedReferences": 3,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 3,
+      "runtimeProgramReferences": 3,
+      "referenceSummary": "3 / 3"
     },
     {
       "id": "unit:resource-routing",
@@ -1185,8 +1237,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "기존 물 운반·임무 식량 예약/반환 경로만 지원한다. 임의 자원·운송망·배송 우선순위는 미지원이다.",
-      "selectedReferences": 2,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 2,
+      "runtimeProgramReferences": 2,
+      "referenceSummary": "2 / 2"
     },
     {
       "id": "unit:prevent-transition",
@@ -1202,8 +1256,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:triggered-geometry",
@@ -1219,8 +1275,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:meta-unlock",
@@ -1236,8 +1294,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:enemy-pressure",
@@ -1306,8 +1366,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "선택된 추격·약탈·돌진·방패·사격 행동 조합만 처리한다. 새로운 적 원형을 모두 데이터로 표현할 수는 없다.",
-      "selectedReferences": 6,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 6,
+      "runtimeProgramReferences": 6,
+      "referenceSummary": "6 / 6"
     },
     {
       "id": "unit:terrain-routing",
@@ -1323,8 +1385,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:contact-reaction",
@@ -1340,8 +1404,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:fixed-placement",
@@ -1357,8 +1423,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:group-formation",
@@ -1392,8 +1460,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "수확 때 실제 교전/엄호 중인 기존 집단의 목적지만 바꾼다. 새로운 인원·부활·임의 진형은 미지원이다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:map-route-trace",
@@ -1427,8 +1497,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "인접 작업 흔적의 연결과 추격 접근만 지원한다. 일반 지형 경로망·동적 통로는 미지원이다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
     },
     {
       "id": "unit:growth-conditioning",
@@ -1444,8 +1516,10 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
-      "selectedReferences": 0,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 0,
+      "runtimeProgramReferences": 0,
+      "referenceSummary": "0 / 0"
     },
     {
       "id": "unit:geometry-modifier",
@@ -1478,8 +1552,37 @@
       "semantic": "not-established",
       "visual": "not-assessed",
       "limitation": "보이는 정면 적 조건의 공전 모양 변경만 지원한다. 모든 공격 형태 변형을 처리하지 않는다.",
-      "selectedReferences": 1,
-      "operationSupportIds": []
+      "operationSupportIds": [],
+      "designReferences": 1,
+      "runtimeProgramReferences": 1,
+      "referenceSummary": "1 / 1"
+    }
+  ],
+  "runtimeSource": "data/runtime/wave-1a.json",
+  "runtimeOnlyMappings": [
+    {
+      "recordId": "core:sowing_sworddance",
+      "unitId": "unit:event-gate",
+      "condition": "attack-kill-near-growth",
+      "historyField": "BladePlotKill",
+      "origin": "legacy-wave-1a-eligibility",
+      "reason": "기존 진화 자격 이력을 실행 단위로 명시. 승인 설계 레코드 변경 없음."
+    },
+    {
+      "recordId": "core:warded_masonry",
+      "unitId": "unit:event-gate",
+      "condition": "repair-completed",
+      "historyField": "RepairCompleted",
+      "origin": "legacy-wave-1a-eligibility",
+      "reason": "기존 진화 자격 이력을 실행 단위로 명시. 승인 설계 레코드 변경 없음."
+    },
+    {
+      "recordId": "core:sheltered_sowing",
+      "unitId": "unit:event-gate",
+      "condition": "harvest-near-building",
+      "historyField": "HarvestNearBuilding",
+      "origin": "legacy-wave-1a-eligibility",
+      "reason": "기존 진화 자격 이력을 실행 단위로 명시. 승인 설계 레코드 변경 없음."
     }
   ]
 }

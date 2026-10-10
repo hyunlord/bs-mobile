@@ -132,4 +132,6 @@ node tools/design-rules-report.mjs
 
 위 v1.1 문법과 bespoke 44개 목록은 설계 원본을 보존한 기록이다. 공통 단위 실행기의 현재 **부분 지원**은 [단위 지원 원장](runtime-primitive-support.json)과 [runtime-operations.md의 #167 경계](runtime-operations.md#167-공통-단위-런타임의-별도-지원-원장)에서 읽는다. Lattice는 이 원장의 전체 단위 목록을 `runtime-support` 층에 표시하고 설계 사용 간선으로 연결한다. 기존 `operationSupport` 14개를 새 단위 구현률로 치환하지 않는다.
 
-설계의 `unitCoverage`·`selectedReferences`는 여전히 문법 사용 수다. 실행기의 엄격한 파라미터 조합, 처리기 경계, 작성된 테스트 경로, 실행 관측, 의미 검토, 화면 검토는 서로 다른 필드다. 설계에 등록된 단위라도 현재 조합을 처리하지 못하면 `unsupported`, 일부만 처리하면 `partial-runtime`이며 `implemented` 하나로 뭉치지 않는다. 실행 레코드에 별도로 명시한 사건 조건은 설계 참조 수를 임의로 늘리지 않는다.
+설계의 `unitCoverage`·`designReferences`는 여전히 문법 사용 수다. 실행기의 엄격한 파라미터 조합, 처리기 경계, 작성된 테스트 경로, 실행 관측, 의미 검토, 화면 검토는 서로 다른 필드다. 설계에 등록된 단위라도 현재 조합을 처리하지 못하면 `unsupported`, 일부만 처리하면 `partial-runtime`이며 `implemented` 하나로 뭉치지 않는다. 실행 레코드에 별도로 명시한 사건 조건은 설계 참조 수를 임의로 늘리지 않는다.
+
+실행 사용은 별도 `runtimeProgramReferences`와 `runtimeOnlyMappings`로 센다. 현재 87개 선택 설계 참조에 기존 진화 이력의 명시적 event-gate 3개를 더한 실행 90참조이며, 이 차이를 설계 원문 변경으로 숨기지 않는다. 정확한 대응과 거부 규칙은 runtime-operations의 설계/실행 사용 차이에 기록한다.

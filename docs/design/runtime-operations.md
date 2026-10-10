@@ -142,3 +142,9 @@ node .lattice/verify-primitive-support.mjs <graph.json>
 ```
 
 검증은 원장↔실제 Core 허용 조합, 설계의 모든 단위·기존 operation 연결, 처리기/테스트 심벌, 실제 추출 노드·facet·표·설계 사용 간선을 대조한다. Core 허용 조합 또는 렌즈가 바뀌어 원장이 뒤처지면 실패한다. 기존 `verify-runtime.mjs`의 14-operation 기반 경계 검증도 계속 실행한다.
+
+### 설계 사용과 실행 프로그램 사용의 차이
+
+단위 원장의 `designReferences`는 선택된 설계 28레코드의 87참조, `runtimeProgramReferences`는 실제 실행 28프로그램의 90참조다. Lattice는 전체 설계 400간선을 보존하며 별도 `runtime-programs` 층에서 실행 90간선을 보여 준다. 실행 전용 `event-gate` 3참조는 `runtimeOnlyMappings`에 한정한다: 파종 검무의 `attack-kill-near-growth → BladePlotKill`, 호위 성가퀴의 `repair-completed → RepairCompleted`, 지붕 아래 파종의 `harvest-near-building → HarvestNearBuilding`. 모두 이전부터 있던 진화 자격 이력을 공통 실행 단위로 명시한 것이다. 승인 설계 데이터는 그대로 보존한다.
+
+설계 params와 실행 params는 목적이 다른 문법이다. 문자열 동일성을 요구하지 않고 설계 단위 보존·엄격한 실행 조합·위 3개에 한정한 실행 전용 대응을 검사한다. 처리기 없는 단위나 선언 없는 추가 단위는 실패한다. 선택 설계0/실행3인 `event-gate`를 설계 누락이나 전체 단위의 의미 검증 완료로 해석하지 않는다.

@@ -1,6 +1,24 @@
 schemaVersion: 1
 name: Sow & Siege · 콘텐츠 지도
 kinds:
+  - id: waveProgram
+    label: wave-1a 실행 프로그램
+    files: []
+    selections:
+      - files: [data/runtime/wave-1a.json]
+        records: /bindings
+        layer: runtime-programs
+        references: false
+  - id: waveProgramCatalog
+    label: 실행 프로그램 원본
+    files: []
+    hidden: true
+    selections:
+      - files: [data/runtime/wave-1a.json]
+        records: /definition
+        idField: revision
+        layer: runtime-programs
+        references: false
   - id: runtimePrimitive
     label: 실행 동작 단위
     files: []
@@ -195,6 +213,30 @@ kinds:
           - data/heroes/*.json
         layer: runtime
 derived:
+  - id: waveProgramCatalog
+    scope: graph
+    value:
+      op: lookup
+      kind: waveProgramCatalog
+      field: [layer]
+      equals: runtime-programs
+  - id: executableParams
+    scope: node
+    kinds: [waveProgram]
+    layer: runtime-programs
+    value:
+      op: at
+      object:
+        op: at
+        object:
+          op: get
+          from: vars
+          path: [waveProgramCatalog, programs]
+        key:
+          op: get
+          from: node
+          path: [originalId]
+      key: params
   - id: catalog
     scope: graph
     value:
@@ -3015,6 +3057,8 @@ presentation:
     codeSupport:runtime-operations:
       label: 정적 처리기 지원 · 실행 증거 아님
   layers:
+    - id: runtime-programs
+      label: wave-1a 실행 프로그램
     - id: runtime-support
       label: 단위 지원 · 정적 근거
     - id: runtime
@@ -3025,6 +3069,47 @@ presentation:
       label: 이전 후보
   defaultLayer: designed-v1
 edges:
+  - id: runtime-program-primitive-support
+    source:
+      kinds: [waveProgram]
+      layer: runtime-programs
+    target:
+      op: map
+      input:
+        op: filter
+        input:
+          op: get
+          from: graph
+          path: [nodes]
+        where:
+          op: and
+          values:
+            - op: eq
+              left:
+                op: get
+                from: item
+                path: [kind]
+              right: runtimePrimitive
+            - op: exists
+              value:
+                op: at
+                object:
+                  op: get
+                  from: vars
+                  path: [executableParams]
+                key:
+                  op: get
+                  from: item
+                  path: [originalId]
+      value:
+        op: get
+        from: item
+        path: [originalId]
+    targetQuery:
+      layer: runtime-support
+    targetKind: runtimePrimitive
+    targetField: [id]
+    direction: forward
   - id: designed-primitive-support
     source:
       kinds: [weapon, tool, item, evolution, enemy, chapter, charter, vassal, material, manor]
@@ -4506,6 +4591,12 @@ views:
           op: get
           from: node
           path: [staticSupport]
+      - id: referenceSummary
+        label: 선택 설계 / 실행 참조
+        value:
+          op: get
+          from: node
+          path: [referenceSummary]
       - id: parameterSummary
         label: 허용 조합
         value:
