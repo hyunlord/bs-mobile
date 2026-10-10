@@ -18,6 +18,16 @@ namespace Game.App
         public Action SampleDiagnostics;
         public Action<string> WriteDiagnostics;
         public static string ProfileDirectory { get; } = ReadProfileDirectory();
+        public static int? RequestedSeed { get; } = ParseRequestedSeed(Environment.GetCommandLineArgs());
+        public static int? ParseRequestedSeed(string[] args)
+        {
+            var index = Array.IndexOf(args, "--smoothness-seed");
+            if (index < 0) return null;
+            if (Array.IndexOf(args, "--smoothness-trace") < 0 || index + 1 >= args.Length ||
+                !int.TryParse(args[index + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var seed))
+                throw new ArgumentException("--smoothness-seed requires --smoothness-trace and a signed 32-bit integer.");
+            return seed;
+        }
         static string ReadProfileDirectory()
         {
             var args = Environment.GetCommandLineArgs();
@@ -40,6 +50,7 @@ namespace Game.App
         bool scripted, quit, begun, finished, inFrame, startupScreenshot, timingOut, phasesArmed;
         int frameCount, entityCount, sampleCount, droppedFrames, droppedEntities, uiStage, buttonPhase, inputPreparationStep;
         double beganAt, phaseBeganAt, initializedAt, nextUiAttempt;
+        long projectileDeadline;
         string failure;
         bool awaitProjectile, projectileReady;
         int projectilePreparationTitleStage, projectileCardClicks, recordedProjectileSamples, recordedFriendlyProjectileSamples;
@@ -92,6 +103,7 @@ namespace Game.App
         public void BeginSession()
         {
             if (begun) return;
+            projectileDeadline = System.Diagnostics.Stopwatch.GetTimestamp() + 120L * System.Diagnostics.Stopwatch.Frequency;
             begun = true; beganAt = Time.realtimeSinceStartupAsDouble; phaseBeganAt = beganAt; phasesArmed = !scripted; inputPreparationStep = 0;
             enemyIds.Clear();
             UnityEngine.Debug.Log($"Normal trace session started: focus={Application.isFocused}; tick={run.Frame?.Tick}; mouse={syntheticMouse?.position.ReadValue()}");
@@ -191,11 +203,7 @@ namespace Game.App
                 }
                 if (scripted && Time.realtimeSinceStartupAsDouble - initializedAt >= 20) StartCoroutine(StartupTimeout());
             }
-            if (begun && !finished && awaitProjectile && !projectileReady && Time.realtimeSinceStartupAsDouble - beganAt >= 120)
-            {
-                failure="No naturally equipped projectile appeared within 120 seconds of normal UI play.";
-                Finish(); if(quit)Application.Quit(1);
-            }
+            if (CheckProjectileTimeout()) return;
             if (begun && !finished && scripted && !phasesArmed && (!awaitProjectile || projectileReady) && Time.realtimeSinceStartupAsDouble - (awaitProjectile?projectileReadyAt:beganAt) >= 10)
             {
                 failure = "Synthetic slow drag never reached normal input sampling within ten seconds.";
@@ -208,6 +216,15 @@ namespace Game.App
                 Finish();
                 if (quit) Application.Quit(failure==null?0:1);
             }
+        }
+        bool CheckProjectileTimeout()
+        {
+            if (!begun || finished || !awaitProjectile || projectileReady || System.Diagnostics.Stopwatch.GetTimestamp() < projectileDeadline) return false;
+            failure = "No naturally equipped projectile appeared within 120 wall-clock seconds of normal UI play.";
+            UnityEngine.Debug.LogError(failure + " Tick=" + run.Frame?.Tick + "; card click attempts=" + projectileCardClicks);
+            Finish();
+            if (quit) Application.Quit(1);
+            return true;
         }
         void DriveInput()
         {
@@ -341,7 +358,7 @@ namespace Game.App
                 for (var i = 0; i < entityCount; i++) { var r = entities[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World.x:F9},{r.World.y:F9},{r.Screen.x:F6},{r.Screen.y:F6},{r.FriendlyProjectile}")); }
             }
             WriteDiagnostics?.Invoke(folder);
-            File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
+            File.WriteAllText(Path.Combine(folder, "normal-trace.txt"), FormattableString.Invariant($"commit={BuildIdentity.Commit}\nsourceHash={BuildIdentity.SourceHash}\nprofile={CanonicalContent.ProfileName}\nsyntheticInput={scripted}\nisolatedProfile={ProfileDirectory ?? "none: existing normal profile"}\ninputPath=InputSystem Mouse state -> EventSystem -> UI/FloatingStick; not physical input\ncapture=false\nprojectilePreparation={awaitProjectile}\nprojectileObserved={projectileReady}\nprojectileCardClicks={projectileCardClicks}\nrequestedSeed={RequestedSeed?.ToString(CultureInfo.InvariantCulture) ?? "normal default"}\nprojectileTimeoutClock=Stopwatch monotonic wall clock; requires a player callback\nrecordedProjectileSamples={recordedProjectileSamples}\nrecordedFriendlyProjectileSamples={recordedFriendlyProjectileSamples}\nprojectileReadyWallSeconds={projectileReadyAt-beganAt:F9}\nprewarm=false\nfailure={failure ?? "none"}\nframes={frameCount}\nentities={entityCount}\ndroppedFrames={droppedFrames}\ndroppedEntities={droppedEntities}\ncommandedDirectionX={commandedDirection.x:F6}\ncommandedDirectionY={commandedDirection.y:F6}\nphaseStartWallSeconds={phaseBeganAt - beganAt:F9}\nphasesArmed={phasesArmed}\nphase0=commanded direction 25 percent 4s; phase1=release 4s; phase2=commanded direction 100 percent 4s; phase3=release 4s; phase4=release remainder\nworldCoordinates=Unity world units; screenCoordinates=actual native pixels; stable first five enemy IDs are never replaced on death\n"));
         }
         void OnApplicationQuit() => Finish();
         void OnDestroy()

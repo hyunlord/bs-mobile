@@ -208,7 +208,7 @@ namespace Game.App
         }
         public void StartRun(int? requestedSeed=null)
         {
-            if(loading)return;if(Session?.View.Status==RunStatus.Completed&&!finished){RetryCompleteRun();return;}StartCoroutine(BeginRun(requestedSeed ?? AutoplayCapture.Active?.RunSeed ?? (int)(DateTime.UtcNow.Ticks & int.MaxValue)));
+            if(loading)return;if(Session?.View.Status==RunStatus.Completed&&!finished){RetryCompleteRun();return;}StartCoroutine(BeginRun(requestedSeed ?? AutoplayCapture.Active?.RunSeed ?? NormalPlayTrace.RequestedSeed ?? (int)(DateTime.UtcNow.Ticks & int.MaxValue)));
         }
         public void StartNeutralRun(int requestedSeed)
         {

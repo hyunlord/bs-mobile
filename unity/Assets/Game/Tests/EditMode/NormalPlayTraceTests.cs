@@ -5,6 +5,16 @@ namespace Tests.EditMode
 {
     public sealed class NormalPlayTraceTests
     {
+        [Test]
+        public void OptionalSeedUsesOnlyExplicitNormalTraceConfiguration()
+        {
+            Assert.That(NormalPlayTrace.ParseRequestedSeed(new[] { "app" }), Is.Null);
+            Assert.That(NormalPlayTrace.ParseRequestedSeed(new[] { "app", "--smoothness-trace", "--smoothness-seed", "1078312934" }), Is.EqualTo(1078312934));
+            Assert.Throws<System.ArgumentException>(() => NormalPlayTrace.ParseRequestedSeed(new[] { "--smoothness-seed", "1" }));
+            Assert.Throws<System.ArgumentException>(() => NormalPlayTrace.ParseRequestedSeed(new[] { "--smoothness-trace", "--smoothness-seed" }));
+            Assert.Throws<System.ArgumentException>(() => NormalPlayTrace.ParseRequestedSeed(new[] { "--smoothness-trace", "--smoothness-seed", "2147483648" }));
+        }
+
         [TestCase(false, 1f, 0f)]
         [TestCase(true, .8f, .6f)]
         public void ScriptDirectionPreservesMagnitudeAcrossCardinalAndObliqueProtocols(bool oblique, float x, float y)
