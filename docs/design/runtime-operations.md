@@ -123,3 +123,22 @@ D3 v1.1부터 [설계 카탈로그](../../data/system-design-v1.json)의 `primit
 [WaveActivationMetrics](../../core/src/SowSiege.Core/WaveActivationMetrics.cs)는 발동과 자식 투사체/공전 만료를 분리한다. 발사 순간 0회 명중을 곧바로 빈 공격으로 확정하지 않는다. [WaveRuntimeMetricTests](../../core/tests/SowSiege.Tests/WaveRuntimeMetricTests.cs)의 `MultipleProjectilesResolveOneActivationOnlyAfterLastChild`, `LateOrbitHitCountsSuccessAtExpiryNotAtLaunch`, `OrbitWithNoHitsResolvesEmptyOnceAndPendingIsSeparate`가 이 구분을 검사하도록 작성됐다. 처리기 연결 수와 실제 발동/해결/대기/명중/과잉피해 수는 서로 다른 분모다.
 
 관찰 보고에는 commit·profile·seed·입력/리플레이·실행 시간 구간을 붙이고 `selected`, `owned`, `eligible`, `observedNonzeroEffect`, `semanticReview`, `presentationObserved`를 분리한다. 28개 서명 통과나 87개 설계 참조를 28개 고유 동작·화면 검증 완료로 표현하지 않는다. 나머지 10개 미선택 primitive와 44개 bespoke 잔여는 후속 웨이브 범위이며 이 표로 지원 상태를 올리지 않는다.
+
+## #167 공통 단위 런타임의 별도 지원 원장
+
+위 14개 operation과 wave-1a의 최초 typed 분기 표는 당시 구현 경계의 역사 기록이다. 새 공통 단위의 현재 경계는 [runtime-primitive-support.json](runtime-primitive-support.json)이 정본이며 Lattice의 **단위 지원 · 정적 근거** 층에서 단위별 표와 분포로 표시한다. 설계 콘텐츠→단위 간선은 문법 사용 관계다. 처리기 구현·실행 관찰·사용자 승인을 뜻하지 않는다.
+
+원장은 전체 설계 등록 단위를 빠짐없이 열거하며 `operationSupportIds`를 원본 그대로 보존한다. `supportedParameterSets`는 Core `WavePrimitiveSupport.Contracts`가 받아들이는 **정확한 조합**이다. 각 필드의 가능한 값들을 자유롭게 곱해서 쓸 수 있다는 뜻이 아니다. 문자열 토큰·참조 역할·수치 상속은 Core/Sim의 컴파일 계약을 따르며, 받아들여진 토큰 중 고정 문맥으로만 처리하는 의미는 `limitation`에 남긴다. 특히 목재 `sale`·`meta-export`는 판매·반출 구현으로 계산하지 않는다.
+
+- `partial-runtime`: 지정 조합에 실제 소비 경로가 있으나 해당 설계 단위 전체의 일반 구현은 아니다.
+- `projection-boundary`: Core view/상태 투영 경계다. Unity가 모든 marker를 그리거나 혼잡 장면을 읽을 수 있다는 뜻이 아니다.
+- `loader-boundary`: 선택·참조·자격 경계다. 자체적인 전투 효과 또는 전체 챕터 실행을 뜻하지 않는다.
+- `unsupported`: 이 wave primitive 실행기에 허용 조합·처리기 근거가 없다. 다른 역사 실행기의 비슷한 이름으로 지원 상태를 올리지 않는다.
+
+`handlers`와 `tests`는 실제 소스 파일/심벌의 위치다. 테스트의 존재는 통과 기록이 아니다. 따라서 이 정적 원장의 `observed=not-assessed`, `semantic=not-established`, `visual=not-assessed`는 유지한다. 실행 PR·CI와 commit/profile/seed/입력/시간 구간이 있는 관측 증거를 별도로 읽는다. 데이터 확장 표본도 1b 제품이나 38개 단위 전체의 지원으로 합산하지 않는다.
+
+```sh
+node .lattice/verify-primitive-support.mjs <graph.json>
+```
+
+검증은 원장↔실제 Core 허용 조합, 설계의 모든 단위·기존 operation 연결, 처리기/테스트 심벌, 실제 추출 노드·facet·표·설계 사용 간선을 대조한다. Core 허용 조합 또는 렌즈가 바뀌어 원장이 뒤처지면 실패한다. 기존 `verify-runtime.mjs`의 14-operation 기반 경계 검증도 계속 실행한다.

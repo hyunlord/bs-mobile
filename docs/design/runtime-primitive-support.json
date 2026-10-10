@@ -1,0 +1,1485 @@
+{
+  "schemaVersion": 1,
+  "designRevision": "designed-v1.1",
+  "profile": "wave-1a",
+  "evidenceLevel": "static-source-audit",
+  "parameterSource": "core/src/SowSiege.Core/WavePrimitiveSupport.cs",
+  "units": [
+    {
+      "id": "unit:attack-shape",
+      "name": "attack-shape",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "shape": "melee-fan",
+          "anchor": "lord",
+          "aim": "facing",
+          "collision": "damage",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "orbit",
+          "anchor": "lord",
+          "aim": "facing",
+          "collision": "knockback",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "chain",
+          "anchor": "lord",
+          "aim": "nearest-enemy",
+          "collision": "damage",
+          "repeatTarget": "never-in-chain",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "homing-projectile",
+          "anchor": "lord",
+          "aim": "nearest-enemy",
+          "collision": "damage",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "melee-fan",
+          "anchor": "lord",
+          "aim": "facing",
+          "collision": "damage-knockback",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "ground-slam",
+          "anchor": "lord",
+          "aim": "facing",
+          "collision": "damage-knockback",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "expanding-wave",
+          "anchor": "lord",
+          "aim": "facing",
+          "collision": "damage-knockback",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "orbit",
+          "anchor": "building",
+          "aim": "facing",
+          "collision": "knockback",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        },
+        {
+          "shape": "ground-slam",
+          "anchor": "lord",
+          "aim": "facing",
+          "collision": "damage",
+          "repeatTarget": "per-activation",
+          "on": "automatic-attack"
+        }
+      ],
+      "parameterSummary": "9개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeSystem.cs",
+          "symbol": "Attack("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeSystem.cs#Attack(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveRuntimeTests.cs",
+          "symbol": "FacingArcDoesNotHitBehindLord"
+        }
+      ],
+      "testSummary": "FacingArcDoesNotHitBehindLord",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "현재 정확한 형태·앵커 조합만 소비한다. 설계의 16형태 전체나 임의 단위 결합을 지원하지 않는다.",
+      "selectedReferences": 12,
+      "operationSupportIds": [
+        "legacy:damage-pulse"
+      ]
+    },
+    {
+      "id": "unit:event-gate",
+      "name": "event-gate",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "equipment-offer",
+          "condition": "attack-kill-near-growth",
+          "scope": "self",
+          "consume": "none"
+        },
+        {
+          "on": "equipment-offer",
+          "condition": "repair-completed",
+          "scope": "self",
+          "consume": "none"
+        },
+        {
+          "on": "equipment-offer",
+          "condition": "harvest-near-building",
+          "scope": "self",
+          "consume": "none"
+        }
+      ],
+      "parameterSummary": "3개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveGrowthPrimitives.cs",
+          "symbol": "Eligible("
+        }
+      ],
+      "handlerSummary": "WaveGrowthPrimitives.cs#Eligible(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WavePrimitiveTests.cs",
+          "symbol": "ExplicitHistoryGateControlsEligibilityRatherThanEvolutionShape"
+        }
+      ],
+      "testSummary": "ExplicitHistoryGateControlsEligibilityRatherThanEvolutionShape",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "진화 카드 자격의 세 가지 실제 이력 조건만 지원한다. 모든 사건·소비·범위 또는 범용 불리언 조건식을 지원하지 않는다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:attack-variant",
+      "name": "attack-variant",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "condition": "wet-target",
+          "action": "wet-priority-chain",
+          "anchor": "target",
+          "consumeCondition": "false"
+        },
+        {
+          "condition": "ripe-contact",
+          "action": "emit-fragments",
+          "anchor": "contact",
+          "consumeCondition": "false"
+        },
+        {
+          "condition": "water-empty",
+          "action": "dry-strike",
+          "anchor": "lord",
+          "consumeCondition": "false"
+        }
+      ],
+      "parameterSummary": "3개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeSystem.cs",
+          "symbol": "Attack("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeSystem.cs#Attack(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveRuntimeTests.cs",
+          "symbol": "ChainNeverHitsSameTargetTwice"
+        }
+      ],
+      "testSummary": "ChainNeverHitsSameTargetTwice",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "젖은 대상 우선·수확 파편·물 소진 타격만 지원한다. 새 조건과 효과는 명시적 지원 추가가 필요하다.",
+      "selectedReferences": 3,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:remnant-create",
+      "name": "remnant-create",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "automatic-attack",
+          "target": "land",
+          "placement": "impact",
+          "stock": "new-cycle",
+          "remnantKey": "grain-patch"
+        },
+        {
+          "on": "automatic-attack",
+          "target": "land",
+          "placement": "impact",
+          "stock": "new-cycle",
+          "remnantKey": "seasonal-pool"
+        },
+        {
+          "on": "automatic-attack",
+          "target": "building",
+          "placement": "near-empty-ground",
+          "stock": "new-cycle",
+          "remnantKey": "joinery-frame"
+        },
+        {
+          "on": "automatic-attack",
+          "target": "people",
+          "placement": "impact",
+          "stock": "available-workers",
+          "remnantKey": "levy-company"
+        },
+        {
+          "on": "automatic-attack",
+          "target": "land",
+          "placement": "attack-footprint",
+          "stock": "new-cycle",
+          "remnantKey": "grain-patch"
+        },
+        {
+          "on": "automatic-attack",
+          "target": "building",
+          "placement": "existing-first",
+          "stock": "new-cycle",
+          "remnantKey": "sheltered-frame"
+        }
+      ],
+      "parameterSummary": "6개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "Activate("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#Activate(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "PlantingSweepCreatesDistinctPlotsInsideRealFacingArcAndRespectsCapacity"
+        }
+      ],
+      "testSummary": "PlantingSweepCreatesDistinctPlotsInsideRealFacingArcAndRespectsCapacity",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "grain·water·building·group의 승인된 배치와 수명만 지원한다. 모든 remnantKey가 생성 가능하지 않다.",
+      "selectedReferences": 6,
+      "operationSupportIds": [
+        "legacy:plant-path",
+        "legacy:planting-bias"
+      ]
+    },
+    {
+      "id": "unit:growth-cycle",
+      "name": "growth-cycle",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "drivers": "time",
+          "workGate": "always",
+          "completion": "growth-complete",
+          "restart": "replant",
+          "restore": "restart"
+        },
+        {
+          "drivers": "season",
+          "workGate": "always",
+          "completion": "growth-complete",
+          "restart": "new-input",
+          "restore": "restart"
+        },
+        {
+          "drivers": "time",
+          "workGate": "within-work-radius",
+          "completion": "shipment-complete",
+          "restart": "new-input",
+          "restore": "remaining-foundation"
+        },
+        {
+          "drivers": "kill",
+          "workGate": "participating-kill",
+          "completion": "mission-return",
+          "restart": "after-return",
+          "restore": "survivors-only"
+        },
+        {
+          "drivers": "time",
+          "workGate": "linked-building-complete",
+          "completion": "growth-complete",
+          "restart": "replant",
+          "restore": "remaining-foundation"
+        }
+      ],
+      "parameterSummary": "5개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveGrowthPrimitives.cs",
+          "symbol": "AdvanceTime("
+        },
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "Tick("
+        }
+      ],
+      "handlerSummary": "WaveGrowthPrimitives.cs#AdvanceTime(; WaveWorkSystem.cs#Tick(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "ConstructionProgressesWhileMovingInRadiusAndFiniteStockCannotRegenerateByRepair"
+        }
+      ],
+      "testSummary": "ConstructionProgressesWhileMovingInRadiusAndFiniteStockCannotRegenerateByRepair",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "시간·관개·건설·참여 처치·귀환의 기존 주기만 처리한다. season 토큰은 임의 계절 시뮬레이터를 뜻하지 않는다.",
+      "selectedReferences": 5,
+      "operationSupportIds": [
+        "legacy:repair-nearest",
+        "legacy:worker-buff"
+      ]
+    },
+    {
+      "id": "unit:completion-ledger",
+      "name": "completion-ledger",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "event": "growth-complete",
+          "oncePer": "growth-cycle",
+          "channels": "xp",
+          "dedupeKey": "source-cycle",
+          "rewardTiming": "completed-work-only",
+          "identityPersistence": "retry-repair-recovery-save-load",
+          "claimGate": "ripe-contact"
+        },
+        {
+          "event": "growth-complete",
+          "oncePer": "growth-cycle",
+          "channels": "xp",
+          "dedupeKey": "source-cycle",
+          "rewardTiming": "completed-work-only",
+          "identityPersistence": "retry-repair-recovery-save-load",
+          "claimGate": "work-complete"
+        },
+        {
+          "event": "shipment-complete",
+          "oncePer": "shipment",
+          "channels": "xp",
+          "dedupeKey": "source-shipment",
+          "rewardTiming": "completed-work-only",
+          "identityPersistence": "retry-repair-recovery-save-load",
+          "claimGate": "cargo-arrival"
+        },
+        {
+          "event": "mission-return",
+          "oncePer": "mission",
+          "channels": "xp",
+          "dedupeKey": "group-mission",
+          "rewardTiming": "completed-work-only",
+          "identityPersistence": "retry-repair-recovery-save-load",
+          "claimGate": "mission-return"
+        }
+      ],
+      "parameterSummary": "4개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveGrowthPrimitives.cs",
+          "symbol": "Claim("
+        }
+      ],
+      "handlerSummary": "WaveGrowthPrimitives.cs#Claim(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "SeedNeedsMaturityAndContactAndClaimsOriginalCycleOnce"
+        }
+      ],
+      "testSummary": "SeedNeedsMaturityAndContactAndClaimsOriginalCycleOnce",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "기존 원본·주기·임무 XP 중복 방지와 수거를 분리한다. 금화·메타 반출 채널은 이 원장 지원에 포함하지 않는다.",
+      "selectedReferences": 4,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:ally-task",
+      "name": "ally-task",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "task": "recruit",
+          "target": "lord",
+          "source": "available-workers",
+          "entityUnit": "group",
+          "capPolicy": "shared-active-group-budget",
+          "onCap": "reuse-existing"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "Recruit("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#Recruit(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "HornRequiresRealEnemyAndAvailableWorkersAndOneGroupCannotMultiply"
+        }
+      ],
+      "testSummary": "HornRequiresRealEnemyAndAvailableWorkersAndOneGroupCannotMultiply",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "기존 인력·공유 상한을 사용한 모집과 재사용만 지원한다. 다른 아군 작업 종류는 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": [
+        "legacy:extend-duty",
+        "legacy:guard-return",
+        "legacy:rally-returners",
+        "legacy:return-via-building"
+      ]
+    },
+    {
+      "id": "unit:visible-marker",
+      "name": "visible-marker",
+      "staticSupport": "projection-boundary",
+      "supportedParameterSets": [
+        {
+          "channel": "ground",
+          "state": "attack-footprint",
+          "bind": "self"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeState.cs",
+          "symbol": "Capture("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeState.cs#Capture(",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "표시용 상태·공격 view를 투영한다. 모든 설계 marker 토큰을 렌더러가 해석하거나 혼잡 판독성을 보장하지 않는다.",
+      "selectedReferences": 9,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:evolution-replace",
+      "name": "evolution-replace",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "inputIds": "$input0|$input1",
+          "replace": "weapon-attack",
+          "slot": "weapon-input",
+          "preserveRemnants": "true",
+          "resourcePriority": "evolution-first",
+          "duplicateRewards": "false"
+        },
+        {
+          "inputIds": "$input0|$input1",
+          "replace": "both-tool-activations",
+          "slot": "first-tool-input",
+          "preserveRemnants": "true",
+          "resourcePriority": "evolution-first",
+          "duplicateRewards": "false"
+        }
+      ],
+      "parameterSummary": "2개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeSystem.cs",
+          "symbol": "Suppressed("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeSystem.cs#Suppressed(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs",
+          "symbol": "EvolutionIsOfferedOnlyAfterActualHistoryAndRequiresSelection"
+        }
+      ],
+      "testSummary": "EvolutionIsOfferedOnlyAfterActualHistoryAndRequiresSelection",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "승인된 두 입력의 공격/활성 대체·기존 잔류물 보존만 지원한다. 임의 개수 입력·교체 순서는 미지원이다.",
+      "selectedReferences": 3,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:growth-protect",
+      "name": "growth-protect",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "enter",
+          "target": "adjacent-land",
+          "anchor": "building",
+          "protection": "first-raid-block",
+          "requires": "completed-live-building",
+          "afterUse": "repair-before-reuse"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveEnemySystem.cs",
+          "symbol": "Advance("
+        }
+      ],
+      "handlerSummary": "WaveEnemySystem.cs#Advance(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveEnemyTests.cs",
+          "symbol": "RoofStopsOneRaidThenLosesProtectionUntilRepair"
+        }
+      ],
+      "testSummary": "RoofStopsOneRaidThenLosesProtectionUntilRepair",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "완성된 살아 있는 지붕의 첫 약탈 차단 후 수리 재무장만 지원한다. 모든 보호 대상과 소비 규칙은 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": [
+        "legacy:shield-farms"
+      ]
+    },
+    {
+      "id": "unit:enemy-tell",
+      "name": "enemy-tell",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "shape": "entity-pose",
+          "before": "strike",
+          "target": "lord",
+          "locksTarget": "false",
+          "escape": "intercept"
+        },
+        {
+          "shape": "entity-pose",
+          "before": "theft",
+          "target": "seed",
+          "locksTarget": "false",
+          "escape": "intercept"
+        },
+        {
+          "shape": "entity-pose",
+          "before": "theft",
+          "target": "ripe",
+          "locksTarget": "false",
+          "escape": "intercept"
+        },
+        {
+          "shape": "line",
+          "before": "charge",
+          "target": "lord",
+          "locksTarget": "true",
+          "escape": "side-step"
+        }
+      ],
+      "parameterSummary": "4개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveEnemySystem.cs",
+          "symbol": "Tell("
+        }
+      ],
+      "handlerSummary": "WaveEnemySystem.cs#Tell(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveEnemyTests.cs",
+          "symbol": "ChargeLocksItsTellAndMissesASidestep"
+        }
+      ],
+      "testSummary": "ChargeLocksItsTellAndMissesASidestep",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "기존 자세·직선·범람선의 예고/잠금 상태만 처리한다. 모든 설계 shape 조합은 미지원이다.",
+      "selectedReferences": 7,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:boss-phases",
+      "name": "boss-phases",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "transitions": "ordered-cycle",
+          "actions": "water-lanes|locked-charge",
+          "leaveEscapeLane": "true",
+          "recoveryWindow": "true"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveEnemySystem.cs",
+          "symbol": "Advance("
+        }
+      ],
+      "handlerSummary": "WaveEnemySystem.cs#Advance(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveEnemyTests.cs",
+          "symbol": "BossCyclesTwoSequentialLanesBeforeItsLockedCharge"
+        }
+      ],
+      "testSummary": "BossCyclesTwoSequentialLanesBeforeItsLockedCharge",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "두 범람선 뒤 고정 돌진의 기존 순환만 지원한다. 임의 actions 순서 또는 모든 보스 국면은 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:meta-route",
+      "name": "meta-route",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:material-guarantee",
+      "name": "material-guarantee",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:stat-modifier",
+      "name": "stat-modifier",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "stat": "pickup-radius",
+          "direction": "increase",
+          "amount": "inherit"
+        },
+        {
+          "stat": "move-speed",
+          "direction": "increase",
+          "amount": "inherit"
+        }
+      ],
+      "parameterSummary": "2개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveItemSubscriptions.cs",
+          "symbol": "Modifier("
+        }
+      ],
+      "handlerSummary": "WaveItemSubscriptions.cs#Modifier(",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "이동 속도와 회수 반경의 기존 수치 입력만 지원한다. 모든 설계 stat 또는 amount 표현을 처리하지 않는다.",
+      "selectedReferences": 2,
+      "operationSupportIds": [
+        "legacy:stat-add"
+      ]
+    },
+    {
+      "id": "unit:harvest-contact",
+      "name": "harvest-contact",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "hit",
+          "target": "ripe-land",
+          "scope": "attack-footprint",
+          "sourceFilter": "owned-source",
+          "sourceIds": "$seed"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "Harvest("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#Harvest(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "SeedNeedsMaturityAndContactAndClaimsOriginalCycleOnce"
+        }
+      ],
+      "testSummary": "SeedNeedsMaturityAndContactAndClaimsOriginalCycleOnce",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "성숙 grain의 실제 공격 접촉만 처리한다. sourceIds는 승인 참조 역할이며 임의 소스 필터 해석기가 아니다.",
+      "selectedReferences": 1,
+      "operationSupportIds": [
+        "legacy:harvest-near"
+      ]
+    },
+    {
+      "id": "unit:equipment-scope",
+      "name": "equipment-scope",
+      "staticSupport": "loader-boundary",
+      "supportedParameterSets": [
+        {
+          "scope": "linked",
+          "toolIds": "none",
+          "weaponIds": "none"
+        },
+        {
+          "scope": "universal",
+          "toolIds": "none",
+          "weaponIds": "none"
+        }
+      ],
+      "parameterSummary": "2개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeSystem.cs",
+          "symbol": "ExtraCards("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeSystem.cs#ExtraCards(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveContentTests.cs",
+          "symbol": "InvalidReferenceOrUnsupportedMappingFailsClosed"
+        }
+      ],
+      "testSummary": "InvalidReferenceOrUnsupportedMappingFailsClosed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "카드 자격 및 연결 장비 선택 경계다. 자체 효과나 모든 사건에서 동적 장비 필터를 지원한다는 뜻이 아니다.",
+      "selectedReferences": 8,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:chapter-route",
+      "name": "chapter-route",
+      "staticSupport": "loader-boundary",
+      "supportedParameterSets": [
+        {
+          "bossId": "$boss",
+          "order": "1",
+          "entry": "before-run",
+          "completion": "chapter-clear"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveEnemySystem.cs",
+          "symbol": "Spawn("
+        }
+      ],
+      "handlerSummary": "WaveEnemySystem.cs#Spawn(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveContentTests.cs",
+          "symbol": "NewProfileHasExactApprovedScopeAndLeavesHistoricalProfilesIsolated"
+        }
+      ],
+      "testSummary": "NewProfileHasExactApprovedScopeAndLeavesHistoricalProfilesIsolated",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "현재 챕터/보스 선택과 출현 경계다. 10챕터 경로·해금·메타 결산 전체의 공통 구현이 아니다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:status-apply",
+      "name": "status-apply",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "hit",
+          "target": "enemy",
+          "status": "brief-stop",
+          "scope": "attack-target",
+          "expire": "duration"
+        },
+        {
+          "on": "enter",
+          "target": "enemy",
+          "status": "wet",
+          "scope": "water-path",
+          "expire": "duration"
+        }
+      ],
+      "parameterSummary": "2개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "TickWater("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#TickWater(",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "젖음·잠깐 정지만 지원한다. 상태 종류·대상·만료 방식의 임의 조합은 지원하지 않는다.",
+      "selectedReferences": 2,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:stock-cycle",
+      "name": "stock-cycle",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "resource": "water",
+          "supply": "rain-or-finite-source",
+          "consumers": "attack|growth",
+          "exclusive": "true",
+          "empty": "dry-strike",
+          "repairCreatesStock": "false"
+        },
+        {
+          "resource": "timber",
+          "supply": "original-finite-ruin",
+          "consumers": "shipment|sale|meta-export",
+          "exclusive": "true",
+          "empty": "wait",
+          "repairCreatesStock": "false"
+        }
+      ],
+      "parameterSummary": "2개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "TickBuilding("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#TickBuilding(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "IrrigationSpendsActualStockAndDoesNotRepeatForSamePlot"
+        }
+      ],
+      "testSummary": "IrrigationSpendsActualStockAndDoesNotRepeatForSamePlot",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "유한 물·목재 예약과 출고 후보 원장을 처리한다. 승인 tuple의 sale/meta-export는 실제 판매·반출 지원이 아니다.",
+      "selectedReferences": 2,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:completed-structure-attack",
+      "name": "completed-structure-attack",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "shape": "melee-fan",
+          "on": "enemy-approach",
+          "anchor": "completed-building",
+          "collision": "damage-knockback",
+          "requires": "live-complete"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "Brace("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#Brace(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "MatureBuildingStillDefendsWhenLordLeavesWorkRadius"
+        }
+      ],
+      "testSummary": "MatureBuildingStillDefendsWhenLordLeavesWorkRadius",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "살아 있는 완성 건물의 근접 호 타격만 지원한다. 건물 임의 공격 형태는 지원하지 않는다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:paired-growth",
+      "name": "paired-growth",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "first": "building-frame",
+          "second": "seed-plot",
+          "placement": "existing-first-else-empty",
+          "workGate": "within-work-radius",
+          "secondGate": "first-complete-alive",
+          "destroyFirst": "pause-second-until-repair",
+          "reward": "original-source-cycle-once"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "Activate("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#Activate(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "ShelteredPlotPausesWhenParentIsRuinedAndResumesSameCycleAfterRepair"
+        }
+      ],
+      "testSummary": "ShelteredPlotPausesWhenParentIsRuinedAndResumesSameCycleAfterRepair",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "부모 건물 손상 시 연결 grain 중지·동일 주기 복구만 지원한다. 임의 의존 그래프는 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:attack-anchor",
+      "name": "attack-anchor",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "when": "repair-in-progress",
+          "anchor": "nearest-repair-building",
+          "fallback": "lord",
+          "transfer": "move-existing-no-duplicate"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeSystem.cs",
+          "symbol": "TickOrbits("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeSystem.cs#TickOrbits(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs",
+          "symbol": "RepairOrbitAnchorsOnlyToActualRepairNotNewConstruction"
+        }
+      ],
+      "testSummary": "RepairOrbitAnchorsOnlyToActualRepairNotNewConstruction",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "실제 수리 중인 미완성 건물로 기존 공전을 옮긴다. 새 건설·모든 동적 앵커 종류를 처리하지 않는다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:projectile-lifecycle",
+      "name": "projectile-lifecycle",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "growthCollision": "ignore",
+          "onTargetLost": "expire",
+          "tracking": "locked-target"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveRuntimeSystem.cs",
+          "symbol": "TickProjectiles("
+        }
+      ],
+      "handlerSummary": "WaveRuntimeSystem.cs#TickProjectiles(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveRuntimeTests.cs",
+          "symbol": "HomingProjectileTravelsAndExpiresWhenLockedTargetDies"
+        }
+      ],
+      "testSummary": "HomingProjectileTravelsAndExpiresWhenLockedTargetDies",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "고정 표적 추적과 표적 소멸/수명 종료만 지원한다. 관통·도탄·회수 등의 생명주기는 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:mission-cycle",
+      "name": "mission-cycle",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "start": "actual-enemy-engagement",
+          "progress": "participating-kills",
+          "finish": "engagement-ended-and-returned",
+          "returnTarget": "lord",
+          "emptyTripReward": "false",
+          "training": "alternating-front-rank"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "TickGroups("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#TickGroups(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "EarlierTrainingDoesNotRewardLaterMissionWithoutItsOwnParticipatingKill"
+        }
+      ],
+      "testSummary": "EarlierTrainingDoesNotRewardLaterMissionWithoutItsOwnParticipatingKill",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "참여 처치·전열 교대·귀환 원장의 기존 경로만 지원한다. 임의 임무 상태기계가 아니다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:target-routing",
+      "name": "target-routing",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "seed-eaten",
+          "actor": "enemy",
+          "selection": "side-route",
+          "fallback": "default",
+          "persistent": "false"
+        },
+        {
+          "on": "water-contact",
+          "actor": "remnant",
+          "selection": "first-young-plot",
+          "fallback": "wait",
+          "persistent": "false"
+        },
+        {
+          "on": "attack-ready",
+          "actor": "attack",
+          "selection": "raider-in-range",
+          "fallback": "default",
+          "persistent": "false"
+        },
+        {
+          "on": "hit",
+          "actor": "enemy",
+          "selection": "side-route",
+          "fallback": "default",
+          "persistent": "false"
+        },
+        {
+          "on": "recruit",
+          "actor": "group",
+          "selection": "available-returned-group",
+          "fallback": "wait",
+          "persistent": "false"
+        }
+      ],
+      "parameterSummary": "5개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveItemSubscriptions.cs",
+          "symbol": "Route("
+        }
+      ],
+      "handlerSummary": "WaveItemSubscriptions.cs#Route(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveEnemyTests.cs",
+          "symbol": "SeedTheftCreatesLinkedDetourAndFollowingEnemyWalksAroundIt"
+        }
+      ],
+      "testSummary": "SeedTheftCreatesLinkedDetourAndFollowingEnemyWalksAroundIt",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "구독된 사건의 우회·범위 내 약탈자·첫 어린 밭 등 명시 조합만 처리한다. 일반 조건/효과 인터프리터가 아니다.",
+      "selectedReferences": 3,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:resource-routing",
+      "name": "resource-routing",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "enter",
+          "resource": "water",
+          "source": "carried-stock",
+          "destination": "first-young-plot",
+          "transform": "none",
+          "exclusive": "true"
+        },
+        {
+          "on": "mission-start",
+          "resource": "food",
+          "source": "existing-storage",
+          "destination": "field-meal",
+          "transform": "none",
+          "exclusive": "true"
+        }
+      ],
+      "parameterSummary": "2개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveItemSubscriptions.cs",
+          "symbol": "ReserveMissionFood("
+        }
+      ],
+      "handlerSummary": "WaveItemSubscriptions.cs#ReserveMissionFood(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "PackedFoodIsReservedAndUnspentFoodReturnsAfterEmptyTrip"
+        }
+      ],
+      "testSummary": "PackedFoodIsReservedAndUnspentFoodReturnsAfterEmptyTrip",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "기존 물 운반·임무 식량 예약/반환 경로만 지원한다. 임의 자원·운송망·배송 우선순위는 미지원이다.",
+      "selectedReferences": 2,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:prevent-transition",
+      "name": "prevent-transition",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:triggered-geometry",
+      "name": "triggered-geometry",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:meta-unlock",
+      "name": "meta-unlock",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:enemy-pressure",
+      "name": "enemy-pressure",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "target": "lord",
+          "movement": "pursue",
+          "action": "melee",
+          "exit": "none",
+          "counter": "kite"
+        },
+        {
+          "target": "seed",
+          "movement": "pursue",
+          "action": "consume-seed",
+          "exit": "none",
+          "counter": "intercept"
+        },
+        {
+          "target": "ripe",
+          "movement": "pursue",
+          "action": "consume-ripe",
+          "exit": "none",
+          "counter": "intercept"
+        },
+        {
+          "target": "lord",
+          "movement": "charge-locked-line",
+          "action": "melee",
+          "exit": "after-attack",
+          "counter": "side-step"
+        },
+        {
+          "target": "lord",
+          "movement": "hold-front",
+          "action": "frontal-block",
+          "exit": "none",
+          "counter": "rear-attack"
+        },
+        {
+          "target": "lord",
+          "movement": "standoff",
+          "action": "shoot-lane",
+          "exit": "none",
+          "counter": "close-range"
+        }
+      ],
+      "parameterSummary": "6개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveEnemySystem.cs",
+          "symbol": "Advance("
+        }
+      ],
+      "handlerSummary": "WaveEnemySystem.cs#Advance(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveEnemyTests.cs",
+          "symbol": "RipeGrazerWaitsThenConsumesOnlyTheLockedRipeCrop"
+        }
+      ],
+      "testSummary": "RipeGrazerWaitsThenConsumesOnlyTheLockedRipeCrop",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "선택된 추격·약탈·돌진·방패·사격 행동 조합만 처리한다. 새로운 적 원형을 모두 데이터로 표현할 수는 없다.",
+      "selectedReferences": 6,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:terrain-routing",
+      "name": "terrain-routing",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:contact-reaction",
+      "name": "contact-reaction",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:fixed-placement",
+      "name": "fixed-placement",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:group-formation",
+      "name": "group-formation",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "harvest-complete",
+          "action": "reposition-existing-guard",
+          "anchor": "harvest-site",
+          "newMembers": "none",
+          "deadMembers": "never-revive"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveItemSubscriptions.cs",
+          "symbol": "Harvest("
+        }
+      ],
+      "handlerSummary": "WaveItemSubscriptions.cs#Harvest(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveWorkTests.cs",
+          "symbol": "HarvestGuardRepositionsExistingGroupWithoutInventingPeople"
+        }
+      ],
+      "testSummary": "HarvestGuardRepositionsExistingGroupWithoutInventingPeople",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "수확 때 실제 교전/엄호 중인 기존 집단의 목적지만 바꾼다. 새로운 인원·부활·임의 진형은 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:map-route-trace",
+      "name": "map-route-trace",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "lord-work-path",
+          "trace": "sprout-track",
+          "connect": "adjacent-work-segments",
+          "enemyResponse": "attract-to-connected-region",
+          "playerChoice": "finish-region-or-move-out"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveWorkSystem.cs",
+          "symbol": "TraceWorkPath("
+        }
+      ],
+      "handlerSummary": "WaveWorkSystem.cs#TraceWorkPath(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveEnemyTests.cs",
+          "symbol": "ConnectedWorkTraceChangesPursuerApproach"
+        }
+      ],
+      "testSummary": "ConnectedWorkTraceChangesPursuerApproach",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "인접 작업 흔적의 연결과 추격 접근만 지원한다. 일반 지형 경로망·동적 통로는 미지원이다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:growth-conditioning",
+      "name": "growth-conditioning",
+      "staticSupport": "unsupported",
+      "supportedParameterSets": [],
+      "parameterSummary": "0개 조합 · 상세에서 확인",
+      "handlers": [],
+      "handlerSummary": "none",
+      "tests": [],
+      "testSummary": "not assessed",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "등록된 설계 문법만 존재한다. wave-1a primitive 런타임의 소비·정적 처리기·실행 증거는 없으며 후속 구현 계약이다.",
+      "selectedReferences": 0,
+      "operationSupportIds": []
+    },
+    {
+      "id": "unit:geometry-modifier",
+      "name": "geometry-modifier",
+      "staticSupport": "partial-runtime",
+      "supportedParameterSets": [
+        {
+          "on": "enemy-front",
+          "change": "front-corner-orbit",
+          "source": "attack",
+          "preserveGrowthIdentity": "true"
+        }
+      ],
+      "parameterSummary": "1개 조합 · 상세에서 확인",
+      "handlers": [
+        {
+          "path": "core/src/SowSiege.Core/WaveItemSubscriptions.cs",
+          "symbol": "FrontOrbit("
+        }
+      ],
+      "handlerSummary": "WaveItemSubscriptions.cs#FrontOrbit(",
+      "tests": [
+        {
+          "path": "core/tests/SowSiege.Tests/WaveRuntimeIntegrationTests.cs",
+          "symbol": "FrontOrbitItemDoesNotReshapeWithoutVisibleFrontalEnemy"
+        }
+      ],
+      "testSummary": "FrontOrbitItemDoesNotReshapeWithoutVisibleFrontalEnemy",
+      "observed": "not-assessed",
+      "semantic": "not-established",
+      "visual": "not-assessed",
+      "limitation": "보이는 정면 적 조건의 공전 모양 변경만 지원한다. 모든 공격 형태 변형을 처리하지 않는다.",
+      "selectedReferences": 1,
+      "operationSupportIds": []
+    }
+  ]
+}

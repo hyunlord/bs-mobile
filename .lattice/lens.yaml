@@ -1,6 +1,15 @@
 schemaVersion: 1
 name: Sow & Siege · 콘텐츠 지도
 kinds:
+  - id: runtimePrimitive
+    label: 실행 동작 단위
+    files: []
+    columns: [name, staticSupport, limitation]
+    selections:
+      - files: [docs/design/runtime-primitive-support.json]
+        records: /units
+        layer: runtime-support
+        references: false
   - id: weapon
     label: 무기
     files: []
@@ -656,6 +665,14 @@ derived:
           value: stat
       default: design
 facets:
+  - id: primitive-static-support
+    key: primitiveStaticSupport
+    kinds: [runtimePrimitive]
+    layer: runtime-support
+    value:
+      op: get
+      from: node
+      path: [staticSupport]
   - id: selected
     key: selected
     kinds:
@@ -2971,10 +2988,13 @@ presentation:
       values:
         "true": 선택됨
         "false": 미선택
+    primitiveStaticSupport:
+      label: 단위 지원 · 실행 관측 아님
     layer:
       label: 층
       values:
         runtime: 런타임
+        runtime-support: 단위 지원 · 정적 근거
         designed-v1: designed-v1 설계
         candidate: 이전 후보
     wave:
@@ -2995,6 +3015,8 @@ presentation:
     codeSupport:runtime-operations:
       label: 정적 처리기 지원 · 실행 증거 아님
   layers:
+    - id: runtime-support
+      label: 단위 지원 · 정적 근거
     - id: runtime
       label: 런타임
     - id: designed-v1
@@ -3003,6 +3025,19 @@ presentation:
       label: 이전 후보
   defaultLayer: designed-v1
 edges:
+  - id: designed-primitive-support
+    source:
+      kinds: [weapon, tool, item, evolution, enemy, chapter, charter, vassal, material, manor]
+      layer: designed-v1
+    target:
+      op: get
+      from: node
+      path: [primitives]
+    targetQuery:
+      layer: runtime-support
+    targetKind: runtimePrimitive
+    targetField: [id]
+    direction: forward
   - id: item-tool
     source:
       kinds:
@@ -4457,6 +4492,42 @@ edges:
     direction: forward
     label: 저자 참조 · 실행 증거 아님
 views:
+  - id: primitive-support
+    type: table
+    label: 공통 동작 단위 지원
+    description: 지정 조합의 정적 지원만 표시합니다. 실행·의미·화면은 미판정입니다. 노드를 누르면 정확한 파라미터·처리기·검사 경로를 읽을 수 있습니다.
+    query:
+      kinds: [runtimePrimitive]
+      layer: runtime-support
+    columns:
+      - id: staticSupport
+        label: 정적 지원
+        value:
+          op: get
+          from: node
+          path: [staticSupport]
+      - id: parameterSummary
+        label: 허용 조합
+        value:
+          op: get
+          from: node
+          path: [parameterSummary]
+      - id: limitation
+        label: 지원 제한
+        value:
+          op: get
+          from: node
+          path: [limitation]
+  - id: primitive-support-counts
+    type: distribution
+    label: 단위별 정적 지원 경계
+    query:
+      kinds: [runtimePrimitive]
+      layer: runtime-support
+    groupBy:
+      op: get
+      from: node
+      path: [staticSupport]
   - id: designed-influence
     type: matrix
     label: 설계 시스템 영향 행렬
