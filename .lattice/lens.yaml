@@ -1758,6 +1758,359 @@ facets:
             - humanSinks
         - op: literal
           value: []
+  - id: human-loop-form
+    key: human:loop:form
+    kinds:
+      - weapon
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: at
+          object:
+            op: literal
+            value:
+              melee-fan: 부채꼴 베기
+              linear-thrust: 직선 찌르기
+              piercing-line: 관통 직선
+              orbit: 궤도
+              ground-zone: 장판
+              chain: 연쇄
+              ground-slam: 내려찍기
+              homing-projectile: 유도탄
+              boomerang: 부메랑
+              summoned-turret: 설치 포탑
+              falling-bombardment: 낙하 폭격
+              aura: 오라
+              rear-wall: 후방 벽
+              ricochet: 반사
+              ground-trap: 덫
+              expanding-wave: 퍼지는 파동
+          key: &a1
+            op: get
+            from: node
+            path:
+              - form
+        - *a1
+  - id: human-loop-role
+    key: human:loop:role
+    kinds:
+      - weapon
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: at
+          object:
+            op: literal
+            value:
+              crowd: 군중 정리
+              estate: 영지 연동
+              control: 제어
+              single: 단일 대상
+              survival: 생존
+          key: &a2
+            op: get
+            from: node
+            path:
+              - primaryRole
+        - *a2
+  - id: human-loop-axes
+    key: human:loop:axes
+    kinds:
+      - weapon
+    layer: designed-v1
+    value:
+      op: concat
+      values:
+        - op: join
+          input:
+            op: map
+            input:
+              op: get
+              from: node
+              path:
+                - growthAxes
+            value:
+              op: coalesce
+              values:
+                - op: at
+                  object:
+                    op: literal
+                    value:
+                      range: 범위
+                      frequency: 빈도
+                      count: 개수
+                      pierce: 관통
+                  key: &a3
+                    op: get
+                    from: item
+                    path: []
+                - *a3
+          separator: " · "
+        - 이 늘어난다
+  - id: human-loop-growth
+    key: human:loop:growth
+    kinds:
+      - tool
+    layer: designed-v1
+    value:
+      op: concat
+      values:
+        - op: join
+          input:
+            op: map
+            input:
+              op: get
+              from: node
+              path:
+                - growth
+                - responses
+            value:
+              op: coalesce
+              values:
+                - op: at
+                  object:
+                    op: literal
+                    value:
+                      time: 시간
+                      adjacency: 인접
+                      season: 계절
+                      kill: 처치
+                  key: &a4
+                    op: get
+                    from: item
+                    path: []
+                - *a4
+          separator: " · "
+        - " · "
+        - op: get
+          from: node
+          path:
+            - growth
+            - mechanism
+  - id: human-loop-returns
+    key: human:loop:returns
+    kinds:
+      - tool
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: get
+        from: node
+        path:
+          - returns
+      value:
+        op: concat
+        values:
+          - op: coalesce
+            values:
+              - op: at
+                object:
+                  op: literal
+                  value:
+                    xp: 경험치
+                    combat: 전투
+                    buff: 강화
+                    gold: 금화
+                key: &a5
+                  op: get
+                  from: item
+                  path:
+                    - channel
+              - *a5
+          - " · "
+          - op: get
+            from: item
+            path:
+              - mechanism
+  - id: human-loop-itemCost
+    key: human:loop:itemCost
+    kinds:
+      - item
+    layer: designed-v1
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - effect
+                - cost
+            right: ""
+          value: 없음
+      default:
+        op: get
+        from: node
+        path:
+          - effect
+          - cost
+  - id: human-loop-itemClass
+    key: human:loop:itemClass
+    kinds:
+      - item
+    layer: designed-v1
+    value:
+      op: case
+      cases:
+        - when:
+            op: eq
+            left:
+              op: get
+              from: node
+              path:
+                - behaviorClass
+            right: numeric-only
+          value: 수치 강화 · 어떤 빌드에도 쓰임
+      default: 행동을 바꾸는 물품
+  - id: human-loop-tier
+    key: human:loop:tier
+    kinds:
+      - enemy
+    layer: designed-v1
+    value:
+      op: coalesce
+      values:
+        - op: at
+          object:
+            op: literal
+            value:
+              normal: 일반 적
+              elite: 정예
+              boss: 보스
+          key: &a6
+            op: get
+            from: node
+            path:
+              - tier
+        - *a6
+  - id: human-loop-phases
+    key: human:loop:phases
+    kinds:
+      - enemy
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: coalesce
+        values:
+          - op: get
+            from: node
+            path:
+              - phasePatterns
+          - op: literal
+            value: []
+      value:
+        op: concat
+        values:
+          - "예고: "
+          - op: get
+            from: item
+            path:
+              - cue
+          - " → "
+          - op: get
+            from: item
+            path:
+              - action
+          - " 대응: "
+          - op: get
+            from: item
+            path:
+              - response
+  - id: human-loop-scene
+    key: human:loop:scene
+    kinds:
+      - vassal
+    layer: designed-v1
+    value:
+      op: concat
+      values:
+        - op: get
+          from: node
+          path:
+            - signatureScene
+            - setup
+        - " "
+        - op: get
+          from: node
+          path:
+            - signatureScene
+            - action
+        - " "
+        - op: get
+          from: node
+          path:
+            - signatureScene
+            - visibleResult
+  - id: human-loop-boss
+    key: human:loop:boss
+    kinds:
+      - chapter
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: filter
+        input:
+          op: get
+          from: vars
+          path:
+            - catalog
+            - content
+        where:
+          op: eq
+          left:
+            op: get
+            from: item
+            path:
+              - id
+          right:
+            op: get
+            from: node
+            path:
+              - bossId
+      value:
+        op: get
+        from: item
+        path:
+          - name
+  - id: human-loop-inputs
+    key: human:loop:inputs
+    kinds:
+      - manor
+    layer: designed-v1
+    value:
+      op: map
+      input:
+        op: filter
+        input:
+          op: get
+          from: vars
+          path:
+            - catalog
+            - content
+        where:
+          op: in
+          value:
+            op: get
+            from: item
+            path:
+              - id
+          collection:
+            op: get
+            from: node
+            path:
+              - inputIds
+      value:
+        op: get
+        from: item
+        path:
+          - name
 findings:
   - id: item-stat-projection
     query:
@@ -3744,6 +4097,19 @@ presentation:
       tool:
         shape: square
         color: green
+        variants:
+          - field: targetKind
+            value: land
+            color: green
+            label: 땅 도구
+          - field: targetKind
+            value: building
+            color: amber
+            label: 건물 도구
+          - field: targetKind
+            value: people
+            color: blue
+            label: 사람 도구
       item:
         shape: circle
         color: amber
@@ -3918,6 +4284,7 @@ presentation:
             direction: out
       - label: 함께 고르면 진화
         side: left
+        viaPrefix: →
         kinds:
           - weapon
           - tool
@@ -3962,6 +4329,8 @@ presentation:
             direction: in
       - label: 진화하면
         side: right
+        displayStep: 0
+        viaPrefix: +
         kinds:
           - weapon
           - tool
@@ -3969,6 +4338,9 @@ presentation:
           - edgeKinds:
               - evolution-input
             direction: out
+          - edgeKinds:
+              - evolution-input
+            direction: in
       - label: 얻는 재료
         side: right
         kinds:
@@ -4230,6 +4602,192 @@ presentation:
     inventory: false
     distributions: false
   detail:
+    summaryFieldsByKind:
+      weapon:
+        - label: 하는 일
+          path:
+            - effect
+            - trigger
+        - label: 고유 동작
+          path:
+            - uniqueMechanic
+        - label: 영지와 엮이는 방식
+          path:
+            - estateLink
+        - label: 빈틈
+          path:
+            - effect
+            - cost
+        - label: 형태
+          path:
+            - facet
+            - human:loop:form
+        - label: 역할
+          path:
+            - facet
+            - human:loop:role
+        - label: 레벨업하면
+          path:
+            - facet
+            - human:loop:axes
+      tool:
+        - label: 발동
+          path:
+            - activation
+        - label: 지도에 남기는 것
+          path:
+            - remnant
+            - description
+        - label: 자라는 조건
+          path:
+            - facet
+            - human:loop:growth
+        - label: 돌려주는 것
+          path:
+            - facet
+            - human:loop:returns
+        - label: 수확 순간
+          path:
+            - harvest
+            - visibleMoment
+        - label: 잃었을 때
+          path:
+            - recovery
+        - label: 대가
+          path:
+            - effect
+            - cost
+      item:
+        - label: 언제
+          path:
+            - effect
+            - trigger
+        - label: 효과
+          path:
+            - effect
+            - benefit
+        - label: 대가
+          path:
+            - facet
+            - human:loop:itemCost
+        - label: 종류
+          path:
+            - facet
+            - human:loop:itemClass
+      charter:
+        - label: 언제
+          path:
+            - effect
+            - trigger
+        - label: 바뀌는 규칙
+          path:
+            - ruleChange
+        - label: 포기하는 것
+          path:
+            - forfeiture
+      evolution:
+        - label: 열리는 조건
+          path:
+            - effect
+            - trigger
+        - label: 바뀌기 전
+          path:
+            - transformation
+            - before
+        - label: 바뀐 뒤
+          path:
+            - transformation
+            - after
+        - label: 화면에서
+          path:
+            - transformation
+            - visibleChange
+        - label: 대가
+          path:
+            - effect
+            - cost
+      enemy:
+        - label: 등급
+          path:
+            - facet
+            - human:loop:tier
+        - label: 행동
+          path:
+            - behavior
+        - label: 예고
+          path:
+            - tell
+        - label: 대응
+          path:
+            - counterplay
+        - label: 영지에 주는 피해
+          path:
+            - estateThreat
+        - label: 보스 국면
+          path:
+            - facet
+            - human:loop:phases
+      chapter:
+        - label: 순서
+          path:
+            - order
+        - label: 땅의 규칙
+          path:
+            - device
+            - rule
+        - label: 플레이어의 고민
+          path:
+            - device
+            - decision
+        - label: 싸움의 변화
+          path:
+            - encounterChange
+        - label: 보스
+          path:
+            - facet
+            - human:loop:boss
+      vassal:
+        - label: 역할
+          path:
+            - role
+        - label: 조건
+          path:
+            - ability
+            - trigger
+        - label: 능력
+          path:
+            - ability
+            - action
+        - label: 대표 장면
+          path:
+            - facet
+            - human:loop:scene
+        - label: 대가
+          path:
+            - cost
+      material:
+        - label: 얻는 곳
+          path:
+            - facet
+            - human:materialSources
+        - label: 쓰는 곳
+          path:
+            - facet
+            - human:materialSinks
+      manor:
+        - label: 입력
+          path:
+            - facet
+            - human:loop:inputs
+        - label: 기능
+          path:
+            - function
+        - label: 열리는 조건
+          path:
+            - unlockBehavior
+        - label: 판과의 연결
+          path:
+            - runConnection
     summaryFields:
       - label: 카드 문구
         path:
