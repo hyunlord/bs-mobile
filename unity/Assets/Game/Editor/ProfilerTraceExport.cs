@@ -66,6 +66,7 @@ namespace Game.Editor
                 firstProfilerFrame = first, lastProfilerFrame = last
             };
             var observed = new SortedSet<string>(StringComparer.Ordinal);
+            var correlations = new List<string>();
             using (var frames = new StreamWriter(Path.Combine(output, "frames.csv")))
             using (var samples = new StreamWriter(Path.Combine(output, "samples.csv")))
             {
@@ -75,6 +76,7 @@ namespace Game.Editor
                 {
                     var threads = 0; var gcEvents = 0; var gcMetadata = 0; long gcBytes = 0; float frameMs = 0;
                     string correlation = ",,,,not-requested";
+                    var correlationStatus = "missing";
                     for (var thread = 0; ; thread++)
                     {
                         using var view = ProfilerDriver.GetRawFrameDataView(frame, thread);
@@ -92,11 +94,13 @@ namespace Game.Editor
                                     if (data.Length == 4 && data[0] >= 0 && data[1] >= 0 && data[2] >= 0 && data[3] >= 0 && data[3] <= 2)
                                     {
                                         correlation = string.Join(",", N(data[0]), N(data[1]), N(data[2]), N(data[3]), "exact-frame-metadata");
+                                        correlationStatus = "exact-frame-metadata";
                                         report.correlatedFrames++;
                                     }
-                                    else correlation = ",,,,invalid";
+                                    else { correlation = ",,,,invalid"; correlationStatus = "invalid"; }
                                 }
-                                else if (count > 1) correlation = ",,,,ambiguous";
+                                else if (count > 1) { correlation = ",,,,ambiguous"; correlationStatus = "ambiguous"; }
+                                else if (count < 0) { correlation = ",,,,invalid"; correlationStatus = "invalid"; }
                             }
                         }
                         threads++;
@@ -125,6 +129,11 @@ namespace Game.Editor
                     }
                     if (threads == 0) throw new InvalidDataException("Missing profiler frame " + frame);
                     if (float.IsNaN(frameMs) || float.IsInfinity(frameMs) || frameMs < 0) throw new InvalidDataException("Invalid CPU frame duration.");
+                    if (benchmark)
+                    {
+                        correlations.Add(correlationStatus);
+                        if (correlationStatus == "missing" && (frame == first || frame == last)) correlation = ",,,,boundary-uncorrelated";
+                    }
                     frames.WriteLine(string.Join(",", N(frame), N(frameMs), N(threads), N(gcEvents), N(gcMetadata), gcEvents > 0 && gcMetadata == gcEvents ? N(gcBytes) : "", correlation));
                     report.gcAllocEvents += gcEvents; report.gcMetadataEvents += gcMetadata; report.gcAllocatedBytes += gcBytes;
                     report.frames++;
@@ -134,12 +143,39 @@ namespace Game.Editor
             var required = RequiredMarkers(metadata.scope);
             report.missingMarkers = required.Where(name => !observed.Contains(name)).ToArray();
             report.allocationMetadataComplete = report.gcAllocEvents > 0 && report.gcAllocEvents == report.gcMetadataEvents;
-            report.correlationComplete = !benchmark || report.correlatedFrames == report.frames;
+            var coverage = EvaluateBenchmarkCorrelation(correlations);
+            report.boundaryUncorrelatedFrames = coverage.boundaryUncorrelatedFrames;
+            report.interiorUncorrelatedFrames = coverage.interiorUncorrelatedFrames;
+            report.invalidOrAmbiguousFrames = coverage.invalidOrAmbiguousFrames;
+            report.correlationComplete = !benchmark || coverage.complete;
             report.complete = report.frames > 0 && report.missingMarkers.Length == 0 && report.correlationComplete && report.profilerWarningCount == 0;
             File.WriteAllText(Path.Combine(output, "export.json"), JsonUtility.ToJson(report, true));
             File.Copy(input + ".json", Path.Combine(output, "trace-provenance.json"));
             if (!report.complete) throw new InvalidDataException("Trace incomplete (frame metadata or required scopes): " + string.Join(",", report.missingMarkers));
             Debug.Log("PROFILER_TRACE_EXPORTED frames=" + report.frames + " samples=" + report.exportedSamples);
+        }
+
+        public static CorrelationCoverage EvaluateBenchmarkCorrelation(IReadOnlyList<string> statuses)
+        {
+            var coverage = new CorrelationCoverage();
+            for (var index = 0; index < statuses.Count; index++)
+            {
+                if (statuses[index] == "exact-frame-metadata") coverage.exactFrames++;
+                else if (statuses[index] == "missing")
+                {
+                    if (index == 0 || index == statuses.Count - 1) coverage.boundaryUncorrelatedFrames++;
+                    else coverage.interiorUncorrelatedFrames++;
+                }
+                else coverage.invalidOrAmbiguousFrames++;
+            }
+            coverage.complete = coverage.exactFrames > 0 && coverage.interiorUncorrelatedFrames == 0 && coverage.invalidOrAmbiguousFrames == 0;
+            return coverage;
+        }
+
+        public sealed class CorrelationCoverage
+        {
+            public int exactFrames, boundaryUncorrelatedFrames, interiorUncorrelatedFrames, invalidOrAmbiguousFrames;
+            public bool complete;
         }
 
         public static string[] RequiredMarkers(string scope)
@@ -172,7 +208,7 @@ namespace Game.Editor
             public string scope = "diagnostic-inclusive-scope-times-not-performance-acceptance";
             public string unnamedSampleScope = "Blank sample names are unavailable in the imported raw view; their thread, index and inclusive timing are retained.";
             public string allocationScope = "Observed GC.Alloc events across captured threads; blank bytes mean absent or incomplete metadata, never proven zero allocation.";
-            public string correlationScope = "Benchmark metadata emitted after WorldPresent: [Time.frameCount, rendered tick, rendered enemies, phase 0 warmup/1 measured window/2 gap]. Missing, invalid or multiple chunks are uncorrelated; never infer an index offset.";
+            public string correlationScope = "Benchmark metadata emitted after WorldPresent: [Time.frameCount, rendered tick, rendered enemies, phase 0 warmup/1 measured window/2 gap]. Only a missing first and/or last raw frame is accepted as boundary-uncorrelated because profiling starts/stops inside a frame; retain these rows but never assign a tick. At least one exact frame is required; interior gaps, invalid or multiple chunks fail. Never infer an index offset.";
             public string timingScope = "Profiler frame indices are not telemetry row IDs. Inclusive nested samples must not be summed. CPU frame time is not GPU or presentation latency.";
             public string rawSha256, sessionId, platform, build, sourceHash, dataHash, unityVersion, stopReason, traceKind;
             public string backend = "not-recorded-by-trace-sidecar; do not infer from platform";
@@ -180,6 +216,7 @@ namespace Game.Editor
             public bool sourceDirty;
             public bool complete, correlationComplete, allocationMetadataComplete;
             public int correlatedFrames, gcAllocEvents, gcMetadataEvents, profilerWarningCount;
+            public int boundaryUncorrelatedFrames, interiorUncorrelatedFrames, invalidOrAmbiguousFrames;
             public long gcAllocatedBytes;
             public string[] observedMarkers, missingMarkers;
         }

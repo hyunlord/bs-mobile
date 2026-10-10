@@ -25,6 +25,10 @@ export UNITY_MAC_PATH="$OUT/Sow and Siege.app"
 [[ "$("$EDITOR" -version)" == "6000.6.4f1" ]] || { echo 'Unity version mismatch' >&2; exit 1; }
 [[ ! -e "$UNITY_MAC_PATH" ]] || { echo 'Use a fresh UNITY_MAC_OUTPUT to preserve prior build evidence.' >&2; exit 1; }
 bash tools/prepare-unity.sh
+if [[ "$UNITY_MAC_DEVELOPMENT" == 1 ]]; then
+  dotnet run --project core/src/SowSiege.Sim --configuration Release -- \
+    interactive-fixtures data artifacts/phase1b/replays "$UNITY_CONTENT_PROFILE" > "$OUT/diagnostic-fixtures.log"
+fi
 URP_ASSET="$ROOT/unity/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset"
 URP_SNAPSHOT="$OUT/urp-authoring-before-build.asset"
 cp "$URP_ASSET" "$URP_SNAPSHOT"

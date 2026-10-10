@@ -7,6 +7,58 @@ namespace Game.Tests
 {
     public sealed class DevelopmentProfilerTraceTests
     {
+        [Test] public void ExactCorrelationNeedsNoBoundaryException()
+        {
+            var coverage = ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[] { "exact-frame-metadata", "exact-frame-metadata" });
+            Assert.That(coverage.complete, Is.True);
+            Assert.That(coverage.exactFrames, Is.EqualTo(2));
+            Assert.That(coverage.boundaryUncorrelatedFrames, Is.Zero);
+        }
+        [TestCase(true, false)] [TestCase(false, true)] [TestCase(true, true)]
+        public void MissingFirstOrLastRawFrameIsRetainedAsAnUncorrelatedBoundary(bool firstMissing, bool lastMissing)
+        {
+            var coverage = ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[]
+            {
+                firstMissing ? "missing" : "exact-frame-metadata", "exact-frame-metadata", lastMissing ? "missing" : "exact-frame-metadata"
+            });
+            Assert.That(coverage.complete, Is.True);
+            Assert.That(coverage.boundaryUncorrelatedFrames, Is.EqualTo((firstMissing ? 1 : 0) + (lastMissing ? 1 : 0)));
+            Assert.That(coverage.interiorUncorrelatedFrames, Is.Zero);
+        }
+        [Test] public void InteriorGapFailsEvenWithExactFramesOnBothSides()
+        {
+            var coverage = ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[] { "exact-frame-metadata", "missing", "exact-frame-metadata" });
+            Assert.That(coverage.complete, Is.False);
+            Assert.That(coverage.interiorUncorrelatedFrames, Is.EqualTo(1));
+        }
+        [Test] public void MultipleLeadingMissingFramesAreNotAssumedToBeACaptureBoundary()
+        {
+            var coverage = ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[] { "missing", "missing", "exact-frame-metadata" });
+            Assert.That(coverage.complete, Is.False);
+            Assert.That(coverage.boundaryUncorrelatedFrames, Is.EqualTo(1));
+            Assert.That(coverage.interiorUncorrelatedFrames, Is.EqualTo(1));
+        }
+        [Test] public void EmptyOrOnlyBoundaryFramesCannotClaimExactCorrelation()
+        {
+            Assert.That(ProfilerTraceExport.EvaluateBenchmarkCorrelation(Array.Empty<string>()).complete, Is.False);
+            Assert.That(ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[] { "missing" }).complete, Is.False);
+            Assert.That(ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[] { "missing", "missing" }).complete, Is.False);
+        }
+        [TestCase("invalid")] [TestCase("ambiguous")] [TestCase("unknown")]
+        public void MalformedMetadataFailsEvenAtCaptureEdges(string status)
+        {
+            foreach (var statuses in new[]
+            {
+                new[] { status, "exact-frame-metadata" },
+                new[] { "exact-frame-metadata", status },
+                new[] { "exact-frame-metadata", status, "exact-frame-metadata" }
+            })
+            {
+                var coverage = ProfilerTraceExport.EvaluateBenchmarkCorrelation(statuses);
+                Assert.That(coverage.complete, Is.False);
+                Assert.That(coverage.invalidOrAmbiguousFrames, Is.EqualTo(1));
+            }
+        }
         [Test] public void NormalTraceStillRequiresTelemetryWhileBenchmarkRequiresItsSnapshotAndAcceptScopes()
         {
             Assert.That(ProfilerTraceExport.RequiredMarkers(DevelopmentProfilerTrace.NormalScope), Is.EquivalentTo(new[]
