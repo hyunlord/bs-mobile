@@ -17,6 +17,9 @@ namespace Game.App
         Dictionary<(string, int), Track> tracks;
         (string, int)[] removals;
         long[] scopeBytes, scopeTicks;
+        readonly long[] externalBytes = new long[(int)SmoothnessScope.Count], externalTicks = new long[(int)SmoothnessScope.Count], externalCalls = new long[(int)SmoothnessScope.Count];
+        bool inFrame;
+        int generation, discardedScopes;
         int frameCount, sampleCount, jumpCount, droppedFrames, droppedSamples, droppedJumps;
         long updateStart, previousStart, sampleTime, allocatedStart;
         public bool Enabled { get; private set; }
@@ -45,11 +48,32 @@ namespace Game.App
         {
             readonly FrameSmoothnessDiagnostics owner;
             readonly int index;
+            readonly int frame, generation;
+            readonly bool internalScope;
             readonly long start, startedAt;
             public AllocationScope(FrameSmoothnessDiagnostics owner, SmoothnessScope scope)
-            { this.owner = owner; index = owner.Enabled && owner.frameCount < FrameCapacity ? owner.frameCount * (int)SmoothnessScope.Count + (int)scope : -1; start = index >= 0 && owner.AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : 0; startedAt = index >= 0 ? Now : 0; }
+            {
+                this.owner = owner; frame = owner.frameCount; generation = owner.generation; internalScope = owner.inFrame;
+                index = owner.Enabled && (!internalScope || frame < FrameCapacity) ? (int)scope : -1;
+                start = index >= 0 && owner.AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : 0;
+                startedAt = index >= 0 ? Now : 0;
+            }
             public void Dispose()
-            { if(owner.Enabled && index >= 0 && index < owner.scopeBytes.Length) { owner.scopeTicks[index] += Now - startedAt; if(owner.AllocationCounterAvailable) owner.scopeBytes[index] += GC.GetAllocatedBytesForCurrentThread() - start; } }
+            {
+                if(!owner.Enabled || index < 0 || generation != owner.generation) return;
+                if(internalScope != owner.inFrame || frame != owner.frameCount) { owner.discardedScopes++; return; }
+                var elapsed = Now - startedAt;
+                var bytes = owner.AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() - start : 0;
+                if(internalScope)
+                {
+                    var offset = frame * (int)SmoothnessScope.Count + index;
+                    owner.scopeTicks[offset] += elapsed; owner.scopeBytes[offset] += bytes;
+                }
+                else
+                {
+                    owner.externalTicks[index] += elapsed; owner.externalBytes[index] += bytes; owner.externalCalls[index]++;
+                }
+            }
         }
         public AllocationScope Scope(SmoothnessScope scope) => new AllocationScope(this, scope);
         public void Begin()
@@ -60,12 +84,15 @@ namespace Game.App
             scopeBytes ??= new long[FrameCapacity * (int)SmoothnessScope.Count];
             scopeTicks ??= new long[FrameCapacity * (int)SmoothnessScope.Count];
             Array.Clear(rows, 0, rows.Length); Array.Clear(scopeBytes, 0, scopeBytes.Length); Array.Clear(scopeTicks, 0, scopeTicks.Length);
+            Array.Clear(externalBytes, 0, externalBytes.Length); Array.Clear(externalTicks, 0, externalTicks.Length); Array.Clear(externalCalls, 0, externalCalls.Length);
+            generation++; inFrame = false; discardedScopes = 0;
             frameCount = sampleCount = jumpCount = droppedFrames = droppedSamples = droppedJumps = 0;
             tracks.Clear(); previousStart = sampleTime = 0; Enabled = true;
         }
         public void BeginFrame(int tick, bool paused)
         {
             if(!Enabled) return;
+            inFrame = true;
             updateStart = Now; allocatedStart = AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() : 0; sampleCount = 0;
             if(!Enabled || frameCount >= FrameCapacity) return;
             rows[frameCount] = new FrameRow { Tick = tick, UnityFrame = Time.frameCount, Paused = paused,
@@ -127,7 +154,8 @@ namespace Game.App
         }
         public void EndFrame()
         {
-            if(!Enabled) return;
+            if(!Enabled || !inFrame) return;
+            inFrame = false;
             if(frameCount >= FrameCapacity) { droppedFrames++; return; }
             rows[frameCount].Allocated = AllocationCounterAvailable ? GC.GetAllocatedBytesForCurrentThread() - allocatedStart : -1;
             rows[frameCount].UpdateMs = Ms(Now - updateStart); frameCount++;
@@ -141,6 +169,7 @@ namespace Game.App
         {
             if(rows == null) return;
             Enabled = false;
+            inFrame = false;
             Directory.CreateDirectory(folder);
             using(var file = new StreamWriter(Path.Combine(folder, "smoothness-frames.csv")))
             {
@@ -161,12 +190,19 @@ namespace Game.App
                     file.WriteLine(FormattableString.Invariant($",{r.UpdateMs - accountedMs:F6},{r.UnityUnscaledDeltaMs:F6}"));
                 }
             }
+            using(var file = new StreamWriter(Path.Combine(folder, "smoothness-external-scopes.csv")))
+            {
+                file.WriteLine("scope,calls,elapsedMs,allocatedBytes");
+                for(var scope = 0; scope < (int)SmoothnessScope.Count; scope++)
+                    file.WriteLine(FormattableString.Invariant($"{(SmoothnessScope)scope},{externalCalls[scope]},{Ms(externalTicks[scope]):F6},{(AllocationCounterAvailable ? externalBytes[scope] : -1)}"));
+            }
             using(var file = new StreamWriter(Path.Combine(folder, "smoothness-jumps.csv")))
             {
                 file.WriteLine("frame,kind,id,worldJump,screenJumpPixels,cameraJumpPixels,cameraCompensatedPixels,expectedMovementPixels,paused,reset");
                 for(var i = 0; i < jumpCount; i++) { var r = jumps[i]; file.WriteLine(FormattableString.Invariant($"{r.Frame},{r.Kind},{r.Id},{r.World:F6},{r.Screen:F6},{r.Camera:F6},{r.Residual:F6},{r.ExpectedPixels:F6},{r.Paused},{r.Reset}")); }
             }
             File.WriteAllText(Path.Combine(folder, "smoothness-boundary.txt"),
+                $"Update rows include scopes only between BeginFrame and EndFrame. UI/autoplay command scopes outside Update are retained separately in smoothness-external-scopes.csv; this file measures those scopes, not the whole external callback. Neither their time nor bytes are subtracted from Update totals. Scopes crossing a frame boundary are discarded and counted: {discardedScopes}.\n" +
                 $"Software input sample to CPU render submission / EndOfFrame only; not physical input-to-photon.\nAllocation counter: {(AllocationCounterAvailable ? "available: known allocation calibration passed" : "unavailable: known allocation calibration failed; every byte column is -1, never zero-allocation evidence")}.\nStopwatch scope durations are disjoint CPU elapsed times, independent of allocation counter availability; unattributedUpdateMs includes input, diagnostics and unscoped work. Recording measures accepted-command serialization/write only. Scope byte counters are disjoint when available; CoreSnapshot includes immutable snapshot allocations. No frame-global profiler value is attributed to individual scopes.\nRaw jumps retained even across pause/reset; anomalies compare camera-compensated movement to observed velocity plus 6 pixels.\nDropped frame rows: {droppedFrames}; dropped entity samples: {droppedSamples}; dropped jump rows: {droppedJumps}.\n");
         }
     }

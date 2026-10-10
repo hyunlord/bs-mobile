@@ -5,6 +5,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     // Numeric HUD text uses a reusable character/vertex buffer, not formatted strings per frame.
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class BufferedHudText : MaskableGraphic
     {
         const string Glyphs = "0123456789 /:-·봄여름가을겨울체력레벨남음";
@@ -16,7 +17,7 @@ namespace Game.View
         int fontSize, length, writing;
         FontStyle style;
         TextAnchor alignment;
-        bool changed;
+        bool changed, populating;
         public override Texture mainTexture => font != null ? font.material.mainTexture : base.mainTexture;
 
         public static BufferedHudText Create(Text source)
@@ -40,9 +41,14 @@ namespace Game.View
         protected override void OnDisable() { Font.textureRebuilt -= RefreshGlyphs; base.OnDisable(); }
         void RefreshGlyphs(Font rebuilt)
         {
-            if (font == null || rebuilt != font) return;
-            for (var i = 0; i < Glyphs.Length; i++) font.GetCharacterInfo(Glyphs[i], out glyphs[i], fontSize, style);
-            SetVerticesDirty(); SetMaterialDirty();
+            if (font == null || rebuilt != font || populating || !IsActive()) return;
+            // Like uGUI Text.FontTextureChanged, rebuild immediately inside the Canvas pass:
+            // registering another dirty graphic there is rejected by CanvasUpdateRegistry.
+            if (CanvasUpdateRegistry.IsRebuildingGraphics() || CanvasUpdateRegistry.IsRebuildingLayout())
+            {
+                UpdateGeometry(); UpdateMaterial();
+            }
+            else { SetVerticesDirty(); SetMaterialDirty(); }
         }
         public void Begin() { writing = 0; changed = false; }
         public void Append(string value) { for (var i = 0; i < value.Length; i++) Append(value[i]); }
@@ -71,29 +77,40 @@ namespace Game.View
 #endif
         protected override void OnPopulateMesh(VertexHelper helper)
         {
-            helper.Clear(); if (font == null) return;
-            font.RequestCharactersInTexture(Glyphs, fontSize, style);
-            var width = 0f;
-            for (var i = 0; i < length; i++) { var index = Glyphs.IndexOf(text[i]); if (index >= 0) width += glyphs[index].advance; }
-            var rect = rectTransform.rect;
-            var horizontal = (int)alignment % 3;
-            var x = horizontal == 0 ? rect.xMin : horizontal == 1 ? rect.center.x - width * .5f : rect.xMax - width;
-            // Match the single-line legacy Text middle alignment using the font's ascent.
-            var ascent = font.ascent * (float)fontSize / Mathf.Max(1, font.fontSize);
-            var vertical = (int)alignment / 3;
-            var lineTop = vertical == 0 ? rect.yMax : vertical == 1 ? rect.center.y + fontSize * .5f : rect.yMin + fontSize;
-            var baseline = lineTop - ascent;
-            for (var i = 0; i < length; i++)
+            if (font == null) { helper.Clear(); return; }
+            populating = true;
+            try
             {
-                var index = Glyphs.IndexOf(text[i]); if (index < 0) continue;
-                var glyph = glyphs[index];
-                for (var vertex = 0; vertex < 4; vertex++) { quad[vertex] = UIVertex.simpleVert; quad[vertex].color = color; }
-                quad[0].position = new Vector3(x + glyph.minX, baseline + glyph.minY); quad[0].uv0 = glyph.uvBottomLeft;
-                quad[1].position = new Vector3(x + glyph.minX, baseline + glyph.maxY); quad[1].uv0 = glyph.uvTopLeft;
-                quad[2].position = new Vector3(x + glyph.maxX, baseline + glyph.maxY); quad[2].uv0 = glyph.uvTopRight;
-                quad[3].position = new Vector3(x + glyph.maxX, baseline + glyph.minY); quad[3].uv0 = glyph.uvBottomRight;
-                helper.AddUIVertexQuad(quad); x += glyph.advance;
+                font.RequestCharactersInTexture(Glyphs, fontSize, style);
+                // A request can repopulate missing glyphs without rebuilding the whole atlas.
+                // Always read the final metrics/UVs; a texture event alone is not a cache key.
+                for (var i = 0; i < Glyphs.Length; i++) font.GetCharacterInfo(Glyphs[i], out glyphs[i], fontSize, style);
+                // Font callbacks may rebuild another label through uGUI's shared VertexHelper.
+                helper.Clear();
+
+                var width = 0f;
+                for (var i = 0; i < length; i++) { var index = Glyphs.IndexOf(text[i]); if (index >= 0) width += glyphs[index].advance; }
+                var rect = rectTransform.rect;
+                var horizontal = (int)alignment % 3;
+                var x = horizontal == 0 ? rect.xMin : horizontal == 1 ? rect.center.x - width * .5f : rect.xMax - width;
+                // Match the single-line legacy Text middle alignment using the font's ascent.
+                var ascent = font.ascent * (float)fontSize / Mathf.Max(1, font.fontSize);
+                var vertical = (int)alignment / 3;
+                var lineTop = vertical == 0 ? rect.yMax : vertical == 1 ? rect.center.y + fontSize * .5f : rect.yMin + fontSize;
+                var baseline = lineTop - ascent;
+                for (var i = 0; i < length; i++)
+                {
+                    var index = Glyphs.IndexOf(text[i]); if (index < 0) continue;
+                    var glyph = glyphs[index];
+                    for (var vertex = 0; vertex < 4; vertex++) { quad[vertex] = UIVertex.simpleVert; quad[vertex].color = color; }
+                    quad[0].position = new Vector3(x + glyph.minX, baseline + glyph.minY); quad[0].uv0 = glyph.uvBottomLeft;
+                    quad[1].position = new Vector3(x + glyph.minX, baseline + glyph.maxY); quad[1].uv0 = glyph.uvTopLeft;
+                    quad[2].position = new Vector3(x + glyph.maxX, baseline + glyph.maxY); quad[2].uv0 = glyph.uvTopRight;
+                    quad[3].position = new Vector3(x + glyph.maxX, baseline + glyph.minY); quad[3].uv0 = glyph.uvBottomRight;
+                    helper.AddUIVertexQuad(quad); x += glyph.advance;
+                }
             }
+            finally { populating = false; }
         }
     }
 }

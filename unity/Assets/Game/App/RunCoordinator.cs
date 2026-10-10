@@ -241,7 +241,7 @@ namespace Game.App
             if(Error==null)AutoplayCapture.Active?.OnRunReady(this);
         }
         private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
-        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
+        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true));hud.Present(Frame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
         // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
         public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running

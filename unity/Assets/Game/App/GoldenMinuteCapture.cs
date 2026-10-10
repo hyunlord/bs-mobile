@@ -27,7 +27,8 @@ namespace Game.App
         long submissionAllocations = -1, callbackAllocations = -1;
         bool submissionCounterAvailable, callbackCounterAvailable, callbackCounterCalibrated;
         bool stopping, finalized, battleSelected, initialRunSelected, writerCompleting;
-        int oldFrameRate;
+        int oldFrameRate, renderStride, firstRenderFrame;
+        double displayRefreshRate;
         bool warmupSubmitted, warmed, flipReadbackRows, armed;
         public bool ReadyToStart => warmed && !stopping;
 
@@ -61,9 +62,20 @@ namespace Game.App
             writer = new GoldenCaptureWriter(folder, width, height, frames, flipReadbackRows);
             var listener = FindFirstObjectByType<AudioListener>();
             if (listener != null) audio = GoldenMinuteAudio.BeginMixedOutput(listener, Path.Combine(folder, "audio.wav"));
+            displayRefreshRate = Screen.currentResolution.refreshRateRatio.value;
+            renderStride = RefreshStride(displayRefreshRate, QualitySettings.vSyncCount);
             oldFrameRate = Application.targetFrameRate;
             Application.targetFrameRate = 60;
             StartCoroutine(Record());
+        }
+
+        public static int RefreshStride(double displayHz, int vSyncCount)
+        {
+            if (vSyncCount <= 0) return 0;
+            var presentationHz = displayHz / vSyncCount;
+            if (Math.Abs(presentationHz - 120) < 1) return 2;
+            if (Math.Abs(presentationHz - 60) < 1) return 1;
+            return 0;
         }
 
         public void ArmRecording()
@@ -122,16 +134,18 @@ namespace Game.App
                 if (run.Frame.Status == RunStatus.Completed && run.Frame.Tick < run.Frame.TickRate * 60)
                     throw new InvalidOperationException("Run ended before sixty gameplay seconds.");
                 var now = System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency;
-                // On a 60 Hz presentation stream, take every real frame despite submillisecond jitter.
-                // On faster displays use accumulated 60 Hz deadlines, not now + 1/60 drift.
-                if (submitted > 0 && now < nextDeadline - .002) return;
+                // Synchronized 60/120 Hz uses a stable render phase; timestamp jitter must not alternate 8/25 ms selection.
+                // Unknown presentation rates retain accumulated deadlines and the same strict elapsed-time evidence.
+                if (submitted > 0 && (renderStride > 0
+                    ? (Time.renderedFrameCount - firstRenderFrame) % renderStride != 0
+                    : now < nextDeadline - .002)) return;
                 var slot = frames[submitted % RingSize];
                 var buffer = gpu[submitted % RingSize];
                 if (Volatile.Read(ref slot.State) != 0)
                 {
                     ringOverflows++; throw new InvalidOperationException("Capture ring overflow; no frame duplication or silent drop permitted.");
                 }
-                if (submitted == 0) { initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
+                if (submitted == 0) { firstRenderFrame = Time.renderedFrameCount; initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
                 else
                 {
                     var interval = now - lastTime;
@@ -243,7 +257,7 @@ namespace Game.App
                 imageWriterAllocationCounterAvailable = writer != null && writer.AllocationCounterAvailable, audioWriterAllocationCounterAvailable = audio != null && audio.AllocationCounterAvailable,
                 audio = audio != null && audio.NonzeroSampleCount > 0, audioDroppedBlocks = audio?.DroppedBlocks ?? 0,
                 audioStartOffsetSeconds = audio?.VideoOffsetSeconds ?? 0, battleScreenshot = writer != null && writer.BattleWritten, initialRunScreenshot = writer != null && writer.InitialRunWritten,
-                automatedNormalInput = true, failure = failure, requestedFps = 60, readbackRowsFlipped = flipReadbackRows
+                automatedNormalInput = true, failure = failure, requestedFps = 60, displayRefreshHz = displayRefreshRate, presentationRenderStride = renderStride, readbackRowsFlipped = flipReadbackRows
             }, true));
             complete(failure == null, failure ?? "Live native frames captured asynchronously with actual timestamps; no synthesized frames or visual acceptance claim.");
         }
@@ -273,6 +287,8 @@ namespace Game.App
             public string commit, sourceHash, profile, dataHash, failure;
             public bool sourceDirty, audio, battleScreenshot, initialRunScreenshot, automatedNormalInput, readbackRowsFlipped;
             public bool submissionAllocationCounterAvailable, callbackAllocationCounterAvailable, imageWriterAllocationCounterAvailable, audioWriterAllocationCounterAvailable;
+            public double displayRefreshHz;
+            public int presentationRenderStride;
             public int frames, submittedFrames, finalTick, tickRate, width, height, requestedFps, gpuErrors, ringOverflows, missed60HzSlots, audioDroppedBlocks, completedReadbacks, maximumQueueDepth, globalGcCollections;
             public long submissionAllocatedBytes, callbackAllocatedBytes, imageWriterAllocatedBytes, audioWriterAllocatedBytes;
             public double wallSeconds, measuredFps, frameP95Ms, frameMaxMs, audioStartOffsetSeconds;

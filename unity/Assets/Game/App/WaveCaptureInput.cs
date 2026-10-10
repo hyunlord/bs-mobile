@@ -49,7 +49,7 @@ namespace Game.App
                 }
                 // Positive world Y is screen-up. Walk northeast of actual completed buildings;
                 // do not move the estate, camera, rewards, or simulation state for the comparison.
-                if(count>0)target=new WorldPoint((int)Math.Max(0,Math.Min(frame.MapWidth,x/count+1200)),(int)Math.Max(0,Math.Min(frame.MapHeight,y/count+900)));
+                if(count>0)target=new WorldPoint((int)Math.Max(0,Math.Min(frame.MapWidth,x/count+1800)),(int)Math.Max(0,Math.Min(frame.MapHeight,y/count+1600)));
             }
             return evasive?EvasiveTarget(frame,wave,target,catalog):target;
         }

@@ -113,6 +113,20 @@ namespace Game.App
 #endif
         }
 
+        public static int PrewarmIsolatedCore(ContentCatalog catalog, InteractiveOptions options)
+        {
+            var isolated = new InteractiveSession(catalog, options);
+            for (var tick = 0; tick < 6 && isolated.View.Status == RunStatus.Running; tick++)
+            {
+                isolated.Apply(new ReplayCommand(isolated.NextSequence, tick, ReplayCommandKind.Advance, new PlayerInput(PlayerInput.Scale, 0)));
+                var frame = isolated.View.CaptureFrame();
+                var firstPlayable = isolated.View.CaptureFirstPlayable();
+                var wave = (isolated.View as IWaveRunView)?.CaptureWaveRuntime();
+                if (firstPlayable == null) WavePresentation.Envelope(catalog, frame, isolated.View.CaptureCards(), wave);
+            }
+            return isolated.View.CaptureFrame().Tick;
+        }
+
         public static bool IsRequested(string[] args) => args.Contains("--autoplay-capture");
         public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && args.Contains("--golden-minute");
 
@@ -245,7 +259,13 @@ namespace Game.App
                     {
                         if (minuteCapture == null)
                         {
+                            if (run.Session != null) throw new InvalidOperationException("Core warmup must precede the fresh run.");
+                            var catalog = FoundationBoot.Catalog;
+                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash);
+                            var warmTicks = PrewarmIsolatedCore(catalog, options);
+                            Log("isolated-core-warmup", "discarded separate normal session; ticks=" + warmTicks + "; real run not created");
                             minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
+
                             minuteCapture.Initialize(run, output, (success, detail) => Finish(success, detail));
                             return;
                         }

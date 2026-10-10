@@ -9,6 +9,81 @@ namespace Tests.EditMode
 {
     public sealed class AutoplayCaptureTests
     {
+        [TestCase(120, 1, 2)]
+        [TestCase(60, 1, 1)]
+        [TestCase(120, 2, 1)]
+        [TestCase(144, 1, 0)]
+        [TestCase(120, 0, 0)]
+        public void CaptureStrideUsesOnlyKnownSynchronizedPresentationRates(double hz, int vSync, int expected)
+            => Assert.That(GoldenMinuteCapture.RefreshStride(hz, vSync), Is.EqualTo(expected));
+
+        [Test]
+        public void CoreWarmupDoesNotAdvanceAnExistingFreshSession()
+        {
+            var catalog = Game.App.Generated.CanonicalContent.CreateCatalog();
+            var options = new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.NearestEnemy, new string('a', 64));
+            var actual = new InteractiveSession(catalog, options);
+            var originalHash = actual.ComputeStateHash();
+            Assert.That(AutoplayCapture.PrewarmIsolatedCore(catalog, options), Is.EqualTo(6));
+            Assert.That(actual.View.CaptureFrame().Tick, Is.Zero);
+            Assert.That(actual.NextSequence, Is.Zero);
+            Assert.That(actual.ComputeStateHash(), Is.EqualTo(originalHash));
+        }
+
+        [Test]
+        public void SmoothnessExternalCommandsDoNotEnterUpdateRows()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "external-scope-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var diagnostics = new FrameSmoothnessDiagnostics();
+                diagnostics.Begin();
+                using (diagnostics.Scope(SmoothnessScope.CoreApply)) GC.KeepAlive(new byte[4096]);
+                diagnostics.BeginFrame(1, false); diagnostics.EndFrame();
+                using (diagnostics.Scope(SmoothnessScope.Recording)) GC.KeepAlive(new byte[4096]);
+                diagnostics.BeginFrame(2, false); diagnostics.EndFrame(); diagnostics.Write(folder);
+                var lines = File.ReadAllLines(Path.Combine(folder, "smoothness-frames.csv"));
+                var columns = lines[0].Split(',');
+                for (var i = 1; i < lines.Length; i++)
+                {
+                    var values = lines[i].Split(',');
+                    foreach (var name in new[] { "coreApplyMs", "recordingMs" })
+                        Assert.That(values[Array.IndexOf(columns, name)], Is.EqualTo("0.000000"));
+                    Assert.That(double.Parse(values[Array.IndexOf(columns, "unattributedUpdateMs")], System.Globalization.CultureInfo.InvariantCulture), Is.GreaterThanOrEqualTo(0));
+                    foreach (var name in new[] { "coreApplyBytes", "recordingBytes" })
+                        Assert.That(long.Parse(values[Array.IndexOf(columns, name)]), Is.EqualTo(diagnostics.AllocationCounterAvailable ? 0 : -1));
+                }
+                var external = File.ReadAllLines(Path.Combine(folder, "smoothness-external-scopes.csv"));
+                foreach (var name in new[] { "CoreApply", "Recording" })
+                {
+                    var row = Array.Find(external, line => line.StartsWith(name + ",", StringComparison.Ordinal)).Split(',');
+                    Assert.That(row[1], Is.EqualTo("1"));
+                    Assert.That(double.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture), Is.GreaterThan(0));
+                    if (diagnostics.AllocationCounterAvailable) Assert.That(long.Parse(row[3]), Is.GreaterThanOrEqualTo(4096));
+                    else Assert.That(long.Parse(row[3]), Is.EqualTo(-1));
+                }
+            }
+            finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+        }
+
+        [Test]
+        public void SmoothnessRestartDoesNotAcceptAnEarlierScope()
+        {
+            var folder = Path.Combine(Path.GetTempPath(), "restart-scope-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var diagnostics = new FrameSmoothnessDiagnostics(); diagnostics.Begin();
+                var stale = diagnostics.Scope(SmoothnessScope.CoreApply);
+                diagnostics.Begin(); stale.Dispose();
+                diagnostics.BeginFrame(1, false); diagnostics.EndFrame(); diagnostics.Write(folder);
+                var external = File.ReadAllLines(Path.Combine(folder, "smoothness-external-scopes.csv"));
+                var row = Array.Find(external, line => line.StartsWith("CoreApply,", StringComparison.Ordinal)).Split(',');
+                Assert.That(row[1], Is.EqualTo("0"));
+                Assert.That(row[2], Is.EqualTo("0.000000"));
+            }
+            finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
+        }
+
         [Test]
         public void SmoothnessScopeTimesRemainSeparateFromAllocationCapability()
         {

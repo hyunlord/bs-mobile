@@ -58,13 +58,14 @@ worker의 할당도 전역 GC에 영향을 줄 수 있으므로 Update/draw 할�
   gpuErrors/ringOverflows, 제출·기록 수, main 제출/callback/worker 할당과 audioStartOffsetSeconds.
 - 기존 `capture-result.json`, `capture-ledger.jsonl`, 격리 프로필 입력 기록.
 - `smoothness-frames.csv`: 실제 Update 간격, 소프트웨어 입력 표본부터 렌더 제출·EndOfFrame까지의 지연, 범위별 할당, 표시 개체 수·생성·제거·카메라 보정 전후 이동량.
+- `smoothness-external-scopes.csv`: Update 밖에서 실행한 UI·autoplay 명령의 계측 범위별 호출 수·총 경과 시간·할당 바이트. 프레임별 기록이 아닌 범위별 합계이며 외부 callback 전체 비용을 뜻하지 않는다.
 - `smoothness-jumps.csv`: 안정 ID별 이동 이상 후보와 당시 pause/reset 상태. 후보가 없다는 사실만으로 사용자 부드러움 관문을 통과하지 않는다.
 - `smoothness-boundary.txt`: 지연·할당 계측의 범위와 버퍼 누락 정보. 해당 실행의 CSV 및 빌드 식별자와 함께 확인한다.
 
 `golden-minute.json`의 `failure`와 실제 프레임 간격을 먼저 확인한다. 요청 fps가 60이라는
 필드나 결과 영상의 명목 프레임률만으로 60fps라고 보고하지 않는다.
 
-부드러움 CSV는 `unityFrame`·`tick`으로 실제 영상 프레임과 연결한다. 첫 프레임의
+`smoothness-frames.csv`는 `unityFrame`·`tick`으로 실제 영상 프레임과 연결한다. 첫 프레임의
 간격0은 이전 표본이 없다는 뜻이며 지연의 음수 값은 미측정이다. 입력 지연은
 소프트웨어가 입력을 읽은 뒤 CPU 렌더 제출·EndOfFrame까지의 시간이다. 디스플레이의
 표시 완료나 물리 입력→광자 지연으로 해석하지 않는다. 프레임 간격과 지연을 따로 보고한다.
@@ -78,6 +79,12 @@ worker의 할당도 전역 GC에 영향을 줄 수 있으므로 Update/draw 할�
 전체 Update 수치와 함께 보고하고 Core 틱·스냅샷·worker 할당을 빼서 전체0 B로
 부르지 않는다. 미지원이면 할당 관문은 미검증으로 남긴다. 캡처의 통과 여부와
 [C05 회귀 비교](wave-density-benchmark.md), 할당 관문, 사용자 판정은 각각 기록한다.
+
+Update 행의 범위별 비용은 BeginFrame부터 EndFrame 사이만 포함한다. 그 밖의
+UI·autoplay 명령 비용은 `smoothness-external-scopes.csv`로 함께 보고하며 Update
+총합에서 빼거나 별도 기록이라는 이유로 숨기지 않는다. 외부 범위의 할당도 미지원이면
+`-1`이다. 프레임 경계를 넘은 범위는 폐기 수가 `smoothness-boundary.txt`에 기록되므로
+그 수가 있으면 범위별 비용의 불완전성을 밝힌다.
 
 실패한 네이티브 표본은 원래 판정과 함께 보존하고 재측정은 새 출력 경로를 사용한다.
 실패 영상·명목60fps 또는 CI 통과를 부드러움 통과로 바꾸지 않는다. 직접 플레이용
@@ -97,7 +104,20 @@ ffmpeg -f concat -safe 0 -i frames.ffconcat \
 기준과 같은 비율로 나란히 비교하되 기준 그림을 실제 화면에 합성하지 않는다. Release에는
 영상·선정 비교 캡처만 올리고 재생성 가능한 프레임 전체나 증거 ZIP을 올리지 않는다.
 
+## 캡처 준비와 화면 주사율
+
+실제 출정 생성 전에 동일 콘텐츠·seed·옵션의 별도 `InteractiveSession`에서 정상 이동
+입력으로 최대 6틱과 읽기 전용 스냅샷 경로를 준비한 뒤 폐기한다. 실제 세션의 상태·틱·
+재생 기록에는 접근하지 않는다. 이는 첫 Core Apply의 초기 비용을 준비하는 캡처 전용
+절차이며 `isolated-core-warmup` 로그에 남긴다. 실제 첫 60초의 틱은 생략하지 않는다.
+
+동기화된 화면 주사율이 120Hz이면 렌더 프레임 2개마다, 60Hz이면 매 프레임 실제
+이미지를 읽는다. 그 외 주사율이나 vSync가 없는 경우 기존 누적 시간 마감을 사용한다.
+`displayRefreshHz`와 `presentationRenderStride`를 기록하고 모든 경우 실제 timestamp의
+누락 판정은 그대로 유지한다. 프레임 복제·시간 보정·합격 기준 완화는 하지 않는다.
+
 ## 실제 월드의 시작 준비
+
 
 소개 화면에서 캡처 링을 준비한 뒤, 정상 `개척 시작`으로 생성한 월드의 tick 0에서
 HUD의 `잠시 멈춤` 버튼을 호출한다. RunCoordinator의 UI 준비 알림은 로딩 종료 직후
