@@ -13,6 +13,8 @@ internal static class SelfTests
             ("inactive branch numeric", "class C {\n#if GAME\nint Attack => 42;\n#endif\n}", "AG003"),
             ("engine alias", "using E = Godot.Node; class C {}", "AG001"),
             ("content id literal", "class C { string Id = \"hero:default\"; }", "AG002"),
+            ("core content identity", "class C { string Id = \"core:seed_bag\"; }", "AG002"),
+            ("estate content identity", "class C { string Id = \"estate:meadow\"; }", "AG002"),
             ("content id escaped", "class C { string Id = \"hero\\u003adefault\"; }", "AG002"),
             ("content id concatenated", "class C { const string Id = \"hero\" + \":default\"; }", "AG002"),
             ("content id interpolated", "class C { const string Prefix = \"hero\"; const string Id = $\"{Prefix}:default\"; }", "AG002"),

@@ -12,6 +12,8 @@ namespace SowSiege.Core
         private readonly InteractiveState? interactive;
         private readonly WaveEnemySystem enemies;
         private readonly WaveWorkSystem work;
+        private readonly WavePrimitiveModules modules;
+        private readonly WaveItemSubscriptions subscriptions;
         public WaveRuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive)
         {
             this.catalog = catalog;
@@ -25,19 +27,14 @@ namespace SowSiege.Core
                 TimberOrigin = world.Estate,
                 AvailableWorkers = definition.InitialWorkers
             };
-            enemies = new(catalog, world, random, interactive);
-            work = new(catalog, world, interactive);
+            modules = new(definition);
+            subscriptions = new(catalog, world, modules);
+            enemies = new(catalog, world, random, interactive, modules, subscriptions);
+            work = new(catalog, world, interactive, modules, subscriptions);
         }
-        public int MovementSpeed(int original) => original + ItemAmount(WaveItemKind.MoveSpeed);
-        private bool HasItem(WaveItemKind kind) => state.Items.Any(id => definition.Items[id].Kind == kind);
-        private int ItemAmount(WaveItemKind kind) => state.Items.Where(id => definition.Items[id].Kind == kind).Sum(id => definition.Items[id].Amount);
-        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) && (e.Kind switch
-        {
-            WaveEvolutionKind.PlantingArc => state.BladePlotKill,
-            WaveEvolutionKind.RepairOrbit => state.RepairCompleted,
-            WaveEvolutionKind.ShelteredPlot => state.HarvestNearBuilding,
-            _ => false
-        });
+        public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
+        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) &&
+            WaveGrowthPrimitives.Eligible(modules[e.Id], state);
         public IEnumerable<string> ExtraCards() => definition.Items.Values.Where(i => !state.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(definition.Evolutions.Values.Where(EligibleEvolution).Select(e => e.Id));
         public bool Select(string id)
         {
@@ -61,7 +58,7 @@ namespace SowSiege.Core
             state.Emit(world.Tick, "evolution-activated", id, -1, world.Lord, world.Lord);
             return true;
         }
-        public bool Suppressed(string id) => state.Evolutions.Select(e => definition.Evolutions[e]).Any(e => e.Kind == WaveEvolutionKind.ShelteredPlot && e.InputIds.Contains(id));
+        public bool Suppressed(string id) => state.Evolutions.Select(e => definition.Evolutions[e]).Any(e => modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations") && e.InputIds.Contains(id));
         public void Tick(Position previous)
         {
             state.Events.Clear();
@@ -86,10 +83,10 @@ namespace SowSiege.Core
 
                 var gear = AtLevel(definition.Gear[equipment.Id], equipment.Level);
                 equipment.ReadyTick = world.Tick + gear.CooldownTicks;
-                var evolution = state.Evolutions.Select(id => definition.Evolutions[id]).FirstOrDefault(e => e.InputIds[0] == gear.Id && e.Kind != WaveEvolutionKind.ShelteredPlot);
+                var evolution = state.Evolutions.Select(id => definition.Evolutions[id]).FirstOrDefault(e => e.InputIds[0] == gear.Id && !modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations"));
                 Attack(gear, evolution);
             }
-            foreach (var e in state.Evolutions.Select(id => definition.Evolutions[id]).Where(e => e.Kind == WaveEvolutionKind.ShelteredPlot))
+            foreach (var e in state.Evolutions.Select(id => definition.Evolutions[id]).Where(e => modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations")))
             {
                 var first = world.Equipment.First(x => x.Id == e.InputIds[0]);
                 if (first.ReadyTick > world.Tick)
@@ -101,8 +98,7 @@ namespace SowSiege.Core
                 first.ReadyTick = world.Tick + gear.CooldownTicks;
                 Attack(gear with
                 {
-                    Id = e.Id,
-                    Kind = WaveAttackKind.ConstructionSlam
+                    Id = e.Id
                 }, e);
             }
             TickOrbits();
@@ -146,7 +142,9 @@ namespace SowSiege.Core
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
-            if (gear.Kind == WaveAttackKind.WaterFan && state.Water <= 0)
+            var program = modules[evolution?.Id ?? gear.Id];
+            var shape = program.Value("unit:attack-shape", "shape");
+            if (program.Is("unit:attack-variant", "condition", "water-empty") && state.Water <= 0)
             {
                 gear = gear with
                 {
@@ -158,7 +156,7 @@ namespace SowSiege.Core
 
             var origin = world.Lord;
             var facing = state.Facing;
-            if (evolution?.Kind == WaveEvolutionKind.RepairOrbit)
+            if (evolution is not null && modules.Has(evolution.Id, "unit:attack-anchor"))
             {
                 var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
                 if (building != null)
@@ -166,20 +164,13 @@ namespace SowSiege.Core
                     origin = building.Position;
                 }
             }
-            if (gear.Kind == WaveAttackKind.Arc && HasItem(WaveItemKind.RaiderAim))
-            {
-                var raider = world.Enemies.Where(e => e.Health > 0 && definition.Enemies[e.Definition].Kind is WaveEnemyKind.SeedThief or WaveEnemyKind.RipeGrazer && Within(e.Position, origin, gear.Range)).OrderBy(e => e.Position.DistanceSquared(origin)).ThenBy(e => e.Id).FirstOrDefault();
-                if (raider != null)
-                {
-                    facing = new(raider.Position.X - origin.X, raider.Position.Y - origin.Y);
-                }
-            }
+            facing = subscriptions.Aim(gear, origin, facing);
             var source = evolution?.Id ?? gear.Id;
             var targets = world.Enemies.Where(e => e.Health > 0 && Within(e.Position, origin, gear.Range)).OrderBy(e => e.Position.DistanceSquared(origin)).ThenBy(e => e.Id).ToArray();
-            var children = gear.Kind == WaveAttackKind.Homing ? Math.Min(targets.Length, gear.Count) : 0;
-            var activation = state.BeginActivation(source, children, world.Tick + (gear.Kind == WaveAttackKind.Orbit ? gear.CooldownTicks : gear.LifetimeTicks));
+            var children = shape == "homing-projectile" ? Math.Min(targets.Length, gear.Count) : 0;
+            var activation = state.BeginActivation(source, children, world.Tick + (shape == "orbit" ? gear.CooldownTicks : gear.LifetimeTicks));
             var hits = new List<EnemyState>();
-            if (gear.Kind == WaveAttackKind.Homing)
+            if (shape == "homing-projectile")
             {
                 foreach (var target in targets.Take(gear.Count))
                 {
@@ -199,13 +190,13 @@ namespace SowSiege.Core
                     state.Emit(world.Tick, "projectile-launched", source, target.Id, origin, target.Position);
                 }
             }
-            else if (gear.Kind == WaveAttackKind.Chain)
+            else if (shape == "chain")
             {
                 var from = origin;
                 var visited = new HashSet<int>();
                 for (int i = 0; i < gear.Count; i++)
                 {
-                    var next = world.Enemies.Where(e => e.Health > 0 && !visited.Contains(e.Id) && Within(e.Position, from, gear.Range)).OrderByDescending(e => i > 0 && state.EnemyActions.TryGetValue(e.Id, out var a) && a.WetUntil > world.Tick).ThenBy(e => e.Position.DistanceSquared(from)).ThenBy(e => e.Id).FirstOrDefault();
+                    var next = world.Enemies.Where(e => e.Health > 0 && !visited.Contains(e.Id) && Within(e.Position, from, gear.Range)).OrderByDescending(e => i > 0 && program.Is("unit:attack-variant", "condition", "wet-target") && state.EnemyActions.TryGetValue(e.Id, out var a) && a.WetUntil > world.Tick).ThenBy(e => e.Position.DistanceSquared(from)).ThenBy(e => e.Id).FirstOrDefault();
                     if (next == null)
                     {
                         break;
@@ -214,7 +205,7 @@ namespace SowSiege.Core
                     visited.Add(next.Id);
                     state.Emit(world.Tick, "chain-link", source, next.Id, from, next.Position);
                     Hit(next, gear.Damage, source, origin, gear.Knockback, activation);
-                    if (state.EnemyActions.TryGetValue(next.Id, out var action))
+                    if (program.Is("unit:status-apply", "status", "brief-stop") && state.EnemyActions.TryGetValue(next.Id, out var action))
                     {
                         action.StopUntil = world.Tick + definition.StopTicks;
                     }
@@ -223,7 +214,7 @@ namespace SowSiege.Core
                     from = next.Position;
                 }
             }
-            else if (gear.Kind == WaveAttackKind.Orbit)
+            else if (shape == "orbit")
             {
                 var phase = (world.Tick / Math.Max(1, gear.CooldownTicks)) % WaveGeometry.OrbitDirections;
                 var dirs = new[]{
@@ -231,23 +222,23 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 ;
                 for (int i = 0; i < gear.Count; i++)
                 {
-                    var direction = HasItem(WaveItemKind.FrontOrbit) && FrontEnemy(origin, facing, gear.Range) ? new Position(facing.X + (i % WaveGeometry.MidpointDivisor == 0 ? -facing.Y : facing.Y), facing.Y + (i % WaveGeometry.MidpointDivisor == 0 ? facing.X : -facing.X)) : dirs[(phase + i * WaveGeometry.OrbitDirections / gear.Count) % WaveGeometry.OrbitDirections];
+                    var direction = subscriptions.FrontOrbit(gear.Id) && FrontEnemy(origin, facing, gear.Range) ? new Position(facing.X + (i % WaveGeometry.MidpointDivisor == 0 ? -facing.Y : facing.Y), facing.Y + (i % WaveGeometry.MidpointDivisor == 0 ? facing.X : -facing.X)) : dirs[(phase + i * WaveGeometry.OrbitDirections / gear.Count) % WaveGeometry.OrbitDirections];
                     var point = origin.MoveToward(new(origin.X + direction.X * gear.Range, origin.Y + direction.Y * gear.Range), gear.Range);
                     state.Attacks.Add(new(source, "orbit", new(origin.X, origin.Y), new(point.X, point.Y), Math.Max(1, gear.Speed), world.Tick + gear.CooldownTicks, activation));
                     state.Emit(world.Tick, "orbit-fragment", source, -1, origin, point, Math.Max(1, gear.Speed));
                 }
             }
-            else
+            else if (shape is "melee-fan" or "ground-slam" or "expanding-wave")
             {
-                foreach (var enemy in targets.Where(e => gear.Kind is WaveAttackKind.MusterWave || InArc(origin, facing, e.Position, gear.Range)))
+                foreach (var enemy in targets.Where(e => shape == "expanding-wave" || InArc(origin, facing, e.Position, gear.Range)))
                 {
                     Hit(enemy, gear.Damage, source, origin, gear.Knockback, activation);
                     hits.Add(enemy);
                 }
                 state.Emit(world.Tick, "attack", source, -1, origin, new(origin.X + facing.X, origin.Y + facing.Y), gear.Range);
-                if (gear.Kind == WaveAttackKind.HarvestArc)
+                if (program.Has("unit:harvest-contact"))
                 {
-                    foreach (var plot in state.Work.Where(w => w.Kind == "grain" && w.Complete && w.Health > 0 && InArc(origin, facing, w.Position, gear.Range)).ToArray())
+                    foreach (var plot in state.Work.Where(w => w.Kind == "grain" && w.Complete && w.Health > 0 && HarvestSource(program, w.Source) && InArc(origin, facing, w.Position, gear.Range)).ToArray())
                     {
                         work.Harvest(plot);
                         foreach (var enemy in world.Enemies.Where(e => e.Health > 0 && Within(e.Position, plot.Position, gear.Range / WaveGeometry.MidpointDivisor)).OrderBy(e => e.Id).Take(gear.Count))
@@ -259,17 +250,18 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                     }
                 }
             }
+            else { throw new ArgumentException("Unsupported attack shape: " + shape); }
             if (world.Tools.TryGetValue(gear.Id, out var ledger))
             {
                 ledger.Activations++;
             }
 
-            if (evolution?.Kind == WaveEvolutionKind.PlantingArc)
+            if (evolution is not null && modules.Is(evolution.Id, "unit:remnant-create", "placement", "attack-footprint"))
             {
                 work.PlantSweep(evolution.InputIds[1], origin, facing, gear.Range, Math.Max(WaveGeometry.MinimumFanSamples, gear.Count));
             }
-            else if (gear.Kind >= WaveAttackKind.SeedFan) { work.Activate(gear, origin, facing); }
-            if (gear.Kind != WaveAttackKind.Orbit && (gear.Kind != WaveAttackKind.Homing || children == 0))
+            else if (program.Has("unit:remnant-create")) { work.Activate(gear, origin, facing); }
+            if (shape != "orbit" && (shape != "homing-projectile" || children == 0))
             {
                 state.ResolveActivation(activation);
             }
@@ -291,12 +283,13 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 enemy.Position = new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height));
             }
 
-            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && gear.Kind == WaveAttackKind.Arc && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
+            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
             {
                 state.BladePlotKill = true;
             }
 
             state.Emit(world.Tick, "hit", source, enemy.Id, enemy.Position, enemy.Position, actual);
+            subscriptions.Hit(source, enemy);
         }
         private void TickOrbits()
         {
@@ -308,7 +301,7 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 var level = world.Equipment.First(e => e.Id == gear.Id).Level;
                 gear = AtLevel(gear, level);
                 var anchor = world.Lord;
-                if (evolution?.Kind == WaveEvolutionKind.RepairOrbit)
+                if (evolution is not null && modules.Has(evolution.Id, "unit:attack-anchor"))
                 {
                     var building = state.Work.Where(w => w.Kind == "building" && w.Health > 0 && !w.Complete && w.ReadyTick == -1).OrderBy(w => w.Position.DistanceSquared(world.Lord)).ThenBy(w => w.Id).FirstOrDefault();
                     if (building is not null)
@@ -324,7 +317,7 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 {
                     var phase = (world.Tick / Math.Max(1, gear.CooldownTicks / WaveGeometry.OrbitDirections) + index * WaveGeometry.OrbitDirections / gear.Count) % WaveGeometry.OrbitDirections;
                     var facing = state.Facing;
-                    var direction = HasItem(WaveItemKind.FrontOrbit) && FrontEnemy(anchor, facing, gear.Range) ? new Position(facing.X + (index % WaveGeometry.MidpointDivisor == 0 ? -facing.Y : facing.Y), facing.Y + (index % WaveGeometry.MidpointDivisor == 0 ? facing.X : -facing.X)) : dirs[phase];
+                    var direction = subscriptions.FrontOrbit(gear.Id) && FrontEnemy(anchor, facing, gear.Range) ? new Position(facing.X + (index % WaveGeometry.MidpointDivisor == 0 ? -facing.Y : facing.Y), facing.Y + (index % WaveGeometry.MidpointDivisor == 0 ? facing.X : -facing.X)) : dirs[phase];
                     var point = anchor.MoveToward(new(anchor.X + direction.X * gear.Range, anchor.Y + direction.Y * gear.Range), gear.Range);
                     var next = old with
                     {
@@ -371,6 +364,13 @@ new Position(1,0),new Position(1,1),new Position(0,1),new Position(-1,1),new Pos
                 }
             }
         }
+        private bool HarvestSource(WavePrimitiveProgram program, string source)
+        {
+            if (!program.Is("unit:harvest-contact", "sourceFilter", "owned-source")) { return false; }
+            var ids = program.Value("unit:harvest-contact", "sourceIds").Split('|');
+            return ids.Any(id => id == source || id == "$seed" && modules.Is(source, "unit:remnant-create", "remnantKey", "grain-patch"));
+        }
+        private bool programHasRemnant(string source) => modules.Has(source, "unit:remnant-create");
         private bool FrontEnemy(Position origin, Position facing, int range) => world.Enemies.Any(e => e.Health > 0 && InArc(origin, facing, e.Position, range));
         internal static bool Within(Position a, Position b, int radius) => a.DistanceSquared(b) <= (long)radius * radius;
         internal static bool InArc(Position origin, Position facing, Position point, int radius)

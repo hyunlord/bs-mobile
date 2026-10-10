@@ -23,3 +23,13 @@ for (const mutation of ['reference-path', 'reference-revision', 'reference-kind'
     assert.throws(() => validateWaveContent(profile, runtime, design));
   });
 }
+
+for (const mutation of ['missing-program','unknown-unit','ignored-parameter']) {
+  test(`wave rejects executable ${mutation}`, () => {
+    const args = fixture(); const programs = args[1].definition.programs;
+    if (mutation === 'missing-program') delete programs['core:iron_blade'];
+    if (mutation === 'unknown-unit') programs['core:iron_blade'].params['unit:unknown'] = {};
+    if (mutation === 'ignored-parameter') programs['core:iron_blade'].params['unit:attack-shape'].silentFlag = 'true';
+    assert.throws(() => validateWaveContent(...args));
+  });
+}

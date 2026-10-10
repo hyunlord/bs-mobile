@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import Ajv from 'ajv/dist/2020.js';
+const programSchema = JSON.parse(readFileSync(new URL('../data/schema/wave-runtime.schema.json', import.meta.url))).properties.definition.properties.programs;
+const validatePrograms = new Ajv({ allErrors: true, strict: true }).compile(programSchema);
 
 const handlers = Object.freeze({
   "core:iron_blade": "Arc",
@@ -55,6 +59,8 @@ export function validateWaveContent(profile, runtime, design) {
     assert.equal(binding.semanticSha256, waveSemanticSignature(records.get(binding.id)), 'Primitive/parameter mapping drift');
   }
   const definition = runtime.definition;
+  assert.ok(validatePrograms(definition.programs), 'Unsupported executable primitive parameters: ' + JSON.stringify(validatePrograms.errors));
+  assert.deepEqual(Object.keys(definition.programs).sort(), runtime.bindings.map(b => b.id).sort(), 'Primitive program selection differs');
   for (const [group, kind] of [['weapons', 'weapon'], ['tools', 'tool'], ['enemies', 'enemy']]) {
     assert.deepEqual([...profile.selection[group]].sort(), runtime.bindings.filter(b => b.kind === kind).map(b => b.id).sort(), `Wave selection ${group} mismatch`);
   }
