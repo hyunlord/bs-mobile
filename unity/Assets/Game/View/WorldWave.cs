@@ -21,8 +21,7 @@ namespace Game.View
         readonly HashSet<string> drawnRepairAnchors = new HashSet<string>();
         long lastWaveEvent = -1;
         int ripeCueId = -1;
-        string collectionLabel;
-        float collectedAt;
+        readonly WorldHintQueue growthHints = new WorldHintQueue();
         readonly WaveRenderInterpolation waveMotion = new WaveRenderInterpolation();
         readonly Dictionary<string,string> rewardSources = new Dictionary<string,string>(StringComparer.Ordinal);
         readonly Dictionary<string,string> attackSources = new Dictionary<string,string>(StringComparer.Ordinal);
@@ -35,6 +34,7 @@ namespace Game.View
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
+                ResetThreatWarnings();
                 waveMotion.Reset();
                 heroAttackUntil=0;
                 rewardSources.Clear(); attackSources.Clear();
@@ -50,7 +50,7 @@ namespace Game.View
                         }
                     }
                 ripeCueId=-1;
-                collectionLabel=null;growthLabels?.Clear();
+                growthHints.Clear();growthLabels?.Clear();
             }
             if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
             {
@@ -79,8 +79,7 @@ namespace Game.View
                 {
                     var source=value.Source;
                     if(rewardSources.TryGetValue(source,out var rewardSource))source=rewardSource;
-                    collectionLabel=(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?"수확 +":"완료 +")+value.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)+" 경험치";
-                    collectedAt=visualTime;
+                    growthHints.Enqueue(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?WorldHintKind.HarvestExperience:WorldHintKind.CompletionExperience,value.Amount);
                 }
                 if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))waveEffects.Add((value,visualTime));
                 if(value.Kind=="work-created"&&liveGrainIds.Contains(value.SubjectId))waveEffects.Add((value,visualTime));
@@ -143,12 +142,6 @@ namespace Game.View
             for(var i=0;i<wave.Paths.Count;i++)Draw(pathArt,GameVisualTokens.GrowthLayer-2,Point(wave.Paths[i]),visualTime,pathSize,opacity:GameVisualTokens.TerrainOpacity);
             WaveWorkView nearbyRipe=null,retainedRipe=null;
             var nearestRipeDistance=GameVisualTokens.WaveRipeCueRadius*GameVisualTokens.WaveRipeCueRadius;
-            if(collectionLabel!=null)
-            {
-                var progress=(visualTime-collectedAt)/GameVisualTokens.WaveCollectionLabelSeconds;
-                if(progress<1)growthLabels.Show(1,collectionLabel,lordPoint+Vector2.up*(GameVisualTokens.WaveCollectionLabelRise+progress*.15f),Mathf.Min(1,(1-progress)*3));
-                else collectionLabel=null;
-            }
             for(var workIndex=0;workIndex<wave.Work.Count;workIndex++)
             {
                 var work=wave.Work[workIndex];
@@ -195,12 +188,12 @@ namespace Game.View
                 if(work.ShipmentActive)WaveSprite("timber-bundle",GameVisualTokens.ReadyLayer+1,work.Position,scale:GameVisualTokens.StockBundleScale);
             }
             var ripeCue=retainedRipe??nearbyRipe;
+            if(ripeCue!=null&&ripeCue.Id!=ripeCueId)growthHints.Enqueue(WorldHintKind.Ripe);
             ripeCueId=ripeCue?.Id??-1;
             if(ripeCue!=null)
             {
                 var ear=Resolve("wave","grain-ripe","default");
                 Draw(ear,GameVisualTokens.WaveReadinessCueLayer,Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,ear.WorldSize*GameVisualTokens.WaveRipeCueScale);
-                growthLabels.Show(0,"익음",Point(ripeCue.Position)+Vector2.up*GameVisualTokens.WaveGrowthLabelRise);
             }
             if(wave.CarriedWater>0)WaveSpriteAt("water-carry",GameVisualTokens.AllyLayer+1,lordPoint,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
             for(var rewardIndex=0;rewardIndex<wave.Rewards.Count;rewardIndex++)
@@ -241,7 +234,8 @@ namespace Game.View
                         if(!attack.Origin.Equals(current.Lord.Position))unfinishedBuildingByPosition.TryGetValue(attack.Origin,out anchor);
                         if(anchor!=null)
                         {
-                            if(!repairAnchors.TryGetValue(attack.Source,out var before)||before.buildingId!=anchor.Id)repairAnchors[attack.Source]=(anchor.Id,visualTime);
+                            if(!repairAnchors.TryGetValue(attack.Source,out var before)||before.buildingId!=anchor.Id)
+                            {repairAnchors[attack.Source]=(anchor.Id,visualTime);growthHints.Enqueue(WorldHintKind.Repair);}
                             var pulse=Mathf.Clamp01(1-(visualTime-repairAnchors[attack.Source].started)/GameVisualTokens.EmphasisSeconds);
                             var badge=Resolve("attack","core:levy_banner","nova");
                             Draw(badge,GameVisualTokens.ReadyLayer+1,Point(attack.Origin),0,badge.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveRepairBannerOpacity+pulse*GameVisualTokens.AreaAttackOpacity);
@@ -249,7 +243,6 @@ namespace Game.View
                             Draw(workshop,GameVisualTokens.WaveReadinessCueLayer,Point(anchor.Position),visualTime,workshop.WorldSize*GameVisualTokens.WaveWorkshopScale,opacity:GameVisualTokens.WaveEdgeOpacity,tint:GameVisualTokens.Attack,edgeTexels:GameVisualTokens.WaveEdgeTexels);
                             var shield=Resolve("wave","shield-fragment","default");
                             Draw(shield,GameVisualTokens.WaveTransientCueLayer,Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveRipeCueRise,0,shield.WorldSize*GameVisualTokens.WaveRepairShieldScale);
-                            growthLabels.Show(2,"수리 중",Point(attack.Origin)+Vector2.up*GameVisualTokens.WaveGrowthLabelRise);
                         }
                         else repairAnchors.Remove(attack.Source);
                     }
@@ -282,18 +275,10 @@ namespace Game.View
                 var actorPosition=Interpolate(previousEnemies,enemy.Id,actor.Position,alpha);
                 if(enemy.Wet)WaveSpriteAt("wet",GameVisualTokens.GrowthLayer,actorPosition,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale,GameVisualTokens.WaveWetHeight);
                 if(enemy.Stopped)WaveSpriteAt("stopped",GameVisualTokens.GrowthLayer+1,actorPosition,GameVisualTokens.WaveWetOpacity,GameVisualTokens.WaveStatusScale);
-                if(enemy.Phase=="tell-charge"||enemy.Phase=="tell-water"||enemy.Phase=="water")
-                {
-                    var a=Point(enemy.Origin);var b=Point(enemy.Target);var visual=Resolve("wave",enemy.Phase.Contains("water")?"water-lane":"charge-tell","default");
-                    var diameter=waveCatalog.Enemies[actor.DefinitionId].Range*2f/settings.WorldUnitsPerUnityUnit;
-                    var opacity=enemy.Phase=="water"?GameVisualTokens.WaveHostileActiveOpacity:GameVisualTokens.WaveHostileTellOpacity;
-                    Draw(visual,GameVisualTokens.WaveDangerLayer,(a+b)*.5f,visualTime,new Vector2((b-a).magnitude,diameter),Angle(b-a),opacity);
-                    var cap=Resolve("attack","core:levy_banner","nova");
-                    var tint=enemy.Phase.Contains("water")?Color.white:GameVisualTokens.Hostile;
-                    Draw(cap,GameVisualTokens.WaveDangerLayer,a,0,Vector2.one*diameter,opacity:opacity,tint:tint);
-                    Draw(cap,GameVisualTokens.WaveDangerLayer,b,0,Vector2.one*diameter,opacity:opacity,tint:tint);
-                }
             }
+            DrawThreatWarnings(current,alpha,lordPoint);
+            var growthHint=growthHints.Present(visualTime,GameVisualTokens.WaveCollectionLabelSeconds);
+            if(growthHint!=null)growthLabels.ShowClamped(0,growthHint,lordPoint+Vector2.up*GameVisualTokens.WaveCollectionLabelRise,OverlayWorldBounds());
             var intakeDrawn=false;var harvestCues=0;
             for(var i=waveEffects.Count-1;i>=0;i--)
             {

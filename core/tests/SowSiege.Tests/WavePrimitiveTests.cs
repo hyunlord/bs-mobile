@@ -101,6 +101,9 @@ public sealed class WavePrimitiveTests
     {
         var data = Path.Combine(AppContext.BaseDirectory, "data");
         var catalog = ContentLoader.Load(data, false, "wave-1a");
+        // These goldens predate ADR0049's opt-in separation contract; retain their original rules.
+        catalog = catalog with { WaveRuntime = catalog.WaveRuntime! with { EnemySeparation = null } };
+        Assert.Equal("D108BA8D527BFE93A00C5FB78111AE2B8D4F53B4047CEA269AFE78D551CFC58E", PortableStateCodec.HashCatalog(catalog));
         using var goldens = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures/wave-primitive-baseline/hashes.json")));
         foreach (var golden in goldens.RootElement.EnumerateArray())
         {

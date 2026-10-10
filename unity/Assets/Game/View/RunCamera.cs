@@ -31,6 +31,7 @@ namespace Game.View
         public Vector2 LordViewportAnchor { get; set; } = new Vector2(.5f, .5f);
         public float PresentationZoom { get; set; } = 1;
         private Vector2 visualOffset;
+        private Vector2 previousTarget;
         private Vector2 mapSize;
         public RunCamera(Camera camera, WorldCameraSettings settings)
         {
@@ -57,7 +58,8 @@ namespace Game.View
             if (mapSize.x > 0)
                 maximum = Mathf.Min(maximum, Mathf.Min((mapSize.x * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)) / aspect, mapSize.y * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)));
             desired = Mathf.Min(Mathf.Min(desired, maximum) / Mathf.Clamp(PresentationZoom, .5f, 2), maximum);
-            var follow = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.FollowMilliseconds);
+            var followStep = (double)Mathf.Max(0, deltaTime) * 1000 / settings.FollowMilliseconds;
+            var follow = 1 - Math.Exp(-followStep);
             var zoom = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.ZoomMilliseconds);
             camera.orthographicSize = positioned ? Mathf.Min(Mathf.Lerp(camera.orthographicSize, desired, zoom), maximum) : desired;
             var viewport = camera.pixelRect;
@@ -71,7 +73,14 @@ namespace Game.View
             var anchorPixels = new Vector2((Mathf.Clamp01(LordViewportAnchor.x) - .5f) * safe.width,
                 (Mathf.Clamp01(LordViewportAnchor.y) - .5f) * safe.height);
             var target = ClampToMap(lord - (safe.center - viewport.center + anchorPixels) * pixelsToWorld, excluded);
-            var position = positioned ? Vector2.Lerp(camera.transform.position, target, follow) : target;
+            // Integrate a target moving linearly between accepted presentation samples.
+            // Holding the new endpoint for the whole interval biases follow by variable frame duration.
+            var linearCorrection = followStep <= 0 ? 0 : followStep < .001
+                ? followStep * (.5 - followStep / 3 + followStep * followStep / 8 - followStep * followStep * followStep / 30)
+                : follow / followStep - Math.Exp(-followStep);
+            var position = positioned ? Vector2.Lerp(camera.transform.position, target, (float)follow)
+                - (target - previousTarget) * (float)linearCorrection : target;
+            previousTarget = target;
             position = ClampToMap(position, excluded);
             camera.transform.position = new Vector3(position.x, position.y, -10); positioned = true;
         }

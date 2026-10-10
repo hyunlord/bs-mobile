@@ -11,6 +11,12 @@ namespace Game.View
         readonly UiShell ui;
         readonly ContentCatalog catalog;
         readonly RectTransform root, hpFill, xpFill;
+        readonly RectTransform footer;
+        readonly Text weaponCaption,toolCaption;
+        RectTransform[] topParts;
+        Vector2[] topPositions;
+        Vector2 layoutSize;
+        float layoutScale;
         readonly Text health, level, timer;
         readonly RectTransform[] slots = new RectTransform[9];
         readonly string[] shown = new string[9];
@@ -51,12 +57,12 @@ namespace Game.View
                 Position((RectTransform)button.transform, 806, 8, 80, 80);
                 button.GetComponentInChildren<Text>().fontSize = UiTokens.Caption;
             }
-            var footer = UiShell.Rect("Loadout", ui.Content);
+            footer = UiShell.Rect("Loadout", ui.Content);
             footer.anchorMin = Vector2.zero; footer.anchorMax = new Vector2(1, 0);
             footer.pivot = new Vector2(.5f, 0); footer.sizeDelta = new Vector2(0, UiTokens.FallowFooterHeight);
             var surface = ui.Surface(footer, "ui.panel"); surface.color = UiTokens.FallowCharcoal; surface.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
-            Label(footer, "무기", UiTokens.Caption, 26, 12, 280, 30, GameVisualTokens.Attack);
-            Label(footer, "도구", UiTokens.Caption, 508, 12, 280, 30, GameVisualTokens.Attack);
+            weaponCaption=Label(footer, "무기", UiTokens.Caption, 26, 12, 280, 30, GameVisualTokens.Attack);
+            toolCaption=Label(footer, "도구", UiTokens.Caption, 508, 12, 280, 30, GameVisualTokens.Attack);
             for(var i = 0; i < slots.Length; i++)
             {
                 var x = i < 5 ? 24 + i * 86 : 506 + (i - 5) * 92;
@@ -81,6 +87,7 @@ namespace Game.View
 
         public void Present(RunFrame frame)
         {
+            RefreshLayout();
             var seconds = frame.Tick / frame.TickRate;
             timerValue.Begin(); timerValue.Append(seconds / 60, 2); timerValue.Append(":"); timerValue.Append(seconds % 60, 2); timerValue.End();
             healthValue.Begin(); healthValue.Append(frame.Lord.Health); healthValue.Append(" / "); healthValue.Append(frame.Lord.MaxHealth); healthValue.End();
@@ -107,6 +114,44 @@ namespace Game.View
                     shown[i] = id;
                 }
                 rankValues[i].Begin(); if (gear != null) rankValues[i].Append(gear.Level); rankValues[i].End();
+            }
+        }
+
+        void RefreshLayout()
+        {
+            var screen=new Vector2(Screen.width,Screen.height);
+            var scale=ui.Canvas.scaleFactor;
+            if(topParts==null)
+            {
+                topParts=new RectTransform[root.childCount];topPositions=new Vector2[root.childCount];
+                for(var i=0;i<root.childCount;i++){topParts[i]=(RectTransform)root.GetChild(i);topPositions[i]=topParts[i].anchoredPosition;}
+            }
+            if(layoutSize==screen&&layoutScale==scale)return;
+            layoutSize=screen;layoutScale=scale;
+            var wide=screen.x>screen.y;
+            var factor=wide?Mathf.Min(1,screen.y*UiTokens.LandscapeHudFraction/(scale*UiTokens.FallowHudHeight)):1;
+            root.sizeDelta=new Vector2(0,UiTokens.FallowHudHeight*factor);
+            var width=ui.SafeRoot.rect.width;
+            for(var i=0;i<topParts.Length;i++)
+            {
+                var point=topPositions[i];var x=point.x;
+                if(wide)x=x>=650?width-(900-x)*factor:x>=300?(width-topParts[i].rect.width*factor)*.5f:x*factor;
+                topParts[i].localScale=Vector3.one*factor;
+                topParts[i].anchoredPosition=new Vector2(x,(wide&&point.x>=300&&point.x<650?point.y+8:point.y)*factor);
+            }
+            var footerHeight=wide?screen.y*UiTokens.LandscapeLoadoutFraction/scale:UiTokens.FallowFooterHeight;
+            footer.sizeDelta=new Vector2(0,footerHeight);
+            var slotSize=wide?Mathf.Min(footerHeight-10,UiTokens.FallowSlotSize):UiTokens.FallowSlotSize;
+            Position(weaponCaption.rectTransform,wide?12:26,wide?(footerHeight-24)*.5f:12,wide?48:280,wide?24:30);
+            Position(toolCaption.rectTransform,wide?width*.55f:508,wide?(footerHeight-24)*.5f:12,wide?48:280,wide?24:30);
+            weaponCaption.fontSize=toolCaption.fontSize=wide?16:UiTokens.Caption;
+            for(var i=0;i<slots.Length;i++)
+            {
+                var x=wide?(i<5?64+i*(width*.46f-64)/5:width*.55f+52+(i-5)*(width*.45f-64)/4):(i<5?24+i*86:506+(i-5)*92);
+                Position(slots[i],x,wide?(footerHeight-slotSize)*.5f:50,slotSize,slotSize);
+                Position(ranks[i].rectTransform,wide?slotSize-27:45,wide?slotSize-26:48,27,26);
+                ranks[i].fontSize=wide?14:UiTokens.Caption;
+                foreach(var icon in icons[i].Values)icon.rectTransform.sizeDelta=Vector2.one*(slotSize-(wide?10:12));
             }
         }
 

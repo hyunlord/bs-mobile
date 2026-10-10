@@ -17,6 +17,38 @@ namespace Game.View
         bool fallowChapter;
         bool FallowActive => fallowChapter && wave != null && ArtCatalog.ProfileName == "wave-1a";
 
+        public FallowDiagnosticSnapshot ReadFallowDiagnostics()
+        {
+            var result = new FallowDiagnosticSnapshot { Active = FallowActive, ChapterEnabled = fallowChapter,
+                ArtProfile = ArtCatalog.ProfileName, Chapter = wave?.ChapterId ?? "none",
+                Pixels = fallowPixels?.Length ?? 0, MaskBound = fallowMask != null && Shader.GetGlobalTexture("_FallowMask") == fallowMask,
+                ShaderSupported = fallowShader != null && fallowShader.isSupported && fallowGroundShader != null && fallowGroundShader.isSupported };
+            if (fallowPixels != null)
+                for (var i = 0; i < fallowPixels.Length; i++)
+                {
+                    var pixel = fallowPixels[i];
+                    if (pixel.a != 0) result.NonzeroPixels++;
+                    if (pixel.r != 0) result.GreenPixels++;
+                    if (pixel.g != 0) result.GoldPixels++;
+                    if (pixel.b != 0) result.BuildingPixels++;
+                }
+            if (wave != null)
+                for (var i = 0; i < wave.Work.Count; i++)
+                {
+                    var work = wave.Work[i]; result.TotalWork++;
+                    if ((work.Kind == "grain" || work.Kind == "building") && work.Health <= 0) { result.DeadWork++; continue; }
+                    if (work.Kind == "grain")
+                    {
+                        if (work.Complete) result.Ripe++;
+                        else if (work.Progress > 0) result.Sprout++;
+                        else result.Seed++;
+                    }
+                    else if (work.Kind == "building") { if (work.Complete) result.Built++; else result.Building++; }
+                    else result.OtherWork++;
+                }
+            return result;
+        }
+
         public void SetFallowChapter(bool enabled)
         {
             if (batches.Count != 0) throw new InvalidOperationException("Set the chapter appearance before its first presented frame.");

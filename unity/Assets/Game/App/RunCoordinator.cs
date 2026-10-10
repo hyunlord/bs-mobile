@@ -51,6 +51,8 @@ namespace Game.App
             get
             {
                 if(AutoplayCapture.Active!=null)return AutoplayCapture.Active.ProfileDirectory;
+                if(NormalPlayTrace.ProfileDirectory!=null)return NormalPlayTrace.ProfileDirectory;
+                if(NormalGcProbe.ProfileDirectory!=null)return NormalGcProbe.ProfileDirectory;
 #if UNITY_EDITOR
                 if(!string.IsNullOrEmpty(MetaDirectoryOverride))return MetaDirectoryOverride;
 #endif
@@ -82,8 +84,12 @@ namespace Game.App
         private double accumulator;
         private RunFrame cardsFrame;
         private int cardsWidth,cardsHeight;
+        private Vector2 cardsSafeSize;
+        private float cardsCanvasScale;
         private readonly Vector3[] hintCorners=new Vector3[4];
         private Text pooledHint;
+        private Vector2 hintViewportSize,hintSafeSize;
+        private float hintCanvasScale;
         private bool finished,loading,parityRunning,applicationPaused,focusLost,discardResumeDelta,telemetryClosed,suspendedInterval;
         private double intervalStarted;
         private int seed;
@@ -138,7 +144,9 @@ namespace Game.App
 #endif
                 gameObject.AddComponent<AudioListener>();sound=gameObject.AddComponent<FirstPlayableAudio>();sound.Initialize(FoundationBoot.Catalog);if(IsWave){waveSound=gameObject.AddComponent<WaveAudio>();waveSound.Initialize();}ApplyPreferences();
                 ShowMeta();
-                TryStartWaveBenchmark();
+                LandscapeUiReview.Create(this);
+                TryStartVisualReview();
+                if(!visualReviewRequested)TryStartWaveBenchmark();
             }
             catch(Exception e){Fail(e);}
         }
@@ -206,7 +214,7 @@ namespace Game.App
         }
         public void StartRun(int? requestedSeed=null)
         {
-            if(loading)return;if(Session?.View.Status==RunStatus.Completed&&!finished){RetryCompleteRun();return;}StartCoroutine(BeginRun(requestedSeed ?? AutoplayCapture.Active?.RunSeed ?? (int)(DateTime.UtcNow.Ticks & int.MaxValue)));
+            if(loading)return;if(Session?.View.Status==RunStatus.Completed&&!finished){RetryCompleteRun();return;}StartCoroutine(BeginRun(requestedSeed ?? AutoplayCapture.Active?.RunSeed ?? NormalPlayTrace.RequestedSeed ?? NormalGcProbe.RequestedSeed ?? (int)(DateTime.UtcNow.Ticks & int.MaxValue)));
         }
         public void StartNeutralRun(int requestedSeed)
         {
@@ -226,7 +234,7 @@ namespace Game.App
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash);
                 Session=new InteractiveSession(c,options);CaptureSnapshots();previous=Frame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
-                recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
+                recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??NormalPlayTrace.ProfileDirectory??NormalGcProbe.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,Frame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
                 world.SetFallowChapter(IsWave&&c.WaveRuntime?.ChapterId=="meta:chapter_1");
                 world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,Frame.MapWidth,Frame.MapHeight);if(useMeta)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptWave(c,Wave);world.AcceptFrame(Frame,FirstPlayable);ApplyPreferences();sound.ResetRun();waveSound?.ResetRun();bossPhaseCue.Reset();lastWaveSound=-1;if(IsWave)sound.AcceptCommonFeedback(Frame,waveSound.PlayCommon);else sound.AcceptFrame(Frame,FirstPlayable);
@@ -251,6 +259,7 @@ namespace Game.App
             ;
         private void UpdateRunFrame()
         {
+            if (visualReviewRequested) return;
             if (waveBenchmarkRequested) { UpdateWaveBenchmark(); return; }
             if(Ui==null||Stick==null)return;
             DesktopControls.UpdateWindow();
@@ -291,8 +300,16 @@ namespace Game.App
                 var visible=Screen.safeArea;
                 if(hud!=null)
                 {
-                    var bottom=Mathf.Min(UiTokens.BottomWorldInset*Ui.Canvas.scaleFactor,visible.height*.2f);
-                    visible.yMin+=bottom;visible.yMax=Mathf.Max(visible.yMin+1,visible.yMax-hud.ReservedTopPixels);
+                    if(IsWave&&runCatalog.WaveRuntime?.ChapterId=="meta:chapter_1")
+                    {
+                        var overlays=Ui.GetWorldOverlayBounds();
+                        visible=Rect.MinMaxRect(Mathf.Max(visible.xMin,overlays.xMin),Mathf.Max(visible.yMin,overlays.yMin),Mathf.Min(visible.xMax,overlays.xMax),Mathf.Min(visible.yMax,overlays.yMax));
+                    }
+                    else
+                    {
+                        var bottom=Mathf.Min(UiTokens.BottomWorldInset*Ui.Canvas.scaleFactor,visible.height*.2f);
+                        visible.yMin+=bottom;visible.yMax=Mathf.Max(visible.yMin+1,visible.yMax-hud.ReservedTopPixels);
+                    }
                 }
                 world.ShowAnnouncements=screen==UiScreen.Run;
                 PredictLord(movement);
@@ -348,11 +365,14 @@ namespace Game.App
         }
         private void ShowCards()
         {
-            if(ReferenceEquals(cardsFrame,Frame)&&cardsWidth==Screen.width&&cardsHeight==Screen.height&&screen==UiScreen.Cards)return;
+            Ui.SynchronizeViewport();
+            if(ReferenceEquals(cardsFrame,Frame)&&cardsWidth==Screen.width&&cardsHeight==Screen.height&&cardsSafeSize==Ui.SafeRoot.rect.size&&cardsCanvasScale==Ui.Canvas.scaleFactor&&screen==UiScreen.Cards)return;
+            cardsSafeSize=Ui.SafeRoot.rect.size;cardsCanvasScale=Ui.Canvas.scaleFactor;
             var offer=Session.View.CaptureCards();
             cardsFrame=Frame;cardsWidth=Screen.width;cardsHeight=Screen.height;screen=UiScreen.Cards;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
-            UiRunPanels.Cards(Ui,Frame,FirstPlayable,offer,runCatalog??FoundationBoot.Catalog,displays,(kind,id)=>Send(kind,card:id));
-            Ui.Button(Ui.Content.GetComponentInChildren<ScrollRect>().content,"설정",()=>ShowSettings(true));
+            UiRunPanels.Cards(Ui,Frame,FirstPlayable,offer,runCatalog??FoundationBoot.Catalog,displays,(kind,id)=>Send(kind,card:id),()=>ShowSettings(true));
+            var scroll=Ui.Content.GetComponentInChildren<ScrollRect>();
+            if(scroll!=null)Ui.Button(scroll.content,"설정",()=>ShowSettings(true));
         }
         private void ShowSettings(bool inRun)
         {
@@ -433,6 +453,7 @@ namespace Game.App
             if(activeHint!=null)
             {
                 if(screen!=hintScreen){ReleaseHint();return;}
+                if(hintViewportSize!=new Vector2(Screen.width,Screen.height)||hintSafeSize!=Ui.SafeRoot.rect.size||hintCanvasScale!=Ui.Canvas.scaleFactor)LayoutActiveHint();
                 if(!hintRecorded&&!applicationPaused&&!focusLost&&Time.frameCount>hintStartedFrame&&activeHint.gameObject.activeInHierarchy&&!activeHint.canvasRenderer.cull)
                 {
                     activeHint.rectTransform.GetWorldCorners(hintCorners);
@@ -455,17 +476,12 @@ namespace Game.App
             activeHintKind=next.Value;hintScreen=screen;hintRecorded=false;hintStartedFrame=Time.frameCount;hintRemaining=5;
             if(pooledHint==null)pooledHint=Ui.Hint(HintText(activeHintKind));
             activeHint=pooledHint;activeHint.text=HintText(activeHintKind);
-            var hintContainer=(RectTransform)activeHint.transform.parent;hintContainer.SetParent(Ui.Content,false);hintContainer.gameObject.SetActive(true);
-            hintContainer.anchorMin=hintContainer.anchorMax=new Vector2(.5f,.18f);hintContainer.anchoredPosition=Vector2.zero;hintContainer.sizeDelta=new Vector2(720,120);
-            var hintLayout=hintContainer.GetComponent<LayoutElement>();if(hintLayout!=null)hintLayout.enabled=false;
-            if(screen==UiScreen.Cards)
-            {
-                var container=(RectTransform)activeHint.transform.parent;
-                container.SetParent(Ui.Content.GetComponentInChildren<ScrollRect>().content,false);
-                container.SetSiblingIndex(2);
-                var layout=hintLayout??container.gameObject.AddComponent<LayoutElement>();layout.enabled=true;
-                layout.minHeight=layout.preferredHeight=96;layout.flexibleHeight=0;
-            }
+            LayoutActiveHint();
+        }
+        private void LayoutActiveHint()
+        {
+            UiRunPanels.LayoutHint(Ui,activeHint,screen==UiScreen.Cards,Screen.width>Screen.height);
+            hintViewportSize=new Vector2(Screen.width,Screen.height);hintSafeSize=Ui.SafeRoot.rect.size;hintCanvasScale=Ui.Canvas.scaleFactor;
         }
         private bool HasRipeFarm()
         {for(var i=0;i<Frame.Farms.Count;i++)if(Frame.Farms[i].Ripe)return true;return false;}

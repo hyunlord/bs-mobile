@@ -9,21 +9,25 @@ namespace Game.View
         readonly Transform parent;
         readonly TextMesh[] labels = new TextMesh[Capacity];
         readonly TextMesh[] shadows = new TextMesh[Capacity];
+        readonly Renderer[] labelRenderers = new Renderer[Capacity];
         Font font;
         Material material;
         Material shadowMaterial;
         bool disposed;
+        readonly Color ink;
 
-        public WorldGrowthLabels(Transform parent)
+        public WorldGrowthLabels(Transform parent, string additionalGlyphs = "", Color? color = null)
         {
             if (parent == null) throw new ArgumentNullException(nameof(parent));
             this.parent = parent;
+            ink = color ?? GameVisualTokens.Ready;
             for (var slot = 0; slot < Capacity; slot++)
             {
                 if (font == null)
                 {
-                    font = FontProvider.Create(new[] { "익음 수확 완료 경험치 수리 중 0123456789+ XP" });
-                    font.RequestCharactersInTexture("익음 수확 완료 경험치 수리 중 0123456789+ XP",48);
+                    var glyphs = "익음 수확 완료 경험치 수리 중 0123456789+ XP" + additionalGlyphs;
+                    font = FontProvider.Create(new[] { glyphs });
+                    font.RequestCharactersInTexture(glyphs,48);
                     material = new Material(font.material)
                     {
                         name = "Growth label ink",
@@ -40,11 +44,25 @@ namespace Game.View
                 }
                 shadows[slot] = CreateLabel("Growth label shadow " + slot, shadowMaterial);
                 labels[slot] = CreateLabel("Growth label " + slot, material);
+                labelRenderers[slot] = labels[slot].GetComponent<Renderer>();
             }
             Clear();
         }
 
         public void BeginFrame() => Clear();
+
+        public void ShowClamped(int slot, string message, Vector2 position, Rect worldBounds)
+        {
+            if (worldBounds.width <= 0 || worldBounds.height <= 0) { Hide(slot); return; }
+            Show(slot, message, position);
+            var bounds = labelRenderers[slot].bounds;
+            var center = (Vector2)bounds.center;
+            var extent = (Vector2)bounds.extents + Vector2.one * .03f;
+            var target = new Vector2(
+                Mathf.Clamp(center.x, worldBounds.xMin + Mathf.Min(extent.x, worldBounds.width * .5f), worldBounds.xMax - Mathf.Min(extent.x, worldBounds.width * .5f)),
+                Mathf.Clamp(center.y, worldBounds.yMin + Mathf.Min(extent.y, worldBounds.height * .5f), worldBounds.yMax - Mathf.Min(extent.y, worldBounds.height * .5f)));
+            Show(slot, message, position + target - center);
+        }
 
         public void Show(int slot, string message, Vector2 position, float opacity = 1)
         {
@@ -55,7 +73,7 @@ namespace Game.View
                 Hide(slot);
                 return;
             }
-            var color = GameVisualTokens.Ready;
+            var color = ink;
             color.a = Mathf.Clamp01(opacity);
             var shadowColor = GameVisualTokens.Ink;
             shadowColor.a = color.a;

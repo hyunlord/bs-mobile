@@ -4,7 +4,12 @@ namespace Game.View
     public static class UiTokens
     {
         public const float GrowthStartScale = .82f;
-        public const int FallowTitleLogo = 88;
+        public const int FallowTitleLogo = 88, FallowEvolution = 32;
+        public const float StickThumbDiameter = 80;
+        public const float LandscapeHudFraction = .11f, LandscapeLoadoutFraction = .11f;
+        public const float LandscapeStickDiameter1080 = 160, LandscapeStickAlpha = .5f;
+        public const int LandscapeCardBody = 16, LandscapeCardMinimum = 12;
+        public const float LandscapeCardInset = 14, LandscapeActionHeight = 34;
         public const float FallowHudHeight = 104, FallowFooterHeight = 156, FallowSlotSize = 76;
         public static readonly Color FallowPaperShade = new Color32(0xC9, 0xB8, 0x87, 255);
         public static readonly Color FallowMuted = new Color32(0x77, 0x6F, 0x59, 255);

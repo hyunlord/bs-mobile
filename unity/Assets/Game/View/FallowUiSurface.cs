@@ -5,12 +5,12 @@ namespace Game.View
 {
     public static class FallowUiSurface
     {
-        public static void Button(UiShell ui, Button button, bool dark)
+        public static void Button(UiShell ui, Button button, bool dark, bool ornate = false)
         {
             button.image.enabled = false;
             var rect = UiShell.Rect("Paper surface", button.transform); UiShell.Stretch(rect); rect.SetAsFirstSibling();
-            var image = ui.Surface(rect, "ui.hint"); image.raycastTarget = true;
-            image.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier;
+            var image = ui.Surface(rect, ornate ? "ui.button.secondary" : "ui.hint"); image.raycastTarget = true;
+            image.pixelsPerUnitMultiplier = ornate ? 1 : UiTokens.FallowFrameMultiplier;
             button.targetGraphic = image;
             var colors = button.colors;
             colors.normalColor = dark ? UiTokens.FallowCharcoal : Color.white;

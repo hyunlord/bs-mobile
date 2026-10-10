@@ -27,7 +27,7 @@ namespace Game.App
         bool capturing, ended, waveAttached;
         long lastWaveEvent=-1;
         Result result;
-        bool goldenMinute, goldenWorldPaused, goldenRecordingStarted;
+        bool goldenMinute, goldenWorldPaused, goldenRecordingStarted, weakBuild;
         GoldenMinuteCapture minuteCapture;
         int portraitAttempt, portraitFrame;
         double portraitSettleAt;
@@ -152,6 +152,8 @@ namespace Game.App
             RequireEmptyOutput(folder);
             var args=Environment.GetCommandLineArgs();
             goldenMinute = IsGoldenMinuteRequested(args);
+            weakBuild = Array.IndexOf(args,"--capture-weak-build") >= 0;
+            if(weakBuild&&!goldenMinute)throw new ArgumentException("Weak-build capture requires the explicit golden-minute capture mode.");
             var seedArgument=Array.IndexOf(args,"--capture-seed");
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
             var movementArgument=Array.IndexOf(args,"--capture-movement");
@@ -173,6 +175,7 @@ namespace Game.App
                 automatedInput = true, timeScale = 1, isolatedProfile = ProfileDirectory, preferencesPrefix = PreferencesPrefix };
             WriteResult();
             Log("capture-start", "automated pointer and UI button input; 1x; fresh chapter1 profile; focus-independent capture; no OS-user or human-input claim");
+            if(weakBuild)Log("weak-build-policy","ordinary perimeter movement avoiding reward/estate farming; prefer items then owned gear; at most two weapons; no evolution; only required card choices; no level or experience override");
             nextAction = 3;
         }
 
@@ -249,7 +252,7 @@ namespace Game.App
                     if(captureTarget!=null)
                     {
                         if(!run.IsWave||!FoundationBoot.Catalog.WaveRuntime.MaterialTargets.TryGetValue(captureTarget,out var tool))throw new InvalidOperationException("Capture target is not supported by this profile.");
-                        ClickContaining("출정 준비 · ");
+                        ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.interactable && b.name == "출정 준비"));
                         ClickContaining(CanonicalContent.Displays.Single(d=>d.Id==tool).DisplayName);
                         Log("target-material-click",captureTarget);
                     }
@@ -293,20 +296,22 @@ namespace Game.App
         bool PreparePortraitWindow()
         {
             if (portraitReady) return true;
+            var landscape = CaptureSegmentWindow.Parse(Environment.GetCommandLineArgs()).Landscape;
             // RunCoordinator has now applied its ordinary desktop preset; capture can override it once.
             if (portraitAttempt == 0)
             {
-                Screen.SetResolution(900, 1600, FullScreenMode.Windowed);
+                Screen.SetResolution(landscape ? 1920 : 900, landscape ? 1080 : 1600, FullScreenMode.Windowed);
                 portraitAttempt = 1; portraitFrame = Time.frameCount; portraitSettleAt = Elapsed + 1;
                 return false;
             }
             if (Time.frameCount < portraitFrame + 3 || Elapsed < portraitSettleAt) return false;
-            if (Screen.width * 16 == Screen.height * 9)
+            if (landscape ? Screen.width == 1920 && Screen.height == 1080 : Screen.width * 16 == Screen.height * 9)
             {
                 portraitReady = true;
-                Log("portrait-ready", $"width={Screen.width};height={Screen.height};attempt={portraitAttempt}");
+                Log(landscape ? "landscape-ready" : "portrait-ready", $"width={Screen.width};height={Screen.height};attempt={portraitAttempt}");
                 return true;
             }
+            if (landscape) throw new InvalidOperationException($"Native landscape capture requires 1920x1080, observed {Screen.width}x{Screen.height}.");
             if (portraitAttempt == 1)
             {
                 // macOS can constrain oversized windows. Fit the observed drawable bounds exactly to 9:16.
@@ -338,19 +343,24 @@ namespace Game.App
             }
             if (frame.Status == RunStatus.AwaitingCard)
             {
+                if(LandscapeUiReview.HoldCards)return;
                 if (cardAt < 0) { cardAt = Elapsed; Log("cards-visible", string.Join(",", run.Session.View.CaptureCards().Cards)); }
                 if (Elapsed - cardAt < 2) return;
                 var offers=run.Session.View.CaptureCards();
-                var card = run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,captureTarget):offers.Cards.OrderBy(CardRank).First();
-                var parent = run.Ui.GetComponentsInChildren<RectTransform>().First(t => t.name == "Card " + card);
-                ClickButton(parent.GetComponentsInChildren<Button>().Single(b => b.name == "Choose " + card));
+                var card = weakBuild?WeakCapturePolicy.Choose(offers,frame,FoundationBoot.Catalog):run.IsWave?WaveCaptureInput.ChooseCard(offers,frame,FoundationBoot.Catalog,captureTarget):offers.Cards.OrderBy(CardRank).First();
+                if(card==null)
+                {
+                    if(offers.Rerolls<=0)throw new InvalidOperationException("Weak-build legal offer cannot preserve two-weapon/no-evolution observation; no grants or forced selection permitted.");
+                    ClickContaining("다시 뽑기");Log("weak-reroll","ordinary budget to preserve weak-build constraint");cardAt=-1;return;
+                }
+                ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Choose " + card));
                 Log("card-click", card); cardAt = -1; return;
             }
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
             var angle = frame.Tick / 180d;
             var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
-            if(run.Wave!=null)target=WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog,goldenMinute);
-            var direction = new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y).normalized;
+            if(run.Wave!=null)target=weakBuild?WeakCapturePolicy.Target(frame,run.Wave):WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog,goldenMinute);
+            var direction = CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = new Vector2(Screen.width * .25f, Screen.height * .2f), button = PointerEventData.InputButton.Left };
             if (!run.Stick.Active) ExecuteEvents.Execute(run.Stick.gameObject, pointer, ExecuteEvents.pointerDownHandler);
             pointer.position = run.Stick.Origin + direction * run.Stick.Radius;

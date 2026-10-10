@@ -2516,21 +2516,21 @@
     },
     {
       "id": "enemy.core.ram_runner.idle",
-      "atlas": "fallow-actors",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 1040,
-          "y": 487,
-          "width": 465,
-          "height": 465
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
         }
       ],
       "pivot": {
-        "x": 0.4946236559139785,
-        "y": 0.11406465376344088
+        "x": 0.5,
+        "y": 0.04
       },
       "worldSize": {
-        "x": 0.44589,
+        "x": 0.375386,
         "y": 0.44589
       },
       "frameMs": 350,
@@ -2538,21 +2538,21 @@
     },
     {
       "id": "enemy.core.ram_runner.walk",
-      "atlas": "fallow-actors",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 1040,
-          "y": 487,
-          "width": 465,
-          "height": 465
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
         }
       ],
       "pivot": {
-        "x": 0.4946236559139785,
-        "y": 0.11406465376344088
+        "x": 0.5,
+        "y": 0.04
       },
       "worldSize": {
-        "x": 0.44589,
+        "x": 0.375386,
         "y": 0.44589
       },
       "frameMs": 350,
@@ -2560,21 +2560,21 @@
     },
     {
       "id": "enemy.core.ram_runner.hit",
-      "atlas": "fallow-actors",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 1040,
-          "y": 487,
-          "width": 465,
-          "height": 465
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
         }
       ],
       "pivot": {
-        "x": 0.4946236559139785,
-        "y": 0.11406465376344088
+        "x": 0.5,
+        "y": 0.04
       },
       "worldSize": {
-        "x": 0.44589,
+        "x": 0.375386,
         "y": 0.44589
       },
       "frameMs": 350,
@@ -2582,21 +2582,21 @@
     },
     {
       "id": "enemy.core.ram_runner.death",
-      "atlas": "fallow-actors",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 1040,
-          "y": 487,
-          "width": 465,
-          "height": 465
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
         }
       ],
       "pivot": {
-        "x": 0.4946236559139785,
-        "y": 0.11406465376344088
+        "x": 0.5,
+        "y": 0.04
       },
       "worldSize": {
-        "x": 0.44589,
+        "x": 0.375386,
         "y": 0.44589
       },
       "frameMs": 350,
@@ -8528,21 +8528,21 @@
     },
     {
       "id": "wave1a.enemy.core.ram_runner.windup",
-      "atlas": "fallow-actors",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 1040,
-          "y": 487,
-          "width": 465,
-          "height": 465
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
         }
       ],
       "pivot": {
-        "x": 0.4946236559139785,
-        "y": 0.11406465376344088
+        "x": 0.5,
+        "y": 0.04
       },
       "worldSize": {
-        "x": 0.44589,
+        "x": 0.375386,
         "y": 0.44589
       },
       "frameMs": 350,
@@ -8550,21 +8550,21 @@
     },
     {
       "id": "wave1a.enemy.core.ram_runner.recover",
-      "atlas": "fallow-actors",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 1040,
-          "y": 487,
-          "width": 465,
-          "height": 465
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
         }
       ],
       "pivot": {
-        "x": 0.4946236559139785,
-        "y": 0.11406465376344088
+        "x": 0.5,
+        "y": 0.04
       },
       "worldSize": {
-        "x": 0.44589,
+        "x": 0.375386,
         "y": 0.44589
       },
       "frameMs": 350,
