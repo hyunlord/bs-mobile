@@ -13,9 +13,15 @@ namespace Game.View
         {rect.anchorMin=rect.anchorMax=new Vector2(0,1);rect.pivot=new Vector2(0,1);rect.anchoredPosition=new Vector2(x,-y);rect.sizeDelta=new Vector2(width,height);}
         public static Text Label(UiShell ui,Transform parent,string text,float x,float y,float width,float height,int size=PortraitTokens.Body)
         {var label=ui.Label(parent,text,size,height);Position(label.rectTransform,x,y,width,height);label.lineSpacing=1.15f;return label;}
-        public static Button Button(UiShell ui,Transform parent,string text,Action action,float x,float y,float width,float height=PortraitTokens.Action,bool enabled=true)
+        public static Image Art(UiShell ui,Transform parent,string assetName,float x,float y,float width,float height)
         {
-            var button=ui.Button(parent,text,action,enabled);FallowUiSurface.Button(ui,button,true);
+            var rect=Place(assetName,parent,x,y,width,height);
+            var image=rect.gameObject.AddComponent<Image>();image.sprite=PortraitArt.Get(assetName);image.preserveAspect=true;image.raycastTarget=false;return image;
+        }
+        public static Button Button(UiShell ui,Transform parent,string text,Action action,float x,float y,float width,float height=PortraitTokens.Action,bool enabled=true,string role="ui.button.secondary")
+        {
+            var button=ui.Button(parent,text,action,enabled);ui.ApplySurface(button.image,role);
+            button.GetComponentInChildren<Text>().color=role=="ui.button.secondary"?GameVisualTokens.Ink:GameVisualTokens.Attack;
             Position((RectTransform)button.transform,x,y,width,height);button.GetComponentInChildren<Text>().fontSize=PortraitTokens.Body;return button;
         }
     }

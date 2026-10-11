@@ -1,0 +1,1553 @@
+{
+  "schemaVersion": 1,
+  "issue": 234,
+  "reference": "docs/design/portrait-v0",
+  "gate": "partial-awaiting-user-approval",
+  "inventoryPurpose": "Authored reference checklist, not an automatic claim of feature presence or visual equivalence.",
+  "primaryRule": "At most one red/blue primary action; exclude informational banners, and use the explicit Revive reference exception. No primary invented for selection-only screens.",
+  "deviations": [
+    {
+      "id": "logo-korean",
+      "status": "approved-override",
+      "reason": "원본 영어 제목 대신 사용자 지정 기존 휴경의 왕국 로고를 유지한다."
+    },
+    {
+      "id": "font-fallback",
+      "status": "known-deviation",
+      "reason": "원본 Gowun Batang 글꼴은 제공되지 않았고 설치되지 않아 제목 글꼴의 완전 일치는 미확인이다. 본문은 설치된 Noto Sans KR 사용 여부를 실제 캡처로 확인한다."
+    },
+    {
+      "id": "font-minimum",
+      "status": "approved-override",
+      "reason": "원본 일부 보조 10pt는 사용자 최소 11pt 요구에 맞춰 늘린다."
+    },
+    {
+      "id": "cards-auxiliary-placement",
+      "status": "missing-or-different",
+      "reason": "원본 하단 공통 금지·고정 대신 카드 직접 보조 동작이 남아 있는지 확인이 필요하다. 해당 차이를 일치로 세지 않는다."
+    },
+    {
+      "id": "pause-inline-settings",
+      "status": "missing-or-different",
+      "reason": "원본의 소리·진동·화면 흔들림·피해 숫자 인라인 스위치 대신 설정 화면 링크가 남은 경우 네 제어 요소 미일치로 기록한다."
+    },
+    {
+      "id": "pass-claim-data",
+      "status": "missing-or-different",
+      "reason": "현행 패스 수령 데이터가 없으므로 원본의 실제 수령 가능한 칸을 조작 가능한 보상으로 만들지 않는다. 이 강조·수령 상태는 미구현 차이로 남긴다."
+    },
+    {
+      "id": "revive-blue-ad",
+      "status": "reference-exception",
+      "reason": "원본은 부활 광고 버튼만 파랑이며 결산과 같은 크기이다. 일반 크림 광고 규칙보다 이 화면 그림을 따른다."
+    },
+    {
+      "id": "revive-fixture",
+      "status": "fixture-only",
+      "reason": "부활 캡처는 명시적 시험 규칙이다. #224 보류와 실제 기본 실행의 부활 미설정 상태를 바꾸지 않는다."
+    },
+    {
+      "id": "optional-ad-eligibility",
+      "status": "behavior-preserved",
+      "reason": "첫 판·첫 날·광고 불가·한도 완료에서는 기존 규칙대로 광고가 숨는다. 예시와 같게 보이기 위해 규칙을 바꾸지 않는다."
+    },
+    {
+      "id": "dynamic-data",
+      "status": "behavior-preserved",
+      "reason": "그림의 챕터·레벨·자원·조각·도전 수치는 예시이며 실제 저장·콘텐츠 데이터로 표시한다. 미정 수치는 [n]을 유지한다."
+    },
+    {
+      "id": "view-only",
+      "status": "behavior-preserved",
+      "reason": "결제·유료 해금 동작은 추가하지 않고 기존 보기 전용을 유지한다."
+    }
+  ],
+  "screens": [
+    {
+      "id": "title",
+      "label": "타이틀",
+      "group": "run",
+      "capture": "title",
+      "board": "02-Title.png",
+      "visualVerdict": "pending-recapture-after-correction",
+      "elements": [
+        {
+          "id": "title-1",
+          "label": "문장과 문장 아래 부제",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "title-2",
+          "label": "영주·이삭 풍경",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "title-3",
+          "label": "크림 시작 리본",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "title-4",
+          "label": "설정",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "title-5",
+          "label": "첫 실행 안내",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        }
+      ],
+      "deviationIds": [
+        "logo-korean",
+        "font-fallback"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-run/title-390x844.png",
+          "sha256": "c4d815c62ec5b3e490d271a728b12186aad6778f47b162f27d5ececdff9aec08"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-run/title-1080x2520.png",
+          "sha256": "ed76a7bc80b0377da3ee630d4bd7873eebe6b28e0c6c6d1a9af23656cb1c442b"
+        }
+      ],
+      "longAspectReview": {
+        "status": "pending-recapture",
+        "evidence": "artifacts/portrait-234/editor-run/title-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      }
+    },
+    {
+      "id": "run",
+      "label": "판 HUD",
+      "group": "run",
+      "capture": "run",
+      "board": "03-Run.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "run-1",
+          "label": "레벨 메달",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "메달은 있으나 원본 y48과 달리 현재 화면 위 y0 부근에 붙어 있다. 인셋 안전 영역 재검증이 필요하다."
+        },
+        {
+          "id": "run-2",
+          "label": "체력 바와 수치",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "체력 바·수치가 보이나 원본 y52 대신 화면 최상단에 놓여 있다."
+        },
+        {
+          "id": "run-3",
+          "label": "경험치 바",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "run-4",
+          "label": "계절·시간",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "run-5",
+          "label": "둥근 일시정지",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "run-6",
+          "label": "26pt 장비 아이콘",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "run-7",
+          "label": "입력할 때만 조이스틱",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-run/run-390x844.png",
+            "artifacts/portrait-234/editor-run/run-1080x2520.png"
+          ],
+          "note": "입력 없는 캡처에서 조이스틱이 없는 것은 확인했다. 누르는 위치 표시·해제 동작은 정지 캡처만으로 확인할 수 없다."
+        }
+      ],
+      "deviationIds": [],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-run/run-390x844.png",
+          "sha256": "1b3e7ede4670bc78a4c95a6b3305a945b8751bbfadf216424e1b0aba8b9e7714"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-run/run-1080x2520.png",
+          "sha256": "f135522ece69a8816c3d1c0bc05cc77d8d4f12c9a78b16b705e6ef03932978ce"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-run/run-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 0,
+        "status": "source-and-capture-reviewed",
+        "note": "선택/일시정지 전용 HUD로 별도 주 행동 버튼 없음."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "cards",
+      "label": "레벨업",
+      "group": "run",
+      "capture": "cards",
+      "board": "04-LevelUp.png",
+      "visualVerdict": "pending-recapture-after-correction",
+      "elements": [
+        {
+          "id": "cards-1",
+          "label": "파랑 레벨 헤더",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-2",
+          "label": "가로로 긴 카드 3장 세로 배치",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-3",
+          "label": "종류별 common·rare·epic 테두리",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-4",
+          "label": "아이콘 슬롯",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-5",
+          "label": "종류 태그",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-6",
+          "label": "레벨 변화",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-7",
+          "label": "이름",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-8",
+          "label": "설명 두 줄",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-9",
+          "label": "조건 충족 카드의 금빛 진화 띠",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "cards-10",
+          "label": "하단 다시 뽑기·금지·고정 및 횟수",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        }
+      ],
+      "deviationIds": [
+        "cards-auxiliary-placement"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "sha256": "1aed1937a91ffcc96a920b206fcb768d2384a9d1ba30afbd3c2d58a74793f119"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-run/cards-1080x2520.png",
+          "sha256": "4ec8742aa27c614bb65716b80448bff48444b1f932009bff892c4baa3c7b8d28"
+        }
+      ],
+      "longAspectReview": {
+        "status": "pending-recapture",
+        "evidence": "artifacts/portrait-234/editor-run/cards-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      }
+    },
+    {
+      "id": "pause",
+      "label": "일시정지",
+      "group": "run",
+      "capture": "pause",
+      "board": "05-Pause.png",
+      "visualVerdict": "pending-recapture-after-correction",
+      "elements": [
+        {
+          "id": "pause-1",
+          "label": "양피지 패널",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-2",
+          "label": "일시정지·계절·시간·레벨",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-3",
+          "label": "무기 5칸",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-4",
+          "label": "도구 4칸",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-5",
+          "label": "특허장 4칸",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-6",
+          "label": "진화 진행",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-7",
+          "label": "설정 네 줄",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-8",
+          "label": "크림 포기",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pause-9",
+          "label": "파랑 계속",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        }
+      ],
+      "deviationIds": [
+        "pause-inline-settings"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "sha256": "630c54ec3b4598cbbac510d7ddda69c88478ebc35cdb6571bb469c99901ce397"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-run/pause-1080x2520.png",
+          "sha256": "630550707394ef7057173041b59cee5aca303b7765782dd5d06a38f3a2c012fe"
+        }
+      ],
+      "longAspectReview": {
+        "status": "pending-recapture",
+        "evidence": "artifacts/portrait-234/editor-run/pause-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      }
+    },
+    {
+      "id": "estate",
+      "label": "영지",
+      "group": "meta",
+      "capture": "estate",
+      "board": "06-Home.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "estate-1",
+          "label": "나무 자원 바 5종과 보석+",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "5종 자원 바와 보석+ 존재. 철재는 검, 인장은 두루마리 아이콘으로 원본 철괴·붉은 인장과 다르며 보석은 글자다."
+        },
+        {
+          "id": "estate-2",
+          "label": "파랑 다음 챕터 배너",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "estate-3",
+          "label": "설정",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "44pt 크림 프레임의 설정 글자 버튼이다. 원본 둥근 톱니 아이콘 버튼과 다르다."
+        },
+        {
+          "id": "estate-4",
+          "label": "풍경 속 건물 4채",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "estate-5",
+          "label": "건물 이름·레벨",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "estate-6",
+          "label": "우선 성장 깃발 1개",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "estate-7",
+          "label": "가운데 방치 생산 상자",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "중앙 상자와 원형 받침은 있지만 밝은 받침 위 흰 생산 상자 글자의 대비가 낮다. 원본은 어두운 원형 받침/받기다."
+        },
+        {
+          "id": "estate-8",
+          "label": "빨강 출정",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "estate-9",
+          "label": "아이콘 탭 4개",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "estate-10",
+          "label": "받을 것에만 빨간 점",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/estate-390x844.png",
+            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
+          ],
+          "note": "현재 0개 받을 상태에서는 빨간 점이 없다. 받을 상태의 빨간 점은 이 캡처에서 미확인이다."
+        }
+      ],
+      "deviationIds": [],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-meta/estate-390x844.png",
+          "sha256": "25f6f3c7de1c3926353b9b430e685912676bb8c12785477d3948906b141f8bfe"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-meta/estate-1080x2520.png",
+          "sha256": "92f2f4d8e73991e349bbd191508f3c506e54c9fe0378d5a95a38cc8276618614"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-meta/estate-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "빨강 출정 1개; 파랑 챕터 배너는 안내."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "departure",
+      "label": "출정 준비",
+      "group": "meta",
+      "capture": "departure",
+      "board": "07-Prepare.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "departure-1",
+          "label": "뒤로",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "뒤로 기능 표식은 있지만 원형 얇은 테두리 대신 크림 사각 프레임이다."
+        },
+        {
+          "id": "departure-2",
+          "label": "챕터 원 7개 한 줄",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "7개 원은 한 줄로 보인다. 선택은 금빛 메달이며 원본 선택 파랑/잠김 어두운 원과 다르다."
+        },
+        {
+          "id": "departure-3",
+          "label": "챕터 카드",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "departure-4",
+          "label": "특징 한 줄",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "특징 설명은 두 줄이며 원본 한 줄 요구와 다르다. 실제 현재 챕터 설명을 표시했다."
+        },
+        {
+          "id": "departure-5",
+          "label": "적 아이콘",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "departure-6",
+          "label": "보스",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "보스 이름 글자는 보이나 원본의 별도 보스 타일은 없다."
+        },
+        {
+          "id": "departure-7",
+          "label": "보상 상한",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "상한 수치 글자는 보이나 원본 자원 아이콘 줄과 다르다."
+        },
+        {
+          "id": "departure-8",
+          "label": "가신 3칸",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "3칸 존재. 잠금은 문구만 있으며 원본 자물쇠 아이콘은 없다."
+        },
+        {
+          "id": "departure-9",
+          "label": "기본 장비 2칸",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "departure-10",
+          "label": "이번 판 카드 보기",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "departure-11",
+          "label": "빨강 출정 시작",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/departure-390x844.png",
+            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-meta/departure-390x844.png",
+          "sha256": "0288d1b669b7b122c7433e116ef7fa283ea5de741aec663d0ee01efa4a5ca38c"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-meta/departure-1080x2520.png",
+          "sha256": "d9666b923162f4bea20e61ebe23022c18e2ea504e82008abd99db2d2c34b47ec"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-meta/departure-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "빨강 출정 시작 1개."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "result",
+      "label": "결산",
+      "group": "meta",
+      "capture": "result",
+      "board": "08-Result.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "result-1",
+          "label": "결과 제목 강조",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "result-2",
+          "label": "3칸 요약",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "result-3",
+          "label": "자재와 상한 표",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
+          ],
+          "note": "실제 자재·상한 표는 보이지만 철재 검·인장 두루마리 등 원본 자원 아이콘과 다르다."
+        },
+        {
+          "id": "result-4",
+          "label": "가신 조각",
+          "status": "missing",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png",
+            "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          ],
+          "note": "포기·0수확 fixture에서 조각 줄이 없다. 소스는 fragmentDelta의 양수 항목만 표시한다. 실제 지급 fixture 화면 미검증."
+        },
+        {
+          "id": "result-5",
+          "label": "새로 열린 것 띠",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "result-6",
+          "label": "선택 광고 2배 크림 보조",
+          "status": "missing",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png",
+            "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs",
+            "unity/Assets/Game/App/PortraitBmPanels.cs"
+          ],
+          "note": "현재 결산 캡처에서 광고 버튼이 없다. 기존 적격성/설정 조건 보존으로 보며 화면 일치로 세지 않는다. 소스상 표시 시 크림 362×48로 주 영지로 약206.5×60보다 넓다. 원본도 같은 폭 구성이어서 그림 우선 예외 또는 버튼 크기 정책 정리가 필요하다."
+        },
+        {
+          "id": "result-7",
+          "label": "크림 다시 출정",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "result-8",
+          "label": "빨강 영지로",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/result-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [
+        "optional-ad-eligibility",
+        "dynamic-data"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-meta/result-390x844.png",
+          "sha256": "755d0ca655737d6ff824b28c1d4b780e4689b8b6a60f4662c3bc4d9ad055f7fb"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-meta/result-1080x2520.png",
+          "sha256": "7b2c54a98ee3137803538edf0fc408f363eeedc4150de0ccd8d971378b044ce5"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-meta/result-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "빨강 영지로 1개; 크림 다시 출정. 광고 부재로 실제 광고 크기 검증은 못했으며 소스 폭 예외를 기록했다."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "vassals",
+      "label": "가신",
+      "group": "meta",
+      "capture": "vassals",
+      "board": "09-Vassals.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "vassals-1",
+          "label": "제목과 출전 칸",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "vassals-2",
+          "label": "초상 상세 패널",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "vassals-3",
+          "label": "가신 이름·효과·레벨·상한·승급",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "이름·설명·레벨·상한·승급은 보이지만 별 등급/다음 레벨 효과 없음. 강화 비용과 계정 전용 안내는 그리드 아래의 어두운 글자로 긴 화면에서 대비가 거의 없어 읽기 어렵다."
+        },
+        {
+          "id": "vassals-4",
+          "label": "파랑 레벨업",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "vassals-5",
+          "label": "크림 승급",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "vassals-6",
+          "label": "초상 카드 6장",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "vassals-7",
+          "label": "잠김 구분",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "도전으로 해금 글자·어두운 오버레이는 있으나 원본 잠긴 초상 흑백과 달리 모두 색이 남아 있다."
+        },
+        {
+          "id": "vassals-8",
+          "label": "하단 탭",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [
+        "font-minimum",
+        "dynamic-data"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+          "sha256": "9829591f96e0559d868db49a468d4b9b71060609598641fb56701e41a607d691"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png",
+          "sha256": "a08e63c447f15a4b4bde5fe4d43ab54f9106538e6e4d982e43b218c4de834b7e"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "파랑 레벨업 1개(현재 비활성); 크림 승급/출전."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "challenges",
+      "label": "도전",
+      "group": "meta",
+      "capture": "challenges",
+      "board": "10-Challenges.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "challenges-1",
+          "label": "제목과 달성 수",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "challenges-2",
+          "label": "실제 데이터 도전 카드",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
+          ],
+          "note": "실제 20개 데이터가 스크롤 카드로 보인다. 원본보다 카드 높이가 커 390×844에서는 다섯째 카드가 viewport 아래로 잘려 스크롤이 필요하다. 고정 탭과 내용은 분리되어 있다."
+        },
+        {
+          "id": "challenges-3",
+          "label": "아이콘·이름·목표",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "challenges-4",
+          "label": "진행도 바",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "challenges-5",
+          "label": "받음·달성·진행·잠금 구분",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
+            "artifacts/portrait-234/editor-meta/claimed-fixture-390x844.png"
+          ],
+          "note": "진행 캡처와 claimed fixture의 받음 표시는 확인했다. 달성 후 미수령·잠김의 서로 다른 외형은 미검증."
+        },
+        {
+          "id": "challenges-6",
+          "label": "달성 보상 받기",
+          "status": "missing",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
+            "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          ],
+          "note": "현재 캡처들은 진행/받음 상태이므로 활성 보상 받기 표본이 없다. 소스에 pending != null이면 받기 버튼이 있으나 활성 화면 증거로 대체하지 않는다."
+        },
+        {
+          "id": "challenges-7",
+          "label": "하단 탭",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [
+        "dynamic-data"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
+          "sha256": "ed9c6784347daaca7785f582a951fc1aec93950b82466254c99040d05fef723a"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
+          "sha256": "96797fc34e37c5dd3ceac89fe279a340422d8b51addc4f0962bb8723ef353309"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 0,
+        "status": "source-and-capture-reviewed",
+        "note": "목록 상태별 청구 버튼만 있으며 억지 주 버튼을 추가하지 않았다."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "shop",
+      "label": "상점",
+      "group": "bm",
+      "capture": "shop",
+      "board": "11-Shop.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "shop-1",
+          "label": "제목과 보석 잔액",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "shop-2",
+          "label": "외형 카드 2장",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "외형 카드 두 장과 서로 다른 프레임은 보이지만 두 장의 영주 그림이 같다. 원본은 서로 다른 외형이다. 신규 콘텐츠 추가 없이 미정 외형 슬롯으로 남는다."
+        },
+        {
+          "id": "shop-3",
+          "label": "능력치 없음 문구",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "shop-4",
+          "label": "영지 테마",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "shop-5",
+          "label": "파랑 시즌 패스 띠",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "shop-6",
+          "label": "광고 제거",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "shop-7",
+          "label": "보석 묶음",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "shop-8",
+          "label": "하단 탭",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/shop-390x844.png",
+            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [
+        "view-only"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-bm/shop-390x844.png",
+          "sha256": "61f3c5ede47d43f176d91182c3a031f67175903d9f57f611d2dd2dac77d313a2"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-bm/shop-1080x2520.png",
+          "sha256": "3c2b15ceb998f68afa15afd9cb16b42a09078e584b399eb7e8ae9f910a4a6acd"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-bm/shop-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "파랑 시즌 패스 이동 1개; 나머지는 보기 전용."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "idle",
+      "label": "방치 생산",
+      "group": "bm",
+      "capture": "idle",
+      "board": "12-Idle.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "idle-1",
+          "label": "어두운 배경과 작은 패널",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "idle-2",
+          "label": "곡물창고 그림",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "idle-3",
+          "label": "닫기 ×",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "닫기 ×는 있으나 원본 원형 테두리 대신 크림 사각 프레임이다."
+        },
+        {
+          "id": "idle-4",
+          "label": "모인 시간·최대 시간",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "idle-5",
+          "label": "자원 4칸",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "4칸/수량은 존재하나 철재·인장은 아이콘 대신 글자로 되어 있다."
+        },
+        {
+          "id": "idle-6",
+          "label": "파랑 받기",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "idle-7",
+          "label": "크림 광고 2배",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "idle-8",
+          "label": "하루 사용 횟수",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/idle-390x844.png",
+            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [
+        "optional-ad-eligibility",
+        "dynamic-data"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-bm/idle-390x844.png",
+          "sha256": "6111934756bf0dbd44838221108b40e0c12d00b0f6c566af2b2eb84df3181db3"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-bm/idle-1080x2520.png",
+          "sha256": "fe1b377eb22b01338e06a0708f3a2f6158b662dcb8b8b894297fea4c635d1c94"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-bm/idle-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "파랑 받기314×60; 크림 광고314×48으로 넓이는 같고 높이는 작음."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "revive",
+      "label": "부활",
+      "group": "bm",
+      "capture": "revive-rules-fixture",
+      "board": "13-Revive.png",
+      "visualVerdict": "partial-reviewed-awaiting-user",
+      "elements": [
+        {
+          "id": "revive-1",
+          "label": "어두운 판 배경",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "실제 판 위 어두운 패널이지만 피해/수확 글자가 배경에 남아 제목 주변과 겹친다. 원본처럼 배경 판독을 충분히 낮추지 못했다."
+        },
+        {
+          "id": "revive-2",
+          "label": "쓰러짐 제목·판 기록",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "쓰러졌다 제목은 존재하나 계절·판 시간·레벨·남은 시간 줄이 없다."
+        },
+        {
+          "id": "revive-3",
+          "label": "작은 양피지 패널",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "revive-4",
+          "label": "체력 [n]%·장비 레벨 유지 설명",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "revive-5",
+          "label": "사망 배율 결산 설명",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        },
+        {
+          "id": "revive-6",
+          "label": "동일 크기 크림 결산·파랑 광고 부활",
+          "status": "different",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "동일 크기 크림/파랑 버튼은 확인. 이 fixture는 광고 제거 보유라 바로 일어나기로 표시되므로 원본 광고 표시가 있는 상태의 캡처는 아니다."
+        },
+        {
+          "id": "revive-7",
+          "label": "카운트다운 없음",
+          "status": "present",
+          "evidence": [
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
+          ],
+          "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
+        }
+      ],
+      "deviationIds": [
+        "revive-blue-ad",
+        "revive-fixture",
+        "optional-ad-eligibility"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+          "sha256": "7dfea5c1f5905c3061dbb2f158d566aeb1fc8a38a5abc5fef8ee67ccc6e6550e"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
+          "sha256": "23eec774bf2c30ad7a057aabb8e6aba26de8675cebd44a50bd07346df2a7a8dd"
+        }
+      ],
+      "longAspectReview": {
+        "status": "viewport-contained",
+        "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      },
+      "primaryReview": {
+        "coloredPrimaryCount": 1,
+        "status": "source-and-capture-reviewed",
+        "note": "파랑 바로 일어나기153×60 / 크림 결산153×60. 원본의 파랑 광고 예외를 따른다."
+      },
+      "fontReview": {
+        "status": "partial-source-reviewed",
+        "minimumDeclaredPt": 11,
+        "bodyPolicyPt": 13,
+        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "evidence": [
+          "unity/Assets/Game/View/PortraitTokens.cs",
+          "unity/Assets/Game/App/PortraitBmPanels.cs",
+          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+        ]
+      }
+    },
+    {
+      "id": "pass",
+      "label": "시즌 패스",
+      "group": "bm",
+      "capture": "pass",
+      "board": "14-Pass.png",
+      "visualVerdict": "pending-recapture-after-correction",
+      "elements": [
+        {
+          "id": "pass-1",
+          "label": "뒤로·제목·기간",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-2",
+          "label": "진행 메달과 바",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-3",
+          "label": "무료·유료 두 열",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-4",
+          "label": "1~5단계 다섯 줄",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-5",
+          "label": "고정 보상",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-6",
+          "label": "받을 수 있는 칸 강조",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-7",
+          "label": "판 안 힘 없음",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        },
+        {
+          "id": "pass-8",
+          "label": "파랑 유료 줄 열기",
+          "status": "pending-recapture",
+          "evidence": null,
+          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+        }
+      ],
+      "deviationIds": [
+        "pass-claim-data",
+        "view-only",
+        "font-minimum"
+      ],
+      "captureEvidence": [
+        {
+          "path": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "sha256": "768d8c11cfcd33adc0fc9da1de4e825616d6f082c20e4f4836c87b9440ae0863"
+        },
+        {
+          "path": "artifacts/portrait-234/editor-bm/pass-1080x2520.png",
+          "sha256": "af190822a72e74dc902554b95b27bcf919e3b3c33f35df530a9c6c38137c47f7"
+        }
+      ],
+      "longAspectReview": {
+        "status": "pending-recapture",
+        "evidence": "artifacts/portrait-234/editor-bm/pass-1080x2520.png",
+        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+      }
+    }
+  ],
+  "reviewMethod": "9 screens reviewed from existing 390x844 and 1080x2520 Editor PNGs plus source; no browser, rendering, Unity run, or benchmark performed during this review. Title/cards/pause/pass await recapture after corrections.",
+  "reviewCounts": {
+    "present": 47,
+    "different": 24,
+    "missing": 3,
+    "pending-recapture": 32
+  }
+}

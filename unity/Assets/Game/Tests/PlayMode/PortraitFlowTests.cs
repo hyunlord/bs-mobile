@@ -139,20 +139,28 @@ namespace Tests.PlayMode
             var offered = app.Session.View.CaptureCards();
             var sequence = app.Session.NextSequence;
             var tick = app.Frame.Tick;
-            var guardCapture = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-flow-225/editor/guard-offer-before-pointer.png"));
+            var guardCapture = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-run/guard-offer-before-pointer.png"));
             Directory.CreateDirectory(Path.GetDirectoryName(guardCapture));
             if (File.Exists(guardCapture)) File.Delete(guardCapture);
             ScreenCapture.CaptureScreenshot(guardCapture);
             yield return null;
             Assert.That(ButtonNamed("Card.Choose:" + offered.Cards[0]).interactable, Is.False, "Capture preparation must remain inside the 300 ms guard.");
+            Assert.That(ButtonNamed("Cards.Ban").interactable, Is.False);
+            Assert.That(ButtonNamed("Cards.Lock").interactable, Is.False);
+            Click("Cards.Ban", allowDisabled: true);
+            Click("Cards.Lock", allowDisabled: true);
             Click("Card.Choose:" + offered.Cards[0], allowDisabled: true);
             Assert.That(app.Session.NextSequence, Is.EqualTo(sequence), "Moving-pointer release must not select during the 300 ms guard.");
             Assert.That(app.Frame.Status, Is.EqualTo(RunStatus.AwaitingCard));
             yield return new WaitForSecondsRealtime(.35f);
             Assert.That(app.Frame.Tick, Is.EqualTo(tick));
             Assert.That(offered.Bans, Is.GreaterThan(0), "Canonical opening offer must exercise a real ban allowance.");
-            yield return Reveal("Card.Ban:" + offered.Cards[0]);
-            Click("Card.Ban:" + offered.Cards[0]);
+            yield return Reveal("Cards.Ban");
+            Click("Cards.Ban");
+            Assert.That(app.Session.NextSequence, Is.EqualTo(sequence), "Arming the view-only ban target must not record a replay command.");
+            Assert.That(app.Session.View.CaptureCards().Bans, Is.EqualTo(offered.Bans), "Arming must not spend a quota.");
+            yield return Reveal("Card.Choose:" + offered.Cards[0]);
+            Click("Card.Choose:" + offered.Cards[0]);
             yield return null;
             Assert.That(app.Frame.Status, Is.EqualTo(RunStatus.AwaitingCard), "Secondary ban must never bubble into card selection.");
             Assert.That(app.Session.View.CaptureCards().Bans, Is.EqualTo(offered.Bans - 1));
@@ -219,8 +227,14 @@ namespace Tests.PlayMode
             app.Send(ReplayCommandKind.GrantLevel); yield return WaitForScreen("Cards");
             yield return new WaitForSecondsRealtime(.35f);
             var card = app.Session.View.CaptureCards().Cards[0];
-            yield return Reveal("Card.Lock:" + card);
-            Click("Card.Lock:" + card); yield return null;
+            var sequence = app.Session.NextSequence;
+            yield return Reveal("Cards.Lock"); Click("Cards.Lock");
+            Assert.That(app.Session.NextSequence, Is.EqualTo(sequence), "Arming a lock is view-only.");
+            Click("Cards.Lock");
+            Assert.That(app.Session.NextSequence, Is.EqualTo(sequence), "Cancelling a targeting mode is view-only.");
+            Click("Cards.Lock");
+            yield return Reveal("Card.Choose:" + card); Click("Card.Choose:" + card); yield return null;
+            Assert.That(app.Session.NextSequence, Is.EqualTo(sequence + 1), "Only the final card target records the lock command.");
             Assert.That(app.Session.View.CaptureCards().LockedCardId, Is.EqualTo(card));
             Assert.That(ButtonNamed("Card.Choose:" + card).interactable, Is.True,
                 "Locking preserves the offer and must not swallow the next selection.");
@@ -320,7 +334,7 @@ namespace Tests.PlayMode
             var geometry = $"button={name}; pointer={point}; buttonPixels={Pixels(rect)}; scrollPixels={(scroll != null && scroll.viewport != null ? Pixels(scroll.viewport).ToString() : "none")}; safe={app.Ui.SafePixels}; hits={string.Join(" | ", hits.Select(hit => hit.gameObject.name))}";
             if (actual != button)
             {
-                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-flow-225/editor"));
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-run"));
                 Directory.CreateDirectory(output);
                 File.WriteAllText(Path.Combine(output, "pointer-obstruction.txt"), geometry);
             }
@@ -383,7 +397,7 @@ namespace Tests.PlayMode
 
         IEnumerator Capture(string screen, Vector2Int size, bool mobile, bool cardFixture)
         {
-            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-flow-225/editor"));
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-run"));
             Directory.CreateDirectory(output);
             var path = Path.Combine(output, screen + "-" + size.x + "x" + size.y + ".png");
             if (File.Exists(path)) File.Delete(path);

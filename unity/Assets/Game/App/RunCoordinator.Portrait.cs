@@ -56,7 +56,7 @@ namespace Game.App
                 {
                     screen = UiScreen.ConfirmAbandon; ClearUi();
                     PortraitRunPanels.ConfirmAbandon(Ui, AbandonCurrentRun, OpenPause);
-                });
+                }, preferences, () => ApplyPreferences(true));
         }
         public void ContinuePausedRun()
         {

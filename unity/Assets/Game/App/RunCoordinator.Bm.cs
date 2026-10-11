@@ -213,13 +213,19 @@ namespace Game.App
         {
             var pending = rewardPolicy.HasPendingWrite || rewardPolicy.PendingRewards.Any(intent => intent.Slot == RewardedAdSlot.Revive && intent.RunId == rewardRunId);
             Action retrySave = pending ? () => RequestReward(RewardedAdSlot.Revive) : (Action)null;
-            PortraitBmPanels.Revive(Ui, new BmReviveView(RewardOffer(RewardedAdSlot.Revive)), FinishWithoutRevive,
+            var frame = CurrentFrame;
+            var season = frame.Season == 0 ? "봄" : frame.Season == 1 ? "여름" : frame.Season == 2 ? "가을" : "겨울";
+            var elapsed = frame.Tick / Math.Max(1, frame.TickRate);
+            var remaining = Math.Max(0, frame.DurationTicks - frame.Tick) / Math.Max(1, frame.TickRate);
+            var caption = season + " " + (elapsed / 60).ToString("00") + ":" + (elapsed % 60).ToString("00")
+                + " · 레벨 " + frame.Level + " · 남은 시간 " + (remaining / 60).ToString("00") + ":" + (remaining % 60).ToString("00");
+            PortraitBmPanels.Revive(Ui, new BmReviveView(RewardOffer(RewardedAdSlot.Revive), caption), FinishWithoutRevive,
                 () => RequestReward(RewardedAdSlot.Revive), retrySave);
         });
         void ShowPortraitShop() => MetaPage(UiScreen.Shop, () => PortraitBmPanels.Shop(Ui,
             new BmShopView(new[] { "현재 외형 · 코발트 망토" }, new[] { "현재 영지 · 휴경의 왕국" }, adRemovalOwned,
                 new[] { "hero.core.frontier_knight.idle" }, new[] { Progression.Catalog.ManorBuildings[0].ArtRole }),
-            ShowPortraitPass, ShowPortraitAdRemoval, ShowPortraitEstate));
+            ShowPortraitPass, ShowPortraitAdRemoval, ShowPortraitEstate, NavigatePortraitMeta));
         void ShowPortraitPass() => MetaPage(UiScreen.Pass, () => PortraitBmPanels.Pass(Ui,
             new BmPassView(new[] { "고정 보상 [n]" }, new[] { "고정 보상 [n]" }), ShowPortraitShop));
         void ShowPortraitAdRemoval() => MetaPage(UiScreen.AdRemoval, () =>

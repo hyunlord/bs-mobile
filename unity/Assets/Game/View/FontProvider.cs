@@ -10,9 +10,13 @@ namespace Game.View
         public static Font Create(IEnumerable<string> contentNames)
         {
             var text = Labels + string.Concat(contentNames);
+            // Full face names avoid selecting a Thin face from family enumeration.
+            var regular = Font.CreateDynamicFontFromOSFont(new[] { "Noto Sans KR Regular", "NotoSansKR-Regular", "Apple SD Gothic Neo" }, GamePalette.BodySize);
+            if (Supports(regular, text)) return regular;
+            if (regular != null) UnityEngine.Object.Destroy(regular);
             var names = Font.GetOSInstalledFontNames();
             var mac = Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
-            var candidates = names.OrderBy(n => mac && n == "Apple SD Gothic Neo" ? 0 : n.Contains("Noto Sans CJK KR") ? 1 : n.Contains("Noto Sans KR") ? 2 : n == "AppleGothic" ? 3 : 4).ToArray();
+            var candidates = names.OrderBy(n => n.Contains("Noto Sans KR") ? 0 : n.Contains("Noto Sans CJK KR") ? 1 : mac && n == "Apple SD Gothic Neo" ? 2 : n == "AppleGothic" ? 3 : 4).ToArray();
             var font = Font.CreateDynamicFontFromOSFont(candidates, GamePalette.BodySize);
             if (Supports(font, text)) return font;
             if (font != null) UnityEngine.Object.Destroy(font);
