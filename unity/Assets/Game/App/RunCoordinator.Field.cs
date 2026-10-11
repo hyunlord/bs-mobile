@@ -36,12 +36,12 @@ namespace Game.App
             return new NormalPlayMetrics
             {
                 CoreMs=probeCoreMs,DrawMs=probeDrawMs,SnapshotMs=probeSnapshotMs,HudMs=probeHudMs,CoreTicks=probeCoreTicks,
-                Enemies=Frame?.Enemies.Count??0,VisibleEnemies=world!=null?world.VisibleEnemyCount:0,
+                Enemies=CurrentFrame?.Enemies.Count??0,VisibleEnemies=world!=null?world.VisibleEnemyCount:0,
                 DrawCalls=world!=null?world.DrawCalls:0,SpriteInstances=world!=null?world.SubmittedInstances:0,
                 CameraX=camera!=null?camera.transform.position.x:0,CameraY=camera!=null?camera.transform.position.y:0,
                 CameraHalfHeight=camera!=null?camera.orthographicSize:0,
-                LordX=Frame?.Lord.Position.X??0,LordY=Frame?.Lord.Position.Y??0,
-                MapWidth=Frame?.MapWidth??0,MapHeight=Frame?.MapHeight??0,
+                LordX=CurrentFrame?.Lord.Position.X??0,LordY=CurrentFrame?.Lord.Position.Y??0,
+                MapWidth=CurrentFrame?.MapWidth??0,MapHeight=CurrentFrame?.MapHeight??0,
                 LordBoundaryBlocked=probeLordBlocked,CameraBoundaryClamped=world!=null&&world.CameraMapClampedThisFrame
             };
         }

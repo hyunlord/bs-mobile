@@ -47,7 +47,7 @@ namespace Game.App
         {
             if(ended||world!=null)return;
             if(run==null)run=FindFirstObjectByType<RunCoordinator>();
-            if(run==null||run.Frame==null)return;
+            if(run==null||run.CurrentFrame==null)return;
             world=FindFirstObjectByType<WorldRenderer>();
             if(world==null)return;
             world.HeroGaitSampled+=ObserveGait;
@@ -64,7 +64,7 @@ namespace Game.App
             var dt=count==0?0:wall-rows[count-1].Wall;
             var speed=dt>0?Vector2.Distance(lord,rows[count-1].Lord)/(float)dt:0;
             rows[count++]=new Row {
-                Frame=Time.frameCount,Tick=run.Frame.Tick,Pose=sample.FrameIndex,Wall=wall,Dt=dt,
+                Frame=Time.frameCount,Tick=run.CurrentFrame.Tick,Pose=sample.FrameIndex,Wall=wall,Dt=dt,
                 Phase=sample.Phase,Speed=speed,Lord=lord,Release=sample.ReleaseReason,
                 NearStance=sample.NearPlanted?nearStance:0,FarStance=sample.FarPlanted?farStance:0,
                 NearPlanted=sample.NearPlanted,FarPlanted=sample.FarPlanted,

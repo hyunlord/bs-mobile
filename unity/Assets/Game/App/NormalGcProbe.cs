@@ -114,7 +114,7 @@ namespace Game.App
         }
         void LateUpdate()
         {
-            if (ended || run == null || run.Frame == null) return;
+            if (ended || run == null || run.CurrentFrame == null) return;
             var now = System.Diagnostics.Stopwatch.GetTimestamp();
             if (!begun)
             {
@@ -123,12 +123,12 @@ namespace Game.App
             }
             if (count == Capacity) { Finish("Numeric observation capacity exhausted."); return; }
             var g0 = GC.CollectionCount(0); var g1 = GC.CollectionCount(1); var g2 = GC.CollectionCount(2);
-            rows[count++] = new Row { Frame = Time.frameCount, Tick = run.Frame.Tick, Wall = Seconds(now - beganStamp), Dt = Seconds(now - previousStamp), UnityDt = Time.unscaledDeltaTime,
+            rows[count++] = new Row { Frame = Time.frameCount, Tick = run.CurrentFrame.Tick, Wall = Seconds(now - beganStamp), Dt = Seconds(now - previousStamp), UnityDt = Time.unscaledDeltaTime,
                 G0 = g0, G1 = g1, G2 = g2, D0 = CollectionDelta(previous0, g0), D1 = CollectionDelta(previous1, g1), D2 = CollectionDelta(previous2, g2),
-                Paused = run.Frame.Status == RunStatus.AwaitingCard || run.CaptureClockPaused, Focus = Application.isFocused, Metrics = run.ReadNormalPlayMetrics() };
+                Paused = run.CurrentFrame.Status == RunStatus.AwaitingCard || run.CaptureClockPaused, Focus = Application.isFocused, Metrics = run.ReadNormalPlayMetrics() };
             previousStamp = now; previous0 = g0; previous1 = g1; previous2 = g2;
-            if (ReachedSixMinutes(run.Frame.Tick, run.Frame.TickRate)) Finish(null);
-            else if (run.Frame.Status == RunStatus.Completed) Finish("Normal run ended before six gameplay minutes; no resurrection or grants applied.");
+            if (ReachedSixMinutes(run.CurrentFrame.Tick, run.CurrentFrame.TickRate)) Finish(null);
+            else if (run.CurrentFrame.Status == RunStatus.Completed) Finish("Normal run ended before six gameplay minutes; no resurrection or grants applied.");
             else if (Seconds(now - beganStamp) > 900) Finish("Normal run exceeded 15 wall-clock minutes.");
         }
         static double Seconds(long ticks) => ticks / (double)System.Diagnostics.Stopwatch.Frequency;
@@ -142,7 +142,7 @@ namespace Game.App
                 else { Queue(click, false); buttonPhase = 0; nextUi = Time.realtimeSinceStartupAsDouble + .5; if (pendingCard) { cardSelections++; pendingCard = false; cardAt = -1; } }
                 return;
             }
-            if (run.Frame == null)
+            if (run.CurrentFrame == null)
             {
                 if (Time.realtimeSinceStartupAsDouble < nextUi) return;
                 buttons.Clear(); run.Ui.GetComponentsInChildren(false, buttons);
@@ -155,22 +155,22 @@ namespace Game.App
                 }
                 return;
             }
-            if (run.Frame.Status == RunStatus.AwaitingCard)
+            if (run.CurrentFrame.Status == RunStatus.AwaitingCard)
             {
                 Queue(stickOrigin, false);
                 if (cardAt < 0) cardAt = Time.realtimeSinceStartupAsDouble;
                 if (Time.realtimeSinceStartupAsDouble - cardAt < 2 || Time.realtimeSinceStartupAsDouble < nextUi) return;
                 // Card choices are discrete UI transitions, separately counted; no per-frame card scans.
-                var selected = WaveCaptureInput.ChooseCard(run.Session.View.CaptureCards(), run.Frame, FoundationBoot.Catalog, "meta:grain");
+                var selected = WaveCaptureInput.ChooseCard(run.Session.View.CaptureCards(), run.CurrentFrame, FoundationBoot.Catalog, "meta:grain");
                 buttons.Clear(); run.Ui.GetComponentsInChildren(false, buttons);
                 foreach (var b in buttons) if (b.interactable && b.name == "Choose " + selected) { PrepareClick(b); pendingCard = true; break; }
                 return;
             }
-            if (run.Frame.Status != RunStatus.Running) { Queue(stickOrigin, false); return; }
-            if (run.Frame.Tick != lastTargetTick)
+            if (run.CurrentFrame.Status != RunStatus.Running) { Queue(stickOrigin, false); return; }
+            if (run.CurrentFrame.Tick != lastTargetTick)
             {
-                lastTargetTick = run.Frame.Tick;
-                var target = GrowthTarget(); var origin = run.Frame.Lord.Position;
+                lastTargetTick = run.CurrentFrame.Tick;
+                var target = GrowthTarget(); var origin = run.CurrentFrame.Lord.Position;
                 direction = CaptureArrivalSteering.Direction(new Vector2(target.X - origin.X, target.Y - origin.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
             }
             if (!run.Stick.Active) { stickOrigin = new Vector2(Screen.width * .25f, Screen.height * .28f); Queue(stickOrigin, true); }
@@ -178,7 +178,7 @@ namespace Game.App
         }
         WorldPoint GrowthTarget()
         {
-            var f = run.Frame; var wave = run.Wave; var p = f.Lord.Position;
+            var f = run.CurrentFrame; var wave = run.CurrentWave; var p = f.Lord.Position;
             var target = new WorldPoint(f.Estate.X + (int)(Math.Cos(f.Tick / 180d) * 1500), f.Estate.Y + (int)(Math.Sin(f.Tick / 180d) * 1500));
             if (wave == null) return target;
             long best = long.MaxValue;

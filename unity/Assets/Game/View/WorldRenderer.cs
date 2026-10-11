@@ -12,6 +12,7 @@ namespace Game.View
     public sealed partial class WorldRenderer : MonoBehaviour
     {
         public bool PresentationDiagnosticsEnabled { get; set; }
+        public bool DiagnosticSkipActorGrounding { get; set; }
         public WorldPresentationDiagnostics LastDiagnostics { get; private set; }
         bool presentationDiagnosticsActive;
         int diagnosticMaskUpdates, diagnosticMaskPixels, diagnosticPaintPixels, diagnosticGroundingAdds;

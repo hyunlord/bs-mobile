@@ -70,31 +70,31 @@ namespace Game.App
                 if (!Application.isFocused) { unfocusedFrames++; return; }
                 var now = Time.realtimeSinceStartupAsDouble;
                 if (now < nextAction) return;
-                if (run.Frame == null)
+                if (run.CurrentFrame == null)
                 {
                     if (stage == 0) { if (Click("시작하기")) { stage++; nextAction = now + .5; } }
                     else if (Click("개척 시작")) { stage++; nextAction = now + .5; }
                     return;
                 }
-                if (runStarted == 0) { runStarted = now; initialHealth = run.Frame.Lord.Health; }
-                maxHealth = Math.Max(maxHealth, run.Frame.Lord.MaxHealth);
-                if (run.Frame.Status == RunStatus.Completed || run.Frame.Tick >= FeelTrialOptions.DurationSeconds * run.Frame.TickRate) { Finish(null); return; }
-                if (run.Frame.Status == RunStatus.AwaitingCard)
+                if (runStarted == 0) { runStarted = now; initialHealth = run.CurrentFrame.Lord.Health; }
+                maxHealth = Math.Max(maxHealth, run.CurrentFrame.Lord.MaxHealth);
+                if (run.CurrentFrame.Status == RunStatus.Completed || run.CurrentFrame.Tick >= FeelTrialOptions.DurationSeconds * run.CurrentFrame.TickRate) { Finish(null); return; }
+                if (run.CurrentFrame.Status == RunStatus.AwaitingCard)
                 {
                     run.Stick.ResetStick();
                     if (cardAt < 0) cardAt = now;
                     if (now - cardAt < 2) return;
-                    var card = WaveCaptureInput.ChooseCard(run.Session.View.CaptureCards(), run.Frame, FoundationBoot.Catalog);
+                    var card = WaveCaptureInput.ChooseCard(run.Session.View.CaptureCards(), run.CurrentFrame, FoundationBoot.Catalog);
                     if (Click("Choose " + card, true)) { cardAt = -1; cardChoices++; }
                     return;
                 }
-                if (run.Frame.Status != RunStatus.Running || run.CaptureClockPaused) return;
-                if (lastTargetTick != run.Frame.Tick)
+                if (run.CurrentFrame.Status != RunStatus.Running || run.CaptureClockPaused) return;
+                if (lastTargetTick != run.CurrentFrame.Tick)
                 {
-                    lastTargetTick = run.Frame.Tick;
-                    var frame = run.Frame; var angle = frame.Tick / 180d;
+                    lastTargetTick = run.CurrentFrame.Tick;
+                    var frame = run.CurrentFrame; var angle = frame.Tick / 180d;
                     var fallback = new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
-                    var target = WaveCaptureInput.Target(frame, run.Wave, fallback, FoundationBoot.Catalog);
+                    var target = WaveCaptureInput.Target(frame, run.CurrentWave, fallback, FoundationBoot.Catalog);
                     direction = CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
                 }
                 pointer.position = new Vector2(Screen.width * .25f, Screen.height * .2f);
@@ -135,10 +135,10 @@ namespace Game.App
                 unfocusedFrames = unfocusedFrames, wallSeconds = Time.realtimeSinceStartupAsDouble - started, gameplayWallSeconds = runStarted == 0 ? 0 : Time.realtimeSinceStartupAsDouble - runStarted };
             try
             {
-                if (run?.Frame != null)
+                if (run?.CurrentFrame != null)
                 {
-                    result.tick = run.Frame.Tick; result.tickRate = run.Frame.TickRate; result.durationSeconds = result.tick / (double)result.tickRate;
-                    result.remainingHealth = run.Frame.Lord.Health; result.maximumHealth = run.Frame.Lord.MaxHealth;
+                    result.tick = run.CurrentFrame.Tick; result.tickRate = run.CurrentFrame.TickRate; result.durationSeconds = result.tick / (double)result.tickRate;
+                    result.remainingHealth = run.CurrentFrame.Lord.Health; result.maximumHealth = run.CurrentFrame.Lord.MaxHealth;
                     result.survived = result.tick >= FeelTrialOptions.DurationSeconds * result.tickRate && result.remainingHealth > 0;
                     result.outcome = result.survived ? "survived-observation" : result.remainingHealth <= 0 ? "death" : "interrupted";
                     result.replay = run.RecordedReplayPath;

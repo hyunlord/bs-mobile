@@ -50,14 +50,14 @@ namespace Tests.EditMode
             Assert.That(loaded.HasSeen(FirstRunHint.Muster), Is.False);
         }
 
-        [Test] public void SelectedRigMigrationKeepsApprovedFeelDefaults()
+        [Test] public void SelectedRigPreferenceRoundTripsIndependentlyOfFeelDefaults()
         {
-            PlayerPrefs.SetInt(prefix + "heroRigPreview", 0);
+            PlayerPrefs.SetInt(prefix + "heroRigSelectedB", 0);
             var settings = RunPreferences.Load(prefix);
-            Assert.That(settings.HeroRigPreview, Is.True);
+            Assert.That(settings.HeroRigPreview, Is.False);
             Assert.That(settings.SnapshotFeel(), Is.EqualTo(new FeelExperimentOptions(true, false, false)));
-            settings.HeroRigPreview = false; settings.Save();
-            Assert.That(RunPreferences.Load(prefix).HeroRigPreview, Is.False);
+            settings.HeroRigPreview = true; settings.Save();
+            Assert.That(RunPreferences.Load(prefix).HeroRigPreview, Is.True);
         }
 
         [Test] public void ApprovedFeelDefaultsAndSnapshotDoNotFollowLaterPreferenceChanges()

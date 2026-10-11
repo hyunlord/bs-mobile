@@ -21,9 +21,9 @@ namespace Game.App
         public void WriteSmoothnessDiagnostics(string folder) => smoothness.Write(folder);
         public void RefreshCapturePresentation()
         {
-            if(AutoplayCapture.Active==null||Frame==null||Frame.Tick!=0||world==null||hud==null||Paused||screen!=UiScreen.Run)
+            if(AutoplayCapture.Active==null||CurrentFrame==null||CurrentFrame.Tick!=0||world==null||hud==null||Paused||screen!=UiScreen.Run)
                 throw new System.InvalidOperationException("Capture presentation refresh requires the resumed tick-zero run.");
-            hud.Present(Frame,FirstPlayable);
+            hud.Present(CurrentFrame,FirstPlayable);
             Canvas.ForceUpdateCanvases();
             var visible=Screen.safeArea;
             var bottom=Mathf.Min(UiTokens.BottomWorldInset*Ui.Canvas.scaleFactor,visible.height*.2f);
@@ -39,8 +39,8 @@ namespace Game.App
             var expectedLocomotion = activeFeelRules != null;
             var initialSpeed = expectedLocomotion ? (float)Session.LocomotionSpeedPerTick : map.LordSpeed;
             UpdatePredictionTopology();
-            lordPrediction.Initialize(PresentationPoint(Frame.Lord.Position), new Vector2(map.Width, map.Height) / presentationUnits,
-                initialSpeed * Frame.TickRate / presentationUnits, 1f / Frame.TickRate, Frame.Tick,
+            lordPrediction.Initialize(PresentationPoint(CurrentFrame.Lord.Position), new Vector2(map.Width, map.Height) / presentationUnits,
+                initialSpeed * CurrentFrame.TickRate / presentationUnits, 1f / CurrentFrame.TickRate, CurrentFrame.Tick,
                 expectedLocomotion, 2f / presentationUnits, activeFeelRules?.FasterLord == false ? 1f / presentationUnits : 0);
             world.RenderedEntitySample = ObserveRenderedEntity;
             normalTrace?.BeginSession();
@@ -56,21 +56,21 @@ namespace Game.App
         void ObserveLordMovement(PlayerInput input)
         {
             UpdatePredictionTopology();
-            float? expectedSpeed = activeFeelRules == null ? (float?)null : (float)Session.LocomotionSpeedPerTick * Frame.TickRate / presentationUnits;
-            lordPrediction.Observe(PresentationPoint(Frame.Lord.Position), Frame.Tick, PresentationInput(input), expectedSpeed);
+            float? expectedSpeed = activeFeelRules == null ? (float?)null : (float)Session.LocomotionSpeedPerTick * CurrentFrame.TickRate / presentationUnits;
+            lordPrediction.Observe(PresentationPoint(CurrentFrame.Lord.Position), CurrentFrame.Tick, PresentationInput(input), expectedSpeed);
         }
-        void PredictLord(PlayerInput input)
+        void PredictLord(PlayerInput input, float? presentationDelta = null)
         {
             if(!IsWave||runCatalog.WaveRuntime?.ChapterId!="meta:chapter_1") { world.PredictedLordPosition = null; return; }
             UpdatePredictionTopology();
-            world.PredictedLordPosition = lordPrediction.Present(PresentationPoint(Frame.Lord.Position), PresentationInput(input),
-                Time.unscaledDeltaTime * Speed, (float)accumulator, Paused);
-            normalTrace?.ObserveInput(PresentationInput(input), Frame.Tick, accumulator, Paused, PresentationPoint(Frame.Lord.Position), lordPrediction.Position, lordPrediction.Speed);
+            world.PredictedLordPosition = lordPrediction.Present(PresentationPoint(CurrentFrame.Lord.Position), PresentationInput(input),
+                (presentationDelta ?? Time.unscaledDeltaTime) * Speed, (float)accumulator, Paused);
+            normalTrace?.ObserveInput(PresentationInput(input), CurrentFrame.Tick, accumulator, Paused, PresentationPoint(CurrentFrame.Lord.Position), lordPrediction.Position, lordPrediction.Speed);
         }
         void UpdatePredictionTopology()
         {
-            var arena = Frame.Field?.Arena;
-            lordPrediction.SetTopology(Frame.Field != null, arena == null ? (Vector2?)null : PresentationPoint(arena.Center),
+            var arena = CurrentFrame.Field?.Arena;
+            lordPrediction.SetTopology(CurrentFrame.Field != null, arena == null ? (Vector2?)null : PresentationPoint(arena.Center),
                 arena == null ? 0 : arena.Radius / presentationUnits);
         }
         void Update()
@@ -78,7 +78,7 @@ namespace Game.App
             if(ProbeEnabled)BeginProbeFrame();
             if (!normalTraceChecked) { normalTraceChecked = true; normalTrace = NormalPlayTrace.Create(this); if (normalTrace != null) ConfigureNormalTrace(normalTrace); }
             normalTrace?.BeginFrame();
-            smoothness.BeginFrame(Frame?.Tick ?? 0, Paused);
+            smoothness.BeginFrame(CurrentFrame?.Tick ?? 0, Paused);
             try { UpdateRunFrame(); }
             finally { smoothness.EndFrame(); normalTrace?.EndFrame(Camera.main, world != null ? world.CameraShakeOffset : Vector2.zero); }
         }

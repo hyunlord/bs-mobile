@@ -94,7 +94,7 @@ namespace Game.App
 
         public void ArmRecording()
         {
-            if (!ReadyToStart || armed || run.Frame == null || run.Frame.Tick != 0 || run.CaptureClockPaused)
+            if (!ReadyToStart || armed || run.CurrentFrame == null || run.CurrentFrame.Tick != 0 || run.CaptureClockPaused)
                 throw new InvalidOperationException("Recording requires a warmed, normally resumed run at tick zero.");
             if (segment.StartSeconds > 0) run.SuspendSmoothnessDiagnostics();
             ObserveFieldTraversal();
@@ -103,8 +103,8 @@ namespace Game.App
 
         void ObserveFieldTraversal()
         {
-            if (run?.Frame == null || run.Session == null) return;
-            var frame = run.Frame;
+            if (run?.CurrentFrame == null || run.Session == null) return;
+            var frame = run.CurrentFrame;
             AutoplayCapture.Active?.FieldVideo?.Observe(frame.Tick, frame.TickRate, frame.Lord.Position,
                 frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
         }
@@ -123,8 +123,8 @@ namespace Game.App
                     }
                     catch (Exception exception) { failure = exception.ToString(); StopCapture(); }
                 }
-                if (!stopping && warmed && armed && run.Frame != null && (segment.StartSeconds == 0 || actualStartTick >= 0)) run.NotifySmoothnessEndOfFrame();
-                if (!stopping && warmed && armed && run.Frame != null)
+                if (!stopping && warmed && armed && run.CurrentFrame != null && (segment.StartSeconds == 0 || actualStartTick >= 0)) run.NotifySmoothnessEndOfFrame();
+                if (!stopping && warmed && armed && run.CurrentFrame != null)
                 {
                     try { SubmitFrame(); }
                     catch (Exception exception) { failure = exception.ToString(); StopCapture(); }
@@ -155,8 +155,8 @@ namespace Game.App
             {
                 if (Time.timeScale != 1 || run.Speed != 1) throw new InvalidOperationException("Golden minute requires normal speed.");
                 if (Screen.width != width || Screen.height != height) throw new InvalidOperationException("Capture dimensions changed during the run.");
-                if (!segment.Ready(run.Frame.Tick, run.Frame.TickRate, run.Frame.Status == RunStatus.Completed)) return;
-                if (submitted == 0 && run.Frame.Tick != segment.StartSeconds * run.Frame.TickRate)
+                if (!segment.Ready(run.CurrentFrame.Tick, run.CurrentFrame.TickRate, run.CurrentFrame.Status == RunStatus.Completed)) return;
+                if (submitted == 0 && run.CurrentFrame.Tick != segment.StartSeconds * run.CurrentFrame.TickRate)
                     throw new InvalidOperationException("Requested capture start tick was not presented; no skipped start is accepted.");
                 var now = System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency;
                 // Synchronized 60/120 Hz uses a stable render phase; timestamp jitter must not alternate 8/25 ms selection.
@@ -173,7 +173,7 @@ namespace Game.App
                         ", submitted=" + submitted + ", written=" + writer.Written +
                         ", completedReadbacks=" + completedReadbacks);
                 }
-                if (submitted == 0) { if (segment.StartSeconds > 0) run.BeginSmoothnessDiagnostics(); actualStartTick = run.Frame.Tick; firstRenderFrame = Time.renderedFrameCount; initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
+                if (submitted == 0) { if (segment.StartSeconds > 0) run.BeginSmoothnessDiagnostics(); actualStartTick = run.CurrentFrame.Tick; firstRenderFrame = Time.renderedFrameCount; initialGcCount = GC.CollectionCount(0); firstTime = now; firstDsp = AudioSettings.dspTime; nextDeadline = now; audio?.MarkVideoStart(now, firstDsp); }
                 else
                 {
                     var interval = now - lastTime;
@@ -181,22 +181,22 @@ namespace Game.App
                     intervals[intervalCount++] = interval;
                 }
                 while (nextDeadline <= now + .002) nextDeadline += 1d / 60;
-                slot.Sequence = submitted; slot.Tick = run.Frame.Tick; slot.RenderFrame = Time.renderedFrameCount;
-                slot.CardPause = run.Frame.Status == RunStatus.AwaitingCard ? 1 : 0;
+                slot.Sequence = submitted; slot.Tick = run.CurrentFrame.Tick; slot.RenderFrame = Time.renderedFrameCount;
+                slot.CardPause = run.CurrentFrame.Status == RunStatus.AwaitingCard ? 1 : 0;
                 slot.WallSeconds = now - firstTime; slot.DspSeconds = AudioSettings.dspTime - firstDsp;
                 slot.CapturedTimestamp = now;
-                slot.InitialRun = !initialRunSelected && run.Frame.Tick >= run.Frame.TickRate * (segment.StartSeconds + 2);
+                slot.InitialRun = !initialRunSelected && run.CurrentFrame.Tick >= run.CurrentFrame.TickRate * (segment.StartSeconds + 2);
                 if (slot.InitialRun) initialRunSelected = true;
-                slot.Battle = !battleSelected && run.Frame.Tick >= run.Frame.TickRate * (segment.EndSeconds - 5) && run.Frame.Status == RunStatus.Running;
+                slot.Battle = !battleSelected && run.CurrentFrame.Tick >= run.CurrentFrame.TickRate * (segment.EndSeconds - 5) && run.CurrentFrame.Status == RunStatus.Running;
                 if (slot.Battle) battleSelected = true;
                 Volatile.Write(ref slot.State, 1);
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(buffer.Texture);
-                pending++; submitted++; lastTime = now; finalTick = run.Frame.Tick;
+                pending++; submitted++; lastTime = now; finalTick = run.CurrentFrame.Tick;
                 missedSlots = Math.Max(missedSlots, CumulativeMissingSlots(now - firstTime, submitted));
                 maximumQueueDepth = Math.Max(maximumQueueDepth, submitted - writer.Written);
                 try { AsyncGPUReadback.RequestIntoNativeArray(ref buffer.Native, buffer.Texture, 0, TextureFormat.RGBA32, buffer.Callback); }
                 catch { pending--; gpuErrors++; Volatile.Write(ref slot.State, 0); throw; }
-                if (segment.Complete(run.Frame.Tick, run.Frame.TickRate)) StopCapture();
+                if (segment.Complete(run.CurrentFrame.Tick, run.CurrentFrame.TickRate)) StopCapture();
             }
             finally { if (submissionCounterAvailable) submissionAllocations += GC.GetAllocatedBytesForCurrentThread() - allocationStart; }
         }
@@ -290,7 +290,7 @@ namespace Game.App
                 segmentBoundary = "Normal live autoplay from tick zero; no skipped simulation, replay, acceleration or grants. Audio and image recording begin at the requested start tick.",
                 frames = writer?.Written ?? 0, submittedFrames = submitted, completedReadbacks = completedReadbacks, maximumQueueDepth = maximumQueueDepth,
                 globalGcCollections = GC.CollectionCount(0) - initialGcCount, gpuErrors = gpuErrors, ringOverflows = ringOverflows,
-                missed60HzSlots = missedSlots, finalTick = finalTick, tickRate = run?.Frame?.TickRate ?? 0,
+                missed60HzSlots = missedSlots, finalTick = finalTick, tickRate = run?.CurrentFrame?.TickRate ?? 0,
                 wallSeconds = submitted == 0 ? 0 : lastTime - firstTime, width = width, height = height,
                 measuredFps = submitted > 1 ? (submitted - 1) / (lastTime - firstTime) : 0,
                 frameP95Ms = intervalCount == 0 ? 0 : intervals[Math.Min(intervalCount - 1, (int)Math.Ceiling(intervalCount * .95) - 1)] * 1000,

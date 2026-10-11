@@ -8,25 +8,25 @@ namespace Game.App
         readonly Game.View.WaveBossPhaseCue bossPhaseCue=new Game.View.WaveBossPhaseCue();
         void AcceptWaveAudio()
         {
-            if(Wave==null||waveSound==null)return;
+            if(CurrentWave==null||waveSound==null)return;
             var definition=runCatalog.WaveRuntime;
-            foreach(var enemy in Frame.Enemies)
+            foreach(var enemy in CurrentFrame.Enemies)
             {
                 if(definition.Enemies[enemy.DefinitionId].Kind!=WaveEnemyKind.FloodBoss)continue;
-                var state=Wave.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);
+                var state=CurrentWave.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);
                 if(state.Phase!=null&&bossPhaseCue.Accept(enemy.Id,state.Phase))waveSound.Play("boss-tusk-stuck");
             }
-            foreach(var value in Wave.Events)
+            foreach(var value in CurrentWave.Events)
             {
                 if(value.Id<=lastWaveSound)continue;lastWaveSound=value.Id;
                 if(value.Kind=="hit"&&value.Amount>0)
                 {
-                    if(!Frame.Events.Any(e=>e.Kind==PresentationKind.Damage&&e.Amount>0))waveSound.PlayCommon("hit");
+                    if(!CurrentFrame.Events.Any(e=>e.Kind==PresentationKind.Damage&&e.Amount>0))waveSound.PlayCommon("hit");
                     continue;
                 }
                 if(value.Kind=="enemy-killed")
                 {
-                    if(!Frame.Events.Any(e=>e.Kind==PresentationKind.EnemyKilled))waveSound.PlayCommon("kill");
+                    if(!CurrentFrame.Events.Any(e=>e.Kind==PresentationKind.EnemyKilled))waveSound.PlayCommon("kill");
                     continue;
                 }
                 var suffix=value.Source.Substring(value.Source.IndexOf(':')+1).Replace('_','-');
@@ -35,7 +35,7 @@ namespace Game.App
                 else if(value.Kind=="enemy-tell")
                 {
                     var enemy=definition.Enemies[value.Source];
-                    var view=Wave.Enemies.FirstOrDefault(e=>e.Id==value.SubjectId);
+                    var view=CurrentWave.Enemies.FirstOrDefault(e=>e.Id==value.SubjectId);
                     cue=enemy.Kind==WaveEnemyKind.FloodBoss?(view.Phase=="tell-water"?"boss-bank-break":"boss-tusk-charge"):"enemy-"+suffix+"-tell";
                 }
                 else if(value.Kind=="reward-created")

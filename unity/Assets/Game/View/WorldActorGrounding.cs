@@ -18,6 +18,7 @@ namespace Game.View
 
         void DrawActorGrounding(Vector2 position, Vector2 size, Vector2 movement, float time, WaveEnemyKind kind, bool authoredWings = false)
         {
+            if (DiagnosticSkipActorGrounding) return;
             var shadow = GameVisualTokens.Ink;
             shadow.a = GameVisualTokens.ActorShadowOpacity;
             if (presentationDiagnosticsActive) diagnosticGroundingAdds++;

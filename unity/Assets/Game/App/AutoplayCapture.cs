@@ -85,9 +85,9 @@ namespace Game.App
                 minimumIntervalSeconds = clockMinInterval, maximumIntervalSeconds = clockMaxInterval,
                 captureDeltaSeconds = Time.captureDeltaTime, captureFramerate = Time.captureFramerate,
                 frame = Time.frameCount, renderedFrame = Time.renderedFrameCount, stage = stage,
-                tick = run?.Frame?.Tick ?? 0, samples = clockFrames, pausedSamples = clockPausedFrames,
+                tick = run?.CurrentFrame?.Tick ?? 0, samples = clockFrames, pausedSamples = clockPausedFrames,
                 paused = paused, menuOpen = run != null && run.MenuOpen, capturing = capturing,
-                runStatus = run?.Frame?.Status.ToString() ?? "no-session"
+                runStatus = run?.CurrentFrame?.Status.ToString() ?? "no-session"
             }));
             clockNextReport = realtime + 1; clockStopwatchSum = clockUnitySum = 0;
             clockFrames = clockPausedFrames = 0; clockMinInterval = double.MaxValue; clockMaxInterval = 0;
@@ -204,7 +204,7 @@ namespace Game.App
             if (ended || !goldenMinute || stage != 5 || coordinator != run) return;
             try
             {
-                if (run.Frame == null || run.Frame.Tick != 0) throw new InvalidOperationException("Golden minute world warmup missed tick zero; no gameplay may be skipped.");
+                if (run.CurrentFrame == null || run.CurrentFrame.Tick != 0) throw new InvalidOperationException("Golden minute world warmup missed tick zero; no gameplay may be skipped.");
                 Click(run.IsWave ? "잠시\n멈춤" : "설정");
                 if (!run.CaptureClockPaused) throw new InvalidOperationException("Normal pause button did not pause world warmup.");
                 goldenWorldPaused = true;
@@ -219,7 +219,7 @@ namespace Game.App
             if (ended || !goldenMinute || stage != 5 || !goldenWorldPaused || goldenRecordingStarted || Elapsed < nextAction) return;
             try
             {
-                if (run.Frame == null || run.Frame.Tick != 0) throw new InvalidOperationException("Paused world warmup advanced gameplay.");
+                if (run.CurrentFrame == null || run.CurrentFrame.Tick != 0) throw new InvalidOperationException("Paused world warmup advanced gameplay.");
                 if (!run.CaptureClockPaused) throw new InvalidOperationException("World warmup unexpectedly resumed.");
                 Click("돌아가기");
                 if (run.CaptureClockPaused) throw new InvalidOperationException("Normal resume button did not resume the run.");
@@ -284,7 +284,7 @@ namespace Game.App
                     }
                     Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
                 case 5:
-                    if (run.Frame == null || goldenMinute && !goldenRecordingStarted) return;
+                    if (run.CurrentFrame == null || goldenMinute && !goldenRecordingStarted) return;
                     replayPath = run.RecordedReplayPath; result.replay = replayPath;
                     Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); if (!goldenMinute) Capture("02-native-run.png"); stage = 6; break;
                 case 6: Play(); break;
@@ -294,7 +294,7 @@ namespace Game.App
                 case 8: lastWaveEvent=-1; restartAt = Elapsed; Click("다시 하기"); stage = 9; nextAction = Elapsed + 3; break;
                 case 9:
                     if (!CaptureRestartGate.IsReady(Elapsed - restartAt, replayPath, run.RecordedReplayPath,
-                        run.Frame?.Status == RunStatus.Running, run.Frame?.Tick ?? 0)) return;
+                        run.CurrentFrame?.Status == RunStatus.Running, run.CurrentFrame?.Tick ?? 0)) return;
                     result.restartReplay = run.RecordedReplayPath;
                     Log("restart-running", result.restartReplay); Capture("04-native-restart.png"); stage = 10; nextAction = Elapsed + 1; break;
                 case 10: Verify(); Finish(true, run.IsWave ? "wave-1a actual outcome recorded; summary displayed; restart advanced; no survival gate" : "survived duration, defeated winter boss, summary displayed, restart advanced"); break;
@@ -334,7 +334,7 @@ namespace Game.App
 
         void Play()
         {
-            var frame = run.Frame;
+            var frame = run.CurrentFrame;
             if (Elapsed >= nextSample)
             {
                 Log("sample", $"health={frame.Lord.Health};level={frame.Level};season={frame.Season};people={frame.People.Count}");
@@ -346,7 +346,7 @@ namespace Game.App
                 result.completedTick = summary.Tick; result.bossDefeated = summary.BossDefeated == true; result.survived = summary.Survived; result.stateHash = summary.StateHash;
                 if (!run.IsWave && (!summary.Survived || summary.Tick != frame.DurationTicks || summary.BossDefeated != true))
                     throw new InvalidOperationException("Normal run failed survival/full-duration/winter-boss gate: " + summary);
-                if(run.Wave!=null)Log("wave-counters",string.Join(";",run.Wave.Counters.Select(p=>p.Key+"="+p.Value)));
+                if(run.CurrentWave!=null)Log("wave-counters",string.Join(";",run.CurrentWave.Counters.Select(p=>p.Key+"="+p.Value)));
                 Log("run-complete", summary.ToString()); stage = 7; nextAction = Elapsed + 3; return;
             }
             if (frame.Status == RunStatus.AwaitingCard)
@@ -372,7 +372,7 @@ namespace Game.App
             var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
             var angle = frame.Tick / 180d;
             var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
-            if(run.Wave!=null)target=weakBuild?WeakCapturePolicy.Target(frame,run.Wave):WaveCaptureInput.Target(frame,run.Wave,target,FoundationBoot.Catalog,goldenMinute);
+            if(run.CurrentWave!=null)target=weakBuild?WeakCapturePolicy.Target(frame,run.CurrentWave):WaveCaptureInput.Target(frame,run.CurrentWave,target,FoundationBoot.Catalog,goldenMinute);
             direction = CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
             }
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = new Vector2(Screen.width * .25f, Screen.height * .2f), button = PointerEventData.InputButton.Left };
@@ -434,7 +434,7 @@ namespace Game.App
         }
 
         static string Hash(byte[] bytes) { using var hash = SHA256.Create(); return BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant(); }
-        void Log(string kind, string detail) => ledger?.WriteLine(JsonUtility.ToJson(new Entry { seconds = Elapsed, tick = run?.Frame?.Tick ?? 0, renderFrame = Time.renderedFrameCount, kind = kind, detail = detail }));
+        void Log(string kind, string detail) => ledger?.WriteLine(JsonUtility.ToJson(new Entry { seconds = Elapsed, tick = run?.CurrentFrame?.Tick ?? 0, renderFrame = Time.renderedFrameCount, kind = kind, detail = detail }));
         void WriteResult() => File.WriteAllText(Path.Combine(output, "capture-result.json"), JsonUtility.ToJson(result, true));
         void Finish(bool success, string detail)
         {
