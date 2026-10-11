@@ -9,7 +9,11 @@ namespace SowSiege.Core
         Dictionary<string, MetaVassalState> Vassals, Dictionary<string, long> Metrics,
         string[] CompletedChallenges, string[] UnlockedContentIds, string[] ActiveVassalIds,
         long NextRunSequence, MetaPendingRun? PendingRun, long LastMonotonicSeconds, long LastWallSeconds,
-        long IdleRemainderSeconds, long CompletedRuns);
+        long IdleRemainderSeconds, long CompletedRuns)
+    {
+        public long NextClaimSequence { get; init; } = 1;
+        public MetaPendingClaim[] PendingClaims { get; init; } = System.Array.Empty<MetaPendingClaim>();
+    }
     public sealed record MetaRunPlan(MetaState State, MetaPendingRun Run);
     public sealed record MetaRunFacts(int Tick, int DurationTicks, bool Survived, bool BossDefeated, bool Abandoned,
         int Level, int Farms, int Buildings, int People, long Kills, long Harvests);

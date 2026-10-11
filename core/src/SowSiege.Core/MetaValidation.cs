@@ -39,6 +39,27 @@ namespace SowSiege.Core
             Check(state.ActiveVassalIds.Length <= slots && state.ActiveVassalIds.Distinct().Count() == state.ActiveVassalIds.Length && state.ActiveVassalIds.All(x => state.Vassals.TryGetValue(x, out var value) && value.Unlocked), "active-vassals");
             var challengeIds = new HashSet<string>(catalog.Challenges.Select(x => x.Id));
             Check(state.CompletedChallenges.Distinct().Count() == state.CompletedChallenges.Length && state.CompletedChallenges.All(challengeIds.Contains), "challenge-ids");
+            Check(state.NextClaimSequence >= 1 && state.PendingClaims.All(x => x.Sequence >= 1 && x.Sequence < state.NextClaimSequence) && state.PendingClaims.Select(x => x.Sequence).Distinct().Count() == state.PendingClaims.Length, "claim-sequence");
+            Check(state.PendingClaims.Count(x => x.Kind == MetaClaimKind.Idle) <= 1, "idle-claim-count");
+            Check(state.PendingClaims.Where(x => x.Kind == MetaClaimKind.Challenge).Select(x => x.SourceId).Distinct().Count() == state.PendingClaims.Count(x => x.Kind == MetaClaimKind.Challenge), "challenge-claim-count");
+            foreach (var claim in state.PendingClaims)
+            {
+                Check(Enum.IsDefined(typeof(MetaClaimKind), claim.Kind) && claim.Rewards.All(x => state.Wallet.ContainsKey(x.Key) && x.Value >= 0), "claim-rewards");
+                if (claim.Kind == MetaClaimKind.Challenge)
+                {
+                    var definition = catalog.Challenges.SingleOrDefault(x => x.Id == claim.SourceId);
+                    state.Metrics.TryGetValue(definition?.Metric.ToString() ?? "", out long progress);
+                    Check(definition != null && !state.CompletedChallenges.Contains(claim.SourceId) && claim.IdleSeconds == 0 &&
+                        progress >= definition.Target && Effect(ManorEffect.Research) >= definition.ResearchLevel &&
+                        Same(claim.Rewards.Keys, definition.Rewards.Keys) && claim.Rewards.All(x => definition.Rewards.TryGetValue(x.Key, out int amount) && amount == x.Value), "claim-challenge");
+                }
+                else if (claim.Kind == MetaClaimKind.Idle)
+                {
+                    long cap = Math.Min(catalog.Economy.MaximumIdleCapSeconds, (long)catalog.Economy.BaseIdleCapSeconds + (long)Effect(ManorEffect.IdleCapacity) * catalog.Economy.IdleCapSecondsPerLevel);
+                    Check(claim.SourceId == "idle" && claim.IdleSeconds > 0 && claim.IdleSeconds <= cap && claim.IdleSeconds % catalog.Economy.IdleStepSeconds == 0 &&
+                        Same(claim.Rewards.Keys, catalog.Economy.IdlePerStep.Keys) && claim.Rewards.All(x => catalog.Economy.IdlePerStep.TryGetValue(x.Key, out int amount) && x.Value == (int)Math.Min(int.MaxValue, (long)claim.IdleSeconds / catalog.Economy.IdleStepSeconds * amount)), "claim-idle");
+                }
+            }
             var unlocked = new HashSet<string>(catalog.InitialContentIds);
             foreach (var challenge in catalog.Challenges.Where(x => state.CompletedChallenges.Contains(x.Id)))
             {
