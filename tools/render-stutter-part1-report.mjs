@@ -51,4 +51,23 @@ for(const [fi,fixture]of Object.keys(inputs).entries()){
 }
 body+='<text x="36" y="490">Priority: multiple Advances first; otherwise largest of Core / combined View / post-Update span.</text><text x="36" y="518">This is recorded-scope classification, NOT causes. No OS, GPU, first-appearance or GC cause is inferred.</text>';
 svg('scopes','Long-frame accounting — unresolved attribution remains explicit',body);
-console.log('Wrote cadence, maximum interval, and recorded-scope SVGs to ' + output);
+
+// Final restored-setting verification is a separate attempt, never part of ABBA.
+const restored = parseCsv(fs.readFileSync(path.join(repo, 'docs/metrics/stutter-part1-restored-summary.csv'), 'utf8')).filter(row => row.density === 'all');
+if (restored.length !== 2 || new Set(restored.map(row => row.fixture)).size !== 2) throw new Error('Expected two restored validation fixtures');
+let restoredBody = '';
+const chartTop = 105, chartHeight = 270, chartLeft = 130, chartRight = 1110;
+const yPercent = value => chartTop + chartHeight - value / .8 * chartHeight;
+for (const value of [0, .2, .4, .6, .8]) {
+  restoredBody += `<line x1="${chartLeft}" x2="${chartRight}" y1="${yPercent(value)}" y2="${yPercent(value)}" stroke="${value === .2 ? '#ba2f30' : '#d4d8da'}"/><text x="60" y="${yPercent(value)+5}">${value.toFixed(1)}%</text>`;
+}
+for (const [index, row] of restored.entries()) {
+  const percent = Number(row.over25Percent), count = Number(row.over25), frames = Number(row.frames), maximum = Number(row.max);
+  if (![percent, count, frames, maximum].every(Number.isFinite)) throw new Error('Invalid restored summary');
+  const x = 290 + index * 490, height = percent / .8 * chartHeight;
+  restoredBody += `<rect x="${x}" y="${yPercent(percent)}" width="160" height="${height}" fill="${percent > .2 ? '#ba2f30' : '#536779'}"/><text x="${x}" y="${yPercent(percent)-12}">${count}/${frames}: ${percent.toFixed(4)}%</text><text x="${x}" y="405">${row.fixture === 'c05' ? 'C05 capped' : '411 replay'}</text><text x="${x}" y="433">max ${maximum.toFixed(3)}ms</text>`;
+}
+restoredBody += '<text x="36" y="484">Restored Metal0, commit 6fe4d29. Red line: >25ms frames must be at most 0.2%.</text><text x="36" y="512">411 fails the ratio. C05 passes the ratio but retains 312ms / 149ms visible stalls; cause unresolved.</text><text x="36" y="540">Separate final validation, not ABBA repetitions; no outlier exemptions or OS attribution.</text>';
+svg('restored', 'Final restored settings: long-frame failure remains visible', restoredBody);
+
+console.log('Wrote four SVG reports from canonical CSVs to ' + output);
