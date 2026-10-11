@@ -161,7 +161,7 @@ namespace Game.App
                 if (benchmarkDiagnosticPasses > 1) { benchmarkOutput = Path.Combine(benchmarkDiagnosticRoot, "pass-1"); Directory.CreateDirectory(benchmarkOutput); }
 #else
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, false);
-                if (Array.IndexOf(args, "--wave-benchmark-repeat") >= 0 || Array.IndexOf(args, "--wave-benchmark-trace-range") >= 0)
+                if (Array.IndexOf(args, "--wave-benchmark-repeat") >= 0 || Array.IndexOf(args, "--wave-benchmark-trace-range") >= 0 || Array.IndexOf(args, "--wave-benchmark-stall-trace") >= 0)
                     throw new ArgumentException("Repeat and trace range require a Development build.");
 #endif
                 benchmarkProfilerEnabled = benchmarkProfileRequested;
@@ -244,6 +244,9 @@ namespace Game.App
                     benchmarkPending.allocatedBytes = benchmarkAllocationAvailable ? entryAllocated - benchmarkAllocatedStart : -1;
                     benchmarkPending.gcCollections = entryGc - benchmarkGcStart;
                     if (benchmarkFrames.Count == benchmarkFrames.Capacity) throw new InvalidOperationException("Benchmark frame capacity exceeded; no measured rows were dropped.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    profilerTrace.ObserveBenchmarkInterval(new DevelopmentProfilerTrace.StallFrame { Frame = benchmarkPending.frame, Tick = benchmarkPending.tick, WallMs = benchmarkPending.wallMs, StartTimestamp = benchmarkPending.entryTimestamp, EndTimestamp = entryTimestamp });
+#endif
                     benchmarkFrames.Add(benchmarkPending); benchmarkHasPending = false;
                 }
                 if (!offlineReplayRequested && FrameTimingManager.GetLatestTimings(1, benchmarkTimingBuffer) > 0 && benchmarkTimingBuffer[0].frameStartTimestamp != benchmarkLastTiming)
@@ -255,12 +258,18 @@ namespace Game.App
                 if (benchmarkCommand == benchmarkReplay.Commands.Count) { EndWaveBenchmark(null); return; }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
-                if ((crowdBenchmark != null || benchmarkDiagnosticTraceRange != null) && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
+                if (!profilerTrace.StallTriggerRequested && (crowdBenchmark != null || benchmarkDiagnosticTraceRange != null) && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
                     profilerTrace.Stop(CurrentFrame.Tick, benchmarkDiagnosticTraceRange != null ? "explicit-window-end" : "crowd-window-end");
                 profilerTrace.Pump(CurrentFrame.Tick);
+                if (benchmarkProfileRequested && profilerTrace.StallTriggerRequested && benchmarkTraceWindow == 0 && !benchmarkInterrupted && benchmarkWarmFrames == 60)
+                {
+                    benchmarkTraceWindow = 1;
+                    if (!profilerTrace.Start(benchmarkOutput, "stall-trigger-" + benchmarkDiagnosticPass, CurrentFrame.Tick, benchmarkReplay.Header.Options.DataHash, DevelopmentProfilerTrace.BenchmarkScope))
+                        throw new InvalidOperationException("Could not start requested stall-trigger trace.");
+                }
                 var traceTicks = benchmarkDiagnosticTraceRange != null ? benchmarkDiagnosticTraceRange : crowdBenchmark == null ? benchmarkTraceTicks : crowdBenchmarkTraceTicks;
                 var traceCount = benchmarkDiagnosticTraceRange != null ? 1 : traceTicks.Length;
-                if (benchmarkProfileRequested && !profilerTrace.Active && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < traceCount && CurrentFrame.Tick >= traceTicks[benchmarkTraceWindow])
+                if (benchmarkProfileRequested && !profilerTrace.StallTriggerRequested && !profilerTrace.Active && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < traceCount && CurrentFrame.Tick >= traceTicks[benchmarkTraceWindow])
                 {
                     benchmarkTraceEndTick = benchmarkDiagnosticTraceRange != null ? benchmarkDiagnosticTraceRange[1] : crowdBenchmark == null ? int.MaxValue : Math.Min(traceTicks[benchmarkTraceWindow] + 180, CrowdReplayBenchmark.EndTick);
                     benchmarkTraceWindow++;

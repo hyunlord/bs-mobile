@@ -12,6 +12,45 @@ namespace Game.App
     public sealed class DevelopmentProfilerTrace
     {
         const double MaximumSeconds = 10;
+        const int TriggerBufferBytes = 128 * 1024 * 1024;
+        const long TriggerFileSoftLimit = 512L * 1024 * 1024;
+        public struct StallFrame { public int Frame, Tick; public double WallMs; public long StartTimestamp, EndTimestamp; }
+        public sealed class StallWindow
+        {
+            readonly int startupFrame;
+            public StallFrame Trigger { get; private set; } = new StallFrame { Frame = -1 };
+            public StallWindow(int startFrame) { startupFrame = startFrame; }
+            public bool Observe(StallFrame frame)
+            {
+                if (frame.Frame <= startupFrame) return false;
+                if (Trigger.Frame < 0 && frame.WallMs > 100) Trigger = frame;
+                return Trigger.Frame >= 0 && frame.Frame >= Trigger.Frame + 4;
+            }
+        }
+        public bool StallTriggerRequested { get; }
+        StallWindow stallWindow;
+        int previousBufferBytes;
+        bool ownsBuffer;
+        double nextSizeCheck;
+        public static bool ParseStallTrigger(string[] args)
+        {
+            if (args == null) throw new ArgumentNullException(nameof(args));
+            var first = Array.IndexOf(args, "--wave-benchmark-stall-trace");
+            if (first < 0) return false;
+            if (first != Array.LastIndexOf(args, "--wave-benchmark-stall-trace") || Array.IndexOf(args, "--wave-benchmark") < 0 || Array.IndexOf(args, "--wave-benchmark-profile") < 0 ||
+                Array.IndexOf(args, "--wave-benchmark-trace-range") >= 0 || Array.IndexOf(args, "--offline-replay-capture") >= 0 || Array.IndexOf(args, "--wave-benchmark-capture") >= 0 || Array.IndexOf(args, "--diagnostic-trace-tick") >= 0)
+                throw new ArgumentException("Stall trace requires a capture-free benchmark profiler, without another trace schedule.");
+            return true;
+        }
+        public void ObserveBenchmarkInterval(StallFrame frame)
+        {
+            if (!Active || stallWindow == null) return;
+            var complete = stallWindow.Observe(frame);
+            metadata.triggerFrame = stallWindow.Trigger.Frame; metadata.triggerTick = stallWindow.Trigger.Tick;
+            metadata.triggerWallMs = stallWindow.Trigger.WallMs;
+            metadata.triggerStartTimestamp = stallWindow.Trigger.StartTimestamp; metadata.triggerEndTimestamp = stallWindow.Trigger.EndTimestamp;
+            if (complete) Stop(frame.Tick, "long-frame-trigger");
+        }
         public const string NormalScope = "diagnostic-profiler-on-not-performance-acceptance";
         public const string BenchmarkScope = "wave-benchmark-profiler-on-not-performance-acceptance";
         public static readonly Guid BenchmarkMetadataId = new Guid("5c6c4987-c51b-41d5-b213-729f357d1690");
@@ -33,6 +72,7 @@ namespace Game.App
         {
             requestedTick = ParseRequestedTick(arguments);
             allocationStacksRequested = ParseAllocationStacks(arguments);
+            StallTriggerRequested = ParseStallTrigger(arguments);
         }
         public static bool ParseAllocationStacks(string[] arguments)
         {
@@ -99,6 +139,15 @@ namespace Game.App
                     startRealtime = Time.realtimeSinceStartupAsDouble, unityVersion = Application.unityVersion,
                     platform = Application.platform.ToString(), allocationCallstacks = allocationStacksRequested
                 };
+                if (StallTriggerRequested && scope == BenchmarkScope)
+                {
+                    metadata.requestedSeconds = 120; metadata.triggerThresholdMs = 100; metadata.contextFrames = 4;
+                    metadata.profilerBufferBytes = TriggerBufferBytes; metadata.rawFileSoftLimitBytes = TriggerFileSoftLimit;
+                    stallWindow = new StallWindow(Time.frameCount);
+                    previousBufferBytes = Profiler.maxUsedMemory; ownsBuffer = true; Profiler.maxUsedMemory = TriggerBufferBytes;
+                    nextSizeCheck = metadata.startRealtime + 1;
+                }
+                else stallWindow = null;
                 Save();
                 Application.logMessageReceivedThreaded += OnLog;
                 previousAllocationStacks = Profiler.enableAllocationCallstacks;
@@ -117,7 +166,13 @@ namespace Game.App
 
         public void Pump(int tick)
         {
-            if (Active && Time.realtimeSinceStartupAsDouble - metadata.startRealtime >= MaximumSeconds) Stop(tick, "time-limit");
+            if (!Active) return;
+            var now = Time.realtimeSinceStartupAsDouble;
+            if (now - metadata.startRealtime >= metadata.requestedSeconds) { Stop(tick, "time-limit"); return; }
+            if (stallWindow == null || now < nextSizeCheck) return;
+            nextSizeCheck = now + 1;
+            var file = new FileInfo(Path.Combine(Path.GetDirectoryName(metadataPath), metadata.rawFile));
+            if (file.Exists && file.Length >= TriggerFileSoftLimit) Stop(tick, "size-limit");
         }
 
         public void Stop(int tick, string reason)
@@ -143,7 +198,8 @@ namespace Game.App
             finally
             {
                 Application.logMessageReceivedThreaded -= OnLog;
-                metadata = null;
+                metadata = null; stallWindow = null;
+                if (ownsBuffer) { Profiler.maxUsedMemory = previousBufferBytes; ownsBuffer = false; }
                 if (ownsAllocationStacks)
                 {
                     Profiler.enableAllocationCallstacks = previousAllocationStacks;
@@ -169,6 +225,10 @@ namespace Game.App
             public double startRealtime, endRealtime;
             public double requestedSeconds = MaximumSeconds;
             public long rawBytes;
+            public int triggerFrame = -1, triggerTick, contextFrames, profilerBufferBytes;
+            public double triggerWallMs, triggerThresholdMs;
+            public long triggerStartTimestamp, triggerEndTimestamp, rawFileSoftLimitBytes;
+            public string triggerContract = "Opt-in benchmark: trace starts during rendered warmup; only completed measured intervals can trigger. First >100ms interval plus four following frame IDs. Stopwatch timestamps identify Update-entry intervals, not raw-profiler frame boundaries. Raw file size is a once-per-second soft limit with in-flight buffer overshoot; profiler warnings and exact raw metadata coverage remain mandatory. Stop/hash/write cost is diagnostic boundary, never acceptance.";
             public string rawSha256 = "", stopReason = "open";
             public string[] profilerWarnings = Array.Empty<string>();
         }
