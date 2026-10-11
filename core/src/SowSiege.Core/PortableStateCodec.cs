@@ -735,6 +735,11 @@ namespace SowSiege.Core
             Write(value.DataHash);
             if (FeelExperimentOptions.Normalize(value.Feel) is { } feel) { Write("feel-experiment-v1"); Write(feel); }
             if (value.Field is { } field) { Write("field-options-v1"); Write(field.Version); }
+            if (value.HostRewards is { } rewards)
+            {
+                Write("host-reward-options-v1"); Write(rewards.AllowRerollGrant); Write(rewards.Revive is not null);
+                if (rewards.Revive is { } revive) { Write(revive.RestoreHealth); Write(revive.InvulnerabilityTicks); Write((int)revive.Preservation); }
+            }
         }
         private void Write(FeelExperimentOptions? value)
         {
@@ -782,6 +787,7 @@ namespace SowSiege.Core
             Write(value.SpawnPermille);
             Write(value.NextEventId);
             WriteList(value.Events, item => { Write(item); });
+            if (value.HostRewards is { } rewards) { Write("host-reward-state-v1"); Write(rewards.Revived); Write(rewards.InvulnerableUntil); Write(rewards.RerollGrants); }
             if (value.Feel is not null) { Write(value.Feel); }
             if (value.Field is { } field)
             {

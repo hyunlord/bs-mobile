@@ -9,14 +9,15 @@ namespace SowSiege.Core
 {
     public static class MetaSaveCodec
     {
-        public const int CurrentVersion = ClaimsVersion;
+        public const int CurrentVersion = RewardVersion;
         private const int ClockVersion = 2;
         private const int CompletedRunsVersion = 3;
         private const int ClaimsVersion = 4;
+        private const int RewardVersion = 5;
         private const int EnvelopeBytes = 44;
         private const int ChecksumBytes = 32;
-        private const int MaximumCollectionEntries = 4096;
-        private const int MaximumStringBytes = 1024;
+        internal const int MaximumCollectionEntries = 4096;
+        internal const int MaximumStringBytes = 1024;
         private const int Magic = 0x534D4554;
         private const int MaximumBytes = 1048576;
         public static byte[] Encode(MetaState state) => EncodeVersion(state, CurrentVersion);
@@ -34,6 +35,7 @@ namespace SowSiege.Core
             {
                 throw new InvalidDataException("Pending claims cannot be written to a historical schema.");
             }
+            if (version < RewardVersion && state.RewardReceipts.Length != 0) { throw new InvalidDataException("Reward receipts cannot be downgraded."); }
             using var payload = new MemoryStream();
             using (var writer = new BinaryWriter(payload, Encoding.UTF8, true))
             {
@@ -63,6 +65,14 @@ namespace SowSiege.Core
                         writer.Write(claim.Sequence); writer.Write((int)claim.Kind); WriteString(writer, claim.SourceId);
                         WriteInts(writer, claim.Rewards); writer.Write(claim.IdleSeconds);
                     }
+                }
+                if (version >= RewardVersion)
+                {
+                    writer.Write(state.RewardReceipts.Length);
+                    foreach (var receipt in state.RewardReceipts.OrderBy(x => x.ReceiptId, StringComparer.Ordinal))
+                    { WriteString(writer, receipt.ReceiptId); writer.Write((int)receipt.Kind); writer.Write(receipt.SourceSequence); }
+                    writer.Write(state.ResultRewardBasis != null);
+                    if (state.ResultRewardBasis != null) { writer.Write(state.ResultRewardBasis.RunSequence); WriteInts(writer, state.ResultRewardBasis.Awarded); }
                 }
             }
             byte[] bytes = payload.ToArray();
@@ -141,6 +151,13 @@ namespace SowSiege.Core
                     }
                     state = state with { NextClaimSequence = nextClaim, PendingClaims = claims };
                 }
+                if (version >= RewardVersion)
+                {
+                    var receipts = new MetaRewardReceipt[Count(reader)];
+                    for (int i = 0; i < receipts.Length; i++) { receipts[i] = new MetaRewardReceipt(ReadString(reader), (MetaBonusKind)reader.ReadInt32(), reader.ReadInt64()); }
+                    MetaResultRewardBasis? basis = ReadBoolean(reader) ? new MetaResultRewardBasis(reader.ReadInt64(), ReadInts(reader)) : null;
+                    state = state with { RewardReceipts = receipts, ResultRewardBasis = basis };
+                }
                 if (stream.Position != bytes.Length - ChecksumBytes)
                 {
                     throw new InvalidDataException();
@@ -156,7 +173,7 @@ namespace SowSiege.Core
                     state = MigrateTwoToThree(state);
                 }
 
-                if (state.SchemaVersion == CompletedRunsVersion)
+                if (state.SchemaVersion == CompletedRunsVersion || state.SchemaVersion == ClaimsVersion)
                 {
                     state = state with { SchemaVersion = CurrentVersion };
                 }
@@ -169,6 +186,12 @@ namespace SowSiege.Core
         private static MetaState MigrateTwoToThree(MetaState state) => state with { SchemaVersion = CompletedRunsVersion, CompletedRuns = state.NextRunSequence - 1 - (state.PendingRun == null ? 0 : 1) };
         private static void Validate(MetaState state)
         {
+            if (state.RewardReceipts.Length > MaximumCollectionEntries || state.RewardReceipts.Select(x => x.ReceiptId).Distinct().Count() != state.RewardReceipts.Length ||
+                state.RewardReceipts.Select(x => (x.Kind, x.SourceSequence)).Distinct().Count() != state.RewardReceipts.Length ||
+                state.RewardReceipts.Any(x => string.IsNullOrWhiteSpace(x.ReceiptId) || !Enum.IsDefined(typeof(MetaBonusKind), x.Kind) || x.SourceSequence < 1 ||
+                    (x.Kind == MetaBonusKind.Result ? x.SourceSequence >= state.NextRunSequence : x.SourceSequence >= state.NextClaimSequence)) ||
+                (state.ResultRewardBasis != null && (state.ResultRewardBasis.RunSequence < 1 || state.ResultRewardBasis.RunSequence >= state.NextRunSequence || state.ResultRewardBasis.Awarded.Values.Any(x => x < 0))))
+            { throw new InvalidDataException("Invalid reward receipt ledger."); }
             if (state.NextClaimSequence < 1 || state.PendingClaims.Length > MaximumCollectionEntries ||
                 state.PendingClaims.Select(x => x.Sequence).Distinct().Count() != state.PendingClaims.Length ||
                 state.PendingClaims.Count(x => x.Kind == MetaClaimKind.Idle) > 1 ||
