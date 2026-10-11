@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using SowSiege.Core;
 using SowSiege.Sim;
 using Xunit;
@@ -5,6 +6,10 @@ using Xunit.Abstractions;
 
 namespace SowSiege.Tests;
 
+[CollectionDefinition(nameof(SnapshotAllocationCollection), DisableParallelization = true)]
+public sealed class SnapshotAllocationCollection { }
+
+[Collection(nameof(SnapshotAllocationCollection))]
 public sealed class PresentationSnapshotBufferTests
 {
     private readonly ITestOutputHelper output;
@@ -106,9 +111,17 @@ public sealed class PresentationSnapshotBufferTests
             return GC.GetAllocatedBytesForCurrentThread() - before;
         }
         var threadBefore = Environment.CurrentManagedThreadId;
-        var run800 = Measure(false, run800Calls); var wave800 = Measure(true, wave800Calls);
-        Populate(session, 1600);
-        var run1600 = Measure(false, run1600Calls); var wave1600 = Measure(true, wave1600Calls);
+        long run800, wave800, run1600, wave1600;
+        // Background-GC allocation-context retirement can overcount: dotnet/runtime#134855.
+        // No-GC isolates the counter, not allocations; unavailable or exhausted regions fail this test.
+        Assert.True(GC.TryStartNoGCRegion(16 * 1024 * 1024));
+        try
+        {
+            run800 = Measure(false, run800Calls); wave800 = Measure(true, wave800Calls);
+            Populate(session, 1600);
+            run1600 = Measure(false, run1600Calls); wave1600 = Measure(true, wave1600Calls);
+        }
+        finally { GC.EndNoGCRegion(); }
         var threadAfter = Environment.CurrentManagedThreadId;
         // Diagnostics run only after all allocation windows; no sample is discarded or retried.
         output.WriteLine($"Capture allocation thread {threadBefore}->{threadAfter}; warmup=10, measured=100");
@@ -123,6 +136,32 @@ public sealed class PresentationSnapshotBufferTests
         Assert.Equal(wave800, wave1600);
         Assert.True(run800 > 0); Assert.True(wave800 > 0);
     }
+    [Fact]
+    public void NoGcAllocationWindowStillCountsEveryRealAllocation()
+    {
+        var empty = new long[100]; var allocated = new long[100];
+        GC.KeepAlive(AllocateControl());
+        Assert.True(GC.TryStartNoGCRegion(16 * 1024 * 1024));
+        try
+        {
+            for (var i = 0; i < 100; i++)
+            {
+                var before = GC.GetAllocatedBytesForCurrentThread();
+                empty[i] = GC.GetAllocatedBytesForCurrentThread() - before;
+                before = GC.GetAllocatedBytesForCurrentThread();
+                var value = AllocateControl();
+                allocated[i] = GC.GetAllocatedBytesForCurrentThread() - before;
+                GC.KeepAlive(value);
+            }
+        }
+        finally { GC.EndNoGCRegion(); }
+        Assert.All(empty, bytes => Assert.Equal(0, bytes));
+        Assert.All(allocated, bytes => Assert.True(bytes >= 37));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static object AllocateControl() => new byte[37];
+
     [Fact]
     public void BorrowedCountersKeepOrdinalOrderAndDetachedExportsSurviveBothBuffers()
     {
