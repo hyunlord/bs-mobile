@@ -117,7 +117,7 @@ namespace Game.App
                 benchmarkCapture = Array.IndexOf(args, "--wave-benchmark-capture") >= 0;
                 Screen.SetResolution(crowdBenchmark == null ? 1600 : 1920, crowdBenchmark == null ? 900 : 1080, FullScreenMode.Windowed);
                 if (crowdBenchmark == null) { Application.targetFrameRate = benchmarkMode == "uncapped" ? -1 : 60; QualitySettings.vSyncCount = 0; }
-                else { Application.targetFrameRate = -1; QualitySettings.vSyncCount = 1; }
+                else DisplayCadence.Apply();
                 runCatalog = frozen;
                 StartCoroutine(BeginWaveBenchmark());
             }
