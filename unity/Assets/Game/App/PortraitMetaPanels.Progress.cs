@@ -75,12 +75,14 @@ namespace Game.App
         }
 
         public static void Result(UiShell ui, MetaCatalog catalog, string chapterId, MetaRunFacts facts, MetaSettlement settlement,
-            int tickRate, int level, IReadOnlyDictionary<string, int> fragmentDelta, Action retry, Action estate)
+            int tickRate, int level, IReadOnlyDictionary<string, int> fragmentDelta, Action retry, Action estate, BmAdOffer ad = null, Action rewardedResult = null, bool revived = false)
         {
             var cleared = settlement?.Cleared ?? (facts.Survived && facts.BossDefeated && facts.Tick >= facts.DurationTicks);
             var root = Page(ui, "Result", facts.Abandoned ? "포기" : cleared ? "클리어" : "쓰러짐"); var width = Width(ui) - 36;
-            var body = Body(ui, root, 66, 140); var seconds = facts.Tick / Math.Max(1, tickRate); float y = 0;
+            var hasAd = ad != null && ad.Visible;
+            var body = Body(ui, root, 66, hasAd ? 196 : 140); var seconds = facts.Tick / Math.Max(1, tickRate); float y = 0;
             y += Label(ui, body, "버틴 시간 " + seconds / 60 + ":" + (seconds % 60).ToString("00") + " · 도달 레벨 " + facts.Level + "\n수확 " + facts.Harvests, 0, y, width, 18) + 16;
+            if(revived) y += Label(ui, body, "부활한 출정", 0, y, width, 18) + 8;
             var chapter = catalog.Chapters.First(c => c.Id == chapterId);
             foreach (var material in catalog.Materials)
             {
@@ -95,6 +97,7 @@ namespace Game.App
             foreach (var id in settlement?.ChallengesCompleted ?? Array.Empty<string>())
                 y += Label(ui, body, catalog.Challenges.First(c => c.Id == id).Name + " · 도전 보상을 받을 수 있습니다", 0, y, width) + 8;
             End(body, y);
+            if(hasAd) { var button = PortraitBmPanels.OptionalAdButton(ui, root, ad, rewardedResult, 18, Height(ui) - 174, width); button.name = "Summary.OptionalAd"; }
             ActionButton(ui, root, "Summary.Retry", "다시 출정", retry, 18, Height(ui) - 118, width);
             ActionButton(ui, root, "Summary.Estate", "영지로", estate, 18, Height(ui) - 62, width);
         }

@@ -79,6 +79,9 @@ namespace Game.App
                 case UiScreen.CardPool: ShowPortraitDeparture(); break;
                 case UiScreen.Vassals: RestoreVassalOrigin(); break;
                 case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: ShowPortraitEstate(); break;
+                case UiScreen.Pass: case UiScreen.AdRemoval: ShowPortraitShop(); break;
+                case UiScreen.Revive: FinishWithoutRevive(); break;
+                case UiScreen.FakeAdSettings: RestoreFakeAdSettings(); break;
                 case UiScreen.SpendConfirmation: ShowPortraitVassals(); break;
                 case UiScreen.ConfirmExit: if (exitOrigin == UiScreen.Title) ShowPortraitTitle(); else ShowPortraitEstate(); break;
             }
@@ -101,7 +104,10 @@ namespace Game.App
                 case UiScreen.Departure: ShowPortraitDeparture(); break;
                 case UiScreen.Vassals: ShowPortraitVassals(); break;
                 case UiScreen.Challenges: ShowPortraitChallenges(); break;
-                case UiScreen.Shop: case UiScreen.Idle: ShowPortraitPlaceholder(settingsOrigin); break;
+                case UiScreen.Shop: ShowPortraitShop(); break;
+                case UiScreen.Idle: ShowPortraitIdle(); break;
+                case UiScreen.Pass: ShowPortraitPass(); break;
+                case UiScreen.Revive: ShowPortraitRevive(); break;
                 default: ContinuePausedRun(); break;
             }
         }
@@ -114,13 +120,15 @@ namespace Game.App
                 for (var i = 0; i < offer.Cards.Count; i++)
                     if (guardedOffer.Cards[i] != offer.Cards[i]) { changed = true; break; }
             if (changed) cardActionsUnlockAt = Time.unscaledTimeAsDouble + .3;
+            NotifyRewardLevel();
             guardedOffer = offer; guardedLevel = CurrentFrame.Level;
             portraitCardActions = PortraitRunPanels.Cards(Ui, CurrentFrame, FirstPlayable, offer,
                 runCatalog ?? FoundationBoot.Catalog, displays, (kind, id) =>
                 {
                     if (screen == UiScreen.Cards && Time.unscaledTimeAsDouble >= cardActionsUnlockAt)
                         Send(kind, card: id);
-                });
+                }, RewardOffer(RewardedAdSlot.Reroll), () =>
+                { if (Time.unscaledTimeAsDouble >= cardActionsUnlockAt) RequestReward(RewardedAdSlot.Reroll); });
             portraitCardActions.SetActionsEnabled(Time.unscaledTimeAsDouble >= cardActionsUnlockAt);
         }
         void RefreshPortraitCardGate()
@@ -152,7 +160,12 @@ namespace Game.App
                         case UiScreen.Challenges: ShowPortraitChallenges(); break;
                         case UiScreen.CardPool: ShowPortraitCardPool(); break;
                         case UiScreen.SpendConfirmation: ShowPortraitSpend(); break;
-                        case UiScreen.Shop: case UiScreen.Idle: ShowPortraitPlaceholder(screen); break;
+                        case UiScreen.Shop: ShowPortraitShop(); break;
+                        case UiScreen.Idle: ShowPortraitIdle(); break;
+                        case UiScreen.Pass: ShowPortraitPass(); break;
+                        case UiScreen.Revive: ShowPortraitRevive(); break;
+                        case UiScreen.AdRemoval: ShowPortraitAdRemoval(); break;
+                        case UiScreen.FakeAdSettings: ShowFakeAdSettings(); break;
                         case UiScreen.ConfirmAbandon:
                             ClearUi(); PortraitRunPanels.ConfirmAbandon(Ui, AbandonCurrentRun, OpenPause); break;
                         case UiScreen.ConfirmExit:

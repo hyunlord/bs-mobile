@@ -90,12 +90,13 @@ namespace Game.App
         }
 
         public static PortraitCardActions Cards(UiShell ui, RunFrame frame, FirstPlayableFrame first, CardOfferView offer,
-            ContentCatalog catalog, IReadOnlyDictionary<string, ContentDisplay> displays, Action<ReplayCommandKind, string> send)
+            ContentCatalog catalog, IReadOnlyDictionary<string, ContentDisplay> displays, Action<ReplayCommandKind, string> send, BmAdOffer ad = null, Action rewardedReroll = null)
         {
             var root = Root(ui, "Portrait.Cards"); var width = Width(ui); var height = Height(ui); var actions = new PortraitCardActions();
             Text(ui, root, "레벨 " + frame.Level + " · 성장 선택", 12, 12, width - 24, PortraitTokens.Title);
             Text(ui, root, "무기와 도구를 함께 골라 영지를 키우세요.", 12, 48, width - 24);
-            var body = Scroll(ui, root, 82, 76);
+            var hasAd = ad != null && ad.Visible;
+            var body = Scroll(ui, root, 82, hasAd ? 132 : 76);
             var cardWidth = Mathf.Min(CardWidth, (width - 24 - Gap * 2) / 3);
             var left = Mathf.Max(0, (width - 24 - cardWidth * 3 - Gap * 2) * .5f);
             var maxHeight = 410f;
@@ -131,7 +132,9 @@ namespace Game.App
             }
             body.sizeDelta = new Vector2(0, maxHeight + 12);
             var reroll = Button(ui, root, "Cards.Reroll", "다시 뽑기 · " + offer.Rerolls, () => send(ReplayCommandKind.RerollCards, null), 12, height - 60, width - 24, 48, offer.Rerolls > 0);
-            actions.Add(reroll, offer.Rerolls > 0); return actions;
+            actions.Add(reroll, offer.Rerolls > 0);
+            if(hasAd) { var button = PortraitBmPanels.OptionalAdButton(ui, root, ad, rewardedReroll, 12, height - 116, width - 24); button.name = "Cards.OptionalAd"; actions.Add(button, ad.Enabled); }
+            return actions;
         }
 
         public static void Pause(UiShell ui, RunFrame frame, FirstPlayableFrame first, ContentCatalog catalog,
@@ -202,7 +205,7 @@ namespace Game.App
         }
 
         public static void Settings(UiShell ui, RunPreferences preferences, AimMode aim, Action preferencesChanged,
-            Action<AimMode> changeAim, Action back, bool showFeel = true)
+            Action<AimMode> changeAim, Action back, bool showFeel = true, Action fakeAds = null)
         {
             var root = Root(ui, "Portrait.Settings"); var width = Width(ui); var height = Height(ui);
             Text(ui, root, "설정", 12, 12, width - 24, PortraitTokens.Title);
@@ -230,6 +233,7 @@ namespace Game.App
                 Toggle(ui, body, "피격 잔상 · 붉은 테 · 피해 숫자", preferences.FeelFeedback, v => { preferences.FeelFeedback = v; preferencesChanged(); }, innerWidth, ref y);
                 Toggle(ui, body, "걷기 B · 부위별 애니메이션", preferences.HeroRigPreview, v => { preferences.HeroRigPreview = v; preferencesChanged(); }, innerWidth, ref y);
             }
+            if(fakeAds != null) { Button(ui, body, "Settings.FakeAds", "개발 광고 시험", fakeAds, 0, y, innerWidth); y += 60; }
             body.sizeDelta = new Vector2(0, y + 8);
             Button(ui, root, "Settings.Back", "돌아가기", back, 12, height - 60, width - 24);
         }
