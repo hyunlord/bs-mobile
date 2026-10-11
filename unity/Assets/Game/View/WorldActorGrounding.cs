@@ -20,6 +20,7 @@ namespace Game.View
         {
             var shadow = GameVisualTokens.Ink;
             shadow.a = GameVisualTokens.ActorShadowOpacity;
+            if (presentationDiagnosticsActive) diagnosticGroundingAdds++;
             actorGrounding.Add(position, new Vector2(size.x * .26f, size.y * .055f), 0, shadow);
             if (kind == WaveEnemyKind.Ranged)
             {
@@ -29,6 +30,7 @@ namespace Game.View
                 wing.a = .15f + .04f * Mathf.Sin(time * 53);
                 var wingSize = new Vector2(size.x * .17f, size.y * .045f);
                 var body = position + hover + Vector2.up * (size.y * .56f);
+                if (presentationDiagnosticsActive) diagnosticGroundingAdds += 2;
                 actorWings.Add(body + Vector2.left * size.x * .23f, wingSize, 28, wing);
                 actorWings.Add(body + Vector2.right * size.x * .23f, wingSize, -28, wing);
                 return;
@@ -45,6 +47,7 @@ namespace Game.View
                 var point = position - direction * (age * size.x * .28f)
                     + across * ((foot == 0 ? -1 : 1) * size.x * .12f);
                 var radius = size.x * (.018f + age * .034f);
+                if (presentationDiagnosticsActive) diagnosticGroundingAdds++;
                 actorGrounding.Add(point, new Vector2(radius, radius * .55f), 0, dust);
             }
         }

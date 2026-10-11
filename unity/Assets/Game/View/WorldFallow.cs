@@ -125,6 +125,11 @@ namespace Game.View
                 if (progress >= 1) { fallowHarvests.RemoveAt(i); continue; }
                 PaintFallow(bloom.position, GameVisualTokens.FallowRipeRadius * (1 + progress * .9f), 1, 1 - progress);
             }
+            if (presentationDiagnosticsActive)
+            {
+                diagnosticMaskUpdates++;
+                diagnosticMaskPixels += fallowPixels.Length;
+            }
             fallowMask.SetPixels32(fallowPixels);
             fallowMask.Apply(false, false);
             Shader.SetGlobalTexture("_FallowMask", fallowMask);
@@ -143,6 +148,7 @@ namespace Game.View
             var right = Mathf.Clamp(Mathf.CeilToInt((center.x + radius) / width * size), 0, size - 1);
             var bottom = Mathf.Clamp(Mathf.FloorToInt((center.y - radius) / height * size), 0, size - 1);
             var top = Mathf.Clamp(Mathf.CeilToInt((center.y + radius) / height * size), 0, size - 1);
+            if (presentationDiagnosticsActive) diagnosticPaintPixels += (top - bottom + 1) * (right - left + 1);
             for (var y = bottom; y <= top; y++) for (var x = left; x <= right; x++)
             {
                 var dx = ((x + .5f) / size * width - center.x) / radius;
