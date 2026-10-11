@@ -6,6 +6,44 @@ namespace SowSiege.Tests;
 
 public sealed class WaveSeparationGridTests
 {
+    [Fact]
+    public void DenseWindowSparseOutliersAndOutsideMovesMatchOriginalGrid()
+    {
+        var actors = new List<EnemyState>();
+        for (var id = 1; id <= 24; id++)
+            actors.Add(new() { Id = id, Health = 10, Position = new(-200 + id * 9, 30 + id % 3) });
+        actors.Add(new() { Id = 25, Health = 10, Position = new(1000000, -1000000) });
+        actors.Add(new() { Id = 26, Health = 10, Position = new(int.MinValue + 10000, 0) });
+        var originalActors = actors.Select(e => new EnemyState { Id = e.Id, Health = e.Health, Position = e.Position }).ToList();
+        var grid = new WaveSeparationGrid(31, true); var original = new SpatialHash(31, true);
+        var found = new List<EnemyState>(); var expected = new List<EnemyState>();
+        var bodies = actors.ToDictionary(e => e.Id, e => (Width: 40, Charging: e.Id % 3 == 0));
+        void Compare()
+        {
+            foreach (var actor in actors)
+            {
+                grid.Collect(actor.Position, 80, found); original.Collect(actor.Position, 80, expected);
+                Assert.Equal(expected.Select(e => e.Id).OrderBy(id => id), found.Select(e => e.Id).OrderBy(id => id));
+                var clear = !expected.Any(other => other.Id != actor.Id && (other.Id < actor.Id || bodies[other.Id].Charging)
+                    && actor.Position.DistanceSquared(other.Position) < 25L * 25);
+                Assert.Equal(clear, grid.Clear(actor, actor.Position, 80, bodies, 3, 10));
+            }
+        }
+        grid.Rebuild(actors); original.Rebuild(originalActors); Compare();
+        // Both sparse-to-dense and dense-to-sparse transitions happen without rebasing.
+        foreach (var destination in new[] { new Position(-100, 31), new Position(-1000000, 1000000), new Position(1000001, -1000000), new Position(0, 0) })
+        {
+            grid.Move(actors[0], destination); original.Move(originalActors[0], destination);
+            grid.Move(actors[24], new(destination.X + 2, destination.Y)); original.Move(originalActors[24], new(destination.X + 2, destination.Y));
+            Compare();
+        }
+        actors.RemoveRange(24, 2); originalActors.RemoveRange(24, 2);
+        grid.Rebuild(actors); original.Rebuild(originalActors); Compare();
+        grid.Rebuild(new()); original.Rebuild(Array.Empty<EnemyState>());
+        grid.Collect(new(0, 0), 80, found); Assert.Empty(found);
+        grid.Rebuild(actors); original.Rebuild(originalActors); Compare();
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

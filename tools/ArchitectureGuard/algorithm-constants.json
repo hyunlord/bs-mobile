@@ -358,5 +358,55 @@
     "Symbol": "SowSiege.Core.ReplayCodec.FieldVersion",
     "Value": "4",
     "Reason": "ADR0051/#210 replay wire format discriminator for explicitly versioned field options plus optional feel flags. Old replay formats1-3 and global rules/state-codec versions remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.CoordinateBits",
+    "Value": "32",
+    "Reason": "Packed signed cell coordinates each occupy exactly one Int32 half of a long; also folds the mixed 64-bit hash. Representation, not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashFirstShift",
+    "Value": "30",
+    "Reason": "SplitMix64 finalizer first xor-shift; improves private dictionary key distribution without changing exact key equality or simulation state."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashSecondShift",
+    "Value": "27",
+    "Reason": "SplitMix64 finalizer second xor-shift; private dictionary distribution only."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashFinalShift",
+    "Value": "31",
+    "Reason": "SplitMix64 finalizer final xor-shift; private dictionary distribution only."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashFirstMultiplier",
+    "Value": "13787848793156543929",
+    "Reason": "SplitMix64 finalizer first multiplier; unchecked modulo-2^64 dictionary hashing, not RNG or gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashSecondMultiplier",
+    "Value": "10723151780598845931",
+    "Reason": "SplitMix64 finalizer second multiplier; unchecked modulo-2^64 dictionary hashing, not RNG or gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.WindowRadix",
+    "Value": "2",
+    "Reason": "Power-of-two array capacity growth and midpoint divisor for the separation lookup window; affects storage only, sparse fallback preserves all cells."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.PaddedInclusiveSpan",
+    "Value": "3",
+    "Reason": "Inclusive cell span adds one plus a one-cell margin at each end. Lookup window optimization only; outside cells remain in sparse fallback."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.MaximumDenseCells",
+    "Value": "16384",
+    "Reason": "Bounded private flat lookup storage budget: at most 16384 bucket references. Does not limit enemy count, coordinates, query radius or motion; sparse fallback retains all overflow cells."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.SparseCloudWindowSide",
+    "Value": "64",
+    "Reason": "Private lookup window side when enemy cell bounds exceed the flat storage budget. Distant cells use exact sparse fallback, so no gameplay boundary is imposed."
   }
 ]
