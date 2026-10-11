@@ -1,11 +1,14 @@
 using SowSiege.Core;
 using SowSiege.Sim;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace SowSiege.Tests;
 
 public sealed class PresentationSnapshotBufferTests
 {
+    private readonly ITestOutputHelper output;
+    public PresentationSnapshotBufferTests(ITestOutputHelper output) { this.output = output; }
     private static InteractiveSession Session(int count)
     {
         var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), profileName: "wave-1a");
@@ -88,16 +91,36 @@ public sealed class PresentationSnapshotBufferTests
     {
         var session = Session(800); var run = new RunSnapshotBuffer(1600); var wave = new WaveSnapshotBuffer(1600);
         var view = (IBufferedRunView)session.View; var waveView = (IBufferedWaveRunView)session.View;
-        long Measure(bool includeWave)
+        var run800Calls = new long[100]; var wave800Calls = new long[100];
+        var run1600Calls = new long[100]; var wave1600Calls = new long[100];
+        long Measure(bool includeWave, long[] calls)
         {
             for (var i = 0; i < 10; i++) { if (includeWave) { waveView.CaptureWaveRuntime(wave); } else { view.CaptureFrame(run); } }
             var before = GC.GetAllocatedBytesForCurrentThread();
-            for (var i = 0; i < 100; i++) { if (includeWave) { waveView.CaptureWaveRuntime(wave); } else { view.CaptureFrame(run); } }
+            for (var i = 0; i < 100; i++)
+            {
+                var callBefore = GC.GetAllocatedBytesForCurrentThread();
+                if (includeWave) { waveView.CaptureWaveRuntime(wave); } else { view.CaptureFrame(run); }
+                calls[i] = GC.GetAllocatedBytesForCurrentThread() - callBefore;
+            }
             return GC.GetAllocatedBytesForCurrentThread() - before;
         }
-        var run800 = Measure(false); var wave800 = Measure(true);
+        var threadBefore = Environment.CurrentManagedThreadId;
+        var run800 = Measure(false, run800Calls); var wave800 = Measure(true, wave800Calls);
         Populate(session, 1600);
-        Assert.Equal(run800, Measure(false)); Assert.Equal(wave800, Measure(true));
+        var run1600 = Measure(false, run1600Calls); var wave1600 = Measure(true, wave1600Calls);
+        var threadAfter = Environment.CurrentManagedThreadId;
+        // Diagnostics run only after all allocation windows; no sample is discarded or retried.
+        output.WriteLine($"Capture allocation thread {threadBefore}->{threadAfter}; warmup=10, measured=100");
+        void Report(string phase, long total, long[] calls)
+        {
+            var histogram = string.Join(", ", calls.GroupBy(bytes => bytes).OrderBy(group => group.Key).Select(group => $"{group.Key} bytes x {group.Count()}"));
+            output.WriteLine($"{phase}: aggregate={total}; per-call sum={calls.Sum()}; histogram=[{histogram}]");
+        }
+        Report("run800", run800, run800Calls); Report("run1600", run1600, run1600Calls);
+        Report("wave800", wave800, wave800Calls); Report("wave1600", wave1600, wave1600Calls);
+        Assert.Equal(run800, run1600);
+        Assert.Equal(wave800, wave1600);
         Assert.True(run800 > 0); Assert.True(wave800 > 0);
     }
 }
