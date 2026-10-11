@@ -6,6 +6,7 @@ namespace SowSiege.Core
     public sealed record HostReviveRules(int RestoreHealth, int InvulnerabilityTicks, HostRevivePreservation Preservation);
     public sealed record HostRewardRunOptions(bool AllowRerollGrant, HostReviveRules? Revive)
     {
+        internal const int MaximumRerollGrants = 2;
         internal void Validate()
         {
             if (!AllowRerollGrant && Revive is null) { throw new ArgumentException("Host reward options must enable a command."); }
