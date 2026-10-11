@@ -211,6 +211,22 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(120000)]
+        public IEnumerator LockingTheSameOfferDoesNotRestartItsPointerGuard()
+        {
+            yield return Boot(); Click("Title.Enter"); yield return WaitForScreen("Run");
+            app.Send(ReplayCommandKind.GrantLevel); yield return WaitForScreen("Cards");
+            yield return new WaitForSecondsRealtime(.35f);
+            var card = app.Session.View.CaptureCards().Cards[0];
+            yield return Reveal("Card.Lock:" + card);
+            Click("Card.Lock:" + card); yield return null;
+            Assert.That(app.Session.View.CaptureCards().LockedCardId, Is.EqualTo(card));
+            Assert.That(ButtonNamed("Card.Choose:" + card).interactable, Is.True,
+                "Locking preserves the offer and must not swallow the next selection.");
+            yield return Reveal("Card.Choose:" + card); Click("Card.Choose:" + card);
+            yield return WaitForScreen("Run");
+        }
+
+        [UnityTest, Timeout(120000)]
         public IEnumerator RetryingWithTheSameCommandSequenceStartsANewCardInputGuard()
         {
             yield return Boot();

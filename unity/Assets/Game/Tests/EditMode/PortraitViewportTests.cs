@@ -19,6 +19,17 @@ namespace Tests.EditMode
             Assert.That(phone.Pixels.height/phone.Scale,Is.GreaterThan(844));
         }
         [Test]
+        public void RotatedPhoneStillHasAFullHeightPortraitPage()
+        {
+            var viewport=PortraitViewport.Calculate(new Vector2(1920,1080),new Rect(80,0,1760,1080),true);
+            Assert.That(viewport.Pixels.height/viewport.Scale,Is.EqualTo(844).Within(.001));
+            Assert.That(viewport.Pixels.width/viewport.Scale,Is.EqualTo(390).Within(.001));
+            Assert.That(viewport.SafePixels.x,Is.EqualTo(viewport.Pixels.x).Within(.001));
+            Assert.That(viewport.SafePixels.y,Is.EqualTo(viewport.Pixels.y).Within(.001));
+            Assert.That(viewport.SafePixels.width,Is.EqualTo(viewport.Pixels.width).Within(.001));
+            Assert.That(viewport.SafePixels.height,Is.EqualTo(viewport.Pixels.height).Within(.001));
+        }
+        [Test]
         public void DesktopSafeAreaIsIntersectionAndThirteenIconsFit()
         {
             var viewport=PortraitViewport.Calculate(new Vector2(390,844),new Rect(0,34,390,763),false);

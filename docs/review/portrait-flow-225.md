@@ -22,6 +22,10 @@ wave-1a 프로필로 `UNITY_CONTENT_PROFILE=wave-1a bash tools/prepare-unity.sh`
 
 ## 범위
 
+### 병합 전 리뷰 수정
+
+자동 캡처는 텍스트가 없는 타이틀 버튼도 안정된 이름으로 찾으며 기존 UI 경로를 함께 지원한다. 모바일 가로 자동 회전을 끄고, 가로 크기가 전달되어도 세로 뷰포트를 유지한다. 카드 고정은 같은 제안이므로300ms 보호를 재시작하지 않으며 새 제안과 새 판에는 보호가 적용된다. 수정 뒤 EditMode48/48, 실제 포인터 PlayMode5/5를 재검증했다(`ReviewEditFinal.xml`, `ReviewFlow.xml`). 기기 회전과 전체 네이티브 자동 캡처는 통합 전달 검증에 남아 있다.
+
 `RunCoordinator.Portrait`가 화면 복귀·일시정지·입력 보호를 맡고, `PortraitRunPanels`가 판 안 패널을 만든다. `PortraitViewport`, `PortraitHud`, `PortraitWidgets`, `PortraitTokens`는 기존 프로필과 분리된 표시 경로다. 기존 아트를 재사용하며 새 패키지는 없다. 진동은 플랫폼 기본 API를 쓰고 설정에서 끌 수 있다.
 
 영지와 결산은 현재 연결용 화면이며 #226의 실제 자원·장원·가신·도전·보상 UI로 대체한다. 상점·방치·부활·패스는 #227 범위다. 연결 불가 canvas 대신 [서면 화면 정본](../design/screen-flow-v0.md)을 사용하며 canvas와 직접 비교했다고 주장하지 않는다. 전체13화면 비교 시트와 새 HUD의 네이티브 성능 검사는 세 단계 통합 뒤에 수행한다. [이전 끊김 실패](stutter-part1-219.md)는 그대로 남긴다.

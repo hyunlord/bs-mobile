@@ -205,7 +205,7 @@ namespace Game.App
             try
             {
                 if (run.CurrentFrame == null || run.CurrentFrame.Tick != 0) throw new InvalidOperationException("Golden minute world warmup missed tick zero; no gameplay may be skipped.");
-                Click(run.IsWave ? "잠시\n멈춤" : "설정");
+                Click(run.IsWave ? "잠시\n멈춤" : "설정", "멈춤");
                 if (!run.CaptureClockPaused) throw new InvalidOperationException("Normal pause button did not pause world warmup.");
                 goldenWorldPaused = true;
                 nextAction = Elapsed + 1;
@@ -221,7 +221,7 @@ namespace Game.App
             {
                 if (run.CurrentFrame == null || run.CurrentFrame.Tick != 0) throw new InvalidOperationException("Paused world warmup advanced gameplay.");
                 if (!run.CaptureClockPaused) throw new InvalidOperationException("World warmup unexpectedly resumed.");
-                Click("돌아가기");
+                Click("돌아가기", "Pause.Continue", "Settings.Back");
                 if (run.CaptureClockPaused) throw new InvalidOperationException("Normal resume button did not resume the run.");
                 run.RefreshCapturePresentation();
                 run.BeginSmoothnessDiagnostics();
@@ -254,17 +254,17 @@ namespace Game.App
                 case 0:
                     if (run.Session != null || run.Progression?.State.PendingRun != null) throw new InvalidOperationException("Capture did not start at a fresh title.");
                     Capture("01-native-title.png"); stage = 1; nextAction = Elapsed + 1; break;
-                case 1: Click("설정"); stage = 2; nextAction = Elapsed + .5; break;
-                case 2: ClickContaining("가까운 적 자동 조준"); stage = 3; nextAction = Elapsed + .5; break;
-                case 3: Click("돌아가기");
+                case 1: Click("설정", "Title.Settings"); stage = 2; nextAction = Elapsed + .5; break;
+                case 2: if (run.Aim != AimMode.NearestEnemy) ClickContaining("가까운 적 자동 조준", "Settings.AimNearest"); stage = 3; nextAction = Elapsed + .5; break;
+                case 3: Click("돌아가기", "Settings.Back");
                     if(captureTarget!=null)
                     {
                         if(!run.IsWave||!FoundationBoot.Catalog.WaveRuntime.MaterialTargets.TryGetValue(captureTarget,out var tool))throw new InvalidOperationException("Capture target is not supported by this profile.");
-                        ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.interactable && b.name == "출정 준비"));
+                        ClickButton(ResolveButton(run.Ui.GetComponentsInChildren<Button>(), null, false, "출정 준비"));
                         ClickContaining(CanonicalContent.Displays.Single(d=>d.Id==tool).DisplayName);
                         Log("target-material-click",captureTarget);
                     }
-                    Click(run.IsWave ? "시작하기" : "시작"); stage = 4; nextAction = Elapsed + 1; break;
+                    stage = 4; nextAction = Elapsed + 1; break;
                 case 4:
                     if (goldenMinute)
                     {
@@ -282,8 +282,10 @@ namespace Game.App
                         }
                         if (!minuteCapture.ReadyToStart) return;
                     }
-                    Click("개척 시작"); stage = 5; nextAction = Elapsed + 2; break;
+                    stage = 5; nextAction = Elapsed + 2;
+                    Click(run.IsWave ? "시작하기" : "시작", "Title.Enter"); break;
                 case 5:
+                    if (TryDepartureRoute()) { nextAction = Elapsed + 1; return; }
                     if (run.CurrentFrame == null || goldenMinute && !goldenRecordingStarted) return;
                     replayPath = run.RecordedReplayPath; result.replay = replayPath;
                     Log("run-start", "seed="+RunSeed+";profile="+CanonicalContent.ProfileName+";"+replayPath); if (!goldenMinute) Capture("02-native-run.png"); stage = 6; break;
@@ -291,8 +293,9 @@ namespace Game.App
                 case 7:
                     if (!run.MenuOpen) return;
                     Capture("03-native-summary.png"); stage = 8; nextAction = Elapsed + 2; break;
-                case 8: lastWaveEvent=-1; restartAt = Elapsed; Click("다시 하기"); stage = 9; nextAction = Elapsed + 3; break;
+                case 8: lastWaveEvent=-1; restartAt = Elapsed; Click("다시 하기", "Summary.Retry"); stage = 9; nextAction = Elapsed + 3; break;
                 case 9:
+                    if (TryDepartureRoute()) { nextAction = Elapsed + 1; return; }
                     if (!CaptureRestartGate.IsReady(Elapsed - restartAt, replayPath, run.RecordedReplayPath,
                         run.CurrentFrame?.Status == RunStatus.Running, run.CurrentFrame?.Tick ?? 0)) return;
                     result.restartReplay = run.RecordedReplayPath;
@@ -359,9 +362,9 @@ namespace Game.App
                 if(card==null)
                 {
                     if(offers.Rerolls<=0)throw new InvalidOperationException("Weak-build legal offer cannot preserve two-weapon/no-evolution observation; no grants or forced selection permitted.");
-                    ClickContaining("다시 뽑기");Log("weak-reroll","ordinary budget to preserve weak-build constraint");cardAt=-1;return;
+                    ClickContaining("다시 뽑기", "Cards.Reroll");Log("weak-reroll","ordinary budget to preserve weak-build constraint");cardAt=-1;return;
                 }
-                ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.name == "Choose " + card));
+                ClickButton(ResolveButton(run.Ui.GetComponentsInChildren<Button>(), null, false, "Card.Choose:" + card, "Choose " + card));
                 Log("card-click", card); cardAt = -1; return;
             }
             Vector2 direction;
@@ -383,11 +386,34 @@ namespace Game.App
 
         static double Distance(WorldPoint a, WorldPoint b) => Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2);
         static int CardRank(string id) { if(Game.App.Generated.CanonicalContent.ProfileName=="wave-1a")return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
-        void Click(string text) => ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.interactable && b.GetComponentInChildren<Text>().text == text));
-        void ClickContaining(string text) => ClickButton(run.Ui.GetComponentsInChildren<Button>().Single(b => b.interactable && b.GetComponentInChildren<Text>().text.Contains(text)));
+        bool TryDepartureRoute()
+        {
+            if (!run.MenuOpen) return false;
+            var button = ResolveButton(run.Ui.GetComponentsInChildren<Button>(), "개척 시작", false, "Estate.Depart", "Departure.Start");
+            if (button == null) return false;
+            ClickButton(button); return true;
+        }
+
+        public static Button ResolveButton(Button[] buttons, string text, bool contains, params string[] names)
+        {
+            foreach (var name in names)
+            {
+                var named = buttons.Where(b => b != null && b.isActiveAndEnabled && b.IsInteractable() && b.name == name).ToArray();
+                if (named.Length > 1) throw new InvalidOperationException("Ambiguous capture button: " + name);
+                if (named.Length == 1) return named[0];
+            }
+            if (text == null) return null;
+            var matches = buttons.Where(b => b != null && b.isActiveAndEnabled && b.IsInteractable() &&
+                b.GetComponentsInChildren<Text>().Any(label => contains ? label.text.Contains(text) : label.text == text)).ToArray();
+            if (matches.Length > 1) throw new InvalidOperationException("Ambiguous capture label: " + text);
+            return matches.SingleOrDefault();
+        }
+        void Click(string text, params string[] names) => ClickButton(ResolveButton(run.Ui.GetComponentsInChildren<Button>(), text, false, names));
+        void ClickContaining(string text, params string[] names) => ClickButton(ResolveButton(run.Ui.GetComponentsInChildren<Button>(), text, true, names));
         void ClickButton(Button button)
         {
-            Log("ui-click", button.GetComponentInChildren<Text>().text);
+            if (button == null) throw new InvalidOperationException("Required autoplay UI action is unavailable on " + run.CurrentScreenName + ".");
+            Log("ui-click", button.name);
             var pointer = new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left };
             ExecuteEvents.Execute(button.gameObject, pointer, ExecuteEvents.pointerClickHandler);
         }

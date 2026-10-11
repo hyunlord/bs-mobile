@@ -11,7 +11,8 @@ namespace Game.App
         const string PortraitGlyphs = PortraitRunPanels.Glyphs + " 영지 새봄의 터 집으로 돌아왔습니다 출정 영지로 다시 출정 클리어 쓰러짐 포기 버틴 시간 도달 레벨 종료하시겠어요 종료 취소 끌어서 이동 공격은 자동 익은 밭에 다가가 수확 백성이 싸운 뒤 일터로 복귀";
         PortraitCardActions portraitCardActions;
         double cardActionsUnlockAt;
-        long cardGateSequence = -1;
+        CardOfferView guardedOffer;
+        int guardedLevel;
         UiScreen exitOrigin;
         Vector2 portraitLayoutSize;
         public string CurrentScreenName => screen.ToString();
@@ -104,8 +105,14 @@ namespace Game.App
         }
         void ShowPortraitCards(CardOfferView offer)
         {
-            if (cardGateSequence != Session.NextSequence)
-            { cardGateSequence = Session.NextSequence; cardActionsUnlockAt = Time.unscaledTimeAsDouble + .3; }
+            var changed = guardedOffer == null || guardedLevel != CurrentFrame.Level ||
+                guardedOffer.Rerolls != offer.Rerolls || guardedOffer.Bans != offer.Bans ||
+                guardedOffer.Cards.Count != offer.Cards.Count;
+            if (!changed)
+                for (var i = 0; i < offer.Cards.Count; i++)
+                    if (guardedOffer.Cards[i] != offer.Cards[i]) { changed = true; break; }
+            if (changed) cardActionsUnlockAt = Time.unscaledTimeAsDouble + .3;
+            guardedOffer = offer; guardedLevel = CurrentFrame.Level;
             portraitCardActions = PortraitRunPanels.Cards(Ui, CurrentFrame, FirstPlayable, offer,
                 runCatalog ?? FoundationBoot.Catalog, displays, (kind, id) =>
                 {
