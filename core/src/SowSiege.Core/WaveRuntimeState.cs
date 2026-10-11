@@ -64,8 +64,10 @@ namespace SowSiege.Core
             Events.Add(new(NextEvent++, tick, kind, source, subject, new(position.X, position.Y), new(target.X, target.Y), amount));
         }
         private static readonly Comparison<WaveEnemyView> EnemyViewOrder = (a, b) => a.Id.CompareTo(b.Id);
-        public WaveRuntimeFrame Capture(WaveRuntimeDefinition d, int tick)
+        private static readonly IComparer<WaveEnemyView> EnemyViewComparer = Comparer<WaveEnemyView>.Create(EnemyViewOrder);
+        public WaveRuntimeFrame Capture(WaveRuntimeDefinition d, int tick, WaveSnapshotBuffer? buffer = null)
         {
+            buffer?.Enemies.Begin(EnemyActions.Count);
             var work = new WaveWorkView[Work.Count];
             for (var i = 0; i < work.Length; i++)
             {
@@ -76,14 +78,14 @@ namespace SowSiege.Core
             for (var i = 0; i < rewards.Length; i++) { var r = Rewards[i]; rewards[i] = new(r.Id, r.Source, new(r.Position.X, r.Position.Y), r.Experience, r.CompletionKey); }
             var projectiles = new WaveProjectileView[Projectiles.Count];
             for (var i = 0; i < projectiles.Length; i++) { var p = Projectiles[i]; projectiles[i] = new(p.Id, p.Source, new(p.Position.X, p.Position.Y), new(p.Previous.X, p.Previous.Y), p.TargetId, p.Hostile); }
-            var enemies = new WaveEnemyView[EnemyActions.Count];
+            var enemies = buffer?.Enemies.Storage ?? new WaveEnemyView[EnemyActions.Count];
             var index = 0;
             foreach (var pair in EnemyActions)
             {
                 var e = pair.Value;
                 enemies[index++] = new(pair.Key, e.Phase, new(e.Origin.X, e.Origin.Y), new(e.Target.X, e.Target.Y), e.UntilTick, e.WetUntil > tick, e.StopUntil > tick, e.BossPhase);
             }
-            Array.Sort(enemies, EnemyViewOrder);
+            Array.Sort(enemies, 0, EnemyActions.Count, EnemyViewComparer);
             var groups = new WaveGroupView[Groups.Count];
             for (var i = 0; i < groups.Length; i++) { var g = Groups[i]; groups[i] = new(g.Id, g.Source, new(g.Position.X, g.Position.Y), g.Phase, g.Mission, g.Training, g.ReservedFood, g.FrontRank, g.Formation); }
             var paths = new WorldPoint[Paths.Count];
@@ -93,7 +95,7 @@ namespace SowSiege.Core
             var items = new string[Items.Count]; Items.CopyTo(items);
             var evolutions = new string[Evolutions.Count]; Evolutions.CopyTo(evolutions);
             return new(d.Revision, d.ChapterId, Water, Timber, AvailableWorkers, BossDefeated,
-                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), Array.AsReadOnly(enemies), Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)), Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
+                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)), Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
         }
     }
 }

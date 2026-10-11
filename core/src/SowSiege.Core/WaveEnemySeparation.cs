@@ -19,7 +19,7 @@ namespace SowSiege.Core
         private readonly FieldState? field;
         private readonly MapTuning map;
         private readonly IReadOnlyDictionary<string, int> widths;
-        private readonly SpatialHash spatial;
+        private readonly WaveSeparationGrid spatial;
         private readonly List<EnemyState> candidates = new();
         private readonly int maximumWidth;
         private readonly Dictionary<int, (int Width, bool Charging)> bodies = new();
@@ -34,6 +34,14 @@ namespace SowSiege.Core
         }
 
         internal void Resolve(List<EnemyState> ordered)
+        {
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Separation);
+            try { ResolveCore(ordered); }
+            finally { diagnostics?.End(RuntimeStage.Separation); }
+        }
+
+        private void ResolveCore(List<EnemyState> ordered)
         {
             ordered.Sort(IdOrder);
             bodies.Clear();
@@ -92,7 +100,10 @@ namespace SowSiege.Core
                 }
                 if (!changed) { break; }
             }
-            SettleResiduals(ordered);
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Residual);
+            try { SettleResiduals(ordered); }
+            finally { diagnostics?.End(RuntimeStage.Residual); }
         }
 
         private void SettleResiduals(List<EnemyState> ordered)
@@ -135,16 +146,7 @@ namespace SowSiege.Core
         }
 
         private bool Clear(EnemyState enemy, Position candidate)
-        {
-            spatial.Collect(candidate, maximumWidth, candidates);
-            foreach (var other in candidates)
-            {
-                if (other.Id == enemy.Id || other.Id > enemy.Id && !Charging(other) || !bodies.TryGetValue(other.Id, out var body)) { continue; }
-                var minimum = (MinimumDistanceWidthSumNumerator * (bodies[enemy.Id].Width + body.Width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + 1;
-                if (candidate.DistanceSquared(other.Position) < (long)minimum * minimum) { return false; }
-            }
-            return true;
-        }
+            => spatial.Clear(enemy, candidate, maximumWidth, bodies, MinimumDistanceWidthSumNumerator, MinimumDistanceWidthSumDenominator);
 
         private bool Charging(EnemyState enemy) => bodies.TryGetValue(enemy.Id, out var body) && body.Charging;
         private void Move(EnemyState enemy, int dx, int dy)

@@ -127,7 +127,7 @@ namespace Tests.PlayMode
             var boss = snapshot.FirstPlayable.Bosses.FirstOrDefault(value => value.Rank == "boss" && value.State == "active");
             if (boss == null) return false;
             var enemy = snapshot.Frame.Enemies.FirstOrDefault(value => value.Id == boss.EntityId);
-            if (enemy == null) return false;
+            if (enemy.DefinitionId == null) return false;
             var settings = CanonicalContent.Presentation.Camera; const float aspect = 900f / 1600;
             var halfHeight = Mathf.Clamp((snapshot.Frame.EstateExtent + settings.EstatePadding) / aspect, settings.MinHalfHeight, settings.MaxHalfHeight);
             var visual = art.Resolve("enemy", enemy.DefinitionId, "idle");

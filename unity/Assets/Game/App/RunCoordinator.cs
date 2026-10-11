@@ -36,6 +36,10 @@ namespace Game.App
 #endif
         private readonly Dictionary<string,ContentDisplay> displays=new Dictionary<string,ContentDisplay>(StringComparer.Ordinal);
         private RunFrame previous;
+        private InteractiveSession snapshotSession;
+        private RunSnapshotBuffer[] runSnapshotBuffers;
+        private WaveSnapshotBuffer[] waveSnapshotBuffers;
+        private int snapshotSlot;
         private WorldRenderer world;
         private UiHud hud;
         private FirstPlayableAudio sound;
@@ -371,12 +375,27 @@ namespace Game.App
         {
             var probeSnapshotStart=ProbeEnabled?ProbeTimestamp():0;
             using var allocationScope=smoothness.Scope(SmoothnessScope.CoreSnapshot);
+            if(!ReferenceEquals(snapshotSession,Session))
+            {
+                snapshotSession=Session;snapshotSlot=0;
+                var capacity=runCatalog.Tuning.World.Threat.EnemyCap;
+                runSnapshotBuffers=runCatalog.WaveRuntime==null?null:new[]{new RunSnapshotBuffer(capacity),new RunSnapshotBuffer(capacity)};
+                waveSnapshotBuffers=runCatalog.WaveRuntime==null?null:new[]{new WaveSnapshotBuffer(capacity),new WaveSnapshotBuffer(capacity)};
+            }
             RunFrame frame;FirstPlayableFrame firstPlayable;
-            using(RunProfilerMarkers.CaptureRun.Auto())frame=Session.View.CaptureFrame();
+            using(RunProfilerMarkers.CaptureRun.Auto())frame=runSnapshotBuffers==null?Session.View.CaptureFrame():((IBufferedRunView)Session.View).CaptureFrame(runSnapshotBuffers[snapshotSlot]);
             using(RunProfilerMarkers.CaptureFirstPlayable.Auto())firstPlayable=Session.View.CaptureFirstPlayable();
-            Wave=(Session.View as IWaveRunView)?.CaptureWaveRuntime();
+            Wave=waveSnapshotBuffers==null?(Session.View as IWaveRunView)?.CaptureWaveRuntime():((IBufferedWaveRunView)Session.View).CaptureWaveRuntime(waveSnapshotBuffers[snapshotSlot]);
+            snapshotSlot=1-snapshotSlot;
             Frame=frame;FirstPlayable=firstPlayable ?? WavePresentation.Envelope(runCatalog,frame,Session.View.CaptureCards(),Wave);
-            if(Wave!=null)WaveFrameAccepted?.Invoke(Wave);
+            var subscribers=WaveFrameAccepted;
+            if(Wave!=null&&subscribers!=null)
+            {
+                // Public event consumers may retain frames; detach only the borrowed enemy storage at this explicit recording boundary.
+                var enemies=new WaveEnemyView[Wave.Enemies.Count];
+                for(var i=0;i<enemies.Length;i++)enemies[i]=Wave.Enemies[i];
+                subscribers(Wave with {Enemies=Array.AsReadOnly(enemies)});
+            }
             if(ProbeEnabled)probeSnapshotMs+=ProbeElapsed(probeSnapshotStart);
         }
         private void ShowCards()

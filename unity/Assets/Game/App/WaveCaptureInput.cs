@@ -82,7 +82,7 @@ namespace Game.App
                     var radius=clearance+(catalog!=null&&catalog.Enemies.TryGetValue(enemy.DefinitionId,out var rule)?rule.Range:0);
                     risk+=Math.Max(0,1-Math.Sqrt(Distance(point,enemy.Position))/Math.Max(1,radius));
                     var tell=wave.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);
-                    if(tell==null||(tell.Phase!="tell-charge"&&tell.Phase!="charge"&&tell.Phase!="tell-water"&&tell.Phase!="water"))continue;
+                    if(tell.Phase==null||(tell.Phase!="tell-charge"&&tell.Phase!="charge"&&tell.Phase!="tell-water"&&tell.Phase!="water"))continue;
                     var dx=(double)tell.Target.X-tell.Origin.X;var dy=(double)tell.Target.Y-tell.Origin.Y;
                     var denominator=dx*dx+dy*dy;
                     var t=denominator==0?0:Math.Max(0,Math.Min(1,((point.X-tell.Origin.X)*dx+(point.Y-tell.Origin.Y)*dy)/denominator));

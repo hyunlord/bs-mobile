@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SowSiege.Core
 {
@@ -22,6 +21,8 @@ namespace SowSiege.Core
         private readonly List<WaveEnemyDefinition> spawnRules = new();
         private static readonly Comparison<WaveEnemyDefinition> SpawnOrder = (a, b) => StringComparer.Ordinal.Compare(a.Id, b.Id);
         private static readonly Comparison<EnemyState> EnemyOrder = (a, b) => a.Id.CompareTo(b.Id);
+        private bool ripeAvailabilityKnown, lordNearRipe;
+        private Position ripeAvailabilityLord;
         private WaveRuntimeState State => world.WaveRuntime!;
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
@@ -34,7 +35,9 @@ namespace SowSiege.Core
             Spawn();
             if (interactive?.Field?.ArenaActive == true) { RecycleFieldEnemies(); }
             var pathsCollected = false;
-            State.Detours.RemoveAll(d => d.UntilTick <= world.Tick);
+            ripeAvailabilityKnown = false;
+            for (var index = State.Detours.Count - 1; index >= 0; index--)
+            { if (State.Detours[index].UntilTick <= world.Tick) { State.Detours.RemoveAt(index); } }
             liveEnemies.Clear();
             foreach (var enemy in world.Enemies) { if (enemy.Health > 0) { liveEnemies.Add(enemy); } }
             liveEnemies.Sort(EnemyOrder);
@@ -183,8 +186,8 @@ namespace SowSiege.Core
                 enemy.Position = enemy.Position.MoveToward(action.Target, rule.ProjectileSpeed);
                 if (operations.Boss)
                 {
-                    foreach (var building in State.Work.Where(w => w.Kind == "building" && w.Health > 0 && OnSegment(w.Position, previous, enemy.Position, body.Range)))
-                    { if (State.Completed.Add("charge-building:" + enemy.Id + ":" + action.UntilTick + ":" + building.Id)) { DamageBuilding(building, rule.Id, body.Damage); } }
+                    foreach (var building in State.Work)
+                    { if (building.Kind != "building" || building.Health <= 0 || !OnSegment(building.Position, previous, enemy.Position, body.Range)) { continue; } if (State.Completed.Add("charge-building:" + enemy.Id + ":" + action.UntilTick + ":" + building.Id)) { DamageBuilding(building, rule.Id, body.Damage); } }
                 }
                 if (!action.Hit && OnSegment(world.Lord, previous, enemy.Position, body.Range)) { Hurt(rule.Id, body.Damage); action.Hit = true; }
                 if (enemy.Position == action.Target || world.Tick >= action.UntilTick) { Recover(rule, action); }
@@ -193,8 +196,8 @@ namespace SowSiege.Core
             if (action.Phase == "water")
             {
                 if (!action.Hit && OnSegment(world.Lord, action.Origin, action.Target, body.Range)) { Hurt(rule.Id, body.Damage); action.Hit = true; }
-                foreach (var work in State.Work.Where(w => w.Kind == "grain" && !w.Complete && w.Health > 0 && w.DormantUntil < action.UntilTick && OnSegment(w.Position, action.Origin, action.Target, body.Range)))
-                { work.DormantUntil = action.UntilTick; State.Emit(world.Tick, "growth-dormant", rule.Id, work.Id, work.Position, work.Position, action.UntilTick - world.Tick); }
+                foreach (var work in State.Work)
+                { if (work.Kind != "grain" || work.Complete || work.Health <= 0 || work.DormantUntil >= action.UntilTick || !OnSegment(work.Position, action.Origin, action.Target, body.Range)) { continue; } work.DormantUntil = action.UntilTick; State.Emit(world.Tick, "growth-dormant", rule.Id, work.Id, work.Position, work.Position, action.UntilTick - world.Tick); }
                 if (world.Tick >= action.UntilTick) { action.BossPhase++; Recover(rule, action); }
                 return;
             }
@@ -209,7 +212,9 @@ namespace SowSiege.Core
                 }
                 else if (action.Phase == "tell-intercept")
                 {
-                    var group = State.Groups.FirstOrDefault(g => g.Id == action.TargetId && g.Health > 0 && g.Phase != "idle");
+                    WaveGroup? group = null;
+                    foreach (var candidate in State.Groups)
+                    { if (candidate.Id == action.TargetId && candidate.Health > 0 && candidate.Phase != "idle") { group = candidate; break; } }
                     if (group is not null && OnSegment(group.Position, enemy.Position, enemy.Position, body.Range))
                     {
                         var cover = group.Phase == "returning" ? CoverFor(enemy, group, body.Range) : null;
@@ -221,20 +226,23 @@ namespace SowSiege.Core
                 }
                 else if (action.TargetId >= 0)
                 {
-                    var crop = State.Work.FirstOrDefault(w => w.Id == action.TargetId && w.Health > 0 && w.Kind == "grain" && (operations.Action == "consume-seed" ? !w.Complete : w.Complete));
+                    WaveWork? crop = null;
+                    foreach (var candidate in State.Work)
+                    { if (candidate.Id == action.TargetId && candidate.Health > 0 && candidate.Kind == "grain" && (operations.Action == "consume-seed" ? !candidate.Complete : candidate.Complete)) { crop = candidate; break; } }
                     if (crop is not null && crop.Position.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range)
                     {
                         if (crop.Protected && crop.ParentId >= 0)
                         {
                             State.Completed.Add("roof-used:" + crop.ParentId);
-                            foreach (var sibling in State.Work.Where(w => w.ParentId == crop.ParentId)) { sibling.Protected = false; }
-                            var roof = State.Work.FirstOrDefault(w => w.Id == crop.ParentId);
+                            WaveWork? roof = null;
+                            foreach (var sibling in State.Work)
+                            { if (sibling.ParentId == crop.ParentId) { sibling.Protected = false; } if (roof is null && sibling.Id == crop.ParentId) { roof = sibling; } }
                             if (roof is not null) { DamageBuilding(roof, rule.Id, body.Damage); }
                             State.Emit(world.Tick, "roof-block", rule.Id, crop.Id, crop.Position, crop.Position, 1);
                         }
                         else
                         {
-                            crop.Health = 0; State.Emit(world.Tick, operations.Action == "consume-seed" ? "seed-theft" : "ripe-consumed", rule.Id, crop.Id, crop.Position, crop.Position, 1);
+                            crop.Health = 0; ripeAvailabilityKnown = false; State.Emit(world.Tick, operations.Action == "consume-seed" ? "seed-theft" : "ripe-consumed", rule.Id, crop.Id, crop.Position, crop.Position, 1);
                             if (operations.Action == "consume-seed")
                             {
                                 subscriptions.SeedEaten(crop);
@@ -300,8 +308,7 @@ namespace SowSiege.Core
             {
                 if (enemy.Position.DistanceSquared(world.Lord) > (long)body.Range * body.Range * Definition.Behavior.RangedRangeMultiplier * Definition.Behavior.RangedRangeMultiplier)
                 { enemy.Position = enemy.Position.MoveToward(world.Lord, speed); }
-                else if (State.Work.Any(w => w.Kind == "grain" && w.Health > 0 && w.Complete
-                    && OnSegment(world.Lord, w.Position, w.Position, catalog.Tuning.World.Farms.Spacing)))
+                else if (LordNearRipe())
                 { Tell(enemy, action, rule, "shot", world.Lord); }
                 return;
             }
@@ -354,20 +361,39 @@ namespace SowSiege.Core
         {
             var dx = (long)returning.Position.X - enemy.Position.X; var dy = (long)returning.Position.Y - enemy.Position.Y;
             var length = dx * dx + dy * dy;
-            return State.Groups.Where(g => g.Id != returning.Id && g.Health > 0 && g.Training > 0 && g.Formation == "cover" && g.Phase != "idle" && g.Phase != "returning")
-                .Where(g =>
-                {
-                    var dot = ((long)g.Position.X - enemy.Position.X) * dx + ((long)g.Position.Y - enemy.Position.Y) * dy;
-                    return dot > 0 && dot < length && OnSegment(g.Position, enemy.Position, returning.Position, range)
-                        && OnSegment(g.Position, enemy.Position, enemy.Position, range);
-                }).OrderBy(g => g.Position.DistanceSquared(enemy.Position)).ThenBy(g => g.Id).FirstOrDefault();
+            WaveGroup? nearest = null;
+            var nearestDistance = long.MaxValue;
+            foreach (var group in State.Groups)
+            {
+                if (group.Id == returning.Id || group.Health <= 0 || group.Training <= 0 || group.Formation != "cover" || group.Phase == "idle" || group.Phase == "returning") { continue; }
+                var dot = ((long)group.Position.X - enemy.Position.X) * dx + ((long)group.Position.Y - enemy.Position.Y) * dy;
+                if (dot <= 0 || dot >= length || !OnSegment(group.Position, enemy.Position, returning.Position, range) || !OnSegment(group.Position, enemy.Position, enemy.Position, range)) { continue; }
+                var distance = group.Position.DistanceSquared(enemy.Position);
+                if (nearest is null || distance < nearestDistance || distance == nearestDistance && group.Id < nearest.Id)
+                { nearest = group; nearestDistance = distance; }
+            }
+            return nearest;
+        }
+
+        private bool LordNearRipe()
+        {
+            // Enemy-phase writes can consume grain or move the lord through contact knockback.
+            // Work growth/harvest runs later; the next enemy Tick always starts a fresh cache.
+            if (ripeAvailabilityKnown && ripeAvailabilityLord == world.Lord) { return lordNearRipe; }
+            ripeAvailabilityKnown = true; ripeAvailabilityLord = world.Lord; lordNearRipe = false;
+            foreach (var work in State.Work)
+            {
+                if (work.Kind == "grain" && work.Health > 0 && work.Complete && OnSegment(world.Lord, work.Position, work.Position, catalog.Tuning.World.Farms.Spacing))
+                { lordNearRipe = true; break; }
+            }
+            return lordNearRipe;
         }
 
         private void DamageBuilding(WaveWork building, string source, int damage)
         {
             var dealt = Math.Min(building.Health, damage); building.Health -= dealt;
             building.Complete = false; building.Progress = 0; building.ReadyTick = -1;
-            foreach (var crop in State.Work.Where(w => w.ParentId == building.Id)) { crop.Protected = false; }
+            foreach (var crop in State.Work) { if (crop.ParentId == building.Id) { crop.Protected = false; } }
             State.Emit(world.Tick, "building-hit", source, building.Id, building.Position, building.Position, dealt);
         }
 

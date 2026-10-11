@@ -14,7 +14,7 @@ namespace Game.App
             {
                 if(definition.Enemies[enemy.DefinitionId].Kind!=WaveEnemyKind.FloodBoss)continue;
                 var state=Wave.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);
-                if(state!=null&&bossPhaseCue.Accept(enemy.Id,state.Phase))waveSound.Play("boss-tusk-stuck");
+                if(state.Phase!=null&&bossPhaseCue.Accept(enemy.Id,state.Phase))waveSound.Play("boss-tusk-stuck");
             }
             foreach(var value in Wave.Events)
             {
@@ -36,7 +36,7 @@ namespace Game.App
                 {
                     var enemy=definition.Enemies[value.Source];
                     var view=Wave.Enemies.FirstOrDefault(e=>e.Id==value.SubjectId);
-                    cue=enemy.Kind==WaveEnemyKind.FloodBoss?(view?.Phase=="tell-water"?"boss-bank-break":"boss-tusk-charge"):"enemy-"+suffix+"-tell";
+                    cue=enemy.Kind==WaveEnemyKind.FloodBoss?(view.Phase=="tell-water"?"boss-bank-break":"boss-tusk-charge"):"enemy-"+suffix+"-tell";
                 }
                 else if(value.Kind=="reward-created")
                 {

@@ -287,4 +287,74 @@ public sealed class WaveEnemyTests
         Assert.Equal(93, world.LordHealth);
     }
 
+    [Fact]
+    public void RipeAvailabilityRefreshesBetweenShootersWhenAGrazerConsumesInTheSameTick()
+    {
+        var (_, world, first, catalog) = Arena(WaveEnemyKind.Ranged);
+        world.Lord = first.Position;
+        var grazerId = "test:grazer";
+        ((Dictionary<string, EnemyDefinition>)catalog.Enemies).Add(grazerId, catalog.Enemies[first.Definition] with { Id = grazerId });
+        ((Dictionary<string, WaveEnemyDefinition>)catalog.WaveRuntime!.Enemies).Add(grazerId,
+            new(grazerId, "design:test", WaveEnemyKind.RipeGrazer, 3, 10, 4, 30, 10000));
+        var crop = new WaveWork { Id = 50, Kind = "grain", Position = world.Lord, Complete = true, Health = 1 };
+        world.WaveRuntime!.Work.Add(crop);
+        world.Enemies.Add(new() { Id = 2, Definition = grazerId, Position = world.Lord, Health = 100 });
+        world.Enemies.Add(new() { Id = 3, Definition = first.Definition, Position = world.Lord, Health = 100 });
+        world.WaveRuntime.EnemyActions[2] = new() { Phase = "tell-strike", TargetId = crop.Id };
+        var system = new WaveEnemySystem(catalog, world, new(1, true), null);
+        Tick(system, world);
+        Assert.Equal("tell-shot", world.WaveRuntime.EnemyActions[1].Phase);
+        Assert.Equal(0, crop.Health);
+        Assert.Equal("approach", world.WaveRuntime.EnemyActions[3].Phase);
+    }
+
+    [Fact]
+    public void RangedApproachDoesNotAllocatePerEnemyAfterWarmup()
+    {
+        var (system, world, first, _) = Arena(WaveEnemyKind.Ranged);
+        world.Lord = first.Position;
+        for (var id = 2; id <= 200; id++)
+            world.Enemies.Add(new() { Id = id, Definition = first.Definition, Position = first.Position, Health = 100 });
+        Tick(system, world, 20);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        Tick(system, world, 20);
+        var crowdedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
+        world.Enemies.RemoveRange(1, world.Enemies.Count - 1);
+        Tick(system, world, 20);
+        before = GC.GetAllocatedBytesForCurrentThread();
+        Tick(system, world, 20);
+        var singleBytes = GC.GetAllocatedBytesForCurrentThread() - before;
+        Assert.Equal(singleBytes, crowdedBytes);
+    }
+
+    [Fact]
+    public void RipeAvailabilityRefreshesAfterSameTickContactMovesLord()
+    {
+        var (_, world, first, catalog) = Arena(WaveEnemyKind.Ranged);
+        var meleeId = "test:contact";
+        var bodies = (Dictionary<string, EnemyDefinition>)catalog.Enemies;
+        bodies[first.Definition] = bodies[first.Definition] with { Range = 1000 };
+        bodies.Add(meleeId, bodies[first.Definition] with { Id = meleeId });
+        ((Dictionary<string, WaveEnemyDefinition>)catalog.WaveRuntime!.Enemies).Add(meleeId,
+            new(meleeId, "design:test", WaveEnemyKind.Pursuer, 3, 10, 4, 30, 10000));
+        catalog = catalog with {
+            FirstPlayable = null,
+            Tuning = catalog.Tuning with { World = catalog.Tuning.World with {
+                Farms = catalog.Tuning.World.Farms with { Spacing = 10 },
+                Map = catalog.Tuning.World.Map with { LordSpeed = 10 }
+            } },
+            WaveRuntime = catalog.WaveRuntime with { EnemySeparation = new(1, new Dictionary<string, int> { [first.Definition] = 1, [meleeId] = 1 }) }
+        };
+        world.Lord = new(1000, 1000); first.Position = new(500, 1000);
+        world.WaveRuntime!.Work.Add(new() { Id = 50, Kind = "grain", Position = world.Lord, Complete = true, Health = 1 });
+        world.Enemies.Add(new() { Id = 2, Definition = meleeId, Position = new(999, 1000), Health = 100 });
+        world.Enemies.Add(new() { Id = 3, Definition = first.Definition, Position = new(1500, 1000), Health = 100 });
+        var interactive = new InteractiveState { Feel = new(new(ImmediateContact: true)) };
+        var system = new WaveEnemySystem(catalog, world, new(1, true), interactive);
+        Tick(system, world);
+        Assert.Equal(new Position(1030, 1000), world.Lord);
+        Assert.Equal("tell-shot", world.WaveRuntime.EnemyActions[1].Phase);
+        Assert.Equal("approach", world.WaveRuntime.EnemyActions[3].Phase);
+    }
+
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SowSiege.Core
 {
@@ -16,17 +15,19 @@ namespace SowSiege.Core
         private readonly WaveEnemyQueries queries;
         private readonly bool ownsQueries;
         private readonly List<EnemyState> enemyCandidates = new();
+        private readonly Action<WaveWork, string, int, int> irrigate;
         private WaveRuntimeState State => world.WaveRuntime!;
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
         internal WaveWorkSystem(ContentCatalog catalog, WorldState world, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null, WaveEnemyQueries? queries = null)
-        { this.catalog = catalog; this.world = world; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null); growth = new(world, this.modules); completions = new(world, this.modules); }
+        { this.catalog = catalog; this.world = world; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null); growth = new(world, this.modules); completions = new(world, this.modules); irrigate = Irrigate; }
 
         private WaveGearDefinition Gear(string source)
         {
             if (Definition.Gear.TryGetValue(source, out var gear)) { return gear; }
             var evolution = Definition.Evolutions[source];
-            return Definition.Gear[evolution.InputIds.First(id => modules.Has(id, "unit:remnant-create"))];
+            foreach (var id in evolution.InputIds) { if (modules.Has(id, "unit:remnant-create")) { return Definition.Gear[id]; } }
+            throw new InvalidOperationException("Evolution has no remnant creation input.");
         }
         private bool Near(Position a, Position b, int radius) => a.DistanceSquared(b) <= (long)radius * radius;
         private Position Clamp(Position p) => interactive?.Field is { } field ? field.Constrain(p) : new(Math.Clamp(p.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(p.Y, 0, catalog.Tuning.World.Map.Height));
@@ -38,10 +39,13 @@ namespace SowSiege.Core
             var at = Clamp(position.MoveToward(new(position.X + direction.X * gear.Range, position.Y + direction.Y * gear.Range), Math.Max(1, gear.Range / WaveGeometry.MidpointDivisor)));
             if (Definition.Evolutions.TryGetValue(gear.Id, out var evolution) && modules.Has(evolution.Id, "unit:paired-growth"))
             {
-                var builder = Definition.Gear[evolution.InputIds.First(id => modules.Is(id, "unit:remnant-create", "target", "building"))];
-                var seed = Definition.Gear[evolution.InputIds.First(id => modules.Is(id, "unit:remnant-create", "remnantKey", "grain-patch"))];
+                var builder = PairedInput(evolution, "target", "building");
+                var seed = PairedInput(evolution, "remnantKey", "grain-patch");
                 var building = Build(builder, at);
-                if (building is not null && !State.Work.Any(w => w.Kind == "grain" && w.Health > 0 && w.ParentId == building.Id))
+                var hasPlot = false;
+                if (building is not null)
+                { foreach (var work in State.Work) { if (work.Kind == "grain" && work.Health > 0 && work.ParentId == building.Id) { hasPlot = true; break; } } }
+                if (building is not null && !hasPlot)
                 { var plot = Plant(seed, Clamp(new(building.Position.X + Math.Max(1, seed.WorkRadius / WaveGeometry.MidpointDivisor), building.Position.Y))); if (plot is not null) { plot.ParentId = building.Id; } }
                 return;
             }
@@ -49,8 +53,15 @@ namespace SowSiege.Core
             {
                 case "grain-patch": Plant(Gear(gear.Id), at); break;
                 case "seasonal-pool":
-                    var pool = State.Work.Where(w => w.Kind == "water" && Near(w.Position, at, Math.Max(1, gear.WorkRadius))).OrderBy(w => w.Id).FirstOrDefault();
-                    if (pool is null && State.Work.Count(w => w.Kind == "water") < gear.Capacity) { pool = Add(gear, "water", at); }
+                    WaveWork? pool = null;
+                    var pools = 0;
+                    foreach (var work in State.Work)
+                    {
+                        if (work.Kind != "water") { continue; }
+                        pools++;
+                        if (Near(work.Position, at, Math.Max(1, gear.WorkRadius)) && (pool is null || work.Id < pool.Id)) { pool = work; }
+                    }
+                    if (pool is null && pools < gear.Capacity) { pool = Add(gear, "water", at); }
                     if (pool is not null && pool.Health <= 0) { pool.Health = 1; Emit("pool-repaired", gear.Id, pool.Id, pool.Position); }
                     if (State.Water > 0 && pool is not null)
                     { State.Water--; pool.WetUntil = world.Tick + Definition.WetTicks; Emit("water-spent-attack", gear.Id, pool.Id, at, 1); }
@@ -60,6 +71,13 @@ namespace SowSiege.Core
                 case "levy-company": Recruit(gear); break;
                 default: throw new ArgumentException("Unsupported remnant creation unit.");
             }
+        }
+
+        private WaveGearDefinition PairedInput(WaveEvolutionDefinition evolution, string parameter, string value)
+        {
+            foreach (var id in evolution.InputIds)
+            { if (modules.Is(id, "unit:remnant-create", parameter, value)) { return Definition.Gear[id]; } }
+            throw new InvalidOperationException("Evolution has no matching remnant creation input.");
         }
 
         internal void PlantSweep(string seedSource, Position origin, Position direction, int range, int count)
@@ -96,13 +114,20 @@ namespace SowSiege.Core
         }
         private WaveWork? Build(WaveGearDefinition gear, Position at)
         {
-            var existing = State.Work.Where(w => w.Kind == "building" && Near(w.Position, at, gear.WorkRadius)).OrderBy(w => w.Id).FirstOrDefault();
+            WaveWork? existing = null;
+            var buildings = 0;
+            foreach (var work in State.Work)
+            {
+                if (work.Kind != "building") { continue; }
+                buildings++;
+                if (Near(work.Position, at, gear.WorkRadius) && (existing is null || work.Id < existing.Id)) { existing = work; }
+            }
             if (existing is not null)
             {
                 if (existing.Health <= 0) { existing.Health = Math.Max(1, gear.Capacity); existing.Complete = false; existing.Progress = 0; existing.ReadyTick = -1; Emit("repair-start", existing.Source, existing.Id, existing.Position); }
                 return existing;
             }
-            if (State.Work.Count(w => w.Kind == "building") >= gear.Capacity) { return null; }
+            if (buildings >= gear.Capacity) { return null; }
             return Add(gear, "building", at);
         }
 
@@ -119,7 +144,9 @@ namespace SowSiege.Core
                     if (w.DormantUntil > world.Tick) { continue; }
                     if (Definition.DryAfterTicks > 0 && !w.Complete && world.Tick >= w.ReadyTick) { w.Dry = true; }
                     if (w.Dry) { continue; }
-                    var roof = w.ParentId < 0 ? null : State.Work.FirstOrDefault(b => b.Id == w.ParentId);
+                    WaveWork? roof = null;
+                    if (w.ParentId >= 0)
+                    { foreach (var candidate in State.Work) { if (candidate.Id == w.ParentId) { roof = candidate; break; } } }
                     if (w.ParentId >= 0 && (roof is null || !roof.Complete || roof.Health <= 0)) { w.Protected = false; continue; }
                     w.Protected = roof is not null && !State.Completed.Contains("roof-used:" + roof.Id);
                     if (!w.Complete && growth.AdvanceTime(w, gear)) { w.Complete = true; Emit("growth-complete", w.Source, w.Id, w.Position); }
@@ -170,9 +197,12 @@ namespace SowSiege.Core
         private void TickRain()
         {
             if (Definition.WaterRefillTicks <= 0 || world.Tick <= 0 || world.Tick % Definition.WaterRefillTicks != 0 || !State.Completed.Add("rain:" + world.Tick)) { return; }
-            foreach (var plot in State.Work.Where(w => w.Kind == "grain" && w.Health > 0 && !w.Complete))
-            { plot.Dry = false; plot.ReadyTick = world.Tick + Definition.DryAfterTicks; }
-            var pool = State.Work.FirstOrDefault(w => w.Kind == "water" && w.Health > 0);
+            WaveWork? pool = null;
+            foreach (var plot in State.Work)
+            {
+                if (plot.Kind == "grain" && plot.Health > 0 && !plot.Complete) { plot.Dry = false; plot.ReadyTick = world.Tick + Definition.DryAfterTicks; }
+                if (pool is null && plot.Kind == "water" && plot.Health > 0) { pool = plot; }
+            }
             if (pool is null) { Emit("rain-fall", "", -1, world.Lord); return; }
             var fill = Definition.WaterCapacity - State.Water; State.Water += fill;
             Emit("rain-fill", pool.Source, pool.Id, pool.Position, fill);
@@ -186,7 +216,9 @@ namespace SowSiege.Core
                 { if (!State.EnemyActions.TryGetValue(enemy.Id, out var action)) { action = new(); State.EnemyActions[enemy.Id] = action; } action.WetUntil = world.Tick + Definition.WetTicks; }
             }
             if (State.Water <= 0) { return; }
-            var plot = State.Work.Where(w => w.Kind == "grain" && w.Health > 0 && !w.Complete && w.Dry && Near(w.Position, pool.Position, gear.WorkRadius)).OrderBy(w => w.Id).FirstOrDefault();
+            WaveWork? plot = null;
+            foreach (var candidate in State.Work)
+            { if (candidate.Kind == "grain" && candidate.Health > 0 && !candidate.Complete && candidate.Dry && Near(candidate.Position, pool.Position, gear.WorkRadius) && (plot is null || candidate.Id < plot.Id)) { plot = candidate; } }
             if (plot is null) { return; }
             State.Water--; Irrigate(plot, pool.Source, pool.Id, gear.RewardExperience); pool.WetUntil = world.Tick + Definition.WetTicks;
         }
@@ -196,14 +228,15 @@ namespace SowSiege.Core
             plot.Dry = false; plot.Irrigated = true; plot.ReadyTick = world.Tick + Definition.DryAfterTicks;
             Reward(source, plot.Id, plot.Cycle, "irrigation", plot.Position, experience); Emit("irrigation-complete", source, plot.Id, plot.Position, 1);
         }
-        private void TickCarriedWater() => subscriptions.CarryWater(Irrigate);
+        private void TickCarriedWater() => subscriptions.CarryWater(irrigate);
 
         internal void Harvest(WaveWork work)
         {
             if (work.Kind != "grain" || work.Health <= 0 || !work.Complete) { return; }
             if (!Reward(work.Source, work.Id, work.Cycle, "growth", work.Position, Gear(work.Source).RewardExperience)) { return; }
             work.Health = 0; world.Harvests++; world.Food++;
-            State.HarvestNearBuilding |= State.Work.Any(w => w.Kind == "building" && w.Health > 0 && w.Complete && Near(w.Position, work.Position, Gear(w.Source).WorkRadius));
+            foreach (var building in State.Work)
+            { if (building.Kind == "building" && building.Health > 0 && building.Complete && Near(building.Position, work.Position, Gear(building.Source).WorkRadius)) { State.HarvestNearBuilding = true; break; } }
             subscriptions.Harvest(work);
             Emit("harvest-complete", work.Source, work.Id, work.Position);
         }
@@ -222,10 +255,17 @@ namespace SowSiege.Core
         {
             queries.Collect(enemyCandidates, world.Lord, gear.Range);
             if (enemyCandidates.Count == 0) { return; }
-            var group = State.Groups.Where(g => g.Source == gear.Id && g.Health > 0 && g.Phase == "idle").OrderBy(g => g.Id).FirstOrDefault();
+            WaveGroup? group = null;
+            var liveGroups = 0;
+            foreach (var candidate in State.Groups)
+            {
+                if (candidate.Health <= 0) { continue; }
+                liveGroups++;
+                if (candidate.Source == gear.Id && candidate.Phase == "idle" && (group is null || candidate.Id < group.Id)) { group = candidate; }
+            }
             if (group is null)
             {
-                if (subscriptions.WaitForReturnedGroup(gear.Id) || State.AvailableWorkers <= 0 || State.Groups.Count(g => g.Health > 0) >= Definition.GroupCap) { return; }
+                if (subscriptions.WaitForReturnedGroup(gear.Id) || State.AvailableWorkers <= 0 || liveGroups >= Definition.GroupCap) { return; }
                 State.AvailableWorkers--; group = new() { Id = world.AllocateId(), Source = gear.Id, Position = world.Lord, Health = Math.Max(1, gear.Capacity) }; State.Groups.Add(group);
             }
             else
@@ -258,7 +298,15 @@ namespace SowSiege.Core
                 if (group.Training > 0 && world.Tick < group.ReadyTick)
                 {
                     group.Formation = "cover";
-                    var returning = State.Groups.Where(g => g.Id != group.Id && g.Health > 0 && g.Phase == "returning").OrderBy(g => g.Position.DistanceSquared(group.Position)).ThenBy(g => g.Id).FirstOrDefault();
+                    WaveGroup? returning = null;
+                    var nearestDistance = long.MaxValue;
+                    foreach (var candidate in State.Groups)
+                    {
+                        if (candidate.Id == group.Id || candidate.Health <= 0 || candidate.Phase != "returning") { continue; }
+                        var distance = candidate.Position.DistanceSquared(group.Position);
+                        if (returning is null || distance < nearestDistance || distance == nearestDistance && candidate.Id < returning.Id)
+                        { returning = candidate; nearestDistance = distance; }
+                    }
                     var defended = returning?.Position ?? anchor;
                     var cover = defended.MoveToward(enemy.Position, Math.Max(1, gear.WorkRadius / WaveGeometry.MidpointDivisor));
                     group.Position = group.Position.MoveToward(cover, Math.Max(1, gear.Speed));
@@ -285,8 +333,12 @@ namespace SowSiege.Core
         }
         private void TraceWorkPath()
         {
-            if (!modules.Has(Definition.ChapterId, "unit:map-route-trace") || State.Paths.Count >= Definition.PathCapacity || !State.Work.Any(w => w.Health > 0 && Near(w.Position, world.Lord, Gear(w.Source).WorkRadius))) { return; }
-            if (State.Paths.Any(p => Near(p, world.Lord, Definition.PathSpacing))) { return; }
+            if (!modules.Has(Definition.ChapterId, "unit:map-route-trace") || State.Paths.Count >= Definition.PathCapacity) { return; }
+            var nearWork = false;
+            foreach (var work in State.Work)
+            { if (work.Health > 0 && Near(work.Position, world.Lord, Gear(work.Source).WorkRadius)) { nearWork = true; break; } }
+            if (!nearWork) { return; }
+            foreach (var path in State.Paths) { if (Near(path, world.Lord, Definition.PathSpacing)) { return; } }
             State.Paths.Add(world.Lord); Emit("work-path", "", -1, world.Lord);
         }
     }

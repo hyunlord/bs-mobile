@@ -33,7 +33,23 @@ namespace SowSiege.Core
         FirstPlayableFrame? CaptureFirstPlayable();
     }
     public sealed record LordView(WorldPoint Position, WorldPoint Facing, int Health, int MaxHealth);
-    public sealed record EnemyView(int Id, string DefinitionId, WorldPoint Position, int Health, int MaxHealth);
+    public readonly struct EnemyView : IEquatable<EnemyView>
+    {
+        public int Id { get; }
+        public string DefinitionId { get; }
+        public WorldPoint Position { get; }
+        public int Health { get; }
+        public int MaxHealth { get; }
+        public EnemyView(int Id, string DefinitionId, WorldPoint Position, int Health, int MaxHealth)
+        { this.Id = Id; this.DefinitionId = DefinitionId; this.Position = Position; this.Health = Health; this.MaxHealth = MaxHealth; }
+        public bool Equals(EnemyView other) => Id == other.Id && DefinitionId == other.DefinitionId && Position.X == other.Position.X && Position.Y == other.Position.Y && Health == other.Health && MaxHealth == other.MaxHealth;
+        public override bool Equals(object? obj) => obj is EnemyView other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(Id, DefinitionId, Position.X, Position.Y, Health, MaxHealth);
+        public static bool operator ==(EnemyView left, EnemyView right) => left.Equals(right);
+        public static bool operator !=(EnemyView left, EnemyView right) => !left.Equals(right);
+        public void Deconstruct(out int Id, out string DefinitionId, out WorldPoint Position, out int Health, out int MaxHealth)
+        { Id = this.Id; DefinitionId = this.DefinitionId; Position = this.Position; Health = this.Health; MaxHealth = this.MaxHealth; }
+    }
     public sealed record FarmView(int Id, string SourceId, WorldPoint Position, int Stage, bool Ripe);
     public sealed record BuildingView(int Id, string SourceId, WorldPoint Position, bool Built, int Health);
     public sealed record PersonView(int Id, string SourceId, WorldPoint Position, string Role, int Members, int Health);
