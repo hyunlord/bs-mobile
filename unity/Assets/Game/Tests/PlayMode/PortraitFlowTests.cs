@@ -293,6 +293,7 @@ namespace Tests.PlayMode
             while (app.CurrentScreenName != expected && app.Error == null && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(app.Error, Is.Null);
             Assert.That(app.CurrentScreenName, Is.EqualTo(expected));
+            yield return null;
             Canvas.ForceUpdateCanvases();
         }
 

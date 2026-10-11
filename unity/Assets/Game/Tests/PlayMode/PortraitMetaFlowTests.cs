@@ -203,6 +203,7 @@ namespace Tests.PlayMode
             while ((app = Object.FindFirstObjectByType<RunCoordinator>()) == null && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(app, Is.Not.Null); yield return null; Assert.That(app.Error, Is.Null);
             app.Ui.SetPortraitMobileSimulation(true); app.Ui.SynchronizeViewport(); Canvas.ForceUpdateCanvases(); yield return null;
+            yield return ScreenIs("Title");
         }
         IEnumerator ScreenIs(string name)
         {
