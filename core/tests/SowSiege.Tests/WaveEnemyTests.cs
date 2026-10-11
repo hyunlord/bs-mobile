@@ -314,7 +314,9 @@ public sealed class WaveEnemyTests
         var (system, world, first, _) = Arena(WaveEnemyKind.Ranged);
         world.Lord = first.Position;
         for (var id = 2; id <= 200; id++)
+        {
             world.Enemies.Add(new() { Id = id, Definition = first.Definition, Position = first.Position, Health = 100 });
+        }
         Tick(system, world, 20);
         var before = GC.GetAllocatedBytesForCurrentThread();
         Tick(system, world, 20);
@@ -337,12 +339,17 @@ public sealed class WaveEnemyTests
         bodies.Add(meleeId, bodies[first.Definition] with { Id = meleeId });
         ((Dictionary<string, WaveEnemyDefinition>)catalog.WaveRuntime!.Enemies).Add(meleeId,
             new(meleeId, "design:test", WaveEnemyKind.Pursuer, 3, 10, 4, 30, 10000));
-        catalog = catalog with {
+        catalog = catalog with
+        {
             FirstPlayable = null,
-            Tuning = catalog.Tuning with { World = catalog.Tuning.World with {
-                Farms = catalog.Tuning.World.Farms with { Spacing = 10 },
-                Map = catalog.Tuning.World.Map with { LordSpeed = 10 }
-            } },
+            Tuning = catalog.Tuning with
+            {
+                World = catalog.Tuning.World with
+                {
+                    Farms = catalog.Tuning.World.Farms with { Spacing = 10 },
+                    Map = catalog.Tuning.World.Map with { LordSpeed = 10 }
+                }
+            },
             WaveRuntime = catalog.WaveRuntime with { EnemySeparation = new(1, new Dictionary<string, int> { [first.Definition] = 1, [meleeId] = 1 }) }
         };
         world.Lord = new(1000, 1000); first.Position = new(500, 1000);

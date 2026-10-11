@@ -11,7 +11,9 @@ public sealed class WaveSeparationGridTests
     {
         var actors = new List<EnemyState>();
         for (var id = 1; id <= 24; id++)
+        {
             actors.Add(new() { Id = id, Health = 10, Position = new(-200 + id * 9, 30 + id % 3) });
+        }
         actors.Add(new() { Id = 25, Health = 10, Position = new(1000000, -1000000) });
         actors.Add(new() { Id = 26, Health = 10, Position = new(int.MinValue + 10000, 0) });
         var originalActors = actors.Select(e => new EnemyState { Id = e.Id, Health = e.Health, Position = e.Position }).ToList();
@@ -83,8 +85,13 @@ public sealed class WaveSeparationGridTests
             var world = new WorldState { WaveRuntime = new() };
             for (var id = 160; id >= 1; id--)
             {
-                world.Enemies.Add(new() { Id = id, Definition = id % 29 == 0 ? catalog.WaveRuntime.BossId : names[id % names.Length],
-                    Health = id % 23 == 0 ? 0 : 100, Position = new(x + id % 4, y + id % 3) });
+                world.Enemies.Add(new()
+                {
+                    Id = id,
+                    Definition = id % 29 == 0 ? catalog.WaveRuntime.BossId : names[id % names.Length],
+                    Health = id % 23 == 0 ? 0 : 100,
+                    Position = new(x + id % 4, y + id % 3)
+                });
                 world.WaveRuntime.EnemyActions[id] = new() { Phase = id % 17 == 0 ? "charge" : "tell-strike", UntilTick = 2, Origin = new(x, y), Target = new(x + 700, y + 700) };
             }
             return world;
