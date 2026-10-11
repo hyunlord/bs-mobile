@@ -122,6 +122,8 @@ namespace Tests.PlayMode
             app.NavigateBack();
             yield return WaitForScreen("Estate");
             Click("Estate.Depart");
+            yield return WaitForScreen("Departure");
+            Click("Departure.Start");
             yield return WaitForScreen("Run");
             Assert.That(app.Session, Is.Not.Null);
         }
@@ -245,6 +247,8 @@ namespace Tests.PlayMode
             Click("Abandon.Confirm");
             yield return WaitForScreen("Summary");
             Click("Summary.Retry");
+            yield return WaitForScreen("Departure");
+            Click("Departure.Start");
             yield return WaitForScreen("Run");
             Assert.That(app.Session, Is.Not.SameAs(originalSession));
             PrepareSameSequenceOffer();

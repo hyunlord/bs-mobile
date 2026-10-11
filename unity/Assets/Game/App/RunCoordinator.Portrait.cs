@@ -45,14 +45,7 @@ namespace Game.App
             var button = PortraitWidgets.Button(Ui, root, label, action, 16, Ui.SafeRoot.rect.height - bottom, Ui.SafeRoot.rect.width - 32, 48);
             button.name = name; return button;
         }
-        void ShowPortraitEstate()
-        {
-            screen = UiScreen.Estate; MenuOpen = true; ClearUi(); hud = null;
-            var root = PortraitPage("Portrait.Estate", "영지 · 새봄의 터");
-            PortraitWidgets.Label(Ui, root, "집으로 돌아왔습니다", 16, 96, Ui.SafeRoot.rect.width - 32, 56);
-            PortraitAction(root, "Estate.Settings", "설정", () => ShowSettings(false), 120);
-            PortraitAction(root, "Estate.Depart", "출정", () => StartRun(), 64);
-        }
+        void ShowPortraitEstate() => ShowAccountEstate();
         public void OpenPause()
         {
             if (!Ui.PortraitEnabled || Session == null || finished) return;
@@ -82,6 +75,11 @@ namespace Game.App
                 case UiScreen.ConfirmAbandon: OpenPause(); break;
                 case UiScreen.Summary: StartCoroutine(ReturnMeta()); break;
                 case UiScreen.Title: case UiScreen.Estate: ShowPortraitExit(); break;
+                case UiScreen.Departure: ShowPortraitEstate(); break;
+                case UiScreen.CardPool: ShowPortraitDeparture(); break;
+                case UiScreen.Vassals: RestoreVassalOrigin(); break;
+                case UiScreen.Challenges: case UiScreen.Shop: case UiScreen.Idle: ShowPortraitEstate(); break;
+                case UiScreen.SpendConfirmation: ShowPortraitVassals(); break;
                 case UiScreen.ConfirmExit: if (exitOrigin == UiScreen.Title) ShowPortraitTitle(); else ShowPortraitEstate(); break;
             }
         }
@@ -100,6 +98,10 @@ namespace Game.App
                 case UiScreen.Estate: ShowPortraitEstate(); break;
                 case UiScreen.Summary: ShowSummary(); break;
                 case UiScreen.Pause: OpenPause(); break;
+                case UiScreen.Departure: ShowPortraitDeparture(); break;
+                case UiScreen.Vassals: ShowPortraitVassals(); break;
+                case UiScreen.Challenges: ShowPortraitChallenges(); break;
+                case UiScreen.Shop: case UiScreen.Idle: ShowPortraitPlaceholder(settingsOrigin); break;
                 default: ContinuePausedRun(); break;
             }
         }
@@ -145,6 +147,12 @@ namespace Game.App
                         case UiScreen.Settings: ShowSettings(Session != null && !finished); break;
                         case UiScreen.Summary: ShowSummary(); break;
                         case UiScreen.Cards: cardsFrame = null; ShowCards(); break;
+                        case UiScreen.Departure: ShowPortraitDeparture(); break;
+                        case UiScreen.Vassals: ShowPortraitVassals(); break;
+                        case UiScreen.Challenges: ShowPortraitChallenges(); break;
+                        case UiScreen.CardPool: ShowPortraitCardPool(); break;
+                        case UiScreen.SpendConfirmation: ShowPortraitSpend(); break;
+                        case UiScreen.Shop: case UiScreen.Idle: ShowPortraitPlaceholder(screen); break;
                         case UiScreen.ConfirmAbandon:
                             ClearUi(); PortraitRunPanels.ConfirmAbandon(Ui, AbandonCurrentRun, OpenPause); break;
                         case UiScreen.ConfirmExit:
@@ -161,14 +169,7 @@ namespace Game.App
             if (Ui != null && Ui.PortraitEnabled && !waveBenchmarkRequested && !visualReviewRequested && AutoplayCapture.Active == null
                 && (screen == UiScreen.Run || screen == UiScreen.Cards)) OpenPause();
         }
-        void ShowPortraitSummary()
-        {
-            var root = PortraitPage("Portrait.Summary", abandoned ? "포기" : completedSummary.Survived ? "클리어" : "쓰러짐");
-            var seconds = CurrentFrame.Tick / CurrentFrame.TickRate;
-            PortraitWidgets.Label(Ui, root, $"버틴 시간 {seconds / 60}:{seconds % 60:00}\n도달 레벨 {CurrentFrame.Level}", 16, 110, Ui.SafeRoot.rect.width - 32, 96);
-            PortraitAction(root, "Summary.Retry", "다시 출정", () => StartRun(), 120);
-            PortraitAction(root, "Summary.Estate", "영지로", () => StartCoroutine(ReturnMeta()), 64);
-        }
+        void ShowPortraitSummary() => ShowAccountResult();
         float PortraitHintLeft()
         {
             var count = FirstPlayable?.Charters.Count ?? 0;
