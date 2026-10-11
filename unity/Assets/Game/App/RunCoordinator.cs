@@ -47,9 +47,7 @@ namespace Game.App
                 if (CurrentWave == null) return null;
                 if (!ReferenceEquals(exportedWaveSource, CurrentWave))
                 {
-                    var enemies = new WaveEnemyView[CurrentWave.Enemies.Count];
-                    for (var i = 0; i < enemies.Length; i++) enemies[i] = CurrentWave.Enemies[i];
-                    exportedWave = CurrentWave with { Enemies = Array.AsReadOnly(enemies) };
+                    exportedWave = WaveSnapshotBuffer.Detach(CurrentWave);
                     exportedWaveSource = CurrentWave;
                 }
                 return exportedWave;

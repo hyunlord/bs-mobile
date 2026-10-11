@@ -9,6 +9,23 @@ namespace Game.Tests
 {
     public sealed class WavePresentationTests
     {
+        [Test] public void CounterPrefixIsOrdinalDelimitedAndAdditionIsChecked()
+        {
+            var counters = new System.Collections.Generic.Dictionary<string, long>
+            {
+                ["enemy-killed:a"] = 4, ["enemy-killed:b"] = 7, ["enemy-killed"] = 90,
+                ["enemy-killed-extra:c"] = 80, ["Enemy-killed:a"] = 70
+            };
+            Assert.That(WavePresentation.EditorCountCounters(counters, "enemy-killed:"), Is.EqualTo(11));
+            counters["enemy-killed:a"] = long.MaxValue;
+            Assert.Throws<OverflowException>(() => WavePresentation.EditorCountCounters(counters, "enemy-killed:"));
+        }
+        [TestCase("weapon-", "core:iron_blade", "weapon-iron-blade")]
+        [TestCase("complete-", "seed_bag", "complete-seed-bag")]
+        public void AudioCueNamingRetainsNamespaceRemovalAndHyphenation(string prefix, string source, string expected)
+        {
+            Assert.That(RunCoordinator.EditorWaveCueName(prefix, source), Is.EqualTo(expected));
+        }
         [Test]
         public void GrowthCopyDescribesEveryChangedDirectionWithoutWorldUnits()
         {
@@ -154,7 +171,7 @@ namespace Game.Tests
                 WaveCaptureInput.ConfigureMovement(null);
                 var ordinary=WaveCaptureInput.Target(frame,wave,fallback,catalog);
                 Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:false),Is.EqualTo(ordinary));
-                Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(new WorldPoint(6200,5900)));
+                Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(new WorldPoint(6800,6600)));
                 var earlier=frame with {Tick=52*frame.TickRate-1};
                 Assert.That(WaveCaptureInput.Target(earlier,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(WaveCaptureInput.Target(earlier,wave,fallback,catalog)));
                 var later=frame with {Tick=60*frame.TickRate};

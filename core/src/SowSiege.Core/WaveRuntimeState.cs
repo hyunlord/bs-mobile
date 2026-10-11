@@ -8,6 +8,19 @@ namespace SowSiege.Core
         public string Source = "", Kind = "";
         public Position Position;
         public bool Complete, Protected, Irrigated, Dry, ShipmentActive;
+        private WaveWorkView? cachedView;
+        internal WaveWorkView Capture(int tick)
+        {
+            var dormant = DormantUntil > tick; var wet = WetUntil > tick;
+            var view = cachedView;
+            if (view is not null && view.Id == Id && view.Source == Source && view.Kind == Kind &&
+                view.Position.X == Position.X && view.Position.Y == Position.Y && view.Progress == Progress &&
+                view.Required == Required && view.Complete == Complete && view.Health == Health &&
+                view.ParentId == ParentId && view.Protected == Protected && view.Dormant == dormant &&
+                view.Wet == wet && view.ShipmentActive == ShipmentActive && view.Dry == Dry) { return view; }
+            return cachedView = new(Id, Source, Kind, new(Position.X, Position.Y), Progress, Required, Complete,
+                Health, ParentId, Protected, dormant, wet, ShipmentActive, Dry);
+        }
     }
     internal sealed class WaveDetour { public Position Position; public int Radius, UntilTick; public string Source = ""; }
     internal sealed class WaveReward
@@ -68,11 +81,12 @@ namespace SowSiege.Core
         public WaveRuntimeFrame Capture(WaveRuntimeDefinition d, int tick, WaveSnapshotBuffer? buffer = null)
         {
             buffer?.Enemies.Begin(EnemyActions.Count);
+            buffer?.Counters.Capture(Counters);
             var work = new WaveWorkView[Work.Count];
             for (var i = 0; i < work.Length; i++)
             {
                 var w = Work[i];
-                work[i] = new(w.Id, w.Source, w.Kind, new(w.Position.X, w.Position.Y), w.Progress, w.Required, w.Complete, w.Health, w.ParentId, w.Protected, w.DormantUntil > tick, w.WetUntil > tick, w.ShipmentActive, w.Dry);
+                work[i] = w.Capture(tick);
             }
             var rewards = new WaveRewardView[Rewards.Count];
             for (var i = 0; i < rewards.Length; i++) { var r = Rewards[i]; rewards[i] = new(r.Id, r.Source, new(r.Position.X, r.Position.Y), r.Experience, r.CompletionKey); }
@@ -95,7 +109,7 @@ namespace SowSiege.Core
             var items = new string[Items.Count]; Items.CopyTo(items);
             var evolutions = new string[Evolutions.Count]; Evolutions.CopyTo(evolutions);
             return new(d.Revision, d.ChapterId, Water, Timber, AvailableWorkers, BossDefeated,
-                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)), Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
+                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), buffer is null ? new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)) : buffer.Counters, Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
         }
     }
 }

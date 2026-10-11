@@ -18,9 +18,18 @@ namespace Game.App
             var evolutions = catalog.WaveRuntime.Evolutions.Values.Select(e => new EvolutionClueView(e.Id, wave.Evolutions.Contains(e.Id), offers.Cards.Contains(e.Id), e.InputIds.Select(id => new EvolutionRequirement(id, 1)).ToArray(), null)).ToArray();
             var bosses = frame.Enemies.Where(e => e.DefinitionId == catalog.WaveRuntime.BossId).Select(e => new BossView(e.DefinitionId, e.Id, "boss", "active", e.Health, catalog.Enemies[e.DefinitionId].Health)).ToArray();
             return new FirstPlayableFrame(Array.Empty<ActiveAttackView>(), Array.Empty<MapEventView>(), Array.Empty<BuildingProgressView>(), cards, evolutions,
-                Array.Empty<string>(), wave.Items.ToDictionary(id => id, _ => 1), Count(wave,"enemy-killed"), Count(wave,"reward-collected"), catalog.Tuning.DefaultHero,
+                Array.Empty<string>(), wave.Items.ToDictionary(id => id, _ => 1), Count(wave.Counters,"enemy-killed:"), Count(wave.Counters,"reward-collected:"), catalog.Tuning.DefaultHero,
                 Array.Empty<PersonActivityView>(), bosses, wave.BossDefeated);
         }
-        static long Count(WaveRuntimeFrame frame, string key) => frame.Counters.Where(pair => pair.Key.StartsWith(key+":",StringComparison.Ordinal)).Sum(pair => pair.Value);
+        static long Count(IReadOnlyDictionary<string, long> counters, string prefix)
+        {
+            long total = 0;
+            foreach (var pair in counters)
+                if (pair.Key.StartsWith(prefix, StringComparison.Ordinal)) total = checked(total + pair.Value);
+            return total;
+        }
+#if UNITY_EDITOR
+        public static long EditorCountCounters(IReadOnlyDictionary<string, long> counters, string prefix) => Count(counters, prefix);
+#endif
     }
 }

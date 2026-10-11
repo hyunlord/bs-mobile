@@ -123,4 +123,90 @@ public sealed class PresentationSnapshotBufferTests
         Assert.Equal(wave800, wave1600);
         Assert.True(run800 > 0); Assert.True(wave800 > 0);
     }
+    [Fact]
+    public void BorrowedCountersKeepOrdinalOrderAndDetachedExportsSurviveBothBuffers()
+    {
+        var session = Session(3); var state = session.Simulation.World.WaveRuntime!;
+        state.Counters["가"] = 1; state.Counters["a"] = 2; state.Counters["Z"] = 3;
+        var view = (IBufferedWaveRunView)session.View;
+        var a = new WaveSnapshotBuffer(4); var b = new WaveSnapshotBuffer(4);
+        var borrowed = view.CaptureWaveRuntime(a)!;
+        var detached = view.CaptureWaveRuntime()!;
+        var exported = WaveSnapshotBuffer.Detach(borrowed);
+        Assert.Equal(new[] { "Z", "a", "가" }, borrowed.Counters.Keys);
+        Assert.Equal(new long[] { 3, 2, 1 }, borrowed.Counters.Values);
+        Assert.Equal(2, borrowed.Counters["a"]);
+        Assert.False(borrowed.Counters.TryGetValue("missing", out _));
+        Assert.Throws<KeyNotFoundException>(() => borrowed.Counters["missing"]);
+        Assert.Throws<ArgumentNullException>(() => borrowed.Counters.ContainsKey(null!));
+        state.Counters.Clear(); state.Counters["new"] = 99;
+        view.CaptureWaveRuntime(b);
+        Assert.Equal(detached.Counters.ToArray(), borrowed.Counters.ToArray());
+        Populate(session, 1); view.CaptureWaveRuntime(a);
+        Assert.Single(borrowed.Counters); Assert.Equal(99, borrowed.Counters["new"]);
+        Assert.False(borrowed.Counters.ContainsKey("a"));
+        Assert.Equal(detached.Counters.ToArray(), exported.Counters.ToArray());
+        Assert.Equal(detached.Enemies.ToArray(), exported.Enemies.ToArray());
+        Assert.Throws<NotSupportedException>(() => ((IDictionary<string, long>)exported.Counters).Clear());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    [InlineData(9)]
+    [InlineData(10)]
+    [InlineData(11)]
+    [InlineData(12)]
+    [InlineData(13)]
+    public void ImmutableWorkCacheRefreshesEveryVisibleFieldWithoutMutatingRetainedRecords(int field)
+    {
+        var work = new WaveWork { Id = 1, Source = "source", Kind = "grain", Position = new(10, 20), Health = 3 };
+        var before = work.Capture(0);
+        Assert.Same(before, work.Capture(0));
+        switch (field)
+        {
+            case 0: work.Id++; break;
+            case 1: work.Source += "x"; break;
+            case 2: work.Kind = "building"; break;
+            case 3: work.Position = new(20, 30); break;
+            case 4: work.Progress++; break;
+            case 5: work.Required++; break;
+            case 6: work.Complete = true; break;
+            case 7: work.Health++; break;
+            case 8: work.ParentId++; break;
+            case 9: work.Protected = true; break;
+            case 10: work.DormantUntil = 1; break;
+            case 11: work.WetUntil = 1; break;
+            case 12: work.ShipmentActive = true; break;
+            case 13: work.Dry = true; break;
+        }
+        var after = work.Capture(0);
+        Assert.NotSame(before, after); Assert.NotEqual(before, after);
+        Assert.Same(after, work.Capture(0));
+        Assert.Equal(new WaveWorkView(1, "source", "grain", new(10, 20), 0, 0, false, 3, -1, false, false, false, false, false), before);
+    }
+
+    [Fact]
+    public void WorkTickFlagsExpireWithoutChangingRulesOrOldSnapshots()
+    {
+        var session = Session(0); var state = session.Simulation.World.WaveRuntime!;
+        state.Work.Add(new() { Id = 1, Source = "test:work", Kind = "grain", Health = 2, DormantUntil = 1, WetUntil = 1 });
+        var hash = session.ComputeStateHash(); var view = (IWaveRunView)session.View;
+        var before = view.CaptureWaveRuntime()!;
+        Assert.Equal(hash, session.ComputeStateHash());
+        Assert.True(before.Work[0].Dormant); Assert.True(before.Work[0].Wet);
+        session.Simulation.World.Tick = 1;
+        var after = view.CaptureWaveRuntime()!;
+        Assert.False(after.Work[0].Dormant); Assert.False(after.Work[0].Wet);
+        Assert.True(before.Work[0].Dormant); Assert.True(before.Work[0].Wet);
+        Assert.NotSame(before.Work, after.Work);
+    }
+
 }
