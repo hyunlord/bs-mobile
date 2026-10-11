@@ -151,3 +151,6 @@ Lattice PR74의 Node20·22·24, artifact, contracts CI가 통과한 main `2b12fc
 게시 뒤에는 유지 모드로 전환한다. 새로운 기능·표본 검수·성능 캠페인을 시작하지 않고 자동 지도와 PR 댓글을 유지하며, 사용자가 실제 사용 중 보고한 문제만 수정한다. 공개 Pages의 실제 배포 검증은 연결 PR과 실행 기록으로 남긴다.
 
 최종 고정은 Lattice PR76의 main `2e977c519381cbc9f49cee50bcea62e9c81bb3b1`다. 최종 PR head의 Node20·22·24, artifact, contracts CI가 모두 통과했다.
+
+
+[#216](https://github.com/hyunlord/bs-mobile/issues/216)의 기존 게시 작업을 설정 변경 없이 재실행한 [38092261983 attempt2](https://github.com/hyunlord/bs-mobile/actions/runs/38092261983/attempts/2)가 성공했고 공개 소스 `e016710c3a7df4ff32afb63eed585d561f66238a`의 콘텐츠163·빌드28을1280/390px 브라우저에서 확인했다. 앞선 HTTP403의 정확한 원인은 미확인으로 보존한다. 같은 게시 계약의 유지 보수로 워크플로 호출과 도구 checkout 두 SHA를 [Lattice PR78](https://github.com/hyunlord/lattice/pull/78)의 main `520a502e540ff164bb23065a81e7982798128828`로 함께 고정하여, 이후 실패 시 오류 메시지와 지정 응답 헤더만 기록하고 토큰은 노출하지 않는다. Lattice407개 검사와 Node20·22·24, artifact, contracts CI 통과를 확인했으며 기존200/404 처리와403 실패 동작을 유지한다. 권한·저장소 설정·렌즈·데이터는 바꾸지 않으며 자동 재시도·실패 우회는 추가하지 않는다. 새 ADR 번호 없이 이 문단으로 후속 적용을 기록하고, 소비자 PR220의 필수 CI와 병합 후 새 소스의 공개 배포를 별도로 확인한다.
