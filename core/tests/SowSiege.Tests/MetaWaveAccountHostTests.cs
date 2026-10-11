@@ -128,5 +128,11 @@ public sealed class MetaWaveAccountHostTests : IDisposable
 
     private static WaveWorkView Work(int id, string kind, bool complete, int health) =>
         new(id, "source", kind, new(0, 0), 0, 1, complete, health, 0, false, false, false, false, false);
-    public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    public void Dispose()
+    {
+        if (Directory.Exists(directory))
+        {
+            Directory.Delete(directory, true);
+        }
+    }
 }
