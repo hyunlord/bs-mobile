@@ -38,7 +38,7 @@ namespace Game.View
                 heroRigShader=Resources.Load<Shader>("HeroRig");
                 if(heroRigShader==null||!heroRigShader.isSupported)throw new InvalidOperationException("Layered hero shader is unavailable.");
             }
-            var fullSize=visual.WorldSize*(256f/252);
+            var fullSize=visual.WorldSize*(256f/252)*GameVisualTokens.HeroRigHeightScale;
             fullSize.x*=facing.SignedWidth;
             var sample=heroGait.Advance(position,fullSize,walking,discontinuity,hit||dead);
             var frame=hit||dead?14:sample.FrameIndex;

@@ -103,6 +103,41 @@ namespace Game.View
             start = lane.Origin - axis * lane.Radius; end = lane.Target + axis * lane.Radius;
         }
 
+        public static void LocalSegment(ThreatCorridor lane, Vector2 lord, float maximumLength, out Vector2 start, out Vector2 end)
+        {
+            CoveredSegment(lane, out start, out end);
+            if (lane.Water) return;
+            var axis = (end - start).normalized;
+            var length = Vector2.Distance(start, end);
+            var limit = Mathf.Max(0, maximumLength);
+            var terminal = Mathf.Clamp(Vector2.Dot(lord - start, axis) + lane.Radius, 0, length);
+            var from = Mathf.Max(0, terminal - limit);
+            end = start + axis * terminal;
+            start += axis * from;
+        }
+
+        public static Vector2 EntryArrowPosition(Rect viewport, ThreatCorridor lane, float inset)
+        {
+            var start = lane.Origin; var end = lane.Target;
+            if (ClipSegment(viewport, ref start, ref end))
+                return Vector2.MoveTowards(start, end, Mathf.Min(inset, Vector2.Distance(start, end) * .5f));
+            var point = VisibleArrowPosition(viewport, lane, 0);
+            var axis = (lane.Target - lane.Origin).normalized;
+            ConsiderEntryPoint(lane, axis, viewport.min, ref point);
+            ConsiderEntryPoint(lane, axis, viewport.max, ref point);
+            ConsiderEntryPoint(lane, axis, new Vector2(viewport.xMin, viewport.yMax), ref point);
+            ConsiderEntryPoint(lane, axis, new Vector2(viewport.xMax, viewport.yMin), ref point);
+            var closestOrigin = new Vector2(Mathf.Clamp(lane.Origin.x, viewport.xMin, viewport.xMax), Mathf.Clamp(lane.Origin.y, viewport.yMin, viewport.yMax));
+            ConsiderEntryPoint(lane, axis, closestOrigin, ref point);
+            var slack = Mathf.Max(0, lane.Radius - Mathf.Sqrt(DistanceToLane(lane, point)));
+            return point + (viewport.center - point).normalized * Mathf.Min(inset, slack * .5f);
+        }
+
+        static void ConsiderEntryPoint(ThreatCorridor lane, Vector2 axis, Vector2 candidate, ref Vector2 point)
+        {
+            if (Contains(lane, candidate) && Vector2.Dot(candidate - point, axis) < 0) point = candidate;
+        }
+
         public static void Select(List<ThreatCorridor> candidates, List<ThreatCorridor> selected)
         {
             selected.Clear();
