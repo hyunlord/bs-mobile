@@ -1,7 +1,6 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Game.App.Generated;
-using Game.Editor;
 using SowSiege.Core;
 using Game.App;
 using NUnit.Framework;
@@ -42,25 +41,30 @@ namespace Tests.EditMode
             Assert.That(accepted, Is.EqualTo(new[] { 0, 1, 2, 3, 4, 5 }));
             Assert.That(debt, Is.EqualTo(.4).Within(1e-12));
         }
-        [Test] public void DeferredAndLegacyPumpsPreserveCanonicalReplayThroughCardChoice()
+        [Test] public void DeferredAndLegacyPumpsPreserveActualCardChoiceInDebugFixture()
         {
-            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires the wave-1a export.");
-            var directory = Environment.GetEnvironmentVariable("WAVE_REPLAY_FIXTURES")
-                ?? Path.Combine(FoundationBuild.RepoRoot, "artifacts/wave1a/editor-replays");
-            using var input = File.OpenRead(Path.Combine(directory, "30001.ssreplay"));
-            var replay = ReplayCodec.Read(input);
-            Assert.That(replay.Header.Options.DataHash, Is.EqualTo(CanonicalContent.DataHash));
             var catalog = CanonicalContent.CreateCatalog();
-            var legacy = new InteractiveSession(catalog, replay.Header.Options);
-            var deferred = new InteractiveSession(catalog, replay.Header.Options);
-            var end = 0; var cards = 0; var advancesAfterCard = 0;
-            while (end < replay.Commands.Count && advancesAfterCard < 30)
+            var options = new InteractiveOptions(new RunOptions(30001, catalog.Tuning.DefaultHero,
+                catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash);
+            var source = new InteractiveSession(catalog, options);
+            var commands = new List<ReplayCommand>();
+            void Record(ReplayCommandKind kind, string card = null)
             {
-                var command = replay.Commands[end++];
-                if (command.Kind == ReplayCommandKind.ChooseCard) cards++;
-                if (cards > 0 && command.Kind == ReplayCommandKind.Advance) advancesAfterCard++;
+                var command = new ReplayCommand(source.NextSequence, source.View.CaptureFrame().Tick, kind,
+                    kind == ReplayCommandKind.Advance ? new PlayerInput(1000, 0) : default, CardId: card);
+                source.Apply(command); commands.Add(command);
             }
-            Assert.That(cards, Is.GreaterThan(0), "Fixture prefix must exercise a real card choice.");
+            for (var tick = 0; tick < 10; tick++) Record(ReplayCommandKind.Advance);
+            Record(ReplayCommandKind.GrantLevel);
+            Assert.That(source.Status, Is.EqualTo(RunStatus.AwaitingCard));
+            var offered = source.View.CaptureCards().Cards;
+            Assert.That(offered.Count, Is.GreaterThan(0));
+            Record(ReplayCommandKind.ChooseCard, offered[0]);
+            Assert.That(source.Status, Is.EqualTo(RunStatus.Running));
+            for (var tick = 0; tick < 30; tick++) Record(ReplayCommandKind.Advance);
+            var legacy = new InteractiveSession(catalog, options);
+            var deferred = new InteractiveSession(catalog, options);
+            var end = commands.Count;
             const double step = 1d / 30;
             foreach (var limited in new[] { false, true })
             {
@@ -72,7 +76,7 @@ namespace Tests.EditMode
                     var budget = new FrameAdvanceBudget(limited); var frameAdvances = 0;
                     while (debt >= step && next < end)
                     {
-                        var command = replay.Commands[next];
+                        var command = commands[next];
                         if (command.Kind == ReplayCommandKind.Advance)
                         {
                             if (!budget.TryAdvance(ref debt, step)) break;
@@ -85,6 +89,7 @@ namespace Tests.EditMode
                 Assert.That(next, Is.EqualTo(end), "No command may be dropped to clear time debt.");
             }
             Assert.That(deferred.ComputeStateHash(), Is.EqualTo(legacy.ComputeStateHash()));
+            Assert.That(deferred.ComputeStateHash(), Is.EqualTo(source.ComputeStateHash()));
         }
         [Test] public void OfflineAndFastDebugRetainUnlimitedBudgetAndFixedDeltaCadence()
         {
