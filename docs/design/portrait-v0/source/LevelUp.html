@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>레벨업 카드 선택</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+.n-blue{border-style:solid;border-width:0 30px;border-image:url(a/ui-btn-blue.png) 0 52 fill / 0 30px stretch}
+.n-cream{border-style:solid;border-width:0 16px;border-image:url(a/ui-btn-cream.png) 0 46 fill / 0 16px stretch}
+.c-rare{border-style:solid;border-width:14px;border-image:url(a/ui-card-rare.png) 40 fill / 14px stretch}
+.c-common{border-style:solid;border-width:14px;border-image:url(a/ui-card-common.png) 40 fill / 14px stretch}
+.c-epic{border-style:solid;border-width:14px;border-image:url(a/ui-card-epic.png) 40 fill / 14px stretch}
+.n-slot{border-style:solid;border-width:8px;border-image:url(a/ui-slot.png) 48 fill / 8px stretch}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #1A1712; font-family: 'Noto Sans KR', sans-serif; color: #3B2A18">
+<img src="a/bd-run.jpg" alt="" style="position: absolute; left: -10px; top: -10px; width: 410px; height: 864px; object-fit: cover; filter: blur(4px) brightness(0.42)">
+<div class="n-blue" style="position: absolute; left: 55px; top: 58px; width: 280px; height: 64px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFFFFF"><span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 24px; line-height: 26px">레벨 17</span><span style="font-size: 11px; color: #D8E1F5">하나를 고르면 바로 이어서 싸운다</span></div>
+<div style="position: absolute; left: 14px; top: 142px; width: 362px; display: flex; flex-direction: column; gap: 12px">
+<a href="Run.dc.html" class="c-rare" style="position: relative; min-height: 150px; box-sizing: border-box; display: flex; gap: 10px; padding: 2px">
+<span class="n-slot" style="flex: none; width: 70px; height: 70px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-iron_blade.png" alt="" style="width: 44px; height: 47px"></span>
+<span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<span style="display: flex; gap: 6px; align-items: center"><span style="font-size: 11px; font-weight: 700; color: #FFFFFF; background: #2C4F96; border-radius: 6px; padding: 1px 6px">무기</span><span style="font-size: 12px; color: #5A4428">Lv 1 → 2</span></span>
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 19px">철날 검</span>
+<span style="font-size: 13px; line-height: 18px">짧은 전방 베기로 영주에게 붙은 적을 걷어 낸다</span>
+<span style="margin-top: 4px; display: flex; align-items: center; gap: 6px; background: #F3D58C; border: 1px solid #B8873A; border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 700; color: #4A3210"><img src="a/c-sowing_sworddance.png" alt="" style="width: 20px; height: 22px">씨앗 자루와 함께 → 파종 검무</span>
+</span>
+</a>
+<a href="Run.dc.html" class="c-common" style="min-height: 132px; box-sizing: border-box; display: flex; gap: 10px; padding: 2px">
+<span class="n-slot" style="flex: none; width: 70px; height: 70px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-rain_ladle.png" alt="" style="width: 46px; height: 46px"></span>
+<span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<span style="display: flex; gap: 6px; align-items: center"><span style="font-size: 11px; font-weight: 700; color: #FFFFFF; background: #4F6B2E; border-radius: 6px; padding: 1px 6px">도구</span><span style="font-size: 12px; color: #5A4428">Lv 2 → 3</span></span>
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 19px">빗물 바가지</span>
+<span style="font-size: 13px; line-height: 18px">물을 부채꼴로 끼얹어 적을 밀친다 · 마른 밭을 적시는 관개 웅덩이를 남긴다</span>
+</span>
+</a>
+<a href="Run.dc.html" class="c-epic" style="min-height: 132px; box-sizing: border-box; display: flex; gap: 10px; padding: 2px">
+<span class="n-slot" style="flex: none; width: 70px; height: 70px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/c-meal_oath.png" alt="" style="width: 46px; height: 48px"></span>
+<span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+<span style="display: flex; gap: 6px; align-items: center"><span style="font-size: 11px; font-weight: 700; color: #FFFFFF; background: #6B3E8F; border-radius: 6px; padding: 1px 6px">특허장</span><span style="font-size: 12px; color: #5A4428">새로 얻음</span></span>
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 19px">공동 식탁 서약</span>
+<span style="font-size: 13px; line-height: 18px">수확 몫 일부를 백성에게 더 나눠 경작 참여를 유지한다 · 대신 징집 여유가 준다</span>
+</span>
+</a>
+</div>
+<div style="position: absolute; left: 14px; top: 744px; width: 362px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<button class="n-cream" style="height: 52px; box-sizing: border-box; background: transparent; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #3B2A18"><b style="font-size: 14px">다시 뽑기</b><span style="display: flex; align-items: center; gap: 3px; font-size: 10px; color: #FFFFFF; background: #5A4428; border-radius: 5px; padding: 0 5px"><svg width="6" height="8" viewBox="0 0 8 10" aria-hidden="true"><path d="M0 0l8 5-8 5z" fill="#FFFFFF"></path></svg>광고로 +1</span></button>
+<button class="n-cream" style="height: 52px; box-sizing: border-box; background: transparent; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #3B2A18"><b style="font-size: 14px">금지</b><span style="font-size: 11px">1회 남음</span></button>
+<button class="n-cream" style="height: 52px; box-sizing: border-box; background: transparent; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #3B2A18"><b style="font-size: 14px">고정</b><span style="font-size: 11px">1회 남음</span></button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

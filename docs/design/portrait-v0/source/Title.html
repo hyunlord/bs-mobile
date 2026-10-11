@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>타이틀 화면</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&amp;family=Gowun+Batang:wght@400;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+.t-ribbon{border-style:solid;border-width:0 30px;border-image:url(a/ui-hint.png) 0 60 fill / 0 30px stretch}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: linear-gradient(180deg, #1B2340 0%, #3A3F5C 34%, #8E6E5A 52%, #C79A5B 60%, #6E8A45 61%, #4C6B33 78%, #2E4220 100%); font-family: 'Noto Sans KR', sans-serif; color: #F6EBD2">
+<div style="position: absolute; left: -60px; top: 470px; width: 520px; height: 160px; border-radius: 50%; background: #5B7A3A"></div>
+<div style="position: absolute; left: -120px; top: 520px; width: 360px; height: 140px; border-radius: 50%; background: #4D6C31"></div>
+<div style="position: absolute; left: 200px; top: 540px; width: 320px; height: 130px; border-radius: 50%; background: #45622C"></div>
+<div style="position: absolute; left: 0; top: 0; width: 390px; height: 420px; background: radial-gradient(circle at 50% 46%, #F4D49A55 0%, #F4D49A00 55%)"></div>
+<img src="a/o-crest.png" alt="영지 문장" style="position: absolute; left: 120px; top: 92px; width: 150px; height: 167px">
+<div style="position: absolute; left: 0; top: 272px; width: 390px; text-align: center; font-family: 'Cinzel', serif; font-weight: 900; font-size: 44px; line-height: 50px; letter-spacing: 1px; color: #F3D58C; text-shadow: 0 2px 0 #5A3B12, 0 4px 14px #00000099">Sow &amp; Siege</div>
+<div style="position: absolute; left: 0; top: 330px; width: 390px; text-align: center; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 18px; color: #F6EBD2; text-shadow: 0 2px 6px #000000AA">영지를 일구고, 포위를 버텨라</div>
+<img src="a/o-wheat.png" alt="" style="position: absolute; left: 18px; top: 548px; width: 120px; height: 116px">
+<img src="a/o-wheat.png" alt="" style="position: absolute; left: 258px; top: 560px; width: 112px; height: 108px">
+<img src="a/hero.png" alt="영주" style="position: absolute; left: 140px; top: 470px; width: 110px; height: 139px">
+<div style="position: absolute; left: 162px; top: 598px; width: 66px; height: 14px; border-radius: 50%; background: #00000055"></div>
+<a href="Home.dc.html" class="t-ribbon" style="position: absolute; left: 65px; top: 690px; width: 260px; height: 64px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 19px; color: #3B2A18">화면을 눌러 시작</a>
+<div style="position: absolute; left: 0; top: 770px; width: 390px; text-align: center; font-size: 12px; color: #E9DDBF">첫 실행이면 바로 첫 판 · 이후에는 영지로</div>
+<button aria-label="설정" style="position: absolute; left: 330px; top: 52px; width: 44px; height: 44px; border-radius: 22px; border: 1px solid #F6EBD266; background: #00000040; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F6EBD2" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

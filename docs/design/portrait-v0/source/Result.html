@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>결산 화면</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+.n-panel{border-style:solid;border-width:16px;border-image:url(a/ui-panel.png) 44 fill / 16px stretch}
+.n-red{border-style:solid;border-width:0 28px;border-image:url(a/ui-btn-red.png) 0 52 fill / 0 28px stretch}
+.n-cream{border-style:solid;border-width:0 18px;border-image:url(a/ui-btn-cream.png) 0 46 fill / 0 18px stretch}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; padding: 44px 14px 0; background: radial-gradient(ellipse at 50% 12%, #6B5126 0%, #2A231A 45%, #17140F 100%); font-family: 'Noto Sans KR', sans-serif; color: #F6EBD2; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+<img src="a/c-seed_crown.png" alt="" style="width: 92px; height: 74px">
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 30px; line-height: 34px; color: #F3D58C; text-shadow: 0 2px 0 #4A3210">챕터 4 클리어</span>
+<span style="font-size: 13px; color: #E2D4B2">돌등성이 · 겨울 보스 처치 · 첫 클리어</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<div style="border-radius: 12px; background: #2F2A21; border: 1px solid #8B6A33; padding: 8px 4px; display: flex; flex-direction: column; align-items: center"><span style="font-size: 11px; color: #C9BC9F">버틴 시간</span><b style="font-size: 18px">15:00</b></div>
+<div style="border-radius: 12px; background: #2F2A21; border: 1px solid #8B6A33; padding: 8px 4px; display: flex; flex-direction: column; align-items: center"><span style="font-size: 11px; color: #C9BC9F">도달 레벨</span><b style="font-size: 18px">[n]</b></div>
+<div style="border-radius: 12px; background: #2F2A21; border: 1px solid #8B6A33; padding: 8px 4px; display: flex; flex-direction: column; align-items: center"><span style="font-size: 11px; color: #C9BC9F">수확</span><b style="font-size: 18px">[n]</b></div>
+</div>
+<div class="n-panel" style="box-sizing: border-box; color: #3B2A18; display: flex; flex-direction: column; gap: 6px; padding: 0 4px">
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 17px">받은 자재 <span style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 400; color: #6B5233">첫 클리어 100%</span></span>
+<div style="display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 6px; font-size: 15px"><img src="a/r-grain.png" alt="" style="width: 20px; height: 24px"><span>곡물</span><span><b>+[n]</b> <span style="font-size: 12px; color: #6B5233">/ 최대 [n]</span></span></div>
+<div style="display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 6px; font-size: 15px"><img src="a/r-timber.png" alt="" style="width: 26px; height: 20px"><span>목재</span><span><b>+[n]</b> <span style="font-size: 12px; color: #6B5233">/ 최대 [n]</span></span></div>
+<div style="display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 6px; font-size: 15px"><svg width="22" height="16" viewBox="0 0 22 16" aria-hidden="true"><path d="M4 3h14l3 10H1z" fill="#9EA4AA" stroke="#3C4045" stroke-width="1.4"></path></svg><span>철재</span><span><b>+[n]</b> <span style="font-size: 12px; color: #6B5233">/ 최대 [n]</span></span></div>
+<div style="display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 6px; font-size: 15px"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="#A3271E" stroke="#5E120D" stroke-width="1.4"></circle></svg><span>인장</span><span><b>+[n]</b> <span style="font-size: 12px; color: #6B5233">/ 최대 [n]</span></span></div>
+<div style="display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 6px; font-size: 15px; border-top: 1px solid #C9B48A; padding-top: 6px"><span style="width: 26px; height: 26px; border-radius: 13px; overflow: hidden; background: #4A5A7A"><img src="a/v-furrow_guard.png" alt="" style="width: 26px; height: 31px; object-fit: cover; object-position: top"></span><span>고랑 방패수 조각</span><b>+2</b></div>
+</div>
+<div style="border-radius: 14px; background: linear-gradient(90deg, #F3D58C, #E2B860); border: 2px solid #8B6A33; color: #3B2A18; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 16px">새로 열림</span>
+<span style="font-size: 14px">챕터 5 · 갈대 여울</span>
+<span style="font-size: 14px">도전 달성 · [도전 이름] → 도전 화면에서 받기</span>
+</div>
+<a href="Home.dc.html" class="n-cream" style="position: absolute; left: 14px; top: 694px; width: 362px; height: 52px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; color: #3B2A18; font-size: 15px; font-weight: 700"><span style="display: flex; align-items: center; gap: 3px; font-size: 11px; color: #FFFFFF; background: #5A4428; border-radius: 6px; padding: 2px 6px"><svg width="8" height="10" viewBox="0 0 8 10" aria-hidden="true"><path d="M0 0l8 5-8 5z" fill="#FFFFFF"></path></svg>광고</span>보고 자재 2배로 받기</a>
+<div style="position: absolute; left: 14px; top: 756px; width: 362px; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px">
+<a href="Prepare.dc.html" class="n-cream" style="height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 17px; color: #3B2A18">다시 출정</a>
+<a href="Home.dc.html" class="n-red" style="height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 21px; color: #FFF6E2">영지로</a>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

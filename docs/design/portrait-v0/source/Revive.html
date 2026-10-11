@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>부활 제안</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+.n-panel{border-style:solid;border-width:18px;border-image:url(a/ui-panel.png) 44 fill / 18px stretch}
+.n-blue{border-style:solid;border-width:0 24px;border-image:url(a/ui-btn-blue.png) 0 52 fill / 0 24px stretch}
+.n-cream{border-style:solid;border-width:0 18px;border-image:url(a/ui-btn-cream.png) 0 46 fill / 0 18px stretch}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #14120E; font-family: 'Noto Sans KR', sans-serif; color: #3B2A18">
+<img src="a/bd-run.jpg" alt="" style="position: absolute; left: -10px; top: -10px; width: 410px; height: 864px; object-fit: cover; filter: grayscale(1) blur(3px) brightness(0.38)">
+<div style="position: absolute; left: 0; top: 190px; width: 390px; text-align: center; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 34px; color: #E9C9B9; text-shadow: 0 2px 10px #000000">쓰러졌다</div>
+<div style="position: absolute; left: 0; top: 240px; width: 390px; text-align: center; font-size: 14px; color: #D8CDB3">여름 06:08 · 레벨 16 · 남은 시간 8:52</div>
+<div class="n-panel" style="position: absolute; left: 20px; top: 300px; width: 350px; height: 300px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 20px">이번 판에 한 번, 다시 일어날 수 있다</span>
+<span style="font-size: 14px; line-height: 21px">체력 [n]%로 일어나고 주변 적을 밀어낸다. 지금까지 모은 장비와 레벨은 그대로.</span>
+<span style="font-size: 13px; color: #6B5233">그만두면 지금까지의 결과로 결산한다(사망 배율).</span>
+<div style="flex: 1"></div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+<a href="Result.dc.html" class="n-cream" style="height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 17px">결산으로</a>
+<a href="Run.dc.html" class="n-blue" style="height: 60px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFFFFF"><span style="display: flex; align-items: center; gap: 3px; font-size: 10px; color: #D8E1F5"><svg width="7" height="9" viewBox="0 0 8 10" aria-hidden="true"><path d="M0 0l8 5-8 5z" fill="#D8E1F5"></path></svg>광고</span><b style="font-family: 'Gowun Batang', serif; font-size: 17px">일어나기</b></a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
