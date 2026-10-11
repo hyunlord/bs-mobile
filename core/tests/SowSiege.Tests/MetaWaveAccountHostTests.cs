@@ -104,6 +104,28 @@ public sealed class MetaWaveAccountHostTests : IDisposable
         Assert.True(facts.BossDefeated); Assert.True(facts.Abandoned);
     }
 
+    [Fact]
+    public void SettlementCountsSurvivingGroupsInBothSnapshotPathsWithoutChangingHash()
+    {
+        var options = new InteractiveOptions(new RunOptions(42, source.Tuning.DefaultHero, source.Tuning.DefaultEstate, "manual", ManualCards: true), AimMode.NearestEnemy, new string('A', 64));
+        var session = new InteractiveSession(source, options);
+        var runtime = session.Simulation.World.WaveRuntime!;
+        runtime.Groups.Add(new WaveGroup { Id = 90, Source = "fixture", Health = 5, Phase = "idle" });
+        runtime.Groups.Add(new WaveGroup { Id = 91, Source = "fixture", Health = 0, Phase = "engaging" });
+        runtime.Groups.Add(new WaveGroup { Id = 92, Source = "fixture", Health = 2, Phase = "returning" });
+        string before = session.ComputeStateHash();
+        var ordinary = ((IWaveRunView)session.View).CaptureWaveRuntime()!;
+        var buffered = ((IBufferedWaveRunView)session.View).CaptureWaveRuntime(new WaveSnapshotBuffer(128))!;
+        Assert.Equal(new[] { 5, 0, 2 }, ordinary.Groups.Select(x => x.Health));
+        Assert.Equal(ordinary.Groups, buffered.Groups);
+        foreach (var captured in new[] { ordinary, buffered, WaveSnapshotBuffer.Detach(buffered) })
+        {
+            var facts = MetaRunAdapter.FromWave(session.GetSummary(), session.View.CaptureFrame(), captured, false);
+            Assert.Equal(2, facts.People);
+        }
+        Assert.Equal(before, session.ComputeStateHash());
+    }
+
     private static WaveWorkView Work(int id, string kind, bool complete, int health) =>
         new(id, "source", kind, new(0, 0), 0, 1, complete, health, 0, false, false, false, false, false);
     public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }

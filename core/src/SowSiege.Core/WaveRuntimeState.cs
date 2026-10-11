@@ -101,7 +101,7 @@ namespace SowSiege.Core
             }
             Array.Sort(enemies, 0, EnemyActions.Count, EnemyViewComparer);
             var groups = new WaveGroupView[Groups.Count];
-            for (var i = 0; i < groups.Length; i++) { var g = Groups[i]; groups[i] = new(g.Id, g.Source, new(g.Position.X, g.Position.Y), g.Phase, g.Mission, g.Training, g.ReservedFood, g.FrontRank, g.Formation); }
+            for (var i = 0; i < groups.Length; i++) { var g = Groups[i]; groups[i] = new(g.Id, g.Source, new(g.Position.X, g.Position.Y), g.Phase, g.Mission, g.Training, g.ReservedFood, g.FrontRank, g.Formation, g.Health); }
             var paths = new WorldPoint[Paths.Count];
             for (var i = 0; i < paths.Length; i++) { var p = Paths[i]; paths[i] = new(p.X, p.Y); }
             var detours = new WaveDetourView[Detours.Count];
