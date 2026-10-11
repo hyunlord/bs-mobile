@@ -7,8 +7,9 @@ namespace Game.App
 
     public sealed class RunPreferences
     {
+        const int FeelDefaultsVersion = 1;
         public const string Prefix = "sowsiege.fp.v1.";
-        public static readonly string[] Keys = { "musicVolume", "sfxVolume", "haptics", "shake", "damageNumbers", "aim", "introductionSeen", "seenHints", "feelSpeed", "feelContact", "feelHealth", "feelFeedback", "heroRigPreview", "heroRigSelectedB" };
+        public static readonly string[] Keys = { "musicVolume", "sfxVolume", "haptics", "shake", "damageNumbers", "aim", "introductionSeen", "seenHints", "feelSpeed", "feelContact", "feelHealth", "feelFeedback", "heroRigPreview", "heroRigSelectedB", "feelDefaultsVersion" };
         readonly string prefix;
         public float MusicVolume { get; set; } = .55f;
         public float EffectsVolume { get; set; } = .8f;
@@ -43,6 +44,14 @@ namespace Game.App
             value.FeelHealth = PlayerPrefs.GetInt(prefix + "feelHealth", 0) == 1;
             value.FeelFeedback = PlayerPrefs.GetInt(prefix + "feelFeedback", 0) == 1;
             value.HeroRigPreview = PlayerPrefs.GetInt(prefix + "heroRigSelectedB", 1) == 1;
+            if (PlayerPrefs.GetInt(prefix + "feelDefaultsVersion", 0) < FeelDefaultsVersion)
+            {
+                value.FeelSpeed = true;
+                value.FeelFeedback = true;
+                value.FeelContact = false;
+                value.FeelHealth = false;
+                value.Save();
+            }
             return value;
         }
 
@@ -65,6 +74,7 @@ namespace Game.App
             PlayerPrefs.SetInt(prefix + "feelHealth", FeelHealth ? 1 : 0);
             PlayerPrefs.SetInt(prefix + "feelFeedback", FeelFeedback ? 1 : 0);
             PlayerPrefs.SetInt(prefix + "heroRigSelectedB", HeroRigPreview ? 1 : 0);
+            PlayerPrefs.SetInt(prefix + "feelDefaultsVersion", FeelDefaultsVersion);
             PlayerPrefs.Save();
         }
 

@@ -50,21 +50,21 @@ namespace Tests.EditMode
             Assert.That(loaded.HasSeen(FirstRunHint.Muster), Is.False);
         }
 
-        [Test] public void SelectedRigMigratesOldPreviewWithoutEnablingRuleExperiments()
+        [Test] public void SelectedRigMigrationKeepsApprovedFeelDefaults()
         {
             PlayerPrefs.SetInt(prefix + "heroRigPreview", 0);
             var settings = RunPreferences.Load(prefix);
             Assert.That(settings.HeroRigPreview, Is.True);
-            Assert.That(settings.SnapshotFeel(), Is.Null);
+            Assert.That(settings.SnapshotFeel(), Is.EqualTo(new FeelExperimentOptions(true, false, false)));
             settings.HeroRigPreview = false; settings.Save();
             Assert.That(RunPreferences.Load(prefix).HeroRigPreview, Is.False);
         }
 
-        [Test] public void FeelTrialsDefaultOffAndSnapshotDoesNotFollowLaterPreferenceChanges()
+        [Test] public void ApprovedFeelDefaultsAndSnapshotDoNotFollowLaterPreferenceChanges()
         {
             var settings = RunPreferences.Load(prefix);
-            Assert.That(settings.SnapshotFeel(), Is.Null);
-            Assert.That(settings.FeelFeedback, Is.False);
+            Assert.That(settings.SnapshotFeel(), Is.EqualTo(new FeelExperimentOptions(true, false, false)));
+            Assert.That(settings.FeelFeedback, Is.True);
             Assert.That(settings.HeroRigPreview, Is.True);
             settings.FeelSpeed = true; settings.FeelContact = true; settings.FeelHealth = true;
             settings.FeelFeedback = true; settings.HeroRigPreview = true;
@@ -76,5 +76,25 @@ namespace Tests.EditMode
             Assert.That(loaded.SnapshotFeel(), Is.EqualTo(snapshot));
             Assert.That(loaded.FeelFeedback && loaded.HeroRigPreview, Is.True);
         }
+        [Test]
+        public void ApprovedFeelMigrationRunsOnceForExistingSettings()
+        {
+            PlayerPrefs.SetInt(prefix + "feelSpeed", 0);
+            PlayerPrefs.SetInt(prefix + "feelFeedback", 0);
+            PlayerPrefs.SetInt(prefix + "feelContact", 1);
+            PlayerPrefs.SetInt(prefix + "feelHealth", 1);
+            var migrated = RunPreferences.Load(prefix);
+            Assert.That(migrated.FeelSpeed && migrated.FeelFeedback, Is.True);
+            Assert.That(migrated.FeelContact || migrated.FeelHealth, Is.False);
+            migrated.FeelSpeed = false;
+            migrated.FeelFeedback = false;
+            migrated.FeelContact = true;
+            migrated.FeelHealth = true;
+            migrated.Save();
+            var chosen = RunPreferences.Load(prefix);
+            Assert.That(chosen.FeelSpeed || chosen.FeelFeedback, Is.False);
+            Assert.That(chosen.FeelContact && chosen.FeelHealth, Is.True);
+        }
+
     }
 }
