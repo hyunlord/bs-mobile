@@ -52,6 +52,15 @@ namespace Game.View
             mapSize = new Vector2((float)width / settings.WorldUnitsPerUnityUnit, (float)height / settings.WorldUnitsPerUnityUnit);
         }
 
+        public void SetBaseViewport(Rect pixels)
+        {
+            var width=camera.targetTexture!=null?camera.targetTexture.width:Screen.width;
+            var height=camera.targetTexture!=null?camera.targetTexture.height:Screen.height;
+            var normalized=new Rect(pixels.x/Mathf.Max(1,width),pixels.y/Mathf.Max(1,height),pixels.width/Mathf.Max(1,width),pixels.height/Mathf.Max(1,height));
+            if(originalViewport==normalized&&fieldViewport)return;
+            originalViewport=normalized;camera.rect=normalized;fieldViewport=true;
+        }
+
         public void SnapNextPresentation() => positioned = false;
 
         public void Present(Vector2 lord, int estateExtent, float deltaTime, Rect? safeAreaPixels = null)

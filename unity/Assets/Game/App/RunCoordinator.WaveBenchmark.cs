@@ -254,10 +254,11 @@ namespace Game.App
                 BeginLongFrameHud();
                 var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.Hud.Auto()) hud?.Present(CurrentFrame, FirstPlayable); sample.hudMs = BenchmarkMilliseconds(started);
                 EndLongFrameHud();
-                var visible = Screen.safeArea;
+                if (Ui.PortraitEnabled) { Ui.SynchronizeViewport(); world.SetPresentationViewport(Ui.PortraitPixels); }
+                var visible = Ui.PortraitEnabled ? Ui.SafePixels : Screen.safeArea;
                 if (hud != null)
                 {
-                    if (crowdBenchmark != null)
+                    if (Ui.PortraitEnabled || crowdBenchmark != null)
                     {
                         var overlays = Ui.GetWorldOverlayBounds();
                         visible = Rect.MinMaxRect(Mathf.Max(visible.xMin, overlays.xMin), Mathf.Max(visible.yMin, overlays.yMin), Mathf.Min(visible.xMax, overlays.xMax), Mathf.Min(visible.yMax, overlays.yMax));

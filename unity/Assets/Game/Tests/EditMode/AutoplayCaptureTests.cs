@@ -4,11 +4,86 @@ using Game.App;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Tests.EditMode
 {
     public sealed class AutoplayCaptureTests
     {
+        [TestCase("Title.Enter")]
+        [TestCase("Title.Settings")]
+        [TestCase("Estate.Depart")]
+        [TestCase("Departure.Start")]
+        [TestCase("Summary.Retry")]
+        [TestCase("Card.Choose:core:seed_bag")]
+        [TestCase("Cards.Reroll")]
+        [TestCase("Pause.Continue")]
+        [TestCase("Settings.Back")]
+        [TestCase("Settings.AimNearest")]
+        public void CapturePrefersStableActionEvenWhenButtonHasNoText(string name)
+        {
+            var root = new GameObject("capture button regression");
+            try
+            {
+                var unlabeled = CaptureButton(root, name);
+                var legacy = CaptureButton(root, "legacy", "old label");
+                var selected = AutoplayCapture.ResolveButton(new[] { legacy, unlabeled }, "old label", false, name);
+                Assert.That(selected, Is.SameAs(unlabeled));
+                var invoked = 0; selected.onClick.AddListener(() => invoked++);
+                selected.OnPointerClick(new UnityEngine.EventSystems.PointerEventData(null)
+                    { button = UnityEngine.EventSystems.PointerEventData.InputButton.Left });
+                Assert.That(invoked, Is.EqualTo(1));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        [Test]
+        public void LegacyLabelsRemainAvailableBesideUnlabeledAndDisabledPortraitButtons()
+        {
+            var root = new GameObject("legacy capture regression");
+            try
+            {
+                var title = CaptureButton(root, "Title.Enter");
+                var unavailable = CaptureButton(root, "Departure.Start"); unavailable.interactable = false;
+                var legacy = CaptureButton(root, "legacy", "개척 시작");
+                var buttons = new[] { title, unavailable, legacy };
+                Assert.That(AutoplayCapture.ResolveButton(buttons, "개척 시작", false, "Estate.Depart", "Departure.Start"), Is.SameAs(legacy));
+                Assert.That(AutoplayCapture.ResolveButton(buttons, "개척", true), Is.SameAs(legacy));
+                legacy.gameObject.SetActive(false);
+                Assert.That(AutoplayCapture.ResolveButton(buttons, "개척 시작", false), Is.Null);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        [Test]
+        public void CaptureCardSelectDoesNotChooseBanOrLockAndAmbiguousLabelsFailClosed()
+        {
+            var root = new GameObject("card capture regression");
+            try
+            {
+                var choose = CaptureButton(root, "Card.Choose:core:seed_bag");
+                var ban = CaptureButton(root, "Card.Ban:core:seed_bag", "씨앗 자루");
+                var pin = CaptureButton(root, "Card.Lock:core:seed_bag", "씨앗 자루");
+                var buttons = new[] { ban, pin, choose };
+                Assert.That(AutoplayCapture.ResolveButton(buttons, null, false, "Card.Choose:core:seed_bag", "Choose core:seed_bag"), Is.SameAs(choose));
+                Assert.Throws<InvalidOperationException>(() => AutoplayCapture.ResolveButton(buttons, "씨앗 자루", false));
+                choose.interactable = false;
+                Assert.That(AutoplayCapture.ResolveButton(buttons, null, false, "Card.Choose:core:seed_bag"), Is.Null);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(root); }
+        }
+
+        static Button CaptureButton(GameObject parent, string name, string label = null)
+        {
+            var child = new GameObject(name, typeof(RectTransform), typeof(Button)); child.transform.SetParent(parent.transform);
+            if (label != null)
+            {
+                var text = new GameObject("Label", typeof(RectTransform), typeof(Text)); text.transform.SetParent(child.transform);
+                text.GetComponent<Text>().text = label;
+            }
+            return child.GetComponent<Button>();
+        }
+
         [TestCase(60,1)]
         [TestCase(120,2)]
         [TestCase(119.88,2)]

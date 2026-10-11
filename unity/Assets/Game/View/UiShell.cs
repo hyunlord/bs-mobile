@@ -10,6 +10,17 @@ namespace Game.View
         public RectTransform TouchSurface { get; private set; }
         public RectTransform Content { get; private set; }
         public Font Font { get; private set; }
+        public bool PortraitEnabled { get; private set; }
+        public Rect PortraitPixels { get; private set; }
+        public Rect SafePixels { get; private set; }
+        public RectTransform ViewportRoot { get; private set; }
+        public float MovementRadiusCanvasUnits => PortraitEnabled?PortraitTokens.StickRadius:UiTokens.StickRadius;
+        bool mobilePortrait;
+        RectTransform[] portraitBars;
+#if UNITY_EDITOR
+        public void SetPortraitMobileSimulation(bool enabled){mobilePortrait=enabled;RefreshSafeArea();SynchronizeViewport();}
+#endif
+        public void ApplyCameraViewport(Camera camera){if(PortraitEnabled&&camera!=null)camera.pixelRect=PortraitPixels;}
         public Canvas Canvas { get; private set; }
         readonly Dictionary<string,Sprite> slicedSprites=new Dictionary<string,Sprite>(StringComparer.Ordinal);
         private Rect lastSafe;
@@ -20,16 +31,23 @@ namespace Game.View
         readonly Vector3[] stickCorners = new Vector3[4];
         RectTransform stickHud,stickLoadout;
         bool stickBoundsCached;
-        public void Initialize(Font font)
+        public void Initialize(Font font,bool portrait=false)
         {
-            Font = font;
+            Font = font;PortraitEnabled=portrait;mobilePortrait=Application.isMobilePlatform;
             Canvas = gameObject.AddComponent<Canvas>(); Canvas.renderMode = RenderMode.ScreenSpaceOverlay; Canvas.sortingOrder = 10;
             var scaler = gameObject.AddComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(900, 1600); scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight; scaler.matchWidthOrHeight = 0;
             gameObject.AddComponent<GraphicRaycaster>();
-            TouchSurface = Rect("Movement surface", transform); Stretch(TouchSurface); var hit = TouchSurface.gameObject.AddComponent<Image>(); hit.color = Color.clear;
-            SafeRoot = Rect("Safe area", transform); Stretch(SafeRoot);
+            if(portrait)
+            {
+                portraitBars=new RectTransform[4];
+                for(var i=0;i<4;i++){portraitBars[i]=Rect("Portrait margin "+i,transform);portraitBars[i].gameObject.AddComponent<Image>().color=UiTokens.FallowCharcoal;}
+            }
+            ViewportRoot=Rect("Portrait viewport",transform);Stretch(ViewportRoot);
+            if(portrait)ViewportRoot.gameObject.AddComponent<RectMask2D>();
+            TouchSurface = Rect("Movement surface", portrait?ViewportRoot:transform); Stretch(TouchSurface); var hit = TouchSurface.gameObject.AddComponent<Image>(); hit.color = Color.clear;
+            SafeRoot = Rect("Safe area", portrait?ViewportRoot:transform); Stretch(SafeRoot);
             Content = Rect("Content", SafeRoot); Stretch(Content);
-            stickBase = Rect("Joystick", transform); stickBase.sizeDelta = Vector2.one * UiTokens.StickRadius * 2; StickSurface(stickBase, "ui.joystick.base", new Rect(4,36,174,174));
+            stickBase = Rect("Joystick", portrait?ViewportRoot:transform); stickBase.sizeDelta = Vector2.one * UiTokens.StickRadius * 2; StickSurface(stickBase, "ui.joystick.base", new Rect(4,36,174,174));
             stickOpacity=stickBase.gameObject.AddComponent<CanvasGroup>();
             stickKnob = Rect("Knob", stickBase); stickKnob.sizeDelta = Vector2.one * UiTokens.StickThumbDiameter; StickSurface(stickKnob, "ui.joystick.thumb", new Rect(6,5,153,153));
             foreach (var graphic in stickBase.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
@@ -39,6 +57,22 @@ namespace Game.View
         {
             if (SafeRoot == null) return;
             var safe = Screen.safeArea; if (safe.width <= 0 || safe.height <= 0) safe = new Rect(0,0,Screen.width,Screen.height);
+            if(PortraitEnabled)
+            {
+                var viewport=PortraitViewport.Calculate(new Vector2(Screen.width,Screen.height),safe,mobilePortrait);
+                PortraitPixels=viewport.Pixels;SafePixels=viewport.SafePixels;
+                var scaler=GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ConstantPixelSize;scaler.scaleFactor=viewport.Scale;Canvas.scaleFactor=viewport.Scale;
+                ViewportRoot.anchorMin=ViewportRoot.anchorMax=new Vector2(.5f,.5f);ViewportRoot.pivot=new Vector2(.5f,.5f);
+                ViewportRoot.sizeDelta=PortraitPixels.size/viewport.Scale;ViewportRoot.anchoredPosition=Vector2.zero;
+                var sw=Screen.width/viewport.Scale;var sh=Screen.height/viewport.Scale;
+                var side=(sw-ViewportRoot.sizeDelta.x)*.5f;var cap=(sh-ViewportRoot.sizeDelta.y)*.5f;
+                PortraitWidgets.Position(portraitBars[0],0,0,side,sh);PortraitWidgets.Position(portraitBars[1],sw-side,0,side,sh);
+                PortraitWidgets.Position(portraitBars[2],side,0,sw-2*side,cap);PortraitWidgets.Position(portraitBars[3],side,sh-cap,sw-2*side,cap);
+                SafeRoot.anchorMin=new Vector2((SafePixels.xMin-PortraitPixels.xMin)/PortraitPixels.width,(SafePixels.yMin-PortraitPixels.yMin)/PortraitPixels.height);
+                SafeRoot.anchorMax=new Vector2((SafePixels.xMax-PortraitPixels.xMin)/PortraitPixels.width,(SafePixels.yMax-PortraitPixels.yMin)/PortraitPixels.height);SafeRoot.offsetMin=SafeRoot.offsetMax=Vector2.zero;
+                lastSafe=safe;lastScreen=new Vector2(Screen.width,Screen.height);viewportLayoutPending=true;return;
+            }
+            PortraitPixels=new Rect(0,0,Screen.width,Screen.height);SafePixels=safe;
             GetComponent<CanvasScaler>().referenceResolution = Screen.height / (float)Screen.width < 1.35f ? new Vector2(900,900) : new Vector2(900,1600);
             lastSafe = safe; lastScreen = new Vector2(Screen.width,Screen.height);viewportLayoutPending=true;
             SafeRoot.anchorMin = new Vector2(safe.xMin / Screen.width, safe.yMin / Screen.height); SafeRoot.anchorMax = new Vector2(safe.xMax / Screen.width,safe.yMax / Screen.height); SafeRoot.offsetMin = SafeRoot.offsetMax = Vector2.zero;
@@ -49,7 +83,7 @@ namespace Game.View
             if(lastSafe!=Screen.safeArea||lastScreen!=new Vector2(Screen.width,Screen.height))RefreshSafeArea();
             // MatchWidthOrHeight is configured to width matching. Apply that same scale before
             // building fixed geometry rather than waiting for CanvasScaler's next Update.
-            var expected=Screen.width/900f;
+            var expected=PortraitEnabled?PortraitViewport.Calculate(new Vector2(Screen.width,Screen.height),Screen.safeArea,mobilePortrait).Scale:Screen.width/900f;
             if(!viewportLayoutPending&&Mathf.Abs(Canvas.scaleFactor-expected)<.00001f)return;
             Canvas.scaleFactor=expected;
             Canvas.ForceUpdateCanvases();
@@ -61,16 +95,17 @@ namespace Game.View
             stickBase.gameObject.SetActive(active); if (!active) return;
             var usable = GetWorldOverlayBounds();
             var visualScale = StickPresentationScale(new Vector2(Screen.width,Screen.height),usable,Canvas.scaleFactor);
+            if(PortraitEnabled)visualScale=PortraitTokens.StickRadius/UiTokens.StickRadius;
             var center = StickPresentationCenter(origin,usable,UiTokens.StickRadius*Canvas.scaleFactor*visualScale);
-            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform,center,null,out var point);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)stickBase.parent,center,null,out var point);
             stickBase.localScale = Vector3.one*visualScale;
-            stickOpacity.alpha=Screen.width>Screen.height?UiTokens.LandscapeStickAlpha:1;
+            stickOpacity.alpha=PortraitEnabled?.5f:Screen.width>Screen.height?UiTokens.LandscapeStickAlpha:1;
             stickBase.anchoredPosition = point;
-            stickKnob.anchoredPosition = StickVisualOffset(offset,Canvas.scaleFactor);
+            stickKnob.anchoredPosition = StickVisualOffset(PortraitEnabled?offset*UiTokens.StickRadius/PortraitTokens.StickRadius:offset,Canvas.scaleFactor);
         }
         public Rect GetWorldOverlayBounds()
         {
-            var usable = Screen.safeArea;
+            var usable = PortraitEnabled?SafePixels:Screen.safeArea;
             if (usable.width <= 0 || usable.height <= 0) usable = new Rect(0,0,Screen.width,Screen.height);
             if(!stickBoundsCached)
             {
