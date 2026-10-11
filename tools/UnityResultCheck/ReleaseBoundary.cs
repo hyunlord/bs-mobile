@@ -64,12 +64,18 @@ internal static class ReleaseBoundary
         {
             var type = metadata.GetTypeDefinition(handle);
             var name = metadata.GetString(type.Name);
-            if (metadata.GetString(type.Namespace) == "Game.App" && name == "DevelopmentLongFrameRecorder") return true;
+            if (metadata.GetString(type.Namespace) == "Game.App" && name == "DevelopmentLongFrameRecorder")
+            {
+                return true;
+            }
             var parent = type.GetDeclaringType();
             if (!parent.IsNil && name is "LongFrameStages" or "LongFrameProvenance")
             {
                 var owner = metadata.GetTypeDefinition(parent);
-                if (metadata.GetString(owner.Namespace) == "Game.App" && metadata.GetString(owner.Name) == "RunCoordinator") return true;
+                if (metadata.GetString(owner.Namespace) == "Game.App" && metadata.GetString(owner.Name) == "RunCoordinator")
+                {
+                    return true;
+                }
             }
             handle = parent;
         }
@@ -84,17 +90,28 @@ internal static class ReleaseBoundary
         foreach (var handle in metadata.TypeDefinitions)
         {
             var type = metadata.GetTypeDefinition(handle);
-            if (metadata.GetString(type.Namespace) != "SowSiege.Core" || metadata.GetString(type.Name) != "RuntimeDiagnosticsCapabilities") continue;
+            if (metadata.GetString(type.Namespace) != "SowSiege.Core" || metadata.GetString(type.Name) != "RuntimeDiagnosticsCapabilities")
+            {
+                continue;
+            }
             foreach (var fieldHandle in type.GetFields())
             {
                 var field = metadata.GetFieldDefinition(fieldHandle);
-                if (metadata.GetString(field.Name) != "FineStagesEnabled") continue;
+                if (metadata.GetString(field.Name) != "FineStagesEnabled")
+                {
+                    continue;
+                }
                 var constantHandle = field.GetDefaultValue();
-                if (constantHandle.IsNil) throw new InvalidDataException("Core diagnostics capability is not constant.");
+                if (constantHandle.IsNil)
+                {
+                    throw new InvalidDataException("Core diagnostics capability is not constant.");
+                }
                 var constant = metadata.GetConstant(constantHandle);
                 var bytes = metadata.GetBlobBytes(constant.Value);
                 if (constant.TypeCode != ConstantTypeCode.Boolean || bytes.Length != 1 || bytes[0] != 0)
+                {
                     throw new InvalidDataException("Development Core fine diagnostics leaked into release.");
+                }
                 return;
             }
         }
