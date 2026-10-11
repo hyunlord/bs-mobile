@@ -341,6 +341,7 @@ namespace Game.App
         }
     }
     // Small vectors authored in the reference HTML (SVG icons, circles and CSS gradient).
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class PortraitBmShape : MaskableGraphic
     {
         public enum Form { Circle, Gem, Ingot, VerticalGradient }
