@@ -6,11 +6,25 @@ using System.Linq;
 #endif
 using SowSiege.Core;
 using UnityEngine;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
     public sealed partial class WorldRenderer : MonoBehaviour
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly ProfilerMarker SpriteBatchRebuildMarker = new ProfilerMarker("SowSiege.View.SpriteBatchRebuild");
+        public Action<string, string> DiagnosticEffectCreated;
+        public static void RegisterDiagnosticsMarkers()
+        {
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WorldRenderer).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SpriteBatch).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(BufferedHudText).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WorldEffects).TypeHandle);
+        }
+#endif
         public bool PresentationDiagnosticsEnabled { get; set; }
         public bool DiagnosticSkipActorGrounding { get; set; }
         public WorldPresentationDiagnostics LastDiagnostics { get; private set; }
@@ -194,6 +208,11 @@ namespace Game.View
             if (presentationDiagnosticsActive) diagnostics.CameraUiMs = DiagnosticInterval(ref diagnosticCheckpoint);
             UpdateFallowMask();
             if (presentationDiagnosticsActive) diagnostics.FallowMaskMs = DiagnosticInterval(ref diagnosticCheckpoint);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Inclusive draw preparation: capacity-triggered Flush samples can be nested.
+            using (SpriteBatchRebuildMarker.Auto())
+            {
+#endif
             DrawTerrain();
             DrawFallowLandmarks();
             if (presentationDiagnosticsActive) diagnostics.TerrainLandmarksMs = DiagnosticInterval(ref diagnosticCheckpoint);
@@ -311,6 +330,9 @@ namespace Game.View
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
             threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
             if (presentationDiagnosticsActive) diagnostics.HeroThreatsMs = DiagnosticInterval(ref diagnosticCheckpoint);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            }
+#endif
             SubmittedInstances = 0; DrawCalls = 0;
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}

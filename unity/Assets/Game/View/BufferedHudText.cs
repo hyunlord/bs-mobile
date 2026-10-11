@@ -1,6 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
@@ -8,6 +11,10 @@ namespace Game.View
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class BufferedHudText : MaskableGraphic
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly ProfilerMarker TextUpdateMarker = new ProfilerMarker("SowSiege.View.HudTextUpdate");
+        static readonly ProfilerMarker TextDirtyMarker = new ProfilerMarker("SowSiege.View.HudTextDirty");
+#endif
         const string Glyphs = "0123456789 /:-·봄여름가을겨울체력레벨남음";
         readonly char[] text = new char[96];
         readonly char[] digits = new char[20];
@@ -70,13 +77,22 @@ namespace Game.View
         public void End()
         {
             changed |= length != writing; length = writing;
-            if (changed) SetVerticesDirty();
+            if (changed)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using var dirtySample = TextDirtyMarker.Auto();
+#endif
+                SetVerticesDirty();
+            }
         }
 #if UNITY_EDITOR
         public string CaptureTextForTesting() => new string(text, 0, length);
 #endif
         protected override void OnPopulateMesh(VertexHelper helper)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var textUpdateSample = TextUpdateMarker.Auto();
+#endif
             if (font == null) { helper.Clear(); return; }
             populating = true;
             try

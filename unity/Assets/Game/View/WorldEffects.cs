@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using SowSiege.Core;
 using UnityEngine;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
@@ -16,6 +19,9 @@ namespace Game.View
 
     public sealed class WorldEffects
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        internal static readonly ProfilerMarker CreateMarker = new ProfilerMarker("SowSiege.View.EffectCreate");
+#endif
         public const int Capacity = 2048;
         public const float AttackLifetimeSeconds = 0.18f;
         public const float ExperienceLifetimeSeconds = GameVisualTokens.ExperienceSeconds;
@@ -40,6 +46,10 @@ namespace Game.View
         }
         public void Accept(IReadOnlyList<PresentationEvent> events, Action<PresentationEvent> accepted = null)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Includes event de-duplication, accepted callbacks and pooled slot insertion.
+            using var createSample = CreateMarker.Auto();
+#endif
             for (var index = 0; index < events.Count; index++)
             {
                 var effect = events[index];

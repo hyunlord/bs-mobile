@@ -75,12 +75,13 @@ namespace Game.App
         }
         void Update()
         {
+            BeginLongFrame();
             if(ProbeEnabled)BeginProbeFrame();
             if (!normalTraceChecked) { normalTraceChecked = true; normalTrace = NormalPlayTrace.Create(this); if (normalTrace != null) ConfigureNormalTrace(normalTrace); }
             normalTrace?.BeginFrame();
             smoothness.BeginFrame(CurrentFrame?.Tick ?? 0, Paused);
             try { UpdateRunFrame(); }
-            finally { smoothness.EndFrame(); normalTrace?.EndFrame(Camera.main, world != null ? world.CameraShakeOffset : Vector2.zero); }
+            finally { smoothness.EndFrame(); normalTrace?.EndFrame(Camera.main, world != null ? world.CameraShakeOffset : Vector2.zero); EndLongFrame(); }
         }
     }
 }

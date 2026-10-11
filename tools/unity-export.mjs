@@ -20,6 +20,10 @@ export function selectedProfile(value = process.env.UNITY_CONTENT_PROFILE ?? pro
   assert.ok(['first-playable', 'wave-1a'].includes(value), 'Unsupported Unity content profile');
   return value;
 }
+export function selectedCoreVariant(value = process.env.UNITY_MAC_DEVELOPMENT ?? '0') {
+  assert.ok(value === '0' || value === '1', 'UNITY_MAC_DEVELOPMENT must be 0 or 1');
+  return value === '1' ? 'fine-diagnostics' : 'standard';
+}
 const digest = bytes => createHash('sha256').update(bytes).digest('hex').toUpperCase();
 const portable = relative => relative.split(path.sep).join('/');
 
@@ -80,6 +84,7 @@ export async function verify(root, profile = selectedProfile()) {
   selectedProfile(profile);
   const manifest = JSON.parse(await readFile(await safeOutput(root, outputs.provenance), 'utf8'));
   assert.equal(manifest.contractVersion, 3, 'Unsupported Unity preparation manifest; regenerate');
+  assert.equal(manifest.coreVariant, selectedCoreVariant(), 'Unity Core variant mismatch; run tools/prepare-unity.sh');
   assert.deepEqual(manifest.inputs, await inputSnapshot(root), 'Stale Unity source/data; run tools/prepare-unity.sh');
   assert.deepEqual(manifest.outputs, await outputSnapshot(root), 'Stale Unity bridge/DLL; run tools/prepare-unity.sh');
   assert.deepEqual(manifest.buildIdentity, await buildIdentity(root), 'Stale Unity build identity; run tools/prepare-unity.sh');
@@ -100,13 +105,14 @@ function run(root, arguments_) {
 
 export async function prepare(root, profile = selectedProfile()) {
   selectedProfile(profile);
+  const coreVariant = selectedCoreVariant();
   const before = await inputSnapshot(root);
   const identity = await buildIdentity(root);
   const provenance = await safeOutput(root, outputs.provenance);
   const bridge = await safeOutput(root, outputs.bridge);
   const core = await safeOutput(root, outputs.core);
   run(root, ['build', 'core/src/SowSiege.Sim/SowSiege.Sim.csproj', '--configuration', 'Release', '--no-incremental', '--nologo']);
-  run(root, ['build', 'core/src/SowSiege.Core/SowSiege.Core.csproj', '--configuration', 'Release', '--framework', 'netstandard2.1', '--no-incremental', '--nologo']);
+  run(root, ['build', 'core/src/SowSiege.Core/SowSiege.Core.csproj', '--configuration', 'Release', '--framework', 'netstandard2.1', '--no-incremental', '--nologo', ...(coreVariant === 'fine-diagnostics' ? ['--property:SowSiegeFineDiagnostics=true'] : [])]);
   run(root, ['core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll', '--export-unity', path.join(root, 'data'), bridge, profile]);
   if (process.env.UNITY_WAVE_BENCHMARK === '1') {
     assert.equal(profile, 'wave-1a', 'Wave benchmark requires wave-1a presentation');
@@ -118,7 +124,7 @@ export async function prepare(root, profile = selectedProfile()) {
   await mkdir(path.dirname(core), { recursive: true });
   await copyFile(path.join(root, 'core/src/SowSiege.Core/bin/Release/netstandard2.1/SowSiege.Core.dll'), core);
   await writeFile(await safeOutput(root, outputs.identity), identitySource(identity));
-  const manifest = { contractVersion: 3, profileName: profile, profileHash: digest(await readFile(await safeOutput(root, `data/profiles/${profile}.json`))), buildIdentity: identity, inputs: before, outputs: await outputSnapshot(root) };
+  const manifest = { contractVersion: 3, coreVariant, profileName: profile, profileHash: digest(await readFile(await safeOutput(root, `data/profiles/${profile}.json`))), buildIdentity: identity, inputs: before, outputs: await outputSnapshot(root) };
   assert.deepEqual(await inputSnapshot(root), before, 'Source/data changed before Unity preparation completed');
   assert.deepEqual(await buildIdentity(root), identity, 'Source changed before Unity build identity completed');
   await writeFile(provenance, `${JSON.stringify(manifest, null, 2)}\n`);

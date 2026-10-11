@@ -335,6 +335,7 @@ namespace Game.App
                 var step=1d/CurrentFrame.TickRate;
                 while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,movement);}
             }
+            BeginLongFrameHud();
             var probeHudStart=ProbeEnabled?ProbeTimestamp():0;
             using(RunProfilerMarkers.Hud.Auto())
             using(smoothness.Scope(SmoothnessScope.Hud))
@@ -343,6 +344,7 @@ namespace Game.App
                 hud?.Present(CurrentFrame,FirstPlayable);UpdateHints();
             }
             if(ProbeEnabled)probeHudMs+=ProbeElapsed(probeHudStart);
+            EndLongFrameHud();
             if(world!=null)
             {
                 var visible=Screen.safeArea;
@@ -364,6 +366,7 @@ namespace Game.App
                 var probeDrawStart=ProbeEnabled?ProbeTimestamp():0;
                 using(RunProfilerMarkers.WorldPresent.Auto())
                 using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,CurrentFrame,FirstPlayable,renderInterpolation.Present(CurrentFrame.Tick,(float)(accumulator*CurrentFrame.TickRate),Paused,Time.unscaledDeltaTime,CurrentFrame.TickRate),Time.unscaledDeltaTime,visible);
+                LongFrameViewPresented();
                 if(ProbeEnabled)probeDrawMs+=ProbeElapsed(probeDrawStart);
                 smoothness.Submit(Camera.main,CurrentFrame.Tick,Paused,lordPrediction.ResetThisFrame,lordPrediction.Speed);
             }
@@ -386,8 +389,17 @@ namespace Game.App
             {
                 var command=new ReplayCommand(Session.NextSequence,CurrentFrame.Tick,kind,input,card,value);
                 var probeCoreStart=ProbeEnabled?ProbeTimestamp():0;
-                using(RunProfilerMarkers.CoreApply.Auto())
-                using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);
+                BeginLongFrameCommand(kind);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                try
+                {
+#endif
+                    using(RunProfilerMarkers.CoreApply.Auto())
+                    using(smoothness.Scope(SmoothnessScope.CoreApply))Session.Apply(command);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                }
+                finally { EndLongFrameCommand(kind); }
+#endif
                 if(ProbeEnabled&&kind==ReplayCommandKind.Advance){probeCoreMs+=ProbeElapsed(probeCoreStart);probeCoreTicks++;}
                 using(smoothness.Scope(SmoothnessScope.Recording))recording.WriteAccepted(command);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -412,6 +424,7 @@ namespace Game.App
         }
         private void CaptureSnapshots()
         {
+            BeginLongFrameSnapshot();
             var probeSnapshotStart=ProbeEnabled?ProbeTimestamp():0;
             using var allocationScope=smoothness.Scope(SmoothnessScope.CoreSnapshot);
             if(!ReferenceEquals(snapshotSession,Session))
@@ -430,6 +443,7 @@ namespace Game.App
             var subscribers=WaveFrameAccepted;
             if(CurrentWave!=null&&subscribers!=null) subscribers(Wave);
             if(ProbeEnabled)probeSnapshotMs+=ProbeElapsed(probeSnapshotStart);
+            EndLongFrameSnapshot();
         }
         private void ShowCards()
         {
@@ -565,6 +579,7 @@ namespace Game.App
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
+            LongFrameLifecycle(false, pause);
             if (offlineReplayCapture != null) return;
             if (waveBenchmarkReady && benchmarkWarmFrames == 0 && pause) benchmarkInterrupted = true;
 #if UNITY_EDITOR
@@ -579,6 +594,7 @@ namespace Game.App
         }
         private void OnApplicationFocus(bool focus)
         {
+            LongFrameLifecycle(true, focus);
             if (offlineReplayCapture != null) return;
             if (waveBenchmarkReady && benchmarkWarmFrames == 0 && !focus) benchmarkInterrupted = true;
 #if UNITY_EDITOR
@@ -590,8 +606,8 @@ namespace Game.App
             suspendedInterval=true;focusLost=!focus&&AutoplayCapture.Active==null;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
             if(!focus)StopDiagnosticTrace("focus-lost");
         }
-        private void OnApplicationQuit(){if(!waveBenchmarkRequested)preferences?.Save();StopRecording();}
-        private void OnDestroy(){offlineReplayCapture?.Dispose();StopRecording();if(ownsFont&&font!=null)Destroy(font);}
+        private void OnApplicationQuit(){FinishLongFrames();if(!waveBenchmarkRequested)preferences?.Save();StopRecording();}
+        private void OnDestroy(){FinishLongFrames();offlineReplayCapture?.Dispose();StopRecording();if(ownsFont&&font!=null)Destroy(font);}
         private void StopDiagnosticTrace(string reason)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

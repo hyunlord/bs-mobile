@@ -60,7 +60,14 @@ namespace SowSiege.Core
                 foreach (var first in ordered)
                 {
                     if (first.Health <= 0 || !bodies.TryGetValue(first.Id, out var firstBody)) { continue; }
+#if SOWSIEGE_FINE_DIAGNOSTICS
+                    var collectDiagnostics = world.Diagnostics;
+                    collectDiagnostics?.Begin(RuntimeStage.Collect);
+                    try { spatial.Collect(first.Position, maximumWidth, candidates); }
+                    finally { collectDiagnostics?.End(RuntimeStage.Collect); }
+#else
                     spatial.Collect(first.Position, maximumWidth, candidates);
+#endif
                     candidates.Sort(IdOrder);
                     foreach (var second in candidates)
                     {
@@ -146,7 +153,16 @@ namespace SowSiege.Core
         }
 
         private bool Clear(EnemyState enemy, Position candidate)
+#if SOWSIEGE_FINE_DIAGNOSTICS
+        {
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Clear);
+            try { return spatial.Clear(enemy, candidate, maximumWidth, bodies, MinimumDistanceWidthSumNumerator, MinimumDistanceWidthSumDenominator); }
+            finally { diagnostics?.End(RuntimeStage.Clear); }
+        }
+#else
             => spatial.Clear(enemy, candidate, maximumWidth, bodies, MinimumDistanceWidthSumNumerator, MinimumDistanceWidthSumDenominator);
+#endif
 
         private bool Charging(EnemyState enemy) => bodies.TryGetValue(enemy.Id, out var body) && body.Charging;
         private void Move(EnemyState enemy, int dx, int dy)

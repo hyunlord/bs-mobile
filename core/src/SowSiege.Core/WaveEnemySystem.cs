@@ -32,7 +32,14 @@ namespace SowSiege.Core
         internal void Tick()
         {
             RecycleFieldEnemies();
+#if SOWSIEGE_FINE_DIAGNOSTICS
+            var spawnDiagnostics = world.Diagnostics;
+            spawnDiagnostics?.Begin(RuntimeStage.Spawn);
+            try { Spawn(); }
+            finally { spawnDiagnostics?.End(RuntimeStage.Spawn); }
+#else
             Spawn();
+#endif
             if (interactive?.Field?.ArenaActive == true) { RecycleFieldEnemies(); }
             var pathsCollected = false;
             ripeAvailabilityKnown = false;

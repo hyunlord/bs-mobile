@@ -72,6 +72,9 @@ namespace Game.View
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
             if(frame==null)return;
             waveMotion.Accept(frame,visualTime);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var effectCreateSample = WorldEffects.CreateMarker.Auto();
+#endif
             for(var valueIndex=0;valueIndex<frame.Events.Count;valueIndex++)
             {
                 var value=frame.Events[valueIndex];
@@ -89,8 +92,20 @@ namespace Game.View
                     if(rewardSources.TryGetValue(source,out var rewardSource))source=rewardSource;
                     growthHints.Enqueue(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?WorldHintKind.HarvestExperience:WorldHintKind.CompletionExperience,value.Amount);
                 }
-                if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))waveEffects.Add((value,visualTime));
-                if(value.Kind=="work-created"&&liveGrainIds.Contains(value.SubjectId))waveEffects.Add((value,visualTime));
+                if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))
+                {
+                    waveEffects.Add((value,visualTime));
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    DiagnosticEffectCreated?.Invoke(value.Source,value.Kind);
+#endif
+                }
+                if(value.Kind=="work-created"&&liveGrainIds.Contains(value.SubjectId))
+                {
+                    waveEffects.Add((value,visualTime));
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    DiagnosticEffectCreated?.Invoke(value.Source,value.Kind);
+#endif
+                }
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
                 if(value.Kind=="attack")heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
             }

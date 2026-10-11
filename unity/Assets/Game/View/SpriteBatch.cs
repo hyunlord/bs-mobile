@@ -1,12 +1,19 @@
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
     public sealed class SpriteBatch : IDisposable
     {
         public const int MaximumInstances = 511;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly ProfilerMarker SubmitMarker = new ProfilerMarker("SowSiege.View.SpriteBatchSubmit");
+        static readonly ProfilerMarker FirstUseMarker = new ProfilerMarker("SowSiege.View.SpriteBatchFirstUse");
+#endif
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
         static readonly int FlashId = Shader.PropertyToID("_InstanceFlash");
@@ -31,6 +38,9 @@ namespace Game.View
 
         public SpriteBatch(Texture2D texture, Shader shader, Camera camera, int layer)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var firstUseSample = FirstUseMarker.Auto();
+#endif
             if (texture == null) throw new ArgumentNullException(nameof(texture));
             if (shader == null) throw new ArgumentNullException(nameof(shader));
             if (camera == null) throw new ArgumentNullException(nameof(camera));
@@ -71,6 +81,9 @@ namespace Game.View
         public void Flush()
         {
             if (count == 0) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var submitSample = SubmitMarker.Auto();
+#endif
             properties.SetVectorArray(ColorId, colors); properties.SetVectorArray(UvId, uvs); properties.SetVectorArray(FlashId, flashes);
             var parameters = new RenderParams(material)
             {

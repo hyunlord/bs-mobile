@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { execFileSync } from 'node:child_process';
-import { inputSnapshot, outputSnapshot, outputs, prepare, selectedProfile, verify } from './unity-export.mjs';
+import { inputSnapshot, outputSnapshot, outputs, prepare, selectedCoreVariant, selectedProfile, verify } from './unity-export.mjs';
 import { validateContent } from './validate-content.mjs';
 import { buildIdentity, identitySource } from './unity-build-identity.mjs';
 
@@ -31,7 +31,7 @@ async function fixture(t) {
   git(root, ['init', '-q']); git(root, ['add', '.']); git(root, ['commit', '-qm', 'fixture']);
   const identity = await buildIdentity(root);
   await writeFile(path.join(root, outputs.identity), identitySource(identity));
-  const manifest = { contractVersion: 3, profileName: 'first-playable', profileHash: createHash('sha256').update('{}').digest('hex').toUpperCase(), buildIdentity: identity, inputs: await inputSnapshot(root), outputs: await outputSnapshot(root) };
+  const manifest = { contractVersion: 3, coreVariant: selectedCoreVariant(), profileName: 'first-playable', profileHash: createHash('sha256').update('{}').digest('hex').toUpperCase(), buildIdentity: identity, inputs: await inputSnapshot(root), outputs: await outputSnapshot(root) };
   await writeFile(path.join(root, outputs.provenance), JSON.stringify(manifest));
   return root;
 }
@@ -139,3 +139,54 @@ test('wave bridge cannot pass verification as a historical profile', async t => 
   const root = await fixture(t);
   await assert.rejects(verify(root, 'wave-1a'), /profile mismatch/);
 });
+
+for (const [development, coreVariant] of [['0', 'fine-diagnostics'], ['1', 'standard']]) {
+  test(`preparation rejects ${coreVariant} Core for development=${development}`, async t => {
+    const root = await fixture(t), file = path.join(root, outputs.provenance);
+    const previous = process.env.UNITY_MAC_DEVELOPMENT;
+    process.env.UNITY_MAC_DEVELOPMENT = development;
+    t.after(() => { if (previous === undefined) delete process.env.UNITY_MAC_DEVELOPMENT; else process.env.UNITY_MAC_DEVELOPMENT = previous; });
+    const manifest = JSON.parse(await readFile(file, 'utf8'));
+    manifest.coreVariant = coreVariant;
+    await writeFile(file, JSON.stringify(manifest));
+    await assert.rejects(verify(root), /Core variant mismatch/);
+  });
+}
+
+test('Core variant selection defaults to standard and rejects ambiguous values', () => {
+  assert.equal(selectedCoreVariant('0'), 'standard');
+  assert.equal(selectedCoreVariant('1'), 'fine-diagnostics');
+  for (const value of ['', 'true', '2']) assert.throws(() => selectedCoreVariant(value), /must be 0 or 1/);
+});
+
+for (const development of ['0', '1']) {
+  test(`preparation builds and verifies the requested Core variant (${development})`, async t => {
+    const root = await fixture(t);
+    const fakeDotnet = path.join(root, 'fake-dotnet');
+    const log = path.join(root, 'unity/Assets/Generated/dotnet-arguments.jsonl');
+    const compiledCore = path.join(root, 'core/src/SowSiege.Core/bin/Release/netstandard2.1/SowSiege.Core.dll');
+    await mkdir(path.dirname(compiledCore), { recursive: true });
+    await writeFile(compiledCore, 'compiled fixture dll');
+    await writeFile(fakeDotnet, '#!/usr/bin/env node\nrequire("node:fs").appendFileSync(process.env.UNITY_EXPORT_TEST_LOG, JSON.stringify(process.argv.slice(2)) + "\\n");\n');
+    await chmod(fakeDotnet, 0o755);
+    const values = { DOTNET: fakeDotnet, UNITY_EXPORT_TEST_LOG: log, UNITY_MAC_DEVELOPMENT: development };
+    const previous = Object.fromEntries(Object.keys(values).map(key => [key, process.env[key]]));
+    Object.assign(process.env, values);
+    t.after(() => {
+      for (const [key, value] of Object.entries(previous)) {
+        if (value === undefined) delete process.env[key]; else process.env[key] = value;
+      }
+    });
+    const manifest = await prepare(root);
+    const calls = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
+    const flag = '--property:SowSiegeFineDiagnostics=true';
+    assert.equal(calls.length, 3);
+    assert.equal(calls[0].includes(flag), false, 'CLI export remains the ordinary Core variant');
+    assert.equal(calls[1].includes(flag), development === '1');
+    assert.equal(calls.some(args => args.some(argument => argument.startsWith('--property:DefineConstants='))), false, 'SDK target framework symbols must not be replaced');
+    assert.equal(manifest.coreVariant, development === '1' ? 'fine-diagnostics' : 'standard');
+    assert.deepEqual(await verify(root), manifest);
+    process.env.UNITY_MAC_DEVELOPMENT = development === '1' ? '0' : '1';
+    await assert.rejects(verify(root), /Core variant mismatch/);
+  });
+}

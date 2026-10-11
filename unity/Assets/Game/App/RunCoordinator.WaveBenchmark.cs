@@ -251,7 +251,9 @@ namespace Game.App
                         if (command.Kind == ReplayCommandKind.Advance) accumulator -= step;
                     }
                 }
+                BeginLongFrameHud();
                 var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.Hud.Auto()) hud?.Present(CurrentFrame, FirstPlayable); sample.hudMs = BenchmarkMilliseconds(started);
+                EndLongFrameHud();
                 var visible = Screen.safeArea;
                 if (hud != null)
                 {
@@ -276,6 +278,7 @@ namespace Game.App
                 }
                 using (RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous, CurrentFrame, FirstPlayable, alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
+                LongFrameViewPresented();
                 sample.composition = world.LastDiagnostics;
                 sample.tick = CurrentFrame.Tick; sample.enemies = CurrentFrame.Counts.Enemies;
                 sample.drawCalls = world.DrawCalls; sample.spriteInstances = world.SubmittedInstances;
@@ -297,8 +300,9 @@ namespace Game.App
             var measureTick = benchmarkCoreDiagnostics != null && present && command.Kind == ReplayCommandKind.Advance && BenchmarkWindow(command.Tick);
             if (measureTick) benchmarkCoreDiagnostics.BeginTick(command.Tick, Time.frameCount);
             var started = Stopwatch.GetTimestamp();
+            BeginLongFrameCommand(command.Kind);
             try { using (RunProfilerMarkers.CoreApply.Auto()) Session.Apply(command); }
-            finally { if (measureTick) benchmarkCoreDiagnostics.EndTick(); }
+            finally { EndLongFrameCommand(command.Kind); if (measureTick) benchmarkCoreDiagnostics.EndTick(); }
             var elapsed = BenchmarkMilliseconds(started); sample.simulationMs += elapsed;
             if (command.Kind == ReplayCommandKind.Advance) { sample.advances++; sample.advanceMs += elapsed; benchmarkMovement = command.Input; }
             foreach (var checkpoint in benchmarkReplay.Checkpoints)
@@ -333,6 +337,7 @@ namespace Game.App
             result.metalDisplayLinkEnvironment = Environment.GetEnvironmentVariable("UNITY_USE_METAL_DISPLAY_LINK") ?? "unset";
             result.diagnosticOnly = benchmarkTarget60Experiment || benchmarkSkipGrounding || benchmarkCoreDiagnostics != null || benchmarkProfilerEnabled || result.developmentBuild;
             result.performanceEligible = !offlineReplayRequested && !result.diagnosticOnly;
+            LongFrameBenchmarkMetadata(result);
             result.actorGroundingSkipped = benchmarkSkipGrounding;
             if (offlineReplayRequested) result.benchmarkMode = "offline-render-60fps";
             if (crowdBenchmark != null)
@@ -379,6 +384,7 @@ namespace Game.App
                             }
                         }
                     }
+                    FinishLongFrames();
                     File.WriteAllText(Path.Combine(benchmarkOutput, "benchmark.json"), JsonUtility.ToJson(result, true));
                 }
             }

@@ -230,7 +230,18 @@ namespace SowSiege.Core
         }
         private void TickCarriedWater() => subscriptions.CarryWater(irrigate);
 
+#if SOWSIEGE_FINE_DIAGNOSTICS
         internal void Harvest(WaveWork work)
+        {
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Harvest);
+            try { HarvestCore(work); }
+            finally { diagnostics?.End(RuntimeStage.Harvest); }
+        }
+        private void HarvestCore(WaveWork work)
+#else
+        internal void Harvest(WaveWork work)
+#endif
         {
             if (work.Kind != "grain" || work.Health <= 0 || !work.Complete) { return; }
             if (!Reward(work.Source, work.Id, work.Cycle, "growth", work.Position, Gear(work.Source).RewardExperience)) { return; }
