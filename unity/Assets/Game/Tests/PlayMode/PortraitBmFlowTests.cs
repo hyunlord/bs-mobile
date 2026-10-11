@@ -318,6 +318,7 @@ namespace Tests.PlayMode
             var existingOverflow = catalog.Materials.ToDictionary(m => m.Id, m => 7);
             app.EditorPresentSettledRewardFixture(new MetaSettlement(before, false, awarded, existingOverflow, new[] { building.Id }, Array.Empty<string>()));
             yield return ScreenIs("Summary");
+            yield return CaptureSizes("result-bonus", "Summary", true);
             store.FailFrom = store.Writes + 2; // Receipt saves; its acknowledgement fails after the atomic meta reward.
             Click("Summary.OptionalAd"); yield return ScreenIs("Summary");
             Assert.That(policy.HasPendingWrite, Is.True);
@@ -335,6 +336,7 @@ namespace Tests.PlayMode
             store.FailFrom = -1; app.EditorRetryRewardDelivery(); yield return ScreenIs("Summary");
             Assert.That(policy.PendingRewards, Is.Empty); Assert.That(policy.HasPendingWrite, Is.False);
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
+            yield return CaptureSizes("result-bonus-granted", "Summary", true);
         }
 
         void PrepareAccount()

@@ -207,6 +207,8 @@ namespace Tests.PlayMode
             yield return WaitForScreen("Cards");
             yield return new WaitForSecondsRealtime(.35f);
             yield return CaptureSizes("cards", true);
+            yield return ReachOfferedEvolutionRibbon();
+            yield return CaptureSizes("cards", true, "cards-evolution-fixture");
             app.NavigateBack();
             yield return WaitForScreen("Pause");
             yield return CaptureSizes("pause", true);
@@ -359,7 +361,34 @@ namespace Tests.PlayMode
             Assert.Fail("Button center cannot be reached by scrolling: " + name);
         }
 
-        IEnumerator CaptureSizes(string screen, bool cardFixture)
+        IEnumerator ReachOfferedEvolutionRibbon()
+        {
+            const int maximumOffers = 16;
+            for (var attempt = 0; attempt < maximumOffers; attempt++)
+            {
+                var offer = app.Session.View.CaptureCards();
+                Assert.That(offer, Is.Not.Null);
+                var evolved = app.FirstPlayable.Cards.Where(card => offer.Cards.Contains(card.Id))
+                    .Any(card => app.FirstPlayable.Evolutions.Any(evolution => card.EvolutionIds.Contains(evolution.Id)));
+                if (evolved)
+                {
+                    var ribbons = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "Evolution ribbon" && rect.gameObject.activeInHierarchy).ToArray();
+                    Assert.That(ribbons, Is.Not.Empty, "A real offered evolution relationship must produce a gold ribbon.");
+                    foreach (var ribbon in ribbons)
+                        Assert.That(ribbon.GetComponentInChildren<Text>().text, Does.Contain("→"));
+                    yield break;
+                }
+                yield return new WaitForSecondsRealtime(.35f);
+                var selected = offer.Cards[0];
+                yield return Reveal("Card.Choose:" + selected); Click("Card.Choose:" + selected);
+                yield return WaitForScreen("Run");
+                app.Send(ReplayCommandKind.GrantLevel);
+                yield return WaitForScreen("Cards");
+            }
+            Assert.Fail("No canonical evolution-related offer within 16 developer-granted levels; never synthesize a card for this capture.");
+        }
+
+        IEnumerator CaptureSizes(string screen, bool cardFixture, string captureName = null)
         {
             foreach (var size in new[] { new Vector2Int(390, 844), new Vector2Int(1080, 2520), new Vector2Int(1920, 1080) })
             {
@@ -378,7 +407,20 @@ namespace Tests.PlayMode
                 AssertTouchTargets();
                 if (screen == "run") AssertHudCoverage(size.x == 390);
                 if (screen == "pause") AssertPauseScrollDoesNotCoverActions();
-                yield return Capture(screen, size, mobile, cardFixture);
+                if (captureName == "cards-evolution-fixture")
+                {
+                    var viewport = app.Ui.GetComponentInChildren<ScrollRect>().viewport;
+                    var visible = Pixels(viewport);
+                    var ribbons = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "Evolution ribbon" && rect.gameObject.activeInHierarchy).ToArray();
+                    Assert.That(ribbons, Is.Not.Empty);
+                    foreach (var ribbon in ribbons)
+                    {
+                        var bounds = Pixels(ribbon);
+                        Assert.That(bounds.yMin, Is.GreaterThanOrEqualTo(visible.yMin - 1), "Gold ribbon must be fully visible in the actual capture.");
+                        Assert.That(bounds.yMax, Is.LessThanOrEqualTo(visible.yMax + 1));
+                    }
+                }
+                yield return Capture(captureName ?? screen, size, mobile, cardFixture);
                 if (screen == "cards" || screen == "settings" || screen == "pause")
                 {
                     var scroll = app.Ui.GetComponentInChildren<ScrollRect>();
@@ -388,7 +430,7 @@ namespace Tests.PlayMode
                     Canvas.ForceUpdateCanvases();
                     AssertTouchTargets();
                     if (screen == "pause") AssertPauseScrollDoesNotCoverActions();
-                    yield return Capture(screen + "-bottom", size, mobile, cardFixture);
+                    yield return Capture((captureName ?? screen) + "-bottom", size, mobile, cardFixture);
                     scroll.verticalNormalizedPosition = 1;
                     yield return null;
                 }

@@ -65,20 +65,25 @@ namespace Game.App
             var logo = Resources.Load<Texture2D>("Fallow/title-logo");
             if (logo != null)
             {
-                var logoRect = PortraitWidgets.Place("Kingdom logo", root, 30, 252, width - 60, 92);
+                var bounds = PortraitWidgets.Place("Kingdom logo bounds", root, 30, 260, width - 60, 84);
+                var scale = Mathf.Min((width - 60) / logo.width, 84f / logo.height);
+                var logoWidth = logo.width * scale; var logoHeight = logo.height * scale;
+                var logoRect = PortraitWidgets.Place("Kingdom logo", bounds, (width - 60 - logoWidth) / 2, (84 - logoHeight) / 2, logoWidth, logoHeight);
                 var image = logoRect.gameObject.AddComponent<RawImage>(); image.texture = logo; image.raycastTarget = false;
-                var fit = logoRect.gameObject.AddComponent<AspectRatioFitter>(); fit.aspectRatio = (float)logo.width / logo.height; fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             }
             else Text(ui, root, "휴경의 왕국", 24, height * .2f, width - 48, PortraitTokens.Title).alignment = TextAnchor.MiddleCenter;
             PortraitWidgets.Art(ui, root, "o-wheat", 18, 548, 120, 116);
             PortraitWidgets.Art(ui, root, "o-wheat", width - 132, 560, 112, 108);
             PortraitWidgets.Art(ui, root, "hero", (width - 110) / 2, 470, 110, 139);
-            var tagline = PortraitWidgets.Label(ui, root, "돌본 땅에 다시 봄이 깃든다", 20, 344, width - 40, 30, 18);
+            var tagline = PortraitWidgets.Label(ui, root, "돌본 땅에 다시 봄이 깃든다", 20, 350, width - 40, 30, 18);
             tagline.color = new Color32(246,235,210,255); tagline.alignment = TextAnchor.MiddleCenter;
             var taglineShadow = tagline.gameObject.AddComponent<Shadow>(); taglineShadow.effectColor = new Color(0,0,0,.65f); taglineShadow.effectDistance = new Vector2(0,-2);
             TitleCaption(ui, root, "Title.Prompt", firstRun ? "화면을 눌러 시작" : "화면을 눌러 장원으로", 65, height - 154, width - 130, 64);
             var note = Text(ui, root, "첫 실행이면 바로 첫 판 · 이후에는 영지로", 20, height - 74, width - 40, 12); note.color = new Color32(233,221,191,255); note.alignment = TextAnchor.MiddleCenter;
-            Button(ui, root, "Title.Settings", "설정", settings, width - 60, 52, 44);
+            var settingsTarget = PortraitWidgets.Place("Title.Settings", root, width - 60, 52, 44, 44);
+            var settingsGraphic = settingsTarget.gameObject.AddComponent<PortraitSettingsGear>();
+            var settingsButton = settingsTarget.gameObject.AddComponent<Button>(); settingsButton.targetGraphic = settingsGraphic;
+            settingsButton.onClick.AddListener(() => settings?.Invoke());
         }
         static void TitleCaption(UiShell ui, Transform parent, string name, string text, float x, float y, float width, float height)
         {
@@ -345,6 +350,50 @@ namespace Game.App
             Button(ui, root, "Abandon.Cancel", "돌아가기", cancel, 12, height - 60, width - 24);
         }
     }
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class PortraitSettingsGear : MaskableGraphic
+    {
+        protected override void OnPopulateMesh(VertexHelper vertices)
+        {
+            vertices.Clear(); var center = rectTransform.rect.center;
+            var radius = Mathf.Min(rectTransform.rect.width, rectTransform.rect.height) / 2;
+            var cream = new Color32(246,235,210,255);
+            Disc(vertices, center, radius, new Color32(0,0,0,64));
+            Ring(vertices, center, radius - .5f, 1, new Color32(246,235,210,102));
+            Ring(vertices, center, 3.2f, 1.8f, cream);
+            for (var i = 0; i < 8; i++)
+            {
+                var angle = Mathf.PI * i / 4; var direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                var perpendicular = new Vector2(-direction.y, direction.x) * .9f;
+                var inner = center + direction * 6.5f; var outer = center + direction * 9.5f; var start = vertices.currentVertCount;
+                vertices.AddVert(inner - perpendicular, cream, Vector2.zero); vertices.AddVert(inner + perpendicular, cream, Vector2.zero);
+                vertices.AddVert(outer + perpendicular, cream, Vector2.zero); vertices.AddVert(outer - perpendicular, cream, Vector2.zero);
+                vertices.AddTriangle(start, start + 1, start + 2); vertices.AddTriangle(start, start + 2, start + 3);
+            }
+        }
+        static void Disc(VertexHelper vertices, Vector2 center, float radius, Color32 shade)
+        {
+            var start = vertices.currentVertCount; vertices.AddVert(center, shade, Vector2.zero);
+            for (var i = 0; i <= 48; i++)
+            {
+                var angle = i * Mathf.PI * 2 / 48;
+                vertices.AddVert(center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius, shade, Vector2.zero);
+                if (i > 0) vertices.AddTriangle(start, start + i, start + i + 1);
+            }
+        }
+        static void Ring(VertexHelper vertices, Vector2 center, float radius, float thickness, Color32 shade)
+        {
+            var start = vertices.currentVertCount;
+            for (var i = 0; i <= 48; i++)
+            {
+                var angle = i * Mathf.PI * 2 / 48; var direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                vertices.AddVert(center + direction * radius, shade, Vector2.zero); vertices.AddVert(center + direction * (radius - thickness), shade, Vector2.zero);
+                if (i == 0) continue;
+                var previous = start + (i - 1) * 2; vertices.AddTriangle(previous, previous + 1, previous + 2); vertices.AddTriangle(previous + 1, previous + 3, previous + 2);
+            }
+        }
+    }
+
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class PortraitPill : MaskableGraphic
     {
