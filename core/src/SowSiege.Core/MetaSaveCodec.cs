@@ -9,9 +9,10 @@ namespace SowSiege.Core
 {
     public static class MetaSaveCodec
     {
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = ClaimsVersion;
         private const int ClockVersion = 2;
         private const int CompletedRunsVersion = 3;
+        private const int ClaimsVersion = 4;
         private const int EnvelopeBytes = 44;
         private const int ChecksumBytes = 32;
         private const int MaximumCollectionEntries = 4096;
@@ -29,7 +30,7 @@ namespace SowSiege.Core
             }
 
             Validate(state);
-            if (version < 4 && state.PendingClaims.Length != 0)
+            if (version < ClaimsVersion && state.PendingClaims.Length != 0)
             {
                 throw new InvalidDataException("Pending claims cannot be written to a historical schema.");
             }
@@ -53,7 +54,7 @@ namespace SowSiege.Core
                 {
                     writer.Write(state.CompletedRuns);
                 }
-                if (version >= 4)
+                if (version >= ClaimsVersion)
                 {
                     writer.Write(state.NextClaimSequence);
                     writer.Write(state.PendingClaims.Length);
@@ -130,7 +131,7 @@ namespace SowSiege.Core
                 MetaPendingRun? pending = ReadBoolean(reader) ? new MetaPendingRun(reader.ReadInt64(), ReadString(reader), reader.ReadInt32()) : null;
                 var state = new MetaState(version, highest, priority, wallet, manor, vassals, metrics, completed, unlocked, active, sequence, pending,
                     version >= ClockVersion ? reader.ReadInt64() : -1, version >= ClockVersion ? reader.ReadInt64() : -1, version >= ClockVersion ? reader.ReadInt64() : 0, version >= CompletedRunsVersion ? reader.ReadInt64() : 0);
-                if (version >= 4)
+                if (version >= ClaimsVersion)
                 {
                     long nextClaim = reader.ReadInt64();
                     var claims = new MetaPendingClaim[Count(reader)];

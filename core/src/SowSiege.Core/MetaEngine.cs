@@ -273,6 +273,7 @@ namespace SowSiege.Core
                 if (delivery == MetaRewardDelivery.PendingClaims)
                 {
                     state = QueueClaim(state, MetaClaimKind.Challenge, challenge.Id, challenge.Rewards, 0);
+                    added.Add(challenge.Id);
                     continue;
                 }
                 done.Add(challenge.Id); added.Add(challenge.Id); content.UnionWith(challenge.UnlockContentIds);

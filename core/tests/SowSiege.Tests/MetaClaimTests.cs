@@ -30,6 +30,11 @@ public sealed class MetaClaimTests
         Assert.Equal(100, result.State.Wallet["wood"]);
         Assert.Equal(catalog.Economy.FragmentsPerClear, result.State.Vassals["vassal-0"].Fragments);
         Assert.Empty(result.State.CompletedChallenges);
+        Assert.Equal(new[] { "clear-first" }, result.ChallengesCompleted);
+        var next = MetaEngine.BeginRun(catalog, result.State, "chapter-1", 8);
+        var repeated = MetaEngine.SettleRun(catalog, next.State, next.Run, MetaEngineTests.Success, MetaRewardDelivery.PendingClaims);
+        Assert.Empty(repeated.ChallengesCompleted);
+        Assert.Single(repeated.State.PendingClaims);
         Assert.DoesNotContain("new-weapon", result.State.UnlockedContentIds);
         var claim = Assert.Single(result.State.PendingClaims);
         Assert.Equal(MetaClaimKind.Challenge, claim.Kind);
