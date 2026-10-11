@@ -56,11 +56,11 @@ namespace Tests.EditMode
             }
             for (var tick = 0; tick < 10; tick++) Record(ReplayCommandKind.Advance);
             Record(ReplayCommandKind.GrantLevel);
-            Assert.That(source.Status, Is.EqualTo(RunStatus.AwaitingCard));
+            Assert.That(source.View.Status, Is.EqualTo(RunStatus.AwaitingCard));
             var offered = source.View.CaptureCards().Cards;
             Assert.That(offered.Count, Is.GreaterThan(0));
             Record(ReplayCommandKind.ChooseCard, offered[0]);
-            Assert.That(source.Status, Is.EqualTo(RunStatus.Running));
+            Assert.That(source.View.Status, Is.EqualTo(RunStatus.Running));
             for (var tick = 0; tick < 30; tick++) Record(ReplayCommandKind.Advance);
             var legacy = new InteractiveSession(catalog, options);
             var deferred = new InteractiveSession(catalog, options);
