@@ -76,3 +76,11 @@ test('truncated frame CSV fails closed', t => {
   fs.writeFileSync(file, lines.join('\n') + '\n');
   assert.throws(() => summarizeStutter50(root), /missing\/truncated frames/);
 });
+
+test('pacing change is explicit rather than rejected as an unrelated config mismatch', t => {
+  const root = cohort(t);
+  for (const run of ['B1', 'B2', 'B3']) changeIdentity(root, run, 'pacingPolicy', 'one-advance-per-render-frame-debt-preserved-v1');
+  const report = summarizeStutter50(root);
+  assert.equal(report.rows.find(row => row.run === 'A1').pacing_policy, 'legacy-unbounded-catch-up');
+  assert.equal(report.rows.find(row => row.run === 'B1' && row.scope === 'C05-all').pacing_policy, 'one-advance-per-render-frame-debt-preserved-v1');
+});

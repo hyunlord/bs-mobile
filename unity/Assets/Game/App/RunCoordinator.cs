@@ -345,7 +345,8 @@ namespace Game.App
             {
                 if(discardResumeDelta)discardResumeDelta=false;else accumulator+=Time.unscaledDeltaTime*Speed;
                 var step=1d/CurrentFrame.TickRate;
-                while(accumulator>=step && Session.View.Status==RunStatus.Running){accumulator-=step;Send(ReplayCommandKind.Advance,movement);}
+                var advanceBudget=new FrameAdvanceBudget(Speed==1);
+                while(Session.View.Status==RunStatus.Running&&advanceBudget.TryAdvance(ref accumulator,step))Send(ReplayCommandKind.Advance,movement);
             }
             BeginLongFrameHud();
             var probeHudStart=ProbeEnabled?ProbeTimestamp():0;

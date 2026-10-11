@@ -119,7 +119,7 @@ namespace Game.App
             public bool performanceEligible = true;
             public bool diagnosticOnly, actorGroundingSkipped;
             public string fixture = "c05", playbackBoundary;
-            public string benchmarkMode, gcMode, metalDisplayLinkEnvironment;
+            public string benchmarkMode, gcMode, metalDisplayLinkEnvironment, pacingPolicy;
             public int frameCapacity, timingCapacity, coreTickSamples;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             public int diagnosticPass, diagnosticPasses;
@@ -294,12 +294,13 @@ namespace Game.App
                     if (Screen.width != (crowdBenchmark == null ? 1600 : 1920) || Screen.height != (crowdBenchmark == null ? 900 : 1080)) throw new InvalidOperationException("Benchmark render surface changed.");
                     accumulator += offlineReplayRequested ? OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
                     var step = 1d / CurrentFrame.TickRate;
+                    var advanceBudget = new FrameAdvanceBudget(!offlineReplayRequested);
                     while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count)
                     {
                         var command = benchmarkReplay.Commands[benchmarkCommand];
+                        if (command.Kind == ReplayCommandKind.Advance && !advanceBudget.TryAdvance(ref accumulator, step)) break;
                         ApplyBenchmarkCommand(true, ref sample);
                         sample.commands++;
-                        if (command.Kind == ReplayCommandKind.Advance) accumulator -= step;
                     }
                 }
                 BeginLongFrameHud();
@@ -395,6 +396,7 @@ namespace Game.App
             result.repeatCacheContract = "Same process; identical replay initial state; scene-local world/pools rebuilt, engine shader/resource caches retained. No forced GC or unload.";
 #endif
             result.actorGroundingSkipped = benchmarkSkipGrounding;
+            result.pacingPolicy = offlineReplayRequested ? FrameAdvanceBudget.LegacyPolicy : FrameAdvanceBudget.DeferredPolicy;
             if (offlineReplayRequested) result.benchmarkMode = "offline-render-60fps";
             if (crowdBenchmark != null)
             {

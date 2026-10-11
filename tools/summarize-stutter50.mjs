@@ -67,9 +67,9 @@ export function summarizeStutter50(root) {
     const config = Object.fromEntries([...configFields, 'benchmarkMode', 'gcMode', 'metalDisplayLinkEnvironment', 'heroRig'].map(key => { assert(Object.hasOwn(identity, key), `Missing configuration ${key}`); return [key, identity[key]]; }));
     if (baseline.has(name)) assert.deepEqual(config, baseline.get(name), `${name}: A/B configuration mismatch`); else baseline.set(name, config);
     const groups = name === 'crowd411' ? [['411', rows]] : [['C05-all', rows], ['C05-800+', rows.filter(row => row.enemies >= 800)]];
-    for (const [scope, frames] of groups) result.push({ run, side, scope, ...frameStats(frames), commit: identity.commit, state_hash: identity.stateHash, source_hash: identity.sourceHash, eligible: true });
+    for (const [scope, frames] of groups) result.push({ run, side, scope, ...frameStats(frames), commit: identity.commit, state_hash: identity.stateHash, source_hash: identity.sourceHash, eligible: true, pacing_policy: identity.pacingPolicy ?? 'legacy-unbounded-catch-up' });
   }
-  return { contract: 'Each B repetition independently: max <=50ms and >25ms ratio <=0.2%. No outlier removal or pooled acceptance. A failures remain visible. C05-all means every frame in the unchanged C05 measurement windows. Directory names encode requested ABBA order; execution chronology requires launch records.', order, baselineCommit, candidateCommit: candidate, pass: result.filter(row => row.side === 'B').every(row => row.pass), rows: result };
+  return { contract: 'Each B repetition independently: max <=50ms and >25ms ratio <=0.2%. No outlier removal or pooled acceptance. A failures remain visible. C05-all means every frame in the unchanged C05 measurement windows. Missing historical pacingPolicy denotes legacy-unbounded-catch-up; candidate scheduling changes are shown per row, not silently treated as identical pacing. Directory names encode requested ABBA order; execution chronology requires launch records.', order, baselineCommit, candidateCommit: candidate, pass: result.filter(row => row.side === 'B').every(row => row.pass), rows: result };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const root = process.argv[2]; assert(root, 'Usage: node tools/summarize-stutter50.mjs <ABBA-root> [output-directory]');
