@@ -1,4 +1,4 @@
-관문: 부분 — 최종087cd81 표본의25ms 초과는411 0%, C05 전체0.0459%,800+0%로 비율 기준을 만족했다. 다만 최대600.4ms와 따라잡기 묶음이 남아 끊김 해결로 판정하지 않으며 #223을 유지한다.
+관문: 부분 — 최종f3f48a2 표본의25ms 초과는411 0%, C05 전체0.0382%,800+0%로 비율 기준을 만족했다. 최대325.0ms와 따라잡기 묶음이 남아 끊김 해결로 판정하지 않으며 #223을 유지한다.
 상점과 패스는 힘을 팔지 않는 보기 전용 화면이며, 미정 가격·보상은 `[n]`으로 남긴다.
 방치 받기·선택 추가 보상은 중복 지급을 막는 저장 경로를 사용한다. 결산 배율 #126과 실제 부활 규칙 #224는 미정으로 숨긴다.
 실제 Editor 캡처로13화면 비교 시트를 만들었다. 원격 canvas를 확보하지 못해 사용자 서면 규격과 비교했으며 실기 판정은 아니다.
@@ -14,7 +14,7 @@
 | 끊김 | 새 HUD, 깨끗한 Mac Release, 전경·캡처 없음:411·C05 각1회, 모든 밀도 구간25ms 초과≤0.2% | 반복 ABBA 개선 증거 아님; Part1 실패·#223 미해결 보존 |
 | 외부 기기·경제 | #98·#126 보류 | 실기·생산 경제·1b 승인을 대신하지 않음 |
 
-Core 검사 수는 재생·계정 API 구현 단계의 검증이며 과거 준비 커밋을 최종 배포 소스로 표시하지 않는다. 첫 네이티브 표본은 `4d913ef077a8f2366976c2a2cfa4cf215e150a69`, 저장 격리를 반영한 최종 측정 바이너리는 `087cd81d8323b99737a3809beefccf7ca4f2672e`다. 최종 공개 커밋·PR·CI는 별도로 기록한다. 실제 net8.0·netstandard2.1 DLL의 명시적 v5 fixture 재생 해시는 모두 `44476CDB3FA0449EBCE6B907E43B754FCA6F52C3AD71B5BC68587ACA2B164F48`이다. 이 CLI fixture의 해시와 Unity PlayMode에서 기록한 별도 죽음/부활 판의 해시 일치 검사는 서로 다른 증거다.
+Core 검사 수는 재생·계정 API 구현 단계의 검증이며 과거 준비 커밋을 최종 배포 소스로 표시하지 않는다. 첫 네이티브 표본은 `4d913ef077a8f2366976c2a2cfa4cf215e150a69`, 저장 격리 표본은 `087cd81d8323b99737a3809beefccf7ca4f2672e`, PR 검토 후 최종 측정 바이너리는 `f3f48a245f9ac115c46db8e1e14c8d0acd262458`다. 최종 공개 커밋·PR·CI는 별도로 기록한다. 실제 net8.0·netstandard2.1 DLL의 명시적 v5 fixture 재생 해시는 모두 `44476CDB3FA0449EBCE6B907E43B754FCA6F52C3AD71B5BC68587ACA2B164F48`이다. 이 CLI fixture의 해시와 Unity PlayMode에서 기록한 별도 죽음/부활 판의 해시 일치 검사는 서로 다른 증거다.
 
 Unity 원자료는 `artifacts/portrait-227/BmEdit.xml`(17/17: 광고 정책14·Meta 통합3), `Flow.xml`(12/13), `BmFlowRetry.xml`(5/5)이다. 최초 실패는 재시작 뒤 그래픽이 raycast 목록에 등록되기 전에 확인한 BM 검사였다. 렌더 대기와 assertion을 보강한 뒤 BM5개를 다시 실행했으며 최초 실패 XML은 보존했다. 따라서 13개를 한 실행에서 전부 통과했다고 합쳐 쓰지 않는다. 최초 검사에서 선행 PR1·PR2 화면8개는 통과했다. 수정 후 BM 검사에는 실제 부활 버튼과 최종 재생 해시 검증, 광고 실패 무지급/무소비, 광고 제거 직접 지급, 재시작 후 정확히 한 번 받기가 포함된다.
 
@@ -41,7 +41,7 @@ Unity 원자료는 `artifacts/portrait-227/BmEdit.xml`(17/17: 광고 정책14·M
 
 재생성: `node tools/summarize-portrait-native.mjs artifacts/portrait-227/native-4d913ef docs/metrics`. 입력은 각 fixture의 `benchmark.json`·`frames.csv`이며 원자료 전체를 Release에 중복 업로드하지 않는다. 명령은 부적격·비전경·해시 불일치 실행을 거부하고 작은 요약6행·초과 프레임3행을 생성한다.
 
-## 최종 네이티브 표본:087cd81, 저장 격리 반영
+## 저장 격리 네이티브 표본:087cd81
 
 측정 바이너리는 깨끗한 Release `087cd81d8323b99737a3809beefccf7ca4f2672e`, source hash `7B5FA7C7F07389E6A91C2DAF0AC87415F6DA137030FDDBB12106CEC08C841487`다. 선행 PR #230 병합 뒤 rebase한 `ef2da7f`와 측정 커밋의 Git tree는 모두 `6a3e503517f9aa5e0a21ed205717ab5edac6c516`로 같다. 측정된 바이너리의 커밋을 rebase 뒤 커밋으로 바꿔 적지 않는다. 이후 문서·지표 갱신은 별도다.
 
@@ -76,6 +76,31 @@ Unity 원자료는 `artifacts/portrait-227/BmEdit.xml`(17/17: 광고 정책14·M
 
 실제 화면 비교 시트는 확인하지 못한 원격 canvas 자체와 비교했다고 쓰지 않고 사용자 서면 규격 보드와 나란히 표시한다.390×844 기준과1080×2520 기기 비율 시뮬레이션은 서로 구분하며 #98 Fold7 실기로 표기하지 않는다. 실패·숨김·광고 제거 즉시 지급·첫 판/첫날·한도·복귀 상태를 테스트와 캡처에서 구분한다.
 
-13화면 비교 시트는 `node tools/render-portrait-board.mjs --png`로 `artifacts/portrait-screen-board/`에 재생성한다. BM4화면의 실제 Editor 상단/하단16장은 독립 시각 검토에서 복구되지 않는 잘림·버튼 겹침이 발견되지 않았다. 캡처 식별자는 `c15565f87d08f45c17ce2498d543808f0fdb786f`이며 전체 safe area 표본이므로 실제 노치나44pt 실기 조작 증거로 확대하지 않는다. 부활 화면은 명시적 규칙/계정 fixture다. 최종 공개 PR·CI와 Mac 배포 링크는 아직 없으므로 만들지 않는다. CSV에서 재생성할 수 있는 그래프·보고서를 Release 원자료로 중복 업로드하지 않는다. 소스·작은 정본 CSV·재생성 명령을 유지하고 필요한 실패/표본과 Mac 배포물만 전달한다.
+13화면 비교 시트는 `node tools/render-portrait-board.mjs --png`로 `artifacts/portrait-screen-board/`에 재생성한다. BM4화면의 실제 Editor 상단/하단16장은 독립 시각 검토에서 복구되지 않는 잘림·버튼 겹침이 발견되지 않았다. 캡처 식별자는 `c15565f87d08f45c17ce2498d543808f0fdb786f`이며 전체 safe area 표본이므로 실제 노치나44pt 실기 조작 증거로 확대하지 않는다. 부활 화면은 명시적 규칙/계정 fixture다. 공개 [PR #231](https://github.com/hyunlord/bs-mobile/pull/231)의 [CI 실행38142259532](https://github.com/hyunlord/bs-mobile/actions/runs/38142259532)는 진행 중이며 통과로 보고하지 않는다. 최종 Mac 배포 링크는 준비 뒤 추가한다. CSV에서 재생성할 수 있는 그래프·보고서를 Release 원자료로 중복 업로드하지 않는다. 소스·작은 정본 CSV·재생성 명령을 유지하고 필요한 실패/표본과 Mac 배포물만 전달한다.
 
 [추적 #227](https://github.com/hyunlord/bs-mobile/issues/227) · [ADR0054](../adr/0054-opt-in-host-rewards-and-local-bm-slots.md) · [화면 정본](../design/screen-flow-v0.md) · [부활 미정 #224](https://github.com/hyunlord/bs-mobile/issues/224) · [경제 보류 #126](https://github.com/hyunlord/bs-mobile/issues/126)
+
+## PR 검토 후 보상 선택·저장 재시도 수정
+
+`f3f48a2` 후보는 광고 실패·취소 때 부활 선택을 보존한다. 사용자가 직접 결산을 고르기 전에는 판을 끝내지 않는다. 완료 영수증 저장이 대기 상태라면 명시적인 저장 재시도 버튼을 표시하고 광고를 다시 재생하지 않는다. 결산 추가 보상의 넘친 자재와 장원 성장 내역도 기존 결산 기록에 합쳐 지급 결과를 빠뜨리지 않는다.
+
+`artifacts/portrait-227/BmReviewFinal.xml`의 실제 PlayMode9/9가 통과했다. 기존5개에 실패 부활·취소 부활·완료 영수증 저장 재시도·결산 성장/overflow 병합4개가 추가됐다. 앞선 `BmReviewFix.xml`8/9 실패와 `BmRetryVisual.xml` 실패1건은 보존한다. 재시도 버튼은 패널이 하단 배치를 소유하도록 수정했고 두 화면 크기의 캡처 검사를 통과했다. 실패를 지우거나 서로 다른 실행을 하나의 통과로 합치지 않는다.
+
+087cd81 이후 실행/검사 소스 차이는 일시정지된 보상 흐름의 `PortraitBmPanels.cs`·`RunCoordinator.Bm.cs`와 PlayMode 검사3파일이다. 별도 문서·지표 변경은 있지만 Core와 전투 hot loop 변경은 없다. 새 후보의 아래 별도 측정을 사용하며087cd81 결과를 f3f48a2의 측정으로 바꾸어 적지 않는다.
+
+## PR 검토 후 최종 네이티브 표본:f3f48a2
+
+실제 깨끗한 Release는 `f3f48a245f9ac115c46db8e1e14c8d0acd262458`, source hash는 `B07DF87A5FF46FECFA43142D6533D787C13D662D08FB36D747A40413CF636678`다. 전경 전체 유지·캡처 없음·중단 없음·Development/profiler 꺼짐이며 두 역사 재생 해시는 위 표본과 동일하다.411은1920×1080·vSync2, C05는1600×900·기존60fps capped 하네스다. 각1회 결과이며 앞선 두 후보와 합쳐 ABBA 개선을 주장하지 않는다.
+
+| 최종 표본·밀도 | 프레임 | p50 / p95 / p99 (ms) | 최대 (ms) | >25ms 개수 / 비율 | Gen0 GC/초 |
+| --- | --- | --- | --- | --- | --- |
+| 411 전체 | 1,454 | 16.6734 / 16.8945 / 17.5409 | 22.8908 | 0 / 0% | 0.2875 |
+| 411 중400–599 | 988 | 16.6747 / 16.9586 / 21.9696 | 22.8908 | 0 / 0% | 0.3018 |
+| C05 전체 | 13,102 | 16.6744 / 17.2030 / 17.5871 | 324.9741 | 5 / 0.0382% | 0.1090 |
+| C05 400–599 | 5,339 | 16.6742 / 17.2324 / 17.5882 | 324.9741 | 5 / 0.0937% | 0.1111 |
+| C05 600–799 | 5,374 | 16.6747 / 17.1735 / 17.5851 | 21.8065 | 0 / 0% | 0.1111 |
+| C05 800+ | 2,389 | 16.6744 / 17.1797 / 17.5847 | 22.2332 | 0 / 0% | 0.0999 |
+
+긴 프레임5건은400–599 구간에서 발생했고 모두 GC 증가0이다. 프레임1893의0틱185.9518ms→1894의1틱324.9741ms→1895의14틱50.0303ms가 시간상 이어진다. 나머지는 프레임1902의1틱99.0791ms와5389의1틱29.1137ms다. 처음 지연의 원인을 확정하지 않았으며 뒤의 따라잡기만으로 앞 지연을 설명하지 않는다. **비율은 통과하지만325ms 정지를 포함하므로 ‘끊김 해결’은 아니다. #223과 Part1 실패를 유지한다.**
+
+원자료는 `artifacts/portrait-227/native-f3f48a2/`이며 [정본 요약](../metrics/portrait-native-227-summary.csv)·[모든 초과 프레임](../metrics/portrait-native-227-outliers.csv)은 commit으로 세 후보를 구분한다. 재생성은 `node tools/summarize-portrait-native.mjs artifacts/portrait-227/native-f3f48a2 <별도 출력 폴더>`다. [PR #231](https://github.com/hyunlord/bs-mobile/pull/231)·[CI38142259532](https://github.com/hyunlord/bs-mobile/actions/runs/38142259532)는 진행 중으로, 이 측정을 최종 CI 통과로 표현하지 않는다.
