@@ -23,13 +23,13 @@
     },
     {
       "id": "cards-auxiliary-placement",
-      "status": "missing-or-different",
-      "reason": "원본 하단 공통 금지·고정 대신 카드 직접 보조 동작이 남아 있는지 확인이 필요하다. 해당 차이를 일치로 세지 않는다."
+      "status": "resolved-in-7f58560",
+      "reason": "최종 Editor 캡처에서 원본 위치의 공통 보조 버튼/인라인 스위치 복원을 확인했다."
     },
     {
       "id": "pause-inline-settings",
-      "status": "missing-or-different",
-      "reason": "원본의 소리·진동·화면 흔들림·피해 숫자 인라인 스위치 대신 설정 화면 링크가 남은 경우 네 제어 요소 미일치로 기록한다."
+      "status": "resolved-in-7f58560",
+      "reason": "최종 Editor 캡처에서 원본 위치의 공통 보조 버튼/인라인 스위치 복원을 확인했다."
     },
     {
       "id": "pass-claim-data",
@@ -69,42 +69,42 @@
       "group": "run",
       "capture": "title",
       "board": "02-Title.png",
-      "visualVerdict": "pending-recapture-after-correction",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "title-1",
           "label": "문장과 문장 아래 부제",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "different",
+          "evidence": "artifacts/portrait-234/editor-run/title-390x844.png",
+          "note": "문장·로고·부제 경계가 분리되어 겹침이 해소됐다. 한국어 휴경의 왕국 로고는 사용자 승인 예외이며 원본 영문 제목과 다르다."
         },
         {
           "id": "title-2",
           "label": "영주·이삭 풍경",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/title-390x844.png",
+          "note": "영주와 이삭 풍경이 보인다."
         },
         {
           "id": "title-3",
           "label": "크림 시작 리본",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/title-390x844.png",
+          "note": "크림 시작 리본이 보인다."
         },
         {
           "id": "title-4",
           "label": "설정",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/title-390x844.png",
+          "note": "390×844와 긴 화면 모두 우상단 원형 설정 아이콘이 보인다."
         },
         {
           "id": "title-5",
           "label": "첫 실행 안내",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/title-390x844.png",
+          "note": "첫 실행 안내가 보인다."
         }
       ],
       "deviationIds": [
@@ -114,17 +114,29 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/title-390x844.png",
-          "sha256": "c4d815c62ec5b3e490d271a728b12186aad6778f47b162f27d5ececdff9aec08"
+          "sha256": "1b464f37d7a1f091b02fcea43efff0356ba56e761fe4106f15fab725a739982c",
+          "provenancePath": "artifacts/portrait-234/editor-run/title-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/title-1080x2520.png",
-          "sha256": "ed76a7bc80b0377da3ee630d4bd7873eebe6b28e0c6c6d1a9af23656cb1c442b"
+          "sha256": "367a40df22dc0e68562bc97e548ae7fb47bd680138f07acf388169b8e9ceb4fa",
+          "provenancePath": "artifacts/portrait-234/editor-run/title-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "pending-recapture",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-run/title-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
+      },
+      "primaryReview": {
+        "status": "observed-reference-exceptions-recorded",
+        "note": "크림 시작 리본; 빨강·파랑 주 버튼 없음."
+      },
+      "fontReview": {
+        "status": "partial",
+        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
       }
     },
     {
@@ -133,76 +145,55 @@
       "group": "run",
       "capture": "run",
       "board": "03-Run.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "run-1",
           "label": "레벨 메달",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "메달은 있으나 원본 y48과 달리 현재 화면 위 y0 부근에 붙어 있다. 인셋 안전 영역 재검증이 필요하다."
         },
         {
           "id": "run-2",
           "label": "체력 바와 수치",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "체력 바·수치가 보이나 원본 y52 대신 화면 최상단에 놓여 있다."
         },
         {
           "id": "run-3",
           "label": "경험치 바",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "run-4",
           "label": "계절·시간",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "run-5",
           "label": "둥근 일시정지",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "run-6",
           "label": "26pt 장비 아이콘",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "run-7",
           "label": "입력할 때만 조이스틱",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-run/run-390x844.png",
-            "artifacts/portrait-234/editor-run/run-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
           "note": "입력 없는 캡처에서 조이스틱이 없는 것은 확인했다. 누르는 위치 표시·해제 동작은 정지 캡처만으로 확인할 수 없다."
         }
       ],
@@ -210,17 +201,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/run-390x844.png",
-          "sha256": "1b3e7ede4670bc78a4c95a6b3305a945b8751bbfadf216424e1b0aba8b9e7714"
+          "sha256": "20c9920c6baa1de5e5faeb672a3699b295b8b5bc6e852646554e1875e05d9099",
+          "provenancePath": "artifacts/portrait-234/editor-run/run-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=8; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/run-1080x2520.png",
-          "sha256": "f135522ece69a8816c3d1c0bc05cc77d8d4f12c9a78b16b705e6ef03932978ce"
+          "sha256": "4b611abdb13e1a400cfc85cd9d022fbeeace3fcb046b1b7bcf3ce9baf72d038b",
+          "provenancePath": "artifacts/portrait-234/editor-run/run-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=17; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-run/run-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 0,
@@ -245,77 +240,81 @@
       "group": "run",
       "capture": "cards",
       "board": "04-LevelUp.png",
-      "visualVerdict": "pending-recapture-after-correction",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "cards-1",
           "label": "파랑 레벨 헤더",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "파랑 레벨업 헤더가 보인다."
         },
         {
           "id": "cards-2",
           "label": "가로로 긴 카드 3장 세로 배치",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "가로로 긴 카드 세 장이 세로로 쌓인다."
         },
         {
           "id": "cards-3",
           "label": "종류별 common·rare·epic 테두리",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "different",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "현재 제안은 도구·특허장·도구라 common/epic은 보이지만 rare 무기 카드는 이 표본에서 미검증이다."
         },
         {
           "id": "cards-4",
           "label": "아이콘 슬롯",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "각 카드 아이콘 슬롯이 보인다."
         },
         {
           "id": "cards-5",
           "label": "종류 태그",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "도구·특허장 종류 태그가 보인다."
         },
         {
           "id": "cards-6",
           "label": "레벨 변화",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "different",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "현재 세 장 모두 새로 얻음 상태이다. 레벨 증가 화살표의 시각 표본은 없다."
         },
         {
           "id": "cards-7",
           "label": "이름",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "카드 이름이 보인다."
         },
         {
           "id": "cards-8",
           "label": "설명 두 줄",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "짧은 설명이 가독성 있는 색으로 보이며 두 줄 공간 안에 들어간다."
         },
         {
           "id": "cards-9",
           "label": "조건 충족 카드의 금빛 진화 띠",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "추가 cards-evolution-fixture에서 목수 망치 아래 호위 성가퀴·지붕 아래 파종 금빛 진화 띠가 두 비율 모두 보인다. 기본13화면을 시험 표본으로 대체하지 않는다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
+            "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png"
+          ]
         },
         {
           "id": "cards-10",
           "label": "하단 다시 뽑기·금지·고정 및 횟수",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
+          "note": "하단 공통 다시 뽑기·금지·고정 세 버튼과 횟수가 복원됐다."
         }
       ],
       "deviationIds": [
@@ -324,17 +323,29 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "sha256": "1aed1937a91ffcc96a920b206fcb768d2384a9d1ba30afbd3c2d58a74793f119"
+          "sha256": "b6d42ff0d2040b80f7940e6b9d51c9e026394021d14c6b11ebfd0c433b727313",
+          "provenancePath": "artifacts/portrait-234/editor-run/cards-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/cards-1080x2520.png",
-          "sha256": "4ec8742aa27c614bb65716b80448bff48444b1f932009bff892c4baa3c7b8d28"
+          "sha256": "86edb7dc1eb18cd39a229a4d54e67df9e3cd3ce9f935109dea330f40a83f6b9a",
+          "provenancePath": "artifacts/portrait-234/editor-run/cards-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "pending-recapture",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-run/cards-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
+      },
+      "primaryReview": {
+        "status": "observed-reference-exceptions-recorded",
+        "note": "카드 선택이 주 동작, 공통 보조 버튼은 크림."
+      },
+      "fontReview": {
+        "status": "partial",
+        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
       }
     },
     {
@@ -343,70 +354,70 @@
       "group": "run",
       "capture": "pause",
       "board": "05-Pause.png",
-      "visualVerdict": "pending-recapture-after-correction",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "pause-1",
           "label": "양피지 패널",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "양피지 패널이 보인다."
         },
         {
           "id": "pause-2",
           "label": "일시정지·계절·시간·레벨",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "different",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "제목·시간·레벨은 보이나 원본의 계절 문구는 없다."
         },
         {
           "id": "pause-3",
           "label": "무기 5칸",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "무기 다섯 칸이 보인다."
         },
         {
           "id": "pause-4",
           "label": "도구 4칸",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "도구 네 칸이 보인다."
         },
         {
           "id": "pause-5",
           "label": "특허장 4칸",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "특허장 네 칸이 보인다."
         },
         {
           "id": "pause-6",
           "label": "진화 진행",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "different",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "진화 목록이 있으나 설정 위 스크롤 영역 경계에서 설명이 잘려 보인다. 첫 화면에 모든 조건이 동시에 보이지 않는다."
         },
         {
           "id": "pause-7",
           "label": "설정 네 줄",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "소리·진동·화면 흔들림·피해 숫자 인라인 스위치가 복원됐다."
         },
         {
           "id": "pause-8",
           "label": "크림 포기",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "크림 포기 버튼이 보인다."
         },
         {
           "id": "pause-9",
           "label": "파랑 계속",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
+          "note": "파랑 계속 버튼이 보인다."
         }
       ],
       "deviationIds": [
@@ -415,17 +426,29 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/pause-390x844.png",
-          "sha256": "630c54ec3b4598cbbac510d7ddda69c88478ebc35cdb6571bb469c99901ce397"
+          "sha256": "bc58d5e4579a8ed1df2efad3e57ef54d9b7ce0a59008220c069e737ede14da91",
+          "provenancePath": "artifacts/portrait-234/editor-run/pause-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/pause-1080x2520.png",
-          "sha256": "630550707394ef7057173041b59cee5aca303b7765782dd5d06a38f3a2c012fe"
+          "sha256": "2f29e55c2f9070686fc99ab4d031c74699defbca4e100d09c3d2972cc522cc40",
+          "provenancePath": "artifacts/portrait-234/editor-run/pause-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "pending-recapture",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-run/pause-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
+      },
+      "primaryReview": {
+        "status": "observed-reference-exceptions-recorded",
+        "note": "파랑 계속 1개; 설정 스위치는 주 버튼에서 제외."
+      },
+      "fontReview": {
+        "status": "partial",
+        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
       }
     },
     {
@@ -434,106 +457,76 @@
       "group": "meta",
       "capture": "estate",
       "board": "06-Home.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "estate-1",
           "label": "나무 자원 바 5종과 보석+",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
-          "note": "5종 자원 바와 보석+ 존재. 철재는 검, 인장은 두루마리 아이콘으로 원본 철괴·붉은 인장과 다르며 보석은 글자다."
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
+          "note": "목재·곡물·철괴·붉은 인장 아이콘은 복원됐다. 보석+는 텍스트이며 원본 보석 아이콘은 없다."
         },
         {
           "id": "estate-2",
           "label": "파랑 다음 챕터 배너",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "estate-3",
           "label": "설정",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "44pt 크림 프레임의 설정 글자 버튼이다. 원본 둥근 톱니 아이콘 버튼과 다르다."
         },
         {
           "id": "estate-4",
           "label": "풍경 속 건물 4채",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "estate-5",
           "label": "건물 이름·레벨",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "estate-6",
           "label": "우선 성장 깃발 1개",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "estate-7",
           "label": "가운데 방치 생산 상자",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "중앙 상자와 원형 받침은 있지만 밝은 받침 위 흰 생산 상자 글자의 대비가 낮다. 원본은 어두운 원형 받침/받기다."
         },
         {
           "id": "estate-8",
           "label": "빨강 출정",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "estate-9",
           "label": "아이콘 탭 4개",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "estate-10",
           "label": "받을 것에만 빨간 점",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/estate-390x844.png",
-            "artifacts/portrait-234/editor-meta/estate-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "note": "현재 0개 받을 상태에서는 빨간 점이 없다. 받을 상태의 빨간 점은 이 캡처에서 미확인이다."
         }
       ],
@@ -541,17 +534,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/estate-390x844.png",
-          "sha256": "25f6f3c7de1c3926353b9b430e685912676bb8c12785477d3948906b141f8bfe"
+          "sha256": "486a1c64682e3b415f6b7917a4c557cc82fcdd1a2df85bf5d52000b99008bcdb",
+          "provenancePath": "artifacts/portrait-234/editor-meta/estate-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/estate-1080x2520.png",
-          "sha256": "92f2f4d8e73991e349bbd191508f3c506e54c9fe0378d5a95a38cc8276618614"
+          "sha256": "5e1dda8af2f51a3438f570d5a995d288680dabaac363a4575051731f0452c4a0",
+          "provenancePath": "artifacts/portrait-234/editor-meta/estate-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-meta/estate-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -576,116 +573,83 @@
       "group": "meta",
       "capture": "departure",
       "board": "07-Prepare.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "departure-1",
           "label": "뒤로",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "뒤로 기능 표식은 있지만 원형 얇은 테두리 대신 크림 사각 프레임이다."
         },
         {
           "id": "departure-2",
           "label": "챕터 원 7개 한 줄",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "7개 원은 한 줄로 보인다. 선택은 금빛 메달이며 원본 선택 파랑/잠김 어두운 원과 다르다."
         },
         {
           "id": "departure-3",
           "label": "챕터 카드",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "departure-4",
           "label": "특징 한 줄",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "특징 설명은 두 줄이며 원본 한 줄 요구와 다르다. 실제 현재 챕터 설명을 표시했다."
         },
         {
           "id": "departure-5",
           "label": "적 아이콘",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "departure-6",
           "label": "보스",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "보스 이름 글자는 보이나 원본의 별도 보스 타일은 없다."
         },
         {
           "id": "departure-7",
           "label": "보상 상한",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "상한 수치 글자는 보이나 원본 자원 아이콘 줄과 다르다."
         },
         {
           "id": "departure-8",
           "label": "가신 3칸",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "3칸 존재. 잠금은 문구만 있으며 원본 자물쇠 아이콘은 없다."
         },
         {
           "id": "departure-9",
           "label": "기본 장비 2칸",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "departure-10",
           "label": "이번 판 카드 보기",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "departure-11",
           "label": "빨강 출정 시작",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/departure-390x844.png",
-            "artifacts/portrait-234/editor-meta/departure-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -693,17 +657,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/departure-390x844.png",
-          "sha256": "0288d1b669b7b122c7433e116ef7fa283ea5de741aec663d0ee01efa4a5ca38c"
+          "sha256": "0288d1b669b7b122c7433e116ef7fa283ea5de741aec663d0ee01efa4a5ca38c",
+          "provenancePath": "artifacts/portrait-234/editor-meta/departure-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/departure-1080x2520.png",
-          "sha256": "d9666b923162f4bea20e61ebe23022c18e2ea504e82008abd99db2d2c34b47ec"
+          "sha256": "d9666b923162f4bea20e61ebe23022c18e2ea504e82008abd99db2d2c34b47ec",
+          "provenancePath": "artifacts/portrait-234/editor-meta/departure-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-meta/departure-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -728,89 +696,67 @@
       "group": "meta",
       "capture": "result",
       "board": "08-Result.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "result-1",
           "label": "결과 제목 강조",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "result-2",
           "label": "3칸 요약",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "result-3",
           "label": "자재와 상한 표",
-          "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
-          ],
-          "note": "실제 자재·상한 표는 보이지만 철재 검·인장 두루마리 등 원본 자원 아이콘과 다르다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
+          "note": "곡물·목재·철괴·인장 아이콘과 현재 자재·상한 표가 보인다."
         },
         {
           "id": "result-4",
           "label": "가신 조각",
           "status": "missing",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-            "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
           "note": "포기·0수확 fixture에서 조각 줄이 없다. 소스는 fragmentDelta의 양수 항목만 표시한다. 실제 지급 fixture 화면 미검증."
         },
         {
           "id": "result-5",
           "label": "새로 열린 것 띠",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "result-6",
           "label": "선택 광고 2배 크림 보조",
-          "status": "missing",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-            "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs",
-            "unity/Assets/Game/App/PortraitBmPanels.cs"
-          ],
-          "note": "현재 결산 캡처에서 광고 버튼이 없다. 기존 적격성/설정 조건 보존으로 보며 화면 일치로 세지 않는다. 소스상 표시 시 크림 362×48로 주 영지로 약206.5×60보다 넓다. 원본도 같은 폭 구성이어서 그림 우선 예외 또는 버튼 크기 정책 정리가 필요하다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
+          "note": "추가 result-bonus 시험 계정에서 크림 바로 2배 보조 버튼이 보이고, result-bonus-granted에서는 사라진다. 광고 제거 상태라 광고 문구 대신 바로 2배이다. 기본13화면 대체 아님. 원본대로 폭362pt로 주 버튼보다 넓어 일반 광고 크기 규칙의 예외는 남는다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-bm/result-bonus-390x844.png",
+            "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png",
+            "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png"
+          ]
         },
         {
           "id": "result-7",
           "label": "크림 다시 출정",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "result-8",
           "label": "빨강 영지로",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/result-390x844.png",
-            "artifacts/portrait-234/editor-meta/result-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -821,17 +767,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/result-390x844.png",
-          "sha256": "755d0ca655737d6ff824b28c1d4b780e4689b8b6a60f4662c3bc4d9ad055f7fb"
+          "sha256": "e4d8f713288ad09ed07454af02fdfc641c1ad3e692fc1567c1f20dc53bd4e015",
+          "provenancePath": "artifacts/portrait-234/editor-meta/result-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-          "sha256": "7b2c54a98ee3137803538edf0fc408f363eeedc4150de0ccd8d971378b044ce5"
+          "sha256": "0e9a32189b97dd04ee04a4a0898b30b70e367cb61d0b1fef44871fc548674dae",
+          "provenancePath": "artifacts/portrait-234/editor-meta/result-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -856,86 +806,62 @@
       "group": "meta",
       "capture": "vassals",
       "board": "09-Vassals.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "vassals-1",
           "label": "제목과 출전 칸",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "vassals-2",
           "label": "초상 상세 패널",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "vassals-3",
           "label": "가신 이름·효과·레벨·상한·승급",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
-          "note": "이름·설명·레벨·상한·승급은 보이지만 별 등급/다음 레벨 효과 없음. 강화 비용과 계정 전용 안내는 그리드 아래의 어두운 글자로 긴 화면에서 대비가 거의 없어 읽기 어렵다."
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+          "note": "이름·효과·레벨·상한·승급과 비용 문구가 보인다. 긴 화면 하단 비용·경고 대비는 수정됐다. 원본의 별과 다음 레벨 효과는 없다."
         },
         {
           "id": "vassals-4",
           "label": "파랑 레벨업",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "vassals-5",
           "label": "크림 승급",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "vassals-6",
           "label": "초상 카드 6장",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "vassals-7",
           "label": "잠김 구분",
-          "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
-          "note": "도전으로 해금 글자·어두운 오버레이는 있으나 원본 잠긴 초상 흑백과 달리 모두 색이 남아 있다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
+          "note": "잠긴 가신 다섯 장의 초상이 회색으로 표시된다."
         },
         {
           "id": "vassals-8",
           "label": "하단 탭",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-            "artifacts/portrait-234/editor-meta/vassals-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -946,17 +872,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-          "sha256": "9829591f96e0559d868db49a468d4b9b71060609598641fb56701e41a607d691"
+          "sha256": "caf9dadd885b235f1dbca726b6ab0db33e5189335e0aa138b7d2f40eec093263",
+          "provenancePath": "artifacts/portrait-234/editor-meta/vassals-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png",
-          "sha256": "a08e63c447f15a4b4bde5fe4d43ab54f9106538e6e4d982e43b218c4de834b7e"
+          "sha256": "20e42165d38a64edb9aa09277ec5dc9d9328d94e29249c492e85a69d21486411",
+          "provenancePath": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -981,78 +911,55 @@
       "group": "meta",
       "capture": "challenges",
       "board": "10-Challenges.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "challenges-1",
           "label": "제목과 달성 수",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "challenges-2",
           "label": "실제 데이터 도전 카드",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "실제 20개 데이터가 스크롤 카드로 보인다. 원본보다 카드 높이가 커 390×844에서는 다섯째 카드가 viewport 아래로 잘려 스크롤이 필요하다. 고정 탭과 내용은 분리되어 있다."
         },
         {
           "id": "challenges-3",
           "label": "아이콘·이름·목표",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "challenges-4",
           "label": "진행도 바",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "challenges-5",
           "label": "받음·달성·진행·잠금 구분",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
-            "artifacts/portrait-234/editor-meta/claimed-fixture-390x844.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "진행 캡처와 claimed fixture의 받음 표시는 확인했다. 달성 후 미수령·잠김의 서로 다른 외형은 미검증."
         },
         {
           "id": "challenges-6",
           "label": "달성 보상 받기",
           "status": "missing",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
-            "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "현재 캡처들은 진행/받음 상태이므로 활성 보상 받기 표본이 없다. 소스에 pending != null이면 받기 버튼이 있으나 활성 화면 증거로 대체하지 않는다."
         },
         {
           "id": "challenges-7",
           "label": "하단 탭",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-            "artifacts/portrait-234/editor-meta/challenges-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -1062,17 +969,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-          "sha256": "ed9c6784347daaca7785f582a951fc1aec93950b82466254c99040d05fef723a"
+          "sha256": "ed9c6784347daaca7785f582a951fc1aec93950b82466254c99040d05fef723a",
+          "provenancePath": "artifacts/portrait-234/editor-meta/challenges-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
-          "sha256": "96797fc34e37c5dd3ceac89fe279a340422d8b51addc4f0962bb8723ef353309"
+          "sha256": "96797fc34e37c5dd3ceac89fe279a340422d8b51addc4f0962bb8723ef353309",
+          "provenancePath": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 0,
@@ -1097,86 +1008,62 @@
       "group": "bm",
       "capture": "shop",
       "board": "11-Shop.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "shop-1",
           "label": "제목과 보석 잔액",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "shop-2",
           "label": "외형 카드 2장",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "외형 카드 두 장과 서로 다른 프레임은 보이지만 두 장의 영주 그림이 같다. 원본은 서로 다른 외형이다. 신규 콘텐츠 추가 없이 미정 외형 슬롯으로 남는다."
         },
         {
           "id": "shop-3",
           "label": "능력치 없음 문구",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "shop-4",
           "label": "영지 테마",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "shop-5",
           "label": "파랑 시즌 패스 띠",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "shop-6",
           "label": "광고 제거",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "shop-7",
           "label": "보석 묶음",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "shop-8",
           "label": "하단 탭",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/shop-390x844.png",
-            "artifacts/portrait-234/editor-bm/shop-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -1186,17 +1073,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/shop-390x844.png",
-          "sha256": "61f3c5ede47d43f176d91182c3a031f67175903d9f57f611d2dd2dac77d313a2"
+          "sha256": "61f3c5ede47d43f176d91182c3a031f67175903d9f57f611d2dd2dac77d313a2",
+          "provenancePath": "artifacts/portrait-234/editor-bm/shop-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/shop-1080x2520.png",
-          "sha256": "3c2b15ceb998f68afa15afd9cb16b42a09078e584b399eb7e8ae9f910a4a6acd"
+          "sha256": "3c2b15ceb998f68afa15afd9cb16b42a09078e584b399eb7e8ae9f910a4a6acd",
+          "provenancePath": "artifacts/portrait-234/editor-bm/shop-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-bm/shop-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -1221,86 +1112,62 @@
       "group": "bm",
       "capture": "idle",
       "board": "12-Idle.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "idle-1",
           "label": "어두운 배경과 작은 패널",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "idle-2",
           "label": "곡물창고 그림",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "idle-3",
           "label": "닫기 ×",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "닫기 ×는 있으나 원본 원형 테두리 대신 크림 사각 프레임이다."
         },
         {
           "id": "idle-4",
           "label": "모인 시간·최대 시간",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "idle-5",
           "label": "자원 4칸",
-          "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
-          "note": "4칸/수량은 존재하나 철재·인장은 아이콘 대신 글자로 되어 있다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
+          "note": "곡물·목재·철괴·붉은 인장 네 자원 칸이 보인다."
         },
         {
           "id": "idle-6",
           "label": "파랑 받기",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "idle-7",
           "label": "크림 광고 2배",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "idle-8",
           "label": "하루 사용 횟수",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/idle-390x844.png",
-            "artifacts/portrait-234/editor-bm/idle-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -1311,17 +1178,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/idle-390x844.png",
-          "sha256": "6111934756bf0dbd44838221108b40e0c12d00b0f6c566af2b2eb84df3181db3"
+          "sha256": "d9022cfeba6d45f4bece83d73eda340f2b68a9117e73e3627d13f0ad56efdf5b",
+          "provenancePath": "artifacts/portrait-234/editor-bm/idle-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/idle-1080x2520.png",
-          "sha256": "fe1b377eb22b01338e06a0708f3a2f6158b662dcb8b8b894297fea4c635d1c94"
+          "sha256": "b0ce4da9c7c2f51d3c688319bf61c7ee0d55e9e2eb9199676fc7448733f46593",
+          "provenancePath": "artifacts/portrait-234/editor-bm/idle-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-bm/idle-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -1346,76 +1217,55 @@
       "group": "bm",
       "capture": "revive-rules-fixture",
       "board": "13-Revive.png",
-      "visualVerdict": "partial-reviewed-awaiting-user",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "revive-1",
           "label": "어두운 판 배경",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
-          "note": "실제 판 위 어두운 패널이지만 피해/수확 글자가 배경에 남아 제목 주변과 겹친다. 원본처럼 배경 판독을 충분히 낮추지 못했다."
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+          "note": "실제 판 배경이 어두워졌으나 수확 경험치 글자가 제목과 기록 사이 뒤로 남아 겹친다."
         },
         {
           "id": "revive-2",
           "label": "쓰러짐 제목·판 기록",
-          "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
-          "note": "쓰러졌다 제목은 존재하나 계절·판 시간·레벨·남은 시간 줄이 없다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+          "note": "쓰러짐 제목과 봄·판 시간·레벨·남은 시간 기록이 복원됐다."
         },
         {
           "id": "revive-3",
           "label": "작은 양피지 패널",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "revive-4",
           "label": "체력 [n]%·장비 레벨 유지 설명",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "revive-5",
           "label": "사망 배율 결산 설명",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         },
         {
           "id": "revive-6",
           "label": "동일 크기 크림 결산·파랑 광고 부활",
           "status": "different",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
           "note": "동일 크기 크림/파랑 버튼은 확인. 이 fixture는 광고 제거 보유라 바로 일어나기로 표시되므로 원본 광고 표시가 있는 상태의 캡처는 아니다."
         },
         {
           "id": "revive-7",
           "label": "카운트다운 없음",
           "status": "present",
-          "evidence": [
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-            "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png"
-          ],
+          "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
           "note": "두 크기 실제 Editor 캡처에서 요소 존재를 확인했다. 원본과 픽셀 일치나 기능 통과를 뜻하지 않는다."
         }
       ],
@@ -1427,17 +1277,21 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-          "sha256": "7dfea5c1f5905c3061dbb2f158d566aeb1fc8a38a5abc5fef8ee67ccc6e6550e"
+          "sha256": "88b6c16de86814f3ddd918bc7f81a1fd3d9c189eec7ef966c43510931e29cb76",
+          "provenancePath": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
-          "sha256": "23eec774bf2c30ad7a057aabb8e6aba26de8675cebd44a50bd07346df2a7a8dd"
+          "sha256": "7af3155692e8ecbe3b116dc65db601684ca6b3e0ce4e087aecab9899ab8c6217",
+          "provenancePath": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
-        "status": "viewport-contained",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
       },
       "primaryReview": {
         "coloredPrimaryCount": 1,
@@ -1462,63 +1316,63 @@
       "group": "bm",
       "capture": "pass",
       "board": "14-Pass.png",
-      "visualVerdict": "pending-recapture-after-correction",
+      "visualVerdict": "partial-awaiting-user-approval",
       "elements": [
         {
           "id": "pass-1",
           "label": "뒤로·제목·기간",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "different",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "제목·기간·뒤로가 보인다. 뒤로는 원형 대신 크림 사각 버튼이다."
         },
         {
           "id": "pass-2",
           "label": "진행 메달과 바",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "진행 메달과 바가 보인다. 미정 수치는 [n]이다."
         },
         {
           "id": "pass-3",
           "label": "무료·유료 두 열",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "무료·유료 두 열이 보인다."
         },
         {
           "id": "pass-4",
           "label": "1~5단계 다섯 줄",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "1~5단계 다섯 줄이 보인다."
         },
         {
           "id": "pass-5",
           "label": "고정 보상",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "각 줄의 고정 보상 아이콘이 보인다."
         },
         {
           "id": "pass-6",
           "label": "받을 수 있는 칸 강조",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "missing",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "현행 수령 데이터가 없어 받을 수 있는 칸 강조·수령 상태는 구현되지 않았다. 보기 전용 범위를 보존한 명시적 차이다."
         },
         {
           "id": "pass-7",
           "label": "판 안 힘 없음",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "판 안 힘은 없음 문구가 보인다."
         },
         {
           "id": "pass-8",
           "label": "파랑 유료 줄 열기",
-          "status": "pending-recapture",
-          "evidence": null,
-          "note": "수정 진행 중이며 수정 후 캡처로 재검토해야 한다."
+          "status": "present",
+          "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
+          "note": "파랑 유료 줄 열기와 보기 전용 문구가 보인다."
         }
       ],
       "deviationIds": [
@@ -1529,25 +1383,95 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/pass-390x844.png",
-          "sha256": "768d8c11cfcd33adc0fc9da1de4e825616d6f082c20e4f4836c87b9440ae0863"
+          "sha256": "371e5f3ce5f5aa3a431e4dccc10f9db1e6b7d373e5b7a91bc7c0368b7537a6c9",
+          "provenancePath": "artifacts/portrait-234/editor-bm/pass-390x844.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/pass-1080x2520.png",
-          "sha256": "af190822a72e74dc902554b95b27bcf919e3b3c33f35df530a9c6c38137c47f7"
+          "sha256": "33c865b06b04904e0f6ecb1c9a2599adff7811100391d3137bb3aef9d7d3f800",
+          "provenancePath": "artifacts/portrait-234/editor-bm/pass-1080x2520.png.txt",
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
-        "status": "pending-recapture",
+        "status": "ratio-reviewed-inset-unverified",
         "evidence": "artifacts/portrait-234/editor-bm/pass-1080x2520.png",
-        "note": "1080×2520 세로 비율 캡처이다. provenance의 safePixels가 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백 관문은 미검증이다."
+        "note": "1080×2520 세로 비율. 실제 기기가 아닌 Editor 증거이며 safePixels 전체 화면이므로 노치·홈 인디케이터의 0이 아닌 안전 여백은 미검증이다."
+      },
+      "primaryReview": {
+        "status": "observed-reference-exceptions-recorded",
+        "note": "파랑 유료 줄 열기 1개; 보기 전용."
+      },
+      "fontReview": {
+        "status": "partial",
+        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
       }
     }
   ],
-  "reviewMethod": "9 screens reviewed from existing 390x844 and 1080x2520 Editor PNGs plus source; no browser, rendering, Unity run, or benchmark performed during this review. Title/cards/pause/pass await recapture after corrections.",
+  "reviewMethod": "Final read-only review: e3f5817 title and extra evolution/result-bonus PNGs at 390x844 and long aspect; prior 7f58560 visual inspection of all13 retained for unchanged elements. All26 default and6 extra fixture image hashes/provenance refreshed to e3f5817; sourceDirty=False. No Unity/browser/render/benchmark executed. Extras do not replace default13 captures. 1080x2520 safePixels is full frame: ratio proof only, no nonzero notch/home-indicator inset proof or physical device acceptance.",
   "reviewCounts": {
-    "present": 47,
-    "different": 24,
-    "missing": 3,
-    "pending-recapture": 32
-  }
+    "different": 26,
+    "present": 77,
+    "missing": 3
+  },
+  "reviewCommit": "e3f5817abf0732748dd30cf7477cf6d1ee443078",
+  "userAcceptance": false,
+  "statusSemantics": {
+    "present": "Element visible, not pixel-match or user approval.",
+    "different": "Visible deviation or positive fixture state unverified; note distinguishes.",
+    "missing": "Not visible in selected fixture or unimplemented; note distinguishes."
+  },
+  "extraFixtureEvidence": [
+    {
+      "path": "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
+      "sha256": "a9c659fea14001c1d7dc01ff78214a9f9c8c3f78d14591ab518378f175e37c32",
+      "provenancePath": "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png",
+      "sha256": "d19ea06b2a9d61c4ac1f023f0312535381f7ca62d64b472572cefbd1392ccf3c",
+      "provenancePath": "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-bm/result-bonus-390x844.png",
+      "sha256": "5245aa1172fc8620c695b071fca668c6260a018725d04adfc88b4caf002fc730",
+      "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png",
+      "sha256": "db8250e7d82f42b667fc96418c1980bdf955f6627e0788b7c25d92ebab34b2ca",
+      "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png",
+      "sha256": "ae692e9f5f27f2669ea6d11a0263f2a4a5d4db2ac5cf08586fba7618f909de91",
+      "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png",
+      "sha256": "4df72d6e581cb679d108d10f6ebd1917db3cb70542f16b8cff5d085b0b306091",
+      "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+    }
+  ],
+  "remainingMissing": [
+    {
+      "id": "result-4",
+      "reason": "포기·0수확 fixture에서 조각 줄이 없다. 소스는 fragmentDelta의 양수 항목만 표시한다. 실제 지급 fixture 화면 미검증."
+    },
+    {
+      "id": "challenges-6",
+      "reason": "현재 캡처들은 진행/받음 상태이므로 활성 보상 받기 표본이 없다. 소스에 pending != null이면 받기 버튼이 있으나 활성 화면 증거로 대체하지 않는다."
+    },
+    {
+      "id": "pass-6",
+      "reason": "현행 수령 데이터가 없어 받을 수 있는 칸 강조·수령 상태는 구현되지 않았다. 보기 전용 범위를 보존한 명시적 차이다."
+    }
+  ]
 }
