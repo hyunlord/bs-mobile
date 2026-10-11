@@ -14,10 +14,10 @@ namespace SowSiege.Core
         private readonly Comparison<EnemyState> worldOrder;
         private static readonly Comparison<EnemyState> IdOrder = (a, b) => a.Id.CompareTo(b.Id);
 
-        internal WaveEnemyQueries(WorldState world, int cellSize)
+        internal WaveEnemyQueries(WorldState world, int cellSize, bool signed = false)
         {
             this.world = world;
-            spatial = new(Math.Max(1, cellSize));
+            spatial = new(Math.Max(1, cellSize), signed);
             worldOrder = (a, b) => ordinal[a.Id].CompareTo(ordinal[b.Id]);
         }
         internal void Rebuild()

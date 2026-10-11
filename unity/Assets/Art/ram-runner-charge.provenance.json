@@ -1,0 +1,54 @@
+{
+  "kind": "imagegen-derived-single-charge-pose",
+  "reference": "unity/Assets/Art/actors.png",
+  "referenceRect": {
+    "x": 994,
+    "y": 369,
+    "width": 197,
+    "height": 234
+  },
+  "referenceRole": "enemy.core.ram_runner.walk",
+  "generationTool": "image_gen.imagegen",
+  "prompt": "Create ONE transparent-background game sprite derived from the attached existing sprite atlas. Use ONLY the red horned RAM / mountain sheep in SECOND ROW, FOURTH COLUMN, at source pixel rectangle x=994,y=369,width=197,height=234 of the 1280x1280 atlas. Do not use the boar, ogre, human, or deer. Preserve that exact character identity: shaggy scarlet-red fur, two heavy charcoal gray tightly curled ram horns, red eyes and scarlet danger accents, cloven dark hooves, short raised tail, four-legged quadruped, same hand-inked dark outlines and textured gouache game illustration. Produce one NEW crouched sprint / charging pose, facing diagonally down-right with the same slightly top-down three-quarter game view as the source. Anatomically bend the neck and lower the head with horns aiming forward; shoulders and torso clearly lean low and stretched forward; bent forelegs thrust forward and rear legs drive backward. This MUST look like a distinct lowered charge, not the same standing sprite rotated or uniformly squashed. Keep all four legs anatomically readable, no humanoid limbs. Compact clean silhouette legible at approximately 55 pixels in game. No effects, no speed lines, no ground, no cast shadow, no scenery, no text, no border, no atlas, no multiple frames. Single isolated full creature centered with transparent padding around horns and hooves, actual alpha transparency. Same identity and red palette, modest painterly texture, not photoreal, not 3D. Canvas square 1024x1024 preferred.",
+  "intendedUse": "Charge-only alternative pose for the existing core:ram_runner. No new content or rule change.",
+  "review": "Visually inspected generated single quadruped: lowered head and neck, stretched bent forelegs, curled dark horns, scarlet fur and eyes. Runtime integration and native-size readability remain unverified.",
+  "recommendedPivot": {
+    "x": 0.5,
+    "y": 0.04
+  },
+  "preserveOriginalWorldSize": {
+    "x": 0.375386,
+    "y": 0.44589
+  },
+  "alphaPolicy": "Retain generated alpha. Original reference remains unchanged.",
+  "output": {
+    "width": 1270,
+    "height": 1270,
+    "sha256": "4da1ef9f07f159e2bf6b133e9f01fdd82615ea97b9bc1afec1d6d49b53b1fe84"
+  },
+  "originalGeneratedOutput": {
+    "width": 1254,
+    "height": 1254,
+    "visibleAlphaBounds": {
+      "x": 184,
+      "y": 92,
+      "width": 946,
+      "height": 1085
+    },
+    "fullyTransparentPixels": 1092423,
+    "sha256": "f8881fabd2cb0e15363dc554d0e6878a4216b89cb075b71d0cd999328a2d949a"
+  },
+  "packaging": {
+    "sourcePath": "unity/Assets/Game/Editor/Authoring/RamCharge/ram-runner-charge-original.png",
+    "command": "ffmpeg -v error -i unity/Assets/Game/Editor/Authoring/RamCharge/ram-runner-charge-original.png -vf 'pad=iw+16:ih+16:8:8:color=black@0' -pix_fmt rgba -frames:v 1 -y unity/Assets/Art/ram-runner-charge.png",
+    "reason": "Generated alpha noise at source perimeter requires transparent atlas padding; no source pixel retouch.",
+    "frame": {
+      "x": 8,
+      "y": 8,
+      "width": 1254,
+      "height": 1254
+    },
+    "transparentOuterBorder": 8,
+    "verification": "Every original RGBA pixel equals the output pixel at offset (8,8); every outer border alpha is zero."
+  }
+}

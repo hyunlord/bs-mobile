@@ -1,15 +1,36 @@
 using System;
 using System.Collections.Generic;
+using Stopwatch = System.Diagnostics.Stopwatch;
 #if UNITY_EDITOR
 using System.Linq;
 #endif
 using SowSiege.Core;
 using UnityEngine;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
     public sealed partial class WorldRenderer : MonoBehaviour
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly ProfilerMarker SpriteBatchRebuildMarker = new ProfilerMarker("SowSiege.View.SpriteBatchRebuild");
+        public Action<string, string> DiagnosticEffectCreated;
+        public static void RegisterDiagnosticsMarkers()
+        {
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WorldRenderer).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(SpriteBatch).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(BufferedHudText).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WorldEffects).TypeHandle);
+        }
+#endif
+        public bool PresentationDiagnosticsEnabled { get; set; }
+        public bool DiagnosticSkipActorGrounding { get; set; }
+        public WorldPresentationDiagnostics LastDiagnostics { get; private set; }
+        bool presentationDiagnosticsActive;
+        int diagnosticMaskUpdates, diagnosticMaskPixels, diagnosticPaintPixels, diagnosticGroundingAdds;
+        EnemyRigAtlas enemyRigAtlas;
         readonly Dictionary<(string kind, string id, string state), ArtVisual> visuals = new Dictionary<(string, string, string), ArtVisual>();
         readonly Dictionary<(int layer, Texture2D texture), SpriteBatch> batches = new Dictionary<(int, Texture2D), SpriteBatch>();
         readonly Dictionary<int, Vector2> previousEnemies = new Dictionary<int, Vector2>();
@@ -27,13 +48,14 @@ namespace Game.View
         RunCamera followCamera;
         WorldCameraSettings settings;
         WorldDamageNumbers numbers;
+        WorldDamageNumbers lordDamageNumbers;
+        public bool HitFeedbackEnabled { get; set; }
         WorldGrowthLabels growthLabels;
         Rect worldOverlayPixels;
         WorldAnnouncements announcements;
         ArtCatalog art;
         ShapeMeshes lordMarkerMeshes;
         ShapeBatch lordMarker;
-        static readonly Vector2[] HeroOutlineDirections = {Vector2.left,Vector2.right,Vector2.up,Vector2.down};
         Shader shader;
         string estateId;
         MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
@@ -77,7 +99,7 @@ namespace Game.View
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
         int facingGeneration;
         Vector2 previousRenderedLord;
-        bool hasRenderedLord;
+        bool hasRenderedLord, heroGaitDiscontinuity;
 
         public void Initialize(Camera camera, WorldCameraSettings cameraSettings, string estate, int width, int height)
         {
@@ -87,9 +109,12 @@ namespace Game.View
             if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D sprite shader is unavailable.");
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
+            followCamera.EndlessField = acceptedFrame?.Field != null;
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            if(ArtCatalog.ProfileName=="wave-1a")enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
+            InitializeActorGrounding();
         }
 
         public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot)
@@ -105,7 +130,9 @@ namespace Game.View
                 if (frame.Level > level) levelAge = 0;
                 level = frame.Level;
             }
+            if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) heroGaitDiscontinuity = true;
             acceptedFrame = frame;
+            if (followCamera != null) followCamera.EndlessField = frame.Field != null;
             for(var i=0;i<frame.Farms.Count;i++)
             {
                 var stage=frame.Farms[i].Stage;
@@ -123,7 +150,9 @@ namespace Game.View
                 foreach (var id in effect.HitEntityIds) hitUntil[id] = visualTime + GameVisualTokens.HitFlashSeconds;
             if (effect.Kind == PresentationKind.LordHit)
             {
-                heroHitUntil = visualTime + GameVisualTokens.HitFlashSeconds;
+                heroGaitDiscontinuity = true;
+                heroHitUntil = visualTime + (HitFeedbackEnabled ? .2f : GameVisualTokens.HitFlashSeconds);
+                if(HitFeedbackEnabled)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
             }
             if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
             if (effect.Kind == PresentationKind.BossWarning)
@@ -143,13 +172,18 @@ namespace Game.View
 
         public void Present(RunFrame previous, RunFrame current, FirstPlayableFrame snapshot, float alpha, float unscaledDeltaTime, Rect safeAreaPixels)
         {
+            presentationDiagnosticsActive = PresentationDiagnosticsEnabled;
+            var diagnosticStart = presentationDiagnosticsActive ? Stopwatch.GetTimestamp() : 0;
+            var diagnosticCheckpoint = diagnosticStart;
+            var diagnostics = default(WorldPresentationDiagnostics);
+            diagnosticMaskUpdates = diagnosticMaskPixels = diagnosticPaintPixels = diagnosticGroundingAdds = 0;
             if (art == null) throw new InvalidOperationException("Initialize the world renderer before presenting frames.");
             if (current == null) throw new ArgumentNullException(nameof(current));
             previous = previous ?? current; alpha = Mathf.Clamp01(alpha);
             var seconds = Mathf.Max(0, unscaledDeltaTime);
             effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
             WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);
-            numbers.Advance(seconds, ShowDamageNumbers); AcceptFrame(current, snapshot); IndexPrevious(previous);
+            numbers.Advance(seconds, ShowDamageNumbers); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled); AcceptFrame(current, snapshot); IndexPrevious(previous);
             expiredHits.Clear(); foreach (var pair in hitUntil) if (pair.Value <= visualTime) expiredHits.Add(pair.Key);
             foreach (var id in expiredHits) hitUntil.Remove(id);
             var lord = PredictedLordPosition ?? Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
@@ -159,6 +193,7 @@ namespace Game.View
             previousRenderedLord=lord;hasRenderedLord=true;
             RenderedLordPosition = lord;
             RenderedEntitySample?.Invoke("lord",0,lord);
+            if (presentationDiagnosticsActive) diagnostics.SetupMs = DiagnosticInterval(ref diagnosticCheckpoint);
             if(wave!=null){var heroSize=Resolve("hero",snapshot.HeroId,"idle").WorldSize;followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
             followCamera.LordViewportAnchor = FallowActive ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
@@ -169,9 +204,18 @@ namespace Game.View
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
             lordMarker?.BeginFrame();
+            actorGrounding.BeginFrame(); actorWings.BeginFrame();
+            if (presentationDiagnosticsActive) diagnostics.CameraUiMs = DiagnosticInterval(ref diagnosticCheckpoint);
             UpdateFallowMask();
+            if (presentationDiagnosticsActive) diagnostics.FallowMaskMs = DiagnosticInterval(ref diagnosticCheckpoint);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Inclusive draw preparation: capacity-triggered Flush samples can be nested.
+            using (SpriteBatchRebuildMarker.Auto())
+            {
+#endif
             DrawTerrain();
             DrawFallowLandmarks();
+            if (presentationDiagnosticsActive) diagnostics.TerrainLandmarksMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawWave(current,alpha,lord);
             for(var i=0;i<current.Farms.Count;i++)
             {
@@ -206,6 +250,7 @@ namespace Game.View
                 if (!activities.TryGetValue(person.Id, out var activity)) throw new InvalidOperationException("Missing person activity: " + person.Id);
                 Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, Interpolate(previousPeople, person.Id, person.Position, alpha), visualTime + person.Id * 0.13f);
             }
+            if (presentationDiagnosticsActive) diagnostics.WaveWorldObjectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawEffects(lord);
             for (var attackIndex = 0; attackIndex < snapshot.Attacks.Count; attackIndex++)
             {
@@ -216,21 +261,30 @@ namespace Game.View
                 var size = attack.Form == "field" || attack.Form == "nova" ? Vector2.one * (attack.PresentationRadius ?? attack.Radius) * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
                 Draw(visual, GameVisualTokens.AttackLayer, position, (float)attack.AgeTicks / current.TickRate, size, Angle(Point(attack.Position) - before), opacity: attack.Form == "field" ? GameVisualTokens.FieldOpacity : attack.Form == "nova" ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity);
             }
+            if (presentationDiagnosticsActive) diagnostics.AttackEffectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             for (var enemyIndex = 0; enemyIndex < current.Enemies.Count; enemyIndex++)
             {
                 var enemy = current.Enemies[enemyIndex];
                 var flashing = hitUntil.ContainsKey(enemy.Id);
-                var moved = previousEnemies.TryGetValue(enemy.Id, out var before) && before != Point(enemy.Position);
+                var moved = previousEnemies.TryGetValue(enemy.Id, out var before) && before != Point(enemy.Position) && !relocatedEnemies.Contains(enemy.Id);
                 var state = enemy.Health <= 0 ? "death" : flashing ? "hit" : moved ? "walk" : "idle";
                 state = WaveEnemyState(enemy.Id, enemy.DefinitionId, state);
                 var enemyArt=Resolve("enemy",enemy.DefinitionId,state);
+                var rigged=false; var rigUv=default(Rect); string actionPhase=null;
                 var position=Interpolate(previousEnemies,enemy.Id,enemy.Position,alpha);
                 RenderedEntitySample?.Invoke("enemy",enemy.Id,position);
                 var dimensions=enemyArt.WorldSize;
                 var upperOpacity=1f;
+                var actorKind=WaveEnemyKind.Pursuer;
                 if(wave!=null)
                 {
                     var kind=waveDefinition.Enemies[enemy.DefinitionId].Kind;
+                    actorKind=kind;
+                    if(waveEnemyById.TryGetValue(enemy.Id,out var action))actionPhase=action.Phase;
+                    var tellTicks=waveDefinition.Enemies[enemy.DefinitionId].TellTicks;
+                    var tellProgress=action.Phase==null?0:1-(action.UntilTick-(current.Tick+alpha))/(float)Mathf.Max(1,tellTicks);
+                    rigged=enemyRigAtlas.TrySample(kind,actionPhase,moved,state,visualTime+enemy.Id*.13f,tellProgress,out var rigArt,out rigUv);
+                    if(rigged){enemyArt=rigArt;dimensions=enemyArt.WorldSize;}
                     dimensions=WaveEnemySize(dimensions,kind);
                     var body=new Rect(position-Vector2.Scale(dimensions,enemyArt.Pivot),dimensions);
                     var warning=waveEnemyById.TryGetValue(enemy.Id,out var phase)&&
@@ -240,19 +294,24 @@ namespace Game.View
                 var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
                 var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
-                DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing);
-                if(wave!=null)DrawActor(enemyArt,enemyLayer,position,visualTime+enemy.Id*.13f,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels);
+                if(FieldActive)enemyLayer=GameVisualTokens.EnemyLayer+Mathf.Clamp(19-Mathf.FloorToInt(20f*renderCamera.WorldToViewportPoint(position).y),0,19);
+                var actorTime=visualTime+enemy.Id*.13f;
+                var actorPose=rigged?new ActorPose(Vector2.zero,Vector2.one,0):ActorMotion.SampleEnemy(actorKind,actorTime,moved);
+                if(!FieldActive||FieldVisible(position,dimensions))DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind,rigged);
+                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:rigged&&EnemyRigAtlas.IsChargeDanger(actorKind,actionPhase,state)?GameVisualTokens.Hostile:(Color?)null,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
+                if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
-                    RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,visualTime+enemy.Id*.13f,dimensions,moved,hitProgress,enemyFacing));
+                    RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));
             }
+            if (presentationDiagnosticsActive) diagnostics.EnemyActorsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             var heroHit = heroHitUntil > visualTime;
-            var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : Point(previous.Lord.Position) != Point(current.Lord.Position) ? "walk" : "idle";
+            var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : "idle";
             var heroWalking=Point(previous.Lord.Position)!=Point(current.Lord.Position);
             var heroAttackProgress=heroAttackUntil>visualTime?1-(heroAttackUntil-visualTime)/GameVisualTokens.ActorAttackSeconds:-1;
-            var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
+            var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/(HitFeedbackEnabled?.2f:GameVisualTokens.HitFlashSeconds):-1;
+            var heroVisual=HeroVisual(snapshot.HeroId,heroState,heroWalking,heroAttackProgress,seconds,out var heroAnimationTime);
             if(wave!=null)
             {
-                var heroArt=Resolve("hero",snapshot.HeroId,heroState);
                 if(lordMarker==null)
                 {
                     lordMarkerMeshes=new ShapeMeshes();
@@ -262,23 +321,51 @@ namespace Game.View
                 var radius=GameVisualTokens.WaveLordRingRadius;
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
-                foreach(var direction in HeroOutlineDirections)
-                {
-                    if(FallowActive)DrawActor(heroArt,GameVisualTokens.LordLayer-2,lord+direction*GameVisualTokens.WaveHeroOutline*1.8f,visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:GameVisualTokens.Ink,facing:heroFacing);
-                    DrawActor(heroArt,GameVisualTokens.LordLayer-1,lord+direction*GameVisualTokens.WaveHeroOutline*(FallowActive?1.25f:1),visualTime,heroArt.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,tint:FallowActive ? GameVisualTokens.Ally : GameVisualTokens.Ink,facing:heroFacing);
-                }
             }
-            var heroVisual=Resolve("hero",snapshot.HeroId,heroState);
-            DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,visualTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit ? .8f : 0,facing:heroFacing);
+            DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
+            if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
+                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity))
+                DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
+            heroGaitDiscontinuity=false;
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
             threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
+            if (presentationDiagnosticsActive) diagnostics.HeroThreatsMs = DiagnosticInterval(ref diagnosticCheckpoint);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            }
+#endif
             SubmittedInstances = 0; DrawCalls = 0;
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
+            actorGrounding.Flush(); actorWings.Flush();
+            SubmittedInstances+=actorGrounding.SubmittedInstances+actorWings.SubmittedInstances;
+            DrawCalls+=actorGrounding.DrawCalls+actorWings.DrawCalls;
+            if (presentationDiagnosticsActive) diagnostics.SpriteBatchSubmitMs = DiagnosticInterval(ref diagnosticCheckpoint);
             retiredFacing.Clear();
             foreach(var pair in actorFacing)if(pair.Value.generation!=facingGeneration)retiredFacing.Add(pair.Key);
             for(var i=0;i<retiredFacing.Count;i++)actorFacing.Remove(retiredFacing[i]);
+            if (presentationDiagnosticsActive)
+            {
+                diagnostics.CleanupMs = DiagnosticInterval(ref diagnosticCheckpoint);
+                diagnostics.TotalMs = (diagnosticCheckpoint - diagnosticStart) * (1000d / Stopwatch.Frequency);
+                diagnostics.DrawCalls = DrawCalls;
+                diagnostics.SubmittedInstances = SubmittedInstances;
+                diagnostics.MaskUpdates = diagnosticMaskUpdates;
+                diagnostics.MaskPixelsUploaded = diagnosticMaskPixels;
+                diagnostics.MaskPaintPixelVisits = diagnosticPaintPixels;
+                diagnostics.GroundingAdds = diagnosticGroundingAdds;
+            }
+            LastDiagnostics = diagnostics;
+            presentationDiagnosticsActive = false;
         }
+
+        static double DiagnosticInterval(ref long checkpoint)
+        {
+            var now = Stopwatch.GetTimestamp();
+            var elapsed = (now - checkpoint) * (1000d / Stopwatch.Frequency);
+            checkpoint = now;
+            return elapsed;
+        }
+
         public static Vector2 WaveEnemySize(Vector2 authored,WaveEnemyKind kind)
         {
             if(kind==WaveEnemyKind.FloodBoss)return authored;
@@ -295,6 +382,7 @@ namespace Game.View
         }
         Vector2 Interpolate(Dictionary<int, Vector2> positions, int id, WorldPoint current, float alpha)
         {
+            if (ReferenceEquals(positions, previousEnemies) && relocatedEnemies.Contains(id)) return Point(current);
             var point = Point(current); return positions.TryGetValue(id, out var before) ? Vector2.Lerp(before, point, alpha) : point;
         }
         Vector2 Point(WorldPoint value) => followCamera.Point(value);
@@ -315,12 +403,20 @@ namespace Game.View
             var halfHeight = renderCamera.orthographicSize; var halfWidth = halfHeight * renderCamera.aspect; var center = renderCamera.transform.position;
             var xMin = Mathf.Max(-1, Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1); var xMax = Mathf.Min(Mathf.CeilToInt(width / stride.x), Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1);
             var yMin = Mathf.Max(-1, Mathf.FloorToInt((center.y - halfHeight) / stride.y) - 1); var yMax = Mathf.Min(Mathf.CeilToInt(height / stride.y), Mathf.FloorToInt((center.y + halfHeight) / stride.y) + 1);
+            if (FieldActive)
+            {
+                xMin = Mathf.FloorToInt((center.x - halfWidth) / stride.x) - 1;
+                xMax = Mathf.FloorToInt((center.x + halfWidth) / stride.x) + 1;
+                yMin = Mathf.FloorToInt((center.y - halfHeight) / stride.y) - 1;
+                yMax = Mathf.FloorToInt((center.y + halfHeight) / stride.y) + 1;
+            }
             for (var y = yMin; y <= yMax; y++) for (var x = xMin; x <= xMax; x++)
             {
                 var left = x * stride.x; var bottom = y * stride.y;
                 var exterior=wave==null?0:followCamera.EdgeActorMargin;
                 var x0 = Mathf.Max(-exterior, left); var y0 = Mathf.Max(-exterior, bottom);
                 var x1 = Mathf.Min(width+exterior, left + size.x); var y1 = Mathf.Min(height+exterior, bottom + size.y);
+                if (FieldActive) { x0 = left; y0 = bottom; x1 = left + size.x; y1 = bottom + size.y; }
                 if (x1 <= x0 || y1 <= y0) continue;
                 var cell = new Vector2(x1 - x0, y1 - y0);
                 var position = new Vector2(x0, y0) + Vector2.Scale(visual.Pivot, cell);
@@ -342,6 +438,7 @@ namespace Game.View
                     Draw(patch,GameVisualTokens.TerrainLayer+2,position,0,cell,opacity:GameVisualTokens.TerrainOpacity);
                 }
             }
+            if (FieldActive) { DrawFieldArena(); return; }
             var edge = Resolve("boundary", "edge", "default"); var corner = Resolve("boundary", "corner", "default");
             if(wave!=null)
             {
@@ -395,7 +492,7 @@ namespace Game.View
                     case PresentationKind.Attack: DrawAttack(effect, pooled.Age, progress); break;
                     case PresentationKind.Damage: Feedback("hit", GameVisualTokens.AttackLayer, origin, progress); break;
                     case PresentationKind.EnemyKilled:
-                        Draw(Resolve("enemy", effect.SourceId, "death"), GameVisualTokens.EnemyLayer, origin, pooled.Age, opacity: 1 - progress);
+                        Draw(EnemyDeathVisual(effect.SourceId), GameVisualTokens.EnemyLayer, origin, pooled.Age, opacity: 1 - progress);
                         Feedback("death", GameVisualTokens.AttackLayer, origin, progress); break;
                     case PresentationKind.KillExperience: Feedback("kill-experience", GameVisualTokens.ExperienceLayer, Vector2.Lerp(origin, lord, progress * progress), progress); break;
                     case PresentationKind.HarvestExperience:
@@ -461,6 +558,15 @@ namespace Game.View
                 if (marker.ClusterCount > 1) Draw(Resolve("feedback", "threat-cluster", "default"), GameVisualTokens.ThreatLayer, point - marker.Direction * pixelsToWorld * 18, visualTime, Vector2.one * pixelsToWorld * 12);
             }
         }
+        ArtVisual EnemyDeathVisual(string source)
+        {
+            if(wave!=null&&waveDefinition.Enemies.TryGetValue(source,out var rule)&&rule.Kind==WaveEnemyKind.Charger)
+            {
+                enemyRigAtlas.TrySample(rule.Kind,null,false,"death",0,0,out var visual,out _);
+                return visual;
+            }
+            return Resolve("enemy",source,"death");
+        }
         ArtVisual Resolve(string kind, string id, string state)
         {
             var key = (kind, id, state);
@@ -474,9 +580,8 @@ namespace Game.View
             state.motion.SetDirection(movement,visualTime);state.generation=facingGeneration;actorFacing[key]=state;
             return state.motion.Sample(visualTime);
         }
-        static Rect ActorBounds(ArtVisual visual,Vector2 position,float time,Vector2 size,bool walking,float hitProgress,ActorFacingPose facing)
+        static Rect ActorBounds(ArtVisual visual,Vector2 position,Vector2 size,ActorPose pose,ActorFacingPose facing)
         {
-            var pose=ActorMotion.Sample(time,walking,-1,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale); dimensions.x*=facing.SignedWidth;
             var rotation=Quaternion.Euler(0,0,pose.Degrees+facing.LeanDegrees);
             var origin=position+pose.Offset;
@@ -491,17 +596,18 @@ namespace Game.View
             return Rect.MinMaxRect(minimum.x,minimum.y,maximum.x,maximum.y);
         }
 
-        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0)
+        void DrawActor(ArtVisual visual,int layer,Vector2 position,float time,Vector2 size,bool walking,float attackProgress,float hitProgress,Color? tint=null,float flash=0,float upperOpacity=1,ActorFacingPose facing=default,float edgeTexels=0,ActorPose? poseOverride=null,Rect? uv=null)
         {
-            var pose=ActorMotion.Sample(time,walking,attackProgress,hitProgress);
+            var pose=poseOverride??ActorMotion.Sample(time,walking,attackProgress,hitProgress);
             var dimensions=Vector2.Scale(size,pose.Scale);
             var angle=pose.Degrees+facing.LeanDegrees;
             dimensions.x *= facing.SignedWidth;
-            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels);
+            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels,uv:uv);
         }
         void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true)
         {
             var dimensions = size ?? visual.WorldSize;
+            if (FieldActive && !FieldVisible(position, dimensions)) return;
             var phase = time * Mathf.PI * 2 / GameVisualTokens.WalkSeconds;
             switch (applyTween ? visual.Tween : "none")
             {
@@ -525,7 +631,8 @@ namespace Game.View
         {
             DisposeFallow();
             DisposeThreatWarnings();
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
+            DisposeActorGrounding();
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }

@@ -35,7 +35,26 @@ namespace SowSiege.Core
     public sealed record WaveProjectileView(int Id, string Source, WorldPoint Position, WorldPoint Previous, int TargetId, bool Hostile);
     public sealed record WaveDetourView(WorldPoint Position, int Radius, int UntilTick, string Source);
     public sealed record WaveAttackView(string Source, string Kind, WorldPoint Origin, WorldPoint Position, int Radius, int ExpireTick, int ActivationId = -1);
-    public sealed record WaveEnemyView(int Id, string Phase, WorldPoint Origin, WorldPoint Target, int UntilTick, bool Wet, bool Stopped, int BossPhase);
+    public readonly struct WaveEnemyView : IEquatable<WaveEnemyView>
+    {
+        public int Id { get; }
+        public string Phase { get; }
+        public WorldPoint Origin { get; }
+        public WorldPoint Target { get; }
+        public int UntilTick { get; }
+        public bool Wet { get; }
+        public bool Stopped { get; }
+        public int BossPhase { get; }
+        public WaveEnemyView(int Id, string Phase, WorldPoint Origin, WorldPoint Target, int UntilTick, bool Wet, bool Stopped, int BossPhase)
+        { this.Id = Id; this.Phase = Phase; this.Origin = Origin; this.Target = Target; this.UntilTick = UntilTick; this.Wet = Wet; this.Stopped = Stopped; this.BossPhase = BossPhase; }
+        public bool Equals(WaveEnemyView other) => Id == other.Id && Phase == other.Phase && Origin.X == other.Origin.X && Origin.Y == other.Origin.Y && Target.X == other.Target.X && Target.Y == other.Target.Y && UntilTick == other.UntilTick && Wet == other.Wet && Stopped == other.Stopped && BossPhase == other.BossPhase;
+        public override bool Equals(object? obj) => obj is WaveEnemyView other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(Id, Phase, HashCode.Combine(Origin.X, Origin.Y), HashCode.Combine(Target.X, Target.Y), UntilTick, Wet, Stopped, BossPhase);
+        public static bool operator ==(WaveEnemyView left, WaveEnemyView right) => left.Equals(right);
+        public static bool operator !=(WaveEnemyView left, WaveEnemyView right) => !left.Equals(right);
+        public void Deconstruct(out int Id, out string Phase, out WorldPoint Origin, out WorldPoint Target, out int UntilTick, out bool Wet, out bool Stopped, out int BossPhase)
+        { Id = this.Id; Phase = this.Phase; Origin = this.Origin; Target = this.Target; UntilTick = this.UntilTick; Wet = this.Wet; Stopped = this.Stopped; BossPhase = this.BossPhase; }
+    }
     public sealed record WaveGroupView(int Id, string Source, WorldPoint Position, string Phase, int Mission, int Training, int ReservedFood, int FrontRank, string Formation);
     public sealed record WaveEvent(long Id, int Tick, string Kind, string Source, int SubjectId, WorldPoint Position, WorldPoint Target, int Amount);
     public sealed record WaveRuntimeFrame(string Revision, string ChapterId, int Water, int Timber, int AvailableWorkers, bool BossDefeated, IReadOnlyList<WaveWorkView> Work, IReadOnlyList<WaveRewardView> Rewards, IReadOnlyList<WaveProjectileView> Projectiles, IReadOnlyList<WaveEnemyView> Enemies, IReadOnlyList<WaveGroupView> Groups, IReadOnlyList<WorldPoint> Paths, IReadOnlyList<string> Items, IReadOnlyList<string> Evolutions, IReadOnlyList<WaveEvent> Events, IReadOnlyDictionary<string, long> Counters, IReadOnlyList<WaveAttackView> Attacks, int CarriedWater, IReadOnlyList<WaveDetourView> Detours, WorldPoint TimberOrigin, int ProcessedTimber);

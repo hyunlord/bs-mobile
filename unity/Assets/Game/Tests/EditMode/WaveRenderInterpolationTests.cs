@@ -147,13 +147,13 @@ namespace Tests.EditMode
             Assert.That(facing.Sample(1.05f).MirrorBlend,Is.EqualTo(1));
         }
 
-        [Test] public void FacingReversalNarrowsOneSilhouetteAndVerticalNoiseDoesNotFlipAgain()
+        [Test] public void FacingReversalKeepsRigidWidthAndVerticalNoiseDoesNotFlipAgain()
         {
             var facing=new ActorFacingMotion(Vector2.right,0);
             facing.SetDirection(Vector2.left,1);
             Assert.That(facing.Sample(1).MirrorBlend,Is.Zero);
             Assert.That(facing.Sample(1.05f).MirrorBlend,Is.EqualTo(.5f).Within(.001f));
-            Assert.That(Mathf.Abs(facing.Sample(1.05f).SignedWidth),Is.EqualTo(.8f).Within(.001f));
+            Assert.That(Mathf.Abs(facing.Sample(1.05f).SignedWidth),Is.EqualTo(1));
             Assert.That(facing.Sample(1.02f).SignedWidth,Is.GreaterThan(.8f));
             Assert.That(facing.Sample(1.08f).SignedWidth,Is.LessThan(-.8f));
             Assert.That(facing.Sample(1.101f).MirrorBlend,Is.EqualTo(1));

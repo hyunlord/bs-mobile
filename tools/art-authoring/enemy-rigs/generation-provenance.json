@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "tool": "image_gen.imagegen",
+  "date": "2026-10-11",
+  "generationSession": "01a12771-312d-7c92-abad-7cd92a435a4d",
+  "references": [
+    "unity/Assets/Art/fallow-actors.png",
+    "unity/Assets/Art/fallow-enemies.png"
+  ],
+  "sources": [
+    {
+      "kind": "mite",
+      "original": "exec-6114751e-7f3f-47f7-ba52-89b998585dfd.png",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/mite-parts.png",
+      "prompt": "Use case: stylized-concept. Production game cutout rig source sheet. Inputs are STYLE/IDENTITY references only. Ink line and opaque gouache, high-detail grey dead-season fantasy. Draw ONLY named subject's SEPARATED PARTS for hierarchical animation, not assembled poses. All parts same 3/4 overhead facing screen-right, same scale/lighting; hidden areas and rounded overlapping joints fully drawn. Arrange parts in clean separated spacious grid on TRUE TRANSPARENT canvas 2048x2048, minimum 30px gaps. No shadows, scenery, labels, gridlines, numbers, colored guide marks. Each arm/leg points generally downward in neutral rest. Body and limbs must NOT be duplicated/connected. Preserve gritty high-quality source proportions and dark quiet palette; red reserved only later animated danger so remove red body markings. Subject: Image1 lower-middle armored six-legged beetle mite. Six separate slim armored insect legs (left/right front middle rear), shell/body with NO legs, separate head with mandibles.",
+      "transparent_background": true,
+      "sha256": "7dd99c6a84c2bc1271224c15a4f02fee5c071fcf0dc6203cb2d1df6aac6448be",
+      "actualDimensions": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "grazer",
+      "original": "exec-9b013979-1dc2-4b00-8994-6bed0546dc89.png",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/grazer-parts.png",
+      "prompt": "Use case: stylized-concept. Production game cutout rig source sheet. Inputs are STYLE/IDENTITY references only. Ink line and opaque gouache, high-detail grey dead-season fantasy. Draw ONLY named subject's SEPARATED PARTS for hierarchical animation, not assembled poses. All parts same 3/4 overhead facing screen-right, same scale/lighting; hidden areas and rounded overlapping joints fully drawn. Arrange parts in clean separated spacious grid on TRUE TRANSPARENT canvas 2048x2048, minimum 30px gaps. No shadows, scenery, labels, gridlines, numbers, colored guide marks. Each arm/leg points generally downward in neutral rest. Body and limbs must NOT be duplicated/connected. Preserve gritty high-quality source proportions and dark quiet palette; red reserved only later animated danger so remove red body markings. Subject: Image2 left antlered boar crop grazer. Four separate legs, separate bulky torso WITHOUT legs/head, separate lowered boar head/tusks, separate antler/root crest.",
+      "transparent_background": true,
+      "sha256": "4e01c42b44b198a64b476bac120d8a0d33019714e66c174ed6c239943b9f82bf",
+      "actualDimensions": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "raider",
+      "original": "exec-e3e5e03b-9b47-49ec-8899-b8705b460955.png",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/raider-parts.png",
+      "prompt": "Use case: stylized-concept. Production game cutout rig source sheet. Inputs are STYLE/IDENTITY references only. Ink line and opaque gouache, high-detail grey dead-season fantasy. Draw ONLY named subject's SEPARATED PARTS for hierarchical animation, not assembled poses. All parts same 3/4 overhead facing screen-right, same scale/lighting; hidden areas and rounded overlapping joints fully drawn. Arrange parts in clean separated spacious grid on TRUE TRANSPARENT canvas 2048x2048, minimum 30px gaps. No shadows, scenery, labels, gridlines, numbers, colored guide marks. Each arm/leg points generally downward in neutral rest. Body and limbs must NOT be duplicated/connected. Preserve gritty high-quality source proportions and dark quiet palette; red reserved only later animated danger so remove red body markings. Subject: Image1 lower-left hollow armored human raider. Separate torso NO limbs/head, separate helmet/head, separate left/right upper arms and forearms, separate left/right thighs and shin/boots, separate spear, separate cape. Ensure arm/leg segments are individually separated with generous gaps; torso must include waist skirt but NO dangling arms/legs; head and cape on own cells.",
+      "transparent_background": true,
+      "sha256": "e6ca0de490a092c4d5ef7c341c7eca84c3374607fa33e6fbc1e1ab1b6bde7177",
+      "actualDimensions": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "shield",
+      "original": "exec-181f792c-180b-4f2f-bfee-a781abbe2cc7.png",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/shield-parts.png",
+      "prompt": "Use case: stylized-concept. Production game cutout rig source sheet. Inputs are STYLE/IDENTITY references only. Ink line and opaque gouache, high-detail grey dead-season fantasy. Draw ONLY named subject's SEPARATED PARTS for hierarchical animation, not assembled poses. All parts same 3/4 overhead facing screen-right, same scale/lighting; hidden areas and rounded overlapping joints fully drawn. Arrange parts in clean separated spacious grid on TRUE TRANSPARENT canvas 2048x2048, minimum 30px gaps. No shadows, scenery, labels, gridlines, numbers, colored guide marks. Each arm/leg points generally downward in neutral rest. Body and limbs must NOT be duplicated/connected. Preserve gritty high-quality source proportions and dark quiet palette; red reserved only later animated danger so remove red body markings. Subject: Image2 middle hollow armored shield raider. Separate torso NO limbs/head, separate helmet/head, separate left/right upper arms and forearms, separate left/right thighs and shin/boots, separate sword, separate shield, separate cape. Ensure arm/leg segments are individually separated with generous gaps; torso must include waist skirt but NO dangling arms/legs; head and cape on own cells.",
+      "transparent_background": true,
+      "sha256": "bdd8e422903a9c9a782d836f1b0f4c410a7bac738c9d1c2d2457987f67132573",
+      "actualDimensions": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "charger",
+      "original": "exec-aa0ca30c-4b55-4376-89cb-1604ab03e4e8.png",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/charger-parts.png",
+      "prompt": "Use case: stylized-concept. Production game cutout rig source sheet. Inputs are STYLE/IDENTITY references only. Ink line and opaque gouache, high-detail grey dead-season fantasy. Draw ONLY named subject's SEPARATED PARTS for hierarchical animation, not assembled poses. All parts same 3/4 overhead facing screen-right, same scale/lighting; hidden areas and rounded overlapping joints fully drawn. Arrange parts in clean separated spacious grid on TRUE TRANSPARENT canvas 2048x2048, minimum 30px gaps. No shadows, scenery, labels, gridlines, numbers, colored guide marks. Each arm/leg points generally downward in neutral rest. Body and limbs must NOT be duplicated/connected. Preserve gritty high-quality source proportions and dark quiet palette; red reserved only later animated danger so remove red body markings. Subject: Image1 lower-right horned charger. Dark charcoal armor and grey-brown rag cloak, ivory skull mask, NO red pigment whatsoever. Separate low leaning torso NO limbs/head, separate horned skull/head, separate left/right upper arms and forearms, separate left/right thighs and hoof-shins, separate cape. Crucial no red pigment; charcoal, ivory and neutral brown only. Each part spatially isolated; no assembled character.",
+      "transparent_background": true,
+      "sha256": "d8e0111990d4a59c511f52860f12cac09e04521c858cd43ed84d03f72e79baa6",
+      "actualDimensions": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "wasp",
+      "original": "exec-a6640323-7461-45eb-9fda-f8d9caa34704.png",
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/wasp-parts.png",
+      "prompt": "Use case: stylized-concept. Production game cutout rig source sheet. Inputs are STYLE/IDENTITY references only. Ink line and opaque gouache, high-detail grey dead-season fantasy. Draw ONLY named subject's SEPARATED PARTS for hierarchical animation, not assembled poses. All parts same 3/4 overhead facing screen-right, same scale/lighting; hidden areas and rounded overlapping joints fully drawn. Arrange parts in clean separated spacious grid on TRUE TRANSPARENT canvas 2048x2048, minimum 30px gaps. No shadows, scenery, labels, gridlines, numbers, colored guide marks. Each arm/leg points generally downward in neutral rest. Body and limbs must NOT be duplicated/connected. Preserve gritty high-quality source proportions and dark quiet palette; red reserved only later animated danger so remove red body markings. Subject: Image2 right dark fermentation wasp. Separate thorax/head, separate striped abdomen, four separate translucent wings (left/right front/hind), six separate fine legs, separate antennae pair. Crucial no red pigment; charcoal, ivory and neutral brown only. Each part spatially isolated; no assembled character.",
+      "transparent_background": true,
+      "sha256": "e2f1b6cb5c48453460f4fb270a6059c665b1516b7caeeb95f7700078b450afb4",
+      "actualDimensions": [
+        1254,
+        1254
+      ]
+    }
+  ]
+}

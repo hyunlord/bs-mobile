@@ -50,7 +50,7 @@ namespace SowSiege.Core
             World.Estate = new(map.Width >> 1, map.Height >> 1);
             World.Lord = World.Estate;
             World.Destination = World.Lord;
-            World.LordHealth = map.LordHealth;
+            World.LordHealth = interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth;
             World.Food = catalog.Tuning.World.People.InitialFood;
             foreach (var id in catalog.Tools.Keys.OrderBy(value => value, StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
@@ -154,7 +154,16 @@ namespace SowSiege.Core
             var map = catalog.Tuning.World.Map;
             var speed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
             var scale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
-            World.Lord = new(Math.Clamp(World.Lord.X + (int)((long)input.X * speed / scale), 0, map.Width),
+            if (Interactive?.Field is { } field)
+            {
+                field.AcceptInput(input);
+                World.Lord = Interactive.Feel is { Options: { FasterLord: true } } fieldFeel
+                    ? field.Constrain(fieldFeel.Move(World.Lord, input, speed, map, unbounded: true))
+                    : field.Constrain(new(checked(World.Lord.X + (int)((long)input.X * speed / scale)), checked(World.Lord.Y + (int)((long)input.Y * speed / scale))));
+                World.Destination = field.Constrain(new(checked(World.Lord.X + input.X), checked(World.Lord.Y + input.Y)));
+                return;
+            }
+            World.Lord = Interactive?.Feel is { Options: { FasterLord: true } } feel ? feel.Move(World.Lord, input, speed, map) : new(Math.Clamp(World.Lord.X + (int)((long)input.X * speed / scale), 0, map.Width),
                 Math.Clamp(World.Lord.Y + (int)((long)input.Y * speed / scale), 0, map.Height));
             World.Destination = new(Math.Clamp(World.Lord.X + input.X, 0, map.Width), Math.Clamp(World.Lord.Y + input.Y, 0, map.Height));
         }

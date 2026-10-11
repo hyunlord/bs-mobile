@@ -1,0 +1,25 @@
+{
+  "tool": "image_gen.imagegen",
+  "date": "2026-10-11",
+  "transparent_background": true,
+  "reference": "unity/Assets/Game/Editor/Authoring/HeroB/hero-b-cutout-original.png",
+  "originalPromptStatus": "Unavailable after compaction; reconstructed brief explicitly in README. No verbatim claim.",
+  "edits": [
+    {
+      "output": "exec-e225188c-919a-4767-81e0-ead6b4501b94.png",
+      "status": "rejected: visually retained red blade-edge flecks; not used in atlas",
+      "prompt": "Precise cleanup edit of this transparent game-character cutout parts sheet. Keep the entire sheet layout, all 16 separated parts, exact positions, sizes, pose, proportions, ink-and-gouache brushwork, colors, and alpha transparency unchanged. ONLY remove accidental fluorescent neon red and yellow fringe pixels around the sword in the bottom-left cell and along the ivory skirt edge; replace those unwanted colored edge flecks with natural dark ink/steel/ivory edges or transparency. The sword must remain the same straight upright full sword at the same exact position and size, with the same gold hilt, silver steel blade and dark ink outline. No redesign, no extra objects, no background, no grid or text. Preserve original canvas dimensions1254x1254 and genuine alpha if possible. Critical: this is cleanup of thin neon edge artifacts, not new art."
+    },
+    {
+      "output": "exec-c5b53438-181c-4f2f-b25c-56df4b6315d6.png",
+      "copiedTo": "unity/Assets/Game/Editor/Authoring/HeroB/hero-b-sword-clean.png",
+      "actualDimensions": [
+        724,
+        2172
+      ],
+      "sha256": "f5f247dadd3a166ca38234058de119c39f69ca793263ac95b3de956a6055bd6b",
+      "status": "accepted for B preview bake, replaces sword only",
+      "prompt": "Create a clean replacement for ONLY THE SWORD in the bottom-left cell of this supplied game sprite sheet. Output ONE isolated full sword on genuine transparent alpha, vertically upright centered, tip at top, pommel at bottom. Nothing else. Match exactly the existing straight narrow silver-steel blade, black ink contour, brass/gold short crossguard with diamond tips, brown leather grip and gold pommel, ink-and-gouache visual style and proportions. Leave clear transparent margin. CRITICAL EDGE CLEANUP: Absolutely NO RED PIXELS, NO ORANGE OR YELLOW NEON FRINGE, NO SATURATED GLOW. The existing image contains erroneous bright red/yellow pixels beside the blade; those are defects and must NOT be copied. Blade edge is only clean neutral dark charcoal ink against transparency; gold hilt is muted ochre paint with dark outline. No aura or shine outside silhouette. Preserve sword length-to-width approximately3:1 including hilt, thin blade about one third hilt width. No character, text, background, shadow, framing or other parts."
+    }
+  ]
+}

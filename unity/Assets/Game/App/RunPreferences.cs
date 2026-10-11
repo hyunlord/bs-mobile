@@ -7,8 +7,9 @@ namespace Game.App
 
     public sealed class RunPreferences
     {
+        const int FeelDefaultsVersion = 1;
         public const string Prefix = "sowsiege.fp.v1.";
-        public static readonly string[] Keys = { "musicVolume", "sfxVolume", "haptics", "shake", "damageNumbers", "aim", "introductionSeen", "seenHints" };
+        public static readonly string[] Keys = { "musicVolume", "sfxVolume", "haptics", "shake", "damageNumbers", "aim", "introductionSeen", "seenHints", "feelSpeed", "feelContact", "feelHealth", "feelFeedback", "heroRigPreview", "heroRigSelectedB", "feelDefaultsVersion" };
         readonly string prefix;
         public float MusicVolume { get; set; } = .55f;
         public float EffectsVolume { get; set; } = .8f;
@@ -18,6 +19,13 @@ namespace Game.App
         public AimMode Aim { get; set; }
         public bool IntroductionSeen { get; set; }
         public int SeenHints { get; private set; }
+        public bool FeelSpeed { get; set; }
+        public bool FeelContact { get; set; }
+        public bool FeelHealth { get; set; }
+        public bool FeelFeedback { get; set; }
+        public bool HeroRigPreview { get; set; }
+        public FeelExperimentOptions SnapshotFeel() => FeelSpeed || FeelContact || FeelHealth
+            ? new FeelExperimentOptions(FeelSpeed, FeelContact, FeelHealth) : null;
 
         RunPreferences(string prefix) { this.prefix = prefix; }
         public static RunPreferences Load(string prefix = Prefix)
@@ -31,6 +39,19 @@ namespace Game.App
             value.Aim = PlayerPrefs.GetInt(prefix + "aim", 0) == (int)AimMode.NearestEnemy ? AimMode.NearestEnemy : AimMode.Movement;
             value.IntroductionSeen = PlayerPrefs.GetInt(prefix + "introductionSeen", 0) != 0;
             value.SeenHints = PlayerPrefs.GetInt(prefix + "seenHints", 0) & 15;
+            value.FeelSpeed = PlayerPrefs.GetInt(prefix + "feelSpeed", 0) == 1;
+            value.FeelContact = PlayerPrefs.GetInt(prefix + "feelContact", 0) == 1;
+            value.FeelHealth = PlayerPrefs.GetInt(prefix + "feelHealth", 0) == 1;
+            value.FeelFeedback = PlayerPrefs.GetInt(prefix + "feelFeedback", 0) == 1;
+            value.HeroRigPreview = PlayerPrefs.GetInt(prefix + "heroRigSelectedB", 1) == 1;
+            if (PlayerPrefs.GetInt(prefix + "feelDefaultsVersion", 0) < FeelDefaultsVersion)
+            {
+                value.FeelSpeed = true;
+                value.FeelFeedback = true;
+                value.FeelContact = false;
+                value.FeelHealth = false;
+                value.Save();
+            }
             return value;
         }
 
@@ -48,6 +69,12 @@ namespace Game.App
             PlayerPrefs.SetInt(prefix + "aim", (int)Aim);
             PlayerPrefs.SetInt(prefix + "introductionSeen", IntroductionSeen ? 1 : 0);
             PlayerPrefs.SetInt(prefix + "seenHints", SeenHints);
+            PlayerPrefs.SetInt(prefix + "feelSpeed", FeelSpeed ? 1 : 0);
+            PlayerPrefs.SetInt(prefix + "feelContact", FeelContact ? 1 : 0);
+            PlayerPrefs.SetInt(prefix + "feelHealth", FeelHealth ? 1 : 0);
+            PlayerPrefs.SetInt(prefix + "feelFeedback", FeelFeedback ? 1 : 0);
+            PlayerPrefs.SetInt(prefix + "heroRigSelectedB", HeroRigPreview ? 1 : 0);
+            PlayerPrefs.SetInt(prefix + "feelDefaultsVersion", FeelDefaultsVersion);
             PlayerPrefs.Save();
         }
 

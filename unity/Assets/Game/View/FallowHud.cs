@@ -9,6 +9,7 @@ namespace Game.View
     public sealed class FallowHud
     {
         readonly UiShell ui;
+        readonly UiDamageFeedback damageFeedback;
         readonly ContentCatalog catalog;
         readonly RectTransform root, hpFill, xpFill;
         readonly RectTransform footer;
@@ -28,7 +29,7 @@ namespace Game.View
         readonly Dictionary<string, Image>[] icons = new Dictionary<string, Image>[9];
         public float ReservedTopPixels => root.rect.height * ui.Canvas.scaleFactor;
 
-        public FallowHud(UiShell ui, ContentCatalog catalog, Action pause)
+        public FallowHud(UiShell ui, ContentCatalog catalog, Action pause, bool hitFeedback=false)
         {
             this.ui = ui;
             this.catalog = catalog;
@@ -83,11 +84,13 @@ namespace Game.View
                 }
                 ranks[i].transform.SetAsLastSibling();
             }
+            if(hitFeedback)damageFeedback=new UiDamageFeedback(ui,hpFill);
         }
 
         public void Present(RunFrame frame)
         {
             RefreshLayout();
+            damageFeedback?.Present(frame);
             var seconds = frame.Tick / frame.TickRate;
             timerValue.Begin(); timerValue.Append(seconds / 60, 2); timerValue.Append(":"); timerValue.Append(seconds % 60, 2); timerValue.End();
             healthValue.Begin(); healthValue.Append(frame.Lord.Health); healthValue.Append(" / "); healthValue.Append(frame.Lord.MaxHealth); healthValue.End();

@@ -49,7 +49,7 @@ namespace Game.App
                 }
                 // Positive world Y is screen-up. Walk northeast of actual completed buildings;
                 // do not move the estate, camera, rewards, or simulation state for the comparison.
-                if(count>0)target=new WorldPoint((int)Math.Max(0,Math.Min(frame.MapWidth,x/count+1800)),(int)Math.Max(0,Math.Min(frame.MapHeight,y/count+1600)));
+                if(count>0)target=Constrain(frame,new WorldPoint((int)(x/count+1800),(int)(y/count+1600)));
             }
             return evasive?EvasiveTarget(frame,wave,target,catalog):target;
         }
@@ -68,7 +68,7 @@ namespace Game.App
             const int step=450, observationRadius=1800, clearance=200;
             var origin=frame.Lord.Position;
             var nearby=frame.Enemies.Where(e=>e.Health>0&&Distance(e.Position,origin)<=(long)observationRadius*observationRadius).ToArray();
-            WorldPoint Clamp(WorldPoint point)=>new WorldPoint(Math.Max(0,Math.Min(frame.MapWidth,point.X)),Math.Max(0,Math.Min(frame.MapHeight,point.Y)));
+            WorldPoint Clamp(WorldPoint point)=>Constrain(frame,point);
             WorldPoint Toward(WorldPoint point)
             {
                 var length=Math.Sqrt(Distance(origin,point));
@@ -82,7 +82,7 @@ namespace Game.App
                     var radius=clearance+(catalog!=null&&catalog.Enemies.TryGetValue(enemy.DefinitionId,out var rule)?rule.Range:0);
                     risk+=Math.Max(0,1-Math.Sqrt(Distance(point,enemy.Position))/Math.Max(1,radius));
                     var tell=wave.Enemies.FirstOrDefault(e=>e.Id==enemy.Id);
-                    if(tell==null||(tell.Phase!="tell-charge"&&tell.Phase!="charge"&&tell.Phase!="tell-water"&&tell.Phase!="water"))continue;
+                    if(tell.Phase==null||(tell.Phase!="tell-charge"&&tell.Phase!="charge"&&tell.Phase!="tell-water"&&tell.Phase!="water"))continue;
                     var dx=(double)tell.Target.X-tell.Origin.X;var dy=(double)tell.Target.Y-tell.Origin.Y;
                     var denominator=dx*dx+dy*dy;
                     var t=denominator==0?0:Math.Max(0,Math.Min(1,((point.X-tell.Origin.X)*dx+(point.Y-tell.Origin.Y)*dy)/denominator));
@@ -103,5 +103,12 @@ namespace Game.App
             return best;
         }
         static long Distance(WorldPoint a,WorldPoint b){var x=(long)a.X-b.X;var y=(long)a.Y-b.Y;return x*x+y*y;}
+        static WorldPoint Constrain(RunFrame frame,WorldPoint point)
+        {
+            if(frame.Field==null)return new WorldPoint(Math.Max(0,Math.Min(frame.MapWidth,point.X)),Math.Max(0,Math.Min(frame.MapHeight,point.Y)));
+            var arena=frame.Field.Arena;if(arena==null)return point;
+            var dx=(double)point.X-arena.Center.X;var dy=(double)point.Y-arena.Center.Y;var distance=Math.Sqrt(dx*dx+dy*dy);
+            return distance<=arena.Radius?point:new WorldPoint(arena.Center.X+(int)(dx*arena.Radius/distance),arena.Center.Y+(int)(dy*arena.Radius/distance));
+        }
     }
 }

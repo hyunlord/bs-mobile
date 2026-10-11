@@ -63,7 +63,7 @@ namespace Game.App
         IEnumerator Review()
         {
             var deadline = Time.realtimeSinceStartupAsDouble + 300;
-            while(run.Frame == null || run.Frame.Status != RunStatus.Running || run.MenuOpen)
+            while(run.CurrentFrame == null || run.CurrentFrame.Status != RunStatus.Running || run.MenuOpen)
             {
                 if(Time.realtimeSinceStartupAsDouble > deadline) { Complete("Timed out waiting for live battle HUD."); yield break; }
                 yield return null;
@@ -71,20 +71,20 @@ namespace Game.App
             foreach(var size in Sizes)
             {
                 yield return Resize(size);
-                if(run.Frame.Status != RunStatus.Running || run.MenuOpen) { Complete("Battle HUD was interrupted before all resolutions were captured."); yield break; }
+                if(run.CurrentFrame.Status != RunStatus.Running || run.MenuOpen) { Complete("Battle HUD was interrupted before all resolutions were captured."); yield break; }
                 yield return new WaitForEndOfFrame();
                 if(!Capture("battle",size,"live battle HUD")) yield break;
             }
-            while(run.Frame.Status != RunStatus.AwaitingCard)
+            while(run.CurrentFrame.Status != RunStatus.AwaitingCard)
             {
-                if(Time.realtimeSinceStartupAsDouble > deadline || run.Frame.Status == RunStatus.Completed)
+                if(Time.realtimeSinceStartupAsDouble > deadline || run.CurrentFrame.Status == RunStatus.Completed)
                 { Complete("No naturally earned card offer before timeout or run completion."); yield break; }
                 yield return null;
             }
             foreach(var size in Sizes)
             {
                 yield return Resize(size);
-                if(run.Frame.Status != RunStatus.AwaitingCard) { Complete("Card offer was selected during review."); yield break; }
+                if(run.CurrentFrame.Status != RunStatus.AwaitingCard) { Complete("Card offer was selected during review."); yield break; }
                 var scroll = run.Ui.Content.GetComponentInChildren<ScrollRect>();
                 if(scroll != null)scroll.verticalNormalizedPosition = 1;
                 yield return null; Canvas.ForceUpdateCanvases();
@@ -115,7 +115,7 @@ namespace Game.App
                 var image = phase+"-"+requested.x+"x"+requested.y+".png";
                 var shot = new Shot { image=image,phase=phase,scope=scope,requestedWidth=requested.x,requestedHeight=requested.y,
                     actualWidth=Screen.width,actualHeight=Screen.height,exactResolution=Screen.width==requested.x && Screen.height==requested.y,
-                    focused=Application.isFocused,tick=run.Frame.Tick,worldOverlayBounds=run.Ui.GetWorldOverlayBounds(),elements=Measure(run.Ui.Content) };
+                    focused=Application.isFocused,tick=run.CurrentFrame.Tick,worldOverlayBounds=run.Ui.GetWorldOverlayBounds(),elements=Measure(run.Ui.Content) };
                 var texts=0;var buttons=0;
                 foreach(var element in shot.elements){if(element.kind=="text")texts++;else if(element.kind=="button")buttons++;}
                 if(texts==0 || buttons==0)throw new InvalidOperationException("Review surface has no text or buttons; cannot count an empty UI as captured.");

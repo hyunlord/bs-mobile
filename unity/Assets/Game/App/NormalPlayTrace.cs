@@ -153,7 +153,7 @@ namespace Game.App
             projectileDeadline = System.Diagnostics.Stopwatch.GetTimestamp() + 120L * System.Diagnostics.Stopwatch.Frequency;
             begun = true; beganAt = Time.realtimeSinceStartupAsDouble; phaseBeganAt = beganAt; phasesArmed = !scripted; inputPreparationStep = 0;
             enemyIds.Clear();
-            UnityEngine.Debug.Log($"Normal trace session started: focus={Application.isFocused}; tick={run.Frame?.Tick}; mouse={syntheticMouse?.position.ReadValue()}");
+            UnityEngine.Debug.Log($"Normal trace session started: focus={Application.isFocused}; tick={run.CurrentFrame?.Tick}; mouse={syntheticMouse?.position.ReadValue()}");
         }
         public void BeginFrame()
         {
@@ -185,7 +185,7 @@ namespace Game.App
                 if (!enemyIds.Contains(id) && enemyIds.Count < 5) enemyIds.Add(id);
                 if (!enemyIds.Contains(id)) return;
             }
-            else if (kind != "lord" && kind != "projectile" && kind != "orbit") return;
+            else if (kind != "lord" && kind != "projectile" && kind != "orbit" && kind != "hero-foot-near" && kind != "hero-foot-far") return;
             if (sampleCount == samples.Length) { droppedEntities++; return; }
             samples[sampleCount++] = new Sample { Kind = kind, Id = id, World = world, FriendlyProjectile=kind=="projectile"&&IsFriendlyProjectile(id) };
         }
@@ -304,7 +304,7 @@ namespace Game.App
         {
             if (!begun || finished || !awaitProjectile || projectileReady || System.Diagnostics.Stopwatch.GetTimestamp() < projectileDeadline) return false;
             failure = "No naturally equipped projectile appeared within 120 wall-clock seconds of normal UI play.";
-            UnityEngine.Debug.LogError(failure + " Tick=" + run.Frame?.Tick + "; card click attempts=" + projectileCardClicks);
+            UnityEngine.Debug.LogError(failure + " Tick=" + run.CurrentFrame?.Tick + "; card click attempts=" + projectileCardClicks);
             Finish();
             if (quit) Application.Quit(1);
             return true;
@@ -344,12 +344,12 @@ namespace Game.App
                 {
                     projectileReady=true;projectileReadyAt=Time.realtimeSinceStartupAsDouble;inputPreparationStep=0;
                     QueueMouse(stickOrigin,false);
-                    UnityEngine.Debug.Log("Normal projectile setup ready at tick "+run.Frame.Tick+"; chosen cards="+projectileCardClicks);
+                    UnityEngine.Debug.Log("Normal projectile setup ready at tick "+run.CurrentFrame.Tick+"; chosen cards="+projectileCardClicks);
                     return;
                 }
                 var angle=(float)(Time.realtimeSinceStartupAsDouble-beganAt)*.35f;
-                var target=new Vector2(run.Frame.Estate.X+Mathf.Cos(angle)*850,run.Frame.Estate.Y+Mathf.Sin(angle)*850);
-                var direction=(target-new Vector2(run.Frame.Lord.Position.X,run.Frame.Lord.Position.Y)).normalized;
+                var target=new Vector2(run.CurrentFrame.Estate.X+Mathf.Cos(angle)*850,run.CurrentFrame.Estate.Y+Mathf.Sin(angle)*850);
+                var direction=(target-new Vector2(run.CurrentFrame.Lord.Position.X,run.CurrentFrame.Lord.Position.Y)).normalized;
                 if(!run.Stick.Active){stickOrigin=new Vector2(Screen.width*.25f,Screen.height*.28f);QueueMouse(stickOrigin,true);}
                 else QueueMouse(stickOrigin+direction*run.Stick.Radius,true);
                 return;
@@ -378,20 +378,20 @@ namespace Game.App
         }
         bool HasFriendlyProjectile()
         {
-            if(run.Wave==null)return false;
-            for(var i=0;i<run.Wave.Projectiles.Count;i++)if(!run.Wave.Projectiles[i].Hostile)return true;
+            if(run.CurrentWave==null)return false;
+            for(var i=0;i<run.CurrentWave.Projectiles.Count;i++)if(!run.CurrentWave.Projectiles[i].Hostile)return true;
             return false;
         }
         bool IsFriendlyProjectile(int id)
         {
-            if(run.Wave==null)return false;
-            for(var i=0;i<run.Wave.Projectiles.Count;i++)
-            { var projectile=run.Wave.Projectiles[i];if(projectile.Id==id)return !projectile.Hostile; }
+            if(run.CurrentWave==null)return false;
+            for(var i=0;i<run.CurrentWave.Projectiles.Count;i++)
+            { var projectile=run.CurrentWave.Projectiles[i];if(projectile.Id==id)return !projectile.Hostile; }
             return false;
         }
         bool DriveProjectileCard()
         {
-            if(run.Frame==null || run.Frame.Status!=SowSiege.Core.RunStatus.AwaitingCard)
+            if(run.CurrentFrame==null || run.CurrentFrame.Status!=SowSiege.Core.RunStatus.AwaitingCard)
             {
                 if(buttonPhase!=0){QueueMouse(pendingClick,false);buttonPhase=0;return true;}
                 return false;

@@ -176,12 +176,13 @@ namespace Game.App
             if(Screen.width!=visualReviewWidth||Screen.height!=visualReviewHeight) throw new InvalidOperationException("Native visual viewport did not reach the explicitly requested dimensions.");
             Ui.RefreshSafeArea();
             Session=new InteractiveSession(runCatalog,replay.Header.Options with { DataHash=hash });
+            activeFeelRules=replay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=false;
             var commandIndex=0;
             world=new GameObject("Visual review world").AddComponent<WorldRenderer>();
             var settings=CanonicalContent.Presentation.Camera;
-            CaptureSnapshots();previous=Frame;
+            CaptureSnapshots();previous=CurrentFrame;
             world.SetFallowChapter(runCatalog.WaveRuntime?.ChapterId=="meta:chapter_1");
-            world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),runCatalog.Tuning.DefaultEstate,Frame.MapWidth,Frame.MapHeight);
+            world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),runCatalog.Tuning.DefaultEstate,CurrentFrame.MapWidth,CurrentFrame.MapHeight);
             ShowHud();Ui.ShowStick(false,Vector2.zero,Vector2.zero);
             foreach(var tick in new[]{targetTick-60,targetTick,targetTick+60})
             {
@@ -190,8 +191,8 @@ namespace Game.App
                     if(commandIndex % 300 == 0) yield return null;
                 }
                 CaptureSnapshots();
-                if(Frame.Tick != tick) throw new InvalidDataException("Original commands did not reach the requested tick.");
-                previous=Frame;world.AcceptWave(runCatalog,Wave);world.AcceptFrame(Frame,FirstPlayable);hud.Present(Frame,FirstPlayable);
+                if(CurrentFrame.Tick != tick) throw new InvalidDataException("Original commands did not reach the requested tick.");
+                previous=CurrentFrame;world.AcceptWave(runCatalog,CurrentWave);world.AcceptFrame(CurrentFrame,FirstPlayable);hud.Present(CurrentFrame,FirstPlayable);
                 Canvas.ForceUpdateCanvases();
                 var visible=Screen.safeArea;
                 visible.yMin+=Mathf.Min(UiTokens.BottomWorldInset*Ui.Canvas.scaleFactor,visible.height*.2f);
@@ -203,14 +204,14 @@ namespace Game.App
                     // Resume before camera rendering; EOF is capture-only, never a draw submission phase.
                     yield return null;
                     world.RenderedEnemyBoundsSample=warm==29?CaptureVisualEnemyBounds:null;
-                    world.Present(Frame,Frame,FirstPlayable,1,1f/60,visible);
+                    world.Present(CurrentFrame,CurrentFrame,FirstPlayable,1,1f/60,visible);
                     yield return new WaitForEndOfFrame();
                 }
                 if(Screen.width!=visualReviewWidth||Screen.height!=visualReviewHeight) throw new InvalidOperationException("Visual viewport changed before capture.");
-                var filename="tick-"+Frame.Tick+".png";
+                var filename="tick-"+CurrentFrame.Tick+".png";
                 world.RenderedEnemyBoundsSample=null;
                 SelectVisualEnemySamples();
-                var row=new VisualReviewFrame { tick=Frame.Tick,enemies=Frame.Enemies.Count,file=filename,stateHash=Session.ComputeStateHash(),usableWorldScreenArea=visualReviewUsableArea };
+                var row=new VisualReviewFrame { tick=CurrentFrame.Tick,enemies=CurrentFrame.Enemies.Count,file=filename,stateHash=Session.ComputeStateHash(),usableWorldScreenArea=visualReviewUsableArea };
                 var texture=ScreenCapture.CaptureScreenshotAsTexture();
                 try
                 {
@@ -231,7 +232,7 @@ namespace Game.App
                         try
                         {
                             crop.SetPixels(texture.GetPixels(x,y,width,height));crop.Apply();
-                            sample.cropFile="tick-"+Frame.Tick+"-enemy-"+sample.entityId+".png";
+                            sample.cropFile="tick-"+CurrentFrame.Tick+"-enemy-"+sample.entityId+".png";
                             File.WriteAllBytes(Path.Combine(visualReviewOutput,sample.cropFile),crop.EncodeToPNG());
                         }
                         finally { Destroy(crop); }
@@ -239,7 +240,7 @@ namespace Game.App
                     }
                 }
                 finally { Destroy(texture); }
-                foreach(var enemy in Frame.Enemies) if(!row.enemyKinds.Contains(enemy.DefinitionId)) row.enemyKinds.Add(enemy.DefinitionId);
+                foreach(var enemy in CurrentFrame.Enemies) if(!row.enemyKinds.Contains(enemy.DefinitionId)) row.enemyKinds.Add(enemy.DefinitionId);
                 row.enemyKinds.Sort(StringComparer.Ordinal);visualReviewResult.frames.Add(row);
                 visualReviewResult.width=Screen.width;visualReviewResult.height=Screen.height;
             }

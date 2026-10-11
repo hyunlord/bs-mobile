@@ -39,7 +39,7 @@ namespace SowSiege.Core
                 AvailableWorkers = definition.InitialWorkers
             };
             modules = new(definition);
-            queries = new(world, catalog.Tuning.World.Farms.Spacing);
+            queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
             subscriptions = new(catalog, world, modules, queries);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
@@ -94,45 +94,54 @@ namespace SowSiege.Core
                 state.Facing = new(world.Lord.X - previous.X, world.Lord.Y - previous.Y);
             }
 
-            enemies.Tick();
-            queries.Rebuild();
-            foreach (var equipment in world.Equipment)
+            world.Diagnostics?.Begin(RuntimeStage.Enemy);
+            try { enemies.Tick(); }
+            finally { world.Diagnostics?.End(RuntimeStage.Enemy); }
+            world.Diagnostics?.Begin(RuntimeStage.Attack);
+            try
             {
-                if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
+                queries.Rebuild();
+                foreach (var equipment in world.Equipment)
                 {
-                    continue;
-                }
+                    if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
+                    {
+                        continue;
+                    }
 
-                var gear = AtLevel(definition.Gear[equipment.Id], equipment.Level);
-                equipment.ReadyTick = world.Tick + gear.CooldownTicks;
-                WaveEvolutionDefinition? evolution = null;
+                    var gear = AtLevel(definition.Gear[equipment.Id], equipment.Level);
+                    equipment.ReadyTick = world.Tick + gear.CooldownTicks;
+                    WaveEvolutionDefinition? evolution = null;
+                    foreach (var id in state.Evolutions)
+                    {
+                        var candidate = definition.Evolutions[id];
+                        if (candidate.InputIds[0] == gear.Id && !modules.Is(candidate.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { evolution = candidate; break; }
+                    }
+                    Attack(gear, evolution);
+                }
                 foreach (var id in state.Evolutions)
                 {
-                    var candidate = definition.Evolutions[id];
-                    if (candidate.InputIds[0] == gear.Id && !modules.Is(candidate.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { evolution = candidate; break; }
-                }
-                Attack(gear, evolution);
-            }
-            foreach (var id in state.Evolutions)
-            {
-                var e = definition.Evolutions[id];
-                if (!modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { continue; }
-                var first = world.Equipment.First(x => x.Id == e.InputIds[0]);
-                if (first.ReadyTick > world.Tick)
-                {
-                    continue;
-                }
+                    var e = definition.Evolutions[id];
+                    if (!modules.Is(e.Id, "unit:evolution-replace", "replace", "both-tool-activations")) { continue; }
+                    var first = world.Equipment.First(x => x.Id == e.InputIds[0]);
+                    if (first.ReadyTick > world.Tick)
+                    {
+                        continue;
+                    }
 
-                var gear = AtLevel(definition.Gear[e.InputIds[1]], first.Level);
-                first.ReadyTick = world.Tick + gear.CooldownTicks;
-                Attack(gear with
-                {
-                    Id = e.Id
-                }, e);
+                    var gear = AtLevel(definition.Gear[e.InputIds[1]], first.Level);
+                    first.ReadyTick = world.Tick + gear.CooldownTicks;
+                    Attack(gear with
+                    {
+                        Id = e.Id
+                    }, e);
+                }
+                TickOrbits();
+                TickProjectiles();
             }
-            TickOrbits();
-            TickProjectiles();
-            work.Tick();
+            finally { world.Diagnostics?.End(RuntimeStage.Attack); }
+            world.Diagnostics?.Begin(RuntimeStage.Work);
+            try { work.Tick(); }
+            finally { world.Diagnostics?.End(RuntimeStage.Work); }
             foreach (var enemy in world.Enemies)
             {
                 if (enemy.Health > 0) { continue; }
@@ -149,6 +158,7 @@ namespace SowSiege.Core
                 state.EnemyActions.Remove(enemy.Id);
             }
             world.Enemies.RemoveAll(e => e.Health <= 0);
+            enemies.FinishFieldTick();
         }
         private WaveGearDefinition AtLevel(WaveGearDefinition gear, int level)
         {
@@ -328,7 +338,8 @@ namespace SowSiege.Core
             state.RecordDamage(activation, damage, actual);
             if (knockback > 0)
             {
-                queries.Move(enemy, new(Math.Clamp(enemy.Position.X + Math.Sign(enemy.Position.X - origin.X) * knockback, 0, catalog.Tuning.World.Map.Width), Math.Clamp(enemy.Position.Y + Math.Sign(enemy.Position.Y - origin.Y) * knockback, 0, catalog.Tuning.World.Map.Height)));
+                var target = new Position(checked(enemy.Position.X + Math.Sign((long)enemy.Position.X - origin.X) * knockback), checked(enemy.Position.Y + Math.Sign((long)enemy.Position.Y - origin.Y) * knockback));
+                queries.Move(enemy, interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
             }
 
             if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))

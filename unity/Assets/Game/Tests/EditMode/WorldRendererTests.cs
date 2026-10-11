@@ -68,8 +68,10 @@ namespace Tests.EditMode
         {
             var catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
-            var snapshot = session.View.CaptureFirstPlayable();
-            Assert.That(snapshot, Is.Not.Null);
+            var snapshot = new FirstPlayableFrame(Array.Empty<ActiveAttackView>(), Array.Empty<MapEventView>(),
+                Array.Empty<BuildingProgressView>(), Array.Empty<OfferedCardDetail>(), Array.Empty<EvolutionClueView>(),
+                Array.Empty<string>(), new System.Collections.Generic.Dictionary<string,int>(), 0, 0,
+                catalog.Tuning.DefaultHero, Array.Empty<PersonActivityView>(), Array.Empty<BossView>(), false);
             var persistentEvent = Event(0, "projectile") with { SourceId = "test:persistent" };
             var allyEvent = Event(1, "projectile") with { SourceId = "test:ally" };
             var frame = session.View.CaptureFrame() with { Events = new[] { persistentEvent, allyEvent } };

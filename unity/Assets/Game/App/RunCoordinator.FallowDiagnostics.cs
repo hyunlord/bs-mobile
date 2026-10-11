@@ -16,9 +16,9 @@ namespace Game.App
         }
         void SampleFallowDiagnostics()
         {
-            if (Frame == null || Wave == null || world == null) return;
-            if (fallowExperienceTrace.LastTick == Frame.Tick) return;
-            fallowExperienceTrace.Sample(Frame, Wave, world.ReadFallowDiagnostics());
+            if (CurrentFrame == null || CurrentWave == null || world == null) return;
+            if (fallowExperienceTrace.LastTick == CurrentFrame.Tick) return;
+            fallowExperienceTrace.Sample(CurrentFrame, CurrentWave, world.ReadFallowDiagnostics());
         }
     }
 

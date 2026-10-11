@@ -9,6 +9,58 @@ namespace Game.Tests
 {
     public sealed class WavePresentationTests
     {
+        [Test] public void EnvelopePreservesReferenceProjectionOrderAndDetachedRequirements()
+        {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a catalog.");
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var frame = session.View.CaptureFrame();
+            var wave = ((IWaveRunView)session.View).CaptureWaveRuntime();
+            var definitions = catalog.WaveRuntime.Evolutions.Values.ToArray();
+            var selected = new[] { definitions[0].InputIds[0], definitions[0].Id };
+            var offers = new CardOfferView(selected, null, 0, 0, 0);
+            var activated = new[] { definitions[0].Id };
+            wave = wave with { Evolutions = activated };
+            var result = WavePresentation.Envelope(catalog, frame, offers, wave);
+            Assert.That(result.Cards.Select(c => c.Id), Is.EqualTo(selected));
+            for (var index = 0; index < result.Cards.Count; index++)
+            {
+                var card = result.Cards[index];
+                Assert.That(card.EvolutionIds, Is.EqualTo(definitions.Where(e => e.Id == card.Id || e.InputIds.Contains(card.Id)).Select(e => e.Id).ToArray()));
+                Assert.That(card.CurrentLevel, Is.EqualTo(frame.Equipment.FirstOrDefault(e => e.Id == card.Id)?.Level ?? 0));
+                Assert.That(card.Rarity, Is.EqualTo(catalog.WaveRuntime.Evolutions.ContainsKey(card.Id) ? "epic" : "common"));
+            }
+            Assert.That(result.Evolutions.Select(e => e.Id), Is.EqualTo(definitions.Select(e => e.Id)));
+            for (var index = 0; index < definitions.Length; index++)
+                Assert.That(result.Evolutions[index].Requirements, Is.EqualTo(definitions[index].InputIds.Select(id => new EvolutionRequirement(id, 1)).ToArray()));
+            Assert.That(result.Evolutions[0].Activated, Is.True);
+            Assert.That(result.Evolutions[0].Available, Is.True);
+            selected[0] = "changed"; activated[0] = "changed";
+            var next = WavePresentation.Envelope(catalog, frame, offers, wave);
+            Assert.That(result.Cards[0].Id, Is.EqualTo(definitions[0].InputIds[0]));
+            Assert.That(result.Evolutions[0].Activated, Is.True);
+            Assert.That(next.Evolutions[0].Activated, Is.False);
+            var duplicates = wave with { Items = new[] { "same", "same" } };
+            Assert.Throws<ArgumentException>(() => WavePresentation.Envelope(catalog, frame, offers, duplicates));
+        }
+
+        [Test] public void CounterPrefixIsOrdinalDelimitedAndAdditionIsChecked()
+        {
+            var counters = new System.Collections.Generic.Dictionary<string, long>
+            {
+                ["enemy-killed:a"] = 4, ["enemy-killed:b"] = 7, ["enemy-killed"] = 90,
+                ["enemy-killed-extra:c"] = 80, ["Enemy-killed:a"] = 70
+            };
+            Assert.That(WavePresentation.EditorCountCounters(counters, "enemy-killed:"), Is.EqualTo(11));
+            counters["enemy-killed:a"] = long.MaxValue;
+            Assert.Throws<OverflowException>(() => WavePresentation.EditorCountCounters(counters, "enemy-killed:"));
+        }
+        [TestCase("weapon-", "core:iron_blade", "weapon-iron-blade")]
+        [TestCase("complete-", "seed_bag", "complete-seed-bag")]
+        public void AudioCueNamingRetainsNamespaceRemovalAndHyphenation(string prefix, string source, string expected)
+        {
+            Assert.That(RunCoordinator.EditorWaveCueName(prefix, source), Is.EqualTo(expected));
+        }
         [Test]
         public void GrowthCopyDescribesEveryChangedDirectionWithoutWorldUnits()
         {
@@ -154,7 +206,7 @@ namespace Game.Tests
                 WaveCaptureInput.ConfigureMovement(null);
                 var ordinary=WaveCaptureInput.Target(frame,wave,fallback,catalog);
                 Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:false),Is.EqualTo(ordinary));
-                Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(new WorldPoint(6200,5900)));
+                Assert.That(WaveCaptureInput.Target(frame,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(new WorldPoint(6800,6600)));
                 var earlier=frame with {Tick=52*frame.TickRate-1};
                 Assert.That(WaveCaptureInput.Target(earlier,wave,fallback,catalog,goldenMinute:true),Is.EqualTo(WaveCaptureInput.Target(earlier,wave,fallback,catalog)));
                 var later=frame with {Tick=60*frame.TickRate};

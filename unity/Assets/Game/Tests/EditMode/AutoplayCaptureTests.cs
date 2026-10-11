@@ -9,6 +9,16 @@ namespace Tests.EditMode
 {
     public sealed class AutoplayCaptureTests
     {
+        [TestCase(60,1)]
+        [TestCase(120,2)]
+        [TestCase(119.88,2)]
+        [TestCase(144,0)]
+        [TestCase(180,3)]
+        [TestCase(240,4)]
+        [TestCase(0,0)]
+        public void ExplicitRecordingPresentsAtSixtyInsteadOfDiscardingHalfOfOverloadedRendering(double hz,int divisor)
+            => Assert.That(GoldenMinuteCapture.CaptureVSync(hz),Is.EqualTo(divisor));
+
         [TestCase(120, 1, 2)]
         [TestCase(60, 1, 1)]
         [TestCase(120, 2, 1)]
@@ -264,6 +274,14 @@ namespace Tests.EditMode
             Assert.That(pixels, Is.EqualTo(new byte[] { 5, 6, 3, 4, 1, 2 }));
             GoldenCaptureWriter.FlipRows(pixels, 2, 3, scratch);
             Assert.That(pixels, Is.EqualTo(new byte[] { 1, 2, 3, 4, 5, 6 }));
+        }
+
+        [Test]
+        public void ScreenPngKeepsRenderedRgbAndDiscardsFramebufferTransparency()
+        {
+            var pixels = new byte[] { 12, 34, 56, 0, 78, 90, 123, 127 };
+            GoldenCaptureWriter.MakeScreenOpaque(pixels);
+            Assert.That(pixels, Is.EqualTo(new byte[] { 12, 34, 56, 255, 78, 90, 123, 255 }));
         }
 
         [Test]

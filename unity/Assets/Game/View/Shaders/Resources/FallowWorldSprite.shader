@@ -32,6 +32,7 @@ Shader "Game/View/FallowWorldSprite"
             TEXTURE2D(_FallowMask);
             SAMPLER(sampler_FallowMask);
             float4 _FallowMap;
+            float _FallowWindowed;
             UNITY_INSTANCING_BUFFER_START(SpriteProperties)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceColor)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceUv)
@@ -75,7 +76,9 @@ Shader "Game/View/FallowWorldSprite"
                 sample.a *= lerp(1, style.z, smoothstep(0.25, 0.65, input.local.y));
                 sample.rgb = lerp(sample.rgb, half3(1,1,1), style.x);
                 sample *= color;
-                half4 restoration = SAMPLE_TEXTURE2D(_FallowMask, sampler_FallowMask, input.world * _FallowMap.xy);
+                float2 maskUv = input.world * _FallowMap.xy + _FallowMap.zw;
+                half4 restoration = SAMPLE_TEXTURE2D(_FallowMask, sampler_FallowMask, maskUv);
+                restoration *= lerp(1, step(0, maskUv.x) * step(maskUv.x, 1) * step(0, maskUv.y) * step(maskUv.y, 1), _FallowWindowed);
                 float2 paper = input.world * 29;
                 half grain = frac(sin(dot(floor(paper), float2(12.9898, 78.233))) * 43758.5453);
                 half coverage = smoothstep(.09 + grain * .12, .60 + grain * .13, restoration.a);

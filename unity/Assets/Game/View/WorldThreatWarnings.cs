@@ -56,35 +56,51 @@ namespace Game.View
             {
                 var lane = warningSelection[index];
                 var vector = lane.Target - lane.Origin; var length = vector.magnitude; var axis = vector / length;
-                ThreatCorridors.CoveredSegment(lane, out var coveredStart, out var coveredEnd);
-                var coveredVector = coveredEnd - coveredStart; var coveredLength = coveredVector.magnitude;
-                var normal = new Vector2(-axis.y, axis.x); var angle = Angle(axis); var middle = (coveredStart + coveredEnd) * .5f;
+                ThreatCorridors.LocalSegment(lane, lord, halfHeight * 2 * GameVisualTokens.ThreatStripHeightFraction, out var coveredStart, out var coveredEnd);
+                var normal = new Vector2(-axis.y, axis.x); var angle = Angle(axis);
                 var color = lane.Water ? Color.Lerp(GameVisualTokens.Hostile, GameVisualTokens.Ally, .25f) : GameVisualTokens.Hostile;
-                var lineWidth = pixelsToWorld * 1.5f;
-                var backingWidth = pixelsToWorld * 4.5f;
-                warningLineBacking.Add(middle + normal * lane.Radius, new Vector2(coveredLength * .5f, backingWidth * .5f), angle, GameVisualTokens.Ink);
-                warningLineBacking.Add(middle - normal * lane.Radius, new Vector2(coveredLength * .5f, backingWidth * .5f), angle, GameVisualTokens.Ink);
-                warningLineBacking.Add(coveredStart, new Vector2(backingWidth * .5f, lane.Radius), angle, GameVisualTokens.Ink);
-                warningLineBacking.Add(coveredEnd, new Vector2(backingWidth * .5f, lane.Radius), angle, GameVisualTokens.Ink);
-                warningLines.Add(middle + normal * lane.Radius, new Vector2(coveredLength * .5f, lineWidth * .5f), angle, color);
-                warningLines.Add(middle - normal * lane.Radius, new Vector2(coveredLength * .5f, lineWidth * .5f), angle, color);
-                warningLines.Add(coveredStart, new Vector2(lineWidth * .5f, lane.Radius), angle, color);
-                warningLines.Add(coveredEnd, new Vector2(lineWidth * .5f, lane.Radius), angle, color);
-                warningLines.Add(lane.Origin, new Vector2(lineWidth, Mathf.Min(lane.Radius, pixelsToWorld * 5)), angle, color);
                 var progress = ThreatCorridors.Progress(lane, current.Tick, alpha);
-                var fill = color; fill.a = lane.Active ? .13f : .065f;
-                warningLines.Add(coveredStart + coveredVector * progress * .5f, new Vector2(coveredLength * progress * .5f, lane.Radius), angle, fill);
-                var arrowLength = Mathf.Min(length * .22f, pixelsToWorld * 15);
-                var arrowWidth = Mathf.Min(lane.Radius * .7f, pixelsToWorld * 9);
-                var arrowPosition = ThreatCorridors.VisibleArrowPosition(visible, lane, arrowLength + pixelsToWorld * 2);
-                var backing = pixelsToWorld * 2;
+                DrawWarningStrip(lane, coveredStart, coveredEnd, normal, angle, color, progress, pixelsToWorld);
+                var arrowLength = Mathf.Min(length * .22f, pixelsToWorld * GameVisualTokens.ThreatArrowLengthPixels);
+                var arrowWidth = Mathf.Min(lane.Radius * .7f, pixelsToWorld * GameVisualTokens.ThreatArrowWidthPixels);
+                var backing = pixelsToWorld * GameVisualTokens.ThreatArrowBackingPixels;
+                var arrowLane = lane; arrowLane.Origin = coveredStart; arrowLane.Target = coveredEnd;
+                var arrowPosition = ThreatCorridors.OriginVisible(visible, lane.Origin)
+                    ? ThreatCorridors.VisibleArrowPosition(visible, arrowLane, arrowLength + backing)
+                    : ThreatCorridors.EntryArrowPosition(visible, lane, arrowLength + backing);
                 warningArrowBacking.Add(arrowPosition, new Vector2(arrowLength + backing, arrowWidth + backing), angle, GameVisualTokens.Ink);
-                warningArrows.Add(arrowPosition, new Vector2(arrowLength, arrowWidth), angle, Color.Lerp(GameVisualTokens.Attack, color, .15f));
+                warningArrows.Add(arrowPosition, new Vector2(arrowLength, arrowWidth), angle, color);
                 if (!lane.Water && explainedCharges.Count < 2 && explainedCharges.Add((lane.Id, lane.ImpactTick))) warningCaptionUntil = visualTime + 2;
             }
             if (visualTime < warningCaptionUntil)
                 warningLabels.ShowClamped(0, "돌진 — 옆으로 피하세요", lord + Vector2.up * .75f, visible);
             warningLineBacking.Flush(); warningLines.Flush(); warningArrowBacking.Flush(); warningArrows.Flush();
+        }
+
+        void DrawWarningStrip(ThreatCorridor lane, Vector2 start, Vector2 end, Vector2 normal, float angle, Color color, float progress, float pixelsToWorld)
+        {
+            var delta = end - start;
+            var length = delta.magnitude;
+            var steps = lane.Water ? 1 : GameVisualTokens.ThreatFadeSteps;
+            var lineWidth = pixelsToWorld * GameVisualTokens.ThreatLinePixels;
+            var backingWidth = pixelsToWorld * GameVisualTokens.ThreatBackingPixels;
+            for (var step = 0; step < steps; step++)
+            {
+                var from = step / (float)steps; var to = (step + 1f) / steps;
+                var opacity = lane.Water ? 1 : (from + to) * .5f;
+                var middle = start + delta * ((from + to) * .5f);
+                var halfLength = length * (to - from) * .5f;
+                var edge = color; edge.a *= opacity;
+                var ink = GameVisualTokens.Ink; ink.a *= opacity;
+                warningLineBacking.Add(middle + normal * lane.Radius, new Vector2(halfLength, backingWidth * .5f), angle, ink);
+                warningLineBacking.Add(middle - normal * lane.Radius, new Vector2(halfLength, backingWidth * .5f), angle, ink);
+                warningLines.Add(middle + normal * lane.Radius, new Vector2(halfLength, lineWidth * .5f), angle, edge);
+                warningLines.Add(middle - normal * lane.Radius, new Vector2(halfLength, lineWidth * .5f), angle, edge);
+                var filledTo = Mathf.Min(to, progress);
+                if (filledTo <= from) continue;
+                var fill = color; fill.a = opacity * (lane.Active ? GameVisualTokens.ThreatActiveFillOpacity : GameVisualTokens.ThreatTellFillOpacity);
+                warningLines.Add(start + delta * ((from + filledTo) * .5f), new Vector2(length * (filledTo - from) * .5f, lane.Radius), angle, fill);
+            }
         }
 
         Rect OverlayWorldBounds()

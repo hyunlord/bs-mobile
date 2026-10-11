@@ -1,5 +1,18 @@
 # 런타임 operation 계약과 구현 경계
 
+## 들판 지도 경계 (#210)
+
+`FieldOptions v1`은 콘텐츠 primitive를 추가하지 않는 실행 지도 계약이다. 새 wave 출정의 형식4만 사용하며, 이전 형식1~3은 직사각형 규칙과 해시를 보존한다. [ADR0051](../adr/0051-versioned-endless-fallow-field.md)을 따른다.
+
+| 실행 경계 | 담당 | 보존·표현 |
+|---|---|---|
+| 이동·생성·먼 적 재배치·임시 보스 원형 경계 | Core `FieldState`, `WaveEnemySystem`, `SpatialHash` | 스폰량·체력·성장 수치는 유지. 재배치는 죽음·새 생성이 아니며 ID와 체력을 보존. |
+| 구역 소품·개울·고정된 집의 표식 | View `FieldLandscape`, `WorldField` | seed와 signed 구역 좌표로 재생성. 보이는 구역만 그림 캐시에 보관. |
+| 작업과 복원 색 | Core 작업 좌표 / View `WorldFallow` | 기존 `map-residue`·`growth-rule`·완료 원장은 그대로. 돌아온 작업 상태를 카메라 창에 다시 칠함. |
+| 옛 입력·새 입력 구분 | `ReplayCodec` 형식4 | nullable field 옵션과 arena·이동방향 상태만 새 해시 경로. 기존 재생을 새 기본값으로 덮어쓰지 않음. |
+
+위 연결은 구현 위치이며 네이티브 화면 판정을 대신하지 않는다. 화면 안 적 수 지표는 카메라 사각형 안에 있는 적 중심 수다. HUD에 가려진 중심도 포함하고, 중심이 밖인 가장자리 스프라이트는 제외한다.
+
 확인일: 2026-10-10 · 기준: `90c8ca34f9de6755afca01d28c8eff4f2eae20be`와 D1 공통 필드 정규화 · 추적: #133.
 
 `runtimeProjection.effects[].operation`은 **14종**이다. 아래는 소스·선택 데이터의 정적 대조이며 실행 빈도나 설계 의도 달성의 판정이 아니다. `production`의 유효 선택에는 14종, `first-playable`에는 12종이 있다. 후자의 `damage-pulse`, `rally-returners`는 처리기 미구현이 아니라 현재 유효 선택에서 제외된 연산이다. 이 문서는 Lattice 렌즈의 근거이며 뷰어·새 런타임을 구현하지 않는다.

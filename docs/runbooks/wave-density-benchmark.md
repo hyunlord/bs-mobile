@@ -111,3 +111,55 @@ UNITY_PROFILER_EXPORT="$PWD/artifacts/wave-density/profile-export-1" \
 `diagnostic-SELECTED.raw`는 실제 생성된 파일로 바꾸며 같은 이름의 메타데이터 JSON을 함께 보존한다. 프로파일 수집 종료 후 앱이 닫힌 다음 Editor 추출을 실행한다. GC.Alloc 이벤트 수·메타데이터가 제공한 할당 바이트와 GC 정지 시간을 구별한다. 경고·버퍼 부족·불완전 프레임 상관은 조사 자료로만 남기며 누락을0으로 채우지 않는다.
 
 원인 확정에는 느린 **동일 프레임**의 틱·적 수·Unity 프레임과 지배적인 표본 마커를 연결한다. GC 정지, 셰이더 첫 컴파일, 에셋 로드, 격자 재구축 후보를 실제 마커로 비교하고 화면 구성 증가도 같은 방식으로 조사한다. 중첩 마커 inclusive 시간을 합산하거나 다른 프레임의 p95를 빼서 원인을 만들지 않는다. 명확한 원인이 있으면 좁게 수정하고 **프로파일러를 끈 깨끗한 Release**에서 capped3회를 다시 측정해 새 끊김 관문을 통과할 때 #169를 닫는다. 원인이 불명확하면 후보와 증거 한계를 보고하고 추가 최적화를 중단하며 #169는 열어 둔다. 조사 자체는 새 런타임 검증 완료나 원인 발견의 증거가 아니다.
+
+## #218 표시 검토와 성능 측정 분리
+
+[#218 보고](../review/smooth60-218.md)의 411마리 관문은 C05 상한 없는 추세와 별개다. 일반 Mac 설정은 [ADR0048](../adr/0048-continuous-presentation-and-live-capture.md)의 최신 결정에 따라 화면 주사율에 맞춘 60fps vSync를 사용한다. `--crowd-replay-benchmark --crowd-hero-b`의 1920×1080 캡처 없는 재생에서 장 간격 p5~p95 16.0~17.4ms, 25ms 초과≤0.2%, Core 한 틱 p95≤3.5ms, Gen0 GC/초≤0.5를 검사한다. C05 uncapped는 계속 vSync0·targetFrameRate-1이며 동일3회 기준 대비20% 회귀 계약을 유지한다.
+
+`--wave-benchmark-core-diagnostics`는 별도 `core-ticks.csv`와 화면 구성 단계 측정을 켠다. Enemy→Separation→Residual은 중첩 비용이다. 전체 비용 비중은 각 단계 평균을 전체 평균으로 나누며, p95를 빼거나 중첩 값을 합치지 않는다. Mono에서 할당 카운터가 제공되지 않아 -1이면 `unavailable`로 보고한다. 별도 .NET 관측기의 바이트를 Mac 전체 할당으로 대체하지 않는다.
+
+같은 바이너리의 C05에서 `--wave-benchmark-skip-grounding`을 추가하면 발밑 표시만 끈 진단 실행이 된다. 메타데이터의 `diagnosticOnly:true`, `actorGroundingSkipped:true`, `performanceEligible:false`를 확인한다. 이 실행은 원인 기여 비교용으로만 쓰고 제품 성능 관문이나 회귀 기준으로 등록하지 않는다. 마스크·그림·포즈를 함께 끄는 비교와 혼동하지 않는다.
+
+표시 검토 영상은 동일한 411 입력에 `--offline-replay-capture`를 추가한다. 정상 실행이나 C05 추세에는 추가하지 않는다.
+
+```sh
+open -n "$PWD/artifacts/smooth60/final-build/Sow and Siege.app" --args \
+  --wave-benchmark "$PWD/artifacts/movement-feel-207/rules-off-six-minute-failure-8c94ce2.ssreplay" \
+  --crowd-replay-benchmark --crowd-hero-b --offline-replay-capture \
+  --wave-benchmark-output "$PWD/artifacts/smooth60/offline-after" \
+  -screen-width 1920 -screen-height 1080
+```
+
+이 모드는 `Time.captureFramerate=60`이며 실제 시간 기준으로 부드럽다는 증거가 아니다. 완료 표시·기대 프레임 수(이 fixture는1460)·연속 프레임 인덱스·종결 해시·성능 부적격 메타데이터를 확인한 뒤 인코딩한다. 영상에는 **오프라인 렌더 · 60fps · 무음**을 표기한다. Metal ReadPixels JPEG의 상하 반전은 모든 프레임에 같은 `vflip`으로 바로잡고, 비교 그림에도 같은 방향 보정을 적용한다. 이 수정은 화면 내용이나 타이밍 보간을 추가하지 않는다. 캡처와 빌드·테스트·인코딩은 직렬로 수행한다.
+
+## #218 Part 1 최신 계약: 네 번씩 비교와 Development 긴 장 진단
+
+최신 사용자 결정은 A=`65983e2`, B=최종 수정 후보를 각4회씩 **A B B A A B B A** 순서로 비교한다. 411 fixture와 capped C05 각각 이 순서를 보존하고, C05는800+까지 모두 포함한다. C05 capped는 `targetFrameRate=60/vSync0`, 411은 일반 Mac 표시 정책을 사용하므로 둘을 같은 설정이라고 기록하지 않는다. 버전마다 같은 불변 앱을 사용하며 프로세스·시작/끝·순서·환경·해상도·해시를 남긴다. 앞의 역사3회 uncapped 계약과 그 판정은 보존한다.
+
+관문 실행에는 캡처·Profiler·Core 세부 계측·표시 생략·프레임 설정 실험 옵션을 넣지 않는다. 각 반복의25ms 초과 비율·p99·최대·GC/초 및 밀도별p95를 남기고, 반복 변동보다 작은 차이를 원인 개선으로 단정하지 않는다. 두 버전의 전후 순서를 균형 있게 맞춘 이유와 중단 실행을 함께 보존한다. 다음 명령은 **별도 원인 조사 실행**이며 관문 반복을 대신하지 않는다.
+
+```sh
+UNITY_WAVE_BENCHMARK=1 UNITY_CONTENT_PROFILE=wave-1a UNITY_MAC_DEVELOPMENT=1 \
+  UNITY_MAC_OUTPUT="$PWD/artifacts/stutter-part1/development-build" \
+  bash tools/build-mac.sh
+
+open -n "$PWD/artifacts/stutter-part1/development-build/Sow and Siege.app" --args \
+  --wave-benchmark "$PWD/benchmarks/wave-c05/run.ssreplay" \
+  --wave-benchmark-mode capped --diagnostic-long-frames \
+  --wave-benchmark-output "$PWD/artifacts/stutter-part1/development-c05" \
+  -screen-width 1600 -screen-height 900
+```
+
+`UNITY_MAC_DEVELOPMENT=1`은 Unity Development 플레이어뿐 아니라 `tools/unity-export.mjs`의 **`coreVariant=fine-diagnostics`**를 선택한다. 이 경로는 netstandard Core를 `--property:SowSiegeFineDiagnostics=true`로 빌드한다. `Directory.Build.props`가 `SOWSIEGE_FINE_DIAGNOSTICS`를 추가하며 SDK의 기존 대상 심볼을 보존한다. `DefineConstants`를 직접 덮어쓰면 `NETSTANDARD2_1` 등 대상 심볼을 잃으므로 사용하지 않는다. 일반 `UNITY_MAC_DEVELOPMENT=0`은 standard 변형이며 새 세부 Core 훅과 Development 기록기는 Release에서 컴파일 제거되어야 한다. 원인 조사 앱과 배포 앱의 DLL·변형·소스 식별을 확인한다. `--diagnostic-long-frames` 인자만으로 Release를 계측 앱으로 바꾸거나 표준 Core를 세부 진단 변형으로 간주하지 않는다.
+
+긴 장 자료는 Update 진입·종료·다음 진입, Core 세부 단계와 스냅샷·화면 비용, ProfilerRecorder의 렌더·대기·생성·로드·SpriteBatch·HUD·효과 관측, 포커스·일시정지·창·카드·적/효과 첫 관측·성장/경험치 사건을 연결해 읽는다. Recorder 카운터는 집계 관측이며 **호출 스택이 아니다**. 필요한 스택은 별도의 `--wave-benchmark-profile` raw 수집과 위 `ProfilerTraceExport` 절차로 얻고, 다른 실행에서 얻은 스택을 깨끗한 Release의 특정 장과 같은 시각이라고 단정하지 않는다. 정확한 프레임 연결이 없으면 관측 시각과 추정 연결을 구분하고, 미등록·미측정 값을0으로 채우지 않는다.
+
+첫 적·효과·셰이더·캐시 비용 가설은 **같은 프로세스 안에서 같은 상황을 반복**하여 최초와 이후의 사건·시간을 비교한다. 기록기의 첫 관측은 벤치마크 준비 구간까지 포함한 실제 최초 생성과 다를 수 있다. 반복을 구현·관측하지 못했으면 첫 사용 원인은 미확인으로 남긴다. Update 밖 시간이 크거나 같은 틱에서 재현되지 않았다는 이유만으로 OS 지연으로 분류하지 않는다.
+
+Part 1 결과 보고 뒤 PR #219를 ready로 전환할 수 있다는 최신 사용자 결정이, 이 PR에 한해 과거 사용자 Mac 플레이 전 draft 조건을 대체한다. 필수 CI·리뷰·선행 가지 조건은 유지하고 결과 미달을 통과로 바꾸지 않는다. Part 2는 Part 1의 main 반영 이후에만 시작한다.
+
+### Part 1 종료 시 적용할 표시 설정과 판정
+
+[최종 Part 1 보고](../review/stutter-part1-219.md)의 A659/B3bb 비교는 두 fixture에서각8회 완료했으며, 입력·종결 해시와25ms 초과 비율은 모든 실행에서 만족했다. 그러나 B는8회 모두cadence 기준에 실패했고, queue1 단독 진단도p95 17.6054ms·57.9741fps로 실패했다. 두 후보를 기본값으로 사용하지 않는다. 정본 `metalUseMetalDisplayLink=0`과 기존60fps 표시 정책으로 복원한 상태가 운영 기준이다. 비채택 B 앱이나 dirty queue1 앱을 최종 배포 앱이라고 바꾸어 표기하지 않는다.
+
+후속 보고에서는 A566.593ms·B372.625ms 지연과 원인 미확정, 같은 프로세스 첫 등장 검증 공백을 유지한다. 낮은 초과 비율·해시 일치·CI 통과가 모든 끊김 해결을 뜻하지 않는다. 이 결과는 부분 종료이며 추가 표시 설정 실험을 반복하지 않는다. Part 1의 필수 CI·리뷰·병합 조건을 지킨 뒤에만 main 기반 Part 2로 이동한다.

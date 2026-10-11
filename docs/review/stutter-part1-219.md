@@ -1,0 +1,89 @@
+![복원한 최종 빌드: 긴 장 비율 실패](../../artifacts/stutter-part1-report/stutter-part1-final-restored.svg)
+![Release 반복별 장 간격: 로컬 재생성 그림](../../artifacts/stutter-part1-report/stutter-part1-final-cadence.svg)
+![반복별 최대 지연: 면제 없이 보존](../../artifacts/stutter-part1-report/stutter-part1-final-max.svg)
+![긴 장의 계측 구간: 원인 확정과 구분](../../artifacts/stutter-part1-report/stutter-part1-final-scopes.svg)
+
+관문: 실패 — 복원한 최종6fe 빌드의411 검증은25ms 초과9/1348(0.6677%)로 기준0.2%를 넘었다. B 후보도cadence 실패로 미채택이다.
+앞선 ABBA의 A는 이미 모든 실행에서25ms 초과 비율 기준을 만족했다. B의 적은 초과 건수를 끊김 개선이라고 판정하지 않는다.
+복원 빌드의 C05도 최대312.473ms 지연이 남았다. 비율 통과와 별개로 원인은 #223에서 미해결로 기록하며, B·queue1은 미채택이다.
+CI는 통과했지만 성능 통과와 다르다. Part 1 후속이 끝나기 전 Part 2를 시작하지 않으며 #126·#98·1b 보류를 유지한다.
+
+## 실제 Release 결과
+
+각 fixture를 **A B B A A B B A**, 각 버전4회씩 실행했다.16회 모두 깨끗한 소스·전경·입력·종결 해시가 유효하다. 411은1920×1080·vSync2·target−1, C05 capped는1600×900·vSync0·target60이다. Mac16,5 / macOS27.0.1 / Unity6000.6.4f1 / Mono / Metal / Ultra. 온도는 미측정이다. 모든 p값은 nearest-rank, 시간은ms다.
+
+| Fixture | Slot | Variant | Frames | p5 | p50 | p95 | p99 | max ms | >25 count (%) | >100 | GC/s | fps |
+|---|---:|---|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|
+|crowd411|1|A|1451|16.627|16.669|16.830|22.235|24.966|0 (0.000%)|0|0.329|59.630|
+|crowd411|2|B|1416|16.646|17.284|17.603|17.626|18.575|0 (0.000%)|0|0.329|58.210|
+|crowd411|3|B|1408|16.655|17.543|17.611|17.633|17.660|0 (0.000%)|0|0.329|57.843|
+|crowd411|4|A|1451|16.637|16.673|16.902|21.888|23.871|0 (0.000%)|0|0.329|59.641|
+|crowd411|5|A|1453|15.807|16.676|17.561|17.719|26.230|1 (0.069%)|0|0.329|59.743|
+|crowd411|6|B|1401|16.671|17.558|17.610|17.629|17.662|0 (0.000%)|0|0.329|57.538|
+|crowd411|7|B|1407|16.659|17.548|17.608|17.627|17.655|0 (0.000%)|0|0.329|57.799|
+|crowd411|8|A|1459|16.639|16.667|16.695|16.709|24.192|0 (0.000%)|0|0.329|59.958|
+|c05capped|1|A|13071|16.647|16.675|17.270|17.588|566.593|5 (0.038%)|3|0.105|59.395|
+|c05capped|2|B|12708|16.666|17.560|17.596|17.608|18.597|0 (0.000%)|0|0.100|57.744|
+|c05capped|3|B|12741|16.661|17.493|17.593|17.606|372.625|3 (0.024%)|1|0.105|57.891|
+|c05capped|4|A|13134|16.646|16.674|17.254|17.590|21.934|0 (0.000%)|0|0.105|59.679|
+|c05capped|5|A|13135|16.647|16.674|17.242|17.588|22.451|0 (0.000%)|0|0.104|59.678|
+|c05capped|6|B|12728|16.663|17.555|17.595|17.608|18.233|0 (0.000%)|0|0.105|57.836|
+|c05capped|7|B|12740|16.662|17.544|17.594|17.609|17.681|0 (0.000%)|0|0.105|57.892|
+|c05capped|8|A|13135|16.646|16.674|17.231|17.587|22.816|0 (0.000%)|0|0.105|59.684|
+
+C05의400–599·600–799·**800+**를 각 반복에 모두 포함했다. 밀도별 장수·p95·Core1틱 분포·출처는 [정본 CSV](../metrics/stutter-part1-abba.csv)에 있으며, 411에 없는600+ 구간을 만들어 넣지 않았다. 전체 표의 좋은 값으로 나쁜 반복·밀도를 숨기지 않는다.
+
+411 A 순서5는 p5/p95 범위도 벗어났고 나머지 A3회는 만족했다. B는411·C05 전8회 p95가17.4ms를 넘었다. 411 p99의 B−A 차이는 앞4회 블록에서−4.432ms, 뒤4회 블록에서+0.414ms로 방향이 바뀌었다. A의 시간순 변동을 무시해 일관된 개선이라고 부르지 않는다.4회씩은 설명용 표본이지 통계적 유의성 증거가 아니다. 양쪽 GC 빈도 감소는 유지됐지만, 전체Update0B를 증명한 것은 아니다.
+
+## 복원한 최종 빌드의 별도 검증: 실패
+
+이 검증은 위 ABBA16회 뒤의 **별도 실행**이며 원래 표·판정을 덮어쓰지 않는다. `metalUseMetalDisplayLink=0`으로 복원한 `6fe4d2940af486bdf8fcda9f0c0fc5b8cc7e33b8`, sourceHash `3004B536248181B9ACE5D41234F25A3DEAB47C0B97BEC54006A1CBED0D0C59BD`의 깨끗한 Release다. 종결 해시 일치·전경·중단 없음·성능 표본 적격은 확인했지만, 그것이 긴 장 관문 통과는 아니다.
+
+| 별도 검증 | 장수 | p95 | 최대 | 25ms 초과 | 100ms 초과 | 판정 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 최종6fe 복원411 | 1348 | 17.0396ms | 586.4908ms | 9(0.6677%) | 4 | **긴 장 비율 실패** |
+| 같은 앱의 첫 C05 시도 | 0 | 미측정 | 미측정 | 미측정 | 미측정 | 고정 역사 카탈로그 누락, 설정 실패 |
+| 같은6fe·고정 카탈로그 포함 재빌드 C05 | 13108 | 17.2345ms | 312.4729ms | 5(0.0381%) | 2 | 비율은 통과, 큰 지연 원인은 미해결 |
+
+[두 검증의 초과14장 정본 CSV](../metrics/stutter-part1-restored-validation.csv)에 각 범위·틱·GC·출처를 모두 남겼다. 586.4908ms 장은 Core30.355ms·스냅샷40.3822ms·화면 구성90.5492ms뿐 아니라 Update 뒤424.1738ms도 있어 무작업 지연이라고 부를 수 없다. 앞뒤556.2974ms 지연 이후34틱·10틱 따라잡기도 관측됐지만, 시작 원인을 증명하지 않는다. 마지막32.956ms 장의 GC 증가1 역시 시간적 동시 발생일 뿐 정지 비용 확정이 아니다. 할당−1은 미측정이며 OS·GPU·GC·첫 등장 원인을 추정 배정하지 않는다.
+
+고정 카탈로그를 포함한 같은6fe 재빌드의 C05는 깨끗한 소스·전경·종결 해시·중단 없음이 확인됐다. p50/p95/p99는16.6733/17.2345/17.5861ms, GC는0.104500회/초였다. 밀도400–599/600–799/800+의 표본은5373/5345/2390장, p95는17.2670/17.2283/17.1352ms다. [별도 검증 요약 CSV](../metrics/stutter-part1-restored-summary.csv)에 전체와 밀도별 수치를 남겼다. 이 단일 재검증을 ABBA 반복으로 더하지 않으며, 비율이 낮다는 이유로312.4729ms 등의 지연을 면제하지 않는다.
+
+미해결 지연은 [#223](https://github.com/hyunlord/bs-mobile/issues/223)에서 추적한다. 앞선 ABBA 비율 통과를 이 최종 빌드의 통과로 일반화하거나, 낮은p95로 드문 큰 지연을 지우지 않는다. 고정 카탈로그를 빠뜨린 C05 시도는 성능 표본0개인 설정 실패로 보존한다.
+
+## 긴 장의 원인 분류와 한계
+
+**아래 분류는 별도 Development 진단4변형의 일반 긴 장30개**다. 깨끗한 Release의9개에 이 분류를 옮겨 붙이지 않는다. raw Profiler 시작1개·종료8개·종료 직후 따라잡기6개, 합계15개는 별도 진단 경계로 보존한다. 총45개 중 어느 장도 삭제하지 않았다.
+
+| 원인 분류 | 확정 건수 / 일반30개 | 근거·한계 |
+| --- | ---: | --- |
+| Core | 0 / 0% | 계산 시간이0이 아니라 이 집단의 초과 원인으로 확정하지 못함 |
+| View·확인된 GC | 0 / 0% | 할당 호출 위치와 같은 장의 GC 정지는 서로 다른 증거 |
+| 렌더·표시 대기 | 21 / 70% | legacy-vSync16, legacy-target60 5; 관측된 엔진 대기이며 GPU 과부하와 구별 |
+| 첫 등장 | 0 / 0% | 같은 프로세스 두 번째 재생 없음; 미검증 |
+| 외부·OS | 0 / 0% | 독립된 외부 원인 증거 없음 |
+| 미분류 | 9 / 30% | raw 구간 밖: legacy-vSync8, legacy-target60 1 |
+
+실제 렌더 대기 스택 표본3개:
+
+1. legacy-vSync frame462/tick10839,28.0380ms: `PlayerLoop > TimeUpdate.WaitForLastPresentationAndUpdateTime > WaitForLastPresentation > Semaphore.WaitForSignal`11.497630ms, 직접 `PlayerLoop > WaitForTargetFPS`4.538375ms, TimeUpdate 내부 targetFPS0.700958ms. Update 이후17.5196ms 대부분을 대기로 관측했다.
+2. legacy-vSync frame1305/tick11273,26.0800ms: 같은 presentation semaphore9.311083ms, 직접 targetFPS4.036292ms, TimeUpdate 내부 targetFPS2.375542ms. 다른 구간에서도 같은 대기 조합이 나타났다.
+3. legacy-target60 frame494/tick10857,27.3411ms: `PlayerLoop > WaitForTargetFPS`16.372380ms. vSync0·target60만으로도 Update 뒤 거의 한 주사 간격의 대기가 남았다.
+
+raw 메타데이터와 Stopwatch 시계를 맞추고 현재·다음 프레임의 `[Update종료, 다음Update진입)`에 겹치는 최하위 구간만 세어 부모와 자식 시간을 중복 합산하지 않았다. ProfilerRecorder 집계가 호출 스택인 것은 아니며 GPU 프레임을 정확히 조인했다는 뜻도 아니다. 왜 엔진이 이렇게 기다렸는지까지는 확정하지 않았다. 진단 시작의 Shader.CreateGPUProgram은 Profiler 스크린샷 준비였고 게임의 첫 등장 셰이더 증거가 아니다.
+
+**깨끗한 Release 긴 장9개**는 [모든 원자료 행](../metrics/stutter-part1-outliers.csv)에 보존했다. 관측 구간 표시는 Update 뒤 미계측5개, 따라잡기3개, View 범위1개이며 **확정 원인 분류가 아니다**. A566.593ms는 Update105.1904ms와 이후461.4026ms, B372.6245ms는 Update4.5413ms와 이후368.0832ms다. 뒤의 여러 틱은 따라잡기라는 관측일 뿐 최초 멈칫의 원인을 설명하지 않는다. 이9개에는 같은 장의 raw 스택이 없어 원인5분류의 확정값을 새로 만들지 않았다. 재현되지 않거나 Core가 작다는 이유로 OS로 분류·면제하지 않는다.
+
+## 빌드 출처와 재생성
+
+- A: `65983e218c8f584adb6d7c2557cfd5452612f5e4`, sourceHash `01D24722C8E528DA70B9CF25B3B65528FC462D1ED45E4D7120708382AFD37E13`.
+- B: `3bbdb32d8594f75cd63896ab59bea4be89802781`, sourceHash `3584934E74569C15B403CFF3C513DEA0FDFD0CDB83F2615665F6FEA907F778A3`. 두 앱은 source freeze한 불변 빌드다. 이후 테스트·문서 커밋을 앱의 빌드 커밋이라고 표기하지 않는다.
+- 411 입력 SHA256 `4fe0f97f23d20b487730be03ae76f5d7551ec88b787d43566f0cde41cd5a079c`; 각730 Advances, 종결 `59805294BB813DA1D34D1CF505F49A42513975DE373696EA247FB1B5B8C43619`.
+- C05 입력 SHA256 `f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5`; 역사5118e2c 데이터,14400틱 종결 `B056B090575693A13CEEAB514E909F5C2C346FF2B1007598A4EE6E9B2DE8AEE8`. 전체dataHash는 정본 CSV에 있다.
+- **queue1 단독 탐색도 미채택**이다. `a28ce67` 기반 dirty 진단 변형, sourceHash `365B376EE38BF144F4DE1C9BC1AA194E64C66741E601DF5AEA52C4642AF6B408`에서1411장·p95 17.6054·p99 17.6263·최대17.6571ms·57.9741fps·25ms 초과0장을 기록했다. 종결 검증·중단 없음이 확인됐지만 cadence 실패는 개선하지 못했다. A/B16회나 깨끗한 제품 빌드 증거에 섞지 않는다. 정본 `metalUseMetalDisplayLink=0`과 기존60fps 표시 정책으로 복원했다. 같은 프로세스 첫 등장 반복은 아직 미검증이다.
+
+첫 그림들은 로컬에서 생성하는 보조 보고다. 저장소 루트에서 `node tools/render-stutter-part1-report.mjs`를 실행하면 커밋된 지표에서 `artifacts/stutter-part1-report/stutter-part1-final-{restored,cadence,max,scopes}.svg` 네 그림을 재생성한다. 정본은 `stutter-part1-abba.csv`, `stutter-part1-outliers.csv`, `stutter-part1-restored-summary.csv`, `stutter-part1-restored-validation.csv` 네 CSV이며 모두 `docs/metrics/`에 있다. 비공개 원자료나 `.omo` 파일은 필요하지 않는다. 생성 그림·전체 성공 원자료를 Release 증거로 중복 업로드하지 않는다. 저장소의 작은 정본 CSV를 보존하고, 필요할 때 실패 사례와 선정 표본만 Release에 남긴다. 새 ZIP은 배포용 `.app` 예외만 허용한다. 측정 전 실행 실패도 별도로 보존하며 성능 실행으로 계산하지 않았다.
+
+최신 사용자 결정은 Part 1 결과 후 PR #219 ready 전환을 허용하지만, 필수 CI·리뷰·선행 가지 조건을 면제하지 않는다. 이번 Part 1은 실패와 한계를 명시한 **부분 종료 보고**다. 추가 표시 설정 실험은 종료하며, 모든 끊김이 해결됐다거나 사용자 플레이가 승인됐다고 쓰지 않는다. 최종 복원 빌드의 긴 장 비율 실패와 큰 지연의 원인 미확정은 #223에 남기고, 첫 등장 검증 공백도 유지한다. Part 2는 Part 1이 main에 반영된 뒤 시작한다.
+
+[기준 A 커밋](https://github.com/hyunlord/bs-mobile/commit/65983e218c8f584adb6d7c2557cfd5452612f5e4) · [비채택 B 커밋](https://github.com/hyunlord/bs-mobile/commit/3bbdb32d8594f75cd63896ab59bea4be89802781) · [PR #219](https://github.com/hyunlord/bs-mobile/pull/219) · [빌드 커밋6fe4d29 CI 통과](https://github.com/hyunlord/bs-mobile/actions/runs/38132023191) · [Mac Release stutter-part1-6fe4d29](https://github.com/hyunlord/bs-mobile/releases/tag/stutter-part1-6fe4d29): **공개 검토판, 끊김 관문 미달**

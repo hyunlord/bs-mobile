@@ -20,12 +20,17 @@ namespace SowSiege.Core
         public override int GetHashCode() => unchecked(Y.GetHashCode() - X.GetHashCode() * RecordHashMultiplier);
         public static bool operator ==(Position left, Position right) => left.Equals(right);
         public static bool operator !=(Position left, Position right) => !left.Equals(right);
-        public long DistanceSquared(Position other) => (long)(X - other.X) * (X - other.X) + (long)(Y - other.Y) * (Y - other.Y);
+        public long DistanceSquared(Position other)
+        {
+            var dx = (long)X - other.X; var dy = (long)Y - other.Y;
+            return checked(dx * dx + dy * dy);
+        }
         public Position MoveToward(Position target, int speed)
         {
-            var distance = Math.Max(Math.Abs(target.X - X), Math.Abs(target.Y - Y));
+            var dx = (long)target.X - X; var dy = (long)target.Y - Y;
+            var distance = Math.Max(Math.Abs(dx), Math.Abs(dy));
             if (distance <= speed) { return target; }
-            return new(X + (int)((long)(target.X - X) * speed / distance), Y + (int)((long)(target.Y - Y) * speed / distance));
+            return new(checked(X + (int)(dx * speed / distance)), checked(Y + (int)(dy * speed / distance)));
         }
     }
 
@@ -100,6 +105,7 @@ namespace SowSiege.Core
     }
     internal sealed class WorldState
     {
+        internal IRuntimeDiagnostics? Diagnostics { get; set; }
         [OmitWhenNull] public WaveRuntimeState? WaveRuntime;
         [OmitWhenNull] public FirstPlayableState? FirstPlayable;
         [OmitWhenNull]

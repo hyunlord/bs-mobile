@@ -13,12 +13,37 @@ namespace SowSiege.Core
         internal InteractiveState State { get; }
         public long NextSequence { get; private set; }
         public IReadOnlyRunView View { get; }
+        public IRuntimeDiagnostics? Diagnostics { get => Simulation.World.Diagnostics; set => Simulation.World.Diagnostics = value; }
+        public double LocomotionSpeedPerTick
+        {
+            get
+            {
+                var speed = Simulation.Wave?.MovementSpeed(Catalog.Tuning.World.Map.LordSpeed) ?? Catalog.Tuning.World.Map.LordSpeed;
+                return Options.Feel?.FasterLord == true ? (double)speed * FeelExperimentState.SpeedNumerator / FeelExperimentState.SpeedDenominator : speed;
+            }
+        }
         public InteractiveSession(ContentCatalog catalog, InteractiveOptions options)
         {
             if (catalog is null || options is null) { throw new ArgumentNullException(nameof(catalog)); }
             if (!options.Run.ManualCards || options.Run.Scenario != "normal" || options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), options.InitialAimMode)) { throw new ArgumentException("Interactive run requires manual cards, normal scenario and manual movement."); }
             ReplayCodec.ValidateHash(options.DataHash);
+            options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
+            if (options.Feel is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Feel experiments require a wave runtime."); }
+            if (options.Field is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Fields require a wave runtime."); }
+            if (options.Feel?.ImmediateContact == true)
+            {
+                var definition = catalog.WaveRuntime!;
+                var modules = new WavePrimitiveModules(definition);
+                foreach (var rule in definition.Enemies.Values)
+                {
+                    if (!WaveEnemySystem.ContactEligible(catalog, rule, modules.Enemy(rule.Id))) { continue; }
+                    if (definition.EnemySeparation is not { Version: 1 } body || !body.BodyWidths.TryGetValue(rule.Id, out var width) || width <= 0)
+                    { throw new ArgumentException("Immediate contact requires a positive body width for every eligible enemy."); }
+                }
+            }
             Catalog = catalog; Options = options; InitialCatalogHash = PortableStateCodec.HashCatalog(catalog); State = new() { Aim = options.InitialAimMode };
+            if (options.Feel is not null) { State.Feel = new(options.Feel); }
+            if (options.Field is not null) { State.Field = new(options.Field, options.Run.Seed); }
             Simulation = new(catalog, options.Run, new InteractiveHasher(), null, State);
             View = new SessionView(this);
         }
@@ -63,32 +88,57 @@ namespace SowSiege.Core
             return new(Options.Run.Seed, w.Tick, w.LordHealth > 0, w.LordHealth <= 0 ? "death" : Simulation.IsComplete ? "duration" : "running", w.Level,
                 w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), w.WaveRuntime is not null ? w.WaveRuntime.BossDefeated : Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w));
         }
-        private sealed class SessionView : IReadOnlyRunView, IWaveRunView
+        private sealed class SessionView : IBufferedRunView, IBufferedWaveRunView
         {
             private readonly InteractiveSession session;
             internal SessionView(InteractiveSession session) { this.session = session; }
             public RunStatus Status => session.Status;
             public WaveRuntimeFrame? CaptureWaveRuntime() => session.Catalog.WaveRuntime is { } definition ? session.Simulation.World.WaveRuntime!.Capture(definition, session.Simulation.World.Tick) : null;
+            public WaveRuntimeFrame? CaptureWaveRuntime(WaveSnapshotBuffer buffer)
+            {
+                if (buffer is null) { throw new ArgumentNullException(nameof(buffer)); }
+                return session.Catalog.WaveRuntime is { } definition ? session.Simulation.World.WaveRuntime!.Capture(definition, session.Simulation.World.Tick, buffer) : null;
+            }
             public FirstPlayableFrame? CaptureFirstPlayable() => FirstPlayableView.Capture(session.Catalog, session.Simulation.World, session.Options.Run.HeroId);
             public CardOfferView CaptureCards()
             {
                 var w = session.Simulation.World;
                 return new(Array.AsReadOnly(w.PendingCards.ToArray()), w.LockedCard, w.Rerolls, w.Bans, w.Locks);
             }
-            public RunFrame CaptureFrame()
+            public RunFrame CaptureFrame() => CaptureFrameCore(null);
+            public RunFrame CaptureFrame(RunSnapshotBuffer buffer)
+            {
+                if (buffer is null) { throw new ArgumentNullException(nameof(buffer)); }
+                return CaptureFrameCore(buffer);
+            }
+            private RunFrame CaptureFrameCore(RunSnapshotBuffer? buffer)
             {
                 var w = session.Simulation.World; var c = session.Catalog; var map = c.Tuning.World.Map;
-                var enemies = w.Enemies.Where(e => e.Health > 0).Select(e => new EnemyView(e.Id, e.Definition, InteractiveState.Point(e.Position), e.Health, c.Enemies[e.Definition].Health)).ToArray();
-                var farms = w.Farms.Select(f => new FarmView(f.Id, f.Source, InteractiveState.Point(f.Position), f.Stage, f.Stage == c.Tuning.World.Farms.StageTicks.Length - 1)).ToArray();
-                var buildings = w.Buildings.Select(b => new BuildingView(b.Id, b.Source, InteractiveState.Point(b.Position), b.Built, b.Health)).ToArray();
-                var people = w.People.Select(p => new PersonView(p.Id, p.Source, InteractiveState.Point(p.Position), p.Role, p.Members, p.Health)).ToArray();
+                var living = 0;
+                for (var i = 0; i < w.Enemies.Count; i++) { if (w.Enemies[i].Health > 0) { living++; } }
+                buffer?.Enemies.Begin(living);
+                var enemies = buffer?.Enemies.Storage ?? new EnemyView[living];
+                var enemyIndex = 0;
+                for (var i = 0; i < w.Enemies.Count; i++)
+                {
+                    var e = w.Enemies[i];
+                    if (e.Health > 0) { enemies[enemyIndex++] = new(e.Id, e.Definition, InteractiveState.Point(e.Position), e.Health, c.Enemies[e.Definition].Health); }
+                }
+                var farms = new FarmView[w.Farms.Count];
+                for (var i = 0; i < farms.Length; i++) { var f = w.Farms[i]; farms[i] = new(f.Id, f.Source, InteractiveState.Point(f.Position), f.Stage, f.Stage == c.Tuning.World.Farms.StageTicks.Length - 1); }
+                var buildings = new BuildingView[w.Buildings.Count];
+                for (var i = 0; i < buildings.Length; i++) { var b = w.Buildings[i]; buildings[i] = new(b.Id, b.Source, InteractiveState.Point(b.Position), b.Built, b.Health); }
+                var people = new PersonView[w.People.Count];
+                for (var i = 0; i < people.Length; i++) { var person = w.People[i]; people[i] = new(person.Id, person.Source, InteractiveState.Point(person.Position), person.Role, person.Members, person.Health); }
                 var loot = w.Runtime?.GroundLoot.Select(l => new GroundLootView(l.Id, l.Item, InteractiveState.Point(l.Position))).ToArray() ?? Array.Empty<GroundLootView>();
                 var remains = w.Remains?.Live.Select(r => new RemainView(r.Id, InteractiveState.Point(r.Position))).ToArray() ?? Array.Empty<RemainView>();
-                var extent = Math.Max(map.EstateRadius, w.Farms.Select(f => Math.Max(Math.Abs(f.Position.X - w.Estate.X), Math.Abs(f.Position.Y - w.Estate.Y))).Concat(w.Buildings.Select(b => Math.Max(Math.Abs(b.Position.X - w.Estate.X), Math.Abs(b.Position.Y - w.Estate.Y)))).DefaultIfEmpty(0).Max());
+                var extent = map.EstateRadius;
+                for (var i = 0; i < w.Farms.Count; i++) { var p = w.Farms[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
+                for (var i = 0; i < w.Buildings.Count; i++) { var p = w.Buildings[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
                 return new(w.Tick, Status, w.Season, Math.Max(0, c.Tuning.World.Seasons.Take(w.Season + 1).Sum(s => s.DurationTicks) - w.Tick), c.Tuning.DurationTicks, c.Tuning.TickRate, map.Width, map.Height,
-                    new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, map.LordHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
-                    new(enemies.Length, people.Length, farms.Length, buildings.Length, session.State.Events.Count(e => e.Kind == PresentationKind.Attack && (e.Shape == "projectile" || e.Shape == "rays"))),
-                    Array.AsReadOnly(enemies), Array.AsReadOnly(farms), Array.AsReadOnly(buildings), Array.AsReadOnly(people), Array.AsReadOnly(loot), Array.AsReadOnly(remains), Array.AsReadOnly(w.Equipment.Select(e => new EquipmentView(e.Id, e.Level)).ToArray()), Array.AsReadOnly(session.State.Events.ToArray()));
+                    new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, session.State.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
+                    new(living, people.Length, farms.Length, buildings.Length, session.State.Events.Count(e => e.Kind == PresentationKind.Attack && (e.Shape == "projectile" || e.Shape == "rays"))),
+                    buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(farms), Array.AsReadOnly(buildings), Array.AsReadOnly(people), Array.AsReadOnly(loot), Array.AsReadOnly(remains), Array.AsReadOnly(w.Equipment.Select(e => new EquipmentView(e.Id, e.Level)).ToArray()), Array.AsReadOnly(session.State.Events.ToArray()), session.State.Field?.Frame(w.Estate));
             }
         }
     }

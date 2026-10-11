@@ -16,38 +16,64 @@ namespace SowSiege.Core
         private const int NegativeYDirection = 3;
         private const int ResidualGridDivisions = 8;
         private readonly WorldState world;
+        private readonly FieldState? field;
         private readonly MapTuning map;
         private readonly IReadOnlyDictionary<string, int> widths;
-        private readonly SpatialHash spatial;
+        private readonly WaveSeparationGrid spatial;
         private readonly List<EnemyState> candidates = new();
         private readonly int maximumWidth;
+        private readonly Dictionary<int, (int Width, bool Charging)> bodies = new();
         private static readonly Comparison<EnemyState> IdOrder = (a, b) => a.Id.CompareTo(b.Id);
 
-        internal WaveEnemySeparation(WorldState world, MapTuning map, WaveEnemySeparationDefinition definition)
+        internal WaveEnemySeparation(WorldState world, MapTuning map, WaveEnemySeparationDefinition definition, FieldState? field = null)
         {
             if (definition.Version != 1) { throw new ArgumentException("Unsupported enemy separation version."); }
-            this.world = world; this.map = map; widths = definition.BodyWidths;
+            this.world = world; this.map = map; this.field = field; widths = definition.BodyWidths;
             foreach (var width in widths.Values) { maximumWidth = Math.Max(maximumWidth, width); }
-            spatial = new(Math.Max(1, maximumWidth));
+            spatial = new(Math.Max(1, maximumWidth), field is not null);
         }
 
         internal void Resolve(List<EnemyState> ordered)
         {
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Separation);
+            try { ResolveCore(ordered); }
+            finally { diagnostics?.End(RuntimeStage.Separation); }
+        }
+
+        private void ResolveCore(List<EnemyState> ordered)
+        {
             ordered.Sort(IdOrder);
+            bodies.Clear();
+            foreach (var enemy in ordered)
+            {
+                if (widths.TryGetValue(enemy.Definition, out var width))
+                {
+                    var charging = world.WaveRuntime!.EnemyActions.TryGetValue(enemy.Id, out var action) && action.Phase == "charge" && world.Tick < action.UntilTick;
+                    bodies.Add(enemy.Id, (width, charging));
+                }
+            }
             spatial.Rebuild(ordered);
             for (var sweep = 0; sweep < RelaxationSweeps; sweep++)
             {
                 var changed = false;
                 foreach (var first in ordered)
                 {
-                    if (first.Health <= 0 || !widths.TryGetValue(first.Definition, out var firstWidth)) { continue; }
+                    if (first.Health <= 0 || !bodies.TryGetValue(first.Id, out var firstBody)) { continue; }
+#if SOWSIEGE_FINE_DIAGNOSTICS
+                    var collectDiagnostics = world.Diagnostics;
+                    collectDiagnostics?.Begin(RuntimeStage.Collect);
+                    try { spatial.Collect(first.Position, maximumWidth, candidates); }
+                    finally { collectDiagnostics?.End(RuntimeStage.Collect); }
+#else
                     spatial.Collect(first.Position, maximumWidth, candidates);
+#endif
                     candidates.Sort(IdOrder);
                     foreach (var second in candidates)
                     {
-                        if (second.Id <= first.Id || !widths.TryGetValue(second.Definition, out var secondWidth)) { continue; }
+                        if (second.Id <= first.Id || !bodies.TryGetValue(second.Id, out var secondBody)) { continue; }
                         // 0.6 times mean width; integer padding prevents a rounding-only residual.
-                        var minimum = (MinimumDistanceWidthSumNumerator * (firstWidth + secondWidth) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + IntegerResolutionPadding;
+                        var minimum = (MinimumDistanceWidthSumNumerator * (firstBody.Width + secondBody.Width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + IntegerResolutionPadding;
                         var dx = (long)second.Position.X - first.Position.X;
                         var dy = (long)second.Position.Y - first.Position.Y;
                         var squared = dx * dx + dy * dy;
@@ -81,16 +107,19 @@ namespace SowSiege.Core
                 }
                 if (!changed) { break; }
             }
-            SettleResiduals(ordered);
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Residual);
+            try { SettleResiduals(ordered); }
+            finally { diagnostics?.End(RuntimeStage.Residual); }
         }
 
         private void SettleResiduals(List<EnemyState> ordered)
         {
             var step = Math.Max(1, maximumWidth / ResidualGridDivisions);
-            var limit = (Math.Max(map.Width, map.Height) + step - 1) / step;
+            var limit = ((field is null ? Math.Max(map.Width, map.Height) : FieldRules.SectorSize) + step - 1) / step;
             foreach (var enemy in ordered)
             {
-                if (enemy.Health <= 0 || !widths.ContainsKey(enemy.Definition) || Charging(enemy) || Clear(enemy, enemy.Position)) { continue; }
+                if (enemy.Health <= 0 || !bodies.ContainsKey(enemy.Id) || Charging(enemy) || Clear(enemy, enemy.Position)) { continue; }
                 var origin = enemy.Position;
                 var settled = false;
                 for (var ring = 1; ring <= limit && !settled; ring++)
@@ -118,28 +147,29 @@ namespace SowSiege.Core
         private bool TryPlace(EnemyState enemy, Position origin, int dx, int dy)
         {
             var candidate = new Position(origin.X + dx, origin.Y + dy);
-            if (candidate.X < 0 || candidate.X > map.Width || candidate.Y < 0 || candidate.Y > map.Height || !Clear(enemy, candidate)) { return false; }
+            if ((field is null ? candidate.X < 0 || candidate.X > map.Width || candidate.Y < 0 || candidate.Y > map.Height : field.Constrain(candidate) != candidate) || !Clear(enemy, candidate)) { return false; }
             Move(enemy, candidate.X - enemy.Position.X, candidate.Y - enemy.Position.Y);
             return true;
         }
 
         private bool Clear(EnemyState enemy, Position candidate)
+#if SOWSIEGE_FINE_DIAGNOSTICS
         {
-            spatial.Collect(candidate, maximumWidth, candidates);
-            foreach (var other in candidates)
-            {
-                if (other.Id == enemy.Id || other.Id > enemy.Id && !Charging(other) || !widths.TryGetValue(other.Definition, out var width)) { continue; }
-                var minimum = (MinimumDistanceWidthSumNumerator * (widths[enemy.Definition] + width) + MinimumDistanceWidthSumDenominator - 1) / MinimumDistanceWidthSumDenominator + 1;
-                if (candidate.DistanceSquared(other.Position) < (long)minimum * minimum) { return false; }
-            }
-            return true;
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Clear);
+            try { return spatial.Clear(enemy, candidate, maximumWidth, bodies, MinimumDistanceWidthSumNumerator, MinimumDistanceWidthSumDenominator); }
+            finally { diagnostics?.End(RuntimeStage.Clear); }
         }
+#else
+            => spatial.Clear(enemy, candidate, maximumWidth, bodies, MinimumDistanceWidthSumNumerator, MinimumDistanceWidthSumDenominator);
+#endif
 
-        private bool Charging(EnemyState enemy) => world.WaveRuntime!.EnemyActions.TryGetValue(enemy.Id, out var action) && action.Phase == "charge" && world.Tick < action.UntilTick;
+        private bool Charging(EnemyState enemy) => bodies.TryGetValue(enemy.Id, out var body) && body.Charging;
         private void Move(EnemyState enemy, int dx, int dy)
         {
             if (dx == 0 && dy == 0) { return; }
-            var position = new Position(Math.Clamp(enemy.Position.X + dx, 0, map.Width), Math.Clamp(enemy.Position.Y + dy, 0, map.Height));
+            var position = field is null ? new Position(Math.Clamp(enemy.Position.X + dx, 0, map.Width), Math.Clamp(enemy.Position.Y + dy, 0, map.Height))
+                : field.Constrain(new(checked(enemy.Position.X + dx), checked(enemy.Position.Y + dy)));
             spatial.Move(enemy, position);
             if (world.WaveRuntime!.EnemyActions.TryGetValue(enemy.Id, out var action) && action.Phase.StartsWith("tell-", StringComparison.Ordinal))
             {

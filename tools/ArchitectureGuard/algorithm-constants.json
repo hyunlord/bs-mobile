@@ -238,5 +238,175 @@
     "Symbol": "SowSiege.Core.WaveEnemySeparation.ResidualGridDivisions",
     "Value": "8",
     "Reason": "ADR0049 separation-v1 search-grid subdivision of the maximum authored body width; deterministic residual search discretization, not enemy count or spawn rate."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.LordBodyWidth",
+    "Value": "300",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. Explicit experimental lord body width; physical contact only, never weapon range."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.ImmunityTicks",
+    "Value": "15",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved half-second immunity at wave 30Hz."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.Health",
+    "Value": "100",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved readable health experiment."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.MinimumDamage",
+    "Value": "5",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved experiment damage lower bound."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.MaximumDamage",
+    "Value": "15",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved experiment damage upper bound."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.SpeedNumerator",
+    "Value": "13",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved rational 1.3 movement numerator."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.SpeedDenominator",
+    "Value": "10",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. User-approved rational 1.3 movement denominator."
+  },
+  {
+    "Symbol": "SowSiege.Core.FeelExperimentState.KnockbackSteps",
+    "Value": "3",
+    "Reason": "#207 opt-in version1 feel experiment only; OFF leaves canonical tuning and historical bytes untouched. Approved short lord knockback in base walking steps."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.FeelVersion",
+    "Value": "3",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.ContactFlag",
+    "Value": "2",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.HealthFlag",
+    "Value": "4",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.FeelFlags",
+    "Value": "7",
+    "Reason": "#207 versioned opt-in replay wire encoding; legacy format1/2 unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.SpawnRadius",
+    "Value": "16200",
+    "Reason": "ADR0051/#210 field-v1 canonical offscreen spawn geometry: reviewed 6000 half-height, 16:9 envelope, (.60,.57) anchor, follow/body/tile gutter rounded to one 600-unit cell. Frozen replay-format4 topology, not a spawn amount/rate or damage/health tuning exemption."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.RecycleRadius",
+    "Value": "32400",
+    "Reason": "ADR0051/#210 field-v1 active-region geometry: twice canonical spawn radius16200. Relocation preserves enemy ID, HP and spawn ledger; no population/stat change. A future radius change requires a field contract version."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.ArenaRadius",
+    "Value": "6000",
+    "Reason": "ADR0051/#210 temporary circular boss-boundary geometry, half the historical12000 map width; not enemy range or weapon reach. Frozen field-v1 replay rule, legacy rectangle untouched."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.SectorSize",
+    "Value": "12000",
+    "Reason": "ADR0051/#210 deterministic visual sector coordinates and bounded local separation search extent inherited from old map width; no world boundary or content identity."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldRules.ArenaSpawnInset",
+    "Value": "600",
+    "Reason": "ADR0051/#210 one historical map-cell geometric inset from temporary arena perimeter for spawn centers; versioned topology only, not enemy speed/HP/spawn rate."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.DirectionNearAxis",
+    "Value": "924",
+    "Reason": "ADR0051 field-v1 fixed 16-direction integer lattice: rounded cos22.5 degrees scaled1000. Pair with383, then integer-normalize outward; changing sample coordinates changes replay spawn positions."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.DirectionFarAxis",
+    "Value": "383",
+    "Reason": "ADR0051 field-v1 fixed 16-direction integer lattice: rounded sin22.5 degrees scaled1000, paired with924. Pure direction geometry without floating-point runtime math."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.DirectionDiagonal",
+    "Value": "707",
+    "Reason": "ADR0051 field-v1 fixed diagonal integer lattice component: rounded sin45 degrees scaled1000; integer-normalized, not authored movement speed."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.SeedHashMultiplier",
+    "Value": "73856093",
+    "Reason": "ADR0051 field-v1 stateless relocation hash seed multiplier. Frozen integer identity mapping; does not consume gameplay RNG or encode content IDs."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.TickHashMultiplier",
+    "Value": "19349663",
+    "Reason": "ADR0051 field-v1 stateless relocation hash tick multiplier; deterministic ahead-sector selection only."
+  },
+  {
+    "Symbol": "SowSiege.Core.FieldState.EnemyHashMultiplier",
+    "Value": "83492791",
+    "Reason": "ADR0051 field-v1 stateless relocation hash enemy-ID multiplier; distinct existing entity placement without new entity or spawn-count allocation."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.FieldVersion",
+    "Value": "4",
+    "Reason": "ADR0051/#210 replay wire format discriminator for explicitly versioned field options plus optional feel flags. Old replay formats1-3 and global rules/state-codec versions remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.CoordinateBits",
+    "Value": "32",
+    "Reason": "Packed signed cell coordinates each occupy exactly one Int32 half of a long; also folds the mixed 64-bit hash. Representation, not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashFirstShift",
+    "Value": "30",
+    "Reason": "SplitMix64 finalizer first xor-shift; improves private dictionary key distribution without changing exact key equality or simulation state."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashSecondShift",
+    "Value": "27",
+    "Reason": "SplitMix64 finalizer second xor-shift; private dictionary distribution only."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashFinalShift",
+    "Value": "31",
+    "Reason": "SplitMix64 finalizer final xor-shift; private dictionary distribution only."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashFirstMultiplier",
+    "Value": "13787848793156543929",
+    "Reason": "SplitMix64 finalizer first multiplier; unchecked modulo-2^64 dictionary hashing, not RNG or gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.HashSecondMultiplier",
+    "Value": "10723151780598845931",
+    "Reason": "SplitMix64 finalizer second multiplier; unchecked modulo-2^64 dictionary hashing, not RNG or gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.WindowRadix",
+    "Value": "2",
+    "Reason": "Power-of-two array capacity growth and midpoint divisor for the separation lookup window; affects storage only, sparse fallback preserves all cells."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.PaddedInclusiveSpan",
+    "Value": "3",
+    "Reason": "Inclusive cell span adds one plus a one-cell margin at each end. Lookup window optimization only; outside cells remain in sparse fallback."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.MaximumDenseCells",
+    "Value": "16384",
+    "Reason": "Bounded private flat lookup storage budget: at most 16384 bucket references. Does not limit enemy count, coordinates, query radius or motion; sparse fallback retains all overflow cells."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveSeparationGrid.SparseCloudWindowSide",
+    "Value": "64",
+    "Reason": "Private lookup window side when enemy cell bounds exceed the flat storage budget. Distant cells use exact sparse fallback, so no gameplay boundary is imposed."
   }
 ]

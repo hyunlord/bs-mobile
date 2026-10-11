@@ -121,3 +121,60 @@ test('pooled allocation is unavailable if any contributing repetition counter is
   assert.equal(supported.allocatedBytesPerFrame.mean, 121.6);
   assert.equal(result.bins[0].repetitions[1].allocatedBytesPerFrame, null);
 });
+
+test('accepts documented appended diagnostics while preserving base statistics', t => {
+  const f = fixture(t);
+  mutateFrames(f.run, lines => lines.map((line, index) => line + (index === 0
+    ? ',advances,advanceMs,worldBatchDrawCalls,worldInstances,entryTimestamp,exitTimestamp,nextEntryTimestamp,inputDeltaSeconds,accumulatorBefore,accumulatorAfter'
+    : `,0,0,32,1409,${index * 1000},${index * 1000 + 10},${index * 1000 + 20},0.016,0,0`)));
+  const timing = path.join(f.run, 'render-timings.csv');
+  fs.writeFileSync(timing, fs.readFileSync(timing, 'utf8').trimEnd().split('\n').map((line, i) => `${line},${i === 0 ? 'observationTimestamp' : i * 200000}`).join('\n') + '\n');
+  const result = f.compare().after;
+  assert.equal(result.bins[0].wallMs.p95, 19);
+  assert.equal(result.renderTimings.gpuMs.mean, 4);
+});
+
+test('explicit minus-one allocation support remains unavailable, never averaged as negative bytes', t => {
+  const f = fixture(t);
+  mutateFrames(f.run, lines => lines.map((line, i) => {
+    if (i !== 1) return line;
+    const cells = line.split(','); cells[10] = '-1'; return cells.join(',');
+  }));
+  const result = f.compare().after;
+  assert.equal(result.allFrames.allocatedBytesPerFrame, null);
+  assert.equal(result.bins[0].repetitions[0].allocationMeasurement, 'unavailable/sentinel');
+  assert.equal(result.allFrames.gcCollections, 9);
+});
+
+for (const [name, column, value] of [['other negative allocation', 10, '-2'], ['negative wall', 4, '-1'], ['fractional allocation', 10, '-0.5']]) {
+  test(`rejects ${name}`, t => {
+    const f = fixture(t);
+    mutateFrames(f.run, lines => lines.map((line, i) => {
+      if (i !== 1) return line;
+      const cells = line.split(','); cells[column] = value; return cells.join(',');
+    }));
+    assert.throws(f.compare, /Invalid/);
+  });
+}
+
+for (const [header, value] of [['unknownColumn', '1'], ['advances', 'NaN'], ['advances', '-1'], ['advances', '0.5']]) {
+  test(`rejects invalid appended ${header}=${value}`, t => {
+    const f = fixture(t);
+    mutateFrames(f.run, lines => lines.map((line, i) => `${line},${i === 0 ? header : value}`));
+    assert.throws(f.compare, /schema mismatch|Invalid|Noninteger/);
+  });
+}
+
+for (const [key, value] of [['diagnosticOnly', true], ['performanceEligible', false], ['diagnosticOnly', 'false'], ['performanceEligible', null]]) {
+  test(`rejects non-acceptance metadata ${key}=${value}`, t => {
+    const f = fixture(t);
+    mutateJson(path.join(f.run, 'benchmark.json'), identity => { identity[key] = value; });
+    assert.throws(f.compare, /Diagnostic-only|Ineligible/);
+  });
+}
+
+test('accepts explicit eligibility without requiring it for historical runs', t => {
+  const f = fixture(t);
+  mutateJson(path.join(f.run, 'benchmark.json'), identity => { identity.diagnosticOnly = false; identity.performanceEligible = true; });
+  assert.equal(f.compare().after.bins[0].wallMs.p95, 19);
+});
