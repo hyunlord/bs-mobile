@@ -82,6 +82,14 @@ namespace Game.App
         public MetaProgression Progression { get; private set; }
 #if UNITY_EDITOR
         public static string MetaDirectoryOverride { get; set; }
+        public void EditorSetBorrowedSnapshotsForTests(RunFrame frame, WaveRuntimeFrame wave)
+        { CurrentFrame = frame; CurrentWave = wave; }
+        public void EditorCaptureSnapshotsForTests(InteractiveSession session, ContentCatalog catalog)
+        { Session = session; runCatalog = catalog; CaptureSnapshots(); }
+        public bool EditorHasDetachedSnapshotsForTests => exportedFrame != null || exportedWave != null;
+        public bool EditorWaveExportSharesEnemyStorageForTests(WaveRuntimeFrame exported)
+            => ReferenceEquals(exported.Enemies, CurrentWave.Enemies);
+
 #endif
         private static string MetaDirectory
         {

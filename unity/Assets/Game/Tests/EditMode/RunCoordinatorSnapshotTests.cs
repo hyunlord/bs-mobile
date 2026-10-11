@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Game.App;
 using Game.App.Generated;
 using NUnit.Framework;
@@ -10,8 +9,6 @@ namespace Tests.EditMode
 {
     public sealed class RunCoordinatorSnapshotTests
     {
-        private const BindingFlags Instance = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-
         [Test] public void PublicSnapshotsRetainEnemyValuesAcrossRepeatedBorrowedStorageReuse()
         {
             var catalog = CanonicalContent.CreateCatalog();
@@ -25,8 +22,8 @@ namespace Tests.EditMode
             try
             {
                 var run = owner.AddComponent<RunCoordinator>();
-                Set(run, "CurrentFrame", template with { Enemies = enemies.AsReadOnly() });
-                Set(run, "CurrentWave", waveTemplate with { Enemies = waveEnemies.AsReadOnly() });
+                run.EditorSetBorrowedSnapshotsForTests(template with { Enemies = enemies.AsReadOnly() },
+                    waveTemplate with { Enemies = waveEnemies.AsReadOnly() });
                 var retained = run.Frame; var retainedWave = run.Wave;
                 var expected = enemies[0]; var expectedWave = waveEnemies[0];
                 Assert.That(run.Frame, Is.SameAs(retained));
@@ -35,8 +32,8 @@ namespace Tests.EditMode
                 {
                     enemies[0] = new(1, "test:enemy", new(10 + tick, 20), 30 - tick, 40);
                     waveEnemies[0] = new(1, "strike", new(tick, 0), new(0, tick), tick, true, false, 0);
-                    Set(run, "CurrentFrame", template with { Tick = tick, Enemies = enemies.AsReadOnly() });
-                    Set(run, "CurrentWave", waveTemplate with { Enemies = waveEnemies.AsReadOnly() });
+                    run.EditorSetBorrowedSnapshotsForTests(template with { Tick = tick, Enemies = enemies.AsReadOnly() },
+                        waveTemplate with { Enemies = waveEnemies.AsReadOnly() });
                     Assert.That(run.Frame.Enemies[0], Is.EqualTo(enemies[0]));
                     Assert.That(run.Wave.Enemies[0], Is.EqualTo(waveEnemies[0]));
                     Assert.That(retained.Enemies[0], Is.EqualTo(expected));
@@ -57,22 +54,16 @@ namespace Tests.EditMode
             try
             {
                 var run = owner.AddComponent<RunCoordinator>();
-                Set(run, "Session", session);
-                typeof(RunCoordinator).GetField("runCatalog", Instance).SetValue(run, catalog);
-                var capture = typeof(RunCoordinator).GetMethod("CaptureSnapshots", Instance);
-                for (var i = 0; i < 4; i++) capture.Invoke(run, null);
-                Assert.That(typeof(RunCoordinator).GetField("exportedFrame", Instance).GetValue(run), Is.Null);
-                Assert.That(typeof(RunCoordinator).GetField("exportedWave", Instance).GetValue(run), Is.Null);
+                for (var i = 0; i < 4; i++) run.EditorCaptureSnapshotsForTests(session, catalog);
+                Assert.That(run.EditorHasDetachedSnapshotsForTests, Is.False);
                 WaveRuntimeFrame accepted = null;
                 run.WaveFrameAccepted += frame => accepted = frame;
-                capture.Invoke(run, null);
+                run.EditorCaptureSnapshotsForTests(session, catalog);
                 Assert.That(accepted, Is.SameAs(run.Wave));
-                Assert.That(accepted.Enemies, Is.Not.SameAs(((WaveRuntimeFrame)typeof(RunCoordinator).GetProperty("CurrentWave", Instance).GetValue(run)).Enemies));
+                Assert.That(run.EditorWaveExportSharesEnemyStorageForTests(accepted), Is.False);
             }
             finally { Object.DestroyImmediate(owner); }
         }
 
-        private static void Set(RunCoordinator run, string name, object value)
-            => typeof(RunCoordinator).GetProperty(name, Instance).SetValue(run, value);
     }
 }
