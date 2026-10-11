@@ -116,7 +116,7 @@ namespace Game.App
                 if (!IsWave || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException("Wave benchmark requires wave-1a, a replay path, and no autoplay capture.");
                 var output = Array.IndexOf(args, "--wave-benchmark-output");
                 if (output < 0 || output + 1 >= args.Length) throw new ArgumentException("Missing --wave-benchmark-output directory.");
-                var destination = Path.GetFullPath(args[output + 1]);
+                var destination = WaveBenchmarkAccount.Current.OutputDirectory;
                 if (Directory.Exists(destination) && Directory.GetFileSystemEntries(destination).Length != 0) throw new IOException("Benchmark output must be empty.");
                 Directory.CreateDirectory(destination);
                 benchmarkOutput = destination;

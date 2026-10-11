@@ -94,6 +94,7 @@ namespace Game.App
         {
             get
             {
+                if(WaveBenchmarkAccount.Current != null)return WaveBenchmarkAccount.Current.ProfileDirectory;
                 if(AutoplayCapture.Active!=null)return AutoplayCapture.Active.ProfileDirectory;
                 if(FeelTrialAutomation.Active!=null)return FeelTrialAutomation.Active.ProfileDirectory;
                 if(NormalPlayTrace.ProfileDirectory!=null)return NormalPlayTrace.ProfileDirectory;
