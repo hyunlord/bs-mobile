@@ -75,6 +75,20 @@ namespace SowSiege.Core
             new(summary.Tick, frame.DurationTicks, summary.Survived, firstPlayable.BossDefeated, abandoned, frame.Level,
                 frame.Farms.Count, frame.Buildings.Count(b => b.Built && b.Health > 0), frame.People.Sum(p => p.Members), firstPlayable.Kills, firstPlayable.Harvests);
 
+        public static MetaRunFacts FromWave(RunSummary summary, RunFrame frame, WaveRuntimeFrame wave, bool abandoned)
+        {
+            long kills = 0, harvests = 0;
+            foreach (var counter in wave.Counters)
+            {
+                if (counter.Key.StartsWith("enemy-killed:", StringComparison.Ordinal)) { kills = checked(kills + counter.Value); }
+                if (counter.Key.StartsWith("harvest-complete:", StringComparison.Ordinal)) { harvests = checked(harvests + counter.Value); }
+            }
+            return new MetaRunFacts(summary.Tick, frame.DurationTicks, summary.Survived, wave.BossDefeated,
+                abandoned, frame.Level, wave.Work.Count(x => x.Kind == "grain" && x.Health > 0),
+                wave.Work.Count(x => x.Kind == "building" && x.Complete && x.Health > 0),
+                wave.Groups.Count, kills, harvests);
+        }
+
         // Round upward so small data-defined bonuses affect integral simulation units; zero remains zero.
         private static int Scale(int value, int permille) => checked((int)(((long)value * permille + PlayerInput.Scale - 1) / PlayerInput.Scale));
         private static int Duration(int value, int permille) => Math.Max(1, checked((int)((long)value * PlayerInput.Scale / permille)));

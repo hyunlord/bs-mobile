@@ -94,13 +94,13 @@ public sealed class MetaProgressionHostTests : IDisposable
         }
         var replay = new ReplayDocument(ReplayCodec.Header(options), commands, [], new(30, 30, ReplayEndKind.Quit, session.ComputeStateHash()));
         string replayPath = Path.Combine(directory, "run.replay");
-        File.WriteAllBytes(replayPath + ".meta", started.ReplayContext);
+        File.WriteAllBytes(replayPath + ".meta", started.ReplayContext!);
         Assert.Equal(session.ComputeStateHash(), MetaReplayFile.Verify(replayPath, Data, content, hash, replay).StateHash);
-        Assert.Equal(session.ComputeStateHash(), MetaReplayContext.Verify(started.ReplayContext, content, meta, hash, replay).StateHash);
-        Assert.Throws<InvalidDataException>(() => MetaReplayContext.Verify(started.ReplayContext, content, meta, new string('B', 64), replay));
+        Assert.Equal(session.ComputeStateHash(), MetaReplayContext.Verify(started.ReplayContext!, content, meta, hash, replay).StateHash);
+        Assert.Throws<InvalidDataException>(() => MetaReplayContext.Verify(started.ReplayContext!, content, meta, new string('B', 64), replay));
         Assert.Throws<InvalidDataException>(() => ReplayRunner.Verify(content, hash, replay));
-        started.ReplayContext[^1] ^= 1;
-        Assert.Throws<InvalidDataException>(() => MetaReplayContext.Restore(started.ReplayContext, content, meta, hash));
+        started.ReplayContext![^1] ^= 1;
+        Assert.Throws<InvalidDataException>(() => MetaReplayContext.Restore(started.ReplayContext!, content, meta, hash));
     }
 
     [Fact]

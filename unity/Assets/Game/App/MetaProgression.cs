@@ -8,12 +8,14 @@ using SowSiege.Core;
 
 namespace Game.App
 {
+    public enum MetaProjectionPolicy { LegacyProjectCatalog, AccountOnlyWave }
+
     public sealed class MetaStartedRun
     {
         public MetaRunPlan Plan { get; }
         public ContentCatalog Catalog { get; }
-        public byte[] ReplayContext { get; }
-        internal MetaStartedRun(MetaRunPlan plan, ContentCatalog catalog, byte[] context)
+        public byte[]? ReplayContext { get; }
+        internal MetaStartedRun(MetaRunPlan plan, ContentCatalog catalog, byte[]? context)
         { Plan = plan; Catalog = catalog; ReplayContext = context; }
     }
 
@@ -23,6 +25,8 @@ namespace Game.App
         private readonly AtomicSaveStore terminalStore;
         private readonly ContentCatalog source;
         private readonly string dataHash;
+        private readonly MetaProjectionPolicy projectionPolicy;
+        private readonly MetaRewardDelivery rewardDelivery;
         private readonly Func<long> monotonicSeconds;
         private readonly Func<long> wallSeconds;
         private MetaState state;
@@ -34,11 +38,19 @@ namespace Game.App
         public MetaIdleResult? LastIdle { get; private set; }
 
         public MetaProgression(MetaCatalog meta, ContentCatalog baseCatalog, string baseDataHash, string directory,
-            Func<long>? monotonicSeconds = null, Func<long>? wallSeconds = null)
+            Func<long>? monotonicSeconds = null, Func<long>? wallSeconds = null,
+            MetaProjectionPolicy projectionPolicy = MetaProjectionPolicy.LegacyProjectCatalog,
+            MetaRewardDelivery rewardDelivery = MetaRewardDelivery.LegacyAutoCredit)
         {
             Catalog = meta ?? throw new ArgumentNullException(nameof(meta));
             source = baseCatalog ?? throw new ArgumentNullException(nameof(baseCatalog));
             dataHash = baseDataHash;
+            if (!Enum.IsDefined(typeof(MetaProjectionPolicy), projectionPolicy)) { throw new ArgumentOutOfRangeException(nameof(projectionPolicy)); }
+            if (!Enum.IsDefined(typeof(MetaRewardDelivery), rewardDelivery)) { throw new ArgumentOutOfRangeException(nameof(rewardDelivery)); }
+            if (projectionPolicy == MetaProjectionPolicy.AccountOnlyWave && source.WaveRuntime == null)
+            { throw new ArgumentException("Account-only wave progression requires wave runtime content.", nameof(baseCatalog)); }
+            this.projectionPolicy = projectionPolicy;
+            this.rewardDelivery = rewardDelivery;
             this.monotonicSeconds = monotonicSeconds ?? (() => Stopwatch.GetTimestamp() / Stopwatch.Frequency);
             this.wallSeconds = wallSeconds ?? (() => DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             store = new AtomicSaveStore(directory, "progress.bin");
@@ -54,7 +66,7 @@ namespace Game.App
                 var after = MetaSaveCodec.Decode(snapshots.After).State!;
                 if (state.PendingRun != null && state.PendingRun == before.PendingRun)
                 {
-                    if (!MetaSaveCodec.Encode(state).SequenceEqual(snapshots.Before))
+                    if (!MetaSaveCodec.Encode(state).SequenceEqual(MetaSaveCodec.Encode(before)))
                     {
                         throw new InvalidDataException("Terminal intent does not match the pending state.");
                     }
@@ -68,10 +80,10 @@ namespace Game.App
             }
             if (state.PendingRun != null)
             {
-                state = MetaEngine.SettleRun(Catalog, state, state.PendingRun, AbandonedFacts()).State;
+                state = MetaEngine.SettleRun(Catalog, state, state.PendingRun, AbandonedFacts(), rewardDelivery).State;
                 RecoveredAbandonedRun = true;
             }
-            var idle = MetaEngine.AdvanceIdle(Catalog, state, this.monotonicSeconds(), this.wallSeconds());
+            var idle = MetaEngine.AdvanceIdle(Catalog, state, this.monotonicSeconds(), this.wallSeconds(), rewardDelivery);
             Publish(idle.State);
             LastIdle = idle;
         }
@@ -79,8 +91,10 @@ namespace Game.App
         public MetaStartedRun BeginRun(string chapterId, int seed)
         {
             var plan = MetaEngine.BeginRun(Catalog, state, chapterId, seed);
-            var effective = MetaRunAdapter.ProjectCatalog(source, Catalog, plan.State, plan);
-            var context = MetaReplayContext.Encode(plan, dataHash, effective);
+            var effective = projectionPolicy == MetaProjectionPolicy.AccountOnlyWave
+                ? source : MetaRunAdapter.ProjectCatalog(source, Catalog, plan.State, plan);
+            var context = projectionPolicy == MetaProjectionPolicy.AccountOnlyWave
+                ? null : MetaReplayContext.Encode(plan, dataHash, effective);
             Publish(plan.State);
             return new MetaStartedRun(new MetaRunPlan(Copy(plan.State), plan.Run), effective, context);
         }
@@ -88,7 +102,7 @@ namespace Game.App
         public MetaSettlement SettleRun(MetaRunFacts facts)
         {
             var pending = state.PendingRun ?? throw new InvalidOperationException("No pending run.");
-            var settlement = MetaEngine.SettleRun(Catalog, state, pending, facts);
+            var settlement = MetaEngine.SettleRun(Catalog, state, pending, facts, rewardDelivery);
             byte[] intent = WriteTerminal(state, settlement.State);
             var recorded = terminalStore.Load(ValidateTerminal);
             if (recorded.Payload != null)
@@ -108,14 +122,22 @@ namespace Game.App
         public MetaIdleResult AdvanceIdle()
         {
             RequireMenu();
-            var result = MetaEngine.AdvanceIdle(Catalog, state, monotonicSeconds(), wallSeconds());
+            var result = MetaEngine.AdvanceIdle(Catalog, state, monotonicSeconds(), wallSeconds(), rewardDelivery);
             Publish(result.State); LastIdle = result;
             return result;
         }
-        public void SetManorPriority(string id) { RequireMenu(); Publish(MetaEngine.SetManorPriority(Catalog, state, id)); }
-        public void UpgradeVassal(string id) { RequireMenu(); Publish(MetaEngine.UpgradeVassal(Catalog, state, id)); }
+        public void SetManorPriority(string id) { RequireMenu(); Publish(MetaEngine.SetManorPriority(Catalog, state, id, rewardDelivery)); }
+        public void UpgradeVassal(string id) { RequireMenu(); Publish(MetaEngine.UpgradeVassal(Catalog, state, id, rewardDelivery)); }
         public void RankUpVassal(string id) { RequireMenu(); Publish(MetaEngine.RankUpVassal(Catalog, state, id)); }
         public void ToggleVassal(string id) { RequireMenu(); Publish(MetaEngine.ToggleVassal(Catalog, state, id)); }
+
+        public MetaClaimResult Claim(long sequence)
+        {
+            RequireMenu();
+            var result = MetaEngine.Claim(Catalog, state, sequence);
+            if (result.Claimed) { Publish(result.State); }
+            return result;
+        }
 
         private void RequireMenu()
         {
