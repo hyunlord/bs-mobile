@@ -62,6 +62,7 @@ namespace SowSiege.Core
                 requested[rule.MaterialId] = facts.Tick < catalog.Economy.MinimumRewardTicks ? 0 : (int)(Math.Min(cap, raw) * multiplier / PlayerInput.Scale);
             }
             var awarded = Credit(catalog, next, requested, out var overflow);
+            next = next with { ResultRewardBasis = new MetaResultRewardBasis(pending.Sequence, new Dictionary<string, int>(awarded)) };
             if (facts.Tick >= catalog.Economy.MinimumRewardTicks)
             {
                 AddMetric(next, MetaMetric.Runs, 1); AddMetric(next, MetaMetric.Clears, cleared ? 1 : 0);
@@ -188,7 +189,7 @@ namespace SowSiege.Core
             return new MetaModifiers(PlayerInput.Scale + values[(int)MetaAbility.Attack], PlayerInput.Scale + values[(int)MetaAbility.Health], PlayerInput.Scale + values[(int)MetaAbility.Movement], PlayerInput.Scale + values[(int)MetaAbility.Growth], PlayerInput.Scale + values[(int)MetaAbility.Allies], PlayerInput.Scale + values[(int)MetaAbility.Experience]);
         }
 
-        private static MetaState Clone(MetaState state) => state with { Wallet = new Dictionary<string, int>(state.Wallet), ManorLevels = new Dictionary<string, int>(state.ManorLevels), Vassals = new Dictionary<string, MetaVassalState>(state.Vassals), Metrics = new Dictionary<string, long>(state.Metrics), CompletedChallenges = (string[])state.CompletedChallenges.Clone(), UnlockedContentIds = (string[])state.UnlockedContentIds.Clone(), ActiveVassalIds = (string[])state.ActiveVassalIds.Clone(), PendingClaims = state.PendingClaims.Select(x => x with { Rewards = new Dictionary<string, int>(x.Rewards) }).ToArray() };
+        private static MetaState Clone(MetaState state) => state with { RewardReceipts = (MetaRewardReceipt[])state.RewardReceipts.Clone(), ResultRewardBasis = state.ResultRewardBasis == null ? null : state.ResultRewardBasis with { Awarded = new Dictionary<string, int>(state.ResultRewardBasis.Awarded) }, Wallet = new Dictionary<string, int>(state.Wallet), ManorLevels = new Dictionary<string, int>(state.ManorLevels), Vassals = new Dictionary<string, MetaVassalState>(state.Vassals), Metrics = new Dictionary<string, long>(state.Metrics), CompletedChallenges = (string[])state.CompletedChallenges.Clone(), UnlockedContentIds = (string[])state.UnlockedContentIds.Clone(), ActiveVassalIds = (string[])state.ActiveVassalIds.Clone(), PendingClaims = state.PendingClaims.Select(x => x with { Rewards = new Dictionary<string, int>(x.Rewards) }).ToArray() };
         private static long Saturate(long a, long b) => a > long.MaxValue - b ? long.MaxValue : a + b;
         private static void AddMetric(MetaState state, MetaMetric metric, long value) { string key = metric.ToString(); state.Metrics.TryGetValue(key, out long previous); state.Metrics[key] = Math.Min(MetaValidation.MaximumMetricValue, Saturate(previous, value)); }
         private static int EffectLevel(MetaCatalog catalog, MetaState state, ManorEffect effect) => catalog.ManorBuildings.Where(x => x.Effect == effect).Sum(x => state.ManorLevels[x.Id]);

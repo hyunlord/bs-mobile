@@ -21,6 +21,12 @@ namespace SowSiege.Core
                 Check(state.Wallet.TryGetValue(material.Id, out int amount) && amount >= 0 && amount <= material.WalletCap, "wallet:" + material.Id);
             }
 
+            if (state.ResultRewardBasis != null)
+            {
+                Check(state.ResultRewardBasis.RunSequence >= 1 && state.ResultRewardBasis.RunSequence < state.NextRunSequence &&
+                    Same(state.ResultRewardBasis.Awarded.Keys, catalog.Materials.Select(x => x.Id)) &&
+                    catalog.Materials.All(x => state.ResultRewardBasis.Awarded.TryGetValue(x.Id, out int amount) && amount >= 0 && amount <= x.WalletCap), "result-reward-basis");
+            }
             Check(Same(state.ManorLevels.Keys, catalog.ManorBuildings.Select(x => x.Id)), "manor-keys");
             foreach (var building in catalog.ManorBuildings)
             {

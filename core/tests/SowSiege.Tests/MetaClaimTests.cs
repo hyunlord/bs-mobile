@@ -16,7 +16,7 @@ public sealed class MetaClaimTests
         Assert.Equal(old.CompletedRuns, restored.CompletedRuns);
         Assert.Equal(old.CompletedChallenges, restored.CompletedChallenges);
         Assert.Empty(restored.PendingClaims);
-        Assert.Equal(4, restored.SchemaVersion);
+        Assert.Equal(MetaSaveCodec.CurrentVersion, restored.SchemaVersion);
         var observed = MetaEngine.AdvanceIdle(catalog, restored, 0, 0, MetaRewardDelivery.PendingClaims).State;
         Assert.Empty(observed.PendingClaims);
     }
@@ -57,7 +57,10 @@ public sealed class MetaClaimTests
         var catalog = MetaEngineTests.Catalog() with { Challenges = [] };
         var state = MetaEngine.AdvanceIdle(catalog, MetaEngine.NewGame(catalog), 0, 100, MetaRewardDelivery.PendingClaims).State;
         for (int time = 10; time <= 200; time += 10)
+        {
             state = MetaEngine.AdvanceIdle(catalog, state, time, 100 + time, MetaRewardDelivery.PendingClaims).State;
+        }
+
         Assert.Equal(0, state.Wallet["wood"]);
         var pending = Assert.Single(state.PendingClaims);
         Assert.Equal(MetaClaimKind.Idle, pending.Kind);
@@ -106,7 +109,11 @@ public sealed class MetaClaimTests
     {
         var catalog = MetaEngineTests.Catalog() with { Challenges = [] };
         var state = MetaEngine.NewGame(catalog);
-        foreach (var building in catalog.ManorBuildings) state.ManorLevels[building.Id] = building.MaxLevel;
+        foreach (var building in catalog.ManorBuildings)
+        {
+            state.ManorLevels[building.Id] = building.MaxLevel;
+        }
+
         state.Wallet["wood"] = 999;
         state = MetaEngine.AdvanceIdle(catalog, state, 0, 100, MetaRewardDelivery.PendingClaims).State;
         state = MetaEngine.AdvanceIdle(catalog, state, 30, 130, MetaRewardDelivery.PendingClaims).State;
@@ -127,7 +134,10 @@ public sealed class MetaClaimTests
         var state = MetaEngine.SettleRun(catalog, run.State, run.Run, MetaEngineTests.Success, MetaRewardDelivery.PendingClaims).State;
         long next = state.NextClaimSequence;
         for (int i = 0; i < 5; i++)
+        {
             state = MetaEngine.SetManorPriority(catalog, state, state.ManorPriority, MetaRewardDelivery.PendingClaims);
+        }
+
         Assert.Single(state.PendingClaims);
         Assert.Equal(next, state.NextClaimSequence);
         var broken = state with { PendingClaims = [state.PendingClaims[0] with { Rewards = new() { ["wood"] = 500 } }] };

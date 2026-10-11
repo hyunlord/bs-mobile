@@ -11,6 +11,8 @@ namespace SowSiege.Core
         long NextRunSequence, MetaPendingRun? PendingRun, long LastMonotonicSeconds, long LastWallSeconds,
         long IdleRemainderSeconds, long CompletedRuns)
     {
+        public MetaRewardReceipt[] RewardReceipts { get; init; } = System.Array.Empty<MetaRewardReceipt>();
+        public MetaResultRewardBasis? ResultRewardBasis { get; init; }
         public long NextClaimSequence { get; init; } = 1;
         public MetaPendingClaim[] PendingClaims { get; init; } = System.Array.Empty<MetaPendingClaim>();
     }
