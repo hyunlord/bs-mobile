@@ -21,7 +21,7 @@ namespace Game.App
         bool offlineReplayRequested;
         OfflineReplayCapture offlineReplayCapture;
         bool benchmarkAllocationAvailable;
-        bool benchmarkSkipGrounding;
+        bool benchmarkSkipGrounding, benchmarkTarget60Experiment;
         BenchmarkCoreDiagnostics benchmarkCoreDiagnostics;
         PlayerInput benchmarkMovement;
         bool benchmarkProfileRequested, benchmarkProfilerEnabled;
@@ -94,7 +94,7 @@ namespace Game.App
             public bool performanceEligible = true;
             public bool diagnosticOnly, actorGroundingSkipped;
             public string fixture = "c05", playbackBoundary;
-            public string benchmarkMode, gcMode;
+            public string benchmarkMode, gcMode, metalDisplayLinkEnvironment;
             public int frameCapacity, timingCapacity, coreTickSamples;
             public string coreTimingContract = "Optional core-ticks.csv records pre-Advance tick and accepted Advance only within benchmark windows; no pre-roll. Enemy includes Separation, which includes Residual: nested times and allocations must not be summed. MovementAiContact is the sorted live-enemy action/movement/contact loop before separation, nested in Enemy, not pure integration. Full Advance excludes snapshot/presentation; appended snapshotMs is the same Advance capture only. Unavailable allocation counters are -1.";
             public int tick, commands, frames, renderTimingSamples, width, height, targetFrameRate, vSyncCount, renderWarmupFrames = 120;
@@ -107,10 +107,11 @@ namespace Game.App
         {
             var args = Environment.GetCommandLineArgs();
             var index = Array.IndexOf(args, "--wave-benchmark");
-            if (index < 0 && Array.IndexOf(args, "--wave-benchmark-skip-grounding") < 0) return;
+            if (index < 0 && Array.IndexOf(args, "--wave-benchmark-skip-grounding") < 0 && Array.IndexOf(args, "--crowd-target60-experiment") < 0) return;
             waveBenchmarkRequested = true;
             try
             {
+                benchmarkTarget60Experiment = DisplayCadence.ParseCrowdTarget60Experiment(args);
                 benchmarkSkipGrounding = ParseWaveBenchmarkSkipGrounding(args);
                 if (!IsWave || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException("Wave benchmark requires wave-1a, a replay path, and no autoplay capture.");
                 var output = Array.IndexOf(args, "--wave-benchmark-output");
@@ -121,7 +122,7 @@ namespace Game.App
                 benchmarkOutput = destination;
                 crowdBenchmark = CrowdReplayBenchmark.Parse(args);
                 offlineReplayRequested = OfflineReplayCapture.Requested(args);
-                benchmarkMode = crowdBenchmark == null ? ParseWaveBenchmarkMode(args) : "normal-mac-vsync";
+                benchmarkMode = benchmarkTarget60Experiment ? "diagnostic-crowd-target60-vsync0" : crowdBenchmark == null ? ParseWaveBenchmarkMode(args) : "normal-mac-vsync";
                 benchmarkAllocationAvailable = AllocationCounterProbe.CurrentThreadAvailable();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, true);
@@ -147,6 +148,7 @@ namespace Game.App
                 benchmarkCapture = Array.IndexOf(args, "--wave-benchmark-capture") >= 0;
                 Screen.SetResolution(crowdBenchmark == null ? 1600 : 1920, crowdBenchmark == null ? 900 : 1080, FullScreenMode.Windowed);
                 if (crowdBenchmark == null) { Application.targetFrameRate = benchmarkMode == "uncapped" ? -1 : 60; QualitySettings.vSyncCount = 0; }
+                else if (benchmarkTarget60Experiment) DisplayCadence.ApplyCrowdTarget60Experiment();
                 else DisplayCadence.Apply();
                 runCatalog = frozen;
                 StartCoroutine(BeginWaveBenchmark());
@@ -328,7 +330,8 @@ namespace Game.App
             result.allocationCounterAvailable = benchmarkAllocationAvailable;
             result.coreTickSamples = benchmarkCoreDiagnostics?.Count ?? 0;
             result.heroRig = activeHeroRig;
-            result.diagnosticOnly = benchmarkSkipGrounding || benchmarkCoreDiagnostics != null || benchmarkProfilerEnabled || result.developmentBuild;
+            result.metalDisplayLinkEnvironment = Environment.GetEnvironmentVariable("UNITY_USE_METAL_DISPLAY_LINK") ?? "unset";
+            result.diagnosticOnly = benchmarkTarget60Experiment || benchmarkSkipGrounding || benchmarkCoreDiagnostics != null || benchmarkProfilerEnabled || result.developmentBuild;
             result.performanceEligible = !offlineReplayRequested && !result.diagnosticOnly;
             result.actorGroundingSkipped = benchmarkSkipGrounding;
             if (offlineReplayRequested) result.benchmarkMode = "offline-render-60fps";

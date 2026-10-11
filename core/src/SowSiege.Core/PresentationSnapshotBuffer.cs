@@ -48,7 +48,7 @@ namespace SowSiege.Core
         public int Count { get; private set; }
         internal void Capture(SortedDictionary<string, long> source)
         {
-            if (source.Count > entries.Length) { Array.Resize(ref entries, Math.Max(source.Count, entries.Length * 2)); }
+            if (source.Count > entries.Length) { Array.Resize(ref entries, Math.Max(source.Count, entries.Length << 1)); }
             if (Count > source.Count) { Array.Clear(entries, source.Count, Count - source.Count); }
             var index = 0;
             foreach (var pair in source) { entries[index++] = pair; }
@@ -60,7 +60,7 @@ namespace SowSiege.Core
             var low = 0; var high = Count - 1;
             while (low <= high)
             {
-                var middle = low + (high - low) / 2;
+                var middle = low + ((high - low) >> 1);
                 var comparison = StringComparer.Ordinal.Compare(entries[middle].Key, key);
                 if (comparison == 0) { value = entries[middle].Value; return true; }
                 if (comparison < 0) { low = middle + 1; } else { high = middle - 1; }
