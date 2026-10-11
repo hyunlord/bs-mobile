@@ -173,7 +173,7 @@ namespace Game.App
             return values.Count==0?"성장표 상한":"다음 성장 · "+string.Join(" · ",values);
         }
 
-        static string WaveEvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,WaveRuntimeDefinition definition,IReadOnlyDictionary<string,ContentDisplay> displays,bool readable=false)
+        public static string WaveEvolutionClues(OfferedCardDetail card,FirstPlayableFrame frame,WaveRuntimeDefinition definition,IReadOnlyDictionary<string,ContentDisplay> displays,bool readable=false)
         {
             return string.Join("\n",frame.Evolutions.Where(e=>card.EvolutionIds.Contains(e.Id)).Select(e=>
             {

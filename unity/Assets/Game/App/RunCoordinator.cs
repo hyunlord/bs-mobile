@@ -80,6 +80,7 @@ namespace Game.App
         public MetaProgression Progression { get; private set; }
 #if UNITY_EDITOR
         public static string MetaDirectoryOverride { get; set; }
+        public static string PreferencePrefixOverride { get; set; }
         public void EditorSetBorrowedSnapshotsForTests(RunFrame frame, WaveRuntimeFrame wave)
         { CurrentFrame = frame; CurrentWave = wave; }
         public void EditorCaptureSnapshotsForTests(InteractiveSession session, ContentCatalog catalog)
@@ -111,7 +112,7 @@ namespace Game.App
         private bool metaRun,abandoned;
         private readonly HashSet<string> recentGrowth=new HashSet<string>(StringComparer.Ordinal);
         private readonly DesktopControls desktopControls = new DesktopControls();
-        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges }
+        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
         private Text activeHint;
@@ -163,13 +164,14 @@ namespace Game.App
             try
             {
                 foreach(var item in CanonicalContent.Displays) displays.Add(item.Id,item);
-                preferences=RunPreferences.Load(AutoplayCapture.Active?.PreferencesPrefix??FeelTrialAutomation.Active?.PreferencesPrefix??NormalGcProbe.PreferencesPrefix??RunPreferences.Prefix);Aim=preferences.Aim;
+                preferences=RunPreferences.Load(PreferencePrefix);Aim=preferences.Aim;
                 if(!IsWave) { Progression=new MetaProgression(CanonicalContent.CreateMetaCatalog(),FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,MetaDirectory);
                 selectedChapter=Progression.Catalog.Chapters.OrderBy(c=>c.Index).First().Id;
                 recentIdle=Progression.LastIdle;if(recentIdle!=null)recentGrowth.UnionWith(recentIdle.BuildingsGrown); }
                 var fontCorpus=displays.Values.SelectMany(d=>new[]{d.DisplayName,d.EffectDescription,d.GrowthDescription,d.EvolutionHint}).ToList();
                 fontCorpus.Add("씨앗과 공성 새싹 변경의 한 해 적을 물리치고 영지를 키우세요 개척을 시작하기 전에 화면을 끌어 이동합니다 무기와 도구는 자동으로 작동합니다 카드를 골라 전투와 영지의 성장을 함께 준비하세요 개척 시작 시작 설정 돌아가기 배경음 효과음 진동 화면 흔들림 피해 숫자 자동 조준 이동 방향 가까운 적 소리와 화면 판을 잠시 멈췄습니다");
                 fontCorpus.Add(MetaScreens.Glyphs);
+                if(IsWave)fontCorpus.Add(PortraitGlyphs);
                 fontCorpus.Add("새싹 들판 도구의 흔적을 키워 수확하세요 목표 재료 초반 도구 선택에 등장합니다 곡물 목재 특허장 선택");
                 if(IsWave)fontCorpus.Add(FallowTitle.Glyphs);
                 if(!IsWave) { fontCorpus.AddRange(Progression.Catalog.Chapters.SelectMany(c=>new[]{c.Name,c.Description}));
@@ -181,7 +183,7 @@ namespace Game.App
                 fontCorpus.Add(DebugOverlay.RequiredGlyphs);
 #endif
                 font=FontProvider.Create(fontCorpus);ownsFont=true;
-                var uiObject=new GameObject("Game UI",typeof(RectTransform));uiObject.transform.SetParent(transform,false);Ui=uiObject.AddComponent<UiShell>();Ui.Initialize(font);Stick=Ui.TouchSurface.gameObject.AddComponent<FloatingStick>();Stick.RadiusCanvasUnits=UiTokens.StickRadius;
+                var uiObject=new GameObject("Game UI",typeof(RectTransform));uiObject.transform.SetParent(transform,false);Ui=uiObject.AddComponent<UiShell>();Ui.Initialize(font,IsWave);Stick=Ui.TouchSurface.gameObject.AddComponent<FloatingStick>();Stick.RadiusCanvasUnits=Ui.MovementRadiusCanvasUnits;
                 var events=new GameObject("UI events");events.transform.SetParent(transform,false);events.AddComponent<EventSystem>();events.AddComponent<InputSystemUIInputModule>();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 debug=gameObject.AddComponent<DebugOverlay>();debug.Initialize(font,DebugAction);debug.SetColors(GamePalette.Panel,GamePalette.Text,GamePalette.Button,GamePalette.ButtonText);Stick.ExtraBlocker=debug.BlocksPointer;
@@ -197,6 +199,7 @@ namespace Game.App
         public void ShowMeta()
         {
             screen=UiScreen.Title;MenuOpen=true;Stick.ResetStick();ClearUi();hud=null;
+            if(Ui.PortraitEnabled){ShowPortraitTitle();return;}
             if(IsWave&&FoundationBoot.Catalog.WaveRuntime?.ChapterId=="meta:chapter_1")
             {
                 FallowTitle.Show(Ui,selectedTarget,FoundationBoot.Catalog.WaveRuntime.MaterialTargets,
@@ -279,8 +282,8 @@ namespace Game.App
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;
                 SnapshotFeelPreferences();
                 var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions());
-                Session=new InteractiveSession(c,options);CaptureSnapshots();previous=CurrentFrame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
-                recording=new RunRecording(AutoplayCapture.Active?.ProfileDirectory??FeelTrialAutomation.Active?.ProfileDirectory??NormalPlayTrace.ProfileDirectory??NormalGcProbe.ProfileDirectory??Application.persistentDataPath,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
+                Session=new InteractiveSession(c,options);cardGateSequence=-1;portraitCardActions=null;CaptureSnapshots();previous=CurrentFrame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
+                recording=new RunRecording(MetaDirectory,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
                 world.SetFallowChapter(IsWave&&c.WaveRuntime?.ChapterId=="meta:chapter_1");
                 world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,CurrentFrame.MapWidth,CurrentFrame.MapHeight);if(useMeta)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptWave(c,CurrentWave);world.AcceptFrame(CurrentFrame,FirstPlayable);ApplyPreferences();sound.ResetRun();waveSound?.ResetRun();bossPhaseCue.Reset();lastWaveSound=-1;if(IsWave)sound.AcceptCommonFeedback(CurrentFrame,waveSound.PlayCommon);else sound.AcceptFrame(CurrentFrame,FirstPlayable);
@@ -288,6 +291,7 @@ namespace Game.App
                 invulnerable=false;spawnPermille=1000;
 #endif
                 InitializeSmoothness();
+                if(Ui.PortraitEnabled){preferences.IntroductionSeen=true;preferences.Save();}
                 ShowHud();
             }
             catch(Exception e){Fail(e);}
@@ -295,7 +299,7 @@ namespace Game.App
             if(Error==null)AutoplayCapture.Active?.OnRunReady(this);
         }
         private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
-        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>ShowSettings(true),activeHitFeedback);hud.Present(CurrentFrame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
+        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>{if(Ui.PortraitEnabled)OpenPause();else ShowSettings(true);},activeHitFeedback);hud.Present(CurrentFrame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
         // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
         public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
@@ -309,6 +313,8 @@ namespace Game.App
             if (waveBenchmarkRequested) { UpdateWaveBenchmark(); return; }
             if(Ui==null||Stick==null)return;
             DesktopControls.UpdateWindow();
+            Ui.SynchronizeViewport();
+            UpdatePortraitNavigation();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             profilerTrace.Pump(CurrentFrame?.Tick ?? 0);
             profilerTrace.StartScheduled(recording, CurrentFrame?.Tick ?? 0, CanonicalContent.DataHash,
@@ -341,16 +347,17 @@ namespace Game.App
             using(smoothness.Scope(SmoothnessScope.Hud))
             {
                 if(Session.View.Status==RunStatus.AwaitingCard&&(screen==UiScreen.Run||screen==UiScreen.Cards))ShowCards();
-                hud?.Present(CurrentFrame,FirstPlayable);UpdateHints();
+                hud?.Present(CurrentFrame,FirstPlayable);RefreshPortraitCardGate();UpdateHints();
             }
             if(ProbeEnabled)probeHudMs+=ProbeElapsed(probeHudStart);
             EndLongFrameHud();
             if(world!=null)
             {
-                var visible=Screen.safeArea;
+                if(Ui.PortraitEnabled)world.SetPresentationViewport(Ui.PortraitPixels);
+                var visible=Ui.PortraitEnabled?Ui.SafePixels:Screen.safeArea;
                 if(hud!=null)
                 {
-                    if(IsWave&&runCatalog.WaveRuntime?.ChapterId=="meta:chapter_1")
+                    if(Ui.PortraitEnabled||(IsWave&&runCatalog.WaveRuntime?.ChapterId=="meta:chapter_1"))
                     {
                         var overlays=Ui.GetWorldOverlayBounds();
                         visible=Rect.MinMaxRect(Mathf.Max(visible.xMin,overlays.xMin),Mathf.Max(visible.yMin,overlays.yMin),Mathf.Min(visible.xMax,overlays.xMax),Mathf.Min(visible.yMax,overlays.yMax));
@@ -452,6 +459,7 @@ namespace Game.App
             cardsSafeSize=Ui.SafeRoot.rect.size;cardsCanvasScale=Ui.Canvas.scaleFactor;
             var offer=Session.View.CaptureCards();
             cardsFrame=CurrentFrame;cardsWidth=Screen.width;cardsHeight=Screen.height;screen=UiScreen.Cards;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
+            if(Ui.PortraitEnabled){ShowPortraitCards(offer);return;}
             UiRunPanels.Cards(Ui,CurrentFrame,FirstPlayable,offer,runCatalog??FoundationBoot.Catalog,displays,(kind,id)=>Send(kind,card:id),()=>ShowSettings(true));
             var scroll=Ui.Content.GetComponentInChildren<ScrollRect>();
             if(scroll!=null)Ui.Button(scroll.content,"설정",()=>ShowSettings(true));
@@ -460,6 +468,7 @@ namespace Game.App
         {
             if(screen!=UiScreen.Settings)settingsOrigin=screen;
             screen=UiScreen.Settings;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
+            if(Ui.PortraitEnabled){PortraitRunPanels.Settings(Ui,preferences,Aim,()=>ApplyPreferences(true),value=>SetAim(value,inRun),RestoreSettingsOrigin);return;}
             var panel=Ui.Panel("Settings");Ui.Label(panel,"설정",UiTokens.Title,72);
             Ui.Label(panel,inRun&&!finished?"판을 잠시 멈췄습니다":"소리와 화면",UiTokens.Caption,40);
             Ui.Slider(panel,"배경음",preferences.MusicVolume,v=>{preferences.MusicVolume=v;ApplyPreferences(true);});
@@ -482,6 +491,7 @@ namespace Game.App
         }
         private void RestoreSettingsOrigin()
         {
+            if(Ui.PortraitEnabled){RestorePortraitSettings();return;}
             if(settingsOrigin==UiScreen.Summary){ShowSummary();return;}
             if(settingsOrigin==UiScreen.Introduction){ShowIntroduction();return;}
             if(settingsOrigin==UiScreen.Title){ShowMeta();return;}
@@ -518,6 +528,7 @@ namespace Game.App
         private void ShowSummary()
         {
             screen=UiScreen.Summary;MenuOpen=true;ClearUi();hud=null;
+            if(Ui.PortraitEnabled){ShowPortraitSummary();return;}
             UiRunPanels.Summary(Ui,completedSummary,CurrentFrame,FirstPlayable,displays,()=>StartRun(),()=>StartCoroutine(ReturnMeta()),abandoned,IsWave);
             if(settlement!=null)recentGrowth.UnionWith(settlement.BuildingsGrown);
             if(settlement!=null)MetaScreens.Settlement(Ui,Ui.Content.GetComponentInChildren<ScrollRect>().content,Progression.Catalog,settlement);
@@ -535,6 +546,7 @@ namespace Game.App
         {
             if(activeHint!=null)
             {
+                if(Ui.PortraitEnabled&&!PortraitHintFits){ReleaseHint();return;}
                 if(screen!=hintScreen){ReleaseHint();return;}
                 if(hintViewportSize!=new Vector2(Screen.width,Screen.height)||hintSafeSize!=Ui.SafeRoot.rect.size||hintCanvasScale!=Ui.Canvas.scaleFactor)LayoutActiveHint();
                 if(!hintRecorded&&!applicationPaused&&!focusLost&&Time.frameCount>hintStartedFrame&&activeHint.gameObject.activeInHierarchy&&!activeHint.canvasRenderer.cull)
@@ -548,14 +560,14 @@ namespace Game.App
                 return;
             }
             FirstRunHint? next=null;
-            if(screen==UiScreen.Cards&&!preferences.HasSeen(FirstRunHint.Card))next=FirstRunHint.Card;
+            if(!Ui.PortraitEnabled&&screen==UiScreen.Cards&&!preferences.HasSeen(FirstRunHint.Card))next=FirstRunHint.Card;
             else if(screen==UiScreen.Run)
             {
                 if(!preferences.HasSeen(FirstRunHint.Move))next=FirstRunHint.Move;
                 else if(!preferences.HasSeen(FirstRunHint.Harvest)&&HasRipeFarm())next=FirstRunHint.Harvest;
                 else if(!preferences.HasSeen(FirstRunHint.Muster)&&HasMuster())next=FirstRunHint.Muster;
             }
-            if(!next.HasValue||applicationPaused||focusLost)return;
+            if(!next.HasValue||applicationPaused||focusLost||(Ui.PortraitEnabled&&!PortraitHintFits))return;
             activeHintKind=next.Value;hintScreen=screen;hintRecorded=false;hintStartedFrame=Time.frameCount;hintRemaining=5;
             if(pooledHint==null)pooledHint=Ui.Hint(HintText(activeHintKind));
             activeHint=pooledHint;activeHint.text=HintText(activeHintKind);
@@ -563,7 +575,8 @@ namespace Game.App
         }
         private void LayoutActiveHint()
         {
-            UiRunPanels.LayoutHint(Ui,activeHint,screen==UiScreen.Cards,Screen.width>Screen.height);
+            if(Ui.PortraitEnabled)LayoutPortraitHint();
+            else UiRunPanels.LayoutHint(Ui,activeHint,screen==UiScreen.Cards,Screen.width>Screen.height);
             hintViewportSize=new Vector2(Screen.width,Screen.height);hintSafeSize=Ui.SafeRoot.rect.size;hintCanvasScale=Ui.Canvas.scaleFactor;
         }
         private bool HasRipeFarm()
@@ -575,7 +588,7 @@ namespace Game.App
             if(pooledHint!=null){var container=pooledHint.transform.parent;container.SetParent(Ui.SafeRoot,false);container.gameObject.SetActive(false);}
             activeHint=null;
         }
-        private IEnumerator ReturnMeta(){if(metaRun&&Session!=null&&!finished){settlement=Progression.SettleRun(MetaRunAdapter.FromInteractive(Session.GetSummary(),CurrentFrame,FirstPlayable,true));}StopRecording();Session=null;CurrentFrame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");ShowMeta();}
+        private IEnumerator ReturnMeta(){if(metaRun&&Session!=null&&!finished){settlement=Progression.SettleRun(MetaRunAdapter.FromInteractive(Session.GetSummary(),CurrentFrame,FirstPlayable,true));}StopRecording();Session=null;CurrentFrame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");if(Ui.PortraitEnabled)ShowPortraitEstate();else ShowMeta();}
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {
@@ -590,7 +603,7 @@ namespace Game.App
             desktopControls.Reset();
             suspendedInterval=true;applicationPaused=pause;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(pause||focusLost);if(!waveBenchmarkRequested)preferences?.Save();
             if(pause&&Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording?.Checkpoint(Session);
-            if(pause)StopDiagnosticTrace("application-paused");
+            if(pause){PausePortraitForLifecycle();StopDiagnosticTrace("application-paused");}
         }
         private void OnApplicationFocus(bool focus)
         {
@@ -604,7 +617,7 @@ namespace Game.App
 #endif
             desktopControls.Reset();
             suspendedInterval=true;focusLost=!focus&&AutoplayCapture.Active==null;Stick?.ResetStick();accumulator=0;discardResumeDelta=true;sound?.SetPaused(applicationPaused||focusLost);
-            if(!focus)StopDiagnosticTrace("focus-lost");
+            if(!focus){PausePortraitForLifecycle();StopDiagnosticTrace("focus-lost");}
         }
         private void OnApplicationQuit(){FinishLongFrames();if(!waveBenchmarkRequested)preferences?.Save();StopRecording();}
         private void OnDestroy(){FinishLongFrames();offlineReplayCapture?.Dispose();StopRecording();if(ownsFont&&font!=null)Destroy(font);}

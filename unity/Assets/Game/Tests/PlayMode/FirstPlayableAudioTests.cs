@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Game.App.Generated;
 using Game.View;
@@ -32,6 +33,17 @@ namespace Tests.PlayMode
             catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
             baseline = session.View.CaptureFrame(); snapshot = session.View.CaptureFirstPlayable();
+            catalog = catalog with
+            {
+                FirstPlayable = new FirstPlayableDefinition(1,
+                    new Dictionary<string, FirstPlayableWeaponDefinition>(),
+                    new Dictionary<string, FirstPlayableEnemyDefinition>
+                    {
+                        ["fixture:audio_boss"] = new FirstPlayableEnemyDefinition("boss", 0, 0, 1),
+                        ["fixture:audio_elite"] = new FirstPlayableEnemyDefinition("elite", 0, 0, 1)
+                    },
+                    Array.Empty<MapEventDefinition>(), new Dictionary<string, EvolutionRequirement[]>(), 1, 1, 1)
+            };
             owner = new GameObject("Presentation audio test"); audio = owner.AddComponent<FirstPlayableAudio>();
             audio.SetPreferences(0.45f, 0.75f, false); audio.Initialize(catalog);
             sources = owner.GetComponents<AudioSource>();
@@ -127,6 +139,57 @@ namespace Tests.PlayMode
         }
 
         AudioSource Source(string name) => sources.Single(s => s.clip.name == name);
+
+#if UNITY_EDITOR
+        [UnityTest]
+        public IEnumerator HapticRequestsCoverLevelEvolutionAndLordHitWithoutInitialLevelPulse()
+        {
+            yield return null;
+            audio.SetPreferences(0, 0, true);
+            audio.AcceptFrame(baseline, snapshot);
+            Assert.That(HapticDeadline(), Is.Zero);
+            audio.AcceptFrame(baseline with { Level = baseline.Level + 1 }, snapshot);
+            Assert.That(HapticDeadline(), Is.GreaterThan(Time.unscaledTime));
+            foreach (var kind in new[] { PresentationKind.Evolution, PresentationKind.LordHit })
+            {
+                audio.ResetRun(); audio.AcceptFrame(baseline, snapshot);
+                audio.AcceptFrame(baseline with { Events = new[] { Event(1, kind) } }, snapshot);
+                Assert.That(HapticDeadline(), Is.GreaterThan(Time.unscaledTime));
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator HapticPreferencePauseAndCooldownApplyToWaveEvolutionEntryPoint()
+        {
+            yield return null;
+            audio.PlayEvolutionHaptic(); Assert.That(HapticDeadline(), Is.Zero);
+            audio.SetPreferences(0, 0, true); audio.SetPaused(true);
+            audio.PlayEvolutionHaptic(); Assert.That(HapticDeadline(), Is.Zero);
+            audio.SetPaused(false); audio.PlayEvolutionHaptic();
+            var deadline = HapticDeadline();
+            Assert.That(deadline, Is.GreaterThan(Time.unscaledTime));
+            audio.PlayEvolutionHaptic(); Assert.That(HapticDeadline(), Is.EqualTo(deadline));
+            audio.ResetRun(); Assert.That(HapticDeadline(), Is.Zero);
+        }
+
+        [UnityTest]
+        public IEnumerator CommonFeedbackLeavesEvolutionToWaveOwnerAndDeduplicatesLevelAndHit()
+        {
+            yield return null;
+            audio.SetPreferences(0, 0, true);
+            audio.AcceptCommonFeedback(baseline, IgnoreCue);
+            audio.AcceptCommonFeedback(baseline with { Events = new[] { Event(1, PresentationKind.Evolution) } }, IgnoreCue);
+            Assert.That(HapticDeadline(), Is.Zero);
+            var next = baseline with { Level = baseline.Level + 1, Events = new[] { Event(2, PresentationKind.LordHit) } };
+            audio.AcceptCommonFeedback(next, IgnoreCue);
+            var deadline = HapticDeadline(); Assert.That(deadline, Is.GreaterThan(Time.unscaledTime));
+            audio.AcceptCommonFeedback(next, IgnoreCue);
+            Assert.That(HapticDeadline(), Is.EqualTo(deadline));
+        }
+
+        static void IgnoreCue(string cue) { }
+        float HapticDeadline() => audio.EditorHapticDeadline;
+#endif
         void StopEffects() { foreach (var source in sources) if (!source.loop) source.Stop(); }
         void AssertEffects(params string[] playing) => CollectionAssert.AreEquivalent(playing, sources.Where(s => !s.loop && s.isPlaying).Select(s => s.clip.name));
         static PresentationEvent Event(long id, PresentationKind kind, string source = "", long amount = 1) =>

@@ -101,6 +101,8 @@ namespace Game.View
         Vector2 previousRenderedLord;
         bool hasRenderedLord, heroGaitDiscontinuity;
 
+        public void SetPresentationViewport(Rect pixels) => followCamera?.SetBaseViewport(pixels);
+
         public void Initialize(Camera camera, WorldCameraSettings cameraSettings, string estate, int width, int height)
         {
             if (art != null) throw new InvalidOperationException("World renderer is already initialized.");

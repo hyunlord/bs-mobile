@@ -4,6 +4,7 @@ using UnityEngine.UI;
 namespace Game.View
 {
     // Four feathered edge strips leave the centre clear and render beneath all HUD siblings.
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class DamageEdgeGraphic : MaskableGraphic
     {
         float opacity;

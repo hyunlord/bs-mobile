@@ -15,10 +15,14 @@ namespace Game.View
         readonly AudioSource[] voices = new AudioSource[7];
         readonly float[] nextCueTime = new float[7];
         ContentCatalog catalog;
+        ShortHaptics haptics;
         AudioSource music;
         long lastEventId = -1;
         int lastLevel = -1;
         float nextHapticTime;
+#if UNITY_EDITOR
+        public float EditorHapticDeadline => nextHapticTime;
+#endif
         float musicVolume = .45f;
         float effectsVolume = .75f;
         bool vibration = true;
@@ -31,6 +35,7 @@ namespace Game.View
             catalog = content ?? throw new ArgumentNullException(nameof(content));
             for (var i = 0; i < voices.Length; i++) voices[i] = CreateSource(ClipNames[i], false);
             music = CreateSource("frontier-loop", true);
+            haptics = new ShortHaptics();
             initialized = true;
             SetPreferences(musicVolume, effectsVolume, vibration);
             ResetRun();
@@ -108,7 +113,9 @@ namespace Game.View
                     case PresentationKind.Damage: if (value.Amount > 0) Emit(Cue.Hit); break;
                     case PresentationKind.EnemyKilled: Emit(Cue.Kill); break;
                     case PresentationKind.HarvestExperience: Emit(Cue.Harvest); break;
-                    case PresentationKind.Evolution: if(commonOutput == null) Play(Cue.Evolution); break;
+                    case PresentationKind.Evolution:
+                        if(commonOutput == null) { Play(Cue.Evolution); PlayEvolutionHaptic(); }
+                        break;
                     case PresentationKind.LordHit: Emit(Cue.Hurt); Vibrate(); break;
                     case PresentationKind.BossWarning:
                         if (commonOutput == null && catalog.FirstPlayable != null && catalog.FirstPlayable.Enemies.TryGetValue(value.SourceId, out var enemy) && enemy.Rank == "boss")
@@ -118,7 +125,7 @@ namespace Game.View
                         break;
                 }
             }
-            if (lastLevel >= 0 && frame.Level > lastLevel) Emit(Cue.Level);
+            if (lastLevel >= 0 && frame.Level > lastLevel) { Emit(Cue.Level); Vibrate(); }
             lastLevel = frame.Level;
         }
 
@@ -132,17 +139,18 @@ namespace Game.View
             voices[index].Play();
         }
 
+        public void PlayEvolutionHaptic() => Vibrate();
+
         void Vibrate()
         {
             if (!vibration || paused || Time.unscaledTime < nextHapticTime) return;
             nextHapticTime = Time.unscaledTime + HapticInterval;
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            Handheld.Vibrate();
-#endif
+            haptics?.Play();
         }
 
         void OnDestroy()
         {
+            haptics?.Dispose();
             if (!initialized) return;
             music.Stop();
             for (var i = 0; i < voices.Length; i++) voices[i].Stop();

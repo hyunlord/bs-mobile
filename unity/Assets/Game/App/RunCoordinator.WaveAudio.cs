@@ -56,7 +56,7 @@ namespace Game.App
                     continue;
                 }
                 string cue=null;
-                if(value.Kind=="evolution-activated")cue=WaveCue("evolution-",value.Source);
+                if(value.Kind=="evolution-activated"){cue=WaveCue("evolution-",value.Source);sound?.PlayEvolutionHaptic();}
                 else if(value.Kind=="enemy-tell")
                 {
                     var enemy=definition.Enemies[value.Source];
