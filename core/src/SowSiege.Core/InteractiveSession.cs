@@ -77,7 +77,7 @@ namespace SowSiege.Core
             if (command.Kind == ReplayCommandKind.RerollCards && (cards.Length == 0 || Simulation.World.Rerolls <= 0)) { throw new InvalidOperationException("No offer or reroll budget."); }
             if (command.Kind == ReplayCommandKind.HostReviveV1 && !CanHostRevive) { throw new InvalidOperationException("Revive is not available."); }
             if (command.Kind == ReplayCommandKind.HostGrantRerollV1 &&
-                (Options.HostRewards?.AllowRerollGrant != true || Status != RunStatus.AwaitingCard || Simulation.World.Rerolls != 0 || State.HostRewards!.RerollGrants >= 2))
+                (Options.HostRewards?.AllowRerollGrant != true || Status != RunStatus.AwaitingCard || Simulation.World.Rerolls != 0 || State.HostRewards!.RerollGrants >= HostRewardRunOptions.MaximumRerollGrants))
             { throw new InvalidOperationException("Host reroll grant is not available."); }
             switch (command.Kind)
             {

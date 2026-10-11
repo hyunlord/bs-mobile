@@ -1,5 +1,20 @@
 [
   {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.RewardVersion",
+    "Value": "5",
+    "Reason": "Binary account save schema for reward receipts and settlement reward basis; serialization discriminator only."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.HostRewardVersion",
+    "Value": "5",
+    "Reason": "Opt-in replay wire format for host reward commands and explicit revive configuration; historical formats remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.HostRewardRunOptions.MaximumRerollGrants",
+    "Value": "2",
+    "Reason": "Explicit user-approved BM v0 contract: at most two host reroll grants per run. Protocol abuse bound, not inferred combat or economy tuning."
+  },
+  {
     "Symbol": "SowSiege.Core.Position.RecordHashMultiplier",
     "Value": "1521134295",
     "Reason": "Magnitude of the C# compiler record-struct hash multiplier; subtraction preserves the former generated negative multiplier exactly. Compatibility algorithm, not gameplay tuning."

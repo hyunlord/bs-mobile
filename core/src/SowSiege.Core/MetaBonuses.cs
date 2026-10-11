@@ -41,12 +41,12 @@ namespace SowSiege.Core
             MetaBonusKind kind, long sequence, MetaBonusPolicy policy, Dictionary<string, int> basis,
             Dictionary<string, int> baseAwarded, Dictionary<string, int> overflow)
         {
-            if (next.RewardReceipts.Length >= 4096) { throw new InvalidOperationException("Reward receipt ledger is full; no reward was granted."); }
+            if (next.RewardReceipts.Length >= MetaSaveCodec.MaximumCollectionEntries) { throw new InvalidOperationException("Reward receipt ledger is full; no reward was granted."); }
             var requested = new Dictionary<string, int>();
             foreach (var material in catalog.Materials)
             {
                 basis.TryGetValue(material.Id, out int amount);
-                requested[material.Id] = (int)Math.Min(policy.MaximumBonus[material.Id], (long)amount * policy.BonusPermille / 1000);
+                requested[material.Id] = (int)Math.Min(policy.MaximumBonus[material.Id], (long)amount * policy.BonusPermille / PlayerInput.Scale);
             }
             var bonus = Credit(catalog, next, requested, out var bonusOverflow);
             foreach (var entry in bonusOverflow)
@@ -66,7 +66,7 @@ namespace SowSiege.Core
         private static void ValidateBonus(MetaCatalog catalog, MetaState state, string receiptId, MetaBonusPolicy policy)
         {
             if (state.PendingRun != null) { throw new InvalidOperationException("Bonuses require a settled account."); }
-            if (string.IsNullOrWhiteSpace(receiptId) || System.Text.Encoding.UTF8.GetByteCount(receiptId) > 1024)
+            if (string.IsNullOrWhiteSpace(receiptId) || System.Text.Encoding.UTF8.GetByteCount(receiptId) > MetaSaveCodec.MaximumStringBytes)
             { throw new ArgumentException("A stable receipt identity is required.", nameof(receiptId)); }
             if (policy == null || policy.BonusPermille < 0 || policy.MaximumBonus == null ||
                 policy.MaximumBonus.Count != catalog.Materials.Length || catalog.Materials.Any(x => !policy.MaximumBonus.TryGetValue(x.Id, out int cap) || cap < 0))
