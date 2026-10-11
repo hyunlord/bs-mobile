@@ -15,6 +15,7 @@ namespace SowSiege.Core
         private readonly List<EnemyState> liveEnemies = new();
         private readonly WaveEnemyQueries queries;
         private readonly bool ownsQueries;
+        private readonly WaveEnemySeparation? separation;
         private readonly List<EnemyState> interceptCandidates = new();
         private readonly int interceptRange;
         private readonly List<Position> connectedPaths = new();
@@ -25,7 +26,7 @@ namespace SowSiege.Core
         private WaveRuntimeDefinition Definition => catalog.WaveRuntime!;
 
         internal WaveEnemySystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, WavePrimitiveModules? modules = null, WaveItemSubscriptions? subscriptions = null, WaveEnemyQueries? queries = null)
-        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); foreach (var enemy in catalog.Enemies.Values) { interceptRange = Math.Max(interceptRange, enemy.Range); } }
+        { this.catalog = catalog; this.world = world; this.random = random; this.interactive = interactive; this.modules = modules ?? new(catalog.WaveRuntime!); this.subscriptions = subscriptions ?? new(catalog, world, this.modules); separation = catalog.WaveRuntime!.EnemySeparation is { } contract ? new(world, catalog.Tuning.World.Map, contract) : null; ownsQueries = queries is null; this.queries = queries ?? new(world, catalog.Tuning.World.Farms.Spacing); foreach (var enemy in catalog.Enemies.Values) { interceptRange = Math.Max(interceptRange, enemy.Range); } }
 
         internal void Tick()
         {
@@ -40,9 +41,14 @@ namespace SowSiege.Core
                 if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule)) { continue; }
                 if (!State.EnemyActions.TryGetValue(enemy.Id, out var action))
                 { action = new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 }; State.EnemyActions.Add(enemy.Id, action); }
-                if (action.StopUntil > world.Tick) { continue; }
+                if (action.StopUntil > world.Tick)
+                {
+                    if (separation is not null && !modules.Enemy(rule.Id).Boss && action.Phase == "charge" && world.Tick >= action.UntilTick) { Recover(rule, action); }
+                    continue;
+                }
                 Advance(enemy, rule, action, ref pathsCollected);
             }
+            separation?.Resolve(liveEnemies);
             for (var index = 0; index < State.Projectiles.Count;)
             {
                 var shot = State.Projectiles[index];

@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-168806b4-ae01-4327-be65-4fcc7e43dd31.png
+Source SHA256: e97d1d270e4b21938c7ae4ae42f185f6d26fcc05e86c8eccfb9a34a89a1b93ce
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+Edit this approved portrait game title artwork into a production background plate. Preserve composition, exact painterly ink and opaque gouache brush texture, gray ruined kingdom and cathedral, cobalt cloaked ivory quilted frontier knight seen from behind at lower left, small restored colorful farm near his feet, twisted framing trees and wheat. REMOVE ALL lettering and title/logo in upper third, including emblem if necessary leave gently clouded sky for real Korean title overlay. REMOVE the start button and gear UI entirely and paint natural stone path in their places. REMOVE English writing on wooden sign, leave blank aged wood. No text, no glyphs, no UI, no logo, no buttons anywhere. Same tall 9:16 composition and premium finished illustration quality. Keep ample dark sky in upper third for title and quiet lower-center path for actual button overlay.

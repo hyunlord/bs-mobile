@@ -10,6 +10,10 @@ namespace SowSiege.Core
                 Write("wave-primitive-program-v1");
                 WriteMap(d.Programs!, program => WriteMap(program.Params, parameters => WriteMap(parameters, Write)));
             }
+            if (d.EnemySeparation is { } separation)
+            {
+                Write("wave-enemy-separation-v1"); Write(separation.Version); WriteMap(separation.BodyWidths, Write);
+            }
             Write("wave-runtime-definition-v1");
             Write(d.Revision);
             Write(d.ChapterId);

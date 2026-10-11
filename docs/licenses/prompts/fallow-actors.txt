@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-bc263498-cb4f-47e3-a5a8-9656a967df5a.png
+Source SHA256: 9ee045fef086379a4950e90a4a55b6c88ca6060fc92c07f2bd26aebdc146a8b3
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+Production 2D game character sprite atlas TRUE TRANSPARENT background regular 3columns x2rows equal square cells, isolated whole body figures centered generous transparent margins, no labels no text no UI no ground plate. Ink contour and rich gouache brush texture precisely like reference. 3/4 top-down view upperleftlight phone readable silhouette. Row1: 1 young frontier knight cobalt flowing cloak ivory quilted tunic dark boots holding slim iron sword facing down-right,2 same knight walking second distinct stride cloak swinging ivory armor facing down-right,3 same knight sword striking forward flowingcobaltcloak. Row2:1 empty dark medieval armor raider with angular tall helmet torn burgundy tabard bright small red chest sigil carrying rusty fork,2 squat oldseason armored beetle pest black gray shell scarlet scar marking sharp pincers,3 gnarled oldseason horned beast thin dark limbs white skull mask small red runic mark. No chibi/toy/emoji style, detailed strong varied silhouettes like premium handpainted game miniatures. All wholebody including feet sword horn insidecells. Exactly six sprites landscape3:2.

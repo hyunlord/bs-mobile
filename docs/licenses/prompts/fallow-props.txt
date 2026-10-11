@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-bd50e8db-326b-4b33-a74d-598ffbb8cc40.png
+Source SHA256: d1c13e2d0e793e1118f273c2338566ac2f7c8d9118cc1c379fff9282f6432df1
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+Production game prop sprite atlas on TRUE TRANSPARENT background, regular exactly 3 columns x2 rows, six equal square cells, each prop fully isolated, centered within its cell with generous transparent margins, no touching neighbors, no labels/text/UI. Match reference detailed hand-painted INK AND GOUACHE medieval fallow kingdom 3/4 top-down view with light upper left. Row1: ruined half collapsed timber watermill with large broken wheel and stone foundation; low stone bridge short walkway diagonal with 2 arches; old leafless twisted dead tree with a little stump grass. Row2: ancient upright stone seasonal sundial slab with abstract carved sun NO letters; small rectangular empty tilled soil patch with three readable furrows and tiny pebbles, NO crops; a flat short worn stone path section with irregular pale stones. Desaturated warm stone/muted moss/gray umber timber, no vividcolors. No cast shadow outside object silhouette, no background ground rectangle except furrow patch and path. All same 3/4 overhead game projection, artisanal illustration, visibly better than primitive icons. Atlas landscape3:2.

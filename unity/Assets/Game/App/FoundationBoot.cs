@@ -22,7 +22,10 @@ namespace Game.App
 
         private IEnumerator Start()
         {
-            Application.targetFrameRate = 60;
+            // Desktop follows the display refresh; mobile owns a fixed 60 fps budget.
+            // The explicit C05 benchmark mode overrides these defaults separately.
+            QualitySettings.vSyncCount = Application.isMobilePlatform ? 0 : 1;
+            Application.targetFrameRate = Application.isMobilePlatform ? 60 : -1;
             DontDestroyOnLoad(gameObject);
             var status = gameObject.AddComponent<FoundationStatus>();
             var files = new Dictionary<string, byte[]>(StringComparer.Ordinal);

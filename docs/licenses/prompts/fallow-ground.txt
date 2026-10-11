@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-b3698758-1218-4c6c-ae57-548c35dbf9b1.png
+Source SHA256: 91ad14a9e326c53708063405c885e850e077fdf3cea42c5b174f94875b184fbb
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+Create a standalone seamless square top-down 3/4 hand-painted gouache and ink GROUND TEXTURE TILE asset inspired by the reference, NOT the whole scene. Only softly mottled medieval old earth, irregular small flat slate stones, fine old plough scratches, sparse moss and tiny dormant grass traces. No actors, buildings, trees, crops, props, text, UI, horizon, border, no large shapes or circles. Muted warm earth umber and soft sage-gray naturally colored version that runtime can desaturate to ashes then reveal warmth. Low contrast, no black shadows, no highcontrast gravel; finely authored gentle painterly brush grain at phone scale. Perfect overhead terrain square filled edge to edge, seamlessly repeats.

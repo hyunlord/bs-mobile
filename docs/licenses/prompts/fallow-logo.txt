@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-06ee723a-9161-40a9-9150-121f424e9ff8.png
+Source SHA256: 353567c5f75c6c317bdb85ea2aced0136585ca2463bb6b2afdef5224da5a5324
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+A single premium Korean hand-painted title logotype reading EXACTLY '휴경의 왕국' in one beautifully balanced horizontal line, with expressive ivory parchment calligraphic brush strokes, thin charcoal ink edging and delicate desaturated antique-gold flourishes, one tiny fresh sage sprout growing from final letter. Include small fine gold circular four-season tree crest centered ABOVE words (no other lettering). For a somber but hopeful ink and gouache medieval fantasy game. TRUE transparent background, all artwork isolated with wide transparent margin. No English, no subtitle, no frame, no UI, no other text. Wide landscape aspect.

@@ -1,0 +1,7 @@
+Generated with built-in image_gen for Sow & Siege, 2026-10-10.
+Original output: exec-6c02b561-a216-4c1f-ab7c-91bdb3b9fb7c.png
+Source SHA256: 3b0a51f05b8e17efc2df3eafb81c5f6873a85944aeee54a023f5d957046135b5
+Processing: lossless original pixel copy into transparent padded atlas cells; no repainting or resampling. Title/logo are unmodified originals.
+
+Exact prompt:
+Create production game GROWTH STATE sprite atlas TRUE TRANSPARENT background, exactly3columns x2rows equal squarecells with generous empty margins, six isolated separate objects NO labels NO text NO UI. Fine ink and gouache rendering matching reference. Same 3/4 overhead angle lightupperleft. Row1 identical small farm footprint in3states: 1 richbrown neatly tilled four short furrows with visible planted seeds,2 same footprint rows of fresh sage-green two-leaf seedlings,3 same footprint dense but readable ripe warm golden wheat ears. Row2 same timber workshop footprint three construction states:1 low stone foundation timber skeletal scaffold pale cloth and stacked planks,2 finished welcoming small ivory plaster house/workshop with terracotta tiled roof cobalt hanging blank pennant warm small window and timber workbench,3 collapsed gray ruined version. House finished proportion like reference cozy handpainted village architecture with visibly dimensional roof notflat icon. No scenery, fences, people, specialeffects; no opaque rectanglebackdrops; eachasset isolated alpha. Atlas3:2 landscape.

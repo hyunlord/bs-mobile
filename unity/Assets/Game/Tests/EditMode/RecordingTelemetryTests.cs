@@ -84,6 +84,21 @@ namespace Game.Tests.EditMode
             telemetry.Finish();var summary=JsonUtility.FromJson<Summary>(File.ReadAllText(telemetry.SummaryPath));
             Assert.That(summary.lateComplete,Is.False);Assert.That(summary.lateSampleCount,Is.Zero);Assert.That(File.ReadAllLines(telemetry.CsvPath).Length,Is.EqualTo(4));
         }
-        [Serializable] sealed class Summary { public bool lateComplete; public double frameP95Ms; public int lateSampleCount; }
+        [Test] public void SteadyCaptureUsesNoMainThreadAllocationsAndFinishDrainsEverySample()
+        {
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(1, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var frame = session.View.CaptureFrame(); var screen = new Rect(0, 0, 400, 800);
+            using var telemetry = new FrameTelemetry(root, "allocation", "build", "data", 100, new DeviceFacts());
+            for (var i = 0; i < 32; i++) telemetry.Capture(.016f, frame, 1, 0, screen, screen, false);
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            for (var i = 0; i < 512; i++) telemetry.Capture(.016f, frame, 1, 0, screen, screen, false);
+            var allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            telemetry.Finish();
+            Assert.That(allocated, Is.Zero, "Capture must enqueue values, not format CSV on the game thread.");
+            Assert.That(File.ReadAllLines(telemetry.CsvPath).Length, Is.EqualTo(545));
+        }
+        [Serializable] sealed class Summary
+ { public bool lateComplete; public double frameP95Ms; public int lateSampleCount; }
     }
 }

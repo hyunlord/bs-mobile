@@ -193,5 +193,50 @@
     "Symbol": "SowSiege.Core.WaveGeometry.LanePartitions",
     "Value": "3",
     "Reason": "Partitions placing the two boss water lanes at the interior thirds; geometric layout, not phase timing."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.RelaxationSweeps",
+    "Value": "2",
+    "Reason": "ADR0049/#204 separation-v1 bounded local projection passes before exact residual placement; solver iteration count, not movement speed or attack cadence."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.MinimumDistanceWidthSumNumerator",
+    "Value": "3",
+    "Reason": "ADR0049/#204 user-approved geometric overlap predicate: 0.6 times arithmetic mean body widths equals 3/10 of their sum. Frozen separation-v1 collision geometry, not a balance coefficient."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.MinimumDistanceWidthSumDenominator",
+    "Value": "10",
+    "Reason": "ADR0049/#204 exact integer denominator paired with numerator 3 for the approved 0.6 mean-width separation geometry; changing it requires a separation contract revision."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.IntegerResolutionPadding",
+    "Value": "2",
+    "Reason": "ADR0049 separation-v1 integer rounding slack for floor square-root and two-sided displacement projection; prevents sub-unit truncation residue, not authored body size."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.PairHashFirstMultiplier",
+    "Value": "73856093",
+    "Reason": "ADR0049 separation-v1 fixed integer pair-ID hash multiplier for deterministic cardinal tie-breaking at exact coincidence; no RNG draws or content identity."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.PairHashSecondMultiplier",
+    "Value": "19349663",
+    "Reason": "ADR0049 separation-v1 second pair-ID hash multiplier, independent of world iteration order; preserves the frozen collision resolver mapping."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.PositiveYDirection",
+    "Value": "2",
+    "Reason": "Third discriminator in the four cardinal tie-break directions (+X,-X,+Y,-Y); exact topology mapping."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.NegativeYDirection",
+    "Value": "3",
+    "Reason": "Fourth discriminator in the four cardinal tie-break directions (+X,-X,+Y,-Y); exact topology mapping."
+  },
+  {
+    "Symbol": "SowSiege.Core.WaveEnemySeparation.ResidualGridDivisions",
+    "Value": "8",
+    "Reason": "ADR0049 separation-v1 search-grid subdivision of the maximum authored body width; deterministic residual search discretization, not enemy count or spawn rate."
   }
 ]
