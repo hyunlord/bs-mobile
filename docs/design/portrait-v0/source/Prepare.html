@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>출정 준비 화면</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+.n-red{border-style:solid;border-width:0 30px;border-image:url(a/ui-btn-red.png) 0 52 fill / 0 30px stretch}
+.n-panel{border-style:solid;border-width:16px;border-image:url(a/ui-panel.png) 44 fill / 16px stretch}
+.n-slot{border-style:solid;border-width:10px;border-image:url(a/ui-slot.png) 48 fill / 10px stretch}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; padding: 50px 16px 0; background: linear-gradient(180deg, #2A251D 0%, #1A1712 100%); font-family: 'Noto Sans KR', sans-serif; color: #F6EBD2; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 10px">
+<a href="Home.dc.html" aria-label="영지로 돌아가기" style="width: 44px; height: 44px; border-radius: 22px; border: 2px solid #B8873A; background: #2F2A21; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F3D58C" stroke-width="2.4" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 22px">출정 준비</span>
+</div>
+<div style="display: flex; gap: 6px; overflow: hidden">
+<button style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 2px solid #B8873A; background: #3A2F1F; color: #F3D58C; font-family: inherit; font-weight: 700; font-size: 15px">1</button>
+<button style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 2px solid #B8873A; background: #3A2F1F; color: #F3D58C; font-family: inherit; font-weight: 700; font-size: 15px">2</button>
+<button style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 2px solid #B8873A; background: #3A2F1F; color: #F3D58C; font-family: inherit; font-weight: 700; font-size: 15px">3</button>
+<button aria-pressed="true" style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 3px solid #F3D58C; background: #2C4F96; color: #FFFFFF; font-family: inherit; font-weight: 700; font-size: 16px; box-shadow: 0 0 12px #F3D58C88">4</button>
+<button style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 2px solid #5C5446; background: #24201A; color: #7D7464; font-family: inherit; font-size: 13px">5</button>
+<button style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 2px solid #5C5446; background: #24201A; color: #7D7464; font-family: inherit; font-size: 13px">6</button>
+<button style="flex: none; width: 44px; height: 44px; border-radius: 22px; border: 2px solid #5C5446; background: #24201A; color: #7D7464; font-family: inherit; font-size: 13px">7</button>
+</div>
+<div class="n-panel" style="box-sizing: border-box; color: #3B2A18; display: flex; flex-direction: column; gap: 8px; padding: 4px 6px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 21px">챕터 4 · 돌등성이</span><span style="font-size: 12px; color: #6B5233">첫 클리어 전</span></div>
+<div style="font-size: 13px; color: #5A4428">울림돌에 공격이 닿으면 균열 쪽으로 낙석을 예고한다</div>
+<div style="display: flex; gap: 8px; align-items: center">
+<span style="font-size: 12px; font-weight: 700; width: 52px">나오는 적</span>
+<span style="width: 48px; height: 48px; border-radius: 10px; background: #D9C7A0; border: 1px solid #A88A55; overflow: hidden; display: flex; align-items: center; justify-content: center"><img src="a/en-boar.png" alt="작물 포식자" style="width: 46px; height: 45px"></span>
+<span style="width: 48px; height: 48px; border-radius: 10px; background: #D9C7A0; border: 1px solid #A88A55; overflow: hidden; display: flex; align-items: center; justify-content: center"><img src="a/en-raider.png" alt="약탈병" style="width: 38px; height: 46px"></span>
+<span style="width: 48px; height: 48px; border-radius: 10px; background: #5E1A14; border: 2px solid #B3261E; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #F6D0C5; font-weight: 700">보스</span>
+<span style="font-size: 12px; color: #6B5233">외 [n]종</span>
+</div>
+<div style="display: flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 700">
+<span style="font-size: 12px; width: 52px">보상 최대</span>
+<span style="display: flex; align-items: center; gap: 2px"><img src="a/r-grain.png" alt="곡물" style="width: 16px; height: 20px">[n]</span>
+<span style="display: flex; align-items: center; gap: 2px"><img src="a/r-timber.png" alt="목재" style="width: 22px; height: 17px">[n]</span>
+<span style="display: flex; align-items: center; gap: 2px"><svg width="18" height="13" viewBox="0 0 22 16" role="img" aria-label="철재"><path d="M4 3h14l3 10H1z" fill="#9EA4AA" stroke="#3C4045" stroke-width="1.4"></path></svg>[n]</span>
+<span style="display: flex; align-items: center; gap: 2px"><svg width="16" height="16" viewBox="0 0 20 20" role="img" aria-label="인장"><circle cx="10" cy="10" r="8" fill="#A3271E" stroke="#5E120D" stroke-width="1.4"></circle></svg>[n]</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 16px; color: #F3D58C">출전 가신</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<a href="Vassals.dc.html" class="n-slot" style="height: 112px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; overflow: hidden; position: relative"><img src="a/v-furrow_guard.png" alt="" style="position: absolute; left: 10px; top: 4px; width: 78px; height: 92px; object-fit: cover; object-position: top"><span style="position: relative; width: 100%; text-align: center; background: #1A1712D9; font-size: 12px; font-weight: 700; padding: 2px 0">고랑 방패수</span></a>
+<div class="n-slot" style="height: 112px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #A89C84; font-size: 11px"><svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><rect x="3" y="11" width="16" height="13" rx="2" fill="#7D7464"></rect><path d="M6 11V7a5 5 0 0110 0v4" fill="none" stroke="#7D7464" stroke-width="2.4"></path></svg>병영 Lv 4</div>
+<div class="n-slot" style="height: 112px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #A89C84; font-size: 11px"><svg width="22" height="26" viewBox="0 0 22 26" aria-hidden="true"><rect x="3" y="11" width="16" height="13" rx="2" fill="#7D7464"></rect><path d="M6 11V7a5 5 0 0110 0v4" fill="none" stroke="#7D7464" stroke-width="2.4"></path></svg>병영 Lv 8</div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 16px; color: #F3D58C">시작 장비 <span style="font-family: 'Noto Sans KR', sans-serif; font-size: 11px; font-weight: 400; color: #C9BC9F">영웅 기본</span></span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="height: 64px; border-radius: 12px; background: #2F2A21; border: 1px solid #6B5A3A; display: flex; align-items: center; gap: 8px; padding: 0 10px"><span class="n-slot" style="width: 48px; height: 48px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-iron_blade.png" alt="" style="width: 26px; height: 28px"></span><span style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #9DB6E8">무기</span><b style="font-size: 14px">철날 검</b></span></div>
+<div style="height: 64px; border-radius: 12px; background: #2F2A21; border: 1px solid #6B5A3A; display: flex; align-items: center; gap: 8px; padding: 0 10px"><span class="n-slot" style="width: 48px; height: 48px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-seed_bag.png" alt="" style="width: 28px; height: 28px"></span><span style="display: flex; flex-direction: column"><span style="font-size: 11px; color: #B9D49A">도구</span><b style="font-size: 14px">씨앗 자루</b></span></div>
+</div>
+<button style="height: 44px; border: none; background: transparent; color: #F3D58C; font-family: inherit; font-size: 13px; text-decoration: underline; text-align: left; padding: 0">이번 판에 나올 수 있는 카드 보기 · 해금 [n]/[m]</button>
+</div>
+<a href="Run.dc.html" class="n-red" style="position: absolute; left: 20px; top: 742px; width: 350px; height: 70px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 10px"><img src="a/c-fertile_duel.png" alt="" style="width: 44px; height: 42px"><span style="font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 24px; color: #FFF6E2">출정 시작</span></a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

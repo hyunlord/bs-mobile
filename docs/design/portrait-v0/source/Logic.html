@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>유저 행동 규칙</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#22211E}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width: 1600px; height: 1180px; box-sizing: border-box; padding: 56px 64px; background: #F3F1EB; font-family: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', sans-serif; color: #22211E; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 28px; font-weight: 700">유저 행동 규칙 v0</span><span style="font-size: 15px; color: #5E5B54">화면마다 어디서 들어오고, 무엇을 할 수 있고, 어디로 나가며, 앱이 꺼졌다 켜지면 어떻게 되는지.</span></div>
+<div style="display: grid; grid-template-columns: 140px 260px 420px 300px 1fr; border: 1px solid #CFCAC0; border-radius: 12px; overflow: hidden; background: #FFFFFF; font-size: 14px; line-height: 20px">
+<div style="padding: 10px 12px; background: #22211E; color: #FFFFFF; font-weight: 600">화면</div>
+<div style="padding: 10px 12px; background: #22211E; color: #FFFFFF; font-weight: 600">들어오는 길</div>
+<div style="padding: 10px 12px; background: #22211E; color: #FFFFFF; font-weight: 600">할 수 있는 행동</div>
+<div style="padding: 10px 12px; background: #22211E; color: #FFFFFF; font-weight: 600">나가는 길</div>
+<div style="padding: 10px 12px; background: #22211E; color: #FFFFFF; font-weight: 600">앱이 꺼졌다 켜지면</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">타이틀</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">앱 실행</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">화면 아무 곳이나 누르기</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">첫 실행: 바로 첫 판(화면 안 짧은 힌트 3~4개)<br>이후: 영지</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">같은 흐름 다시</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">영지</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">타이틀, 결산 '영지로', 아래 탭</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">방치 생산 받기, 우선 건물 깃발 옮기기, 출정, 설정</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">출정 준비, 가신·도전·상점 탭</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">영지에서 다시 시작</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">출정 준비</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">영지 '출정', 결산 '다시 출정'</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">열린 챕터 고르기, 출전 가신 바꾸기(가신 화면), 이번 판 카드 풀 보기</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">출정 시작 → 판<br>뒤로 → 영지</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">영지에서 다시 시작. 고른 챕터는 기억</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700; background: #E6ECDC">판</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">출정 시작</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">손가락을 대고 끌어 이동. 공격·도구 발동·수확은 자동. 멈춤 버튼</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">경험치가 차면 레벨업 카드(자동 멈춤), 멈춤 → 일시정지, 끝나면 결산</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">정산 기록이 남아 있으면 결산을 복원, 없으면 보상 없는 포기로 정리하고 영지 (현재 Core 규칙)</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700; background: #E6ECDC">레벨업 카드</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">판에서 레벨이 오름</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">3장 중 1장 고르기. 다시 뽑기·금지·고정은 남은 횟수 안에서</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">고르면 바로 판으로 (닫기 버튼 없음)</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">판과 같음</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700; background: #E6ECDC">일시정지</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">멈춤 버튼, 안드로이드 뒤로 가기, 앱이 뒤로 가거나 전화가 옴</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">보유 무기·도구·특허장과 진화 조건 보기, 설정 바꾸기</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">계속 → 판<br>포기 → 확인 한 번 → 결산</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; background: #F4F7EE">판과 같음</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">결산</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">판이 끝남(클리어·쓰러짐·포기)</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">받은 자재·조각·새로 열린 것 확인</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">영지로 / 다시 출정</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">이미 정산된 판은 다시 지급하지 않음</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">가신</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">아래 탭, 출정 준비의 가신 칸</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">출전 넣고 빼기, 레벨업(자재), 승급(조각)</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">다른 탭, 출정 준비에서 왔으면 출정 준비로</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">지출은 누르는 즉시 저장</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">도전</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">아래 탭</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">20개 진행도 보기, 달성 보상 받기</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">다른 탭</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">받은 보상은 즉시 저장</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1; font-weight: 700">상점</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">아래 탭</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">지금은 보기만 (판매 보류)</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">다른 탭</div>
+<div style="padding: 10px 12px; border-top: 1px solid #ECE9E1">해당 없음</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 32px; font-size: 15px; line-height: 22px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 18px; font-weight: 700">공통 규칙</span>
+<span>1. 자주 누르는 버튼(출정, 출정 시작, 계속, 영지로)은 화면 아래 1/3, 엄지가 닿는 곳에 둔다.</span>
+<span>2. 누르는 대상은 최소 44pt. 아이콘만 있는 버튼에도 같은 크기의 누르는 영역.</span>
+<span>3. 판 중 조작은 손가락 하나로 이동뿐이다. 공격·도구는 자동이고, 화면을 가리는 상시 패널은 두지 않는다.</span>
+<span>4. 판 안 화면 전환(레벨업·일시정지)은 게임이 멈춘 상태에서만 일어난다.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 18px; font-weight: 700">&#160;</span>
+<span>5. 되돌릴 수 없는 행동(판 포기, 큰 자재 지출)은 확인 한 번.</span>
+<span>6. 안드로이드 뒤로 가기: 판에서는 일시정지, 다른 화면에서는 이전 화면, 영지에서는 종료 확인.</span>
+<span>7. 화면은 세로 고정. Mac 검토판은 세로 화면을 가운데 두고 양옆을 비운다.</span>
+<span>8. 숫자·가격이 정해지지 않은 곳은 [n] 자리로 남기고 지어내지 않는다.</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1180}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

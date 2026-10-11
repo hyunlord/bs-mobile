@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>판 진행 화면 HUD</title>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&amp;family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:inherit;text-decoration:none}a:hover{color:inherit}
+.n-rail{border-style:solid;border-width:0 10px;border-image:url(a/ui-xp-rail.png) 0 36 fill / 0 10px stretch}
+.n-hp{border-style:solid;border-width:0 8px;border-image:url(a/ui-hp-fill.png) 0 36 fill / 0 8px stretch}
+.n-xp{border-style:solid;border-width:0 8px;border-image:url(a/ui-xp-fill.png) 0 36 fill / 0 8px stretch}
+.n-slot{border-style:solid;border-width:5px;border-image:url(a/ui-slot.png) 48 fill / 5px stretch}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: #5E7A3E; font-family: 'Noto Sans KR', sans-serif; color: #FFFFFF">
+<img src="a/bd-run.jpg" alt="판 진행 화면" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; object-fit: cover">
+<div style="position: absolute; left: 0; top: 0; width: 390px; height: 150px; background: linear-gradient(180deg, #120F0BD9 0%, #120F0B00 100%)"></div>
+<a href="LevelUp.dc.html" aria-label="레벨 16, 레벨업 카드 예시 보기" style="position: absolute; left: 10px; top: 48px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background-image: none">
+<img src="a/ui-medallion.png" alt="" style="position: absolute; left: 0; top: 0; width: 48px; height: 48px">
+<span style="position: relative; font-family: 'Gowun Batang', serif; font-weight: 700; font-size: 18px; color: #3B2A18">16</span>
+</a>
+<div class="n-rail" style="position: absolute; left: 62px; top: 52px; width: 170px; height: 18px; box-sizing: border-box; display: flex; align-items: center">
+<div class="n-hp" style="width: 112px; height: 12px; box-sizing: border-box"></div>
+</div>
+<span style="position: absolute; left: 70px; top: 52px; font-size: 11px; font-weight: 700; line-height: 18px; text-shadow: 0 1px 2px #000000">1,188 / 1,800</span>
+<div class="n-rail" style="position: absolute; left: 62px; top: 74px; width: 170px; height: 12px; box-sizing: border-box; display: flex; align-items: center">
+<div class="n-xp" style="width: 60px; height: 8px; box-sizing: border-box"></div>
+</div>
+<div style="position: absolute; left: 238px; top: 50px; width: 84px; display: flex; flex-direction: column; align-items: center; text-shadow: 0 1px 3px #000000"><span style="font-size: 11px; color: #F3D58C">여름</span><span style="font-size: 20px; font-weight: 700; line-height: 22px">06:08</span></div>
+<a href="Pause.dc.html" aria-label="일시정지" style="position: absolute; left: 332px; top: 46px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center">
+<img src="a/ui-btn-round-blue.png" alt="" style="position: absolute; left: 0; top: 0; width: 48px; height: 48px">
+<svg width="16" height="18" viewBox="0 0 16 18" style="position: relative" aria-hidden="true"><path d="M4 2v14M12 2v14" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round"></path></svg>
+</a>
+<div style="position: absolute; left: 10px; top: 100px; display: flex; align-items: center; gap: 3px">
+<span class="n-slot" style="position: relative; width: 26px; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-iron_blade.png" alt="철날 검 1" style="width: 15px; height: 16px"><b style="position: absolute; right: -4px; bottom: -6px; font-size: 9px; text-shadow: 0 0 2px #000000">1</b></span>
+<span class="n-slot" style="position: relative; width: 26px; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-ember_wand.png" alt="잔불 지팡이 2" style="width: 14px; height: 16px"><b style="position: absolute; right: -4px; bottom: -6px; font-size: 9px; text-shadow: 0 0 2px #000000">2</b></span>
+<span class="n-slot" style="position: relative; width: 26px; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-harvest_scythe.png" alt="이삭 낫 1" style="width: 16px; height: 16px"><b style="position: absolute; right: -4px; bottom: -6px; font-size: 9px; text-shadow: 0 0 2px #000000">1</b></span>
+<span style="width: 1px; height: 18px; background: #FFFFFF66; margin: 0 3px"></span>
+<span class="n-slot" style="position: relative; width: 26px; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-seed_bag.png" alt="씨앗 자루 7" style="width: 16px; height: 16px"><b style="position: absolute; right: -4px; bottom: -6px; font-size: 9px; text-shadow: 0 0 2px #000000">7</b></span>
+<span class="n-slot" style="position: relative; width: 26px; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-carpenter_hammer.png" alt="목수 망치 2" style="width: 14px; height: 16px"><b style="position: absolute; right: -4px; bottom: -6px; font-size: 9px; text-shadow: 0 0 2px #000000">2</b></span>
+<span class="n-slot" style="position: relative; width: 26px; height: 26px; box-sizing: border-box; display: flex; align-items: center; justify-content: center"><img src="a/e-rain_ladle.png" alt="빗물 바가지 2" style="width: 16px; height: 16px"><b style="position: absolute; right: -4px; bottom: -6px; font-size: 9px; text-shadow: 0 0 2px #000000">2</b></span>
+</div>
+<div style="position: absolute; left: 56px; top: 636px; width: 120px; height: 120px; border-radius: 60px; border: 2px solid #FFFFFF55; background: radial-gradient(circle, #FFFFFF14 0%, #FFFFFF05 70%); box-sizing: border-box"></div>
+<div style="position: absolute; left: 92px; top: 672px; width: 48px; height: 48px; border-radius: 24px; background: #F6EBD24D; border: 2px solid #F6EBD299; box-sizing: border-box"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
