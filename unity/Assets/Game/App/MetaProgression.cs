@@ -139,6 +139,22 @@ namespace Game.App
             return result;
         }
 
+        public MetaBonusResult ClaimIdleWithBonus(long claimSequence, string receiptId, MetaBonusPolicy policy)
+        {
+            RequireMenu();
+            var result = MetaEngine.ClaimIdleWithBonus(Catalog, state, claimSequence, receiptId, policy);
+            if (result.Granted) { Publish(result.State); }
+            return result;
+        }
+
+        public MetaBonusResult GrantResultBonus(long runSequence, string receiptId, MetaBonusPolicy policy)
+        {
+            RequireMenu();
+            var result = MetaEngine.GrantResultBonus(Catalog, state, runSequence, receiptId, policy);
+            if (result.Granted) { Publish(result.State); }
+            return result;
+        }
+
         private void RequireMenu()
         {
             if (state.PendingRun != null) { throw new InvalidOperationException("Meta actions are unavailable during a pending run."); }
