@@ -21,7 +21,11 @@ public sealed class HostRewardReplayTests
         void Apply(ReplayCommandKind kind, int value = 0) { var command = Command(s, kind, value); s.Apply(command); commands.Add(command); }
         Assert.Throws<InvalidOperationException>(() => s.Apply(Command(s, ReplayCommandKind.HostGrantRerollV1, 1)));
         Apply(ReplayCommandKind.GrantLevel);
-        while (s.View.CaptureCards().Rerolls > 0) Apply(ReplayCommandKind.RerollCards);
+        while (s.View.CaptureCards().Rerolls > 0)
+        {
+            Apply(ReplayCommandKind.RerollCards);
+        }
+
         for (int i = 0; i < 2; i++)
         {
             string[] offer = s.View.CaptureCards().Cards.ToArray();
@@ -78,9 +82,15 @@ public sealed class HostRewardReplayTests
         Assert.Throws<InvalidOperationException>(() => s.Apply(Command(s, ReplayCommandKind.HostGrantRerollV1, 1)));
         Assert.Equal(before, s.ComputeStateHash());
         foreach (var command in new[] { new ReplayCommand(0, 0, ReplayCommandKind.HostGrantRerollV1), new(0, 0, ReplayCommandKind.HostGrantRerollV1, new(1, 0), Value: 1), new(0, 0, ReplayCommandKind.HostReviveV1, CardId: "x"), new(0, 0, ReplayCommandKind.HostReviveV1, Value: 1) })
+        {
             Assert.Throws<ArgumentException>(() => s.Apply(command));
+        }
+
         foreach (var rules in new[] { new HostReviveRules(0, 0, 0), new(1, -1, 0), new(1, 0, (HostRevivePreservation)9), new(int.MaxValue, 0, 0), new(1, int.MaxValue, 0) })
+        {
             Assert.Throws<ArgumentException>(() => new InteractiveSession(c, Options(c, new(false, rules))));
+        }
+
         Assert.Throws<ArgumentException>(() => new InteractiveSession(c, Options(c, new(false, null))));
         var duration = new InteractiveSession(c, Options(c, new(false, new(10, 0, 0))));
         duration.Simulation.World.LordHealth = 0; duration.Simulation.World.Tick = c.Tuning.DurationTicks;
@@ -125,7 +135,11 @@ public sealed class HostRewardReplayTests
             session.Apply(command); commands.Add(command);
         }
         Apply(ReplayCommandKind.GrantLevel);
-        while (session.View.CaptureCards().Rerolls > 0) Apply(ReplayCommandKind.RerollCards);
+        while (session.View.CaptureCards().Rerolls > 0)
+        {
+            Apply(ReplayCommandKind.RerollCards);
+        }
+
         Apply(ReplayCommandKind.HostGrantRerollV1, 1);
         Apply(ReplayCommandKind.RerollCards);
         Apply(ReplayCommandKind.ChooseCard, card: session.View.CaptureCards().Cards[0]);
@@ -133,15 +147,23 @@ public sealed class HostRewardReplayTests
         while (session.View.Status != RunStatus.Completed)
         {
             if (session.View.Status == RunStatus.AwaitingCard)
+            {
                 Apply(ReplayCommandKind.ChooseCard, card: session.View.CaptureCards().Cards[0]);
-            else Apply(ReplayCommandKind.Advance);
+            }
+            else
+            {
+                Apply(ReplayCommandKind.Advance);
+            }
         }
         Assert.True(session.CanHostRevive);
         Apply(ReplayCommandKind.HostReviveV1);
         for (int i = 0; i < 60; i++)
         {
             if (session.View.Status == RunStatus.AwaitingCard)
+            {
                 Apply(ReplayCommandKind.ChooseCard, card: session.View.CaptureCards().Cards[0]);
+            }
+
             Apply(ReplayCommandKind.Advance);
             Assert.Equal(50, session.View.CaptureFrame().Lord.Health);
         }
@@ -149,8 +171,13 @@ public sealed class HostRewardReplayTests
         while (session.View.Status != RunStatus.Completed && session.View.CaptureFrame().Lord.Health == 50 && session.View.CaptureFrame().Tick < immunityEnded + 120)
         {
             if (session.View.Status == RunStatus.AwaitingCard)
+            {
                 Apply(ReplayCommandKind.ChooseCard, card: session.View.CaptureCards().Cards[0]);
-            else Apply(ReplayCommandKind.Advance);
+            }
+            else
+            {
+                Apply(ReplayCommandKind.Advance);
+            }
         }
         Assert.True(session.View.CaptureFrame().Lord.Health < 50, "Damage must resume after fixture immunity expires.");
         Assert.True(session.GetSummary().Revived);
@@ -162,7 +189,11 @@ public sealed class HostRewardReplayTests
             Directory.CreateDirectory(output);
             using var bytes = File.Create(Path.Combine(output, "revive-reroll-v5.ssreplay"));
             ReplayCodec.WriteHeader(bytes, replay.Header);
-            foreach (var command in replay.Commands) ReplayCodec.WriteCommand(bytes, command);
+            foreach (var command in replay.Commands)
+            {
+                ReplayCodec.WriteCommand(bytes, command);
+            }
+
             ReplayCodec.WriteEnd(bytes, replay.End);
         }
     }
@@ -170,7 +201,11 @@ public sealed class HostRewardReplayTests
     private static ReplayDocument Roundtrip(InteractiveSession session, IReadOnlyList<ReplayCommand> commands)
     {
         using var bytes = new MemoryStream(); ReplayCodec.WriteHeader(bytes, ReplayCodec.Header(session.Options));
-        foreach (var command in commands) ReplayCodec.WriteCommand(bytes, command);
+        foreach (var command in commands)
+        {
+            ReplayCodec.WriteCommand(bytes, command);
+        }
+
         var summary = session.GetSummary();
         ReplayCodec.WriteEnd(bytes, new(session.NextSequence, summary.Tick, summary.EndReason == "death" ? ReplayEndKind.Death : summary.EndReason == "duration" ? ReplayEndKind.Duration : ReplayEndKind.Quit, summary.StateHash));
         bytes.Position = 0; return ReplayCodec.Read(bytes);
