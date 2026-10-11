@@ -27,8 +27,33 @@ namespace Game.App
         bool benchmarkProfileRequested, benchmarkProfilerEnabled;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         int benchmarkTraceWindow, benchmarkTraceEndTick;
+        int benchmarkDiagnosticPass = 1, benchmarkDiagnosticPasses = 1;
+        int[] benchmarkDiagnosticTraceRange;
+        string benchmarkDiagnosticRoot;
         readonly int[] benchmarkTraceTicks = { 8900, 11100, 13500 };
         readonly int[] crowdBenchmarkTraceTicks = { 10800, 11100, 11400 };
+        public static (int Passes, int[] TraceRange) ParseBenchmarkDiagnosticOptions(string[] args)
+        {
+            int passes = 1; int[] range = null; bool repeatSeen = false;
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--wave-benchmark-repeat")
+                {
+                    if (repeatSeen || ++i >= args.Length || args[i] != "2") throw new ArgumentException("--wave-benchmark-repeat requires 2 and may appear once.");
+                    repeatSeen = true; passes = 2;
+                }
+                else if (args[i] == "--wave-benchmark-trace-range")
+                {
+                    if (range != null || i + 2 >= args.Length || !int.TryParse(args[++i], out var start) || !int.TryParse(args[++i], out var end) || start < 0 || end <= start || end - start > 240)
+                        throw new ArgumentException("--wave-benchmark-trace-range requires ordered ticks spanning at most 240 ticks.");
+                    range = new[] { start, end };
+                }
+            }
+            if ((passes > 1 || range != null) && (Array.IndexOf(args, "--wave-benchmark") < 0 || Array.IndexOf(args, "--offline-replay-capture") >= 0 || Array.IndexOf(args, "--wave-benchmark-capture") >= 0))
+                throw new ArgumentException("Diagnostic repeat/trace requires a capture-free wave benchmark.");
+            if (range != null && Array.IndexOf(args, "--wave-benchmark-profile") < 0) throw new ArgumentException("Trace range requires --wave-benchmark-profile.");
+            return (passes, range);
+        }
 #endif
         public static string ParseWaveBenchmarkMode(string[] arguments)
         {
@@ -96,6 +121,10 @@ namespace Game.App
             public string fixture = "c05", playbackBoundary;
             public string benchmarkMode, gcMode, metalDisplayLinkEnvironment;
             public int frameCapacity, timingCapacity, coreTickSamples;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            public int diagnosticPass, diagnosticPasses;
+            public string repeatCacheContract;
+#endif
             public string coreTimingContract = "Optional core-ticks.csv records pre-Advance tick and accepted Advance only within benchmark windows; no pre-roll. Enemy includes Separation, which includes Residual: nested times and allocations must not be summed. MovementAiContact is the sorted live-enemy action/movement/contact loop before separation, nested in Enemy, not pure integration. Full Advance excludes snapshot/presentation; appended snapshotMs is the same Advance capture only. Unavailable allocation counters are -1.";
             public int tick, commands, frames, renderTimingSamples, width, height, targetFrameRate, vSyncCount, renderWarmupFrames = 120;
             public ulong cpuTimerFrequency;
@@ -126,8 +155,14 @@ namespace Game.App
                 benchmarkAllocationAvailable = AllocationCounterProbe.CurrentThreadAvailable();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, true);
+                var diagnosticOptions = ParseBenchmarkDiagnosticOptions(args);
+                benchmarkDiagnosticPasses = diagnosticOptions.Passes; benchmarkDiagnosticTraceRange = diagnosticOptions.TraceRange;
+                benchmarkDiagnosticRoot = benchmarkOutput;
+                if (benchmarkDiagnosticPasses > 1) { benchmarkOutput = Path.Combine(benchmarkDiagnosticRoot, "pass-1"); Directory.CreateDirectory(benchmarkOutput); }
 #else
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, false);
+                if (Array.IndexOf(args, "--wave-benchmark-repeat") >= 0 || Array.IndexOf(args, "--wave-benchmark-trace-range") >= 0)
+                    throw new ArgumentException("Repeat and trace range require a Development build.");
 #endif
                 benchmarkProfilerEnabled = benchmarkProfileRequested;
                 if (benchmarkProfileRequested || Array.IndexOf(args, "--wave-benchmark-core-diagnostics") >= 0)
@@ -182,6 +217,9 @@ namespace Game.App
                 File.WriteAllText(Path.Combine(benchmarkOutput, "device.json"), JsonUtility.ToJson(DeviceFacts.Capture(), true));
                 if (offlineReplayRequested) offlineReplayCapture = new OfflineReplayCapture(benchmarkOutput, Screen.width, Screen.height);
                 ResetBenchmarkClock(); waveBenchmarkReady = true;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                RefreshLongFrameCountersAfterLoading();
+#endif
             }
             catch (Exception exception) { EndWaveBenchmark(exception); }
         }
@@ -217,13 +255,14 @@ namespace Game.App
                 if (benchmarkCommand == benchmarkReplay.Commands.Count) { EndWaveBenchmark(null); return; }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
-                if (crowdBenchmark != null && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
-                    profilerTrace.Stop(CurrentFrame.Tick, "crowd-window-end");
+                if ((crowdBenchmark != null || benchmarkDiagnosticTraceRange != null) && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
+                    profilerTrace.Stop(CurrentFrame.Tick, benchmarkDiagnosticTraceRange != null ? "explicit-window-end" : "crowd-window-end");
                 profilerTrace.Pump(CurrentFrame.Tick);
-                var traceTicks = crowdBenchmark == null ? benchmarkTraceTicks : crowdBenchmarkTraceTicks;
-                if (benchmarkProfileRequested && !profilerTrace.Active && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < traceTicks.Length && CurrentFrame.Tick >= traceTicks[benchmarkTraceWindow])
+                var traceTicks = benchmarkDiagnosticTraceRange != null ? benchmarkDiagnosticTraceRange : crowdBenchmark == null ? benchmarkTraceTicks : crowdBenchmarkTraceTicks;
+                var traceCount = benchmarkDiagnosticTraceRange != null ? 1 : traceTicks.Length;
+                if (benchmarkProfileRequested && !profilerTrace.Active && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < traceCount && CurrentFrame.Tick >= traceTicks[benchmarkTraceWindow])
                 {
-                    benchmarkTraceEndTick = crowdBenchmark == null ? int.MaxValue : Math.Min(traceTicks[benchmarkTraceWindow] + 180, CrowdReplayBenchmark.EndTick);
+                    benchmarkTraceEndTick = benchmarkDiagnosticTraceRange != null ? benchmarkDiagnosticTraceRange[1] : crowdBenchmark == null ? int.MaxValue : Math.Min(traceTicks[benchmarkTraceWindow] + 180, CrowdReplayBenchmark.EndTick);
                     benchmarkTraceWindow++;
                     if (!profilerTrace.Start(benchmarkOutput, (crowdBenchmark == null ? "wave-c05-" : "crowd-411-") + benchmarkTraceWindow, CurrentFrame.Tick, benchmarkReplay.Header.Options.DataHash, DevelopmentProfilerTrace.BenchmarkScope))
                         throw new InvalidOperationException("Could not start requested benchmark profiler window.");
@@ -236,6 +275,9 @@ namespace Game.App
                 if (warming)
                 {
                     benchmarkWarmFrames--; accumulator = 0;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    if (benchmarkWarmFrames == 1) RefreshLongFrameCountersAfterLoading();
+#endif
                     if (benchmarkCapture && benchmarkWarmFrames == 60) ScreenCapture.CaptureScreenshot(Path.Combine(benchmarkOutput, "warmup-7200.png"));
                 }
                 else
@@ -339,6 +381,10 @@ namespace Game.App
             result.diagnosticOnly = benchmarkTarget60Experiment || benchmarkSkipGrounding || benchmarkCoreDiagnostics != null || benchmarkProfilerEnabled || result.developmentBuild;
             result.performanceEligible = !offlineReplayRequested && !result.diagnosticOnly;
             LongFrameBenchmarkMetadata(result);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            result.diagnosticPass = benchmarkDiagnosticPass; result.diagnosticPasses = benchmarkDiagnosticPasses;
+            result.repeatCacheContract = "Same process; identical replay initial state; scene-local world/pools rebuilt, engine shader/resource caches retained. No forced GC or unload.";
+#endif
             result.actorGroundingSkipped = benchmarkSkipGrounding;
             if (offlineReplayRequested) result.benchmarkMode = "offline-render-60fps";
             if (crowdBenchmark != null)
@@ -396,7 +442,32 @@ namespace Game.App
             }
             finally { offlineReplayCapture?.Dispose(); }
             if (!result.verified) UnityEngine.Debug.LogError(result.error ?? "Benchmark failed.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (result.verified && !benchmarkInterrupted && benchmarkDiagnosticPass < benchmarkDiagnosticPasses)
+            {
+                StartCoroutine(RepeatWaveBenchmark());
+                return;
+            }
+#endif
             Application.Quit(result.verified ? 0 : 1);
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        IEnumerator RepeatWaveBenchmark()
+        {
+            waveBenchmarkReady = false;
+            yield return null;
+            ResetLongFramesForRepeat();
+            benchmarkDiagnosticPass++;
+            benchmarkOutput = Path.Combine(benchmarkDiagnosticRoot, "pass-" + benchmarkDiagnosticPass);
+            Directory.CreateDirectory(benchmarkOutput);
+            benchmarkFrames.Clear(); benchmarkTimings.Clear(); benchmarkLastTiming = 0;
+            benchmarkCommand = 0; benchmarkWarmFrames = 120; benchmarkPending = default; benchmarkHasPending = false;
+            benchmarkMovement = default; benchmarkTraceWindow = 0; benchmarkTraceEndTick = 0;
+            benchmarkProfilerEnabled = benchmarkProfileRequested;
+            if (benchmarkCoreDiagnostics != null) benchmarkCoreDiagnostics = new BenchmarkCoreDiagnostics(BenchmarkMaximumRows, benchmarkAllocationAvailable, benchmarkProfileRequested);
+            waveBenchmarkEnded = false; accumulator = 0;
+            yield return BeginWaveBenchmark();
+        }
+#endif
     }
 }

@@ -9,6 +9,41 @@ namespace Game.Tests
     public sealed class DevelopmentLongFrameRecorderTests
     {
         static DevelopmentLongFrameRecorder.FrameSample Frame(int frame, double wall = 16) => new DevelopmentLongFrameRecorder.FrameSample { Frame = frame, ObservedFrame = frame + 1, Tick = frame * 2, WallMs = wall, StartedTimestamp = frame * 100, EndedTimestamp = frame * 100 + 90, ObservedTimestamp = frame * 100 + 100, Width = 1920, Height = 1080, Focused = true };
+        [Test] public void BenchmarkRepeatAndTraceAreExplicitBoundedCaptureFreeDiagnostics()
+        {
+            var parsed = RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-repeat", "2", "--wave-benchmark-profile", "--wave-benchmark-trace-range", "7900", "8000" });
+            Assert.That(parsed.Passes, Is.EqualTo(2));
+            Assert.That(parsed.TraceRange, Is.EqualTo(new[] { 7900, 8000 }));
+            Assert.That(RunCoordinator.ParseBenchmarkDiagnosticOptions(Array.Empty<string>()).Passes, Is.EqualTo(1));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark-repeat", "2" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-repeat", "3" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-repeat", "2", "--wave-benchmark-capture" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-trace-range", "7900", "8000" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-profile", "--wave-benchmark-trace-range", "7900", "8200" }));
+        }
+        [Test] public void RegistrationRefreshKeepsHistoricalUnavailableMetadataAndRegistersLateMarker()
+        {
+            var name = "SowSiege.LateMarkerTest." + Guid.NewGuid().ToString("N");
+            var directory = Path.Combine(Path.GetTempPath(), "sowsiege-late-marker-" + Guid.NewGuid().ToString("N"));
+            using var recorder = DevelopmentLongFrameRecorder.WithDeferredMarkerForTesting(name);
+            recorder.Observe(Frame(1, 16));
+            var marker = new Unity.Profiling.ProfilerMarker(name);
+            using (marker.Auto()) { }
+            recorder.RefreshRegistrationAfterLoading();
+            recorder.Observe(Frame(2, 26));
+            try
+            {
+                recorder.Write(directory);
+                var lines = File.ReadAllLines(Path.Combine(directory, "counter-observations.csv"));
+                Assert.That(lines.Length, Is.EqualTo(3));
+                Assert.That(lines[1], Does.StartWith("1,2,200,"));
+                Assert.That(lines[1], Does.Contain(",\"unavailable\",-1,\"not-registered-at-start\","));
+                Assert.That(lines[2], Does.StartWith("2,3,300,"));
+                Assert.That(lines[2], Does.Contain("\"registered-after-loading\""));
+                Assert.That(lines[2], Does.Not.Contain("\"unavailable\""));
+            }
+            finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        }
         [Test] public void ExplicitOptInRejectsDuplicates()
         {
             Assert.That(DevelopmentLongFrameRecorder.Requested(Array.Empty<string>()), Is.False);

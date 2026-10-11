@@ -26,6 +26,18 @@ namespace Game.App
         partial void FinishLongFrames();
         partial void LongFrameBenchmarkMetadata(BenchmarkResult result);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        void RefreshLongFrameCountersAfterLoading()
+        {
+            if (longFrames != null && !longFramesClosed) longFrames.RefreshRegistrationAfterLoading();
+        }
+        void ResetLongFramesForRepeat()
+        {
+            if (longFrames != null && !longFramesClosed) FinishLongFrames();
+            longFrames = null; longFrameStages = null; longFrameSession = null; longFrameWorld = null;
+            longFramesChecked = false; longFramesClosed = false; longFramePending = false; longFrameActive = false;
+            longFrame = default; longFrameEventId = -1; longFramePresentationId = -1;
+            longFrameEnemyKinds.Clear(); longFrameEffectKinds.Clear();
+        }
         DevelopmentLongFrameRecorder longFrames;
         DevelopmentLongFrameRecorder.FrameSample longFrame;
         LongFrameStages longFrameStages;

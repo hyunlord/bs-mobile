@@ -25,9 +25,10 @@ namespace Game.App
         }
         struct EventSample { public int Frame, Width, Height; public long Timestamp, Delta; public string Detail; public EventFlags Flags; public bool FromFrameSample; }
         struct CounterState { public string Name, Unit, Status; public ProfilerRecorder Recorder; }
+        struct CounterObservation { public long Value; public string Unit, Status; }
         static readonly string[] RequiredCounters = { "PlayerLoop", "Update.ScriptRunBehaviourUpdate", "PreLateUpdate.ScriptRunBehaviourLateUpdate", "Rendering", "RenderLoop", "Gfx.WaitForPresentOnGfxThread", "Gfx.PresentFrame", "GfxDeviceMetal.WaitForLastPresent", "WaitForTargetFPS", "Semaphore.WaitForSignal", "CreateGPUProgram", "Instantiate", "Loading", "SowSiege.View.SpriteBatchRebuild", "SowSiege.View.SpriteBatchSubmit", "SowSiege.View.SpriteBatchFirstUse", "SowSiege.View.HudTextUpdate", "SowSiege.View.HudTextDirty", "SowSiege.View.EffectCreate" };
         readonly FrameSample[] ring = new FrameSample[RingSize], archive;
-        readonly long[] ringCounters, archivedCounters;
+        readonly CounterObservation[] ringCounters, archivedCounters;
         readonly EventSample[] events;
         readonly CounterState[] counters;
         int ringCount, nextRing, saved, eventCount, lastFrame = -1, lastSavedFrame = -1, contextThrough = -1;
@@ -45,13 +46,18 @@ namespace Game.App
             return first >= 0;
         }
         public DevelopmentLongFrameRecorder(int capacity = 4096, bool startCounters = true, int eventCapacity = 65536)
+            : this(capacity, eventCapacity, startCounters, null) { }
+        DevelopmentLongFrameRecorder(int capacity, int eventCapacity, bool startCounters, string deferredCounter)
         {
             if (capacity < RingSize) throw new ArgumentOutOfRangeException(nameof(capacity));
             if (eventCapacity < 1) throw new ArgumentOutOfRangeException(nameof(eventCapacity));
             archive = new FrameSample[capacity]; events = new EventSample[eventCapacity];
-            counters = startCounters ? StartCounters() : Array.Empty<CounterState>();
-            ringCounters = new long[RingSize * counters.Length]; archivedCounters = new long[capacity * counters.Length];
+            counters = deferredCounter != null ? new[] { new CounterState { Name = deferredCounter, Unit = "unavailable", Status = "not-registered-at-start" } } : startCounters ? StartCounters() : Array.Empty<CounterState>();
+            ringCounters = new CounterObservation[RingSize * counters.Length]; archivedCounters = new CounterObservation[capacity * counters.Length];
         }
+#if UNITY_EDITOR
+        public static DevelopmentLongFrameRecorder WithDeferredMarkerForTesting(string name) => new DevelopmentLongFrameRecorder(8, 8, false, name ?? throw new ArgumentNullException(nameof(name)));
+#endif
         static bool Wanted(string name)
         {
             for (var i = 0; i < RequiredCounters.Length; i++) if (name == RequiredCounters[i]) return true;
@@ -87,6 +93,24 @@ namespace Game.App
             }
             catch { for (var i = 0; i < selected.Count; i++) { var recorder = selected[i].Recorder; recorder.Dispose(); } throw; }
         }
+        public void RefreshRegistrationAfterLoading()
+        {
+            ThrowIfDisposed();
+            var handles = new List<ProfilerRecorderHandle>();
+            ProfilerRecorderHandle.GetAvailable(handles);
+            for (var index = 0; index < counters.Length; index++)
+            {
+                if (counters[index].Recorder.Valid) continue;
+                for (var handle = 0; handle < handles.Count; handle++)
+                {
+                    var description = ProfilerRecorderHandle.GetDescription(handles[handle]);
+                    if (description.Name != counters[index].Name) continue;
+                    var recorder = new ProfilerRecorder(handles[handle], 1, ProfilerRecorderOptions.StartImmediately | ProfilerRecorderOptions.SumAllSamplesInFrame | ProfilerRecorderOptions.WrapAroundWhenCapacityReached);
+                    counters[index] = new CounterState { Name = description.Name, Unit = description.UnitType.ToString(), Recorder = recorder, Status = recorder.Valid ? "registered-after-loading" : "unavailable" };
+                    break;
+                }
+            }
+        }
         public void RecordEvent(EventFlags flags, int frame, long timestamp, int width, int height, string detail = null, long delta = 0)
         {
             ThrowIfDisposed();
@@ -117,7 +141,11 @@ namespace Game.App
             for (var index = 0; index < counters.Length; index++)
             {
                 var recorder = counters[index].Recorder;
-                ringCounters[slot * counters.Length + index] = recorder.Valid && recorder.IsRunning && recorder.Count > 0 ? recorder.LastValue : -1;
+                ringCounters[slot * counters.Length + index] = new CounterObservation
+                {
+                    Value = recorder.Valid && recorder.IsRunning && recorder.Count > 0 ? recorder.LastValue : -1,
+                    Unit = counters[index].Unit, Status = counters[index].Status
+                };
             }
             nextRing = (nextRing + 1) % RingSize; ringCount = Math.Min(RingSize, ringCount + 1);
             if (sample.WallMs > 25)
@@ -151,10 +179,13 @@ namespace Game.App
             {
                 writer.WriteLine("candidateFrame,observedFrame,observedTimestamp,counter,unit,value,registration,association");
                 for (var row = 0; row < saved; row++) for (var counter = 0; counter < counters.Length; counter++)
-                    writer.WriteLine(string.Join(",", N(archive[row].Frame), N(archive[row].ObservedFrame), N(archive[row].ObservedTimestamp), Csv(counters[counter].Name), Csv(counters[counter].Unit), N(archivedCounters[row * counters.Length + counter]), Csv(counters[counter].Status), "last-completed-frame-per-recorder-api-not-exact-interval-join"));
+                {
+                    var observation = archivedCounters[row * counters.Length + counter];
+                    writer.WriteLine(string.Join(",", N(archive[row].Frame), N(archive[row].ObservedFrame), N(archive[row].ObservedTimestamp), Csv(counters[counter].Name), Csv(observation.Unit), N(observation.Value), Csv(observation.Status), "last-completed-frame-per-recorder-api-not-exact-interval-join"));
+                }
             }
             using (var writer = new StreamWriter(Path.Combine(directory, "events.csv"))) WriteEventsCsv(writer);
-            File.WriteAllText(Path.Combine(directory, "contract.txt"), "Development-only diagnostic, not acceptance. Frames observed=" + N(ObservedFrames) + "; >25ms=" + N(LongFrames) + "; selected=" + N(saved) + "; overflow=" + Overflowed + ".\nCounter LastValue is previous frame per Recorder API, observed at ObservedFrame. Candidate frame identity is supplied by caller, not timestamp-verified. Unit column is authoritative; -1 means unavailable/no samples, never proven zero. Marker totals aggregate all threads and nested markers must not be summed. Only markers registered at startup are discovered. Stopwatch timestamps use System.Diagnostics.Stopwatch.Frequency=" + N(System.Diagnostics.Stopwatch.Frequency) + ".\nContext keeps four preceding and following frame IDs where observed; gaps are not synthesized. Callback events retain their own frame/timestamp; frame-sample-boundary events indicate the supplied frame boundary, not an exact callback time. Core/View values are externally supplied and nested Core stages must not be summed. No call stacks are collected here: representative stacks require the separate raw Profiler capture/export. Overflow means incomplete evidence.\n");
+            File.WriteAllText(Path.Combine(directory, "contract.txt"), "Development-only diagnostic, not acceptance. Frames observed=" + N(ObservedFrames) + "; >25ms=" + N(LongFrames) + "; selected=" + N(saved) + "; overflow=" + Overflowed + ".\nCounter LastValue is previous frame per Recorder API, observed at ObservedFrame. Candidate frame identity is supplied by caller, not timestamp-verified. Unit column is authoritative; -1 means unavailable/no samples, never proven zero. Marker totals aggregate all threads and nested markers must not be summed. Startup marker slots are retried after scene loading and rendered warmup. Earlier -1 observations remain unavailable; registered-after-loading does not retroactively establish availability. Newly named optional markers outside startup slots are not added. Stopwatch timestamps use System.Diagnostics.Stopwatch.Frequency=" + N(System.Diagnostics.Stopwatch.Frequency) + ".\nContext keeps four preceding and following frame IDs where observed; gaps are not synthesized. Callback events retain their own frame/timestamp; frame-sample-boundary events indicate the supplied frame boundary, not an exact callback time. Core/View values are externally supplied and nested Core stages must not be summed. No call stacks are collected here: representative stacks require the separate raw Profiler capture/export. Overflow means incomplete evidence.\n");
         }
         public void WriteFramesCsv(TextWriter writer, bool onlyLongFrames)
         {
