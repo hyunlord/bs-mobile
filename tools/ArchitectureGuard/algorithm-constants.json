@@ -80,9 +80,14 @@
     "Reason": "Replay decoder bounded command allocation limit for untrusted input."
   },
   {
-    "Symbol": "SowSiege.Core.MetaSaveCodec.CurrentVersion",
+    "Symbol": "SowSiege.Core.MetaSaveCodec.CompletedRunsVersion",
     "Value": "3",
-    "Reason": "Current binary meta save schema discriminator, not gameplay tuning."
+    "Reason": "Historical binary save migration schema introducing completed run accounting."
+  },
+  {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.ClaimsVersion",
+    "Value": "4",
+    "Reason": "Binary save migration schema introducing explicit pending reward claims, not gameplay tuning."
   },
   {
     "Symbol": "SowSiege.Core.MetaSaveCodec.ClockVersion",

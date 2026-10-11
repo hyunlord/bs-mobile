@@ -22,7 +22,7 @@ public sealed class MetaSaveCodecTests
         var state = MetaEngine.NewGame(MetaEngineTests.Catalog()) with { LastMonotonicSeconds = 100, LastWallSeconds = 1000, CompletedRuns = 7, NextRunSequence = 8 };
         state.Metrics[MetaMetric.Runs.ToString()] = 7;
         var result = MetaSaveCodec.Decode(MetaSaveCodec.EncodeVersion(state, version));
-        Assert.True(result.Valid); Assert.Equal(3, result.State!.SchemaVersion); Assert.Equal(7, result.State.CompletedRuns);
+        Assert.True(result.Valid); Assert.Equal(MetaSaveCodec.CurrentVersion, result.State!.SchemaVersion); Assert.Equal(7, result.State.CompletedRuns);
         Assert.Equal(version == 1 ? -1 : 100, result.State.LastMonotonicSeconds);
         Assert.True(MetaSaveCodec.Decode(MetaSaveCodec.Encode(result.State)).Valid);
     }

@@ -112,7 +112,7 @@ namespace Game.App
         private bool metaRun,abandoned;
         private readonly HashSet<string> recentGrowth=new HashSet<string>(StringComparer.Ordinal);
         private readonly DesktopControls desktopControls = new DesktopControls();
-        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit }
+        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
         private Text activeHint;
@@ -165,16 +165,18 @@ namespace Game.App
             {
                 foreach(var item in CanonicalContent.Displays) displays.Add(item.Id,item);
                 preferences=RunPreferences.Load(PreferencePrefix);Aim=preferences.Aim;
-                if(!IsWave) { Progression=new MetaProgression(CanonicalContent.CreateMetaCatalog(),FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,MetaDirectory);
+                { Progression=new MetaProgression(CanonicalContent.CreateMetaCatalog(),FoundationBoot.Catalog,FoundationBoot.VerifiedDataHash,MetaDirectory,
+                    projectionPolicy:IsWave?MetaProjectionPolicy.AccountOnlyWave:MetaProjectionPolicy.LegacyProjectCatalog,
+                    rewardDelivery:IsWave?MetaRewardDelivery.PendingClaims:MetaRewardDelivery.LegacyAutoCredit);
                 selectedChapter=Progression.Catalog.Chapters.OrderBy(c=>c.Index).First().Id;
                 recentIdle=Progression.LastIdle;if(recentIdle!=null)recentGrowth.UnionWith(recentIdle.BuildingsGrown); }
                 var fontCorpus=displays.Values.SelectMany(d=>new[]{d.DisplayName,d.EffectDescription,d.GrowthDescription,d.EvolutionHint}).ToList();
                 fontCorpus.Add("씨앗과 공성 새싹 변경의 한 해 적을 물리치고 영지를 키우세요 개척을 시작하기 전에 화면을 끌어 이동합니다 무기와 도구는 자동으로 작동합니다 카드를 골라 전투와 영지의 성장을 함께 준비하세요 개척 시작 시작 설정 돌아가기 배경음 효과음 진동 화면 흔들림 피해 숫자 자동 조준 이동 방향 가까운 적 소리와 화면 판을 잠시 멈췄습니다");
                 fontCorpus.Add(MetaScreens.Glyphs);
-                if(IsWave)fontCorpus.Add(PortraitGlyphs);
+                if(IsWave){fontCorpus.Add(PortraitGlyphs);fontCorpus.Add(PortraitMetaPanels.Glyphs);fontCorpus.Add(PortraitMetaGlyphs);}
                 fontCorpus.Add("새싹 들판 도구의 흔적을 키워 수확하세요 목표 재료 초반 도구 선택에 등장합니다 곡물 목재 특허장 선택");
                 if(IsWave)fontCorpus.Add(FallowTitle.Glyphs);
-                if(!IsWave) { fontCorpus.AddRange(Progression.Catalog.Chapters.SelectMany(c=>new[]{c.Name,c.Description}));
+                { fontCorpus.AddRange(Progression.Catalog.Chapters.SelectMany(c=>new[]{c.Name,c.Description}));
                 fontCorpus.AddRange(Progression.Catalog.ManorBuildings.SelectMany(c=>new[]{c.Name,c.Description}));
                 fontCorpus.AddRange(Progression.Catalog.Vassals.SelectMany(c=>new[]{c.Name,c.Description}));
                 fontCorpus.AddRange(Progression.Catalog.Challenges.Select(c=>c.Name)); }
@@ -269,24 +271,25 @@ namespace Game.App
         }
         private IEnumerator BeginRun(int nextSeed,bool useMeta=true)
         {
-            loading=true; useMeta = useMeta && !IsWave;
+            loading=true; useMeta = useMeta && Progression!=null;
             try
             {
-                if(metaRun&&Session!=null&&!finished&&Progression.State.PendingRun!=null)Progression.SettleRun(MetaRunAdapter.FromInteractive(Session.GetSummary(),CurrentFrame,FirstPlayable,true));
+                if(metaRun&&Session!=null&&!finished&&Progression.State.PendingRun!=null)SettleAccountRun(true);
+                if(useMeta&&IsWave&&!CanDepart(selectedChapter))throw new InvalidOperationException("출정할 수 없는 지역입니다.");
                 StopRecording();Stick.ResetStick();
             }
             catch(Exception e){loading=false;Fail(e);yield break;}
             yield return SceneManager.LoadSceneAsync("Run");
             try
             {
-                seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;metaRun=useMeta;abandoned=false;
+                seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;resultFragments.Clear();metaRun=useMeta;abandoned=false;
                 SnapshotFeelPreferences();
                 var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions());
                 Session=new InteractiveSession(c,options);guardedOffer=null;portraitCardActions=null;CaptureSnapshots();previous=CurrentFrame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
-                recording=new RunRecording(MetaDirectory,options,BuildIdentity.Commit);if(started!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
+                recording=new RunRecording(MetaDirectory,options,BuildIdentity.Commit);if(started?.ReplayContext!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
                 world.SetFallowChapter(IsWave&&c.WaveRuntime?.ChapterId=="meta:chapter_1");
-                world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,CurrentFrame.MapWidth,CurrentFrame.MapHeight);if(useMeta)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptWave(c,CurrentWave);world.AcceptFrame(CurrentFrame,FirstPlayable);ApplyPreferences();sound.ResetRun();waveSound?.ResetRun();bossPhaseCue.Reset();lastWaveSound=-1;if(IsWave)sound.AcceptCommonFeedback(CurrentFrame,waveSound.PlayCommon);else sound.AcceptFrame(CurrentFrame,FirstPlayable);
+                world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,CurrentFrame.MapWidth,CurrentFrame.MapHeight);if(useMeta&&!IsWave)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptWave(c,CurrentWave);world.AcceptFrame(CurrentFrame,FirstPlayable);ApplyPreferences();sound.ResetRun();waveSound?.ResetRun();bossPhaseCue.Reset();lastWaveSound=-1;if(IsWave)sound.AcceptCommonFeedback(CurrentFrame,waveSound.PlayCommon);else sound.AcceptFrame(CurrentFrame,FirstPlayable);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 invulnerable=false;spawnPermille=1000;
 #endif
@@ -507,7 +510,7 @@ namespace Game.App
         private void CompleteRun()
         {
             MenuOpen=true;Stick.ResetStick();completedSummary=Session.GetSummary();
-            if(metaRun&&settlement==null)settlement=Progression.SettleRun(MetaRunAdapter.FromInteractive(completedSummary,CurrentFrame,FirstPlayable,false));
+            if(metaRun&&settlement==null)settlement=SettleAccountRun(false);
             recording.Finish(Session,completedSummary.Survived?ReplayEndKind.Duration:ReplayEndKind.Death);
             finished=true;Error=null;ShowSummary();StopDiagnosticTrace("run-complete");
         }
@@ -520,7 +523,7 @@ namespace Game.App
             try
             {
                 completedSummary=Session.GetSummary();
-                if(metaRun)settlement=Progression.SettleRun(MetaRunAdapter.FromInteractive(completedSummary,CurrentFrame,FirstPlayable,true));
+                if(metaRun)settlement=SettleAccountRun(true);
                 recording.Finish(Session,ReplayEndKind.Quit);finished=true;abandoned=true;ShowSummary();
             }
             catch(Exception e){Fail(e);}
@@ -588,7 +591,7 @@ namespace Game.App
             if(pooledHint!=null){var container=pooledHint.transform.parent;container.SetParent(Ui.SafeRoot,false);container.gameObject.SetActive(false);}
             activeHint=null;
         }
-        private IEnumerator ReturnMeta(){if(metaRun&&Session!=null&&!finished){settlement=Progression.SettleRun(MetaRunAdapter.FromInteractive(Session.GetSummary(),CurrentFrame,FirstPlayable,true));}StopRecording();Session=null;CurrentFrame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");if(Ui.PortraitEnabled)ShowPortraitEstate();else ShowMeta();}
+        private IEnumerator ReturnMeta(){if(metaRun&&Session!=null&&!finished){settlement=SettleAccountRun(true);}StopRecording();Session=null;CurrentFrame=null;FirstPlayable=null;yield return SceneManager.LoadSceneAsync("Meta");if(Ui.PortraitEnabled)ShowPortraitEstate();else ShowMeta();}
         private void StopRecording(){try{using var scope=RunProfilerMarkers.Telemetry.Auto();if(recording!=null){if(Session!=null&&!finished&&Session.View.Status!=RunStatus.Completed)recording.Finish(Session,ReplayEndKind.Quit);recording.Dispose();recording=null;}if(telemetry!=null&&!telemetryClosed){if(intervalStarted>0)telemetry.CompleteInterval((float)(Time.realtimeSinceStartupAsDouble-intervalStarted),suspendedInterval,true);telemetry.Finish();}telemetry?.Dispose();telemetry=null;telemetryClosed=true;intervalStarted=0;}finally{StopDiagnosticTrace("recording-closed");}}
         private void OnApplicationPause(bool pause)
         {

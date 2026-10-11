@@ -9,8 +9,10 @@ namespace SowSiege.Core
 {
     public static class MetaSaveCodec
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = ClaimsVersion;
         private const int ClockVersion = 2;
+        private const int CompletedRunsVersion = 3;
+        private const int ClaimsVersion = 4;
         private const int EnvelopeBytes = 44;
         private const int ChecksumBytes = 32;
         private const int MaximumCollectionEntries = 4096;
@@ -28,6 +30,10 @@ namespace SowSiege.Core
             }
 
             Validate(state);
+            if (version < ClaimsVersion && state.PendingClaims.Length != 0)
+            {
+                throw new InvalidDataException("Pending claims cannot be written to a historical schema.");
+            }
             using var payload = new MemoryStream();
             using (var writer = new BinaryWriter(payload, Encoding.UTF8, true))
             {
@@ -44,9 +50,19 @@ namespace SowSiege.Core
                 writer.Write(state.NextRunSequence); writer.Write(state.PendingRun != null);
                 if (state.PendingRun != null) { writer.Write(state.PendingRun.Sequence); WriteString(writer, state.PendingRun.ChapterId); writer.Write(state.PendingRun.Seed); }
                 if (version >= ClockVersion) { writer.Write(state.LastMonotonicSeconds); writer.Write(state.LastWallSeconds); writer.Write(state.IdleRemainderSeconds); }
-                if (version >= CurrentVersion)
+                if (version >= CompletedRunsVersion)
                 {
                     writer.Write(state.CompletedRuns);
+                }
+                if (version >= ClaimsVersion)
+                {
+                    writer.Write(state.NextClaimSequence);
+                    writer.Write(state.PendingClaims.Length);
+                    foreach (var claim in state.PendingClaims.OrderBy(x => x.Sequence))
+                    {
+                        writer.Write(claim.Sequence); writer.Write((int)claim.Kind); WriteString(writer, claim.SourceId);
+                        WriteInts(writer, claim.Rewards); writer.Write(claim.IdleSeconds);
+                    }
                 }
             }
             byte[] bytes = payload.ToArray();
@@ -114,7 +130,17 @@ namespace SowSiege.Core
                 long sequence = reader.ReadInt64();
                 MetaPendingRun? pending = ReadBoolean(reader) ? new MetaPendingRun(reader.ReadInt64(), ReadString(reader), reader.ReadInt32()) : null;
                 var state = new MetaState(version, highest, priority, wallet, manor, vassals, metrics, completed, unlocked, active, sequence, pending,
-                    version >= ClockVersion ? reader.ReadInt64() : -1, version >= ClockVersion ? reader.ReadInt64() : -1, version >= ClockVersion ? reader.ReadInt64() : 0, version >= CurrentVersion ? reader.ReadInt64() : 0);
+                    version >= ClockVersion ? reader.ReadInt64() : -1, version >= ClockVersion ? reader.ReadInt64() : -1, version >= ClockVersion ? reader.ReadInt64() : 0, version >= CompletedRunsVersion ? reader.ReadInt64() : 0);
+                if (version >= ClaimsVersion)
+                {
+                    long nextClaim = reader.ReadInt64();
+                    var claims = new MetaPendingClaim[Count(reader)];
+                    for (int i = 0; i < claims.Length; i++)
+                    {
+                        claims[i] = new MetaPendingClaim(reader.ReadInt64(), (MetaClaimKind)reader.ReadInt32(), ReadString(reader), ReadInts(reader), reader.ReadInt32());
+                    }
+                    state = state with { NextClaimSequence = nextClaim, PendingClaims = claims };
+                }
                 if (stream.Position != bytes.Length - ChecksumBytes)
                 {
                     throw new InvalidDataException();
@@ -130,15 +156,31 @@ namespace SowSiege.Core
                     state = MigrateTwoToThree(state);
                 }
 
+                if (state.SchemaVersion == CompletedRunsVersion)
+                {
+                    state = state with { SchemaVersion = CurrentVersion };
+                }
                 Validate(state); return new MetaDecodeResult(true, state, "");
             }
             catch (Exception exception) when (exception is InvalidDataException || exception is IOException || exception is ArgumentException || exception is OverflowException)
             { return new MetaDecodeResult(false, null, "corrupt"); }
         }
         private static MetaState MigrateOneToTwo(MetaState state) => state with { SchemaVersion = ClockVersion, LastMonotonicSeconds = -1, LastWallSeconds = -1, IdleRemainderSeconds = 0 };
-        private static MetaState MigrateTwoToThree(MetaState state) => state with { SchemaVersion = CurrentVersion, CompletedRuns = state.NextRunSequence - 1 - (state.PendingRun == null ? 0 : 1) };
+        private static MetaState MigrateTwoToThree(MetaState state) => state with { SchemaVersion = CompletedRunsVersion, CompletedRuns = state.NextRunSequence - 1 - (state.PendingRun == null ? 0 : 1) };
         private static void Validate(MetaState state)
         {
+            if (state.NextClaimSequence < 1 || state.PendingClaims.Length > MaximumCollectionEntries ||
+                state.PendingClaims.Select(x => x.Sequence).Distinct().Count() != state.PendingClaims.Length ||
+                state.PendingClaims.Count(x => x.Kind == MetaClaimKind.Idle) > 1 ||
+                state.PendingClaims.Where(x => x.Kind == MetaClaimKind.Challenge).Select(x => x.SourceId).Distinct().Count() != state.PendingClaims.Count(x => x.Kind == MetaClaimKind.Challenge) ||
+                state.PendingClaims.Any(x => x.Sequence < 1 || x.Sequence >= state.NextClaimSequence ||
+                    !Enum.IsDefined(typeof(MetaClaimKind), x.Kind) || string.IsNullOrWhiteSpace(x.SourceId) ||
+                    x.Rewards.Values.Any(value => value < 0) || x.IdleSeconds < 0 ||
+                    (x.Kind == MetaClaimKind.Idle && (x.IdleSeconds == 0 || x.SourceId != "idle")) ||
+                    (x.Kind == MetaClaimKind.Challenge && (x.IdleSeconds != 0 || state.CompletedChallenges.Contains(x.SourceId)))))
+            {
+                throw new InvalidDataException("Invalid claim ledger.");
+            }
             if (state.SchemaVersion < 1 || state.SchemaVersion > CurrentVersion || state.HighestClearedChapter < 0 || state.NextRunSequence < 1 || state.CompletedRuns < 0 || state.LastMonotonicSeconds < -1 || state.LastWallSeconds < -1 || state.IdleRemainderSeconds < 0)
             {
                 throw new InvalidDataException("Invalid meta state.");

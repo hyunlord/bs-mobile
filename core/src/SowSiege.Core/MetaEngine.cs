@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SowSiege.Core
 {
-    public static class MetaEngine
+    public static partial class MetaEngine
     {
         public static MetaState NewGame(MetaCatalog catalog)
         {
@@ -38,7 +38,7 @@ namespace SowSiege.Core
             return new MetaRunPlan(Clone(state) with { PendingRun = pending, NextRunSequence = state.NextRunSequence + 1 }, pending);
         }
 
-        public static MetaSettlement SettleRun(MetaCatalog catalog, MetaState state, MetaPendingRun pending, MetaRunFacts facts)
+        public static MetaSettlement SettleRun(MetaCatalog catalog, MetaState state, MetaPendingRun pending, MetaRunFacts facts, MetaRewardDelivery delivery = MetaRewardDelivery.LegacyAutoCredit)
         {
             if (state.PendingRun == null || state.PendingRun != pending)
             {
@@ -77,11 +77,11 @@ namespace SowSiege.Core
                 int fragments = facts.Tick < catalog.Economy.MinimumRewardTicks || facts.Abandoned ? 0 : cleared ? catalog.Economy.FragmentsPerClear : catalog.Economy.FragmentsPerDeath;
                 next.Vassals[id] = vassal with { Fragments = (int)Math.Min(definition.FragmentCap, (long)vassal.Fragments + fragments) };
             }
-            next = CompleteProgression(catalog, next, out var grown, out var completed);
+            next = CompleteProgression(catalog, next, out var grown, out var completed, delivery);
             return new MetaSettlement(next, cleared, awarded, overflow, grown, completed);
         }
 
-        public static MetaIdleResult AdvanceIdle(MetaCatalog catalog, MetaState state, long observedMonotonicSeconds, long observedWallSeconds)
+        public static MetaIdleResult AdvanceIdle(MetaCatalog catalog, MetaState state, long observedMonotonicSeconds, long observedWallSeconds, MetaRewardDelivery delivery = MetaRewardDelivery.LegacyAutoCredit)
         {
             if (observedMonotonicSeconds < 0 || observedWallSeconds < 0)
             {
@@ -95,16 +95,26 @@ namespace SowSiege.Core
             bool valid = !initial && mono >= 0 && wall >= 0 && Math.Abs((decimal)mono - wall) <= catalog.Economy.ClockToleranceSeconds;
             int cap = (int)Math.Min(catalog.Economy.MaximumIdleCapSeconds, (long)catalog.Economy.BaseIdleCapSeconds + (long)EffectLevel(catalog, state, ManorEffect.IdleCapacity) * catalog.Economy.IdleCapSecondsPerLevel);
             int seconds = valid ? (int)Math.Min(cap, mono) : 0;
-            long available = valid ? Math.Min(cap, seconds + state.IdleRemainderSeconds) : 0;
+            long heldSeconds = delivery == MetaRewardDelivery.PendingClaims ? state.PendingClaims.Where(x => x.Kind == MetaClaimKind.Idle).Sum(x => (long)x.IdleSeconds) : 0;
+            long available = valid ? Math.Min(Math.Max(0, cap - heldSeconds), seconds + state.IdleRemainderSeconds) : 0;
             long steps = available / catalog.Economy.IdleStepSeconds;
             next = next with { IdleRemainderSeconds = available % catalog.Economy.IdleStepSeconds };
             var requested = catalog.Economy.IdlePerStep.ToDictionary(x => x.Key, x => (int)Math.Min(int.MaxValue, steps * x.Value));
-            var awarded = Credit(catalog, next, requested, out _);
-            next = CompleteProgression(catalog, next, out var grown, out _);
+            Dictionary<string, int> awarded;
+            if (delivery == MetaRewardDelivery.PendingClaims)
+            {
+                next = QueueIdle(next, requested, checked((int)(steps * catalog.Economy.IdleStepSeconds)));
+                awarded = catalog.Materials.ToDictionary(x => x.Id, _ => 0);
+            }
+            else
+            {
+                awarded = Credit(catalog, next, requested, out _);
+            }
+            next = CompleteProgression(catalog, next, out var grown, out _, delivery);
             return new MetaIdleResult(next, seconds, initial ? "initialized" : valid ? "accepted" : "clock-mismatch", awarded, grown);
         }
 
-        public static MetaState SetManorPriority(MetaCatalog catalog, MetaState state, string buildingId)
+        public static MetaState SetManorPriority(MetaCatalog catalog, MetaState state, string buildingId, MetaRewardDelivery delivery = MetaRewardDelivery.LegacyAutoCredit)
         {
             if (!catalog.ManorBuildings.Any(x => x.Id == buildingId))
             {
@@ -112,10 +122,10 @@ namespace SowSiege.Core
             }
 
             var next = Clone(state) with { ManorPriority = buildingId };
-            return CompleteProgression(catalog, next, out _, out _);
+            return CompleteProgression(catalog, next, out _, out _, delivery);
         }
 
-        public static MetaState UpgradeVassal(MetaCatalog catalog, MetaState state, string id)
+        public static MetaState UpgradeVassal(MetaCatalog catalog, MetaState state, string id, MetaRewardDelivery delivery = MetaRewardDelivery.LegacyAutoCredit)
         {
             var definition = catalog.Vassals.Single(x => x.Id == id); var current = state.Vassals[id];
             int cap = (int)Math.Min(definition.MaxLevel, (long)catalog.Economy.BaseVassalLevelCap + (long)EffectLevel(catalog, state, ManorEffect.VassalLevelCap) * catalog.Economy.LevelCapPerForgeLevel);
@@ -127,7 +137,7 @@ namespace SowSiege.Core
             var next = Clone(state); Pay(next, Cost(definition.LevelCostBase, definition.LevelCostStep, current.Level - 1));
             next.Vassals[id] = current with { Level = current.Level + 1 };
             next.Metrics[MetaMetric.VassalLevel.ToString()] = next.Vassals.Values.Max(x => (long)x.Level);
-            return CompleteProgression(catalog, next, out _, out _);
+            return CompleteProgression(catalog, next, out _, out _, delivery);
         }
 
         public static MetaState RankUpVassal(MetaCatalog catalog, MetaState state, string id)
@@ -178,7 +188,7 @@ namespace SowSiege.Core
             return new MetaModifiers(PlayerInput.Scale + values[(int)MetaAbility.Attack], PlayerInput.Scale + values[(int)MetaAbility.Health], PlayerInput.Scale + values[(int)MetaAbility.Movement], PlayerInput.Scale + values[(int)MetaAbility.Growth], PlayerInput.Scale + values[(int)MetaAbility.Allies], PlayerInput.Scale + values[(int)MetaAbility.Experience]);
         }
 
-        private static MetaState Clone(MetaState state) => state with { Wallet = new Dictionary<string, int>(state.Wallet), ManorLevels = new Dictionary<string, int>(state.ManorLevels), Vassals = new Dictionary<string, MetaVassalState>(state.Vassals), Metrics = new Dictionary<string, long>(state.Metrics), CompletedChallenges = (string[])state.CompletedChallenges.Clone(), UnlockedContentIds = (string[])state.UnlockedContentIds.Clone(), ActiveVassalIds = (string[])state.ActiveVassalIds.Clone() };
+        private static MetaState Clone(MetaState state) => state with { Wallet = new Dictionary<string, int>(state.Wallet), ManorLevels = new Dictionary<string, int>(state.ManorLevels), Vassals = new Dictionary<string, MetaVassalState>(state.Vassals), Metrics = new Dictionary<string, long>(state.Metrics), CompletedChallenges = (string[])state.CompletedChallenges.Clone(), UnlockedContentIds = (string[])state.UnlockedContentIds.Clone(), ActiveVassalIds = (string[])state.ActiveVassalIds.Clone(), PendingClaims = state.PendingClaims.Select(x => x with { Rewards = new Dictionary<string, int>(x.Rewards) }).ToArray() };
         private static long Saturate(long a, long b) => a > long.MaxValue - b ? long.MaxValue : a + b;
         private static void AddMetric(MetaState state, MetaMetric metric, long value) { string key = metric.ToString(); state.Metrics.TryGetValue(key, out long previous); state.Metrics[key] = Math.Min(MetaValidation.MaximumMetricValue, Saturate(previous, value)); }
         private static int EffectLevel(MetaCatalog catalog, MetaState state, ManorEffect effect) => catalog.ManorBuildings.Where(x => x.Effect == effect).Sum(x => state.ManorLevels[x.Id]);
@@ -232,7 +242,7 @@ namespace SowSiege.Core
             } while (changed);
             return grown;
         }
-        private static MetaState CompleteProgression(MetaCatalog catalog, MetaState state, out string[] buildingsGrown, out string[] challengesCompleted)
+        private static MetaState CompleteProgression(MetaCatalog catalog, MetaState state, out string[] buildingsGrown, out string[] challengesCompleted, MetaRewardDelivery delivery = MetaRewardDelivery.LegacyAutoCredit)
         {
             var grown = new List<string>();
             var completed = new List<string>();
@@ -240,7 +250,7 @@ namespace SowSiege.Core
             do
             {
                 grown.AddRange(Grow(catalog, state));
-                state = CompleteChallenges(catalog, state, out newlyCompleted);
+                state = CompleteChallenges(catalog, state, out newlyCompleted, delivery);
                 completed.AddRange(newlyCompleted);
                 // Each repeat consumes previously unclaimed challenges; building levels are also bounded.
             } while (newlyCompleted.Length > 0);
@@ -248,18 +258,24 @@ namespace SowSiege.Core
             challengesCompleted = completed.ToArray();
             return state;
         }
-        private static MetaState CompleteChallenges(MetaCatalog catalog, MetaState state, out string[] newlyCompleted)
+        private static MetaState CompleteChallenges(MetaCatalog catalog, MetaState state, out string[] newlyCompleted, MetaRewardDelivery delivery)
         {
             var done = new HashSet<string>(state.CompletedChallenges); var content = new HashSet<string>(state.UnlockedContentIds); var added = new List<string>();
             int research = EffectLevel(catalog, state, ManorEffect.Research);
             foreach (var challenge in catalog.Challenges.OrderBy(x => x.Id, StringComparer.Ordinal))
             {
                 state.Metrics.TryGetValue(challenge.Metric.ToString(), out long metric);
-                if (done.Contains(challenge.Id) || metric < challenge.Target || research < challenge.ResearchLevel)
+                if (done.Contains(challenge.Id) || state.PendingClaims.Any(x => x.Kind == MetaClaimKind.Challenge && x.SourceId == challenge.Id) || metric < challenge.Target || research < challenge.ResearchLevel)
                 {
                     continue;
                 }
 
+                if (delivery == MetaRewardDelivery.PendingClaims)
+                {
+                    state = QueueClaim(state, MetaClaimKind.Challenge, challenge.Id, challenge.Rewards, 0);
+                    added.Add(challenge.Id);
+                    continue;
+                }
                 done.Add(challenge.Id); added.Add(challenge.Id); content.UnionWith(challenge.UnlockContentIds);
                 foreach (string id in challenge.UnlockVassalIds)
                 {

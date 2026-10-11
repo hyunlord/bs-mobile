@@ -55,7 +55,7 @@ namespace SowSiege.Core
         public void Deconstruct(out int Id, out string Phase, out WorldPoint Origin, out WorldPoint Target, out int UntilTick, out bool Wet, out bool Stopped, out int BossPhase)
         { Id = this.Id; Phase = this.Phase; Origin = this.Origin; Target = this.Target; UntilTick = this.UntilTick; Wet = this.Wet; Stopped = this.Stopped; BossPhase = this.BossPhase; }
     }
-    public sealed record WaveGroupView(int Id, string Source, WorldPoint Position, string Phase, int Mission, int Training, int ReservedFood, int FrontRank, string Formation);
+    public sealed record WaveGroupView(int Id, string Source, WorldPoint Position, string Phase, int Mission, int Training, int ReservedFood, int FrontRank, string Formation, int Health = 1);
     public sealed record WaveEvent(long Id, int Tick, string Kind, string Source, int SubjectId, WorldPoint Position, WorldPoint Target, int Amount);
     public sealed record WaveRuntimeFrame(string Revision, string ChapterId, int Water, int Timber, int AvailableWorkers, bool BossDefeated, IReadOnlyList<WaveWorkView> Work, IReadOnlyList<WaveRewardView> Rewards, IReadOnlyList<WaveProjectileView> Projectiles, IReadOnlyList<WaveEnemyView> Enemies, IReadOnlyList<WaveGroupView> Groups, IReadOnlyList<WorldPoint> Paths, IReadOnlyList<string> Items, IReadOnlyList<string> Evolutions, IReadOnlyList<WaveEvent> Events, IReadOnlyDictionary<string, long> Counters, IReadOnlyList<WaveAttackView> Attacks, int CarriedWater, IReadOnlyList<WaveDetourView> Detours, WorldPoint TimberOrigin, int ProcessedTimber);
 }
