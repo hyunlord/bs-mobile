@@ -1,12 +1,12 @@
-![제공 시안과 실제13화면 비교](../../artifacts/portrait-234/comparison/overview.png)
+![제공 시안과 실제13화면 비교](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-8f446e5/overview.png)
 
 관문: 부분 — 제공 시안의 장식·프레임·버튼을13화면에 적용했지만 원본과의 차이와 미확인 상태가 남아 사용자 시각 판정을 기다린다.
-깨끗한 `e3f5817`의 Editor 검사17/17(그중 BM9)이 통과했고, 제공 아트50개는 원본과 바이트가 같다.
+깨끗한 `8f446e5`의 Editor 검사17/17(그중 BM9)이 통과했고, 제공 아트50개는 원본과 바이트가 같다.
 성능은 Release 반복 측정 준비·미완료 상태다. Development의 긴 지연은 반복됐으며 #223을 해결했다고 판정하지 않는다.
 
 ## 화면 반영과 차이
 
-이번 비교의 원본은 [제공 패키지](../design/portrait-v0)이며, 이전 서면 대체 보드를 원본 시안으로 쓰지 않는다. 패키지 반입 [PR233](https://github.com/hyunlord/bs-mobile/pull/233)은 병합됐고 구현 [PR235](https://github.com/hyunlord/bs-mobile/pull/235)는 초안이다. 첫 이미지와 비교 시트는 로컬 산출물이며 Release 게시 전에는 GitHub에서 이미지가 표시되지 않는다. 비교 시트는 `artifacts/portrait-234/comparison/index.html`에서13화면의390×844·1080×2520을 확인한다.
+이번 비교의 원본은 [제공 패키지](../design/portrait-v0)이며, 이전 서면 대체 보드를 원본 시안으로 쓰지 않는다. 패키지 반입 [PR233](https://github.com/hyunlord/bs-mobile/pull/233)은 병합됐고 구현 [PR235](https://github.com/hyunlord/bs-mobile/pull/235)는 초안이다. 첫 이미지와 비교 시트는 [검토용 Release](https://github.com/hyunlord/bs-mobile/releases/tag/portrait-v0-8f446e5)에 게시한다. 비교 시트는 `artifacts/portrait-234/comparison/index.html`에서13화면의390×844·1080×2520을 확인한다.
 
 검토한106요소는 **존재77·차이26·누락3**이다. `present`는 화면에 보인다는 뜻이며 픽셀 일치·기능 통과·사용자 승인이 아니다. `different`에는 확인된 외형 차이와 양성 상태 표본 부족이 함께 들어 있으므로 개별 사유로 구분한다. [요소별 정본](portrait-234-elements.json)은 검토자의 원본 JSON을 그대로 보존하며26기본 캡처와6추가 fixture의 해시·출처를 포함한다.
 
@@ -26,12 +26,12 @@
 
 | 항목 | 현재 증거 | 판정 경계 |
 | --- | --- | --- |
-| 최종 UI | `e3f5817abf0732748dd30cf7477cf6d1ee443078`, sourceDirty=False | 캡처·Editor 검증 소스 |
-| Editor 흐름 | `artifacts/portrait-234/final-e3f5817-playmode.xml`,17/17 통과(BM9 포함) | 정상 완주·사용자 미감·실기 증거 아님 |
+| 최종 UI | `8f446e5f46273a7f6001f6e09411e9bdd0c9f534`, sourceDirty=False | 캡처·Editor 검증 소스 |
+| Editor 흐름 | `artifacts/portrait-234/final-8f446e5-playmode.xml`,17/17 통과(BM9 포함) | 정상 완주·사용자 미감·실기 증거 아님 |
 | 아트·규칙 경계 | 제공 아트50개 바이트 동일, Core/data/schema 무변경 | UI가 규칙·경제를 바꾸지 않음 |
-| 기존 CI | `7f58560` [CI38147794586](https://github.com/hyunlord/bs-mobile/actions/runs/38147794586) 통과 | 최종e3f5817 CI는 아직 게시 전; 기존 CI를 최종 통과로 옮겨 쓰지 않음 |
+| 기존 CI | `0aa97e6` [CI38149253171](https://github.com/hyunlord/bs-mobile/actions/runs/38149253171) 통과 | 최종8f446e5 CI는 아직 게시 전; 기존 CI를 최종 통과로 옮겨 쓰지 않음 |
 | Development 같은 프로세스 반복 | 두 번 모두 해시 일치·포커스 이탈 없음; 최대658.9129/649.4870ms, 해당 지연 GC 증가0·사건0 | 첫 등장만의 비용 가설은 지지되지 않음. OS/GPU 등 원인 확정 아님 |
-| Release 반복 | 최종e3f5817 앱 빌드 완료. 첫 A411이 측정 시작 전 포커스를 잃어 중단됐고 미완료 실행은 보존. 반복 측정은 준비·미완료 | 새 반복 결과 없음; 통과·개선 주장 없음 |
+| Release 반복 | 최종8f446e5 앱 빌드 완료. 첫 A411이 측정 시작 전 포커스를 잃어 중단됐고 미완료 실행은 보존. 반복 측정은 준비·미완료 | 새 반복 결과 없음; 통과·개선 주장 없음 |
 
 Release의 기존A와 새UI B는 각 fixture·반복에서 최대50ms 및25ms 초과 비율≤0.2%를 확인하며 C05의800+도 따로 본다. 평균이나 이전 빌드의 단일 표본으로 실패를 덮지 않는다. Development 기록은 진단용이며 Release 합격을 대신하지 않는다. Part1의 실패와 [#223](https://github.com/hyunlord/bs-mobile/issues/223)은 보존한다.
 
@@ -43,4 +43,4 @@ Release의 기존A와 새UI B는 각 fixture·반복에서 최대50ms 및25ms �
 
 `29deb1b` 트리거 진단은 두 시도 모두 다른 프로젝트의 Godot가 전경이 되며 포커스를 잃었다. 이 중단 실행은 유효한 연속 전경 계측으로 채택하지 않는다. 최종 Release A/B 반복 역시 전경 유지 조율 전까지 미완료이며 새로운 합격 표는 없다.
 
-이차 회복 몰림 수정 `ef86f6a`는 정상 속도에서 표시 프레임당 Advance1회로 제한하고 남은 누적 시간을 보존한다. [ADR0055](../adr/0055-defer-recovery-ticks-between-rendered-frames.md)에 입력 순서·해시 계약과 A/B pacing 차이를 명시했다. Node17개는 통과했지만 Unity pacing 검사는 아직 준비 단계다. 최초 수백ms 지연 수정·최종 성능 통과로 주장하지 않으며 #223은 열어 두고 PR235는 초안을 유지한다. 이 변경은 앞의 e3f5817 화면 캡처 식별자를 바꾸지 않는다.
+이차 회복 몰림 수정 `ef86f6a`는 정상 속도에서 표시 프레임당 Advance1회로 제한하고 남은 누적 시간을 보존한다. [ADR0055](../adr/0055-defer-recovery-ticks-between-rendered-frames.md)에 입력 순서·해시 계약과 A/B pacing 차이를 명시했다. Node17개와 최종8f446e5 Unity pacing25/25가 통과했다. 실제 카드 제안·선택을 생성한 동일 명령 fixture에서 기존 배치와 새 배치의 최종 상태 해시가 일치한다. 트리거 진단26/26도 통과했다. 최초 수백ms 지연 수정·최종 성능 통과로 주장하지 않으며 #223은 열어 두고 PR235는 초안을 유지한다. 최종8f446e5의 Editor 흐름17/17(BM9 포함)과32개 화면 표본을 다시 수집했고 ARM64 Mono Release 빌드 및 개발 기능 제외 검사도 통과했다.

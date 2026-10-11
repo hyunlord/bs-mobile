@@ -116,13 +116,13 @@
           "path": "artifacts/portrait-234/editor-run/title-390x844.png",
           "sha256": "1b464f37d7a1f091b02fcea43efff0356ba56e761fe4106f15fab725a739982c",
           "provenancePath": "artifacts/portrait-234/editor-run/title-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/title-1080x2520.png",
           "sha256": "367a40df22dc0e68562bc97e548ae7fb47bd680138f07acf388169b8e9ceb4fa",
           "provenancePath": "artifacts/portrait-234/editor-run/title-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -201,15 +201,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/run-390x844.png",
-          "sha256": "20c9920c6baa1de5e5faeb672a3699b295b8b5bc6e852646554e1875e05d9099",
+          "sha256": "e2547db1724a914c92e7d59b8401f36107d4766acda11827af02c649a7086d46",
           "provenancePath": "artifacts/portrait-234/editor-run/run-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=8; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=7; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/run-1080x2520.png",
-          "sha256": "4b611abdb13e1a400cfc85cd9d022fbeeace3fcb046b1b7bcf3ce9baf72d038b",
+          "sha256": "077a9642e4d17e1e3135553f0d6e142e414afb8c2ee35baf05803c8dd0840cac",
           "provenancePath": "artifacts/portrait-234/editor-run/run-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=17; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=15; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -261,7 +261,7 @@
           "label": "종류별 common·rare·epic 테두리",
           "status": "different",
           "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "note": "현재 제안은 도구·특허장·도구라 common/epic은 보이지만 rare 무기 카드는 이 표본에서 미검증이다."
+          "note": "현재 제안은 특허장·특허장·도구라 epic/common은 보이지만 rare 무기 카드는 이 표본에서 미검증이다."
         },
         {
           "id": "cards-4",
@@ -303,7 +303,7 @@
           "label": "조건 충족 카드의 금빛 진화 띠",
           "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "note": "추가 cards-evolution-fixture에서 목수 망치 아래 호위 성가퀴·지붕 아래 파종 금빛 진화 띠가 두 비율 모두 보인다. 기본13화면을 시험 표본으로 대체하지 않는다.",
+          "note": "8f446e5 기본 카드 및 추가 cards-evolution-fixture 모두 목수 망치 아래 호위 성가퀴·지붕 아래 파종 금빛 진화 띠가 두 비율에서 보인다. 추가 표본은 기본13화면을 대체하지 않는다.",
           "extraEvidence": [
             "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
             "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png"
@@ -323,15 +323,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "sha256": "b6d42ff0d2040b80f7940e6b9d51c9e026394021d14c6b11ebfd0c433b727313",
+          "sha256": "db667216dc8731b0bcb84a5f8bbe46c3d07457e05eb6125cf6aa84c8d85ea612",
           "provenancePath": "artifacts/portrait-234/editor-run/cards-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/cards-1080x2520.png",
-          "sha256": "86edb7dc1eb18cd39a229a4d54e67df9e3cd3ce9f935109dea330f40a83f6b9a",
+          "sha256": "0b2c118bad19332052e92207490a2c74bf2356812ff183d452d9af24f970827c",
           "provenancePath": "artifacts/portrait-234/editor-run/cards-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -426,15 +426,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/pause-390x844.png",
-          "sha256": "bc58d5e4579a8ed1df2efad3e57ef54d9b7ce0a59008220c069e737ede14da91",
+          "sha256": "66d43f8e63c039343615fea83215d74498593561af6d87a7dc96da488f1458ac",
           "provenancePath": "artifacts/portrait-234/editor-run/pause-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/pause-1080x2520.png",
-          "sha256": "2f29e55c2f9070686fc99ab4d031c74699defbca4e100d09c3d2972cc522cc40",
+          "sha256": "670befc0add236f202fa7472fe384a7b869cb47fc2f046a67414950a4e5818b1",
           "provenancePath": "artifacts/portrait-234/editor-run/pause-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -536,13 +536,13 @@
           "path": "artifacts/portrait-234/editor-meta/estate-390x844.png",
           "sha256": "486a1c64682e3b415f6b7917a4c557cc82fcdd1a2df85bf5d52000b99008bcdb",
           "provenancePath": "artifacts/portrait-234/editor-meta/estate-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/estate-1080x2520.png",
           "sha256": "5e1dda8af2f51a3438f570d5a995d288680dabaac363a4575051731f0452c4a0",
           "provenancePath": "artifacts/portrait-234/editor-meta/estate-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -659,13 +659,13 @@
           "path": "artifacts/portrait-234/editor-meta/departure-390x844.png",
           "sha256": "0288d1b669b7b122c7433e116ef7fa283ea5de741aec663d0ee01efa4a5ca38c",
           "provenancePath": "artifacts/portrait-234/editor-meta/departure-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/departure-1080x2520.png",
           "sha256": "d9666b923162f4bea20e61ebe23022c18e2ea504e82008abd99db2d2c34b47ec",
           "provenancePath": "artifacts/portrait-234/editor-meta/departure-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -767,15 +767,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/result-390x844.png",
-          "sha256": "e4d8f713288ad09ed07454af02fdfc641c1ad3e692fc1567c1f20dc53bd4e015",
+          "sha256": "2f70882880275bb594bb42845c8238ad2f9814668cf98e46589b05cdb01f094e",
           "provenancePath": "artifacts/portrait-234/editor-meta/result-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-          "sha256": "0e9a32189b97dd04ee04a4a0898b30b70e367cb61d0b1fef44871fc548674dae",
+          "sha256": "abd15fed94fedc8a7930e0c4b55866395e603a58d733702ed1ebdd0a6f14ddba",
           "provenancePath": "artifacts/portrait-234/editor-meta/result-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -874,13 +874,13 @@
           "path": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
           "sha256": "caf9dadd885b235f1dbca726b6ab0db33e5189335e0aa138b7d2f40eec093263",
           "provenancePath": "artifacts/portrait-234/editor-meta/vassals-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png",
           "sha256": "20e42165d38a64edb9aa09277ec5dc9d9328d94e29249c492e85a69d21486411",
           "provenancePath": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -971,13 +971,13 @@
           "path": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
           "sha256": "ed9c6784347daaca7785f582a951fc1aec93950b82466254c99040d05fef723a",
           "provenancePath": "artifacts/portrait-234/editor-meta/challenges-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
           "sha256": "96797fc34e37c5dd3ceac89fe279a340422d8b51addc4f0962bb8723ef353309",
           "provenancePath": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -1075,13 +1075,13 @@
           "path": "artifacts/portrait-234/editor-bm/shop-390x844.png",
           "sha256": "61f3c5ede47d43f176d91182c3a031f67175903d9f57f611d2dd2dac77d313a2",
           "provenancePath": "artifacts/portrait-234/editor-bm/shop-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/shop-1080x2520.png",
           "sha256": "3c2b15ceb998f68afa15afd9cb16b42a09078e584b399eb7e8ae9f910a4a6acd",
           "provenancePath": "artifacts/portrait-234/editor-bm/shop-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1180,13 +1180,13 @@
           "path": "artifacts/portrait-234/editor-bm/idle-390x844.png",
           "sha256": "d9022cfeba6d45f4bece83d73eda340f2b68a9117e73e3627d13f0ad56efdf5b",
           "provenancePath": "artifacts/portrait-234/editor-bm/idle-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/idle-1080x2520.png",
           "sha256": "b0ce4da9c7c2f51d3c688319bf61c7ee0d55e9e2eb9199676fc7448733f46593",
           "provenancePath": "artifacts/portrait-234/editor-bm/idle-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1224,7 +1224,7 @@
           "label": "어두운 판 배경",
           "status": "different",
           "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-          "note": "실제 판 배경이 어두워졌으나 수확 경험치 글자가 제목과 기록 사이 뒤로 남아 겹친다."
+          "note": "실제 판 배경은 어둡지만 피해 숫자와 익음 글자가 제목·판 기록 뒤에 남아 겹친다. 8f446e5에서는 판20초 표본이다."
         },
         {
           "id": "revive-2",
@@ -1277,15 +1277,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-          "sha256": "88b6c16de86814f3ddd918bc7f81a1fd3d9c189eec7ef966c43510931e29cb76",
+          "sha256": "6a0c597d5fcbf47a49e4da2a0af01db5dd5a5b5ee3c6b95db39a8f50f6f65bfa",
           "provenancePath": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
-          "sha256": "7af3155692e8ecbe3b116dc65db601684ca6b3e0ce4e087aecab9899ab8c6217",
+          "sha256": "7a7806a952eeddce75342cae10f3ceaabb758cf6ff8cafbe79c166b4ebf0bc38",
           "provenancePath": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1385,13 +1385,13 @@
           "path": "artifacts/portrait-234/editor-bm/pass-390x844.png",
           "sha256": "371e5f3ce5f5aa3a431e4dccc10f9db1e6b7d373e5b7a91bc7c0368b7537a6c9",
           "provenancePath": "artifacts/portrait-234/editor-bm/pass-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/pass-1080x2520.png",
           "sha256": "33c865b06b04904e0f6ecb1c9a2599adff7811100391d3137bb3aef9d7d3f800",
           "provenancePath": "artifacts/portrait-234/editor-bm/pass-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1409,13 +1409,13 @@
       }
     }
   ],
-  "reviewMethod": "Final read-only review: e3f5817 title and extra evolution/result-bonus PNGs at 390x844 and long aspect; prior 7f58560 visual inspection of all13 retained for unchanged elements. All26 default and6 extra fixture image hashes/provenance refreshed to e3f5817; sourceDirty=False. No Unity/browser/render/benchmark executed. Extras do not replace default13 captures. 1080x2520 safePixels is full frame: ratio proof only, no nonzero notch/home-indicator inset proof or physical device acceptance.",
+  "reviewMethod": "Read-only final8f446e5 refresh: 32 exact PNG hashes and clean-source provenance checked. 16 files byte-identical to prior inspected e3f5817; all8 changed390x844 screens inspected plus cards/pause/revive long variants. Prior visual assessments retained for unchanged layout; newly visible default-card evolution stripe recorded. No Unity/browser/render/build/benchmark executed. Extras remain supplementary. Full-frame safePixels1080x2520 proves ratio only, not nonzero notch/home-indicator insets or physical-device acceptance.",
   "reviewCounts": {
     "different": 26,
     "present": 77,
     "missing": 3
   },
-  "reviewCommit": "e3f5817abf0732748dd30cf7477cf6d1ee443078",
+  "reviewCommit": "8f446e5f46273a7f6001f6e09411e9bdd0c9f534",
   "userAcceptance": false,
   "statusSemantics": {
     "present": "Element visible, not pixel-match or user approval.",
@@ -1425,39 +1425,39 @@
   "extraFixtureEvidence": [
     {
       "path": "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
-      "sha256": "a9c659fea14001c1d7dc01ff78214a9f9c8c3f78d14591ab518378f175e37c32",
+      "sha256": "4856a1fe1bd3ee2c8e86413a2dd3cd7cd94194eb68daba29e7ed80793c999455",
       "provenancePath": "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
     },
     {
       "path": "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png",
-      "sha256": "d19ea06b2a9d61c4ac1f023f0312535381f7ca62d64b472572cefbd1392ccf3c",
+      "sha256": "ce2f0a530020bebef111c750c21e9d53dba9110b4f320b918be5fc8059d93aac",
       "provenancePath": "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-390x844.png",
-      "sha256": "5245aa1172fc8620c695b071fca668c6260a018725d04adfc88b4caf002fc730",
+      "sha256": "bfed5c5ab2e478e7b10de96f46fe07218e79692d9bd51b1373540d540682cd97",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-390x844.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png",
-      "sha256": "db8250e7d82f42b667fc96418c1980bdf955f6627e0788b7c25d92ebab34b2ca",
+      "sha256": "54a23864c67de6fce69621fcefe86cba9ed747900ab18fa5c472ea32afa358b1",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png",
-      "sha256": "ae692e9f5f27f2669ea6d11a0263f2a4a5d4db2ac5cf08586fba7618f909de91",
+      "sha256": "d719ff10d8fad58c7d7d1f4fffd95d741e1965844cff6eacee13a57017394b60",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png",
-      "sha256": "4df72d6e581cb679d108d10f6ebd1917db3cb70542f16b8cff5d085b0b306091",
+      "sha256": "00ab105a5c607bebfe76dd77b9d18ea9ecdf7a4729a85c834439e72336fe6b15",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=e3f5817abf0732748dd30cf7477cf6d1ee443078; sourceHash=9F68F2C52B6106C6F0A1AB6C368ED667D6143823A6C38A641562CB11196421EB; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     }
   ],
   "remainingMissing": [
@@ -1473,5 +1473,29 @@
       "id": "pass-6",
       "reason": "현행 수령 데이터가 없어 받을 수 있는 칸 강조·수령 상태는 구현되지 않았다. 보기 전용 범위를 보존한 명시적 차이다."
     }
-  ]
+  ],
+  "captureRefresh": {
+    "comparedAgainst": "e3f5817abf0732748dd30cf7477cf6d1ee443078",
+    "sameImageBytes": 16,
+    "changedImageBytes": 16,
+    "changedPaths": [
+      "artifacts/portrait-234/editor-run/run-390x844.png",
+      "artifacts/portrait-234/editor-run/run-1080x2520.png",
+      "artifacts/portrait-234/editor-run/cards-390x844.png",
+      "artifacts/portrait-234/editor-run/cards-1080x2520.png",
+      "artifacts/portrait-234/editor-run/pause-390x844.png",
+      "artifacts/portrait-234/editor-run/pause-1080x2520.png",
+      "artifacts/portrait-234/editor-meta/result-390x844.png",
+      "artifacts/portrait-234/editor-meta/result-1080x2520.png",
+      "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
+      "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
+      "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
+      "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png",
+      "artifacts/portrait-234/editor-bm/result-bonus-390x844.png",
+      "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png",
+      "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png",
+      "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png"
+    ],
+    "observation": "판 진행·카드 제안·부활 시간 및 배경이 달라졌다. 요소 배치 판정과 77/26/3 개수는 유지한다."
+  }
 }
