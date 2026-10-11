@@ -1,6 +1,6 @@
 namespace SowSiege.Core
 {
-    public enum RuntimeStage { Enemy, Separation, Residual, Work, Attack }
+    public enum RuntimeStage { Enemy, Separation, Residual, Work, Attack, Movement }
 
     // Optional host-owned measurements. No time source, allocations, or state codec entries live here.
     public interface IRuntimeDiagnostics

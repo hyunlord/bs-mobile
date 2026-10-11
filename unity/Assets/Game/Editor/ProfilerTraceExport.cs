@@ -48,7 +48,7 @@ namespace Game.Editor
                 || double.IsNaN(metadata.startRealtime) || double.IsInfinity(metadata.startRealtime) || metadata.startRealtime < 0
                 || double.IsNaN(metadata.endRealtime) || double.IsInfinity(metadata.endRealtime)
                 || !new[] { "Android", "OSXPlayer", "OSXEditor", "WindowsEditor", "LinuxEditor" }.Contains(metadata.platform)
-                || !new[] { "time-limit", "manual", "run-complete", "recording-closed", "application-paused", "focus-lost", "error" }.Contains(metadata.stopReason))
+                || !IsValidStopReason(metadata.stopReason))
                 throw new InvalidDataException("Trace build/source/data identity, runtime or capture bounds are invalid.");
             if (metadata.profilerWarningCount != 0 && metadata.scope == DevelopmentProfilerTrace.NormalScope) throw new InvalidDataException("Profiler warnings require investigation before this trace can be accepted.");
             Profiler.enabled = false;
@@ -59,7 +59,7 @@ namespace Game.Editor
             var benchmark = metadata.scope == DevelopmentProfilerTrace.BenchmarkScope;
             var report = new ExportReport
             {
-                profilerWarningCount = metadata.profilerWarningCount, traceKind = benchmark ? "wave-benchmark" : "normal-run", rawSha256 = hash, sessionId = metadata.sessionId, platform = metadata.platform,
+                allocationCallstacksRequested = metadata.allocationCallstacks, profilerWarningCount = metadata.profilerWarningCount, traceKind = benchmark ? "wave-benchmark" : "normal-run", rawSha256 = hash, sessionId = metadata.sessionId, platform = metadata.platform,
                 build = metadata.build, sourceHash = metadata.sourceHash, sourceDirty = metadata.sourceDirty, dataHash = metadata.dataHash,
                 unityVersion = metadata.unityVersion, startTick = metadata.startTick, endTick = metadata.endTick, stopReason = metadata.stopReason,
                 startUnityFrame = metadata.startFrame, endUnityFrame = metadata.endFrame,
@@ -69,9 +69,12 @@ namespace Game.Editor
             var correlations = new List<string>();
             using (var frames = new StreamWriter(Path.Combine(output, "frames.csv")))
             using (var samples = new StreamWriter(Path.Combine(output, "samples.csv")))
+            using (var stacks = new StreamWriter(Path.Combine(output, "allocation-stacks.csv")))
             {
                 frames.WriteLine("profilerFrame,cpuFrameMs,threads,gcAllocEvents,gcMetadataEvents,gcAllocatedBytes,unityFrame,tick,enemies,phase,correlationStatus");
-                samples.WriteLine("profilerFrame,threadIndex,threadName,sampleIndex,sampleName,inclusiveMs,allocationBytes");
+                samples.WriteLine("profilerFrame,threadIndex,threadName,sampleIndex,sampleName,inclusiveMs,allocationBytes,startMs,parentIndex,depth,exclusiveMs,stackDepth,firstGameMethod,firstGameFile,firstGameLine");
+                stacks.WriteLine("profilerFrame,threadIndex,sampleIndex,stackIndex,address,method,file,line");
+                var callstack = new List<ulong>(64);
                 for (var frame = first; frame <= last; frame++)
                 {
                     var threads = 0; var gcEvents = 0; var gcMetadata = 0; long gcBytes = 0; float frameMs = 0;
@@ -104,6 +107,14 @@ namespace Game.Editor
                             }
                         }
                         threads++;
+                        var descendants = new int[view.sampleCount];
+                        var durations = new double[view.sampleCount];
+                        for (var sampleIndex = 0; sampleIndex < view.sampleCount; sampleIndex++)
+                        {
+                            descendants[sampleIndex] = view.GetSampleChildrenCountRecursive(sampleIndex);
+                            durations[sampleIndex] = view.GetSampleTimeMs(sampleIndex);
+                        }
+                        var hierarchy = BuildHierarchy(descendants, durations);
                         for (var sample = 0; sample < view.sampleCount; sample++)
                         {
                             var name = view.GetSampleName(sample) ?? string.Empty;
@@ -112,9 +123,30 @@ namespace Game.Editor
                             var gc = name.IndexOf("GC", StringComparison.OrdinalIgnoreCase) >= 0 || name.IndexOf("Garbage", StringComparison.OrdinalIgnoreCase) >= 0;
                             if (custom || gc) observed.Add(name);
                             var allocation = "";
+                            var stackDepth = 0;
+                            var firstGameMethod = ""; var firstGameFile = ""; var firstGameLine = "";
                             if (name == "GC.Alloc")
                             {
                                 gcEvents++;
+                                callstack.Clear();
+                                view.GetSampleCallstack(sample, callstack);
+                                stackDepth = callstack.Count;
+                                if (stackDepth == 0) report.allocationSamplesWithoutStack++;
+                                else report.allocationSamplesWithStack++;
+                                for (var stackIndex = 0; stackIndex < callstack.Count; stackIndex++)
+                                {
+                                    var address = callstack[stackIndex];
+                                    var method = view.ResolveMethodInfo(address);
+                                    var methodName = method.methodName ?? "";
+                                    var fileName = method.sourceFileName ?? "";
+                                    var line = method.sourceFileLine > 0 ? N(method.sourceFileLine) : "";
+                                    if (methodName.Length == 0) report.unresolvedStackAddresses++;
+                                    stacks.WriteLine(string.Join(",", N(frame), N(thread), N(sample), N(stackIndex), "0x" + address.ToString("X", CultureInfo.InvariantCulture), Csv(methodName), Csv(fileName), line));
+                                    if (firstGameMethod.Length == 0 && IsGameMethod(methodName))
+                                    {
+                                        firstGameMethod = methodName; firstGameFile = fileName; firstGameLine = line;
+                                    }
+                                }
                                 if (view.GetSampleMetadataCount(sample) > 0)
                                 {
                                     var bytes = view.GetSampleMetadataAsLong(sample, 0);
@@ -123,7 +155,9 @@ namespace Game.Editor
                             }
                             var sampleMs = view.GetSampleTimeMs(sample);
                             if (float.IsNaN(sampleMs) || float.IsInfinity(sampleMs) || sampleMs < 0) throw new InvalidDataException("Invalid sample duration in profiler frame " + frame);
-                            samples.WriteLine(string.Join(",", N(frame), N(thread), Csv(view.threadName), N(sample), Csv(name), N(sampleMs), allocation));
+                            samples.WriteLine(string.Join(",", N(frame), N(thread), Csv(view.threadName), N(sample), Csv(name), N(sampleMs), allocation,
+                                N(view.GetSampleStartTimeMs(sample)), N(hierarchy.parents[sample]), N(hierarchy.depths[sample]), N(hierarchy.exclusiveMs[sample]),
+                                N(stackDepth), Csv(firstGameMethod), Csv(firstGameFile), firstGameLine));
                             report.exportedSamples++;
                         }
                     }
@@ -143,6 +177,8 @@ namespace Game.Editor
             var required = RequiredMarkers(metadata.scope);
             report.missingMarkers = required.Where(name => !observed.Contains(name)).ToArray();
             report.allocationMetadataComplete = report.gcAllocEvents > 0 && report.gcAllocEvents == report.gcMetadataEvents;
+            report.allocationCallstackEvidenceComplete = report.allocationCallstacksRequested && report.gcAllocEvents > 0 &&
+                report.allocationSamplesWithStack == report.gcAllocEvents && report.allocationSamplesWithoutStack == 0 && report.unresolvedStackAddresses == 0;
             var coverage = EvaluateBenchmarkCorrelation(correlations);
             report.boundaryUncorrelatedFrames = coverage.boundaryUncorrelatedFrames;
             report.interiorUncorrelatedFrames = coverage.interiorUncorrelatedFrames;
@@ -153,6 +189,41 @@ namespace Game.Editor
             File.Copy(input + ".json", Path.Combine(output, "trace-provenance.json"));
             if (!report.complete) throw new InvalidDataException("Trace incomplete (frame metadata or required scopes): " + string.Join(",", report.missingMarkers));
             Debug.Log("PROFILER_TRACE_EXPORTED frames=" + report.frames + " samples=" + report.exportedSamples);
+        }
+
+        public static bool IsValidStopReason(string reason) => reason == "time-limit" || reason == "manual" || reason == "run-complete" ||
+            reason == "recording-closed" || reason == "application-paused" || reason == "focus-lost" || reason == "error" || reason == "crowd-window-end";
+
+        public static bool IsGameMethod(string name) => !string.IsNullOrEmpty(name) &&
+            (name.StartsWith("Game.", StringComparison.Ordinal) || name.StartsWith("SowSiege.", StringComparison.Ordinal));
+
+        public sealed class SampleHierarchy
+        {
+            public int[] parents, depths;
+            public double[] exclusiveMs;
+        }
+        public static SampleHierarchy BuildHierarchy(IReadOnlyList<int> descendants, IReadOnlyList<double> durations)
+        {
+            if (descendants == null || durations == null || descendants.Count != durations.Count)
+                throw new ArgumentException("Matching hierarchy and duration samples required.");
+            var result = new SampleHierarchy { parents = new int[descendants.Count], depths = new int[descendants.Count], exclusiveMs = new double[descendants.Count] };
+            var ancestors = new Stack<int>();
+            for (var index = 0; index < descendants.Count; index++)
+            {
+                if (descendants[index] < 0 || descendants[index] > descendants.Count - index - 1 ||
+                    double.IsNaN(durations[index]) || double.IsInfinity(durations[index]) || durations[index] < 0)
+                    throw new InvalidDataException("Invalid sample hierarchy or duration.");
+                while (ancestors.Count > 0 && index > ancestors.Peek() + descendants[ancestors.Peek()]) ancestors.Pop();
+                var parent = ancestors.Count == 0 ? -1 : ancestors.Peek();
+                if (parent >= 0 && index + descendants[index] > parent + descendants[parent])
+                    throw new InvalidDataException("Child sample exceeds parent subtree.");
+                result.parents[index] = parent; result.depths[index] = ancestors.Count;
+                result.exclusiveMs[index] = durations[index];
+                if (parent >= 0) result.exclusiveMs[parent] -= durations[index];
+                if (descendants[index] > 0) ancestors.Push(index);
+            }
+            // Raw timings can have rounding error; retain signed residuals rather than inventing zero.
+            return result;
         }
 
         public static CorrelationCoverage EvaluateBenchmarkCorrelation(IReadOnlyList<string> statuses)
@@ -197,7 +268,7 @@ namespace Game.Editor
         sealed class TraceMetadata
         {
             public string scope, rawFile, rawSha256, sessionId, platform, build, sourceHash, dataHash, unityVersion, stopReason;
-            public bool closed, sourceDirty;
+            public bool closed, sourceDirty, allocationCallstacks;
             public long rawBytes;
             public int startFrame, endFrame, startTick, endTick, profilerWarningCount;
             public double startRealtime, endRealtime;
@@ -212,6 +283,8 @@ namespace Game.Editor
             public string timingScope = "Profiler frame indices are not telemetry row IDs. Inclusive nested samples must not be summed. CPU frame time is not GPU or presentation latency.";
             public string rawSha256, sessionId, platform, build, sourceHash, dataHash, unityVersion, stopReason, traceKind;
             public string backend = "not-recorded-by-trace-sidecar; do not infer from platform";
+            public bool allocationCallstacksRequested, allocationCallstackEvidenceComplete;
+            public int allocationSamplesWithStack, allocationSamplesWithoutStack, unresolvedStackAddresses;
             public int firstProfilerFrame, lastProfilerFrame, frames, exportedSamples, unnamedSamples, startUnityFrame, endUnityFrame, startTick, endTick;
             public bool sourceDirty;
             public bool complete, correlationComplete, allocationMetadataComplete;

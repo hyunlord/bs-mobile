@@ -25,9 +25,23 @@ namespace Game.App
             Profiler.EmitFrameMetaData(BenchmarkMetadataId, BenchmarkMetadataTag, frameMetadata);
         }
         readonly int? requestedTick;
+        readonly bool allocationStacksRequested;
+        bool previousAllocationStacks, ownsAllocationStacks;
         bool scheduledConsumed;
         public DevelopmentProfilerTrace() : this(Environment.GetCommandLineArgs()) { }
-        public DevelopmentProfilerTrace(string[] arguments) { requestedTick = ParseRequestedTick(arguments); }
+        public DevelopmentProfilerTrace(string[] arguments)
+        {
+            requestedTick = ParseRequestedTick(arguments);
+            allocationStacksRequested = ParseAllocationStacks(arguments);
+        }
+        public static bool ParseAllocationStacks(string[] arguments)
+        {
+            if (arguments == null) throw new ArgumentNullException(nameof(arguments));
+            var first = Array.IndexOf(arguments, "--diagnostic-allocation-stacks");
+            if (first >= 0 && first != Array.LastIndexOf(arguments, "--diagnostic-allocation-stacks"))
+                throw new ArgumentException("--diagnostic-allocation-stacks may appear once.");
+            return first >= 0;
+        }
         public static int? ParseRequestedTick(string[] arguments)
         {
             if (arguments == null) throw new ArgumentNullException(nameof(arguments));
@@ -83,10 +97,13 @@ namespace Game.App
                     sourceDirty = BuildIdentity.SourceDirty, dataHash = dataHash, rawFile = Path.GetFileName(path),
                     startedUtc = DateTime.UtcNow.ToString("O"), startFrame = Time.frameCount, startTick = tick,
                     startRealtime = Time.realtimeSinceStartupAsDouble, unityVersion = Application.unityVersion,
-                    platform = Application.platform.ToString()
+                    platform = Application.platform.ToString(), allocationCallstacks = allocationStacksRequested
                 };
                 Save();
                 Application.logMessageReceivedThreaded += OnLog;
+                previousAllocationStacks = Profiler.enableAllocationCallstacks;
+                ownsAllocationStacks = true;
+                Profiler.enableAllocationCallstacks = allocationStacksRequested;
                 Profiler.logFile = path; Profiler.enableBinaryLog = true; Profiler.enabled = true;
                 return true;
             }
@@ -123,7 +140,16 @@ namespace Game.App
                 UnityEngine.Debug.Log("DIAGNOSTIC_TRACE_CLOSED " + metadata.rawFile + " reason=" + reason);
             }
             catch (Exception error) { UnityEngine.Debug.LogWarning("Diagnostic trace close failed: " + error.Message); }
-            finally { Application.logMessageReceivedThreaded -= OnLog; metadata = null; }
+            finally
+            {
+                Application.logMessageReceivedThreaded -= OnLog;
+                metadata = null;
+                if (ownsAllocationStacks)
+                {
+                    Profiler.enableAllocationCallstacks = previousAllocationStacks;
+                    ownsAllocationStacks = false;
+                }
+            }
         }
 
         void OnLog(string condition, string stack, LogType type)
@@ -138,7 +164,7 @@ namespace Game.App
         {
             public string scope = "diagnostic-profiler-on-not-performance-acceptance";
             public string sessionId, build, sourceHash, dataHash, rawFile, startedUtc, unityVersion, platform;
-            public bool sourceDirty, closed;
+            public bool sourceDirty, closed, allocationCallstacks;
             public int startFrame, endFrame, startTick, endTick, profilerWarningCount;
             public double startRealtime, endRealtime;
             public double requestedSeconds = MaximumSeconds;

@@ -41,21 +41,27 @@ namespace SowSiege.Core
             liveEnemies.Clear();
             foreach (var enemy in world.Enemies) { if (enemy.Health > 0) { liveEnemies.Add(enemy); } }
             liveEnemies.Sort(EnemyOrder);
-            foreach (var enemy in liveEnemies)
+            var diagnostics = world.Diagnostics;
+            diagnostics?.Begin(RuntimeStage.Movement);
+            try
             {
-                if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule)) { continue; }
-                if (!State.EnemyActions.TryGetValue(enemy.Id, out var action))
-                { action = new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 }; State.EnemyActions.Add(enemy.Id, action); }
-                Contact(enemy, rule);
-                if (action.StopUntil > world.Tick)
+                foreach (var enemy in liveEnemies)
                 {
-                    if (separation is not null && !modules.Enemy(rule.Id).Boss && action.Phase == "charge" && world.Tick >= action.UntilTick) { Recover(rule, action); }
-                    continue;
+                    if (!Definition.Enemies.TryGetValue(enemy.Definition, out var rule)) { continue; }
+                    if (!State.EnemyActions.TryGetValue(enemy.Id, out var action))
+                    { action = new WaveEnemyAction { Phase = "approach", Origin = enemy.Position, Target = world.Lord, TargetId = -1 }; State.EnemyActions.Add(enemy.Id, action); }
+                    Contact(enemy, rule);
+                    if (action.StopUntil > world.Tick)
+                    {
+                        if (separation is not null && !modules.Enemy(rule.Id).Boss && action.Phase == "charge" && world.Tick >= action.UntilTick) { Recover(rule, action); }
+                        continue;
+                    }
+                    Advance(enemy, rule, action, ref pathsCollected);
+                    if (interactive?.Field is { } field) { enemy.Position = field.Constrain(enemy.Position); }
+                    Contact(enemy, rule);
                 }
-                Advance(enemy, rule, action, ref pathsCollected);
-                if (interactive?.Field is { } field) { enemy.Position = field.Constrain(enemy.Position); }
-                Contact(enemy, rule);
             }
+            finally { diagnostics?.End(RuntimeStage.Movement); }
             separation?.Resolve(liveEnemies);
             for (var index = 0; index < State.Projectiles.Count;)
             {

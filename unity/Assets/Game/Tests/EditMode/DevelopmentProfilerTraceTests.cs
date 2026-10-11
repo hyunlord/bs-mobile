@@ -7,6 +7,39 @@ namespace Game.Tests
 {
     public sealed class DevelopmentProfilerTraceTests
     {
+        [Test] public void CrowdWindowEndIsAnAcceptedTraceBoundary()
+        {
+            Assert.That(ProfilerTraceExport.IsValidStopReason("crowd-window-end"), Is.True);
+            Assert.That(ProfilerTraceExport.IsValidStopReason("start-failed"), Is.False);
+            Assert.That(ProfilerTraceExport.IsValidStopReason(null), Is.False);
+        }
+        [Test] public void AllocationCallstacksAreExplicitAndDuplicateFlagsFail()
+        {
+            Assert.That(DevelopmentProfilerTrace.ParseAllocationStacks(Array.Empty<string>()), Is.False);
+            Assert.That(DevelopmentProfilerTrace.ParseAllocationStacks(new[] { "--diagnostic-allocation-stacks" }), Is.True);
+            Assert.Throws<ArgumentException>(() => DevelopmentProfilerTrace.ParseAllocationStacks(new[] { "--diagnostic-allocation-stacks", "--diagnostic-allocation-stacks" }));
+            Assert.Throws<ArgumentNullException>(() => DevelopmentProfilerTrace.ParseAllocationStacks(null));
+        }
+        [Test] public void ExclusiveTimesSubtractOnlyDirectChildrenAcrossMultipleRoots()
+        {
+            var result = ProfilerTraceExport.BuildHierarchy(new[] { 3, 1, 0, 0, 0 }, new[] { 10d, 5d, 2d, 3d, 7d });
+            Assert.That(result.parents, Is.EqualTo(new[] { -1, 0, 1, 0, -1 }));
+            Assert.That(result.depths, Is.EqualTo(new[] { 0, 1, 2, 1, 0 }));
+            Assert.That(result.exclusiveMs, Is.EqualTo(new[] { 2d, 3d, 2d, 3d, 7d }));
+        }
+        [Test] public void MalformedHierarchyFailsInsteadOfInventingParents()
+        {
+            Assert.Throws<System.IO.InvalidDataException>(() => ProfilerTraceExport.BuildHierarchy(new[] { 1, 1, 0 }, new[] { 2d, 1d, 1d }));
+            Assert.Throws<System.IO.InvalidDataException>(() => ProfilerTraceExport.BuildHierarchy(new[] { 2 }, new[] { 1d }));
+            Assert.Throws<System.IO.InvalidDataException>(() => ProfilerTraceExport.BuildHierarchy(new[] { 0 }, new[] { double.NaN }));
+        }
+        [Test] public void MissingStackNamesNeverBecomeGameLocations()
+        {
+            Assert.That(ProfilerTraceExport.IsGameMethod(null), Is.False);
+            Assert.That(ProfilerTraceExport.IsGameMethod("System.String.Concat"), Is.False);
+            Assert.That(ProfilerTraceExport.IsGameMethod("Game.View.Hud.Present"), Is.True);
+            Assert.That(ProfilerTraceExport.IsGameMethod("SowSiege.Core.Session.Apply"), Is.True);
+        }
         [Test] public void ExactCorrelationNeedsNoBoundaryException()
         {
             var coverage = ProfilerTraceExport.EvaluateBenchmarkCorrelation(new[] { "exact-frame-metadata", "exact-frame-metadata" });
