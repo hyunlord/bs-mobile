@@ -6,6 +6,9 @@ import { parseCsv } from './csv.mjs';
 
 export const frameHeaders = 'frame tick enemies commands wallMs simulationMs snapshotMs acceptMs presentMs hudMs allocatedBytes gcCollections focused'.split(' ');
 export const timingHeaders = 'observedFrame frameStartTimestamp cpuFrameMs cpuMainThreadMs cpuRenderThreadMs cpuPresentWaitMs gpuMs'.split(' ');
+const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter'.split(' ');
+const timingExtensions = ['observationTimestamp'];
+const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp'.split(' '));
 const cpuFields = 'wallMs simulationMs snapshotMs acceptMs presentMs hudMs'.split(' ');
 const configFields = 'width height targetFrameRate vSyncCount renderWarmupFrames windows graphicsApi quality frameTimingEnabled platform'.split(' ');
 const deviceFields = 'model os unityVersion backend graphics'.split(' ');
@@ -17,11 +20,12 @@ function stats(values) {
     p95: sorted.length ? sorted[Math.ceil(sorted.length * .95) - 1] : null, max: sorted.at(-1) ?? null };
 }
 function summarize(rows) {
-  const allocationAvailable = rows.some(row => row.allocatedBytes > 0);
+  const unavailableSentinel = rows.some(row => row.allocatedBytes === -1);
+  const allocationAvailable = !unavailableSentinel && rows.some(row => row.allocatedBytes > 0);
   return { frames: rows.length, zeroCommandFrames: rows.filter(r => r.commands === 0).length,
     multiCommandFrames: rows.filter(r => r.commands > 1).length,
     ...Object.fromEntries(cpuFields.map(key => [key, stats(rows.map(row => row[key]))])),
-    allocationMeasurement: allocationAvailable ? 'available' : rows.length ? 'unavailable/all-zero-counter' : 'unavailable/no-samples',
+    allocationMeasurement: unavailableSentinel ? 'unavailable/sentinel' : allocationAvailable ? 'available' : rows.length ? 'unavailable/all-zero-counter' : 'unavailable/no-samples',
     allocatedBytesPerFrame: allocationAvailable ? stats(rows.map(row => row.allocatedBytes)) : null,
     gcCollections: rows.reduce((sum, row) => sum + row.gcCollections, 0) };
 }
@@ -33,10 +37,17 @@ function summarizePooled(repetitions) {
   }
   return summary;
 }
-function parseNumbers(file, headers) {
-  return parseCsv(fs.readFileSync(file, 'utf8'), headers).map(row => Object.fromEntries(headers.map(key => {
-    assert.ok(row[key].trim() && Number.isFinite(Number(row[key])) && Number(row[key]) >= 0, `Invalid ${key} in ${file}`);
-    return [key, Number(row[key])];
+function parseNumbers(file, headers, extensions) {
+  const text = fs.readFileSync(file, 'utf8');
+  const rows = parseCsv(text);
+  const actual = rows.length ? Object.keys(rows[0]) : text.split(/\r?\n/, 1)[0].split(',').map(key => key.replace(/^"(.*)"$/, '$1'));
+  assert.ok(actual.length >= headers.length && actual.length <= headers.length + extensions.length &&
+    actual.every((key, index) => key === [...headers, ...extensions][index]), `CSV header schema mismatch in ${file}`);
+  return rows.map(row => Object.fromEntries(actual.map(key => {
+    const value = Number(row[key]);
+    assert.ok(row[key].trim() && Number.isFinite(value) && (value >= 0 || key === 'allocatedBytes' && value === -1), `Invalid ${key} in ${file}`);
+    if (integerExtensions.has(key)) assert.ok(Number.isSafeInteger(value), `Noninteger ${key} in ${file}`);
+    return [key, value];
   })));
 }
 function loadRun(directory, contract) {
@@ -46,6 +57,8 @@ function loadRun(directory, contract) {
   assert.equal(identity.interrupted, false, 'Benchmark was interrupted');
   assert.ok(!identity.error, 'Benchmark reported an error');
   assert.equal(identity.developmentBuild, false, 'Development build is not acceptance evidence');
+  if (Object.hasOwn(identity, 'diagnosticOnly')) assert.equal(identity.diagnosticOnly, false, 'Diagnostic-only run is not acceptance evidence');
+  if (Object.hasOwn(identity, 'performanceEligible')) assert.equal(identity.performanceEligible, true, 'Ineligible performance run');
   assert.equal(identity.sourceDirty, false, 'Dirty source is not a repeatable benchmark');
   assert.equal(identity.platform, 'OSXPlayer', 'Native Mac player required');
   for (const [key, length] of [['commit', 40], ['sourceHash', 64], ['dataHash', 64], ['replaySha256', 64], ['stateHash', 64], ['expectedStateHash', 64]]) {
@@ -66,11 +79,13 @@ function loadRun(directory, contract) {
   for (const key of deviceFields) assert.ok(typeof device[key] === 'string' && device[key].length > 0, `Missing device ${key}`);
   assert.match(device.model, /^Mac/); assert.match(device.os, /^Mac OS X /); assert.equal(device.backend, 'Mono');
   assert.equal(device.graphics, identity.graphicsApi);
-  const rows = parseNumbers(path.join(directory, 'frames.csv'), frameHeaders);
+  const rows = parseNumbers(path.join(directory, 'frames.csv'), frameHeaders, frameExtensions);
   assert.ok(rows.length > 0, 'No frame samples'); assert.equal(rows.length, identity.frames, 'Truncated frame CSV');
   let previous;
   for (const row of rows) {
     for (const key of ['frame', 'tick', 'enemies', 'commands', 'allocatedBytes', 'gcCollections', 'focused']) assert.ok(Number.isSafeInteger(row[key]), `Noninteger ${key}`);
+    if (Object.hasOwn(row, 'advances')) assert.ok(row.advances <= row.commands, 'Advance count exceeds commands');
+    if (Object.hasOwn(row, 'nextEntryTimestamp')) assert.ok(row.entryTimestamp <= row.exitTimestamp && row.exitTimestamp <= row.nextEntryTimestamp, 'Invalid frame timestamp order');
     assert.equal(row.focused, 1, 'Unfocused benchmark frame'); assert.ok(row.wallMs > 0, 'Empty frame duration');
     const window = contract.windows.findIndex(([start, end]) => row.tick >= start && row.tick <= end);
     assert.ok(window >= 0, 'Frame outside fixed measurement windows');
@@ -83,7 +98,7 @@ function loadRun(directory, contract) {
   }
   assert.equal(rows.at(-1).tick, contract.endTick, 'Missing terminal rendered state');
   for (const [start, end] of contract.windows) assert.ok(rows.some(r => r.tick >= start && r.tick <= end), 'Missing measurement window');
-  const timings = parseNumbers(path.join(directory, 'render-timings.csv'), timingHeaders);
+  const timings = parseNumbers(path.join(directory, 'render-timings.csv'), timingHeaders, timingExtensions);
   assert.equal(timings.length, identity.renderTimingSamples, 'Truncated render timing CSV');
   let priorTiming;
   for (const row of timings) {

@@ -51,7 +51,7 @@ namespace Game.App
                 WaveCaptureInput.ConfigureMovement("evasive"); WaveCaptureInput.ConfigurePriority(null);
                 Active = trial;
             }
-            catch (Exception error) { Debug.LogError("FEEL_TRIAL_FAILED " + error); Application.Quit(2); }
+            catch (Exception error) { UnityEngine.Debug.LogError("FEEL_TRIAL_FAILED " + error); Application.Quit(2); }
 #endif
         }
 
