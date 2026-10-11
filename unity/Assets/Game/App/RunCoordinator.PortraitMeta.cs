@@ -41,8 +41,8 @@ namespace Game.App
                 case PortraitMetaPage.Departure: ShowPortraitDeparture(); break;
                 case PortraitMetaPage.Vassals: vassalOrigin = screen == UiScreen.Departure ? screen : UiScreen.Estate; ShowPortraitVassals(); break;
                 case PortraitMetaPage.Challenges: ShowPortraitChallenges(); break;
-                case PortraitMetaPage.Shop: ShowPortraitPlaceholder(UiScreen.Shop); break;
-                case PortraitMetaPage.Idle: ShowPortraitPlaceholder(UiScreen.Idle); break;
+                case PortraitMetaPage.Shop: ShowPortraitShop(); break;
+                case PortraitMetaPage.Idle: ShowPortraitIdle(); break;
             }
         }
         void ShowAccountEstate()
@@ -118,18 +118,10 @@ namespace Game.App
         {
             PortraitMetaPanels.Result(Ui, Progression.Catalog, selectedChapter, AccountFacts(abandoned), settlement,
                 CurrentFrame.TickRate, CurrentFrame.Level, resultFragments,
-                () => StartCoroutine(ReturnPortraitDeparture()), () => StartCoroutine(ReturnMeta()));
+                () => StartCoroutine(ReturnPortraitDeparture()), () => StartCoroutine(ReturnMeta()),
+                RewardOffer(RewardedAdSlot.Result), () => RequestReward(RewardedAdSlot.Result), Session?.HostRevived == true);
         }
         System.Collections.IEnumerator ReturnPortraitDeparture()
         { yield return ReturnMeta(); ShowPortraitDeparture(); }
-        void ShowPortraitPlaceholder(UiScreen page)
-        {
-            MetaPage(page, () =>
-            {
-                var root = PortraitPage("Portrait." + page, page == UiScreen.Shop ? "상점" : "방치 생산");
-                PortraitWidgets.Label(Ui, root, "곧 찾아옵니다", 16, 100, Ui.SafeRoot.rect.width - 32, 48);
-                PortraitAction(root, "Meta.Back", "돌아가기", ShowPortraitEstate, 64);
-            });
-        }
     }
 }
