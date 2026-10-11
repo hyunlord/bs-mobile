@@ -41,8 +41,13 @@ namespace SowSiege.Core
                     { throw new ArgumentException("Immediate contact requires a positive body width for every eligible enemy."); }
                 }
             }
+            options.HostRewards?.Validate();
+            if (options.HostRewards?.Revive is { } revive &&
+                (revive.RestoreHealth > (options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth) || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
+            { throw new ArgumentException("Host revive rules exceed run limits.", nameof(options)); }
             Catalog = catalog; Options = options; InitialCatalogHash = PortableStateCodec.HashCatalog(catalog); State = new() { Aim = options.InitialAimMode };
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
+            if (options.HostRewards is not null) { State.HostRewards = new(); }
             if (options.Field is not null) { State.Field = new(options.Field, options.Run.Seed); }
             Simulation = new(catalog, options.Run, new InteractiveHasher(), null, State);
             View = new SessionView(this);
@@ -52,11 +57,15 @@ namespace SowSiege.Core
             public string Compute(object snapshot) => throw new InvalidOperationException("Interactive sessions use the explicit state codec.");
         }
         internal RunStatus Status => Simulation.IsComplete ? RunStatus.Completed : Simulation.World.PendingCards.Length > 0 ? RunStatus.AwaitingCard : RunStatus.Running;
+        public int HostRerollsGranted => State.HostRewards?.RerollGrants ?? 0;
+        public bool HostRevived => State.HostRewards?.Revived ?? false;
+        public bool CanHostRevive => Options.HostRewards?.Revive is not null && State.HostRewards is { Revived: false }
+            && Simulation.World.LordHealth <= 0 && Simulation.World.Tick < Catalog.Tuning.DurationTicks;
         public void Apply(ReplayCommand command)
         {
             ReplayCodec.ValidateCommand(command);
             if (command.Sequence != NextSequence || command.Tick != Simulation.World.Tick) { throw new ArgumentException("Command sequence or tick mismatch."); }
-            if (Status == RunStatus.Completed) { throw new InvalidOperationException("Run is complete."); }
+            if (Status == RunStatus.Completed && command.Kind != ReplayCommandKind.HostReviveV1) { throw new InvalidOperationException("Run is complete."); }
             var cards = Simulation.World.PendingCards;
             if (command.Kind == ReplayCommandKind.Advance && Status != RunStatus.Running) { throw new InvalidOperationException("Choose a pending card first."); }
             if (command.Kind == ReplayCommandKind.GrantLevel && Status != RunStatus.Running) { throw new InvalidOperationException("A card is already pending."); }
@@ -66,9 +75,13 @@ namespace SowSiege.Core
                 if (command.Kind == ReplayCommandKind.BanCard && Simulation.World.Bans <= 0 || command.Kind == ReplayCommandKind.LockCard && Simulation.World.Locks <= 0) { throw new InvalidOperationException("Card budget exhausted."); }
             }
             if (command.Kind == ReplayCommandKind.RerollCards && (cards.Length == 0 || Simulation.World.Rerolls <= 0)) { throw new InvalidOperationException("No offer or reroll budget."); }
+            if (command.Kind == ReplayCommandKind.HostReviveV1 && !CanHostRevive) { throw new InvalidOperationException("Revive is not available."); }
+            if (command.Kind == ReplayCommandKind.HostGrantRerollV1 &&
+                (Options.HostRewards?.AllowRerollGrant != true || Status != RunStatus.AwaitingCard || Simulation.World.Rerolls != 0 || State.HostRewards!.RerollGrants >= 2))
+            { throw new InvalidOperationException("Host reroll grant is not available."); }
             switch (command.Kind)
             {
-                case ReplayCommandKind.Advance: State.Events.Clear(); Simulation.Advance(command.Input); break;
+                case ReplayCommandKind.Advance: State.Events.Clear(); AdvanceWithHostImmunity(command.Input); break;
                 case ReplayCommandKind.ChooseCard: Simulation.ChooseCard(command.CardId!); break;
                 case ReplayCommandKind.RerollCards: Simulation.RerollCards(); break;
                 case ReplayCommandKind.BanCard: Simulation.BanCard(command.CardId!); break;
@@ -77,16 +90,32 @@ namespace SowSiege.Core
                 case ReplayCommandKind.SetInvulnerable: State.Invulnerable = command.Value != 0; break;
                 case ReplayCommandKind.SetSpawnPermille: State.SpawnPermille = command.Value; break;
                 case ReplayCommandKind.GrantLevel: Simulation.GrantLevel(); break;
+                case ReplayCommandKind.HostGrantRerollV1: Simulation.World.Rerolls = 1; State.HostRewards!.RerollGrants++; break;
+                case ReplayCommandKind.HostReviveV1:
+                    var revive = Options.HostRewards!.Revive!;
+                    Simulation.World.LordHealth = revive.RestoreHealth;
+                    State.HostRewards!.Revived = true;
+                    State.HostRewards.InvulnerableUntil = Simulation.World.Tick + revive.InvulnerabilityTicks;
+                    break;
                 default: throw new ArgumentException("Unknown command.");
             }
             NextSequence++;
+        }
+        private void AdvanceWithHostImmunity(PlayerInput input)
+        {
+            if (State.HostRewards is not { } rewards || Simulation.World.Tick >= rewards.InvulnerableUntil)
+            { Simulation.Advance(input); return; }
+            bool original = State.Invulnerable;
+            State.Invulnerable = true;
+            try { Simulation.Advance(input); }
+            finally { State.Invulnerable = original; }
         }
         public string ComputeStateHash() => PortableStateCodec.Hash(this);
         public RunSummary GetSummary()
         {
             var w = Simulation.World;
             return new(Options.Run.Seed, w.Tick, w.LordHealth > 0, w.LordHealth <= 0 ? "death" : Simulation.IsComplete ? "duration" : "running", w.Level,
-                w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), w.WaveRuntime is not null ? w.WaveRuntime.BossDefeated : Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w));
+                w.KillExperience, w.HarvestExperience, w.TaxExperience, w.WeaponDamage, w.Tools.Values.Sum(t => t.ActivationDamage), w.Tools.Values.Sum(t => t.GrowthDamage), w.AllyDamage, ComputeStateHash(), w.WaveRuntime is not null ? w.WaveRuntime.BossDefeated : Catalog.FirstPlayable is null ? null : FirstPlayableView.BossDefeated(Catalog, w), State.HostRewards?.Revived);
         }
         private sealed class SessionView : IBufferedRunView, IBufferedWaveRunView
         {

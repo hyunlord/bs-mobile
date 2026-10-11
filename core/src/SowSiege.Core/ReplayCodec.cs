@@ -19,6 +19,7 @@ namespace SowSiege.Core
         private const int MaterialTargetVersion = 2;
         private const int FeelVersion = 3;
         private const int FieldVersion = 4;
+        public const int HostRewardVersion = 5;
         private const int ContactFlag = 2;
         private const int HealthFlag = 4;
         private const int FeelFlags = 7;
@@ -33,7 +34,7 @@ namespace SowSiege.Core
         public static ReplayHeader Header(InteractiveOptions options)
         {
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
-            return new(options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
+            return new(options.HostRewards is not null ? HostRewardVersion : options.Field is not null ? FieldVersion : options.Feel is not null ? FeelVersion : options.Run.TargetMaterial is null ? Version : MaterialTargetVersion, Version, Version, PortableRandom.Algorithm, options);
         }
         internal static void ValidateHash(string hash)
         {
@@ -47,6 +48,7 @@ namespace SowSiege.Core
             if (c.Kind != ReplayCommandKind.Advance && (c.Input.X != 0 || c.Input.Y != 0)) { throw new ArgumentException("Unexpected movement payload."); }
             var valid = c.Kind switch
             {
+                ReplayCommandKind.HostGrantRerollV1 => c.Value == 1,
                 ReplayCommandKind.SetAimMode => Enum.IsDefined(typeof(AimMode), c.Value),
                 ReplayCommandKind.SetInvulnerable => c.Value == 0 || c.Value == 1,
                 ReplayCommandKind.SetSpawnPermille => c.Value >= 0 && c.Value <= InteractiveSession.MaximumSpawnPermille,
@@ -56,9 +58,11 @@ namespace SowSiege.Core
         }
         private static void ValidateHeader(ReplayHeader h)
         {
-            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion && h.FormatVersion != FieldVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
-            if (h.FormatVersion != FieldVersion && (FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
-            if ((h.Options.Field is not null) != (h.FormatVersion == FieldVersion) || h.Options.Field is { Version: not FieldRules.Version }) { throw new ArgumentException("Replay field format mismatch."); }
+            if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion && h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
+            if (h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion && (FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
+            if ((h.FormatVersion != HostRewardVersion && (h.Options.Field is not null) != (h.FormatVersion == FieldVersion)) || h.Options.Field is { Version: not FieldRules.Version }) { throw new ArgumentException("Replay field format mismatch."); }
+            if ((h.Options.HostRewards is not null) != (h.FormatVersion == HostRewardVersion)) { throw new ArgumentException("Replay host reward format mismatch."); }
+            h.Options.HostRewards?.Validate();
             ValidateHash(h.Options.DataHash);
             if (!h.Options.Run.ManualCards || h.Options.Run.Scenario != "normal" || h.Options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), h.Options.InitialAimMode)) { throw new ArgumentException("Invalid interactive options."); }
         }
@@ -90,12 +94,18 @@ namespace SowSiege.Core
             {
                 Text(w, r.TargetMaterial);
             }
-            if (header.FormatVersion == FeelVersion || header.FormatVersion == FieldVersion)
+            if (header.FormatVersion == FeelVersion || header.FormatVersion == FieldVersion || header.FormatVersion == HostRewardVersion)
             {
                 Text(w, r.TargetMaterial); w.Write(1);
                 var feel = o.Feel;
                 w.Write((feel?.FasterLord == true ? 1 : 0) | (feel?.ImmediateContact == true ? ContactFlag : 0) | (feel?.ReadableHealth == true ? HealthFlag : 0));
                 if (header.FormatVersion == FieldVersion) { w.Write(1); w.Write(o.Field!.Version); }
+                if (header.FormatVersion == HostRewardVersion)
+                {
+                    w.Write(o.Field is not null); if (o.Field is not null) { w.Write(o.Field.Version); }
+                    var rewards = o.HostRewards!; w.Write(1); w.Write(rewards.AllowRerollGrant); w.Write(rewards.Revive is not null);
+                    if (rewards.Revive is { } revive) { w.Write(revive.RestoreHealth); w.Write(revive.InvulnerabilityTicks); w.Write((int)revive.Preservation); }
+                }
             }
         }
         public static void WriteCommand(Stream output, ReplayCommand command)
@@ -126,7 +136,8 @@ namespace SowSiege.Core
 
                 FeelExperimentOptions? feel = null;
                 FieldOptions? field = null;
-                if (format == FeelVersion || format == FieldVersion)
+                HostRewardRunOptions? rewards = null;
+                if (format == FeelVersion || format == FieldVersion || format == HostRewardVersion)
                 {
                     run = run with { TargetMaterial = Text(r) };
                     if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported feel experiment version."); }
@@ -138,8 +149,16 @@ namespace SowSiege.Core
                         if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported field schema."); }
                         field = new(r.ReadInt32());
                     }
+                    if (format == HostRewardVersion)
+                    {
+                        field = Boolean(r) ? new FieldOptions(r.ReadInt32()) : null;
+                        if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported host reward rules version."); }
+                        bool reroll = Boolean(r);
+                        HostReviveRules? revive = Boolean(r) ? new(r.ReadInt32(), r.ReadInt32(), (HostRevivePreservation)r.ReadInt32()) : null;
+                        rewards = new(reroll, revive);
+                    }
                 }
-                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel, field)); ValidateHeader(header);
+                var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel, field, rewards)); ValidateHeader(header);
                 var commands = new List<ReplayCommand>(); var checkpoints = new List<ReplayCheckpoint>(); var tick = 0;
                 while (true)
                 {
@@ -148,6 +167,8 @@ namespace SowSiege.Core
                     {
                         if (commands.Count >= MaximumCommands) { throw new InvalidDataException("Replay command limit exceeded."); }
                         var command = new ReplayCommand(r.ReadInt64(), r.ReadInt32(), (ReplayCommandKind)r.ReadInt32(), new(r.ReadInt16(), r.ReadInt16()), Text(r), r.ReadInt32()); ValidateCommand(command);
+                        if ((command.Kind == ReplayCommandKind.HostGrantRerollV1 || command.Kind == ReplayCommandKind.HostReviveV1) && format != HostRewardVersion)
+                        { throw new InvalidDataException("Host commands require replay format v5."); }
                         if (command.Sequence != commands.Count || command.Tick != tick) { throw new InvalidDataException("Command order or tick mismatch."); }
                         commands.Add(command); if (command.Kind == ReplayCommandKind.Advance) { tick++; }
                     }
