@@ -63,3 +63,11 @@ Development 호출 스택은 할당 위치를 찾는 진단이며 그 프레임 
 긴 프레임 원인 조사는 Development 전용 `--diagnostic-long-frames`로 수행한다. Core 세부 단계, 화면 갱신·SpriteBatch·HUD·효과 관련 ProfilerRecorder 관측, 포커스·일시정지·창 변경·첫 적/효과·성장/경험치 등의 사건을 함께 기록한다. Recorder 집계는 관측값이며 동일 프레임의 호출 스택을 제공하지 않는다. 스택과 중첩 경로는 별도 raw Profiler 자료에서 얻는다. 미등록 카운터·미측정 단계는 unavailable로 남긴다. 긴 장을 게임 밖 시간이라는 이유만으로 OS 문제로 확정하지 않는다.
 
 이 계측은 Release에서 실행 조건을 끄는 것에 그치지 않고 컴파일에서 제거한다. Unity Development 빌드는 명시적인 Core `fine-diagnostics` 변형(`SOWSIEGE_FINE_DIAGNOSTICS`)을 사용하며, 일반 Core와 Release에는 새 세부 계측을 포함하지 않는다. 변형 식별자와 DLL 출처를 남기고, Development 프레임 시간을 Release 관문으로 쓰지 않는다. 첫 등장 비용을 주장하려면 같은 프로세스 안에서 같은 상황을 반복해 첫 회와 이후 회를 구분한다. 앱 재시작 사이의 비교만으로 첫 사용 효과를 확정하지 않는다.
+
+### Part 1 부분 종료: Metal 후보와 queue1을 채택하지 않는다
+
+A=`65983e2`와 B=`3bbdb32`의 깨끗한 Release ABBAABBA를411 및 capped C05 각각8회 완료했다. 모든 실행의 입력·종결 해시와25ms 초과 비율 기준은 만족했지만, B는8회 모두p95 17.4ms를 넘고 약58fps를 표시했다. A도 이미 초과 비율 기준을 만족했으므로 이를 B의 끊김 개선으로 해석하지 않는다. C05의 A566.593ms·B372.625ms 큰 지연은 남았고 원인은 미확정이다. 비율 통과가 이 지연을 해결했다는 뜻은 아니다.
+
+queue1 단독 진단도1411장·p95 17.6054ms·57.9741fps로 개선하지 못했다. `a28ce67` 기반 dirty 진단 변형이라는 출처를 유지하며 제품 통과 증거로 쓰지 않는다. B와 queue1을 미채택하고 정본 `metalUseMetalDisplayLink=0` 및 기존60fps 표시 정책을 복원한다. 추가 표시 설정 실험은 여기서 종료한다. 과거 진단·실패·비채택 후보 기록은 보존한다.
+
+[Part 1 보고](../review/stutter-part1-219.md)는 사용자가 허용한 미달의 정직한 보고에 따른 부분 종료다. 모든 끊김 해결이나 사용자 플레이 승인을 뜻하지 않는다. 같은 프로세스 첫 등장 검증도 미완료다. 앞의 PR #219 ready·CI·리뷰·선행 가지 조건은 유지하고, Part 2는 Part 1 main 반영 뒤 시작한다.
