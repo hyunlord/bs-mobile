@@ -184,11 +184,13 @@ namespace Game.App
             if (hasAd) { var ad = OptionalAdButton(ui, root, view.Ad, rewardedClaim, 18, Height(ui) - 118, width); ad.name = "Idle.OptionalAd"; }
             Button(ui, root, "Idle.Back", "돌아가기", back, 18, Height(ui) - 62, width);
         }
-        public static void Revive(UiShell ui, BmReviveView view, Action result, Action rewardedRevive)
+        public static void Revive(UiShell ui, BmReviveView view, Action result, Action rewardedRevive, Action retrySave = null)
         {
-            var root = Root(ui, "Revive", "쓰러짐"); var width = Width(ui) - 36; var hasAd = view.Ad != null && view.Ad.Visible;
-            var body = Body(ui, root, hasAd ? 138 : 82); End(body, Label(ui, body, hasAd ? "여기서 마치거나 다시 일어설 수 있습니다." : "이번 출정을 마칩니다.", 0, 0, width, 18));
-            Button(ui, root, "Revive.Result", "결산으로", result, 18, Height(ui) - (hasAd ? 118 : 62), width);
+            var root = Root(ui, "Revive", "쓰러짐"); var width = Width(ui) - 36; var hasAd = retrySave == null && view.Ad != null && view.Ad.Visible;
+            var hasSecondAction = hasAd || retrySave != null;
+            var body = Body(ui, root, hasSecondAction ? 138 : 82); End(body, Label(ui, body, hasSecondAction ? "여기서 마치거나 다시 일어설 수 있습니다." : "이번 출정을 마칩니다.", 0, 0, width, 18));
+            Button(ui, root, "Revive.Result", "결산으로", result, 18, Height(ui) - (hasSecondAction ? 118 : 62), width);
+            if (retrySave != null) Button(ui, root, "Revive.RetrySave", "보상 저장 다시 시도", retrySave, 18, Height(ui) - 62, width);
             if (hasAd) { var ad = OptionalAdButton(ui, root, view.Ad, rewardedRevive, 18, Height(ui) - 62, width); ad.name = "Revive.OptionalAd"; }
         }
         public static void FakeSettings(UiShell ui, BmFakeOutcome outcome, Action<BmFakeOutcome> change, Action back)

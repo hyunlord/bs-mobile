@@ -9,7 +9,7 @@ namespace Game.App
 {
     public sealed partial class RunCoordinator
     {
-        const string BmGlyphs = "광고 보고 2배 바로 2배 광고로 일어나기 바로 일어나기 광고 다시 뽑기 +1 바로 다시 뽑기 +1 오늘 부활한 출정 현재 외형 코발트 망토 현재 영지 휴경의 왕국 고정 보상 미정 보기 전용 실제 구매는 제공하지 않습니다 개발 광고 시험";
+        const string BmGlyphs = "광고 보고 2배 바로 2배 광고로 일어나기 바로 일어나기 광고 다시 뽑기 +1 바로 다시 뽑기 +1 오늘 부활한 출정 현재 외형 코발트 망토 현재 영지 휴경의 왕국 고정 보상 미정 보기 전용 실제 구매는 제공하지 않습니다 개발 광고 시험 보상 저장 다시 시도";
         RewardedAdsPolicy rewardPolicy;
         IRewardedAdProvider rewardProvider;
         HostRewardRunOptions nextHostRewards, activeHostRewards;
@@ -25,6 +25,18 @@ namespace Game.App
         public static MetaBonusPolicy EditorResultBonus { get; set; }
         public static bool EditorAdRemovalOwned { get; set; }
         public static int? EditorCompletedRuns { get; set; }
+        public void EditorPresentSettledRewardFixture(MetaSettlement fixture)
+        {
+            if(!finished || Progression.State.PendingRun != null || Progression.State.ResultRewardBasis == null)
+                throw new InvalidOperationException("Fixture requires a closed session and a persisted settled reward basis.");
+            settlement = fixture;
+            rewardRunSequence = Progression.State.ResultRewardBasis.RunSequence;
+            rewardRunId = "run:" + rewardRunSequence.ToString(CultureInfo.InvariantCulture);
+            rewardRunCompletedCount = CompletedRewardRuns;
+            ShowSummary();
+        }
+        public MetaSettlement EditorRewardSettlement => settlement;
+        public void EditorRetryRewardDelivery() { rewardPolicy.FlushPendingWrite(); DeliverPendingRewards(); ShowSummary(); }
         public void EditorAdvanceRewardFixture(int maxCommands)
         {
             for(int i = 0; i < maxCommands && Session != null && Session.View.Status != RunStatus.Completed && Error == null; i++)
@@ -127,7 +139,7 @@ namespace Game.App
                     case RewardedAdSlot.Reroll: cardsFrame = null; ShowCards(); break;
                     case RewardedAdSlot.Revive:
                         if(Session.HostRevived) { completedSummary = null; reviveDeclined = false; if(CurrentFrame.Status == RunStatus.AwaitingCard) { cardsFrame = null; ShowCards(); } else ShowHud(); }
-                        else FinishWithoutRevive();
+                        else ShowPortraitRevive();
                         break;
                     case RewardedAdSlot.Result: ShowSummary(); break;
                     case RewardedAdSlot.Idle: ShowPortraitIdle(); break;
@@ -176,7 +188,14 @@ namespace Game.App
                         {
                             var total = settlement.Awarded.ToDictionary(p => p.Key, p => p.Value);
                             foreach(var amount in bonusResult.BonusAwarded) total[amount.Key] = checked(total[amount.Key] + amount.Value);
-                            settlement = settlement with { State = bonusResult.State, Awarded = total };
+                            var overflow = settlement.Overflow.ToDictionary(p => p.Key, p => p.Value);
+                            foreach(var amount in bonusResult.Overflow)
+                            {
+                                overflow.TryGetValue(amount.Key, out var previousOverflow);
+                                overflow[amount.Key] = (int)Math.Min(int.MaxValue, (long)previousOverflow + amount.Value);
+                            }
+                            settlement = settlement with { State = bonusResult.State, Awarded = total, Overflow = overflow,
+                                BuildingsGrown = settlement.BuildingsGrown.Concat(bonusResult.BuildingsGrown).Distinct(StringComparer.Ordinal).ToArray() };
                         }
                         break;
                 }
@@ -190,8 +209,13 @@ namespace Game.App
             ShowPortraitRevive(); return true;
         }
         void FinishWithoutRevive() { reviveDeclined = true; screen = UiScreen.Run; RetryCompleteRun(); }
-        void ShowPortraitRevive() => MetaPage(UiScreen.Revive,
-            () => PortraitBmPanels.Revive(Ui, new BmReviveView(RewardOffer(RewardedAdSlot.Revive)), FinishWithoutRevive, () => RequestReward(RewardedAdSlot.Revive)));
+        void ShowPortraitRevive() => MetaPage(UiScreen.Revive, () =>
+        {
+            var pending = rewardPolicy.HasPendingWrite || rewardPolicy.PendingRewards.Any(intent => intent.Slot == RewardedAdSlot.Revive && intent.RunId == rewardRunId);
+            Action retrySave = pending ? () => RequestReward(RewardedAdSlot.Revive) : (Action)null;
+            PortraitBmPanels.Revive(Ui, new BmReviveView(RewardOffer(RewardedAdSlot.Revive)), FinishWithoutRevive,
+                () => RequestReward(RewardedAdSlot.Revive), retrySave);
+        });
         void ShowPortraitShop() => MetaPage(UiScreen.Shop, () => PortraitBmPanels.Shop(Ui,
             new BmShopView(new[] { "현재 외형 · 코발트 망토" }, new[] { "현재 영지 · 휴경의 왕국" }, adRemovalOwned,
                 new[] { "hero.core.frontier_knight.idle" }, new[] { Progression.Catalog.ManorBuildings[0].ArtRole }),

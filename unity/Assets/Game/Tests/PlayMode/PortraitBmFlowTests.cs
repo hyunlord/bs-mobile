@@ -211,6 +211,132 @@ namespace Tests.PlayMode
             File.WriteAllText(Path.Combine(evidence, "revive-fixture.txt"), "Preselected Editor fixture: idle normal Advance/legal card commands; health/contact experiment settings; explicit revive health100/invulnerability30; actual UI reward; final replay hash verified. Not natural-play or production revive-balance acceptance.\n");
         }
 
+        sealed class OutcomeProvider : IRewardedAdProvider
+        {
+            public bool IsAvailable => true;
+            public RewardedAdOutcome Outcome;
+            public int Calls;
+            public RewardedAdOutcome Show(RewardedAdSlot slot, string completionId) { Calls++; return Outcome; }
+        }
+        sealed class FailingRewardStore : IRewardedAdsStore
+        {
+            readonly IRewardedAdsStore inner;
+            public bool Fail;
+            public int Writes, FailFrom = -1;
+            public FailingRewardStore(string path) { inner = new RewardedAdsAtomicStore(path); }
+            public byte[] Load() => inner.Load();
+            public void Save(byte[] bytes) { Writes++; if(Fail || FailFrom >= 0 && Writes >= FailFrom) throw new IOException("Fixture reward persistence failure."); inner.Save(bytes); }
+        }
+        IEnumerator ReachRevive()
+        {
+            RunCoordinator.EditorHostRewardOptions = new HostRewardRunOptions(true, new HostReviveRules(100, 30, HostRevivePreservation.PreserveWorldAndCards));
+            var preferences = RunPreferences.Load(prefix); preferences.FeelHealth = true; preferences.FeelContact = true; preferences.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Estate");
+            Click("Estate.Depart"); yield return ScreenIs("Departure"); Click("Departure.Start"); yield return ScreenIs("Run");
+            for(var batch = 0; batch < 120 && app.CurrentScreenName != "Revive" && app.CurrentScreenName != "Summary"; batch++)
+            { app.EditorAdvanceRewardFixture(256); Assert.That(app.Error, Is.Null); yield return null; }
+            yield return ScreenIs("Revive");
+        }
+        [UnityTest, Timeout(300000)]
+        public IEnumerator FailedReviveAdvertisementKeepsChoiceUntilExplicitResult()
+        { yield return UnsuccessfulRevive(RewardedAdOutcome.Failed); }
+        [UnityTest, Timeout(300000)]
+        public IEnumerator CancelledReviveAdvertisementKeepsChoiceUntilExplicitResult()
+        { yield return UnsuccessfulRevive(RewardedAdOutcome.Cancelled); }
+        IEnumerator UnsuccessfulRevive(RewardedAdOutcome outcome)
+        {
+            PrepareAccount();
+            var provider = new OutcomeProvider { Outcome = outcome };
+            RunCoordinator.EditorRewardProvider = provider;
+            yield return ReachRevive(); var pending = app.Progression.State.PendingRun;
+            Click("Revive.OptionalAd"); yield return ScreenIs("Revive");
+            Assert.That(app.Progression.State.PendingRun, Is.EqualTo(pending));
+            Assert.That(app.Session.HostRevived, Is.False); Assert.That(provider.Calls, Is.EqualTo(1));
+            Assert.That(Buttons("Revive.OptionalAd"), Is.Empty); Assert.That(Buttons("Revive.RetrySave"), Is.Empty);
+            yield return BackgroundAndReturn("Revive");
+            Click("Revive.Result"); yield return ScreenIs("Summary");
+            Assert.That(app.Progression.State.PendingRun, Is.Null);
+        }
+        [UnityTest, Timeout(300000)]
+        public IEnumerator PendingReviveReceiptRetriesStorageWithoutAnotherAdvertisement()
+        {
+            PrepareAccount();
+            var store = new FailingRewardStore(Path.Combine(directory, "retry-policy"));
+            day = 100; policy = new RewardedAdsPolicy(store, () => day); day = 101;
+            RunCoordinator.EditorRewardPolicyFactory = () => policy = new RewardedAdsPolicy(store, () => day);
+            var provider = new OutcomeProvider { Outcome = RewardedAdOutcome.Completed };
+            RunCoordinator.EditorRewardProvider = provider;
+            yield return ReachRevive(); var pending = app.Progression.State.PendingRun;
+            store.Fail = true; Click("Revive.OptionalAd"); yield return ScreenIs("Revive");
+            Assert.That(policy.HasPendingWrite, Is.True); Assert.That(app.Progression.State.PendingRun, Is.EqualTo(pending));
+            Assert.That(app.Session.HostRevived, Is.False); Assert.That(Buttons("Revive.OptionalAd"), Is.Empty);
+            Assert.That(Named("Revive.RetrySave").interactable, Is.True);
+            yield return CaptureSizes("revive-pending-save", "Revive", false);
+            store.Fail = false; Click("Revive.RetrySave"); yield return null;
+            Assert.That(app.Error, Is.Null); Assert.That(app.Session.HostRevived, Is.True);
+            Assert.That(policy.HasPendingWrite, Is.False); Assert.That(policy.PendingRewards, Is.Empty);
+            Assert.That(provider.Calls, Is.EqualTo(1)); Assert.That(app.Progression.State.PendingRun, Is.EqualTo(pending));
+            app.OpenPause(); yield return ScreenIs("Pause"); Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon");
+            Click("Abandon.Confirm"); yield return ScreenIs("Summary");
+            using(var input = File.OpenRead(app.RecordedReplayPath))
+            {
+                var replay = ReplayCodec.Read(input);
+                Assert.That(replay.Commands.Count(command => command.Kind == ReplayCommandKind.HostReviveV1), Is.EqualTo(1));
+                Assert.That(ReplayRunner.Verify(FoundationBoot.Catalog, FoundationBoot.VerifiedDataHash, replay).StateHash, Is.EqualTo(replay.End.StateHash));
+            }
+        }
+        [UnityTest, Timeout(120000)]
+        public IEnumerator ResultBonusDisplaysWalletOverflowAndManorGrowthExactlyOnce()
+        {
+            PrepareAccount(); var catalog = CanonicalContent.CreateMetaCatalog();
+            var store = new FailingRewardStore(Path.Combine(directory, "result-retry-policy"));
+            day = 100; policy = new RewardedAdsPolicy(store, () => day); day = 101;
+            RunCoordinator.EditorRewardPolicyFactory = () => policy = new RewardedAdsPolicy(store, () => day);
+            var building = catalog.ManorBuildings.First(b => b.BaseCost.Count(pair => pair.Value > 0) > 1);
+            var fixture = MetaEngine.NewGame(catalog) with { CompletedRuns = 2, NextRunSequence = 3 };
+            foreach(var other in catalog.ManorBuildings) fixture.ManorLevels[other.Id] = other.MaxLevel;
+            fixture.ManorLevels[building.Id] = building.MaxLevel - 1;
+            foreach(var material in catalog.Materials)
+            {
+                building.BaseCost.TryGetValue(material.Id, out var basis); building.CostPerLevel.TryGetValue(material.Id, out var step);
+                fixture.Wallet[material.Id] = Math.Max(0, basis + step * (building.MaxLevel - 1) - 1);
+            }
+            var capped = catalog.Materials[0]; fixture.Wallet[capped.Id] = capped.WalletCap;
+            var awarded = catalog.Materials.ToDictionary(m => m.Id, m => 2);
+            fixture = fixture with { ResultRewardBasis = new MetaResultRewardBasis(2, awarded) };
+            SaveFixture(catalog, fixture);
+            var caps = catalog.Materials.ToDictionary(m => m.Id, m => m.WalletCap);
+            RunCoordinator.EditorResultBonus = new MetaBonusPolicy(1000, caps);
+            RunCoordinator.EditorAdRemovalOwned = true;
+            yield return Boot(); app.StartNeutralRun(42); yield return ScreenIs("Run");
+            app.OpenPause(); yield return ScreenIs("Pause"); Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon");
+            Click("Abandon.Confirm"); yield return ScreenIs("Summary");
+            var before = app.Progression.State;
+            var expected = MetaEngine.GrantResultBonus(catalog, before, 2, "expected-result-ui", RunCoordinator.EditorResultBonus);
+            Assert.That(expected.Overflow[capped.Id], Is.GreaterThan(0));
+            Assert.That(expected.BuildingsGrown, Does.Contain(building.Id));
+            var existingOverflow = catalog.Materials.ToDictionary(m => m.Id, m => 7);
+            app.EditorPresentSettledRewardFixture(new MetaSettlement(before, false, awarded, existingOverflow, new[] { building.Id }, Array.Empty<string>()));
+            yield return ScreenIs("Summary");
+            store.FailFrom = store.Writes + 2; // Receipt saves; its acknowledgement fails after the atomic meta reward.
+            Click("Summary.OptionalAd"); yield return ScreenIs("Summary");
+            Assert.That(policy.HasPendingWrite, Is.True);
+            var actual = app.EditorRewardSettlement;
+            AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
+            Assert.That(actual.Overflow[capped.Id], Is.EqualTo(7 + expected.Overflow[capped.Id]));
+            Assert.That(actual.BuildingsGrown.Count(id => id == building.Id), Is.EqualTo(1));
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("보관 초과 " + actual.Overflow[capped.Id])), Is.True);
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Count(t => t.text == building.Name + " · 성장"), Is.EqualTo(1));
+            Assert.That(Buttons("Summary.OptionalAd"), Is.Empty);
+            app.EditorRetryRewardDelivery(); yield return ScreenIs("Summary");
+            Assert.That(app.EditorRewardSettlement.Overflow[capped.Id], Is.EqualTo(actual.Overflow[capped.Id]));
+            Assert.That(app.EditorRewardSettlement.BuildingsGrown, Is.EqualTo(actual.BuildingsGrown));
+            Assert.That(app.Progression.State.RewardReceipts.Count(r => r.Kind == MetaBonusKind.Result), Is.EqualTo(1));
+            store.FailFrom = -1; app.EditorRetryRewardDelivery(); yield return ScreenIs("Summary");
+            Assert.That(policy.PendingRewards, Is.Empty); Assert.That(policy.HasPendingWrite, Is.False);
+            AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
+        }
+
         void PrepareAccount()
         {
             var catalog = CanonicalContent.CreateMetaCatalog();
