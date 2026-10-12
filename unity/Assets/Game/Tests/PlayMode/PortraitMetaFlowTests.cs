@@ -167,13 +167,21 @@ namespace Tests.PlayMode
             var expected = MetaEngine.Claim(catalog, app.Progression.State, pending.Sequence);
             yield return Reveal("Challenges.Claim:" + challenge.Id);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.True);
-            Assert.That(Named("Challenges.Claim:" + challenge.Id).GetComponentsInChildren<Image>().Any(image => image.sprite != null && image.sprite.name.Contains("ui-confirm")), Is.True, "Pending reward must show the authored claim medal.");
+            var readyButton = Named("Challenges.Claim:" + challenge.Id);
+            Assert.That(readyButton.GetComponentInChildren<Text>().text, Is.EqualTo("받기"));
+            Assert.That(((RectTransform)readyButton.transform).rect.height, Is.GreaterThanOrEqualTo(44));
+            Assert.That(readyButton.image.sprite.name, Does.Contain("ui-btn-cream"));
+            Assert.That(readyButton.GetComponentsInChildren<Image>().Any(image => image.sprite != null && image.sprite.name.Contains("ui-confirm")), Is.False, "The claim action must remain a readable text button, not a check-only medal.");
+            var unfinished = catalog.Challenges.First(item => item.Id != challenge.Id);
+            Assert.That(Named("Challenges.Claim:" + unfinished.Id).interactable, Is.False);
+            Assert.That(Named("Challenges.Claim:" + unfinished.Id).GetComponentInChildren<Text>().text, Is.EqualTo("진행"));
             yield return CaptureSizes("claim-ready-fixture", "Challenges", true);
             yield return Reveal("Challenges.Claim:" + challenge.Id);
             Click("Challenges.Claim:" + challenge.Id); yield return null;
             Assert.That(app.Progression.State.CompletedChallenges.Count(item => item == challenge.Id), Is.EqualTo(1));
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.False);
+            Assert.That(Named("Challenges.Claim:" + challenge.Id).GetComponentInChildren<Text>().text, Is.EqualTo("받음"));
             Click("Challenges.Claim:" + challenge.Id, true); yield return null;
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
             Assert.That(app.Progression.Claim(pending.Sequence).Claimed, Is.False, "The real save host must reject a duplicate receipt too.");
@@ -183,6 +191,7 @@ namespace Tests.PlayMode
             Assert.That(app.Progression.State.CompletedChallenges.Count(item => item == challenge.Id), Is.EqualTo(1));
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.False);
+            Assert.That(Named("Challenges.Claim:" + challenge.Id).GetComponentInChildren<Text>().text, Is.EqualTo("받음"));
             yield return CaptureSizes("claimed-fixture", "Challenges", true);
         }
 

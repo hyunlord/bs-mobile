@@ -147,12 +147,27 @@ namespace Tests.PlayMode
             Assert.That(ButtonNamed("Card.Choose:" + offered.Cards[0]).interactable, Is.False, "Capture preparation must remain inside the 300 ms guard.");
             Assert.That(ButtonNamed("Cards.Ban").interactable, Is.False);
             Assert.That(ButtonNamed("Cards.Lock").interactable, Is.False);
+            Assert.That(ButtonNamed("Cards.Ban").GetComponentInChildren<Text>().color.a, Is.LessThan(1), "Only disabled actions use translucent ink.");
             Click("Cards.Ban", allowDisabled: true);
             Click("Cards.Lock", allowDisabled: true);
             Click("Card.Choose:" + offered.Cards[0], allowDisabled: true);
             Assert.That(app.Session.NextSequence, Is.EqualTo(sequence), "Moving-pointer release must not select during the 300 ms guard.");
             Assert.That(app.Frame.Status, Is.EqualTo(RunStatus.AwaitingCard));
             yield return new WaitForSecondsRealtime(.35f);
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            foreach (var name in new[] { "Cards.Reroll", "Cards.Ban", "Cards.Lock" })
+            {
+                var action = ButtonNamed(name);
+                var label = action.GetComponentInChildren<Text>();
+                if (action.interactable)
+                {
+                    Assert.That(label.color, Is.EqualTo(PortraitTokens.CreamButtonInk), name + " must use opaque cream-button ink.");
+                    Assert.That(label.font.name, Does.Contain("Bold"), name + " needs readable body strokes.");
+                }
+                Assert.That(label.text, Does.Contain("회 남음"));
+                Assert.That(label.preferredHeight, Is.LessThanOrEqualTo(label.rectTransform.rect.height + .5f), name + " quota must fit inside the button.");
+            }
             Assert.That(app.Frame.Tick, Is.EqualTo(tick));
             Assert.That(offered.Bans, Is.GreaterThan(0), "Canonical opening offer must exercise a real ban allowance.");
             yield return Reveal("Cards.Ban");
@@ -435,6 +450,19 @@ namespace Tests.PlayMode
                 app.Ui.SynchronizeViewport();
                 yield return null; yield return null;
                 yield return new WaitForSecondsRealtime(.2f);
+                if (screen == "cards")
+                {
+                    var offer = app.Session.View.CaptureCards();
+                    var deadline = Time.realtimeSinceStartup + 2;
+                    while (!ButtonNamed("Card.Choose:" + offer.Cards[0]).interactable && Time.realtimeSinceStartup < deadline)
+                        yield return null;
+                    Assert.That(ButtonNamed("Card.Choose:" + offer.Cards[0]).interactable, Is.True, "Report capture must show the active offer, not its 300 ms pointer guard.");
+                    Assert.That(ButtonNamed("Cards.Reroll").interactable, Is.EqualTo(offer.Rerolls > 0));
+                    Assert.That(ButtonNamed("Cards.Ban").interactable, Is.EqualTo(offer.Bans > 0));
+                    Assert.That(ButtonNamed("Cards.Lock").interactable, Is.EqualTo(offer.Locks > 0 && offer.Cards.Any(id => id != offer.LockedCardId)));
+                    yield return new WaitForSecondsRealtime(.15f);
+                    yield return null;
+                }
                 Canvas.ForceUpdateCanvases();
                 Assert.That(Screen.width, Is.EqualTo(size.x));
                 Assert.That(Screen.height, Is.EqualTo(size.y));

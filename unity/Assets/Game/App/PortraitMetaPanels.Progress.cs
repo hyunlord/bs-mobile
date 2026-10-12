@@ -76,8 +76,7 @@ namespace Game.App
                 Caption(ui, panel, challenge.Name, 74, 12, width - 154, 26, 17, true);
                 Caption(ui, panel, "진행 " + Math.Min(progress, challenge.Target) + "/" + challenge.Target + " · 연구 " + challenge.ResearchLevel, 74, 39, width - 88, 24, 12, true);
                 var sequence = pending?.Sequence ?? 0;
-                var claimButton = ActionButton(ui, panel, "Challenges.Claim:" + challenge.Id, pending != null ? "받기" : completed ? "받음" : "진행", () => claim(sequence), width - 66, 10, 54, pending != null, 44);
-                if (pending != null) { claimButton.GetComponentInChildren<UnityEngine.UI.Text>().text = ""; PortraitWidgets.Art(ui, claimButton.transform, "ui-confirm", 3, 0, 44, 44); }
+                ActionButton(ui, panel, "Challenges.Claim:" + challenge.Id, pending != null ? "받기" : completed ? "받음" : "진행", () => claim(sequence), width - 66, 10, 54, pending != null, 44);
                 if (!completed && pending == null)
                 {
                     var railWidth = width - 110; Plate(ui, panel, "Progress rail", "ui.xp.rail", 14, 79, railWidth, 12);

@@ -25,8 +25,31 @@ namespace Game.View
         public static Button Button(UiShell ui,Transform parent,string text,Action action,float x,float y,float width,float height=PortraitTokens.Action,bool enabled=true,string role="ui.button.secondary")
         {
             var button=ui.Button(parent,text,action,enabled);ui.ApplySurface(button.image,role);
-            button.GetComponentInChildren<Text>().color=role=="ui.button.secondary"?GameVisualTokens.Ink:GameVisualTokens.Attack;
-            Position((RectTransform)button.transform,x,y,width,height);var label=button.GetComponentInChildren<Text>();label.fontSize=PortraitTokens.Body;if(ButtonFont!=null)label.font=ButtonFont;return button;
+            Position((RectTransform)button.transform,x,y,width,height);
+            var label=button.GetComponentInChildren<Text>();label.fontSize=PortraitTokens.Body;
+            var cream=role=="ui.button.secondary";
+            var font=cream?HeadingFont:ButtonFont;if(font!=null)label.font=font;
+            UiShell.Stretch(label.rectTransform);label.rectTransform.offsetMin=new Vector2(8,4);label.rectTransform.offsetMax=new Vector2(-8,-4);
+            label.lineSpacing=1;label.verticalOverflow=VerticalWrapMode.Truncate;
+            label.gameObject.AddComponent<PortraitButtonLabel>().Initialize(button,label,cream?PortraitTokens.CreamButtonInk:GameVisualTokens.Attack);
+            return button;
+        }
+    }
+    public sealed class PortraitButtonLabel : MonoBehaviour
+    {
+        Button button;
+        Text label;
+        Color active;
+        bool wasInteractable;
+        public void Initialize(Button owner,Text text,Color ink)
+        {button=owner;label=text;active=ink;Refresh();}
+        void LateUpdate()
+        {if(button!=null&&button.IsInteractable()!=wasInteractable)Refresh();}
+        void Refresh()
+        {
+            wasInteractable=button.IsInteractable();
+            var ink=wasInteractable?active:PortraitTokens.DisabledButtonInk;
+            label.color=ink;
         }
     }
 }
