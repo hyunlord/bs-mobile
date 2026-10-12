@@ -16,7 +16,7 @@ bash tools/prepare-unity.sh
 dotnet run --project core/src/SowSiege.Sim --configuration Release -- interactive-fixtures data artifacts/phase1b/replays first-playable > "$OUT/dotnet-replay.log"
 dotnet run --project core/src/SowSiege.Sim --configuration Release -- meta-replay-fixtures data "${META_REPLAY_FIXTURES:-artifacts/phase2a/p2/meta-replays}" > "$OUT/dotnet-meta-replay.log"
 node tools/verify-unity-boundaries.mjs
-node --test tools/test-unity-boundaries.mjs tools/test-unity-results.mjs tools/test-unity-export.mjs
+node --test tools/test-unity-boundaries.mjs tools/test-unity-results.mjs tools/test-unity-export.mjs tools/test-font-assets.mjs
 "$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -executeMethod Game.Editor.FoundationBuild.Configure -logFile "$OUT/configure.log"
 for platform in EditMode PlayMode; do
   result="$OUT/$platform.xml"

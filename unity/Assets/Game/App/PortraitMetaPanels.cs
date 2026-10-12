@@ -154,7 +154,7 @@ namespace Game.App
             var next = catalog.Chapters.OrderBy(c => c.Index).FirstOrDefault(c => c.Index > state.HighestClearedChapter) ?? catalog.Chapters.Last();
             var banner = Plate(ui, root, "Next chapter", "ui.button.primary", 10, 104, width - 78, 56);
             Caption(ui, banner, "다음 출정", 25, 5, width - 130, 18, 11);
-            Caption(ui, banner, "챕터 " + next.Index + " · " + ChapterName(next), 25, 22, width - 130, 27, 19);
+            Caption(ui, banner, "챕터 " + next.Index + " · " + ChapterName(next), 25, 20, width - 130, 34, 19);
             PortraitRunPanels.RoundIcon(ui, root, "Estate.Settings", "settings", settings, width - 60, 110);
             var landHeight = Mathf.Max(300, Height(ui) - 392);
             var land = PortraitWidgets.Place("Manor landscape", root, 10, 172, inner, landHeight);
