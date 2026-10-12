@@ -15,6 +15,14 @@ namespace Game.App
     public sealed partial class RunCoordinator
     {
         static partial void LoadFrozenWaveBenchmark(ref ContentCatalog catalog, ref string dataHash);
+#if UNITY_EDITOR
+        public static ContentCatalog EditorFrozenWaveBenchmark(out string dataHash)
+        {
+            ContentCatalog catalog = null; dataHash = null;
+            LoadFrozenWaveBenchmark(ref catalog, ref dataHash);
+            return catalog;
+        }
+#endif
         bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture, benchmarkInterrupted;
         string benchmarkMode = "capped";
         CrowdReplayBenchmark crowdBenchmark;

@@ -222,9 +222,17 @@ function assembleHeroes(plan, output) {
   }
   save(path.join(output, 'production-review-provenance.json'), { contract: plan.contract, performanceEligible: false, sources: proof, outputs, sheetWindows, sheetOrder: runs.map(run => run.title), sheetTiming: '12 originals at 0,5,...55 frames after first recorded action; no new animation/interpolation. Missing death/hit means N/A.', limitations: 'Methods are authoring candidates, not approved default. 2x crop clamps to original portrait; sourceframes retained. Each comparison track retains one method original game mix, selectable independently.' });
 }
-function assembleWeapons(plan, output) {
+export function selectWeaponRuns(plan, contentId) {
   const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;
-  const runs = plan.runs.filter(run => run.kind === (combat ? 'combat' : 'weapon')), proof = validateAll(plan, runs); assert.equal(runs.length, 24); fresh(output); labelHelper(output); const outputs = [];
+  const runs = plan.runs.filter(run => run.kind === (combat ? 'combat' : 'weapon') && (!contentId || run.contentId === contentId));
+  assert.equal(runs.length, contentId ? 3 : 24, 'Require all three stages for each selected weapon');
+  const ids = [...new Set(runs.map(run => run.contentId))]; assert.equal(ids.length, contentId ? 1 : 8);
+  for (const id of ids) assert.deepEqual(runs.filter(run => run.contentId === id).map(run => run.stage).sort(), [...order].sort(), `Missing or duplicate stage: ${id}`);
+  return runs;
+}
+function assembleWeapons(plan, output, contentId) {
+  const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;
+  const runs = selectWeaponRuns(plan, contentId), proof = validateAll(plan, runs); fresh(output); labelHelper(output); const outputs = [];
   for (const id of [...new Set(runs.map(run => run.contentId))]) {
     const group = order.map(stage => runs.find(run => run.contentId === id && run.stage === stage)); const clips = group.map(run => encodeRun(plan, run, output, 1));
     const file = path.join(output, id.replace(':', '-') + '-three-stages.mp4');
@@ -254,8 +262,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
       case 'run': assert(first); await runCaptures(plan, first, second); break;
       case 'validate': console.log(JSON.stringify(validateAll(plan, plan.runs.filter(run => !first || run.kind === first || run.role === first)), null, 2)); break;
       case 'heroes': assert(first); assembleHeroes(plan, first); break;
-      case 'weapons': assert(first); assembleWeapons(plan, first); break;
-      default: throw Error('Usage: m1-production-review.mjs plans NEWROOT BAKED_JSON DRAWN_JSON | combat-plans NEWROOT CASES_DIRECTORY | run PLAN APP [hero|weapon|combat|ROLE] | validate PLAN [hero|weapon|combat|ROLE] | heroes PLAN NEWVIDEO | weapons PLAN NEWVIDEO');
+      case 'weapons': assert(first); assembleWeapons(plan, first, second); break;
+      default: throw Error('Usage: m1-production-review.mjs plans NEWROOT BAKED_JSON DRAWN_JSON | combat-plans NEWROOT CASES_DIRECTORY | run PLAN APP [hero|weapon|combat|ROLE] | validate PLAN [hero|weapon|combat|ROLE] | heroes PLAN NEWVIDEO | weapons PLAN NEWVIDEO [contentId]');
     }
   }
 }

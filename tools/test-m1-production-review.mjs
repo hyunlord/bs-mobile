@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows } from './m1-production-review.mjs';
+import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns } from './m1-production-review.mjs';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'production-plan-test-'));
 try {
   const baked = path.join(root, 'baked.json'), drawn = path.join(root, 'drawn.json');
@@ -39,6 +39,14 @@ try {
   const combat = makeCombatPlan(path.join(root, 'combat'), cases);
   assert.equal(combat.runs.length, 24); assert.equal(combat.replay, undefined);
   assert.equal(new Set(combat.runs.map(run => run.replaySha256)).size, 24);
+  for (const candidate of [plan, combat]) {
+    assert.equal(selectWeaponRuns(candidate).length, 24);
+    assert.equal(selectWeaponRuns(candidate, 'core:iron_blade').length, 3);
+    assert.throws(() => selectWeaponRuns(candidate, 'core:missing'));
+    const selected = selectWeaponRuns(candidate, 'core:iron_blade');
+    assert.throws(() => selectWeaponRuns({ ...candidate, runs: selected.slice(1) }, 'core:iron_blade'));
+    assert.throws(() => selectWeaponRuns({ ...candidate, runs: [selected[0], selected[0], selected[2]] }, 'core:iron_blade'));
+  }
   assert(combat.runs.every(run => run.frames === 600 && run.args.length === 2 && run.args[0] === '--m1-combat-case'));
   const run = combat.runs[0], hit = { eventId: '1', frameIndex: '5', snapshotTick: '303', eventTick: '302', kind: 'hit', source: run.contentId, subjectId: '7', amount: '24', inViewport: 'True' }, death = { ...hit, eventId: '2', kind: 'enemy-killed', source: 'core:raider' }, manifest = { firstVisibleHitFrame: 5, firstVisibleDeathFrame: 5 }, expected = { windowHits: 1, windowKills: 1 };
   assert.deepEqual(validateCombatEvents([hit, death], run, manifest, expected), { hitCount: 1, killCount: 1, firstVisibleHitFrame: 5, firstVisibleDeathFrame: 5 });
