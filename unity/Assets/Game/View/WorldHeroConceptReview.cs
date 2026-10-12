@@ -22,11 +22,18 @@ namespace Game.View
                 : candidate == "B" ? new ArtPixelRect { x = 0, y = 0, width = 495, height = 995 }
                 : new ArtPixelRect { x = 0, y = 25, width = 470, height = 940 };
             var source = art.ResolveRole("hero.preview-b.idle");
-            var height = source.WorldSize.y * GameVisualTokens.HeroRigHeightScale;
+            // Alpha >= 8/255 bounds, measured from the source PNGs. The existing layered
+            // B idle occupies y=44..210 (167px) in its 256px cell / 252px role crop.
+            // Match visible paint height, not the padded quad height (which enlarged concepts).
+            const float referencePaintedHeight = 167f;
+            var paintedHeight = candidate == "A" ? 888f : candidate == "B" ? 968f : 892f;
+            var paintedBottom = candidate == "A" ? 900f : candidate == "B" ? 985f : 917f;
+            var height = source.WorldSize.y * GameVisualTokens.HeroRigHeightScale
+                * (referencePaintedHeight / 252f) * (frame.height / paintedHeight);
             heroConceptVisual = new ArtVisual(new ArtRoleDefinition
             {
                 id = "review.hero." + candidate, frames = new[] { frame },
-                pivot = new Vector2(.5f, .04f), worldSize = new Vector2(height * frame.width / frame.height, height),
+                pivot = new Vector2(.5f, (frame.height - paintedBottom - .5f) / frame.height), worldSize = new Vector2(height * frame.width / frame.height, height),
                 frameMs = 1000, tween = "none"
             }, heroConceptTexture);
         }

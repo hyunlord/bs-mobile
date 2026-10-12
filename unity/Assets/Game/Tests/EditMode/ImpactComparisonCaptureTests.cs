@@ -9,9 +9,11 @@ public sealed class ImpactComparisonCaptureTests
     {
         var before = Mode("baseline"); var after = Mode("applied");
         Assert.That(before.Enabled, Is.False); Assert.That(after.Enabled, Is.True);
-        Assert.That(before.Window.StartSeconds, Is.Zero); Assert.That(after.Window.DurationSeconds, Is.EqualTo(30));
+        Assert.That(before.Window.StartSeconds, Is.EqualTo(60)); Assert.That(after.Window.StartSeconds, Is.EqualTo(60));
+        Assert.That(before.Window.DurationSeconds, Is.EqualTo(30)); Assert.That(after.Window.DurationSeconds, Is.EqualTo(30));
+        Assert.That(after.Window.EndSeconds, Is.EqualTo(90));
         Assert.That(before.InputProtocol, Is.EqualTo(after.InputProtocol));
-        for (var tick = 0; tick <= 900; tick++) Assert.That(before.Direction(tick, 30), Is.EqualTo(after.Direction(tick, 30)));
+        for (var tick = 0; tick <= 2700; tick++) Assert.That(before.Direction(tick, 30), Is.EqualTo(after.Direction(tick, 30)));
         Assert.That(AutoplayCapture.IsGoldenMinuteRequested(new[] { "--autoplay-capture", "--impact-comparison", "applied" }), Is.True);
         Assert.That(FeelComparisonCapture.ResolveWindow(new[] { "--autoplay-capture", "--impact-comparison", "applied" }).DurationSeconds, Is.EqualTo(30));
     }

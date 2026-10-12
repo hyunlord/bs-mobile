@@ -9,6 +9,16 @@ namespace Tests.EditMode
     public sealed class HeroRigGpuTests
     {
         [Test]
+        public void LiveHeroResourceMaterialReferencesThePackageShader()
+        {
+            var material = Resources.Load<Material>("HeroMotion/live-material");
+            Assert.That(material, Is.Not.Null);
+            Assert.That(material.shader, Is.Not.Null);
+            Assert.That(material.shader.name, Is.EqualTo("Universal Render Pipeline/2D/Sprite-Unlit-Default"));
+            Assert.That(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(material.shader)), Is.EqualTo("13c02b14c4d048fa9653293d54f6e0e1"));
+        }
+
+        [Test]
         public void RetainedHeroMaterialEnablesInstancing()
         {
             var material=Resources.Load<Material>("HeroRigMaterial");

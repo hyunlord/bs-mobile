@@ -50,9 +50,10 @@ namespace Game.View
             swordTexture = Resources.Load<Texture2D>("HeroMotion/sword");
             if (partsTexture == null || swordTexture == null) throw new InvalidOperationException("Hero source cutouts are missing.");
             TextureBytes = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(partsTexture) + UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(swordTexture);
-            var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
-            if (shader == null) throw new InvalidOperationException("URP unlit SpriteSkin shader is unavailable.");
-            material = new Material(shader) { name = "Hero live comparison", renderQueue = 3000 + GameVisualTokens.LordLayer, hideFlags = HideFlags.DontSave };
+            var template = Resources.Load<Material>("HeroMotion/live-material");
+            if (template == null || template.shader == null || !template.shader.isSupported)
+                throw new InvalidOperationException("Retained URP SpriteSkin material is unavailable or unsupported.");
+            material = new Material(template) { name = "Hero live comparison", renderQueue = 3000 + GameVisualTokens.LordLayer, hideFlags = HideFlags.DontSave };
             root = new GameObject("Hero live comparison"); root.SetActive(false); root.transform.SetParent(owner, false);
             bones = new Transform[data.jointNames.Length]; parents = new int[bones.Length]; lowerBody = new bool[bones.Length]; pose = new HeroLiveJoint[bones.Length];
             for (var i = 0; i < bones.Length; i++)

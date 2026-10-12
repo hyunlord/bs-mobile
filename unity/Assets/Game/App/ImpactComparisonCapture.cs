@@ -9,7 +9,7 @@ namespace Game.App
         public string Mode { get; }
         public bool Enabled => Mode == "applied";
         public string InputProtocol => "impact-square-tick-tape-v1";
-        public CaptureSegmentWindow Window => new CaptureSegmentWindow(0, 30);
+        public CaptureSegmentWindow Window => new CaptureSegmentWindow(60, 30);
         ImpactComparisonCapture(string mode) { Mode = mode; }
 
         public static ImpactComparisonCapture Parse(string[] args)
