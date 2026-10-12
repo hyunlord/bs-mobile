@@ -9,6 +9,26 @@ namespace Tests.EditMode
     public sealed class HeroRigGpuTests
     {
         [Test]
+        public void LiveHeroCutoutsPreserveAuthoredPixelCoordinates()
+        {
+            var parts = Resources.Load<Texture2D>("HeroMotion/parts");
+            var sword = Resources.Load<Texture2D>("HeroMotion/sword");
+            Assert.That(parts, Is.Not.Null);
+            Assert.That(sword, Is.Not.Null);
+            Assert.That(new Vector2Int(parts.width, parts.height), Is.EqualTo(new Vector2Int(1254, 1254)));
+            Assert.That(new Vector2Int(sword.width, sword.height), Is.EqualTo(new Vector2Int(724, 2172)));
+            foreach (var part in HeroLiveRigData.Load().sprites)
+            {
+                var texture = part.source == "cleanSword" ? sword : parts;
+                var rectangle = part.rect;
+                Assert.That(rectangle[0], Is.GreaterThanOrEqualTo(0), part.bone);
+                Assert.That(rectangle[1], Is.GreaterThanOrEqualTo(0), part.bone);
+                Assert.That(rectangle[0] + rectangle[2], Is.LessThanOrEqualTo(texture.width), part.bone);
+                Assert.That(rectangle[1] + rectangle[3], Is.LessThanOrEqualTo(texture.height), part.bone);
+            }
+        }
+
+        [Test]
         public void LiveHeroResourceMaterialReferencesThePackageShader()
         {
             var material = Resources.Load<Material>("HeroMotion/live-material");
