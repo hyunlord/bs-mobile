@@ -63,7 +63,7 @@ public sealed class M1CombatReviewTests
     }
     [Test] public void ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes()
     {
-        var root=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../.omo/evidence/m1-256-combat-candidate3"));
+        var root=Environment.GetEnvironmentVariable("M1_COMBAT_FIXTURES")??Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../.omo/evidence/m1-256-combat-candidate4"));
         if(!Directory.Exists(root))Assert.Ignore("Generated actual fixture sidecars unavailable; run showcase-fixtures first.");
         var baseline=RunCoordinator.EditorFrozenWaveBenchmark(out var baselineDataHash);
         Assert.That(baseline,Is.Not.Null,"Frozen C05 catalog must be prepared.");

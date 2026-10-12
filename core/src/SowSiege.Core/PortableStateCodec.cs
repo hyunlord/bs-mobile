@@ -783,6 +783,7 @@ namespace SowSiege.Core
         private void Write(InteractiveState? value)
         {
             Write(value is not null); if (value is null) { return; }
+            if (value.MeleeAim is { } melee) { Write("melee-aim-state-v1"); Write(melee.Version); }
             Write((int)value.Aim);
             Write(value.Invulnerable);
             Write(value.SpawnPermille);

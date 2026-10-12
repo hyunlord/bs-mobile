@@ -5,6 +5,19 @@ namespace SowSiege.Tests;
 public sealed class WaveReviewCompositionTests
 {
     [Fact]
+    public void ShowcaseWalkingInputUsesIdenticalClosedSquareForAllStages()
+    {
+        var x = 0; var y = 0;
+        for (var tick = 0; tick < 360; tick++)
+        {
+            var input = ShowcaseFixtureCli.WalkingInput(tick);
+            Assert.Equal(PlayerInput.Scale, Math.Abs(input.X) + Math.Abs(input.Y));
+            x += input.X; y += input.Y;
+            Assert.Equal(input, ShowcaseFixtureCli.WalkingInput(tick + 360));
+        }
+        Assert.Equal(0, x); Assert.Equal(0, y);
+    }
+    [Fact]
     public void ReviewFactoryIsImmutableAndHashesStageAndRealDamage()
     {
         var baseline = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), profileName: "wave-1a");

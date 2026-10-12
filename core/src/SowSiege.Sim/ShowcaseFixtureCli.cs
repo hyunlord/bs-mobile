@@ -6,6 +6,13 @@ namespace SowSiege.Sim;
 public static class ShowcaseFixtureCli
 {
     public static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
+    public static PlayerInput WalkingInput(int tick) => (tick / 90 % 4) switch
+    {
+        0 => new(PlayerInput.Scale, 0),
+        1 => new(0, PlayerInput.Scale),
+        2 => new(-PlayerInput.Scale, 0),
+        _ => new(0, -PlayerInput.Scale)
+    };
     public static int Run(string[] args)
     {
 
@@ -45,7 +52,7 @@ public static class ShowcaseFixtureCli
                 ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
                 while (session.View.Status != RunStatus.Completed && tick < review.Arena.DurationTicks)
                 {
-                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance);
+                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, WalkingInput(tick));
                     session.Apply(command); ReplayCodec.WriteCommand(output, command); tick++;
                     var frame = session.View.CaptureFrame(); maximumEnemies = Math.Max(maximumEnemies, frame.Enemies.Count);
                     foreach (var e in ((IWaveRunView)session.View).CaptureWaveRuntime()!.Events)
@@ -93,6 +100,7 @@ public static class ShowcaseFixtureCli
                 review.Classification,
                 review.Gear,
                 review.Arena,
+                inputContract = "square-walk-v1: full movement, right/up/left/down, 90 ticks per edge, same input for all 24 cases",
                 scope = "review-only numeric hypotheses; 10s setup +10s capture; evolved is preconfigured proposal, not earned progression",
                 positiveHits = hits,
                 kills,

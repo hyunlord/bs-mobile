@@ -93,6 +93,19 @@ public sealed class MeleeAimTests
         Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options with { MeleeAim = new(2) }));
     }
     [Fact]
+    public void MeleeAimRuntimeStateParticipatesInHashIndependentlyOfOptions()
+    {
+        var session = InteractiveTests.Session();
+        var legacyHash = session.ComputeStateHash();
+        session.State.MeleeAim = new();
+        var enabledHash = session.ComputeStateHash();
+        Assert.NotEqual(legacyHash, enabledHash);
+        session.State.MeleeAim = new(2);
+        Assert.NotEqual(enabledHash, session.ComputeStateHash());
+        session.State.MeleeAim = null;
+        Assert.Equal(legacyHash, session.ComputeStateHash());
+    }
+    [Fact]
     public void LegacyReplayFixturesRetainExactBytes()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);

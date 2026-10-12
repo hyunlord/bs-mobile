@@ -180,7 +180,7 @@ namespace Game.View
             followCamera.ReviewMagnification = reviewCameraMagnification;
             followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
             if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
             InitializeActorGrounding();

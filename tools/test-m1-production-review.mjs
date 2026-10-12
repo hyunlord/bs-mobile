@@ -18,7 +18,7 @@ try {
   for (const run of plan.runs.slice(1, 3)) { assert.equal(run.args[run.args.indexOf('--hero-production-direction') + 1], 'follow'); assert.equal(run.expected['knight-review.json'].productionDirection, 'follow'); }
   const baseline = Array.from({ length: 120 }, () => ({ action: 'live-rig' })), animated = Array.from({ length: 120 }, (_, i) => ({ action: i === 10 ? 'walk' : i === 20 ? 'slash-light' : i === 90 ? 'death' : 'idle' }));
   const sheets = selectSheetWindows([baseline, animated, animated]);
-  validateHeroActions([{ method: 'cutout-baseline', action: 'live-rig' }], plan.runs[0]);
+  validateHeroActions([{ method: 'a-knight-live', action: 'live-rig' }], plan.runs[0]);
   for (const run of plan.runs.slice(1, 3)) {
     validateHeroActions([{ method: run.method, action: 'walk' }, { method: run.method, action: 'slash-light' }], run);
     assert.throws(() => validateHeroActions([{ method: run.method, action: 'walk' }], run), /missing actual rendered slash-light/);
