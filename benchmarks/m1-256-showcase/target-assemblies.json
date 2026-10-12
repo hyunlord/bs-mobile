@@ -1,8 +1,8 @@
 {
   "scope": "Actual net8.0 and netstandard2.1 Core DLLs; not Unity or device",
-  "commit": "3a94a09acda8e86bfd446460f0f5eda5ad3c8aea",
+  "commit": "2ef07cabbcddbb3101e2075796674e60c5b81f25",
   "gitDirty": true,
-  "caseJsonSha256": "985f5544ea34bba3fc6c1701905135705e0fee957b66147fb9f1dd36d082504c",
+  "caseJsonSha256": "254bf434ca92e9a156a4061d319293b5b9fa2e329a7e7dc8648c7d0ddd083345",
   "targets": [
     {
       "name": "net8",

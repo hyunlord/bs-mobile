@@ -1,6 +1,6 @@
 {
   "contract": "m1-combat-cases-v1",
-  "status": "candidate8: 검토 전용 수치 가설. 진화는 미리 구성한 제안 상태이며 획득 진행이 아님. 설계 정본·출시 데이터 불변. 동일한30틱 사각걷기와 실제 피해·타격을 사용한다. 고리·포자 궤도600/700/900, evolved 충돌반경400·생성2600·회수4000은 세로 화면 안 접근과 반응을 관찰하기 위한 값이며 출시 밸런스가 아니다.",
+  "status": "candidate9: 검토 전용 수치 가설. 진화는 미리 구성한 제안 상태이며 획득 진행이 아님. 설계 정본·출시 데이터 불변. 동일한30틱 사각걷기와 실제 피해·타격을 사용한다. 고리·포자 궤도600/700/900, evolved 충돌반경400·생성2600·회수4000은 세로 화면 안 접근과 반응을 관찰하기 위한 값이며 출시 밸런스가 아니다. Lv1 8사례만 적 상한24로 개별 타격 반응을 관찰한다. 단계별 수치 공정 비교가 아닌 공격 모양 검토 시나리오이며 게임 스폰·출시 규칙은 바꾸지 않는다.",
   "baselineSourceCommit": "5118e2c2a06f6449be672a77a64b61c9a349d69b",
   "cases": [
     {
@@ -29,7 +29,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -143,7 +143,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -257,7 +257,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -379,7 +379,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -509,7 +509,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -631,7 +631,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -769,7 +769,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
@@ -899,7 +899,7 @@
       "arena": {
         "enemyId": "core:raider",
         "spawnPeriodTicks": 2,
-        "enemyCap": 400,
+        "enemyCap": 24,
         "enemySpeed": 20,
         "enemyHealth": 100,
         "durationTicks": 600,
