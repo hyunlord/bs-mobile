@@ -13,6 +13,10 @@ namespace Game.View
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         static readonly ProfilerMarker SubmitMarker = new ProfilerMarker("SowSiege.View.SpriteBatchSubmit");
         static readonly ProfilerMarker FirstUseMarker = new ProfilerMarker("SowSiege.View.SpriteBatchFirstUse");
+        static readonly ProfilerMarker MeshUploadMarker = new ProfilerMarker("SowSiege.View.SpriteBatchMeshUpload");
+        static readonly ProfilerMarker PropertyUploadMarker = new ProfilerMarker("SowSiege.View.SpriteBatchPropertyUpload");
+        static readonly ProfilerMarker CapacityFlushMarker = new ProfilerMarker("SowSiege.View.SpriteBatchCapacityFlush");
+        static readonly ProfilerMarker DrawMarker = new ProfilerMarker("SowSiege.View.SpriteBatchDraw");
 #endif
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
@@ -47,9 +51,14 @@ namespace Game.View
             if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("The world renderer requires GPU instancing.");
             material = new Material(shader) { name = "World sprites " + layer, mainTexture = texture, enableInstancing = true, renderQueue = 3000 + layer, hideFlags = HideFlags.HideAndDontSave };
             mesh = new Mesh { name = "Instanced sprite quad", hideFlags = HideFlags.HideAndDontSave };
-            mesh.vertices = new[] { Vector3.zero, Vector3.right, new Vector3(1, 1), Vector3.up };
-            mesh.uv = new[] { Vector2.zero, Vector2.right, Vector2.one, Vector2.up };
-            mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 }; mesh.RecalculateBounds();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (MeshUploadMarker.Auto())
+#endif
+            {
+                mesh.vertices = new[] { Vector3.zero, Vector3.right, new Vector3(1, 1), Vector3.up };
+                mesh.uv = new[] { Vector2.zero, Vector2.right, Vector2.one, Vector2.up };
+                mesh.triangles = new[] { 0, 1, 2, 0, 2, 3 }; mesh.RecalculateBounds();
+            }
             linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear;
         }
         public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear; }
@@ -70,7 +79,14 @@ namespace Game.View
         }
         public void Add(Vector2 position, Vector2 size, Vector2 pivot, Rect uv, float degrees, Color color, float flash = 0, float edgeTexels = 0, float upperOpacity = 1)
         {
-            if (count == MaximumInstances) Flush();
+            if (count == MaximumInstances)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using (CapacityFlushMarker.Auto()) Flush();
+#else
+                Flush();
+#endif
+            }
             var rotation = Quaternion.Euler(0, 0, degrees);
             var offset = rotation * new Vector3(-pivot.x * size.x, -pivot.y * size.y, 0);
             matrices[count] = Matrix4x4.TRS(new Vector3(position.x, position.y, 0) + offset, rotation, new Vector3(size.x, size.y, 1));
@@ -84,14 +100,24 @@ namespace Game.View
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var submitSample = SubmitMarker.Auto();
 #endif
-            properties.SetVectorArray(ColorId, colors); properties.SetVectorArray(UvId, uvs); properties.SetVectorArray(FlashId, flashes);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (PropertyUploadMarker.Auto())
+#endif
+            {
+                properties.SetVectorArray(ColorId, colors); properties.SetVectorArray(UvId, uvs); properties.SetVectorArray(FlashId, flashes);
+            }
             var parameters = new RenderParams(material)
             {
                 // Explicit camera filtering drops instanced draws in the pinned URP2D runtime.
                 camera = null, layer = 0, matProps = properties, shadowCastingMode = ShadowCastingMode.Off,
                 receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off
             };
-            Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (DrawMarker.Auto())
+#endif
+            {
+                Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
+            }
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
 #if UNITY_EDITOR

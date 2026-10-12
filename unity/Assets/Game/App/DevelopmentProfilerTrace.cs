@@ -28,6 +28,7 @@ namespace Game.App
             }
         }
         public bool StallTriggerRequested { get; }
+        public bool ActiveStallTriggerCaptured => stallWindow != null && stallWindow.Trigger.Frame >= 0;
         StallWindow stallWindow;
         int previousBufferBytes;
         bool ownsBuffer;
@@ -105,6 +106,12 @@ namespace Game.App
         {
             if (TryConsumeScheduledTick(tick, eligible)) Start(recording, tick, dataHash);
         }
+#if UNITY_EDITOR
+        public void EditorRearmScheduledTraceAfterStopForTesting(string reason, bool triggerCaptured)
+        {
+            if (ShouldRearmScheduledTrace(reason, triggerCaptured)) scheduledConsumed = false;
+        }
+#endif
         TraceMetadata metadata;
         string metadataPath;
         readonly List<string> warnings = new List<string>();
@@ -178,6 +185,7 @@ namespace Game.App
         public void Stop(int tick, string reason)
         {
             if (!Active) return;
+            var rearmScheduled = ShouldRearmScheduledTrace(reason, stallWindow != null && stallWindow.Trigger.Frame >= 0);
             try
             {
                 Profiler.enabled = false; Profiler.logFile = string.Empty; Profiler.enableBinaryLog = false;
@@ -199,6 +207,7 @@ namespace Game.App
             {
                 Application.logMessageReceivedThreaded -= OnLog;
                 metadata = null; stallWindow = null;
+                if (rearmScheduled) scheduledConsumed = false;
                 if (ownsBuffer) { Profiler.maxUsedMemory = previousBufferBytes; ownsBuffer = false; }
                 if (ownsAllocationStacks)
                 {
@@ -208,6 +217,10 @@ namespace Game.App
             }
         }
 
+        bool ShouldRearmScheduledTrace(string reason, bool triggerCaptured)
+        {
+            return requestedTick.HasValue && scheduledConsumed && !triggerCaptured && (reason == "focus-lost" || reason == "application-paused");
+        }
         void OnLog(string condition, string stack, LogType type)
         {
             if (type == LogType.Log || (condition.IndexOf("profiler", StringComparison.OrdinalIgnoreCase) < 0 && condition.IndexOf("buffer", StringComparison.OrdinalIgnoreCase) < 0)) return;

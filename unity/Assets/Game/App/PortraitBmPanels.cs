@@ -305,7 +305,7 @@ namespace Game.App
             {
                 var ad = OptionalAdButton(ui, panel, view.Ad, rewardedClaim, 18, 400, width - 76); ad.name = "Idle.OptionalAd";
             }
-            Action(ui, root, "Idle.Back", "×", back, width - 68, top - 50, 44, 44, true, "ui.button.secondary", 26);
+            PortraitRunPanels.RoundIcon(ui, root, "Idle.Back", "×", back, width - 68, top - 50);
         }
         public static void Revive(UiShell ui, BmReviveView view, Action result, Action rewardedRevive, Action retrySave = null)
         {

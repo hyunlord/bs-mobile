@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { baselineCommit, fixtures, frameStats, order, summarizeStutter50 } from './summarize-stutter50.mjs';
+import { baselineCommit, fixtures, frameStats, foregroundTicks, order, summarizeStutter50 } from './summarize-stutter50.mjs';
 
 function cohort(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stutter50-test-'));
@@ -11,7 +11,7 @@ function cohort(t) {
   for (const run of order) for (const [name, fixture] of Object.entries(fixtures)) {
     const directory = path.join(root, run, name); fs.mkdirSync(directory, { recursive: true });
     const side = run[0];
-    const identity = { ...fixture, commit: side === 'A' ? baselineCommit : 'b'.repeat(40), sourceHash: side === 'A' ? 'B07DF87A5FF46FECFA43142D6533D787C13D662D08FB36D747A40413CF636678' : 'b'.repeat(64), expectedStateHash: fixture.stateHash, sourceDirty: false, developmentBuild: false, profilerEnabled: false, interrupted: false, diagnosticOnly: false, actorGroundingSkipped: false, verified: true, performanceEligible: true, frameTimingEnabled: true, error: '', platform: 'OSXPlayer', graphicsApi: 'Metal', quality: 'Ultra', renderWarmupFrames: 120, gcMode: 'Enabled', metalDisplayLinkEnvironment: 'unset', coreTickSamples: 0, heroRig: name === 'crowd411', frames: name === 'crowd411' ? 500 : 1500 };
+    const identity = { ...fixture, commit: side === 'A' ? baselineCommit : 'b'.repeat(40), sourceHash: side === 'A' ? 'EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5' : 'b'.repeat(64), expectedStateHash: fixture.stateHash, sourceDirty: false, developmentBuild: false, profilerEnabled: false, interrupted: false, diagnosticOnly: false, actorGroundingSkipped: false, verified: true, performanceEligible: true, frameTimingEnabled: true, error: '', platform: 'OSXPlayer', graphicsApi: 'Metal', quality: 'Ultra', renderWarmupFrames: 120, gcMode: 'Enabled', metalDisplayLinkEnvironment: 'unset', coreTickSamples: 0, heroRig: name === 'crowd411', frames: name === 'crowd411' ? 500 : 1500 };
     fs.writeFileSync(path.join(directory, 'benchmark.json'), JSON.stringify(identity));
     const windows = fixture.windows.split(',').map(value => value.split('-').map(Number));
     const lines = windows.flatMap(([start, end], window) => Array.from({ length: 500 }, (_, index) => `${window * 500 + index + 1},${index === 499 ? end : start},${name === 'crowd411' ? 411 : window === 2 ? 800 : 500},16.7,1`));
@@ -83,4 +83,38 @@ test('pacing change is explicit rather than rejected as an unrelated config mism
   const report = summarizeStutter50(root);
   assert.equal(report.rows.find(row => row.run === 'A1').pacing_policy, 'legacy-unbounded-catch-up');
   assert.equal(report.rows.find(row => row.run === 'B1' && row.scope === 'C05-all').pacing_policy, 'one-advance-per-render-frame-debt-preserved-v1');
+});
+
+test('documented focus gap is excluded but subsequent steady-focus stall remains a failure', t => {
+  const root = cohort(t); const file = path.join(root, 'B1', 'c05capped', 'frames.csv');
+  const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
+  lines.splice(10, 2); lines[10] = lines[10].replace(',16.7,1', ',325,1');
+  fs.writeFileSync(file, lines.join('\n') + '\n');
+  changeIdentity(root, 'B1', 'frames', 1498);
+  assert.throws(() => summarizeStutter50(root), /dropped frame/);
+  changeIdentity(root, 'B1', 'foregroundPolicy', 'pause-input-exclude-boundary-resume-v1');
+  changeIdentity(root, 'B1', 'excludedIntervals', [{firstFrame:10,lastFrame:11,startTimestamp:100,endTimestamp:200,reason:'background'}]);
+  assert.throws(() => summarizeStutter50(root), /lifecycle evidence/);
+  changeIdentity(root, 'B1', 'focusEvents', [{focus:false,paused:false,timestamp:100}]);
+  const report = summarizeStutter50(root);
+  assert.equal(report.pass, false);
+  assert.equal(report.rows.find(row => row.run === 'B1' && row.scope === 'C05-all').max_ms, 325);
+});
+
+test('historical A never gains resumable exclusions', t => {
+  const root = cohort(t);
+  changeIdentity(root, 'A1', 'foregroundPolicy', 'pause-input-exclude-boundary-resume-v1');
+  changeIdentity(root, 'A1', 'excludedIntervals', [{firstFrame:2000,lastFrame:2001,startTimestamp:100,endTimestamp:200,reason:'background'}]);
+  changeIdentity(root, 'A1', 'focusEvents', [{focus:false,paused:false,timestamp:100}]);
+  assert.throws(() => summarizeStutter50(root), /Immutable A must be uninterrupted/);
+});
+
+test('325ms of focused work before loss remains in the gate and fake ledger overlap is rejected', t => {
+  assert.equal(foregroundTicks(1000, 2000, [{timestamp:1325,focus:false,paused:false}]), 325);
+  assert.equal(frameStats([{wallMs:325}]).pass, false);
+  const root = cohort(t);
+  changeIdentity(root, 'B1', 'foregroundPolicy', 'pause-input-exclude-boundary-resume-v1');
+  changeIdentity(root, 'B1', 'excludedIntervals', [{firstFrame:2000,lastFrame:2001,startTimestamp:100,endTimestamp:200,reason:'background'}]);
+  changeIdentity(root, 'B1', 'focusEvents', [{focus:false,paused:false,timestamp:300}]);
+  assert.throws(() => summarizeStutter50(root), /does not overlap background timeline/);
 });

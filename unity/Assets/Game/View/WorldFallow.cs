@@ -74,7 +74,14 @@ namespace Game.View
 
         void AcceptFallowEvent(WaveEvent value)
         {
-            if (value.Kind == "harvest-complete") fallowHarvests.Add((Point(value.Position), visualTime));
+            if (value.Kind != "harvest-complete") return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            var before = fallowHarvests.Capacity;
+#endif
+            fallowHarvests.Add((Point(value.Position), visualTime));
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            RecordCapacityGrowth("fallowHarvests", before, fallowHarvests.Capacity, fallowHarvests.Count);
+#endif
         }
 
         void UpdateFallowMask()
@@ -99,6 +106,9 @@ namespace Game.View
                 : new Rect(0, 0, (float)mapWidth / settings.WorldUnitsPerUnityUnit, (float)mapHeight / settings.WorldUnitsPerUnityUnit);
             var windowChanged = nextWindow != fallowWindow;
             if (!windowChanged && visualTime < fallowMaskAt) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var rebuildSample = FallowMaskRebuildMarker.Auto();
+#endif
             fallowWindow = nextWindow;
             fallowMaskAt = visualTime + GameVisualTokens.FallowMaskInterval;
             Array.Clear(fallowPixels, 0, fallowPixels.Length);

@@ -201,7 +201,7 @@ namespace Game.App
             var rect = (RectTransform)activeHint.transform.parent;
             rect.SetParent(Ui.Content, false); rect.gameObject.SetActive(true);
             var left = PortraitHintLeft();
-            PortraitWidgets.Position(rect, left, 44, Ui.SafeRoot.rect.width - left - 12, 32);
+            PortraitWidgets.Position(rect, left, PortraitTokens.HudInset + 44, Ui.SafeRoot.rect.width - left - 12, 32);
             activeHint.text = activeHintKind == FirstRunHint.Move ? "끌어서 이동 · 공격은 자동" : activeHintKind == FirstRunHint.Harvest ? "익은 밭에 다가가 수확" : "백성이 싸운 뒤 일터로 복귀";
             activeHint.fontSize = PortraitTokens.Small; UiShell.Stretch(activeHint.rectTransform, 6);
             var image = rect.GetComponent<Image>(); if (image != null) { image.raycastTarget = false; image.pixelsPerUnitMultiplier = UiTokens.FallowFrameMultiplier; }

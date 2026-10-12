@@ -222,6 +222,42 @@ namespace Tests.PlayMode
             yield return CaptureSizes("abandon-confirm", true);
         }
 
+        [UnityTest, Timeout(180000)]
+        public IEnumerator ActualOffersCaptureWeaponFrameAndOwnedLevelArrow()
+        {
+            yield return Boot(); Click("Title.Enter"); yield return WaitForScreen("Run");
+            app.Send(ReplayCommandKind.GrantLevel); yield return WaitForScreen("Cards");
+            var capturedWeapon = false; var capturedUpgrade = false;
+            for (var attempt = 0; attempt < 32 && (!capturedWeapon || !capturedUpgrade); attempt++)
+            {
+                yield return new WaitForSecondsRealtime(.35f);
+                var offer = app.Session.View.CaptureCards();
+                var details = app.FirstPlayable.Cards.Where(detail => offer.Cards.Contains(detail.Id)).ToArray();
+                var weapon = details.FirstOrDefault(detail => FoundationBoot.Catalog.Weapons.ContainsKey(detail.Id));
+                var upgrade = details.FirstOrDefault(detail => detail.CurrentLevel > 0 && detail.NextLevel > detail.CurrentLevel);
+                if (!capturedWeapon && weapon != null)
+                {
+                    Assert.That(ButtonNamed("Card.Choose:" + weapon.Id).GetComponentsInChildren<Text>().Any(label => label.text == "무기"), Is.True);
+                    yield return CaptureSizes("cards", true, "cards-weapon-fixture");
+                    capturedWeapon = true;
+                }
+                if (!capturedUpgrade && upgrade != null)
+                {
+                    var expected = "Lv " + upgrade.CurrentLevel + " → " + upgrade.NextLevel;
+                    Assert.That(ButtonNamed("Card.Choose:" + upgrade.Id).GetComponentsInChildren<Text>().Any(label => label.text == expected), Is.True);
+                    yield return CaptureSizes("cards", true, "cards-upgrade-fixture");
+                    capturedUpgrade = true;
+                }
+                if (capturedWeapon && capturedUpgrade) break;
+                var selected = upgrade?.Id ?? weapon?.Id ?? offer.Cards[0];
+                yield return Reveal("Card.Choose:" + selected); Click("Card.Choose:" + selected);
+                yield return WaitForScreen("Run");
+                app.Send(ReplayCommandKind.GrantLevel); yield return WaitForScreen("Cards");
+            }
+            Assert.That(capturedWeapon, Is.True, "No actual canonical weapon offer in 32 developer-granted levels; do not synthesize a card.");
+            Assert.That(capturedUpgrade, Is.True, "No actual owned-card upgrade offer in 32 developer-granted levels; do not synthesize levels.");
+        }
+
         [UnityTest, Timeout(120000)]
         public IEnumerator LockingTheSameOfferDoesNotRestartItsPointerGuard()
         {
@@ -406,7 +442,11 @@ namespace Tests.PlayMode
                 AssertViewport(mobile);
                 AssertTouchTargets();
                 if (screen == "run") AssertHudCoverage(size.x == 390);
-                if (screen == "pause") AssertPauseScrollDoesNotCoverActions();
+                if (screen == "pause")
+                {
+                    AssertPauseScrollDoesNotCoverActions();
+                    yield return AssertPauseEvolutionAndPreferencesReachable();
+                }
                 if (captureName == "cards-evolution-fixture")
                 {
                     var viewport = app.Ui.GetComponentInChildren<ScrollRect>().viewport;
@@ -520,7 +560,18 @@ namespace Tests.PlayMode
             Assert.That(bands.Length, Is.EqualTo(1));
             var band = Pixels(bands[0]);
             Assert.That(band.height, Is.LessThanOrEqualTo(app.Ui.SafePixels.height * .1f + 1));
-            Assert.That(band.yMax, Is.EqualTo(app.Ui.SafePixels.yMax).Within(1));
+            var scale = app.Ui.Canvas.scaleFactor;
+            var inset = (app.Ui.SafePixels.yMax - band.yMax) / scale;
+            Assert.That(inset, Is.GreaterThanOrEqualTo(7.99f), "HUD must keep an eight-point inset from SafeRoot after resize.");
+            Assert.That(band.height + inset * scale, Is.LessThanOrEqualTo(app.Ui.SafePixels.height * .1f + 1), "Inset plus HUD must preserve at least 90% battlefield height.");
+            foreach (var name in new[] { "Level medallion", "Health" })
+            {
+                var item = bands[0].GetComponentsInChildren<RectTransform>().Single(rect => rect.name == name);
+                var bounds = Pixels(item);
+                Assert.That((app.Ui.SafePixels.yMax - bounds.yMax) / scale, Is.GreaterThanOrEqualTo(7.99f), name + " top safe inset");
+                Assert.That((bounds.xMin - app.Ui.SafePixels.xMin) / scale, Is.GreaterThanOrEqualTo(7.99f), name + " left safe inset");
+                Assert.That(bounds.xMax, Is.LessThanOrEqualTo(app.Ui.SafePixels.xMax));
+            }
             var hints = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "Hint" && rect.gameObject.activeInHierarchy).ToArray();
             if (requireHint) Assert.That(hints.Length, Is.EqualTo(1), "Fresh departure must exercise the actual movement hint geometry.");
             var equipment = bands[0].GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool" && rect.gameObject.activeInHierarchy).ToArray();
@@ -543,6 +594,51 @@ namespace Tests.PlayMode
             var settings = Pixels((RectTransform)ButtonNamed("Pause.Settings").transform);
             Assert.That(viewport.yMin, Is.GreaterThanOrEqualTo(settings.yMax - .5f), "Pause body must be clipped above its fixed action buttons after every resize.");
         }
+
+        IEnumerator AssertPauseEvolutionAndPreferencesReachable()
+        {
+            var panel = app.Ui.GetComponentsInChildren<RectTransform>().Single(rect => rect.name == "Portrait.Pause");
+            var scroll = panel.GetComponentInChildren<ScrollRect>();
+            scroll.verticalNormalizedPosition = 1; yield return null; Canvas.ForceUpdateCanvases();
+            var evolutions = scroll.content.GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Evolution:", StringComparison.Ordinal)).ToArray();
+            Assert.That(evolutions, Is.Not.Empty);
+            AssertFullyVisible(evolutions[0], scroll.viewport, "First evolution must be fully visible without scrolling.");
+            foreach (var target in evolutions)
+            {
+                var visible = false;
+                for (var step = 0; step <= 100; step++)
+                {
+                    scroll.verticalNormalizedPosition = 1 - step / 100f;
+                    Canvas.ForceUpdateCanvases();
+                    if (FullyVisible(target, scroll.viewport)) { visible = true; break; }
+                }
+                Assert.That(visible, Is.True, target.name + " must be fully readable by scrolling.");
+            }
+            foreach (var name in new[] { "Pause.Sound", "Pause.Haptics", "Pause.Shake", "Pause.DamageNumbers" })
+            {
+                var button = ButtonNamed(name);
+                Assert.That(button.GetComponentInParent<ScrollRect>(), Is.SameAs(scroll), name + " must scroll with evolution content.");
+                var reachable = false;
+                for (var step = 0; step <= 100; step++)
+                {
+                    scroll.verticalNormalizedPosition = 1 - step / 100f;
+                    Canvas.ForceUpdateCanvases();
+                    if (FullyVisible((RectTransform)button.transform, scroll.viewport)) { reachable = true; break; }
+                }
+                Assert.That(reachable, Is.True, name + " must be fully reachable.");
+            }
+            scroll.verticalNormalizedPosition = 1; yield return null; Canvas.ForceUpdateCanvases();
+            AssertPauseScrollDoesNotCoverActions();
+        }
+
+        static bool FullyVisible(RectTransform target, RectTransform viewport)
+        {
+            var bounds = Pixels(target); var clip = Pixels(viewport);
+            return bounds.xMin >= clip.xMin - 1 && bounds.xMax <= clip.xMax + 1 && bounds.yMin >= clip.yMin - 1 && bounds.yMax <= clip.yMax + 1;
+        }
+
+        static void AssertFullyVisible(RectTransform target, RectTransform viewport, string message)
+            => Assert.That(FullyVisible(target, viewport), Is.True, message + " bounds=" + Pixels(target) + " viewport=" + Pixels(viewport));
 
         static Rect Pixels(RectTransform rect)
         {

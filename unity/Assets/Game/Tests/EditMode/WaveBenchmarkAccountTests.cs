@@ -10,6 +10,40 @@ namespace Tests.EditMode
 {
     public sealed class WaveBenchmarkAccountTests
     {
+        [Test] public void ForegroundSpikeBeforeLossCannotBeErasedByBoundaryExclusion()
+        {
+            var interval = new BenchmarkForegroundInterval(1000);
+            interval.Transition(1325, false);
+            interval.Transition(1825, true);
+            Assert.That(interval.Finish(1840), Is.EqualTo(340));
+            var steady = new BenchmarkForegroundInterval(1000);
+            Assert.That(steady.Finish(1325), Is.EqualTo(325));
+        }
+        [Test] public void ForegroundGatePausesWithoutSpendingDebtAndResumesAfterOneBoundary()
+        {
+            var gate = new BenchmarkForegroundGate();
+            double debt = .2; var commands = 0;
+            Assert.That(gate.SkipFrame(), Is.False);
+            gate.Focus(false);
+            for (var i = 0; i < 5; i++)
+                if (!gate.SkipFrame()) { debt -= 1d / 30; commands++; }
+            Assert.That(commands, Is.Zero); Assert.That(debt, Is.EqualTo(.2));
+            gate.Focus(true);
+            Assert.That(gate.SkipFrame(), Is.True);
+            for (var i = 0; i < 10; i++) Assert.That(gate.SkipFrame(), Is.False, "No post-resume cooldown may hide a steady-focus stall.");
+        }
+        [Test] public void PauseAndFocusComposeAndSameFrameTransitionsAreStillExcluded()
+        {
+            var gate = new BenchmarkForegroundGate();
+            gate.Focus(false); gate.Pause(true); gate.Focus(true);
+            Assert.That(gate.SkipFrame(), Is.True);
+            gate.Pause(false); Assert.That(gate.SkipFrame(), Is.True);
+            Assert.That(gate.SkipFrame(), Is.False);
+            gate.Focus(false); gate.Focus(true);
+            Assert.That(gate.SkipFrame(), Is.True);
+            Assert.That(gate.SkipFrame(), Is.False);
+            gate.Focus(true); Assert.That(gate.SkipFrame(), Is.False, "Duplicate callbacks do not create exclusions.");
+        }
         [Test]
         public void OutputUsesSiblingAccountAndStableDistinctPreferenceIdentity()
         {

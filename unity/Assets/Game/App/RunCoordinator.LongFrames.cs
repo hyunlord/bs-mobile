@@ -81,6 +81,7 @@ namespace Game.App
                 {
                     WorldRenderer.RegisterDiagnosticsMarkers();
                     longFrames = new DevelopmentLongFrameRecorder();
+                    WorldRenderer.DiagnosticCapacityGrowth += ObserveLongFrameCapacityGrowth;
                     longFrameStages = new LongFrameStages();
                     longFrameOutput = Path.Combine(Application.persistentDataPath, "long-frame-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff"));
                 }
@@ -227,6 +228,11 @@ namespace Game.App
             if (longFramesClosed || !longFrameEffectKinds.Add((source, kind))) return;
             LongFrameEvent(DevelopmentLongFrameRecorder.EventFlags.FirstEffect, source);
         }
+        void ObserveLongFrameCapacityGrowth(string collection, int before, int after, int count)
+        {
+            if (longFrames == null || longFramesClosed) return;
+            longFrames.RecordCapacityGrowth(Time.frameCount, CurrentFrame?.Tick ?? 0, Stopwatch.GetTimestamp(), collection, before, after, count);
+        }
         partial void LongFrameLifecycle(bool focusEvent, bool value)
         {
             if (longFrames == null || longFramesClosed) return;
@@ -258,6 +264,7 @@ namespace Game.App
             finally
             {
                 if (Session != null && ReferenceEquals(Session.Diagnostics, longFrameStages)) Session.Diagnostics = longFrameStages.Forward;
+                WorldRenderer.DiagnosticCapacityGrowth -= ObserveLongFrameCapacityGrowth;
                 if (longFrameWorld != null) longFrameWorld.DiagnosticEffectCreated -= ObserveLongFrameEffect;
                 longFrames.Dispose();
             }
@@ -279,6 +286,7 @@ namespace Game.App
         public void EditorDetachLongFrameForTests()
         {
             if (Session != null && ReferenceEquals(Session.Diagnostics, longFrameStages)) Session.Diagnostics = longFrameStages.Forward;
+            WorldRenderer.DiagnosticCapacityGrowth -= ObserveLongFrameCapacityGrowth;
             longFramesClosed = true; longFrames = null;
         }
 #endif

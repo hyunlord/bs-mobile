@@ -166,6 +166,10 @@ namespace Tests.PlayMode
             var pending = app.Progression.State.PendingClaims.Single(item => item.SourceId == challenge.Id);
             var expected = MetaEngine.Claim(catalog, app.Progression.State, pending.Sequence);
             yield return Reveal("Challenges.Claim:" + challenge.Id);
+            Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.True);
+            Assert.That(Named("Challenges.Claim:" + challenge.Id).GetComponentsInChildren<Image>().Any(image => image.sprite != null && image.sprite.name.Contains("ui-confirm")), Is.True, "Pending reward must show the authored claim medal.");
+            yield return CaptureSizes("claim-ready-fixture", "Challenges", true);
+            yield return Reveal("Challenges.Claim:" + challenge.Id);
             Click("Challenges.Claim:" + challenge.Id); yield return null;
             Assert.That(app.Progression.State.CompletedChallenges.Count(item => item == challenge.Id), Is.EqualTo(1));
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
@@ -180,6 +184,40 @@ namespace Tests.PlayMode
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.False);
             yield return CaptureSizes("claimed-fixture", "Challenges", true);
+        }
+
+        [UnityTest, Timeout(120000)]
+        public IEnumerator CanonicalClearSettlementDisplaysEarnedVassalFragments()
+        {
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Run");
+            app.OpenPause(); yield return ScreenIs("Pause"); Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon");
+            Click("Abandon.Confirm"); yield return ScreenIs("Summary");
+            var catalog = CanonicalContent.CreateMetaCatalog(); var before = MetaEngine.NewGame(catalog);
+            var chapter = catalog.Chapters.OrderBy(item => item.Index).First();
+            var plan = MetaEngine.BeginRun(catalog, before, chapter.Id, 30001);
+            var duration = Math.Max(catalog.Economy.MinimumRewardTicks, FoundationBoot.Catalog.Tuning.DurationTicks);
+            var facts = new MetaRunFacts(duration, duration, true, true, false, 1, 0, 0, 0, 0, 0);
+            var settlement = MetaEngine.SettleRun(catalog, plan.State, plan.Run, facts, MetaRewardDelivery.PendingClaims);
+            Assert.That(settlement.Cleared, Is.True);
+            Assert.That(MetaValidation.ValidateState(catalog, settlement.State), Is.Empty);
+            var fragments = settlement.State.Vassals.Where(pair => pair.Value.Fragments > before.Vassals[pair.Key].Fragments)
+                .ToDictionary(pair => pair.Key, pair => pair.Value.Fragments - before.Vassals[pair.Key].Fragments);
+            Assert.That(fragments, Is.Not.Empty);
+            foreach (var id in before.ActiveVassalIds)
+                Assert.That(fragments[id], Is.EqualTo(Math.Min(catalog.Economy.FragmentsPerClear, catalog.Vassals.Single(item => item.Id == id).FragmentCap - before.Vassals[id].Fragments)));
+            var savedState = MetaSaveCodec.Encode(app.Progression.State);
+            void RenderRuleFixture()
+            {
+                app.Ui.Clear();
+                PortraitMetaPanels.Result(app.Ui, catalog, chapter.Id, facts, settlement, FoundationBoot.Catalog.Tuning.TickRate, facts.Level, fragments, () => { }, () => { });
+                foreach (var pair in fragments)
+                {
+                    var label = catalog.Vassals.Single(item => item.Id == pair.Key).Name + " · 조각 +" + pair.Value;
+                    Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(text => text.text == label), Is.True, label);
+                }
+            }
+            yield return CaptureSizes("result-clear-rule-fixture", "Summary", true, RenderRuleFixture);
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(savedState), "The visual clear fixture must not grant its rewards to the running account.");
         }
 
         void ReturningPreference() { var preferences = RunPreferences.Load(prefix); preferences.IntroductionSeen = true; preferences.Save(); }
@@ -237,13 +275,13 @@ namespace Tests.PlayMode
             }
             Assert.Fail("Unreachable scroll target " + name);
         }
-        IEnumerator CaptureSizes(string name, string expectedScreen, bool fixture)
+        IEnumerator CaptureSizes(string name, string expectedScreen, bool fixture, Action renderFixture = null)
         {
             foreach (var size in new[] { new Vector2Int(390, 844), new Vector2Int(1080, 2520) })
             {
                 PlayModeWindow.SetCustomRenderingResolution((uint)size.x, (uint)size.y, "Portrait meta QA");
                 yield return null; yield return null; app.Ui.SetPortraitMobileSimulation(true); app.Ui.SynchronizeViewport();
-                yield return new WaitForSecondsRealtime(.2f); Canvas.ForceUpdateCanvases();
+                yield return new WaitForSecondsRealtime(.2f); renderFixture?.Invoke(); Canvas.ForceUpdateCanvases();
                 Assert.That(Screen.width, Is.EqualTo(size.x)); Assert.That(Screen.height, Is.EqualTo(size.y));
                 Assert.That(app.CurrentScreenName, Is.EqualTo(expectedScreen));
                 var scroll = app.Ui.GetComponentInChildren<ScrollRect>();
@@ -259,7 +297,7 @@ namespace Tests.PlayMode
                     var image = new Texture2D(2, 2);
                     try { Assert.That(image.LoadImage(File.ReadAllBytes(path)), Is.True); Assert.That(image.width, Is.EqualTo(size.x)); Assert.That(image.height, Is.EqualTo(size.y)); }
                     finally { Object.Destroy(image); }
-                    File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture={fixture}; screen={app.CurrentScreenName}; commit={BuildIdentity.Commit}; sourceHash={BuildIdentity.SourceHash}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; safePixels={app.Ui.SafePixels}; normalPlayEvidence=false\n");
+                    File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture={fixture}; screen={app.CurrentScreenName}; commit={BuildIdentity.Commit}; sourceHash={BuildIdentity.SourceHash}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; safePixels={app.Ui.SafePixels}; normalPlayEvidence=false; fixtureOrigin={(renderFixture == null ? "account-flow" : "canonical-MetaEngine-clear-result-panel")}\n");
                 }
                 if (scroll != null) scroll.verticalNormalizedPosition = 1;
                 yield return null;

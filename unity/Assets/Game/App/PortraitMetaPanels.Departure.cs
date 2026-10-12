@@ -16,7 +16,7 @@ namespace Game.App
             Action start, Action cards, Action vassals, Action back, bool pendingRun = false)
         {
             var root = Page(ui, "Departure", ""); var width = Width(ui) - 32;
-            ActionButton(ui, root, "Departure.Back", "‹", back, 16, 50, 44, true, 44);
+            PortraitRunPanels.RoundIcon(ui, root, "Departure.Back", "‹", back, 16, 50);
             Caption(ui, root, "출정 준비", 70, 50, width - 60, 44, 22);
             var body = Body(ui, root, 106, 112); float y = 0; var chapters = catalog.Chapters.Where(c => c.Index <= 7).OrderBy(c => c.Index).ToArray();
             var step = (width - 44) / 6;

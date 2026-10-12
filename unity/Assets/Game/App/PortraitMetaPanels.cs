@@ -155,7 +155,7 @@ namespace Game.App
             var banner = Plate(ui, root, "Next chapter", "ui.button.primary", 10, 104, width - 78, 56);
             Caption(ui, banner, "다음 출정", 25, 5, width - 130, 18, 11);
             Caption(ui, banner, "챕터 " + next.Index + " · " + ChapterName(next), 25, 22, width - 130, 27, 19);
-            ActionButton(ui, root, "Estate.Settings", "설정", settings, width - 60, 110, 44, true, 44);
+            PortraitRunPanels.RoundIcon(ui, root, "Estate.Settings", "settings", settings, width - 60, 110);
             var landHeight = Mathf.Max(300, Height(ui) - 392);
             var land = PortraitWidgets.Place("Manor landscape", root, 10, 172, inner, landHeight);
             var landscape = land.gameObject.AddComponent<PortraitManorDrawing>(); landscape.raycastTarget = false;
@@ -177,9 +177,11 @@ namespace Game.App
                 }
             }
             var chestX = inner * .32f; var chestY = landHeight * .50f;
-            Plate(ui, land, "Production chest rim", "ui.medallion", chestX, chestY, 76, 76);
+            PortraitBmPanels.Shape(land, "Production chest rim", chestX, chestY, 76, 76, PortraitBmShape.Form.Circle,
+                new Color32(42, 37, 29, 235), new Color32(243, 213, 140, 255), 3);
             PortraitWidgets.Art(ui, land, "o-chest", chestX + 16, chestY + 8, 44, 39);
-            Caption(ui, land, Pending(state, MetaClaimKind.Idle) ? "받기" : "생산 상자", chestX, chestY + 47, 76, 22, 11, false, TextAnchor.MiddleCenter);
+            var chestCaption = Caption(ui, land, Pending(state, MetaClaimKind.Idle) ? "받기" : "생산 상자", chestX, chestY + 47, 76, 22, 11, false, TextAnchor.MiddleCenter);
+            chestCaption.color = new Color32(243, 213, 140, 255); chestCaption.fontStyle = FontStyle.Bold;
             Hit(land, "Estate.Idle", () => navigate(PortraitMetaPage.Idle), chestX, chestY, 76, 76);
             var pendingClaims = state.PendingClaims.Where(c => c.Kind == MetaClaimKind.Idle && c.Rewards.Values.Any(v => v > 0)).ToArray();
             for (var i = 0; i < pendingClaims.Length; i++)

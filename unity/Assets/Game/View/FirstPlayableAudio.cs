@@ -1,6 +1,9 @@
 using System;
 using SowSiege.Core;
 using UnityEngine;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
@@ -14,6 +17,14 @@ namespace Game.View
         static readonly float[] Cooldowns = { .09f, .14f, .12f, 0f, 0f, .4f, 0f };
         readonly AudioSource[] voices = new AudioSource[7];
         readonly float[] nextCueTime = new float[7];
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly ProfilerMarker AudioResourceLoadMarker = new ProfilerMarker("SowSiege.View.AudioResourceLoad");
+        static readonly ProfilerMarker AudioSourceCreateMarker = new ProfilerMarker("SowSiege.View.AudioSourceCreate");
+        static readonly ProfilerMarker AudioPlaybackMarker = new ProfilerMarker("SowSiege.View.AudioPlayback");
+        static readonly ProfilerMarker AudioFirstPlaybackMarker = new ProfilerMarker("SowSiege.View.AudioFirstPlayback");
+        readonly bool[] playedOnce = new bool[7];
+        bool musicPlayedOnce;
+#endif
         ContentCatalog catalog;
         ShortHaptics haptics;
         AudioSource music;
@@ -43,9 +54,19 @@ namespace Game.View
 
         AudioSource CreateSource(string name, bool loop)
         {
-            var clip = Resources.Load<AudioClip>("Audio/" + name);
+            AudioClip clip;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (AudioResourceLoadMarker.Auto()) clip = Resources.Load<AudioClip>("Audio/" + name);
+#else
+            clip = Resources.Load<AudioClip>("Audio/" + name);
+#endif
             if (clip == null) throw new InvalidOperationException("Missing original audio: " + name);
-            var source = gameObject.AddComponent<AudioSource>();
+            AudioSource source;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (AudioSourceCreateMarker.Auto()) source = gameObject.AddComponent<AudioSource>();
+#else
+            source = gameObject.AddComponent<AudioSource>();
+#endif
             source.playOnAwake = false;
             source.loop = loop;
             source.spatialBlend = 0;
@@ -78,7 +99,11 @@ namespace Game.View
             }
             if (!initialized) return;
             music.Stop();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            PlaySource(music, ref musicPlayedOnce);
+#else
             music.Play();
+#endif
             if (paused) music.Pause();
         }
 
@@ -136,8 +161,32 @@ namespace Game.View
             if (paused || effectsVolume <= 0 || now < nextCueTime[index]) return;
             nextCueTime[index] = now + Cooldowns[index];
             // Dedicated voices keep level/evolution/boss cues independent from combat floods.
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            PlaySource(voices[index], ref playedOnce[index]);
+#else
             voices[index].Play();
+#endif
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static void PlaySource(AudioSource source, ref bool firstObserved)
+        {
+            if (!firstObserved)
+            {
+                firstObserved = true;
+                using (AudioFirstPlaybackMarker.Auto()) PlaySource(source);
+                return;
+            }
+            PlaySource(source);
+        }
+        static void PlaySource(AudioSource source)
+        {
+            using (AudioPlaybackMarker.Auto())
+            {
+                source.Play();
+            }
+        }
+#endif
 
         public void PlayEvolutionHaptic() => Vibrate();
 

@@ -376,6 +376,7 @@ namespace Game.App
                     }
                 }
                 world.ShowAnnouncements=screen==UiScreen.Run;
+                world.ShowTransientText=screen!=UiScreen.Revive;
                 PredictLord(movement);
                 var probeDrawStart=ProbeEnabled?ProbeTimestamp():0;
                 using(RunProfilerMarkers.WorldPresent.Auto())
@@ -602,7 +603,7 @@ namespace Game.App
         {
             LongFrameLifecycle(false, pause);
             if (offlineReplayCapture != null) return;
-            if (waveBenchmarkReady && benchmarkWarmFrames == 0 && pause) benchmarkInterrupted = true;
+            if (waveBenchmarkRequested) { BenchmarkLifecycle(false, pause); return; }
 #if UNITY_EDITOR
             editorLastPause=pause;
             EditorCaptureLifecycle?.Invoke("application-pause",pause,editorCaptureActive);
@@ -617,7 +618,7 @@ namespace Game.App
         {
             LongFrameLifecycle(true, focus);
             if (offlineReplayCapture != null) return;
-            if (waveBenchmarkReady && benchmarkWarmFrames == 0 && !focus) benchmarkInterrupted = true;
+            if (waveBenchmarkRequested) { BenchmarkLifecycle(true, focus); return; }
 #if UNITY_EDITOR
             editorLastFocus=focus;
             EditorCaptureLifecycle?.Invoke("application-focus",focus,editorCaptureActive);

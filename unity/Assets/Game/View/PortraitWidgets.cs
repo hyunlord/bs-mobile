@@ -5,6 +5,10 @@ namespace Game.View
 {
     public static class PortraitWidgets
     {
+        static Font headingFont;
+        static Font buttonFont;
+        static Font HeadingFont => headingFont != null ? headingFont : headingFont = Resources.Load<Font>("Fonts/GowunBatang/GowunBatang-Bold");
+        static Font ButtonFont => buttonFont != null ? buttonFont : buttonFont = Resources.Load<Font>("Fonts/GowunBatang/GowunBatang-Regular");
         public static RectTransform Place(string name,Transform parent,float x,float y,float width,float height)
         {
             var rect=UiShell.Rect(name,parent);Position(rect,x,y,width,height);return rect;
@@ -12,7 +16,7 @@ namespace Game.View
         public static void Position(RectTransform rect,float x,float y,float width,float height)
         {rect.anchorMin=rect.anchorMax=new Vector2(0,1);rect.pivot=new Vector2(0,1);rect.anchoredPosition=new Vector2(x,-y);rect.sizeDelta=new Vector2(width,height);}
         public static Text Label(UiShell ui,Transform parent,string text,float x,float y,float width,float height,int size=PortraitTokens.Body)
-        {var label=ui.Label(parent,text,size,height);Position(label.rectTransform,x,y,width,height);label.lineSpacing=1.15f;return label;}
+        {var label=ui.Label(parent,text,size,height);if(size>=PortraitTokens.Heading&&HeadingFont!=null)label.font=HeadingFont;Position(label.rectTransform,x,y,width,height);label.lineSpacing=1.15f;return label;}
         public static Image Art(UiShell ui,Transform parent,string assetName,float x,float y,float width,float height)
         {
             var rect=Place(assetName,parent,x,y,width,height);
@@ -22,7 +26,7 @@ namespace Game.View
         {
             var button=ui.Button(parent,text,action,enabled);ui.ApplySurface(button.image,role);
             button.GetComponentInChildren<Text>().color=role=="ui.button.secondary"?GameVisualTokens.Ink:GameVisualTokens.Attack;
-            Position((RectTransform)button.transform,x,y,width,height);button.GetComponentInChildren<Text>().fontSize=PortraitTokens.Body;return button;
+            Position((RectTransform)button.transform,x,y,width,height);var label=button.GetComponentInChildren<Text>();label.fontSize=PortraitTokens.Body;if(ButtonFont!=null)label.font=ButtonFont;return button;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Game.View
         readonly int[] shownLevels=new int[13];
         readonly Dictionary<string,Image> icons=new Dictionary<string,Image>(StringComparer.Ordinal);
         Vector2 layoutSize;long lastHealth=long.MinValue,lastMaximum,lastExperience,lastRequired;int lastLevel=-1,lastSecond=-1,lastSeason=-1;
-        public float ReservedTopPixels=>root.rect.height*ui.Canvas.scaleFactor;
+        public float ReservedTopPixels=>(root.rect.height+PortraitTokens.HudInset)*ui.Canvas.scaleFactor;
         public PortraitHud(UiShell ui,ContentCatalog catalog,Action pause,bool hitFeedback)
         {
             this.ui=ui;this.catalog=catalog;ui.SynchronizeViewport();
@@ -67,7 +67,8 @@ namespace Game.View
         void Layout()
         {
             var size=ui.SafeRoot.rect.size;if(size==layoutSize)return;layoutSize=size;
-            root.sizeDelta=new Vector2(0,Mathf.Min(PortraitTokens.HudHeight,size.y*.1f));
+            root.anchoredPosition=new Vector2(0,-PortraitTokens.HudInset);
+            root.sizeDelta=new Vector2(0,Mathf.Min(PortraitTokens.HudHeight,size.y*.1f-PortraitTokens.HudInset));
             var y=Mathf.Max(44,root.rect.height-26);
             for(var i=0;i<slots.Length;i++)slots[i].anchoredPosition=new Vector2(10+i*28f,-y);
         }

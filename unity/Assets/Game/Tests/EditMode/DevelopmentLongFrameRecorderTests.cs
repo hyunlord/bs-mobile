@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using Game.App;
@@ -44,11 +45,43 @@ namespace Game.Tests
             }
             finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
         }
+        [Test] public void RequiredDiagnosticCountersIncludeViewFirstUseMarkerFamilies()
+        {
+            var names = DevelopmentLongFrameRecorder.RequiredCounterNamesForTesting();
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchMeshUpload"));
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchPropertyUpload"));
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchCapacityFlush"));
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchDraw"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioResourceLoad"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioSourceCreate"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioPlayback"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioFirstPlayback"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontSupportProbe"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontRequestCharacters"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontNewCharacters"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontTextureRebuilt"));
+            Assert.That(new HashSet<string>(names).Count, Is.EqualTo(names.Length));
+        }
         [Test] public void ExplicitOptInRejectsDuplicates()
         {
             Assert.That(DevelopmentLongFrameRecorder.Requested(Array.Empty<string>()), Is.False);
             Assert.That(DevelopmentLongFrameRecorder.Requested(new[] { "--diagnostic-long-frames" }), Is.True);
             Assert.Throws<ArgumentException>(() => DevelopmentLongFrameRecorder.Requested(new[] { "--diagnostic-long-frames", "--diagnostic-long-frames" }));
+        }
+        [Test] public void CapacityEvidencePreservesGrowthCoordinatesAndReportsOverflow()
+        {
+            using var recorder = DevelopmentLongFrameRecorder.WithSmallCapacityGrowthBufferForTesting();
+            recorder.RecordCapacityGrowth(10, 20, 300, "enemies", 64, 64, 40);
+            recorder.RecordCapacityGrowth(11, 21, 301, "enemies", 64, 128, 65);
+            recorder.RecordCapacityGrowth(12, 22, 302, "effects", 16, 32, 17);
+            Assert.That(recorder.Overflowed, Is.False);
+            recorder.RecordCapacityGrowth(13, 23, 303, "effects", 32, 64, 33);
+            Assert.That(recorder.Overflowed, Is.True);
+            var writer = new StringWriter(); recorder.WriteCapacityGrowthCsv(writer);
+            var rows = writer.ToString().Trim().Split('\n');
+            Assert.That(rows.Length, Is.EqualTo(3));
+            Assert.That(rows[1].Trim(), Is.EqualTo("11,21,301,\"enemies\",64,128,65"));
+            Assert.That(rows[2].Trim(), Is.EqualTo("12,22,302,\"effects\",16,32,17"));
         }
         [Test] public void RingPreservesFourNeighborsAndDoesNotDuplicateOverlappingWindows()
         {

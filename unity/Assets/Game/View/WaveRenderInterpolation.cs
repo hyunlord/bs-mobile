@@ -59,6 +59,15 @@ namespace Game.View
         public void Accept(WaveRuntimeFrame frame, float time)
         {
             if (ReferenceEquals(frame, accepted)) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var rebuildSample = WorldRenderer.WaveInterpolationRebuildMarker.Auto();
+            var groupCapacity = previousGroups.EnsureCapacity(0);
+            var projectileCapacity = previousProjectiles.EnsureCapacity(0);
+            var orbitCapacity = orbits.EnsureCapacity(0);
+            var ordinalCapacity = ordinals.EnsureCapacity(0);
+            var keyCapacity = keys.Capacity;
+            var expiredCapacity = expired.Capacity;
+#endif
             previousGroups.Clear(); previousProjectiles.Clear();
             if (accepted != null)
             {
@@ -83,6 +92,14 @@ namespace Game.View
             foreach (var pair in orbits) if (pair.Value.generation != generation) expired.Add(pair.Key);
             for (var i = 0; i < expired.Count; i++) orbits.Remove(expired[i]);
             accepted = frame;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            WorldRenderer.RecordCapacityGrowth("waveMotion.previousGroups", groupCapacity, previousGroups.EnsureCapacity(0), previousGroups.Count);
+            WorldRenderer.RecordCapacityGrowth("waveMotion.previousProjectiles", projectileCapacity, previousProjectiles.EnsureCapacity(0), previousProjectiles.Count);
+            WorldRenderer.RecordCapacityGrowth("waveMotion.orbits", orbitCapacity, orbits.EnsureCapacity(0), orbits.Count);
+            WorldRenderer.RecordCapacityGrowth("waveMotion.ordinals", ordinalCapacity, ordinals.EnsureCapacity(0), ordinals.Count);
+            WorldRenderer.RecordCapacityGrowth("waveMotion.keys", keyCapacity, keys.Capacity, keys.Count);
+            WorldRenderer.RecordCapacityGrowth("waveMotion.expired", expiredCapacity, expired.Capacity, expired.Count);
+#endif
         }
 
         public Vector2 GroupPosition(WaveGroupView group, float alpha, float units)

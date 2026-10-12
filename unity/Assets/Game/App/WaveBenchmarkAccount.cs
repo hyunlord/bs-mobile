@@ -5,6 +5,34 @@ using System.Text;
 
 namespace Game.App
 {
+    public struct BenchmarkForegroundInterval
+    {
+        long cursor, activeTicks;
+        bool active;
+        public BenchmarkForegroundInterval(long start) { cursor = start; activeTicks = 0; active = true; }
+        public void Transition(long timestamp, bool nextActive)
+        {
+            if (timestamp < cursor) throw new ArgumentException("Foreground timeline is unordered.");
+            if (active) activeTicks += timestamp - cursor;
+            cursor = timestamp; active = nextActive;
+        }
+        public long Finish(long end) { Transition(end, false); return activeTicks; }
+    }
+    public sealed class BenchmarkForegroundGate
+    {
+        public bool Focused { get; private set; } = true;
+        public bool Paused { get; private set; }
+        bool boundary;
+        public void Focus(bool value) { if (Focused != value) boundary = true; Focused = value; }
+        public void Pause(bool value) { if (Paused != value) boundary = true; Paused = value; }
+        public bool SkipFrame()
+        {
+            if (!Focused || Paused) return true;
+            if (!boundary) return false;
+            boundary = false;
+            return true;
+        }
+    }
     // Startup runs before the benchmark harness: isolate its save migration and preference defaults too.
     public sealed class WaveBenchmarkAccount
     {

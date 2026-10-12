@@ -211,6 +211,7 @@ namespace Game.App
         void FinishWithoutRevive() { reviveDeclined = true; screen = UiScreen.Run; RetryCompleteRun(); }
         void ShowPortraitRevive() => MetaPage(UiScreen.Revive, () =>
         {
+            if (world != null) world.ShowTransientText = false;
             var pending = rewardPolicy.HasPendingWrite || rewardPolicy.PendingRewards.Any(intent => intent.Slot == RewardedAdSlot.Revive && intent.RunId == rewardRunId);
             Action retrySave = pending ? () => RequestReward(RewardedAdSlot.Revive) : (Action)null;
             var frame = CurrentFrame;

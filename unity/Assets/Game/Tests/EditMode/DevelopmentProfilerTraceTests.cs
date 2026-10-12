@@ -143,6 +143,19 @@ namespace Game.Tests
             Assert.Throws<ArgumentException>(() => RunCoordinator.ParseWaveBenchmarkProfile(new[] { "--wave-benchmark-profile" }, false));
             Assert.Throws<ArgumentException>(() => RunCoordinator.ParseWaveBenchmarkProfile(new[] { "--wave-benchmark-profile", "--wave-benchmark-profile" }, true));
         }
+        [Test] public void InterruptedScheduledTraceRearmsUnlessTriggerWasCaptured()
+        {
+            var trace = new DevelopmentProfilerTrace(new[] { "app", "--diagnostic-trace-tick", "10" });
+            Assert.That(trace.TryConsumeScheduledTick(10, true), Is.True);
+            trace.EditorRearmScheduledTraceAfterStopForTesting("focus-lost", false);
+            Assert.That(trace.TryConsumeScheduledTick(11, true), Is.True);
+            trace.EditorRearmScheduledTraceAfterStopForTesting("application-paused", true);
+            Assert.That(trace.TryConsumeScheduledTick(12, true), Is.False);
+            var other = new DevelopmentProfilerTrace(new[] { "app", "--diagnostic-trace-tick", "10" });
+            Assert.That(other.TryConsumeScheduledTick(10, true), Is.True);
+            other.EditorRearmScheduledTraceAfterStopForTesting("manual", false);
+            Assert.That(other.TryConsumeScheduledTick(11, true), Is.False);
+        }
         [Test] public void MissingOptionNeverArmsAndCrossingTickConsumesOnce()
         {
             Assert.That(new DevelopmentProfilerTrace(Array.Empty<string>()).TryConsumeScheduledTick(30000, true), Is.False);

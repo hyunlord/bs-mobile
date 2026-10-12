@@ -17,6 +17,19 @@ namespace Game.View
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         static readonly ProfilerMarker SpriteBatchRebuildMarker = new ProfilerMarker("SowSiege.View.SpriteBatchRebuild");
         public Action<string, string> DiagnosticEffectCreated;
+        public static Action<string, int, int, int> DiagnosticCapacityGrowth;
+        internal static readonly ProfilerMarker WaveIndexRebuildMarker = new ProfilerMarker("SowSiege.View.WaveIndexRebuild");
+        internal static readonly ProfilerMarker WaveActorIndexRebuildMarker = new ProfilerMarker("SowSiege.View.WaveActorIndexRebuild");
+        internal static readonly ProfilerMarker PreviousIndexRebuildMarker = new ProfilerMarker("SowSiege.View.PreviousIndexRebuild");
+        internal static readonly ProfilerMarker WaveInterpolationRebuildMarker = new ProfilerMarker("SowSiege.View.WaveInterpolationRebuild");
+        internal static readonly ProfilerMarker FallowMaskRebuildMarker = new ProfilerMarker("SowSiege.View.FallowMaskRebuild");
+        static readonly ProfilerMarker CollectionCapacityGrowthMarker = new ProfilerMarker("SowSiege.View.CollectionCapacityGrowth");
+        internal static void RecordCapacityGrowth(string collection, int before, int after, int count)
+        {
+            if (after <= before) return;
+            using var sample = CollectionCapacityGrowthMarker.Auto();
+            DiagnosticCapacityGrowth?.Invoke(collection, before, after, count);
+        }
         public static void RegisterDiagnosticsMarkers()
         {
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(WorldRenderer).TypeHandle);
@@ -72,6 +85,22 @@ namespace Game.View
         int mapWidth, mapHeight, season, previousSeason, level;
         float visualTime, seasonAge, heroHitUntil, levelAge = 10;
         public bool ShowAnnouncements { get; set; } = true;
+        bool showTransientText = true;
+        public bool ShowTransientText
+        {
+            get => showTransientText;
+            set
+            {
+                showTransientText = value;
+                if (!value) HideTransientText();
+            }
+        }
+        void HideTransientText()
+        {
+            numbers?.Advance(0, false);
+            lordDamageNumbers?.Advance(0, false);
+            growthLabels?.Clear();
+        }
         public bool ShowDamageNumbers { get; set; } = true;
         public bool ShakeEnabled { get; set; } = true;
         public Vector2 CameraShakeOffset => Vector2.zero;
@@ -219,6 +248,7 @@ namespace Game.View
             DrawFallowLandmarks();
             if (presentationDiagnosticsActive) diagnostics.TerrainLandmarksMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawWave(current,alpha,lord);
+            if (!showTransientText) HideTransientText();
             for(var i=0;i<current.Farms.Count;i++)
             {
                 var farm=current.Farms[i];
@@ -378,9 +408,18 @@ namespace Game.View
         void IndexPrevious(RunFrame previous)
         {
             if (ReferenceEquals(indexedPrevious, previous)) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var rebuildSample = PreviousIndexRebuildMarker.Auto();
+            var enemyCapacity = previousEnemies.EnsureCapacity(0);
+            var peopleCapacity = previousPeople.EnsureCapacity(0);
+#endif
             indexedPrevious = previous; previousEnemies.Clear(); previousPeople.Clear();
             for(var i=0;i<previous.Enemies.Count;i++){var enemy=previous.Enemies[i];previousEnemies[enemy.Id]=Point(enemy.Position);}
             for(var i=0;i<previous.People.Count;i++){var person=previous.People[i];previousPeople[person.Id]=Point(person.Position);}
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            RecordCapacityGrowth("previousEnemies", enemyCapacity, previousEnemies.EnsureCapacity(0), previousEnemies.Count);
+            RecordCapacityGrowth("previousPeople", peopleCapacity, previousPeople.EnsureCapacity(0), previousPeople.Count);
+#endif
         }
         Vector2 Interpolate(Dictionary<int, Vector2> positions, int id, WorldPoint current, float alpha)
         {

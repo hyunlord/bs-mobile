@@ -25,6 +25,22 @@ namespace Game.App
     {
         public const string Glyphs = "휴경의 왕국 돌본 땅에 다시 봄이 깃든다 화면을 눌러 시작 화면을 눌러 장원으로 설정 성장 선택 카드 선택 금지 고정됨 상세 소리 켬 끔 고정할 금지할 카드를 누르세요 이미 카드입니다 다른 취소 다시 뽑기 진화 선택 잠시 멈춤 무기 도구 특허장 빈 칸 계속하기 출정을 포기하시겠어요 이번 출정은 포기로 정산됩니다 돌아가기 포기하고 정산 배경음 효과음 진동 화면 흔들림 피해 숫자 자동 조준 이동 방향 가까운 적 걷기와 피격 실험 다음 출정부터 빠른 걸음 접촉 즉시 피격 잠깐 무적과 밀려남 체력 한 대 피격 잔상 붉은 테 걷기 부위별 애니메이션 새 선택 보유 레벨 진화 진행 완료 조건 켜짐 꺼짐 출정 포기 B ×1.3 100 5~15 % ?";
         const float Gap = 12;
+        public static Button RoundIcon(UiShell ui, Transform parent, string name, string glyph, Action action, float x, float y)
+        {
+            var rect = PortraitWidgets.Place(name, parent, x, y, 44, 44);
+            Graphic graphic;
+            if (glyph == "settings") graphic = rect.gameObject.AddComponent<PortraitSettingsGear>();
+            else
+            {
+                var circle = rect.gameObject.AddComponent<PortraitBmShape>();
+                circle.Shape = PortraitBmShape.Form.Circle; circle.color = new Color32(47,42,33,255);
+                circle.Edge = new Color32(184,135,58,255); circle.Border = 2; graphic = circle;
+                var label = PortraitWidgets.Label(ui, rect, glyph, 0, -1, 44, 44, 28);
+                label.alignment = TextAnchor.MiddleCenter; label.color = new Color32(243,213,140,255);
+            }
+            var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = graphic;
+            button.onClick.AddListener(() => action?.Invoke()); return button;
+        }
         static float Width(UiShell ui) => ui.SafeRoot.rect.width > 1 ? ui.SafeRoot.rect.width : PortraitTokens.Width;
         static float Height(UiShell ui) => ui.SafeRoot.rect.height > 1 ? ui.SafeRoot.rect.height : PortraitTokens.Height;
         static RectTransform Root(UiShell ui, string name)
@@ -198,28 +214,29 @@ namespace Game.App
             Text(ui, root, "일시정지", 32, 72, 180, 24);
             var seconds = frame.Tick / frame.TickRate;
             Text(ui, root, (seconds / 60) + ":" + (seconds % 60).ToString("00") + " · 레벨 " + frame.Level, 200, 84, width - 232, 12);
-            var body = Scroll(ui, root, 116, preferences != null ? 360 : 178); float y = 0; var innerWidth = width - 64;
+            var body = Scroll(ui, root, 116, 178); float y = 0; var innerWidth = width - 64;
             var viewport = (RectTransform)body.parent;
             viewport.offsetMin = new Vector2(32, viewport.offsetMin.y); viewport.offsetMax = new Vector2(-32, viewport.offsetMax.y);
             y = Loadout(ui, body, "무기", frame.Equipment.Where(e => catalog.Weapons.ContainsKey(e.Id)).Select(e => e.Id).ToArray(), 5, displays, innerWidth, y, frame);
             y = Loadout(ui, body, "도구", frame.Equipment.Where(e => catalog.Tools.ContainsKey(e.Id)).Select(e => e.Id).ToArray(), 4, displays, innerWidth, y, frame);
             y = Loadout(ui, body, "특허장", first.Charters, 4, displays, innerWidth, y, frame);
             y = EvolutionProgress(ui, body, frame, first, catalog, displays, innerWidth, y);
-            body.sizeDelta = new Vector2(0, y);
             if (preferences != null)
             {
+                y += 8;
                 var musicBeforeMute = preferences.MusicVolume > 0 ? preferences.MusicVolume : .55f;
                 var effectsBeforeMute = preferences.EffectsVolume > 0 ? preferences.EffectsVolume : .8f;
-                InlinePreference(ui, root, "Pause.Sound", "소리", preferences.MusicVolume > 0 || preferences.EffectsVolume > 0, value =>
+                InlinePreference(ui, body, "Pause.Sound", "소리", preferences.MusicVolume > 0 || preferences.EffectsVolume > 0, value =>
                 {
                     if (!value) { musicBeforeMute = preferences.MusicVolume; effectsBeforeMute = preferences.EffectsVolume; }
                     preferences.MusicVolume = value ? musicBeforeMute : 0;
                     preferences.EffectsVolume = value ? effectsBeforeMute : 0; preferencesChanged?.Invoke();
-                }, 32, height - 352, width - 64);
-                InlinePreference(ui, root, "Pause.Haptics", "진동", preferences.Haptics, value => { preferences.Haptics = value; preferencesChanged?.Invoke(); }, 32, height - 308, width - 64);
-                InlinePreference(ui, root, "Pause.Shake", "화면 흔들림", preferences.Shake, value => { preferences.Shake = value; preferencesChanged?.Invoke(); }, 32, height - 264, width - 64);
-                InlinePreference(ui, root, "Pause.DamageNumbers", "피해 숫자", preferences.DamageNumbers, value => { preferences.DamageNumbers = value; preferencesChanged?.Invoke(); }, 32, height - 220, width - 64);
+                }, 0, y, innerWidth); y += 44;
+                InlinePreference(ui, body, "Pause.Haptics", "진동", preferences.Haptics, value => { preferences.Haptics = value; preferencesChanged?.Invoke(); }, 0, y, innerWidth); y += 44;
+                InlinePreference(ui, body, "Pause.Shake", "화면 흔들림", preferences.Shake, value => { preferences.Shake = value; preferencesChanged?.Invoke(); }, 0, y, innerWidth); y += 44;
+                InlinePreference(ui, body, "Pause.DamageNumbers", "피해 숫자", preferences.DamageNumbers, value => { preferences.DamageNumbers = value; preferencesChanged?.Invoke(); }, 0, y, innerWidth); y += 44;
             }
+            body.sizeDelta = new Vector2(0, y);
             Button(ui, root, "Pause.Settings", "상세 설정", settings, 32, height - 164, width - 64, 44);
             var abandonWidth = (width - 36) / 2.6f;
             Button(ui, root, "Pause.Abandon", "포기", requestAbandon, 14, height - 88, abandonWidth, 60);
@@ -271,8 +288,8 @@ namespace Game.App
         {
             var caption = Text(ui, body, title + " " + ids.Count + "/" + count, 0, y, width, 13);
             caption.color = title == "무기" ? new Color32(44,79,150,255) : title == "도구" ? new Color32(79,107,46,255) : new Color32(107,62,143,255);
-            y += 28;
-            var slotWidth = (width - 24) / 5; var rowHeight = title == "특허장" ? 44 : 58;
+            y += 24;
+            var slotWidth = (width - 24) / 5; var rowHeight = title == "특허장" ? 44 : 48;
             for (var i = 0; i < count; i++)
             {
                 var slot = PortraitWidgets.Place(title + ".Slot:" + i, body, i * (slotWidth + 6), y, slotWidth, rowHeight);
@@ -284,7 +301,7 @@ namespace Game.App
                 var badge = PortraitWidgets.Label(ui, slot, equipment.Level.ToString(), slotWidth - 18, rowHeight - 18, 16, 18, 11); badge.color = Color.white; badge.alignment = TextAnchor.MiddleRight;
                 var shadow = badge.gameObject.AddComponent<Shadow>(); shadow.effectColor = Color.black; shadow.effectDistance = new Vector2(0,-1);
             }
-            return y + rowHeight + 14;
+            return y + rowHeight + 10;
         }
 
         public static void Settings(UiShell ui, RunPreferences preferences, AimMode aim, Action preferencesChanged,
