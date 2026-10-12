@@ -1,6 +1,6 @@
 {
   "contract": "m1-combat-cases-v1",
-  "status": "검토 전용 수치 가설. 진화 단계는 미리 구성한 제안 상태이며 획득 진행이 아님. 설계 정본·출시 데이터 불변.",
+  "status": "candidate8: 검토 전용 수치 가설. 진화는 미리 구성한 제안 상태이며 획득 진행이 아님. 설계 정본·출시 데이터 불변. 동일한30틱 사각걷기와 실제 피해·타격을 사용한다. 고리·포자 궤도600/700/900, evolved 충돌반경400·생성2600·회수4000은 세로 화면 안 접근과 반응을 관찰하기 위한 값이며 출시 밸런스가 아니다.",
   "baselineSourceCommit": "5118e2c2a06f6449be672a77a64b61c9a349d69b",
   "cases": [
     {
@@ -35,7 +35,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -70,7 +73,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -105,7 +111,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -119,7 +128,7 @@
         "designRef": "data/review/m1-weapon-combat-cases.json#core:ward_orbit/lv1",
         "kind": "Orbit",
         "damage": 24,
-        "range": 1300,
+        "range": 600,
         "cooldownTicks": 30,
         "speed": 300,
         "count": 2,
@@ -140,7 +149,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -154,7 +166,7 @@
         "designRef": "data/review/m1-weapon-combat-cases.json#core:ward_orbit/max",
         "kind": "Orbit",
         "damage": 80,
-        "range": 2000,
+        "range": 700,
         "cooldownTicks": 24,
         "speed": 650,
         "count": 5,
@@ -175,7 +187,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -189,9 +204,9 @@
         "designRef": "data/review/m1-weapon-combat-cases.json#core:ward_orbit/evolved",
         "kind": "Orbit",
         "damage": 140,
-        "range": 3200,
+        "range": 900,
         "cooldownTicks": 30,
-        "speed": 1200,
+        "speed": 400,
         "count": 8,
         "lifetimeTicks": 120,
         "knockback": 0,
@@ -210,7 +225,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 2600,
+        "recycleRadius": 4000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -245,7 +263,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -280,7 +301,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -315,7 +339,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -358,7 +385,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -401,7 +431,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -444,7 +477,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -458,7 +494,7 @@
         "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/lv1",
         "kind": "Orbit",
         "damage": 24,
-        "range": 1300,
+        "range": 600,
         "cooldownTicks": 30,
         "speed": 300,
         "count": 2,
@@ -479,7 +515,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -493,7 +532,7 @@
         "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/max",
         "kind": "Orbit",
         "damage": 80,
-        "range": 2000,
+        "range": 700,
         "cooldownTicks": 24,
         "speed": 650,
         "count": 5,
@@ -514,7 +553,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -528,9 +570,9 @@
         "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/evolved",
         "kind": "Orbit",
         "damage": 140,
-        "range": 3200,
+        "range": 900,
         "cooldownTicks": 30,
-        "speed": 1200,
+        "speed": 400,
         "count": 8,
         "lifetimeTicks": 120,
         "knockback": 0,
@@ -549,7 +591,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 2600,
+        "recycleRadius": 4000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -592,7 +637,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -635,7 +683,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -678,7 +729,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -721,7 +775,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -764,7 +821,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -807,7 +867,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -842,7 +905,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -877,7 +943,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     },
     {
@@ -912,7 +981,10 @@
         "durationTicks": 600,
         "enemyDamage": 1,
         "suppressedUntilTick": 1000000,
-        "baseExperience": 1000000
+        "baseExperience": 1000000,
+        "spawnRadius": 1200,
+        "recycleRadius": 3000,
+        "enemyBodyWidth": 475
       }
     }
   ]

@@ -6,7 +6,7 @@ namespace SowSiege.Sim;
 public static class ShowcaseFixtureCli
 {
     public static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
-    public static PlayerInput WalkingInput(int tick) => (tick / 90 % 4) switch
+    public static PlayerInput WalkingInput(int tick) => (tick / 30 % 4) switch
     {
         0 => new(PlayerInput.Scale, 0),
         1 => new(0, PlayerInput.Scale),
@@ -42,7 +42,7 @@ public static class ShowcaseFixtureCli
             var hash = ReviewShowcaseCatalog.Hash(catalog);
             var key = review.Id.Replace(':', '-') + "-" + review.Stage;
             var prefix = Path.Combine(args[3], key);
-            var options = new InteractiveOptions(new(30001, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, hash, MeleeAim: new());
+            var options = new InteractiveOptions(new(30001, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, hash, Field: new(FieldOptions.ReviewVersion, review.Arena.SpawnRadius, review.Arena.RecycleRadius), MeleeAim: new());
             var session = new InteractiveSession(catalog, options);
             var hits = 0; var kills = 0; var windowHits = 0; var windowKills = 0; var maximumEnemies = 0; var tick = 0;
             using (var output = File.Create(prefix + ".ssreplay"))
@@ -100,7 +100,7 @@ public static class ShowcaseFixtureCli
                 review.Classification,
                 review.Gear,
                 review.Arena,
-                inputContract = "square-walk-v1: full movement, right/up/left/down, 90 ticks per edge, same input for all 24 cases",
+                inputContract = "square-walk-v2: full movement, right/up/left/down, 30 ticks per edge, same input for all 24 cases",
                 scope = "review-only numeric hypotheses; 10s setup +10s capture; evolved is preconfigured proposal, not earned progression",
                 positiveHits = hits,
                 kills,

@@ -1,21 +1,38 @@
 {
   "scope": "Actual net8.0 and netstandard2.1 Core DLLs; not Unity or device",
-  "sourceHead": "d3790c8ad83bf7e9d6707d460d5adc845e07a128",
-  "sourceWasDirty": true,
-  "caseJsonSha256": "964dce526404f85827471ff661619b4fc8804edba6ab68c05982a3806d3224bd",
-  "configuration": "Debug",
+  "commit": "3a94a09acda8e86bfd446460f0f5eda5ad3c8aea",
+  "gitDirty": true,
+  "caseJsonSha256": "985f5544ea34bba3fc6c1701905135705e0fee957b66147fb9f1dd36d082504c",
   "targets": [
     {
       "name": "net8",
-      "targetFramework": ".NETCoreApp,Version=v8.0",
-      "mvid": "d80f7ed0-6a9c-4344-aa1f-c910fb1f3ded",
-      "sha256": "0682AC86DA1BE18F6E4017427B98AB761D51DD1F3A2A24DDDA2900D8E137C268"
+      "dll": "/Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Debug/net8.0/SowSiege.Sim.dll",
+      "binding": {
+        "targetFramework": ".NETCoreApp,Version=v8.0",
+        "mvid": "92b7987f-1c46-4d65-925f-d760916e9928",
+        "sha256": "9C385FBF8F9910A5B33CED735838C017AC58DF70D03C20062736B69F4D53DEDB",
+        "location": "/Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Debug/net8.0/SowSiege.Core.dll"
+      },
+      "expected": {
+        "targetFramework": ".NETCoreApp,Version=v8.0",
+        "location": "/Users/rexxa/bs-mobile/core/src/SowSiege.Sim/bin/Debug/net8.0/SowSiege.Core.dll",
+        "sha256": "9c385fbf8f9910a5b33ced735838c017ac58df70d03c20062736b69f4d53dedb"
+      }
     },
     {
       "name": "standard21",
-      "targetFramework": ".NETStandard,Version=v2.1",
-      "mvid": "f6f59b69-c195-4d1b-9911-b359cfd2b15d",
-      "sha256": "63CB39160580D7E545933BB4050BCAF6A6B0DE5DB32876C0D4CC058631E07ED4"
+      "dll": "/Users/rexxa/bs-mobile/core/src/SowSiege.CompatSim/bin/Debug/net8.0/SowSiege.CompatSim.dll",
+      "binding": {
+        "targetFramework": ".NETStandard,Version=v2.1",
+        "mvid": "0d7596ae-e295-4ec3-ad0f-1427273d1b6e",
+        "sha256": "5F7A26AA646A3B273D400C1FB9E371050CEF48E417A5B39E7334C8C87D90B0DA",
+        "location": "/Users/rexxa/bs-mobile/core/src/SowSiege.CompatSim/bin/Debug/net8.0/SowSiege.Core.dll"
+      },
+      "expected": {
+        "targetFramework": ".NETStandard,Version=v2.1",
+        "location": "/Users/rexxa/bs-mobile/core/src/SowSiege.CompatSim/bin/Debug/net8.0/SowSiege.Core.dll",
+        "sha256": "5f7a26aa646a3b273d400c1fb9e371050cef48e417a5b39e7334c8c87d90b0da"
+      }
     }
   ]
 }

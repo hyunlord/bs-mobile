@@ -61,7 +61,9 @@ namespace SowSiege.Core
         {
             if ((h.FormatVersion != Version && h.FormatVersion != MaterialTargetVersion && h.FormatVersion != FeelVersion && h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion) || h.RulesVersion != Version || h.StateCodecVersion != Version || h.RngAlgorithm != PortableRandom.Algorithm) { throw new ArgumentException("Unsupported replay version or RNG."); }
             if (h.FormatVersion != FieldVersion && h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion && (FeelExperimentOptions.Normalize(h.Options.Feel) is not null) != (h.FormatVersion == FeelVersion)) { throw new ArgumentException("Replay feel format mismatch."); }
-            if ((h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion && (h.Options.Field is not null) != (h.FormatVersion == FieldVersion)) || h.Options.Field is { Version: not FieldRules.Version }) { throw new ArgumentException("Replay field format mismatch."); }
+            if ((h.FormatVersion != HostRewardVersion && h.FormatVersion != MeleeAimVersion && (h.Options.Field is not null) != (h.FormatVersion == FieldVersion))) { throw new ArgumentException("Replay field format mismatch."); }
+            h.Options.Field?.Validate();
+            if (h.Options.Field is { Version: FieldOptions.ReviewVersion } && h.FormatVersion != MeleeAimVersion) { throw new ArgumentException("Review field radii require replay v6."); }
             if (h.FormatVersion != MeleeAimVersion && (h.Options.HostRewards is not null) != (h.FormatVersion == HostRewardVersion)) { throw new ArgumentException("Replay host reward format mismatch."); }
             if ((h.Options.MeleeAim is not null) != (h.FormatVersion == MeleeAimVersion) || h.Options.MeleeAim is { Version: not 1 })
             { throw new ArgumentException("Replay melee aim format mismatch."); }
@@ -105,7 +107,7 @@ namespace SowSiege.Core
                 if (header.FormatVersion == FieldVersion) { w.Write(1); w.Write(o.Field!.Version); }
                 if (header.FormatVersion == HostRewardVersion || header.FormatVersion == MeleeAimVersion)
                 {
-                    w.Write(o.Field is not null); if (o.Field is not null) { w.Write(o.Field.Version); }
+                    w.Write(o.Field is not null); if (o.Field is not null) { w.Write(o.Field.Version); if (o.Field.Version == FieldOptions.ReviewVersion) { w.Write(o.Field.SpawnRadius); w.Write(o.Field.RecycleRadius); } }
                     if (header.FormatVersion == MeleeAimVersion) { w.Write(o.HostRewards is not null); }
                     if (o.HostRewards is { } rewards)
                     {
@@ -161,6 +163,7 @@ namespace SowSiege.Core
                     if (format == HostRewardVersion || format == MeleeAimVersion)
                     {
                         field = Boolean(r) ? new FieldOptions(r.ReadInt32()) : null;
+                        if (field is { Version: FieldOptions.ReviewVersion }) { field = field with { SpawnRadius = r.ReadInt32(), RecycleRadius = r.ReadInt32() }; }
                         if (format == HostRewardVersion || Boolean(r))
                         {
                             if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported host reward rules version."); }

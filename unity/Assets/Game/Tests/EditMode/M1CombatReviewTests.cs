@@ -14,6 +14,16 @@ public sealed class M1CombatReviewTests
     [TearDown] public void Cleanup()=>File.Delete(path);
     string[] Args(params string[] extra)
     { var basic=new[]{"--m1-combat-case",path,"--wave-benchmark","fixture.ssreplay"};var result=new string[basic.Length+extra.Length];basic.CopyTo(result,0);extra.CopyTo(result,basic.Length);return result; }
+    [Test] public void ReviewArenaRadiusDeserializesAndCannotDisagreeWithReplay()
+    {
+        File.WriteAllText(path,File.ReadAllText(path).Replace("\"arena\":{}","\"arena\":{\"spawnRadius\":1200,\"recycleRadius\":3000,\"enemyBodyWidth\":475}"));
+        var review=M1CombatReview.Parse(Args());
+        Assert.That(review.Definition.arena.enemyBodyWidth,Is.EqualTo(475));
+        var options=new InteractiveOptions(new RunOptions(1,"hero","estate","mixed"),AimMode.Movement,"hash",Field:new FieldOptions(FieldOptions.ReviewVersion,1200,3000),MeleeAim:new MeleeAimOptions());
+        Assert.DoesNotThrow(()=>review.ValidateReplayOptions(options));
+        review.Definition.arena.spawnRadius++;
+        Assert.Throws<InvalidDataException>(()=>review.ValidateReplayOptions(options));
+    }
     [Test] public void OrdinaryGameHasNoCase()=>Assert.That(M1CombatReview.Parse(Array.Empty<string>()),Is.Null);
     [Test] public void ExplicitCaseCapturesLastTenSeconds()
     { var window=CameraScaleComparison.Parse(Args());Assert.That(window.StartTick,Is.EqualTo(300));Assert.That(window.EndTick,Is.EqualTo(600));Assert.That(OfflineReplayCapture.ExpectedFrames(window.EndTick-window.StartTick,30),Is.EqualTo(600)); }

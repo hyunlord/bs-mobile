@@ -8,12 +8,12 @@ public sealed class WaveReviewCompositionTests
     public void ShowcaseWalkingInputUsesIdenticalClosedSquareForAllStages()
     {
         var x = 0; var y = 0;
-        for (var tick = 0; tick < 360; tick++)
+        for (var tick = 0; tick < 120; tick++)
         {
             var input = ShowcaseFixtureCli.WalkingInput(tick);
             Assert.Equal(PlayerInput.Scale, Math.Abs(input.X) + Math.Abs(input.Y));
             x += input.X; y += input.Y;
-            Assert.Equal(input, ShowcaseFixtureCli.WalkingInput(tick + 360));
+            Assert.Equal(input, ShowcaseFixtureCli.WalkingInput(tick + 120));
         }
         Assert.Equal(0, x); Assert.Equal(0, y);
     }
@@ -47,7 +47,8 @@ public sealed class WaveReviewCompositionTests
             var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance);
             session.Apply(command); ReplayCodec.WriteCommand(replayBytes, command);
             foreach (var e in ((IWaveRunView)session.View).CaptureWaveRuntime()!.Events)
-            { if (e.Kind == "hit" && e.Source == id && e.Amount > 0)
+            {
+                if (e.Kind == "hit" && e.Source == id && e.Amount > 0)
                 {
                     hits++;
                 }

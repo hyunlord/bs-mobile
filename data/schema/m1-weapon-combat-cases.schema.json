@@ -271,7 +271,10 @@
               "durationTicks",
               "enemyDamage",
               "suppressedUntilTick",
-              "baseExperience"
+              "baseExperience",
+              "spawnRadius",
+              "recycleRadius",
+              "enemyBodyWidth"
             ],
             "properties": {
               "enemyId": {
@@ -310,6 +313,18 @@
                 "minimum": 601
               },
               "baseExperience": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "spawnRadius": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "recycleRadius": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "enemyBodyWidth": {
                 "type": "integer",
                 "minimum": 1
               }

@@ -45,9 +45,19 @@ public sealed class MeleeAimTests
     public void MissingOrCoincidentTargetKeepsFacing(bool present, bool coincident)
     {
         var (system, world, enemy) = Arena(true);
-        if (!present) world.Enemies.Clear();
-        else if (coincident) enemy.Position = world.Lord;
-        else enemy.Health = 0;
+        if (!present)
+        {
+            world.Enemies.Clear();
+        }
+        else if (coincident)
+        {
+            enemy.Position = world.Lord;
+        }
+        else
+        {
+            enemy.Health = 0;
+        }
+
         system.Tick(world.Lord);
         var attack = Assert.Single(world.WaveRuntime!.Events, e => e.Kind == "attack");
         Assert.True(attack.Target.X > attack.Position.X); Assert.Equal(attack.Position.Y, attack.Target.Y);
@@ -59,17 +69,18 @@ public sealed class MeleeAimTests
         system.Tick(world.Lord); Assert.Equal(100, enemy.Health);
     }
     [Theory]
-    [InlineData(false, false, false)]
-    [InlineData(true, false, false)]
-    [InlineData(false, true, false)]
-    [InlineData(true, true, true)]
-    public void V6RoundtripsNewAimWithOptionalPriorContracts(bool feel, bool field, bool rewards)
+    [InlineData(false, false, false, false)]
+    [InlineData(true, false, false, false)]
+    [InlineData(false, true, false, false)]
+    [InlineData(true, true, true, false)]
+    [InlineData(false, true, false, true)]
+    public void V6RoundtripsNewAimWithOptionalPriorContracts(bool feel, bool field, bool rewards, bool reviewField)
     {
         var catalog = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), profileName: "wave-1a");
         var gear = catalog.WaveRuntime!.Gear.Values.First(g => g.Kind == WaveAttackKind.Arc);
         ((Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear)[gear.Id] = gear with { Aim = "nearest-enemy" };
         var options = new InteractiveOptions(new(30001, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true),
-            AimMode.Movement, new string('A', 64), feel ? new(FasterLord: true) : null, field ? new() : null,
+            AimMode.Movement, new string('A', 64), feel ? new(FasterLord: true) : null, field ? reviewField ? new(FieldOptions.ReviewVersion, 1200, 3000) : new() : null,
             rewards ? new(true, new(50, 30, 0)) : null, new());
         var session = new InteractiveSession(catalog, options);
         using var stream = new MemoryStream();
@@ -93,6 +104,18 @@ public sealed class MeleeAimTests
         Assert.Throws<ArgumentException>(() => new InteractiveSession(catalog, options with { MeleeAim = new(2) }));
     }
     [Fact]
+    public void ReviewFieldRadiusIsExplicitBoundedAndRequiresV6()
+    {
+        var options = new FieldOptions(FieldOptions.ReviewVersion, 1200, 3000);
+        var state = new FieldState(options, 30001);
+        Assert.Equal(new Position(6200, 5000), state.Spawn(new(5000, 5000), 0));
+        Assert.Equal(3000, state.RecycleRadius);
+        Assert.Throws<ArgumentException>(() => new FieldState(options with { RecycleRadius = 1000 }, 1));
+        Assert.Throws<ArgumentException>(() => new FieldState(new(1, 1200, 3000), 1));
+        var session = InteractiveTests.Session();
+        Assert.Throws<ArgumentException>(() => ReplayCodec.WriteHeader(new MemoryStream(), ReplayCodec.Header(session.Options with { Field = options })));
+    }
+    [Fact]
     public void MeleeAimRuntimeStateParticipatesInHashIndependentlyOfOptions()
     {
         var session = InteractiveTests.Session();
@@ -109,7 +132,11 @@ public sealed class MeleeAimTests
     public void LegacyReplayFixturesRetainExactBytes()
     {
         var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !Directory.Exists(Path.Combine(root.FullName, "benchmarks"))) root = root.Parent;
+        while (root is not null && !Directory.Exists(Path.Combine(root.FullName, "benchmarks")))
+        {
+            root = root.Parent;
+        }
+
         Assert.NotNull(root);
         foreach (var relative in new[] { "wave-c05/run.ssreplay", "wave-history/a03.ssreplay", "m1-254/dense-approach-candidate2.ssreplay" })
         {
@@ -121,10 +148,17 @@ public sealed class MeleeAimTests
             foreach (var command in replay.Commands)
             {
                 while (checkpoint < replay.Checkpoints.Count && replay.Checkpoints[checkpoint].AppliedCommands == command.Sequence)
+                {
                     ReplayCodec.WriteCheckpoint(output, replay.Checkpoints[checkpoint++]);
+                }
+
                 ReplayCodec.WriteCommand(output, command);
             }
-            while (checkpoint < replay.Checkpoints.Count) ReplayCodec.WriteCheckpoint(output, replay.Checkpoints[checkpoint++]);
+            while (checkpoint < replay.Checkpoints.Count)
+            {
+                ReplayCodec.WriteCheckpoint(output, replay.Checkpoints[checkpoint++]);
+            }
+
             ReplayCodec.WriteEnd(output, replay.End);
             Assert.Equal(expected, output.ToArray());
         }

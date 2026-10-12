@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
-    public sealed record WaveShowcaseArena(string EnemyId, int SpawnPeriodTicks, int EnemyCap, int EnemySpeed, int EnemyHealth, int DurationTicks, int EnemyDamage, int SuppressedUntilTick, int BaseExperience);
+    public sealed record WaveShowcaseArena(string EnemyId, int SpawnPeriodTicks, int EnemyCap, int EnemySpeed, int EnemyHealth, int DurationTicks, int EnemyDamage, int SuppressedUntilTick, int BaseExperience, int SpawnRadius = 0, int RecycleRadius = 0, int EnemyBodyWidth = 0);
     public sealed record WaveShowcaseCase(string Id, string DesignRef, string ProposedContract, string Stage, string Classification, WaveGearDefinition Gear, WaveShowcaseArena Arena);
     public static class ReviewShowcaseCatalog
     {
@@ -64,6 +64,7 @@ namespace SowSiege.Core
                     Gear = gear,
                     Enemies = rules,
                     Programs = null,
+                    EnemySeparation = review.Arena.EnemyBodyWidth > 0 ? new(1, new Dictionary<string, int> { [review.Arena.EnemyId] = review.Arena.EnemyBodyWidth }) : wave.EnemySeparation,
                     Items = new Dictionary<string, WaveItemDefinition>(),
                     Evolutions = new Dictionary<string, WaveEvolutionDefinition>(),
                     MaterialTargets = new Dictionary<string, string>(),

@@ -211,7 +211,7 @@ namespace Game.App
                 ContentCatalog frozen = null; string hash = null;
                 if (crowdBenchmark == null) LoadFrozenWaveBenchmark(ref frozen, ref hash);
                 else { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; crowdBenchmark.Validate(benchmarkReplaySha, hash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash); }
-                if (combatReview != null) { frozen = combatReview.Apply(frozen,hash,benchmarkReplaySha); hash = combatReview.Definition.catalogHash; }
+                if (combatReview != null) { combatReview.ValidateReplayOptions(benchmarkReplay.Header.Options); frozen = combatReview.Apply(frozen,hash,benchmarkReplaySha); hash = combatReview.Definition.catalogHash; }
                 if (frozen == null || hash != benchmarkReplay.Header.Options.DataHash) throw new InvalidDataException("Frozen benchmark catalog absent or mismatched; prepare the benchmark build.");
                 benchmarkCapture = Array.IndexOf(args, "--wave-benchmark-capture") >= 0;
                 Screen.SetResolution(BenchmarkWidth, BenchmarkHeight, FullScreenMode.Windowed);

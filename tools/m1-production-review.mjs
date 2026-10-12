@@ -173,6 +173,15 @@ function labelHelper(output) {
   fs.writeFileSync(source, `import AppKit
 import Foundation
 let a = CommandLine.arguments
+if a.count == 4 {
+  let start = Int(a[1])!, step = Int(a[2])!
+  let b = NSBitmapImageRep(bitmapDataPlanes:nil,pixelsWide:1500,pixelsHigh:48,bitsPerSample:8,samplesPerPixel:4,hasAlpha:true,isPlanar:false,colorSpaceName:.deviceRGB,bytesPerRow:0,bitsPerPixel:0)!
+  NSGraphicsContext.saveGraphicsState(); NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep:b)
+  NSColor(calibratedWhite:0.08,alpha:1).setFill(); NSRect(x:0,y:0,width:1500,height:48).fill()
+  let attrs:[NSAttributedString.Key:Any]=[.font:NSFont.systemFont(ofSize:12),.foregroundColor:NSColor.white]
+  for i in 0..<12 { let x=CGFloat(i*125+8); (String(format:"+%.1f ms",Double(i*step)*1000/60) as NSString).draw(at:NSPoint(x:x,y:27),withAttributes:attrs); ("frame " + String(start+i*step) as NSString).draw(at:NSPoint(x:x,y:8),withAttributes:attrs) }
+  NSGraphicsContext.restoreGraphicsState(); try b.representation(using:.png,properties:[:])!.write(to:URL(fileURLWithPath:a[3])); exit(0)
+}
 let bitmap = NSBitmapImageRep(bitmapDataPlanes:nil,pixelsWide:500,pixelsHigh:100,bitsPerSample:8,samplesPerPixel:4,hasAlpha:true,isPlanar:false,colorSpaceName:.deviceRGB,bytesPerRow:0,bitsPerPixel:0)!
 NSGraphicsContext.saveGraphicsState(); NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep:bitmap)
 NSColor(calibratedWhite:0.08,alpha:1).setFill(); NSRect(x:0,y:0,width:500,height:100).fill()
@@ -245,6 +254,13 @@ export function selectWeaponRuns(plan, contentId) {
   for (const id of ids) assert.deepEqual(runs.filter(run => run.contentId === id).map(run => run.stage).sort(), [...order].sort(), `Missing or duplicate stage: ${id}`);
   return runs;
 }
+export function combatSheetTiming(events, event, start, totalFrames) {
+  const kinds = event === 'hit' ? ['hit', 'group-hit', 'trained-group-hit'] : ['enemy-killed'];
+  const source = events.find(e => Number(e.frameIndex) === start && kinds.includes(e.kind) && e.inViewport.toLowerCase() === 'true' && (event !== 'hit' || Number(e.amount) > 0));
+  assert(start < 0 || source, 'Missing first visible event metadata');
+  const eventTime = source ? { eventId: Number(source.eventId), subjectId: Number(source.subjectId), coreEventTick: Number(source.eventTick), coreEventSeconds: Number(source.eventTick) / 30, snapshotTick: Number(source.snapshotTick), firstEventRenderFrame: start } : null;
+  return { eventTime, pixelVerified: false, interpretation: 'Event center entered viewport; does not prove the reaction was drawn on that frame. No inferred +2-frame offset. Contiguous strip preserves the following render frames so delayed flashes can be inspected.', strips: [5, 1].map(step => ({ step, available: start >= 0 && start + 11 * step < totalFrames, frames: start < 0 ? [] : Array.from({ length: 12 }, (_, i) => ({ index: start + i * step, elapsedRenderMs: i * step * 1000 / 60 })), spanMs: 11 * step * 1000 / 60 })) };
+}
 function assembleWeapons(plan, output, contentId) {
   const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;
   const runs = selectWeaponRuns(plan, contentId), proof = validateAll(plan, runs); fresh(output); labelHelper(output); const outputs = [];
@@ -257,13 +273,27 @@ function assembleWeapons(plan, output, contentId) {
   const sheets = [];
   if (combat) for (const run of runs) {
     const evidence = proof.find(result => result.role === run.role);
+    const events = rows(path.join(run.directory, 'm1-combat-events.csv'));
     for (const [event, start] of [['hit', evidence.firstVisibleHitFrame], ['death', evidence.firstVisibleDeathFrame]]) {
+      const timing = combatSheetTiming(events, event, start, run.frames);
       const available = start >= 0 && start + 55 < run.frames, file = path.join(output, `${run.role}-${event}-12frames.png`);
-      sheets.push({ role: run.role, event, startFrame: start, available, file: available ? file : null, subject: 'Enemy selected-source damage/death, not hero hit/death', rule: 'First viewport-visible event center, 12 originals at 5-frame intervals; readability requires user review.' });
+      const record = { role: run.role, event, startFrame: start, available, file: available ? file : null, timing, subject: 'Enemy selected-source damage/death, not hero hit/death', rule: 'First viewport-visible event center, 12 originals at 5-frame intervals; readability requires user review.' }; sheets.push(record);
+      const close = timing.strips[1];
+      if (close.available) {
+        const closeFile = path.join(output, `${run.role}-${event}-contiguous12.png`), label = path.join(output, `${run.role}-${event}-contiguous-label.png`), ticks = path.join(output, `${run.role}-${event}-render-times.png`);
+        call(path.join(output, 'labels'), [run.title, `Core ${timing.eventTime.coreEventTick}틱 (${timing.eventTime.coreEventSeconds.toFixed(3)}초)`, '렌더 연속 12장 · 효과 표시 시점은 미검증', label]);
+        call(path.join(output, 'labels'), [String(start), '1', ticks]);
+        call('ffmpeg', ['-nostdin', '-v', 'error', '-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg'), '-i', label, '-i', ticks, '-filter_complex', `[0:v]select='${close.frames.map(f => `eq(n,${f.index})`).join('+')}',crop=500:1080:710:0,scale=125:270,tile=12x1[s];[2:v][s]vstack=inputs=2[t];[1:v]pad=500:318:0:100:color=0x141414[l];[l][t]hstack=inputs=2[v]`, '-map', '[v]', '-frames:v', '1', closeFile]);
+        record.contiguousFile = closeFile;
+      }
       if (!available) continue;
       const frames = Array.from({ length: 12 }, (_, i) => start + i * 5), label = path.join(output, `${run.role}-${event}-sheet-label.png`);
       call(path.join(output, 'labels'), [run.title, `${run.stage} · 적 ${event === 'hit' ? '피격' : '처치'} · 첫 사건 ${start}장`, '실제 12장 · 5프레임 간격 · 원본 보존', label]);
       call('ffmpeg', ['-nostdin', '-v', 'error', '-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg'), '-i', label, '-filter_complex', `[0:v]select='${frames.map(frame => `eq(n,${frame})`).join('+')}',crop=500:1080:710:0,scale=125:270,tile=12x1[s];[1:v]pad=500:270:0:85:color=0x141414[l];[l][s]hstack=inputs=2[v]`, '-map', '[v]', '-frames:v', '1', file]);
+      if (record.contiguousFile) {
+        record.pairedFile = path.join(output, `${run.role}-${event}-event-render-pair.png`);
+        call('ffmpeg', ['-nostdin', '-v', 'error', '-i', file, '-i', record.contiguousFile, '-filter_complex', '[0:v][1:v]vstack=inputs=2[v]', '-map', '[v]', '-frames:v', '1', record.pairedFile]);
+      }
     }
   }
   save(path.join(output, 'weapon-review-provenance.json'), { contract: plan.contract, performanceEligible: false, sources: proof, outputs, sheets, limitation: combat ? 'Actual selected-source Core damage and linked kills under isolated numeric hypotheses. Each stage is preconfigured, not earned level/evolution progression. No production balance approval. First event center inside viewport does not establish pixel readability.' : 'Ten seconds each of level1/max/evolution VISUAL proposals, not balance or collision implementation. Existing replay damage/deaths cannot be attributed to showcase overlays.' });

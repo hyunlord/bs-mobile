@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns, sourceHeadRatio } from './m1-production-review.mjs';
+import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns, sourceHeadRatio, combatSheetTiming } from './m1-production-review.mjs';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'production-plan-test-'));
 try {
   const baked = path.join(root, 'baked.json'), drawn = path.join(root, 'drawn.json');
@@ -64,6 +64,15 @@ try {
   assert.throws(() => validateCombatEvents([hit, { ...death, eventTick: '301' }], run, manifest, expected));
   assert.throws(() => validateCombatEvents([hit, death], run, { ...manifest, firstVisibleHitFrame: 9 }, expected));
   const noKills = { windowHits: 1, windowKills: 0 }, noDeath = { firstVisibleHitFrame: 5, firstVisibleDeathFrame: -1 };
+  const timing = combatSheetTiming([hit, death], 'hit', 5, 600);
+  assert.equal(timing.eventTime.coreEventTick, 302); assert.equal(timing.pixelVerified, false);
+  assert.deepEqual(timing.strips[1].frames.map(f => f.index), Array.from({ length: 12 }, (_, i) => i + 5));
+  assert.equal(timing.strips[1].frames[2].elapsedRenderMs, 1000 / 30);
+  assert(!timing.strips[0].frames.some(f => f.index === 7)); assert(timing.strips[1].frames.some(f => f.index === 7));
+  const late = combatSheetTiming([{ ...hit, frameIndex: '570' }], 'hit', 570, 600);
+  assert.equal(late.strips[0].available, false); assert.equal(late.strips[1].available, true);
+  assert(combatSheetTiming([], 'death', -1, 600).strips.every(s => !s.available));
+  assert.throws(() => combatSheetTiming([], 'hit', 5, 600));
   assert.equal(validateCombatEvents([hit], { ...run, stage: 'lv1' }, noDeath, noKills).killCount, 0);
   assert.throws(() => validateCombatEvents([hit, death], { ...run, stage: 'lv1' }, manifest, noKills));
   assert.throws(() => validateCombatEvents([hit], { ...run, stage: 'evolved' }, noDeath, noKills));

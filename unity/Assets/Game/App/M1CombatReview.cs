@@ -12,7 +12,7 @@ namespace Game.App
     {
         [Serializable] public sealed class Composition { public int version, delayTicks, stepTicks, spacing, radius; public string placement; }
         [Serializable] public sealed class Gear { public string id, designRef, kind, aim; public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback, workTicks, workRadius, rewardExperience, capacity; public Composition composition; }
-        [Serializable] public sealed class Arena { public string enemyId; public int spawnPeriodTicks, enemyCap, enemySpeed, enemyHealth, durationTicks, enemyDamage, suppressedUntilTick, baseExperience; }
+        [Serializable] public sealed class Arena { public string enemyId; public int spawnPeriodTicks, enemyCap, enemySpeed, enemyHealth, durationTicks, enemyDamage, suppressedUntilTick, baseExperience, spawnRadius, recycleRadius, enemyBodyWidth; }
         [Serializable] public sealed class Case
         {
             public string contract, replaySha256, baselineDataHash, baselineCatalogHash, catalogHash, id, designRef, proposedContract, stage, classification, shape, audioCue, stateHash, scope;
@@ -52,6 +52,17 @@ namespace Game.App
                 throw new InvalidDataException("Malformed nonempty combat composition.");
             return value;
         }
+        public void ValidateReplayOptions(InteractiveOptions options)
+        {
+            var a = Definition.arena;
+            if (a.spawnRadius == 0 && a.recycleRadius == 0)
+            {
+                if (options.Field != null) throw new InvalidDataException("Legacy showcase requires no field override.");
+                return;
+            }
+            if (options.Field == null || options.Field.Version != FieldOptions.ReviewVersion || options.Field.SpawnRadius != a.spawnRadius || options.Field.RecycleRadius != a.recycleRadius)
+                throw new InvalidDataException("Showcase radius metadata differs from replay options.");
+        }
         public ContentCatalog Apply(ContentCatalog baseline, string baselineDataHash, string replaySha)
         {
             var d = Definition;
@@ -62,7 +73,7 @@ namespace Game.App
             var gear = new WaveGearDefinition(g.id,g.designRef,kind,g.damage,g.range,g.cooldownTicks,g.speed,g.count,g.lifetimeTicks,g.knockback,g.workTicks,g.workRadius,g.rewardExperience,g.capacity,
                 Aim:string.IsNullOrEmpty(g.aim)?null:g.aim, Composition:c==null?null:new WaveAttackComposition(c.version,c.placement,c.delayTicks,c.stepTicks,c.spacing,c.radius));
             var result = ReviewShowcaseCatalog.Create(baseline,new WaveShowcaseCase(d.id,d.designRef,d.proposedContract,d.stage,d.classification,gear,
-                new WaveShowcaseArena(a.enemyId,a.spawnPeriodTicks,a.enemyCap,a.enemySpeed,a.enemyHealth,a.durationTicks,a.enemyDamage,a.suppressedUntilTick,a.baseExperience)));
+                new WaveShowcaseArena(a.enemyId,a.spawnPeriodTicks,a.enemyCap,a.enemySpeed,a.enemyHealth,a.durationTicks,a.enemyDamage,a.suppressedUntilTick,a.baseExperience,a.spawnRadius,a.recycleRadius,a.enemyBodyWidth)));
             if (ReviewShowcaseCatalog.Hash(result) != d.catalogHash) throw new InvalidDataException("Derived combat catalog hash mismatch.");
             return result;
         }
