@@ -64,6 +64,46 @@ namespace Tests.EditMode
             Assert.That(notifications, Is.EqualTo(forms.Length));
         }
 
+        [TestCase(1)]
+        [TestCase(2)]
+        public void MotionComparisonCanFrameBoundedMapEdgeWithoutChangingOrdinaryCamera(int mode)
+        {
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var snapshot = new FirstPlayableFrame(Array.Empty<ActiveAttackView>(), Array.Empty<MapEventView>(),
+                Array.Empty<BuildingProgressView>(), Array.Empty<OfferedCardDetail>(), Array.Empty<EvolutionClueView>(),
+                Array.Empty<string>(), new System.Collections.Generic.Dictionary<string,int>(), 0, 0,
+                catalog.Tuning.DefaultHero, Array.Empty<PersonActivityView>(), Array.Empty<BossView>(), false);
+            var frame = session.View.CaptureFrame() with { Field = null, Events = Array.Empty<PresentationEvent>() };
+            var owner = new GameObject("Motion comparison camera policy");
+            var target = new RenderTexture(390, 844, 0);
+            try
+            {
+                var camera = owner.AddComponent<Camera>(); camera.targetTexture = target; camera.orthographic = true;
+                var follow = new RunCamera(camera, new WorldCameraSettings(1000, 2400, 6000, 600, 120, 800)) { KeepViewportInsideMap = true };
+                follow.SetMapBounds(12000, 12000);
+                var world = owner.AddComponent<WorldRenderer>();
+                typeof(WorldRenderer).GetField("followCamera", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(world, follow);
+                world.HeroMotionPreviewMode = mode;
+                world.AcceptFrame(frame, snapshot);
+                Assert.That(follow.EndlessField, Is.True);
+                var lord = new Vector2(6, 12);
+                var safe = new Rect(0, 0, 390, 780);
+                follow.Present(lord, 2400, 0, safe);
+                var onScreen = camera.WorldToScreenPoint(lord);
+                Assert.That(onScreen.x, Is.EqualTo(safe.center.x).Within(.1f));
+                Assert.That(onScreen.y, Is.EqualTo(safe.center.y).Within(.1f));
+                Assert.That(follow.MapClampedThisFrame, Is.False);
+                Assert.That(frame.Field, Is.Null, "Comparison framing must not create Core endless-field rules.");
+                world.HeroMotionPreviewMode = 0;
+                world.AcceptFrame(frame, snapshot); // Same borrowed snapshot must restore ordinary policy too.
+                Assert.That(follow.EndlessField, Is.False);
+                follow.SnapNextPresentation(); follow.Present(lord, 2400, 0, safe);
+                Assert.That(follow.MapClampedThisFrame, Is.True);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(owner); UnityEngine.Object.DestroyImmediate(target); }
+        }
+
         [Test] public void VisualProjectileTelemetryExcludesOnlySuppressedPersistentEvents()
         {
             var catalog = CanonicalContent.CreateCatalog();

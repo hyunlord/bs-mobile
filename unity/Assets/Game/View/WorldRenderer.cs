@@ -159,7 +159,7 @@ namespace Game.View
             if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D sprite shader is unavailable.");
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
-            followCamera.EndlessField = acceptedFrame?.Field != null;
+            followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
             art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
             if(ArtCatalog.ProfileName=="wave-1a")enemyRigAtlas=new EnemyRigAtlas(art);
@@ -173,6 +173,7 @@ namespace Game.View
             if (frame == null) throw new ArgumentNullException(nameof(frame));
             if (snapshot == null) throw new ArgumentNullException(nameof(snapshot), "The first-playable world requires its authoritative snapshot.");
             firstPlayable = snapshot;
+            if (followCamera != null) followCamera.EndlessField = frame.Field != null || HeroMotionPreviewMode > 0;
             if (ReferenceEquals(frame, acceptedFrame))
             {
                 if(acceptEvents)effects.Accept(frame.Events, onPresentationEvent ??= OnEvent);
@@ -187,7 +188,6 @@ namespace Game.View
             }
             if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) heroGaitDiscontinuity = true;
             acceptedFrame = frame;
-            if (followCamera != null) followCamera.EndlessField = frame.Field != null;
             for(var i=0;i<frame.Farms.Count;i++)
             {
                 var stage=frame.Farms[i].Stage;
@@ -251,7 +251,7 @@ namespace Game.View
             RenderedEntitySample?.Invoke("lord",0,lord);
             if (presentationDiagnosticsActive) diagnostics.SetupMs = DiagnosticInterval(ref diagnosticCheckpoint);
             if(wave!=null){var heroSize=Resolve("hero",snapshot.HeroId,"idle").WorldSize;followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
-            followCamera.LordViewportAnchor = FallowActive ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
+            followCamera.LordViewportAnchor = FallowActive && HeroMotionPreviewMode == 0 ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
             worldOverlayPixels = safeAreaPixels;
