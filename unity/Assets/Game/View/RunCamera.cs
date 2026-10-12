@@ -33,6 +33,27 @@ namespace Game.View
         public float EdgeActorMargin { get; set; }
         public Vector2 LordViewportAnchor { get; set; } = new Vector2(.5f, .5f);
         public float PresentationZoom { get; set; } = 1;
+        private float reviewMagnification = 1;
+        public float ReviewMagnification
+        {
+            get => reviewMagnification;
+            set
+            {
+                if (float.IsNaN(value) || value < 1 || value > 1.8f)
+                    throw new ArgumentOutOfRangeException(nameof(value), "Review magnification must be between 1 and 1.8.");
+                reviewMagnification = value;
+            }
+        }
+        public Rect WorldViewport
+        {
+            get
+            {
+                var halfHeight = camera.orthographicSize;
+                var halfWidth = halfHeight * camera.aspect;
+                var center = camera.transform.position;
+                return new Rect(center.x - halfWidth, center.y - halfHeight, halfWidth * 2, halfHeight * 2);
+            }
+        }
         private Vector2 visualOffset;
         private Vector2 previousTarget;
         private Vector2 mapSize;
@@ -84,6 +105,8 @@ namespace Game.View
             if (!EndlessField && mapSize.x > 0)
                 maximum = Mathf.Min(maximum, Mathf.Min((mapSize.x * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)) / aspect, mapSize.y * 0.5f + (KeepViewportInsideMap ? 0 : GameVisualTokens.CameraOutsideMargin)));
             desired = Mathf.Min(Mathf.Min(desired, maximum) / Mathf.Clamp(PresentationZoom, .5f, 2), maximum);
+            desired /= reviewMagnification;
+            maximum /= reviewMagnification;
             var followStep = (double)Mathf.Max(0, deltaTime) * 1000 / settings.FollowMilliseconds;
             var follow = 1 - Math.Exp(-followStep);
             var zoom = 1 - Mathf.Exp(-Mathf.Max(0, deltaTime) * 1000 / settings.ZoomMilliseconds);
