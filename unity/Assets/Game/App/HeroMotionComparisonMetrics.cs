@@ -60,8 +60,8 @@ namespace Game.App
             File.WriteAllText(Path.Combine(directory, "hero-motion-metrics.json"), JsonUtility.ToJson(new Manifest {
                 mode = mode, replaySha256 = replaySha256, finalStateHash = finalStateHash,
                 frames = count, dropped = DroppedSamples, captureActive = captureActive,
-                replayVerified = replayVerified, developmentBuild = Debug.isDebugBuild,
-                performanceEligible = replayVerified && benchmarkEligible && !Debug.isDebugBuild && !captureActive && count > 0 && DroppedSamples == 0,
+                replayVerified = replayVerified, developmentBuild = UnityEngine.Debug.isDebugBuild,
+                performanceEligible = replayVerified && benchmarkEligible && !UnityEngine.Debug.isDebugBuild && !captureActive && count > 0 && DroppedSamples == 0,
                 spriteSkinRecorderAvailable = deformation.Valid, mainRecorderAvailable = main.Valid }, true));
         }
         [Serializable] sealed class Manifest
