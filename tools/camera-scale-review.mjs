@@ -30,7 +30,7 @@ function benchmark(directory, window, capture, scale) {
   assert.equal(b.windows, windows[window].join('-'));
   assert.equal(b.width, 1920); assert.equal(b.height, 1080);
   const camera = json(path.join(directory, 'camera-scale.json'));
-  assert.equal(camera.contract, 'camera-scale-frozen-c05-v1'); assert.equal(camera.scale, Number(scale));
+  assert.equal(camera.contract, 'camera-scale-frozen-c05-v1'); assert(Number.isFinite(camera.scale) && Math.abs(camera.scale - Number(scale)) <= 1e-6, 'Camera scale differs beyond float serialization tolerance');
   assert.equal(camera.window, window); assert.equal(camera.startTick, windows[window][0]); assert.equal(camera.endTick, windows[window][1]);
   assert(camera.replayVerified); assert.equal(camera.replaySha256, replayHash); assert.equal(camera.offline, capture);
   assert.equal(b.performanceEligible, !capture);
@@ -79,17 +79,23 @@ async function executeNative(app, root, scale, window, capture) {
   benchmark(path.join(root, name), window, capture, scale);
   console.log(`END ${name} ${new Date().toISOString()}`);
 }
-async function run(app, root, capture) {
+async function run(app, root, capture, resume = false) {
   assert(path.isAbsolute(app), 'Absolute .app path required');
   fs.accessSync(path.join(app, 'Contents/MacOS/Sow and Siege'), fs.constants.X_OK);
   assert.equal(createHash('sha256').update(fs.readFileSync(fixture)).digest('hex'), replayHash);
   const existing = spawnSyncText('pgrep', ['-f', '/Contents/MacOS/Sow and Siege'], true);
   assert(!existing.trim(), 'Another game process is running; do not overlap GPU work');
-  newDirectory(root); buildMacHelper(root);
+  const completed = resume ? validateExistingCaptures(root) : new Set();
+  if (!resume) { newDirectory(root); buildMacHelper(root); }
+  else fs.accessSync(path.join(root, 'mac-helper'), fs.constants.X_OK);
   if (!capture) spawnSyncText('swiftc', [path.join(repo, 'tools/observe-foreground.swift'), '-o', path.join(root, 'observe-foreground')]);
   // Rotate scale order across windows to avoid always assigning one scale the cold run.
   for (const [index, window] of Object.keys(windows).entries())
-    for (let i = 0; i < scales.length; i++) await executeNative(app, root, scales[(i + index) % scales.length], window, capture);
+    for (let i = 0; i < scales.length; i++) {
+      const scale = scales[(i + index) % scales.length], name = label(scale, window);
+      if (completed.has(name)) { console.log(`SKIP validated complete ${name}`); continue; }
+      await executeNative(app, root, scale, window, capture);
+    }
 }
 function buildMacHelper(directory) {
   const source = path.join(directory, 'mac-helper.swift');
@@ -118,6 +124,35 @@ function spawnSyncText(binary, args, emptyExitOne = false) {
   try { return execFileSync(binary, args, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }); }
   catch (error) { if (emptyExitOne && error.status === 1) return ''; throw error; }
 }
+function validateCaptureFrames(directory) {
+  const capture = json(path.join(directory, 'offline-capture.json'));
+  assert(capture.complete && capture.performanceEligible === false && capture.fps === 60 && capture.frames === 1800 && capture.expectedFrames === 1800);
+  const rows = csv(path.join(directory, 'offline-frame-index.csv'));
+  assert.equal(rows.length, 1800);
+  const tape = rows.map((row, index) => { assert.equal(Number(row.index), index); return [row.index, row.tick, row.alpha, row.seconds].join(','); }).join('\n');
+  const files = fs.readdirSync(path.join(directory, 'offline-frames')).filter(file => /^frame-\d{6}\.jpg$/.test(file)).sort();
+  assert.equal(files.length, 1800); files.forEach((file, i) => assert.equal(file, `frame-${String(i).padStart(6, '0')}.jpg`));
+  return tape;
+}
+function validateExistingCaptures(root) {
+  assert(path.isAbsolute(root) && fs.statSync(root).isDirectory(), 'Existing absolute capture root required');
+  const completed = new Set(); let sourceIdentity;
+  for (const window of Object.keys(windows)) {
+    let reference;
+    for (const scale of scales) {
+      const name = label(scale, window), directory = path.join(root, name);
+      if (!fs.existsSync(directory)) {
+        assert(!fs.readdirSync(root).some(file => file.startsWith(name + '.')), `Partial run logs without capture directory: ${name}`);
+        continue;
+      }
+      const b = benchmark(directory, window, true, scale), tape = validateCaptureFrames(directory);
+      if (sourceIdentity) assert.equal(identity(b), sourceIdentity); else sourceIdentity = identity(b);
+      if (reference) assert.equal(tape, reference, `Different tick/alpha/time: ${window}`); else reference = tape;
+      completed.add(name);
+    }
+  }
+  return completed;
+}
 function assemble(root, output) {
   const sources = []; let sourceIdentity;
   for (const window of Object.keys(windows)) {
@@ -125,14 +160,8 @@ function assemble(root, output) {
     for (const scale of scales) {
       const directory = path.join(root, label(scale, window)), b = benchmark(directory, window, true, scale);
       if (sourceIdentity) assert.equal(identity(b), sourceIdentity); else sourceIdentity = identity(b);
-      const capture = json(path.join(directory, 'offline-capture.json'));
-      assert(capture.complete && capture.performanceEligible === false && capture.fps === 60 && capture.frames === 1800 && capture.expectedFrames === 1800);
-      const rows = csv(path.join(directory, 'offline-frame-index.csv'));
-      assert.equal(rows.length, 1800);
-      const tape = rows.map((row, index) => { assert.equal(Number(row.index), index); return [row.index, row.tick, row.alpha, row.seconds].join(','); }).join('\n');
+      const tape = validateCaptureFrames(directory);
       if (reference) assert.equal(tape, reference, `Different tick/alpha/time: ${window}`); else reference = tape;
-      const files = fs.readdirSync(path.join(directory, 'offline-frames')).filter(file => /^frame-\d{6}\.jpg$/.test(file)).sort();
-      assert.equal(files.length, 1800); files.forEach((file, i) => assert.equal(file, `frame-${String(i).padStart(6, '0')}.jpg`));
       sources.push({ scale, window, directory, commit: b.commit, sourceHash: b.sourceHash, replayHash: b.replaySha256, terminalHash: b.stateHash });
     }
   }
@@ -193,8 +222,10 @@ const [command, first, second, ...extra] = process.argv.slice(2);
 assert(!extra.length, 'Too many arguments');
 switch (command) {
   case 'run-capture': assert(first && second); await run(first, second, true); break;
+  case 'resume-capture': assert(first && second); await run(first, second, true, true); break;
+  case 'validate-capture': assert(first && !second); console.log([...validateExistingCaptures(first)].join('\n')); break;
   case 'run-performance': assert(first && second); await run(first, second, false); break;
   case 'assemble': assert(first && second); assemble(first, second); break;
   case 'summary': assert(first && !second); summarize(first); break;
-  default: throw Error('Usage: camera-scale-review.mjs run-capture|run-performance APP NEW_ROOT | assemble CAPTURE_ROOT NEW_VIDEO_ROOT | summary PERFORMANCE_ROOT');
+  default: throw Error('Usage: camera-scale-review.mjs run-capture|run-performance APP NEW_ROOT | resume-capture APP EXISTING_ROOT | validate-capture EXISTING_ROOT | assemble CAPTURE_ROOT NEW_VIDEO_ROOT | summary PERFORMANCE_ROOT');
 }
