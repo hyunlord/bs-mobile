@@ -25,6 +25,7 @@ namespace Game.App
         int lastUnityFrame = -1;
         public int Frames { get; private set; }
         public bool Pending { get; private set; }
+        public bool AudioPending => audio != null && audio.PendingFrames > 0;
         public Exception Error => captureError ?? audio?.Error;
         public static bool Requested(string[] args)
         {

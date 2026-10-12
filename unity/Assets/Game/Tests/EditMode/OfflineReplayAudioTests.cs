@@ -6,18 +6,40 @@ using UnityEngine;
 
 public sealed class OfflineReplayAudioTests
 {
-    [TestCase(0, 0), TestCase(800, 1600), TestCase(1600, 3200)]
-    public void WarmupDrainsReportedSampleFramesWithoutTrimming(int sampleFrames, int floatCount)
-        => Assert.That(OfflineReplayAudio.RenderSampleCount(sampleFrames, 48000, 2, false), Is.EqualTo(floatCount));
-    [TestCase(0), TestCase(799), TestCase(801), TestCase(1600)]
-    public void CapturedFrameRejectsMissingOrExcessSamples(int sampleFrames)
-        => Assert.Throws<InvalidDataException>(() => OfflineReplayAudio.RenderSampleCount(sampleFrames, 48000, 2, true));
-    [Test] public void CapturedStereoFrameIsExactly800SampleFrames()
-        => Assert.That(OfflineReplayAudio.RenderSampleCount(800, 48000, 2, true), Is.EqualTo(1600));
+    [Test] public void QuantizedDspBlocksReblockWithoutMissingOrInventedSamples()
+    {
+        using var raw = new MemoryStream(); using var output = new MemoryStream();
+        var frame = new byte[800 * 2 * 2];
+        const int start = 3 * 800, clipFrames = 8;
+        var next = 0; long emitted = 0;
+        for (var render = 0; render < 13; render++)
+        {
+            var available = ((render + 1) * 800 / 1024) * 1024;
+            while (emitted < available)
+            {
+                for (var channelByte = 0; channelByte < 4; channelByte++) raw.WriteByte((byte)((emitted * 4 + channelByte) % 251));
+                emitted++;
+            }
+            while (next < clipFrames && OfflineReplayAudio.CopyPcmWindow(raw, output, start + next * 800, frame, 2)) next++;
+        }
+        Assert.That(next, Is.EqualTo(clipFrames));
+        Assert.That(output.Length, Is.EqualTo(clipFrames * frame.Length));
+        var expected = new byte[clipFrames * frame.Length];
+        Array.Copy(raw.ToArray(), start * 4, expected, 0, expected.Length);
+        Assert.That(output.ToArray(), Is.EqualTo(expected));
+        Assert.That(raw.Position, Is.EqualTo(raw.Length));
+    }
+    [Test] public void IncompleteDspWindowNeverPadsOutput()
+    {
+        using var raw = new MemoryStream(new byte[1024 * 4]); using var output = new MemoryStream();
+        raw.Position = raw.Length;
+        Assert.That(OfflineReplayAudio.CopyPcmWindow(raw, output, 800, new byte[800 * 4], 2), Is.False);
+        Assert.That(output.Length, Is.Zero); Assert.That(raw.Position, Is.EqualTo(raw.Length));
+    }
     [Test] public void InvalidMixerCountsCannotAllocate()
     {
-        Assert.Throws<InvalidDataException>(() => OfflineReplayAudio.RenderSampleCount(-1, 48000, 2, false));
-        Assert.Throws<OverflowException>(() => OfflineReplayAudio.RenderSampleCount(int.MaxValue, 48000, 2, false));
+        Assert.Throws<InvalidDataException>(() => OfflineReplayAudio.RenderSampleCount(-1, 2));
+        Assert.Throws<OverflowException>(() => OfflineReplayAudio.RenderSampleCount(int.MaxValue, 2));
     }
     [Test] public void OrdinaryExecutionDoesNotRecordAudio() => Assert.That(OfflineReplayAudio.Requested(Array.Empty<string>()), Is.False);
     [Test] public void AudioRequiresExplicitOfflineCapture()

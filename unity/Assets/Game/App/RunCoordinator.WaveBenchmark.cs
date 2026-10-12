@@ -367,12 +367,17 @@ namespace Game.App
                 }
                 if ((heroMotionWindow != null || cameraScaleComparison != null) && CurrentFrame.Tick >= BenchmarkDisplayEnd)
                 {
+                    if (offlineReplayCapture != null && offlineReplayCapture.AudioPending) return;
                     // Continue the exact original suffix without rendering or fabricated input.
                     // This proves the full terminal hash, while the review clip remains bounded.
                     while (benchmarkCommand < benchmarkReplay.Commands.Count) ApplyBenchmarkCommand(false, ref benchmarkPending);
                     EndWaveBenchmark(null); return;
                 }
-                if (benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick)) { EndWaveBenchmark(null); return; }
+                if (benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick))
+                {
+                    if (offlineReplayCapture != null && offlineReplayCapture.AudioPending) return;
+                    EndWaveBenchmark(null); return;
+                }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 using (BenchmarkTraceHousekeeping.Auto())
                 {

@@ -46,6 +46,38 @@ export function validatePcm(file, audio, frames) {
   assert(nonzero > 0, 'Silent native audio rejected; no replacement soundtrack allowed');
   return { sampleRate: rate, channels, sampleFrames: size / channels / 2, nonzero, peak: peak / 32768, rms: Math.sqrt(sum / (size / 2)) / 32768, sha256: hash(file) };
 }
+export function validateAudioBlocks(directory, audio, sound) {
+  assert.equal(audio.contract, 'unity-audiorenderer-offline-pcm16-v2');
+  const perFrame = audio.sampleRate / 60, frameBytes = audio.channels * 2;
+  assert.equal(audio.logicalSamplesPerFrame, perFrame); assert.equal(audio.pendingFrames, 0);
+  assert(Number.isSafeInteger(audio.firstRenderUnityFrame) && audio.firstRenderUnityFrame >= 0);
+  const blocks = csv(path.join(directory, 'offline-audio-blocks.csv'));
+  assert(blocks.length > 0, 'Missing native audio block provenance');
+  let rawFrames = 0;
+  blocks.forEach((block, index) => {
+    assert.equal(Number(block.renderFrame), index);
+    assert.equal(Number(block.unityFrame), audio.firstRenderUnityFrame + index, 'Native render clock gap');
+    assert.equal(Number(block.startSampleFrame), rawFrames, 'Native PCM block gap or overlap');
+    const count = Number(block.sampleFrames); assert(Number.isSafeInteger(count) && count >= 0);
+    assert.equal(Number(block.logicalEndSampleFrame), (index + 1) * perFrame);
+    assert.equal(Number(block.channels), audio.channels); assert.equal(Number(block.sampleRate), audio.sampleRate);
+    rawFrames += count;
+  });
+  assert.equal(audio.rawSampleFrames, rawFrames);
+  const raw = fs.readFileSync(path.join(directory, 'offline-audio-raw.pcm'));
+  assert.equal(raw.length, rawFrames * frameBytes, 'Native PCM byte count differs from block ledger');
+  const start = audio.captureStartRawSampleFrame, end = audio.captureEndRawSampleFrame;
+  assert(Number.isSafeInteger(start) && Number.isSafeInteger(end) && start >= 0 && end <= rawFrames && end > start);
+  assert.equal(end - start, sound.length * perFrame);
+  sound.forEach((frame, index) => {
+    const rawStart = Number(frame.rawStartSampleFrame);
+    assert.equal(rawStart, start + index * perFrame, 'Capture raw sample sequence gap');
+    assert.equal(rawStart, (Number(frame.unityFrame) - audio.firstRenderUnityFrame) * perFrame, 'Captured mixer clock origin shifted');
+  });
+  const wav = fs.readFileSync(path.join(directory, 'offline-audio.wav'));
+  assert(wav.subarray(44).equals(raw.subarray(start * frameBytes, end * frameBytes)), 'Captured PCM differs from original mixer slice: padding, loss or replacement');
+  return { rawSha256: hash(path.join(directory, 'offline-audio-raw.pcm')), rawSampleFrames: rawFrames, captureStartRawSampleFrame: start, captureEndRawSampleFrame: end, firstRenderUnityFrame: audio.firstRenderUnityFrame, nativeBlocks: blocks.length };
+}
 export function validateRun(plan, run) {
   const b = read(path.join(run.directory, 'benchmark.json'));
   assert(b.verified && !b.error && !b.sourceDirty && b.performanceEligible === false, 'Clean verified offline native capture required');
@@ -61,13 +93,14 @@ export function validateRun(plan, run) {
   }
   const capture = read(path.join(run.directory, 'offline-capture.json')), audio = read(path.join(run.directory, 'offline-audio.json'));
   assert(capture.complete && capture.fps === 60 && capture.performanceEligible === false && capture.frames === plan.frames && capture.expectedFrames === plan.frames);
-  assert.equal(audio.contract, 'unity-audiorenderer-offline-pcm16-v1');
+  assert.equal(audio.contract, 'unity-audiorenderer-offline-pcm16-v2');
   assert(audio.complete && !audio.error && audio.performanceEligible === false && audio.videoFrames === plan.frames && audio.expectedFrames === plan.frames);
   const video = csv(path.join(run.directory, 'offline-frame-index.csv')), sound = csv(path.join(run.directory, 'offline-audio-index.csv'));
   const hero = csv(path.join(run.directory, plan.heroCoordinates)); assert.equal(hero.length, plan.frames);
   assert.equal(video.length, plan.frames); assert.equal(sound.length, plan.frames);
   const pcm = validatePcm(path.join(run.directory, 'offline-audio.wav'), audio, plan.frames);
   assert.equal(audio.sampleFrames, pcm.sampleFrames);
+  pcm.nativeProvenance = validateAudioBlocks(run.directory, audio, sound);
   const tape = video.map((frame, index) => {
     assert.equal(Number(frame.index), index); assert.equal(Number(sound[index].videoFrame), index);
     assert.equal(Number(hero[index].frameIndex), index); assert.equal(Number(hero[index].tick), Number(frame.tick)); assert.equal(Number(hero[index].alpha), Number(frame.alpha));
