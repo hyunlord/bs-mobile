@@ -1,0 +1,4 @@
+control,commit,capture,sha256,glyphRoi,glyphRgb,backgroundPoint,backgroundRgb,contrastRatio,method
+reroll,d12db4a,artifacts/portrait-234/editor-run/cards-390x844.png,abcbb22f75e00b44b4ca2d10b6dc2572a444a0311a3c055105fb0e8e8f813137,51:774:92:784,61-46-26,71:768,246-230-191,10.5911,glyph-core vs adjacent cream; antialias edges excluded
+ban,d12db4a,artifacts/portrait-234/editor-run/cards-390x844.png,abcbb22f75e00b44b4ca2d10b6dc2572a444a0311a3c055105fb0e8e8f813137,175:774:216:784,59-42-22,195:768,246-229-192,11.0467,glyph-core vs adjacent cream; antialias edges excluded
+lock,d12db4a,artifacts/portrait-234/editor-run/cards-390x844.png,abcbb22f75e00b44b4ca2d10b6dc2572a444a0311a3c055105fb0e8e8f813137,299:774:340:784,64-49-30,319:768,246-229-195,10.0917,glyph-core vs adjacent cream; antialias edges excluded
