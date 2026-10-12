@@ -75,6 +75,7 @@ namespace Game.App
         }
         void Update()
         {
+            RecordHeroMotionComparisonFrame();
             BeginLongFrame();
             if(ProbeEnabled)BeginProbeFrame();
             if (!normalTraceChecked) { normalTraceChecked = true; normalTrace = NormalPlayTrace.Create(this); if (normalTrace != null) ConfigureNormalTrace(normalTrace); }

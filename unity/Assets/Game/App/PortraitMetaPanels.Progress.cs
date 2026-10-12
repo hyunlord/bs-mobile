@@ -5,6 +5,7 @@ using Game.View;
 using Game.App.Generated;
 using SowSiege.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Game.App
 {
@@ -76,6 +77,11 @@ namespace Game.App
                 Caption(ui, panel, challenge.Name, 74, 12, width - 154, 26, 17, true);
                 Caption(ui, panel, "진행 " + Math.Min(progress, challenge.Target) + "/" + challenge.Target + " · 연구 " + challenge.ResearchLevel, 74, 39, width - 88, 24, 12, true);
                 var sequence = pending?.Sequence ?? 0;
+                if (pending != null)
+                {
+                    var emphasis = ColorPlate(panel, "Claim ready gold border", new Color32(218, 178, 75, 255), width - 69, 7, 60, 50);
+                    emphasis.GetComponent<Image>().raycastTarget = false;
+                }
                 ActionButton(ui, panel, "Challenges.Claim:" + challenge.Id, pending != null ? "받기" : completed ? "받음" : "진행", () => claim(sequence), width - 66, 10, 54, pending != null, 44);
                 if (!completed && pending == null)
                 {

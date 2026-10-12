@@ -27,7 +27,7 @@ namespace Game.View
         readonly Dictionary<string,string> rewardSources = new Dictionary<string,string>(StringComparer.Ordinal);
         readonly Dictionary<string,string> attackSources = new Dictionary<string,string>(StringComparer.Ordinal);
         float heroAttackUntil;
-        public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame)
+        public void AcceptWave(ContentCatalog catalog, WaveRuntimeFrame frame, bool acceptEvents = true)
         {
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
             if(profileChanged||frame==null)
@@ -37,6 +37,7 @@ namespace Game.View
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
                 ResetThreatWarnings();
+                ResetImpactFeedback();
                 waveMotion.Reset();
                 heroAttackUntil=0;
                 rewardSources.Clear(); attackSources.Clear();
@@ -83,6 +84,7 @@ namespace Game.View
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
             if(frame==null)return;
             waveMotion.Accept(frame,visualTime);
+            if(!acceptEvents)return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var effectCreateSample = WorldEffects.CreateMarker.Auto();
             var effectsCapacity = waveEffects.Capacity;
@@ -98,6 +100,7 @@ namespace Game.View
                     actorFacing.Remove(("enemy",value.SubjectId));
                 }
                 AcceptFallowEvent(value);
+                AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
                     var source=value.Source;
@@ -118,8 +121,16 @@ namespace Game.View
                     DiagnosticEffectCreated?.Invoke(value.Source,value.Kind);
 #endif
                 }
-                if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
-                if(value.Kind=="attack")heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
+                if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
+                if(value.Kind=="attack")
+                {
+                    heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
+                    if(HeroMotionPreviewMode!=0)
+                    {
+                        if(value.Source=="core:iron_blade")NotifyHeroMotionAttack(false);
+                        else if(value.Source=="core:sowing_sworddance")NotifyHeroMotionAttack(true);
+                    }
+                }
             }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             RecordCapacityGrowth("waveEffects", effectsCapacity, waveEffects.Capacity, waveEffects.Count);

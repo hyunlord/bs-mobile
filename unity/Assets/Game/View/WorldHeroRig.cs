@@ -7,6 +7,46 @@ namespace Game.View
     {
         public bool HeroRigPreviewEnabled { get; set; }
         public Action<HeroGaitSample> HeroGaitSampled { get; set; }
+        // Opt-in comparison only: zero preserves the approved existing B presentation.
+        public int HeroMotionPreviewMode { get; set; }
+        public bool HeroMotionEvolved { get; set; }
+        public HeroLiveRig HeroMotionLiveMetrics => heroLiveRig;
+        HeroLiveRig heroLiveRig;
+        Texture2D heroMotionUpper;
+        HeroLiveClip motionSwingClip, motionEvolvedClip, motionHitClip;
+        float motionAttackStarted = -100, motionHitStarted = -100;
+        float motionObservedAttackUntil, motionObservedHitUntil;
+        bool motionAttackEvolved;
+
+        public void PrepareHeroMotionPreview(int mode)
+        {
+            if (mode < 0 || mode > 2) throw new ArgumentOutOfRangeException(nameof(mode));
+            HeroMotionPreviewMode = mode;
+            if (mode != 0 && motionSwingClip == null)
+            {
+                var motion = HeroLiveRigData.Load();
+                motionSwingClip = motion.Clip("swing");
+                motionEvolvedClip = motion.Clip("evolved-swing");
+                motionHitClip = motion.Clip("hit");
+            }
+            if (mode == 1)
+            {
+                heroMotionUpper = Resources.Load<Texture2D>("HeroMotion/baked-actions");
+                if (heroMotionUpper == null) throw new InvalidOperationException("Baked hero comparison atlas is unavailable.");
+            }
+            if (mode == 2 && heroLiveRig == null) heroLiveRig = new HeroLiveRig(null);
+            if (mode != 2) heroLiveRig?.Hide();
+        }
+        public void NotifyHeroMotionAttack(bool evolved)
+        {
+            motionAttackStarted = visualTime;
+            motionAttackEvolved = evolved;
+            motionObservedAttackUntil = heroAttackUntil;
+        }
+        public void DisposeHeroMotion()
+        {
+            heroLiveRig?.Dispose(); heroLiveRig = null;
+        }
         ArtVisual rigIdle, rigWalk, rigAttack, rigHit;
         readonly HeroGaitState heroGait=new HeroGaitState();
         Shader heroRigShader;
@@ -14,7 +54,8 @@ namespace Game.View
         ArtVisual HeroVisual(string heroId,string state,bool walking,float attackProgress,float seconds,out float animationTime)
         {
             animationTime=visualTime;
-            if(!HeroRigPreviewEnabled){heroGait.Reset();return Resolve("hero",heroId,state);}
+            if(heroConceptVisual!=null)return heroConceptVisual;
+            if(!HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
             if(rigIdle==null)
             {
                 rigIdle=art.ResolveRole("hero.preview-b.idle");
@@ -32,7 +73,8 @@ namespace Game.View
         bool DrawHeroRig(ArtVisual visual,Vector2 position,bool walking,float attackProgress,bool hit,bool dead,
             ActorFacingPose facing,Color color,float flash,bool discontinuity)
         {
-            if(!HeroRigPreviewEnabled)return false;
+            if(heroConceptVisual!=null){heroLiveRig?.Hide();return false;}
+            if(!HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroLiveRig?.Hide();return false;}
             if(heroRigShader==null)
             {
                 heroRigShader=Resources.Load<Shader>("HeroRig");
@@ -40,16 +82,58 @@ namespace Game.View
             }
             var fullSize=visual.WorldSize*(256f/252)*GameVisualTokens.HeroRigHeightScale;
             fullSize.x*=facing.SignedWidth;
-            var sample=heroGait.Advance(position,fullSize,walking,discontinuity,hit||dead);
+            var comparing = HeroMotionPreviewMode != 0;
+            var sample=heroGait.Advance(position,fullSize,walking,discontinuity,!comparing&&(hit||dead));
             var frame=hit||dead?14:sample.FrameIndex;
             var upperFrame=HeroGaitState.UpperFrame(frame,attackProgress>=0,hit||dead);
+            Texture2D actionTexture = null;
+            if (comparing)
+            {
+                if (motionSwingClip == null) PrepareHeroMotionPreview(HeroMotionPreviewMode);
+                if (wave == null && heroAttackUntil != motionObservedAttackUntil && attackProgress >= 0)
+                {
+                    motionObservedAttackUntil = heroAttackUntil;
+                    motionAttackStarted = visualTime;
+                    motionAttackEvolved = HeroMotionEvolved;
+                }
+                if (heroHitUntil != motionObservedHitUntil && hit)
+                {
+                    motionObservedHitUntil = heroHitUntil;
+                    motionHitStarted = visualTime;
+                }
+                var attackClip = motionAttackEvolved ? motionEvolvedClip : motionSwingClip;
+                var attackTime = (visualTime-motionAttackStarted)/attackClip.durationSeconds;
+                var hitTime = (visualTime-motionHitStarted)/motionHitClip.durationSeconds;
+                if (attackTime > 1 || attackTime < 0) attackTime = -1;
+                if (hitTime > 1 || hitTime < 0) hitTime = -1;
+                frame = sample.FrameIndex;
+                if (HeroMotionPreviewMode == 2)
+                {
+                    if (heroLiveRig == null) heroLiveRig = new HeroLiveRig(null);
+                    heroLiveRig.Present(position,fullSize,sample,walking,attackTime,motionAttackEvolved,hitTime,color);
+                    HeroGaitSampled?.Invoke(sample);
+                    return true;
+                }
+                heroLiveRig?.Hide();
+                upperFrame = frame;
+                if (hitTime >= 0 || attackTime >= 0)
+                {
+                    if (heroMotionUpper == null) heroMotionUpper = Resources.Load<Texture2D>("HeroMotion/baked-actions");
+                    if (heroMotionUpper == null) throw new InvalidOperationException("Baked hero comparison atlas is unavailable.");
+                    actionTexture = heroMotionUpper;
+                    var clip = hitTime >= 0 ? motionHitClip : attackClip;
+                    var progress = hitTime >= 0 ? hitTime : attackTime;
+                    upperFrame = clip.firstFrame + Mathf.RoundToInt(progress * (clip.frameCount - 1));
+                }
+            }
+            else heroLiveRig?.Hide();
             var key=(GameVisualTokens.LordLayer,visual.Texture);
             if(!batches.TryGetValue(key,out var batch))
             {
                 batch=new SpriteBatch(visual.Texture,heroRigShader,renderCamera,GameVisualTokens.LordLayer);
                 batches.Add(key,batch);
             }
-            batch.SetHeroRigPose(HeroGaitState.FrameRect(frame),HeroGaitState.FrameRect(upperFrame),sample.FarCorrection,sample.NearCorrection,HeroGaitState.Warp);
+            batch.SetHeroRigPose(HeroGaitState.FrameRect(frame),HeroGaitState.FrameRect(upperFrame),sample.FarCorrection,sample.NearCorrection,HeroGaitState.Warp,actionTexture);
             batch.Add(position,fullSize,HeroGaitState.Pivot,new Rect(0,0,1,1),0,color,flash);
             HeroGaitSampled?.Invoke(sample);
             if(sample.NearPlanted)RenderedEntitySample?.Invoke("hero-foot-near",0,HeroGaitState.WorldSole(position,fullSize,sample.FrameIndex,true,sample.NearCorrection));

@@ -7,23 +7,40 @@ namespace Game.View
     public sealed class WorldDamageNumbers : IDisposable
     {
         public const int Capacity = 64;
+        const int ContinuationChunks = 4;
         const float PlacementStep = 0.18f;
         const float LabelGap = 0.025f;
         static readonly int[] PlacementOffsets = { 0, 1, -1, 2, -2, 3, -3 };
         readonly MeshRenderer[] renderers = new MeshRenderer[Capacity];
         readonly TextMesh[] labels = new TextMesh[Capacity];
+        readonly TextMesh[,] continuations = new TextMesh[Capacity, ContinuationChunks];
+        readonly MeshRenderer[,] continuationRenderers = new MeshRenderer[Capacity, ContinuationChunks];
+        readonly int[] chunkCounts = new int[Capacity];
+        readonly int[] digitCounts = new int[Capacity];
+        readonly float[] centerShifts = new float[Capacity];
+        readonly int[] chunks = new int[ContinuationChunks + 1];
         readonly Vector2[] origins = new Vector2[Capacity];
         readonly float[] ages = new float[Capacity];
         readonly Color[] colors = new Color[Capacity];
+        readonly int[] subjects = new int[Capacity];
+        readonly long[] amounts = new long[Capacity];
+        readonly bool[] aggregate = new bool[Capacity];
         readonly Transform parent;
         Font font;
         int next;
         readonly string[] amountText;
         static readonly string[] AmountText = CreateAmountText();
+        static readonly string[] PaddedChunkText = CreatePaddedChunkText();
         static string[] CreateAmountText()
         {
             var values = new string[16384];
             for (var i = 0; i < values.Length; i++) values[i] = i.ToString(CultureInfo.InvariantCulture);
+            return values;
+        }
+        static string[] CreatePaddedChunkText()
+        {
+            var values = new string[10000];
+            for (var i = 0; i < values.Length; i++) values[i] = i.ToString("D4", CultureInfo.InvariantCulture);
             return values;
         }
         public WorldDamageNumbers(Transform parent)
@@ -39,20 +56,93 @@ namespace Game.View
                 label.anchor = TextAnchor.MiddleCenter; label.alignment = TextAlignment.Center;
                 var renderer = owner.GetComponent<MeshRenderer>(); renderer.sharedMaterial = font.material; renderer.sortingOrder = GameVisualTokens.ThreatLayer + 1;
                 labels[index] = label; renderers[index] = renderer; owner.SetActive(false);
+                for (var chunk = 0; chunk < ContinuationChunks; chunk++)
+                {
+                    var child = new GameObject("Pooled damage digits"); child.transform.SetParent(owner.transform, false);
+                    var digits = child.AddComponent<TextMesh>(); digits.font = font; digits.fontSize = label.fontSize;
+                    digits.characterSize = label.characterSize; digits.anchor = label.anchor; digits.alignment = label.alignment;
+                    var childRenderer = child.GetComponent<MeshRenderer>(); childRenderer.sharedMaterial = font.material;
+                    childRenderer.sortingOrder = renderer.sortingOrder;
+                    continuations[index, chunk] = digits; continuationRenderers[index, chunk] = childRenderer;
+                    child.SetActive(false);
+                }
             }
         }
 
         public void Add(Vector2 origin, long amount) => Add(origin, amount, GameVisualTokens.Attack);
+        public void AddAggregated(int subjectId, Vector2 origin, long amount)
+        {
+            if (amount <= 0) return;
+            for (var i = 0; i < Capacity; i++)
+            {
+                if (!aggregate[i] || subjects[i] != subjectId || !labels[i].gameObject.activeSelf || ages[i] > GameVisualTokens.DamageAggregateSeconds) continue;
+                if (amount > long.MaxValue - amounts[i]) continue;
+                amounts[i] += amount;
+                var oldDigits = digitCounts[i];
+                SetAmount(i, amounts[i]);
+                if (oldDigits != digitCounts[i] && !Place(i, origins[i])) labels[i].gameObject.SetActive(false);
+                return;
+            }
+            var slot = next;
+            Add(origin, amount, GameVisualTokens.Attack);
+            subjects[slot] = subjectId; amounts[slot] = amount; aggregate[slot] = true;
+        }
+        void SetAmount(int index, long amount)
+        {
+            amounts[index] = amount;
+            var previousChunks = chunkCounts[index];
+            var count = 0;
+            var rest = amount;
+            if (amount < amountText.Length)
+            {
+                labels[index].text = amountText[(int)amount];
+                digitCounts[index] = amountText[(int)amount].Length;
+            }
+            else
+            {
+                while (rest >= 10000) { chunks[count++] = (int)(rest % 10000); rest /= 10000; }
+                labels[index].text = amountText[(int)rest];
+                digitCounts[index] = amountText[(int)rest].Length + count * 4;
+                for (var chunk = 0; chunk < count; chunk++) continuations[index, chunk].text = PaddedChunkText[chunks[count - chunk - 1]];
+            }
+            chunkCounts[index] = count;
+            for (var chunk = count; chunk < previousChunks; chunk++) continuations[index, chunk].gameObject.SetActive(false);
+            for (var chunk = previousChunks; chunk < count; chunk++) continuations[index, chunk].gameObject.SetActive(true);
+            if (count == 0) { centerShifts[index] = 0; return; }
+            labels[index].gameObject.SetActive(true);
+            var prefixWidth = renderers[index].bounds.size.x;
+            var width = prefixWidth;
+            for (var chunk = 0; chunk < count; chunk++)
+            {
+                var childWidth = continuationRenderers[index, chunk].bounds.size.x;
+                continuations[index, chunk].transform.localPosition = new Vector3(width - prefixWidth * .5f + childWidth * .5f, 0, 0);
+                width += childWidth;
+            }
+            centerShifts[index] = (width - prefixWidth) * .5f;
+            SetColor(index, colors[index]);
+        }
+        void SetColor(int index, Color color)
+        {
+            labels[index].color = color;
+            for (var chunk = 0; chunk < chunkCounts[index]; chunk++) continuations[index, chunk].color = color;
+        }
+        void SetPosition(int index, Vector2 center)
+            => labels[index].transform.position = new Vector3(center.x - centerShifts[index], center.y, -.1f);
+        Bounds LabelBounds(int index)
+        {
+            var result = renderers[index].bounds;
+            for (var chunk = 0; chunk < chunkCounts[index]; chunk++) result.Encapsulate(continuationRenderers[index, chunk].bounds);
+            return result;
+        }
         public void Add(Vector2 origin, long amount, Color color)
         {
             if (amount <= 0) return;
             var index = next; next = (next + 1) % Capacity;
-            // Unusually large values remain exact; their event-only formatting is visible in acceptance allocation telemetry.
-            labels[index].text = amount < amountText.Length ? amountText[(int)amount] : amount.ToString(CultureInfo.InvariantCulture);
+            SetAmount(index, amount); aggregate[index] = false;
             origins[index] = origin; ages[index] = 0; labels[index].gameObject.SetActive(true);
-            labels[index].transform.position = new Vector3(origin.x, origin.y + 0.14f, -0.1f);
+            SetPosition(index, origin + Vector2.up * .14f);
             colors[index] = color;
-            labels[index].color = color;
+            SetColor(index, color);
             if (!Place(index, origin)) labels[index].gameObject.SetActive(false);
         }
         bool Place(int index, Vector2 origin)
@@ -61,13 +151,13 @@ namespace Game.View
                 foreach (var x in PlacementOffsets)
                 {
                     var candidate = origin + new Vector2(x * PlacementStep, y * PlacementStep);
-                    labels[index].transform.position = new Vector3(candidate.x, candidate.y + 0.14f, -0.1f);
-                    var bounds = renderers[index].bounds;
+                    SetPosition(index, candidate + Vector2.up * .14f);
+                    var bounds = LabelBounds(index);
                     var available = true;
                     for (var other = 0; other < Capacity; other++)
                     {
                         if (other == index || labels[other] == null || !labels[other].gameObject.activeSelf) continue;
-                        var occupied = renderers[other].bounds;
+                        var occupied = LabelBounds(other);
                         if (bounds.min.x < occupied.max.x + LabelGap && bounds.max.x > occupied.min.x - LabelGap &&
                             bounds.min.y < occupied.max.y + LabelGap && bounds.max.y > occupied.min.y - LabelGap)
                         { available = false; break; }
@@ -86,10 +176,24 @@ namespace Game.View
                 ages[i] += Mathf.Max(0, seconds);
                 if (!visible || ages[i] >= GameVisualTokens.DamageNumberSeconds) { label.gameObject.SetActive(false); continue; }
                 var progress = ages[i] / GameVisualTokens.DamageNumberSeconds;
-                label.transform.position = new Vector3(origins[i].x, origins[i].y + 0.14f + progress * 0.25f, -0.1f);
-                var color = colors[i]; color.a *= 1 - progress * progress; label.color = color;
+                SetPosition(i, origins[i] + Vector2.up * (.14f + progress * .25f));
+                var color = colors[i]; color.a *= 1 - progress * progress; SetColor(i, color);
             }
         }
+#if UNITY_EDITOR
+        public string[] CaptureVisibleAmountsForTesting()
+        {
+            var result = new System.Collections.Generic.List<string>();
+            for (var i = 0; i < Capacity; i++)
+            {
+                if (!labels[i].gameObject.activeSelf) continue;
+                var text = labels[i].text;
+                for (var chunk = 0; chunk < chunkCounts[i]; chunk++) text += continuations[i, chunk].text;
+                result.Add(text);
+            }
+            return result.ToArray();
+        }
+#endif
         public void Dispose()
         {
             foreach (var label in labels) if (label != null) Destroy(label.gameObject);

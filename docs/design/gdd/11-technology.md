@@ -1,7 +1,7 @@
 # 11 기술·ADR 색인
 
-- 버전: v1.0 · 날짜: 2026-10-12
-- 바뀐 점: 시작 main의 기술 경계와 ADR 전체 색인, 역사 문구와 현행 결정의 차이를 연결한다.
+- 버전: v1.1 · 날짜: 2026-10-12
+- 바뀐 점: 살아 있는 설계 계약과 화면 전용 손맛·영웅 모션 비교 ADR을 연결한다.
 - 상태: 정본 — 구현 경계는 확정, 성능·실기·미선택 제작 방식은 별도 관문.
 - 근거: [AGENTS](../../../AGENTS.md), [시작 main](https://github.com/hyunlord/bs-mobile/commit/9387b7669bdc3d01790246509ad8d66f212af0ad), [기존 시스템 설계](../08_system-design-v1.md).
 
@@ -102,3 +102,5 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR0053: 받기 원장과 wave 계정 기록을 전투 규칙에서 분리한다](../../adr/0053-explicit-meta-claims-and-wave-accounting.md)
 - [ADR0054: 선택 보상을 재생 명령과 원자적 계정 지급으로 나눈다](../../adr/0054-opt-in-host-rewards-and-local-bm-slots.md)
 - [ADR 0055: 정상 속도의 지연 회복 틱을 여러 표시 프레임에 나눈다](../../adr/0055-defer-recovery-ticks-between-rendered-frames.md)
+- [ADR 0056: 구현 변경과 같은 PR에서 살아 있는 설계를 갱신한다](../../adr/0056-living-design-contract.md)
+- [ADR 0057: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다](../../adr/0057-view-only-impact-and-hero-motion-comparison.md)
