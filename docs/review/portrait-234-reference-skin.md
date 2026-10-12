@@ -1,10 +1,61 @@
+![화면4건 — 왼쪽 제공 시안 / 오른쪽 실제 Editor](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-fa6c71a/four-fixes.png)
+
+관문: 부분 — HUD 여백·부활 뒤 글자 숨김·일시정지 진화 설명·생산 상자 대비와 Gowun Batang을 반영했다. 사용자 시각 승인은 대기다.
+깨끗한 `fa6c71a`의 Editor19/19(BM9 포함), CI Core664/664가 통과했다. Mac 빌드와 비교 시트를 먼저 전달한다.
+성능은 사용자 요청으로2026-10-12 11:35 KST 보류했다. 완료된 B2 C05 최대841.7649ms로 기준 미달이며, 각3회도 미완료다. #223을 해결했다고 보고하지 않는다.
+
+## 화면·배포
+
+[Mac ARM64 앱](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-fa6c71a/Sow-and-Siege-portrait-fa6c71a-mac.zip) · [13화면 및 긴 비율 비교](https://github.com/hyunlord/bs-mobile/releases/tag/portrait-v0-fa6c71a) · [추가 상태 표본](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-fa6c71a/positive-states.png)
+
+빌드·캡처 소스는 `fa6c71a03bd42810e13c66fb44f81d561ec1a53e`, sourceHash `2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1`, sourceDirty=False다. 문서 후속 커밋을 앱 커밋으로 표시하지 않는다. ARM64 Mono Release 빌드와 개발 기능 제외 검사가 통과했다.
+
+- HUD 메달·체력 바를 SafeRoot 안쪽8pt 이상으로 내렸다. 390×844와1080×2520 Editor 표본 및 HUD 기하 검사를 확인했다. 비영 노치·물리 기기 판정은 아니다.
+- 부활 창에서 실제 피해/성장 글자 풀을 숨기고, 복귀 때 다시 표시한다. PlayMode 검사는 활성 글자4개 이상→창 중0→복귀4개 이상을 확인했다.
+- 일시정지에는 세 진화 조건을 모두 표시하고 설정 내용을 스크롤 영역으로 옮겼다. 고정 계속·포기 동작은 유지했다.
+- 생산 상자 받침을 어둡게 하고 금빛 글자의 대비를 높였다. 설계와 남은 색·굵기 차이는 사용자 비교로 판단한다.
+- Gowun Batang Regular/Bold 고정 원본과 OFL을 번들했다. 본문은 기존 Noto, 제목·장식 버튼은 Gowun이다. 설정·뒤로·닫기는 원형 조작부로 다듬었다.
+- rare 무기, Lv1→2, 활성 도전 받기, 실제 정산 로직의 가신 조각+2를 추가 캡처했다. 결산·부활은 명시적 시험 fixture이며 정상 플레이 완주·미정 경제 승인 근거가 아니다.
+
+[요소별 정본](portrait-234-elements.json)은106개 중 **표시89·차이16·미구현1**과42PNG의 출처를 기록한다. 표시 확인은 픽셀 일치가 아니다. 미구현1개는 수령 데이터가 없는 패스 강조/받기 상태다. 남은 외형 차이에는 생산 상자 색·글자 굵기, 출정 선택색·보스/자원/잠금 아이콘, 가신 별/다음 효과, 동일한 상점 외형 그림과 일부 상태 표본이 있다. 가짜 보상으로 메우지 않는다. 제공 아트50개는 원본과 바이트가 같다.
+
+## 검증
+
+|항목|결과|경계|
+|---|---|---|
+|Editor 흐름|19/19, BM9 포함|사용자 시각·실기 승인 아님|
+|CI|[38192436867](https://github.com/hyunlord/bs-mobile/actions/runs/38192436867) 통과, Core664/664|결정론 안전망; 성능 합격 아님|
+|배포|Mac ARM64 Mono Release, 개발 기능 제외 검사 통과|일반 실행은 자동 측정/fixture 비활성|
+|기능 범위|Core·data·schema 무변경|BM·저장·리플레이 규칙 유지|
+|부분 재생|완료9실행 모두 고정 최종 해시 일치|A/B 각3회 미완료|
+
+## #223 부분 측정과 보류
+
+[부분 결과 및 출처](stutter-223-fa6c71a-partial.md) · [정본 CSV](../metrics/stutter-223-fa6c71a-partial.csv)
+
+A1·B1·B2·A2의411/C05와 A3의411만 완료했다. 완료 실행은 캡처·Profiler 없이 모든 측정 행focused=1, interrupted=false다. B의focus/exclusion은0이고 A에는 새 이벤트 필드가 없다. B1/B2의411은 >25ms1.180%/3.499%, B2 C05 최대841.7649ms여서 기준 미달이다. 낮은 p95로 이 실패를 덮지 않는다. A도 반복 간 차이가 커 개선/원인 확정은 하지 않는다.
+
+A3 C05 두 시도는 Orca·Google Chrome·카카오톡·OpenUsage 전경 전환으로 미완료다. 기존 A는 새 자동 재개 기능이 없으므로 실패 로그를 보존했다. B는 전경 이탈 구간만 제외하고 진행 위치를 보존하지만, B3은 사용자가 측정을 보류한 시점에 대기 중이었고 최종 결과가 없다. 11:35:25 KST 게임·관측기를 종료했다. 사용자 재개 지시 전 새 측정을 시작하지 않는다.
+
+Development 같은 프로세스 반복의254.7951/1111.5987ms에서는 여러 렌더·메인 스레드 스코프가 함께 늘어 단일 원인이 분리되지 않았다. 후속 프레임의 진단 파일 조회19.756ms는 계측 자체의 이차 비용이며 최초 지연이나 Release841.8ms의 원인이라는 증거가 아니다. 용량 증가·GC·첫 사용만의 문제로 단정하거나 근거 없는 사전 할당을 추가하지 않았다. 과거 실패를 보존하며 #223은 열어 둔다.
+
+재생성: `node tools/render-portrait-reference.mjs artifacts/portrait-234 artifacts/portrait-234/comparison-fa6c71a-final`. 원본 캡처의 commit/source/hash는 요소 JSON에 있다. 큰 성공 원자료나 새 증거 ZIP은 올리지 않는다. 이번 ZIP은 승인된 Mac 앱 배포용 하나다.
+
+[PR235 초안](https://github.com/hyunlord/bs-mobile/pull/235) · [코드 fa6c71a](https://github.com/hyunlord/bs-mobile/commit/fa6c71a03bd42810e13c66fb44f81d561ec1a53e) · [CI](https://github.com/hyunlord/bs-mobile/actions/runs/38192436867)
+
+#126·#98·#224·1b 보류, SDK 미도입을 유지한다. 사용자 승인 전 병합하지 않는다.
+
+## 역사 기록 — 이전 소스의 판정이며 현재 상태로 대입하지 않음
+
+아래 보고는 e3f5817 및 당시 진단·측정 준비 상태를 그대로 보존한다. 앞의 fa6c71a 후속 보고가 현재 상태이며, 과거 미해결/미검증을 삭제하거나 소스 식별자를 바꾸지 않는다.
+
 ![제공 시안과 실제13화면 비교](https://github.com/hyunlord/bs-mobile/releases/download/portrait-v0-8f446e5/overview.png)
 
 관문: 부분 — 제공 시안의 장식·프레임·버튼을13화면에 적용했지만 원본과의 차이와 미확인 상태가 남아 사용자 시각 판정을 기다린다.
 깨끗한 `8f446e5`의 Editor 검사17/17(그중 BM9)이 통과했고, 제공 아트50개는 원본과 바이트가 같다.
 성능은 Release 반복 측정 준비·미완료 상태다. Development의 긴 지연은 반복됐으며 #223을 해결했다고 판정하지 않는다.
 
-## 화면 반영과 차이
+### 화면 반영과 차이
 
 이번 비교의 원본은 [제공 패키지](../design/portrait-v0)이며, 이전 서면 대체 보드를 원본 시안으로 쓰지 않는다. 패키지 반입 [PR233](https://github.com/hyunlord/bs-mobile/pull/233)은 병합됐고 구현 [PR235](https://github.com/hyunlord/bs-mobile/pull/235)는 초안이다. 첫 이미지와 비교 시트는 [검토용 Release](https://github.com/hyunlord/bs-mobile/releases/tag/portrait-v0-8f446e5)에 게시한다. 비교 시트는 `artifacts/portrait-234/comparison/index.html`에서13화면의390×844·1080×2520을 확인한다.
 
@@ -22,7 +73,7 @@
 
 추가 진화·결산 보상 fixture6장은 기본13화면을 대체하지 않는다. 부활·결산 배율 fixture를 일반 실행 승인으로 해석하지 않는다. 긴 비율 캡처의 safePixels는 전체 화면이므로 비영 노치/홈 인디케이터 여백·실제 터치·실기 판정은 미검증이다.
 
-## 검증 출처와 성능 경계
+### 검증 출처와 성능 경계
 
 | 항목 | 현재 증거 | 판정 경계 |
 | --- | --- | --- |
@@ -37,7 +88,7 @@ Release의 기존A와 새UI B는 각 fixture·반복에서 최대50ms 및25ms �
 
 #126 경제·#98 Fold7·#224 생산 부활 규칙·1b 확장 보류를 유지한다. 사용자 확인 전 PR235를 병합하지 않으며 전체 성공 원자료·재생성 가능한 중복 보고서를 새 증거 묶음으로 올리지 않는다.
 
-## 2026-10-12 진단 후속 — 최초 지연은 미해결
+### 2026-10-12 진단 후속 — 최초 지연은 미해결
 
 기존7f Development 두 반복의 최대658.9129/649.4870ms와 GC 증가0·사건0은 그대로 보존한다. 같은 프로세스 반복에서도 발생해 첫 등장만의 비용이라는 가설은 지지되지 않는다. 각 반복에서 프레임 간격 상위3개를 사전에 정한 기준으로 고른 [실패6프레임 CSV](../metrics/stutter-223-diagnostic-samples.csv)는 뒤따른28/25틱 몰림도 포함한다. 스코프 합과 프레임 간격의 차이를 OS 원인으로 단정하지 않는다.
 

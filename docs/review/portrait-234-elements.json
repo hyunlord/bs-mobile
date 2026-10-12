@@ -13,8 +13,8 @@
     },
     {
       "id": "font-fallback",
-      "status": "known-deviation",
-      "reason": "원본 Gowun Batang 글꼴은 제공되지 않았고 설치되지 않아 제목 글꼴의 완전 일치는 미확인이다. 본문은 설치된 Noto Sans KR 사용 여부를 실제 캡처로 확인한다."
+      "status": "resolved-bundled-fonts",
+      "reason": "Gowun Batang Regular/Bold 고정 원본과 OFL을 번들하고 제목·장식 버튼에 적용했다. 본문은 Noto 계열 유지. fa6c71a 캡처에서 메타 제목 잘림 수정도 확인했다."
     },
     {
       "id": "font-minimum",
@@ -28,8 +28,8 @@
     },
     {
       "id": "pause-inline-settings",
-      "status": "resolved-in-7f58560",
-      "reason": "최종 Editor 캡처에서 원본 위치의 공통 보조 버튼/인라인 스위치 복원을 확인했다."
+      "status": "resolved-scroll-layout",
+      "reason": "네 인라인 스위치를 진화 아래 스크롤 내용에 배치하고 상세 설정·포기·계속은 고정했다. 기본 화면에서 세 진화 조건이 모두 보인다."
     },
     {
       "id": "pass-claim-data",
@@ -114,15 +114,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/title-390x844.png",
-          "sha256": "1b464f37d7a1f091b02fcea43efff0356ba56e761fe4106f15fab725a739982c",
+          "sha256": "1870a7d505489f3a5a592653182098124b9b66d1333fa4f9c1c70cac53947c51",
           "provenancePath": "artifacts/portrait-234/editor-run/title-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/title-1080x2520.png",
-          "sha256": "367a40df22dc0e68562bc97e548ae7fb47bd680138f07acf388169b8e9ceb4fa",
+          "sha256": "545279121a5ef7aa76e0f7c443bbf85f4ae001d9470d42380bcd5d71e086e544",
           "provenancePath": "artifacts/portrait-234/editor-run/title-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Title; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -135,8 +135,13 @@
         "note": "크림 시작 리본; 빨강·파랑 주 버튼 없음."
       },
       "fontReview": {
-        "status": "partial",
-        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
+        "evidence": [
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-run/title-390x844.png"
+        ]
       }
     },
     {
@@ -150,16 +155,16 @@
         {
           "id": "run-1",
           "label": "레벨 메달",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
-          "note": "메달은 있으나 원본 y48과 달리 현재 화면 위 y0 부근에 붙어 있다. 인셋 안전 영역 재검증이 필요하다."
+          "note": "레벨 메달이 SafeRoot 안쪽 8pt 이상 내려와 보인다. 최신 승인 인셋 기준이며 원본 y48의 픽셀 일치 주장 아님."
         },
         {
           "id": "run-2",
           "label": "체력 바와 수치",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/run-390x844.png",
-          "note": "체력 바·수치가 보이나 원본 y52 대신 화면 최상단에 놓여 있다."
+          "note": "체력 바·수치가 SafeRoot 안쪽 8pt 이상 여백을 두고 보인다. HUD 전체 점유 높이 10% 기준은 PlayMode 기하 검사에서 별도로 확인한다."
         },
         {
           "id": "run-3",
@@ -201,15 +206,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/run-390x844.png",
-          "sha256": "e2547db1724a914c92e7d59b8401f36107d4766acda11827af02c649a7086d46",
+          "sha256": "1d0a20e77fcf5e5c931b6d7881ed24e8438d5d29f75781a4912ea599995c85ea",
           "provenancePath": "artifacts/portrait-234/editor-run/run-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=7; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=8; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/run-1080x2520.png",
-          "sha256": "077a9642e4d17e1e3135553f0d6e142e414afb8c2ee35baf05803c8dd0840cac",
+          "sha256": "63e2cd62d1363a2b107e7625eb3c601c3cc8c18a032ba1f0516dd42fbf3e0c52",
           "provenancePath": "artifacts/portrait-234/editor-run/run-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=15; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Run; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=15; automatedPointerActions=true; developerGrantLevelFixture=False; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -223,14 +228,12 @@
         "note": "선택/일시정지 전용 HUD로 별도 주 행동 버튼 없음."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-run/run-390x844.png"
         ]
       }
     },
@@ -259,9 +262,13 @@
         {
           "id": "cards-3",
           "label": "종류별 common·rare·epic 테두리",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "note": "현재 제안은 특허장·특허장·도구라 epic/common은 보이지만 rare 무기 카드는 이 표본에서 미검증이다."
+          "note": "기본 표본의 common/epic과 cards-weapon-fixture의 rare 파랑 무기 테두리·무기 태그를 확인했다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-run/cards-weapon-fixture-390x844.png",
+            "artifacts/portrait-234/editor-run/cards-weapon-fixture-1080x2520.png"
+          ]
         },
         {
           "id": "cards-4",
@@ -280,9 +287,13 @@
         {
           "id": "cards-6",
           "label": "레벨 변화",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "note": "현재 세 장 모두 새로 얻음 상태이다. 레벨 증가 화살표의 시각 표본은 없다."
+          "note": "cards-upgrade-fixture에서 실제 제안된 씨앗 자루 Lv 1 → 2가 보인다. 기존 카드 선택·GrantLevel 명령 표본이며 생성한 가짜 카드가 아니다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-run/cards-upgrade-fixture-390x844.png",
+            "artifacts/portrait-234/editor-run/cards-upgrade-fixture-1080x2520.png"
+          ]
         },
         {
           "id": "cards-7",
@@ -303,7 +314,7 @@
           "label": "조건 충족 카드의 금빛 진화 띠",
           "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "note": "8f446e5 기본 카드 및 추가 cards-evolution-fixture 모두 목수 망치 아래 호위 성가퀴·지붕 아래 파종 금빛 진화 띠가 두 비율에서 보인다. 추가 표본은 기본13화면을 대체하지 않는다.",
+          "note": "추가 cards-evolution-fixture에서 실제 제안에 연결된 금빛 진화 띠를 확인했다. 기본13화면은 해당 상태가 없을 수 있다.",
           "extraEvidence": [
             "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
             "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png"
@@ -323,15 +334,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/cards-390x844.png",
-          "sha256": "db667216dc8731b0bcb84a5f8bbe46c3d07457e05eb6125cf6aa84c8d85ea612",
+          "sha256": "951ed6a6b6b8af99a7c2f374c601e589e269302d7476def07b7090f5cf76560e",
           "provenancePath": "artifacts/portrait-234/editor-run/cards-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/cards-1080x2520.png",
-          "sha256": "0b2c118bad19332052e92207490a2c74bf2356812ff183d452d9af24f970827c",
+          "sha256": "71bb48475452cedaf23c7af327e3e74d08e81343aa065bc2e5e93732faef7a69",
           "provenancePath": "artifacts/portrait-234/editor-run/cards-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -344,8 +355,13 @@
         "note": "카드 선택이 주 동작, 공통 보조 버튼은 크림."
       },
       "fontReview": {
-        "status": "partial",
-        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
+        "evidence": [
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-run/cards-390x844.png"
+        ]
       }
     },
     {
@@ -394,16 +410,20 @@
         {
           "id": "pause-6",
           "label": "진화 진행",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
-          "note": "진화 목록이 있으나 설정 위 스크롤 영역 경계에서 설명이 잘려 보인다. 첫 화면에 모든 조건이 동시에 보이지 않는다."
+          "note": "390×844 첫 화면에서 세 진화의 조건·장비 레벨이 모두 보인다. 스크롤 하단에서 설정 네 항목에 접근하며 상세 설정·포기·계속은 고정 영역에 남는다."
         },
         {
           "id": "pause-7",
           "label": "설정 네 줄",
           "status": "present",
           "evidence": "artifacts/portrait-234/editor-run/pause-390x844.png",
-          "note": "소리·진동·화면 흔들림·피해 숫자 인라인 스위치가 복원됐다."
+          "note": "설정 네 줄은 진화 아래 같은 스크롤 내용에 있고 하단 표본에서 모두 보인다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-run/pause-bottom-390x844.png",
+            "artifacts/portrait-234/editor-run/pause-bottom-1080x2520.png"
+          ]
         },
         {
           "id": "pause-8",
@@ -426,15 +446,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-run/pause-390x844.png",
-          "sha256": "66d43f8e63c039343615fea83215d74498593561af6d87a7dc96da488f1458ac",
+          "sha256": "20f9870c1cd6dcd6c796d54d205a7b3ecdec64590192da39ab157ebbbbf4c6da",
           "provenancePath": "artifacts/portrait-234/editor-run/pause-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         },
         {
           "path": "artifacts/portrait-234/editor-run/pause-1080x2520.png",
-          "sha256": "670befc0add236f202fa7472fe384a7b869cb47fc2f046a67414950a4e5818b1",
+          "sha256": "17ae046886da5a2667d5fce0c011386f8621b220bba8c73cfc2f2d671d02bbd5",
           "provenancePath": "artifacts/portrait-234/editor-run/pause-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
         }
       ],
       "longAspectReview": {
@@ -447,8 +467,13 @@
         "note": "파랑 계속 1개; 설정 스위치는 주 버튼에서 제외."
       },
       "fontReview": {
-        "status": "partial",
-        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
+        "evidence": [
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-run/pause-390x844.png"
+        ]
       }
     },
     {
@@ -476,9 +501,9 @@
         {
           "id": "estate-3",
           "label": "설정",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
-          "note": "44pt 크림 프레임의 설정 글자 버튼이다. 원본 둥근 톱니 아이콘 버튼과 다르다."
+          "note": "설정이 원형 테두리 아이콘으로 보인다."
         },
         {
           "id": "estate-4",
@@ -506,7 +531,8 @@
           "label": "가운데 방치 생산 상자",
           "status": "different",
           "evidence": "artifacts/portrait-234/editor-meta/estate-390x844.png",
-          "note": "중앙 상자와 원형 받침은 있지만 밝은 받침 위 흰 생산 상자 글자의 대비가 낮다. 원본은 어두운 원형 받침/받기다."
+          "note": "중앙 상자 받침은 어두운 갈색으로 수정되어 글자와 분리된다. 실제 비교 시트에서는 원본보다 받침이 밝은 갈색·금빛이고 생산 상자 글자가 더 굵게 보인다. 원본 받기와의 문구 차이는 현재 미수령 보상 없는 상태 때문이며, 이전 밝은 받침 구현이 남아 있다는 뜻은 아니다.",
+          "comparisonEvidence": "artifacts/portrait-234/comparison-fa6c71a/estate.png"
         },
         {
           "id": "estate-8",
@@ -534,15 +560,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/estate-390x844.png",
-          "sha256": "486a1c64682e3b415f6b7917a4c557cc82fcdd1a2df85bf5d52000b99008bcdb",
+          "sha256": "35387e50630fa247be109e6cc89c87297ed701fb1c22eeb88f16c792fca4326a",
           "provenancePath": "artifacts/portrait-234/editor-meta/estate-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/estate-1080x2520.png",
-          "sha256": "5e1dda8af2f51a3438f570d5a995d288680dabaac363a4575051731f0452c4a0",
+          "sha256": "d6fed1d657c5d441b656721a076e591ba3cd7f8c983bdd7bf6aa52e0699f57c5",
           "provenancePath": "artifacts/portrait-234/editor-meta/estate-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Estate; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         }
       ],
       "longAspectReview": {
@@ -556,14 +582,12 @@
         "note": "빨강 출정 1개; 파랑 챕터 배너는 안내."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-meta/estate-390x844.png"
         ]
       }
     },
@@ -578,9 +602,9 @@
         {
           "id": "departure-1",
           "label": "뒤로",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-meta/departure-390x844.png",
-          "note": "뒤로 기능 표식은 있지만 원형 얇은 테두리 대신 크림 사각 프레임이다."
+          "note": "뒤로가 원형 테두리 화살표로 보인다."
         },
         {
           "id": "departure-2",
@@ -657,15 +681,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/departure-390x844.png",
-          "sha256": "0288d1b669b7b122c7433e116ef7fa283ea5de741aec663d0ee01efa4a5ca38c",
+          "sha256": "f3df1cec12c466a6ac25799d066d7baf9aa75af2b298c42f83b11357c2682d27",
           "provenancePath": "artifacts/portrait-234/editor-meta/departure-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/departure-1080x2520.png",
-          "sha256": "d9666b923162f4bea20e61ebe23022c18e2ea504e82008abd99db2d2c34b47ec",
+          "sha256": "e75683f6ff618cc85a5b4c658a265e198384ad5bed39a686ce6dd078c8d8eca8",
           "provenancePath": "artifacts/portrait-234/editor-meta/departure-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Departure; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         }
       ],
       "longAspectReview": {
@@ -679,14 +703,12 @@
         "note": "빨강 출정 시작 1개."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-meta/departure-390x844.png"
         ]
       }
     },
@@ -722,9 +744,13 @@
         {
           "id": "result-4",
           "label": "가신 조각",
-          "status": "missing",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-meta/result-390x844.png",
-          "note": "포기·0수확 fixture에서 조각 줄이 없다. 소스는 fragmentDelta의 양수 항목만 표시한다. 실제 지급 fixture 화면 미검증."
+          "note": "result-clear-rule-fixture에 고랑 방패수 · 조각 +2가 보인다. 정본 MetaEngine 클리어 규칙의 실제 전후 차이로 만든 패널 표본이며 자연 플레이 완주·계정 지급 증거는 아니다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-meta/result-clear-rule-fixture-390x844.png",
+            "artifacts/portrait-234/editor-meta/result-clear-rule-fixture-1080x2520.png"
+          ]
         },
         {
           "id": "result-5",
@@ -767,15 +793,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/result-390x844.png",
-          "sha256": "2f70882880275bb594bb42845c8238ad2f9814668cf98e46589b05cdb01f094e",
+          "sha256": "88f7c1a25a0499885a4ea05c56ff0eb8403dfe131268c18a4ed40e87e8fc3d53",
           "provenancePath": "artifacts/portrait-234/editor-meta/result-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-          "sha256": "abd15fed94fedc8a7930e0c4b55866395e603a58d733702ed1ebdd0a6f14ddba",
+          "sha256": "69cbbcc5158b100091f1f45ee9b666ad1901f893973d058ac3c71f281e5906bd",
           "provenancePath": "artifacts/portrait-234/editor-meta/result-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         }
       ],
       "longAspectReview": {
@@ -789,14 +815,12 @@
         "note": "빨강 영지로 1개; 크림 다시 출정. 광고 부재로 실제 광고 크기 검증은 못했으며 소스 폭 예외를 기록했다."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-meta/result-390x844.png"
         ]
       }
     },
@@ -872,15 +896,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/vassals-390x844.png",
-          "sha256": "caf9dadd885b235f1dbca726b6ab0db33e5189335e0aa138b7d2f40eec093263",
+          "sha256": "678c663f28299ee1352fdc0a736f80fe5c302efa6c7004303e52b29846f3e8d9",
           "provenancePath": "artifacts/portrait-234/editor-meta/vassals-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png",
-          "sha256": "20e42165d38a64edb9aa09277ec5dc9d9328d94e29249c492e85a69d21486411",
+          "sha256": "8543938a37845d2438bf1eba7aa3539a42d2ac154a45010e2f1963647534cedc",
           "provenancePath": "artifacts/portrait-234/editor-meta/vassals-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Vassals; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         }
       ],
       "longAspectReview": {
@@ -894,14 +918,12 @@
         "note": "파랑 레벨업 1개(현재 비활성); 크림 승급/출전."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-meta/vassals-390x844.png"
         ]
       }
     },
@@ -946,14 +968,18 @@
           "label": "받음·달성·진행·잠금 구분",
           "status": "different",
           "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-          "note": "진행 캡처와 claimed fixture의 받음 표시는 확인했다. 달성 후 미수령·잠김의 서로 다른 외형은 미검증."
+          "note": "진행·미수령 금빛 받기·수령 후 받음 상태는 표본으로 확인했다. 잠김 상태의 별도 외형 표본은 미검증이다."
         },
         {
           "id": "challenges-6",
           "label": "달성 보상 받기",
-          "status": "missing",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-          "note": "현재 캡처들은 진행/받음 상태이므로 활성 보상 받기 표본이 없다. 소스에 pending != null이면 받기 버튼이 있으나 활성 화면 증거로 대체하지 않는다."
+          "note": "claim-ready-fixture에서 첫 출정의 활성 금빛 받기 표식이 보인다. 유효 저장 fixture의 실제 수령 UI이며 기존 테스트가 지급·중복 방지·재시작을 검증한다.",
+          "extraEvidence": [
+            "artifacts/portrait-234/editor-meta/claim-ready-fixture-390x844.png",
+            "artifacts/portrait-234/editor-meta/claim-ready-fixture-1080x2520.png"
+          ]
         },
         {
           "id": "challenges-7",
@@ -969,15 +995,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-meta/challenges-390x844.png",
-          "sha256": "ed9c6784347daaca7785f582a951fc1aec93950b82466254c99040d05fef723a",
+          "sha256": "335e1025f52230582abaa072a03a1c9d63ad584d0ebc002898fe4661062daa72",
           "provenancePath": "artifacts/portrait-234/editor-meta/challenges-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         },
         {
           "path": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png",
-          "sha256": "96797fc34e37c5dd3ceac89fe279a340422d8b51addc4f0962bb8723ef353309",
+          "sha256": "354818ee939602f4ea6ac93f743a497907a4f6575cd172f2295b96741cc71986",
           "provenancePath": "artifacts/portrait-234/editor-meta/challenges-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=False; screen=Challenges; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
         }
       ],
       "longAspectReview": {
@@ -991,14 +1017,12 @@
         "note": "목록 상태별 청구 버튼만 있으며 억지 주 버튼을 추가하지 않았다."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-meta/challenges-390x844.png"
         ]
       }
     },
@@ -1073,15 +1097,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/shop-390x844.png",
-          "sha256": "61f3c5ede47d43f176d91182c3a031f67175903d9f57f611d2dd2dac77d313a2",
+          "sha256": "9d514b62e5de2802d86a752ab36ef7b0f6da99cfaec5d580772aae61ade645ba",
           "provenancePath": "artifacts/portrait-234/editor-bm/shop-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/shop-1080x2520.png",
-          "sha256": "3c2b15ceb998f68afa15afd9cb16b42a09078e584b399eb7e8ae9f910a4a6acd",
+          "sha256": "06ec430880bc089b6bf71db75c6506017bc8683700da5322a8f462c36792160d",
           "provenancePath": "artifacts/portrait-234/editor-bm/shop-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Shop; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1095,14 +1119,12 @@
         "note": "파랑 시즌 패스 이동 1개; 나머지는 보기 전용."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-bm/shop-390x844.png"
         ]
       }
     },
@@ -1131,9 +1153,9 @@
         {
           "id": "idle-3",
           "label": "닫기 ×",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-bm/idle-390x844.png",
-          "note": "닫기 ×는 있으나 원본 원형 테두리 대신 크림 사각 프레임이다."
+          "note": "닫기 ×가 원형 테두리로 보인다."
         },
         {
           "id": "idle-4",
@@ -1178,15 +1200,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/idle-390x844.png",
-          "sha256": "d9022cfeba6d45f4bece83d73eda340f2b68a9117e73e3627d13f0ad56efdf5b",
+          "sha256": "9ed2553ad5affd0ad51f5bf41fd4f8c93186ac3ca7d22f0b381013247f4dbad5",
           "provenancePath": "artifacts/portrait-234/editor-bm/idle-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/idle-1080x2520.png",
-          "sha256": "b0ce4da9c7c2f51d3c688319bf61c7ee0d55e9e2eb9199676fc7448733f46593",
+          "sha256": "2858d0b687ae06c8cd88a3c64fc296ba8cc9ee622644b8f9216a7c6d74281b67",
           "provenancePath": "artifacts/portrait-234/editor-bm/idle-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Idle; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1200,14 +1222,12 @@
         "note": "파랑 받기314×60; 크림 광고314×48으로 넓이는 같고 높이는 작음."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-bm/idle-390x844.png"
         ]
       }
     },
@@ -1222,9 +1242,9 @@
         {
           "id": "revive-1",
           "label": "어두운 판 배경",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-          "note": "실제 판 배경은 어둡지만 피해 숫자와 익음 글자가 제목·판 기록 뒤에 남아 겹친다. 8f446e5에서는 판20초 표본이다."
+          "note": "부활 표본에서 판 배경은 어둡게 유지하고 피해 숫자·익음·수확 글자를 숨겨 제목·기록과 겹치지 않는다."
         },
         {
           "id": "revive-2",
@@ -1277,15 +1297,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-          "sha256": "6a0c597d5fcbf47a49e4da2a0af01db5dd5a5b5ee3c6b95db39a8f50f6f65bfa",
+          "sha256": "bd4418d963e5848b5efa2de0a4602336c3f36697ed97021fb965a9c4c732e5a3",
           "provenancePath": "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
-          "sha256": "7a7806a952eeddce75342cae10f3ceaabb758cf6ff8cafbe79c166b4ebf0bc38",
+          "sha256": "1b6ae7424c973960dcb0c7c8d8e954eb84c0e6e61dd8f4e9e9b87fc7991c930b",
           "provenancePath": "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Revive; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1299,14 +1319,12 @@
         "note": "파랑 바로 일어나기153×60 / 크림 결산153×60. 원본의 파랑 광고 예외를 따른다."
       },
       "fontReview": {
-        "status": "partial-source-reviewed",
-        "minimumDeclaredPt": 11,
-        "bodyPolicyPt": 13,
-        "note": "본문/보조 선언값 소스 확인. 캡처만으로 모든 글자 실제 pt·최소 터치 영역을 자동 계측한 것은 아니다. 짙은 배경의 가신 보조 문구 대비 문제는 별도로 기록했다.",
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
         "evidence": [
-          "unity/Assets/Game/View/PortraitTokens.cs",
-          "unity/Assets/Game/App/PortraitBmPanels.cs",
-          "unity/Assets/Game/App/PortraitMetaPanels.Progress.cs"
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png"
         ]
       }
     },
@@ -1321,9 +1339,9 @@
         {
           "id": "pass-1",
           "label": "뒤로·제목·기간",
-          "status": "different",
+          "status": "present",
           "evidence": "artifacts/portrait-234/editor-bm/pass-390x844.png",
-          "note": "제목·기간·뒤로가 보인다. 뒤로는 원형 대신 크림 사각 버튼이다."
+          "note": "제목·기간·원형 뒤로 화살표가 보인다."
         },
         {
           "id": "pass-2",
@@ -1383,15 +1401,15 @@
       "captureEvidence": [
         {
           "path": "artifacts/portrait-234/editor-bm/pass-390x844.png",
-          "sha256": "371e5f3ce5f5aa3a431e4dccc10f9db1e6b7d373e5b7a91bc7c0368b7537a6c9",
+          "sha256": "d68b3f69cf383a4ef0185a3621433e7bdcc86dadaf393b409ada0f983116b73f",
           "provenancePath": "artifacts/portrait-234/editor-bm/pass-390x844.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         },
         {
           "path": "artifacts/portrait-234/editor-bm/pass-1080x2520.png",
-          "sha256": "33c865b06b04904e0f6ecb1c9a2599adff7811100391d3137bb3aef9d7d3f800",
+          "sha256": "0d650ee188f2040a1bf3b5397441e67be2688736d24ac1ffef8b3fcaf3bb6a2d",
           "provenancePath": "artifacts/portrait-234/editor-bm/pass-1080x2520.png.txt",
-          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+          "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Pass; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
         }
       ],
       "longAspectReview": {
@@ -1404,18 +1422,23 @@
         "note": "파랑 유료 줄 열기 1개; 보기 전용."
       },
       "fontReview": {
-        "status": "partial",
-        "note": "현재 캡처에서 한글 표시 확인. Gowun Batang 제목 일치는 미확인, 모든 렌더된 문자열의 실제 pt 자동 검사는 수행하지 않았다."
+        "status": "bundled-fonts-source-and-capture-reviewed",
+        "note": "고정 원본 Gowun Batang Bold를 제목, Regular를 장식 버튼에 사용하고 본문은 기존 한글 산세리프를 유지한다. fa6c71a의13화면 제목 표시 확인; 모든 문자열의 pt 자동 판정이나 픽셀 일치 주장은 아니다.",
+        "evidence": [
+          "unity/Assets/Resources/Fonts/GowunBatang/PROVENANCE.md",
+          "unity/Assets/Game/View/PortraitWidgets.cs",
+          "artifacts/portrait-234/editor-bm/pass-390x844.png"
+        ]
       }
     }
   ],
-  "reviewMethod": "Read-only final8f446e5 refresh: 32 exact PNG hashes and clean-source provenance checked. 16 files byte-identical to prior inspected e3f5817; all8 changed390x844 screens inspected plus cards/pause/revive long variants. Prior visual assessments retained for unchanged layout; newly visible default-card evolution stripe recorded. No Unity/browser/render/build/benchmark executed. Extras remain supplementary. Full-frame safePixels1080x2520 proves ratio only, not nonzero notch/home-indicator insets or physical-device acceptance.",
+  "reviewMethod": "Read-only actual fa6c71a Editor PNG review: all13 standard screens and relevant long/positive fixtures, including restored meta headings, round icons, rare weapon, upgrade arrow, claim-ready and canonical-clear shard row. Default26 PNG plus16 supplementary PNG provenance/hash checked clean at same commit. No Unity/browser/native/build execution during review. Extra fixtures do not replace default13. Full-frame safePixels1080x2520 proves aspect ratio only, not nonzero notch/home-indicator insets or physical-device acceptance.",
   "reviewCounts": {
-    "different": 26,
-    "present": 77,
-    "missing": 3
+    "different": 16,
+    "present": 89,
+    "missing": 1
   },
-  "reviewCommit": "8f446e5f46273a7f6001f6e09411e9bdd0c9f534",
+  "reviewCommit": "fa6c71a03bd42810e13c66fb44f81d561ec1a53e",
   "userAcceptance": false,
   "statusSemantics": {
     "present": "Element visible, not pixel-match or user approval.",
@@ -1425,77 +1448,105 @@
   "extraFixtureEvidence": [
     {
       "path": "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
-      "sha256": "4856a1fe1bd3ee2c8e86413a2dd3cd7cd94194eb68daba29e7ed80793c999455",
+      "sha256": "b84c927ea28375de974509261115708ec94aa4dae901ed08d88572059f4e7a0c",
       "provenancePath": "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
     },
     {
       "path": "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png",
-      "sha256": "ce2f0a530020bebef111c750c21e9d53dba9110b4f320b918be5fc8059d93aac",
+      "sha256": "f0a789e9617e2f1b7cbc4908621242ae2ad0e77e8842db4319a673fe9773998a",
       "provenancePath": "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-390x844.png",
-      "sha256": "bfed5c5ab2e478e7b10de96f46fe07218e79692d9bd51b1373540d540682cd97",
+      "sha256": "a2359251fdce4fc0852152f9a6478a986651e32a91a1cfddac9d72e0af7d8c8f",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-390x844.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png",
-      "sha256": "54a23864c67de6fce69621fcefe86cba9ed747900ab18fa5c472ea32afa358b1",
+      "sha256": "8db5791c3cea62db61c4eb30314ffac7563b9dac59b789a6b8279d8f9a165935",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png",
-      "sha256": "d719ff10d8fad58c7d7d1f4fffd95d741e1965844cff6eacee13a57017394b60",
+      "sha256": "073c993dbb512ce6077451b4409fa8fcdbe3cae51aae9c9cd6b1076ef658cade",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
     },
     {
       "path": "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png",
-      "sha256": "00ab105a5c607bebfe76dd77b9d18ea9ecdf7a4729a85c834439e72336fe6b15",
+      "sha256": "98ca183a5e7b643b031cefa6d15ced1a859766fe2128fe3c0b8b1c1c371c3d58",
       "provenancePath": "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png.txt",
-      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=8f446e5f46273a7f6001f6e09411e9bdd0c9f534; sourceHash=EBAA94181C9B2A4989E4448DB781B828E971F27D497ADD52230BA53F15EA94F5; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; unconfiguredReleaseAds=unavailable; bmAccountAndRulesFixture=true"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/cards-weapon-fixture-390x844.png",
+      "sha256": "4fa2cd14b7edfdd230a7e09f26358e0c081d6bd081256ce5f9a4f33c46c74bcb",
+      "provenancePath": "artifacts/portrait-234/editor-run/cards-weapon-fixture-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=0; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/cards-weapon-fixture-1080x2520.png",
+      "sha256": "2a0ed1ed3b5048f76d1abf403c38f93508a68cbf59501f6b993fa456cfe4f210",
+      "provenancePath": "artifacts/portrait-234/editor-run/cards-weapon-fixture-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=0; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/cards-upgrade-fixture-390x844.png",
+      "sha256": "9164d4c59ac5f23d480d451c728f9917563c5634f82b53b59ef126a4fc05a49e",
+      "provenancePath": "artifacts/portrait-234/editor-run/cards-upgrade-fixture-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=0; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/cards-upgrade-fixture-1080x2520.png",
+      "sha256": "9a3d767bbb32d55318048afb2e6584b2d6b0c55e57906935c8382c4d99d05545",
+      "provenancePath": "artifacts/portrait-234/editor-run/cards-upgrade-fixture-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Cards; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=0; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-meta/result-clear-rule-fixture-390x844.png",
+      "sha256": "252a024fa3b6db7c58ef2089bad3e39a06d091394fc298e4ea524ce6bde60ef3",
+      "provenancePath": "artifacts/portrait-234/editor-meta/result-clear-rule-fixture-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=canonical-MetaEngine-clear-result-panel"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-meta/result-clear-rule-fixture-1080x2520.png",
+      "sha256": "2cee3f154d35af849a8ffb434aabc993ec587b214e82c670011a09229a3d3797",
+      "provenancePath": "artifacts/portrait-234/editor-meta/result-clear-rule-fixture-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Summary; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=canonical-MetaEngine-clear-result-panel"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-meta/claim-ready-fixture-390x844.png",
+      "sha256": "aa140afa807f40e4c9f00e1e6e60f12443b45a275d88cb7d0c9629f649300638",
+      "provenancePath": "artifacts/portrait-234/editor-meta/claim-ready-fixture-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Challenges; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-meta/claim-ready-fixture-1080x2520.png",
+      "sha256": "6845d55c51d85c6e09d99d190a0983b84972ea4f8308a79aca0c5e5f8b102662",
+      "provenancePath": "artifacts/portrait-234/editor-meta/claim-ready-fixture-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; accountFixture=True; screen=Challenges; commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); normalPlayEvidence=false; fixtureOrigin=account-flow"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/pause-bottom-390x844.png",
+      "sha256": "54a962742dcebe678169a6264fff3e6bb77c3b48348efdfcdefc4f5659b68472",
+      "provenancePath": "artifacts/portrait-234/editor-run/pause-bottom-390x844.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:390.00, height:844.00); safePixels=(x:0.00, y:0.00, width:390.00, height:844.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
+    },
+    {
+      "path": "artifacts/portrait-234/editor-run/pause-bottom-1080x2520.png",
+      "sha256": "85a97c9ec8a831cabd78b013c8d9c2165737b481546e6df79fb386f2dcb78a2e",
+      "provenancePath": "artifacts/portrait-234/editor-run/pause-bottom-1080x2520.png.txt",
+      "provenance": "surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=True; physicalDevice=false; userAcceptance=false; screen=Pause; viewport=(x:0.00, y:0.00, width:1080.00, height:2520.00); safePixels=(x:0.00, y:0.00, width:1080.00, height:2520.00); commit=fa6c71a03bd42810e13c66fb44f81d561ec1a53e; sourceHash=2A31903EFFC0CECD00C6B2F5F5CEA3A3DE691BB6DF638A63010E2DBAEFF381B1; sourceDirty=False; dataHash=51DA41A20DF37E4960AFB157AC7AA83D20C9AB1FC7E6B5E6D85643BC9C438B74; tick=26; automatedPointerActions=true; developerGrantLevelFixture=True; normalPlayEvidence=false"
     }
   ],
   "remainingMissing": [
     {
-      "id": "result-4",
-      "reason": "포기·0수확 fixture에서 조각 줄이 없다. 소스는 fragmentDelta의 양수 항목만 표시한다. 실제 지급 fixture 화면 미검증."
-    },
-    {
-      "id": "challenges-6",
-      "reason": "현재 캡처들은 진행/받음 상태이므로 활성 보상 받기 표본이 없다. 소스에 pending != null이면 받기 버튼이 있으나 활성 화면 증거로 대체하지 않는다."
-    },
-    {
       "id": "pass-6",
       "reason": "현행 수령 데이터가 없어 받을 수 있는 칸 강조·수령 상태는 구현되지 않았다. 보기 전용 범위를 보존한 명시적 차이다."
     }
-  ],
-  "captureRefresh": {
-    "comparedAgainst": "e3f5817abf0732748dd30cf7477cf6d1ee443078",
-    "sameImageBytes": 16,
-    "changedImageBytes": 16,
-    "changedPaths": [
-      "artifacts/portrait-234/editor-run/run-390x844.png",
-      "artifacts/portrait-234/editor-run/run-1080x2520.png",
-      "artifacts/portrait-234/editor-run/cards-390x844.png",
-      "artifacts/portrait-234/editor-run/cards-1080x2520.png",
-      "artifacts/portrait-234/editor-run/pause-390x844.png",
-      "artifacts/portrait-234/editor-run/pause-1080x2520.png",
-      "artifacts/portrait-234/editor-meta/result-390x844.png",
-      "artifacts/portrait-234/editor-meta/result-1080x2520.png",
-      "artifacts/portrait-234/editor-bm/revive-rules-fixture-390x844.png",
-      "artifacts/portrait-234/editor-bm/revive-rules-fixture-1080x2520.png",
-      "artifacts/portrait-234/editor-run/cards-evolution-fixture-390x844.png",
-      "artifacts/portrait-234/editor-run/cards-evolution-fixture-1080x2520.png",
-      "artifacts/portrait-234/editor-bm/result-bonus-390x844.png",
-      "artifacts/portrait-234/editor-bm/result-bonus-1080x2520.png",
-      "artifacts/portrait-234/editor-bm/result-bonus-granted-390x844.png",
-      "artifacts/portrait-234/editor-bm/result-bonus-granted-1080x2520.png"
-    ],
-    "observation": "판 진행·카드 제안·부활 시간 및 배경이 달라졌다. 요소 배치 판정과 77/26/3 개수는 유지한다."
-  }
+  ]
 }
