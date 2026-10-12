@@ -56,6 +56,12 @@ namespace Game.View
             }
             if(frame!=null&&(profileChanged||!ReferenceEquals(wave,frame)))
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using var rebuildSample = WaveIndexRebuildMarker.Auto();
+                var enemyCapacity = waveEnemyById.EnsureCapacity(0);
+                var workCapacity = waveWorkById.EnsureCapacity(0);
+                var buildingCapacity = unfinishedBuildingByPosition.EnsureCapacity(0);
+#endif
                 relocatedEnemies.Clear();
                 waveEnemyById.Clear();
                 for(var i=0;i<frame.Enemies.Count;i++){var enemy=frame.Enemies[i];if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);}
@@ -67,6 +73,11 @@ namespace Game.View
                     if(work.Kind=="grain"&&work.Health>0)liveGrainIds.Add(work.Id);
                     if(work.Kind=="building"&&work.Health>0&&!work.Complete&&!unfinishedBuildingByPosition.ContainsKey(work.Position))unfinishedBuildingByPosition.Add(work.Position,work);
                 }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                RecordCapacityGrowth("waveEnemyById", enemyCapacity, waveEnemyById.EnsureCapacity(0), waveEnemyById.Count);
+                RecordCapacityGrowth("waveWorkById", workCapacity, waveWorkById.EnsureCapacity(0), waveWorkById.Count);
+                RecordCapacityGrowth("unfinishedBuildingByPosition", buildingCapacity, unfinishedBuildingByPosition.EnsureCapacity(0), unfinishedBuildingByPosition.Count);
+#endif
             }
             waveCatalog=catalog;waveDefinition=catalog?.WaveRuntime;wave=frame;
             if(followCamera!=null)followCamera.KeepViewportInsideMap=frame!=null;
@@ -74,6 +85,7 @@ namespace Game.View
             waveMotion.Accept(frame,visualTime);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var effectCreateSample = WorldEffects.CreateMarker.Auto();
+            var effectsCapacity = waveEffects.Capacity;
 #endif
             for(var valueIndex=0;valueIndex<frame.Events.Count;valueIndex++)
             {
@@ -109,6 +121,9 @@ namespace Game.View
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
                 if(value.Kind=="attack")heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
             }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            RecordCapacityGrowth("waveEffects", effectsCapacity, waveEffects.Capacity, waveEffects.Count);
+#endif
         }
         string WaveEnemyState(int id,string source,string fallback)
         {
@@ -136,9 +151,16 @@ namespace Game.View
         void IndexWaveActors(RunFrame current)
         {
             if(ReferenceEquals(indexedWaveActors,current))return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var rebuildSample = WaveActorIndexRebuildMarker.Auto();
+            var actorCapacity = waveActorById.EnsureCapacity(0);
+#endif
             waveActorById.Clear();
             for(var i=0;i<current.Enemies.Count;i++){var enemy=current.Enemies[i];if(!waveActorById.ContainsKey(enemy.Id))waveActorById.Add(enemy.Id,enemy);}
             indexedWaveActors=current;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            RecordCapacityGrowth("waveActorById", actorCapacity, waveActorById.EnsureCapacity(0), waveActorById.Count);
+#endif
         }
         void DrawWave(RunFrame current,float alpha,Vector2 lordPoint)
         {

@@ -15,47 +15,60 @@ namespace Game.App
             IReadOnlyDictionary<string, ContentDisplay> displays, string chapterId, Action<string> selectChapter,
             Action start, Action cards, Action vassals, Action back, bool pendingRun = false)
         {
-            var root = Page(ui, "Departure", "출정 준비"); var width = Width(ui) - 36;
-            ActionButton(ui, root, "Departure.Back", "뒤로", back, Width(ui) - 74, 10, 56);
-            var body = Body(ui, root); float y = 0; var chapters = catalog.Chapters.Where(c => c.Index <= 7).OrderBy(c => c.Index).ToArray();
+            var root = Page(ui, "Departure", ""); var width = Width(ui) - 32;
+            PortraitRunPanels.RoundIcon(ui, root, "Departure.Back", "‹", back, 16, 50);
+            Caption(ui, root, "출정 준비", 70, 50, width - 60, 44, 22);
+            var body = Body(ui, root, 106, 112); float y = 0; var chapters = catalog.Chapters.Where(c => c.Index <= 7).OrderBy(c => c.Index).ToArray();
+            var step = (width - 44) / 6;
             for (var i = 0; i < chapters.Length; i++)
             {
-                var chapter = chapters[i]; var selected = chapter.Id == chapterId;
-                ChapterButton(ui, body, chapter, selected, () => selectChapter(chapter.Id), i % 4 * 58, i / 4 * 56);
+                var chapter = chapters[i]; ChapterButton(ui, body, chapter, chapter.Id == chapterId, () => selectChapter(chapter.Id), i * step, 0);
             }
-            y = Mathf.Ceil(chapters.Length / 4f) * 56 + 8;
             var definition = chapters.First(c => c.Id == chapterId);
-            y += Label(ui, body, ChapterName(definition), 0, y, width, 22) + 4;
-            y += Label(ui, body, definition.Index == 1 ? definition.Description : "앞으로 만날 곳 · " + definition.Description, 0, y, width) + 8;
-            foreach (var terrain in definition.Terrain.Take(3))
-            { Art(ui, body, terrain.ArtRole, 0, y, width, 90); y += 98; }
+            var panel = Plate(ui, body, "Chapter details", "ui.panel", 0, 56, width, 192);
+            Caption(ui, panel, "챕터 " + definition.Index + " · " + ChapterName(definition), 18, 14, width - 36, 30, 21, true);
+            Caption(ui, panel, definition.Description, 18, 47, width - 36, 38, 13, true);
             string Name(string id) => displays.TryGetValue(id, out var display) ? display.DisplayName : "아직 알려지지 않은 적";
-            var enemies = definition.Index == 1 && runCatalog.WaveRuntime != null ? runCatalog.WaveRuntime.Enemies.Keys.Where(id => id != runCatalog.WaveRuntime.BossId) : definition.EnemyIds;
-            y += Label(ui, body, "적 · " + string.Join(" · ", enemies.Select(Name)), 0, y, width) + 8;
+            var enemies = (definition.Index == 1 && runCatalog.WaveRuntime != null ? runCatalog.WaveRuntime.Enemies.Keys.Where(id => id != runCatalog.WaveRuntime.BossId) : definition.EnemyIds).ToArray();
+            Caption(ui, panel, "나오는 적", 18, 89, 58, 44, 11, true);
+            for (var i = 0; i < Math.Min(3, enemies.Length); i++)
+            {
+                var slot = Plate(ui, panel, "Chapter enemy:" + enemies[i], "ui.slot", 78 + i * 52, 88, 46, 46);
+                var icon = ui.Icon(slot, enemies[i], 36); PortraitWidgets.Position(icon.rectTransform, 5, 5, 36, 36);
+            }
             var bossId = definition.Index == 1 && runCatalog.WaveRuntime != null ? runCatalog.WaveRuntime.BossId : definition.BossId;
-            y += Label(ui, body, "보스 · " + Name(bossId), 0, y, width, 16) + 8;
-            y += Label(ui, body, "재료 상한 · " + MetaScreens.Amounts(catalog, definition.RewardCaps), 0, y, width) + 12;
-            y += Label(ui, body, "동행 기록", 0, y, width, 18) + 4;
+            Caption(ui, panel, "보스 · " + Name(bossId), 18, 135, width - 36, 23, 13, true);
+            Caption(ui, panel, "보상 최대 · " + MetaScreens.Amounts(catalog, definition.RewardCaps), 18, 159, width - 36, 26, 11, true);
+            y = 260; Caption(ui, body, "출전 가신", 0, y, width, 26, 16); y += 30;
             var slots = Slots(catalog, state); var cell = (width - 16) / 3;
             for (var i = 0; i < 3; i++)
             {
                 var id = i < state.ActiveVassalIds.Length ? state.ActiveVassalIds[i] : null;
-                var title = i >= slots ? "잠김" : id == null ? "가신 선택" : catalog.Vassals.First(v => v.Id == id).Name;
-                if (id != null && i < slots) Art(ui, body, catalog.Vassals.First(v => v.Id == id).ArtRole, i * (cell + 8), y, cell, 82);
-                ActionButton(ui, body, "Departure.VassalSlot:" + i, title, vassals, i * (cell + 8), y + 86, cell, i < slots, 56);
+                var title = i >= slots ? "잠김 · 병영 성장" : id == null ? "가신 선택" : catalog.Vassals.First(v => v.Id == id).Name;
+                var slot = Plate(ui, body, "Vassal slot:" + i, "ui.slot", i * (cell + 8), y, cell, 112);
+                if (id != null && i < slots) Art(ui, slot, catalog.Vassals.First(v => v.Id == id).ArtRole, 8, 4, cell - 16, 90);
+                Caption(ui, slot, title, 6, 77, cell - 12, 28, 11, false, TextAnchor.MiddleCenter);
+                Hit(body, "Departure.VassalSlot:" + i, vassals, i * (cell + 8), y, cell, 112, i < slots);
             }
-            y += 152;
-            if (slots < 3) y += Label(ui, body, "다음 자리 · 병영 레벨 " + ((slots - catalog.Economy.BaseVassalSlots + 1) * catalog.Economy.BarracksLevelsPerSlot), 0, y, width);
-            y += Label(ui, body, "이번 출정에서는 가신 능력 보너스가 적용되지 않습니다.", 0, y, width) + 12;
-            y += Label(ui, body, "기본 장비 · 철날 검 + 씨앗 자루", 0, y, width, 16) + 8;
-            ActionButton(ui, body, "Departure.CardPool", "이번 판 카드 보기", cards, 0, y, width); y += 56; End(body, y);
+            y += 120;
+            Caption(ui, body, "가신 능력 보너스는 이번 출정에 적용되지 않습니다.", 0, y, width, 28, 11); y += 30;
+            Caption(ui, body, "시작 장비 · 영웅 기본", 0, y, width, 26, 16); y += 30;
+            var equipment = new[] { "철날 검", "씨앗 자루" }; var equipmentArt = new[] { "e-iron_blade", "e-seed_bag" };
+            for (var i = 0; i < 2; i++)
+            {
+                var half = (width - 8) / 2; var slot = Plate(ui, body, "Starting equipment:" + i, "ui.slot", i * (half + 8), y, half, 64);
+                PortraitWidgets.Art(ui, slot, equipmentArt[i], 10, 15, 34, 34);
+                Caption(ui, slot, i == 0 ? "무기" : "도구", 50, 7, half - 56, 21, 11);
+                Caption(ui, slot, equipment[i], 50, 28, half - 56, 27, 14);
+            }
+            y += 70; ActionButton(ui, body, "Departure.CardPool", "이번 판 카드 보기", cards, 0, y, width, true, 44); y += 50; End(body, y);
             var available = definition.Index == 1 && definition.Index <= state.HighestClearedChapter + 1 && !pendingRun && state.PendingRun == null;
-            ActionButton(ui, root, "Departure.Start", available ? "출정 시작" : "아직 출정할 수 없습니다", start, 18, Height(ui) - 62, width, available);
+            ActionButton(ui, root, "Departure.Start", available ? "출정 시작" : "아직 출정할 수 없습니다", start, 20, Height(ui) - 102, Width(ui) - 40, available, 70, "ui.button.destructive");
         }
 
         static void ChapterButton(UiShell ui, Transform parent, MetaChapter chapter, bool selected, Action choose, float x, float y)
         {
-            var rect = PortraitWidgets.Place("Departure.Chapter:" + chapter.Id, parent, x, y, 48, 48);
+            var rect = PortraitWidgets.Place("Departure.Chapter:" + chapter.Id, parent, x, y, 44, 44);
             // Same authored circular ink bounds as the in-game joystick, without its transparent atlas margins.
             var source = ArtCatalog.Load().ResolveRole("ui.joystick.base").Sprite;
             var bounds = new Rect(source.rect.x + 4, source.rect.y + 36, 174, 174);
@@ -65,7 +78,7 @@ namespace Game.App
             paper.color = selected ? new Color32(235, 197, 98, 255) : Color.white;
             var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = paper;
             button.onClick.AddListener(() => { if (button.interactable) choose(); });
-            var number = PortraitWidgets.Label(ui, rect, chapter.Index.ToString(), 6, 6, 36, 36, 18);
+            var number = PortraitWidgets.Label(ui, rect, chapter.Index.ToString(), 4, 4, 36, 36, 16);
             number.alignment = TextAnchor.MiddleCenter; number.color = GameVisualTokens.Ink; number.raycastTarget = false;
         }
 

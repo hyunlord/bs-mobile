@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using Game.App;
@@ -9,11 +10,78 @@ namespace Game.Tests
     public sealed class DevelopmentLongFrameRecorderTests
     {
         static DevelopmentLongFrameRecorder.FrameSample Frame(int frame, double wall = 16) => new DevelopmentLongFrameRecorder.FrameSample { Frame = frame, ObservedFrame = frame + 1, Tick = frame * 2, WallMs = wall, StartedTimestamp = frame * 100, EndedTimestamp = frame * 100 + 90, ObservedTimestamp = frame * 100 + 100, Width = 1920, Height = 1080, Focused = true };
+        [Test] public void BenchmarkRepeatAndTraceAreExplicitBoundedCaptureFreeDiagnostics()
+        {
+            var parsed = RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-repeat", "2", "--wave-benchmark-profile", "--wave-benchmark-trace-range", "7900", "8000" });
+            Assert.That(parsed.Passes, Is.EqualTo(2));
+            Assert.That(parsed.TraceRange, Is.EqualTo(new[] { 7900, 8000 }));
+            Assert.That(RunCoordinator.ParseBenchmarkDiagnosticOptions(Array.Empty<string>()).Passes, Is.EqualTo(1));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark-repeat", "2" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-repeat", "3" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-repeat", "2", "--wave-benchmark-capture" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-trace-range", "7900", "8000" }));
+            Assert.Throws<ArgumentException>(() => RunCoordinator.ParseBenchmarkDiagnosticOptions(new[] { "--wave-benchmark", "fixture", "--wave-benchmark-profile", "--wave-benchmark-trace-range", "7900", "8200" }));
+        }
+        [Test] public void RegistrationRefreshKeepsHistoricalUnavailableMetadataAndRegistersLateMarker()
+        {
+            var name = "SowSiege.LateMarkerTest." + Guid.NewGuid().ToString("N");
+            var directory = Path.Combine(Path.GetTempPath(), "sowsiege-late-marker-" + Guid.NewGuid().ToString("N"));
+            using var recorder = DevelopmentLongFrameRecorder.WithDeferredMarkerForTesting(name);
+            recorder.Observe(Frame(1, 16));
+            var marker = new Unity.Profiling.ProfilerMarker(name);
+            using (marker.Auto()) { }
+            recorder.RefreshRegistrationAfterLoading();
+            recorder.Observe(Frame(2, 26));
+            try
+            {
+                recorder.Write(directory);
+                var lines = File.ReadAllLines(Path.Combine(directory, "counter-observations.csv"));
+                Assert.That(lines.Length, Is.EqualTo(3));
+                Assert.That(lines[1], Does.StartWith("1,2,200,"));
+                Assert.That(lines[1], Does.Contain(",\"unavailable\",-1,\"not-registered-at-start\","));
+                Assert.That(lines[2], Does.StartWith("2,3,300,"));
+                Assert.That(lines[2], Does.Contain("\"registered-after-loading\""));
+                Assert.That(lines[2], Does.Not.Contain("\"unavailable\""));
+            }
+            finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+        }
+        [Test] public void RequiredDiagnosticCountersIncludeViewFirstUseMarkerFamilies()
+        {
+            var names = DevelopmentLongFrameRecorder.RequiredCounterNamesForTesting();
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchMeshUpload"));
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchPropertyUpload"));
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchCapacityFlush"));
+            Assert.That(names, Does.Contain("SowSiege.View.SpriteBatchDraw"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioResourceLoad"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioSourceCreate"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioPlayback"));
+            Assert.That(names, Does.Contain("SowSiege.View.AudioFirstPlayback"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontSupportProbe"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontRequestCharacters"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontNewCharacters"));
+            Assert.That(names, Does.Contain("SowSiege.View.FontTextureRebuilt"));
+            Assert.That(new HashSet<string>(names).Count, Is.EqualTo(names.Length));
+        }
         [Test] public void ExplicitOptInRejectsDuplicates()
         {
             Assert.That(DevelopmentLongFrameRecorder.Requested(Array.Empty<string>()), Is.False);
             Assert.That(DevelopmentLongFrameRecorder.Requested(new[] { "--diagnostic-long-frames" }), Is.True);
             Assert.Throws<ArgumentException>(() => DevelopmentLongFrameRecorder.Requested(new[] { "--diagnostic-long-frames", "--diagnostic-long-frames" }));
+        }
+        [Test] public void CapacityEvidencePreservesGrowthCoordinatesAndReportsOverflow()
+        {
+            using var recorder = DevelopmentLongFrameRecorder.WithSmallCapacityGrowthBufferForTesting();
+            recorder.RecordCapacityGrowth(10, 20, 300, "enemies", 64, 64, 40);
+            recorder.RecordCapacityGrowth(11, 21, 301, "enemies", 64, 128, 65);
+            recorder.RecordCapacityGrowth(12, 22, 302, "effects", 16, 32, 17);
+            Assert.That(recorder.Overflowed, Is.False);
+            recorder.RecordCapacityGrowth(13, 23, 303, "effects", 32, 64, 33);
+            Assert.That(recorder.Overflowed, Is.True);
+            var writer = new StringWriter(); recorder.WriteCapacityGrowthCsv(writer);
+            var rows = writer.ToString().Trim().Split('\n');
+            Assert.That(rows.Length, Is.EqualTo(3));
+            Assert.That(rows[1].Trim(), Is.EqualTo("11,21,301,\"enemies\",64,128,65"));
+            Assert.That(rows[2].Trim(), Is.EqualTo("12,22,302,\"effects\",16,32,17"));
         }
         [Test] public void RingPreservesFourNeighborsAndDoesNotDuplicateOverlappingWindows()
         {

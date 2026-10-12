@@ -26,9 +26,34 @@ namespace Game.App
         PlayerInput benchmarkMovement;
         bool benchmarkProfileRequested, benchmarkProfilerEnabled;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        int benchmarkTraceWindow, benchmarkTraceEndTick;
+        int benchmarkTraceWindow, benchmarkTraceEndTick, benchmarkStallTraceAttempt;
+        int benchmarkDiagnosticPass = 1, benchmarkDiagnosticPasses = 1;
+        int[] benchmarkDiagnosticTraceRange;
+        string benchmarkDiagnosticRoot;
         readonly int[] benchmarkTraceTicks = { 8900, 11100, 13500 };
         readonly int[] crowdBenchmarkTraceTicks = { 10800, 11100, 11400 };
+        public static (int Passes, int[] TraceRange) ParseBenchmarkDiagnosticOptions(string[] args)
+        {
+            int passes = 1; int[] range = null; bool repeatSeen = false;
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "--wave-benchmark-repeat")
+                {
+                    if (repeatSeen || ++i >= args.Length || args[i] != "2") throw new ArgumentException("--wave-benchmark-repeat requires 2 and may appear once.");
+                    repeatSeen = true; passes = 2;
+                }
+                else if (args[i] == "--wave-benchmark-trace-range")
+                {
+                    if (range != null || i + 2 >= args.Length || !int.TryParse(args[++i], out var start) || !int.TryParse(args[++i], out var end) || start < 0 || end <= start || end - start > 240)
+                        throw new ArgumentException("--wave-benchmark-trace-range requires ordered ticks spanning at most 240 ticks.");
+                    range = new[] { start, end };
+                }
+            }
+            if ((passes > 1 || range != null) && (Array.IndexOf(args, "--wave-benchmark") < 0 || Array.IndexOf(args, "--offline-replay-capture") >= 0 || Array.IndexOf(args, "--wave-benchmark-capture") >= 0))
+                throw new ArgumentException("Diagnostic repeat/trace requires a capture-free wave benchmark.");
+            if (range != null && Array.IndexOf(args, "--wave-benchmark-profile") < 0) throw new ArgumentException("Trace range requires --wave-benchmark-profile.");
+            return (passes, range);
+        }
 #endif
         public static string ParseWaveBenchmarkMode(string[] arguments)
         {
@@ -64,6 +89,14 @@ namespace Game.App
             return true;
         }
         const int BenchmarkMaximumRows = 200000;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkPendingInterval = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.PendingInterval");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkTimingCollection = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.TimingCollection");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkTraceHousekeeping = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.TraceHousekeeping");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkPacing = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.Pacing");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkSurfaceQuery = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.SurfaceQuery");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkPreCoreSetup = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.PreCoreSetup");
+#endif
         static readonly Unity.Profiling.ProfilerMarker BenchmarkSnapshot = new Unity.Profiling.ProfilerMarker("SowSiege.BenchmarkSnapshot");
         ReplayDocument benchmarkReplay;
         string benchmarkOutput, benchmarkReplaySha;
@@ -82,6 +115,8 @@ namespace Game.App
             public int frame, tick, enemies, commands, gcCollections, advances, drawCalls, spriteInstances;
             public long allocatedBytes, entryTimestamp, exitTimestamp, nextEntryTimestamp;
             public double inputDeltaSeconds, accumulatorBefore, accumulatorAfter;
+            public double originalWallMs, excludedBackgroundMs;
+            public bool partialBoundary;
             public double wallMs, simulationMs, snapshotMs, acceptMs, presentMs, hudMs, advanceMs;
             public bool focused;
             public WorldPresentationDiagnostics composition;
@@ -94,8 +129,15 @@ namespace Game.App
             public bool performanceEligible = true;
             public bool diagnosticOnly, actorGroundingSkipped;
             public string fixture = "c05", playbackBoundary;
-            public string benchmarkMode, gcMode, metalDisplayLinkEnvironment;
+            public string benchmarkMode, gcMode, metalDisplayLinkEnvironment, pacingPolicy;
+            public string foregroundPolicy, foregroundAppEvidence, exclusionLedgerContract;
+            public BenchmarkExclusion[] excludedIntervals;
+            public BenchmarkFocusEvent[] focusEvents;
             public int frameCapacity, timingCapacity, coreTickSamples;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            public int diagnosticPass, diagnosticPasses;
+            public string repeatCacheContract;
+#endif
             public string coreTimingContract = "Optional core-ticks.csv records pre-Advance tick and accepted Advance only within benchmark windows; no pre-roll. Enemy includes Separation, which includes Residual: nested times and allocations must not be summed. MovementAiContact is the sorted live-enemy action/movement/contact loop before separation, nested in Enemy, not pure integration. Full Advance excludes snapshot/presentation; appended snapshotMs is the same Advance capture only. Unavailable allocation counters are -1.";
             public int tick, commands, frames, renderTimingSamples, width, height, targetFrameRate, vSyncCount, renderWarmupFrames = 120;
             public ulong cpuTimerFrequency;
@@ -126,8 +168,14 @@ namespace Game.App
                 benchmarkAllocationAvailable = AllocationCounterProbe.CurrentThreadAvailable();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, true);
+                var diagnosticOptions = ParseBenchmarkDiagnosticOptions(args);
+                benchmarkDiagnosticPasses = diagnosticOptions.Passes; benchmarkDiagnosticTraceRange = diagnosticOptions.TraceRange;
+                benchmarkDiagnosticRoot = benchmarkOutput;
+                if (benchmarkDiagnosticPasses > 1) { benchmarkOutput = Path.Combine(benchmarkDiagnosticRoot, "pass-1"); Directory.CreateDirectory(benchmarkOutput); }
 #else
                 benchmarkProfileRequested = ParseWaveBenchmarkProfile(args, false);
+                if (Array.IndexOf(args, "--wave-benchmark-repeat") >= 0 || Array.IndexOf(args, "--wave-benchmark-trace-range") >= 0 || Array.IndexOf(args, "--wave-benchmark-stall-trace") >= 0)
+                    throw new ArgumentException("Repeat and trace range require a Development build.");
 #endif
                 benchmarkProfilerEnabled = benchmarkProfileRequested;
                 if (benchmarkProfileRequested || Array.IndexOf(args, "--wave-benchmark-core-diagnostics") >= 0)
@@ -182,8 +230,78 @@ namespace Game.App
                 File.WriteAllText(Path.Combine(benchmarkOutput, "device.json"), JsonUtility.ToJson(DeviceFacts.Capture(), true));
                 if (offlineReplayRequested) offlineReplayCapture = new OfflineReplayCapture(benchmarkOutput, Screen.width, Screen.height);
                 ResetBenchmarkClock(); waveBenchmarkReady = true;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                RefreshLongFrameCountersAfterLoading();
+#endif
             }
             catch (Exception exception) { EndWaveBenchmark(exception); }
+        }
+        readonly BenchmarkForegroundGate benchmarkForeground = new BenchmarkForegroundGate();
+        readonly List<BenchmarkExclusion> benchmarkExclusions = new List<BenchmarkExclusion>();
+        readonly List<BenchmarkFocusEvent> benchmarkFocusEvents = new List<BenchmarkFocusEvent>();
+        [Serializable] public struct BenchmarkExclusion
+        {
+            public int firstFrame, lastFrame, tick;
+            public long startTimestamp, endTimestamp;
+            public string reason;
+        }
+        [Serializable] public struct BenchmarkFocusEvent
+        {
+            public int frame, tick;
+            public long timestamp, utcUnixMilliseconds;
+            public bool focus, paused;
+            public string kind, foregroundApp;
+        }
+        void BenchmarkLifecycle(bool focusEvent, bool value)
+        {
+            if (focusEvent) benchmarkForeground.Focus(value); else benchmarkForeground.Pause(value);
+            benchmarkFocusEvents.Add(new BenchmarkFocusEvent { frame = Time.frameCount, tick = CurrentFrame?.Tick ?? 0,
+                timestamp = Stopwatch.GetTimestamp(), utcUnixMilliseconds = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                focus = benchmarkForeground.Focused, paused = benchmarkForeground.Paused,
+                kind = focusEvent ? "focus" : "pause", foregroundApp = "external-observer-required" });
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (focusEvent ? !value : value) StopBenchmarkProfilerTraceForLifecycle(focusEvent ? "focus-lost" : "application-paused");
+#endif
+        }
+        bool SuspendBenchmarkFrame(long timestamp)
+        {
+            if (benchmarkForeground.Focused != Application.isFocused)
+            {
+                BenchmarkLifecycle(true, Application.isFocused);
+                timestamp = Stopwatch.GetTimestamp();
+            }
+            if (!benchmarkForeground.SkipFrame()) return false;
+            var start = benchmarkFrameStart;
+            if (benchmarkHasPending)
+            {
+                var interval = new BenchmarkForegroundInterval(benchmarkPending.entryTimestamp);
+                foreach (var transition in benchmarkFocusEvents)
+                    if (transition.timestamp >= benchmarkPending.entryTimestamp && transition.timestamp <= timestamp)
+                        interval.Transition(transition.timestamp, transition.focus && !transition.paused);
+                benchmarkPending.nextEntryTimestamp = timestamp;
+                benchmarkPending.originalWallMs = (timestamp - benchmarkPending.entryTimestamp) * 1000d / Stopwatch.Frequency;
+                benchmarkPending.wallMs = interval.Finish(timestamp) * 1000d / Stopwatch.Frequency;
+                benchmarkPending.excludedBackgroundMs = benchmarkPending.originalWallMs - benchmarkPending.wallMs;
+                benchmarkPending.partialBoundary = true;
+                benchmarkPending.allocatedBytes = benchmarkAllocationAvailable ? GC.GetAllocatedBytesForCurrentThread() - benchmarkAllocatedStart : -1;
+                benchmarkPending.gcCollections = GC.CollectionCount(0) - benchmarkGcStart;
+                if (benchmarkPending.wallMs <= 0) throw new InvalidOperationException("Cannot prove a positive foreground interval at lifecycle boundary.");
+                if (benchmarkFrames.Count == benchmarkFrames.Capacity) throw new InvalidOperationException("Benchmark frame capacity exceeded.");
+                benchmarkFrames.Add(benchmarkPending);
+            }
+            var first = Time.frameCount;
+            var reason = !benchmarkForeground.Focused || benchmarkForeground.Paused ? "background" : "resume-boundary";
+            var last = benchmarkExclusions.Count - 1;
+            if (last >= 0 && benchmarkExclusions[last].lastFrame + 1 >= first && benchmarkExclusions[last].reason == reason)
+            {
+                var previous = benchmarkExclusions[last]; previous.lastFrame = Time.frameCount; previous.endTimestamp = timestamp;
+                benchmarkExclusions[last] = previous;
+            }
+            else benchmarkExclusions.Add(new BenchmarkExclusion { firstFrame = first, lastFrame = Time.frameCount,
+                tick = CurrentFrame.Tick, startTimestamp = start, endTimestamp = timestamp, reason = reason });
+            benchmarkHasPending = false;
+            ResetBenchmarkClock();
+            return true;
         }
         void ResetBenchmarkClock() { benchmarkFrameStart = Stopwatch.GetTimestamp(); benchmarkAllocatedStart = benchmarkAllocationAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1; benchmarkGcStart = GC.CollectionCount(0); }
         static double BenchmarkMilliseconds(long start) => (Stopwatch.GetTimestamp() - start) * 1000d / Stopwatch.Frequency;
@@ -196,9 +314,13 @@ namespace Game.App
             if (!waveBenchmarkReady || waveBenchmarkEnded) return;
             try
             {
+                if (!offlineReplayRequested && SuspendBenchmarkFrame(entryTimestamp)) return;
                 if (offlineReplayCapture?.Error != null) throw offlineReplayCapture.Error;
                 if (offlineReplayCapture != null && offlineReplayCapture.Pending) return;
                 var presentationDelta = offlineReplayRequested ? (float)OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using (BenchmarkPendingInterval.Auto())
+#endif
                 if (benchmarkHasPending)
                 {
                     benchmarkPending.nextEntryTimestamp = entryTimestamp;
@@ -206,28 +328,40 @@ namespace Game.App
                     benchmarkPending.allocatedBytes = benchmarkAllocationAvailable ? entryAllocated - benchmarkAllocatedStart : -1;
                     benchmarkPending.gcCollections = entryGc - benchmarkGcStart;
                     if (benchmarkFrames.Count == benchmarkFrames.Capacity) throw new InvalidOperationException("Benchmark frame capacity exceeded; no measured rows were dropped.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    profilerTrace.ObserveBenchmarkInterval(new DevelopmentProfilerTrace.StallFrame { Frame = benchmarkPending.frame, Tick = benchmarkPending.tick, WallMs = benchmarkPending.wallMs, StartTimestamp = benchmarkPending.entryTimestamp, EndTimestamp = entryTimestamp });
+#endif
                     benchmarkFrames.Add(benchmarkPending); benchmarkHasPending = false;
                 }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using (BenchmarkTimingCollection.Auto())
+#endif
                 if (!offlineReplayRequested && FrameTimingManager.GetLatestTimings(1, benchmarkTimingBuffer) > 0 && benchmarkTimingBuffer[0].frameStartTimestamp != benchmarkLastTiming)
                 {
                     benchmarkLastTiming = benchmarkTimingBuffer[0].frameStartTimestamp;
                     if (benchmarkTimings.Count == benchmarkTimings.Capacity) throw new InvalidOperationException("Benchmark timing capacity exceeded; no observations were dropped.");
                     benchmarkTimings.Add(new BenchmarkTiming { observedFrame = Time.frameCount, observationTimestamp = Stopwatch.GetTimestamp(), value = benchmarkTimingBuffer[0] });
                 }
-                if (benchmarkCommand == benchmarkReplay.Commands.Count) { EndWaveBenchmark(null); return; }
+                if (benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick)) { EndWaveBenchmark(null); return; }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
-                if (crowdBenchmark != null && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
-                    profilerTrace.Stop(CurrentFrame.Tick, "crowd-window-end");
-                profilerTrace.Pump(CurrentFrame.Tick);
-                var traceTicks = crowdBenchmark == null ? benchmarkTraceTicks : crowdBenchmarkTraceTicks;
-                if (benchmarkProfileRequested && !profilerTrace.Active && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < traceTicks.Length && CurrentFrame.Tick >= traceTicks[benchmarkTraceWindow])
+                using (BenchmarkTraceHousekeeping.Auto())
                 {
-                    benchmarkTraceEndTick = crowdBenchmark == null ? int.MaxValue : Math.Min(traceTicks[benchmarkTraceWindow] + 180, CrowdReplayBenchmark.EndTick);
+                benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
+                if (!profilerTrace.StallTriggerRequested && (crowdBenchmark != null || benchmarkDiagnosticTraceRange != null) && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
+                    profilerTrace.Stop(CurrentFrame.Tick, benchmarkDiagnosticTraceRange != null ? "explicit-window-end" : "crowd-window-end");
+                profilerTrace.Pump(CurrentFrame.Tick);
+                if (benchmarkProfileRequested && profilerTrace.StallTriggerRequested && benchmarkTraceWindow == 0 && !benchmarkInterrupted && benchmarkWarmFrames <= 60)
+                    StartBenchmarkStallTrace();
+                var traceTicks = benchmarkDiagnosticTraceRange != null ? benchmarkDiagnosticTraceRange : crowdBenchmark == null ? benchmarkTraceTicks : crowdBenchmarkTraceTicks;
+                var traceCount = benchmarkDiagnosticTraceRange != null ? 1 : traceTicks.Length;
+                if (benchmarkProfileRequested && !profilerTrace.StallTriggerRequested && !profilerTrace.Active && !benchmarkInterrupted && benchmarkWarmFrames == 0 && benchmarkTraceWindow < traceCount && CurrentFrame.Tick >= traceTicks[benchmarkTraceWindow])
+                {
+                    benchmarkTraceEndTick = benchmarkDiagnosticTraceRange != null ? benchmarkDiagnosticTraceRange[1] : crowdBenchmark == null ? int.MaxValue : Math.Min(traceTicks[benchmarkTraceWindow] + 180, CrowdReplayBenchmark.EndTick);
                     benchmarkTraceWindow++;
                     if (!profilerTrace.Start(benchmarkOutput, (crowdBenchmark == null ? "wave-c05-" : "crowd-411-") + benchmarkTraceWindow, CurrentFrame.Tick, benchmarkReplay.Header.Options.DataHash, DevelopmentProfilerTrace.BenchmarkScope))
                         throw new InvalidOperationException("Could not start requested benchmark profiler window.");
                     benchmarkProfilerEnabled = true;
+                }
                 }
 #endif
                 benchmarkFrameStart = entryTimestamp; benchmarkAllocatedStart = entryAllocated; benchmarkGcStart = entryGc;
@@ -236,20 +370,34 @@ namespace Game.App
                 if (warming)
                 {
                     benchmarkWarmFrames--; accumulator = 0;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    if (benchmarkWarmFrames == 1) RefreshLongFrameCountersAfterLoading();
+#endif
                     if (benchmarkCapture && benchmarkWarmFrames == 60) ScreenCapture.CaptureScreenshot(Path.Combine(benchmarkOutput, "warmup-7200.png"));
                 }
                 else
                 {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    using (BenchmarkSurfaceQuery.Auto())
+#endif
                     if (Screen.width != (crowdBenchmark == null ? 1600 : 1920) || Screen.height != (crowdBenchmark == null ? 900 : 1080)) throw new InvalidOperationException("Benchmark render surface changed.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    using (BenchmarkPacing.Auto())
+                    {
+#endif
                     accumulator += offlineReplayRequested ? OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
                     var step = 1d / CurrentFrame.TickRate;
+                    var advanceBudget = new FrameAdvanceBudget(!offlineReplayRequested);
                     while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count)
                     {
                         var command = benchmarkReplay.Commands[benchmarkCommand];
+                        if (command.Kind == ReplayCommandKind.Advance && !advanceBudget.TryAdvance(ref accumulator, step)) break;
                         ApplyBenchmarkCommand(true, ref sample);
                         sample.commands++;
-                        if (command.Kind == ReplayCommandKind.Advance) accumulator -= step;
                     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    }
+#endif
                 }
                 BeginLongFrameHud();
                 var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.Hud.Auto()) hud?.Present(CurrentFrame, FirstPlayable); sample.hudMs = BenchmarkMilliseconds(started);
@@ -299,9 +447,17 @@ namespace Game.App
         {
             var command = benchmarkReplay.Commands[benchmarkCommand++];
             var measureTick = benchmarkCoreDiagnostics != null && present && command.Kind == ReplayCommandKind.Advance && BenchmarkWindow(command.Tick);
+            long started;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (BenchmarkPreCoreSetup.Auto())
+            {
+#endif
             if (measureTick) benchmarkCoreDiagnostics.BeginTick(command.Tick, Time.frameCount);
-            var started = Stopwatch.GetTimestamp();
+            started = Stopwatch.GetTimestamp();
             BeginLongFrameCommand(command.Kind);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            }
+#endif
             try { using (RunProfilerMarkers.CoreApply.Auto()) Session.Apply(command); }
             finally { EndLongFrameCommand(command.Kind); if (measureTick) benchmarkCoreDiagnostics.EndTick(); }
             var elapsed = BenchmarkMilliseconds(started); sample.simulationMs += elapsed;
@@ -321,6 +477,23 @@ namespace Game.App
             }
             sample.acceptMs += BenchmarkMilliseconds(started);
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        void StartBenchmarkStallTrace()
+        {
+            benchmarkTraceWindow = 1;
+            benchmarkStallTraceAttempt++;
+            var session = "stall-trigger-" + benchmarkDiagnosticPass + "-attempt-" + benchmarkStallTraceAttempt;
+            if (!profilerTrace.Start(benchmarkOutput, session, CurrentFrame.Tick, benchmarkReplay.Header.Options.DataHash, DevelopmentProfilerTrace.BenchmarkScope))
+                throw new InvalidOperationException("Could not start requested stall-trigger trace.");
+        }
+        void StopBenchmarkProfilerTraceForLifecycle(string reason)
+        {
+            if (!profilerTrace.Active) return;
+            var rearmStallTrigger = profilerTrace.StallTriggerRequested && !profilerTrace.ActiveStallTriggerCaptured && benchmarkTraceWindow == 1;
+            profilerTrace.Stop(CurrentFrame?.Tick ?? 0, reason);
+            if (rearmStallTrigger) benchmarkTraceWindow = 0;
+        }
+#endif
         void EndWaveBenchmark(Exception exception)
         {
             if (waveBenchmarkEnded) return;
@@ -330,6 +503,11 @@ namespace Game.App
             profilerTrace.Stop(CurrentFrame?.Tick ?? 0, exception == null ? "run-complete" : "error");
 #endif
             var result = new BenchmarkResult { frameCapacity = benchmarkFrames.Capacity, timingCapacity = benchmarkTimings.Capacity, benchmarkMode = benchmarkMode, profilerEnabled = benchmarkProfilerEnabled, gcMode = UnityEngine.Scripting.GarbageCollector.GCMode.ToString(), commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), interrupted = benchmarkInterrupted, frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
+            result.foregroundPolicy = "pause-input-exclude-boundary-resume-v1";
+            result.exclusionLedgerContract = "Excluded intervals identify skipped frame IDs. Their timestamp spans may overlap foreground work retained in partialBoundary rows; they are not pure excluded-duration totals. Use each boundary row excludedBackgroundMs for its excluded duration.";
+            result.foregroundAppEvidence = "foreground-app-events.csv external NSWorkspace observer required";
+            result.excludedIntervals = benchmarkExclusions.ToArray();
+            result.focusEvents = benchmarkFocusEvents.ToArray();
             result.cpuTimerFrequency = FrameTimingManager.GetCpuTimerFrequency();
             result.stopwatchFrequency = Stopwatch.Frequency;
             result.allocationCounterAvailable = benchmarkAllocationAvailable;
@@ -339,7 +517,12 @@ namespace Game.App
             result.diagnosticOnly = benchmarkTarget60Experiment || benchmarkSkipGrounding || benchmarkCoreDiagnostics != null || benchmarkProfilerEnabled || result.developmentBuild;
             result.performanceEligible = !offlineReplayRequested && !result.diagnosticOnly;
             LongFrameBenchmarkMetadata(result);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            result.diagnosticPass = benchmarkDiagnosticPass; result.diagnosticPasses = benchmarkDiagnosticPasses;
+            result.repeatCacheContract = "Same process; identical replay initial state; scene-local world/pools rebuilt, engine shader/resource caches retained. No forced GC or unload.";
+#endif
             result.actorGroundingSkipped = benchmarkSkipGrounding;
+            result.pacingPolicy = offlineReplayRequested ? FrameAdvanceBudget.LegacyPolicy : FrameAdvanceBudget.DeferredPolicy;
             if (offlineReplayRequested) result.benchmarkMode = "offline-render-60fps";
             if (crowdBenchmark != null)
             {
@@ -364,8 +547,8 @@ namespace Game.App
                 {
                     using (var writer = new StreamWriter(Path.Combine(benchmarkOutput, "frames.csv")))
                     {
-                        writer.WriteLine("frame,tick,enemies,commands,wallMs,simulationMs,snapshotMs,acceptMs,presentMs,hudMs,allocatedBytes,gcCollections,focused,advances,advanceMs,worldBatchDrawCalls,worldInstances,entryTimestamp,exitTimestamp,nextEntryTimestamp,inputDeltaSeconds,accumulatorBefore,accumulatorAfter");
-                        foreach (var row in benchmarkFrames) writer.WriteLine(FormattableString.Invariant($"{row.frame},{row.tick},{row.enemies},{row.commands},{row.wallMs:R},{row.simulationMs:R},{row.snapshotMs:R},{row.acceptMs:R},{row.presentMs:R},{row.hudMs:R},{row.allocatedBytes},{row.gcCollections},{(row.focused ? 1 : 0)}") + FormattableString.Invariant($",{row.advances},{row.advanceMs:R},{row.drawCalls},{row.spriteInstances},{row.entryTimestamp},{row.exitTimestamp},{row.nextEntryTimestamp},{row.inputDeltaSeconds:R},{row.accumulatorBefore:R},{row.accumulatorAfter:R}"));
+                        writer.WriteLine("frame,tick,enemies,commands,wallMs,simulationMs,snapshotMs,acceptMs,presentMs,hudMs,allocatedBytes,gcCollections,focused,advances,advanceMs,worldBatchDrawCalls,worldInstances,entryTimestamp,exitTimestamp,nextEntryTimestamp,inputDeltaSeconds,accumulatorBefore,accumulatorAfter,partialBoundary,originalWallMs,excludedBackgroundMs");
+                        foreach (var row in benchmarkFrames) writer.WriteLine(FormattableString.Invariant($"{row.frame},{row.tick},{row.enemies},{row.commands},{row.wallMs:R},{row.simulationMs:R},{row.snapshotMs:R},{row.acceptMs:R},{row.presentMs:R},{row.hudMs:R},{row.allocatedBytes},{row.gcCollections},{(row.focused ? 1 : 0)}") + FormattableString.Invariant($",{row.advances},{row.advanceMs:R},{row.drawCalls},{row.spriteInstances},{row.entryTimestamp},{row.exitTimestamp},{row.nextEntryTimestamp},{row.inputDeltaSeconds:R},{row.accumulatorBefore:R},{row.accumulatorAfter:R},{(row.partialBoundary ? 1 : 0)},{row.originalWallMs:R},{row.excludedBackgroundMs:R}"));
                     }
                     using (var writer = new StreamWriter(Path.Combine(benchmarkOutput, "render-timings.csv")))
                     {
@@ -396,7 +579,33 @@ namespace Game.App
             }
             finally { offlineReplayCapture?.Dispose(); }
             if (!result.verified) UnityEngine.Debug.LogError(result.error ?? "Benchmark failed.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (result.verified && !benchmarkInterrupted && benchmarkDiagnosticPass < benchmarkDiagnosticPasses)
+            {
+                StartCoroutine(RepeatWaveBenchmark());
+                return;
+            }
+#endif
             Application.Quit(result.verified ? 0 : 1);
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        IEnumerator RepeatWaveBenchmark()
+        {
+            waveBenchmarkReady = false;
+            yield return null;
+            ResetLongFramesForRepeat();
+            benchmarkDiagnosticPass++;
+            benchmarkOutput = Path.Combine(benchmarkDiagnosticRoot, "pass-" + benchmarkDiagnosticPass);
+            Directory.CreateDirectory(benchmarkOutput);
+            benchmarkExclusions.Clear(); benchmarkFocusEvents.Clear();
+            benchmarkFrames.Clear(); benchmarkTimings.Clear(); benchmarkLastTiming = 0;
+            benchmarkCommand = 0; benchmarkWarmFrames = 120; benchmarkPending = default; benchmarkHasPending = false;
+            benchmarkMovement = default; benchmarkTraceWindow = 0; benchmarkTraceEndTick = 0; benchmarkStallTraceAttempt = 0;
+            benchmarkProfilerEnabled = benchmarkProfileRequested;
+            if (benchmarkCoreDiagnostics != null) benchmarkCoreDiagnostics = new BenchmarkCoreDiagnostics(BenchmarkMaximumRows, benchmarkAllocationAvailable, benchmarkProfileRequested);
+            waveBenchmarkEnded = false; accumulator = 0;
+            yield return BeginWaveBenchmark();
+        }
+#endif
     }
 }

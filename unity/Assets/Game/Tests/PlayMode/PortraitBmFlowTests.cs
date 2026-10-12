@@ -190,10 +190,19 @@ namespace Tests.PlayMode
             var resultBounds = Pixels((RectTransform)Named("Revive.Result").transform);
             var adBounds = Pixels((RectTransform)Named("Revive.OptionalAd").transform);
             Assert.That(adBounds.size, Is.EqualTo(resultBounds.size));
+            var world = Object.FindFirstObjectByType<WorldRenderer>();
+            Assert.That(world, Is.Not.Null);
+            world.EditorSeedTransientTextForTesting();
+            Assert.That(ActiveTransientText(world), Is.GreaterThanOrEqualTo(4), "The fixture populates both damage pools and growth text plus its shadow.");
+            yield return null; yield return null;
+            Assert.That(ActiveTransientText(world), Is.Zero, "A revive modal must suppress underlying damage and narrative labels on every presented frame.");
             yield return CaptureSizes("revive-rules-fixture", "Revive", true);
             yield return BackgroundAndReturn("Revive");
             Click("Revive.OptionalAd"); yield return null;
             Assert.That(app.Error, Is.Null); Assert.That(app.Session.HostRevived, Is.True);
+            Assert.That(world.ShowTransientText, Is.True, "Resuming play restores transient presentation without changing preferences.");
+            world.EditorSeedTransientTextForTesting();
+            Assert.That(ActiveTransientText(world), Is.GreaterThanOrEqualTo(4));
             app.OpenPause(); yield return ScreenIs("Pause");
             Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon"); Click("Abandon.Confirm"); yield return ScreenIs("Summary");
             var replayPath = app.RecordedReplayPath;
@@ -205,7 +214,7 @@ namespace Tests.PlayMode
                 Assert.That(ReplayRunner.Verify(FoundationBoot.Catalog, FoundationBoot.VerifiedDataHash, replay).StateHash, Is.EqualTo(replay.End.StateHash));
             }
             Assert.That(app.Session.GetSummary().Revived, Is.True);
-            var evidence = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-bm-227/editor"));
+            var evidence = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-bm"));
             Directory.CreateDirectory(evidence);
             File.Copy(replayPath, Path.Combine(evidence, "revive-fixture.ssreplay"), true);
             File.WriteAllText(Path.Combine(evidence, "revive-fixture.txt"), "Preselected Editor fixture: idle normal Advance/legal card commands; health/contact experiment settings; explicit revive health100/invulnerability30; actual UI reward; final replay hash verified. Not natural-play or production revive-balance acceptance.\n");
@@ -318,6 +327,7 @@ namespace Tests.PlayMode
             var existingOverflow = catalog.Materials.ToDictionary(m => m.Id, m => 7);
             app.EditorPresentSettledRewardFixture(new MetaSettlement(before, false, awarded, existingOverflow, new[] { building.Id }, Array.Empty<string>()));
             yield return ScreenIs("Summary");
+            yield return CaptureSizes("result-bonus", "Summary", true);
             store.FailFrom = store.Writes + 2; // Receipt saves; its acknowledgement fails after the atomic meta reward.
             Click("Summary.OptionalAd"); yield return ScreenIs("Summary");
             Assert.That(policy.HasPendingWrite, Is.True);
@@ -335,7 +345,11 @@ namespace Tests.PlayMode
             store.FailFrom = -1; app.EditorRetryRewardDelivery(); yield return ScreenIs("Summary");
             Assert.That(policy.PendingRewards, Is.Empty); Assert.That(policy.HasPendingWrite, Is.False);
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
+            yield return CaptureSizes("result-bonus-granted", "Summary", true);
         }
+
+        static int ActiveTransientText(WorldRenderer world)
+            => world.GetComponentsInChildren<TextMesh>(true).Count(label => label.gameObject.activeInHierarchy && label.GetComponent<Renderer>().enabled);
 
         void PrepareAccount()
         {
@@ -426,7 +440,7 @@ namespace Tests.PlayMode
                 {
                     if (scroll != null) scroll.verticalNormalizedPosition = position;
                     yield return null; yield return null; Canvas.ForceUpdateCanvases(); AssertGeometry();
-                    var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-bm-227/editor")); Directory.CreateDirectory(output);
+                    var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-bm")); Directory.CreateDirectory(output);
                     var path = Path.Combine(output, name + "-" + size.x + "x" + size.y + (position == 0 ? "-bottom" : "") + ".png");
                     if (File.Exists(path)) File.Delete(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
                     while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
@@ -455,9 +469,20 @@ namespace Tests.PlayMode
                     var clip = Pixels(scroll.viewport); if (!clip.Overlaps(bounds)) continue;
                     bounds = Rect.MinMaxRect(Mathf.Max(bounds.xMin, clip.xMin), Mathf.Max(bounds.yMin, clip.yMin), Mathf.Min(bounds.xMax, clip.xMax), Mathf.Min(bounds.yMax, clip.yMax));
                 }
-                else if (button.name.StartsWith("Tab.", StringComparison.Ordinal) || button.name == "Estate.Depart" || button.name == "Departure.Start" || button.name.StartsWith("Summary.", StringComparison.Ordinal) || button.name == "Shop.Back" || button.name == "Pass.Back" || button.name.StartsWith("Idle.", StringComparison.Ordinal) || button.name.StartsWith("Revive.", StringComparison.Ordinal) || button.name == "FakeAd.Back")
+                else if (button.name.StartsWith("Tab.", StringComparison.Ordinal) || button.name == "Estate.Depart" || button.name == "Departure.Start" || button.name.StartsWith("Summary.", StringComparison.Ordinal) || button.name == "Shop.Back" || button.name == "FakeAd.Back")
                 {
                     footer.Add(bounds); Assert.That(bounds.yMax, Is.LessThanOrEqualTo(safe.yMin + safe.height / 3), button.name + " must remain in the lower thumb zone.");
+                }
+                // The authoritative portrait boards put these dismiss controls above their modals.
+                if (button.name == "Pass.Back" || button.name == "Idle.Back")
+                    Assert.That(bounds.center.y, Is.GreaterThan(safe.center.y), button.name + " follows the board's upper dismiss position.");
+                if (button.name.StartsWith("Revive.", StringComparison.Ordinal) || button.name == "Idle.Claim" || button.name == "Idle.OptionalAd")
+                {
+                    var panel = Pixels((RectTransform)button.transform.parent);
+                    Assert.That(bounds.xMin, Is.GreaterThanOrEqualTo(panel.xMin));
+                    Assert.That(bounds.xMax, Is.LessThanOrEqualTo(panel.xMax));
+                    Assert.That(bounds.yMin, Is.GreaterThanOrEqualTo(panel.yMin));
+                    Assert.That(bounds.yMax, Is.LessThanOrEqualTo(panel.yMin + panel.height / 3), button.name + " remains in the modal's action band.");
                 }
                 Assert.That(bounds.xMin, Is.GreaterThanOrEqualTo(safe.xMin - 1)); Assert.That(bounds.xMax, Is.LessThanOrEqualTo(safe.xMax + 1));
                 Assert.That(bounds.yMin, Is.GreaterThanOrEqualTo(safe.yMin - 1)); Assert.That(bounds.yMax, Is.LessThanOrEqualTo(safe.yMax + 1));

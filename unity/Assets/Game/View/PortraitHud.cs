@@ -14,26 +14,37 @@ namespace Game.View
         readonly UiDamageFeedback feedback;
         readonly RectTransform[] slots=new RectTransform[13];
         readonly string[] shown=new string[13];
+        readonly BufferedHudText[] slotLevels=new BufferedHudText[13];
+        readonly int[] shownLevels=new int[13];
         readonly Dictionary<string,Image> icons=new Dictionary<string,Image>(StringComparer.Ordinal);
         Vector2 layoutSize;long lastHealth=long.MinValue,lastMaximum,lastExperience,lastRequired;int lastLevel=-1,lastSecond=-1,lastSeason=-1;
-        public float ReservedTopPixels=>root.rect.height*ui.Canvas.scaleFactor;
+        public float ReservedTopPixels=>(root.rect.height+PortraitTokens.HudInset)*ui.Canvas.scaleFactor;
         public PortraitHud(UiShell ui,ContentCatalog catalog,Action pause,bool hitFeedback)
         {
             this.ui=ui;this.catalog=catalog;ui.SynchronizeViewport();
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);
-            var backing=PortraitWidgets.Place("Paper header backing",root,8,0,322,44);
-            var paper=ui.Surface(backing,"ui.button.secondary");paper.pixelsPerUnitMultiplier=10;paper.color=new Color(1,1,1,.96f);
-            PortraitWidgets.Label(ui,root,"새봄의 터",12,0,74,20,PortraitTokens.Small);
-            var levelLabel=PortraitWidgets.Label(ui,root,"",12,22,68,18,PortraitTokens.Caption);level=BufferedHudText.Create(levelLabel);
-            var rail=PortraitWidgets.Place("Health",root,88,5,174,17);ui.Surface(rail,"ui.hp.rail").pixelsPerUnitMultiplier=UiTokens.FallowFrameMultiplier;
-            hp=UiShell.Rect("Fill",rail);UiShell.Stretch(hp,2);ui.Surface(hp,"ui.hp.fill");
-            var healthLabel=PortraitWidgets.Label(ui,rail,"",3,0,168,17,PortraitTokens.Caption);healthLabel.alignment=TextAnchor.MiddleCenter;healthLabel.color=GameVisualTokens.Attack;
-            var healthShadow=healthLabel.gameObject.AddComponent<Shadow>();healthShadow.effectColor=GameVisualTokens.Ink;healthShadow.effectDistance=new Vector2(0,-1);health=BufferedHudText.Create(healthLabel);
-            var xpRail=PortraitWidgets.Place("Experience",root,88,28,174,7);ui.Surface(xpRail,"ui.xp.rail");
-            xp=UiShell.Rect("Fill",xpRail);UiShell.Stretch(xp);ui.Surface(xp,"ui.xp.fill");
-            var seasonLabel=PortraitWidgets.Label(ui,root,"",270,0,60,18,PortraitTokens.Caption);seasonLabel.name="Current season";seasonLabel.alignment=TextAnchor.MiddleCenter;season=BufferedHudText.Create(seasonLabel);
-            var timer=PortraitWidgets.Label(ui,root,"",270,18,60,22,PortraitTokens.Small);timer.alignment=TextAnchor.MiddleCenter;time=BufferedHudText.Create(timer);
-            if(pause!=null)PortraitWidgets.Button(ui,root,"멈춤",pause,334,0,44,44);
+            var medal = PortraitWidgets.Place("Level medallion", root, 10, 0, 48, 48);
+            ui.Surface(medal, "ui.medallion").type = Image.Type.Simple;
+            var levelLabel = PortraitWidgets.Label(ui, medal, "", 0, 0, 48, 48, 18); levelLabel.alignment = TextAnchor.MiddleCenter;
+            level = BufferedHudText.Create(levelLabel);
+            var rail = PortraitWidgets.Place("Health", root, 62, 4, 170, 18); ui.Surface(rail, "ui.xp.rail").pixelsPerUnitMultiplier = 3.6f;
+            hp = UiShell.Rect("Fill", rail); UiShell.Stretch(hp, 3); ui.Surface(hp, "ui.hp.fill").pixelsPerUnitMultiplier = 4.5f;
+            var healthLabel = PortraitWidgets.Label(ui, rail, "", 8, 0, 154, 18, 11); healthLabel.color = Color.white;
+            var healthShadow = healthLabel.gameObject.AddComponent<Shadow>(); healthShadow.effectColor = GameVisualTokens.Ink; healthShadow.effectDistance = new Vector2(0,-1); health = BufferedHudText.Create(healthLabel);
+            var xpRail = PortraitWidgets.Place("Experience", root, 62, 26, 170, 12); ui.Surface(xpRail, "ui.xp.rail").pixelsPerUnitMultiplier = 3.6f;
+            xp = UiShell.Rect("Fill", xpRail); UiShell.Stretch(xp, 2); ui.Surface(xp, "ui.xp.fill").pixelsPerUnitMultiplier = 4.5f;
+            var seasonLabel = PortraitWidgets.Label(ui, root, "", 238, 2, 84, 18, 11); seasonLabel.name = "Current season"; seasonLabel.alignment = TextAnchor.MiddleCenter; seasonLabel.color = new Color32(243,213,140,255); season = BufferedHudText.Create(seasonLabel);
+            var timer = PortraitWidgets.Label(ui, root, "", 238, 20, 84, 24, 20); timer.alignment = TextAnchor.MiddleCenter; timer.color = Color.white; time = BufferedHudText.Create(timer);
+            if (pause != null)
+            {
+                var pauseButton = PortraitWidgets.Button(ui, root, "", pause, 332, 0, 48, 48, true, "ui.button.round.blue");
+                pauseButton.name = "멈춤";
+                for (var i = 0; i < 2; i++)
+                {
+                    var bar = PortraitWidgets.Place("Pause bar " + i, pauseButton.transform, 16 + i * 12, 15, 4, 18);
+                    var image = bar.gameObject.AddComponent<Image>(); image.color = Color.white; image.raycastTarget = false;
+                }
+            }
             pool=UiShell.Rect("Equipment pool",root);pool.gameObject.SetActive(false);
             if(catalog!=null)
             {
@@ -43,20 +54,23 @@ namespace Game.View
             }
             for(var i=0;i<slots.Length;i++)
             {
-                slots[i]=PortraitWidgets.Place("Equipment "+i,root,16+i*27.5f,50,26,26);
-                ui.Surface(slots[i],"ui.slot");slots[i].gameObject.SetActive(false);
+                slots[i]=PortraitWidgets.Place("Equipment "+i,root,10+i*28f,52,26,26);
+                ui.Surface(slots[i],"ui.slot").pixelsPerUnitMultiplier=9.6f;slots[i].gameObject.SetActive(false);
+                var badge=PortraitWidgets.Label(ui,slots[i],"",16,15,14,16,11);badge.color=Color.white;badge.alignment=TextAnchor.MiddleRight;
+                var shadow=badge.gameObject.AddComponent<Shadow>();shadow.effectColor=Color.black;shadow.effectDistance=new Vector2(0,-1);slotLevels[i]=BufferedHudText.Create(badge);
             }
             if(hitFeedback)feedback=new UiDamageFeedback(ui,hp);
             Layout();
         }
         void Prewarm(string id)
-        {if(!icons.ContainsKey(id))icons.Add(id,ui.Icon(pool,id,26));}
+        {if(!icons.ContainsKey(id))icons.Add(id,ui.Icon(pool,id,16));}
         void Layout()
         {
             var size=ui.SafeRoot.rect.size;if(size==layoutSize)return;layoutSize=size;
-            root.sizeDelta=new Vector2(0,Mathf.Min(PortraitTokens.HudHeight,size.y*.1f));
+            root.anchoredPosition=new Vector2(0,-PortraitTokens.HudInset);
+            root.sizeDelta=new Vector2(0,Mathf.Min(PortraitTokens.HudHeight,size.y*.1f-PortraitTokens.HudInset));
             var y=Mathf.Max(44,root.rect.height-26);
-            for(var i=0;i<slots.Length;i++)slots[i].anchoredPosition=new Vector2(16+i*27.5f,-y);
+            for(var i=0;i<slots.Length;i++)slots[i].anchoredPosition=new Vector2(10+i*28f,-y);
         }
         public void Present(RunFrame frame,FirstPlayableFrame first)
         {
@@ -67,7 +81,7 @@ namespace Game.View
                 health.Begin();health.Append(lastHealth);health.Append("/");health.Append(lastMaximum);health.End();
                 hp.anchorMax=new Vector2(lastMaximum>0?Mathf.Clamp01((float)lastHealth/lastMaximum):0,1);
             }
-            if(frame.Level!=lastLevel){lastLevel=frame.Level;level.Begin();level.Append("레벨 ");level.Append(lastLevel);level.End();}
+            if(frame.Level!=lastLevel){lastLevel=frame.Level;level.Begin();level.Append(lastLevel);level.End();}
             var seasonIndex=Mathf.Clamp(frame.Season,0,Seasons.Length-1);
             if(seasonIndex!=lastSeason){lastSeason=seasonIndex;season.Begin();season.Append(Seasons[seasonIndex]);season.End();}
             var second=frame.Tick/frame.TickRate;
@@ -79,19 +93,20 @@ namespace Game.View
             {
                 var id=frame.Equipment[i].Id;
                 if(catalog!=null&&!catalog.Weapons.ContainsKey(id)&&!catalog.Tools.ContainsKey(id))continue;
-                SetSlot(index++,id);
+                SetSlot(index++,id,frame.Equipment[i].Level);
             }
-            if(first!=null)for(var i=0;i<first.Charters.Count&&index<13;i++)SetSlot(index++,first.Charters[i]);
-            while(index<13)SetSlot(index++,null);
+            if(first!=null)for(var i=0;i<first.Charters.Count&&index<13;i++)SetSlot(index++,first.Charters[i],0);
+            while(index<13)SetSlot(index++,null,0);
         }
-        void SetSlot(int index,string id)
+        void SetSlot(int index,string id,int equipmentLevel)
         {
+            if(shownLevels[index]!=equipmentLevel){shownLevels[index]=equipmentLevel;slotLevels[index].Begin();if(equipmentLevel>0)slotLevels[index].Append(equipmentLevel);slotLevels[index].End();}
             if(string.Equals(shown[index],id,StringComparison.Ordinal))return;
             var old=shown[index];if(old!=null&&icons.TryGetValue(old,out var previous)&&previous.transform.parent==slots[index])previous.transform.SetParent(pool,false);
             shown[index]=id;slots[index].gameObject.SetActive(id!=null);
             if(id==null)return;
             if(!icons.TryGetValue(id,out var icon)){Prewarm(id);icon=icons[id];}
-            icon.transform.SetParent(slots[index],false);icon.rectTransform.anchorMin=icon.rectTransform.anchorMax=new Vector2(.5f,.5f);icon.rectTransform.anchoredPosition=Vector2.zero;
+            icon.transform.SetParent(slots[index],false);icon.transform.SetSiblingIndex(0);icon.rectTransform.anchorMin=icon.rectTransform.anchorMax=new Vector2(.5f,.5f);icon.rectTransform.anchoredPosition=Vector2.zero;
         }
     }
 }

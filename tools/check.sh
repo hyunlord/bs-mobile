@@ -14,7 +14,7 @@ node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
 node --test tools/test-meta-target-parity.mjs
-node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs
+node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs tools/test-font-assets.mjs
 node --test tools/wave1a-content.test.mjs
 DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
 node tools/verify-unity-boundaries.mjs

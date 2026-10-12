@@ -181,8 +181,9 @@ namespace Game.View
         {
             var image=parent.gameObject.AddComponent<Image>();ApplySurface(image,roleId);image.raycastTarget=false;return image;
         }
-        void ApplySurface(Image image,string roleId)
+        public void ApplySurface(Image image,string roleId)
         {
+            if (PortraitEnabled && PortraitArt.Apply(image, roleId)) return;
             var source=ArtCatalog.Load().ResolveRole(roleId).Sprite;
             var framed=roleId=="ui.panel"||roleId=="ui.hint"||roleId.StartsWith("ui.card.",StringComparison.Ordinal)||roleId.StartsWith("ui.button.",StringComparison.Ordinal)||roleId.EndsWith(".rail",StringComparison.Ordinal)||roleId.EndsWith(".fill",StringComparison.Ordinal);
             if(!framed){image.sprite=source;return;}

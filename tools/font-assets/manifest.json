@@ -1,0 +1,7 @@
+{
+  "revision": "bd8f81ddb5c74d5c8897b36ad88b440266245103",
+  "files": [
+    { "name": "GowunBatang-Regular.ttf", "bytes": 8433296, "sha256": "466c593e7147412e748af4856d5ad14709b5a860bdf62b9c2546f2c5874e9849" },
+    { "name": "GowunBatang-Bold.ttf", "bytes": 8178712, "sha256": "dbfcaa646e5831e7478524924f02906f550285a5050699b4e38c9950b3ec4b94" }
+  ]
+}

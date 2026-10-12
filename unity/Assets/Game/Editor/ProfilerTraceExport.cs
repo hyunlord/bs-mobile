@@ -192,7 +192,7 @@ namespace Game.Editor
         }
 
         public static bool IsValidStopReason(string reason) => reason == "time-limit" || reason == "manual" || reason == "run-complete" ||
-            reason == "recording-closed" || reason == "application-paused" || reason == "focus-lost" || reason == "error" || reason == "crowd-window-end";
+            reason == "recording-closed" || reason == "application-paused" || reason == "focus-lost" || reason == "error" || reason == "crowd-window-end" || reason == "explicit-window-end" || reason == "long-frame-trigger" || reason == "size-limit";
 
         public static bool IsGameMethod(string name) => !string.IsNullOrEmpty(name) &&
             (name.StartsWith("Game.", StringComparison.Ordinal) || name.StartsWith("SowSiege.", StringComparison.Ordinal));
