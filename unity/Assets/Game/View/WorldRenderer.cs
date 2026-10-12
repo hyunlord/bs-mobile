@@ -73,6 +73,14 @@ namespace Game.View
         string estateId;
         MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
 #if UNITY_EDITOR
+        public void EditorSeedTransientTextForTesting()
+        {
+            if (numbers == null || lordDamageNumbers == null || growthLabels == null)
+                throw new InvalidOperationException("Initialize the world before populating the transient text fixture.");
+            numbers.Add(Vector2.zero, 15);
+            lordDamageNumbers.Add(Vector2.right, 8);
+            growthLabels.Show(0, "수확 +15 경험치", Vector2.up);
+        }
         public string[] CaptureLayerUvsForTesting(int layer)
             =>batches.Where(pair=>pair.Key.layer==layer).OrderBy(pair=>pair.Key.texture.name,StringComparer.Ordinal)
                 .SelectMany(pair=>pair.Value.CaptureSingleDrawUvsForTesting().Select(uv=>pair.Key.texture.name+":"+uv.ToString("R"))).ToArray();

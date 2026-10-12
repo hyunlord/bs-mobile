@@ -192,7 +192,7 @@ namespace Tests.PlayMode
             Assert.That(adBounds.size, Is.EqualTo(resultBounds.size));
             var world = Object.FindFirstObjectByType<WorldRenderer>();
             Assert.That(world, Is.Not.Null);
-            SeedTransientText(world);
+            world.EditorSeedTransientTextForTesting();
             Assert.That(ActiveTransientText(world), Is.GreaterThanOrEqualTo(4), "The fixture populates both damage pools and growth text plus its shadow.");
             yield return null; yield return null;
             Assert.That(ActiveTransientText(world), Is.Zero, "A revive modal must suppress underlying damage and narrative labels on every presented frame.");
@@ -201,7 +201,7 @@ namespace Tests.PlayMode
             Click("Revive.OptionalAd"); yield return null;
             Assert.That(app.Error, Is.Null); Assert.That(app.Session.HostRevived, Is.True);
             Assert.That(world.ShowTransientText, Is.True, "Resuming play restores transient presentation without changing preferences.");
-            SeedTransientText(world);
+            world.EditorSeedTransientTextForTesting();
             Assert.That(ActiveTransientText(world), Is.GreaterThanOrEqualTo(4));
             app.OpenPause(); yield return ScreenIs("Pause");
             Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon"); Click("Abandon.Confirm"); yield return ScreenIs("Summary");
@@ -348,14 +348,6 @@ namespace Tests.PlayMode
             yield return CaptureSizes("result-bonus-granted", "Summary", true);
         }
 
-        static void SeedTransientText(WorldRenderer world)
-        {
-            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-            var fields = typeof(WorldRenderer);
-            ((WorldDamageNumbers)fields.GetField("numbers", flags).GetValue(world)).Add(Vector2.zero, 15);
-            ((WorldDamageNumbers)fields.GetField("lordDamageNumbers", flags).GetValue(world)).Add(Vector2.right, 8);
-            ((WorldGrowthLabels)fields.GetField("growthLabels", flags).GetValue(world)).Show(0, "수확 +15 경험치", Vector2.up);
-        }
         static int ActiveTransientText(WorldRenderer world)
             => world.GetComponentsInChildren<TextMesh>(true).Count(label => label.gameObject.activeInHierarchy && label.GetComponent<Renderer>().enabled);
 

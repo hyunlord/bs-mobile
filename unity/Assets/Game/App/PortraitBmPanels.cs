@@ -108,6 +108,11 @@ namespace Game.App
             var label = PortraitWidgets.Label(ui, parent, text, x, y, width, height, size);
             label.color = color; label.alignment = centered ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft;
             label.resizeTextForBestFit = false; label.verticalOverflow = VerticalWrapMode.Overflow;
+            if (size >= PortraitTokens.Heading)
+            {
+                var lineHeight = Mathf.Max(height, Mathf.Ceil(label.preferredHeight) + 2);
+                PortraitWidgets.Position(label.rectTransform, x, y - (lineHeight - height) * .5f, width, lineHeight);
+            }
             return label;
         }
         static RectTransform Panel(UiShell ui, Transform parent, string name, float x, float y, float width, float height, string role = "ui.panel")

@@ -89,6 +89,14 @@ namespace Game.App
             return true;
         }
         const int BenchmarkMaximumRows = 200000;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkPendingInterval = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.PendingInterval");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkTimingCollection = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.TimingCollection");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkTraceHousekeeping = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.TraceHousekeeping");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkPacing = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.Pacing");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkSurfaceQuery = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.SurfaceQuery");
+        static readonly Unity.Profiling.ProfilerMarker BenchmarkPreCoreSetup = new Unity.Profiling.ProfilerMarker("SowSiege.Benchmark.PreCoreSetup");
+#endif
         static readonly Unity.Profiling.ProfilerMarker BenchmarkSnapshot = new Unity.Profiling.ProfilerMarker("SowSiege.BenchmarkSnapshot");
         ReplayDocument benchmarkReplay;
         string benchmarkOutput, benchmarkReplaySha;
@@ -310,6 +318,9 @@ namespace Game.App
                 if (offlineReplayCapture?.Error != null) throw offlineReplayCapture.Error;
                 if (offlineReplayCapture != null && offlineReplayCapture.Pending) return;
                 var presentationDelta = offlineReplayRequested ? (float)OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using (BenchmarkPendingInterval.Auto())
+#endif
                 if (benchmarkHasPending)
                 {
                     benchmarkPending.nextEntryTimestamp = entryTimestamp;
@@ -322,6 +333,9 @@ namespace Game.App
 #endif
                     benchmarkFrames.Add(benchmarkPending); benchmarkHasPending = false;
                 }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using (BenchmarkTimingCollection.Auto())
+#endif
                 if (!offlineReplayRequested && FrameTimingManager.GetLatestTimings(1, benchmarkTimingBuffer) > 0 && benchmarkTimingBuffer[0].frameStartTimestamp != benchmarkLastTiming)
                 {
                     benchmarkLastTiming = benchmarkTimingBuffer[0].frameStartTimestamp;
@@ -330,6 +344,8 @@ namespace Game.App
                 }
                 if (benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick)) { EndWaveBenchmark(null); return; }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using (BenchmarkTraceHousekeeping.Auto())
+                {
                 benchmarkProfilerEnabled |= UnityEngine.Profiling.Profiler.enabled;
                 if (!profilerTrace.StallTriggerRequested && (crowdBenchmark != null || benchmarkDiagnosticTraceRange != null) && profilerTrace.Active && CurrentFrame.Tick >= benchmarkTraceEndTick)
                     profilerTrace.Stop(CurrentFrame.Tick, benchmarkDiagnosticTraceRange != null ? "explicit-window-end" : "crowd-window-end");
@@ -346,6 +362,7 @@ namespace Game.App
                         throw new InvalidOperationException("Could not start requested benchmark profiler window.");
                     benchmarkProfilerEnabled = true;
                 }
+                }
 #endif
                 benchmarkFrameStart = entryTimestamp; benchmarkAllocatedStart = entryAllocated; benchmarkGcStart = entryGc;
                 var sample = new BenchmarkFrame { frame = Time.frameCount, focused = Application.isFocused, entryTimestamp = entryTimestamp, inputDeltaSeconds = presentationDelta, accumulatorBefore = accumulator };
@@ -360,7 +377,14 @@ namespace Game.App
                 }
                 else
                 {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    using (BenchmarkSurfaceQuery.Auto())
+#endif
                     if (Screen.width != (crowdBenchmark == null ? 1600 : 1920) || Screen.height != (crowdBenchmark == null ? 900 : 1080)) throw new InvalidOperationException("Benchmark render surface changed.");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    using (BenchmarkPacing.Auto())
+                    {
+#endif
                     accumulator += offlineReplayRequested ? OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
                     var step = 1d / CurrentFrame.TickRate;
                     var advanceBudget = new FrameAdvanceBudget(!offlineReplayRequested);
@@ -371,6 +395,9 @@ namespace Game.App
                         ApplyBenchmarkCommand(true, ref sample);
                         sample.commands++;
                     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    }
+#endif
                 }
                 BeginLongFrameHud();
                 var started = Stopwatch.GetTimestamp(); using (RunProfilerMarkers.Hud.Auto()) hud?.Present(CurrentFrame, FirstPlayable); sample.hudMs = BenchmarkMilliseconds(started);
@@ -420,9 +447,17 @@ namespace Game.App
         {
             var command = benchmarkReplay.Commands[benchmarkCommand++];
             var measureTick = benchmarkCoreDiagnostics != null && present && command.Kind == ReplayCommandKind.Advance && BenchmarkWindow(command.Tick);
+            long started;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (BenchmarkPreCoreSetup.Auto())
+            {
+#endif
             if (measureTick) benchmarkCoreDiagnostics.BeginTick(command.Tick, Time.frameCount);
-            var started = Stopwatch.GetTimestamp();
+            started = Stopwatch.GetTimestamp();
             BeginLongFrameCommand(command.Kind);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            }
+#endif
             try { using (RunProfilerMarkers.CoreApply.Auto()) Session.Apply(command); }
             finally { EndLongFrameCommand(command.Kind); if (measureTick) benchmarkCoreDiagnostics.EndTick(); }
             var elapsed = BenchmarkMilliseconds(started); sample.simulationMs += elapsed;

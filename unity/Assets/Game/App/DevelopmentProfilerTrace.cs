@@ -11,6 +11,7 @@ namespace Game.App
 {
     public sealed class DevelopmentProfilerTrace
     {
+        static readonly Unity.Profiling.ProfilerMarker TraceFileStat = new Unity.Profiling.ProfilerMarker("SowSiege.Diagnostic.TraceFileStat");
         const double MaximumSeconds = 10;
         const int TriggerBufferBytes = 128 * 1024 * 1024;
         const long TriggerFileSoftLimit = 512L * 1024 * 1024;
@@ -178,8 +179,13 @@ namespace Game.App
             if (now - metadata.startRealtime >= metadata.requestedSeconds) { Stop(tick, "time-limit"); return; }
             if (stallWindow == null || now < nextSizeCheck) return;
             nextSizeCheck = now + 1;
-            var file = new FileInfo(Path.Combine(Path.GetDirectoryName(metadataPath), metadata.rawFile));
-            if (file.Exists && file.Length >= TriggerFileSoftLimit) Stop(tick, "size-limit");
+            bool atLimit;
+            using (TraceFileStat.Auto())
+            {
+                var file = new FileInfo(Path.Combine(Path.GetDirectoryName(metadataPath), metadata.rawFile));
+                atLimit = file.Exists && file.Length >= TriggerFileSoftLimit;
+            }
+            if (atLimit) Stop(tick, "size-limit");
         }
 
         public void Stop(int tick, string reason)

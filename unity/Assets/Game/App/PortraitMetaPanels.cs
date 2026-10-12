@@ -85,7 +85,13 @@ namespace Game.App
             var text = PortraitWidgets.Label(ui, parent, value, x, y, width, height, size);
             text.color = paper ? PaperInk : LightInk; text.alignment = align; text.raycastTarget = false;
             text.resizeTextForBestFit = false; text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.verticalOverflow = VerticalWrapMode.Truncate; return text;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            if (size >= PortraitTokens.Heading)
+            {
+                var lineHeight = Mathf.Max(height, Mathf.Ceil(text.preferredHeight) + 2);
+                PortraitWidgets.Position(text.rectTransform, x, y - (lineHeight - height) * .5f, width, lineHeight);
+            }
+            return text;
         }
         static RectTransform Plate(UiShell ui, Transform parent, string name, string role, float x, float y, float width, float height)
         {
