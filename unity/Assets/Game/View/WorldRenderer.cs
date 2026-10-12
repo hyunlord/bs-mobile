@@ -73,6 +73,7 @@ namespace Game.View
         string estateId;
         MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
 #if UNITY_EDITOR
+        public void EditorSetCameraForTesting(RunCamera camera) => followCamera = camera ?? throw new ArgumentNullException(nameof(camera));
         public void EditorSeedTransientTextForTesting()
         {
             if (numbers == null || lordDamageNumbers == null || growthLabels == null)

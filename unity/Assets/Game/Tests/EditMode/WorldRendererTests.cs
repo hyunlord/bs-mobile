@@ -83,7 +83,7 @@ namespace Tests.EditMode
                 var follow = new RunCamera(camera, new WorldCameraSettings(1000, 2400, 6000, 600, 120, 800)) { KeepViewportInsideMap = true };
                 follow.SetMapBounds(12000, 12000);
                 var world = owner.AddComponent<WorldRenderer>();
-                typeof(WorldRenderer).GetField("followCamera", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(world, follow);
+                world.EditorSetCameraForTesting(follow);
                 world.HeroMotionPreviewMode = mode;
                 world.AcceptFrame(frame, snapshot);
                 Assert.That(follow.EndlessField, Is.True);
