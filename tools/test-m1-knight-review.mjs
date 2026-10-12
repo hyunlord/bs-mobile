@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { loadPlan, validatePair, validatePcm } from './m1-knight-review.mjs';
+import { loadPlan, validatePair, validatePcm, portraitZoomCrop } from './m1-knight-review.mjs';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'knight-review-contract-'));
 const save = (file, value) => fs.writeFileSync(file, JSON.stringify(value));
 const replay = path.join(root, 'test.ssreplay'); fs.writeFileSync(replay, 'test fixture, never game evidence');
@@ -13,6 +13,16 @@ function wave() {
   b.write('RIFF'); b.writeUInt32LE(bytes + 36, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(48000, 24); b.writeUInt32LE(96000, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(bytes, 40); b.writeInt16LE(123, 44); return b;
 }
 try {
+  const centered = portraitZoomCrop(plan, { heroX: 960, heroY: 540 });
+  assert.equal(centered.x, 835); assert.equal(centered.y, 270); assert.equal(centered.clamped, false);
+  const left = portraitZoomCrop(plan, { heroX: 720, heroY: 540 });
+  assert.equal(left.x, 710); assert.equal(left.clamped, true); assert.equal(left.heroOutsidePortrait, false);
+  const topRight = portraitZoomCrop(plan, { heroX: 1210, heroY: 1080 });
+  assert.equal(topRight.x, 960); assert.equal(topRight.y, 0); assert.equal(topRight.clamped, true);
+  const outside = portraitZoomCrop(plan, { heroX: -500, heroY: -500 });
+  assert.equal(outside.x, 710); assert.equal(outside.y, 540); assert.equal(outside.heroOutsidePortrait, true);
+  for (const crop of [centered, left, topRight, outside]) { assert(crop.x >= 710 && crop.x + crop.width <= 1210); assert(crop.y >= 0 && crop.y + crop.height <= 1080); }
+  assert.throws(() => portraitZoomCrop(plan, { heroX: NaN, heroY: 0 }), /Missing/);
   for (const run of plan.runs) {
     fs.mkdirSync(path.join(run.directory, 'offline-frames'), { recursive: true });
     save(path.join(run.directory, 'benchmark.json'), { verified: true, error: '', sourceDirty: false, performanceEligible: false, replaySha256: plan.replaySha256, stateHash: plan.terminalHash, width: 1920, height: 1080, commit: 'test', sourceHash: 'test', dataHash: 'test' });

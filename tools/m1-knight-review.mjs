@@ -131,17 +131,20 @@ let args = CommandLine.arguments
 if args.count == 3 && args[1] == "activate" {
   guard let pid = Int32(args[2]), let app = NSRunningApplication(processIdentifier: pid) else { exit(2) }
   if !app.isActive && !app.activate() { exit(3) }
-} else if args.count == 4 && args[1] == "label" {
+} else if args.count == 5 && args[1] == "label" {
   guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 500, pixelsHigh: 100, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0), let context = NSGraphicsContext(bitmapImageRep: bitmap) else { exit(4) }
   NSGraphicsContext.saveGraphicsState(); NSGraphicsContext.current = context
   NSColor(calibratedRed: 0.09, green: 0.09, blue: 0.10, alpha: 1).setFill(); NSRect(x: 0, y: 0, width: 500, height: 100).fill()
   let text = args[2] as NSString
   let attributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 23), .foregroundColor: NSColor.white]
   let size = text.size(withAttributes: attributes)
-  text.draw(at: NSPoint(x: (500-size.width)/2, y: 57), withAttributes: attributes)
+  text.draw(at: NSPoint(x: (500-size.width)/2, y: 71), withAttributes: attributes)
   let caption = "오프라인 고정 60fps · 실제 게임 소리" as NSString
   let captionAttributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 18), .foregroundColor: NSColor.lightGray]
-  caption.draw(at: NSPoint(x: (500-caption.size(withAttributes: captionAttributes).width)/2, y: 21), withAttributes: captionAttributes)
+  caption.draw(at: NSPoint(x: (500-caption.size(withAttributes: captionAttributes).width)/2, y: 45), withAttributes: captionAttributes)
+  let limitation = args[4] as NSString
+  let limitationAttributes: [NSAttributedString.Key: Any] = [.font: NSFont.systemFont(ofSize: 14), .foregroundColor: NSColor.lightGray]
+  limitation.draw(at: NSPoint(x: (500-limitation.size(withAttributes: limitationAttributes).width)/2, y: 15), withAttributes: limitationAttributes)
   NSGraphicsContext.restoreGraphicsState()
   guard let png = bitmap.representation(using: .png, properties: [:]) else { exit(5) }
   try png.write(to: URL(fileURLWithPath: args[3]))
@@ -149,28 +152,43 @@ if args.count == 3 && args[1] == "activate" {
 `, { flag: 'wx' });
   call('swiftc', [source, '-o', path.join(directory, 'mac-helper')]);
 }
+export function portraitZoomCrop(plan, row) {
+  const c = plan.crop, width = c.width / 2, height = c.height / 2;
+  const heroX = Number(row.heroX), heroY = plan.height - Number(row.heroY);
+  assert(Number.isFinite(heroX) && Number.isFinite(heroY), 'Missing observed hero coordinate');
+  const requestedX = Math.round(heroX - width / 2), requestedY = Math.round(heroY - height / 2);
+  const x = Math.max(c.x, Math.min(c.x + c.width - width, requestedX));
+  const y = Math.max(c.y, Math.min(c.y + c.height - height, requestedY));
+  const clamped = x !== requestedX || y !== requestedY;
+  return { x, y, width, height, clamped, offCenterPixels: Math.hypot(x + width / 2 - heroX, y + height / 2 - heroY), heroOutsidePortrait: heroX < c.x || heroX > c.x + c.width || heroY < c.y || heroY > c.y + c.height };
+}
 function encode(plan, output) {
   const provenance = validatePair(plan);
   assert(path.isAbsolute(output) && !fs.existsSync(output), 'Fresh absolute output directory required'); fs.mkdirSync(output, { recursive: true });
   const encodeOptions = ['-frames:v', String(plan.frames), '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-fps_mode', 'passthrough', '-video_track_timescale', '60000', '-c:a', 'aac', '-b:a', '192k'];
   const c = plan.crop; assert.equal(c.width, 500, 'Caption contract uses 500px portrait width'); buildMacHelper(output);
-  for (const run of plan.runs) call(path.join(output, 'mac-helper'), ['label', run.role === 'before' ? '적 타격 반응 적용 전' : '적 타격 반응 적용 후', path.join(output, run.role + '-label.png')]);
+  const cropProvenance = [];
   for (const zoom of [1, 2]) {
     const w = c.width / zoom, h = c.height / zoom;
     for (const run of plan.runs) {
       let crop = `crop=${w}:${h}:${c.x}:${c.y}`;
+      let limitation = '원본 세로 전장 전체 · 캡처 원본 보존';
       if (zoom === 2) {
         const positions = csv(path.join(run.directory, plan.heroCoordinates));
-        const commands = positions.map((row, i) => {
-          const x = Math.round(Number(row.heroX) - w / 2), y = Math.round(plan.height - Number(row.heroY) - h / 2);
-          assert(x >= 0 && y >= 0 && x + w <= plan.width && y + h <= plan.height, 'Observed hero-centered crop out of bounds');
+        const cropSamples = positions.map(row => portraitZoomCrop(plan, row));
+        const clampedFrames = cropSamples.filter(sample => sample.clamped).length;
+        cropProvenance.push({ role: run.role, frames: cropSamples.length, requestedCropClippedFrames: clampedFrames, offCenterFrames: clampedFrames, heroOutsidePortraitFrames: cropSamples.filter(sample => sample.heroOutsidePortrait).length, maximumOffCenterPixels: Math.max(...cropSamples.map(sample => sample.offCenterPixels)), sourceFrames: path.join(run.directory, 'offline-frames'), sourcePreserved: true, boundary: c });
+        limitation = clampedFrames ? `2배 · 세로 전장 경계 제한: ${clampedFrames}장 중심 이탈` : '2배 · 실제 영주 위치 중심 · 원본 보존';
+        const commands = cropSamples.map(({ x, y }, i) => {
           return `${(Math.floor(i * 1000000 / 60) / 1000000).toFixed(6)} crop@hero x ${x}, crop@hero y ${y};`;
         });
         const commandFile = path.join(output, run.role + '-crop.commands'); fs.writeFileSync(commandFile, commands.join('\n') + '\n', { flag: 'wx' });
         assert(!/[':;\[\]\\]/.test(commandFile), 'Filter command path contains unsupported delimiters');
-        crop = `sendcmd=f='${commandFile}',crop@hero=${w}:${h}:0:0`;
+        crop = `sendcmd=f='${commandFile}',crop@hero=${w}:${h}:0:0:exact=1`;
       }
-      call('ffmpeg', ['-nostdin', '-v', 'error', '-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg'), '-i', path.join(run.directory, 'offline-audio.wav'), '-framerate', '60', '-i', path.join(output, run.role + '-label.png'), '-filter_complex', `[0:v]${crop},scale=${c.width}:${c.height}:flags=lanczos,setsar=1,setpts=N/(60*TB),pad=${c.width}:${c.height + 100}:0:100:color=0x171719[game];[game][2:v]overlay=x=0:y=0:eof_action=repeat:shortest=0[v]`, '-map', '[v]', '-map', '1:a', ...encodeOptions, path.join(output, `${run.role}-${zoom}x.mp4`)]);
+      const labelFile = path.join(output, `${run.role}-${zoom}x-label.png`);
+      call(path.join(output, 'mac-helper'), ['label', run.role === 'before' ? '적 타격 반응 적용 전' : '적 타격 반응 적용 후', labelFile, limitation]);
+      call('ffmpeg', ['-nostdin', '-v', 'error', '-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg'), '-i', path.join(run.directory, 'offline-audio.wav'), '-framerate', '60', '-i', labelFile, '-filter_complex', `[0:v]${crop},scale=${c.width}:${c.height}:flags=lanczos,setsar=1,setpts=N/(60*TB),pad=${c.width}:${c.height + 100}:0:100:color=0x171719[game];[game][2:v]overlay=x=0:y=0:eof_action=repeat:shortest=0[v]`, '-map', '[v]', '-map', '1:a', ...encodeOptions, path.join(output, `${run.role}-${zoom}x.mp4`)]);
     }
     // Two original tracks remain separately selectable; never overlay simultaneous before/after sounds.
     call('ffmpeg', ['-nostdin', '-v', 'error', '-i', path.join(output, `before-${zoom}x.mp4`), '-i', path.join(output, `after-${zoom}x.mp4`), '-filter_complex', '[0:v][1:v]hstack=inputs=2[v]', '-i', path.join(plan.runs[0].directory, 'offline-audio.wav'), '-i', path.join(plan.runs[1].directory, 'offline-audio.wav'), '-map', '[v]', '-map', '2:a', '-map', '3:a', ...encodeOptions, '-metadata:s:a:0', 'title=Before - original Unity mixer', '-metadata:s:a:1', 'title=After - original Unity mixer', '-disposition:a:0', '0', '-disposition:a:1', 'default', path.join(output, `before-after-${zoom}x.mp4`)]);
@@ -186,7 +204,7 @@ function encode(plan, output) {
     for (const stream of [...video, ...audio]) assert(Math.abs(Number(stream.duration) - plan.frames / 60) < .025, 'Encoded duration mismatch');
     encoded.push({ name, sha256: hash(file), frames: plan.frames, durationSeconds: Number(video[0].duration), audioTracks: audio.length });
   }
-  write(path.join(output, 'knight-review-provenance.json'), { label: '오프라인 고정 60fps · Unity 실제 소리', performanceEligible: false, width: c.width, height: c.height + 100, frames: plan.frames, crop: c, heroCoordinates: plan.heroCoordinates, audioPolicy: 'Individual original tracks; pair default plays AFTER, first selectable track plays BEFORE. No generated, silent-padded, mixed or replaced audio.', sources: provenance.map(({ tape, ...result }) => result), encoded });
+  write(path.join(output, 'knight-review-provenance.json'), { label: '오프라인 고정 60fps · Unity 실제 소리', performanceEligible: false, width: c.width, height: c.height + 100, frames: plan.frames, crop: c, heroCoordinates: plan.heroCoordinates, zoomCrop: { policy: '2x viewport is clamped strictly inside the original portrait gameplay rectangle. Hero can be off-center or already outside the native view. No fabricated pixels, camera changes, or removal of original frames; 1x preserves the complete native portrait view.', runs: cropProvenance }, audioPolicy: 'Individual original tracks; pair default plays AFTER, first selectable track plays BEFORE. No generated, silent-padded, mixed or replaced audio.', sources: provenance.map(({ tape, ...result }) => result), encoded });
 }
 async function runNative(plan, app) {
   assert(path.isAbsolute(app)); const binary = path.join(app, 'Contents/MacOS/Sow and Siege'); fs.accessSync(binary, fs.constants.X_OK);
