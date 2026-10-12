@@ -11,7 +11,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -20,7 +20,9 @@ const directoryKinds = new Map([
 ]);
 
 function inferKind(relative) {
-  if (relative === 'runtime/wave-1a.json') return 'wave-runtime';
+  if (relative === 'review/m1-weapon-showcase.json') return 'm1-weapon-showcase';
+  if (relative === 'review/m1-weapon-combat-cases.json') return 'm1-weapon-combat-cases';
+  if (relative === 'runtime/wave-1a.json' || relative === 'runtime/m1-showcase-review.json') return 'wave-runtime';
   if (weaponGrowthFilename.test(relative)) return 'weapon-growth';
   if (relative === 'experiments/tuning-s2-baseline.json') return 'tuning';
   if (relative === 'first-playable-tuning.json') return 'tuning';
@@ -120,7 +122,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {

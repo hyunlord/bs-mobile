@@ -1,0 +1,21 @@
+{
+  "scope": "Actual net8.0 and netstandard2.1 Core DLLs; not Unity or device",
+  "sourceHead": "30a9eb14dcd4d2b15d46aa1bbfc915429d5bed89",
+  "sourceWasDirty": true,
+  "caseJsonSha256": "719ff31272641c30f4aa483a2c5ede9a0451a7355f2d47ecc1186b6ab415b04f",
+  "configuration": "Debug",
+  "targets": [
+    {
+      "name": "net8",
+      "targetFramework": ".NETCoreApp,Version=v8.0",
+      "mvid": "90ac8f33-5c9b-4221-8732-45995fc7a484",
+      "sha256": "B7E9D12470E86FFF6128D872E64D974ECADCC745EE83E416D3DE2932270692B4"
+    },
+    {
+      "name": "standard21",
+      "targetFramework": ".NETStandard,Version=v2.1",
+      "mvid": "3d5d3f43-f77c-432f-a0a6-f5356a90baa0",
+      "sha256": "52F72F45548C5B08EA32A38BCA791FDF3C8AF2F2934EFA6070699B1BDB7F2189"
+    }
+  ]
+}

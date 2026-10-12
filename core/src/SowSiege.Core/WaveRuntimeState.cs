@@ -72,6 +72,7 @@ namespace SowSiege.Core
         public SortedSet<string> Items = new(StringComparer.Ordinal), Evolutions = new(StringComparer.Ordinal), Completed = new(StringComparer.Ordinal);
         public List<WaveEvent> Events = new();
         public List<WaveAttackView> Attacks = new();
+        public List<WavePendingImpact> PendingImpacts = new();
         public SortedDictionary<string, long> Counters = new(StringComparer.Ordinal);
         public void Count(string key) => Counters[key] = Counters.TryGetValue(key, out var n) ? n + 1 : 1;
         public void Emit(int tick, string kind, string source, int subject, Position position, Position target, int amount = 0)
@@ -81,6 +82,18 @@ namespace SowSiege.Core
         }
         private static readonly Comparison<WaveEnemyView> EnemyViewOrder = (a, b) => a.Id.CompareTo(b.Id);
         private static readonly IComparer<WaveEnemyView> EnemyViewComparer = Comparer<WaveEnemyView>.Create(EnemyViewOrder);
+        private WaveAttackView[] CaptureAttacks()
+        {
+            if (PendingImpacts.Count == 0) { return Attacks.ToArray(); }
+            var result = new WaveAttackView[Attacks.Count + PendingImpacts.Count];
+            Attacks.CopyTo(result);
+            for (var i = 0; i < PendingImpacts.Count; i++)
+            {
+                var p = PendingImpacts[i]; var point = new WorldPoint(p.Position.X, p.Position.Y);
+                result[Attacks.Count + i] = new(p.Source, "review-ground-impact", point, point, p.Radius, p.Tick, p.Id);
+            }
+            return result;
+        }
         public WaveRuntimeFrame Capture(WaveRuntimeDefinition d, int tick, WaveSnapshotBuffer? buffer = null)
         {
             buffer?.Enemies.Begin(EnemyActions.Count);
@@ -112,7 +125,7 @@ namespace SowSiege.Core
             var items = new string[Items.Count]; Items.CopyTo(items);
             var evolutions = new string[Evolutions.Count]; Evolutions.CopyTo(evolutions);
             return new(d.Revision, d.ChapterId, Water, Timber, AvailableWorkers, BossDefeated,
-                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), buffer is null ? new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)) : buffer.Counters, Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
+                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), buffer is null ? new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)) : buffer.Counters, Array.AsReadOnly(CaptureAttacks()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
         }
     }
 }

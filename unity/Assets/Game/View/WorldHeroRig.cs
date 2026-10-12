@@ -70,6 +70,7 @@ namespace Game.View
         public void DisposeHeroMotion()
         {
             heroLiveRig?.Dispose(); heroLiveRig = null;
+            DisposeHeroProduction();
         }
         ArtVisual rigIdle, rigWalk, rigAttack, rigHit;
         readonly HeroGaitState heroGait=new HeroGaitState();
@@ -98,6 +99,7 @@ namespace Game.View
             ActorFacingPose facing,Color color,float flash,bool discontinuity,float seconds)
         {
             RenderedHeroLevelPoseProgress = -1;
+            if (DrawHeroProduction(visual, position, walking, hit, dead, facing, color)) return true;
             if(heroConceptVisual!=null){heroLiveRig?.Hide();return false;}
             if(!heroKnightEnabled && !HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroLiveRig?.Hide();return false;}
             if(heroRigShader==null)

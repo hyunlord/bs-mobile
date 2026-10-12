@@ -329,7 +329,7 @@ namespace Game.P1Capture
             }
         }
 
-        static int CardRank(string id) { if(CanonicalContent.ProfileName=="wave-1a")return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
+        static int CardRank(string id) { if(CanonicalContent.IsWave)return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
 
         static void ClickButton(string label)
         {

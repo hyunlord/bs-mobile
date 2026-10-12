@@ -733,6 +733,7 @@ namespace SowSiege.Core
             Write(value.Run);
             Write((int)value.InitialAimMode);
             Write(value.DataHash);
+            if (value.MeleeAim is { } melee) { Write("melee-aim-options-v1"); Write(melee.Version); }
             if (FeelExperimentOptions.Normalize(value.Feel) is { } feel) { Write("feel-experiment-v1"); Write(feel); }
             if (value.Field is { } field) { Write("field-options-v1"); Write(field.Version); }
             if (value.HostRewards is { } rewards)

@@ -275,7 +275,7 @@ namespace Game.App
                         {
                             if (run.Session != null) throw new InvalidOperationException("Core warmup must precede the fresh run.");
                             var catalog = FoundationBoot.Catalog;
-                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash);
+                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash, MeleeAim: CatalogRunOptions.MeleeAim(catalog));
                             var warmTicks = PrewarmIsolatedCore(catalog, options);
                             Log("isolated-core-warmup", "discarded separate normal session; ticks=" + warmTicks + "; real run not created");
                             minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
@@ -389,7 +389,7 @@ namespace Game.App
         }
 
         static double Distance(WorldPoint a, WorldPoint b) => Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2);
-        static int CardRank(string id) { if(Game.App.Generated.CanonicalContent.ProfileName=="wave-1a")return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
+        static int CardRank(string id) { if(Game.App.Generated.CanonicalContent.IsWave)return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
         bool TryDepartureRoute()
         {
             if (!run.MenuOpen) return false;

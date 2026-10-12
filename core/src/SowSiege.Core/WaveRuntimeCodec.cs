@@ -33,6 +33,9 @@ namespace SowSiege.Core
             Write(d.Behavior.WetSpeedDivisor); Write(d.Behavior.DryDamageDivisor); Write(d.Behavior.RangedRangeMultiplier); Write(d.Behavior.PathConnectionMultiplier); Write(d.DryAfterTicks);
             WriteMap(d.Gear, g =>
             {
+                if (g.Composition is { } composition)
+                { Write("wave-review-impact-v1"); Write(composition.Version); Write(composition.Placement); Write(composition.DelayTicks); Write(composition.StepTicks); Write(composition.Spacing); Write(composition.Radius); }
+                if (g.Aim is not null) { Write("wave-gear-aim-v1"); Write(g.Aim); }
                 Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null)
                 {
                     WriteList(g.Levels, l =>
@@ -66,6 +69,11 @@ namespace SowSiege.Core
         }
         private void WriteWave(WaveRuntimeState s)
         {
+            if (s.PendingImpacts.Count > 0)
+            {
+                Write("wave-pending-impact-v1");
+                WriteList(s.PendingImpacts, p => { Write(p.Id); Write(p.Source); Write(p.Position); Write(p.Tick); Write(p.Radius); Write(p.Damage); Write(p.Knockback); Write(p.ActivationId); });
+            }
             Write("wave-runtime-state-v1");
             Write(s.Water);
             Write(s.Timber); Write(s.TimberOrigin); Write(s.ProcessedTimber);

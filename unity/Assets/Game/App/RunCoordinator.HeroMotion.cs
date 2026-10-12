@@ -10,6 +10,8 @@ namespace Game.App
         bool heroMotionArgumentsRead;
         bool benchmarkImpactBaseline;
         KnightReview knightReview;
+        M1HeroProductionReview heroProductionReview;
+        M1ShowcaseReview weaponShowcaseReview;
         HeroMotionComparison heroMotionComparison;
         WorldRenderer configuredMotionWorld;
         HeroMotionComparisonMetrics heroMotionMetrics;
@@ -22,6 +24,8 @@ namespace Game.App
             {
                 knightReview = KnightReview.Parse(Environment.GetCommandLineArgs());
                 heroMotionComparison = HeroMotionComparison.Parse(Environment.GetCommandLineArgs());
+                heroProductionReview = M1HeroProductionReview.Parse(Environment.GetCommandLineArgs());
+                weaponShowcaseReview = M1ShowcaseReview.Parse(Environment.GetCommandLineArgs());
                 heroMotionArgumentsRead = true;
                 var args = Environment.GetCommandLineArgs();
                 var impactBaseline=Array.IndexOf(args,"--impact-feedback-baseline");
@@ -49,6 +53,12 @@ namespace Game.App
                 if (cameraScaleComparison == null) world.ReviewCameraMagnification = 1;
             }
             else world.PrepareHeroKnight();
+            if (heroProductionReview != null) world.ConfigureHeroProduction(heroProductionReview.ManifestPath,heroProductionReview.Direction);
+            if (weaponShowcaseReview != null)
+            {
+                weaponShowcaseReview.Configure(world);
+                world.M1ShowcaseCue = cue => waveSound?.Play(cue);
+            }
             world.EdgeWarningsEnabled = knightReview?.EdgeWarnings ?? true;
         }
         // Call at Update entry, before submitting this frame's pose, including benchmark mode.
@@ -60,14 +70,14 @@ namespace Game.App
                 (benchmarkFocusEvents.Count == 0 || benchmarkFocusEvents[benchmarkFocusEvents.Count - 1].frame < Time.frameCount - 1));
             heroMotionMetrics.RecordCompletedFrame(Time.frameCount - 1, CurrentFrame.Tick,
                 CurrentFrame.Enemies.Count, Time.unscaledDeltaTime * 1000d,
-                world?.HeroMotionLiveMetrics?.LastPoseMilliseconds ?? -1, foregroundInterval);
+                heroProductionReview != null ? -1 : world?.HeroMotionLiveMetrics?.LastPoseMilliseconds ?? -1, foregroundInterval);
         }
         // Call on benchmark completion and OnDestroy. Idempotent across both paths.
         void FinishHeroMotionComparisonMetrics(bool replayVerified = false, bool benchmarkEligible = false)
         {
             if (heroMotionMetrics == null || heroMotionMetricsFinished) return;
             heroMotionMetricsFinished = true;
-            try { heroMotionMetrics.Save(heroMotionMetricsDirectory, knightReview != null ? "a-knight-live" : heroMotionComparison.Mode,
+            try { heroMotionMetrics.Save(heroMotionMetricsDirectory, heroProductionReview != null ? world.HeroProductionMethod : knightReview != null ? "a-knight-live" : heroMotionComparison.Mode,
                 benchmarkReplaySha ?? "not-a-replay-capture", Session?.ComputeStateHash() ?? "unavailable", heroMotionMetricsCapture,
                 replayVerified, benchmarkEligible); }
             finally { heroMotionMetrics.Dispose(); }

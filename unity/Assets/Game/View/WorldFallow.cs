@@ -16,7 +16,7 @@ namespace Game.View
         float fallowMaskAt = -1;
         Rect fallowWindow;
         bool fallowChapter;
-        bool FallowActive => fallowChapter && wave != null && ArtCatalog.ProfileName == "wave-1a";
+        bool FallowActive => fallowChapter && wave != null && ArtCatalog.UsesWaveArt;
 
         public FallowDiagnosticSnapshot ReadFallowDiagnostics()
         {

@@ -107,7 +107,7 @@ namespace Game.View
                     if(rewardSources.TryGetValue(source,out var rewardSource))source=rewardSource;
                     growthHints.Enqueue(waveDefinition.Gear[source].Kind==WaveAttackKind.SeedFan?WorldHintKind.HarvestExperience:WorldHintKind.CompletionExperience,value.Amount);
                 }
-                if(value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))
+                if(value.Kind=="review-impact"||value.Kind=="attack"||value.Kind=="building-brace-swing"||value.Kind=="chain-link"||value.Kind=="harvest-fragments"||value.Kind=="evolution-activated"||value.Kind=="harvest-complete"||(value.Kind=="reward-collected"&&value.Amount>0))
                 {
                     waveEffects.Add((value,visualTime));
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -125,7 +125,7 @@ namespace Game.View
                 if(value.Kind=="attack")
                 {
                     heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
-                    if(HeroMotionPreviewMode!=0)
+                    if(HeroMotionPreviewMode!=0 || productionHero!=null)
                     {
                         if(value.Source=="core:iron_blade")NotifyHeroMotionAttack(false);
                         else if(value.Source=="core:sowing_sworddance")NotifyHeroMotionAttack(true);
@@ -285,6 +285,7 @@ namespace Game.View
             for(var attackIndex=0;attackIndex<wave.Attacks.Count;attackIndex++)
             {
                 var attack=wave.Attacks[attackIndex];
+                if(DrawM1CombatAttack(attack,current.Tick,alpha,attackIndex,current.Lord.Position,lordPoint))continue;
                 if(attack.ExpireTick>current.Tick)
                 {
                     if(waveDefinition.Evolutions.TryGetValue(attack.Source,out var orbit)&&orbit.Kind==WaveEvolutionKind.RepairOrbit&&drawnRepairAnchors.Add(attack.Source))
@@ -320,10 +321,11 @@ namespace Game.View
             for(var projectileIndex=0;projectileIndex<wave.Projectiles.Count;projectileIndex++)
             {
                 var projectile=wave.Projectiles[projectileIndex];
-                var visual=Resolve("attack",projectile.Source,"projectile");
                 var direction=waveMotion.ProjectileAngle(projectile,alpha);
                 var position=Vector2.Lerp(Point(projectile.Previous),Point(projectile.Position),alpha);
                 RenderedEntitySample?.Invoke("projectile",projectile.Id,position);
+                if(DrawM1CombatProjectile(projectile,position,direction))continue;
+                var visual=Resolve("attack",projectile.Source,"projectile");
                 Draw(visual,projectile.Hostile?GameVisualTokens.WaveDangerLayer:GameVisualTokens.AttackLayer,position,visualTime,degrees:direction,opacity:GameVisualTokens.TravellingAttackOpacity);
                 if(!projectile.Hostile)DrawWaveAttackEdge(visual,position,visualTime,visual.WorldSize,direction,GameVisualTokens.Attack);
             }
@@ -344,6 +346,7 @@ namespace Game.View
                 var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"||effect.value.Kind=="harvest-complete"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:WorldEffects.AttackLifetimeSeconds;
                 if(age>=duration){waveEffects.RemoveAt(i);continue;}
                 var value=effect.value;var a=Point(value.Position);var b=Point(value.Target);var opacity=1-age/duration;
+                if(DrawM1CombatEvent(value,age,opacity))continue;
                 if(value.Kind=="evolution-activated"){Feedback("evolution",GameVisualTokens.LordLayer-2,a,age/duration);continue;}
                 if(value.Kind=="work-created")
                 {
@@ -410,6 +413,7 @@ namespace Game.View
                     }
                 }
             }
+            DrawM1WeaponShowcase(lordPoint);
         }
         void DrawWaveAttackEdge(ArtVisual visual,Vector2 position,float time,Vector2 size,float direction,Color color,float opacity=1)
             =>Draw(visual,GameVisualTokens.WaveAttackEdgeLayer,position,time,size,direction,opacity*GameVisualTokens.WaveEdgeOpacity,tint:Color.Lerp(color,GameVisualTokens.Ink,.8f),edgeTexels:GameVisualTokens.WaveEdgeTexels);

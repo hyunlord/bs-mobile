@@ -43,12 +43,20 @@ namespace SowSiege.Core
                 }
             }
             options.HostRewards?.Validate();
+            if (options.MeleeAim is not null && (options.MeleeAim.Version != 1 || catalog.WaveRuntime is null))
+            { throw new ArgumentException("Unsupported melee aim contract."); }
+            if (catalog.WaveRuntime is { } aimWave)
+            {
+                foreach (var gear in aimWave.Gear.Values)
+                { if (gear.Aim is not null && gear.Aim != "nearest-enemy") { throw new ArgumentException("Unsupported gear aim."); } }
+            }
             if (options.HostRewards?.Revive is { } revive &&
                 (revive.RestoreHealth > (options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth) || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
             { throw new ArgumentException("Host revive rules exceed run limits.", nameof(options)); }
             Catalog = catalog; Options = options; InitialCatalogHash = PortableStateCodec.HashCatalog(catalog); State = new() { Aim = options.InitialAimMode };
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
             if (options.HostRewards is not null) { State.HostRewards = new(); }
+            State.MeleeAim = options.MeleeAim;
             if (options.Field is not null) { State.Field = new(options.Field, options.Run.Seed); }
             Simulation = new(catalog, options.Run, new InteractiveHasher(), null, State);
             View = new SessionView(this);

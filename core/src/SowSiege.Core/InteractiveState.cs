@@ -12,6 +12,7 @@ namespace SowSiege.Core
         public FeelExperimentState? Feel;
         public FieldState? Field;
         public HostRewardRunState? HostRewards;
+        public MeleeAimOptions? MeleeAim;
         public List<PresentationEvent> Events = new();
         public void Attack(int tick, string source, Position origin, Position direction, string shape, int range, IEnumerable<EnemyState> hits, AttackGeometry? geometry = null)
         {
