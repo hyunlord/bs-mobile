@@ -95,6 +95,8 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - name: Advise on accompanying design documentation
+        run: node tools/design-impact.mjs
       - name: Document gate
         if: steps.scope.outputs.scope == 'docs'
         env:
@@ -112,6 +114,7 @@ jobs:
         run: |
           mkdir -p artifacts/logs
           set -o pipefail
+          node --test tools/test-design-impact.mjs
           GITHUB_EVENT_PATH="${DEPENDENCY_EVENT_PATH:-$GITHUB_EVENT_PATH}" ./tools/check.sh 2>&1 | tee artifacts/logs/full-gate.log
         env:
           GH_TOKEN: ${{ github.token }}
