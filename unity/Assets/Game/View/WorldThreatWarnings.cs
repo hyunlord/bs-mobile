@@ -12,6 +12,7 @@ namespace Game.View
         ShapeBatch warningLines, warningLineBacking, warningArrowBacking, warningArrows;
         WorldGrowthLabels warningLabels;
         float warningCaptionUntil;
+        readonly EdgeThreatSelection edgeThreats = new EdgeThreatSelection();
 
         void InitializeThreatWarnings()
         {
@@ -61,20 +62,54 @@ namespace Game.View
                 var color = lane.Water ? Color.Lerp(GameVisualTokens.Hostile, GameVisualTokens.Ally, .25f) : GameVisualTokens.Hostile;
                 var progress = ThreatCorridors.Progress(lane, current.Tick, alpha);
                 DrawWarningStrip(lane, coveredStart, coveredEnd, normal, angle, color, progress, pixelsToWorld);
-                var arrowLength = Mathf.Min(length * .22f, pixelsToWorld * GameVisualTokens.ThreatArrowLengthPixels);
-                var arrowWidth = Mathf.Min(lane.Radius * .7f, pixelsToWorld * GameVisualTokens.ThreatArrowWidthPixels);
-                var backing = pixelsToWorld * GameVisualTokens.ThreatArrowBackingPixels;
-                var arrowLane = lane; arrowLane.Origin = coveredStart; arrowLane.Target = coveredEnd;
-                var arrowPosition = ThreatCorridors.OriginVisible(visible, lane.Origin)
-                    ? ThreatCorridors.VisibleArrowPosition(visible, arrowLane, arrowLength + backing)
-                    : ThreatCorridors.EntryArrowPosition(visible, lane, arrowLength + backing);
-                warningArrowBacking.Add(arrowPosition, new Vector2(arrowLength + backing, arrowWidth + backing), angle, GameVisualTokens.Ink);
-                warningArrows.Add(arrowPosition, new Vector2(arrowLength, arrowWidth), angle, color);
+                if (ThreatCorridors.OriginVisible(visible, lane.Origin))
+                {
+                    var arrowLength = Mathf.Min(length * .22f, pixelsToWorld * GameVisualTokens.ThreatArrowLengthPixels);
+                    var arrowWidth = Mathf.Min(lane.Radius * .7f, pixelsToWorld * GameVisualTokens.ThreatArrowWidthPixels);
+                    var backing = pixelsToWorld * GameVisualTokens.ThreatArrowBackingPixels;
+                    var arrowLane = lane; arrowLane.Origin = coveredStart; arrowLane.Target = coveredEnd;
+                    var arrowPosition = ThreatCorridors.VisibleArrowPosition(visible, arrowLane, arrowLength + backing);
+                    warningArrowBacking.Add(arrowPosition, new Vector2(arrowLength + backing, arrowWidth + backing), angle, GameVisualTokens.Ink);
+                    warningArrows.Add(arrowPosition, new Vector2(arrowLength, arrowWidth), angle, color);
+                }
                 if (!lane.Water && explainedCharges.Count < 2 && explainedCharges.Add((lane.Id, lane.ImpactTick))) warningCaptionUntil = visualTime + 2;
             }
             if (visualTime < warningCaptionUntil)
                 warningLabels.ShowClamped(0, "돌진 — 옆으로 피하세요", lord + Vector2.up * .75f, visible);
+            if (EdgeWarningsEnabled) DrawEdgeThreats(current, alpha, lord, visible, pixelsToWorld);
             warningLineBacking.Flush(); warningLines.Flush(); warningArrowBacking.Flush(); warningArrows.Flush();
+        }
+
+        void DrawEdgeThreats(RunFrame current, float alpha, Vector2 lord, Rect visible, float pixelsToWorld)
+        {
+            edgeThreats.Begin(visible, lord, pixelsToWorld * 14);
+            for (var i = 0; i < current.Enemies.Count; i++)
+            {
+                var actor = current.Enemies[i];
+                if (actor.Health <= 0) continue;
+                var position = Interpolate(previousEnemies, actor.Id, actor.Position, alpha);
+                var kind = EdgeThreatKind.Ordinary;
+                if (waveDefinition.Enemies.TryGetValue(actor.DefinitionId, out var rule))
+                    kind = rule.Kind == WaveEnemyKind.FloodBoss ? EdgeThreatKind.Boss : rule.Kind == WaveEnemyKind.Charger ? EdgeThreatKind.Charger : EdgeThreatKind.Ordinary;
+                if (waveCatalog.FirstPlayable != null && waveCatalog.FirstPlayable.Enemies.TryGetValue(actor.DefinitionId, out var ranked))
+                    kind = ranked.Rank == "boss" ? EdgeThreatKind.Boss : ranked.Rank == "elite" ? EdgeThreatKind.Elite : kind;
+                var inbound = false;
+                if (waveEnemyById.TryGetValue(actor.Id, out var view))
+                    inbound = EdgeThreatSelection.IsInboundCharge(view.Phase, view.Stopped, view.UntilTick, current.Tick, current.TickRate, visible,
+                        Point(view.Origin), Point(view.Target), waveCatalog.Enemies[actor.DefinitionId].Range / (float)settings.WorldUnitsPerUnityUnit);
+                edgeThreats.Consider(actor.Id, position, kind, inbound);
+            }
+            for (var i = 0; i < EdgeThreatSelection.Limit; i++)
+            {
+                if (!edgeThreats.TryGet(i, out var threat)) continue;
+                var color = EdgeThreatSelection.Tint(threat.Kind); color.a = threat.Opacity;
+                var ink = GameVisualTokens.Ink; ink.a = threat.Opacity;
+                if (threat.InboundCharge) { color.a = .95f; ink = GameVisualTokens.Attack; }
+                var angle = Angle(threat.Direction);
+                var size = pixelsToWorld * (threat.InboundCharge ? 9 : 7);
+                warningArrowBacking.Add(threat.Position, new Vector2(size + pixelsToWorld * 1.5f, size * .65f + pixelsToWorld * 1.5f), angle, ink);
+                warningArrows.Add(threat.Position, new Vector2(size, size * .65f), angle, color);
+            }
         }
 
         void DrawWarningStrip(ThreatCorridor lane, Vector2 start, Vector2 end, Vector2 normal, float angle, Color color, float progress, float pixelsToWorld)

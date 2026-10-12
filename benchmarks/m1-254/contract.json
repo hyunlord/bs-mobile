@@ -1,0 +1,53 @@
+{
+  "contract": "m1-254-c05-derived-damage-v1",
+  "sourceCommit": "5118e2c2a06f6449be672a77a64b61c9a349d69b",
+  "sourceReplay": "../wave-c05/run.ssreplay",
+  "sourceReplaySha256": "f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5",
+  "dataHash": "942CFEA33A25F90CBD5053D711C9BBFF1279DBE481950F2081C765B6093C3FDC",
+  "profile": "wave-1a",
+  "tickRate": 30,
+  "prefixExclusiveEndTick": 13500,
+  "intendedEndTick": 14400,
+  "candidates": [
+    {
+      "file": "dense-approach-candidate1.ssreplay",
+      "name": "dense-approach-candidate1",
+      "sha256": "4A40930B3D4FCEB80FBAEB06F7C5922F8716A2308BD750A4C79089874852E23F",
+      "startTick": 13500,
+      "intendedEndTick": 14400,
+      "prefixHash": "013E14FE35EA6466D219187960F42DD4531AF20E01B49E6A714244ECFD5AAE57",
+      "verified": {
+        "Seed": 30001,
+        "Tick": 13779,
+        "StateHash": "5B665C10FFB4608FF4FDD4A59B07F35E54AF262343DA5C301231D63BD07A6176",
+        "EndKind": 1
+      },
+      "minEnemies": 399,
+      "maxEnemies": 829,
+      "positiveDamageEvents": 178,
+      "damage": 1778,
+      "selectedForDamageReview": false,
+      "durationTargetPassed": false
+    },
+    {
+      "file": "dense-approach-candidate2.ssreplay",
+      "name": "dense-approach-candidate2",
+      "sha256": "07F211D9D8A1E7A22110D7438C29E69106E6BF619CCE681B2B89C28527B9CEC6",
+      "startTick": 13500,
+      "intendedEndTick": 14400,
+      "prefixHash": "013E14FE35EA6466D219187960F42DD4531AF20E01B49E6A714244ECFD5AAE57",
+      "verified": {
+        "Seed": 30001,
+        "Tick": 13643,
+        "StateHash": "F57632711CE0294F63A95668695B5281EED15E9788D00C769730A701C52F11F6",
+        "EndKind": 1
+      },
+      "minEnemies": 814,
+      "maxEnemies": 824,
+      "positiveDamageEvents": 160,
+      "damage": 1778,
+      "selectedForDamageReview": true,
+      "durationTargetPassed": false
+    }
+  ]
+}

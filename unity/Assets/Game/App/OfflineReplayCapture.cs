@@ -19,13 +19,16 @@ namespace Game.App
         readonly byte[] readbackPixels, rowScratch;
         readonly WaitForEndOfFrame endOfFrame = new WaitForEndOfFrame();
         readonly StreamWriter index;
+        readonly OfflineReplayAudio audio;
+        Exception captureError;
         bool disposed;
         int lastUnityFrame = -1;
         public int Frames { get; private set; }
         public bool Pending { get; private set; }
-        public Exception Error { get; private set; }
+        public Exception Error => captureError ?? audio?.Error;
         public static bool Requested(string[] args)
         {
+            OfflineReplayAudio.Requested(args);
             var first = Array.IndexOf(args, "--offline-replay-capture");
             if (first < 0) return false;
             if (first != Array.LastIndexOf(args, "--offline-replay-capture") || (Array.IndexOf(args, "--crowd-replay-benchmark") < 0 && CameraScaleComparison.Parse(args) == null))
@@ -62,11 +65,18 @@ namespace Game.App
             Application.targetFrameRate = -1;
             QualitySettings.vSyncCount = 0;
             Application.runInBackground = true;
+            if (OfflineReplayAudio.Requested(Environment.GetCommandLineArgs()))
+            {
+                audio = new GameObject("Offline replay audio").AddComponent<OfflineReplayAudio>();
+                try { audio.Initialize(directory); }
+                catch { audio.Dispose(); UnityEngine.Object.Destroy(audio.gameObject); Dispose(); throw; }
+            }
         }
         public IEnumerator SaveRenderedFrame(int tick, float alpha)
         {
             if (Pending) throw new InvalidOperationException("An offline frame is still pending.");
             Pending = true;
+            audio?.MarkVideoFrame(Frames, tick, alpha);
             yield return endOfFrame;
             var prior = RenderTexture.active;
             try
@@ -90,16 +100,18 @@ namespace Game.App
                 lastUnityFrame = Time.frameCount;
                 Frames++;
             }
-            catch (Exception exception) { Error = exception; }
+            catch (Exception exception) { captureError = exception; }
             finally { RenderTexture.active = prior; Pending = false; }
         }
         public void Finish(int expected, bool verified)
         {
             index.Flush();
+            audio?.Finish(expected, verified);
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "offline-capture.json"), JsonUtility.ToJson(new Manifest
             {
                 frames = Frames, expectedFrames = expected, complete = verified && Error == null && !Pending && Frames == expected,
-                readbackRowsFlipped = flipReadbackRows
+                readbackRowsFlipped = flipReadbackRows, audioIncluded = audio != null,
+                label = audio == null ? "오프라인 렌더 · 60fps · 무음" : "오프라인 렌더 · 60fps · 게임 소리 포함"
             }, true));
             if (Error != null) throw new IOException("Offline image capture failed.", Error);
             if (Pending || Frames != expected) throw new InvalidDataException("Offline capture frame count mismatch.");
@@ -109,12 +121,13 @@ namespace Game.App
             public string label = "오프라인 렌더 · 60fps · 무음";
             public string contract = "Fixed 1/60 presentation and original 30Hz replay commands; contiguous end-of-frame JPEGs. Not real-time or frame-pacing evidence. Encode frame-%06d.jpg at 60fps without frame resampling.";
             public int fps = FramesPerSecond, frames, expectedFrames;
-            public bool complete, readbackRowsFlipped, performanceEligible = false;
+            public bool complete, readbackRowsFlipped, audioIncluded, performanceEligible = false;
         }
         public void Dispose()
         {
             if (disposed) return;
             disposed = true;
+            if (audio != null) { audio.Dispose(); UnityEngine.Object.Destroy(audio.gameObject); }
             index.Dispose();
             target.Release();
             UnityEngine.Object.Destroy(target);

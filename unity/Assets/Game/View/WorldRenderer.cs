@@ -141,7 +141,11 @@ namespace Game.View
         public int DrawCalls { get; private set; }
         public Vector2? PredictedLordPosition { get; set; }
         public Vector2 RenderedLordPosition { get; private set; }
-        float reviewCameraMagnification = 1;
+        public Vector2 RenderedHeroAnchorScreenPosition { get; private set; }
+        public Action<Vector2> RenderedHeroAnchorScreenSample { get; set; }
+        public bool EdgeWarningsEnabled { get; set; } = true;
+        public bool PresentationPaused { get; set; }
+        float reviewCameraMagnification = 1.4f;
         public float ReviewCameraMagnification
         {
             get => reviewCameraMagnification;
@@ -198,10 +202,10 @@ namespace Game.View
             else
             {
                 if (frame.Season != season) { previousSeason = season; season = frame.Season; seasonAge = 0; announcements.ShowSeason(season); }
-                if (frame.Level > level) levelAge = 0;
+                if (frame.Level > level) { levelAge = 0; heroLevelPose.Queue(); }
                 level = frame.Level;
             }
-            if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) heroGaitDiscontinuity = true;
+            if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) { heroGaitDiscontinuity = true; heroLevelPose.Reset(); }
             acceptedFrame = frame;
             for(var i=0;i<frame.Farms.Count;i++)
             {
@@ -398,11 +402,16 @@ namespace Game.View
             }
             DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
             if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
-                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity))
+                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity,seconds))
                 DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
             heroGaitDiscontinuity=false;
+            RenderedHeroAnchorScreenPosition = renderCamera.WorldToScreenPoint(lord);
+            RenderedHeroAnchorScreenSample?.Invoke(RenderedHeroAnchorScreenPosition);
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
-            threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
+            if (wave == null && EdgeWarningsEnabled)
+            {
+                threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
+            }
             if (presentationDiagnosticsActive) diagnostics.HeroThreatsMs = DiagnosticInterval(ref diagnosticCheckpoint);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             }

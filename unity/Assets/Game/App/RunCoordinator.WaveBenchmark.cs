@@ -18,7 +18,7 @@ namespace Game.App
         bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture, benchmarkInterrupted;
         string benchmarkMode = "capped";
         CrowdReplayBenchmark crowdBenchmark;
-        bool offlineReplayRequested;
+        bool offlineReplayRequested, offlineAudioRequested;
         OfflineReplayCapture offlineReplayCapture;
         HeroMotionComparisonWindow heroMotionWindow;
         int CrowdStartTick => heroMotionWindow?.StartTick ?? CrowdReplayBenchmark.StartTick;
@@ -165,9 +165,11 @@ namespace Game.App
                 if (Directory.Exists(destination) && Directory.GetFileSystemEntries(destination).Length != 0) throw new IOException("Benchmark output must be empty.");
                 Directory.CreateDirectory(destination);
                 benchmarkOutput = destination;
+                knightReview = KnightReview.Parse(args);
                 cameraScaleComparison = CameraScaleComparison.Parse(args);
                 crowdBenchmark = CrowdReplayBenchmark.Parse(args);
                 offlineReplayRequested = OfflineReplayCapture.Requested(args);
+                offlineAudioRequested = OfflineReplayAudio.Requested(args);
                 heroMotionWindow = HeroMotionComparisonWindow.Parse(args);
                 benchmarkMode = cameraScaleComparison != null ? "normal-mac-vsync" : benchmarkTarget60Experiment ? "diagnostic-crowd-target60-vsync0" : crowdBenchmark == null ? ParseWaveBenchmarkMode(args) : "normal-mac-vsync";
                 benchmarkAllocationAvailable = AllocationCounterProbe.CurrentThreadAvailable();
@@ -192,8 +194,9 @@ namespace Game.App
                 }
                 var bytes = File.ReadAllBytes(args[index + 1]);
                 using (var sha = SHA256.Create()) benchmarkReplaySha = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
-                if (benchmarkReplaySha != (crowdBenchmark == null ? "f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5" : CrowdReplayBenchmark.ReplaySha256)) throw new InvalidDataException("Benchmark fixture identity mismatch.");
+                if (benchmarkReplaySha != (knightReview?.DamageReplay == true ? KnightReview.DamageSha256 : crowdBenchmark == null ? KnightReview.C05Sha256 : CrowdReplayBenchmark.ReplaySha256)) throw new InvalidDataException("Benchmark fixture identity mismatch.");
                 using (var stream = new MemoryStream(bytes)) benchmarkReplay = ReplayCodec.Read(stream);
+                knightReview?.Validate(benchmarkReplaySha, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash);
                 ContentCatalog frozen = null; string hash = null;
                 if (crowdBenchmark == null) LoadFrozenWaveBenchmark(ref frozen, ref hash);
                 else { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; crowdBenchmark.Validate(benchmarkReplaySha, hash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash); }
@@ -215,8 +218,13 @@ namespace Game.App
             try
             {
                 Session = new InteractiveSession(runCatalog, benchmarkReplay.Header.Options);
+                if (cameraScaleComparison != null)
+                {
+                    actualLordDamageTelemetry = new ActualLordDamageTelemetry(cameraScaleComparison.StartTick, cameraScaleComparison.EndTick);
+                    Session.LordDamageObserver = actualLordDamageTelemetry;
+                }
                 Session.Diagnostics = benchmarkCoreDiagnostics;
-                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null||knightReview!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
@@ -235,7 +243,15 @@ namespace Game.App
                 ShowHud(); accumulator = 0;
                 if (crowdBenchmark != null || cameraScaleComparison != null) InitializeSmoothness();
                 File.WriteAllText(Path.Combine(benchmarkOutput, "device.json"), JsonUtility.ToJson(DeviceFacts.Capture(), true));
-                if (offlineReplayRequested) offlineReplayCapture = new OfflineReplayCapture(benchmarkOutput, Screen.width, Screen.height);
+                if (offlineReplayRequested)
+                {
+                    offlineReplayCapture = new OfflineReplayCapture(benchmarkOutput, Screen.width, Screen.height);
+                    if (offlineAudioRequested)
+                    {
+                        // Restart after AudioRenderer owns the mixer so both comparison runs share sample zero.
+                        sound.ResetRun(); waveSound?.ResetRun();
+                    }
+                }
                 ResetBenchmarkClock(); waveBenchmarkReady = true;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 RefreshLongFrameCountersAfterLoading();
@@ -440,6 +456,11 @@ namespace Game.App
                     alpha = renderInterpolation.Present(CurrentFrame.Tick, alpha, warming, presentationDelta, CurrentFrame.TickRate);
                 }
                 BeginCameraScaleFrame(warming);
+                if (offlineReplayRequested)
+                {
+                    var audioTime = (CurrentFrame.Tick + alpha) / CurrentFrame.TickRate;
+                    sound.SetPresentationClock(audioTime); waveSound?.SetPresentationClock(audioTime);
+                }
                 using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 ObserveCameraScaleFrame();
@@ -454,7 +475,11 @@ namespace Game.App
                 sample.exitTimestamp = Stopwatch.GetTimestamp();
                 benchmarkPending = sample;
                 benchmarkHasPending = !offlineReplayRequested && !warming && BenchmarkWindow(CurrentFrame.Tick);
-                if (offlineReplayRequested && !warming && (cameraScaleComparison == null || cameraScaleComparison.CaptureFrame(CurrentFrame.Tick, (float)(accumulator * CurrentFrame.TickRate)))) StartCoroutine(offlineReplayCapture.SaveRenderedFrame(CurrentFrame.Tick, alpha));
+                if (offlineReplayRequested && !warming && (cameraScaleComparison == null || cameraScaleComparison.CaptureFrame(CurrentFrame.Tick, (float)(accumulator * CurrentFrame.TickRate))))
+                {
+                    RecordKnightRenderedFrame(offlineReplayCapture.Frames, alpha);
+                    StartCoroutine(offlineReplayCapture.SaveRenderedFrame(CurrentFrame.Tick, alpha));
+                }
                 if (!offlineReplayRequested) FrameTimingManager.CaptureFrameTimings();
             }
             catch (Exception exception) { EndWaveBenchmark(exception); }
@@ -548,12 +573,13 @@ namespace Game.App
             }
             if (cameraScaleComparison != null)
             {
-                result.fixture = "camera-scale-frozen-c05";
+                result.fixture = knightReview?.DamageReplay == true ? "knight-distinct-dense-approach-candidate2" : knightReview != null ? "knight-original-frozen-c05" : "camera-scale-frozen-c05";
                 result.windows = cameraScaleComparison.StartTick + "-" + cameraScaleComparison.EndTick;
                 result.playbackBoundary = "Camera magnification experiment; frozen C05 input, rendered 30-tick pre-roll, bounded review window, original suffix fast-forwarded to terminal hash. Not the historical C05 regression baseline.";
+                if (knightReview?.DamageReplay == true) result.playbackBoundary = "Distinct accepted-input damage sample: original C05 prefix before tick13500, then approach/return/hold input; unchanged spawn/health/rules. Not original C05 input or a C05 regression baseline.";
             }
             if (heroMotionWindow != null && !offlineReplayRequested) result.playbackBoundary = "Hero motion comparison: original replay commands, bounded displayed window, unrendered original suffix validated to the full terminal hash. Only hero rendering differs. " + result.playbackBoundary;
-            if (offlineReplayRequested) result.playbackBoundary = "오프라인 렌더 · 60fps · 무음. Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. Hero comparison windows, when requested, validate the original unrendered suffix to the same terminal hash. See offline-capture.json and offline-frame-index.csv.";
+            if (offlineReplayRequested) result.playbackBoundary = (offlineAudioRequested ? "오프라인 렌더 · 60fps · 게임 소리 포함. " : "오프라인 렌더 · 60fps · 무음. ") + "Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. Hero comparison windows, when requested, validate the original unrendered suffix to the same terminal hash. See offline-capture.json and offline-frame-index.csv." + (offlineAudioRequested ? " AudioRenderer mixer output is sample-locked without padding/resampling; see offline-audio.wav, offline-audio-index.csv and offline-audio.json." : "");
             try
             {
                 if (exception == null)
@@ -593,6 +619,7 @@ namespace Game.App
                     }
                     FinishLongFrames();
                     SaveCameraScaleReview(result.verified);
+                    SaveKnightReview(result.verified);
                     File.WriteAllText(Path.Combine(benchmarkOutput, "benchmark.json"), JsonUtility.ToJson(result, true));
                 }
             }

@@ -12,15 +12,39 @@ namespace Game.View
         public bool HeroMotionEvolved { get; set; }
         public HeroLiveRig HeroMotionLiveMetrics => heroLiveRig;
         HeroLiveRig heroLiveRig;
+        bool heroKnightEnabled;
+        float motionDeathStarted = -1;
         Texture2D heroMotionUpper;
         HeroLiveClip motionSwingClip, motionEvolvedClip, motionHitClip;
         float motionAttackStarted = -100, motionHitStarted = -100;
         float motionObservedAttackUntil, motionObservedHitUntil;
         bool motionAttackEvolved;
+        readonly HeroLevelPoseTimeline heroLevelPose = new HeroLevelPoseTimeline();
+        public bool HeroLevelPosePending => heroLevelPose.Pending;
+        public float RenderedHeroLevelPoseProgress { get; private set; } = -1;
+
+        public void PrepareHeroKnight()
+        {
+            if (heroKnightEnabled && heroLiveRig != null) return;
+            DisposeHeroMotion();
+            HeroMotionPreviewMode = 0;
+            var motion = HeroLiveRigData.Load("HeroKnight");
+            motionSwingClip = motion.Clip("swing");
+            motionEvolvedClip = motion.Clip("evolved-swing");
+            motionHitClip = motion.Clip("hit");
+            heroLiveRig = new HeroLiveRig(null, "HeroKnight");
+            heroKnightEnabled = true;
+        }
 
         public void PrepareHeroMotionPreview(int mode)
         {
             if (mode < 0 || mode > 2) throw new ArgumentOutOfRangeException(nameof(mode));
+            if (heroKnightEnabled)
+            {
+                DisposeHeroMotion();
+                heroKnightEnabled = false;
+                motionSwingClip = motionEvolvedClip = motionHitClip = null;
+            }
             HeroMotionPreviewMode = mode;
             if (mode != 0 && motionSwingClip == null)
             {
@@ -55,7 +79,7 @@ namespace Game.View
         {
             animationTime=visualTime;
             if(heroConceptVisual!=null)return heroConceptVisual;
-            if(!HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
+            if(!heroKnightEnabled && !HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
             if(rigIdle==null)
             {
                 rigIdle=art.ResolveRole("hero.preview-b.idle");
@@ -71,10 +95,11 @@ namespace Game.View
 
         // The shared batches dictionary supplies BeginFrame, Flush, accounting and Dispose.
         bool DrawHeroRig(ArtVisual visual,Vector2 position,bool walking,float attackProgress,bool hit,bool dead,
-            ActorFacingPose facing,Color color,float flash,bool discontinuity)
+            ActorFacingPose facing,Color color,float flash,bool discontinuity,float seconds)
         {
+            RenderedHeroLevelPoseProgress = -1;
             if(heroConceptVisual!=null){heroLiveRig?.Hide();return false;}
-            if(!HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroLiveRig?.Hide();return false;}
+            if(!heroKnightEnabled && !HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroLiveRig?.Hide();return false;}
             if(heroRigShader==null)
             {
                 heroRigShader=Resources.Load<Shader>("HeroRig");
@@ -82,7 +107,7 @@ namespace Game.View
             }
             var fullSize=visual.WorldSize*(256f/252)*GameVisualTokens.HeroRigHeightScale;
             fullSize.x*=facing.SignedWidth;
-            var comparing = HeroMotionPreviewMode != 0;
+            var comparing = HeroMotionPreviewMode != 0 || heroKnightEnabled;
             var sample=heroGait.Advance(position,fullSize,walking,discontinuity,!comparing&&(hit||dead));
             var frame=hit||dead?14:sample.FrameIndex;
             var upperFrame=HeroGaitState.UpperFrame(frame,attackProgress>=0,hit||dead);
@@ -107,10 +132,16 @@ namespace Game.View
                 if (attackTime > 1 || attackTime < 0) attackTime = -1;
                 if (hitTime > 1 || hitTime < 0) hitTime = -1;
                 frame = sample.FrameIndex;
-                if (HeroMotionPreviewMode == 2)
+                if (HeroMotionPreviewMode == 2 || heroKnightEnabled)
                 {
-                    if (heroLiveRig == null) heroLiveRig = new HeroLiveRig(null);
-                    heroLiveRig.Present(position,fullSize,sample,walking,attackTime,motionAttackEvolved,hitTime,color);
+                    if (heroLiveRig == null) heroLiveRig = new HeroLiveRig(null, heroKnightEnabled ? "HeroKnight" : "HeroMotion");
+                    if (!dead) motionDeathStarted = -1;
+                    else if (motionDeathStarted < 0) motionDeathStarted = visualTime;
+                    var deathTime = heroKnightEnabled && dead ? Mathf.Clamp01((visualTime - motionDeathStarted) / .55f) : -1;
+                    if (dead) heroLevelPose.Reset();
+                    var levelTime = heroKnightEnabled ? heroLevelPose.Sample(seconds, PresentationPaused, dead || hitTime >= 0 || attackTime >= 0) : -1;
+                    RenderedHeroLevelPoseProgress = levelTime;
+                    heroLiveRig.Present(position,fullSize,sample,walking,attackTime,motionAttackEvolved,hitTime,color,deathTime,levelTime);
                     HeroGaitSampled?.Invoke(sample);
                     return true;
                 }
