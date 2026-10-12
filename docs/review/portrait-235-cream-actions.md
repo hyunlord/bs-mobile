@@ -29,3 +29,7 @@
 이전 fa6c71a의 화면·성능 실패·재생·출처는 [기존 검토 보고](portrait-234-reference-skin.md)에 보존한다. 이번 문서가 과거 원판정이나 미확인을 덮어쓰지 않는다. #126 경제·#98 Fold7·#224 생산 부활·1b 확장 보류를 유지한다.
 
 [PR235](https://github.com/hyunlord/bs-mobile/pull/235) · [미해결 #223](https://github.com/hyunlord/bs-mobile/issues/223)
+
+## 후속 판정 — 2026-10-12 사용자 승인 및 병합
+
+위 표는 제출 당시 상태를 보존한다. 이후 사용자가 `d12db4a` 그림을 승인하고 CI 통과 후 병합을 지시했다. [승인 기록](https://github.com/hyunlord/bs-mobile/pull/235#issuecomment-6117180635), [최신 main 반영 CI38199709918](https://github.com/hyunlord/bs-mobile/actions/runs/38199709918) 통과 후 PR235를 `9387b7669bdc3d01790246509ad8d66f212af0ad`로 병합했다. 현재 화면 관문은 통과이며 #223은 별도 미해결이다. 도전 받기 활성 강조를 더하는 M1 후속 요청은 이번 승인 취소가 아니다.
