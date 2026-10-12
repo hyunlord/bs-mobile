@@ -200,9 +200,23 @@ function verifyVideo(file, frames, width, tracks) {
   assert.equal(video.length, 1); assert.equal(Number(video[0].nb_read_frames), frames); assert.equal(video[0].width, width); assert.equal(video[0].height, 1180); assert.equal(video[0].r_frame_rate, '60/1'); assert.equal(audio.length, tracks);
   for (const stream of [...video, ...audio]) assert(Math.abs(Number(stream.duration) - frames / 60) < .025, 'Encoded duration mismatch');
 }
-function assembleHeroes(plan, output) {
+export function sourceHeadRatio(run, action) {
+  const originalRatio = 53 / 441, at = run.args.indexOf('--hero-production');
+  if (at < 0) return { originalRatio, ratio: null, basis: 'Baseline source landmarks not remeasured; native pixels unmeasured', label: `원화 ${originalRatio.toFixed(5)} · 현재 비율 미검증` };
+  const file = run.args[at + 1], manifest = read(file);
+  let ratio = null, basis;
+  if (manifest.method === '3d-baked') { ratio = manifest.headHeightRatio; basis = '3D manifest headHeightRatio; source/model landmarks, not native pixel inspection'; }
+  else if (manifest.method === 'frame-drawn') {
+    const clip = manifest.clips.find(clip => clip.id === action && clip.direction === 'E');
+    if (clip && Number.isFinite(clip.headHeightPixels) && Number.isFinite(clip.bodyHeightPixels) && clip.headHeightPixels > 0 && clip.bodyHeightPixels > 0) ratio = clip.headHeightPixels / clip.bodyHeightPixels;
+    basis = `E ${action} source clip headHeightPixels/bodyHeightPixels; not native pixel inspection`;
+  } else throw Error('Unknown production source ratio method');
+  assert(ratio === null || Number.isFinite(ratio) && ratio > 0 && ratio < 1, 'Invalid source head/body ratio');
+  return { originalRatio, ratio, basis, manifest: file, manifestSha256: hash(file), label: `원화 ${originalRatio.toFixed(5)} · 소스 ${ratio === null ? '미검증' : ratio.toFixed(5)} · 실화면 미측정` };
+}
+function assembleHeroes(plan, output, sheetsOnly = false) {
   const runs = plan.runs.filter(run => run.kind === 'hero'), proof = validateAll(plan, runs); assert.equal(runs.length, 3); fresh(output); labelHelper(output); const outputs = [];
-  for (const zoom of [1, 2]) {
+  for (const zoom of sheetsOnly ? [] : [1, 2]) {
     const clips = runs.map(run => encodeRun(plan, run, output, zoom)); outputs.push(...clips);
     const file = path.join(output, `three-methods-${zoom}x.mp4`), inputs = [...clips.flatMap(clip => ['-i', clip.video]), ...runs.map(run => ['-i', path.join(run.directory, 'offline-audio.wav')]).flat()];
     const maps = runs.flatMap((run, index) => ['-map', `${index + 3}:a`, `-metadata:s:a:${index}`, `title=${run.title} original game audio`, `-disposition:a:${index}`, index === 0 ? 'default' : '0']);
@@ -211,16 +225,17 @@ function assembleHeroes(plan, output) {
   }
   const sheetWindows = selectSheetWindows(runs.map(run => rows(path.join(run.directory, plan.heroCoordinates))));
   for (const sheet of sheetWindows.filter(item => item.available)) {
+    sheet.sourceHeadRatios = runs.map(run => ({ role: run.role, ...sourceHeadRatio(run, sheet.action) }));
     const inputs = runs.flatMap(run => ['-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg')]);
     const filters = runs.map((run, i) => `[${i}:v]select='${sheet.frames.map(frame => `eq(n,${frame})`).join('+')}',crop=500:1080:710:0,scale=125:270,tile=12x1[s${i}]`);
     runs.forEach((run, i) => {
       const label = path.join(output, `${sheet.action}-${run.role}-sheet-label.png`);
-      call(path.join(output, 'labels'), [run.title, `${({walk:'걷기','slash-light':'휘두르기',hit:'피격',death:'쓰러짐'})[sheet.action]} 표본 · 첫 기록 프레임 ${sheet.startFrame}`, '실제 12장 · 5프레임 간격 · 연속 1초 범위', label]);
+      call(path.join(output, 'labels'), [run.title, `${({walk:'걷기','slash-light':'휘두르기',hit:'피격',death:'쓰러짐'})[sheet.action]} · ${sheet.startFrame}장부터 12장 · 간격 5장`, sheet.sourceHeadRatios[i].label, label]);
       inputs.push('-i', label); filters.push(`[${i + 3}:v]pad=500:270:0:85:color=0x141414[l${i}];[l${i}][s${i}]hstack=inputs=2[r${i}]`);
     });
     call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', [...filters, '[r0][r1][r2]vstack=inputs=3[v]'].join(';'), '-map', '[v]', '-frames:v', '1', path.join(output, `${sheet.action}-12frames.png`)]);
   }
-  save(path.join(output, 'production-review-provenance.json'), { contract: plan.contract, performanceEligible: false, sources: proof, outputs, sheetWindows, sheetOrder: runs.map(run => run.title), sheetTiming: '12 originals at 0,5,...55 frames after first recorded action; no new animation/interpolation. Missing death/hit means N/A.', limitations: 'Methods are authoring candidates, not approved default. 2x crop clamps to original portrait; sourceframes retained. Each comparison track retains one method original game mix, selectable independently.' });
+  save(path.join(output, 'production-review-provenance.json'), { contract: plan.contract, sheetsOnly, performanceEligible: false, sources: proof, outputs, sheetWindows, sheetOrder: runs.map(run => run.title), sheetTiming: '12 originals at 0,5,...55 frames after first recorded action; no new animation/interpolation. Missing death/hit means N/A.', ratioMeaning: 'Original A reference head/body 53/441; source/model landmark ratios, not native screen pixel measurements. 2D uses the E clip corresponding to each action. Baseline ratio is unverified.', limitations: 'Methods are authoring candidates, not approved default. 2x crop clamps to original portrait; sourceframes retained. Each comparison track retains one method original game mix, selectable independently.' });
 }
 export function selectWeaponRuns(plan, contentId) {
   const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;
@@ -262,8 +277,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
       case 'run': assert(first); await runCaptures(plan, first, second); break;
       case 'validate': console.log(JSON.stringify(validateAll(plan, plan.runs.filter(run => !first || run.kind === first || run.role === first)), null, 2)); break;
       case 'heroes': assert(first); assembleHeroes(plan, first); break;
+      case 'hero-sheets': assert(first); assembleHeroes(plan, first, true); break;
       case 'weapons': assert(first); assembleWeapons(plan, first, second); break;
-      default: throw Error('Usage: m1-production-review.mjs plans NEWROOT BAKED_JSON DRAWN_JSON | combat-plans NEWROOT CASES_DIRECTORY | run PLAN APP [hero|weapon|combat|ROLE] | validate PLAN [hero|weapon|combat|ROLE] | heroes PLAN NEWVIDEO | weapons PLAN NEWVIDEO [contentId]');
+      default: throw Error('Usage: m1-production-review.mjs plans NEWROOT BAKED_JSON DRAWN_JSON | combat-plans NEWROOT CASES_DIRECTORY | run PLAN APP [hero|weapon|combat|ROLE] | validate PLAN [hero|weapon|combat|ROLE] | heroes PLAN NEWVIDEO | hero-sheets PLAN NEWOUTPUT | weapons PLAN NEWVIDEO [contentId]');
     }
   }
 }

@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns } from './m1-production-review.mjs';
+import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns, sourceHeadRatio } from './m1-production-review.mjs';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'production-plan-test-'));
 try {
   const baked = path.join(root, 'baked.json'), drawn = path.join(root, 'drawn.json');
@@ -16,6 +16,14 @@ try {
   for (const run of plan.runs) { assert(run.args.includes('--knight-review')); assert(run.args.includes('--m1-review-seconds')); assert.equal(run.args[run.args.indexOf('--camera-scale') + 1], '1.4'); }
   assert(!plan.runs[0].args.includes('--hero-production')); assert(plan.runs[1].args.includes(baked)); assert(plan.runs[2].args.includes(drawn));
   for (const run of plan.runs.slice(1, 3)) { assert.equal(run.args[run.args.indexOf('--hero-production-direction') + 1], 'follow'); assert.equal(run.expected['knight-review.json'].productionDirection, 'follow'); }
+  fs.writeFileSync(baked, JSON.stringify({ method: '3d-baked', headHeightRatio: .12977148060301785 }));
+  fs.writeFileSync(drawn, JSON.stringify({ method: 'frame-drawn', clips: [{ id: 'walk', direction: 'E', headHeightPixels: 55, bodyHeightPixels: 431 }, { id: 'slash-light', direction: 'E', headHeightPixels: 25, bodyHeightPixels: 193 }] }));
+  assert.equal(sourceHeadRatio(plan.runs[0], 'walk').ratio, null);
+  assert.equal(sourceHeadRatio(plan.runs[1], 'walk').ratio, .12977148060301785);
+  assert.equal(sourceHeadRatio(plan.runs[2], 'walk').ratio, 55 / 431);
+  assert.equal(sourceHeadRatio(plan.runs[2], 'slash-light').ratio, 25 / 193);
+  assert.equal(sourceHeadRatio(plan.runs[2], 'death').ratio, null);
+  assert(sourceHeadRatio(plan.runs[2], 'walk').label.includes('실화면 미측정'));
   const baseline = Array.from({ length: 120 }, () => ({ action: 'live-rig' })), animated = Array.from({ length: 120 }, (_, i) => ({ action: i === 10 ? 'walk' : i === 20 ? 'slash-light' : i === 90 ? 'death' : 'idle' }));
   const sheets = selectSheetWindows([baseline, animated, animated]);
   validateHeroActions([{ method: 'a-knight-live', action: 'live-rig' }], plan.runs[0]);
