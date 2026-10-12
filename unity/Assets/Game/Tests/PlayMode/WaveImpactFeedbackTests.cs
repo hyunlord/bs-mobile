@@ -34,6 +34,23 @@ namespace Tests.PlayMode
                 world.Initialize(camera, new WorldCameraSettings(config.WorldUnitsPerUnityUnit, config.MinHalfHeight,
                     config.MaxHalfHeight, config.EstatePadding, config.FollowMilliseconds, config.ZoomMilliseconds),
                     catalog.Tuning.DefaultEstate, frame.MapWidth, frame.MapHeight);
+                world.HitFeedbackEnabled = true;
+                var snapshot = WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), source);
+                var heroHit = new PresentationEvent(1, frame.Tick, PresentationKind.LordHit, "test", point,
+                    default, "hit", 0, 777, System.Array.Empty<WorldPoint>(), System.Array.Empty<int>());
+                world.ShowDamageNumbers = false;
+                world.AcceptFrame(frame with { Events = new[] { heroHit } }, snapshot);
+                Assert.That(HasVisibleAmount(owner, "777"), Is.False);
+                world.ShowDamageNumbers = true;
+                world.AcceptFrame(frame with { Events = new[] { heroHit with { Id = 2 } } }, snapshot);
+                Assert.That(HasVisibleAmount(owner, "777"), Is.True);
+                world.ShowDamageNumbers = false;
+                Assert.That(HasVisibleAmount(owner, "777"), Is.False);
+                world.ShowDamageNumbers = true;
+                world.ShowTransientText = false;
+                world.AcceptFrame(frame with { Events = new[] { heroHit with { Id = 3 } } }, snapshot);
+                Assert.That(HasVisibleAmount(owner, "777"), Is.False);
+                world.ShowTransientText = true;
                 var wave = source with { Events = new[] { new WaveEvent(100000, frame.Tick, "hit", "test", 17, point, point, 10) } };
                 world.AcceptWave(catalog, wave);
                 var particles = world.ActiveImpactParticles;
@@ -53,6 +70,13 @@ namespace Tests.PlayMode
                 yield return null;
             }
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
+        }
+
+        static bool HasVisibleAmount(GameObject owner, string amount)
+        {
+            foreach (var label in owner.GetComponentsInChildren<TextMesh>())
+                if (label.text == amount) return true;
+            return false;
         }
     }
 }

@@ -109,7 +109,18 @@ namespace Game.View
             lordDamageNumbers?.Advance(0, false);
             growthLabels?.Clear();
         }
-        public bool ShowDamageNumbers { get; set; } = true;
+        bool showDamageNumbers = true;
+        public bool ShowDamageNumbers
+        {
+            get => showDamageNumbers;
+            set
+            {
+                showDamageNumbers = value;
+                if (value) return;
+                numbers?.Advance(0, false);
+                lordDamageNumbers?.Advance(0, false);
+            }
+        }
         public bool ShakeEnabled { get; set; } = true;
         public Vector2 CameraShakeOffset => ImpactCameraOffset;
         public string WarningSourceId { get; private set; } = "";
@@ -196,9 +207,9 @@ namespace Game.View
             {
                 heroGaitDiscontinuity = true;
                 heroHitUntil = visualTime + (HitFeedbackEnabled ? .2f : GameVisualTokens.HitFlashSeconds);
-                if(HitFeedbackEnabled)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
+                if(HitFeedbackEnabled&&ShowDamageNumbers&&showTransientText)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
             }
-            if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
+            if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers && showTransientText) numbers?.Add(Point(effect.Origin), effect.Amount);
             if (effect.Kind == PresentationKind.BossWarning)
             {
                 foreach (var boss in firstPlayable.Bosses)
@@ -228,7 +239,7 @@ namespace Game.View
             effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
             AdvanceImpactFeedback(seconds);
             WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);
-            numbers.Advance(seconds, ShowDamageNumbers); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled); AcceptFrame(current, snapshot, acceptEvents); IndexPrevious(previous);
+            numbers.Advance(seconds, ShowDamageNumbers&&showTransientText); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled&&ShowDamageNumbers&&showTransientText); AcceptFrame(current, snapshot, acceptEvents); IndexPrevious(previous);
             expiredHits.Clear(); foreach (var pair in hitUntil) if (pair.Value <= visualTime) expiredHits.Add(pair.Key);
             foreach (var id in expiredHits) hitUntil.Remove(id);
             var lord = PredictedLordPosition ?? Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
