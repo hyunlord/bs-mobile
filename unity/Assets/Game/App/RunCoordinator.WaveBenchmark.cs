@@ -214,7 +214,7 @@ namespace Game.App
             {
                 Session = new InteractiveSession(runCatalog, benchmarkReplay.Header.Options);
                 Session.Diagnostics = benchmarkCoreDiagnostics;
-                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
@@ -589,7 +589,7 @@ namespace Game.App
                 UnityEngine.Debug.LogException(failure); result.verified = false; result.error = failure.ToString();
                 if (benchmarkOutput != null) File.WriteAllText(Path.Combine(benchmarkOutput, "benchmark.json"), JsonUtility.ToJson(result, true));
             }
-            finally { FinishHeroMotionComparisonMetrics(); offlineReplayCapture?.Dispose(); }
+            finally { FinishHeroMotionComparisonMetrics(result.verified, result.performanceEligible); offlineReplayCapture?.Dispose(); }
             if (!result.verified) UnityEngine.Debug.LogError(result.error ?? "Benchmark failed.");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (result.verified && !benchmarkInterrupted && benchmarkDiagnosticPass < benchmarkDiagnosticPasses)

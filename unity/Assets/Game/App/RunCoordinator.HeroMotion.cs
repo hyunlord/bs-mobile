@@ -47,17 +47,21 @@ namespace Game.App
         void RecordHeroMotionComparisonFrame()
         {
             if (heroMotionMetrics == null || heroMotionMetricsFinished || CurrentFrame == null || (waveBenchmarkRequested && (!waveBenchmarkReady || benchmarkWarmFrames > 0 || waveBenchmarkEnded))) return;
+            var foregroundInterval = Application.isFocused && (!waveBenchmarkRequested ||
+                benchmarkForeground.Focused && !benchmarkForeground.Paused &&
+                (benchmarkFocusEvents.Count == 0 || benchmarkFocusEvents[benchmarkFocusEvents.Count - 1].frame < Time.frameCount - 1));
             heroMotionMetrics.RecordCompletedFrame(Time.frameCount - 1, CurrentFrame.Tick,
                 CurrentFrame.Enemies.Count, Time.unscaledDeltaTime * 1000d,
-                world?.HeroMotionLiveMetrics?.LastPoseMilliseconds ?? -1);
+                world?.HeroMotionLiveMetrics?.LastPoseMilliseconds ?? -1, foregroundInterval);
         }
         // Call on benchmark completion and OnDestroy. Idempotent across both paths.
-        void FinishHeroMotionComparisonMetrics()
+        void FinishHeroMotionComparisonMetrics(bool replayVerified = false, bool benchmarkEligible = false)
         {
             if (heroMotionMetrics == null || heroMotionMetricsFinished) return;
             heroMotionMetricsFinished = true;
             try { heroMotionMetrics.Save(heroMotionMetricsDirectory, heroMotionComparison.Mode,
-                benchmarkReplaySha ?? "not-a-replay-capture", Session?.ComputeStateHash() ?? "unavailable", heroMotionMetricsCapture); }
+                benchmarkReplaySha ?? "not-a-replay-capture", Session?.ComputeStateHash() ?? "unavailable", heroMotionMetricsCapture,
+                replayVerified, benchmarkEligible); }
             finally { heroMotionMetrics.Dispose(); }
         }
     }

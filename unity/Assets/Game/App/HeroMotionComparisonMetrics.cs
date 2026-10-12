@@ -27,7 +27,7 @@ namespace Game.App
             deformation = ProfilerRecorder.StartNew(ProfilerCategory.U2D, "DeformationManager.LateUpdate", 1);
             main = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 1);
         }
-        public void RecordCompletedFrame(int frame, int tick, int enemies, double intervalMilliseconds, double poseMilliseconds)
+        public void RecordCompletedFrame(int frame, int tick, int enemies, double intervalMilliseconds, double poseMilliseconds, bool foregroundInterval)
         {
             if (count == Capacity) { DroppedSamples++; return; }
             // Memory polling is sparse; retain -1 for frames without a memory observation.
@@ -42,9 +42,10 @@ namespace Game.App
                 skin = deformation.Valid && deformation.Count > 0 ? deformation.LastValue * 0.000001 : -1,
                 managed = memory ? GC.GetTotalMemory(false) : -1,
                 native = memory ? UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() : -1,
-                gc = GC.CollectionCount(0), focus = Application.isFocused };
+                gc = GC.CollectionCount(0), focus = foregroundInterval };
         }
-        public void Save(string directory, string mode, string replaySha256, string finalStateHash, bool captureActive)
+        public void Save(string directory, string mode, string replaySha256, string finalStateHash, bool captureActive,
+            bool replayVerified, bool benchmarkEligible)
         {
             Directory.CreateDirectory(directory);
             using (var writer = new StreamWriter(Path.Combine(directory, "hero-motion-metrics.csv")))
@@ -59,15 +60,16 @@ namespace Game.App
             File.WriteAllText(Path.Combine(directory, "hero-motion-metrics.json"), JsonUtility.ToJson(new Manifest {
                 mode = mode, replaySha256 = replaySha256, finalStateHash = finalStateHash,
                 frames = count, dropped = DroppedSamples, captureActive = captureActive,
-                performanceEligible = !captureActive && DroppedSamples == 0,
+                replayVerified = replayVerified, developmentBuild = Debug.isDebugBuild,
+                performanceEligible = replayVerified && benchmarkEligible && !Debug.isDebugBuild && !captureActive && count > 0 && DroppedSamples == 0,
                 spriteSkinRecorderAvailable = deformation.Valid, mainRecorderAvailable = main.Valid }, true));
         }
         [Serializable] sealed class Manifest
         {
             public string contract = HeroMotionComparison.Contract, mode, replaySha256, finalStateHash;
-            public string interpretation = "Record at next Update; negative timings mean unavailable, never zero cost. Skin marker includes deferred package LateUpdate, not only pose submission. Filter focused rows. Compare release capture-off runs; build size is a separate on-disk measurement. FrameTimingManager GPU/render values are latest asynchronous timings, not exact row attribution. Unity allocated memory is not process RSS.";
+            public string interpretation = "Record at next Update; negative timings mean unavailable, never zero cost. Skin marker includes deferred package LateUpdate, not only pose submission. Filter focused rows: foreground transitions in this or the previous frame are excluded. Cross-check benchmark.json and its exclusion ledger. Eligibility requires verified terminal replay and eligible release benchmark; teardown alone is not completion. Build size is a separate on-disk measurement. FrameTimingManager GPU/render values are latest asynchronous timings, not exact row attribution. Unity allocated memory is not process RSS.";
             public int frames, dropped;
-            public bool captureActive, performanceEligible, spriteSkinRecorderAvailable, mainRecorderAvailable;
+            public bool captureActive, performanceEligible, replayVerified, developmentBuild, spriteSkinRecorderAvailable, mainRecorderAvailable;
         }
         public void Dispose() { deformation.Dispose(); main.Dispose(); }
     }
