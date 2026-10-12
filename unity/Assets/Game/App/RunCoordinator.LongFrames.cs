@@ -120,6 +120,7 @@ namespace Game.App
                     if (longFrameWorld != null) longFrameWorld.DiagnosticEffectCreated -= ObserveLongFrameEffect;
                     longFrameWorld = world;
                     longFrameWorld.DiagnosticEffectCreated += ObserveLongFrameEffect;
+                    longFrameWorld.RecordDiagnosticCapacityBaselines(ObserveLongFrameCapacityBaseline);
                 }
             }
             longFrameStages.Reset();
@@ -131,6 +132,7 @@ namespace Game.App
                 WindowX = windowPosition.x, WindowY = windowPosition.y,
                 Focused = Application.isFocused, Paused = Paused, ViewMs = -1, SpriteBatchMs = -1, EffectsMs = -1
             };
+            longFrames.SampleMemory(longFrame);
             longFrameGcStart = GC.CollectionCount(0);
             longFrameActive = true;
         }
@@ -227,6 +229,10 @@ namespace Game.App
         {
             if (longFramesClosed || !longFrameEffectKinds.Add((source, kind))) return;
             LongFrameEvent(DevelopmentLongFrameRecorder.EventFlags.FirstEffect, source);
+        }
+        void ObserveLongFrameCapacityBaseline(string collection, int capacity, int count)
+        {
+            longFrames.RecordCapacityBaseline(Time.frameCount, CurrentFrame?.Tick ?? 0, Stopwatch.GetTimestamp(), collection, capacity, count);
         }
         void ObserveLongFrameCapacityGrowth(string collection, int before, int after, int count)
         {
