@@ -13,12 +13,14 @@ namespace Game.App
         byte[] pcm;
         FileStream wave;
         StreamWriter index;
+        StreamWriter diagnostics;
         string directory;
         int rate, channels, markedUnityFrame = -1, markedVideoFrame = -1, markedTick;
         float markedAlpha;
         long sampleFrames, nonzeroSamples;
         double sumSquares, peak;
         int frames, renderedFrames, discardedFrames;
+        int lastRenderUnityFrame = -1;
         bool started, disposed;
         public Exception Error { get; private set; }
         public static bool Requested(string[] args)
@@ -37,6 +39,14 @@ namespace Game.App
             if (frames < 0 || sampleRate <= 0 || sampleRate % OfflineReplayCapture.FramesPerSecond != 0)
                 throw new ArgumentOutOfRangeException(nameof(sampleRate), "Capture requires an integral sample count per 60fps frame.");
             return (long)frames * (sampleRate / OfflineReplayCapture.FramesPerSecond);
+        }
+        public static int RenderSampleCount(int sampleFrames, int sampleRate, int channelCount, bool captured)
+        {
+            var expected = ExpectedSampleFrames(1, sampleRate);
+            if (sampleFrames < 0 || (captured && sampleFrames != expected))
+                throw new InvalidDataException($"Mixer returned {sampleFrames} sample frames; expected {expected}, channels={channelCount}, captured={captured}. Refusing padding, trimming or resampling.");
+            if (channelCount < 1 || channelCount > 2) throw new ArgumentOutOfRangeException(nameof(channelCount));
+            return checked(sampleFrames * channelCount);
         }
         public static void WriteWaveHeader(Stream stream, int sampleRate, int channelCount, long sampleFrameCount)
         {
@@ -65,6 +75,8 @@ namespace Game.App
             WriteWaveHeader(wave, rate, channels, 0);
             index = new StreamWriter(Path.Combine(directory, "offline-audio-index.csv"));
             index.WriteLine("videoFrame,unityFrame,tick,alpha,startSampleFrame,sampleFrames,sampleRate,channels");
+            diagnostics = new StreamWriter(Path.Combine(directory, "offline-audio-render.csv"));
+            diagnostics.WriteLine("unityFrame,previousRenderUnityFrame,markedVideoFrame,captured,reportedSampleFrames,expectedSampleFrames,channels,sampleRate,captureFramerate,captureDeltaTime,unscaledDeltaTime");
             if (!AudioRenderer.Start()) throw new InvalidOperationException("Unity AudioRenderer could not enter offline mode.");
             started = true;
             StartCoroutine(RenderFrames());
@@ -88,11 +100,27 @@ namespace Game.App
         void RenderFrame()
         {
             var count = AudioRenderer.GetSampleCountForCaptureFrame();
-            if (count < 0 || count * channels > buffer.Length) throw new InvalidDataException("Unity audio returned more than one fixed frame; refusing resampling or sample loss.");
-            var samples = buffer.GetSubArray(0, count * channels);
+            var captured = markedUnityFrame == Time.frameCount;
+            diagnostics.WriteLine(FormattableString.Invariant($"{Time.frameCount},{lastRenderUnityFrame},{markedVideoFrame},{captured},{count},{ExpectedSampleFrames(1, rate)},{channels},{rate},{Time.captureFramerate},{Time.captureDeltaTime:R},{Time.unscaledDeltaTime:R}"));
+            diagnostics.Flush();
+            int floatCount;
+            try { floatCount = RenderSampleCount(count, rate, channels, captured); }
+            catch (Exception exception)
+            {
+                throw new InvalidDataException($"Audio boundary failure at Unity frame {Time.frameCount}, previous={lastRenderUnityFrame}, captureFramerate={Time.captureFramerate}, captureDeltaTime={Time.captureDeltaTime:R}, unscaledDeltaTime={Time.unscaledDeltaTime:R}.", exception);
+            }
+            // Startup and excluded frames still advance the mixer using its complete reported block.
+            // Only unmarked frames may resize; recorded video remains exactly one 60Hz sample block.
+            if (floatCount > buffer.Length)
+            {
+                buffer.Dispose();
+                buffer = new NativeArray<float>(floatCount, Allocator.Persistent);
+            }
+            var samples = buffer.GetSubArray(0, floatCount);
             if (!AudioRenderer.Render(samples)) throw new InvalidOperationException("Unity AudioRenderer.Render failed.");
+            lastRenderUnityFrame = Time.frameCount;
             renderedFrames++;
-            if (markedUnityFrame != Time.frameCount) { discardedFrames++; return; }
+            if (!captured) { discardedFrames++; return; }
             if (markedVideoFrame != frames || count != ExpectedSampleFrames(1, rate)) throw new InvalidDataException("Offline audio/video sample boundary mismatch.");
             for (var i = 0; i < samples.Length; i++)
             {
@@ -136,7 +164,7 @@ namespace Game.App
             disposed = true; StopAllCoroutines();
             if (started) AudioRenderer.Stop();
             if (wave != null) { WriteWaveHeader(wave, rate, channels, sampleFrames); wave.Dispose(); }
-            index?.Dispose(); if (buffer.IsCreated) buffer.Dispose();
+            index?.Dispose(); diagnostics?.Dispose(); if (buffer.IsCreated) buffer.Dispose();
         }
         void OnDestroy() => Dispose();
     }

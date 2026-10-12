@@ -6,6 +6,19 @@ using UnityEngine;
 
 public sealed class OfflineReplayAudioTests
 {
+    [TestCase(0, 0), TestCase(800, 1600), TestCase(1600, 3200)]
+    public void WarmupDrainsReportedSampleFramesWithoutTrimming(int sampleFrames, int floatCount)
+        => Assert.That(OfflineReplayAudio.RenderSampleCount(sampleFrames, 48000, 2, false), Is.EqualTo(floatCount));
+    [TestCase(0), TestCase(799), TestCase(801), TestCase(1600)]
+    public void CapturedFrameRejectsMissingOrExcessSamples(int sampleFrames)
+        => Assert.Throws<InvalidDataException>(() => OfflineReplayAudio.RenderSampleCount(sampleFrames, 48000, 2, true));
+    [Test] public void CapturedStereoFrameIsExactly800SampleFrames()
+        => Assert.That(OfflineReplayAudio.RenderSampleCount(800, 48000, 2, true), Is.EqualTo(1600));
+    [Test] public void InvalidMixerCountsCannotAllocate()
+    {
+        Assert.Throws<InvalidDataException>(() => OfflineReplayAudio.RenderSampleCount(-1, 48000, 2, false));
+        Assert.Throws<OverflowException>(() => OfflineReplayAudio.RenderSampleCount(int.MaxValue, 48000, 2, false));
+    }
     [Test] public void OrdinaryExecutionDoesNotRecordAudio() => Assert.That(OfflineReplayAudio.Requested(Array.Empty<string>()), Is.False);
     [Test] public void AudioRequiresExplicitOfflineCapture()
     {
