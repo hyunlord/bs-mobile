@@ -61,4 +61,39 @@ public sealed class M1CombatReviewTests
         Assert.That(output,Does.Not.Contain(",299,hit,"));Assert.That(output,Does.Not.Contain(",600,hit,"));
         Assert.That(output,Does.Contain(",300,hit,"));Assert.That(output,Does.Contain(",599,hit,"));
     }
+    [Test] public void ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes()
+    {
+        var root=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../.omo/evidence/m1-256-combat-candidate3"));
+        if(!Directory.Exists(root))Assert.Ignore("Generated actual fixture sidecars unavailable; run showcase-fixtures first.");
+        var loader=typeof(RunCoordinator).GetMethod("LoadFrozenWaveBenchmark",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static);
+        Assert.That(loader,Is.Not.Null,"Frozen C05 catalog must be prepared.");
+        var loaded=new object[]{null,null};loader.Invoke(null,loaded);
+        var files=Directory.GetFiles(root,"*.case.json");Assert.That(files.Length,Is.EqualTo(24));
+        var failures=new System.Collections.Generic.List<string>();
+        foreach(var file in files)
+        {
+            var review=M1CombatReview.Parse(new[]{"--m1-combat-case",file,"--wave-benchmark","bound.ssreplay"});
+            var c=review.Definition.gear.composition;
+            TestContext.WriteLine(Path.GetFileName(file)+": composition="+(c==null?"null":c.version+"/"+c.placement+"/"+c.radius));
+            try {var derived=review.Apply((ContentCatalog)loaded[0],(string)loaded[1],review.Definition.replaySha256);Assert.That(ReviewShowcaseCatalog.Hash(derived),Is.EqualTo(review.Definition.catalogHash));}
+            catch(Exception e){failures.Add(Path.GetFileName(file)+": "+e.Message);}
+        }
+        Assert.That(failures,Is.Empty,string.Join("\n",failures));
+    }
+    [Test] public void ExplicitNullCompositionRemainsAbsentAfterUnityDeserialization()
+    {
+        File.WriteAllText(path,File.ReadAllText(path).Replace("\"gear\":{}","\"gear\":{\"composition\":null}"));
+        Assert.That(M1CombatReview.Parse(Args()).Definition.gear.composition,Is.Null);
+    }
+    [Test] public void MalformedNonemptyCompositionIsNotSilentlyDropped()
+    {
+        File.WriteAllText(path,File.ReadAllText(path).Replace("\"gear\":{}","\"gear\":{\"composition\":{\"radius\":1}}"));
+        Assert.Throws<InvalidDataException>(()=>M1CombatReview.Parse(Args()));
+    }
+    [Test] public void ValidCompositionRetainsItsParameters()
+    {
+        File.WriteAllText(path,File.ReadAllText(path).Replace("\"gear\":{}","\"gear\":{\"composition\":{\"version\":1,\"placement\":\"nearest-target\",\"delayTicks\":15,\"radius\":500}}"));
+        var composition=M1CombatReview.Parse(Args()).Definition.gear.composition;
+        Assert.That(composition.radius,Is.EqualTo(500));Assert.That(composition.delayTicks,Is.EqualTo(15));
+    }
 }

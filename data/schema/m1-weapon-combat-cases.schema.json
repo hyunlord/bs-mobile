@@ -269,7 +269,9 @@
               "enemySpeed",
               "enemyHealth",
               "durationTicks",
-              "enemyDamage"
+              "enemyDamage",
+              "suppressedUntilTick",
+              "baseExperience"
             ],
             "properties": {
               "enemyId": {
@@ -302,6 +304,14 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 1000
+              },
+              "suppressedUntilTick": {
+                "type": "integer",
+                "minimum": 601
+              },
+              "baseExperience": {
+                "type": "integer",
+                "minimum": 1
               }
             }
           }

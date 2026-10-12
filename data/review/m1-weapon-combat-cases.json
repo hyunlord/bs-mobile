@@ -33,7 +33,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -66,7 +68,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -99,7 +103,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -132,7 +138,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -165,7 +173,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -198,7 +208,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -231,7 +243,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -264,7 +278,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -297,7 +313,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -338,7 +356,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -379,7 +399,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -420,7 +442,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -453,7 +477,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -486,7 +512,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -519,7 +547,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -560,7 +590,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -601,7 +633,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -642,7 +676,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -675,7 +711,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -708,7 +746,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -741,7 +781,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -774,7 +816,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -807,7 +851,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     },
     {
@@ -840,7 +886,9 @@
         "enemySpeed": 100,
         "enemyHealth": 100,
         "durationTicks": 600,
-        "enemyDamage": 1
+        "enemyDamage": 1,
+        "suppressedUntilTick": 1000000,
+        "baseExperience": 1000000
       }
     }
   ]

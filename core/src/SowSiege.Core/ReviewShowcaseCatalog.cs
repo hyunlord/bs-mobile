@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
-    public sealed record WaveShowcaseArena(string EnemyId, int SpawnPeriodTicks, int EnemyCap, int EnemySpeed, int EnemyHealth, int DurationTicks, int EnemyDamage = 1);
+    public sealed record WaveShowcaseArena(string EnemyId, int SpawnPeriodTicks, int EnemyCap, int EnemySpeed, int EnemyHealth, int DurationTicks, int EnemyDamage, int SuppressedUntilTick, int BaseExperience);
     public sealed record WaveShowcaseCase(string Id, string DesignRef, string ProposedContract, string Stage, string Classification, WaveGearDefinition Gear, WaveShowcaseArena Arena);
     public static class ReviewShowcaseCatalog
     {
@@ -14,14 +14,14 @@ namespace SowSiege.Core
             if (review.ProposedContract != "m1-review-composition-v1" || review.Classification != "hypothesis" ||
                 review.Stage is not ("lv1" or "max" or "evolved") || review.Id != review.Gear.Id || review.Gear.DesignRef != review.DesignRef ||
                 !review.DesignRef.StartsWith("data/review/m1-weapon-combat-cases.json#", StringComparison.Ordinal) ||
-                review.Gear.Damage < 1 || review.Gear.Range < 1 || review.Gear.Range > 12000 || review.Gear.Count < 1 || review.Gear.Count > 64 ||
-                review.Gear.CooldownTicks < 1 || review.Arena.SpawnPeriodTicks < 1 || review.Arena.EnemyCap < 1 || review.Arena.EnemyCap > 1000 ||
-                review.Arena.EnemyHealth < 1 || review.Arena.EnemyDamage < 1 || review.Arena.EnemySpeed < 1 || review.Arena.DurationTicks != 600 || !wave.Enemies.ContainsKey(review.Arena.EnemyId))
+                review.Gear.Damage < 1 || review.Gear.Range < 1 || review.Gear.Count < 1 || review.Gear.Count > WaveAttackComposition.MaximumImpacts ||
+                review.Gear.CooldownTicks < 1 || review.Arena.SpawnPeriodTicks < 1 || review.Arena.EnemyCap < 1 ||
+                review.Arena.EnemyHealth < 1 || review.Arena.EnemyDamage < 1 || review.Arena.EnemySpeed < 1 || review.Arena.DurationTicks < 1 || review.Arena.SuppressedUntilTick <= review.Arena.DurationTicks || review.Arena.BaseExperience < 1 || !wave.Enemies.ContainsKey(review.Arena.EnemyId))
             { throw new ArgumentException("Invalid isolated review composition case."); }
             var gear = new Dictionary<string, WaveGearDefinition>(StringComparer.Ordinal);
             foreach (var entry in wave.Gear)
             {
-                gear.Add(entry.Key, entry.Value with { Damage = 0, Range = 0, Count = 0, Capacity = 0, CooldownTicks = 1000000, Levels = null, Aim = null, Composition = null });
+                gear.Add(entry.Key, entry.Value with { Damage = 0, Range = 0, Count = 0, Capacity = 0, CooldownTicks = review.Arena.SuppressedUntilTick, Levels = null, Aim = null, Composition = null });
             }
 
             gear[review.Id] = review.Gear with { Levels = null };
@@ -39,7 +39,7 @@ namespace SowSiege.Core
 
             var heroes = baseline.Heroes.ToDictionary(e => e.Key, e => e.Value, StringComparer.Ordinal);
             heroes[hero.Id] = hero with { StartingTool = startTool };
-            var rules = wave.Enemies.ToDictionary(e => e.Key, e => e.Value with { FirstSpawnTick = e.Key == review.Arena.EnemyId ? 0 : 1000000 }, StringComparer.Ordinal);
+            var rules = wave.Enemies.ToDictionary(e => e.Key, e => e.Value with { FirstSpawnTick = e.Key == review.Arena.EnemyId ? 0 : review.Arena.SuppressedUntilTick }, StringComparer.Ordinal);
             var enemies = baseline.Enemies.ToDictionary(e => e.Key, e => e.Value, StringComparer.Ordinal);
             enemies[review.Arena.EnemyId] = enemies[review.Arena.EnemyId] with { Health = review.Arena.EnemyHealth, Speed = review.Arena.EnemySpeed, Damage = review.Arena.EnemyDamage };
             var world = baseline.Tuning.World;
@@ -50,7 +50,7 @@ namespace SowSiege.Core
                     DurationTicks = review.Arena.DurationTicks,
                     World = world with
                     {
-                        Progression = world.Progression with { StartingWeapon = startWeapon, BaseExperience = 1000000 },
+                        Progression = world.Progression with { StartingWeapon = startWeapon, BaseExperience = review.Arena.BaseExperience },
                         Threat = world.Threat with { SpawnPeriodTicks = review.Arena.SpawnPeriodTicks, EnemyCap = review.Arena.EnemyCap }
                     }
                 },
@@ -67,7 +67,7 @@ namespace SowSiege.Core
                     Items = new Dictionary<string, WaveItemDefinition>(),
                     Evolutions = new Dictionary<string, WaveEvolutionDefinition>(),
                     MaterialTargets = new Dictionary<string, string>(),
-                    BossSpawnTick = 1000000
+                    BossSpawnTick = review.Arena.SuppressedUntilTick
                 }
             };
         }

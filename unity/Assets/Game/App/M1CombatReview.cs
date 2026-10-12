@@ -12,7 +12,7 @@ namespace Game.App
     {
         [Serializable] public sealed class Composition { public int version, delayTicks, stepTicks, spacing, radius; public string placement; }
         [Serializable] public sealed class Gear { public string id, designRef, kind, aim; public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback, workTicks, workRadius, rewardExperience, capacity; public Composition composition; }
-        [Serializable] public sealed class Arena { public string enemyId; public int spawnPeriodTicks, enemyCap, enemySpeed, enemyHealth, durationTicks, enemyDamage; }
+        [Serializable] public sealed class Arena { public string enemyId; public int spawnPeriodTicks, enemyCap, enemySpeed, enemyHealth, durationTicks, enemyDamage, suppressedUntilTick, baseExperience; }
         [Serializable] public sealed class Case
         {
             public string contract, replaySha256, baselineDataHash, baselineCatalogHash, catalogHash, id, designRef, proposedContract, stage, classification, shape, audioCue, stateHash, scope;
@@ -38,8 +38,19 @@ namespace Game.App
             var value = JsonUtility.FromJson<Case>(System.Text.Encoding.UTF8.GetString(bytes));
             if (value == null || value.contract != "m1-combat-case-v1" || value.gear == null || value.arena == null || value.classification != "hypothesis" || value.proposedContract != "m1-review-composition-v1" || value.captureStartTick != 300 || value.endTick != 600 ||
                 string.IsNullOrEmpty(value.replaySha256) || string.IsNullOrEmpty(value.catalogHash) || string.IsNullOrEmpty(value.baselineCatalogHash)) throw new InvalidDataException("Invalid combat review sidecar.");
+            value.gear.composition = NormalizeComposition(value.gear.composition);
             using var sha = SHA256.Create();
             return new M1CombatReview { Definition = value, SidecarSha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant() };
+        }
+        static Composition NormalizeComposition(Composition value)
+        {
+            // JsonUtility materializes inline JSON null as an empty serializable object.
+            if (value == null || value.version == 0 && string.IsNullOrEmpty(value.placement) &&
+                value.delayTicks == 0 && value.stepTicks == 0 && value.spacing == 0 && value.radius == 0) return null;
+            if (value.version != 1 || (value.placement != "nearest-target" && value.placement != "forward-line") ||
+                value.delayTicks < 0 || value.stepTicks < 0 || value.spacing < 0 || value.radius <= 0)
+                throw new InvalidDataException("Malformed nonempty combat composition.");
+            return value;
         }
         public ContentCatalog Apply(ContentCatalog baseline, string baselineDataHash, string replaySha)
         {
@@ -51,7 +62,7 @@ namespace Game.App
             var gear = new WaveGearDefinition(g.id,g.designRef,kind,g.damage,g.range,g.cooldownTicks,g.speed,g.count,g.lifetimeTicks,g.knockback,g.workTicks,g.workRadius,g.rewardExperience,g.capacity,
                 Aim:string.IsNullOrEmpty(g.aim)?null:g.aim, Composition:c==null?null:new WaveAttackComposition(c.version,c.placement,c.delayTicks,c.stepTicks,c.spacing,c.radius));
             var result = ReviewShowcaseCatalog.Create(baseline,new WaveShowcaseCase(d.id,d.designRef,d.proposedContract,d.stage,d.classification,gear,
-                new WaveShowcaseArena(a.enemyId,a.spawnPeriodTicks,a.enemyCap,a.enemySpeed,a.enemyHealth,a.durationTicks,a.enemyDamage)));
+                new WaveShowcaseArena(a.enemyId,a.spawnPeriodTicks,a.enemyCap,a.enemySpeed,a.enemyHealth,a.durationTicks,a.enemyDamage,a.suppressedUntilTick,a.baseExperience)));
             if (ReviewShowcaseCatalog.Hash(result) != d.catalogHash) throw new InvalidDataException("Derived combat catalog hash mismatch.");
             return result;
         }

@@ -12,7 +12,7 @@ namespace SowSiege.Core
         private void ScheduleReviewImpacts(WaveGearDefinition gear)
         {
             var c = gear.Composition!;
-            if (c.Version != 1 || c.Placement is not ("nearest-target" or "forward-line") || c.DelayTicks < 1 || c.StepTicks < 0 || c.Spacing < 0 || c.Radius < 1 || gear.Count < 1 || gear.Count > 64)
+            if (c.Version != 1 || c.Placement is not ("nearest-target" or "forward-line") || c.DelayTicks < 1 || c.StepTicks < 0 || c.Spacing < 0 || c.Radius < 1 || gear.Count < 1 || gear.Count > WaveAttackComposition.MaximumImpacts)
             { throw new ArgumentException("Unsupported review impact composition."); }
             queries.ByDistance(targets, world.Lord, gear.Range, world.Lord);
             var count = c.Placement == "nearest-target" ? Math.Min(gear.Count, targets.Count) : gear.Count;
