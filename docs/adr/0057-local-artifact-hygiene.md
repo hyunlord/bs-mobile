@@ -32,4 +32,4 @@ AGENTS.md에 「운영: 로컬 산출물과 디스크」 절을 둔다.
 
 ## 검증
 
-문서 계약 변경이다. `node tools/check-docs.mjs`와 docs-only CI로 링크와 형식을 확인한다. 실제 정리량은 #249 보고에 전·후 표로 남긴다.
+문서 계약 변경이지만 루트 `AGENTS.md`가 `docs/` 밖에 있으므로 `node tools/ci-scope.mjs` 판정은 full이다. `node tools/check-docs.mjs`로 링크와 형식을 확인하고 full CI(quality·secrets) 통과를 관문으로 삼는다. 실제 정리량은 #249 보고에 전·후 표로 남긴다.
