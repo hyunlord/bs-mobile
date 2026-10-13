@@ -143,6 +143,28 @@ public sealed class M1HeroProductionReviewTests
         }
         finally {UnityEngine.Object.DestroyImmediate(go);}
     }
+    [Test] public void OccludedHeadRequiresExplicitUnavailableFlagAndKeepsRatioUnavailable()
+    {
+        var value=ValidManifest();
+        const string json="{\"schemaVersion\":1,\"method\":\"frame-drawn\",\"clips\":[{\"id\":\"walk\",\"direction\":\"N\",\"texture\":\"walk.png\",\"columns\":4,\"rows\":2,\"frames\":8,\"fps\":8,\"pivotX\":0.5,\"pivotY\":0.1,\"bodyHeightPixels\":100,\"headHeightPixels\":null,\"headMeasurementUnavailable\":true}]}";
+        value=UnityEngine.JsonUtility.FromJson<HeroProductionManifest>(json);
+        Assert.That(value.clips[0].headHeightPixels,Is.Zero);
+        Assert.DoesNotThrow(()=>WorldRenderer.ValidateProductionManifest(value));
+        Assert.That(value.clips[0].MeasuredHeadHeightRatio,Is.Null);
+        value.clips[0].headMeasurementUnavailable=false;
+        Assert.Throws<InvalidDataException>(()=>WorldRenderer.ValidateProductionManifest(value));
+    }
+    [TestCase(-1f),TestCase(14f),TestCase(float.NaN),TestCase(float.PositiveInfinity)]
+    public void UnavailableHeadCannotConcealInvalidOrConflictingMeasurement(float pixels)
+    {
+        var value=ValidManifest();value.clips[0].headMeasurementUnavailable=true;value.clips[0].headHeightPixels=pixels;
+        Assert.Throws<InvalidDataException>(()=>WorldRenderer.ValidateProductionManifest(value));
+    }
+    [Test] public void HistoricalMeasuredHeadRetainsItsMeasuredRatio()
+    {
+        var value=ValidManifest();Assert.DoesNotThrow(()=>WorldRenderer.ValidateProductionManifest(value));
+        Assert.That(value.clips[0].MeasuredHeadHeightRatio,Is.EqualTo(.14f));
+    }
     static HeroProductionManifest ValidManifest() => new HeroProductionManifest
     {
         schemaVersion = 1, method = "frame-drawn", headHeightRatio = 1f / 7,

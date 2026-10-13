@@ -18,7 +18,8 @@ namespace Game.View
         public string id, direction, texture, authoredDirection;
         public int columns, rows, frames, impactFrame;
         public float fps, pivotX, pivotY, bodyHeightPixels, headHeightPixels;
-        public bool mirror;
+        public bool mirror, headMeasurementUnavailable;
+        public float? MeasuredHeadHeightRatio => headMeasurementUnavailable ? (float?)null : headHeightPixels / bodyHeightPixels;
         [NonSerialized] public ArtVisual visual;
     }
 
@@ -92,7 +93,8 @@ namespace Game.View
                 if (clip == null || string.IsNullOrEmpty(clip.id) || string.IsNullOrEmpty(clip.direction) ||
                     string.IsNullOrEmpty(clip.texture) || clip.columns < 1 || clip.rows < 1 || clip.frames < 1 ||
                     clip.impactFrame < 0 || clip.impactFrame >= clip.frames || clip.frames > (long)clip.columns * clip.rows || !PositiveFinite(clip.fps) || !PositiveFinite(clip.bodyHeightPixels) ||
-                    !PositiveFinite(clip.headHeightPixels) || clip.headHeightPixels >= clip.bodyHeightPixels ||
+                    (clip.headMeasurementUnavailable ? clip.headHeightPixels != 0 :
+                        !PositiveFinite(clip.headHeightPixels) || clip.headHeightPixels >= clip.bodyHeightPixels) ||
                     float.IsNaN(clip.pivotX) || float.IsNaN(clip.pivotY) || clip.pivotX < 0 || clip.pivotX > 1 || clip.pivotY < 0 || clip.pivotY > 1)
                     throw new InvalidDataException("Invalid production clip dimensions or measured landmarks.");
                 if(!identities.Add(clip.direction+":"+clip.id)) throw new InvalidDataException("Duplicate production clip.");
