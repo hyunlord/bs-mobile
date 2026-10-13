@@ -303,8 +303,7 @@ namespace SowSiege.Core
                     subscriptions.ReturnMissionFood(group); group.Phase = "idle"; group.Formation = "advance"; State.AvailableWorkers++; continue;
                 }
                 var anchor = group.Phase == "guarding" ? group.Destination : world.Lord;
-                queries.ByDistance(enemyCandidates, anchor, gear.Range, group.Position);
-                var enemy = enemyCandidates.Count == 0 ? null : enemyCandidates[0];
+                var enemy = queries.Nearest(enemyCandidates, anchor, gear.Range, group.Position);
                 if (enemy is null) { group.Phase = "returning"; continue; }
                 if (group.Training > 0 && world.Tick < group.ReadyTick)
                 {

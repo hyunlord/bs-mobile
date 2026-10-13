@@ -13,10 +13,15 @@ namespace SowSiege.Core
     {
         public int NextActivation;
         public Dictionary<int, WaveActivation> Activations = new();
+        private readonly Dictionary<(string Name, string Source), string> metricKeys = new();
         private void Metric(string name, string source, long amount)
         {
             Counters[name] = Counters.GetValueOrDefault(name) + amount;
-            var key = name + ":" + source;
+            if (!metricKeys.TryGetValue((name, source), out var key))
+            {
+                key = name + ":" + source;
+                metricKeys.Add((name, source), key);
+            }
             Counters[key] = Counters.GetValueOrDefault(key) + amount;
         }
         public int BeginActivation(string source, int pending, int expires)
