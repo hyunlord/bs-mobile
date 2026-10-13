@@ -1,0 +1,9 @@
+scope,samples,p50Ms,p95Ms,maximumMs,sourceField,sourceDirectory,interpretation
+"core-advance","601","7.6311","17.2974","36.1806","advanceMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","Accepted advance frames only; includes all Core stages; no root-cause stage attribution"
+"presentation","982","3.2557","4.6484","5.7082","presentMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","CPU presentation scope; not GPU rendering"
+"snapshot","601","0.2246","0.2562","1.8259","snapshotMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","Accepted advance frames"
+"hud","982","0.0108","0.0222","0.0318","hudMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","CPU HUD update"
+"cpu-main-async","1146","16.607","33.279334","3976.539959","cpuMainThreadMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","All asynchronous timing observations including warmup; not density/window joined"
+"cpu-render-async","1146","0.303916","0.360083","3.70896","cpuRenderThreadMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","All asynchronous timing observations including warmup; not density/window joined"
+"gpu-async","1146","0.7366249919869006","1.180624996777624","10.003708361182362","gpuMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","All asynchronous timing observations including warmup; not density/window joined"
+"present-wait-async","1146","0.057291","13.584292","14.08675","cpuPresentWaitMs","artifacts/m1-256/performance-revision7-2dfad7e-retry2/combined/actual-eight","All asynchronous timing observations including warmup; not density/window joined"

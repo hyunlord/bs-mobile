@@ -28,6 +28,11 @@ export function makePerformancePlan(root, baked, drawn) {
   return { contract: 'm1-knight-measure-v1', purpose: 'm1-production-measure-v1', entries,
     interpretation: 'Capture OFF, same C05 dense replay and 1.4 camera. All8 adds eight simultaneous View-only effects; it is NOT eight combined Core combat modules. Foreground loss is excluded/resumed by native benchmark; observer records app names without screen/accessibility permission. One run per variant is a sample, not a causal regression estimate.' };
 }
+export function summaryInterpretation(plan) {
+  const scope = plan.entries.some(entry => entry.allEffects)
+    ? ' All8 entries add eight simultaneous View-only effects, not eight combined Core combat modules.' : '';
+  return 'Capture OFF, eligible foreground rows only. Replay identity is recorded per row; compared runs must satisfy the plan hash checks.' + scope + ' One run per variant is a sample, not a causal regression estimate.';
+}
 export function stats(values) {
   const v = values.filter(x => Number.isFinite(x) && x >= 0).sort((a, b) => a - b);
   return v.length ? { samples: v.length, p50: v[Math.ceil(v.length * .5) - 1], p95: v[Math.ceil(v.length * .95) - 1], max: v.at(-1) } : null;
@@ -74,7 +79,7 @@ export function summarizePerformance(plan) {
   });
   const baseline = results.find(r => r.name === 'cutout-baseline'); assert(baseline);
   for (const row of results) row.sampleP95DeltaPercent = (row.density800Plus.frameMs.p95 / baseline.density800Plus.frameMs.p95 - 1) * 100;
-  return { contract: plan.purpose, interpretation: plan.interpretation, limitations: 'Unity allocated bytes are not process RSS. Negative/unavailable recorder samples become null, never zero. Pacing remains the same native 60fps setting. Three visual methods retain original replay hash; all8 is visual workload only. Native foreground qualification, not external observer timing, decides included frames.', rows: results };
+  return { contract: plan.purpose, interpretation: summaryInterpretation(plan), limitations: 'Unity allocated bytes are not process RSS. Negative/unavailable recorder samples become null, never zero. Pacing remains the same native 60fps setting. Each variant retains its declared replay hash. Native foreground qualification, not external observer timing, decides included frames.', rows: results };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const [command, file, first, second] = process.argv.slice(2);

@@ -173,4 +173,12 @@ public sealed class M1CombatReviewTests
             Assert.That(json,Does.Contain("\"rewardCollectedEvents\": 0"));Assert.That(json,Does.Contain("\"rewardExperienceCollected\": 0"));}
         finally {Directory.Delete(output,true);}
     }
+    [Test] public void StartupFailureRemainsPrimaryWhenEvidenceExportAlsoFails()
+    {
+        var original="Combat case cannot mix review contracts: --knight-review";
+        var text=RunCoordinator.EditorPreserveBenchmarkFailure(original,new InvalidOperationException("secondary export failure"));
+        Assert.That(text,Does.StartWith(original));Assert.That(text,Does.Contain("secondary export failure"));
+    }
+    [Test] public void ExportFailureIsReportedWhenReplayHadNoPriorFailure()
+    {Assert.That(RunCoordinator.EditorPreserveBenchmarkFailure(null,new InvalidOperationException("export failure")),Does.Contain("export failure"));}
 }

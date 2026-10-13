@@ -564,6 +564,11 @@ namespace Game.App
             if (rearmStallTrigger) benchmarkTraceWindow = 0;
         }
 #endif
+        static string PreserveBenchmarkFailure(string original, Exception exportFailure)
+            => string.IsNullOrEmpty(original) ? exportFailure.ToString() : original + "\nEvidence export also failed:\n" + exportFailure;
+#if UNITY_EDITOR
+        public static string EditorPreserveBenchmarkFailure(string original, Exception exportFailure) => PreserveBenchmarkFailure(original, exportFailure);
+#endif
         void EndWaveBenchmark(Exception exception)
         {
             if (waveBenchmarkEnded) return;
@@ -657,7 +662,7 @@ namespace Game.App
             }
             catch (Exception failure)
             {
-                UnityEngine.Debug.LogException(failure); result.verified = false; result.error = failure.ToString();
+                UnityEngine.Debug.LogException(failure); result.verified = false; result.error = PreserveBenchmarkFailure(result.error, failure);
                 if (benchmarkOutput != null) File.WriteAllText(Path.Combine(benchmarkOutput, "benchmark.json"), JsonUtility.ToJson(result, true));
             }
             finally { FinishHeroMotionComparisonMetrics(result.verified, result.performanceEligible); offlineReplayCapture?.Dispose(); }

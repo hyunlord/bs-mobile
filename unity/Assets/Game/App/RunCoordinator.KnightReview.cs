@@ -21,7 +21,7 @@ namespace Game.App
         }
         void SaveKnightReview(bool verified)
         {
-            if (knightReview == null) return;
+            if (knightReview == null || world == null || cameraScaleComparison == null) return;
             File.WriteAllText(Path.Combine(benchmarkOutput, "knight-review.json"), JsonUtility.ToJson(new KnightManifest {
                 hero = heroProductionReview == null ? "a-knight-live" : world.HeroProductionMethod,
                 productionManifestSha256 = heroProductionReview?.ManifestSha256, productionDirection = heroProductionReview?.Direction,
