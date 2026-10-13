@@ -1,3 +1,5 @@
+> **2026-10-13 사용자 최종 판정: 실패.** AI 생성 2D 프레임 방식은 중단한다. 프레임마다 비율·디테일 변화, 중간 그림 부족에 따른 자세 끊김, 피격 시 전신 빨강 약1초가 이유다. 아래 부분 판정은 당시 이력이며 사용자 판정을 대체하지 않는다. 결과물·원본·실패 영상은 보존하고 PR261은 초안을 유지한다. 후속은 [M1-5 #262](https://github.com/hyunlord/bs-mobile/issues/262)의 기성 리그 모델 선택부터 시작한다.
+
 [초반 2배 비교 · 걷기 판정 부적합 표본](https://github.com/hyunlord/bs-mobile/releases/download/m1-4-frame-0bd300c/hero-walk-slash-2x.mp4) · [피격·쓰러짐 2배 비교](https://github.com/hyunlord/bs-mobile/releases/download/m1-4-frame-0bd300c/hero-hit-death-2x.mp4)
 
 [철날 검 · 3단계 30초](https://github.com/hyunlord/bs-mobile/releases/download/m1-4-frame-0bd300c/core-iron_blade-three-stages.mp4) · [연쇄 번개](https://github.com/hyunlord/bs-mobile/releases/download/m1-4-frame-0bd300c/core-storm_fork-three-stages.mp4) · [뿔나팔](https://github.com/hyunlord/bs-mobile/releases/download/m1-4-frame-0bd300c/core-muster_horn-three-stages.mp4)
