@@ -353,11 +353,22 @@ export function combatSheetTiming(events, event, start, totalFrames) {
 }
 export function actualAimSheet(hero, definition) {
   assert.equal(definition.gear.aim, 'nearest-enemy', 'Nearest-aim evidence requires the opt-in Core rule');
-  const start = hero.findIndex(row => row.action === 'slash-light' && Number(row.attackTick) >= definition.captureStartTick && Number(row.attackTick) < definition.endTick && Math.hypot(Number(row.targetDx), Number(row.targetDy)) > 0 && row.slashDirection === row.drawnDirection);
+  const directions = ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'];
+  const alignment = row => {
+    const x = Number(row.targetDx), y = Number(row.targetDy), octant = directions.indexOf(row.drawnDirection);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || Math.hypot(x, y) === 0 || octant < 0 || row.slashDirection !== row.drawnDirection) return null;
+    const angle = Math.atan2(y, x), difference = angle - octant * Math.PI / 4;
+    const errorDegrees = Math.abs(Math.atan2(Math.sin(difference), Math.cos(difference))) * 180 / Math.PI;
+    return errorDegrees <= 22.5001 ? { vectorDegrees: angle * 180 / Math.PI, errorDegrees } : null;
+  };
+  const eligible = row => row.action === 'slash-light' && Number(row.attackTick) >= definition.captureStartTick && Number(row.attackTick) < definition.endTick;
+  const vectorMismatchFrames = hero.flatMap((row, i) => eligible(row) && !alignment(row) ? [i] : []);
+  if (vectorMismatchFrames.length) return { available: false, vectorMismatchFrames, reason: 'Recorded slash frames disagree with the Core attack vector; a later valid strip cannot hide them' };
+  const start = hero.findIndex(row => eligible(row) && alignment(row));
   if (start < 0 || start + 11 >= hero.length) return { available: false, reason: 'No complete visible action strip with a recorded Core attack vector' };
+  const samples = hero.slice(start, start + 12).map((row, i) => ({ frame: start + i, action: row.action, attackTick: Number(row.attackTick), drawnDirection: row.drawnDirection, alignment: eligible(row) ? alignment(row) : null }));
   const row = hero[start];
-  assert(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'].includes(row.slashDirection));
-  return { available: true, startFrame: start, frames: Array.from({ length: 12 }, (_, i) => start + i), attackTick: Number(row.attackTick), targetId: Number(row.targetId), targetDx: Number(row.targetDx), targetDy: Number(row.targetDy), slashDirection: row.slashDirection, drawnDirection: row.drawnDirection, rule: 'Actual opt-in nearest-enemy Core attack vector; full portrait retains surrounding context. Target ID may be unavailable (-1). Pixel readability remains visual review.' };
+  return { available: true, startFrame: start, frames: samples.map(sample => sample.frame), samples, observedDirections: [...new Set(hero.filter(row => eligible(row) && alignment(row)).map(row => row.drawnDirection))], attackTick: Number(row.attackTick), targetId: Number(row.targetId), targetDx: Number(row.targetDx), targetDy: Number(row.targetDy), slashDirection: row.slashDirection, drawnDirection: row.drawnDirection, rule: 'Actual opt-in nearest-enemy Core attack vector independently checked against the drawn 45-degree sector throughout the strip. Observed directions are coverage, not proof of all eight directions. Full portrait retains context; target ID may be unavailable (-1). Pixel readability remains visual review.' };
 }
 function assembleWeapons(plan, output, contentId) {
   const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;

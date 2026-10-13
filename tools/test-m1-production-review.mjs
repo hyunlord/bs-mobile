@@ -89,6 +89,16 @@ try {
   assert.deepEqual(aimStrip.frames, Array.from({ length: 12 }, (_, i) => i));
   assert.throws(() => actualAimSheet(aimingRows, { ...aimingDefinition, gear: {} }));
   assert.equal(actualAimSheet(aimingRows.map(row => ({ ...row, drawnDirection: 'E' })), aimingDefinition).available, false);
+  assert.equal(actualAimSheet(aimingRows.map(row => ({ ...row, slashDirection: 'E', drawnDirection: 'E' })), aimingDefinition).available, false, 'Matching labels cannot substitute for the recorded attack vector');
+  assert.equal(actualAimSheet(aimingRows.map(row => ({ ...row, targetDx: 'Infinity' })), aimingDefinition).available, false);
+  assert.equal(actualAimSheet(aimingRows.map((row, i) => i === 5 ? { ...row, targetDx: '200' } : row), aimingDefinition).available, false, 'The entire selected action strip must retain vector alignment');
+  const leadingMismatch = actualAimSheet(aimingRows.map((row, i) => i === 0 ? { ...row, targetDx: '200' } : row), aimingDefinition);
+  assert.equal(leadingMismatch.available, false); assert.deepEqual(leadingMismatch.vectorMismatchFrames, [0]);
+  for (const [direction, x, y] of [['E', 1, 0], ['NE', 1, 1], ['N', 0, 1], ['NW', -1, 1], ['W', -1, 0], ['SW', -1, -1], ['S', 0, -1], ['SE', 1, -1]]) {
+    const proof = actualAimSheet(aimingRows.map(row => ({ ...row, targetDx: String(x), targetDy: String(y), slashDirection: direction, drawnDirection: direction })), aimingDefinition);
+    assert.equal(proof.available, true); assert.deepEqual(proof.observedDirections, [direction]);
+    assert(proof.samples.every(sample => sample.alignment.errorDegrees < .0001));
+  }
   const selectedCombat = makeCombatPlan(path.join(root, 'selected-combat'), cases, newFrame);
   assert(selectedCombat.runs.every(run => run.args.includes(newFrame) && run.expectedProduction.hero === 'frame-drawn'));
   assert(selectedCombat.runs.every(run => !run.args.includes('--knight-review') && !run.args.includes('--camera-scale')));
