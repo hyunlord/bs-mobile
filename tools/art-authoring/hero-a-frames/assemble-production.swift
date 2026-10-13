@@ -48,6 +48,9 @@ for job in jobs {
  let texture="\(id)-\(direction.lowercased())-atlas.png"
  try d.representation(using:.png,properties:[:])!.write(to:root.appendingPathComponent(texture))
  var clip=job;clip.removeValue(forKey:"source")
+ if job["headHeightPixels"] is NSNull {
+  clip["headMeasurementUnavailable"]=true
+ }
  clip["texture"]=texture;clip["mirror"]=false;clip["authoredDirection"]=direction
  clip["pivotX"]=0.5;clip["pivotY"]=Double(oh-ground)/Double(oh)
  clip["frameWidth"]=ow;clip["frameHeight"]=oh
