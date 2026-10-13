@@ -123,6 +123,26 @@ public sealed class M1HeroProductionReviewTests
         Assert.That(WorldRenderer.ProductionAttackTime(clip,0),Is.Zero,"Historical clips keep their original start.");
         Assert.That(WorldRenderer.ProductionAttackDuration(clip),Is.EqualTo(8f/12));
     }
+    [Test] public void AttackLifetimeUsesTargetDirectionClipInsteadOfWalkingDirection()
+    {
+        var go=new UnityEngine.GameObject("directional-attack-duration-test");var world=go.AddComponent<WorldRenderer>();
+        try
+        {
+            var east=ValidManifest().clips[0];east.id="slash-light";east.fps=24;east.impactFrame=6;
+            var northwest=ValidManifest().clips[0];northwest.id="slash-light";northwest.direction="NW";northwest.fps=8;northwest.impactFrame=2;
+            var manifest=ValidManifest();manifest.clips=new[]{east,northwest};world.EditorPrepareProductionAttackTest(manifest);
+            world.EditorAcceptProductionAttack(new SowSiege.Core.WaveEvent(1,30,"attack","core:iron_blade",-1,
+                new SowSiege.Core.WorldPoint(0,0),new SowSiege.Core.WorldPoint(-100,100),0),1);
+            Assert.That(world.EditorResolveProductionAttack("E",.5f,out var clip),Is.True,"East walking clip expires after 2/24s, but the actual NW attack lasts 6/8s.");
+            Assert.That(clip,Is.SameAs(northwest));Assert.That(world.HeroProductionDirection,Is.EqualTo("NW"));
+            Assert.That(WorldRenderer.ProductionFrame(clip.id,WorldRenderer.ProductionAttackTime(clip,.5f),clip.frames,clip.fps),Is.EqualTo(6));
+            Assert.That(world.EditorResolveProductionAttack("E",.75f,out clip),Is.False);
+            Assert.That(world.HeroProductionDirection,Is.EqualTo("E"),"Finished attack returns to movement direction.");
+            east.fps=1;east.impactFrame=0;
+            Assert.That(world.EditorResolveProductionAttack("E",.8f,out clip),Is.False,"A longer walking-direction clip cannot extend the actual attack.");
+        }
+        finally {UnityEngine.Object.DestroyImmediate(go);}
+    }
     static HeroProductionManifest ValidManifest() => new HeroProductionManifest
     {
         schemaVersion = 1, method = "frame-drawn", headHeightRatio = 1f / 7,

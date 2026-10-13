@@ -148,12 +148,31 @@ namespace Game.View
             }
         }
 
-        HeroProductionClip ProductionClip(string id)
+        HeroProductionClip ProductionClip(string id, string direction = null)
         {
             foreach (var clip in productionHero.clips)
-                if (clip.direction == productionDirection && clip.id == id) return clip;
+                if (clip.direction == (direction ?? productionDirection) && clip.id == id) return clip;
             return null;
         }
+
+        bool ResolveProductionAttack(float age, out HeroProductionClip slash)
+        {
+            var direction = productionFollowFacing
+                ? productionEightDirections ? productionAttackDirection : HeroProductionTargetDirection.x < 0 ? "W" : "E"
+                : productionDirection;
+            slash = ProductionClip(motionAttackEvolved ? "slash-heavy" : "slash-light", direction) ?? ProductionClip("slash-light", direction);
+            var active = age >= 0 && age < ProductionAttackDuration(slash);
+            if (active && productionFollowFacing) productionDirection = direction;
+            return active;
+        }
+#if UNITY_EDITOR
+        public bool EditorResolveProductionAttack(string movementDirection, float age, out HeroProductionClip slash)
+        {
+            productionDirection = movementDirection;
+            productionFollowFacing = productionEightDirections = true;
+            return ResolveProductionAttack(age, out slash);
+        }
+#endif
 
         bool DrawHeroProduction(ArtVisual reference, Vector2 position, bool walking, bool hit, bool dead, ActorFacingPose facing, Color color)
         {
@@ -162,10 +181,8 @@ namespace Game.View
                 productionDirection=productionEightDirections ? ProductionDirection(position-productionPreviousPosition) : facing.SignedWidth<0?"W":"E";
             productionPreviousPosition=position;productionHasPosition=true;
             heroLiveRig?.Hide();
-            var slash = ProductionClip(motionAttackEvolved ? "slash-heavy" : "slash-light") ?? ProductionClip("slash-light");
             var attackAge = visualTime - motionAttackStarted;
-            var attack = attackAge >= 0 && attackAge < ProductionAttackDuration(slash);
-            if(productionFollowFacing && attack) productionDirection=productionEightDirections ? productionAttackDirection : HeroProductionTargetDirection.x<0?"W":"E";
+            var attack = ResolveProductionAttack(attackAge, out var slash);
             if(hit && !productionWasHit) productionHitStarted=visualTime;
             productionWasHit=hit;
             var hitClip=ProductionClip("hit");
