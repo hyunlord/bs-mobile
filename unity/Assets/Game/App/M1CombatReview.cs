@@ -8,7 +8,7 @@ using Game.View;
 
 namespace Game.App
 {
-    public sealed class M1CombatReview
+    public sealed partial class M1CombatReview
     {
         [Serializable] public sealed class Composition { public int version, delayTicks, stepTicks, spacing, radius; public string placement; }
         [Serializable] public sealed class Gear { public string id, designRef, kind, aim; public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback, workTicks, workRadius, rewardExperience, capacity; public Composition composition; }
@@ -17,7 +17,7 @@ namespace Game.App
         {
             public string contract, replaySha256, baselineDataHash, baselineCatalogHash, catalogHash, id, designRef, proposedContract, stage, classification, shape, audioCue, stateHash, scope;
             public int captureStartTick, endTick, positiveHits, kills, windowHits, windowKills, maximumEnemies;
-            public Gear gear; public Arena arena;
+            public Gear gear; public Arena arena; public Combined combined; public Source[] sources;
         }
         public Case Definition { get; private set; }
         public string SidecarSha256 { get; private set; }
@@ -36,9 +36,13 @@ namespace Game.App
                 if (Array.IndexOf(args,flag) >= 0) throw new ArgumentException("Combat case cannot mix review contracts: " + flag);
             var bytes = File.ReadAllBytes(args[at+1]);
             var value = JsonUtility.FromJson<Case>(System.Text.Encoding.UTF8.GetString(bytes));
-            if (value == null || value.contract != "m1-combat-case-v1" || value.gear == null || value.arena == null || value.classification != "hypothesis" || value.proposedContract != "m1-review-composition-v1" || value.captureStartTick != 300 || value.endTick != 600 ||
-                string.IsNullOrEmpty(value.replaySha256) || string.IsNullOrEmpty(value.catalogHash) || string.IsNullOrEmpty(value.baselineCatalogHash)) throw new InvalidDataException("Invalid combat review sidecar.");
-            value.gear.composition = NormalizeComposition(value.gear.composition);
+            if (value == null || string.IsNullOrEmpty(value.replaySha256) || string.IsNullOrEmpty(value.catalogHash) || string.IsNullOrEmpty(value.baselineCatalogHash)) throw new InvalidDataException("Invalid combat review sidecar.");
+            if (value.contract == "m1-combat-combined-v1") ValidateCombined(value,args);
+            else
+            {
+                if (value.contract != "m1-combat-case-v1" || value.gear == null || value.arena == null || value.classification != "hypothesis" || value.proposedContract != "m1-review-composition-v1" || value.captureStartTick != 300 || value.endTick != 600) throw new InvalidDataException("Invalid combat review sidecar.");
+                value.gear.composition = NormalizeComposition(value.gear.composition);
+            }
             using var sha = SHA256.Create();
             return new M1CombatReview { Definition = value, SidecarSha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant() };
         }
@@ -54,7 +58,7 @@ namespace Game.App
         }
         public void ValidateReplayOptions(InteractiveOptions options)
         {
-            var a = Definition.arena;
+            var a = IsCombined ? Definition.combined.arena : Definition.arena;
             if (a.spawnRadius == 0 && a.recycleRadius == 0)
             {
                 if (options.Field != null) throw new InvalidDataException("Legacy showcase requires no field override.");
@@ -67,6 +71,7 @@ namespace Game.App
         {
             var d = Definition;
             if (d.baselineDataHash != baselineDataHash || d.baselineCatalogHash != ReviewShowcaseCatalog.Hash(baseline) || d.replaySha256 != replaySha) throw new InvalidDataException("Combat fixture or baseline identity mismatch.");
+            if (IsCombined) return ApplyCombined(baseline);
             var g = d.gear; var a = d.arena;
             if (!Enum.TryParse<WaveAttackKind>(g.kind,true,out var kind) || !Enum.IsDefined(typeof(WaveAttackKind),kind)) throw new InvalidDataException("Unknown review attack kind.");
             var c = g.composition;
@@ -113,6 +118,7 @@ namespace Game.App
 #endif
         public void Save(string directory, bool verified)
         {
+            if (IsCombined) { SaveCombined(directory,verified); return; }
             using var writer = new StreamWriter(Path.Combine(directory,"m1-combat-events.csv"));
             writer.WriteLine("frameIndex,snapshotTick,eventId,eventTick,kind,source,subjectId,amount,worldX,worldY,screenX,screenY,inViewport");
             foreach(var s in events) { var e=s.value; writer.WriteLine(FormattableString.Invariant($"{s.frame},{s.snapshot},{e.Id},{e.Tick},{e.Kind},{e.Source},{e.SubjectId},{e.Amount},{e.Position.X},{e.Position.Y},{s.screen.x:R},{s.screen.y:R},{s.visible}")); }

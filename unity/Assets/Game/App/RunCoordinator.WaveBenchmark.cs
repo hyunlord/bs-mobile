@@ -249,7 +249,7 @@ namespace Game.App
                 world.Initialize(Camera.main, new WorldCameraSettings(settings.WorldUnitsPerUnityUnit, settings.MinHalfHeight, settings.MaxHalfHeight, settings.EstatePadding, settings.FollowMilliseconds, settings.ZoomMilliseconds), runCatalog.Tuning.DefaultEstate, CurrentFrame.MapWidth, CurrentFrame.MapHeight);
                 world.AcceptWave(runCatalog, CurrentWave); world.AcceptFrame(CurrentFrame, FirstPlayable);
                 ConfigureCameraScaleReview();
-                if (combatReview != null) world.ConfigureM1Combat(combatReview.Definition.id,combatReview.Definition.shape,combatReview.Definition.audioCue);
+                combatReview?.Configure(world);
                 preferences.MusicVolume = .55f; preferences.EffectsVolume = .8f; preferences.Haptics = false;
                 preferences.Shake = true; preferences.DamageNumbers = true;
                 ApplyPreferences(); sound.ResetRun(); waveSound?.ResetRun(); bossPhaseCue.Reset(); lastWaveSound = -1;
@@ -489,6 +489,7 @@ namespace Game.App
                 using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 ObserveCameraScaleFrame();
+                if (!warming && !offlineReplayRequested) combatReview?.RecordCombinedFrame(Time.frameCount,CurrentFrame,world);
                 LongFrameViewPresented();
                 sample.composition = world.LastDiagnostics;
                 sample.tick = CurrentFrame.Tick; sample.enemies = CurrentFrame.Counts.Enemies;
@@ -535,6 +536,7 @@ namespace Game.App
             if (!present) return;
             started = Stopwatch.GetTimestamp(); previous = CurrentFrame; using (BenchmarkSnapshot.Auto()) CaptureSnapshots();
             var snapshotMs = BenchmarkMilliseconds(started); sample.snapshotMs += snapshotMs;
+            combatReview?.ObserveCombined(CurrentWave,CurrentFrame.Tick);
             if (measureTick) benchmarkCoreDiagnostics.RecordSnapshot(command.Tick, Time.frameCount, snapshotMs);
             if ((crowdBenchmark != null || cameraScaleComparison != null) && command.Kind == ReplayCommandKind.Advance) ObserveLordMovement(command.Input);
             started = Stopwatch.GetTimestamp();
@@ -606,7 +608,7 @@ namespace Game.App
                 if (knightReview?.DamageReplay == true) result.playbackBoundary = "Distinct accepted-input damage sample: original C05 prefix before tick13500, then approach/return/hold input; unchanged spawn/health/rules. Not original C05 input or a C05 regression baseline.";
             }
             if (heroMotionWindow != null && !offlineReplayRequested) result.playbackBoundary = "Hero motion comparison: original replay commands, bounded displayed window, unrendered original suffix validated to the full terminal hash. Only hero rendering differs. " + result.playbackBoundary;
-            if (combatReview != null) { result.fixture = "isolated-m1-combat-proposal"; result.playbackBoundary = "Preconfigured hypothesis composition and arena; derived catalog and accepted replay validated by hash. Last 300 ticks displayed. Not original C05 rules, balance evidence or earned evolution."; }
+            if (combatReview != null) { result.fixture = combatReview.IsCombined ? "combined-eight-source-stress" : "isolated-m1-combat-proposal"; result.playbackBoundary = "Preconfigured hypothesis composition and arena; derived catalog and accepted replay validated by hash. Declared sidecar window displayed. Not original C05 rules, balance evidence or earned evolution."; }
             if (offlineReplayRequested) result.playbackBoundary += " " + (offlineAudioRequested ? "오프라인 렌더 · 60fps · 게임 소리 포함. " : "오프라인 렌더 · 60fps · 무음. ") + "Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. Hero comparison windows, when requested, validate the original unrendered suffix to the same terminal hash. See offline-capture.json and offline-frame-index.csv." + (offlineAudioRequested ? " AudioRenderer mixer output is sample-locked without padding/resampling; see offline-audio.wav, offline-audio-index.csv and offline-audio.json." : "");
             try
             {

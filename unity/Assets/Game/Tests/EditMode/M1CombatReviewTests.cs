@@ -105,4 +105,72 @@ public sealed class M1CombatReviewTests
         var composition=M1CombatReview.Parse(Args()).Definition.gear.composition;
         Assert.That(composition.radius,Is.EqualTo(500));Assert.That(composition.delayTicks,Is.EqualTo(15));
     }
+    void WriteCombined()
+    {
+        var value=new M1CombatReview.Case {contract="m1-combat-combined-v1",captureStartTick=900,endTick=1500,replaySha256="sha",catalogHash="derived",baselineCatalogHash="base",
+            combined=new M1CombatReview.Combined {captureStartTick=900,lordHealth=1000,weaponSlots=7,toolSlots=1,arena=new M1CombatReview.Arena(),cases=new M1CombatReview.CombinedEntry[8]},sources=new M1CombatReview.Source[8]};
+        for(var i=0;i<8;i++)
+        {
+            var id="test:source"+i;
+            value.combined.cases[i]=new M1CombatReview.CombinedEntry {id=id,stage="evolved",classification="hypothesis",proposedContract="m1-review-composition-v1",gear=new M1CombatReview.Gear(),arena=new M1CombatReview.Arena()};
+            value.sources[i]=new M1CombatReview.Source {id=id,shape="sweep",audioCue="blade"};
+        }
+        File.WriteAllText(path,UnityEngine.JsonUtility.ToJson(value));
+    }
+    [Test] public void CombinedWindowAndEverySourceAreBound()
+    {
+        WriteCombined();var review=M1CombatReview.Parse(Args());
+        Assert.That(review.IsCombined,Is.True);Assert.That(review.CueFor("test:source7"),Is.EqualTo("blade"));Assert.That(review.CueFor("other"),Is.Null);
+        var window=CameraScaleComparison.Parse(Args());Assert.That(window.StartTick,Is.EqualTo(900));Assert.That(window.EndTick,Is.EqualTo(1500));
+    }
+    [TestCase("--offline-replay-capture"),TestCase("--wave-benchmark-capture")]
+    public void CombinedStressRejectsCapture(string flag)
+    {WriteCombined();Assert.Throws<ArgumentException>(()=>M1CombatReview.Parse(Args(flag)));}
+    [Test] public void CombinedActualActivationCountersDeduplicateAndRespectWindow()
+    {
+        WriteCombined();var review=M1CombatReview.Parse(Args());
+        review.EditorObserveCombinedEvent(Event(1,899,"attack","test:source0"));
+        for(var i=0;i<8;i++) {var e=Event(i+2,900,"attack","test:source"+i);review.EditorObserveCombinedEvent(e);review.EditorObserveCombinedEvent(e);}
+        review.EditorObserveCombinedEvent(Event(10,1500,"attack","test:source0"));
+        var output=path+"-combined";Directory.CreateDirectory(output);
+        try {review.Save(output,true);var json=File.ReadAllText(Path.Combine(output,"m1-combat-review.json"));Assert.That(json,Does.Contain("\"allEightSourcesActivated\": false"));Assert.That(json.Split(new[]{"\"activationEvents\": 1"},StringSplitOptions.None).Length-1,Is.EqualTo(8));}
+        finally {Directory.Delete(output,true);}
+    }
+    [Test] public void CombinedSourcesCannotAliasOneAnother()
+    {WriteCombined();File.WriteAllText(path,File.ReadAllText(path).Replace("test:source7","test:source0"));Assert.Throws<InvalidDataException>(()=>M1CombatReview.Parse(Args()));}
+    [Test] public void CombinedActivationProofRequiresAuthoritativeWindowCounterDeltas()
+    {
+        WriteCombined();var review=M1CombatReview.Parse(Args());var counters=new System.Collections.Generic.Dictionary<string,long>();
+        for(var i=0;i<8;i++) counters["activation-started:test:source"+i]=10;
+        review.EditorObserveCombinedCounters(counters,900);
+        for(var i=0;i<8;i++) counters["activation-started:test:source"+i]=11;
+        review.EditorObserveCombinedCounters(counters,1500);
+        var output=path+"-counter-proof";Directory.CreateDirectory(output);
+        try {review.Save(output,true);var json=File.ReadAllText(Path.Combine(output,"m1-combat-review.json"));Assert.That(json,Does.Contain("\"allEightSourcesActivated\": true"));Assert.That(json.Split(new[]{"\"activations\": 1"},StringSplitOptions.None).Length-1,Is.EqualTo(8));}
+        finally {Directory.Delete(output,true);}
+    }
+    [Test] public void CombinedSecondaryEnemyFieldsSurviveUnityDeserialization()
+    {
+        WriteCombined();var value=UnityEngine.JsonUtility.FromJson<M1CombatReview.Case>(File.ReadAllText(path));
+        value.combined.arena.enemyId="test:durable";value.combined.arena.durationTicks=1500;
+        value.combined.secondaryEnemyId="test:fragile";value.combined.secondaryEnemyHealth=100;value.combined.secondaryEnemyFirstSpawnTick=850;
+        File.WriteAllText(path,UnityEngine.JsonUtility.ToJson(value));
+        var parsed=M1CombatReview.Parse(Args()).Definition.combined;
+        Assert.That(parsed.secondaryEnemyId,Is.EqualTo("test:fragile"));Assert.That(parsed.secondaryEnemyHealth,Is.EqualTo(100));Assert.That(parsed.secondaryEnemyFirstSpawnTick,Is.EqualTo(850));
+        value.combined.secondaryEnemyHealth=0;File.WriteAllText(path,UnityEngine.JsonUtility.ToJson(value));Assert.Throws<InvalidDataException>(()=>M1CombatReview.Parse(Args()));
+    }
+    [Test] public void CombinedDeathAndRewardCountersUseActualWindowEventsExactlyOnce()
+    {
+        WriteCombined();var review=M1CombatReview.Parse(Args());
+        review.EditorObserveCombinedEvent(Event(1,899,"enemy-killed","test:enemy",20));
+        var death=Event(2,900,"enemy-killed","test:enemy",7);review.EditorObserveCombinedEvent(death);review.EditorObserveCombinedEvent(death);
+        review.EditorObserveCombinedEvent(Event(3,1499,"reward-created","test:source0",11));
+        review.EditorObserveCombinedEvent(Event(4,1500,"reward-collected","test:source0",11));
+        var output=path+"-reward-proof";Directory.CreateDirectory(output);
+        try {review.Save(output,true);var json=File.ReadAllText(Path.Combine(output,"m1-combat-review.json"));
+            Assert.That(json,Does.Contain("\"enemyKilledEvents\": 1"));Assert.That(json,Does.Contain("\"killExperienceAwarded\": 7"));
+            Assert.That(json,Does.Contain("\"rewardCreatedEvents\": 1"));Assert.That(json,Does.Contain("\"rewardExperienceCreated\": 11"));
+            Assert.That(json,Does.Contain("\"rewardCollectedEvents\": 0"));Assert.That(json,Does.Contain("\"rewardExperienceCollected\": 0"));}
+        finally {Directory.Delete(output,true);}
+    }
 }
