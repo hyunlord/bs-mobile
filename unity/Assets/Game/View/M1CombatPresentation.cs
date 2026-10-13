@@ -46,14 +46,14 @@ namespace Game.View
                 var center=waveMotion.OrbitPosition(attackIndex,alpha,visualTime,settings.WorldUnitsPerUnityUnit,lordPosition,lordPoint);
                 if(m1CombatShape=="tornado")
                     for(var i=0;i<6;i++)M1Draw("attack","core:rain_ladle","wave",center+Vector2.up*radius*(i/5f-.5f),new Vector2(radius*(.6f+i*.25f),radius*.3f),Mathf.Sin(visualTime*8+i)*10,.8f,new Color(.65f,.9f,.75f));
-                else M1Draw("wave","shield-fragment","default",center,Vector2.one*radius*2,visualTime*90,1,Color.white);
+                else M1Draw("wave","shield-fragment","default",center,Vector2.one*radius*1.65f,visualTime*90,.52f,Color.white);
             }
             return true;
         }
         void DrawM1CombatSpear(Vector2 ground, float height, float opacity)
         {
             var visual=Resolve("icon","core:ditch_pike","default");
-            M1CombatSpearGeometry.Pose(ground,height,visual.Pivot,out var position,out var size,out var degrees);
+            M1CombatSpearGeometry.Pose(ground,height*1.35f,visual.Pivot,out var position,out var size,out var degrees);
             Draw(visual,GameVisualTokens.AttackLayer,position,0,size,degrees,opacity,Color.white,applyTween:false);
         }
         bool DrawM1CombatProjectile(WaveProjectileView projectile, Vector2 position, float direction)
@@ -67,10 +67,10 @@ namespace Game.View
         {
             // The authored fan pivot is its origin and its width is one radius, not a diameter.
             var arc=Resolve("attack","core:iron_blade","sector90");
-            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*radius,aim,opacity*.75f,Color.white,applyTween:false);
+            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*radius,aim,opacity*.9f,Color.white,applyTween:false);
             // Interior brush strokes connect the near field to the actual outer hit envelope.
-            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.42f),aim,opacity*.25f,new Color(.75f,.9f,1),applyTween:false);
-            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.7f),aim,opacity*.4f,new Color(.8f,.95f,1),applyTween:false);
+            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.42f),aim,opacity*.4f,new Color(.75f,.9f,1),applyTween:false);
+            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.7f),aim,opacity*.6f,new Color(.8f,.95f,1),applyTween:false);
             var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
             var sweep=aim+Mathf.Lerp(-38,38,progress);
             for(var trail=2;trail>=0;trail--)
@@ -86,7 +86,11 @@ namespace Game.View
             if(value.Source==null||!m1CombatShapes.TryGetValue(value.Source,out var m1CombatShape))return false;
             var a=Point(value.Position);var b=Point(value.Target);
             if(value.Kind=="chain-link")
-                M1Draw("attack","core:storm_fork","chain",(a+b)*.5f,new Vector2((b-a).magnitude,.1f),Angle(b-a),opacity,Color.white);
+            {
+                var length=(b-a).magnitude;
+                M1Draw("attack","core:storm_fork","chain",(a+b)*.5f,new Vector2(length,.36f),Angle(b-a),opacity*.3f,new Color(.55f,.8f,1));
+                M1Draw("attack","core:storm_fork","chain",(a+b)*.5f,new Vector2(length,.18f),Angle(b-a),opacity,Color.white);
+            }
             else if(value.Kind=="review-impact")
             {
                 var radius=value.Amount/(float)settings.WorldUnitsPerUnityUnit;
@@ -102,7 +106,13 @@ namespace Game.View
             {
                 var radius=value.Amount/(float)settings.WorldUnitsPerUnityUnit;
                 if(m1CombatShape=="giantblade")DrawM1CombatBlade(a,Angle(b-a),radius,age,opacity);
-                else if(m1CombatShape=="summon")M1Draw("attack","core:muster_horn","wave",a,Vector2.one*radius*2,0,opacity,Color.white);
+                else if(m1CombatShape=="summon")
+                {
+                    var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
+                    var diameter=radius*2;
+                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter,0,opacity*.5f,new Color(.65f,.82f,1));
+                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter*Mathf.Lerp(.3f,1,progress),0,opacity*.7f,Color.white);
+                }
             }
             return true;
         }

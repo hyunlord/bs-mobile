@@ -28,7 +28,7 @@ namespace Game.App
             AcceptWaveAudio(slot.Frame,slot.Wave);
         }
 
-        void PresentWorld(float alpha, float seconds, Rect visible)
+        void PresentWorld(float alpha, float seconds, Rect visible, bool terminalPresentation = false)
         {
             world.PresentationPaused = !waveBenchmarkRequested && Paused;
             if (bossPresentation == null)
@@ -57,7 +57,7 @@ namespace Game.App
             try
             {
                 world.Present(sample.Previous, sample.Current, sample.FirstPlayable, sample.Alpha,
-                    sample.VisualDeltaSeconds, visible, false);
+                    sample.PresentationDelta(seconds, terminalPresentation ? CurrentFrame.Tick : -1), visible, false);
                 heroPresentationDelay.CommitRendered(world.RenderedLordPosition);
             }
             finally { world.PredictedLordPosition = prediction; }

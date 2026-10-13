@@ -157,6 +157,7 @@ namespace Game.App
             public string windows = "7200-9900,10200-12900,13200-14400", timingContract = "frames.csv: Update-to-next-Update wall includes rendering and pacing; CPU scopes disjoint. render-timings.csv: delayed FrameTimingManager observations, timestamped separately, not joined to density. Allocation delta is main-thread managed allocation; GC count is process-wide generation 0.";
         }
         M1CombatReview combatReview;
+        int heroTerminalTailFrames;
         void TryStartWaveBenchmark()
         {
             var args = Environment.GetCommandLineArgs();
@@ -378,7 +379,8 @@ namespace Game.App
                     if (benchmarkTimings.Count == benchmarkTimings.Capacity) throw new InvalidOperationException("Benchmark timing capacity exceeded; no observations were dropped.");
                     benchmarkTimings.Add(new BenchmarkTiming { observedFrame = Time.frameCount, observationTimestamp = Stopwatch.GetTimestamp(), value = benchmarkTimingBuffer[0] });
                 }
-                if ((heroMotionWindow != null || cameraScaleComparison != null) && CurrentFrame.Tick >= BenchmarkDisplayEnd)
+                var terminalTail=offlineReplayRequested && heroProductionReview!=null && CurrentFrame.Lord.Health<=0 && CurrentFrame.Tick>=BenchmarkDisplayEnd && heroTerminalTailFrames<heroProductionReview.TerminalTailFrames;
+                if (!terminalTail && (heroMotionWindow != null || cameraScaleComparison != null) && CurrentFrame.Tick >= BenchmarkDisplayEnd)
                 {
                     if (offlineReplayCapture != null && offlineReplayCapture.AudioPending) return;
                     // Continue the exact original suffix without rendering or fabricated input.
@@ -386,7 +388,7 @@ namespace Game.App
                     while (benchmarkCommand < benchmarkReplay.Commands.Count) ApplyBenchmarkCommand(false, ref benchmarkPending);
                     EndWaveBenchmark(null); return;
                 }
-                if (benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick))
+                if (!terminalTail && benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick))
                 {
                     if (offlineReplayCapture != null && offlineReplayCapture.AudioPending) return;
                     EndWaveBenchmark(null); return;
@@ -467,7 +469,7 @@ namespace Game.App
                 }
                 world.ShowAnnouncements = true;
                 started = Stopwatch.GetTimestamp();
-                var alpha = warming ? 1 : (float)(accumulator * CurrentFrame.TickRate);
+                var alpha = warming || terminalTail ? 1 : (float)(accumulator * CurrentFrame.TickRate);
                 if (crowdBenchmark != null || cameraScaleComparison != null)
                 {
                     if (!warming) PredictLord(benchmarkMovement, presentationDelta);
@@ -486,7 +488,7 @@ namespace Game.App
                     weaponShowcaseReview.Present(world,showcaseSeconds);
                     if (!warming && weaponShowcaseReview.PerformanceOnly) weaponShowcaseReview.ObserveEvents(CurrentWave);
                 }
-                using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible);
+                using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible, terminalTail);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 ObserveCameraScaleFrame();
                 if (!warming && !offlineReplayRequested) combatReview?.RecordCombinedFrame(Time.frameCount,CurrentFrame,world);
@@ -503,11 +505,13 @@ namespace Game.App
                 benchmarkHasPending = !offlineReplayRequested && !warming && BenchmarkWindow(CurrentFrame.Tick);
                 if (offlineReplayRequested && !warming && (cameraScaleComparison == null || cameraScaleComparison.CaptureFrame(CurrentFrame.Tick, (float)(accumulator * CurrentFrame.TickRate))))
                 {
-                    RecordKnightRenderedFrame(offlineReplayCapture.Frames, alpha);
+                    RecordKnightRenderedFrame(offlineReplayCapture.Frames, alpha,terminalTail);
                     combatReview?.Record(offlineReplayCapture.Frames,CurrentFrame.Tick,CurrentWave,world);
                     weaponShowcaseReview?.Record(offlineReplayCapture.Frames,CurrentFrame.Tick,alpha,world,CurrentWave);
                     StartCoroutine(offlineReplayCapture.SaveRenderedFrame(CurrentFrame.Tick, alpha));
+                    if(terminalTail) heroTerminalTailFrames++;
                 }
+                if (!offlineReplayRequested && !warming && heroProductionReview!=null) RecordKnightRenderedFrame(knightRenderedFrames?.Count ?? 0,alpha);
                 if (!offlineReplayRequested) FrameTimingManager.CaptureFrameTimings();
             }
             catch (Exception exception) { EndWaveBenchmark(exception); }
@@ -614,6 +618,7 @@ namespace Game.App
             }
             if (heroMotionWindow != null && !offlineReplayRequested) result.playbackBoundary = "Hero motion comparison: original replay commands, bounded displayed window, unrendered original suffix validated to the full terminal hash. Only hero rendering differs. " + result.playbackBoundary;
             if (combatReview != null) { result.fixture = combatReview.IsCombined ? "combined-eight-source-stress" : "isolated-m1-combat-proposal"; result.playbackBoundary = "Preconfigured hypothesis composition and arena; derived catalog and accepted replay validated by hash. Declared sidecar window displayed. Not original C05 rules, balance evidence or earned evolution."; }
+            if(heroTerminalTailFrames>0) result.playbackBoundary += " Explicit terminal presentation tail: "+heroTerminalTailFrames+" offline frames, frozen terminal Core tick/hash; not replay ticks or performance evidence.";
             if (offlineReplayRequested) result.playbackBoundary += " " + (offlineAudioRequested ? "오프라인 렌더 · 60fps · 게임 소리 포함. " : "오프라인 렌더 · 60fps · 무음. ") + "Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. Hero comparison windows, when requested, validate the original unrendered suffix to the same terminal hash. See offline-capture.json and offline-frame-index.csv." + (offlineAudioRequested ? " AudioRenderer mixer output is sample-locked without padding/resampling; see offline-audio.wav, offline-audio-index.csv and offline-audio.json." : "");
             try
             {
@@ -626,7 +631,7 @@ namespace Game.App
                     result.verified = summary.Tick == benchmarkReplay.End.Tick && summary.StateHash == benchmarkReplay.End.StateHash && kind == benchmarkReplay.End.Kind && Session.NextSequence == benchmarkReplay.End.AppliedCommands;
                     if (!result.verified) result.error = "Original replay terminal state mismatch.";
                 }
-                if (offlineReplayCapture != null) offlineReplayCapture.Finish(OfflineReplayCapture.ExpectedFrames(cameraScaleComparison == null ? CrowdEndTick - CrowdStartTick : cameraScaleComparison.EndTick - cameraScaleComparison.StartTick, CurrentFrame.TickRate), result.verified);
+                if (offlineReplayCapture != null) offlineReplayCapture.Finish(OfflineReplayCapture.ExpectedFrames(cameraScaleComparison == null ? CrowdEndTick - CrowdStartTick : cameraScaleComparison.EndTick - cameraScaleComparison.StartTick, CurrentFrame.TickRate)+heroTerminalTailFrames, result.verified);
                 if (benchmarkOutput != null)
                 {
                     using (var writer = new StreamWriter(Path.Combine(benchmarkOutput, "frames.csv")))
