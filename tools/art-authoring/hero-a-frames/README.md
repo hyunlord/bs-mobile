@@ -59,3 +59,18 @@ swift tools/art-authoring/hero-a-frames/assemble-ratio-v2.swift artifacts/m1-256
 ## 큰 원화의 보관
 
 저장소의 PR 5MB 상한을 지키기 위해 원본 PNG는 `artifacts/m1-256/authoring/hero-a-frames/source/`에 보존한다. 재생성 CSV가 아닌 원화이므로 선택된 제작 원본은 Release 개별 자산으로 전달한다. 조립기·작은 manifest·실측 CSV만 Git에 둔다. 실패 원본도 로컬에서 삭제하지 않는다.
+
+## #258 독립 8방향 제작 경로
+
+#256의 반전 방향과 걷기 첫 장 대체 서기는 역사 기록이다. #258은 각 방향을 독립 생성하며 `mirror:false`, 독립 idle/walk/slash-light/hit/death를 요구한다. 아직 실제 전투 영상 검토가 끝났다는 뜻은 아니다.
+
+```sh
+swift tools/art-authoring/hero-a-frames/assemble-production.swift artifacts/m1-258/hero-frames
+swift tools/art-authoring/hero-a-frames/compact-production.swift artifacts/m1-258/hero-frames
+```
+
+입력 `authoring.json`의 `sourceRects`는 실제 시트 구획, `groundAnchors`는 수동 판독한 발/바닥 기준이다. 칼끝·망토가 포함된 알파 bbox 최하단을 발로 간주하지 않는다. 조립은 온전한 자세 전체의 정수 이동이며, compact 단계는 클립 전체에 동일한 배율을 적용해 서기 기준256px 이하로 줄인다. 엎드림·공격 자세마다 키를 다시 맞추지 않는다. 뒤를 보는 그림의 턱이 가려지면 `headHeightPixels:null`을 그대로 보존한다.
+
+원본 A의 머리53/몸441=.120181을 기준으로 한다. 새 CSV의 대표 프레임 측정은 수동 약±2px 오차를 포함하며 전 프레임/게임 화면의 비율 통과를 대신하지 않는다. `impactFrame`은 실제 Core 타격 사건 시 바로 보여 줄 접촉 자세 번호다. 준비 자세를 타격 뒤에 재생하지 않는다.
+
+E pilot1은 피격 그림의 반투명 사각형과 공격 색 튐 때문에 탈락했다. pilot3은 배경과 타격 시점을 고쳤지만 망토 색이 튀었다. pilot4는 실제 화면에서 밝기 튐이 사라져 다른 방향의 제작 기준으로 사용한다. 이것은 사용자의 최종 아트 승인이 아니다. 실패 원본과 시제품은 버전별로 남긴다. 배경 제거는 imagegen 편집으로 수행했으며, 수동 알파 키잉·임계값 삭제는 사용하지 않는다.

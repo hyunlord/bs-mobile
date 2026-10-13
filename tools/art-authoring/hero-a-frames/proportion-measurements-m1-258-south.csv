@@ -1,0 +1,11 @@
+source,clip,direction,frame,crown_y,chin_y,sole_y,head_pixels,body_pixels,head_body_ratio,scope
+source/idle-s-v2.png,idle,S,0,21,77,496,56,475,0.117895,manual-representative-only-approximately-2px
+source/idle-se-v2.png,idle,SE,0,9,69,499,60,490,0.122449,manual-representative-only-approximately-2px
+source/walk-s-v3.png,walk,S,0,12,56,374,44,362,0.121547,manual-representative-only-approximately-2px
+source/walk-se-v3.png,walk,SE,0,17,60,372,43,355,0.121127,manual-representative-only-approximately-2px
+source/slash-light-s-v3.png,slash-light,S,0,60,96,354,36,294,0.122449,manual-representative-only-approximately-2px
+source/slash-light-se-v3.png,slash-light,SE,0,61,96,344,35,283,0.123675,manual-representative-only-approximately-2px
+source/hit-s-v4.png,hit,S,0,26,86,498,60,472,0.127119,manual-representative-only-approximately-2px
+source/hit-se-v4.png,hit,SE,0,20,77,478,57,458,0.124454,manual-representative-only-approximately-2px
+source/death-s-v3.png,death,S,0,51,113,546,62,495,0.125253,manual-representative-only-approximately-2px
+source/death-se-v3.png,death,SE,0,72,127,530,55,458,0.120087,manual-representative-only-approximately-2px

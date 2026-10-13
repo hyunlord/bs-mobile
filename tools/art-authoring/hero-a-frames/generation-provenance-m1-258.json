@@ -1,0 +1,247 @@
+{
+  "issue": 258,
+  "tool": "image_gen.imagegen",
+  "status": "partial: E pilot4 usable as internal authoring master; S/SE source candidates assembled; native all-direction and user review pending",
+  "entries": [
+    {
+      "key": "m258-E-idle",
+      "prompt": "Production independently DRAWN frame sprite artwork, ink/gouache same restrained cobalt ivory steel brown palette as reference, mature blond A knight in slim realistic8-heads-tall anatomy (haircrown-to-chin .12-.13 ofstandingheight). Sword in ANATOMICAL RIGHT HAND in EVERY frame, never swap hands. EAST side view facing screenRIGHT, samecameraandcharacterscale acrossframes. TRUE transparent alpha, no backdrop no glow no shadows no labels. Every wholefigure andfullsword entirely inside its owncell withgeneroustransparentgutters. Neck natural, adultface, cape ivoryquiltedtunic steelpauldrons greaves leatherboots match reference. FOUR distinct IDLE frames,2columns2rows total1536x1024 cell768x512. Fullbody standingheight350px head44px solesat450. Relaxedweightgroundedbothboots, subtlebreathe andcapemotion4phases, swordlowrighthand. No walking no attack. Keepheadsmall8heads tall.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-b7b31e25-da9d-4fa8-88c9-0fbf757ec978.png"
+    },
+    {
+      "key": "m258-E-slash-light",
+      "prompt": "Production independently DRAWN frame sprite artwork, ink/gouache same restrained cobalt ivory steel brown palette as reference, mature blond A knight in slim realistic8-heads-tall anatomy (haircrown-to-chin .12-.13 ofstandingheight). Sword in ANATOMICAL RIGHT HAND in EVERY frame, never swap hands. EAST side view facing screenRIGHT, samecameraandcharacterscale acrossframes. TRUE transparent alpha, no backdrop no glow no shadows no labels. Every wholefigure andfullsword entirely inside its owncell withgeneroustransparentgutters. Neck natural, adultface, cape ivoryquiltedtunic steelpauldrons greaves leatherboots match reference. EIGHT swordSLASHframes,2columns4rows total1536x1024 cell768x256. Standingreferencebody180px head22px, soles230, allbladetipsmustbe20pxinsidecell. Sequenceguard,drawback,windup,accelerate,contact,followthrough,recover,guard. SINGLEHANDED sword inRIGHTHAND, leftarmbalances. Physicaltorsohiptwist, nojump, noteightidenticalposes. Wholeposeincludingbladefitcell.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-2ff723ae-f6d8-4857-bcdf-0f75f77b2681.png"
+    },
+    {
+      "key": "m258-E-hit",
+      "prompt": "Production independently DRAWN frame sprite artwork, ink/gouache same restrained cobalt ivory steel brown palette as reference, mature blond A knight in slim realistic8-heads-tall anatomy (haircrown-to-chin .12-.13 ofstandingheight). Sword in ANATOMICAL RIGHT HAND in EVERY frame, never swap hands. EAST side view facing screenRIGHT, samecameraandcharacterscale acrossframes. TRUE transparent alpha, no backdrop no glow no shadows no labels. Every wholefigure andfullsword entirely inside its owncell withgeneroustransparentgutters. Neck natural, adultface, cape ivoryquiltedtunic steelpauldrons greaves leatherboots match reference. THREE independently drawn HITreaction frames exact3columns1row total1536x1024 cells512x1024. Standingbodyheight500px head62px soles850px. Frame0flinchbackhurt face, frame1shoulderscurlguard, frame2recoverupright. SwordstaysRIGHTHAND. No blood noflash overlay no duplication.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-4903825b-8326-4e64-ba16-0def28aef54a.png"
+    },
+    {
+      "key": "m258-E-death",
+      "prompt": "Production independently DRAWN frame sprite artwork, ink/gouache same restrained cobalt ivory steel brown palette as reference, mature blond A knight in slim realistic8-heads-tall anatomy (haircrown-to-chin .12-.13 ofstandingheight). Sword in ANATOMICAL RIGHT HAND in EVERY frame, never swap hands. EAST side view facing screenRIGHT, samecameraandcharacterscale acrossframes. TRUE transparent alpha, no backdrop no glow no shadows no labels. Every wholefigure andfullsword entirely inside its owncell withgeneroustransparentgutters. Neck natural, adultface, cape ivoryquiltedtunic steelpauldrons greaves leatherboots match reference. SIX sequential collapsingDEATHposes,3columns2rows total1536x1024 cells512x512. Standingreferenceheight330px head41px. Frame0staggerkneesbuckle,1kneel,2bracefall,3landonside,4settlecape,5stillcorpse. Bodyanatomy/limblengthsameevenwhenhorizontal; doNOTshrinkcorpse; swordRIGHTHANDlyingwithbody. Characterrootfootbaseline440; floorimpliednotdrawn. Entirefallenbodyfitscell.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-39da0f04-6d84-45e6-9b6d-2ee496306596.png"
+    },
+    {
+      "key": "m258-E-hit-v2",
+      "prompt": "Production independently DRAWN frame sprite artwork, ink/gouache same restrained cobalt ivory steel brown palette as reference, mature blond A knight in slim realistic8-heads-tall anatomy (haircrown-to-chin .12-.13 ofstandingheight). Sword in ANATOMICAL RIGHT HAND in EVERY frame, never swap hands. EAST side view facing screenRIGHT, samecameraandcharacterscale acrossframes. TRUE transparent alpha, no backdrop no glow no shadows no labels. Every wholefigure andfullsword entirely inside its owncell withgeneroustransparentgutters. Neck natural, adultface, cape ivoryquiltedtunic steelpauldrons greaves leatherboots match reference.  THREE HIT reaction poses in 3columns1row1536x1024. CRITICAL each fullfigure INCLUDING sword mustfitinside512pixelwidecell. Figuresonly350pixels tall withhead44pixels, baseline750; sworddiagonallydown closebody notextendedhorizontally. Keep100pixelhorizontalmarginswithinEACHcell. AllfaceRIGHT. Slightflinch, hunchguard,recover. SwordRIGHTanatomicalhand.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-82ca8ca8-149e-48e8-88b0-d8a755e31631.png"
+    },
+    {
+      "key": "m258-E-death-v2",
+      "prompt": "Production independently DRAWN frame sprite artwork, ink/gouache same restrained cobalt ivory steel brown palette as reference, mature blond A knight in slim realistic8-heads-tall anatomy (haircrown-to-chin .12-.13 ofstandingheight). Sword in ANATOMICAL RIGHT HAND in EVERY frame, never swap hands. EAST side view facing screenRIGHT, samecameraandcharacterscale acrossframes. TRUE transparent alpha, no backdrop no glow no shadows no labels. Every wholefigure andfullsword entirely inside its owncell withgeneroustransparentgutters. Neck natural, adultface, cape ivoryquiltedtunic steelpauldrons greaves leatherboots match reference.  SIX DEATH sequence frames exact3columns2rows1536x1024, eachcell512x512. ALLdrawingsincludingboots/blade entirelywithin own512x512cell with50pxgutters. Standingheight300pixels head37pixels. Frames0staggerkneesbuckle,1kneel,2falltowardsRIGHT,3landheadtowardsRIGHT,4settle,5stillcorpseheadRIGHT. Fulladultlimblengthstable; fallcurltofit, doNOTenlargehead or shrinkbody. Frame0standingreferenceratio8heads tall. SwordRIGHTHAND. Entireposefitscell.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-63728cfd-8eb9-4e92-b8da-374ad54e543c.png"
+    },
+    {
+      "key": "m258-E-hit-v3",
+      "prompt": "Edit only HEAD SIZE in each3 knight poses: shrinkhair+face22percent, keepnaturalneck. Adult8heads tall, headfromcrownchin65pixels on560pixelbody. DoNOTscalebodies, changeposes, swordhands or backgroundalpha. AlsobringFIRSTknightsswordtip20pixelsleftbyredrawingbladeangle slightlydownward soendsbeforex495. Keep3equal512widecells1536x1024.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-e368fa38-573b-4205-9318-1991f39473b9.png"
+    },
+    {
+      "key": "m258-E-slash-alpha",
+      "prompt": "Remove ALL BACKGROUND completely. Keep ONLY the eight knight figures and swords. Everything outside exact paintedcharacter silhouette must have alpha0. No smoke, no glow, no blur, no coloredhalo, noambientlight, nobackdrop, no shadows. Transparent cutout sprite sheet; preservefigureart/grid/headsize entirely. The currentblackbluegradient MUSTbeREMOVED, notmadeblackorwhite.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-17124ebc-39d9-4de7-a841-bd5cc64c5f3b.png"
+    },
+    {
+      "key": "m258-E-death-v3",
+      "prompt": "Edit6DEATHposes: reduceALLheads(hair+face)20percent whilepreservingadultfaceandnaturalneck; standingreferencebody441pixels needshead53pixels. Nochangebody/limblength; neckseamcoherent. Firstrowthirdswordtipcurrentlybelowrow512: angleblade20pixelsupsoallinkwithinrow. Remove ALL gradient/smoke/light/background, alpha0 outside exactcharacter+swordsilhouette. Keeporiginal3x2grid1536x1024. Allcorpsepositionsandright-handed swordunchanged.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-17a773df-f344-4d7f-81f5-c7f0e1e657de.png"
+    },
+    {
+      "key": "m258-S-idle",
+      "prompt": "Repaint this same adult blond cobalt-caped knight as four IDLE breathing frames facing SOUTH towardviewer. Independent frontdrawings, NOT mirrored sidewaysimages. SwordheldanatomicalRIGHT hand, so on viewerLEFT side. SameA referenceidentity andrealistic8.3heads-tall adultproportions. Fullbody2columns2rows1536x1024, exactcell768x512; figurestandingheight400px,crown60chin108sole460. Feetrootx384, floor460. Thininkgouachesteelarmorivoryquiltedkneelengthtunic, desaturatedcobalt. Nohelm. FOURsubtlebreatheposes. Transparentbackground onlycharacter silhouette, alpha0outside, nofog/gradient/shadow. Every blade/bootentirelyinsidecell with30pxmargin.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-874eee4b-f7a3-4659-92fa-bbac4c68d29b.png"
+    },
+    {
+      "key": "m258-E-idle-v2",
+      "prompt": "Adjust ONLYfourheads hairface size down10percent. Match adult originalA8.3heads-tall anatomy, measured targethead58pixels/standingbody483pixels. Keepfourbody poses armorcape hands andgridunchanged; naturalneck join andmatureblondface. Preservegenuinealpha0background, nofoggradientshadow.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-eaf8ebac-3e8b-4321-864b-42f3dd2238dc.png"
+    },
+    {
+      "key": "m258-E-slash-v4",
+      "prompt": "Correct swordSLASH animation in this8pose2columns4rowtransparent atlas. Keep heroidentity adultsmallhead realistic8heads proportions EXACTLY. Change ONLY frames5and6 (thirdrow) thatcurrentlylooklikeFORWARDTHRUST: frame5 mustdownwarddiagonalCUT, rightelbowbent handsweepingacrosswaist swordbladeangledDOWN-LEFT; frame6followthroughbladelowBEHINDheroLEFT withtorsotwist, noforwardpointingblade. AnatomicalRIGHTHANDholdswordalways, leftfree. All8posesrepresentoneoverhead-to-downwarddiagonalslash, notstab. Preservebody/paletteofother6frames, no glow/backdrop/smoke. Genuinealpha0outsidefigures; transparent. Grid1536x1024. Everyposefitowncellwith8pxmargin.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-31ed647a-fdac-4670-ab1b-fb60f25534ed.png"
+    },
+    {
+      "key": "m258-E-slash-v5",
+      "prompt": "OneposecorrectionONLY: thirdrowRIGHTframe(frame6) currentlyturnsbackandhideswrong swordarm. RepaintthisframeasEASTrightfacingnear-sideRIGHTARMvisible infront ofbody, rightwristatlefthipaftercut, swordheldRIGHTHAND bladeextendsdiagonallydownLEFT. Torso stillside/frontview likeframe5leftneighbor, notbackview. LeftfreehandextendsforwardtowardRIGHTbalance. Showactualrighthandgripclearly, NEVERswapweaponhand. Preserveallother7frames, adulttinyheadpalettegridalpha exactly. Onlycharactertransparentbackground.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-9c1ca020-051f-45d0-9964-85442bf6d9d2.png"
+    },
+    {
+      "key": "m258-E-slash-v6",
+      "prompt": "Fix ONLY thirdrowRIGHTpose(frame6): its armorlegsandtorsoscalehasbecomesmallerthanneighbor. Redrawlimbs/torso atEXACTsameanatomicalscaleas thirdrowLEFTpose(frame5), adultheightreference238pixels, solesatrowbottom. KeepcurrentRIGHTHANDswordgrip andsidefacingpose, fullswordinsidecell. Headnoincrease:matchsamehead29pixels. Allother7framesunchanged. Preserveexact2x4grid1536x1024 andtransparentalpha0background. DoNOT merelyfillcellbyoversizing sword. Samecharacter samebodysize.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-2b784ad2-5f30-4b4a-8aa0-0d8453ec95af.png"
+    },
+    {
+      "key": "m258-S-idle-candidate",
+      "prompt": "Independently redraw sameAknight SOUTH towardviewer FRONT. SwordRIGHTHAND appears viewerLEFT. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. FOUR idle breathing poses exact2columns2rows. Body480pixels, head58pixels, allsoles496per512pxcell. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-fbe6ec8e-e1d5-40c4-a9af-ede58742800a.png"
+    },
+    {
+      "key": "m258-S-walk-candidate",
+      "prompt": "Independently redraw sameAknight SOUTH towardviewer FRONT. SwordRIGHTHAND appears viewerLEFT. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. EIGHT sequentialwalking poses exact4columns2rows. Body430pixels, head52pixels, footfloor480per512pxcell. Alternatelegsteps andnaturalcapemotion, nojump. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-893d539a-adc8-4445-9952-c4eb3735e265.png"
+    },
+    {
+      "key": "m258-S-hit-candidate",
+      "prompt": "Independently redraw sameAknight SOUTH towardviewer FRONT. SwordRIGHTHAND appears viewerLEFT. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. THREE hitflinchposes exact3columns1row. Bodystanding550pixels, head66pixels; allwholeposes/bladetipsinsideown512x1024cell. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-c5d59692-765d-4397-b1ed-ae56899ada2b.png"
+    },
+    {
+      "key": "m258-S-death-candidate",
+      "prompt": "Independently redraw sameAknight SOUTH towardviewer FRONT. SwordRIGHTHAND appears viewerLEFT. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. SIX deathcollapseposes exact3columns2rows. Standingbody430pixels head52pixels. Maintainlimblengthwhenfalling; corpseposesfitowncellnoreshaping. Swordalwaysrighthand. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-fea4aa4d-9bf7-4671-9aff-a0fc13a2b54a.png"
+    },
+    {
+      "key": "m258-SE-idle-candidate",
+      "prompt": "Independently redraw sameAknight SOUTHEAST threequarterFRONT-RIGHT, facebottomright. Right-hand swordforegroundonleftneararm. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. FOUR idle breathing poses exact2columns2rows. Body480pixels, head58pixels, allsoles496per512pxcell. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-d9855d72-0d8d-47e7-bc3d-c6acc3d11524.png"
+    },
+    {
+      "key": "m258-SE-walk-candidate",
+      "prompt": "Independently redraw sameAknight SOUTHEAST threequarterFRONT-RIGHT, facebottomright. Right-hand swordforegroundonleftneararm. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. EIGHT sequentialwalking poses exact4columns2rows. Body430pixels, head52pixels, footfloor480per512pxcell. Alternatelegsteps andnaturalcapemotion, nojump. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-3f6b7abc-0b1c-4fdd-82c2-fe3d5beea679.png"
+    },
+    {
+      "key": "m258-SE-hit-candidate",
+      "prompt": "Independently redraw sameAknight SOUTHEAST threequarterFRONT-RIGHT, facebottomright. Right-hand swordforegroundonleftneararm. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. THREE hitflinchposes exact3columns1row. Bodystanding550pixels, head66pixels; allwholeposes/bladetipsinsideown512x1024cell. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-70643e4c-1f61-4a1a-aff1-d1915fe773a7.png"
+    },
+    {
+      "key": "m258-SE-death-candidate",
+      "prompt": "Independently redraw sameAknight SOUTHEAST threequarterFRONT-RIGHT, facebottomright. Right-hand swordforegroundonleftneararm. Not mirror/rotate/cutout. Matchadultblondidentityandexact restrainedcobalt/ivory/steel/brownINKGOUACHEstyle ofreference. Adult8.3heads-tall, head/body.12, naturalneck. SIX deathcollapseposes exact3columns2rows. Standingbody430pixels head52pixels. Maintainlimblengthwhenfalling; corpseposesfitowncellnoreshaping. Swordalwaysrighthand. Total1536x1024. Clearcellgutters; entirebody/swordinsidecell, noadjacentoverlap. No labels/numbers. TRUEalpha0outside exactcharacter silhouette; nobackdropglowfogshadows. Keepanatomicalright-hand swordallframes, includingfalling.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-a73621cd-3e56-4ddc-a66e-dc45990ff6f6.png"
+    },
+    {
+      "key": "m258-E-hit-alpha-v4",
+      "prompt": "REMOVEBACKGROUNDONLY. Currentthreeknights have translucent smoky rectangularbackgrounds. Delete ALL non-character pixels to exactzeroalpha includingbetweenlegs/aroundcape/abovethehead/belowfeet. Preservepaintedknightfigures/swordsunchanged, sameheadsizebodyposegrid1536x1024. No gradient,noglow,notranslucentfog,nohalo,noshadow. Actualtransparent cutouts readytooverlayonbrightwhitegameground.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-6fafdf75-9b33-4815-8cb6-3fefcfab773e.png"
+    },
+    {
+      "key": "m258-E-slash-style-v7",
+      "prompt": "STYLEANDANATOMY MATCH EDIT of firstimage eightattackposes. Secondimage is THE EXACT CHARACTER MODEL. Firstslashsheetcurrentlybulkybrighttoy-like shoulders/torso comparedtosecondslenderwalk. Repaintall8slashfigureswithsameSLENDERlong adult limbs, narrowwaist, shoulderwidthandhead/bodyratio aswalkingreference. Samequiettexturedinkgouache mutedsteel(ivorynotglowingwhite), wornbrownleather,darkdesaturatedcobalt; no glossyhighlights. Preserve8attackposes andRIGHTHANDsword, exact2columns4rows1536x1024, noscalingindividualframes differently. Characteranatomicalstandingheight equivalent238px head29px; shoulderwidth~55px not80px. Allrelativebodyanatomy consistent acrosscrouchedposes, samehairfaceaswalk. Transparentalpha0outsideexactknight, no smoke/background/glow/shadow. No windupredesign. Fixbodywidthandpaletteglobally, notheadshrink.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-e1d1aa2e-96c0-436e-b810-54a3dd0f587e.png"
+    },
+    {
+      "key": "m258-E-hit-fit-v5",
+      "prompt": "Keepexactthreepaintedknights andposes style identity proportions, but FIT EACHWHOLEPOSE inown512widecellwith40pxblanktransparentmargins. Currentoutercape/swordisclippedatcanvas/cell edges. Redrawfullmissingcape/blade andmakeeachWHOLEfigure uniformly20percentsmaller (notheadonly), feetbaseline850. All3 samecharacteranatomicalscale; no perlimbchange. Backgroundgenuinealpha0, nofogglow. Total1536x1024 exact3columns1row. Keep adulthead/bodyratio unchanged.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-746a96e0-0124-447e-8b64-125d672e80b6.png"
+    },
+    {
+      "key": "m258-E-slash-fit-v8",
+      "prompt": "Productiongrid correction: keepthese exact8slenderadult poses painterlystyle, but makeeverywholepose10percentsmallerWITHINITSOWN768x256cell soallalpha fits10pxmargins. Currently row2feetoverlaprow3head; eliminateoverlap. Uniformsamecharacterscaleacrossall8, frame0standingheight225pixels, head27pixels. Additionallyeachheadhairface~10percentsmallerrelativebody toexact8.3heads-tall; keepnaturalneck. Nochangehands/swordposes/palette. 2columns4rows1536x1024. Actualalpha0background, nosmokegradientglow. CLEAREMPTY HORIZONTALGUTTERS aroundrowsy256512768.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-b489306b-6d5c-475b-b1db-6d5ad1d49772.png"
+    },
+    {
+      "key": "m258-E-slash-palette-v9",
+      "prompt": "Edit FIRST reference sprite sheet only. Preserve every exact pose, silhouette, adult slender anatomy, small head proportions, sword in anatomical RIGHT hand, frame positions, transparent alpha background, canvas1536x1024 and 2columns4rows. ONLY unify cape and scarf coloration/material with SECOND reference walking sheet: first sheet cape is excessively electric royal blue, too saturated and bright. Use muted dusty cobalt gouache fabric matching walking reference, visibly about20% less saturated and15% darker than current first sheet, with subtle paper/grain painted texture. Do not change body, face, outfit geometry, blade, frame sizes or layout. No new glow, shadow, fog or backdrop: genuinely alpha0 everywhere outside character silhouettes, also internal empty spaces. Maintain exact current frame sequence.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-3d856dc3-6cb7-4938-bf9b-47553c503c1e.png"
+    },
+    {
+      "key": "m258-s-idle-v2",
+      "prompt": "Edit FIRST reference's four idle frames. Preserve exact independently drawn FRONT SOUTH facing camera direction, poses, anatomical RIGHT hand sword, outfit. Correct head proportions by reducing each head including hair about12% keeping natural neck; realistic adult crown-to-chin/standingbody ratio0.120. Match SECOND reference cloak fabric: muted dusty cobalt gouache, not electric royal blue, about20% less saturated and15% darker than current FIRST sheet. Preserve all4 body silhouettes and positions,1536x1024 2columns2rows. Genuine transparentalpha0 outside character, no fog/shadows/backdrop. Consistent body/head acrossallframes.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-cfaae784-2263-40ab-bec0-61c7617a8691.png"
+    },
+    {
+      "key": "m258-s-walk-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, FRONT SOUTH facing viewer, sword held in anatomical RIGHT hand on viewerLEFT. EIGHT sequential walking poses, alternating planted legs and passing legs, smooth full walk cycle. 2columns4rows portrait1024x1536 eachcell512x384. Standing body260px head31px. Every whole figure and sword within owncell with20pxclearspace. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-b5832089-dd93-469e-af25-44c7e84bf30d.png"
+    },
+    {
+      "key": "m258-s-walk-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 20% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Keep exactcanvas, sheetgridandposepositions. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-c86574e1-7f0a-409f-aee8-a3a2552eee35.png"
+    },
+    {
+      "key": "m258-s-slash-light-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, FRONT SOUTH facing viewer, sword held in anatomical RIGHT hand on viewerLEFT. EIGHT sequential ONE-HANDED RIGHT-HAND diagonal sword cut poses:0guard,1backswing,2overhead,3contact diagonal downcut,4followthrough,5recovery,6recovery,7guard. Not thrust. 2columns4rows portrait1024x1536 eachcell512x384. Standingbody260px head31px, swordoverheadfitsinside384height; every wholefigure/blade fitsitscellwith20pxgutters. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-38631d72-b5bd-4399-84cb-ccb5c6a4a27c.png"
+    },
+    {
+      "key": "m258-s-slash-light-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 18% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Also reduceallWHOLEposes uniformly by10% within current2column4rowcells so swords fullyfit and everyrow has20pxclearverticalgutter; do not crop swordtips orchange poses. Canvas1024x1536. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-f2003fb4-e79e-4509-b868-556dc4001701.png"
+    },
+    {
+      "key": "m258-s-hit-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, FRONT SOUTH facing viewer, sword held in anatomical RIGHT hand on viewerLEFT. THREE consecutive small hit flinch poses, recoil then recover, sword still RIGHT hand. 1column3rows portrait1024x1536 eachcell1024x512. Standingbody320px head38px. Entirepose/sword/cape mustfitwithin owncellwith40pxclearspace. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-4a1b11e8-96ee-44ed-9055-de786ffe37f7.png"
+    },
+    {
+      "key": "m258-s-hit-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 25% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Keep exactcanvas, sheetgridandposepositions. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-07ec66c4-574b-41b7-80dd-baa6efffb550.png"
+    },
+    {
+      "key": "m258-s-death-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, FRONT SOUTH facing viewer, sword held in anatomical RIGHT hand on viewerLEFT. SIX sequential death fall poses:standingstagger,kneesbuckle,kneeling,fallingright,groundedcorpse,settledcorpse. RIGHT hand keeps sword. 2columns3rows portrait1024x1536 eachcell512x512. Standingbody300px head36px. Corpsesretainlimblength, no shrinking. Entirebody/blade withinowncellwith30pxmargin. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-a61b5f8b-7fa7-4f3f-bea7-735f3e372c80.png"
+    },
+    {
+      "key": "m258-s-death-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 25% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Keep exactcanvas, sheetgridandposepositions. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-563483a6-b51c-4f98-b397-3fb3df27f956.png"
+    },
+    {
+      "key": "m258-s-hit-v4",
+      "prompt": "Edit only heads in these THREE hitflinch poses: reduceeachhair-inclusivehead another12% relative to unchangedbody, keepingnaturalneck andsameadultface. Headheightcrown-to-chin target about58px forstandingbody480px. Preserve allbodygeometry,poses,framepositions, palette, anatomicalRIGHT-hand sword, layoutandtransparency. No otherchanges. Background outside silhouette must be truly alpha0, no veil or shadow.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-19106190-9260-40a7-a4a2-fe623d2ade44.png"
+    },
+    {
+      "key": "m258-se-idle-v2",
+      "prompt": "Edit FIRST reference's four idle frames. Preserve exact independently drawn SOUTHEAST front-right threequarter direction, poses, anatomical RIGHT hand sword, outfit. Correct head proportions by reducing each head including hair about12% keeping natural neck; realistic adult crown-to-chin/standingbody ratio0.120. Match SECOND reference cloak fabric: muted dusty cobalt gouache, not electric royal blue, about20% less saturated and15% darker than current FIRST sheet. Preserve all4 body silhouettes and positions,1536x1024 2columns2rows. Genuine transparentalpha0 outside character, no fog/shadows/backdrop. Consistent body/head acrossallframes.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-b9e6617b-04d1-498c-ae8f-39cef4b9b5a2.png"
+    },
+    {
+      "key": "m258-se-walk-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, SOUTHEAST front-right threequarter view, face bottom-right, anatomical RIGHT arm is near foreground arm on viewerLEFT. EIGHT sequential walking poses, alternating planted legs and passing legs, smooth full walk cycle. 2columns4rows portrait1024x1536 eachcell512x384. Standing body260px head31px. Every whole figure and sword within owncell with20pxclearspace. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-e59cb3e7-2813-4140-b18e-386c1631724f.png"
+    },
+    {
+      "key": "m258-se-walk-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 20% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Keep exactcanvas, sheetgridandposepositions. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-aa99fe0e-4fc6-40ea-97b0-464f6e1a70fd.png"
+    },
+    {
+      "key": "m258-se-slash-light-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, SOUTHEAST front-right threequarter view, face bottom-right, anatomical RIGHT arm is near foreground arm on viewerLEFT. EIGHT sequential ONE-HANDED RIGHT-HAND diagonal sword cut poses:0guard,1backswing,2overhead,3contact diagonal downcut,4followthrough,5recovery,6recovery,7guard. Not thrust. 2columns4rows portrait1024x1536 eachcell512x384. Standingbody260px head31px, swordoverheadfitsinside384height; every wholefigure/blade fitsitscellwith20pxgutters. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-adb095be-a638-4579-9ae8-6fe68394a939.png"
+    },
+    {
+      "key": "m258-se-slash-light-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 18% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Also reduceallWHOLEposes uniformly by10% within current2column4rowcells so swords fullyfit and everyrow has20pxclearverticalgutter; do not crop swordtips orchange poses. Canvas1024x1536. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-df88e5f5-e3c6-4322-a819-ecdaf5ab0498.png"
+    },
+    {
+      "key": "m258-se-hit-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, SOUTHEAST front-right threequarter view, face bottom-right, anatomical RIGHT arm is near foreground arm on viewerLEFT. THREE consecutive small hit flinch poses, recoil then recover, sword still RIGHT hand. 1column3rows portrait1024x1536 eachcell1024x512. Standingbody320px head38px. Entirepose/sword/cape mustfitwithin owncellwith40pxclearspace. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-14a71bc5-70d4-4759-9e14-0707416efd7d.png"
+    },
+    {
+      "key": "m258-se-hit-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 25% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Keep exactcanvas, sheetgridandposepositions. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-4c8563b5-856b-443a-a245-22916a039d23.png"
+    },
+    {
+      "key": "m258-se-death-v2",
+      "prompt": "Create independently drawn animation sheet of FIRST reference knight, SOUTHEAST front-right threequarter view, face bottom-right, anatomical RIGHT arm is near foreground arm on viewerLEFT. SIX sequential death fall poses:standingstagger,kneesbuckle,kneeling,fallingright,groundedcorpse,settledcorpse. RIGHT hand keeps sword. 2columns3rows portrait1024x1536 eachcell512x512. Standingbody300px head36px. Corpsesretainlimblength, no shrinking. Entirebody/blade withinowncellwith30pxmargin. Match exact mature blond adult identity and physique ofFIRST reference, samearmorandivorytunic, muted dusty cobalt fabric and gouache texture. Crown-to-chinhead/standingbody0.12, sameanatomyallframes,no chibi,nooversizedhead. Keepcameraangleandauthoredscaleconstant, do not rotatecharacteraway betweenframes. No mirror, no hand switch. Transparentalpha0 background everywhereoutside silhouettes, no fog/backdrop/shadows/text/borders. Eachposeindependentlydrawn, notrigcutouts.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-08450417-5167-41b8-9e4c-f41750deeb37.png"
+    },
+    {
+      "key": "m258-se-death-v3",
+      "prompt": "Precisely edit this sprite sheet: heads includinghair are too large. Reduce EACH head includinghair by 25% in bothdimensions relative to unchangedbody, attachnaturally at existingneck, matureadult proportions crown-chin about0.12ofstandingheight, samecharacterface. Preserve fullbodylimblength, armor, right-hand sword, direction, every pose/order, mutedfabricpalette and ink-gouache rendering. Keep exactcanvas, sheetgridandposepositions. TRUEalpha0 background outside all silhouettes, no haze/rectangle/shadow/backdrop. No mirroring/no otherchanges.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-25c9272b-0416-4fc3-9695-2bb4994f1215.png"
+    },
+    {
+      "key": "m258-se-hit-v4",
+      "prompt": "Edit only heads in these THREE hitflinch poses: reduceeachhair-inclusivehead another12% relative to unchangedbody, keepingnaturalneck andsameadultface. Headheightcrown-to-chin target about58px forstandingbody480px. Preserve allbodygeometry,poses,framepositions, palette, anatomicalRIGHT-hand sword, layoutandtransparency. No otherchanges. Background outside silhouette must be truly alpha0, no veil or shadow.",
+      "generatedSource": "/Users/rexxa/Library/Application Support/orca/codex-accounts/54be5844-95fd-4c46-925c-75327ccd186a/home/generated_images/01a12ee7-bc07-7922-90e1-6c6226edb242/exec-94b8da7e-cc8b-4e08-b0aa-2f26d554192f.png"
+    }
+  ],
+  "scope": "E/S/SE generation history only",
+  "otherDirectionProvenance": [
+    "artifacts/m1-258/hero-frames/source/north/provenance-resumed.json",
+    "artifacts/m1-258/hero-frames/source/west/generation-resume-provenance.json"
+  ]
+}

@@ -1,0 +1,7 @@
+source,clip,direction,frame,crown_y,chin_y,sole_y,head_pixels,body_pixels,head_body_ratio,scope
+Downloads/heroes.png,original-A,S,0,15,68,456,53,441,0.120181,original-reference
+artifacts/m1-258/hero-frames/source/idle-e-v2.png,idle,E,0,23,78,498,55,475,0.115789,manual-representative-only
+artifacts/m1-258/hero-frames/source/walk-e.png,walk,E,0,46,101,477,55,431,0.127610,manual-representative-only
+artifacts/m1-258/hero-frames/source/slash-light-e-v8.png,slash-light,E,0,23,50,245,27,222,0.121622,manual-representative-only
+artifacts/m1-258/hero-frames/source/hit-e-v5.png,hit,E,0,185,264,850,79,665,0.118797,manual-representative-only
+artifacts/m1-258/hero-frames/source/death-e-v3.png,death,E,0,70,119,507,49,437,0.112128,manual-representative-only

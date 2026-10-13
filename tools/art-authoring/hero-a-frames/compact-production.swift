@@ -39,7 +39,10 @@ for index in clips.indices {
  precondition(anchorX.isFinite && anchorY.isFinite, "Invalid pivot")
  c["pivotX"]=(anchorX-Double(box[0])+Double(pad))*scale/Double(ow)
  c["pivotY"]=1-(anchorY-Double(box[1])+Double(pad))*scale/Double(oh)
- c["bodyHeightPixels"]=body*scale;c["headHeightPixels"]=(c["headHeightPixels"] as! NSNumber).doubleValue*scale
+ c["bodyHeightPixels"]=body*scale
+ if let head = c["headHeightPixels"] as? NSNumber {
+  c["headHeightPixels"]=head.doubleValue*scale
+ }
  c["frameWidth"]=ow;c["frameHeight"]=oh;c["runtimeScale"]=scale;c["authoringTexture"]=texture
  clips[index]=c;bytes+=ow*cols*oh*rows*4
 }
