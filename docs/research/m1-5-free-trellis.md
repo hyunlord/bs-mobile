@@ -14,7 +14,14 @@
 
 직접 만든 메시로 대체하지 않는다. Hunyuan3D는 사용하지 않는다. DGX Spark ARM64의 기존 작업·환경을 보존한 별도 환경에서 낮은 우선순위로 설치를 시도한다. 막히면 정확한 컴파일·의존성 지점을 기록하고 설치 성공으로 포장하지 않는다. 공개 저장소 DGX 러너 연결·운영 SDK 추가는 하지 않는다.
 
-최신 사용자 결정: DINOv3 약관을 검토하고 게임 제작 사용에 동의했으며 **HF 접근 요청 승인만 대기**한다. 동의를 다시 요구하지 않는다. 그동안 MIT BiRefNet 배경 제거와 허용된 의존성을 준비한다. B 선행 시험이 가능해도 **A·B 둘 다 품질 실패해야 유료 조사 가능**이라는 조건은 유지한다.
+최신 사용자 결정: DINOv3 약관 검토·게임 제작 사용 동의와 **HF 접근 승인이 모두 완료**됐다. 고정 revision `ea8dc2863c51be0a264bab82070e3e8836b02d51`의 가중치 1,212,559,808바이트 다운로드 성공을 실행 담당자가 확인했으며 설정 파일 수집은 진행 중이다. 이전 승인 대기·B 선행 시험 조건은 당시 결정으로 보존한다. **A·B 둘 다 품질 실패해야 유료 조사 가능**이라는 조건은 유지한다.
+
+### 현재 입력과 두 시제품 경로
+
+- (a) 저장소의 원본 `docs/design/gdd/hero-concepts-v1/A-knight.png`(1536×1024, SHA256 `b6f834a6cce6a73db14373cffd68b3cd90bff10c6aa4e3e13078b68e150cf9d5`) 정면을 xyxy `(0,15,532,925)`로 잘라 532×910으로 사용한다. MIT BiRefNet 알파 전처리는 성공했다. FlashAttention 준비 뒤 원본 정면으로 메시 생성을 진행한다.
+- (b) A-pose 미리보기는 사용자에게 제시했으나 아직 승인 전이다. **미리보기 승인 전에는 이 입력으로 메시를 생성하지 않는다.**
+- 두 경로 모두 실제 알파 입력과 메시 정면·측면·후면, 손·검·얼굴 확대를 제출한다. 검은 손 본에 붙일 별도 소품으로 취급하고, 망토는 별도 보조 본 또는 단순화 계획을 메시 검토 때 함께 제시한다. 어느 경로도 사용자 메시 승인 전에 Mixamo로 넘기지 않는다.
+- 이전 `heroes.png` 270×480 crop은 역사 전처리 표본이며 현재 생성 입력으로 사용하지 않는다. 설정·확장 설치와 실패한 경합 기록은 [Spark 실행 기록](../review/m1-5/spark-install.md)으로 구분한다. 이미지 자산·FBX를 이 문서 변경으로 추가하지 않는다.
 
 ## 사용자 Mixamo 단계
 
@@ -34,11 +41,11 @@ Microsoft 공식 코드 SHA: `75fbf0183001ed9876c8dbb35de6b68552ee08bd`. 본체 
 | --- | --- | --- |
 | Microsoft TRELLIS.2 코드·본체 모델 | MIT. 사용·수정·상업 배포 가능, 저작권·허가 고지 유지 | 원본 SHA와 라이선스 보존 |
 | `microsoft/TRELLIS-image-large` sparse decoder | HF 모델 카드 MIT | 필요한 decoder만 고정 |
-| `facebook/dinov3-vitl16-pretrain-lvd1689m` | MIT가 아닌 DINOv3 별도 라이선스. Royalty-free 사용권과 용도·재배포 조건, HF gated 접근 | 사용자 약관 검토·게임 제작 동의 완료. 접근 승인 전에는 가중치를 받지 않는다 |
+| `facebook/dinov3-vitl16-pretrain-lvd1689m` | MIT가 아닌 DINOv3 별도 라이선스. Royalty-free 사용권과 용도·재배포 조건, HF gated 접근 | 사용자 동의·접근 승인 완료, 고정 가중치 다운로드 성공. 설정 수집·전체 추론은 별도 |
 | 기본 `briaai/RMBG-2.0` | 비상업 라이선스, 상업 이용 별도 계약 | 예산 0 게임 제작에서 제외 |
-| 대체 `ZhengPeng7/BiRefNet` | 공식 HF 카드 MIT. 고정 Python 소스 정적 검토 완료 | 동일 revision·safetensors·로컬 전용 추론 준비. 실제 실행 결과는 별도 기록 |
+| 대체 `ZhengPeng7/BiRefNet` | 공식 HF 카드 MIT. 고정 Python 소스 정적 검토 완료 | 동일 revision·safetensors·로컬 전용 전처리 성공. 메시 생성 품질은 별도 |
 | nvdiffrast v0.4.0·nvdiffrec renderutils | 각각 LICENSE.txt §3.3 비상업 연구·평가 제한 | **상업 게임 자산 제작에서 제외**. 이름의 “1-Way Commercial”은 일반 사용자 상업 허가가 아님 |
-| CuMesh의 `third_party/cubvh` | 최상위 MIT 외에 LICENSE_NVIDIA §3.3 비상업 제한 코드 포함 | **cubvh 제외**. MIT `_C`·xatlas만 남기는 분리 작업 중이며 준비 완료로 간주하지 않음 |
+| CuMesh의 `third_party/cubvh` | 최상위 MIT 외에 LICENSE_NVIDIA §3.3 비상업 제한 코드 포함 | **cubvh 제외**. MIT `_C`·xatlas 분리 설치·기초 검사 결과와 전체 추론/내보내기를 구별 |
 
 원문: [Microsoft MIT](https://github.com/microsoft/TRELLIS.2/blob/75fbf0183001ed9876c8dbb35de6b68552ee08bd/LICENSE), [모델 카드](https://huggingface.co/microsoft/TRELLIS.2-4B/blob/af44b45f2e35a493886929c6d786e563ec68364d/README.md), [sparse decoder 카드](https://huggingface.co/microsoft/TRELLIS-image-large/tree/25e0d31ffbebe4b5a97464dd851910efc3002d96), [DINOv3 라이선스](https://github.com/facebookresearch/dinov3/blob/6876159a11b4df116f30f667f8c9888617df0751/LICENSE.md), [DINOv3 접근](https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m), [RMBG 조건](https://huggingface.co/briaai/RMBG-2.0), [BiRefNet 카드](https://huggingface.co/ZhengPeng7/BiRefNet/blob/e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4/README.md), [nvdiffrast](https://github.com/NVlabs/nvdiffrast/blob/v0.4.0/LICENSE.txt), [nvdiffrec](https://github.com/JeffreyXiang/nvdiffrec/blob/renderutils/LICENSE.txt).
 

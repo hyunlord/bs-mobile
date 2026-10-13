@@ -17,8 +17,10 @@ Microsoft SHA `75fbf0183001ed9876c8dbb35de6b68552ee08bd`, Eigen submodule `21e45
 | CUDA 정수 tensor 연산 | 성공 | 0..15 제곱 후 synchronize·CPU 결과 일치. 전체 추론 성능/정확도 증거 아님 |
 | nvdiffrast0.4.0 역사 호환성 평가 | 16×16 삼각형 covered32 | NVIDIA 비상업 조건 확인 후 자산 제작 경로에서 제외 |
 | FlashAttention | 소스 빌드 검사 중 | 별도 결과 추가 전 호환 성공 주장 금지 |
-| CuMesh MIT core·xatlas | `_cubvh` 제외 빌드·3정점/1면 GPU 커널 성공 | FlexGEMM/O-Voxel 설치와 전체 추론은 별도 대기 |
-| 모델 생성·손/검/얼굴 품질·Mixamo·굽기 | 미실행 | DINOv3 사용자 게임 사용 동의 완료, HF 접근 승인 대기; 기본 RMBG-2.0 제외 |
+| CuMesh MIT core·xatlas | `_cubvh` 제외 빌드·3정점/1면 GPU 커널 성공 | 전체 메시 추론·내보내기 증거 아님 |
+| FlexGEMM·O-Voxel 등 나머지 확장 | 실행 담당자가 설치·기초 검사 통과 확인 | FlashAttention·전체 추론·생성 품질은 별도 |
+| DINOv3 가중치 | HF 접근 승인 후 1,212,559,808바이트 다운로드 성공 | revision `ea8dc2863c51be0a264bab82070e3e8836b02d51`; 설정 파일 수집·로컬 DINOv3ViTModel 로딩 성공 |
+| 모델 생성·손/검/얼굴 품질·Mixamo·굽기 | 미실행 | 기본 RMBG-2.0 제외. A-pose 입력은 별도 사용자 승인 대기 |
 
 ## 재현 명령
 
@@ -36,15 +38,16 @@ nvdiffrast tag v0.4.0, FlashAttention SHA `1fc0221183e799363001394a12dd9e78e15f5
 ## 전처리·오프라인 준비 실측
 
 - MIT BiRefNet revision `e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4`를 고정하고 safetensors·로컬 코드 검토 후 Mac CPU에서 실행 성공. 원화 RGB를 다시 그리지 않고 알파만 추가했다.
-- 승인 원본 `heroes.png` SHA256 `332d3abbaab9627848369fab9391354a0853e4b2e250c26e3fab635a19093028`, 첫 A 기사 crop `(0,0,270,480)`, 결과 270×480 RGBA. 검·망토·얼굴과 알파 미리보기를 직접 확인했다.
+- 역사 표본: `heroes.png` SHA256 `332d3abbaab9627848369fab9391354a0853e4b2e250c26e3fab635a19093028`, 첫 A 기사 crop `(0,0,270,480)`, 결과 270×480 RGBA. 당시 검·망토·얼굴과 알파 미리보기를 확인했으나 현재 생성 입력으로 사용하지 않는다.
+- 현재 원본: `docs/design/gdd/hero-concepts-v1/A-knight.png`, 1536×1024, SHA256 `b6f834a6cce6a73db14373cffd68b3cd90bff10c6aa4e3e13078b68e150cf9d5`. xyxy `(0,15,532,925)` → 532×910 정면 crop에 BiRefNet 알파 전처리 성공. 원본 RGB를 다시 그리지 않는다.
 - BiRefNet 가중치 SHA256 `9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154`. 모델·원화·투명 PNG는 로컬 작업물이며 Git에 넣지 않는다.
-- 공개 TRELLIS 가중치 8개를 받았고 safetensors 헤더·마지막 data offset·파일 크기 일치를 확인했다. DINOv3 파일은 없음. `logs/public-weight-integrity.json`에 목록 보존.
+- 공개 TRELLIS 가중치 8개를 받았고 safetensors 헤더·마지막 data offset·파일 크기 일치를 확인했다. `logs/public-weight-integrity.json`에 목록 보존. 이후 DINO 접근 승인을 받아 고정 revision의 가중치 1,212,559,808바이트도 다운로드했다. DINO 설정 파일 수집 및 로컬 DINOv3ViTModel(303,129,600 parameters) 로딩 성공. 전체 메시 추론 완료는 아니다.
 - 파일럿 설정은 로컬 DINO 경로·`rembg_model=null`을 사용한다. 로더는 null 배경 제거기를 허용하고 알파 없는 입력은 거부하도록 격리된 upstream checkout에 수정했다. 기본 RMBG-2.0 자동 다운로드는 실행하지 않는다.
 - 생성 준비 스크립트는 seed42·1개 raw PLY·정점 색을 목표로 한다. 아직 실행하지 않았다. nvdiffrast/nvdiffrec/cubvh 및 공식 PBR/GLB 후처리는 호출하지 않는다. Blender4.5.14 LTS로 실제 메시를 렌더할 예정이다.
 - ARM64 선택적 moderngl/glcontext 설치는 `X11/Xlib.h` 부재로 실패했다. 메시 추론에서 필요하지 않은 선택 모듈로 제외했으며 시스템 패키지를 변경하지 않았다.
 
 ## 다음 경계
 
-DINOv3 게임 사용 동의는 완료됐고 HF 접근 승인은 대기한다. gated 파일 우회는 하지 않는다. FlashAttention은 2026-10-13 21시대 기준 97개 object 중 약29개가 컴파일돼 진행 중이며 성공이나 실패로 확정하지 않는다. 낮은 우선순위의 원격 빌드와 로그를 유지한다.
+DINOv3 게임 사용 동의·HF 접근 승인은 완료됐다. 승인된 접근으로 다운로드했으며 gated 파일 우회는 하지 않았다. FlashAttention은 최신 담당자 확인에서 97개 object 중 56개까지 진행 중이며 성공으로 확정하지 않는다. 이전 21시대 29/97 관측은 당시 진행 기록이다. 낮은 우선순위 원격 빌드와 로그를 유지하며, 실패한 경합 시도의 증거도 삭제하거나 성공으로 바꾸지 않는다.
 
-메시가 생성되면 **정면·측면·후면과 손·검·얼굴 확대를 먼저 제출하고 사용자 승인 후 Mixamo**로 간다. 오늘 HF 승인이 오지 않으면 B 무료 기성 캐릭터의 파이프라인을 먼저 시험할 수 있으나, 접근 대기는 A 품질 실패가 아니다. Mixamo 로그인·다운로드는 사용자 담당이고 FBX는 비공개 로컬에만 둔다. 이전 M1-4 실패와 PR261 초안을 유지한다.
+현재 (a) 원본 정면은 FlashAttention 준비 뒤 메시 생성, (b) A-pose 미리보기는 사용자 승인 후에만 메시 생성한다. 두 경로 모두 **실제 알파 입력·정면·측면·후면과 손·검·얼굴 확대를 먼저 제출하고 사용자 메시 승인 후 Mixamo**로 간다. 검은 손 본 별도 소품, 망토는 보조 본 또는 단순화 계획을 메시 검토에 포함한다. 승인 지연 때 허용했던 B 선행 시험은 역사 결정이며 접근 대기를 A 품질 실패로 세지 않는다. Mixamo 로그인·다운로드는 사용자 담당이고 FBX는 비공개 로컬에만 둔다. 이전 M1-4 실패와 PR261 초안을 유지한다.
