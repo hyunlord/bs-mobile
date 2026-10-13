@@ -1,0 +1,172 @@
+{
+  "status": "candidate only, not user approved",
+  "clips": 40,
+  "frames": 232,
+  "rgbaBytes": 120456280,
+  "alphaLossPixels": 0,
+  "files": [
+    {
+      "path": "idle-e-atlas.png",
+      "sha256": "b9ae9b272db0e5a178670fac3c02aebc96fb549d08913f707d19b5fa4275c64b"
+    },
+    {
+      "path": "walk-e-atlas.png",
+      "sha256": "fb4c917aecb3535fb545466943f167026fa90f1b9ee52274ad1b0639dccf8860"
+    },
+    {
+      "path": "slash-light-e-atlas.png",
+      "sha256": "441adea63476eade7a7364fdc0d21a1e0c5786742cf8c07644ca0c0197947c21"
+    },
+    {
+      "path": "hit-e-atlas.png",
+      "sha256": "0deb9389ff2538e5ff91ff2899c9212de787238d794128b26d6e2fa206628518"
+    },
+    {
+      "path": "death-e-atlas.png",
+      "sha256": "6af345670ab6616efd5577ee9e3f5cf83c948d74584aac063fc85217dd8a28c2"
+    },
+    {
+      "path": "idle-s-atlas.png",
+      "sha256": "16deb23ff91d7beaaa8131469ed9525f4d88eade559c43adb83ef40e5dc3dc58"
+    },
+    {
+      "path": "idle-se-atlas.png",
+      "sha256": "4a77c7dbc292b74c71d80da22ce0b0d1de527049f80b4eadadc2ad15700477ff"
+    },
+    {
+      "path": "walk-s-atlas.png",
+      "sha256": "8591a4c0e851138c9150b60a31ac9715e1a74fcfb9c1944883404b43b63f2b2e"
+    },
+    {
+      "path": "walk-se-atlas.png",
+      "sha256": "27aa10914a67fb3d1d9aa3f090b88039d6afdb552d4a9093f0571ac05b5c518a"
+    },
+    {
+      "path": "slash-light-s-atlas.png",
+      "sha256": "075bf0d9f9c359a3d780062b4a63a7f8b1c322cd7b3c232f122fd9fc0fc08029"
+    },
+    {
+      "path": "slash-light-se-atlas.png",
+      "sha256": "e2a800b4c11c53350747d08c17a80e67603a50c09825f0dbd8fb5bc7a58e6f6c"
+    },
+    {
+      "path": "hit-s-atlas.png",
+      "sha256": "1ad98df28ec690e41359a0c54ac3eb7aec8383c02131a0576727ec60cb938fc2"
+    },
+    {
+      "path": "hit-se-atlas.png",
+      "sha256": "680210d0b1fa9df1913052e87fa30c87acf7b8884a095706c67015014a61708b"
+    },
+    {
+      "path": "death-s-atlas.png",
+      "sha256": "74660eb8d7220d243f1d0fa29f123abb85e8777ea03f44ad9ee5927cb2e59816"
+    },
+    {
+      "path": "death-se-atlas.png",
+      "sha256": "64d813692b9620524d2c6af8ec13fa9931b927549305730235ad68993e9f01c6"
+    },
+    {
+      "path": "idle-n-atlas.png",
+      "sha256": "7a61c09bd7c0e6b8537ebdc4dfe79271ba69001dca00f49e0e6de038c536d61f"
+    },
+    {
+      "path": "walk-n-atlas.png",
+      "sha256": "15c32d0ace4dd6497b93cf11ac6b20fb277a5aa14babe749b4e51d203db754c5"
+    },
+    {
+      "path": "hit-n-atlas.png",
+      "sha256": "def0f9a609d8ca968c880a6dd2b2c470fcc7d50870a2d53ac187e9243d1364a8"
+    },
+    {
+      "path": "death-n-atlas.png",
+      "sha256": "61ca2fd58ea0bd2c733b1181399f1563f61350346be64c014fceb77ccb4ec624"
+    },
+    {
+      "path": "idle-ne-atlas.png",
+      "sha256": "8eb67b6cb6e005d03420322923a31cacf160321f1512831b4f5b9c94f07562e7"
+    },
+    {
+      "path": "slash-light-n-atlas.png",
+      "sha256": "ab6851881edf6f5d56194230528f4c9b068e26ec5c5984e3780e6f10ce3681b1"
+    },
+    {
+      "path": "walk-ne-atlas.png",
+      "sha256": "4a304c4f191eb1494e348d0236a3aa12e194789ba3218387209915992c9cfb8d"
+    },
+    {
+      "path": "hit-ne-atlas.png",
+      "sha256": "26c13d93119c379beb1e46d59bc69183ea316c512786432401d18b09cfffabe4"
+    },
+    {
+      "path": "slash-light-ne-atlas.png",
+      "sha256": "ee0d7d64ded3fe1cddaedd75f2a139f1c8de0af61e7ee48ad2527025efd9f39b"
+    },
+    {
+      "path": "death-ne-atlas.png",
+      "sha256": "00d326185e6b41a01a610ac14d3f7acf544b4bbba9122ae2f034b0b6ddf50235"
+    },
+    {
+      "path": "idle-w-atlas.png",
+      "sha256": "86a186c5188a517486352c08d8bac1aba861c4b312066612e18e8520138726eb"
+    },
+    {
+      "path": "walk-w-atlas.png",
+      "sha256": "21235b2d6db91a1bcbf8ced8c9aae5015812ae9b9c18712acc8b04c51d5913c2"
+    },
+    {
+      "path": "idle-sw-atlas.png",
+      "sha256": "5a82483be4cc654a7ace9950905194d755e05c91ae86ec88f89d55f7c397e8b0"
+    },
+    {
+      "path": "slash-light-w-atlas.png",
+      "sha256": "13509222865c14f808566c6913cb84038293d353eb5002d71303a592f2654e5c"
+    },
+    {
+      "path": "hit-w-atlas.png",
+      "sha256": "9b0ce489f8dbaa243db4fb0a835144deb3cb550edd6e57a0bbfe0d8d0fc047c6"
+    },
+    {
+      "path": "death-w-atlas.png",
+      "sha256": "2411aa67585b2461316694346a48e28bced19ea36f40e060c7e6ca008316d61f"
+    },
+    {
+      "path": "idle-nw-atlas.png",
+      "sha256": "ab8119ceb8fb4da114f55dfa5639a8fffed4d384b259dab56364c279e2e6c982"
+    },
+    {
+      "path": "walk-nw-atlas.png",
+      "sha256": "ce033fddfb872dd43dcaed290fe1937d11ef174d2718ebacdd268fdec77732c5"
+    },
+    {
+      "path": "slash-light-nw-atlas.png",
+      "sha256": "d3e8479d50f5c1d20d7e9aa8565129544ece4c9c2100234fb496e290c0fc4229"
+    },
+    {
+      "path": "hit-nw-atlas.png",
+      "sha256": "5c5243bdbd6d5da84609f80848c1d4a724ab92cc20f1f3b77df31ca3228073a5"
+    },
+    {
+      "path": "death-nw-atlas.png",
+      "sha256": "d139269d6190b2d186c92cab9f0d04b9f12ebeca896a34f5e6aa53ee63146bc4"
+    },
+    {
+      "path": "walk-sw-atlas.png",
+      "sha256": "153318e6bbdf8b6fd930193ba1d53b44955e28889d3bb038d9cc04d8de28ea30"
+    },
+    {
+      "path": "slash-light-sw-atlas.png",
+      "sha256": "d3900454bf7f7b111ee6a0ecf132fcbfd4dffbe219687312932d05286647347e"
+    },
+    {
+      "path": "hit-sw-atlas.png",
+      "sha256": "3d4344504f96a6f5a7962b6ab7cedf5838bbedf8350eb9df5545a9592f4a2606"
+    },
+    {
+      "path": "death-sw-atlas.png",
+      "sha256": "3c4c421313956ba0d50cfb88506f31d59971499d3f9c2cbe1ea80ce5fa05256e"
+    }
+  ],
+  "previousCandidate": "candidate-40-v1",
+  "change": "Metadata only: explicitly flag 10 occluded rear head measurements; null preserved",
+  "manifestSha256": "133469231867d9a227d4ea7c51ad4948c556c2e3474fa63d4903a0d7206e2888"
+}

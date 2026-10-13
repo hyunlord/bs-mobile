@@ -1,0 +1,25 @@
+{
+  "historicalRecord": true,
+  "originalRelativePath": "source/west/generation-final-repair-provenance.json",
+  "record": {
+    "tool": "image_gen.imagegen",
+    "transparent_background": true,
+    "records": [
+      {
+        "source": "slash-light-nw-v3.png",
+        "prompt": "Remove background only from thisspriteatlas. Keep everyknight pixelshape/pose/hand/sword/layout unchanged, but ALL darkgraycoloredhalo and translucent rectangular backgroundoutsidecharacter must be fully transparent alpha0. Sharp clean opaque character with antialiasededge only. No shadows/glow/haze. Do notpaintblackbackground. True transparentPNG. No resizing or pose changes.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-b89be2ad-b01e-4700-a277-49a38c542529.png"
+      },
+      {
+        "source": "walk-nw-v2.png",
+        "prompt": "Fix sprite sheet gutter separation ONLY. All8poses2columns4rows1024x1536. Wholeposescurrentlytouch betweenrows. Make eachentirepose INCLUDINGblade/cape/boots 20% smaller UNIFORMLY and centerinsideits512x384cell, preserving anatomicalbody/head proportions and samepose. Atleast20pxtransparentblank on ALL4edges everycell. No pose/hand/directionchanges, no mirror. Background alpha0 no haze/glow. Keepopaquechar.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-9beef692-eb0e-403e-8c45-b2f2321b0a2c.png"
+      },
+      {
+        "source": "slash-light-nw-v4.png",
+        "prompt": "Fix sprite sheet gutter separation ONLY. All8poses2columns4rows1024x1536. Wholeposescurrentlytouch betweenrows. Make eachentirepose INCLUDINGblade/cape/boots 20% smaller UNIFORMLY and centerinsideits512x384cell, preserving anatomicalbody/head proportions and samepose. Atleast20pxtransparentblank on ALL4edges everycell. No pose/hand/directionchanges, no mirror. Background alpha0 no haze/glow. Keepopaquechar.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-605a96fd-2a15-4e4c-b979-1085c538625a.png"
+      }
+    ]
+  }
+}
