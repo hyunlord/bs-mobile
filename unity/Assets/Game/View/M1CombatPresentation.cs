@@ -110,8 +110,8 @@ namespace Game.View
                 {
                     var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
                     var diameter=radius*2;
-                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter,0,opacity*.5f,new Color(.65f,.82f,1));
-                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter*Mathf.Lerp(.3f,1,progress),0,opacity*.7f,Color.white);
+                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter,0,opacity*.2f,new Color(.65f,.82f,1));
+                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter*Mathf.Lerp(.3f,1,progress),0,opacity*.32f,Color.white);
                 }
             }
             return true;
