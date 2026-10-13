@@ -16,7 +16,7 @@ namespace Game.View
     [Serializable] public sealed class HeroProductionClip
     {
         public string id, direction, texture, authoredDirection;
-        public int columns, rows, frames;
+        public int columns, rows, frames, impactFrame;
         public float fps, pivotX, pivotY, bodyHeightPixels, headHeightPixels;
         public bool mirror;
         [NonSerialized] public ArtVisual visual;
@@ -63,7 +63,21 @@ namespace Game.View
         public string HeroProductionMethod => productionHero?.method ?? "cutout-baseline";
         public string HeroProductionAction { get; private set; }
         public int HeroProductionFrame { get; private set; }
-        public long HeroProductionTextureBytes { get; private set; }
+        public long HeroProductionTextureBytes { get; private set; } = -1;
+        public bool HeroProductionTextureBytesAvailable { get; private set; }
+        public long HeroProductionNominalRgbaBytes { get; private set; }
+        public int HeroProductionClipImpactFrame { get; private set; }
+        void RecordProductionTextureMemory(int width, int height, long measuredBytes)
+        {
+            var first = HeroProductionNominalRgbaBytes == 0;
+            HeroProductionNominalRgbaBytes += (long)width * height * 4;
+            HeroProductionTextureBytesAvailable = (first || HeroProductionTextureBytesAvailable) && measuredBytes > 0;
+            HeroProductionTextureBytes = HeroProductionTextureBytesAvailable ? (first ? 0 : HeroProductionTextureBytes) + measuredBytes : -1;
+        }
+#if UNITY_EDITOR
+        public void EditorRecordProductionTextureMemory(int width, int height, long measuredBytes)
+            => RecordProductionTextureMemory(width, height, measuredBytes);
+#endif
 
         public static void ValidateProductionManifest(HeroProductionManifest value, bool requireAuthoredFrames=false)
         {
@@ -77,7 +91,7 @@ namespace Game.View
             {
                 if (clip == null || string.IsNullOrEmpty(clip.id) || string.IsNullOrEmpty(clip.direction) ||
                     string.IsNullOrEmpty(clip.texture) || clip.columns < 1 || clip.rows < 1 || clip.frames < 1 ||
-                    clip.frames > (long)clip.columns * clip.rows || !PositiveFinite(clip.fps) || !PositiveFinite(clip.bodyHeightPixels) ||
+                    clip.impactFrame < 0 || clip.impactFrame >= clip.frames || clip.frames > (long)clip.columns * clip.rows || !PositiveFinite(clip.fps) || !PositiveFinite(clip.bodyHeightPixels) ||
                     !PositiveFinite(clip.headHeightPixels) || clip.headHeightPixels >= clip.bodyHeightPixels ||
                     float.IsNaN(clip.pivotX) || float.IsNaN(clip.pivotY) || clip.pivotX < 0 || clip.pivotX > 1 || clip.pivotY < 0 || clip.pivotY > 1)
                     throw new InvalidDataException("Invalid production clip dimensions or measured landmarks.");
@@ -110,7 +124,7 @@ namespace Game.View
                     texture = new Texture2D(2, 2, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
                     if (!texture.LoadImage(File.ReadAllBytes(file), true)) throw new InvalidDataException("Invalid production atlas.");
                     productionTextures.Add(file, texture);
-                    HeroProductionTextureBytes += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(texture);
+                    RecordProductionTextureMemory(texture.width, texture.height, UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(texture));
                     batches.Add((GameVisualTokens.LordLayer, texture), new SpriteBatch(texture, shader, renderCamera, GameVisualTokens.LordLayer));
                 }
                 if (texture.width % clip.columns != 0 || texture.height % clip.rows != 0)
@@ -150,7 +164,7 @@ namespace Game.View
             heroLiveRig?.Hide();
             var slash = ProductionClip(motionAttackEvolved ? "slash-heavy" : "slash-light") ?? ProductionClip("slash-light");
             var attackAge = visualTime - motionAttackStarted;
-            var attack = attackAge >= 0 && attackAge < slash.frames / slash.fps;
+            var attack = attackAge >= 0 && attackAge < ProductionAttackDuration(slash);
             if(productionFollowFacing && attack) productionDirection=productionEightDirections ? productionAttackDirection : HeroProductionTargetDirection.x<0?"W":"E";
             if(hit && !productionWasHit) productionHitStarted=visualTime;
             productionWasHit=hit;
@@ -160,9 +174,9 @@ namespace Game.View
             var clip = ProductionClip(id);
             if (clip == null) { clip = ProductionClip("walk"); id = "idle-unavailable"; }
             if (id != productionAction) { productionAction = id; productionActionStarted = visualTime; }
-            var time = id=="hit" ? visualTime-productionHitStarted : attack && id == slash.id ? attackAge : visualTime - productionActionStarted;
+            var time = id=="hit" ? visualTime-productionHitStarted : attack && id == slash.id ? ProductionAttackTime(clip, attackAge) : visualTime - productionActionStarted;
             var frame = ProductionFrame(id, time, clip.frames, clip.fps);
-            HeroProductionAction = id; HeroProductionFrame = frame;
+            HeroProductionAction = id; HeroProductionFrame = frame; HeroProductionClipImpactFrame = clip.impactFrame;
             // Match visible body height, not atlas padding; proportions remain wholly inside the authored image.
             var bodyHeight = reference.WorldSize.y * GameVisualTokens.HeroRigHeightScale * (167f / 252f);
             var size = clip.visual.WorldSize * (bodyHeight / clip.bodyHeightPixels);
@@ -170,6 +184,9 @@ namespace Game.View
             Draw(clip.visual, GameVisualTokens.LordLayer, position, 0, size, tint: color, uv: clip.visual.UvRects[frame]);
             return true;
         }
+
+        public static float ProductionAttackDuration(HeroProductionClip clip) => (clip.frames - clip.impactFrame) / clip.fps;
+        public static float ProductionAttackTime(HeroProductionClip clip, float age) => age + clip.impactFrame / clip.fps;
 
         public static int ProductionFrame(string action, float seconds, int frames, float fps)
         {

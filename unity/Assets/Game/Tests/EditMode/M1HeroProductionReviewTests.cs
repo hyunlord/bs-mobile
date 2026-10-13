@@ -89,6 +89,40 @@ public sealed class M1HeroProductionReviewTests
         }
         finally {UnityEngine.Object.DestroyImmediate(go);}
     }
+    [Test] public void UnavailableTextureProfilerDoesNotReportZeroMemory()
+    {
+        var go=new UnityEngine.GameObject("production-memory-test");var world=go.AddComponent<WorldRenderer>();
+        try
+        {
+            world.EditorRecordProductionTextureMemory(1024,1024,4194304);
+            Assert.That(world.HeroProductionTextureBytesAvailable,Is.True);
+            Assert.That(world.HeroProductionTextureBytes,Is.EqualTo(4194304));
+            world.EditorRecordProductionTextureMemory(512,512,0);
+            Assert.That(world.HeroProductionTextureBytesAvailable,Is.False);
+            Assert.That(world.HeroProductionTextureBytes,Is.EqualTo(-1));
+            Assert.That(world.HeroProductionNominalRgbaBytes,Is.EqualTo(5242880));
+            world.EditorRecordProductionTextureMemory(512,512,1048576);
+            Assert.That(world.HeroProductionTextureBytesAvailable,Is.False,"A later measurable atlas cannot repair an incomplete total.");
+            Assert.That(world.HeroProductionTextureBytes,Is.EqualTo(-1));
+        }
+        finally {UnityEngine.Object.DestroyImmediate(go);}
+    }
+    [TestCase(-1),TestCase(8)] public void InvalidImpactFrameIsRejected(int impactFrame)
+    {
+        var value=ValidManifest();value.clips[0].impactFrame=impactFrame;
+        Assert.Throws<InvalidDataException>(()=>WorldRenderer.ValidateProductionManifest(value));
+    }
+    [Test] public void ActualImpactStartsAtContactAndFinishesRecoveryWithoutWindupDelay()
+    {
+        var clip=ValidManifest().clips[0];clip.id="slash-light";clip.fps=12;clip.impactFrame=3;
+        Assert.That(WorldRenderer.ProductionFrame(clip.id,WorldRenderer.ProductionAttackTime(clip,0),clip.frames,clip.fps),Is.EqualTo(3));
+        Assert.That(WorldRenderer.ProductionFrame(clip.id,WorldRenderer.ProductionAttackTime(clip,1f/12),clip.frames,clip.fps),Is.EqualTo(4));
+        Assert.That(WorldRenderer.ProductionAttackDuration(clip),Is.EqualTo(5f/12));
+        Assert.That(WorldRenderer.ProductionFrame(clip.id,WorldRenderer.ProductionAttackTime(clip,1),clip.frames,clip.fps),Is.EqualTo(7));
+        clip.impactFrame=0;
+        Assert.That(WorldRenderer.ProductionAttackTime(clip,0),Is.Zero,"Historical clips keep their original start.");
+        Assert.That(WorldRenderer.ProductionAttackDuration(clip),Is.EqualTo(8f/12));
+    }
     static HeroProductionManifest ValidManifest() => new HeroProductionManifest
     {
         schemaVersion = 1, method = "frame-drawn", headHeightRatio = 1f / 7,
