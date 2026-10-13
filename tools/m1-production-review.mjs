@@ -280,6 +280,38 @@ export function sourceHeadRatio(run, action) {
   assert(ratio === null || Number.isFinite(ratio) && ratio > 0 && ratio < 1, 'Invalid source head/body ratio');
   return { originalRatio, ratio, basis, manifest: file, manifestSha256: hash(file), label: `원화 ${originalRatio.toFixed(5)} · 소스 ${ratio === null ? '미검증' : ratio.toFixed(5)} · 실화면 미측정` };
 }
+export function motionDetailCrop(plan, row) {
+  const portrait = portraitZoomCrop(plan, row), c = plan.crop;
+  const width = 250, height = 250, groundBelowCenter = 60;
+  assert(c.width >= width && c.height >= height);
+  const requestedY = Math.round(plan.height - Number(row.heroY) - groundBelowCenter - height / 2);
+  const y = Math.max(c.y, Math.min(c.y + c.height - height, requestedY));
+  return { x: portrait.x, y, width, height, groundBelowCenter,
+    clamped: portrait.x !== Math.round(Number(row.heroX) - width / 2) || y !== requestedY };
+}
+function assembleMotionDetail(plan, runs, sheet, output) {
+  const frameIndices = Array.from({ length: 12 }, (_, i) => sheet.startFrame + i);
+  const rowFiles = [], crops = [];
+  for (const run of runs) {
+    const hero = rows(path.join(run.directory, plan.heroCoordinates));
+    const samples = frameIndices.map(index => {
+      assert.equal(Number(hero[index].frameIndex), index);
+      return { index, elapsedRenderMs: (index - sheet.startFrame) * 1000 / 60, ...motionDetailCrop(plan, hero[index]) };
+    });
+    const inputs = frameIndices.flatMap(index => ['-i', path.join(run.directory, 'offline-frames', `frame-${String(index).padStart(6, '0')}.jpg`)]);
+    const filters = samples.map((crop, i) => `[${i}:v]crop=${crop.width}:${crop.height}:${crop.x}:${crop.y},scale=500:500:flags=lanczos,setsar=1[c${i}]`);
+    const label = path.join(output, `${sheet.action}-${run.role}-detail-label.png`);
+    call(path.join(output, 'labels'), [run.title, `${sheet.action} · ${sheet.startFrame}장부터 연속12장`, run.limitation ? '이전 원본: 피격·쓰러짐 동작 미구현' : '실제 영주 위치 · 250px 원본을 2배 확대', label]);
+    inputs.push('-i', label);
+    filters.push(samples.map((_, i) => `[c${i}]`).join('') + 'hstack=inputs=12[s]', '[12:v]pad=500:500:0:200:color=0x141414[l]', '[l][s]hstack=inputs=2[v]');
+    const file = path.join(output, `${sheet.action}-${run.role}-detail12.png`);
+    call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', filters.join(';'), '-map', '[v]', '-frames:v', '1', file]);
+    rowFiles.push(file); crops.push({ role: run.role, samples });
+  }
+  const file = path.join(output, `${sheet.action}-detail-contiguous12.png`);
+  call('ffmpeg', ['-nostdin', '-v', 'error', ...rowFiles.flatMap(row => ['-i', row]), '-filter_complex', rowFiles.map((_, i) => `[${i}:v]`).join('') + `vstack=inputs=${rowFiles.length}[v]`, '-map', '[v]', '-frames:v', '1', file]);
+  return { file, frameIndices, crops, policy: 'Same 12 adjacent originals for all methods; no retiming. 250x250 source enlarged 2x. Observed ground anchor is 60 source pixels below crop center to include the standing body. Each crop is clamped inside the original portrait; full-context sheet remains available.' };
+}
 function assembleHeroes(plan, output, sheetsOnly = false) {
   const runs = plan.runs.filter(run => run.kind === 'hero'), proof = validateAll(plan, runs); const count = plan.purpose === 'frame-hero-before-after' ? 2 : 3; assert.equal(runs.length, count); fresh(output); labelHelper(output); const outputs = [];
   for (const zoom of sheetsOnly ? [] : [1, 2]) {
@@ -300,6 +332,7 @@ function assembleHeroes(plan, output, sheetsOnly = false) {
       inputs.push('-i', label); filters.push(`[${i + count}:v]pad=500:270:0:85:color=0x141414[l${i}];[l${i}][s${i}]hstack=inputs=2[r${i}]`);
     });
     call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', [...filters, runs.map((_, i) => `[r${i}]`).join('') + `vstack=inputs=${count}[v]`].join(';'), '-map', '[v]', '-frames:v', '1', path.join(output, `${sheet.action}-12frames.png`)]);
+    sheet.motionDetail = assembleMotionDetail(plan, runs, sheet, output);
   }
   save(path.join(output, 'production-review-provenance.json'), { contract: plan.contract, sheetsOnly, performanceEligible: false, terminalPresentationFrames: plan.terminalPresentationFrames ?? 0, sources: proof, outputs, sheetWindows, sheetOrder: runs.map(run => run.title), sheetTiming: `12 originals with step ${plan.sheetStep ?? 5}; no interpolation. Missing death/hit remains pending and cannot pass essential-action review.`, ratioMeaning: 'Original A reference head/body 53/441; source/model landmark ratios, not native screen pixel measurements. 2D uses the E clip corresponding to each action. Baseline ratio is unverified.', limitations: 'Methods are authoring candidates, not approved default. 2x crop clamps to original portrait; sourceframes retained. Each comparison track retains one method original game mix, selectable independently.' });
 }

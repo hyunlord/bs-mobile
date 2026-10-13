@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import * as productionReview from './m1-production-review.mjs';
 import { actualAimSheet, makePlan, makeFramePlan, validateTerminalPresentation, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns, sourceHeadRatio, combatSheetTiming } from './m1-production-review.mjs';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'production-plan-test-'));
 try {
@@ -48,6 +49,18 @@ try {
   fs.writeFileSync(oldFrame, JSON.stringify({ method: 'frame-drawn', revision: 'old' }));
   fs.writeFileSync(newFrame, JSON.stringify({ method: 'frame-drawn', revision: 'new' }));
   const framePlan = makeFramePlan(path.join(root, 'frame'), oldFrame, newFrame);
+  assert.equal(typeof productionReview.motionDetailCrop, 'function');
+  const centerCrop = productionReview.motionDetailCrop(framePlan, { heroX: '960', heroY: '480' });
+  assert.equal(centerCrop.width, 250); assert.equal(centerCrop.height, 250);
+  assert.equal(centerCrop.x + 125, 960);
+  assert.equal(centerCrop.y + 125 + 60, 600);
+  for (const [heroX, heroY] of [[710, 1080], [1210, 0], [-100, 2000]]) {
+    const crop = productionReview.motionDetailCrop(framePlan, { heroX, heroY });
+    assert(crop.x >= 710 && crop.x + crop.width <= 1210);
+    assert(crop.y >= 0 && crop.y + crop.height <= 1080);
+    assert(crop.clamped);
+  }
+  assert.throws(() => productionReview.motionDetailCrop(framePlan, { heroX: 'unavailable', heroY: 480 }));
   assert.equal(framePlan.runs.length, 2); assert.equal(framePlan.sheetStep, 1);
   assert(framePlan.runs.every(run => run.frames === 1800 && run.method === 'frame-drawn'));
   assert.throws(() => makeFramePlan(path.join(root, 'same'), oldFrame, oldFrame));
