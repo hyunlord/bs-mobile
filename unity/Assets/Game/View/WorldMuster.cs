@@ -18,13 +18,21 @@ namespace Game.View
         public int MusterLunges { get; private set; }
         // Raised whenever the resolved path, evolution or ratio of a muster source changes; review logs record it.
         public Action<string, MusterFormation> MusterPresentationChanged;
+        // Last drawn hero box relative to the hero anchor, and its body width; groups draw before the hero each frame.
+        Rect heroSilhouetteLocal;
+        bool heroSilhouetteKnown;
+        float heroBodyWidth;
+        public Action<Rect> RenderedMusterSoldierBounds;
+        public Rect RenderedHeroSilhouette { get; private set; }
+        ShapeMeshes musterRingMeshes;
+        ShapeBatch musterRings;
         readonly Dictionary<int, (float started, Vector2 target)> musterStrikes = new Dictionary<int, (float, Vector2)>(64);
         readonly Dictionary<string, (MusterPresentationPath path, string evolution, float ratio)> observedMuster =
             new Dictionary<string, (MusterPresentationPath, string, float)>(StringComparer.Ordinal);
 
         void ResetMuster()
         {
-            musterStrikes.Clear(); observedMuster.Clear();
+            musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false;
             MusterPath = MusterPresentationPath.None; MusterEvolutionId = null; MusterRatio = 1; MusterSoldiers = 0; MusterScale = 1; MusterLunges = 0;
         }
 
@@ -109,6 +117,37 @@ namespace Game.View
             MusterLunges++;
         }
 
+        void RecordHeroSilhouette(ArtVisual hero, Vector2 anchor)
+        {
+            // Union of the plain sprite and the taller live rig in both facings, widened by the hit push: never smaller than the figure.
+            var rig = hero.WorldSize * (256f / 252) * GameVisualTokens.HeroRigHeightScale;
+            var mirrored = new Vector2(1 - hero.Pivot.x, hero.Pivot.y); var rigMirrored = new Vector2(1 - HeroGaitState.Pivot.x, HeroGaitState.Pivot.y);
+            var box = Union(Union(MusterFormationRule.SpriteRect(anchor, hero.WorldSize, hero.Pivot), MusterFormationRule.SpriteRect(anchor, hero.WorldSize, mirrored)),
+                Union(MusterFormationRule.SpriteRect(anchor, rig, HeroGaitState.Pivot), MusterFormationRule.SpriteRect(anchor, rig, rigMirrored)));
+            heroBodyWidth = hero.WorldSize.x * GameVisualTokens.HeroBodyWidthFraction;
+            var push = heroBodyWidth * HeroHitFeedback.PushBodyFraction;
+            box = Rect.MinMaxRect(box.xMin - push, box.yMin - push, box.xMax + push, box.yMax + push);
+            RenderedHeroSilhouette = box;
+            heroSilhouetteLocal = new Rect(box.position - anchor, box.size);
+            heroSilhouetteKnown = true;
+        }
+
+        static Rect Union(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));
+
+        void DrawMusterRing(Vector2 center, float radius, Color color, float opacity)
+        {
+            if (radius <= 0 || opacity <= 0) return;
+            if (musterRings == null)
+            {
+                musterRingMeshes = new ShapeMeshes();
+                musterRings = new ShapeBatch(musterRingMeshes[WorldShape.Circle], Resources.Load<Shader>("WorldShape"), renderCamera, GameVisualTokens.AttackLayer);
+                musterRings.BeginFrame();
+            }
+            var pixels = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+            color.a *= opacity;
+            musterRings.Add(center, Vector2.one * radius, 0, color, Mathf.Clamp01(1 - pixels * 2.5f / radius));
+        }
+
         // Draws a formation of soldiers; the representative keeps its authored size and slot when the formation is neutral.
         void DrawMusterFormation(int id, in MusterFormation formation, ArtVisual front, ArtVisual rear, int layer, Vector2 position, float time,
             bool walking, ActorFacingPose facing)
@@ -121,13 +160,21 @@ namespace Game.View
                 var toward = strike.target - position;
                 if (toward.sqrMagnitude > .000001f) lunge = toward.normalized * (size.x * .35f * Mathf.Sin(Mathf.PI * attack));
             }
+            var hero = new Rect(heroSilhouetteLocal.position + RenderedLordPosition, heroSilhouetteLocal.size);
+            var clearance = heroBodyWidth * MusterFormationRule.HeroClearanceBodyWidths;
+            var heading = attack >= 0 ? strikeTarget - hero.center : position - hero.center;
+            var onHero = heroSilhouetteKnown && ((position - hero.center).magnitude < clearance + size.x || hero.Contains(position));
             for (var i = formation.Soldiers - 1; i >= 0; i--)
             {
                 var art = (i & 1) == 0 ? front : rear;
+                var soldierSize = art.WorldSize * formation.Scale;
                 var slot = MusterFormationRule.Slot(i, size);
                 var stagger = i * .025f;
                 var reach = attack >= 0 ? lunge * Mathf.Clamp01(1 - stagger / MusterLungeSeconds) : Vector2.zero;
-                DrawActor(art, layer + (slot.y < 0 ? 1 : 0), position + slot + reach, time + i * .07f, art.WorldSize * formation.Scale, walking,
+                var at = (onHero ? MusterFormationRule.FrontArc(i, formation.Soldiers, hero, heading, clearance + soldierSize.x * .5f) : position + slot) + reach;
+                if (heroSilhouetteKnown) at = MusterFormationRule.ClearOfHero(at, soldierSize, art.Pivot, hero, clearance, heading);
+                RenderedMusterSoldierBounds?.Invoke(MusterFormationRule.SpriteRect(at, soldierSize, art.Pivot));
+                DrawActor(art, layer + (slot.y < 0 ? 1 : 0), at, time + i * .07f, soldierSize, walking,
                     attack >= 0 ? Mathf.Clamp01(attack - stagger) : -1, -1, facing: facing);
             }
             if (strikeAge < 0) return;

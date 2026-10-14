@@ -306,7 +306,7 @@ namespace Game.View
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
-            lordMarker?.BeginFrame();
+            lordMarker?.BeginFrame(); musterRings?.BeginFrame();
             actorGrounding.BeginFrame(); actorWings.BeginFrame();
             if (presentationDiagnosticsActive) diagnostics.CameraUiMs = DiagnosticInterval(ref diagnosticCheckpoint);
             UpdateFallowMask();
@@ -465,6 +465,7 @@ namespace Game.View
                 Color.white,heroFlash,heroGaitDiscontinuity,seconds))
                 DrawActor(heroVisual,GameVisualTokens.LordLayer,heroDrawn,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroFlash,facing:heroFacing);
             heroGaitDiscontinuity=false;
+            RecordHeroSilhouette(heroVisual,lord);
             RenderedHeroAnchorScreenPosition = renderCamera.WorldToScreenPoint(lord);
             RenderedHeroAnchorScreenSample?.Invoke(RenderedHeroAnchorScreenPosition);
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
@@ -479,6 +480,7 @@ namespace Game.View
             SubmittedInstances = 0; DrawCalls = 0;
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
+            if(musterRings!=null){musterRings.Flush();SubmittedInstances+=musterRings.SubmittedInstances;DrawCalls+=musterRings.DrawCalls;}
             actorGrounding.Flush(); actorWings.Flush();
             SubmittedInstances+=actorGrounding.SubmittedInstances+actorWings.SubmittedInstances;
             DrawCalls+=actorGrounding.DrawCalls+actorWings.DrawCalls;
@@ -786,7 +788,7 @@ namespace Game.View
             DisposeFallow();
             DisposeThreatWarnings();
             DisposeActorGrounding();
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); musterRings?.Dispose(); musterRingMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }

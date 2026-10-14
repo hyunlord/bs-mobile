@@ -248,10 +248,9 @@ namespace Game.View
                 else if(m1CombatShape=="summon")
                 {
                     var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
-                    var diameter=radius*2;
-                    // The call ring stays secondary to the soldiers it summons.
-                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter,0,opacity*.1f,new Color(.65f,.82f,1));
-                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter*Mathf.Lerp(.3f,1,progress),0,opacity*.16f,Color.white);
+                    // The call is a thin expanding outline only; a filled ring would tint the whole screen over the soldiers.
+                    DrawMusterRing(a,radius,new Color(.65f,.82f,1),opacity*.35f);
+                    DrawMusterRing(a,radius*Mathf.Lerp(.3f,1,progress),Color.white,opacity*.55f);
                 }
             }
             return true;

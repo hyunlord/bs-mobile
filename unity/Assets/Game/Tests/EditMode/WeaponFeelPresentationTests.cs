@@ -184,13 +184,31 @@ namespace Tests.EditMode
             Assert.That(lv1.Scale, Is.LessThan(max.Scale));
             Assert.That(max.Scale, Is.LessThan(evolved.Scale));
             Assert.That(evolved.Soldiers, Is.LessThanOrEqualTo(MusterFormationRule.MaximumSoldiers));
-            Assert.That(MusterFormationRule.Resolve(2, 1e6f, null).Soldiers, Is.EqualTo(7));
-            Assert.That(MusterFormationRule.Resolve(1, 1e6f, null).Scale, Is.EqualTo(1.5f));
+            Assert.That(MusterFormationRule.Resolve(2, 1e6f, null).Soldiers, Is.EqualTo(5));
+            Assert.That(MusterFormationRule.Resolve(1, 1e6f, null).Scale, Is.EqualTo(1.3f));
+            Assert.That(MusterFormationRule.MaximumSoldiers, Is.EqualTo(5)); Assert.That(MusterFormationRule.MaximumScale, Is.EqualTo(1.3f));
             foreach (var stage in new[] { lv1, max, evolved })
             {
                 Assert.That(stage.Path, Is.EqualTo(MusterPresentationPath.GearRatio));
                 Assert.That(stage.Evolved, Is.False, "Gear strength alone never turns on the evolution-only look.");
             }
+        }
+
+        [Test]
+        public void SoldiersAreMovedClearOfTheHeroBoxAndSpreadOverTheFrontArc()
+        {
+            var hero = new Rect(-.5f, 0, 1, 1.6f); var size = new Vector2(.6f, .8f); var pivot = new Vector2(.5f, .1f);
+            var clearance = .45f * MusterFormationRule.HeroClearanceBodyWidths;
+            foreach (var desired in new[] { hero.center, new Vector2(.2f, .3f), new Vector2(-.9f, 1.4f), new Vector2(3, 0) })
+            {
+                var at = MusterFormationRule.ClearOfHero(desired, size, pivot, hero, clearance, Vector2.up);
+                Assert.That(MusterFormationRule.SpriteRect(at, size, pivot).Overlaps(hero), Is.False, desired.ToString());
+                Assert.That((at - hero.center).magnitude, Is.GreaterThanOrEqualTo(clearance - .0001f));
+            }
+            Assert.That(MusterFormationRule.ClearOfHero(new Vector2(3, 0), size, pivot, hero, clearance, Vector2.up), Is.EqualTo(new Vector2(3, 0)), "Already clear soldiers stay put.");
+            var first = MusterFormationRule.FrontArc(0, 5, hero, Vector2.right, 1); var last = MusterFormationRule.FrontArc(4, 5, hero, Vector2.right, 1);
+            Assert.That(first.y, Is.LessThan(hero.center.y)); Assert.That(last.y, Is.GreaterThan(hero.center.y));
+            Assert.That(MusterFormationRule.FrontArc(2, 5, hero, Vector2.right, 1).x, Is.GreaterThan(hero.center.x), "Arc faces the target.");
         }
 
         [Test]

@@ -132,6 +132,48 @@ namespace Tests.PlayMode
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }
 
+        // P5: enemies > own attacks > allies. Muster soldiers, including a group standing on the hero and a lunge toward the hero
+        // side, must never overlap the hero's drawn box.
+        [UnityTest]
+        public IEnumerator MusterFormationNeverOverlapsTheHero()
+        {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName = CanonicalContent.ProfileName;
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var frame = session.View.CaptureFrame() with { Enemies = System.Array.Empty<EnemyView>() };
+            var lord = frame.Lord.Position;
+            var groups = new[] { (0, 0), (200, 100), (-250, -150), (600, 0), (0, -700) }
+                .Select((o, i) => new WaveGroupView(9000 + i, "core:muster_horn", new WorldPoint(lord.X + o.Item1, lord.Y + o.Item2), "engaging", 1, i % 2, 0, 0, "advance")).ToArray();
+            var strike = new WaveEvent(950000, frame.Tick, "group-hit", "core:muster_horn", 1, new WorldPoint(lord.X - 300, lord.Y), new WorldPoint(lord.X - 300, lord.Y), 10);
+            var wave = ((IWaveRunView)session.View).CaptureWaveRuntime() with { Enemies = System.Array.Empty<WaveEnemyView>(), Groups = groups, Events = new[] { strike } };
+            // A weaker canonical reference makes the actual runtime horn a strong formation (GearRatio path).
+            var reference = catalog.WaveRuntime with { Gear = catalog.WaveRuntime.Gear.ToDictionary(p => p.Key, p => p.Key == "core:muster_horn" ? p.Value with { Count = 1, Range = 100, Levels = null } : p.Value) };
+            var owner = new GameObject("Muster overlap QA"); var cameraOwner = new GameObject("Muster overlap camera");
+            var camera = cameraOwner.AddComponent<Camera>(); var texture = new RenderTexture(720, 1280, 24); camera.targetTexture = texture;
+            try
+            {
+                var world = CreateWorld(owner, camera, catalog, frame);
+                world.GearReference = reference;
+                var soldiers = new System.Collections.Generic.List<Rect>();
+                world.RenderedMusterSoldierBounds = soldiers.Add;
+                for (var i = 0; i < 12; i++)
+                {
+                    soldiers.Clear();
+                    world.AcceptWave(catalog, wave);
+                    world.Present(frame, frame, WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), wave), 1, Frame, new Rect(0, 0, 720, 1280));
+                    yield return null;
+                    if (i == 0) continue; // the hero box is learned from the first drawn hero
+                    Assert.That(world.MusterPath, Is.EqualTo(MusterPresentationPath.GearRatio));
+                    Assert.That(soldiers.Count, Is.GreaterThanOrEqualTo(groups.Length * 2));
+                    foreach (var soldier in soldiers)
+                        Assert.That(soldier.Overlaps(world.RenderedHeroSilhouette), Is.False, $"frame {i}: soldier {soldier} overlaps hero {world.RenderedHeroSilhouette}");
+                }
+                Assert.That(world.MusterLunges, Is.GreaterThan(0));
+            }
+            finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
+        }
+
         // Normal first-playable path: natural level-ups, real offered cards and no invulnerability or grants. Seed 30002 activates
         // rally_kitchen (muster horn + soup ladle at level 3) at tick 6630; the muster soldiers switch to the evolution look only then.
         [UnityTest]
