@@ -25,9 +25,9 @@
 
 처치가 화면 가장자리까지 퍼진 타격은 포함 관계를 우선하므로 부채꼴 일부가 화면을 넘는다. 휘두르는 검은 항상 화면 안에서 끝난다.
 
-뿔나팔 검토 로그(`m1-combat-review.json` `musterPresentation`): Lv1 `GearRatio` r=1.88·3명·1.09배, 최대 r=8·5명·1.3배, 진화 r=32·7명·1.5배. 검토 진화 단계는 런타임 진화가 아니므로 진화 전용 연출은 켜지지 않는다.
+뿔나팔 검토 로그(`m1-combat-review.json` `musterPresentation`): Lv1 `GearRatio` r=1.88·3명·1.09배, 최대 r=8·5명·1.3배, 진화 r=32·7명·1.5배. 사용자 검수(영웅 가림·원 무늬) 후 `a8aa9f2`: 상한 5명·1.3배, 영웅 그림 상자와 겹침 0·중심에서 최소 1.2 몸 너비, 얇은 원 테두리; 재촬영 3/5/5명·1.05/1.18/1.3배. 검토 진화 단계는 런타임 진화가 아니므로 진화 전용 연출은 켜지지 않는다.
 
-정상 플레이 경로: PlayMode `NormalPlayRallyKitchenEvolutionIsTheOnlyPathToTheEvolutionLook`(first-playable, seed 30002, 무적·레벨 부여 없음)에서 6630틱 무렵 `core:rally_kitchen` 활성 시에만 `RuntimeEvolution`·7명이 되고 기록은 1회다. 같은 seed의 Mac 자동 플레이(`d95c282`)도 7802·8324틱에 같은 경로를 기록했다. 실시간 앱 캡처는 후반 first-playable 장면에서 60Hz를 유지하지 못해(24.8fps, 누락 1,428슬롯) **실패 표본**이며 60fps 영상으로 쓰지 않는다.
+정상 플레이 경로: PlayMode `NormalPlayRallyKitchenEvolutionIsTheOnlyPathToTheEvolutionLook`(first-playable, seed 30002, 무적·레벨 부여 없음)에서 6630틱 무렵 `core:rally_kitchen` 활성 시에만 `RuntimeEvolution`·7명이 되고 기록은 1회다. 같은 seed의 Mac 자동 플레이(`d95c282`, `a8aa9f2`)도 7802·8324틱에 같은 경로를 기록했다. 그러나 이 PR 스택의 first-playable Mac 앱은 `HeroVisual`이 매 프레임 `Missing art role: hero.preview-b.idle` 예외를 던져 월드를 그리지 못한다(#255 2bf5295부터, main에는 없음). 따라서 실시간 캡처 1회차(24.8fps)·2회차(59.68fps, 누락 20슬롯) 모두 월드가 빈 화면이며 진화 영상으로 쓰지 않는다. 같은 예외 로깅 때문에 1회차 자동 플레이의 34–50ms 프레임도 성능 관찰로 쓰지 않는다.
 
 ## 8종 결합 장면 비용 (캡처 끔)
 
