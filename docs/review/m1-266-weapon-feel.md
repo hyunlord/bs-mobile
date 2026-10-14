@@ -9,7 +9,7 @@
 | 처치 깜빡임 | Core는 처치 틱에 적을 목록에서 지운다(`WaveRuntimeSystem.cs` 153·160행). 보스 표시 시계는 그 틱의 사건을 표시 시계가 틱에 닿을 때 전달한다(`BossPresentationTimeline.cs` 153행). 30Hz/60fps에서 2표시프레임 동안 적·효과가 모두 없다. 8종 모두 같은 경로 | 현재 스냅샷에 처치 사건이 있는 적의 마지막 렌더 자세를 유지하고 번쩍임→밀림→쓰러짐 재생 |
 | 거대 검 | 반지름=Core 사거리(진화 6000)라 화면 밖, 0.18초 동안 계속 흐려짐 | 화면 안 기본 반지름, 화면 안 처치 위치를 모두 감싸는 최소 반지름까지 확장, 0.15초 유지 |
 | 영웅 피격 | 0.2초 전신 붉은 tint가 연속 피격으로 재시작 | 흰 번쩍임 2프레임(재발동 0.25초)+그림만 0.25 몸 너비 밀림 |
-| 뿔나팔 | 무리당 1~2명, 원래 크기 | 런타임 장비/정본 최대 레벨 배율로 인원·크기(상한 7명·1.5배), 진화 연출은 런타임 진화만 |
+| 뿔나팔 | 무리당 1~2명, 원래 크기 | 런타임 장비/정본 최대 레벨 배율로 인원·크기(상한 7명·1.5배 → 2차 5명·1.3배, 영웅과 겹침 0), 진화 연출은 런타임 진화만 |
 
 세부 수치는 [피드백 GDD #266 절](../design/gdd/06-feedback.md#266-무기-손맛-수정-구현값-사용자-영상-승인-전)에 있다.
 
@@ -27,7 +27,7 @@
 
 뿔나팔 검토 로그(`m1-combat-review.json` `musterPresentation`): Lv1 `GearRatio` r=1.88·3명·1.09배, 최대 r=8·5명·1.3배, 진화 r=32·7명·1.5배. 사용자 검수(영웅 가림·원 무늬) 후 `a8aa9f2`: 상한 5명·1.3배, 영웅 그림 상자와 겹침 0·중심에서 최소 1.2 몸 너비, 얇은 원 테두리; 재촬영 3/5/5명·1.05/1.18/1.3배. 검토 진화 단계는 런타임 진화가 아니므로 진화 전용 연출은 켜지지 않는다.
 
-정상 플레이 경로: PlayMode `NormalPlayRallyKitchenEvolutionIsTheOnlyPathToTheEvolutionLook`(first-playable, seed 30002, 무적·레벨 부여 없음)에서 6630틱 무렵 `core:rally_kitchen` 활성 시에만 `RuntimeEvolution`·7명이 되고 기록은 1회다. 같은 seed의 Mac 자동 플레이(`d95c282`, `a8aa9f2`)도 7802·8324틱에 같은 경로를 기록했다. 그러나 이 PR 스택의 first-playable Mac 앱은 `HeroVisual`이 매 프레임 `Missing art role: hero.preview-b.idle` 예외를 던져 월드를 그리지 못한다(#255 2bf5295부터, main에는 없음). 따라서 실시간 캡처 1회차(24.8fps)·2회차(59.68fps, 누락 20슬롯) 모두 월드가 빈 화면이며 진화 영상으로 쓰지 않는다. 같은 예외 로깅 때문에 1회차 자동 플레이의 34–50ms 프레임도 성능 관찰로 쓰지 않는다.
+정상 플레이 경로: PlayMode `NormalPlayRallyKitchenEvolutionIsTheOnlyPathToTheEvolutionLook`(first-playable, seed 30002, 무적·레벨 부여 없음)에서 6630틱 무렵 `core:rally_kitchen` 활성 시에만 `RuntimeEvolution`·상한 인원(2차 수정 후 5명)이 되고 기록은 1회다. 같은 seed의 Mac 자동 플레이(`d95c282`, `a8aa9f2`)도 7802·8324틱에 같은 경로를 기록했다. 그러나 이 PR 스택의 first-playable Mac 앱은 `HeroVisual`이 매 프레임 `Missing art role: hero.preview-b.idle` 예외를 던져 월드를 그리지 못한다(#255 2bf5295부터, main에는 없음). 따라서 실시간 캡처 1회차(24.8fps)·2회차(59.68fps, 누락 20슬롯) 모두 월드가 빈 화면이며 진화 영상으로 쓰지 않는다. 같은 예외 로깅 때문에 1회차 자동 플레이의 34–50ms 프레임도 성능 관찰로 쓰지 않는다.
 
 ## 8종 결합 장면 비용 (캡처 끔)
 
