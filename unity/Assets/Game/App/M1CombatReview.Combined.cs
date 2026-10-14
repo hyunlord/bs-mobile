@@ -130,7 +130,7 @@ namespace Game.App
                 foreach(var d in densities) { writer.WriteLine($"{d.frame},{d.tick},{d.global},{d.visible}"); global=Math.Max(global,d.global);visible=Math.Max(visible,d.visible);if(d.global>=800 && d.visible>=800)both++; }
             }
             if(sourceCounts!=null) foreach(var s in sourceCounts) all&=s.activations>0;
-            File.WriteAllText(Path.Combine(directory,"m1-combat-review.json"),JsonUtility.ToJson(new CombinedManifest {definition=Definition,sidecarSha256=SidecarSha256,replayVerified=verified,sources=sourceCounts,maximumGlobalEnemies=global,maximumVisibleEnemyCenters=visible,framesWithGlobalAndVisible800=both,allEightSourcesActivated=all,enemyKilledEvents=enemyKilledEvents,killExperienceAwarded=killExperienceAwarded,rewardCreatedEvents=rewardCreatedEvents,rewardExperienceCreated=rewardExperienceCreated,rewardCollectedEvents=rewardCollectedEvents,rewardExperienceCollected=rewardExperienceCollected},true));
+            File.WriteAllText(Path.Combine(directory,"m1-combat-review.json"),JsonUtility.ToJson(new CombinedManifest {definition=Definition,sidecarSha256=SidecarSha256,replayVerified=verified,sources=sourceCounts,maximumGlobalEnemies=global,maximumVisibleEnemyCenters=visible,framesWithGlobalAndVisible800=both,allEightSourcesActivated=all,enemyKilledEvents=enemyKilledEvents,killExperienceAwarded=killExperienceAwarded,rewardCreatedEvents=rewardCreatedEvents,rewardExperienceCreated=rewardExperienceCreated,rewardCollectedEvents=rewardCollectedEvents,rewardExperienceCollected=rewardExperienceCollected,presentation=presentation,musterPresentation=musterRecords.ToArray()},true));
         }
         [Serializable] sealed class CombinedManifest
         {
@@ -138,6 +138,7 @@ namespace Game.App
             public string interpretation="Capture OFF, finite-health preconfigured stress with declared equipment preparation; not ordinary progression or C05. Actual Core event counters cover [start,end), rendered density covers (start,end]. Visibility counts enemy centers inside the current camera viewport, not unobscured pixels. Activations are authoritative activation-started source counter deltas; activationEvents count attack/projectile-launched/chain-link/orbit-fragment/review-impact; no synthetic shapes or damage. Frame numbers join the standard benchmark CSV; foreground exclusions remain in its manifest.";
             public int enemyKilledEvents,rewardCreatedEvents,rewardCollectedEvents;
             public long killExperienceAwarded,rewardExperienceCreated,rewardExperienceCollected;
+            public PresentationSummary presentation; public MusterRecord[] musterPresentation;
             public string experienceContract="Wave enemy-killed.Amount is XP awarded immediately by Core, not a physical loot-drop or collection event. reward-created/reward-collected are actual growth reward events with their XP amounts. All counters use deduplicated [start,end) events; absent events explicitly remain zero.";
             public Case definition; public bool replayVerified,allEightSourcesActivated; public SourceCount[] sources; public int maximumGlobalEnemies,maximumVisibleEnemyCenters,framesWithGlobalAndVisible800;
         }

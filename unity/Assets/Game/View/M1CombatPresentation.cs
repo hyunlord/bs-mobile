@@ -63,24 +63,157 @@ namespace Game.View
             M1Draw("attack","core:canal_bow","piercing",position,new Vector2(diameter*3,diameter),direction,1,Color.white);
             return true;
         }
-        void DrawM1CombatBlade(Vector2 origin, float aim, float radius, float age, float opacity)
+        sealed class M1BladeStrike
         {
-            // The authored fan pivot is its origin and its width is one radius, not a diameter.
-            var arc=Resolve("attack","core:iron_blade","sector90");
-            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*radius,aim,opacity*.9f,Color.white,applyTween:false);
-            // Interior brush strokes connect the near field to the actual outer hit envelope.
-            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.42f),aim,opacity*.4f,new Color(.75f,.9f,1),applyTween:false);
-            Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.7f),aim,opacity*.6f,new Color(.8f,.95f,1),applyTween:false);
-            var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
-            var sweep=aim+Mathf.Lerp(-38,38,progress);
-            for(var trail=2;trail>=0;trail--)
+            public long EventId = -1; public int Tick; public Vector2 Origin; public float Aim, CoreRadius, Radius, HalfAngle; public bool Fitted;
+            public readonly Vector2[] Kills = new Vector2[M1BladeKillCapacity]; public int KillCount, KillsDropped;
+        }
+        const int M1BladeKillCapacity = 512;
+        readonly M1BladeStrike[] m1BladeStrikes = { new M1BladeStrike(), new M1BladeStrike(), new M1BladeStrike(), new M1BladeStrike() };
+        readonly Dictionary<int,int> m1BladeHits = new Dictionary<int,int>(1024);
+        int m1BladeNext, m1BladeHitTick = -1;
+        public int M1BladeStrikes { get; private set; }
+        public int M1BladeKillsOutside { get; private set; }
+        public int M1BladeKillsInside { get; private set; }
+        public float M1BladeMaximumRadius { get; private set; }
+
+        void ResetM1Blades()
+        {
+            foreach (var strike in m1BladeStrikes) { strike.EventId = -1; strike.KillCount = strike.KillsDropped = 0; strike.Fitted = false; }
+            m1BladeHits.Clear(); m1BladeNext = 0; m1BladeHitTick = -1;
+            M1BladeStrikes = M1BladeKillsOutside = M1BladeKillsInside = 0; M1BladeMaximumRadius = 0;
+        }
+
+        bool IsM1GiantBlade(string source) => source != null && m1CombatShapes.TryGetValue(source, out var shape) && shape == "giantblade";
+
+        // Core emits the strike's hits before its attack event and the kills at the end of the same tick.
+        void AcceptM1Blade(WaveEvent value)
+        {
+            if (!IsM1GiantBlade(value.Source)) return;
+            if (value.Kind == "hit" && value.Amount > 0)
             {
-                var angle=Mathf.Max(aim-38,sweep-trail*10);
-                var direction=M1Direction(angle);
-                M1Draw("icon","core:iron_blade","default",origin+direction*(radius*.48f),
-                    new Vector2(radius*.16f,radius*.84f),angle-90,opacity*(trail==0?1:.14f),trail==0?Color.white:new Color(.7f,.9f,1));
+                if (value.Tick != m1BladeHitTick) { m1BladeHits.Clear(); m1BladeHitTick = value.Tick; }
+                m1BladeHits[value.SubjectId] = value.Tick;
+            }
+            else if (value.Kind == "attack")
+            {
+                var strike = m1BladeStrikes[m1BladeNext++ % m1BladeStrikes.Length];
+                var origin = Point(value.Position);
+                strike.EventId = value.Id; strike.Tick = value.Tick; strike.Origin = origin; strike.Aim = Angle(Point(value.Target) - origin);
+                strike.CoreRadius = value.Amount / (float)settings.WorldUnitsPerUnityUnit;
+                strike.KillCount = strike.KillsDropped = 0; strike.Fitted = false; M1BladeStrikes++;
             }
         }
+
+        M1BladeStrike M1BladeStrikeAt(int tick)
+        {
+            for (var i = 1; i <= m1BladeStrikes.Length; i++)
+            {
+                var strike = m1BladeStrikes[(m1BladeNext - i + m1BladeStrikes.Length * 4) % m1BladeStrikes.Length];
+                if (strike.EventId >= 0 && strike.Tick == tick) return strike;
+            }
+            return null;
+        }
+
+        bool M1BladeKill(WaveEvent value, Vector2 kill, Vector2 rendered, bool hasRendered, out float delay, out Vector2 direction)
+        {
+            delay = 0; direction = Vector2.zero;
+            if (!m1BladeHits.TryGetValue(value.SubjectId, out var tick) || tick != value.Tick) return false;
+            var strike = M1BladeStrikeAt(value.Tick);
+            if (strike == null) return false;
+            var viewport = CameraWorldViewport;
+            AddM1BladeKill(strike, kill, viewport);
+            if (hasRendered) AddM1BladeKill(strike, rendered, viewport);
+            var at = hasRendered ? rendered : kill;
+            delay = GiantBladeEnvelope.ArrivalSeconds(strike.Aim, strike.Origin, at);
+            direction = GiantBladeEnvelope.FallDirection(strike.Origin, at);
+            return true;
+        }
+
+        static void AddM1BladeKill(M1BladeStrike strike, Vector2 point, Rect viewport)
+        {
+            if (!viewport.Contains(point)) return;
+            if (strike.KillCount == M1BladeKillCapacity) { strike.KillsDropped++; return; }
+            strike.Kills[strike.KillCount++] = point; strike.Fitted = false;
+        }
+
+        Rect M1BladeVisibleBounds()
+        {
+            var viewport = CameraWorldViewport;
+            if (worldOverlayPixels.width <= 0 || worldOverlayPixels.height <= 0) return viewport;
+            var overlay = OverlayWorldBounds();
+            var bounds = Rect.MinMaxRect(Mathf.Max(viewport.xMin, overlay.xMin), Mathf.Max(viewport.yMin, overlay.yMin), Mathf.Min(viewport.xMax, overlay.xMax), Mathf.Min(viewport.yMax, overlay.yMax));
+            return bounds.width > 0 && bounds.height > 0 ? bounds : viewport;
+        }
+
+        void FitM1Blade(M1BladeStrike strike)
+        {
+            if (strike.Fitted) return;
+            GiantBladeEnvelope.Fit(strike.Origin, strike.Aim, strike.CoreRadius, M1BladeVisibleBounds(), strike.Kills, strike.KillCount, out strike.Radius, out strike.HalfAngle);
+            strike.Fitted = true;
+            M1BladeMaximumRadius = Mathf.Max(M1BladeMaximumRadius, strike.Radius);
+            for (var i = 0; i < strike.KillCount; i++)
+            {
+                if (GiantBladeEnvelope.Contains(strike.Origin, strike.Aim, strike.Radius, strike.HalfAngle, strike.Kills[i])) M1BladeKillsInside++;
+                else M1BladeKillsOutside++;
+            }
+        }
+
+#if UNITY_EDITOR
+        public bool EditorM1BladeEnvelope(long attackEventId, out Vector2 origin, out float aim, out float radius, out float halfAngle, out Vector2[] kills)
+        {
+            foreach (var strike in m1BladeStrikes)
+            {
+                if (strike.EventId != attackEventId) continue;
+                FitM1Blade(strike);
+                origin = strike.Origin; aim = strike.Aim; radius = strike.Radius; halfAngle = strike.HalfAngle;
+                kills = new Vector2[strike.KillCount]; System.Array.Copy(strike.Kills, kills, strike.KillCount);
+                return true;
+            }
+            origin = default; aim = radius = halfAngle = 0; kills = null;
+            return false;
+        }
+#endif
+
+        void DrawM1CombatBlade(WaveEvent value, float age)
+        {
+            var strike = M1BladeStrikeFor(value.Id);
+            if (strike == null) return;
+            FitM1Blade(strike);
+            var opacity = GiantBladeEnvelope.Opacity(age);
+            if (opacity <= 0) return;
+            var origin = strike.Origin; var radius = strike.Radius; var halfAngle = strike.HalfAngle; var aim = strike.Aim;
+            // The authored fan pivot is its origin, its width is one radius and it spans the Core 90° fan; wider kill
+            // envelopes add rotated stamps so the drawn trajectory still covers every on-screen victim.
+            var arc = Resolve("attack","core:iron_blade","sector90");
+            var extra = Mathf.Max(0, halfAngle - GiantBladeEnvelope.CoreHalfAngle);
+            var stamps = extra <= 0 ? 1 : 2 + Mathf.CeilToInt(extra / GiantBladeEnvelope.CoreHalfAngle);
+            for (var i = 0; i < stamps; i++)
+            {
+                var angle = stamps == 1 ? aim : Mathf.Lerp(aim - extra, aim + extra, i / (float)(stamps - 1));
+                Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*radius,angle,opacity*.75f,Color.white,applyTween:false);
+                DrawWaveAttackEdge(arc,origin,age,arc.WorldSize*radius,angle,GameVisualTokens.Attack,opacity);
+                Draw(arc,GameVisualTokens.AttackLayer,origin,age,arc.WorldSize*(radius*.62f),angle,opacity*.55f,new Color(.8f,.95f,1),applyTween:false);
+            }
+            // One large blade sweeps the whole envelope in SweepSeconds and rests at its end; victims fall as it passes.
+            var sweep = GiantBladeEnvelope.SweepAngle(aim, halfAngle, age);
+            for (var trail = 3; trail >= 0; trail--)
+            {
+                var angle = Mathf.Max(aim - halfAngle, sweep - trail * 9);
+                var direction = M1Direction(angle);
+                M1Draw("icon","core:iron_blade","default",origin+direction*(radius*.5f),
+                    new Vector2(radius*.18f,radius*.92f),angle-90,opacity*(trail==0?1:.18f),trail==0?Color.white:new Color(.7f,.9f,1));
+            }
+        }
+
+        M1BladeStrike M1BladeStrikeFor(long eventId)
+        {
+            foreach (var strike in m1BladeStrikes) if (strike.EventId == eventId) return strike;
+            return null;
+        }
+
+        float M1CombatEffectSeconds(WaveEvent value, float fallback)
+            => value.Kind == "attack" && IsM1GiantBlade(value.Source) ? GiantBladeEnvelope.LifetimeSeconds : fallback;
         bool DrawM1CombatEvent(WaveEvent value, float age, float opacity)
         {
             if(value.Source==null||!m1CombatShapes.TryGetValue(value.Source,out var m1CombatShape))return false;
@@ -105,13 +238,14 @@ namespace Game.View
             else if(value.Kind=="attack")
             {
                 var radius=value.Amount/(float)settings.WorldUnitsPerUnityUnit;
-                if(m1CombatShape=="giantblade")DrawM1CombatBlade(a,Angle(b-a),radius,age,opacity);
+                if(m1CombatShape=="giantblade")DrawM1CombatBlade(value,age);
                 else if(m1CombatShape=="summon")
                 {
                     var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
                     var diameter=radius*2;
-                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter,0,opacity*.2f,new Color(.65f,.82f,1));
-                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter*Mathf.Lerp(.3f,1,progress),0,opacity*.32f,Color.white);
+                    // The call ring stays secondary to the soldiers it summons.
+                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter,0,opacity*.1f,new Color(.65f,.82f,1));
+                    M1Draw("attack","core:muster_horn","wave",a,Vector2.one*diameter*Mathf.Lerp(.3f,1,progress),0,opacity*.16f,Color.white);
                 }
             }
             return true;

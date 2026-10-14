@@ -18,6 +18,8 @@ namespace Game.View
         readonly List<(WaveEvent value,float started)> waveEffects = new List<(WaveEvent,float)>();
         readonly HashSet<int> liveGrainIds = new HashSet<int>();
         readonly HashSet<int> relocatedEnemies = new HashSet<int>(1024);
+        // Subjects whose kill is in the current snapshot, delivered or not; only these may be held after Core removed them.
+        readonly HashSet<int> waveKilledIds = new HashSet<int>(1024);
         readonly Dictionary<string,(int buildingId,float started)> repairAnchors = new Dictionary<string,(int,float)>();
         readonly HashSet<string> drawnRepairAnchors = new HashSet<string>();
         long lastWaveEvent = -1;
@@ -32,12 +34,13 @@ namespace Game.View
             var profileChanged=!ReferenceEquals(waveCatalog,catalog);
             if(profileChanged||frame==null)
             {
-                relocatedEnemies.Clear();
+                relocatedEnemies.Clear();waveKilledIds.Clear();
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
                 ResetThreatWarnings();
                 ResetImpactFeedback();
+                ResetMuster();
                 waveMotion.Reset();
                 heroAttackUntil=0;
                 rewardSources.Clear(); attackSources.Clear();
@@ -66,6 +69,8 @@ namespace Game.View
                 relocatedEnemies.Clear();
                 waveEnemyById.Clear();
                 for(var i=0;i<frame.Enemies.Count;i++){var enemy=frame.Enemies[i];if(!waveEnemyById.ContainsKey(enemy.Id))waveEnemyById.Add(enemy.Id,enemy);}
+                waveKilledIds.Clear();
+                for(var i=0;i<frame.Events.Count;i++)if(frame.Events[i].Kind=="enemy-killed")waveKilledIds.Add(frame.Events[i].SubjectId);
                 liveGrainIds.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();
                 for(var workIndex=0;workIndex<frame.Work.Count;workIndex++)
                 {
@@ -100,6 +105,7 @@ namespace Game.View
                     actorFacing.Remove(("enemy",value.SubjectId));
                 }
                 AcceptFallowEvent(value);
+                AcceptM1Blade(value);
                 AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -121,6 +127,7 @@ namespace Game.View
                     DiagnosticEffectCreated?.Invoke(value.Source,value.Kind);
 #endif
                 }
+                AcceptWaveMusterStrike(frame,value);
                 AcceptHeroProductionAttack(value);
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
                 if(value.Kind=="attack")
@@ -273,6 +280,13 @@ namespace Game.View
                 var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
                 RenderedEntitySample?.Invoke("group",group.Id,position);
                 var groupFacing=Facing("group",group.Id,waveMotion.GroupDirection(group));
+                var muster=WaveMusterFormation(group,group.Training>0?2:1);
+                if(muster.Path!=MusterPresentationPath.None)
+                {
+                    DrawMusterFormation(group.Id,muster,representative,Resolve("person",group.Formation=="cover"?"militia":"guard",activity),GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,group.Phase!="idle",groupFacing);
+                    if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
+                    continue;
+                }
                 DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
                 if(group.Training>0)
                 {
@@ -344,7 +358,7 @@ namespace Game.View
             var intakeDrawn=false;var harvestCues=0;
             for(var i=waveEffects.Count-1;i>=0;i--)
             {
-                var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"||effect.value.Kind=="harvest-complete"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:WorldEffects.AttackLifetimeSeconds;
+                var effect=waveEffects[i];var age=visualTime-effect.started;var duration=effect.value.Kind=="evolution-activated"?GameVisualTokens.EmphasisSeconds:effect.value.Kind=="work-created"||effect.value.Kind=="harvest-complete"?GameVisualTokens.HarvestSeconds:effect.value.Kind=="reward-collected"?GameVisualTokens.ExperienceSeconds:M1CombatEffectSeconds(effect.value,WorldEffects.AttackLifetimeSeconds);
                 if(age>=duration){waveEffects.RemoveAt(i);continue;}
                 var value=effect.value;var a=Point(value.Position);var b=Point(value.Target);var opacity=1-age/duration;
                 if(DrawM1CombatEvent(value,age,opacity))continue;

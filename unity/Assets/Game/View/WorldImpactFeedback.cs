@@ -41,6 +41,7 @@ namespace Game.View
         void ResetImpactFeedback()
         {
             impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0;
+            ResetEnemyDeaths(); ResetM1Blades(); heroHitFeedback.Reset();
         }
 
         void AcceptImpactFeedback(WaveEvent value)
@@ -58,7 +59,7 @@ namespace Game.View
             }
             else if (value.Kind == "enemy-killed")
             {
-                impactParticles.Kill(value.Id, origin, value.Amount > 0);
+                AcceptEnemyDeath(value, origin);
                 if (value.Source == waveDefinition.BossId) BossDeathSlowRequested?.Invoke(GameVisualTokens.BossDeathSlowSeconds);
             }
             else if (value.Kind == "evolution-activated" ||
@@ -70,6 +71,7 @@ namespace Game.View
         {
             impactParticles.Advance(seconds);
             enemyImpactPoses.Advance(visualTime);
+            enemyDeaths.Advance(visualTime);
         }
 
         EnemyImpactPose ResolveEnemyImpactPose(int id, float bodyWidth, EnemyImpactPose pose)
