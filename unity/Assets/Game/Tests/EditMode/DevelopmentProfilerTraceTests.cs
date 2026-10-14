@@ -7,13 +7,13 @@ namespace Game.Tests
 {
     public sealed class DevelopmentProfilerTraceTests
     {
-        [Test] public void StallWindowIgnoresStartupAndExact100ThenKeepsFourCompletedFrames()
+        [Test] public void StallWindowIgnoresStartupAndExact50ThenKeepsFourCompletedFrames()
         {
             var window = new DevelopmentProfilerTrace.StallWindow(20);
             Assert.That(window.Observe(new DevelopmentProfilerTrace.StallFrame { Frame = 20, WallMs = 800 }), Is.False);
-            Assert.That(window.Observe(new DevelopmentProfilerTrace.StallFrame { Frame = 21, WallMs = 100 }), Is.False);
+            Assert.That(window.Observe(new DevelopmentProfilerTrace.StallFrame { Frame = 21, WallMs = 50 }), Is.False);
             Assert.That(window.Trigger.Frame, Is.EqualTo(-1));
-            Assert.That(window.Observe(new DevelopmentProfilerTrace.StallFrame { Frame = 22, Tick = 8064, WallMs = 325, StartTimestamp = 100, EndTimestamp = 200 }), Is.False);
+            Assert.That(window.Observe(new DevelopmentProfilerTrace.StallFrame { Frame = 22, Tick = 8064, WallMs = 50.0001, StartTimestamp = 100, EndTimestamp = 200 }), Is.False);
             Assert.That(window.Trigger.Tick, Is.EqualTo(8064));
             Assert.That(window.Trigger.StartTimestamp, Is.EqualTo(100));
             for (var frame = 23; frame <= 25; frame++) Assert.That(window.Observe(new DevelopmentProfilerTrace.StallFrame { Frame = frame, WallMs = 16 }), Is.False);

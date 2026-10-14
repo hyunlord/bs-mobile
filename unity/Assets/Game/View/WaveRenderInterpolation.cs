@@ -37,6 +37,18 @@ namespace Game.View
 
     public sealed class WaveRenderInterpolation
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void RecordDiagnosticCapacityBaselines(System.Action<string, int, int> record)
+        {
+            record("waveMotion.previousGroups", previousGroups.EnsureCapacity(0), previousGroups.Count);
+            record("waveMotion.previousProjectiles", previousProjectiles.EnsureCapacity(0), previousProjectiles.Count);
+            record("waveMotion.orbits", orbits.EnsureCapacity(0), orbits.Count);
+            record("waveMotion.ordinals", ordinals.EnsureCapacity(0), ordinals.Count);
+            record("waveMotion.keys", keys.Capacity, keys.Count);
+            record("waveMotion.expired", expired.Capacity, expired.Count);
+        }
+#endif
+
         readonly Dictionary<int, WaveGroupView> previousGroups = new Dictionary<int, WaveGroupView>(32);
         readonly Dictionary<int, WaveProjectileView> previousProjectiles = new Dictionary<int, WaveProjectileView>(256);
         readonly Dictionary<(string source, int activation, int expiry, int ordinal), OrbitState> orbits = new Dictionary<(string, int, int, int), OrbitState>(128);
