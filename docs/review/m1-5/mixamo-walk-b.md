@@ -10,6 +10,8 @@
 
 ## 준비된 업로드 파일
 
+사용자 업로드 지연 피드백 후 **경량 몸체 FBX로 교체**: `/Users/rexxa/Downloads/SowSiege-Mixamo/A-Knight-Mixamo-Lightweight.fbx`,1,317,852바이트(약1.32MB), 기존보다92.49% 작다. SHA256 `a297213750c118dda4c37832fc4b6f964813f19fb5635d7e4d7f53a242790883`. 재불러오기에서22,445삼각형·코너 인덱스·UV 좌표 일치, 재질/이미지0·내장 PNG 없음·검/별도 망토/본 없음. 좌표 최대 차이0.000224mm는 FBX float32 변환 정밀도이며 메시 편집은 없다. `body/lightweight/verification.json`에 기록했다. Mixamo 리깅 FBX 수신 뒤 원래4K 텍스처와 소품은 에이전트가 복원한다. 원본 고해상도 텍스처 FBX는 아래 경로에 보존한다.
+
 `/Users/rexxa/Downloads/SowSiege-Mixamo/A-Knight-Mixamo-Upload.fbx` · SHA256 `df0eeccce890f09b14a9df27100341e88cb7cb859d671db0e17483f08294731d` ·17,550,716바이트. Blender에서 실제 FBX를 다시 불러와22,445삼각형·UV1·4096² 원본 PNG 내장과 정면 렌더를 확인했다. 높이1.8m/발바닥0으로 균일 배율 및 위치만 정규화했으며 형상·UV는 변경하지 않았다. FBX Y-up/-Z-forward, 검·별도 망토·인체 본·애니메이션 없음. 실제 Mixamo 업로드/자동 리깅 통과를 뜻하지 않는다.
 
 로컬 증거: `/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/rig-pilot-b/body/`의 `upload-verification.json`, 실행 스크립트·로그 및 `mixamo-upload-front.png`. 2026-10-14 사용자에게 이 실제 파일과 걷기 다운로드 절차를 전달했다. 계정 단계 응답과 리깅 FBX 수신 전에는 걷기 영상을 만들 수 없다.
