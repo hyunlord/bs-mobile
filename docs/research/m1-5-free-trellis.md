@@ -2,6 +2,24 @@
 
 확인일: 2026-10-13 · 추적: [#262](https://github.com/hyunlord/bs-mobile/issues/262). 이 문서는 사용자 결정과 공식 출처 조사다. 설치·생성·리깅 성공 또는 사용자 영상 승인을 의미하지 않는다. 실제 설치 결과는 별도 검토 기록으로 남긴다.
 
+## 2026-10-14 현재 경로: UAL과 UniRig
+
+아래 TRELLIS/Mixamo 초기 계획은 역사 기록이다. 최신 결정은 승인된 (b) A-pose 메시 → Quaternius UAL1·2 무료 CC0 모션 → UAL 뼈대 맞춤/Blender bone heat이며, Mixamo는 중단하고 파일만 보존한다. 실제 bone heat 두 시도는 무가중치로 실패하여 사용자 승인 예비안인 UniRig의 설치와 실제 가중치 추론을 완료했다. 걷기 변형 검증은 별도다. 현재 시험은 걷기1동작·1방향이며 베기·피격·8방향은 걷기 영상 승인 이후다. [다운로드·동작 목록·실패 기록](../review/m1-5/ual-walk-b.md).
+
+[UniRig 공식 소스](https://github.com/VAST-AI-Research/UniRig/tree/6793c6640ff01c8fb389f3993434124bb43d2933)와 [공식 모델](https://huggingface.co/VAST-AI/UniRig/tree/36842e2b5947e9e60f89275b83208c8e74071c63)은 MIT 표기를 확인했다. 본체가 MIT여도 모든 구성 요소가 MIT라는 뜻은 아니다. 포함 Michelangelo는 GPLv3, Pointcept는 MIT이며 오프라인 저작 도구로만 취급한다. 게임·SDK에 포함하지 않는다. 원문 라이선스와 아래 고정 revision/모델 SHA는 로컬 `ual-pilot/unirig/licenses/`에 보존한다. 설치 성공과 실제 가중치 품질은 별도 검증한다.
+
+| 구성 | 고정 revision 또는 파일 SHA256 | 확인한 라이선스 |
+| --- | --- | --- |
+| UniRig | `6793c6640ff01c8fb389f3993434124bb43d2933` | MIT; 포함 Michelangelo GPLv3, Pointcept MIT |
+| cumm | `d971d02a0b29b7e6da46186564f37bde77b99dcc` | Apache2.0 |
+| spconv | `263d6b47425ef843c82f997b12d8b714013d216c` | Apache2.0 |
+| torch-scatter | `140d3ad677aae615767412873b90982cbf97d35d` | MIT |
+| torch-cluster | `29cd22bf1a5b82fc06b108d6573f81302c5d6b12` | MIT |
+| 공식 skeleton.ckpt | `d8cf9b42d56e7bc316d293597ecf8c4c39a8631cdd44a261ecf388242fabd0f4` | 공식 모델 MIT 표기 |
+| 공식 skin.ckpt | `9d40cf42fb9d4c10d8b373d9f4f557c6fbbc5ebacae7ae6b3dce5a0d8a18bc33` | 공식 모델 MIT 표기 |
+
+공식 모델 두 파일은 로그인 없이 취득하고 원격 메타데이터 SHA와 실제 파일을 대조했다. ARM64 사전 빌드가 없어 격리 DGX 환경에서 필요한 native 확장을 빌드한다. 기존 TRELLIS 환경과 다른 프로젝트 작업은 수정하지 않는다. 원본 메시/4K/UV를 유지한 가중치 전달 후 실제 걷기 변형 검사를 수행하며, 뼈대만 움직인 결과를 몸체 걷기 성공으로 보고하지 않는다.
+
 ## 결정과 진행 순서
 
 예산은 **0원**이며 유료 기사 후보 조사를 중단한다. M1-4 AI 생성 2D 프레임 방식은 비율·디테일 불일치, 중간 동작 부족, 피격 전신 빨강 약 1초 때문에 실패했다. 기존 결과는 실패 기록으로 보존하고 PR261은 초안으로 둔다.
