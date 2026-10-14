@@ -114,7 +114,9 @@ namespace Tests.EditMode
             var view = new Rect(-2, -4, 4, 8);
             var origin = Vector2.zero;
             GiantBladeEnvelope.Fit(origin, -90, 6, view, new Vector2[0], 0, out var radius, out var half);
-            Assert.That(radius, Is.EqualTo(4 * GiantBladeEnvelope.ViewportFill).Within(.0001f), "Core reach 6 is clamped to the visible distance below the hero.");
+            Assert.That(radius, Is.EqualTo(2 / Mathf.Cos(45 * Mathf.Deg2Rad) * GiantBladeEnvelope.ViewportFill).Within(.001f),
+                "Core reach 6 is clamped to the shortest visible distance across the fan, here its side edges.");
+            Assert.That(GiantBladeEnvelope.FullyVisible(origin, -90, radius, half, view), Is.True, "Without kills the whole fan stays on screen.");
             Assert.That(half, Is.EqualTo(GiantBladeEnvelope.CoreHalfAngle));
             var kills = new[] { new Vector2(0, -3.9f), new Vector2(1.9f, -1.2f), new Vector2(-1.5f, .4f), new Vector2(.2f, -.5f) };
             GiantBladeEnvelope.Fit(origin, -90, 6, view, kills, kills.Length, out radius, out half);

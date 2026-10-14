@@ -8,6 +8,7 @@ namespace Game.View
     {
         public const float CoreHalfAngle = 45; // Core fan: 2·dot² ≥ |p|²·|f|²
         public const float RadiusMargin = 1.06f, AngleMargin = 4, ViewportFill = .94f, MaximumHalfAngle = 180;
+        public const float SampleDegrees = 5;
         public const float SweepSeconds = .15f, HoldSeconds = .15f, FadeSeconds = .12f;
         public static float LifetimeSeconds => Mathf.Max(SweepSeconds, HoldSeconds) + FadeSeconds;
 
@@ -52,7 +53,7 @@ namespace Game.View
         public static void Fit(Vector2 origin, float aim, float coreRadius, Rect visible, Vector2[] kills, int killCount,
             out float radius, out float halfAngle)
         {
-            radius = Mathf.Min(Mathf.Max(0, coreRadius), VisibleReach(origin, Direction(aim), visible) * ViewportFill);
+            radius = Mathf.Min(Mathf.Max(0, coreRadius), SpanReach(origin, aim, CoreHalfAngle, visible) * ViewportFill);
             halfAngle = CoreHalfAngle;
             for (var i = 0; i < killCount; i++)
             {
@@ -62,6 +63,19 @@ namespace Game.View
             }
             halfAngle = Mathf.Min(MaximumHalfAngle, halfAngle);
         }
+
+        // Shortest on-screen distance across the fan, so the base fan never leaves the screen at either edge.
+        public static float SpanReach(Vector2 origin, float aim, float halfAngle, Rect visible)
+        {
+            var reach = float.PositiveInfinity;
+            for (var offset = -halfAngle; offset <= halfAngle + .001f; offset += SampleDegrees)
+                reach = Mathf.Min(reach, VisibleReach(origin, Direction(aim + offset), visible));
+            return float.IsInfinity(reach) ? 0 : reach;
+        }
+
+        // True when the whole drawn fan, arc included, lies inside the visible bounds.
+        public static bool FullyVisible(Vector2 origin, float aim, float radius, float halfAngle, Rect visible)
+            => visible.Contains(origin) && SpanReach(origin, aim, halfAngle, visible) >= radius;
 
         public static bool Contains(Vector2 origin, float aim, float radius, float halfAngle, Vector2 point)
         {

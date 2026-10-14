@@ -11,7 +11,7 @@ namespace Game.App
         [Serializable] public sealed class PresentationSummary
         {
             public string interpretation = "View-only feel counters from the rendered run. Giant-blade kill points are on-screen kill positions (Core and last rendered) tested against the drawn envelope. Muster path RuntimeEvolution requires an active runtime evolution; GearRatio is the runtime gear count/range over the canonical maximum level, capped at 7 soldiers and 1.5x.";
-            public int giantBladeStrikes, giantBladeKillsInside, giantBladeKillsOutside, enemyDeathPeakFull, enemyDeathOverflowed, enemyDeathDropped, enemyDeathFullCapacity, heroHitFlashes, musterLunges;
+            public int giantBladeStrikes, giantBladeStrikesFullyVisible, giantBladeKillsInside, giantBladeKillsOutside, enemyDeathPeakFull, enemyDeathOverflowed, enemyDeathDropped, enemyDeathFullCapacity, heroHitFlashes, musterLunges;
             public float giantBladeMaximumRadius;
         }
         const int MusterRecordCapacity = 256;
@@ -34,7 +34,7 @@ namespace Game.App
             if (world == null) return;
             presentation = new PresentationSummary
             {
-                giantBladeStrikes = world.M1BladeStrikes, giantBladeKillsInside = world.M1BladeKillsInside, giantBladeKillsOutside = world.M1BladeKillsOutside,
+                giantBladeStrikes = world.M1BladeStrikes, giantBladeStrikesFullyVisible = world.M1BladeStrikesFullyVisible, giantBladeKillsInside = world.M1BladeKillsInside, giantBladeKillsOutside = world.M1BladeKillsOutside,
                 giantBladeMaximumRadius = world.M1BladeMaximumRadius, enemyDeathPeakFull = world.PeakFullEnemyDeaths, enemyDeathOverflowed = world.OverflowedEnemyDeaths,
                 enemyDeathDropped = world.DroppedEnemyDeaths, enemyDeathFullCapacity = EnemyDeathPresentationPool.FullCapacity,
                 heroHitFlashes = world.HeroHitFlashes, musterLunges = world.MusterLunges

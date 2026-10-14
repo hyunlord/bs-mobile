@@ -76,12 +76,13 @@ namespace Game.View
         public int M1BladeKillsOutside { get; private set; }
         public int M1BladeKillsInside { get; private set; }
         public float M1BladeMaximumRadius { get; private set; }
+        public int M1BladeStrikesFullyVisible { get; private set; }
 
         void ResetM1Blades()
         {
             foreach (var strike in m1BladeStrikes) { strike.EventId = -1; strike.KillCount = strike.KillsDropped = 0; strike.Fitted = false; }
             m1BladeHits.Clear(); m1BladeNext = 0; m1BladeHitTick = -1;
-            M1BladeStrikes = M1BladeKillsOutside = M1BladeKillsInside = 0; M1BladeMaximumRadius = 0;
+            M1BladeStrikes = M1BladeKillsOutside = M1BladeKillsInside = M1BladeStrikesFullyVisible = 0; M1BladeMaximumRadius = 0;
         }
 
         bool IsM1GiantBlade(string source) => source != null && m1CombatShapes.TryGetValue(source, out var shape) && shape == "giantblade";
@@ -149,8 +150,10 @@ namespace Game.View
         void FitM1Blade(M1BladeStrike strike)
         {
             if (strike.Fitted) return;
-            GiantBladeEnvelope.Fit(strike.Origin, strike.Aim, strike.CoreRadius, M1BladeVisibleBounds(), strike.Kills, strike.KillCount, out strike.Radius, out strike.HalfAngle);
+            var visible = M1BladeVisibleBounds();
+            GiantBladeEnvelope.Fit(strike.Origin, strike.Aim, strike.CoreRadius, visible, strike.Kills, strike.KillCount, out strike.Radius, out strike.HalfAngle);
             strike.Fitted = true;
+            if (GiantBladeEnvelope.FullyVisible(strike.Origin, strike.Aim, strike.Radius, strike.HalfAngle, visible)) M1BladeStrikesFullyVisible++;
             M1BladeMaximumRadius = Mathf.Max(M1BladeMaximumRadius, strike.Radius);
             for (var i = 0; i < strike.KillCount; i++)
             {
@@ -197,12 +200,15 @@ namespace Game.View
             }
             // One large blade sweeps the whole envelope in SweepSeconds and rests at its end; victims fall as it passes.
             var sweep = GiantBladeEnvelope.SweepAngle(aim, halfAngle, age);
+            var visible = M1BladeVisibleBounds();
             for (var trail = 3; trail >= 0; trail--)
             {
                 var angle = Mathf.Max(aim - halfAngle, sweep - trail * 9);
                 var direction = M1Direction(angle);
-                M1Draw("icon","core:iron_blade","default",origin+direction*(radius*.5f),
-                    new Vector2(radius*.18f,radius*.92f),angle-90,opacity*(trail==0?1:.18f),trail==0?Color.white:new Color(.7f,.9f,1));
+                // The sword itself is the read of what killed them, so it always ends inside the screen.
+                var length = Mathf.Min(radius, GiantBladeEnvelope.VisibleReach(origin, direction, visible) * .98f);
+                M1Draw("icon","core:iron_blade","default",origin+direction*(length*.5f),
+                    new Vector2(Mathf.Max(radius*.12f,length*.18f),length*.92f),angle-90,opacity*(trail==0?1:.18f),trail==0?Color.white:new Color(.7f,.9f,1));
             }
         }
 
