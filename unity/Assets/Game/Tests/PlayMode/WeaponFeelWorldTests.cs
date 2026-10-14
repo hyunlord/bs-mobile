@@ -172,21 +172,24 @@ namespace Tests.PlayMode
                 var paths = new System.Collections.Generic.List<MusterPresentationPath>();
                 world.MusterPresentationChanged = (source, formation) => paths.Add(formation.Path);
                 world.AcceptWave(catalog, null);
-                world.AcceptFrame(frame, session.View.CaptureFirstPlayable());
-                world.Present(frame, frame, session.View.CaptureFirstPlayable(), 1, Frame, new Rect(0, 0, 720, 1280));
+                // Same per-frame order as RunCoordinator: first-playable passes a null wave frame before every presentation.
+                void PresentNormal(RunFrame current)
+                {
+                    world.AcceptWave(catalog, null);
+                    world.AcceptFrame(current, session.View.CaptureFirstPlayable());
+                    world.Present(current, current, session.View.CaptureFirstPlayable(), 1, Frame, new Rect(0, 0, 720, 1280));
+                }
+                PresentNormal(frame);
                 yield return null;
                 Assert.That(world.MusterPath, Is.EqualTo(MusterPresentationPath.None), "Before the evolution the muster soldiers draw as before.");
                 while (!Activated() && tick < 7200 && session.View.Status != RunStatus.Completed) Step();
                 Assert.That(Activated(), Is.True, "Seed 30002 reaches rally_kitchen through normal play.");
-                for (var i = 0; i < 30; i++) Step();
-                frame = session.View.CaptureFrame();
-                world.AcceptFrame(frame, session.View.CaptureFirstPlayable());
-                world.Present(frame, frame, session.View.CaptureFirstPlayable(), 1, Frame, new Rect(0, 0, 720, 1280));
-                yield return null;
+                for (var i = 0; i < 90; i++) { Step(); PresentNormal(session.View.CaptureFrame()); if (i % 10 == 0) yield return null; }
                 Assert.That(world.MusterPath, Is.EqualTo(MusterPresentationPath.RuntimeEvolution));
                 Assert.That(world.MusterEvolutionId, Is.EqualTo("core:rally_kitchen"));
                 Assert.That(world.MusterSoldiers, Is.EqualTo(MusterFormationRule.MaximumSoldiers));
                 Assert.That(paths, Is.EqualTo(new[] { MusterPresentationPath.RuntimeEvolution }), "The review log records the path once, when the evolution activates.");
+                Assert.That(world.MusterLunges, Is.GreaterThan(0), "Evolved soldiers attack with the real Core attack events.");
             }
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }

@@ -40,7 +40,8 @@ namespace Game.View
                 ResetFallow();
                 ResetThreatWarnings();
                 ResetImpactFeedback();
-                ResetMuster();
+                // First-playable presents with a null wave frame every frame; muster state resets only with the run's catalog.
+                if(profileChanged)ResetMuster();
                 waveMotion.Reset();
                 heroAttackUntil=0;
                 rewardSources.Clear(); attackSources.Clear();
