@@ -174,6 +174,39 @@ namespace Tests.PlayMode
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }
 
+        // #268 temporary fallback: first-playable art lacks the knight's hero.preview-b roles. The world must still draw and
+        // the substitution is reported once, not every frame.
+        [UnityTest]
+        public IEnumerator FirstPlayableKnightWithoutPreviewRolesDrawsTheWorldAndWarnsOnce()
+        {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
+            ArtCatalog.ProfileName = CanonicalContent.ProfileName;
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30002, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var frame = session.View.CaptureFrame();
+            var owner = new GameObject("Knight fallback QA"); var cameraOwner = new GameObject("Knight fallback camera");
+            var camera = cameraOwner.AddComponent<Camera>(); var texture = new RenderTexture(720, 1280, 24); camera.targetTexture = texture;
+            try
+            {
+                var world = CreateWorld(owner, camera, catalog, frame);
+                world.PrepareHeroKnight();
+                LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex(@"\[hero-art\] hero\.preview-b roles are missing.*#268"));
+                for (var i = 0; i < 5; i++)
+                {
+                    world.AcceptWave(catalog, null);
+                    world.Present(frame, frame, session.View.CaptureFirstPlayable(), 1, Frame, new Rect(0, 0, 720, 1280));
+                    yield return null;
+                }
+                LogAssert.NoUnexpectedReceived();
+                Assert.That(world.HeroRigRolesMissing, Is.True);
+                Assert.That(world.SubmittedInstances, Is.GreaterThan(0), "World draws are submitted instead of aborting before flush.");
+            }
+            finally { DestroyFixture(owner, cameraOwner, texture); }
+        }
+
+        static void DestroyFixture(GameObject owner, GameObject cameraOwner, RenderTexture texture)
+        { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
+
         // Normal first-playable path: natural level-ups, real offered cards and no invulnerability or grants. Seed 30002 activates
         // rally_kitchen (muster horn + soup ladle at level 3) at tick 6630; the muster soldiers switch to the evolution look only then.
         [UnityTest]
