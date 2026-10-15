@@ -10,7 +10,7 @@ namespace Game.View
         public int Tick, Links, SkyBolts, CoveredSkyBolts, OnScreenTargets, AcceptedFrame, VisibleFrame;
         public bool Storm;
         public float Strength, CorePixels, GlowPixels;
-        public Vector2 FirstSkyTargetScreen;
+        public Vector2 FirstSkyTargetScreen, FirstSkyTopScreen;
     }
 
     // Chain lightning drawn from Core chain-link events: telegraph → sky pillar(s) and target-to-target arcs with a bright
@@ -335,12 +335,16 @@ namespace Game.View
             strike.Recorded = true;
             if (LightningStrikeSample == null) return;
             var record = new LightningStrikeRecord { Tick = strike.Tick, Links = strike.Count, AcceptedFrame = strike.AcceptedFrame, VisibleFrame = PresentedFrames, SkyBolts = strike.SkyCount, Storm = strike.Storm, Strength = strike.Strength,
-                CorePixels = core / pixelsToWorld, GlowPixels = glow / pixelsToWorld, FirstSkyTargetScreen = new Vector2(-1, -1) };
+                CorePixels = core / pixelsToWorld, GlowPixels = glow / pixelsToWorld, FirstSkyTargetScreen = new Vector2(-1, -1), FirstSkyTopScreen = new Vector2(-1, -1) };
             for (var i = 0; i < strike.Count; i++)
             {
                 if (!CameraWorldViewport.Contains(strike.To[i])) continue;
                 record.OnScreenTargets++;
-                if (strike.Sky[i] && record.FirstSkyTargetScreen.x < 0) record.FirstSkyTargetScreen = renderCamera.WorldToScreenPoint(strike.To[i]);
+                if (strike.Sky[i] && record.FirstSkyTargetScreen.x < 0)
+                {
+                    record.FirstSkyTargetScreen = renderCamera.WorldToScreenPoint(strike.To[i]);
+                    record.FirstSkyTopScreen = renderCamera.WorldToScreenPoint(PillarTop(strike.To[i], LightningBolt.Hash(strike.Ids[i], 1), glow, CameraWorldViewport));
+                }
                 if (strike.Sky[i] && !PillarClearOfHero(strike.To[i], PillarHeight(strike.To[i], CameraWorldViewport), glow)) record.CoveredSkyBolts++;
             }
             LightningStrikeSample(record);

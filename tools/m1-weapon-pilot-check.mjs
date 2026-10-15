@@ -30,19 +30,28 @@ function flanked(image, x, y) {
   for (let d = 1; d <= 8; d++) if (violet(image.at(x - d, y)) || violet(image.at(x + d, y))) return true;
   return false;
 }
-// Lightning core pixels in the pillar band (20 to 110 px above the target; Unity screen y is bottom-up).
-function corePixels(directory, index, screenX, screenY) {
-  const image = frame(directory, index); const y0 = image.height - screenY;
+// The pillar runs from its logged top to the target (Unity screen y is bottom-up). Rows of the band 20 to 110 px above the
+// target are searched around the straight line between the two, wide enough for the zigzag (.14 of the length at most).
+function line(height, s) {
+  const x = Number(s.firstSkyScreenX), y0 = height - Number(s.firstSkyScreenY);
+  const hasTop = s.firstSkyTopScreenX !== undefined && Number(s.firstSkyTopScreenX) >= 0;
+  const topX = hasTop ? Number(s.firstSkyTopScreenX) : x, topY = hasTop ? height - Number(s.firstSkyTopScreenY) : y0 - 300;
+  const span = Math.max(1, y0 - topY);
+  return { y0, center: y => x + (topX - x) * (y0 - y) / span, half: hasTop ? .16 * span + 12 : Window };
+}
+function corePixels(directory, index, s) {
+  const image = frame(directory, index); const { y0, center, half } = line(image.height, s);
   let count = 0;
-  for (let y = y0 - 110; y <= y0 - 20; y++) for (let x = screenX - Window; x <= screenX + Window; x++)
-    if (white(image.at(x, y)) && flanked(image, x, y)) count++;
+  for (let y = y0 - 110; y <= y0 - 20; y++) { const c = center(y); for (let x = Math.round(c - half); x <= c + half; x++)
+    if (white(image.at(x, y)) && flanked(image, x, y)) count++; }
   return count;
 }
-function pillar(directory, index, screenX, screenY) {
-  const image = frame(directory, index); const y0 = image.height - screenY;
+function pillar(directory, index, s) {
+  const image = frame(directory, index); const geometry = line(image.height, s);
   let core = 0;
-  for (let y = y0 - 110; y <= y0 - 20; y++) for (let x = screenX - Window; x <= screenX + Window; x++) if (flanked(image, x, y)) core = Math.max(core, luma(image.at(x, y)));
-  return { image, y0, core };
+  for (let y = geometry.y0 - 110; y <= geometry.y0 - 20; y++) { const c = geometry.center(y);
+    for (let x = Math.round(c - geometry.half); x <= c + geometry.half; x++) if (flanked(image, x, y)) core = Math.max(core, luma(image.at(x, y))); }
+  return { image, geometry, core };
 }
 function ground(directory, index, screenX, screenY) {
   const image = frame(directory, index); const y0 = image.height - screenY;
@@ -54,13 +63,14 @@ function ground(directory, index, screenX, screenY) {
 // band crosses a row in h = w / cos and a column in v = w / sin, so the perpendicular width is h*v / sqrt(h^2 + v^2). The
 // violet bloom run around the core gives the glow width with the same slant correction. Branches are thinner by design, so
 // each row keeps its widest crossing (the main bolt) and the median over rows is reported.
-function widths(image, y0, screenX) {
+function widths(image, { y0, center, half }) {
   const cores = [], glows = [];
   for (let y = y0 - 108; y <= y0 - 22; y += 2) {
     let rowCore = 0, rowGlow = 0;
-    for (let x = screenX - Window; x <= screenX + Window; x++) {
+    const c = center(y);
+    for (let x = Math.round(c - half); x <= c + half; x++) {
       if (!white(image.at(x, y))) continue;
-      let right = x; while (right < screenX + Window + 20 && white(image.at(right + 1, y))) right++;
+      let right = x; while (right < c + half + 20 && white(image.at(right + 1, y))) right++;
       const left = x; x = right;
       const h = right - left + 1;
       if (h > 40 || !(flanked(image, left, y) && flanked(image, right, y))) continue;
@@ -91,13 +101,13 @@ function checkLightning(directory, manifest) {
     if (x < 0 || at <= 0) continue;
     const before = Math.max(0, at - 8);
     const background = ground(directory, before, x, y);
-    const strike = pillar(directory, at, x, y);
-    const measured = widths(strike.image, strike.y0, x);
+    const strike = pillar(directory, at, s);
+    const measured = widths(strike.image, strike.geometry);
     const telegraph = Number(s.telegraphFrames);
     // Fade: first frame after the strike with at most 5% of the strike frame's lightning-core pixels left in the pillar band.
-    const peak = corePixels(directory, at, x, y);
+    const peak = corePixels(directory, at, s);
     let fadeFrame = null;
-    for (let k = 1; k <= 14 && peak > 0; k++) { if (corePixels(directory, at + k, x, y) <= peak * .05) { fadeFrame = k; break; } }
+    for (let k = 1; k <= 14 && peak > 0; k++) { if (corePixels(directory, at + k, s) <= peak * .05) { fadeFrame = k; break; } }
     results.push({ frame: at, tick: Number(s.tick), storm: s.storm === 'True', links: Number(s.links), skyBolts: Number(s.skyBolts), coveredSkyBolts: Number(s.coveredSkyBolts ?? 0), core: +strike.core.toFixed(1), background: +background.toFixed(1),
       contrast: +(strike.core - background).toFixed(1), corePixelsReported: +Number(s.corePixels).toFixed(2), glowPixelsReported: +Number(s.glowPixels).toFixed(2),
       corePixelsMeasured: measured.core, glowPixelsMeasured: measured.glow, measuredRows: measured.rows, strikeCorePixelCount: peak, telegraphFrames: telegraph, fadeFrames: fadeFrame });
