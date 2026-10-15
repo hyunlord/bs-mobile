@@ -10,7 +10,7 @@ import { parseCsv } from './csv.mjs';
 
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const rows = file => fs.existsSync(file) ? parseCsv(fs.readFileSync(file, 'utf8')) : [];
-const thresholds = { contrast: 40, corePixels: 4, glowPixels: 16, telegraphFrames: [2, 4], fadeFrames: [8, 10], stationaryRatio: .2 };
+const thresholds = { contrast: 40, arcPeak: 95, corePixels: 4, glowPixels: 16, telegraphFrames: [2, 4], fadeFrames: [8, 10], stationaryRatio: .2 };
 
 function frame(directory, index) {
   const file = path.join(directory, 'offline-frames', `frame-${String(index).padStart(6, '0')}.jpg`);
@@ -203,13 +203,17 @@ function checkBlade(directory, manifest) {
     fade: measured.length > 0 && measured.every(r => r.glowSwept > 0 && r.glowGone - r.glowBefore <= Math.max(2, .1 * r.glowSwept)),
     reaction: p.bladeDeferredHits === p.bladePresentedHits && (p.giantBladeKillsOutside ?? 0) === 0 && (p.enemyDeathDropped ?? 0) === 0,
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
+    // Arc band (painted slash v2): every strike's contrast >= 40, or its brightest band pixel >= 95 (on bright ground pure
+    // white is the best a band can do).
+    contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast || r.arcPeak >= thresholds.arcPeak),
   };
-  // Recorded only until the painted sprites are in: contrast, and how many hits the fixed-width band passes over.
-  const recorded = { contrastMin: measured.length ? Math.min(...measured.map(r => r.contrast)) : null, contrastThreshold: thresholds.contrast,
+  const recorded = { contrastMin: measured.length ? Math.min(...measured.map(r => r.contrast)) : null, contrastThreshold: thresholds.contrast, arcPeakThreshold: thresholds.arcPeak,
     contrastMet: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
+    strikesByPeakOnly: measured.filter(r => r.contrast < thresholds.contrast && r.arcPeak >= thresholds.arcPeak).map(r => ({ tick: r.tick, contrast: r.contrast, arcPeak: r.arcPeak, ground: r.ground })),
+    strikesBelow: measured.filter(r => r.contrast < thresholds.contrast && r.arcPeak < thresholds.arcPeak).map(r => ({ tick: r.tick, contrast: r.contrast, arcPeak: r.arcPeak, ground: r.ground })),
     hits: measured.reduce((n, r) => n + r.hits, 0), hitsUnderBand: measured.reduce((n, r) => n + r.hitsCovered, 0) };
   return { strikes: results.length, pass, recorded, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Hits under the band and contrast are recorded only (judged again with the painted sprites). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the whole band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Contrast per strike: >= 40, or the band\'s brightest pixel (median over arc angles) >= 95. Hits under the band are recorded only. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the whole band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 

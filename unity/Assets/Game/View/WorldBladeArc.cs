@@ -23,6 +23,10 @@ namespace Game.View
         // The band picture is wrapped linearly across the band (its top row on the outer edge): the painted slash (v2) is a
         // bright front fading to a clear back, and its role frame is cropped to the drawn rows.
         public const float ArcScreenFill = .85f, MinBandHeroHeights = .55f, MaxBandHeroHeights = 1f, MaxHalfAngle = 65, EdgeShare = .45f, EdgeOfPicture = EdgeShare;
+        // White core of the painted slash v2: picture rows 40-61 of 512x128 (luma 95-97, alpha .46-.91), i.e. v .526-.816 of
+        // its role frame (rows 26-101). Drawn again over the band with alpha x CoreAlphaBoost (clamped to 1) so the drawn
+        // core is opaque on bright ground; a thin element, exempt from the P5 cap over enemies.
+        public const float SlashCoreFrom = .526f, SlashCoreTo = .816f, CoreAlphaBoost = 4;
         // Stage 0..1 of a strike: evolved 1, else NormalStageShare of the gear's growth over its canonical Lv1.
         public const float NormalStageShare = .75f;
         public static float BandHeroHeights(float stage) => Mathf.Lerp(MinBandHeroHeights, MaxBandHeroHeights, stage);
@@ -84,9 +88,10 @@ namespace Game.View
         readonly ArtVisual[] bladeDust = new ArtVisual[3];
         readonly List<Texture2D> temporaryEffectTextures = new List<Texture2D>(4);
         // Arc ribbons are curved meshes submitted with the batches (so the P5 mask and alpha cap see them).
-        sealed class Ribbon { public Mesh Mesh; public Color Color; public bool Used; }
+        sealed class Ribbon { public Mesh Mesh; public Color Color; public bool Used, Core; }
         readonly List<Ribbon> bladeRibbons = new List<Ribbon>(8);
-        Material ribbonMaterial, ribbonOverEnemies;
+        Material ribbonMaterial, ribbonOverEnemies, ribbonCore;
+        bool bladeSlashPainted;
         MaterialPropertyBlock ribbonProperties;   // created on first use (not allowed in a MonoBehaviour field initializer)
         static readonly Matrix4x4[] RibbonMatrix = { Matrix4x4.identity };
         readonly Vector4[] ribbonColor = new Vector4[1], ribbonUv = new Vector4[1];
@@ -150,6 +155,7 @@ namespace Game.View
                 if (age < 0 || age > GiantBladeEnvelope.LifetimeSeconds) continue;
                 CentreBladeArc(strike);
                 DrawBladeArc(strike, age, 1);
+                if (bladeSlashPainted) DrawBladeArc(strike, age, 1, core: true);
                 var echo = age - BladeSpec.Seconds(BladeSpec.AfterimageFrames);
                 if (echo > 0) DrawBladeArc(strike, echo, BladeSpec.AfterimageOpacity);
                 if (!strike.Recorded) RecordBladeStrike(strike);
@@ -158,7 +164,8 @@ namespace Game.View
 
         // One curved ribbon from the trail's oldest end to the blade's leading edge; the picture runs tail (u 0) to tip
         // (u 1) along the arc and inner (v 0) to outer edge (v 1) across it. After the hold it disappears toward the tip.
-        void DrawBladeArc(M1BladeStrike strike, float age, float opacity)
+        // core: only the painted slash's white core rows, drawn opaque over the band (see BladeSpec.SlashCoreFrom).
+        void DrawBladeArc(M1BladeStrike strike, float age, float opacity, bool core = false)
         {
             opacity *= GiantBladeEnvelope.Opacity(age);
             if (opacity <= 0) return;
@@ -169,12 +176,14 @@ namespace Game.View
             var fade = Mathf.Clamp01((age - hold) / GiantBladeEnvelope.FadeSeconds);
             var tail = Mathf.Lerp(start, lead, fade * fade);
             if (lead - tail < .5f) return;
-            var ribbon = NextRibbon();
+            var ribbon = NextRibbon(); ribbon.Core = core;
             var columns = BladeSpec.ArcColumns;
-            // Three rows per column: inner edge (v 0), start of the bright blade edge (v 1 - EdgeOfPicture), outer edge (v 1),
-            // so the blade edge keeps its width whatever the band's.
+            // Three rows per column across the band (picture v 0 = inner edge, 1 = outer edge, wrapped linearly); the core
+            // pass covers only the white core rows.
             var vertices = new Vector3[(columns + 1) * 3]; var uvs = new Vector2[vertices.Length]; var triangles = new int[columns * 12];
-            var radii = new[] { strike.Inner, strike.Outer - strike.Edge, strike.Outer }; var rows = new[] { 0, 1 - BladeSpec.EdgeOfPicture, 1 };
+            var rows = core ? new[] { BladeSpec.SlashCoreFrom, (BladeSpec.SlashCoreFrom + BladeSpec.SlashCoreTo) * .5f, BladeSpec.SlashCoreTo } : new[] { 0, 1 - BladeSpec.EdgeOfPicture, 1 };
+            var radii = new float[3];
+            for (var r = 0; r < 3; r++) radii[r] = strike.Inner + (strike.Outer - strike.Inner) * rows[r];
             // The picture spans the whole swing: the drawn part shows the slice from the tail to the leading edge.
             for (var i = 0; i <= columns; i++)
             {
@@ -208,6 +217,10 @@ namespace Game.View
             {
                 ribbonMaterial = new Material(shader) { name = "Blade arc ribbon", mainTexture = bladeSlash.Texture, renderQueue = 3000 + ProjectileLayer, hideFlags = HideFlags.HideAndDontSave };
                 ribbonOverEnemies = EffectAlphaCap.Configure(ribbonMaterial, ProjectileLayer);
+                // The white core pass: above the band and the enemies, alpha boosted to opaque, no cap (thin element).
+                ribbonCore = new Material(shader) { name = "Blade arc core", mainTexture = bladeSlash.Texture, renderQueue = 3000 + LightningLayer, hideFlags = HideFlags.HideAndDontSave };
+                EffectAlphaCap.Configure(ribbonCore, LightningLayer, wide: false);
+                ribbonCore.SetFloat("_AlphaBoost", BladeSpec.CoreAlphaBoost);
                 ribbonProperties = new MaterialPropertyBlock();
             }
             var rect = bladeSlash.UvRects[0];
@@ -223,6 +236,14 @@ namespace Game.View
                 ribbonProperties.SetVector("_InstanceFlash", new Vector4(0, 0, 1, 0));
                 var parameters = new RenderParams(ribbonMaterial) { camera = null, layer = 0, matProps = ribbonProperties, shadowCastingMode = ShadowCastingMode.Off,
                     receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off };
+                if (ribbon.Core)
+                {
+                    OcclusionProbe.Active?.Record(LightningLayer, ribbon.Mesh, RibbonMatrix, 1, bladeSlash.Texture, ribbonColor, ribbonUv, wide: false, alphaBoost: BladeSpec.CoreAlphaBoost);
+                    parameters.material = ribbonCore;
+                    Graphics.RenderMesh(parameters, ribbon.Mesh, 0, Matrix4x4.identity);
+                    DrawCalls++;
+                    continue;
+                }
                 OcclusionProbe.Active?.Record(ProjectileLayer, ribbon.Mesh, RibbonMatrix, 1, bladeSlash.Texture, ribbonColor, ribbonUv);
                 Graphics.RenderMesh(parameters, ribbon.Mesh, 0, Matrix4x4.identity);
                 parameters.material = ribbonOverEnemies;
@@ -407,6 +428,7 @@ namespace Game.View
         {
             if (bladeSlash != null) return;
             bladeSlash = EffectArt(SlashRole, () => TemporarySlash());
+            bladeSlashPainted = art != null && art.TryResolveRole(SlashRole, out _);
             bladeSword = EffectArt(SwordRole, () => TemporarySword());
             bladeCrack = EffectArt(CrackRole, () => TemporaryCrack());
             for (var i = 0; i < bladeDust.Length; i++) bladeDust[i] = EffectArt(DustRole + (i + 1), () => impactDust ?? Resolve("feedback", "death", "default"));
@@ -552,6 +574,7 @@ namespace Game.View
             bladeRibbons.Clear();
             if (ribbonMaterial != null) Destroy(ribbonMaterial);
             if (ribbonOverEnemies != null) Destroy(ribbonOverEnemies);
+            if (ribbonCore != null) Destroy(ribbonCore);
             bladeSlash = bladeSword = bladeCrack = null;
         }
 

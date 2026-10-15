@@ -34,6 +34,7 @@ namespace Game.View
         static readonly int MainTexId = Shader.PropertyToID("_MainTex");
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
+        static readonly int BoostId = Shader.PropertyToID("_AlphaBoost");
         static readonly Vector4 EnemyChannel = new Vector4(1, 0, 0, 1), EffectChannel = new Vector4(0, 1, 0, 1), ThinChannel = new Vector4(0, 0, 1, 1);
         readonly CommandBuffer commands = new CommandBuffer { name = "P5 occlusion mask" };
         readonly Material material;
@@ -70,10 +71,12 @@ namespace Game.View
 
         // Called by a batch at flush with the instances it is about to draw.
         // Wide effects go to green (capped when counted), thin ones to blue (never capped).
-        public void Record(int layer, Mesh mesh, Matrix4x4[] matrices, int count, Texture texture, Vector4[] colors, Vector4[] uvs, bool wide = true)
+        // alphaBoost mirrors a material that multiplies the picture's alpha before clamping (the slash's opaque core).
+        public void Record(int layer, Mesh mesh, Matrix4x4[] matrices, int count, Texture texture, Vector4[] colors, Vector4[] uvs, bool wide = true, float alphaBoost = 1)
         {
             if (!Wants(layer) || count <= 0) return;
             var block = new MaterialPropertyBlock();
+            block.SetFloat(BoostId, alphaBoost);
             block.SetVector(ChannelId, IsEnemyLayer(layer) ? EnemyChannel : wide ? EffectChannel : ThinChannel);
             block.SetTexture(MainTexId, texture != null ? texture : Texture2D.whiteTexture);
             block.SetVectorArray(ColorId, colors);

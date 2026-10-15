@@ -11,6 +11,8 @@ Shader "Game/View/WorldSprite"
         _StencilComp ("Stencil compare", Float) = 8
         _StencilPass ("Stencil pass", Float) = 0
         _AlphaCap ("Alpha cap", Float) = 1
+        // Multiplies the picture's alpha before the tint (clamped to 1); 1 everywhere except the blade slash's opaque core pass.
+        _AlphaBoost ("Alpha boost", Float) = 1
         _AlphaClip ("Alpha clip", Float) = 0
     }
     SubShader
@@ -31,6 +33,7 @@ Shader "Game/View/WorldSprite"
             #pragma instancing_options forcemaxcount:511
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             float _AlphaCap;
+            float _AlphaBoost;
             float _AlphaClip;
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
@@ -74,6 +77,7 @@ Shader "Game/View/WorldSprite"
                     sample.a = saturate(sample.a - inner);
                     sample.rgb = half3(1, 1, 1);
                 }
+                sample.a = saturate(sample.a * _AlphaBoost);
                 sample.a *= lerp(1, style.z, smoothstep(0.25, 0.65, input.local.y));
                 sample.rgb = lerp(sample.rgb, half3(1,1,1), style.x);
                 half4 result = sample * color;

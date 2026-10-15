@@ -6,6 +6,7 @@ Shader "Hidden/Game/OcclusionMask"
     {
         _MainTex ("Atlas", 2D) = "white" {}
         _MaskChannel ("Channel", Vector) = (1,0,0,0)
+        _AlphaBoost ("Alpha boost", Float) = 1
     }
     SubShader
     {
@@ -26,6 +27,7 @@ Shader "Hidden/Game/OcclusionMask"
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
             float4 _MaskChannel;
+            float _AlphaBoost;
             UNITY_INSTANCING_BUFFER_START(SpriteProperties)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceColor)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceUv)
@@ -46,7 +48,7 @@ Shader "Hidden/Game/OcclusionMask"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 half4 color = UNITY_ACCESS_INSTANCED_PROP(SpriteProperties, _InstanceColor);
-                half coverage = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).a * color.a;
+                half coverage = saturate(SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv).a * _AlphaBoost) * color.a;
                 return _MaskChannel * coverage;
             }
             ENDHLSL
