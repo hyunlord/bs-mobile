@@ -183,6 +183,16 @@ wave 런타임 정의에 선택 블록 `cardOffer`를 둔다. 필드가 없으�
 
 각 PR은 해시 유지 증거(wave-history, `wave-c05`, `wave-primitive-baseline`, catalog 해시)와 AGENTS의 #200 C05 비용 비교를 함께 보고한다. View(진화 카드 표시)가 바뀌면 [#274](https://github.com/hyunlord/bs-mobile/issues/274)의 Core↔View 대응 검사를 함께 갱신한다.
 
+## 구현 기록
+
+- 순서 1 — [#280](https://github.com/hyunlord/bs-mobile/issues/280)/[PR #281](https://github.com/hyunlord/bs-mobile/pull/281): 카드 제시가 `WaveRuntimeSystem.ExtraCards()`의 데이터 판정을 쓴다. 재생 바이트가 main과 같다.
+- 순서 2 — [#282](https://github.com/hyunlord/bs-mobile/issues/282): `unlock`·`cardOffer` 스키마와 로더, `WaveEvolutionUnlocks` 평가기. 구현하면서 정한 세부 사항:
+  - 스키마에는 `default` 키워드를 넣지 않았다. 기본값은 이 ADR의 표와 Core 평가기가 정한다.
+  - `cardOffer`는 순서 3 전까지 기본값만 받는다. 기본값과 다른 값은 로더가 거부해, 데이터가 조용히 무시되지 않게 한다.
+  - `unlock.events`는 전환 기간 규칙대로 event-gate 조건 하나와 같아야 한다. 따라서 지금 데이터로 바꿀 수 있는 것은 재료 레벨과 사건 횟수다.
+  - 스키마 파일 바이트도 데이터 출처 해시에 들어간다. 그래서 현재 데이터로 새로 만든 wave-1a 재생의 해시는 바뀐다. 같은 데이터 바이트로 실행하면 Core 출력은 main과 바이트 단위로 같다. 고정 해시(wave-history·C05·baseline·catalog)는 그대로다.
+- C05 비용 비교는 사용자 지시에 따라 순서 1·2를 합쳐 한 번에 측정한다.
+
 ## 후속 항목
 
 ### 적 스폰 그룹 확장
