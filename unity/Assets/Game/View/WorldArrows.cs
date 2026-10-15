@@ -13,7 +13,8 @@ namespace Game.View
         public const int HitHoldFrames = 2;          // projectile hits freeze briefly (1–2) and push away from the impact
         public const float ArcOfDistance = .12f, ArrowBodyWidths = 1.1f, TrailOfDistance = .3f;
         public const float ShaftPixels = 3, OutlinePixels = 1.5f, HeadPixels = 10;
-        // Evolution element: warning circles on the ground at every impact, then arrows drive down from the sky together.
+        // Evolution element: warning circles on the ground at every impact, then arrows drive down from the sky onto each one
+        // as Core lands it (a cast's impacts land one step apart, so the rain rolls across the circles).
         public const int WarningGrowFrames = 4, FallFrames = 8, MinRainArrows = 4, MaxRainArrows = 9, MaxRainArrowsTotal = 180;
         public const float RainDropHeight = .55f, RainSlant = .18f;
         public static readonly Color Silver = new Color(.9f, .93f, .97f);
@@ -30,7 +31,9 @@ namespace Game.View
         const int ArrowVolleyCapacity = 8, ArrowImpactCapacity = 32;
         sealed class ArrowVolley
         {
-            public int Tick = -1, Count; public string Source; public float Accepted, Due; public bool Evolved, Recorded; public int AcceptedFrame;
+            public int Tick = -1, Count; public string Source; public float Accepted, Due, Step; public bool Evolved, Recorded; public int AcceptedFrame;
+            // Core lands a cast's impacts StepTicks apart (review compositions use 1 tick), so each has its own due time.
+            public float DueOf(int index) => Due + index * Step;
             public readonly int[] Ids = new int[ArrowImpactCapacity];
             public readonly Vector2[] Points = new Vector2[ArrowImpactCapacity];
             public readonly float[] Radii = new float[ArrowImpactCapacity], Landed = new float[ArrowImpactCapacity];
@@ -84,6 +87,7 @@ namespace Game.View
                     volley.Tick = value.Tick; volley.Source = value.Source; volley.Count = 0; volley.Recorded = false;
                     volley.Accepted = visualTime; volley.AcceptedFrame = PresentedFrames + 1;
                     volley.Due = visualTime + (composition?.DelayTicks ?? 12) / (float)Mathf.Max(1, waveTickRate);
+                    volley.Step = (composition?.StepTicks ?? 0) / (float)Mathf.Max(1, waveTickRate);
                     volley.Evolved = WeaponEvolved(value.Source);
                     volley.Launch = PredictedLordPosition ?? RenderedLordPosition;
                     ArrowVolleys++; if (volley.Evolved) ArrowRainVolleys++;
@@ -101,7 +105,7 @@ namespace Game.View
                     {
                         if (volley.Ids[i] != value.SubjectId || volley.Landed[i] >= 0) continue;
                         volley.Landed[i] = visualTime;
-                        if (Mathf.Abs(visualTime - volley.Due) <= ArrowSpec.Seconds(2)) ArrowLandedOnTime++;
+                        if (Mathf.Abs(visualTime - volley.DueOf(i)) <= ArrowSpec.Seconds(2)) ArrowLandedOnTime++;
                         impactParticles.Hit(value.Id, volley.Points[i]);
                     }
             }
@@ -129,7 +133,7 @@ namespace Game.View
             if (waveDefinition == null) return;
             var any = false;
             foreach (var volley in arrowVolleys)
-                if (volley.Tick >= 0 && visualTime - volley.Due < ArrowSpec.Seconds(ArrowSpec.PlantedFrames) + .2f) { any = true; break; }
+                if (volley.Tick >= 0 && visualTime - volley.DueOf(volley.Count) < ArrowSpec.Seconds(ArrowSpec.PlantedFrames) + .2f) { any = true; break; }
             if (!any) return;
             EnsureLightningArt();
             var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
@@ -140,11 +144,11 @@ namespace Game.View
             {
                 if (volley.Tick < 0 || volley.Count == 0) continue;
                 var now = visualTime;
-                if (now - volley.Due > ArrowSpec.Seconds(ArrowSpec.PlantedFrames) + .2f) continue;
+                if (now - volley.DueOf(volley.Count) > ArrowSpec.Seconds(ArrowSpec.PlantedFrames) + .2f) continue;
                 if (!volley.Recorded && now >= volley.Due - ArrowSpec.Seconds(volley.Evolved ? ArrowSpec.FallFrames : ArrowSpec.FlightFrames)) RecordArrowVolley(volley, view);
                 for (var i = 0; i < volley.Count; i++)
                 {
-                    var landed = volley.Landed[i] >= 0 ? volley.Landed[i] : volley.Due;
+                    var landed = volley.Landed[i] >= 0 ? volley.Landed[i] : volley.DueOf(i);
                     var point = volley.Points[i]; var radius = volley.Radii[i];
                     if (volley.Evolved) DrawArrowRain(volley, i, point, radius, landed, w, pixel, view, ref rainBudget);
                     else DrawArrowShot(volley, i, point, landed, w, pixel);
@@ -198,8 +202,7 @@ namespace Game.View
             {
                 var grow = Mathf.Clamp01(sinceTell / ArrowSpec.Seconds(ArrowSpec.WarningGrowFrames));
                 var pulse = .6f + .4f * Mathf.Sin(sinceTell * 30);
-                var ring = ArrowSpec.Water; ring.a = .9f * pulse;
-                DrawMusterRing(point, radius * Mathf.Lerp(.35f, 1, grow), ring, 1);
+                DrawGlowRing(point, radius * Mathf.Lerp(.35f, 1, grow), Mathf.Max(w * .22f, radius * .1f), ArrowSpec.Water, .95f * pulse);
                 var fill = ArrowSpec.Water; fill.a = .18f * grow;
                 Draw(lightningFlash, LightningLayer, point, 0, Vector2.one * radius * 2.1f, 0, 1, fill, applyTween: false);
             }
@@ -220,6 +223,23 @@ namespace Game.View
                 var glow = ArrowSpec.Water; glow.a = .7f;
                 Draw(lightningGlow, LightningLayer, at - down * (w * .8f), 0, new Vector2(w * 1.6f, w * .22f), Angle(down), 1, glow, applyTween: false);
                 DrawArrowBody(at, down, w, pixel, 1);
+            }
+        }
+
+        // A ring of additive glow segments with a thin bright core: reads on grass and over dark enemies alike.
+        void DrawGlowRing(Vector2 centre, float radius, float width, Color color, float alpha)
+        {
+            if (radius <= 0 || alpha <= 0) return;
+            var segments = Mathf.Clamp(Mathf.CeilToInt(radius / Mathf.Max(.0001f, width) * 3), 16, 48);
+            for (var pass = 0; pass < 2; pass++)
+            {
+                var visual = pass == 0 ? lightningGlow : lightningCore;
+                var tint = pass == 0 ? color : Color.white; tint.a = alpha * (pass == 0 ? 1 : .7f);
+                for (var s = 0; s < segments; s++)
+                {
+                    var middle = (s + .5f) * 360f / segments;
+                    Draw(visual, LightningLayer, centre + M1Direction(middle) * radius, 0, new Vector2(radius * Mathf.PI * 2 / segments * 1.2f, pass == 0 ? width : width * .3f), middle + 90, 1, tint, applyTween: false);
+                }
             }
         }
 

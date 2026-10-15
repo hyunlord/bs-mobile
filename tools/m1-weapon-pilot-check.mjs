@@ -164,13 +164,17 @@ function checkBlade(directory, manifest) {
   for (const s of strikes) {
     const at = Number(s.frameIndex);
     if (at <= 8) continue;
-    const before = frame(directory, at - 8), swept = frame(directory, at + 9), gone = frame(directory, at + 19);
+    // +7: the sweep has covered the arc and the fade (from +9) has not begun.
+    const before = frame(directory, at - 8), swept = frame(directory, at + 7), gone = frame(directory, at + 19);
     const points = arcSamples(s, swept).filter(([x, y]) => luma(before.at(x, y)) > 5);
     if (points.length < 3) { results.push({ frame: at, skipped: 'arc off screen' }); continue; }
     const ground = points.reduce((n, [x, y]) => n + luma(before.at(x, y)), 0) / points.length;
-    const peak = median(points.map(([x, y]) => windowMax(swept, x, y)));
-    const after = median(points.map(([x, y]) => windowMax(gone, x, y)));
-    const groundMax = median(points.map(([x, y]) => windowMax(before, x, y)));
+    // Per arc angle, the brightest pixel across the crescent band (.7R to 1.02R) — the band is thin against R.
+    const band = (image, [x, y]) => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let best = 0;
+      for (let k = .7; k <= 1.1; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, oy + (y - oy) * k / .93, 2)); return best; };
+    const peak = median(points.map(p => band(swept, p)));
+    const after = median(points.map(p => band(gone, p)));
+    const groundMax = median(points.map(p => band(before, p)));
     results.push({ frame: at, tick: Number(s.tick), evolved: s.evolved === 'True', windupFrames: Number(s.windupFrames), samples: points.length,
       ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), afterFade: +after.toFixed(1), groundPeak: +groundMax.toFixed(1) });
   }
@@ -184,7 +188,7 @@ function checkBlade(directory, manifest) {
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
   return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over blade-tip arc samples of the brightest pixel within 4px at 9 frames after the crescent appears, minus the mean ground luma at the same samples 8 frames before. Fade = the arc is back to the ground level 19 frames after appearing (sweep 9 + hold 0 + fade 7, +3). Stage = giant sword strikes only in the evolved stage.',
+    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.7R to 1.1R) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = the arc is back to the ground level 19 frames after appearing (sweep 9 + hold 0 + fade 7, +3). Stage = giant sword strikes only in the evolved stage.',
     rows: results };
 }
 
@@ -231,7 +235,7 @@ function checkArrows(directory, manifest) {
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const pass = {
-    onTime: (p.arrowImpacts ?? 0) > 0 && p.arrowLandedOnTime === p.arrowImpacts,
+    onTime: (p.arrowImpacts ?? 0) > 0 && p.arrowLandedOnTime === p.arrowImpacts,   // per impact: Core lands a cast's impacts one step apart
     landing: results.length > 0 && results.every(r => r.landingContrast >= thresholds.contrast),
     visible: results.length > 0 && results.every(r => r.evolved ? r.warningRing >= .4 : r.arrowPixels >= 6),
     flight: results.filter(r => !r.evolved).every(r => r.shownToDue >= 8 && r.shownToDue <= 12),
