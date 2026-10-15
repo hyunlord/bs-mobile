@@ -277,13 +277,17 @@ function checkOrbits(directory, manifest, shape) {
     const iy = image.height - y, size = Number(a.orbiterSizePixels), hero = Number(a.heroHeightPixels);
     // Tornado: from the foot up; shield: around its centre.
     const top = shape === 'tornado' ? iy - size : iy - size / 2, bottom = shape === 'tornado' ? iy : iy + size / 2, half = shape === 'tornado' ? size * .45 : size / 2;
-    let ground = 0, n = 0, peak = 0, coloured = 0;
+    // Orbit activations run back to back, so the same box earlier still holds orbiters: the ground reference is the median
+    // luma of the play area on the frame before (mostly grass).
+    const field = [];
+    for (let py = 100; py < before.height - 80; py += 12) for (let px = before.width / 2 - 240; px <= before.width / 2 + 240; px += 12) field.push(luma(before.at(px, py)));
+    const ground = median(field);
+    let peak = 0, coloured = 0;
     for (let py = top; py <= bottom; py += 2) for (let px = x - half; px <= x + half; px += 2) {
-      const c = image.at(px, py); ground += luma(before.at(px, py)); n++; peak = Math.max(peak, luma(c));
+      const c = image.at(px, py); peak = Math.max(peak, luma(c));
       const [r, g, b] = c;
       if (shape === 'tornado' ? (g - r > 45 && b - r > 25) : (r > 170 && g > 130 && b < 130 && r - b > 70)) coloured++;
     }
-    ground /= Math.max(1, n);
     results.push({ frame: at, activation: Number(a.activation), evolved: a.evolved === 'True', count: Number(a.count), heroHeightPixels: hero, orbiterSizePixels: +size.toFixed(1),
       contrast: +(peak - ground).toFixed(1), colouredPixels: coloured });
   }
@@ -297,7 +301,7 @@ function checkOrbits(directory, manifest, shape) {
     reaction: (p.orbitContactFlashes ?? 0) > 0 && (p.enemyDeathDropped ?? 0) === 0,
   };
   return { activations: results.length, pass, contactFlashes: p.orbitContactFlashes, vortexFrames: p.vortexFrames, shieldThrows: p.shieldThrows,
-    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (tornado from the foot up, shield around its centre), against the same box 20 frames earlier. Size: tornado height >= hero height (x.95), shield diameter >= .84 hero heights. Colour: teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
+    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (tornado from the foot up, shield around its centre), against the median luma of the play area 20 frames earlier (orbit activations run back to back, so the same box would still hold orbiters). Size: tornado height >= hero height (x.95), shield diameter >= .84 hero heights. Colour: teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
     rows: results };
 }
 
