@@ -461,12 +461,13 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
             }
             DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
-            // Hit feedback is a white flash on two rendered frames and a short push of the drawn hero only; no held tint.
+            // Hit feedback brightens the hero on two rendered frames (+40% on the knight rig, a 30% lift toward white on sprite
+            // heroes; a white fill outshone the weapon effects) and pushes the drawn hero only; no held tint.
             var heroFlash=HitFeedbackEnabled?heroHitFeedback.NextFlash():heroHit?.8f:0;
             var heroDrawn=HitFeedbackEnabled?lord+heroHitFeedback.Offset(visualTime,heroVisual.WorldSize.x*GameVisualTokens.HeroBodyWidthFraction):lord;
             if(!DrawHeroRig(heroVisual,heroDrawn,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
                 Color.white,heroFlash,heroGaitDiscontinuity,seconds))
-                DrawActor(heroVisual,GameVisualTokens.LordLayer,heroDrawn,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroFlash,facing:heroFacing);
+                DrawActor(heroVisual,GameVisualTokens.LordLayer,heroDrawn,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroFlash*.3f,facing:heroFacing);
             heroGaitDiscontinuity=false;
             RecordHeroSilhouette(heroVisual,lord);
             RenderedHeroAnchorScreenPosition = renderCamera.WorldToScreenPoint(lord);

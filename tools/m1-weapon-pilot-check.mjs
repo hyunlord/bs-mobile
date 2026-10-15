@@ -177,20 +177,25 @@ function checkBlade(directory, manifest) {
     const glow = image => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let count = 0;
       for (const [x, y] of points) for (let k = .35; k <= 1.1; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, oy + (y - oy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
     const glowSwept = glow(swept), glowGone = glow(gone), glowBefore = glow(before);
+    const hero = Number(s.heroHeightPixels ?? 0), radiusPx = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY));
     results.push({ frame: at, tick: Number(s.tick), evolved: s.evolved === 'True', windupFrames: Number(s.windupFrames), samples: points.length,
+      heroHeightPixels: +hero.toFixed(1), radiusPixels: +radiusPx.toFixed(1), thicknessPixels: +Number(s.thicknessPixels ?? 0).toFixed(1), swordLengthPixels: +Number(s.swordLengthPixels ?? 0).toFixed(1),
       ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), glowSwept, glowGone, glowBefore });
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const measured = results.filter(r => !r.skipped);
   const pass = {
     windup: results.length > 0 && results.every(r => r.skipped || (r.windupFrames >= 3 && r.windupFrames <= 5)),
+    // The crescent is at least a hero tall in reach and .45 hero heights thick; the evolved sword at least 3 hero heights.
+    size: measured.length > 0 && measured.every(r => r.radiusPixels >= r.heroHeightPixels && r.thicknessPixels >= .44 * r.heroHeightPixels
+      && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
     contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
     fade: measured.length > 0 && measured.every(r => r.glowSwept > 0 && r.glowGone - r.glowBefore <= Math.max(2, .1 * r.glowSwept)),
     reaction: p.bladeDeferredHits === p.bladePresentedHits && (p.giantBladeKillsOutside ?? 0) === 0 && (p.enemyDeathDropped ?? 0) === 0,
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
   return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.35R to 1.1R; the crescent follows the visible reach when the fitted radius meets the screen edge) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = sky-blue glow samples across the band 19 frames after appearing (sweep 9 + fade 7, +3) exceed the pre-swing count by at most 10% of the swept count. Stage = giant sword strikes only in the evolved stage.',
+    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.35R to 1.1R; the crescent follows the visible reach when the fitted radius meets the screen edge) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = sky-blue glow samples across the band 19 frames after appearing (sweep 9 + fade 7, +3) exceed the pre-swing count by at most 10% of the swept count. Stage = giant sword strikes only in the evolved stage. Size = crescent reach >= hero height and thickness >= .45 hero heights; evolved sword >= 3 hero heights.',
     rows: results };
 }
 
@@ -212,7 +217,7 @@ function checkArrows(directory, manifest) {
     }
     ground /= Math.max(1, n);
     const entry = { frame: at, tick: Number(v.tick), evolved, impacts: Number(v.impacts), onScreen: Number(v.onScreenImpacts), shownToDue: Number(v.shownToDueFrames),
-      landingContrast: +(peak - ground).toFixed(1) };
+      landingContrast: +(peak - ground).toFixed(1), arrowLengthPixels: +Number(v.arrowLengthPixels ?? 0).toFixed(1), heroHeightPixels: +Number(v.heroHeightPixels ?? 0).toFixed(1) };
     if (evolved) {
       // Warning circle: share of points on the Core radius with a translucent water-blue pixel (over grass, whose blue is ~90)
       // within 3px, 4 frames before landing.
@@ -225,6 +230,14 @@ function checkArrows(directory, manifest) {
         if (found) hits++;
       }
       entry.warningRing = +(hits / total).toFixed(2);
+      // Rain streaks: bright pixels gained in a column above the first impact while the arrows fall (3 frames before landing)
+      // against the same column before the cast.
+      const rain = frame(directory, due - 3), hero = Math.max(20, entry.heroHeightPixels);
+      let gained = 0;
+      for (let dy = 0; dy <= hero * 1.5; dy += 2) for (let dx = -radius; dx <= radius; dx += 2) {
+        if (luma(rain.at(x + dx, iy - dy)) >= 88 && luma(before.at(x + dx, iy - dy)) < 75) gained++;
+      }
+      entry.rainPixels = gained;
     } else {
       // Arrow in flight halfway: bright silver pixels near the straight path's midpoint.
       const mid = frame(directory, due - 5);
@@ -240,13 +253,14 @@ function checkArrows(directory, manifest) {
   const pass = {
     onTime: (p.arrowImpacts ?? 0) > 0 && p.arrowLandedOnTime === p.arrowImpacts,   // per impact: Core lands a cast's impacts one step apart
     landing: results.length > 0 && results.every(r => r.landingContrast >= thresholds.contrast),
-    visible: results.length > 0 && results.every(r => r.evolved ? r.warningRing >= .4 : r.arrowPixels >= 6),
+    visible: results.length > 0 && results.every(r => r.evolved ? r.rainPixels >= 40 : r.arrowPixels >= 6),
+    size: results.length > 0 && results.every(r => r.arrowLengthPixels >= .5 * r.heroHeightPixels),
     flight: results.filter(r => !r.evolved).every(r => r.shownToDue >= 8 && r.shownToDue <= 12),
     stage: stage === 'evolved' ? (p.arrowRainVolleys ?? 0) > 0 && p.arrowRainVolleys === p.arrowVolleys : (p.arrowRainVolleys ?? 0) === 0,
     reaction: (p.enemyDeathDropped ?? 0) === 0,
   };
   return { volleys: results.length, pass, impacts: p.arrowImpacts, landedOnTime: p.arrowLandedOnTime, rainVolleys: p.arrowRainVolleys,
-    note: 'On time = every Core impact landed within 2 frames of its predicted due frame. Landing contrast = brightest pixel inside the first on-screen Core impact radius on the landing frame minus the mean ground there 30 frames earlier. Visible = arrow pixels near the flight midpoint 5 frames before landing (Lv1/max) or water-blue warning ring around the Core radius 4 frames before landing (evolution). Stage = sky rain only in the evolved stage.',
+    note: 'On time = every Core impact landed within 2 frames of its predicted due frame. Landing contrast = brightest pixel inside the first on-screen Core impact radius on the landing frame minus the mean ground there 30 frames earlier. Visible = arrow pixels near the flight midpoint 5 frames before landing (Lv1/max) or bright rain-streak pixels gained above the first impact 3 frames before landing (evolution; the merged thin warning outline is reported as warningRing, not gated). Size = arrows at least half a hero tall. Stage = sky rain only in the evolved stage.',
     rows: results };
 }
 

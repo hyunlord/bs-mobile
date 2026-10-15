@@ -1,5 +1,5 @@
 // Same vertex path as URP Sprite-Unlit-Default, including SpriteSkin GPU deformation, but every opaque texel is white.
-// Swapped onto the live hero parts for the two hit-flash frames only.
+// Swapped onto the live hero parts for the two hit-flash frames only: the parts drawn 40% brighter.
 Shader "Game/HeroLiveFlash"
 {
     Properties
@@ -60,7 +60,8 @@ Shader "Game/HeroLiveFlash"
             half4 FlashFragment(Varyings input) : SV_Target
             {
                 half4 color = CommonUnlitFragment(input, input.color);
-                return half4(1, 1, 1, color.a);
+                // Brightness +40% for the two hit frames (not a white fill, which outshone the weapon effects).
+                return half4(saturate(color.rgb * 1.4), color.a);
             }
             ENDHLSL
         }

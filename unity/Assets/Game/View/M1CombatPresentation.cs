@@ -56,7 +56,7 @@ namespace Game.View
         }
         sealed class M1BladeStrike
         {
-            public long EventId = -1; public int Tick; public Vector2 Origin; public float Aim, CoreRadius, Radius, HalfAngle, Accepted, Strength; public bool Fitted, Evolved, ShakeFired, Recorded; public int AcceptedFrame;
+            public long EventId = -1; public int Tick; public Vector2 Origin; public float Aim, CoreRadius, Radius, HalfAngle, Accepted, Strength, Thickness; public bool Fitted, Evolved, ShakeFired, Recorded; public int AcceptedFrame;
             public float Visible => Accepted + BladeSpec.Seconds(BladeSpec.WindupFrames);
             public readonly Vector2[] Kills = new Vector2[M1BladeKillCapacity]; public int KillCount, KillsDropped;
         }

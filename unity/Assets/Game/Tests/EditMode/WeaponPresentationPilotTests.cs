@@ -140,6 +140,9 @@ namespace Tests.EditMode
             Assert.That(BladeSpec.HitHoldFrames, Is.InRange(3, 5));
             Assert.That(GiantBladeEnvelope.FadeSeconds * 60, Is.InRange(6f, 8f), "The trail fades over 6–8 frames.");
             Assert.That(BladeSpec.Taper(0), Is.LessThan(.2f)); Assert.That(BladeSpec.Taper(1), Is.EqualTo(1).Within(1e-5f), "Thick at the leading edge, thin toward the start.");
+            Assert.That(BladeSpec.SwordHeroHeights, Is.GreaterThanOrEqualTo(3f), "The evolved sword is at least three hero heights.");
+            Assert.That(BladeSpec.MinThicknessHeroHeights, Is.GreaterThanOrEqualTo(.4f), "The Lv1 crescent is not a hairline.");
+            Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
             Assert.That(ArrowSpec.MuzzleFlashFrames, Is.EqualTo(1));
             Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 0), Is.EqualTo(Vector2.zero));

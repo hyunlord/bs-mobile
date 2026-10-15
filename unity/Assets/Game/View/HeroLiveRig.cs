@@ -221,7 +221,7 @@ namespace Game.View
 
         public bool Flashing => flashing;
 
-        // A tint can only darken the cutouts, so the white hit flash swaps in a white-silhouette material instead.
+        // A tint can only darken the cutouts, so the hit flash swaps in a material that draws the parts 40% brighter.
         void ApplyFlash(bool active)
         {
             if (active == flashing) return;

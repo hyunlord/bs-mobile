@@ -44,9 +44,9 @@ namespace Game.App
             world.LightningStrikeSample = r => { if (lightningRows.Count < 1024) lightningRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.VisibleFrame - r.AcceptedFrame},{r.Tick},{r.Links},{r.SkyBolts},{r.CoveredSkyBolts},{r.OnScreenTargets},{r.Storm},{r.Strength:R},{r.CorePixels:R},{r.GlowPixels:R},{r.FirstSkyTargetScreen.x:R},{r.FirstSkyTargetScreen.y:R},{r.FirstSkyTopScreen.x:R},{r.FirstSkyTopScreen.y:R},{r.ScreenFlash:R}")); };
             world.BladeStrikeSample = r => { if (bladeRows.Count < 1024) bladeRows.Add(FormattableString.Invariant(
-                $"{frameCount},{r.VisibleFrame - r.AcceptedFrame},{r.Tick},{r.Evolved},{r.Radius:R},{r.HalfAngle:R},{r.Aim:R},{r.OriginScreen.x:R},{r.OriginScreen.y:R},{r.RadiusPixels.x:R},{r.RadiusPixels.y:R}")); };
+                $"{frameCount},{r.VisibleFrame - r.AcceptedFrame},{r.Tick},{r.Evolved},{r.Radius:R},{r.HalfAngle:R},{r.Aim:R},{r.OriginScreen.x:R},{r.OriginScreen.y:R},{r.RadiusPixels.x:R},{r.RadiusPixels.y:R},{r.HeroHeightPixels:R},{r.ThicknessPixels:R},{r.SwordLengthPixels:R}")); };
             world.ArrowVolleySample = r => { if (arrowRows.Count < 1024) arrowRows.Add(FormattableString.Invariant(
-                $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R}")); };
+                $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R}")); };
             world.MinionThrustSample = (group, soldiers) => { if (thrustRows.Count < 8192) thrustRows.Add(FormattableString.Invariant($"{frameCount},{group},thrust,{soldiers}")); };
             // Hits are accepted before the frame that presents them, i.e. the frame Record() will number next.
             world.MinionHitSample = group => { if (thrustRows.Count < 8192) thrustRows.Add(FormattableString.Invariant($"{frameCount},{group},hit,0")); };
@@ -58,9 +58,9 @@ namespace Game.App
                 new[] { "frameIndex,telegraphFrames,tick,links,skyBolts,coveredSkyBolts,onScreenTargets,storm,strength,corePixels,glowPixels,firstSkyScreenX,firstSkyScreenY,firstSkyTopScreenX,firstSkyTopScreenY,screenFlash" }.Concat(lightningRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-minion-thrusts.csv"), new[] { "frameIndex,group,kind,soldiers" }.Concat(thrustRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-blade-strikes.csv"),
-                new[] { "frameIndex,windupFrames,tick,evolved,radius,halfAngle,aim,originScreenX,originScreenY,radiusPixelsX,radiusPixelsY" }.Concat(bladeRows));
+                new[] { "frameIndex,windupFrames,tick,evolved,radius,halfAngle,aim,originScreenX,originScreenY,radiusPixelsX,radiusPixelsY,heroHeightPixels,thicknessPixels,swordLengthPixels" }.Concat(bladeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-arrow-volleys.csv"),
-                new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,tellToShownFrames,shownToDueFrames,firstImpactScreenX,firstImpactScreenY,firstImpactRadiusPixels,launchScreenX,launchScreenY" }.Concat(arrowRows));
+                new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,tellToShownFrames,shownToDueFrames,firstImpactScreenX,firstImpactScreenY,firstImpactRadiusPixels,launchScreenX,launchScreenY,arrowLengthPixels,heroHeightPixels" }.Concat(arrowRows));
         }
 
         public void CapturePresentation(WorldRenderer world)
