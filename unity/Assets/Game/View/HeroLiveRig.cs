@@ -42,6 +42,9 @@ namespace Game.View
         }
         public long TextureBytes { get; }
         public double LastPoseMilliseconds { get; private set; }
+        HeroHeadFootMeasure reviewMeasure;
+        public Vector2 ReviewHeadFootWorldY { get; private set; }
+        public void EnableHeadFootReview() => reviewMeasure ??= new HeroHeadFootMeasure(data, partsTexture);
 
         public HeroLiveRig(Transform owner, string resourceRoot = "HeroMotion")
         {
@@ -102,6 +105,12 @@ namespace Game.View
                 ApplyBones();
                 root.transform.position = position;
                 root.transform.localScale = new Vector3(signedSize.x / data.canvasSize, signedSize.y / data.canvasSize, 1);
+                if (reviewMeasure != null)
+                {
+                    var bounds = reviewMeasure.Measure(pose);
+                    ReviewHeadFootWorldY = new Vector2(position.y + (data.groundY - bounds.y) * root.transform.localScale.y,
+                        position.y + (data.groundY - bounds.x) * root.transform.localScale.y);
+                }
                 for (var i = 0; i < renderers.Length; i++) renderers[i].color = color;
                 ApplyFlash(flash > 0);
             }

@@ -70,7 +70,7 @@ namespace Game.App
             actualLordDamageTelemetry?.Save(benchmarkOutput);
             File.WriteAllText(Path.Combine(benchmarkOutput, "camera-scale.json"), JsonUtility.ToJson(new CameraScaleManifest {
                 contract = forgeWalkReview != null ? "forge-walk-camera-v1" : knightReview == null ? "camera-scale-frozen-c05-v1" : "knight-camera-review-v1",
-                hero = forgeWalkReview != null ? "forge one-direction baked walk" : knightReview == null ? "current B parts, live Unity 2D Animation; historical scale review" : "a-knight-live",
+                hero = forgeWalkReview?.CutoutBaseline == true ? "existing HeroKnight cutout baseline" : forgeWalkReview != null ? "forge one-direction baked walk" : knightReview == null ? "current B parts, live Unity 2D Animation; historical scale review" : "a-knight-live",
                 scale = cameraScaleComparison.Magnification, window = cameraScaleComparison.Window,
                 startTick = cameraScaleComparison.StartTick, endTick = cameraScaleComparison.EndTick,
                 preRollTick = cameraScaleComparison.PreRollTick, replayVerified = verified,

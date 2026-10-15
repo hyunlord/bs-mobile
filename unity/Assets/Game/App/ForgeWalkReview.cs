@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using SowSiege.Core;
 using UnityEngine;
 
@@ -14,27 +15,61 @@ namespace Game.App
             public float cameraScale;
         }
         public Definition Case { get; private set; }
+        public bool CutoutBaseline { get; private set; }
+        public HeightReference Height { get; private set; }
+        public string HeightReferenceSha256 { get; private set; }
+        [Serializable] public sealed class HeightReference
+        {
+            public string contract, fixture, hero, replaySha256;
+            public bool replayVerified;
+            public float cameraScale, medianBodyHeightWorld, medianBodyHeightPixels;
+            public int startTick, endTick, bodyHeightSamples;
+        }
 
         public static ForgeWalkReview Parse(string[] args)
         {
             var at = Array.IndexOf(args, "--forge-walk-review");
-            if (at < 0) return null;
+            var baselineAt = Array.IndexOf(args, "--forge-cutout-baseline");
+            var referenceAt = Array.IndexOf(args, "--forge-height-reference");
+            if (at < 0)
+            {
+                if (baselineAt >= 0 || referenceAt >= 0) throw new ArgumentException("Forge appearance options require --forge-walk-review.");
+                return null;
+            }
+            var baseline = baselineAt >= 0;
             if (at != Array.LastIndexOf(args, "--forge-walk-review") || Array.IndexOf(args, "--offline-replay-capture") < 0 ||
-                Array.IndexOf(args, "--hero-production") < 0)
+                baselineAt != Array.LastIndexOf(args, "--forge-cutout-baseline") ||
+                (baseline ? Array.IndexOf(args, "--hero-production") >= 0 || Array.IndexOf(args, "--hero-production-direction") >= 0 || referenceAt >= 0 : Array.IndexOf(args, "--hero-production") < 0))
                 throw new ArgumentException("Forge walk requires one explicit flag, external hero atlas and offline capture.");
             foreach (var flag in new[] { "--knight-review", "--m1-combat-case", "--m1-weapon-showcase", "--m1-review-seconds", "--camera-scale", "--camera-scale-window", "--crowd-replay-benchmark", "--hero-motion", "--hero-motion-window", "--hero-concept", "--hero-production-terminal-tail", "--autoplay-capture", "--feel-comparison", "--feel-trial", "--wave-benchmark-repeat", "--wave-benchmark-profile", "--wave-benchmark-core-diagnostics", "--wave-benchmark-capture", "--wave-benchmark-mode", "--wave-benchmark-skip-grounding", "--crowd-target60-experiment", "--smoothness-trace" })
                 if (Array.IndexOf(args, flag) >= 0) throw new ArgumentException("Forge walk cannot mix review contracts: " + flag);
             var replay = ReadValue(args, "--wave-benchmark");
             if (!Path.IsPathRooted(replay) || Path.GetExtension(replay) != ".ssreplay")
                 throw new ArgumentException("Forge walk requires an absolute replay path.");
-            if (ReadValue(args, "--hero-production-direction") != "E")
+            if (!baseline && ReadValue(args, "--hero-production-direction") != "E")
                 throw new ArgumentException("Forge walk contains only the authored east direction.");
             var value = JsonUtility.FromJson<Definition>(File.ReadAllText(Path.ChangeExtension(replay, ".json")));
             if (value == null || value.contract != "forge-walk-review-v1" || value.profile != "wave-1a" || value.seed != 30001 ||
                 value.captureStartTick != 0 || value.endTick != 900 || value.direction != "E" || value.cameraScale != 1.4f ||
                 !ValidHash(value.dataHash) || !ValidHash(value.replaySha256) || !ValidHash(value.stateHash))
                 throw new InvalidDataException("Invalid thirty-second Forge walk fixture contract.");
-            return new ForgeWalkReview { Case = value };
+            var review = new ForgeWalkReview { Case = value, CutoutBaseline = baseline };
+            if (referenceAt >= 0)
+            {
+                var path = ReadValue(args, "--forge-height-reference");
+                if (!Path.IsPathRooted(path)) throw new ArgumentException("Height reference must be an absolute baseline JSON path.");
+                var bytes = File.ReadAllBytes(path);
+                var height = JsonUtility.FromJson<HeightReference>(System.Text.Encoding.UTF8.GetString(bytes));
+                if (height == null || height.contract != "forge-cutout-height-v1" || height.fixture != value.contract ||
+                    height.hero != "a-knight-cutout-baseline" || !height.replayVerified || height.replaySha256 != value.replaySha256 ||
+                    height.cameraScale != value.cameraScale || height.startTick != value.captureStartTick || height.endTick != value.endTick ||
+                    height.bodyHeightSamples != 1800 || !PositiveFinite(height.medianBodyHeightWorld) || !PositiveFinite(height.medianBodyHeightPixels))
+                    throw new InvalidDataException("Height reference is not a complete measured cutout baseline of this replay.");
+                using var sha = SHA256.Create();
+                review.HeightReferenceSha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
+                review.Height = height;
+            }
+            return review;
         }
 
         public void ValidateReplay(ReplayDocument replay, string replaySha, string dataHash)
@@ -75,5 +110,6 @@ namespace Game.App
             foreach (var c in value) if (!Uri.IsHexDigit(c)) return false;
             return true;
         }
+        static bool PositiveFinite(float value) => value > 0 && !float.IsInfinity(value) && !float.IsNaN(value);
     }
 }

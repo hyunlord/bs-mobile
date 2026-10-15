@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEngine;
 using SowSiege.Core;
 
@@ -18,6 +19,7 @@ namespace Game.View
         public string id, direction, texture, authoredDirection;
         public int columns, rows, frames, impactFrame;
         public float fps, pivotX, pivotY, bodyHeightPixels, headHeightPixels;
+        public float[] bodyTopPixels, bodyBottomPixels;
         public bool mirror, headMeasurementUnavailable;
         public float? MeasuredHeadHeightRatio => headMeasurementUnavailable ? (float?)null : headHeightPixels / bodyHeightPixels;
         [NonSerialized] public ArtVisual visual;
@@ -33,6 +35,7 @@ namespace Game.View
         Vector2 productionPreviousPosition;
         bool productionHasPosition, productionWasHit;
         float productionHitStarted=-100;
+        public string HeroProductionAtlasSha256 { get; private set; }
         string productionAttackDirection="E";
         public int HeroProductionTargetId {get;private set;}=-1;
         public int HeroProductionAttackTick {get;private set;}=-1;
@@ -134,7 +137,13 @@ namespace Game.View
                 if (!productionTextures.TryGetValue(file, out var texture))
                 {
                     texture = new Texture2D(2, 2, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
-                    if (!texture.LoadImage(File.ReadAllBytes(file), true)) throw new InvalidDataException("Invalid production atlas.");
+                    var bytes = File.ReadAllBytes(file);
+                    if (!texture.LoadImage(bytes, true)) throw new InvalidDataException("Invalid production atlas.");
+                    if (walkingPilot)
+                    {
+                        using var sha = SHA256.Create();
+                        HeroProductionAtlasSha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
+                    }
                     productionTextures.Add(file, texture);
                     RecordProductionTextureMemory(texture.width, texture.height, UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(texture));
                     batches.Add((GameVisualTokens.LordLayer, texture), new SpriteBatch(texture, shader, renderCamera, GameVisualTokens.LordLayer));
@@ -142,6 +151,7 @@ namespace Game.View
                 if (texture.width % clip.columns != 0 || texture.height % clip.rows != 0)
                     throw new InvalidDataException("Atlas grid must contain whole pixels.");
                 var width = texture.width / clip.columns; var height = texture.height / clip.rows;
+                if (walkingPilot && forgeReferenceBodyHeight > 0) ValidateBodyLandmarks(clip, height);
                 var frames = new ArtPixelRect[clip.frames];
                 for (var i = 0; i < frames.Length; i++) frames[i] = new ArtPixelRect { x = i % clip.columns * width, y = i / clip.columns * height, width = width, height = height };
                 clip.visual = new ArtVisual(new ArtRoleDefinition { id = value.method + "." + clip.id + "." + direction,
@@ -211,10 +221,34 @@ namespace Game.View
             HeroProductionAction = id; HeroProductionFrame = frame; HeroProductionClipImpactFrame = clip.impactFrame;
             // Match visible body height, not atlas padding; proportions remain wholly inside the authored image.
             var bodyHeight = reference.WorldSize.y * GameVisualTokens.HeroRigHeightScale * (167f / 252f);
+            if (productionWalkingPilot && forgeReferenceBodyHeight > 0) bodyHeight = forgeReferenceBodyHeight;
             var size = clip.visual.WorldSize * (bodyHeight / clip.bodyHeightPixels);
             if (clip.mirror) size.x = -size.x;
             Draw(clip.visual, GameVisualTokens.LordLayer, position, 0, size, tint: color, flash: flash, uv: clip.visual.UvRects[frame]);
+            if (productionWalkingPilot && forgeReferenceBodyHeight > 0)
+            {
+                var height = clip.visual.WorldSize.y;
+                RecordHeroHeadFoot(position, new Vector2(position.y + (1 - clip.bodyBottomPixels[frame] / height - clip.pivotY) * size.y,
+                    position.y + (1 - clip.bodyTopPixels[frame] / height - clip.pivotY) * size.y));
+            }
             return true;
+        }
+
+        public static void ValidateBodyLandmarks(HeroProductionClip clip, int height)
+        {
+            if (clip.bodyTopPixels == null || clip.bodyBottomPixels == null || clip.bodyTopPixels.Length != clip.frames || clip.bodyBottomPixels.Length != clip.frames)
+                throw new InvalidDataException("Equal-height review requires per-frame visible head/boot landmarks.");
+            var heights = new float[clip.frames];
+            for (var i = 0; i < clip.frames; i++)
+            {
+                var top = clip.bodyTopPixels[i]; var bottom = clip.bodyBottomPixels[i];
+                if (float.IsNaN(top) || float.IsNaN(bottom) || top < 0 || bottom > height || top >= bottom)
+                    throw new InvalidDataException("Body landmarks must be ordered within their frame.");
+                heights[i] = bottom - top;
+            }
+            Array.Sort(heights);
+            var median = (heights[(heights.Length - 1) / 2] + heights[heights.Length / 2]) * .5f;
+            if (Mathf.Abs(median - clip.bodyHeightPixels) > .01f) throw new InvalidDataException("Body height must equal the median visible landmark height.");
         }
 
         public static float ProductionAttackDuration(HeroProductionClip clip) => (clip.frames - clip.impactFrame) / clip.fps;
