@@ -7,7 +7,7 @@ namespace Game.View
 {
     public struct LightningStrikeRecord
     {
-        public int Tick, Links, SkyBolts, OnScreenTargets, AcceptedFrame, VisibleFrame;
+        public int Tick, Links, SkyBolts, CoveredSkyBolts, OnScreenTargets, AcceptedFrame, VisibleFrame;
         public bool Storm;
         public float Strength, CorePixels, GlowPixels;
         public Vector2 FirstSkyTargetScreen;
@@ -22,7 +22,7 @@ namespace Game.View
         const int LightningLinkCapacity = 64, LightningStrikeCapacity = 12;
         sealed class LightningStrike
         {
-            public long FirstEventId = -1; public int Tick, AcceptedFrame; public string Source; public float Accepted, Strength; public bool Storm, Recorded;
+            public long FirstEventId = -1; public int Tick, AcceptedFrame; public string Source; public float Accepted, Strength; public bool Storm, Recorded, SkyAssigned;
             public readonly Vector2[] From = new Vector2[LightningLinkCapacity], To = new Vector2[LightningLinkCapacity];
             public readonly long[] Ids = new long[LightningLinkCapacity];
             public readonly bool[] Sky = new bool[LightningLinkCapacity];
@@ -77,7 +77,7 @@ namespace Game.View
             {
                 strike = lightningStrikes[lightningNext++ % lightningStrikes.Length];
                 strike.FirstEventId = value.Id; strike.Tick = value.Tick; strike.Source = value.Source; strike.Accepted = visualTime; strike.AcceptedFrame = PresentedFrames + 1;
-                strike.Count = strike.SkyCount = 0; strike.Recorded = false;
+                strike.Count = strike.SkyCount = 0; strike.Recorded = strike.SkyAssigned = false;
                 var runtime = waveDefinition.Gear[value.Source]; WaveGearDefinition reference = null;
                 GearReference?.Gear.TryGetValue(value.Source, out reference);
                 var level = EquipmentLevel(value.Source);
@@ -90,9 +90,45 @@ namespace Game.View
             var to = Point(value.Target);
             var i = strike.Count++;
             strike.Ids[i] = value.Id; strike.From[i] = Point(value.Position); strike.To[i] = to;
-            // One sky pillar marks the first target; the storm (evolution element) drops pillars on up to eight on-screen victims.
-            strike.Sky[i] = strike.SkyCount < (strike.Storm ? LightningSpec.MaxSkyBolts : 1) && (i == 0 || CameraWorldViewport.Contains(to));
-            if (strike.Sky[i]) strike.SkyCount++;
+            strike.Sky[i] = false;
+        }
+
+        // Pillars are assigned once every link of the tick is known (first draw, before the telegraph). One pillar marks a target
+        // whose column the hero does not cover — the nearest victim usually stands under the hero, and a pillar behind the
+        // hero sprite reads as no lightning at all (P5 keeps the hero on top). The storm (evolution element) drops pillars on up to
+        // eight on-screen victims, covered ones only when none is clear.
+        void AssignSkyPillars(LightningStrike strike, Rect view, float glow)
+        {
+            strike.SkyAssigned = true; strike.SkyCount = 0;
+            var limit = strike.Storm ? LightningSpec.MaxSkyBolts : 1;
+            for (var pass = 0; pass < 2 && strike.SkyCount < limit; pass++)
+            {
+                if (pass == 1 && strike.SkyCount > 0) break;
+                for (var i = 0; i < strike.Count && strike.SkyCount < limit; i++)
+                {
+                    if (strike.Sky[i] || !view.Contains(strike.To[i])) continue;
+                    if (pass == 0 && !PillarClearOfHero(strike.To[i], PillarHeight(strike.To[i], view), glow)) continue;
+                    strike.Sky[i] = true; strike.SkyCount++;
+                }
+            }
+            if (strike.SkyCount == 0 && strike.Count > 0) { strike.Sky[0] = true; strike.SkyCount = 1; }
+        }
+
+        Rect HeroBox => new Rect(heroSilhouetteLocal.position + RenderedLordPosition, heroSilhouetteLocal.size);
+
+        bool PillarClearOfHero(Vector2 target, float height, float glow)
+        {
+            if (!heroSilhouetteKnown) return true;
+            var column = Rect.MinMaxRect(target.x - glow * 2, target.y + glow, target.x + glow * 2, target.y + height);
+            return !column.Overlaps(HeroBox);
+        }
+
+        // The pillar top leans away from the hero so the zigzag does not swing into the hero sprite.
+        float PillarLean(Vector2 target, uint seed, float glow)
+        {
+            var lean = (seed & 255) / 255f * glow * 3;
+            if (!heroSilhouetteKnown) return lean * 2 - glow * 3;
+            return target.x >= HeroBox.center.x ? lean : -lean;
         }
 
         // Chain hits are held until their strike is visible so flash, freeze, number and death share the bolt's frame.
@@ -199,6 +235,7 @@ namespace Game.View
                 if (age > LightningSpec.ScorchSeconds) continue;
                 var core = LightningSpec.CorePoints(strike.Strength) * pointsToWorld;
                 var glow = LightningSpec.GlowPoints(strike.Strength) * pointsToWorld;
+                if (!strike.SkyAssigned) AssignSkyPillars(strike, view, glow);
                 if (strike.Storm)
                 {
                     // Evolution element: the sky darkens through the telegraph and strike, then clears.
@@ -245,7 +282,7 @@ namespace Game.View
                     var seed = LightningBolt.Hash(strike.Ids[i], 1);
                     if (strike.Sky[i])
                     {
-                        var top = to + new Vector2((seed & 255) / 255f * glow * 6 - glow * 3, PillarHeight(to, view));
+                        var top = to + new Vector2(PillarLean(to, seed, glow), PillarHeight(to, view));
                         LightningBolt.Build(top, to, seed, .14f, LightningBolt.Generations, boltPoints, 0);
                         DrawBolt(boltPoints, boltPoints.Length, core, glow, opacity);
                         // The storm spreads branches over its pillars so the screen holds strokes, not a white sheet.
@@ -293,6 +330,7 @@ namespace Game.View
                 if (!CameraWorldViewport.Contains(strike.To[i])) continue;
                 record.OnScreenTargets++;
                 if (strike.Sky[i] && record.FirstSkyTargetScreen.x < 0) record.FirstSkyTargetScreen = renderCamera.WorldToScreenPoint(strike.To[i]);
+                if (strike.Sky[i] && !PillarClearOfHero(strike.To[i], PillarHeight(strike.To[i], CameraWorldViewport), glow)) record.CoveredSkyBolts++;
             }
             LightningStrikeSample(record);
         }

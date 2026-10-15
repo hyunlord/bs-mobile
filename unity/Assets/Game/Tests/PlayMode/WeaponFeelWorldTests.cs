@@ -190,6 +190,47 @@ namespace Tests.PlayMode
             finally { DestroyFixture(owner, cameraOwner, texture); }
         }
 
+        // The nearest chain victim usually stands under the hero; a pillar behind the hero sprite reads as no lightning, so the
+        // pillar goes to the first victim whose column the hero does not cover.
+        [UnityTest]
+        public IEnumerator LightningPillarAvoidsAVictimUnderTheHero()
+        {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName = CanonicalContent.ProfileName;
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var frame = session.View.CaptureFrame() with { Enemies = System.Array.Empty<EnemyView>() };
+            var lord = frame.Lord.Position;
+            var under = new WorldPoint(lord.X + 40, lord.Y - 20);
+            var clear = new WorldPoint(lord.X + 900, lord.Y + 300);
+            var wave = ((IWaveRunView)session.View).CaptureWaveRuntime() with { Enemies = System.Array.Empty<WaveEnemyView>(), Events = System.Array.Empty<WaveEvent>() };
+            var strike = wave with { Events = new[] {
+                new WaveEvent(970000, frame.Tick + 1, "chain-link", "core:storm_fork", 1, lord, under, 0),
+                new WaveEvent(970001, frame.Tick + 1, "chain-link", "core:storm_fork", 2, under, clear, 0) } };
+            var owner = new GameObject("Lightning hero QA"); var cameraOwner = new GameObject("Lightning hero camera");
+            var camera = cameraOwner.AddComponent<Camera>(); var texture = new RenderTexture(390, 844, 24); camera.targetTexture = texture;
+            try
+            {
+                var world = CreateWorld(owner, camera, catalog, frame);
+                var records = new System.Collections.Generic.List<LightningStrikeRecord>();
+                world.LightningStrikeSample = records.Add;
+                world.AcceptWave(catalog, wave);
+                world.Present(frame, frame, WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), wave), 1, 0, new Rect(0, 0, 390, 844));
+                yield return null;
+                world.AcceptWave(catalog, strike);
+                for (var i = 0; i <= LightningSpec.TelegraphFrames; i++)
+                {
+                    world.Present(frame, frame, WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), strike), 1, Frame, new Rect(0, 0, 390, 844));
+                    yield return null;
+                }
+                Assert.That(records.Count, Is.EqualTo(1));
+                Assert.That(records[0].SkyBolts, Is.EqualTo(1));
+                Assert.That(records[0].CoveredSkyBolts, Is.Zero, "The pillar must not drop behind the hero when a clear victim exists.");
+                Assert.That(Vector2.Distance(records[0].FirstSkyTargetScreen, world.M1CombatScreenPoint(clear)), Is.LessThan(2f), "The pillar marks the clear victim.");
+            }
+            finally { DestroyFixture(owner, cameraOwner, texture); }
+        }
+
         // P5: enemies > own attacks > allies. Muster soldiers, including a group standing on the hero and a lunge toward the hero
         // side, must never overlap the hero's drawn box.
         [UnityTest]
