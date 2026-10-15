@@ -154,6 +154,8 @@ namespace Tests.PlayMode
         public IEnumerator InstancedWorldProducesActualPixelsWithoutEntityGameObjects()
         {
             var catalog = CanonicalContent.CreateCatalog();
+            // The scene reads the first-playable view, which only a catalog with a first-playable definition has.
+            if (catalog.FirstPlayable is null) Assert.Ignore($"Requires a first-playable definition (export profile {CanonicalContent.ProfileName}).");
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
             session.Apply(new(0, 0, ReplayCommandKind.Advance));
             var frame = session.View.CaptureFrame();

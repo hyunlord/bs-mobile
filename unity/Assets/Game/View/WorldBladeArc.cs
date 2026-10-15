@@ -42,7 +42,9 @@ namespace Game.View
             var f = (SwordFallFrames - SwordShownFallFrames + 1) / (float)SwordFallFrames;
             return Mathf.Max(0, Mathf.Min(preferred, roomAbove / (1 - f * f)));
         }
-        public const float SwordSquash = .14f;       // plant: x wider, y shorter by this fraction on the first squash frame
+        public const float SwordSquash = .14f;
+        // Height of the painted split line above the point, as a share of the sword's length (mask boundary ~ rows 650-705 of 1280).
+        public const float SwordCutHeight = .47f;       // plant: x wider, y shorter by this fraction on the first squash frame
         public const int DustPuffs = 8;
         public const float CrackRevealSeconds = 6 / 60f;
         public static readonly Color Core = new Color(1f, 1f, 1f);
@@ -71,7 +73,8 @@ namespace Game.View
         public System.Action<BladeStrikeRecord> BladeStrikeSample;
         // Painted roles (docs/design/m1-weapon-effect-sprites.md); temporary generated pictures until they are in the manifest.
         const string SlashRole = "fx.iron_blade.slash", SwordRole = "fx.iron_blade.giant_sword", CrackRole = "fx.iron_blade.ground_crack", DustRole = "fx.common.dust.";
-        ArtVisual bladeSlash, bladeSword, bladeCrack;
+        ArtVisual bladeSlash, bladeSword, bladeCrack, bladeSwordUpper, bladeSwordLower;
+        bool bladeDustPainted;
         readonly ArtVisual[] bladeDust = new ArtVisual[3];
         readonly List<Texture2D> temporaryEffectTextures = new List<Texture2D>(4);
         // Arc ribbons are curved meshes submitted with the batches (so the P5 mask and alpha cap see them).
@@ -305,8 +308,22 @@ namespace Game.View
             // Split: the left and right halves part sideways, tilt outward and fade (the painted shard mask replaces the
             // straight cut); each keeps its full width, so the sword never thins into a bar.
             var s = split / BladeSpec.Seconds(BladeSpec.SwordSplitFrames);
-            var rect = bladeSword.UvRects[0];
             var color = Color.white; color.a = 1 - s * s;
+            if (bladeSwordUpper != null)
+            {
+                // Painted pieces cut by the zigzag line across the blade: the upper piece (hilt and upper blade) swings off to
+                // one side and the lower piece (point) to the other, each turning about the middle of the cut.
+                var cut = tip + Vector2.up * (length * BladeSpec.SwordCutHeight);
+                for (var side = -1; side <= 1; side += 2)
+                {
+                    var degrees = -side * 18 * s;
+                    var turned = (Vector2)(Quaternion.Euler(0, 0, degrees) * (tip - cut));
+                    var drift = new Vector2(side * width * .7f * s, (side < 0 ? .08f : -.04f) * length * s);
+                    Draw(side < 0 ? bladeSwordUpper : bladeSwordLower, ProjectileLayer, cut + turned + drift, 0, new Vector2(width, length), degrees, 1, color, applyTween: false);
+                }
+                return;
+            }
+            var rect = bladeSword.UvRects[0];
             for (var side = -1; side <= 1; side += 2)
             {
                 var halfRect = new Rect(side < 0 ? rect.x : rect.x + rect.width * .5f, rect.y, rect.width * .5f, rect.height);
@@ -333,7 +350,8 @@ namespace Game.View
                 direction.y *= .5f;   // 3/4 view: the burst spreads along the ground
                 var travel = length * .32f * Mathf.Sqrt(Mathf.Clamp01(since / .35f));
                 var puff = bladeDust[k % bladeDust.Length];
-                var dust = new Color(.84f, .8f, .72f, .75f * (1 - since / .6f));
+                // The painted dust keeps its own colours; the temporary puff is tinted to earth.
+                var dust = bladeDustPainted ? new Color(1, 1, 1, .9f * (1 - since / .6f)) : new Color(.84f, .8f, .72f, .75f * (1 - since / .6f));
                 var size = length * .2f * (.8f + since) * (.85f + ((seed >> 8) & 63) / 210f);
                 Draw(puff, GameVisualTokens.WaveTransientCueLayer, impact + direction * travel, 0, puff.WorldSize * (size / Mathf.Max(puff.WorldSize.x, puff.WorldSize.y)), (seed >> 4) & 255, 1, dust, applyTween: false);
             }
@@ -351,6 +369,10 @@ namespace Game.View
             bladeSword = EffectArt(SwordRole, () => TemporarySword());
             bladeCrack = EffectArt(CrackRole, () => TemporaryCrack());
             for (var i = 0; i < bladeDust.Length; i++) bladeDust[i] = EffectArt(DustRole + (i + 1), () => impactDust ?? Resolve("feedback", "death", "default"));
+            bladeDustPainted = art != null && art.TryResolveRole(DustRole + 1, out _);
+            // The split mask, applied offline at packing: two full-canvas pieces sharing the sword's pivot.
+            if (art == null || !art.TryResolveRole(SwordRole + ".piece_upper", out bladeSwordUpper) || !art.TryResolveRole(SwordRole + ".piece_lower", out bladeSwordLower))
+                bladeSwordUpper = bladeSwordLower = null;
         }
 
         // The painted role when the art manifest has it; otherwise the temporary picture (same pivot and proportions).
