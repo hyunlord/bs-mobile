@@ -24,7 +24,7 @@ const luma = ([r, g, b]) => (.2126 * r + .7152 * g + .0722 * b) / 2.55;   // 0..
 const violet = ([r, g, b]) => b - g > 18 && r - g > 4;
 
 const white = pixel => luma(pixel) >= 88;
-const Window = 60;   // the zigzag wanders up to ~.2 of the pillar height sideways
+const Window = 120;  // the zigzag wanders sideways and a pillar slanted away from the hero leans up to 45 degrees
 // A lightning core pixel is near-white with violet bloom within 8 px on either side, so white numbers and flashes do not count.
 function flanked(image, x, y) {
   for (let d = 1; d <= 8; d++) if (violet(image.at(x - d, y)) || violet(image.at(x + d, y))) return true;
@@ -41,7 +41,7 @@ function corePixels(directory, index, screenX, screenY) {
 function pillar(directory, index, screenX, screenY) {
   const image = frame(directory, index); const y0 = image.height - screenY;
   let core = 0;
-  for (let y = y0 - 110; y <= y0 - 20; y++) for (let x = screenX - 14; x <= screenX + 14; x++) core = Math.max(core, luma(image.at(x, y)));
+  for (let y = y0 - 110; y <= y0 - 20; y++) for (let x = screenX - Window; x <= screenX + Window; x++) if (flanked(image, x, y)) core = Math.max(core, luma(image.at(x, y)));
   return { image, y0, core };
 }
 function ground(directory, index, screenX, screenY) {

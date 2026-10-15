@@ -123,12 +123,23 @@ namespace Game.View
             return !column.Overlaps(HeroBox);
         }
 
-        // The pillar top leans away from the hero so the zigzag does not swing into the hero sprite.
-        float PillarLean(Vector2 target, uint seed, float glow)
+        // The pillar top leans away from the hero so the zigzag does not swing into the hero sprite. When the only victim stands
+        // under the hero (a one-link chain), the pillar comes in on a slant from that side so it clears the hero box from 40% of
+        // the hero's height up; at most 45 degrees.
+        Vector2 PillarTop(Vector2 target, uint seed, float glow, Rect view)
         {
+            var height = PillarHeight(target, view);
             var lean = (seed & 255) / 255f * glow * 3;
-            if (!heroSilhouetteKnown) return lean * 2 - glow * 3;
-            return target.x >= HeroBox.center.x ? lean : -lean;
+            if (!heroSilhouetteKnown) return target + new Vector2(lean * 2 - glow * 3, height);
+            var hero = HeroBox; var side = target.x >= hero.center.x ? 1 : -1;
+            if (!PillarClearOfHero(target, height, glow))
+            {
+                var edge = (side > 0 ? hero.xMax - target.x : target.x - hero.xMin) + glow * 2;
+                var rise = Mathf.Max(glow, hero.yMax - target.y);
+                lean = Mathf.Max(lean, Mathf.Min(height, edge * height / (.4f * rise)));
+            }
+            var x = Mathf.Clamp(target.x + side * lean, view.xMin + glow, view.xMax - glow);
+            return new Vector2(x, target.y + height);
         }
 
         // Chain hits are held until their strike is visible so flash, freeze, number and death share the bolt's frame.
@@ -282,7 +293,7 @@ namespace Game.View
                     var seed = LightningBolt.Hash(strike.Ids[i], 1);
                     if (strike.Sky[i])
                     {
-                        var top = to + new Vector2(PillarLean(to, seed, glow), PillarHeight(to, view));
+                        var top = PillarTop(to, seed, glow, view);
                         LightningBolt.Build(top, to, seed, .14f, LightningBolt.Generations, boltPoints, 0);
                         DrawBolt(boltPoints, boltPoints.Length, core, glow, opacity);
                         // The storm spreads branches over its pillars so the screen holds strokes, not a white sheet.
