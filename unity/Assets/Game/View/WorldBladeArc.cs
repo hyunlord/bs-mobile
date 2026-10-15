@@ -20,7 +20,9 @@ namespace Game.View
         // (review max 3.2 and evolved 6.0 world units run far past it). Band width and swing angle grow with the stage
         // (Lv1 < max < evolved): width MinBand..MaxBand hero heights, half angle Core 45° .. MaxHalfAngle. Across the band:
         // a bright blade edge (EdgeShare of it, outside) over a faint wash. One afterimage trails it by AfterimageFrames.
-        public const float ArcScreenFill = .85f, MinBandHeroHeights = .55f, MaxBandHeroHeights = 1f, MaxHalfAngle = 65, EdgeShare = .45f, EdgeOfPicture = .3f;
+        // The band picture is wrapped linearly across the band (its top row on the outer edge): the painted slash (v2) is a
+        // bright front fading to a clear back, and its role frame is cropped to the drawn rows.
+        public const float ArcScreenFill = .85f, MinBandHeroHeights = .55f, MaxBandHeroHeights = 1f, MaxHalfAngle = 65, EdgeShare = .45f, EdgeOfPicture = EdgeShare;
         // Stage 0..1 of a strike: evolved 1, else NormalStageShare of the gear's growth over its canonical Lv1.
         public const float NormalStageShare = .75f;
         public static float BandHeroHeights(float stage) => Mathf.Lerp(MinBandHeroHeights, MaxBandHeroHeights, stage);

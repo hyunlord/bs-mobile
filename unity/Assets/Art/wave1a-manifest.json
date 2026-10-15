@@ -10758,6 +10758,28 @@
       },
       "frameMs": 1000,
       "tween": "none"
+    },
+    {
+      "id": "fx.iron_blade.slash",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1377,
+          "y": 526,
+          "width": 503,
+          "height": 76
+        }
+      ],
+      "pivot": {
+        "x": 0.0,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.309896,
+        "y": 0.197917
+      },
+      "frameMs": 1000,
+      "tween": "none"
     }
   ],
   "bindings": [

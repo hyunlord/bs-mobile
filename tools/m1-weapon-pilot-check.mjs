@@ -166,9 +166,10 @@ function checkBlade(directory, manifest) {
     }
     if (points.length < 3) { results.push({ frame: at, skipped: 'arc off screen' }); continue; }
     const ground = points.reduce((n, [x, y]) => n + luma(before.at(x, y)), 0) / points.length;
-    // Per arc angle, the brightest pixel across the outer part of the band (.8 to 1.02 of the outer edge).
+    // Per arc angle, the brightest pixel across the whole band (inner edge to just past the outer edge).
+    const from = Math.max(.3, inner / Math.max(1, outer));
     const band = (image, [x, y]) => { const iy = image.height - oy; let best = 0;
-      for (let k = .8; k <= 1.02; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, iy + (y - iy) * k / .93, 2)); return best; };
+      for (let k = from; k <= 1.02; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, iy + (y - iy) * k / .93, 2)); return best; };
     const peak = median(points.map(p => band(swept, p)));
     // Fade: sky-blue samples across the band must be nearly all gone (white damage numbers and grey steel do not count).
     const glow = image => { const iy = image.height - oy; let count = 0;
@@ -208,7 +209,7 @@ function checkBlade(directory, manifest) {
     contrastMet: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
     hits: measured.reduce((n, r) => n + r.hits, 0), hitsUnderBand: measured.reduce((n, r) => n + r.hitsCovered, 0) };
   return { strikes: results.length, pass, recorded, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Hits under the band and contrast are recorded only (judged again with the painted sprites). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Hits under the band and contrast are recorded only (judged again with the painted sprites). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the whole band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 
