@@ -312,6 +312,11 @@ for (const directory of directories) {
   const manifest = read(path.join(directory, 'm1-combat-review.json'));
   const id = manifest.definition.id, stage = manifest.definition.stage;
   const entry = { directory: path.basename(directory), id, stage };
+  // P5 budget: share of enemy sprite pixels covered by own weapon effects, per frame (renderer mask readback).
+  const p = manifest.presentation ?? {};
+  if (p.occlusionFrames > 0)
+    entry.occlusion = { frames: p.occlusionFrames, p95: +Number(p.occlusionP95).toFixed(3), max: +Number(p.occlusionMax).toFixed(3), framesOver25: p.occlusionFramesOver25,
+      pass: p.occlusionP95 <= .25, note: 'Covered enemy pixels / enemy pixels per frame on a half-resolution mask: enemy sprite alpha vs own weapon effect alpha x opacity on layers 70-76 (attack edges, impact particles, storm sky, projectiles, glow, shield emblems). Gate: p95 <= 25%.' };
   if (id === 'core:storm_fork') entry.lightning = checkLightning(directory, manifest);
   if (id === 'core:muster_horn') entry.minions = checkMinions(directory, manifest);
   if (id === 'core:iron_blade') entry.blade = checkBlade(directory, manifest);
