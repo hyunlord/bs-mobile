@@ -7,7 +7,7 @@ namespace Game.View
 {
     public struct LightningStrikeRecord
     {
-        public int Tick, Links, SkyBolts, OnScreenTargets;
+        public int Tick, Links, SkyBolts, OnScreenTargets, AcceptedFrame, VisibleFrame;
         public bool Storm;
         public float Strength, CorePixels, GlowPixels;
         public Vector2 FirstSkyTargetScreen;
@@ -22,7 +22,7 @@ namespace Game.View
         const int LightningLinkCapacity = 64, LightningStrikeCapacity = 12;
         sealed class LightningStrike
         {
-            public long FirstEventId = -1; public int Tick; public string Source; public float Accepted, Strength; public bool Storm, Recorded;
+            public long FirstEventId = -1; public int Tick, AcceptedFrame; public string Source; public float Accepted, Strength; public bool Storm, Recorded;
             public readonly Vector2[] From = new Vector2[LightningLinkCapacity], To = new Vector2[LightningLinkCapacity];
             public readonly long[] Ids = new long[LightningLinkCapacity];
             public readonly bool[] Sky = new bool[LightningLinkCapacity];
@@ -76,7 +76,7 @@ namespace Game.View
             if (strike == null)
             {
                 strike = lightningStrikes[lightningNext++ % lightningStrikes.Length];
-                strike.FirstEventId = value.Id; strike.Tick = value.Tick; strike.Source = value.Source; strike.Accepted = visualTime;
+                strike.FirstEventId = value.Id; strike.Tick = value.Tick; strike.Source = value.Source; strike.Accepted = visualTime; strike.AcceptedFrame = PresentedFrames + 1;
                 strike.Count = strike.SkyCount = 0; strike.Recorded = false;
                 var runtime = waveDefinition.Gear[value.Source]; WaveGearDefinition reference = null;
                 GearReference?.Gear.TryGetValue(value.Source, out reference);
@@ -286,7 +286,7 @@ namespace Game.View
         {
             strike.Recorded = true;
             if (LightningStrikeSample == null) return;
-            var record = new LightningStrikeRecord { Tick = strike.Tick, Links = strike.Count, SkyBolts = strike.SkyCount, Storm = strike.Storm, Strength = strike.Strength,
+            var record = new LightningStrikeRecord { Tick = strike.Tick, Links = strike.Count, AcceptedFrame = strike.AcceptedFrame, VisibleFrame = PresentedFrames, SkyBolts = strike.SkyCount, Storm = strike.Storm, Strength = strike.Strength,
                 CorePixels = core / pixelsToWorld, GlowPixels = glow / pixelsToWorld, FirstSkyTargetScreen = new Vector2(-1, -1) };
             for (var i = 0; i < strike.Count; i++)
             {

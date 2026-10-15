@@ -36,63 +36,68 @@ function ground(directory, index, screenX, screenY) {
   for (let y = y0 - 110; y <= y0 - 20; y += 2) for (let x = screenX - 30; x <= screenX + 30; x += 2) { sum += luma(image.at(x, y)); count++; }
   return sum / count;
 }
-// Widths along the row halfway up the pillar: bright core run and violet bloom run around the brightest column.
-function widths(image, y0, screenX, core, background) {
-  const y = y0 - 65; let peak = screenX, best = -1;
-  for (let x = screenX - 20; x <= screenX + 20; x++) { const l = luma(image.at(x, y)); if (l > best) { best = l; peak = x; } }
-  const cut = background + .6 * (best - background);
-  let left = peak, right = peak;
-  while (left > peak - 40 && luma(image.at(left - 1, y)) >= cut) left--;
-  while (right < peak + 40 && luma(image.at(right + 1, y)) >= cut) right++;
-  let gLeft = left, gRight = right;
-  while (gLeft > peak - 60 && (violet(image.at(gLeft - 1, y)) || luma(image.at(gLeft - 1, y)) >= cut)) gLeft--;
-  while (gRight < peak + 60 && (violet(image.at(gRight + 1, y)) || luma(image.at(gRight + 1, y)) >= cut)) gRight++;
-  return { core: right - left + 1, glow: gRight - gLeft + 1 };
+// Widths per row over the pillar span: the bright core run and the violet bloom run around each row's brightest pixel.
+// The median over rows whose peak is a lightning core (>= 90/100) is reported, so crossing enemies or numbers do not dominate.
+function widths(image, y0, screenX, background) {
+  const cores = [], glows = [];
+  for (let y = y0 - 105; y <= y0 - 25; y += 4) {
+    let peak = screenX, best = -1;
+    for (let x = screenX - 26; x <= screenX + 26; x++) { const l = luma(image.at(x, y)); if (l > best) { best = l; peak = x; } }
+    if (best < 90) continue;
+    const cut = background + .6 * (best - background);
+    let left = peak, right = peak;
+    while (left > peak - 30 && luma(image.at(left - 1, y)) >= cut) left--;
+    while (right < peak + 30 && luma(image.at(right + 1, y)) >= cut) right++;
+    let gLeft = left, gRight = right;
+    while (gLeft > peak - 45 && violet(image.at(gLeft - 1, y))) gLeft--;
+    while (gRight < peak + 45 && violet(image.at(gRight + 1, y))) gRight++;
+    cores.push(right - left + 1); glows.push(gRight - gLeft + 1);
+  }
+  const median = values => values.length ? values.sort((a, b) => a - b)[values.length >> 1] : 0;
+  return { core: median(cores), glow: median(glows), rows: cores.length };
 }
 
 function checkLightning(directory, manifest) {
   const strikes = rows(path.join(directory, 'm1-lightning-strikes.csv'));
-  const events = rows(path.join(directory, 'm1-combat-events.csv'));
-  const linkFrame = new Map();
-  for (const e of events) if (e.kind === 'chain-link' && !linkFrame.has(e.eventTick)) linkFrame.set(e.eventTick, Number(e.frameIndex));
   const results = [];
   for (const s of strikes) {
     const x = Number(s.firstSkyScreenX), y = Number(s.firstSkyScreenY), at = Number(s.frameIndex);
     if (x < 0) continue;
     const before = Math.max(0, at - 8);
     const background = ground(directory, before, x, y);
+    const baseline = pillar(directory, before, x, y).core;
     const strike = pillar(directory, at, x, y);
-    const measured = widths(strike.image, strike.y0, x, strike.core, background);
-    const telegraph = linkFrame.has(s.tick) ? at - linkFrame.get(s.tick) : null;
+    const measured = widths(strike.image, strike.y0, x, background);
+    const telegraph = Number(s.telegraphFrames);
+    // Fade: first frame after the strike whose pillar region is back to its own pre-telegraph peak brightness.
     let fadeFrame = null;
-    for (let k = 2; k <= 14; k++) { if (pillar(directory, at + k, x, y).core <= background + 12) { fadeFrame = k; break; } }
+    for (let k = 2; k <= 14; k++) { if (pillar(directory, at + k, x, y).core <= Math.max(baseline, background + 12) + 3) { fadeFrame = k; break; } }
     results.push({ frame: at, tick: Number(s.tick), storm: s.storm === 'True', links: Number(s.links), skyBolts: Number(s.skyBolts), core: +strike.core.toFixed(1), background: +background.toFixed(1),
       contrast: +(strike.core - background).toFixed(1), corePixelsReported: +Number(s.corePixels).toFixed(2), glowPixelsReported: +Number(s.glowPixels).toFixed(2),
-      corePixelsMeasured: measured.core, glowPixelsMeasured: measured.glow, telegraphFrames: telegraph, fadeFrames: fadeFrame });
+      corePixelsMeasured: measured.core, glowPixelsMeasured: measured.glow, measuredRows: measured.rows, telegraphFrames: telegraph, fadeFrames: fadeFrame });
   }
   const p = manifest.presentation ?? {};
   const pass = {
     contrast: results.length > 0 && results.every(r => r.contrast >= thresholds.contrast),
-    size: results.length > 0 && results.every(r => r.corePixelsReported >= thresholds.corePixels && r.glowPixelsReported >= thresholds.glowPixels && r.corePixelsMeasured >= thresholds.corePixels && r.glowPixelsMeasured >= thresholds.glowPixels),
-    timing: results.length > 0 && results.every(r => r.telegraphFrames !== null && r.telegraphFrames >= thresholds.telegraphFrames[0] && r.telegraphFrames <= thresholds.telegraphFrames[1] + 1
-      && r.fadeFrames !== null && r.fadeFrames <= thresholds.fadeFrames[1] + 1),
+    size: results.length > 0 && results.every(r => r.corePixelsReported >= thresholds.corePixels && r.glowPixelsReported >= thresholds.glowPixels)
+      && results.filter(r => r.measuredRows >= 3).every(r => r.corePixelsMeasured >= thresholds.corePixels && r.glowPixelsMeasured >= thresholds.glowPixels),
+    timing: results.length > 0 && results.every(r => r.telegraphFrames >= thresholds.telegraphFrames[0] && r.telegraphFrames <= thresholds.telegraphFrames[1]
+      && r.fadeFrames !== null && r.fadeFrames <= thresholds.fadeFrames[1]),
     reaction: p.lightningDeferredHits === p.lightningPresentedHits && (p.enemyDeathDropped ?? 0) === 0,
   };
   return { strikes: results.length, stormStrikes: results.filter(r => r.storm).length, pass, thresholds: { contrast: thresholds.contrast, corePixels: thresholds.corePixels, glowPixels: thresholds.glowPixels, telegraphFrames: thresholds.telegraphFrames, fadeFrames: thresholds.fadeFrames },
-    note: 'Telegraph frames are measured from the capture frame that recorded the chain-link event (+1 tolerance for event-record order); fade is the first frame after the strike whose pillar region returns within 12/100 of the pre-strike ground.',
+    note: 'Telegraph frames = presented frames between the chain-link delivery and the visible strike (renderer log). Fade = first frame after the strike whose pillar region is back to its pre-telegraph peak. Pixel widths are medians over rows whose peak is a lightning core; strikes with fewer than 3 such rows (pillar crossing other effects) are reported but not gated on measured width.',
     deferredHits: p.lightningDeferredHits, presentedHits: p.lightningPresentedHits, rows: results };
 }
 
 function checkMinions(directory, manifest) {
-  const events = rows(path.join(directory, 'm1-combat-events.csv')).filter(e => (e.kind === 'group-hit' || e.kind === 'trained-group-hit') && Number(e.amount) > 0);
-  const thrusts = rows(path.join(directory, 'm1-minion-thrusts.csv'));
-  const thrustFrames = new Set(thrusts.filter(t => Number(t.soldiers) > 0).map(t => t.frameIndex));
-  const hitFrames = [...new Set(events.map(e => e.frameIndex))];
-  const synced = hitFrames.filter(f => thrustFrames.has(f)).length;
+  const log = rows(path.join(directory, 'm1-minion-thrusts.csv'));
+  const hits = log.filter(r => r.kind === 'hit'), thrusts = new Set(log.filter(r => r.kind === 'thrust' && Number(r.soldiers) > 0).map(r => `${r.frameIndex}:${r.group}`));
+  const synced = hits.filter(h => thrusts.has(`${h.frameIndex}:${h.group}`)).length;
   const p = manifest.presentation ?? {};
-  return { groupHitFrames: hitFrames.length, framesWithThrust: synced, stationaryRatio: p.minionStationaryRatio, bearerFrames: p.minionBearerFrames, chargeShoves: p.minionChargeShoves,
-    pass: { attackOnHitFrame: hitFrames.length > 0 && synced === hitFrames.length, moving: hitFrames.length > 0 && p.minionStationaryRatio < thresholds.stationaryRatio },
-    note: 'Each Core group-hit capture frame must carry a thrust start on the same frame. Stationary ratio excludes spawn, attack and despawn animation frames.' };
+  return { presentedGroupHits: hits.length, hitsWithThrustOnSameFrame: synced, stationaryRatio: p.minionStationaryRatio, bearerFrames: p.minionBearerFrames, chargeShoves: p.minionChargeShoves,
+    pass: { attackOnHitFrame: hits.length > 0 && synced === hits.length, moving: hits.length > 0 && p.minionStationaryRatio < thresholds.stationaryRatio },
+    note: 'Each Core group hit presented on a frame must start a soldier thrust on that same frame (renderer log). Stationary ratio excludes spawn, attack and despawn animation frames.' };
 }
 
 const directories = process.argv.slice(2);

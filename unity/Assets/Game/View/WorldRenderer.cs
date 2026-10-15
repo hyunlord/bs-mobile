@@ -94,6 +94,8 @@ namespace Game.View
         int mapWidth, mapHeight, season, previousSeason, level;
         float visualTime, seasonAge, heroHitUntil, levelAge = 10;
         readonly HeroHitFeedback heroHitFeedback = new HeroHitFeedback();
+        // Count of Present calls: events accepted between presents belong to frame PresentedFrames + 1.
+        public int PresentedFrames { get; private set; }
         public int HeroHitFlashes => heroHitFeedback.Triggers;
         public bool ShowAnnouncements { get; set; } = true;
         bool showTransientText = true;
@@ -283,6 +285,7 @@ namespace Game.View
             if (current == null) throw new ArgumentNullException(nameof(current));
             previous = previous ?? current; alpha = Mathf.Clamp01(alpha);
             var seconds = Mathf.Max(0, unscaledDeltaTime);
+            PresentedFrames++;
             effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
             AdvanceImpactFeedback(seconds);
             WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);

@@ -24,6 +24,7 @@ namespace Game.View
         public int MinionChargeShoves { get; private set; }
         public System.Action<Rect, MinionState> RenderedMinionBounds;
         public System.Action<int, int> MinionThrustSample;   // group, soldiers that thrust on this frame
+        public System.Action<int> MinionHitSample;           // group whose Core hit is presented on the next frame
 
         void ResetMinions()
         {
@@ -33,6 +34,7 @@ namespace Game.View
 
         void QueueGroupHit(int group, Vector2 at)
         {
+            MinionHitSample?.Invoke(group);
             if (pendingGroupHits.Count < pendingGroupHits.Capacity) pendingGroupHits.Add((group, at));
         }
 
