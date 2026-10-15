@@ -173,22 +173,24 @@ function checkBlade(directory, manifest) {
     const band = (image, [x, y]) => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let best = 0;
       for (let k = .35; k <= 1.1; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, oy + (y - oy) * k / .93, 2)); return best; };
     const peak = median(points.map(p => band(swept, p)));
-    const after = median(points.map(p => band(gone, p)));
-    const groundMax = median(points.map(p => band(before, p)));
+    // Fade: sky-blue glow samples across the band (white damage numbers do not count) must be nearly all gone.
+    const glow = image => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let count = 0;
+      for (const [x, y] of points) for (let k = .35; k <= 1.1; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, oy + (y - oy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
+    const glowSwept = glow(swept), glowGone = glow(gone), glowBefore = glow(before);
     results.push({ frame: at, tick: Number(s.tick), evolved: s.evolved === 'True', windupFrames: Number(s.windupFrames), samples: points.length,
-      ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), afterFade: +after.toFixed(1), groundPeak: +groundMax.toFixed(1) });
+      ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), glowSwept, glowGone, glowBefore });
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const measured = results.filter(r => !r.skipped);
   const pass = {
     windup: results.length > 0 && results.every(r => r.skipped || (r.windupFrames >= 3 && r.windupFrames <= 5)),
     contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
-    fade: measured.length > 0 && measured.every(r => r.afterFade <= r.groundPeak + 12),
+    fade: measured.length > 0 && measured.every(r => r.glowSwept > 0 && r.glowGone - r.glowBefore <= Math.max(2, .1 * r.glowSwept)),
     reaction: p.bladeDeferredHits === p.bladePresentedHits && (p.giantBladeKillsOutside ?? 0) === 0 && (p.enemyDeathDropped ?? 0) === 0,
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
   return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.35R to 1.1R; the crescent follows the visible reach when the fitted radius meets the screen edge) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = the arc is back to the ground level 19 frames after appearing (sweep 9 + hold 0 + fade 7, +3). Stage = giant sword strikes only in the evolved stage.',
+    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.35R to 1.1R; the crescent follows the visible reach when the fitted radius meets the screen edge) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = sky-blue glow samples across the band 19 frames after appearing (sweep 9 + fade 7, +3) exceed the pre-swing count by at most 10% of the swept count. Stage = giant sword strikes only in the evolved stage.',
     rows: results };
 }
 
