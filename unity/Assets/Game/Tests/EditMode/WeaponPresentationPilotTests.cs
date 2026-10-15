@@ -146,6 +146,7 @@ namespace Tests.EditMode
             Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
             Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");
+            Assert.That(OrbitSpec.Shown(0), Is.InRange(.3f, .6f), "Back-to-back activations shrink part way, not to nothing (no blinking).");
             Assert.That(OrbitSpec.TornadoHeroHeights, Is.GreaterThanOrEqualTo(1f)); Assert.That(OrbitSpec.MinShieldHeroHeights * 2, Is.GreaterThanOrEqualTo(.8f));
             Assert.That(ArrowSpec.MuzzleFlashFrames, Is.EqualTo(1));
             Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");

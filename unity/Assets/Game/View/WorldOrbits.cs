@@ -24,6 +24,10 @@ namespace Game.View
         // 1 while the activation runs, ramping in over the spread and out over the shrink.
         public static float Presence(float age, float remaining)
             => Mathf.Clamp01(age / Seconds(SpreadFrames)) * Mathf.Clamp01(remaining / Seconds(ShrinkFrames));
+        // Core starts the next activation as one ends (every cooldown), so orbiters shrink and regrow only part way instead
+        // of vanishing, which would blink once a second.
+        public const float PresenceFloor = .45f;
+        public static float Shown(float presence) => Mathf.Lerp(PresenceFloor, 1, presence);
     }
 
     public sealed partial class WorldRenderer
@@ -104,12 +108,12 @@ namespace Game.View
                     var marker = color; marker.a = .8f * (1 - Mathf.Clamp01((age - OrbitSpec.Seconds(OrbitSpec.SpreadFrames)) / OrbitSpec.Seconds(4)));
                     DrawMusterRing(lordPoint, Mathf.Max(.01f, orbitRadius * spread), marker, 1);
                 }
-                if (shape == "tornado" && evolved) { DrawVortex(lordPoint, orbitRadius, presence, attack.ActivationId); VortexFrames++; }
+                if (shape == "tornado" && evolved) { DrawVortex(lordPoint, orbitRadius, OrbitSpec.Shown(presence), attack.ActivationId); VortexFrames++; }
                 if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
             }
-            if (presence <= 0) return;
-            if (shape == "tornado") DrawTornado(center, presence, attack.ActivationId, gear);
-            else DrawShield(center, lordPoint, ShieldRadius(attack.Source) * Mathf.Lerp(.2f, 1, presence), presence, age);
+            var shown = OrbitSpec.Shown(presence);
+            if (shape == "tornado") DrawTornado(center, shown, attack.ActivationId, gear);
+            else DrawShield(center, lordPoint, ShieldRadius(attack.Source) * shown, shown, age);
         }
 
         float TornadoHeight(WaveGearDefinition gear)
