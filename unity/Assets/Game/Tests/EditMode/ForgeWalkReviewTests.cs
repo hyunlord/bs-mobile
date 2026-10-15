@@ -23,6 +23,29 @@ public sealed class ForgeWalkReviewTests
     [TearDown] public void TearDown() => Directory.Delete(directory, true);
     string[] Args() => new[] { "--forge-walk-review", "--wave-benchmark", replayPath, "--hero-production", Path.Combine(directory, "manifest.json"), "--hero-production-direction", "E", "--offline-replay-capture" };
     [Test] public void OrdinaryLaunchDoesNotEnableWalkingPilot() => Assert.That(ForgeWalkReview.Parse(Array.Empty<string>()), Is.Null);
+    [Test] public void CutoutBaselineNeedsTheExplicitReviewAndCannotLoadExternalParts()
+    {
+        var args = BaselineArgs();
+        Assert.That(ForgeWalkReview.Parse(args).CutoutBaseline, Is.True);
+        Assert.That(M1HeroProductionReview.Parse(args), Is.Null);
+        Assert.That(CameraScaleComparison.Parse(args).Magnification, Is.EqualTo(1.4f));
+        Assert.Throws<ArgumentException>(() => ForgeWalkReview.Parse(new[] { "--forge-cutout-baseline" }));
+        Assert.Throws<ArgumentException>(() => ForgeWalkReview.Parse(new List<string>(Args()) { "--forge-cutout-baseline" }.ToArray()));
+        Assert.Throws<ArgumentException>(() => ForgeWalkReview.Parse(new List<string>(args) { "--forge-cutout-baseline" }.ToArray()));
+    }
+    string[] BaselineArgs() => new[] { "--forge-walk-review", "--forge-cutout-baseline", "--wave-benchmark", replayPath, "--offline-replay-capture" };
+    [Test] public void HeightReferenceIsMeasuredBaselineOfTheSameReplay()
+    {
+        var path = Path.Combine(directory, "baseline.json");
+        File.WriteAllText(path, JsonUtility.ToJson(new ForgeWalkReview.HeightReference
+        { contract = "forge-cutout-height-v1", fixture = "forge-walk-review-v1", hero = "a-knight-cutout-baseline", replaySha256 = Digest,
+            replayVerified = true, cameraScale = 1.4f, startTick = 0, endTick = 900, bodyHeightSamples = 1800, medianBodyHeightWorld = .7f, medianBodyHeightPixels = 130 }));
+        var args = new List<string>(Args()) { "--forge-height-reference", path };
+        Assert.That(ForgeWalkReview.Parse(args.ToArray()).Height.medianBodyHeightWorld, Is.EqualTo(.7f));
+        File.WriteAllText(path, File.ReadAllText(path).Replace("a-knight-cutout-baseline", "3d-baked"));
+        Assert.Throws<InvalidDataException>(() => ForgeWalkReview.Parse(args.ToArray()));
+        Assert.Throws<ArgumentException>(() => ForgeWalkReview.Parse(new List<string>(BaselineArgs()) { "--forge-height-reference", path }.ToArray()));
+    }
     [Test] public void PilotFixesCameraWindowDirectionAndOfflineClock()
     {
         var args = Args();
@@ -55,6 +78,36 @@ public sealed class ForgeWalkReviewTests
         Assert.Throws<InvalidDataException>(() => WorldRenderer.ValidateWalkingPilot(manifest, "E"));
         manifest.clips[0].mirror = false; manifest.clips[0].id = "slash-light";
         Assert.Throws<InvalidDataException>(() => WorldRenderer.ValidateWalkingPilot(manifest, "E"));
+    }
+    [Test] public void EqualHeightUsesPixelEdgesAndRejectsPaddingAsBodyHeight()
+    {
+        var clip = WalkingManifest().clips[0];
+        clip.bodyTopPixels = new float[16]; clip.bodyBottomPixels = new float[16];
+        for (var i = 0; i < 16; i++) { clip.bodyTopPixels[i] = 40; clip.bodyBottomPixels[i] = 440; }
+        Assert.DoesNotThrow(() => WorldRenderer.ValidateBodyLandmarks(clip, 512));
+        clip.bodyHeightPixels = 401;
+        Assert.Throws<InvalidDataException>(() => WorldRenderer.ValidateBodyLandmarks(clip, 512));
+        clip.bodyHeightPixels = 400; clip.bodyTopPixels[0] = float.NaN;
+        Assert.Throws<InvalidDataException>(() => WorldRenderer.ValidateBodyLandmarks(clip, 512));
+    }
+    [Test] public void CutoutMeasurementExcludesTransparentPaddingAndTracksActualBonePose()
+    {
+        var texture = new Texture2D(3, 2, TextureFormat.RGBA32, false);
+        try
+        {
+            var clear = new Color32(0, 0, 0, 0); var opaque = new Color32(255, 255, 255, 255);
+            texture.SetPixels32(new[] { clear, opaque, opaque, opaque, clear, clear }); texture.Apply();
+            var data = new HeroLiveRigData { jointNames = new[] { "head", "farKnee", "nearKnee" }, sprites = new[] {
+                new HeroLivePart { bone = "head", rect = new float[] { 0, 0, 1, 2 }, anchor = new float[] { 0, 0 }, scale = 1 },
+                new HeroLivePart { bone = "farKnee", rect = new float[] { 1, 0, 1, 2 }, anchor = new float[] { 1, 1 }, scale = 1 },
+                new HeroLivePart { bone = "nearKnee", rect = new float[] { 2, 0, 1, 2 }, anchor = new float[] { 2, 1 }, scale = 1 } } };
+            var measure = new HeroHeadFootMeasure(data, texture);
+            var pose = new[] { new HeroLiveJoint { y = 10 }, new HeroLiveJoint { y = 20 }, new HeroLiveJoint { y = 20 } };
+            Assert.That(measure.Measure(pose), Is.EqualTo(new Vector2(10, 21)));
+            pose[2].y = 25;
+            Assert.That(measure.Measure(pose), Is.EqualTo(new Vector2(10, 26)));
+        }
+        finally { UnityEngine.Object.DestroyImmediate(texture); }
     }
     [Test] public void WalkingPilotNeverDereferencesAnUnavailableSlashOrChangesDirection()
     {

@@ -32,3 +32,21 @@ UNITY_CONTENT_PROFILE=wave-1a UNITY_WAVE_BENCHMARK=1 \
 MPFB 공식 CC0 의상: `toigo_wool_pants`, `culturalibre_hero_boots_1`, `toigo_gloves_medium`, `cortu_short_messy_hair`. 코드 GPL과 결과물/선택 자산 CC0를 구분한다. 원문과 21개 파일 SHA는 외부 Forge의 `docs/licenses/f1-assets.md`, `evidence/f1-assets/manifest.json`에 기록한다. GarmentCode 상체·앞뒤 자락과 MPFB 몸, 원본 UAL 걷기를 재사용한다. 앞뒤 자락 3뼈, 양어깨 망토 4뼈로 변형하고 원본 전체 80프레임 주기에서 16장을 굽는다.
 
 F0 실패 기록과 원본은 그대로 보존한다. 이번 옷차림/걷기 사용자 승인 전 베기·피격·8방향 제작을 시작하지 않는다. #126·#98·1b·#224 보류와 SDK 미도입을 유지한다.
+
+## F3 외형 비교: 같은 화면 크기
+
+F1/F2 걷기는 사용자 승인, 외형은 재작업 대상이다. F3는 같은 900틱 재생·카메라·해상도에서 기존 `HeroKnight` 컷아웃과 새 Forge 아틀라스를 비교한다. 배경·적·공격·피격·입력 규칙은 변경하지 않는다.
+
+먼저 기존 컷아웃을 캡처한다. 위 명령의 외부 아틀라스 두 옵션을 빼고 `--forge-cutout-baseline`을 추가한다. 이 옵션은 `--forge-walk-review`와 함께만 쓰며 외부 아틀라스와 혼용할 수 없다.
+
+```sh
+--forge-walk-review --forge-cutout-baseline \
+--wave-benchmark <동일-fixture.ssreplay> --wave-benchmark-output <새-baseline-경로> \
+--offline-replay-capture --offline-replay-audio
+```
+
+기존 컷아웃의 머리·양쪽 부츠 원본 알파 128 이상 픽셀 경계를 실제 현재 뼈 자세로 변환한다. 검·망토·투명한 사각형 여백은 키에 포함하지 않는다. 프레임별 머리/발끝 월드·화면 좌표를 `knight-rendered.csv`에 기록하고, 1800프레임의 키 중앙값을 `knight-review.json`에 남긴다. 알파 읽기는 검토 초기화에서만 하며 일반 실행에는 켜지지 않는다.
+
+새 Forge 캡처에는 `--forge-height-reference <baseline/knight-review.json>`을 추가한다. 완료된 같은 재생·카메라의 컷아웃 기준만 허용하며, 그 중앙값으로 **고정 배율을 한 번** 정한다. 프레임마다 키를 늘였다 줄이지 않는다. 외부 clip은 16장의 `bodyTopPixels`·`bodyBottomPixels`를 제공해야 한다(셀의 위쪽 기준, 머리/머리카락부터 부츠, 검·망토 제외). 픽셀 경계는 top 포함/bottom 제외이므로 행0~99는 top0·bottom100·높이100이다. `bodyHeightPixels`는 `bottom-top`의 중앙값과 같아야 한다. 생산자가 어떤 마스크/투영으로 측정했는지 외부 Forge manifest에 기록한다.
+
+두 캡처의 실제 키 중앙값과 범위는 영상 제출 전에 비교한다. native 자료에는 외부 manifest·아틀라스·키 기준 JSON의 SHA를 남긴다. 컷아웃은 기존 걷기·공격 표현을 그대로 사용하고, Forge는 걷기만 저작한 상태임을 보고에 명시한다. 원본 메시와 역사 실패 자료는 보존한다.

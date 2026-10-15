@@ -628,7 +628,8 @@ namespace Game.App
             if (forgeWalkReview != null)
             {
                 result.fixture = "forge-walk-review-v1";
-                result.playbackBoundary = "Thirty seconds of ordinary constant-east input with current wave-1a catalog, normal combat and earned cards. One-direction baked walking pose only; no attack, hit, death or other direction pose approval. No performance evidence.";
+                result.playbackBoundary = "Thirty seconds of ordinary constant-east input with current wave-1a catalog, normal combat and earned cards. " +
+                    (forgeWalkReview.CutoutBaseline ? "Existing HeroKnight live cutout baseline; no external art override. " : "One-direction baked walking pose only; no attack, hit, death or other direction pose approval. ") + "No performance evidence.";
             }
             if(heroTerminalTailFrames>0) result.playbackBoundary += " Explicit terminal presentation tail: "+heroTerminalTailFrames+" offline frames, frozen terminal Core tick/hash; not replay ticks or performance evidence.";
             if (offlineReplayRequested) result.playbackBoundary += " " + (offlineAudioRequested ? "오프라인 렌더 · 60fps · 게임 소리 포함. " : "오프라인 렌더 · 60fps · 무음. ") + "Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. Hero comparison windows, when requested, validate the original unrendered suffix to the same terminal hash. See offline-capture.json and offline-frame-index.csv." + (offlineAudioRequested ? " AudioRenderer mixer output is sample-locked without padding/resampling; see offline-audio.wav, offline-audio-index.csv and offline-audio.json." : "");

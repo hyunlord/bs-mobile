@@ -13,6 +13,7 @@ namespace Game.App
         public bool WalkingPilot { get; private set; }
         public static M1HeroProductionReview Parse(string[] args)
         {
+            var forge = ForgeWalkReview.Parse(args);
             var at = Array.IndexOf(args,"--hero-production");
             var directionAt = Array.IndexOf(args,"--hero-production-direction");
             if (at < 0)
@@ -20,7 +21,6 @@ namespace Game.App
                 if (directionAt >= 0) throw new ArgumentException("Production direction requires --hero-production.");
                 return null;
             }
-            var forge = ForgeWalkReview.Parse(args);
             if (forge == null && M1CombatReview.Parse(args) == null && KnightReview.Parse(args) == null) throw new ArgumentException("Production comparison requires an explicit knight, actual combat or Forge walk review.");
             var path = ReadValue(args,"--hero-production");
             if (!Path.IsPathRooted(path) || Path.GetExtension(path) != ".json") throw new ArgumentException("Hero production requires an absolute manifest.json path.");

@@ -53,6 +53,7 @@ namespace Game.App
                 if (cameraScaleComparison == null) world.ReviewCameraMagnification = 1;
             }
             else world.PrepareHeroKnight();
+            if (forgeWalkReview != null) world.ConfigureForgeHeightReview(forgeWalkReview.CutoutBaseline, forgeWalkReview.Height?.medianBodyHeightWorld ?? 0);
             if (heroProductionReview != null) world.ConfigureHeroProduction(heroProductionReview.ManifestPath,heroProductionReview.Direction,combatReview!=null,heroProductionReview.WalkingPilot);
             if (weaponShowcaseReview != null)
             {

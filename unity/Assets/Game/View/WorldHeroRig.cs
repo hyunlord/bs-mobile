@@ -22,6 +22,24 @@ namespace Game.View
         readonly HeroLevelPoseTimeline heroLevelPose = new HeroLevelPoseTimeline();
         public bool HeroLevelPosePending => heroLevelPose.Pending;
         public float RenderedHeroLevelPoseProgress { get; private set; } = -1;
+        bool forgeCutoutHeightReview;
+        float forgeReferenceBodyHeight;
+        public bool HeroHeadFootMeasured { get; private set; }
+        public Vector2 HeroHeadFootWorldY { get; private set; }
+        public Vector2 HeroHeadFootScreenY { get; private set; }
+        public void ConfigureForgeHeightReview(bool cutout, float referenceHeight)
+        {
+            forgeCutoutHeightReview = cutout;
+            forgeReferenceBodyHeight = referenceHeight;
+            if (cutout) heroLiveRig.EnableHeadFootReview();
+        }
+        void RecordHeroHeadFoot(Vector2 position, Vector2 bounds)
+        {
+            HeroHeadFootMeasured = true;
+            HeroHeadFootWorldY = bounds;
+            HeroHeadFootScreenY = new Vector2(renderCamera.WorldToScreenPoint(new Vector3(position.x, bounds.x, 0)).y,
+                renderCamera.WorldToScreenPoint(new Vector3(position.x, bounds.y, 0)).y);
+        }
 
         public void PrepareHeroKnight()
         {
@@ -150,6 +168,7 @@ namespace Game.View
                     var levelTime = heroKnightEnabled ? heroLevelPose.Sample(seconds, PresentationPaused, dead || hitTime >= 0 || attackTime >= 0) : -1;
                     RenderedHeroLevelPoseProgress = levelTime;
                     heroLiveRig.Present(position,fullSize,sample,walking,attackTime,motionAttackEvolved,hitTime,color,deathTime,levelTime,flash);
+                    if (forgeCutoutHeightReview) RecordHeroHeadFoot(position, heroLiveRig.ReviewHeadFootWorldY);
                     HeroGaitSampled?.Invoke(sample);
                     return true;
                 }
