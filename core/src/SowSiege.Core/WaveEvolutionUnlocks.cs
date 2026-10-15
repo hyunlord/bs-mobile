@@ -39,7 +39,7 @@ namespace SowSiege.Core
             }
             foreach (var required in unlock.Events)
             {
-                if (required.MinCount <= 1 ? !Latched(state, required.Event) : Count(state, required.Event) < required.MinCount) { return false; }
+                if (required.MinCount <= 1 ? !WaveGrowthPrimitives.Eligible(required.Event, state) : Count(state, required.Event) < required.MinCount) { return false; }
             }
             return true;
         }
@@ -55,14 +55,6 @@ namespace SowSiege.Core
             }
             if (state.CountUnlockEvents) { state.UnlockEvents[name] = Count(state, name) + 1; }
         }
-
-        private static bool Latched(WaveRuntimeState state, string name) => name switch
-        {
-            AttackKillNearGrowth => state.BladePlotKill,
-            RepairCompleted => state.RepairCompleted,
-            HarvestNearBuilding => state.HarvestNearBuilding,
-            _ => throw new ArgumentException("Unsupported evolution history gate.")
-        };
 
         private static int Count(WaveRuntimeState state, string name) => state.UnlockEvents.TryGetValue(name, out var count) ? count : 0;
     }
