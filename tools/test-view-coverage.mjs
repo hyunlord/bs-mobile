@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { analyze, contractFile, fixture, fixtureFile, parseEnemyRig, parseEvolutionBase, parseWaveForms, verify } from './view-coverage.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const copied = ['data/profiles', 'data/runtime', 'data/evolutions', 'data/first-playable-tuning.json', 'unity/Assets/Game/View', 'unity/Assets/Game/App',
+const copied = ['data/profiles', 'data/runtime', 'data/evolutions', 'data/tools', 'data/first-playable-tuning.json', 'unity/Assets/Game/View', 'unity/Assets/Game/App',
   'unity/Assets/Art/first-playable-manifest.json', 'unity/Assets/Art/wave1a-manifest.json', 'core/src/SowSiege.Core', contractFile];
 function sandbox(t) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'view-coverage-'));
@@ -45,6 +45,15 @@ test('a Core enemy added to the wave runtime without art fails', t => {
   const found = problems(dir).join('\n');
   assert.match(found, /missing binding enemy\|core:mud_sleeper\|idle in wave-1a \(required by enemy core:mud_sleeper\)/);
   assert.match(found, /missing binding icon\|core:mud_sleeper\|default in wave-1a/);
+});
+
+test('a wave tool whose gear kind changes requires the attack form the View will resolve', t => {
+  const dir = sandbox(t);
+  const file = 'data/runtime/wave-1a.json';
+  const runtime = json(dir, file);
+  runtime.definition.gear['core:rain_ladle'].kind = 'Arc';
+  write(dir, file, runtime);
+  assert.match(problems(dir).join('\n'), /missing binding attack\|core:rain_ladle\|sector90 in wave-1a \(required by tool core:rain_ladle \(Arc\)\)/);
 });
 
 test('a first-playable weapon form without its attack binding fails', t => {

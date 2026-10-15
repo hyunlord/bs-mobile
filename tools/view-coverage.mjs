@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Core content IDs (weapon, evolution, enemy, hero) and View code paths must resolve art in every profile that can reach them.
+// Core content IDs (weapon, tool, evolution, enemy, hero) and View code paths must resolve art in every profile that can reach them.
 // Requirements are derived from data and View source; the contract only scopes code paths and records reviewed gaps.
 const readJson = (root, file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const check = (value, message) => { if (!value) throw new Error(message); };
@@ -72,7 +72,7 @@ export function literalRequests(sources) {
 
 export function coreIds(root, profileFile, tuningFile) {
   const profile = readJson(root, profileFile);
-  const ids = { weapon: [...profile.selection.weapons], evolution: [], enemy: [...profile.selection.enemies], hero: [...profile.selection.heroes] };
+  const ids = { weapon: [...profile.selection.weapons], tool: [...profile.selection.tools], evolution: [], enemy: [...profile.selection.enemies], hero: [...profile.selection.heroes] };
   if (profile.waveRuntimeFile) {
     const wave = readJson(root, path.posix.join('data', profile.waveRuntimeFile));
     for (const binding of wave.bindings) if (ids[binding.kind]) ids[binding.kind].push(binding.id);
@@ -102,11 +102,11 @@ function profileRequirements(root, contract, name, config, sources, errors) {
     const special = contract.waveAttack.specialForms;
     for (const [kind, rule] of Object.entries(special)) evidence(root, rule.evidence, `wave ${kind} form`, errors);
     const formOf = kind => Object.hasOwn(special, kind) ? special[kind].form : forms[kind] ?? fallback;
-    for (const id of ids.weapon) {
+    for (const kind of ['weapon', 'tool']) for (const id of ids[kind]) {
       const gear = definition.gear[id];
-      if (!gear) { errors.push(`${name}: weapon ${id} has no wave gear definition`); continue; }
+      if (!gear) { errors.push(`${name}: ${kind} ${id} has no wave gear definition`); continue; }
       const form = formOf(gear.kind);
-      if (form) need('binding', `attack|${id}|${form}`, `weapon ${id} (${gear.kind})`);
+      if (form) need('binding', `attack|${id}|${form}`, `${kind} ${id} (${gear.kind})`);
     }
     for (const id of ids.evolution) {
       const evolution = definition.evolutions[id];
@@ -122,6 +122,11 @@ function profileRequirements(root, contract, name, config, sources, errors) {
       const form = profile.firstPlayable?.weapons?.[id]?.form;
       if (form) need('binding', `attack|${id}|${form}`, `weapon ${id}`);
       else errors.push(`${name}: weapon ${id} declares no attack form`);
+    }
+    for (const id of ids.tool) {
+      const shape = readJson(root, `data/tools/${id.split(':')[1]}.json`).activation?.shape;
+      if (shape) need('binding', `attack|${id}|${shape}`, `tool ${id}`);
+      else errors.push(`${name}: tool ${id} declares no activation shape`);
     }
     for (const id of ids.evolution) {
       const evolution = readJson(root, `data/evolutions/${id.split(':')[1]}.json`);
