@@ -70,6 +70,9 @@ namespace SowSiege.Core
         public List<WaveEvent> Events = new();
         public List<WaveAttackView> Attacks = new();
         public SortedDictionary<string, long> Counters = new(StringComparer.Ordinal);
+        // ADR0058: occurrence counts of unlock events, recorded only when a definition asks for more than one.
+        public bool CountUnlockEvents;
+        public SortedDictionary<string, int> UnlockEvents = new(StringComparer.Ordinal);
         public void Count(string key) => Counters[key] = Counters.TryGetValue(key, out var n) ? n + 1 : 1;
         public void Emit(int tick, string kind, string source, int subject, Position position, Position target, int amount = 0)
         {
