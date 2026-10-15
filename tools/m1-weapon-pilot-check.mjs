@@ -235,7 +235,7 @@ function checkArrows(directory, manifest) {
       // against the same column before the cast.
       const rain = frame(directory, due - 3), hero = Math.max(20, entry.heroHeightPixels);
       let gained = 0;
-      for (let dy = 0; dy <= hero * 1.5; dy += 2) for (let dx = -radius; dx <= radius; dx += 2) {
+      for (let dy = 0; dy <= hero * 3.5; dy += 2) for (let dx = -radius; dx <= radius; dx += 2) {   // falling streaks are still ~1.8 hero heights up
         if (luma(rain.at(x + dx, iy - dy)) >= 88 && luma(before.at(x + dx, iy - dy)) < 75) gained++;
       }
       entry.rainPixels = gained;
