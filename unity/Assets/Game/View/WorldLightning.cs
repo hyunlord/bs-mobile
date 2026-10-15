@@ -18,7 +18,7 @@ namespace Game.View
     // hits, kills and numbers of a strike are presented together when the strike becomes visible after its telegraph.
     public sealed partial class WorldRenderer
     {
-        public const int LightningLayer = 75, StormSkyLayer = 73, ScorchLayer = GameVisualTokens.GrowthLayer + 3;
+        public const int LightningLayer = 75, ProjectileLayer = 74, StormSkyLayer = 73, ScorchLayer = GameVisualTokens.GrowthLayer + 3;
         const int LightningLinkCapacity = 64, LightningStrikeCapacity = 12;
         sealed class LightningStrike
         {
@@ -29,7 +29,9 @@ namespace Game.View
             public int Count, SkyCount;
             public float Visible => Accepted + LightningSpec.Seconds(LightningSpec.TelegraphFrames);
         }
-        struct DeferredHit { public int Subject; public long EventId; public float Due; public Vector2 Origin, Direction; public long Amount; }
+        // A hit whose flash, freeze, number and particles wait for its weapon to visibly arrive (lightning strike, blade pass).
+        // Pending hits wait for their strike's attack event in the same tick (Core emits blade hits first).
+        struct DeferredHit { public int Subject, Tick; public long EventId; public float Due, Hold, Shake; public Vector2 Origin, Direction; public long Amount; public bool Blade, Pending; public string Source; }
         readonly LightningStrike[] lightningStrikes = CreateStrikes();
         readonly List<DeferredHit> deferredHits = new List<DeferredHit>(256);
         readonly Dictionary<int, float> chainHitDue = new Dictionary<int, float>(256);
@@ -82,8 +84,7 @@ namespace Game.View
                 GearReference?.Gear.TryGetValue(value.Source, out reference);
                 var level = EquipmentLevel(value.Source);
                 strike.Strength = LightningSpec.Strength(MusterFormationRule.Ratio(runtime, level, reference));
-                strike.Storm = WeaponEvolutionGrade.Active(WeaponEvolutionGrade.RangeRatio(runtime, level, reference),
-                    MusterFormationRule.ActiveWaveEvolution(wave?.Evolutions, waveDefinition.Evolutions, value.Source));
+                strike.Storm = WeaponEvolved(value.Source);
                 LightningStrikes++; if (strike.Storm) LightningStormStrikes++;
             }
             if (strike.Count == LightningLinkCapacity) return;
@@ -155,7 +156,8 @@ namespace Game.View
             if (value.Tick != chainHitTick) { chainHitDue.Clear(); chainHitTick = value.Tick; }
             chainHitDue[value.SubjectId] = strike.Visible;
             var direction = origin - (PredictedLordPosition ?? RenderedLordPosition);
-            deferredHits.Add(new DeferredHit { Subject = value.SubjectId, EventId = value.Id, Due = strike.Visible, Origin = origin, Direction = direction, Amount = value.Amount });
+            deferredHits.Add(new DeferredHit { Subject = value.SubjectId, Tick = value.Tick, EventId = value.Id, Due = strike.Visible, Origin = origin, Direction = direction, Amount = value.Amount,
+                Hold = LightningSpec.Seconds(LightningSpec.HitHoldFrames), Shake = LightningSpec.HitShakeBodyWidths, Source = value.Source });
             LightningDeferredHits++;
             return true;
         }
@@ -173,12 +175,15 @@ namespace Game.View
             for (var i = deferredHits.Count - 1; i >= 0; i--)
             {
                 var hit = deferredHits[i];
-                if (visualTime < hit.Due) continue;
-                enemyImpactPoses.Hit(hit.Subject, visualTime, hit.Direction, LightningSpec.Seconds(LightningSpec.HitHoldFrames), LightningSpec.HitShakeBodyWidths, true);
+                // A pending blade hit whose attack never arrived is shown rather than lost.
+                if (hit.Pending && visualTime - hit.Due < .1f) continue;
+                if (!hit.Pending && visualTime < hit.Due) continue;
+                enemyImpactPoses.Hit(hit.Subject, visualTime, hit.Direction, hit.Hold, hit.Shake, true);
+                hitUntil[hit.Subject] = visualTime + GameVisualTokens.EnemyHitFlashSeconds;
                 impactParticles.Hit(hit.EventId, hit.Origin);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(hit.Subject, hit.Origin, hit.Amount);
                 deferredHits[i] = deferredHits[deferredHits.Count - 1]; deferredHits.RemoveAt(deferredHits.Count - 1);
-                LightningPresentedHits++;
+                if (hit.Blade) BladePresentedHits++; else LightningPresentedHits++;
             }
         }
 

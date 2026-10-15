@@ -108,6 +108,7 @@ namespace Game.View
                 AcceptFallowEvent(value);
                 AcceptM1Blade(value);
                 AcceptLightningLink(value);
+                AcceptArrowEvent(value);
                 AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -131,7 +132,8 @@ namespace Game.View
                 }
                 AcceptWaveMusterStrike(frame,value);
                 AcceptHeroProductionAttack(value);
-                if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
+                // Lightning and blade hits flash when their weapon visibly arrives (AdvanceLightning), not at the Core tick.
+                if(value.Kind=="hit"&&!(ImpactFeedbackEnabled&&(IsChainSource(value.Source)||IsM1GiantBlade(value.Source))))hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
                 if(value.Kind=="attack")
                 {
                     heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
@@ -187,6 +189,7 @@ namespace Game.View
         {
             growthLabels?.BeginFrame();
             if(wave==null)return;
+            waveTickRate=Mathf.Max(1,current.TickRate);
             IndexWaveActors(current);
             if(wave.Timber>0)
             {
@@ -419,6 +422,8 @@ namespace Game.View
                 }
             }
             DrawM1WeaponShowcase(lordPoint);
+            DrawBladeStrikes();
+            DrawArrowVolleys();
             DrawLightning();
         }
         void DrawWaveAttackEdge(ArtVisual visual,Vector2 position,float time,Vector2 size,float direction,Color color,float opacity=1)

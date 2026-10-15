@@ -15,13 +15,13 @@ namespace Tests.EditMode
         const float Frame = 1f / 60;
 
         [Serializable] sealed class Level { public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback; }
-        [Serializable] sealed class Gear { public string id, kind; public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback, workTicks, workRadius, rewardExperience, capacity; public Level[] levels; }
+        [Serializable] sealed class Gear { public string id, designRef, kind; public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback, workTicks, workRadius, rewardExperience, capacity; public Level[] levels; }
         [Serializable] sealed class Case { public string id, stage; public Gear gear; }
         [Serializable] sealed class Cases { public Case[] cases; }
 
         static string Repository => Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
 
-        static WaveGearDefinition Definition(Gear g) => new WaveGearDefinition(g.id, "test", WaveAttackKind.Chain, g.damage, g.range, g.cooldownTicks, g.speed, g.count,
+        static WaveGearDefinition Definition(Gear g) => new WaveGearDefinition(g.id, g.designRef, WaveAttackKind.Chain, g.damage, g.range, g.cooldownTicks, g.speed, g.count,
             g.lifetimeTicks, g.knockback, g.workTicks, g.workRadius, g.rewardExperience, g.capacity,
             g.levels == null || g.levels.Length == 0 ? null : g.levels.Select(l => new WaveGearLevel(l.damage, l.range, l.cooldownTicks, l.speed, l.count, l.lifetimeTicks, l.knockback)).ToArray());
 
@@ -42,27 +42,70 @@ namespace Tests.EditMode
             JsonUtility.FromJson<Cases>(File.ReadAllText(Path.Combine(Repository, "data/review/m1-weapon-combat-cases.json")))
                 .cases.Where(c => c.id == id).ToDictionary(c => c.stage, c => Definition(c.gear));
 
+        static WeaponDisplayStages Table() => WeaponDisplayStages.Parse(File.ReadAllText(Path.Combine(Application.dataPath, "Game/View/Resources", WeaponDisplayStages.ResourceName + ".json")));
+
+        static readonly string[] ReviewWeapons = { "core:iron_blade", "core:storm_fork", "core:spore_fan", "core:ward_orbit", "core:canal_bow", "core:ditch_pike", "core:granary_sling", "core:muster_horn" };
+
+        // The display stage table is checked against the real data files, so a new review stage, canonical gear or runtime
+        // evolution that is missing from it, or listed at the wrong stage, fails here.
+        [Test]
+        public void DisplayStageTableMatchesTheReviewStagesCanonicalGearAndRuntimeEvolutions()
+        {
+            var table = Table();
+            var cases = JsonUtility.FromJson<Cases>(File.ReadAllText(Path.Combine(Repository, "data/review/m1-weapon-combat-cases.json"))).cases;
+            Assert.That(cases.Select(c => c.id).Distinct(), Is.EquivalentTo(ReviewWeapons));
+            foreach (var c in cases)
+            {
+                Assert.That(table.TryGetGear(c.gear.designRef, out var stage), Is.True, c.gear.designRef);
+                Assert.That(stage, Is.EqualTo(c.stage == "evolved" ? WeaponDisplayStage.Evolved : WeaponDisplayStage.Normal), c.gear.designRef);
+            }
+            var text = File.ReadAllText(Path.Combine(Repository, "data/runtime/wave-1a.json"));
+            var gearStart = text.IndexOf('{', text.IndexOf("\"gear\"", StringComparison.Ordinal));
+            var depth = 0; var gearEnd = gearStart;
+            for (; gearEnd < text.Length; gearEnd++) { if (text[gearEnd] == '{') depth++; else if (text[gearEnd] == '}' && --depth == 0) break; }
+            var canonicalRefs = System.Text.RegularExpressions.Regex.Matches(text.Substring(gearStart, gearEnd - gearStart), "\"designRef\"\\s*:\\s*\"([^\"]+)\"")
+                .Cast<System.Text.RegularExpressions.Match>().Select(m => m.Groups[1].Value).ToArray();
+            Assert.That(canonicalRefs.Length, Is.GreaterThanOrEqualTo(9));
+            foreach (var designRef in canonicalRefs)
+            {
+                Assert.That(table.TryGetGear(designRef, out var stage), Is.True, designRef);
+                Assert.That(stage, Is.EqualTo(WeaponDisplayStage.Normal), designRef);
+            }
+            foreach (var file in Directory.GetFiles(Path.Combine(Repository, "data/evolutions"), "*.json"))
+            {
+                var evolution = "core:" + Path.GetFileNameWithoutExtension(file);
+                Assert.That(table.TryGetEvolution(evolution, out var stage), Is.True, evolution);
+                Assert.That(stage, Is.EqualTo(WeaponDisplayStage.Evolved), evolution);
+            }
+        }
+
         [TestCase("core:storm_fork")]
         [TestCase("core:muster_horn")]
+        [TestCase("core:iron_blade")]
         public void EvolutionOnlyElementsAppearOnlyAtTheReviewEvolutionAndNeverForCanonicalLevels(string id)
         {
+            var table = Table();
             var canonical = Canonical(id);
             var review = Review(id);
             Assert.That(review.Keys, Is.EquivalentTo(new[] { "lv1", "max", "evolved" }));
-            foreach (var stage in new[] { "lv1", "max" })
-            {
-                var ratio = WeaponEvolutionGrade.RangeRatio(review[stage], 1, canonical);
-                Assert.That(WeaponEvolutionGrade.Active(ratio, null), Is.False, $"{id} {stage}: range ratio {ratio:0.00} must stay below {WeaponEvolutionGrade.EvolutionRangeRatio}");
-            }
-            var evolved = WeaponEvolutionGrade.RangeRatio(review["evolved"], 1, canonical);
-            Assert.That(WeaponEvolutionGrade.Active(evolved, null), Is.True, $"{id} evolved: range ratio {evolved:0.00}");
-            for (var level = 1; level <= canonical.Levels.Length; level++)
-            {
-                var ratio = WeaponEvolutionGrade.RangeRatio(canonical, level, canonical);
-                Assert.That(ratio, Is.EqualTo(1), $"canonical level {level}");
-                Assert.That(WeaponEvolutionGrade.Active(ratio, null), Is.False);
-            }
-            Assert.That(WeaponEvolutionGrade.Active(1, "core:some_runtime_evolution"), Is.True, "An active runtime evolution always enables it.");
+            Assert.That(table.Evolved(review["lv1"], null), Is.False, id + " lv1");
+            Assert.That(table.Evolved(review["max"], null), Is.False, id + " max");
+            Assert.That(table.Evolved(review["evolved"], null), Is.True, id + " evolved");
+            // Canonical levels share the canonical definition: off at every level, Lv12 included.
+            Assert.That(canonical.Levels.Length, Is.GreaterThanOrEqualTo(12));
+            Assert.That(table.Evolved(canonical, null), Is.False, id + " canonical");
+            Assert.That(table.Evolved(canonical, "core:rally_kitchen"), Is.True, "An active runtime evolution in the table enables it.");
+        }
+
+        [Test]
+        public void UnlistedGearIsDrawnNormalAndLoggedOnce()
+        {
+            var table = Table();
+            var unknown = new WaveGearDefinition("core:unknown", "data/unknown.json#core:unknown", WaveAttackKind.Arc, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1);
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("weapon-display-stage.*core:unknown"));
+            Assert.That(table.Of(unknown, null), Is.EqualTo(WeaponDisplayStage.Normal));
+            Assert.That(table.Of(unknown, null), Is.EqualTo(WeaponDisplayStage.Normal));
+            UnityEngine.TestTools.LogAssert.NoUnexpectedReceived();
         }
 
         [Test]
@@ -88,6 +131,21 @@ namespace Tests.EditMode
             Assert.That(LightningSpec.Strength(1), Is.Zero);
             Assert.That(LightningSpec.Strength(1.56f), Is.LessThan(LightningSpec.Strength(3.12f)));
             Assert.That(LightningSpec.Strength(5.85f), Is.LessThan(LightningSpec.Strength(1e6f)).Or.EqualTo(1));
+        }
+
+        [Test]
+        public void BladeAndArrowTimingStayInsideTheReferenceRanges()
+        {
+            Assert.That(BladeSpec.WindupFrames, Is.InRange(3, 4), "Hero pulls the sword back 3–4 frames.");
+            Assert.That(BladeSpec.HitHoldFrames, Is.InRange(3, 5));
+            Assert.That(GiantBladeEnvelope.FadeSeconds * 60, Is.InRange(6f, 8f), "The trail fades over 6–8 frames.");
+            Assert.That(BladeSpec.Taper(0), Is.LessThan(.2f)); Assert.That(BladeSpec.Taper(1), Is.EqualTo(1).Within(1e-5f), "Thick at the leading edge, thin toward the start.");
+            Assert.That(ArrowSpec.MuzzleFlashFrames, Is.EqualTo(1));
+            Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");
+            Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 0), Is.EqualTo(Vector2.zero));
+            Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 1), Is.EqualTo(new Vector2(10, 0)));
+            Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), .5f).y, Is.GreaterThan(0), "Arcs above the straight line.");
+            Assert.That(ArrowSpec.RainArrows(.1f, 1), Is.EqualTo(ArrowSpec.MinRainArrows)); Assert.That(ArrowSpec.RainArrows(100, 1), Is.EqualTo(ArrowSpec.MaxRainArrows));
         }
 
         [Test]

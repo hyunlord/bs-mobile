@@ -59,11 +59,8 @@ namespace Game.View
         void SyncMinionGroup(WaveGroupView group, Vector2 anchor, Vector2 lordPoint, int tickRate)
         {
             var formation = WaveMusterFormation(group, group.Training > 0 ? 2 : 1);
-            var gear = waveDefinition.Gear[group.Source]; WaveGearDefinition reference = null;
-            GearReference?.Gear.TryGetValue(group.Source, out reference);
-            var level = EquipmentLevel(group.Source);
-            var charge = WeaponEvolutionGrade.Active(WeaponEvolutionGrade.RangeRatio(gear, level, reference),
-                MusterFormationRule.ActiveWaveEvolution(wave.Evolutions, waveDefinition.Evolutions, group.Source));
+            var gear = waveDefinition.Gear[group.Source];
+            var charge = WeaponEvolved(group.Source);
             var engaging = group.Phase != "returning" && group.Phase != "idle";
             var target = engaging ? NearestEnemy(anchor, gear.Range / (float)settings.WorldUnitsPerUnityUnit) : null;
             var nextHit = -1f;
