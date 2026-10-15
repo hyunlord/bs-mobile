@@ -82,6 +82,7 @@ namespace Tests.EditMode
         [TestCase("core:storm_fork")]
         [TestCase("core:muster_horn")]
         [TestCase("core:iron_blade")]
+        [TestCase("core:ward_orbit")]
         public void EvolutionOnlyElementsAppearOnlyAtTheReviewEvolutionAndNeverForCanonicalLevels(string id)
         {
             var table = Table();
@@ -143,6 +144,9 @@ namespace Tests.EditMode
             Assert.That(BladeSpec.SwordHeroHeights, Is.GreaterThanOrEqualTo(3f), "The evolved sword is at least three hero heights.");
             Assert.That(BladeSpec.MinThicknessHeroHeights, Is.GreaterThanOrEqualTo(.4f), "The Lv1 crescent is not a hairline.");
             Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
+            Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
+            Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");
+            Assert.That(OrbitSpec.TornadoHeroHeights, Is.GreaterThanOrEqualTo(1f)); Assert.That(OrbitSpec.MinShieldHeroHeights * 2, Is.GreaterThanOrEqualTo(.8f));
             Assert.That(ArrowSpec.MuzzleFlashFrames, Is.EqualTo(1));
             Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 0), Is.EqualTo(Vector2.zero));

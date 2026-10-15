@@ -265,6 +265,42 @@ function checkArrows(directory, manifest) {
     rows: results };
 }
 
+// Spore fan / guard ring: the orbiter stands out from the ground, is at least hero sized, carries its weapon colour (teal /
+// gold), and the evolution element appears only in the evolved stage.
+function checkOrbits(directory, manifest, shape) {
+  const activations = rows(path.join(directory, 'm1-orbit-activations.csv'));
+  const results = [];
+  for (const a of activations) {
+    const at = Number(a.frameIndex), x = Number(a.firstOrbiterScreenX), y = Number(a.firstOrbiterScreenY);
+    if (at <= 20 || x < 0) continue;
+    const image = frame(directory, at), before = frame(directory, at - 20);
+    const iy = image.height - y, size = Number(a.orbiterSizePixels), hero = Number(a.heroHeightPixels);
+    // Tornado: from the foot up; shield: around its centre.
+    const top = shape === 'tornado' ? iy - size : iy - size / 2, bottom = shape === 'tornado' ? iy : iy + size / 2, half = shape === 'tornado' ? size * .45 : size / 2;
+    let ground = 0, n = 0, peak = 0, coloured = 0;
+    for (let py = top; py <= bottom; py += 2) for (let px = x - half; px <= x + half; px += 2) {
+      const c = image.at(px, py); ground += luma(before.at(px, py)); n++; peak = Math.max(peak, luma(c));
+      const [r, g, b] = c;
+      if (shape === 'tornado' ? (g - r > 45 && b - r > 25) : (r > 170 && g > 130 && b < 130 && r - b > 70)) coloured++;
+    }
+    ground /= Math.max(1, n);
+    results.push({ frame: at, activation: Number(a.activation), evolved: a.evolved === 'True', count: Number(a.count), heroHeightPixels: hero, orbiterSizePixels: +size.toFixed(1),
+      contrast: +(peak - ground).toFixed(1), colouredPixels: coloured });
+  }
+  const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
+  const evolvedElement = shape === 'tornado' ? (p.vortexFrames ?? 0) : (p.shieldThrows ?? 0);
+  const pass = {
+    contrast: results.length > 0 && results.every(r => r.contrast >= thresholds.contrast),
+    size: results.length > 0 && results.every(r => shape === 'tornado' ? r.orbiterSizePixels >= r.heroHeightPixels * .95 : r.orbiterSizePixels >= .84 * r.heroHeightPixels),
+    colour: results.length > 0 && results.every(r => r.colouredPixels >= 20),
+    stage: stage === 'evolved' ? evolvedElement > 0 : evolvedElement === 0,
+    reaction: (p.orbitContactFlashes ?? 0) > 0 && (p.enemyDeathDropped ?? 0) === 0,
+  };
+  return { activations: results.length, pass, contactFlashes: p.orbitContactFlashes, vortexFrames: p.vortexFrames, shieldThrows: p.shieldThrows,
+    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (tornado from the foot up, shield around its centre), against the same box 20 frames earlier. Size: tornado height >= hero height (x.95), shield diameter >= .84 hero heights. Colour: teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
+    rows: results };
+}
+
 const directories = process.argv.slice(2);
 assert(directories.length > 0, 'Usage: m1-weapon-pilot-check.mjs <capture directory>...');
 const report = { contract: 'm1-weapon-pilot-check-v1', interpretation: 'Automated pre-screen only; the user video verdict decides acceptance. Occlusion is covered by the PlayMode bounding-box test; stage distinction is a blind human check on the three stage screenshots; frame cost uses the native combined measurement.', captures: [] };
@@ -276,6 +312,8 @@ for (const directory of directories) {
   if (id === 'core:muster_horn') entry.minions = checkMinions(directory, manifest);
   if (id === 'core:iron_blade') entry.blade = checkBlade(directory, manifest);
   if (id === 'core:canal_bow') entry.arrows = checkArrows(directory, manifest);
+  if (id === 'core:spore_fan') entry.orbits = checkOrbits(directory, manifest, 'tornado');
+  if (id === 'core:ward_orbit') entry.orbits = checkOrbits(directory, manifest, 'shield');
   report.captures.push(entry);
 }
 console.log(JSON.stringify(report, null, 2));

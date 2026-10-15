@@ -35,9 +35,7 @@ namespace Game.View
             else
             {
                 var center=waveMotion.OrbitPosition(attackIndex,alpha,visualTime,settings.WorldUnitsPerUnityUnit,lordPosition,lordPoint);
-                if(m1CombatShape=="tornado")
-                    for(var i=0;i<6;i++)M1Draw("attack","core:rain_ladle","wave",center+Vector2.up*radius*(i/5f-.5f),new Vector2(radius*(.6f+i*.25f),radius*.3f),Mathf.Sin(visualTime*8+i)*10,.8f,new Color(.65f,.9f,.75f));
-                else M1Draw("wave","shield-fragment","default",center,Vector2.one*radius*1.65f,visualTime*90,.52f,Color.white);
+                if(m1CombatShape=="tornado"||m1CombatShape=="shield")DrawOrbitAttack(attack,center,tick,alpha,lordPoint,m1CombatShape);
             }
             return true;
         }

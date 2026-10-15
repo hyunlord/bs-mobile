@@ -289,6 +289,7 @@ namespace Game.View
             }
             StepAndDrawMinions();
             drawnRepairAnchors.Clear();
+            orbitMarkedActivations.Clear();
             for(var attackIndex=0;attackIndex<wave.Attacks.Count;attackIndex++)
             {
                 var attack=wave.Attacks[attackIndex];
@@ -424,6 +425,7 @@ namespace Game.View
             DrawM1WeaponShowcase(lordPoint);
             DrawBladeStrikes();
             DrawArrowVolleys();
+            DrawShieldThrows();
             DrawLightning();
         }
         void DrawWaveAttackEdge(ArtVisual visual,Vector2 position,float time,Vector2 size,float direction,Color color,float opacity=1)

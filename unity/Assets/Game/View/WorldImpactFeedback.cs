@@ -41,7 +41,7 @@ namespace Game.View
         void ResetImpactFeedback()
         {
             impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0;
-            ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); heroHitFeedback.Reset();
+            ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); ResetOrbits(); heroHitFeedback.Reset();
         }
 
         void AcceptImpactFeedback(WaveEvent value)
@@ -54,7 +54,8 @@ namespace Game.View
                 if (value.Kind == "hit" && (DeferChainHit(value, origin) || DeferBladeHit(value, origin))) return;
                 var direction = origin - (PredictedLordPosition ?? RenderedLordPosition);
                 if (direction.sqrMagnitude < .000001f) direction = Vector2.up;
-                if (ArrowHitDirection(value, origin, out var arrowDirection))
+                if (OrbitHitReaction(value, origin)) { }
+                else if (ArrowHitDirection(value, origin, out var arrowDirection))
                     enemyImpactPoses.Hit(value.SubjectId, visualTime, arrowDirection, ArrowSpec.Seconds(ArrowSpec.HitHoldFrames), 0, true);
                 else enemyImpactPoses.Hit(value.SubjectId, visualTime, direction);
                 impactParticles.Hit(value.Id, origin);

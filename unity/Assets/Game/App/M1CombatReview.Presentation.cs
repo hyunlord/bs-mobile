@@ -13,6 +13,7 @@ namespace Game.App
         {
             public string interpretation = "View-only feel counters from the rendered run. Giant-blade kill points are on-screen kill positions (Core and last rendered) tested against the drawn envelope. Muster path RuntimeEvolution requires an active runtime evolution; GearRatio is the runtime gear count/range over the canonical maximum level, capped at 5 soldiers and 1.3x. Evolution-only elements (storm sky, flag bearer, giant sword, arrow rain) follow the View-only display stage table (WeaponDisplayStages.json). Blade hits are presented when the sweep reaches them after a 4-frame wind-up; arrows land on the Core impact tick. Lightning hits are presented when their strike becomes visible (3-frame telegraph). Minion stationary frames exclude spawn, attack and despawn animation.";
             public int bladeEvolvedStrikes, bladeDeferredHits, bladePresentedHits, arrowVolleys, arrowRainVolleys, arrowImpacts, arrowLandedOnTime;
+            public int orbitActivations, orbitContactFlashes, vortexFrames, shieldThrows;
             public int lightningStrikes, lightningStormStrikes, lightningDeferredHits, lightningPresentedHits, minionGroupHits, minionThrustsOnHitFrame, minionBearerFrames, minionChargeShoves;
             public long minionAgentFrames, minionStationaryFrames;
             public float minionStationaryRatio;
@@ -25,6 +26,7 @@ namespace Game.App
         readonly List<string> thrustRows = new List<string>(256);
         readonly List<string> bladeRows = new List<string>(64);
         readonly List<string> arrowRows = new List<string>(64);
+        readonly List<string> orbitRows = new List<string>(64);
         PresentationSummary presentation;
 
         public void Observe(WorldRenderer world)
@@ -47,6 +49,8 @@ namespace Game.App
                 $"{frameCount},{r.VisibleFrame - r.AcceptedFrame},{r.Tick},{r.Evolved},{r.Radius:R},{r.HalfAngle:R},{r.Aim:R},{r.OriginScreen.x:R},{r.OriginScreen.y:R},{r.RadiusPixels.x:R},{r.RadiusPixels.y:R},{r.HeroHeightPixels:R},{r.ThicknessPixels:R},{r.SwordLengthPixels:R}")); };
             world.ArrowVolleySample = r => { if (arrowRows.Count < 1024) arrowRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R}")); };
+            world.OrbitActivationSample = r => { if (orbitRows.Count < 1024) orbitRows.Add(FormattableString.Invariant(
+                $"{frameCount},{r.Activation},{r.Shape},{r.Evolved},{r.Count},{r.OrbitRadiusPixels:R},{r.OrbiterSizePixels:R},{r.HeroHeightPixels:R},{r.FirstOrbiterScreen.x:R},{r.FirstOrbiterScreen.y:R}")); };
             world.MinionThrustSample = (group, soldiers) => { if (thrustRows.Count < 8192) thrustRows.Add(FormattableString.Invariant($"{frameCount},{group},thrust,{soldiers}")); };
             // Hits are accepted before the frame that presents them, i.e. the frame Record() will number next.
             world.MinionHitSample = group => { if (thrustRows.Count < 8192) thrustRows.Add(FormattableString.Invariant($"{frameCount},{group},hit,0")); };
@@ -57,6 +61,8 @@ namespace Game.App
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-lightning-strikes.csv"),
                 new[] { "frameIndex,telegraphFrames,tick,links,skyBolts,coveredSkyBolts,onScreenTargets,storm,strength,corePixels,glowPixels,firstSkyScreenX,firstSkyScreenY,firstSkyTopScreenX,firstSkyTopScreenY,screenFlash" }.Concat(lightningRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-minion-thrusts.csv"), new[] { "frameIndex,group,kind,soldiers" }.Concat(thrustRows));
+            System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-orbit-activations.csv"),
+                new[] { "frameIndex,activation,shape,evolved,count,orbitRadiusPixels,orbiterSizePixels,heroHeightPixels,firstOrbiterScreenX,firstOrbiterScreenY" }.Concat(orbitRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-blade-strikes.csv"),
                 new[] { "frameIndex,windupFrames,tick,evolved,radius,halfAngle,aim,originScreenX,originScreenY,radiusPixelsX,radiusPixelsY,heroHeightPixels,thicknessPixels,swordLengthPixels" }.Concat(bladeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-arrow-volleys.csv"),
@@ -73,6 +79,7 @@ namespace Game.App
                 enemyDeathDropped = world.DroppedEnemyDeaths, enemyDeathFullCapacity = EnemyDeathPresentationPool.FullCapacity,
                 heroHitFlashes = world.HeroHitFlashes, musterLunges = world.MusterLunges,
                 bladeEvolvedStrikes = world.M1BladeEvolvedStrikes, bladeDeferredHits = world.BladeDeferredHits, bladePresentedHits = world.BladePresentedHits,
+                orbitActivations = world.OrbitActivations, orbitContactFlashes = world.OrbitContactFlashes, vortexFrames = world.VortexFrames, shieldThrows = world.ShieldThrows,
                 arrowVolleys = world.ArrowVolleys, arrowRainVolleys = world.ArrowRainVolleys, arrowImpacts = world.ArrowImpacts, arrowLandedOnTime = world.ArrowLandedOnTime,
                 lightningStrikes = world.LightningStrikes, lightningStormStrikes = world.LightningStormStrikes,
                 lightningDeferredHits = world.LightningDeferredHits, lightningPresentedHits = world.LightningPresentedHits,
