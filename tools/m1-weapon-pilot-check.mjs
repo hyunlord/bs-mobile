@@ -169,9 +169,9 @@ function checkBlade(directory, manifest) {
     const points = arcSamples(s, swept).filter(([x, y]) => luma(before.at(x, y)) > 5);
     if (points.length < 3) { results.push({ frame: at, skipped: 'arc off screen' }); continue; }
     const ground = points.reduce((n, [x, y]) => n + luma(before.at(x, y)), 0) / points.length;
-    // Per arc angle, the brightest pixel across the crescent band (.7R to 1.02R) — the band is thin against R.
+    // Per arc angle, the brightest pixel across the crescent band (.35R to 1.1R) — the band is thin against R and follows the visible reach.
     const band = (image, [x, y]) => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let best = 0;
-      for (let k = .7; k <= 1.1; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, oy + (y - oy) * k / .93, 2)); return best; };
+      for (let k = .35; k <= 1.1; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, oy + (y - oy) * k / .93, 2)); return best; };
     const peak = median(points.map(p => band(swept, p)));
     const after = median(points.map(p => band(gone, p)));
     const groundMax = median(points.map(p => band(before, p)));
@@ -188,7 +188,7 @@ function checkBlade(directory, manifest) {
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
   return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.7R to 1.1R) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = the arc is back to the ground level 19 frames after appearing (sweep 9 + hold 0 + fade 7, +3). Stage = giant sword strikes only in the evolved stage.',
+    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.35R to 1.1R; the crescent follows the visible reach when the fitted radius meets the screen edge) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = the arc is back to the ground level 19 frames after appearing (sweep 9 + hold 0 + fade 7, +3). Stage = giant sword strikes only in the evolved stage.',
     rows: results };
 }
 

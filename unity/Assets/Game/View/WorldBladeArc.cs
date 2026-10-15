@@ -105,6 +105,9 @@ namespace Game.View
             var thickness = Mathf.Max(BladeSpec.GlowPoints(strike.Strength) * pointsToWorld, radius * BladeSpec.GlowFraction);
             thickness = Mathf.Min(thickness, radius * .45f);
             var segments = Mathf.Clamp(Mathf.CeilToInt((lead - tail) / 4f), 2, 48);
+            // The fitted envelope may reach the screen edge to enclose edge kills; the crescent itself stays on screen by
+            // following the visible reach in each direction (the faint fill above still encloses every kill).
+            var visible = M1BladeVisibleBounds();
             for (var pass = 0; pass < 2; pass++)
             {
                 var visual = pass == 0 ? lightningGlow : lightningCore;
@@ -112,10 +115,12 @@ namespace Game.View
                 {
                     var a = Mathf.Lerp(tail, lead, s / (float)segments); var b = Mathf.Lerp(tail, lead, (s + 1) / (float)segments);
                     var along = Mathf.InverseLerp(start, lead, (a + b) * .5f);
-                    var width = thickness * BladeSpec.Taper(along) * (pass == 0 ? 1 : BladeSpec.CoreFraction);
-                    // The band hugs the outer edge of the fan (the blade tip's path).
-                    var centre = radius - thickness * BladeSpec.Taper(along) * .5f;
                     var middle = (a + b) * .5f;
+                    var reach = Mathf.Min(radius, GiantBladeEnvelope.VisibleReach(origin, M1Direction(middle), visible) * .96f);
+                    var band = Mathf.Min(thickness, reach * .45f) * BladeSpec.Taper(along);
+                    var width = band * (pass == 0 ? 1 : BladeSpec.CoreFraction);
+                    // The band hugs the outer edge of the fan (the blade tip's path).
+                    var centre = reach - band * .5f;
                     var length = centre * (b - a) * Mathf.Deg2Rad * 1.25f;
                     var color = pass == 0 ? BladeSpec.Glow : BladeSpec.Core;
                     color.a = opacity * Mathf.Lerp(.35f, 1, along);
