@@ -166,8 +166,8 @@ namespace Game.View
 
         public static readonly Color SpearWood = new Color(.56f, .38f, .2f), SpearSteel = new Color(.93f, .95f, 1f);
 
-        // A drawn spear (not the diagonal pike icon, which cannot be thickened): outlined wooden shaft at least 3px thick and a
-        // bright steel diamond tip, with a glint at full reach so the thrust reads in a single frame.
+        // A drawn spear (not the diagonal pike icon, which cannot be thickened): outlined wooden shaft at least 3px thick ending
+        // in an outlined steel blade along the same line, with a glint at full reach so the thrust reads in a single frame.
         void DrawSpear(Vector2 hand, Vector2 tip, float w, bool glint)
         {
             EnsureLightningArt();
@@ -175,11 +175,14 @@ namespace Game.View
             var span = tip - hand; var length = span.magnitude;
             if (length < .0001f) return;
             var angle = Angle(span); var middle = (hand + tip) * .5f;
-            var thickness = Mathf.Max(3 * pixel, .06f * w); var outline = 1.5f * pixel; var head = Mathf.Max(7 * pixel, .16f * w);
+            var thickness = Mathf.Max(3 * pixel, .06f * w); var outline = 1.5f * pixel;
+            var blade = Mathf.Min(length * .3f, Mathf.Max(10 * pixel, .22f * w)); var bladeWidth = thickness * 1.7f;
+            var shaftEnd = tip - span / length * blade; var shaftMiddle = (hand + shaftEnd) * .5f; var shaftLength = length - blade;
+            var bladeMiddle = (shaftEnd + tip) * .5f;
             Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, middle, 0, new Vector2(length + outline * 2, thickness + outline * 2), angle, 1, GameVisualTokens.Ink, applyTween: false);
-            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, middle, 0, new Vector2(length, thickness), angle, 1, SpearWood, applyTween: false);
-            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, tip, 0, Vector2.one * (head + outline * 2), angle + 45, 1, GameVisualTokens.Ink, applyTween: false);
-            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, tip, 0, Vector2.one * head, angle + 45, 1, SpearSteel, applyTween: false);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, bladeMiddle, 0, new Vector2(blade + outline * 2, bladeWidth + outline * 2), angle, 1, GameVisualTokens.Ink, applyTween: false);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, shaftMiddle, 0, new Vector2(shaftLength, thickness), angle, 1, SpearWood, applyTween: false);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, bladeMiddle, 0, new Vector2(blade, bladeWidth), angle, 1, SpearSteel, applyTween: false);
             if (glint) Draw(lightningFlash, GameVisualTokens.AllyLayer + 2, tip, 0, Vector2.one * w * .7f, 0, 1, new Color(1, .98f, .9f, .95f), applyTween: false);
         }
 
