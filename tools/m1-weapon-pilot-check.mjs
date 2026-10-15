@@ -154,8 +154,8 @@ function checkBlade(directory, manifest) {
   for (const s of strikes) {
     const at = Number(s.frameIndex);
     if (at <= 8) continue;
-    // +7: the sweep has covered the arc and the fade (from +9) has not begun.
-    const before = frame(directory, at - 8), swept = frame(directory, at + 7), gone = frame(directory, at + 19);
+    // +8: the 9-frame sweep has nearly covered the arc and the fade (from +9) has not begun.
+    const before = frame(directory, at - 8), swept = frame(directory, at + 8), gone = frame(directory, at + 19);
     const ox = Number(s.originScreenX), oy = Number(s.originScreenY), hero = Number(s.heroHeightPixels ?? 0);
     const outer = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY)), inner = Number(s.innerPixels ?? 0);
     // Samples every 5 degrees across the Core fan, just inside the band's outer edge (its brightest part); off-strip points drop out.
@@ -188,9 +188,9 @@ function checkBlade(directory, manifest) {
   const measured = results.filter(r => !r.skipped);
   const pass = {
     windup: results.length > 0 && results.every(r => r.skipped || (r.windupFrames >= 3 && r.windupFrames <= 5)),
-    // Centred on the hero (within 3% of a hero height of the rendered hero; the Core origin leads the rendered hero by
-    // up to a tick of movement), outer edge = Core reach clipped to the screen, never past it.
-    geometry: measured.length > 0 && measured.every(r => r.centreFromHeroPixels <= .1 * r.heroHeightPixels && r.outerPixels <= r.corePixels + 1),
+    // Centred on the drawn hero; outer edge = Core reach (reaching a hit drawn just past it), or the farthest on-screen hit
+    // when the reach runs past the play area.
+    geometry: measured.length > 0 && measured.every(r => r.centreFromHeroPixels <= .1 * r.heroHeightPixels && r.outerPixels <= r.corePixels + .1 * r.heroHeightPixels),
     // The band passes over every on-screen hit of its strike.
     overHits: measured.length > 0 && measured.every(r => r.hitsCovered === r.hits),
     size: measured.length > 0 && measured.every(r => r.thicknessPixels >= .44 * r.heroHeightPixels && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
@@ -201,7 +201,7 @@ function checkBlade(directory, manifest) {
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
   return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the rendered hero, outer edge at the Core reach clipped to the visible play area (never past it). Over hits = every on-screen hit of the strike lies inside the Core fan between the band\'s inner and outer edge. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 7 frames after it appears, minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames and its box clears the hero\'s silhouette box. Size = band >= .45 hero heights thick; evolved sword >= 3 hero heights.',
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; outer edge a circle at the Core reach, or at the farthest on-screen hit when the reach runs past the play area (review max/evolved). Over hits = every on-screen hit of the strike lies inside the Core fan between the band\'s inner and outer edge. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames and its box clears the hero\'s silhouette box. Size = band >= .45 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 

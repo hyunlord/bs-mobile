@@ -15,9 +15,10 @@ namespace Game.View
         public const int WindupFrames = 4;           // hero pulls the sword back (3–4)
         public const int HitHoldFrames = 4;          // struck enemies freeze (3–5) and are pushed along the swing
         public const float PushTangent = .75f, PushOutward = .55f;
-        // Arc band: one curved ribbon centred on the drawn hero. Its outer edge is a circle at the Core reach (the screen
-        // cuts it where the reach runs past the play area; it is never drawn wider than the farthest visible point of the
-        // swing), its inner edge reaches in over the strike's hit enemies. Across it: a bright blade edge EdgeHeroHeights
+        // Arc band: one curved ribbon centred on the drawn hero. Its outer edge is a circle at the Core reach; when less than
+        // half of that edge would be on screen (review max 3.2, evolved 6.0 world units against a ~1.3 half-width), the
+        // circle is drawn at the farthest on-screen hit instead, so the blade edge stays in view and still passes over every hit.
+        // Its inner edge reaches in over the strike's hit enemies. Across it: a bright blade edge EdgeHeroHeights
         // wide along the outside, a faint wash inward over the hits. The swing widens past the Core 90° only to pass over a
         // hit drawn just outside it. One afterimage trails it by AfterimageFrames.
         public const float MinBandHeroHeights = .45f, EdgeHeroHeights = .5f, EdgeOfPicture = .3f;
@@ -112,10 +113,17 @@ namespace Game.View
                 if (distance > HeroHeight * .2f) half = Mathf.Max(half, Mathf.Abs(Mathf.DeltaAngle(strike.Aim, Angle(offset))) + 3);
             }
             strike.Half = Mathf.Min(90, half);
-            var visible = M1BladeVisibleBounds(); var reach = 0f;
+            var visible = M1BladeVisibleBounds(); var reach = 0f; int bearings = 0, edgeShown = 0;
             for (var a = -strike.Half; a <= strike.Half + .01f; a += GiantBladeEnvelope.SampleDegrees)
-                reach = Mathf.Max(reach, GiantBladeEnvelope.VisibleReach(strike.Centre, M1Direction(strike.Aim + a), visible));
-            strike.Outer = Mathf.Min(Mathf.Max(strike.CoreRadius, farthest + HeroHeight * .05f), reach);
+            {
+                var along = GiantBladeEnvelope.VisibleReach(strike.Centre, M1Direction(strike.Aim + a), visible);
+                reach = Mathf.Max(reach, along); bearings++; if (along >= strike.CoreRadius) edgeShown++;
+            }
+            // At least half of the Core-reach edge on screen: draw it there. Otherwise the farthest on-screen hit.
+            strike.Outer = edgeShown * 2 >= bearings ? Mathf.Max(strike.CoreRadius, farthest + HeroHeight * .05f)
+                : strike.HitCount > 0 ? Mathf.Min(strike.CoreRadius, farthest + HeroHeight * .1f)
+                : GiantBladeEnvelope.SpanReach(strike.Centre, strike.Aim, strike.Half, visible) * .96f;
+            strike.Outer = Mathf.Min(strike.Outer, reach);
             var minimum = HeroHeight * BladeSpec.MinBandHeroHeights;
             strike.Inner = Mathf.Max(0, Mathf.Min(float.IsInfinity(nearest) ? strike.Outer - minimum : nearest - HeroHeight * .1f, strike.Outer - minimum));
             strike.Edge = Mathf.Min(HeroHeight * BladeSpec.EdgeHeroHeights, strike.Outer - strike.Inner);
@@ -371,7 +379,7 @@ namespace Game.View
                 Color color;
                 if (into <= 1)
                 {
-                    color = Color.Lerp(BladeSpec.Core, blue, Mathf.SmoothStep(.35f, .85f, into));
+                    color = Color.Lerp(BladeSpec.Core, blue, Mathf.SmoothStep(.5f, .95f, into));
                     color.a = Mathf.Lerp(1, .6f, Mathf.SmoothStep(.6f, 1, into));
                 }
                 else
