@@ -10,8 +10,11 @@ namespace Game.View
         public const int FadeFrames = 8;           // then fades out; gone 10 frames after the strike (8–10)
         public const int HitHoldFrames = 5;        // only struck enemies freeze (4–6), electric = longer than melee
         public const float HitShakeBodyWidths = .06f;
+        // Whole-screen flash only for the storm (evolution element), at half the first pilot's .13; ordinary strikes flash
+        // around their targets only.
         public const int ScreenBrightenFrames = 2;
-        public const float ScreenBrighten = .1f;
+        public const float StormScreenBrighten = .065f;
+        public static float ScreenBrighten(bool storm) => storm ? StormScreenBrighten : 0;
         public const float ScorchSeconds = .9f;
         // Core width 4–6 px and glow 16–24 px on a 390 pt portrait screen, scaled continuously with gear strength.
         public const float CoreMinPoints = 5, CoreMaxPoints = 6, GlowMinPoints = 20, GlowMaxPoints = 24;

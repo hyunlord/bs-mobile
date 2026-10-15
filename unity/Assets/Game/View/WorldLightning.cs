@@ -9,7 +9,7 @@ namespace Game.View
     {
         public int Tick, Links, SkyBolts, CoveredSkyBolts, OnScreenTargets, AcceptedFrame, VisibleFrame;
         public bool Storm;
-        public float Strength, CorePixels, GlowPixels;
+        public float Strength, CorePixels, GlowPixels, ScreenFlash;
         public Vector2 FirstSkyTargetScreen, FirstSkyTopScreen;
     }
 
@@ -284,9 +284,9 @@ namespace Game.View
                 }
                 var opacity = LightningSpec.StrikeOpacity(age);
                 if (opacity <= 0) continue;
-                if (age < LightningSpec.Seconds(LightningSpec.ScreenBrightenFrames))
+                if (age < LightningSpec.Seconds(LightningSpec.ScreenBrightenFrames) && LightningSpec.ScreenBrighten(strike.Storm) > 0)
                 {
-                    var light = Color.white; light.a = LightningSpec.ScreenBrighten * (strike.Storm ? 1.3f : 1);
+                    var light = Color.white; light.a = LightningSpec.ScreenBrighten(strike.Storm);
                     Draw(lightningSolid, LightningLayer, view.center, 0, view.size * 1.1f, 0, 1, light, applyTween: false);
                 }
                 var branches = LightningSpec.Branches(strike.Strength);
@@ -339,7 +339,7 @@ namespace Game.View
             strike.Recorded = true;
             if (LightningStrikeSample == null) return;
             var record = new LightningStrikeRecord { Tick = strike.Tick, Links = strike.Count, AcceptedFrame = strike.AcceptedFrame, VisibleFrame = PresentedFrames, SkyBolts = strike.SkyCount, Storm = strike.Storm, Strength = strike.Strength,
-                CorePixels = core / pixelsToWorld, GlowPixels = glow / pixelsToWorld, FirstSkyTargetScreen = new Vector2(-1, -1), FirstSkyTopScreen = new Vector2(-1, -1) };
+                CorePixels = core / pixelsToWorld, GlowPixels = glow / pixelsToWorld, ScreenFlash = LightningSpec.ScreenBrighten(strike.Storm), FirstSkyTargetScreen = new Vector2(-1, -1), FirstSkyTopScreen = new Vector2(-1, -1) };
             for (var i = 0; i < strike.Count; i++)
             {
                 if (!CameraWorldViewport.Contains(strike.To[i])) continue;

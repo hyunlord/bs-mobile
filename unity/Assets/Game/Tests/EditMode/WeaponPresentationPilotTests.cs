@@ -83,6 +83,8 @@ namespace Tests.EditMode
                 Assert.That(LightningSpec.GlowPoints(strength), Is.InRange(16f, 24f));
                 Assert.That(LightningSpec.Branches(strength), Is.InRange(3, 6));
             }
+            Assert.That(LightningSpec.ScreenBrighten(false), Is.Zero, "Ordinary strikes flash around their targets only.");
+            Assert.That(LightningSpec.ScreenBrighten(true), Is.EqualTo(.13f / 2).Within(.0001f), "Storm screen flash is half the first pilot's .13.");
             Assert.That(LightningSpec.Strength(1), Is.Zero);
             Assert.That(LightningSpec.Strength(1.56f), Is.LessThan(LightningSpec.Strength(3.12f)));
             Assert.That(LightningSpec.Strength(5.85f), Is.LessThan(LightningSpec.Strength(1e6f)).Or.EqualTo(1));
@@ -104,6 +106,15 @@ namespace Tests.EditMode
             LightningBolt.Branch(first, 0, first.Length, LightningBolt.Hash(42, 10), out var from, out var to);
             Assert.That(first.Contains(from), Is.True);
             Assert.That((to - from).magnitude, Is.InRange(1.7f, 3.5f));
+        }
+
+        [Test]
+        public void SoldiersAreOpaqueOutlinedAndThrustTheirSpearFarForward()
+        {
+            Assert.That(WorldRenderer.MinionTint.a, Is.EqualTo(1), "Opaque: lower saturation is not transparency.");
+            Assert.That(Mathf.Min(WorldRenderer.MinionTint.r, WorldRenderer.MinionTint.g, WorldRenderer.MinionTint.b), Is.GreaterThanOrEqualTo(.85f), "Keeps the armour's mid value.");
+            Assert.That(WorldRenderer.MinionOutlineTexels, Is.InRange(1f, 2f));
+            Assert.That(WorldRenderer.SpearThrustReach, Is.GreaterThanOrEqualTo(WorldRenderer.SpearRestReach * 1.8f), "The thrust visibly drives the spear forward.");
         }
 
         static MinionSquad.GroupInput Group(int id, MinionMode mode, Vector2 target, float nextHit = -1, int count = 3) => new MinionSquad.GroupInput

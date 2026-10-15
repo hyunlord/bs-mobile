@@ -8,8 +8,11 @@ namespace Game.View
     // the thrust frame; everything here is presentation.
     public sealed partial class WorldRenderer
     {
-        public static readonly Color MinionTint = new Color(.66f, .71f, .82f);   // with MinionWash: desaturated blue, allies below own attacks (P5)
-        public const float MinionWash = .3f, BannerWash = .85f;
+        // Opaque soldiers in their authored armour, only slightly cooled (lower saturation, same value; no wash to white, no
+        // transparency), with a dark 1–2px outline so they read against the ground and below own attacks (P5).
+        public static readonly Color MinionTint = new Color(.88f, .92f, 1f);
+        public const float MinionOutlineTexels = 1.5f, BannerWash = .3f;
+        public const float SpearRestReach = .7f, SpearThrustReach = 1.35f;   // spear length past the hand, in soldier heights
         readonly MinionSquad minions = new MinionSquad();
         readonly List<(int group, Vector2 at)> pendingGroupHits = new List<(int, Vector2)>(32);
         readonly Dictionary<int, float> groupLastHit = new Dictionary<int, float>(16);
@@ -95,7 +98,7 @@ namespace Game.View
             var art = MinionArt(a.Index);
             var size = art.WorldSize * Mathf.Max(.01f, a.Scale);
             var direction = a.Facing.sqrMagnitude > .000001f ? a.Facing : Vector2.right;
-            var offset = Vector2.zero; var degrees = 0f; var stretch = Vector2.one; var opacity = 1f;
+            var offset = Vector2.zero; var degrees = 0f; var stretch = Vector2.one;
             var speed = (a.Position - a.Previous).magnitude;
             if (speed > MinionSpec.StationaryStep * w)
             {
@@ -118,40 +121,53 @@ namespace Game.View
             }
             if (a.State == MinionState.Despawn)
             {
+                // Disperses by shrinking into a puff of dust; stays fully opaque.
                 var t = Mathf.Clamp01((visualTime - a.StateStarted) / MinionSpec.DespawnSeconds);
-                opacity = 1 - t; offset.y += t * .15f * size.y;
+                stretch *= 1 - t; offset.y += t * .15f * size.y;
                 DrawMinionDust(a.Position, size, 1 - t, 1 + t * .8f);
+                if (t >= 1) return;
             }
             var at = a.Position + offset;
             var drawn = Vector2.Scale(size, stretch);
             if (heroSilhouetteKnown) at = MusterFormationRule.ClearOfHero(at, drawn, art.Pivot, hero, clearance, direction);
-            var tint = MinionTint; tint.a = opacity;
             var facing = new ActorFacingPose(direction.x < 0 ? 1 : 0, 0);
-            DrawActor(art, GameVisualTokens.AllyLayer, at, visualTime + a.Index * .07f, drawn, false, -1, -1, tint: tint, flash: MinionWash, facing: facing,
-                poseOverride: new ActorPose(Vector2.zero, Vector2.one, degrees));
+            var pose = new ActorPose(Vector2.zero, Vector2.one, degrees);
+            var time = visualTime + a.Index * .07f;
+            DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: MinionTint, facing: facing, poseOverride: pose);
+            DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: GameVisualTokens.Ink, facing: facing, edgeTexels: MinionOutlineTexels, poseOverride: pose);
             RenderedMinionBounds?.Invoke(MusterFormationRule.SpriteRect(at, drawn, art.Pivot), a.State);
-            if (phase == 1 || phase == 2 && age < windup + thrust + MinionSpec.Seconds(2))
+            if (phase >= 0)
             {
-                // The spear itself drives out along the thrust so the attack reads at a glance.
+                // The spear drives straight out along the thrust: drawn back on the wind-up, at full reach on the thrust frames,
+                // then drawn in again, so a frame sheet shows it shoot forward.
                 var spear = Resolve("icon", "core:ditch_pike", "default");
-                var reach = size.y * (phase == 1 ? 1 : .8f);
-                var hand = at + direction * (.1f * w) + Vector2.up * size.y * .35f;
+                var recover = Mathf.Clamp01((age - windup - thrust) / MinionSpec.Seconds(MinionSpec.RecoverFrames));
+                var reach = size.y * (phase == 0 ? SpearRestReach * .85f : phase == 1 ? SpearThrustReach : Mathf.Lerp(SpearThrustReach, SpearRestReach, recover));
+                var hand = at + direction * ((phase == 0 ? -.15f : .1f) * w) + Vector2.up * size.y * .35f;
                 var tip = hand + direction * reach;
                 var shaft = Rect.MinMaxRect(Mathf.Min(hand.x, tip.x), Mathf.Min(hand.y, tip.y), Mathf.Max(hand.x, tip.x), Mathf.Max(hand.y, tip.y));
                 if (!heroSilhouetteKnown || !shaft.Overlaps(hero))
                 {
                     M1CombatSpearGeometry.PoseAlong(hand, direction, reach, spear.Pivot, out var spearAt, out var spearSize, out var spearDegrees);
-                    Draw(spear, GameVisualTokens.AllyLayer + 1, spearAt, 0, spearSize, spearDegrees, opacity, Color.white, applyTween: false);
+                    Draw(spear, GameVisualTokens.AllyLayer + 1, spearAt, 0, spearSize, spearDegrees, 1, Color.white, applyTween: false);
+                    Draw(spear, GameVisualTokens.AllyLayer + 1, spearAt, 0, spearSize, spearDegrees, 1, GameVisualTokens.Ink, edgeTexels: MinionOutlineTexels, applyTween: false);
+                    if (phase == 1)
+                    {
+                        // Bright glint on the spear tip at full reach.
+                        EnsureLightningArt();
+                        Draw(lightningFlash, GameVisualTokens.AllyLayer + 2, tip, 0, Vector2.one * w * .45f, 0, 1, new Color(1, .98f, .9f, .95f), applyTween: false);
+                    }
                     RenderedMinionBounds?.Invoke(shaft, a.State);
                 }
             }
             if (a.Charge && a.Index == 0 && a.State != MinionState.Despawn)
             {
-                // Evolution element: the flag bearer leads the charge under a gold banner.
+                // Evolution element: the flag bearer leads the charge under an opaque gold banner.
                 var banner = Resolve("icon", "core:levy_banner", "default");
                 var bannerSize = banner.WorldSize * (size.y * .62f / Mathf.Max(banner.WorldSize.x, banner.WorldSize.y));
-                // Washed toward white before tinting so the blue banner art reads as a gold flag.
-                Draw(banner, GameVisualTokens.AllyLayer + 1, at + Vector2.up * size.y * .95f, 0, bannerSize, Mathf.Sin(visualTime * 7) * 6, opacity, GameVisualTokens.Ready, BannerWash, applyTween: false);
+                var bannerAt = at + Vector2.up * size.y * .95f; var wave = Mathf.Sin(visualTime * 7) * 6;
+                Draw(banner, GameVisualTokens.AllyLayer + 1, bannerAt, 0, bannerSize, wave, 1, GameVisualTokens.Ready, BannerWash, applyTween: false);
+                Draw(banner, GameVisualTokens.AllyLayer + 1, bannerAt, 0, bannerSize, wave, 1, GameVisualTokens.Ink, edgeTexels: MinionOutlineTexels, applyTween: false);
                 MinionBearerFrames++;
             }
             if (a.Charge && a.Index <= 2 && (a.State == MinionState.Seek || a.State == MinionState.Attack)) ShoveEnemiesNear(at, direction, w);
