@@ -140,7 +140,6 @@ namespace Game.View
             {
                 // The spear drives straight out along the thrust: drawn back on the wind-up, at full reach on the thrust frames,
                 // then drawn in again, so a frame sheet shows it shoot forward.
-                var spear = Resolve("icon", "core:ditch_pike", "default");
                 var recover = Mathf.Clamp01((age - windup - thrust) / MinionSpec.Seconds(MinionSpec.RecoverFrames));
                 var reach = size.y * (phase == 0 ? SpearRestReach * .85f : phase == 1 ? SpearThrustReach : Mathf.Lerp(SpearThrustReach, SpearRestReach, recover));
                 var hand = at + direction * ((phase == 0 ? -.15f : .1f) * w) + Vector2.up * size.y * .35f;
@@ -148,15 +147,7 @@ namespace Game.View
                 var shaft = Rect.MinMaxRect(Mathf.Min(hand.x, tip.x), Mathf.Min(hand.y, tip.y), Mathf.Max(hand.x, tip.x), Mathf.Max(hand.y, tip.y));
                 if (!heroSilhouetteKnown || !shaft.Overlaps(hero))
                 {
-                    M1CombatSpearGeometry.PoseAlong(hand, direction, reach, spear.Pivot, out var spearAt, out var spearSize, out var spearDegrees);
-                    Draw(spear, GameVisualTokens.AllyLayer + 1, spearAt, 0, spearSize, spearDegrees, 1, Color.white, applyTween: false);
-                    Draw(spear, GameVisualTokens.AllyLayer + 1, spearAt, 0, spearSize, spearDegrees, 1, GameVisualTokens.Ink, edgeTexels: MinionOutlineTexels, applyTween: false);
-                    if (phase == 1)
-                    {
-                        // Bright glint on the spear tip at full reach.
-                        EnsureLightningArt();
-                        Draw(lightningFlash, GameVisualTokens.AllyLayer + 2, tip, 0, Vector2.one * w * .45f, 0, 1, new Color(1, .98f, .9f, .95f), applyTween: false);
-                    }
+                    DrawSpear(hand, tip, w, phase == 1);
                     RenderedMinionBounds?.Invoke(shaft, a.State);
                 }
             }
@@ -171,6 +162,25 @@ namespace Game.View
                 MinionBearerFrames++;
             }
             if (a.Charge && a.Index <= 2 && (a.State == MinionState.Seek || a.State == MinionState.Attack)) ShoveEnemiesNear(at, direction, w);
+        }
+
+        public static readonly Color SpearWood = new Color(.56f, .38f, .2f), SpearSteel = new Color(.93f, .95f, 1f);
+
+        // A drawn spear (not the diagonal pike icon, which cannot be thickened): outlined wooden shaft at least 3px thick and a
+        // bright steel diamond tip, with a glint at full reach so the thrust reads in a single frame.
+        void DrawSpear(Vector2 hand, Vector2 tip, float w, bool glint)
+        {
+            EnsureLightningArt();
+            var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+            var span = tip - hand; var length = span.magnitude;
+            if (length < .0001f) return;
+            var angle = Angle(span); var middle = (hand + tip) * .5f;
+            var thickness = Mathf.Max(3 * pixel, .06f * w); var outline = 1.5f * pixel; var head = Mathf.Max(7 * pixel, .16f * w);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, middle, 0, new Vector2(length + outline * 2, thickness + outline * 2), angle, 1, GameVisualTokens.Ink, applyTween: false);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, middle, 0, new Vector2(length, thickness), angle, 1, SpearWood, applyTween: false);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, tip, 0, Vector2.one * (head + outline * 2), angle + 45, 1, GameVisualTokens.Ink, applyTween: false);
+            Draw(lightningSolid, GameVisualTokens.AllyLayer + 1, tip, 0, Vector2.one * head, angle + 45, 1, SpearSteel, applyTween: false);
+            if (glint) Draw(lightningFlash, GameVisualTokens.AllyLayer + 2, tip, 0, Vector2.one * w * .7f, 0, 1, new Color(1, .98f, .9f, .95f), applyTween: false);
         }
 
         void DrawMinionDust(Vector2 at, Vector2 size, float opacity, float scale)
