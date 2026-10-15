@@ -214,13 +214,14 @@ function checkArrows(directory, manifest) {
     const entry = { frame: at, tick: Number(v.tick), evolved, impacts: Number(v.impacts), onScreen: Number(v.onScreenImpacts), shownToDue: Number(v.shownToDueFrames),
       landingContrast: +(peak - ground).toFixed(1) };
     if (evolved) {
-      // Warning circle: share of points on the Core radius with a water-blue pixel within 3px, 4 frames before landing.
+      // Warning circle: share of points on the Core radius with a translucent water-blue pixel (over grass, whose blue is ~90)
+      // within 3px, 4 frames before landing.
       const warn = frame(directory, due - 4);
       let hits = 0; const total = 32;
       for (let k = 0; k < total; k++) {
         const a = k / total * Math.PI * 2, px = x + Math.cos(a) * radius, py = iy - Math.sin(a) * radius;
         let found = false;
-        for (let d = -3; d <= 3 && !found; d++) for (let e = -3; e <= 3 && !found; e++) { const [r, g, b] = warn.at(px + d, py + e); if (b > 170 && b - r > 30 && g > 120) found = true; }
+        for (let d = -3; d <= 3 && !found; d++) for (let e = -3; e <= 3 && !found; e++) { const [r, g, b] = warn.at(px + d, py + e); if (b > 130 && b - r > 18) found = true; }
         if (found) hits++;
       }
       entry.warningRing = +(hits / total).toFixed(2);
