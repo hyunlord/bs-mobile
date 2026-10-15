@@ -15,11 +15,12 @@ namespace Game.View
         public const int WindupFrames = 4;           // hero pulls the sword back (3–4)
         public const int HitHoldFrames = 4;          // struck enemies freeze (3–5) and are pushed along the swing
         public const float PushTangent = .75f, PushOutward = .55f;
-        // Arc band: one curved ribbon centred on the drawn hero. Its outer edge is the Core reach (clipped to the visible
-        // play area), its inner edge reaches in over the strike's hit enemies, never thinner than MinBand hero heights. The
-        // picture is a bright blade edge along the outer part and a faint wash inward over the hits. One afterimage trails
-        // it by AfterimageFrames.
-        public const float MinBandHeroHeights = .45f, VisibleReachFill = .96f;
+        // Arc band: one curved ribbon centred on the drawn hero. Its outer edge is a circle at the Core reach (the screen
+        // cuts it where the reach runs past the play area; it is never drawn wider than the farthest visible point of the
+        // swing), its inner edge reaches in over the strike's hit enemies. Across it: a bright blade edge EdgeHeroHeights
+        // wide along the outside, a faint wash inward over the hits. The swing widens past the Core 90° only to pass over a
+        // hit drawn just outside it. One afterimage trails it by AfterimageFrames.
+        public const float MinBandHeroHeights = .45f, EdgeHeroHeights = .5f, EdgeOfPicture = .3f;
         public const int ArcColumns = 40, AfterimageFrames = 2;
         public const float AfterimageOpacity = .35f;
         // Evolution element: a giant sword falls point first, speeding up, onto the centre of the struck enemies, squashes
@@ -97,21 +98,27 @@ namespace Game.View
             }
         }
 
-        // The arc follows the drawn hero (the sword is in its hands); its inner edge is the nearest hit from there.
+        // The arc follows the drawn hero (the sword is in its hands). Outer edge: the Core reach, reaching any hit drawn just
+        // past it, but no wider than the farthest visible point of the swing. Inner edge: the nearest hit. Half angle: the
+        // Core 45°, widened to pass over a hit drawn just outside it.
         void CentreBladeArc(M1BladeStrike strike)
         {
-            strike.Centre = RenderedLordPosition; strike.Inner = float.PositiveInfinity;
-            for (var i = 0; i < strike.HitCount; i++) strike.Inner = Mathf.Min(strike.Inner, (strike.Hits[i] - strike.Centre).magnitude);
-        }
-
-        // Outer edge of the arc along a bearing: the Core reach, clipped to the visible play area.
-        float BladeOuter(M1BladeStrike strike, float degrees, Rect visible)
-            => Mathf.Min(strike.CoreRadius, GiantBladeEnvelope.VisibleReach(strike.Centre, M1Direction(degrees), visible) * BladeSpec.VisibleReachFill);
-
-        float BladeInner(M1BladeStrike strike, float outer)
-        {
-            var inner = float.IsInfinity(strike.Inner) ? outer - HeroHeight * BladeSpec.MinBandHeroHeights : strike.Inner - HeroHeight * .1f;
-            return Mathf.Max(0, Mathf.Min(inner, outer - HeroHeight * BladeSpec.MinBandHeroHeights));
+            strike.Centre = RenderedLordPosition;
+            float nearest = float.PositiveInfinity, farthest = 0, half = GiantBladeEnvelope.CoreHalfAngle;
+            for (var i = 0; i < strike.HitCount; i++)
+            {
+                var offset = strike.Hits[i] - strike.Centre; var distance = offset.magnitude;
+                nearest = Mathf.Min(nearest, distance); farthest = Mathf.Max(farthest, distance);
+                if (distance > HeroHeight * .2f) half = Mathf.Max(half, Mathf.Abs(Mathf.DeltaAngle(strike.Aim, Angle(offset))) + 3);
+            }
+            strike.Half = Mathf.Min(90, half);
+            var visible = M1BladeVisibleBounds(); var reach = 0f;
+            for (var a = -strike.Half; a <= strike.Half + .01f; a += GiantBladeEnvelope.SampleDegrees)
+                reach = Mathf.Max(reach, GiantBladeEnvelope.VisibleReach(strike.Centre, M1Direction(strike.Aim + a), visible));
+            strike.Outer = Mathf.Min(Mathf.Max(strike.CoreRadius, farthest + HeroHeight * .05f), reach);
+            var minimum = HeroHeight * BladeSpec.MinBandHeroHeights;
+            strike.Inner = Mathf.Max(0, Mathf.Min(float.IsInfinity(nearest) ? strike.Outer - minimum : nearest - HeroHeight * .1f, strike.Outer - minimum));
+            strike.Edge = Mathf.Min(HeroHeight * BladeSpec.EdgeHeroHeights, strike.Outer - strike.Inner);
         }
 
         void DrawBladeStrikes()
@@ -143,29 +150,31 @@ namespace Game.View
         {
             opacity *= GiantBladeEnvelope.Opacity(age);
             if (opacity <= 0) return;
-            var half = GiantBladeEnvelope.CoreHalfAngle; var aim = strike.Aim;
+            var half = strike.Half; var aim = strike.Aim;
             var start = aim - half;
             var lead = GiantBladeEnvelope.SweepAngle(aim, half, age);
             var hold = Mathf.Max(GiantBladeEnvelope.SweepSeconds, GiantBladeEnvelope.HoldSeconds);
             var fade = Mathf.Clamp01((age - hold) / GiantBladeEnvelope.FadeSeconds);
             var tail = Mathf.Lerp(start, lead, fade * fade);
             if (lead - tail < .5f) return;
-            var visible = M1BladeVisibleBounds();
             var ribbon = NextRibbon();
             var columns = BladeSpec.ArcColumns;
-            var vertices = new Vector3[(columns + 1) * 2]; var uvs = new Vector2[vertices.Length]; var triangles = new int[columns * 6];
+            // Three rows per column: inner edge (v 0), start of the bright blade edge (v 1 - EdgeOfPicture), outer edge (v 1),
+            // so the blade edge keeps its width whatever the band's.
+            var vertices = new Vector3[(columns + 1) * 3]; var uvs = new Vector2[vertices.Length]; var triangles = new int[columns * 12];
+            var radii = new[] { strike.Inner, strike.Outer - strike.Edge, strike.Outer }; var rows = new[] { 0, 1 - BladeSpec.EdgeOfPicture, 1 };
             // The picture spans the whole swing: the drawn part shows the slice from the tail to the leading edge.
             for (var i = 0; i <= columns; i++)
             {
                 var degrees = Mathf.Lerp(tail, lead, i / (float)columns);
-                var outer = BladeOuter(strike, degrees, visible); var inner = BladeInner(strike, outer);
-                var direction = M1Direction(degrees);
-                vertices[i * 2] = strike.Centre + direction * inner; vertices[i * 2 + 1] = strike.Centre + direction * outer;
-                var u = Mathf.InverseLerp(start, lead, degrees);
-                uvs[i * 2] = new Vector2(u, 0); uvs[i * 2 + 1] = new Vector2(u, 1);
+                var direction = M1Direction(degrees); var u = Mathf.InverseLerp(start, lead, degrees);
+                for (var r = 0; r < 3; r++) { vertices[i * 3 + r] = strike.Centre + direction * radii[r]; uvs[i * 3 + r] = new Vector2(u, rows[r]); }
                 if (i == columns) continue;
-                var t = i * 6; var v = i * 2;
-                triangles[t] = v; triangles[t + 1] = v + 1; triangles[t + 2] = v + 3; triangles[t + 3] = v; triangles[t + 4] = v + 3; triangles[t + 5] = v + 2;
+                for (var r = 0; r < 2; r++)
+                {
+                    var t = i * 12 + r * 6; var v = i * 3 + r;
+                    triangles[t] = v; triangles[t + 1] = v + 1; triangles[t + 2] = v + 4; triangles[t + 3] = v; triangles[t + 4] = v + 4; triangles[t + 5] = v + 3;
+                }
             }
             var mesh = ribbon.Mesh; mesh.Clear(); mesh.vertices = vertices; mesh.uv = uvs; mesh.triangles = triangles; mesh.RecalculateBounds();
             var color = Color.white; color.a = opacity; ribbon.Color = color;
@@ -215,7 +224,8 @@ namespace Game.View
         Vector2 SwordLanding(M1BladeStrike strike, float length, float width, out float shift)
         {
             var visible = M1BladeVisibleBounds();
-            var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount : strike.Origin + M1Direction(strike.Aim) * (BladeOuter(strike, strike.Aim, visible) * .6f);
+            var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount
+                : strike.Origin + M1Direction(strike.Aim) * (Mathf.Min(strike.CoreRadius, GiantBladeEnvelope.VisibleReach(strike.Origin, M1Direction(strike.Aim), visible)) * .6f);
             var landing = crowd;
             var hero = SwordHeroBox(strike);
             if (SwordOverlapsHero(landing, length, width, hero))
@@ -344,8 +354,9 @@ namespace Game.View
             return texture;
         }
 
-        // Band picture: a bright blade edge along the outer part (white at the very edge over a thin ink line, saturated sky
-        // blue below it) and a faint blue wash inward over the hits; thin and faint at the tail (u 0), full at the tip (u 1).
+        // Band picture: the outer EdgeOfPicture is the bright blade edge (white along the outside over a thin ink line,
+        // saturated sky blue toward its inner side; thinner toward the tail), the rest a faint blue wash inward over the
+        // hits. Faint at the tail (u 0), full at the tip (u 1).
         ArtVisual TemporarySlash()
         {
             const int width = 256, height = 128;
@@ -354,20 +365,19 @@ namespace Game.View
             {
                 var u = (x + .5f) / width; var v = (y + .5f) / height;
                 var tailFade = Mathf.SmoothStep(0, 1, u / .3f);
-                var edge = .18f + .14f * Mathf.Pow(u, 1.2f);         // bright edge: share of the band from the outer side
-                var into = (1 - v) / edge;                            // 0 at the outer edge, 1 where the bright edge ends
                 if (y == height - 1) { var line = ink; line.a = .9f * tailFade; return line; }
+                var edge = BladeSpec.EdgeOfPicture * (.35f + .65f * u);   // blade edge thins toward the tail
+                var into = (1 - v) / edge;                                 // 0 outside, 1 where the blade edge ends
                 Color color;
                 if (into <= 1)
                 {
-                    color = Color.Lerp(BladeSpec.Core, blue, Mathf.SmoothStep(.2f, .7f, into));
-                    color.a = Mathf.Lerp(1, .55f, Mathf.SmoothStep(.5f, 1, into));
+                    color = Color.Lerp(BladeSpec.Core, blue, Mathf.SmoothStep(.35f, .85f, into));
+                    color.a = Mathf.Lerp(1, .6f, Mathf.SmoothStep(.6f, 1, into));
                 }
                 else
                 {
-                    // Faint wash from the end of the bright edge to the inner edge, softened at the inner edge.
                     color = blue;
-                    color.a = Mathf.Lerp(.55f, .14f, Mathf.SmoothStep(0, .12f, (1 - v) - edge)) * Mathf.SmoothStep(0, .06f, v);
+                    color.a = Mathf.Lerp(.45f, .12f, Mathf.SmoothStep(0, .25f, (1 - v) - edge)) * Mathf.SmoothStep(0, .08f, v);
                 }
                 color.a *= tailFade;
                 return color;
@@ -476,22 +486,21 @@ namespace Game.View
         {
             strike.Recorded = true;
             if (BladeStrikeSample == null) return;
-            var visible = M1BladeVisibleBounds();
-            var outer = BladeOuter(strike, strike.Aim, visible); var inner = BladeInner(strike, outer);
-            // Hits the drawn band passes over: inside the Core fan, between the band's inner and outer edge on their bearing.
+            var outer = strike.Outer; var inner = strike.Inner;
+            // Hits the drawn band passes over: inside its swing, between its inner and outer edge (hits under the hero's feet,
+            // within .2 hero heights of the centre, count as passed over at any bearing).
             var covered = 0;
             for (var i = 0; i < strike.HitCount; i++)
             {
-                var offset = strike.Hits[i] - strike.Centre; var bearing = Angle(offset);
-                if (Mathf.Abs(Mathf.DeltaAngle(strike.Aim, bearing)) > GiantBladeEnvelope.CoreHalfAngle + 1) continue;
-                var edge = BladeOuter(strike, bearing, visible);
-                if (offset.magnitude >= BladeInner(strike, edge) - HeroHeight * .05f && offset.magnitude <= edge + HeroHeight * .05f) covered++;
+                var offset = strike.Hits[i] - strike.Centre; var distance = offset.magnitude;
+                var inside = distance <= HeroHeight * .2f || Mathf.Abs(Mathf.DeltaAngle(strike.Aim, Angle(offset))) <= strike.Half + .5f;
+                if (inside && distance >= inner - HeroHeight * .05f && distance <= outer + HeroHeight * .05f) covered++;
             }
             Vector2 Screen(Vector2 world) => renderCamera.WorldToScreenPoint(world);
             var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount : strike.Origin;
             var swordAt = strike.SwordAt;
             BladeStrikeSample(new BladeStrikeRecord { Tick = strike.Tick, AcceptedFrame = strike.AcceptedFrame, VisibleFrame = PresentedFrames, Evolved = strike.Evolved,
-                Radius = strike.CoreRadius, HalfAngle = GiantBladeEnvelope.CoreHalfAngle, OriginScreen = Screen(strike.Centre), Aim = strike.Aim,
+                Radius = strike.CoreRadius, HalfAngle = strike.Half, OriginScreen = Screen(strike.Centre), Aim = strike.Aim,
                 HeroScreen = Screen(RenderedLordPosition),
                 CoreRadiusPixels = strike.CoreRadius / PixelsToWorld,
                 RadiusPixels = Screen(strike.Centre + M1Direction(strike.Aim) * outer) - Screen(strike.Centre),
