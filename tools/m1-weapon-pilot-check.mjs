@@ -30,42 +30,43 @@ function flanked(image, x, y) {
   for (let d = 1; d <= 8; d++) if (violet(image.at(x - d, y)) || violet(image.at(x + d, y))) return true;
   return false;
 }
-// The pillar runs from its logged top to the target (Unity screen y is bottom-up). Rows of the band 20 to 110 px above the
-// target are searched around the straight line between the two, wide enough for the zigzag (.14 of the length at most).
+// The pillar runs from its logged top to the target (Unity screen y is bottom-up). Rows from 25% to 85% of its length are
+// searched around the straight line between the two, wide enough for the zigzag (.14 of the length at most). The lower part
+// overlaps the struck target and the hero (often mid white hit-flash), so it is left out.
 function line(height, s) {
   const x = Number(s.firstSkyScreenX), y0 = height - Number(s.firstSkyScreenY);
   const hasTop = s.firstSkyTopScreenX !== undefined && Number(s.firstSkyTopScreenX) >= 0;
   const topX = hasTop ? Number(s.firstSkyTopScreenX) : x, topY = hasTop ? height - Number(s.firstSkyTopScreenY) : y0 - 300;
   const span = Math.max(1, y0 - topY);
-  return { y0, center: y => x + (topX - x) * (y0 - y) / span, half: hasTop ? .16 * span + 12 : Window };
+  return { y0, from: Math.round(y0 - .85 * span), to: Math.round(y0 - .25 * span), center: y => x + (topX - x) * (y0 - y) / span, half: hasTop ? .16 * span + 12 : Window };
 }
 function corePixels(directory, index, s) {
-  const image = frame(directory, index); const { y0, center, half } = line(image.height, s);
+  const image = frame(directory, index); const { from, to, center, half } = line(image.height, s);
   let count = 0;
-  for (let y = y0 - 110; y <= y0 - 20; y++) { const c = center(y); for (let x = Math.round(c - half); x <= c + half; x++)
+  for (let y = from; y <= to; y++) { const c = center(y); for (let x = Math.round(c - half); x <= c + half; x++)
     if (white(image.at(x, y)) && flanked(image, x, y)) count++; }
   return count;
 }
 function pillar(directory, index, s) {
   const image = frame(directory, index); const geometry = line(image.height, s);
   let core = 0;
-  for (let y = geometry.y0 - 110; y <= geometry.y0 - 20; y++) { const c = geometry.center(y);
+  for (let y = geometry.from; y <= geometry.to; y++) { const c = geometry.center(y);
     for (let x = Math.round(c - geometry.half); x <= c + geometry.half; x++) if (flanked(image, x, y)) core = Math.max(core, luma(image.at(x, y))); }
   return { image, geometry, core };
 }
-function ground(directory, index, screenX, screenY) {
-  const image = frame(directory, index); const y0 = image.height - screenY;
+function ground(directory, index, s) {
+  const image = frame(directory, index); const { from, to, center } = line(image.height, s);
   let sum = 0, count = 0;
-  for (let y = y0 - 110; y <= y0 - 20; y += 2) for (let x = screenX - 30; x <= screenX + 30; x += 2) { sum += luma(image.at(x, y)); count++; }
+  for (let y = from; y <= to; y += 2) { const c = center(y); for (let x = Math.round(c - 30); x <= c + 30; x += 2) { sum += luma(image.at(x, y)); count++; } }
   return sum / count;
 }
 // Bolt widths traced along the pillar: every horizontal run of violet-flanked near-white pixels is a core crossing. A slanted
 // band crosses a row in h = w / cos and a column in v = w / sin, so the perpendicular width is h*v / sqrt(h^2 + v^2). The
 // violet bloom run around the core gives the glow width with the same slant correction. Branches are thinner by design, so
 // each row keeps its widest crossing (the main bolt) and the median over rows is reported.
-function widths(image, { y0, center, half }) {
+function widths(image, { from, to, center, half }) {
   const cores = [], glows = [];
-  for (let y = y0 - 108; y <= y0 - 22; y += 2) {
+  for (let y = from; y <= to; y += 2) {
     let rowCore = 0, rowGlow = 0;
     const c = center(y);
     for (let x = Math.round(c - half); x <= c + half; x++) {
@@ -100,7 +101,7 @@ function checkLightning(directory, manifest) {
     // Frame 0 rows were logged before recording started (warm-up), so there is no strike frame to look at.
     if (x < 0 || at <= 0) continue;
     const before = Math.max(0, at - 8);
-    const background = ground(directory, before, x, y);
+    const background = ground(directory, before, s);
     const strike = pillar(directory, at, s);
     const measured = widths(strike.image, strike.geometry);
     const telegraph = Number(s.telegraphFrames);
@@ -122,7 +123,7 @@ function checkLightning(directory, manifest) {
     reaction: p.lightningDeferredHits === p.lightningPresentedHits && (p.enemyDeathDropped ?? 0) === 0,
   };
   return { strikes: results.length, stormStrikes: results.filter(r => r.storm).length, skyBolts: results.reduce((n, r) => n + r.skyBolts, 0), coveredSkyBolts: results.reduce((n, r) => n + r.coveredSkyBolts, 0), pass, thresholds: { contrast: thresholds.contrast, corePixels: thresholds.corePixels, glowPixels: thresholds.glowPixels, telegraphFrames: thresholds.telegraphFrames, fadeFrames: thresholds.fadeFrames },
-    note: 'Telegraph frames = presented frames between the chain-link delivery and the visible strike (renderer log). Fade = first frame after the strike with <=5% of its near-white, violet-flanked core pixels left in the pillar band (+1 frame tolerance for JPEG and bloom tails). Pixel widths are medians over rows of the widest violet-flanked core crossing in the pillar band (the main bolt; branches are thinner by design), slant-corrected to the perpendicular width; strikes with fewer than 3 such rows are reported but not gated on measured width.',
+    note: 'Telegraph frames = presented frames between the chain-link delivery and the visible strike (renderer log). Fade = first frame after the strike with <=5% of its near-white, violet-flanked core pixels left along the pillar (+1 frame tolerance for JPEG and bloom tails). Pixel widths are medians over rows of the widest violet-flanked core crossing along the pillar between 25% and 85% of its length (the main bolt; branches are thinner by design), slant-corrected to the perpendicular width; strikes with fewer than 3 such rows are reported but not gated on measured width.',
     deferredHits: p.lightningDeferredHits, presentedHits: p.lightningPresentedHits, rows: results };
 }
 

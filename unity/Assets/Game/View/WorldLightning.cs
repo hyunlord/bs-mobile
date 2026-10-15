@@ -101,13 +101,17 @@ namespace Game.View
         {
             strike.SkyAssigned = true; strike.SkyCount = 0;
             var limit = strike.Storm ? LightningSpec.MaxSkyBolts : 1;
-            for (var pass = 0; pass < 2 && strike.SkyCount < limit; pass++)
+            // Victims near the screen edge get a pillar cut by the edge, so inset ones come first.
+            var inset = Mathf.Min(view.width * .12f, glow * 4);
+            var inner = Rect.MinMaxRect(view.xMin + inset, view.yMin + inset, view.xMax - inset, view.yMax - inset);
+            for (var pass = 0; pass < 3 && strike.SkyCount < limit; pass++)
             {
-                if (pass == 1 && strike.SkyCount > 0) break;
+                if (pass == 2 && strike.SkyCount > 0) break;
                 for (var i = 0; i < strike.Count && strike.SkyCount < limit; i++)
                 {
                     if (strike.Sky[i] || !view.Contains(strike.To[i])) continue;
-                    if (pass == 0 && !PillarClearOfHero(strike.To[i], PillarHeight(strike.To[i], view), glow)) continue;
+                    if (pass == 0 && !inner.Contains(strike.To[i])) continue;
+                    if (pass < 2 && !PillarClearOfHero(strike.To[i], PillarHeight(strike.To[i], view), glow)) continue;
                     strike.Sky[i] = true; strike.SkyCount++;
                 }
             }
