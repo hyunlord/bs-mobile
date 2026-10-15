@@ -11,6 +11,7 @@ using SowSiege.Sim;
 try
 {
     var coreAssembly = CoreAssemblyMetadata.VerifyHostBinding();
+    if (args.Length > 0 && args[0] == "forge-walk-fixture") { return ForgeWalkFixtureCli.Run(args); }
     if (args.Length > 0 && args[0] == "combined-showcase-replay") { return CombinedShowcaseFixtureCli.Verify(args); }
     if (args.Length > 0 && args[0] == "combined-showcase-fixture") { return CombinedShowcaseFixtureCli.Run(args); }
     if (args.Length > 0 && args[0] == "showcase-fixtures") { return ShowcaseFixtureCli.Run(args); }

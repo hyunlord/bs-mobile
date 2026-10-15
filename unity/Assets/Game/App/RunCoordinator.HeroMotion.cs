@@ -53,7 +53,7 @@ namespace Game.App
                 if (cameraScaleComparison == null) world.ReviewCameraMagnification = 1;
             }
             else world.PrepareHeroKnight();
-            if (heroProductionReview != null) world.ConfigureHeroProduction(heroProductionReview.ManifestPath,heroProductionReview.Direction,combatReview!=null);
+            if (heroProductionReview != null) world.ConfigureHeroProduction(heroProductionReview.ManifestPath,heroProductionReview.Direction,combatReview!=null,heroProductionReview.WalkingPilot);
             if (weaponShowcaseReview != null)
             {
                 weaponShowcaseReview.Configure(world);
