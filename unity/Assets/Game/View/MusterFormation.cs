@@ -35,6 +35,20 @@ namespace Game.View
             { count = Math.Max(count, reference.Levels[i].Count); range = Math.Max(range, reference.Levels[i].Range); }
         }
 
+        // Growth of a gear from the canonical Lv1 of the same gear, 0..1: the larger of its count and range doublings over
+        // that Lv1, over TierDoublings. Unlike Ratio (measured against the canonical top level and floored at 1, so every
+        // gear at or below the top level reads 1), this separates a review Lv1 from a review max.
+        public const float TierDoublings = 3;
+        public static float Tier(WaveGearDefinition runtime, int level, WaveGearDefinition reference)
+        {
+            Effective(runtime, level, out var count, out var range);
+            reference ??= runtime;
+            var baseCount = reference.Levels != null && reference.Levels.Length > 0 ? reference.Levels[0].Count : reference.Count;
+            var baseRange = reference.Levels != null && reference.Levels.Length > 0 ? reference.Levels[0].Range : reference.Range;
+            var doublings = Mathf.Max(Mathf.Log(Mathf.Max(1, count) / (float)Math.Max(1, baseCount), 2), Mathf.Log(Mathf.Max(1, range) / (float)Math.Max(1, baseRange), 2));
+            return Mathf.Clamp01(doublings / TierDoublings);
+        }
+
         public static void Effective(WaveGearDefinition runtime, int level, out int count, out int range)
         {
             if (runtime.Levels == null || runtime.Levels.Length == 0) { count = runtime.Count; range = runtime.Range; return; }

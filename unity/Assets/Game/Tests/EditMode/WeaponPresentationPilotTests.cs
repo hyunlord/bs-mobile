@@ -152,6 +152,14 @@ namespace Tests.EditMode
             Assert.That(BladeSpec.SwordScale(0).y, Is.LessThan(1)); Assert.That(BladeSpec.SwordScale(0).x, Is.GreaterThan(1), "Squashes as it plants.");
             Assert.That(BladeSpec.SwordScale(BladeSpec.Seconds(BladeSpec.SwordSquashFrames)), Is.EqualTo(Vector2.one));
             Assert.That(BladeSpec.SwordStaySeconds, Is.EqualTo(.5f).Within(1e-5f), "Stays planted half a second before it splits away.");
+            Assert.That(BladeSpec.ArcScreenFill, Is.EqualTo(.85f).Within(1e-5f), "Arc radius: min(Core reach, short half-width x .85).");
+            Assert.That(BladeSpec.BandHeroHeights(0), Is.LessThan(BladeSpec.BandHeroHeights(BladeSpec.NormalStageShare)), "Band widens Lv1 < max.");
+            Assert.That(BladeSpec.BandHeroHeights(BladeSpec.NormalStageShare), Is.LessThan(BladeSpec.BandHeroHeights(1)), "Band widens max < evolved.");
+            Assert.That(BladeSpec.HalfAngle(0), Is.EqualTo(GiantBladeEnvelope.CoreHalfAngle)); Assert.That(BladeSpec.HalfAngle(1), Is.GreaterThan(BladeSpec.HalfAngle(.5f)));
+            var room = .8f; var drop = BladeSpec.SwordDropFor(room, 10);
+            for (var k = BladeSpec.SwordFallFrames - BladeSpec.SwordShownFallFrames + 1; k <= BladeSpec.SwordFallFrames; k++)
+                Assert.That(BladeSpec.SwordDrop(BladeSpec.Seconds(k), drop), Is.LessThanOrEqualTo(room + 1e-4f), $"Blade in view on fall frame {k}.");
+            Assert.That(BladeSpec.SwordShownFallFrames, Is.GreaterThanOrEqualTo(5));
             Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
             Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");

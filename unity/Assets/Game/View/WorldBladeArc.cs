@@ -15,19 +15,33 @@ namespace Game.View
         public const int WindupFrames = 4;           // hero pulls the sword back (3–4)
         public const int HitHoldFrames = 4;          // struck enemies freeze (3–5) and are pushed along the swing
         public const float PushTangent = .75f, PushOutward = .55f;
-        // Arc band: one curved ribbon centred on the drawn hero. Its outer edge is a circle at the Core reach; when less than
-        // half of that edge would be on screen (review max 3.2, evolved 6.0 world units against a ~1.3 half-width), the
-        // circle is drawn at the farthest on-screen hit instead, so the blade edge stays in view and still passes over every hit.
-        // Its inner edge reaches in over the strike's hit enemies. Across it: a bright blade edge EdgeHeroHeights
-        // wide along the outside, a faint wash inward over the hits. The swing widens past the Core 90° only to pass over a
-        // hit drawn just outside it. One afterimage trails it by AfterimageFrames.
-        public const float MinBandHeroHeights = .45f, EdgeHeroHeights = .5f, EdgeOfPicture = .3f;
+        // Arc band: one curved ribbon centred on the drawn hero, the same shape for every swing of a stage. Radius
+        // r = min(Core reach, ArcScreenFill × the visible play area's short half-width), so the whole swing stays on screen
+        // (review max 3.2 and evolved 6.0 world units run far past it). Band width and swing angle grow with the stage
+        // (Lv1 < max < evolved): width MinBand..MaxBand hero heights, half angle Core 45° .. MaxHalfAngle. Across the band:
+        // a bright blade edge (EdgeShare of it, outside) over a faint wash. One afterimage trails it by AfterimageFrames.
+        public const float ArcScreenFill = .85f, MinBandHeroHeights = .55f, MaxBandHeroHeights = 1f, MaxHalfAngle = 65, EdgeShare = .45f, EdgeOfPicture = .3f;
+        // Stage 0..1 of a strike: evolved 1, else NormalStageShare of the gear's growth over its canonical Lv1.
+        public const float NormalStageShare = .75f;
+        public static float BandHeroHeights(float stage) => Mathf.Lerp(MinBandHeroHeights, MaxBandHeroHeights, stage);
+        public static float HalfAngle(float stage) => Mathf.Lerp(GiantBladeEnvelope.CoreHalfAngle, MaxHalfAngle, stage);
         public const int ArcColumns = 40, AfterimageFrames = 2;
         public const float AfterimageOpacity = .35f;
-        // Evolution element: a giant sword falls point first, speeding up, onto the centre of the struck enemies, squashes
-        // as it plants, stays, then splits in two and fades. It never overlaps the hero.
-        public const int SwordFallFrames = 9, SwordSquashFrames = 2, SwordSplitFrames = 9;
-        public const float SwordStaySeconds = .5f, SwordHeroHeights = 3.2f, SwordDropHeight = .6f, SwordHeroGap = .15f;
+        // Evolution element: a giant sword falls point first, speeding up, onto the densest cluster of struck enemies (never
+        // within SwordHeroClear hero heights of the hero's centre, and SwordScreenMargin of the play area inside its edges so
+        // the blade and where it plants are never cut; only the hilt may run past the top), squashes as it plants, stays,
+        // then its two halves part sideways and fade. The blade is on screen for at least the last SwordShownFallFrames of
+        // the fall.
+        public const int SwordFallFrames = 9, SwordSquashFrames = 2, SwordSplitFrames = 9, SwordShownFallFrames = 5;
+        public const float SwordStaySeconds = .5f, SwordHeroHeights = 3.2f, SwordDropHeight = .6f;
+        public const float SwordHeroClear = .6f, SwordClusterHeroHeights = .8f, SwordScreenMargin = .1f, SwordShownBlade = .3f;
+        // Highest drop (tip above the landing point) that keeps the tip SwordShownBlade hero heights under the top edge from
+        // fall frame SwordFallFrames - SwordShownFallFrames + 1 on.
+        public static float SwordDropFor(float roomAbove, float preferred)
+        {
+            var f = (SwordFallFrames - SwordShownFallFrames + 1) / (float)SwordFallFrames;
+            return Mathf.Max(0, Mathf.Min(preferred, roomAbove / (1 - f * f)));
+        }
         public const float SwordSquash = .14f;       // plant: x wider, y shorter by this fraction on the first squash frame
         public const int DustPuffs = 8;
         public const float CrackRevealSeconds = 6 / 60f;
@@ -99,34 +113,15 @@ namespace Game.View
             }
         }
 
-        // The arc follows the drawn hero (the sword is in its hands). Outer edge: the Core reach, reaching any hit drawn just
-        // past it, but no wider than the farthest visible point of the swing. Inner edge: the nearest hit. Half angle: the
-        // Core 45°, widened to pass over a hit drawn just outside it.
+        // The arc follows the drawn hero (the sword is in its hands); its shape depends on the stage only.
         void CentreBladeArc(M1BladeStrike strike)
         {
             strike.Centre = RenderedLordPosition;
-            float nearest = float.PositiveInfinity, farthest = 0, half = GiantBladeEnvelope.CoreHalfAngle;
-            for (var i = 0; i < strike.HitCount; i++)
-            {
-                var offset = strike.Hits[i] - strike.Centre; var distance = offset.magnitude;
-                nearest = Mathf.Min(nearest, distance); farthest = Mathf.Max(farthest, distance);
-                if (distance > HeroHeight * .2f) half = Mathf.Max(half, Mathf.Abs(Mathf.DeltaAngle(strike.Aim, Angle(offset))) + 3);
-            }
-            strike.Half = Mathf.Min(90, half);
-            var visible = M1BladeVisibleBounds(); var reach = 0f; int bearings = 0, edgeShown = 0;
-            for (var a = -strike.Half; a <= strike.Half + .01f; a += GiantBladeEnvelope.SampleDegrees)
-            {
-                var along = GiantBladeEnvelope.VisibleReach(strike.Centre, M1Direction(strike.Aim + a), visible);
-                reach = Mathf.Max(reach, along); bearings++; if (along >= strike.CoreRadius) edgeShown++;
-            }
-            // At least half of the Core-reach edge on screen: draw it there. Otherwise the farthest on-screen hit.
-            strike.Outer = edgeShown * 2 >= bearings ? Mathf.Max(strike.CoreRadius, farthest + HeroHeight * .05f)
-                : strike.HitCount > 0 ? Mathf.Min(strike.CoreRadius, farthest + HeroHeight * .1f)
-                : GiantBladeEnvelope.SpanReach(strike.Centre, strike.Aim, strike.Half, visible) * .96f;
-            strike.Outer = Mathf.Min(strike.Outer, reach);
-            var minimum = HeroHeight * BladeSpec.MinBandHeroHeights;
-            strike.Inner = Mathf.Max(0, Mathf.Min(float.IsInfinity(nearest) ? strike.Outer - minimum : nearest - HeroHeight * .1f, strike.Outer - minimum));
-            strike.Edge = Mathf.Min(HeroHeight * BladeSpec.EdgeHeroHeights, strike.Outer - strike.Inner);
+            var visible = M1BladeVisibleBounds();
+            strike.Half = BladeSpec.HalfAngle(strike.Stage);
+            strike.Outer = Mathf.Min(strike.CoreRadius, Mathf.Min(visible.width, visible.height) * .5f * BladeSpec.ArcScreenFill);
+            var band = Mathf.Min(HeroHeight * BladeSpec.BandHeroHeights(strike.Stage), strike.Outer * .6f);
+            strike.Inner = strike.Outer - band; strike.Edge = band * BladeSpec.EdgeShare;
         }
 
         void DrawBladeStrikes()
@@ -227,35 +222,42 @@ namespace Game.View
             }
         }
 
-        // Where the giant sword plants: the centre of the strike's on-screen hits (or along the aim without any), moved
-        // sideways off the hero and kept inside the visible play area.
-        Vector2 SwordLanding(M1BladeStrike strike, float length, float width, out float shift)
+        // Where the giant sword plants: the densest cluster of the strike's on-screen hits (the mean of the hits within
+        // SwordCluster of the hit with the most such neighbours; along the aim without hits), outside SwordHeroClear of
+        // the hero's centre, and SwordScreenMargin of the play area (at least half the sword's width) inside its edges.
+        Vector2 SwordLanding(M1BladeStrike strike, float width, out Vector2 crowd)
         {
             var visible = M1BladeVisibleBounds();
-            var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount
-                : strike.Origin + M1Direction(strike.Aim) * (Mathf.Min(strike.CoreRadius, GiantBladeEnvelope.VisibleReach(strike.Origin, M1Direction(strike.Aim), visible)) * .6f);
+            var heroCentre = SwordHeroBox(strike).center;
+            var cluster = HeroHeight * BladeSpec.SwordClusterHeroHeights;
+            crowd = strike.Origin + M1Direction(strike.Aim) * (Mathf.Min(strike.CoreRadius, GiantBladeEnvelope.VisibleReach(strike.Origin, M1Direction(strike.Aim), visible)) * .6f);
+            var best = -1;
+            for (var i = 0; i < strike.HitCount; i++)
+            {
+                int near = 0; var sum = Vector2.zero;
+                for (var j = 0; j < strike.HitCount; j++)
+                    if ((strike.Hits[j] - strike.Hits[i]).sqrMagnitude <= cluster * cluster) { near++; sum += strike.Hits[j]; }
+                if (near > best) { best = near; crowd = sum / near; }
+            }
             var landing = crowd;
-            var hero = SwordHeroBox(strike);
-            if (SwordOverlapsHero(landing, length, width, hero))
+            var mx = Mathf.Max(visible.width * BladeSpec.SwordScreenMargin, width * .5f); var my = visible.height * BladeSpec.SwordScreenMargin;
+            for (var pass = 0; pass < 2; pass++)
             {
-                var side = Mathf.Sign(landing.x - hero.center.x); if (side == 0) side = Mathf.Sign(M1Direction(strike.Aim).x); if (side == 0) side = 1;
-                var away = hero.width * .5f + width * .5f + HeroHeight * BladeSpec.SwordHeroGap;
-                landing.x = hero.center.x + side * away;
-                if (landing.x - width * .5f < visible.xMin || landing.x + width * .5f > visible.xMax) landing.x = hero.center.x - side * away;
+                var away = landing - heroCentre; var clear = HeroHeight * BladeSpec.SwordHeroClear;
+                if (away.magnitude < clear) landing = heroCentre + (away.sqrMagnitude > 1e-6f ? away.normalized : M1Direction(strike.Aim)) * clear;
+                landing.x = Mathf.Clamp(landing.x, visible.xMin + mx, visible.xMax - mx);
+                landing.y = Mathf.Clamp(landing.y, visible.yMin + my, visible.yMax - my);
             }
-            // On screen with at least the lower blade in view; the hilt may run past the top edge (the crowd centre wins).
-            landing.x = Mathf.Clamp(landing.x, visible.xMin + width * .5f, visible.xMax - width * .5f);
-            landing.y = Mathf.Clamp(landing.y, visible.yMin + HeroHeight * .2f, visible.yMax - HeroHeight * .8f);
-            if (SwordOverlapsHero(landing, length, width, hero))
-            {
-                // Lowered under the top edge into the hero's column: step aside again.
-                var side = Mathf.Sign(landing.x - hero.center.x); if (side == 0) side = 1;
-                var away = hero.width * .5f + width * .5f + HeroHeight * BladeSpec.SwordHeroGap;
-                landing.x = hero.center.x + side * away;
-                if (landing.x - width * .5f < visible.xMin || landing.x + width * .5f > visible.xMax) landing.x = hero.center.x - side * away;
-            }
-            shift = (landing - crowd).magnitude;
             return landing;
+        }
+
+        // Frames of the fall (1..SwordFallFrames) on which the falling tip is on screen.
+        int SwordShownFallFrames(M1BladeStrike strike)
+        {
+            var top = M1BladeVisibleBounds().yMax; var shown = 0;
+            for (var k = 1; k <= BladeSpec.SwordFallFrames; k++)
+                if (strike.SwordAt.y + BladeSpec.SwordDrop(BladeSpec.Seconds(k), strike.SwordDropHeight) <= top) shown++;
+            return shown;
         }
 
         // The hero's drawn silhouette box (or a figure-sized box at the strike origin before it is known).
@@ -276,16 +278,18 @@ namespace Game.View
             var length = SwordLength; var width = SwordWidth;
             if (!strike.SwordPlaced)
             {
-                strike.SwordAt = SwordLanding(strike, length, width, out strike.SwordShift); strike.SwordPlaced = true;
+                strike.SwordAt = SwordLanding(strike, width, out strike.SwordCrowd); strike.SwordPlaced = true;
                 strike.SwordClear = !SwordOverlapsHero(strike.SwordAt, length, width, SwordHeroBox(strike));
+                // Drop from as high as allowed while the blade stays in view for the last SwordShownFallFrames.
+                var room = M1BladeVisibleBounds().yMax - HeroHeight * BladeSpec.SwordShownBlade - strike.SwordAt.y;
+                strike.SwordDropHeight = BladeSpec.SwordDropFor(room, CameraWorldViewport.height * BladeSpec.SwordDropHeight);
             }
             var landing = strike.SwordAt;
             var fall = BladeSpec.Seconds(BladeSpec.SwordFallFrames);
             var since = t - fall;
             var split = since - BladeSpec.SwordStaySeconds;
             if (split > BladeSpec.Seconds(BladeSpec.SwordSplitFrames)) return;
-            var view = CameraWorldViewport;
-            var drop = BladeSpec.SwordDrop(t, view.height * BladeSpec.SwordDropHeight);
+            var drop = BladeSpec.SwordDrop(t, strike.SwordDropHeight);
             var tip = landing + Vector2.up * drop;
             if (since < 0)
             {
@@ -298,7 +302,8 @@ namespace Game.View
             var scale = BladeSpec.SwordScale(since);
             var size = new Vector2(width * scale.x, length * scale.y);
             if (split < 0) { Draw(bladeSword, ProjectileLayer, tip, 0, size, 0, 1, Color.white, applyTween: false); return; }
-            // Split: the two halves slide apart, tilt and fade (the painted shard mask replaces the straight cut).
+            // Split: the left and right halves part sideways, tilt outward and fade (the painted shard mask replaces the
+            // straight cut); each keeps its full width, so the sword never thins into a bar.
             var s = split / BladeSpec.Seconds(BladeSpec.SwordSplitFrames);
             var rect = bladeSword.UvRects[0];
             var color = Color.white; color.a = 1 - s * s;
@@ -306,7 +311,7 @@ namespace Game.View
             {
                 var halfRect = new Rect(side < 0 ? rect.x : rect.x + rect.width * .5f, rect.y, rect.width * .5f, rect.height);
                 // Each half keeps the picture's pivot (near the point), so it tilts outward from where it stands.
-                Draw(bladeSword, ProjectileLayer, tip + new Vector2(side * width * (.25f + .35f * s), 0), 0, new Vector2(width * .5f, length), -side * 8 * s, 1, color, applyTween: false, uv: halfRect);
+                Draw(bladeSword, ProjectileLayer, tip + new Vector2(side * width * (.25f + .75f * s), 0), 0, new Vector2(width * .5f, length), -side * 16 * s, 1, color, applyTween: false, uv: halfRect);
             }
         }
 
@@ -505,8 +510,11 @@ namespace Game.View
                 if (inside && distance >= inner - HeroHeight * .05f && distance <= outer + HeroHeight * .05f) covered++;
             }
             Vector2 Screen(Vector2 world) => renderCamera.WorldToScreenPoint(world);
-            var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount : strike.Origin;
-            var swordAt = strike.SwordAt;
+            var crowd = strike.Evolved ? strike.SwordCrowd : strike.HitCount > 0 ? strike.HitSum / strike.HitCount : strike.Origin;
+            var swordAt = strike.SwordAt; var visible = M1BladeVisibleBounds();
+            var margin = visible.width * BladeSpec.SwordScreenMargin * .99f;
+            var swordInside = swordAt.x >= visible.xMin + margin && swordAt.x <= visible.xMax - margin
+                && swordAt.y >= visible.yMin + visible.height * BladeSpec.SwordScreenMargin * .99f && swordAt.y <= visible.yMax - visible.height * BladeSpec.SwordScreenMargin * .99f;
             BladeStrikeSample(new BladeStrikeRecord { Tick = strike.Tick, AcceptedFrame = strike.AcceptedFrame, VisibleFrame = PresentedFrames, Evolved = strike.Evolved,
                 Radius = strike.CoreRadius, HalfAngle = strike.Half, OriginScreen = Screen(strike.Centre), Aim = strike.Aim,
                 HeroScreen = Screen(RenderedLordPosition),
@@ -517,15 +525,20 @@ namespace Game.View
                 SwordLengthPixels = strike.Evolved ? SwordLength / PixelsToWorld : 0, SwordWidthPixels = strike.Evolved ? SwordWidth / PixelsToWorld : 0,
                 SwordFallFrames = strike.Evolved ? BladeSpec.SwordFallFrames : 0,
                 SwordTipScreen = strike.Evolved ? Screen(swordAt) : new Vector2(-1, -1), CrowdScreen = Screen(crowd),
-                SwordClearOfHero = !strike.Evolved || strike.SwordClear });
+                SwordClearOfHero = !strike.Evolved || strike.SwordClear,
+                Stage = strike.Stage, ArcFullyVisible = GiantBladeEnvelope.FullyVisible(strike.Centre, strike.Aim, outer, strike.Half, visible),
+                ShortHalfPixels = Mathf.Min(visible.width, visible.height) * .5f / PixelsToWorld,
+                SwordFromHeroHeroHeights = strike.Evolved ? (swordAt - SwordHeroBox(strike).center).magnitude / HeroHeight : 0,
+                SwordInsideMargin = !strike.Evolved || swordInside, SwordShownFallFrames = strike.Evolved ? SwordShownFallFrames(strike) : 0 });
         }
     }
 
     public struct BladeStrikeRecord
     {
-        public int Tick, AcceptedFrame, VisibleFrame, Hits, HitsCovered, SwordFallFrames;
-        public bool Evolved, SwordClearOfHero;
-        public float Radius, HalfAngle, Aim, HeroHeightPixels, ThicknessPixels, InnerPixels, CoreRadiusPixels, SwordLengthPixels, SwordWidthPixels;
+        public int Tick, AcceptedFrame, VisibleFrame, Hits, HitsCovered, SwordFallFrames, SwordShownFallFrames;
+        public bool Evolved, SwordClearOfHero, ArcFullyVisible, SwordInsideMargin;
+        public float Radius, HalfAngle, Aim, HeroHeightPixels, ThicknessPixels, InnerPixels, CoreRadiusPixels, SwordLengthPixels, SwordWidthPixels,
+            Stage, ShortHalfPixels, SwordFromHeroHeroHeights;
         public Vector2 OriginScreen, HeroScreen, RadiusPixels, SwordTipScreen, CrowdScreen;
     }
 }

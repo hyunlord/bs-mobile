@@ -34,7 +34,7 @@ namespace Game.View
         static readonly int MainTexId = Shader.PropertyToID("_MainTex");
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
-        static readonly Vector4 EnemyChannel = new Vector4(1, 0, 0, 1), EffectChannel = new Vector4(0, 1, 0, 1);
+        static readonly Vector4 EnemyChannel = new Vector4(1, 0, 0, 1), EffectChannel = new Vector4(0, 1, 0, 1), ThinChannel = new Vector4(0, 0, 1, 1);
         readonly CommandBuffer commands = new CommandBuffer { name = "P5 occlusion mask" };
         readonly Material material;
         readonly List<Sample> samples = new List<Sample>(4096);
@@ -69,11 +69,12 @@ namespace Game.View
         public bool Wants(int layer) => recording && (IsEnemyLayer(layer) || IsEffectLayer(layer));
 
         // Called by a batch at flush with the instances it is about to draw.
-        public void Record(int layer, Mesh mesh, Matrix4x4[] matrices, int count, Texture texture, Vector4[] colors, Vector4[] uvs)
+        // Wide effects go to green (capped when counted), thin ones to blue (never capped).
+        public void Record(int layer, Mesh mesh, Matrix4x4[] matrices, int count, Texture texture, Vector4[] colors, Vector4[] uvs, bool wide = true)
         {
             if (!Wants(layer) || count <= 0) return;
             var block = new MaterialPropertyBlock();
-            block.SetVector(ChannelId, IsEnemyLayer(layer) ? EnemyChannel : EffectChannel);
+            block.SetVector(ChannelId, IsEnemyLayer(layer) ? EnemyChannel : wide ? EffectChannel : ThinChannel);
             block.SetTexture(MainTexId, texture != null ? texture : Texture2D.whiteTexture);
             block.SetVectorArray(ColorId, colors);
             if (uvs != null) block.SetVectorArray(UvId, uvs);   // shapes have no atlas rectangle: full coverage of their mesh
@@ -100,9 +101,9 @@ namespace Game.View
             for (var i = 0; i + 3 < data.Length; i += 4)
             {
                 if (data[i] < 128) continue;
-                // The mask holds the strongest effect alpha before the cap; the screen shows it capped over enemies.
-                var alpha = data[i + 1] / 255f;
-                enemy++; covered += Mathf.Min(alpha, EffectAlphaCap.OverEnemies); raw += alpha;
+                // The mask holds the strongest wide (green) and thin (blue) effect alpha; wide ones show capped over enemies.
+                var wide = data[i + 1] / 255f; var thin = data[i + 2] / 255f;
+                enemy++; covered += Mathf.Max(Mathf.Min(wide, EffectAlphaCap.OverEnemies), thin); raw += Mathf.Max(wide, thin);
             }
             samples.Add(new Sample(index, enemy, covered, raw, tint));
         }
@@ -115,10 +116,11 @@ namespace Game.View
         }
     }
 
-    // P5 alpha cap. Enemy sprites mark the stencil buffer where they are drawn; own weapon effects drawn above them are
-    // split into two passes: full alpha where no enemy is, and at most OverEnemies over an enemy pixel. The capped pass
-    // also bumps the mark, so effects stacked on one enemy pixel add up to the cap at most (the first one drawn wins).
-    // Full-screen tints (storm sky 73, storm screen flash 77) are checked separately; threat markers (72) are not own attacks.
+    // P5 alpha cap. Enemy sprites mark the stencil buffer where they are drawn. Wide own-effect elements (fills, glows,
+    // smoke, bands, shapes) drawn above them are split into two passes: full alpha where no enemy is, at most OverEnemies
+    // over an enemy pixel. Thin elements (bolt cores, lines, outlines: batches made with wide = false) are exempt and
+    // draw once at full strength. Full-screen tints (storm sky 73, storm screen flash 77) are checked separately; threat
+    // markers (72) are not own attacks.
     public static class EffectAlphaCap
     {
         public const float OverEnemies = .5f;
@@ -131,8 +133,8 @@ namespace Game.View
         static readonly int RefId = Shader.PropertyToID("_StencilRef"), CompId = Shader.PropertyToID("_StencilComp"), PassId = Shader.PropertyToID("_StencilPass");
         static readonly int CapId = Shader.PropertyToID("_AlphaCap"), ClipId = Shader.PropertyToID("_AlphaClip");
 
-        // Configures a batch material for its layer; returns the capped twin an effect batch draws over enemies, else null.
-        public static Material Configure(Material material, int layer)
+        // Configures a batch material for its layer; returns the capped twin a wide effect batch draws over enemies, else null.
+        public static Material Configure(Material material, int layer, bool wide = true)
         {
             if (IsEnemyLayer(layer))
             {
@@ -140,10 +142,10 @@ namespace Game.View
                 Set(material, EnemyMark, CompareFunction.Always, StencilOp.Replace, 1, .05f);
                 return null;
             }
-            if (!IsEffectLayer(layer)) return null;
+            if (!IsEffectLayer(layer) || !wide) return null;
             var capped = new Material(material) { name = material.name + " over enemies", hideFlags = HideFlags.HideAndDontSave };
             Set(material, 0, CompareFunction.Equal, StencilOp.Keep, 1, 0);
-            Set(capped, EnemyMark, CompareFunction.Equal, StencilOp.IncrementSaturate, OverEnemies, 1 / 255f);
+            Set(capped, EnemyMark, CompareFunction.Equal, StencilOp.Keep, OverEnemies, 0);
             return capped;
         }
 

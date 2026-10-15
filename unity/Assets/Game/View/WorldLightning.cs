@@ -44,6 +44,8 @@ namespace Game.View
         readonly Vector2[] branchPoints = new Vector2[LightningBolt.PointCount(3)];
         int lightningNext, chainHitTick = -1;
         ArtVisual lightningGlow, lightningCore, lightningFlash, lightningSolid, lightningScorch, stormSolid;
+        // Textures of thin effect elements (cores, lines, outlines): their batches skip the P5 alpha cap.
+        readonly HashSet<Texture2D> thinEffectTextures = new HashSet<Texture2D>();
         public Action<LightningStrikeRecord> LightningStrikeSample;
         public int LightningStrikes { get; private set; }
         public int LightningStormStrikes { get; private set; }
@@ -223,8 +225,10 @@ namespace Game.View
             }, LightningSpec.Scorch), Vector2.one);
             var additive = Resources.Load<Shader>("WorldSpriteAdditive");
             if (additive == null || !additive.isSupported) throw new InvalidOperationException("Additive world sprite shader is unavailable.");
+            // Bolt cores and solid lines are thin elements, exempt from the P5 alpha cap; glows and flashes are capped.
+            thinEffectTextures.Add(lightningCore.Texture); thinEffectTextures.Add(lightningSolid.Texture);
             foreach (var visual in new[] { lightningGlow, lightningCore, lightningFlash, lightningSolid })
-                batches.Add((LightningLayer, visual.Texture), new SpriteBatch(visual.Texture, additive, renderCamera, LightningLayer));
+                batches.Add((LightningLayer, visual.Texture), new SpriteBatch(visual.Texture, additive, renderCamera, LightningLayer, !thinEffectTextures.Contains(visual.Texture)));
             batches.Add((ScreenFlashLayer, lightningSolid.Texture), new SpriteBatch(lightningSolid.Texture, additive, renderCamera, ScreenFlashLayer));
         }
 

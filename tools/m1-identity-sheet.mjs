@@ -38,6 +38,12 @@ function pick(directory, id) {
     const hero = Number(a.heroHeightPixels);
     return { frame: Number(a.frameIndex), x: Number(a.firstOrbiterScreenX), y: FrameHeight - Number(a.firstOrbiterScreenY) - (id === 'core:spore_fan' ? hero * .5 : 0), size: Math.max(hero * 1.6, Number(a.orbiterSizePixels) * 1.6) };
   }
+  if (id === 'core:storm_fork') {
+    // A strike with a sky bolt: from the bolt's top down to its target, on the frame the strike becomes visible.
+    const s = rows(path.join(directory, 'm1-lightning-strikes.csv')).filter(late).filter(r => Number(r.firstSkyScreenX) >= 0)[1];
+    const tx = Number(s.firstSkyScreenX), ty = FrameHeight - Number(s.firstSkyScreenY), topx = Number(s.firstSkyTopScreenX), topy = FrameHeight - Number(s.firstSkyTopScreenY);
+    return { frame: Number(s.frameIndex) + 1, x: (tx + topx) / 2, y: (ty + topy) / 2, size: Math.max(230, Math.hypot(tx - topx, ty - topy) * 1.15) };
+  }
   throw new Error('No identity framing for ' + id);
 }
 

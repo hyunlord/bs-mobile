@@ -38,6 +38,14 @@ namespace Game.View
             MusterPath = MusterPresentationPath.None; MusterEvolutionId = null; MusterRatio = 1; MusterSoldiers = 0; MusterScale = 1; MusterLunges = 0;
         }
 
+        // 0..1 growth of a gear over its canonical Lv1 (MusterFormationRule.Tier).
+        float GearTier(string source)
+        {
+            var gear = waveDefinition.Gear[source];
+            WaveGearDefinition reference = null; GearReference?.Gear.TryGetValue(gear.Id, out reference);
+            return MusterFormationRule.Tier(gear, EquipmentLevel(gear.Id), reference);
+        }
+
         int EquipmentLevel(string id)
         {
             if (acceptedFrame == null) return 1;

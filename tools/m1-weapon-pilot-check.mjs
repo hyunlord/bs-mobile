@@ -180,7 +180,9 @@ function checkBlade(directory, manifest) {
       centreFromHeroPixels: +Math.hypot(ox - heroX, oy - heroY).toFixed(1),
       corePixels: +Number(s.coreRadiusPixels).toFixed(1), outerPixels: +outer.toFixed(1), innerPixels: +inner.toFixed(1), thicknessPixels: +Number(s.thicknessPixels ?? 0).toFixed(1),
       hits: Number(s.hits), hitsCovered: Number(s.hitsCovered),
-      swordLengthPixels: +Number(s.swordLengthPixels ?? 0).toFixed(1), swordFallFrames: Number(s.swordFallFrames ?? 0), swordClearOfHero: s.swordClearOfHero === 'True',
+      stage: +Number(s.stage ?? 0).toFixed(3), halfAngle: +Number(s.halfAngle).toFixed(1), arcFullyVisible: s.arcFullyVisible === 'True', shortHalfPixels: +Number(s.shortHalfPixels ?? 0).toFixed(1),
+      swordLengthPixels: +Number(s.swordLengthPixels ?? 0).toFixed(1), swordFallFrames: Number(s.swordFallFrames ?? 0), swordShownFallFrames: Number(s.swordShownFallFrames ?? 0),
+      swordFromHeroHeroHeights: +Number(s.swordFromHeroHeroHeights ?? 0).toFixed(2), swordInsideMargin: s.swordInsideMargin !== 'False',
       swordFromCrowdPixels: evolved ? +Math.hypot(Number(s.swordTipScreenX) - Number(s.crowdScreenX), Number(s.swordTipScreenY) - Number(s.crowdScreenY)).toFixed(1) : 0,
       ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), glowSwept, glowGone, glowBefore });
   }
@@ -188,20 +190,25 @@ function checkBlade(directory, manifest) {
   const measured = results.filter(r => !r.skipped);
   const pass = {
     windup: results.length > 0 && results.every(r => r.skipped || (r.windupFrames >= 3 && r.windupFrames <= 5)),
-    // Centred on the drawn hero; outer edge = Core reach (reaching a hit drawn just past it), or the farthest on-screen hit
-    // when the reach runs past the play area.
-    geometry: measured.length > 0 && measured.every(r => r.centreFromHeroPixels <= .1 * r.heroHeightPixels && r.outerPixels <= r.corePixels + .1 * r.heroHeightPixels),
-    // The band passes over every on-screen hit of its strike.
-    overHits: measured.length > 0 && measured.every(r => r.hitsCovered === r.hits),
-    size: measured.length > 0 && measured.every(r => r.thicknessPixels >= .44 * r.heroHeightPixels && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
-    sword: measured.every(r => !r.evolved || (r.swordFallFrames >= 8 && r.swordFallFrames <= 10 && r.swordClearOfHero)),
-    contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
+    // Centred on the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area's short half-width); the
+    // whole swing on screen.
+    geometry: measured.length > 0 && measured.every(r => r.centreFromHeroPixels <= .1 * r.heroHeightPixels
+      && Math.abs(r.outerPixels - Math.min(r.corePixels, .85 * r.shortHalfPixels)) <= 1.5 && r.arcFullyVisible),
+    size: measured.length > 0 && measured.every(r => r.thicknessPixels >= .54 * r.heroHeightPixels && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
+    // Evolved sword: 8-10 frame fall with the blade in view for at least the last 5; plants outside .6 hero heights of the
+    // hero's centre and 10% inside the play area's edges.
+    sword: measured.every(r => !r.evolved || (r.swordFallFrames >= 8 && r.swordFallFrames <= 10 && r.swordShownFallFrames >= 5
+      && r.swordFromHeroHeroHeights >= .59 && r.swordInsideMargin)),
     fade: measured.length > 0 && measured.every(r => r.glowSwept > 0 && r.glowGone - r.glowBefore <= Math.max(2, .1 * r.glowSwept)),
     reaction: p.bladeDeferredHits === p.bladePresentedHits && (p.giantBladeKillsOutside ?? 0) === 0 && (p.enemyDeathDropped ?? 0) === 0,
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
-  return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; outer edge a circle at the Core reach, or at the farthest on-screen hit when the reach runs past the play area (review max/evolved). Over hits = every on-screen hit of the strike lies inside the Core fan between the band\'s inner and outer edge. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames and its box clears the hero\'s silhouette box. Size = band >= .45 hero heights thick; evolved sword >= 3 hero heights.',
+  // Recorded only until the painted sprites are in: contrast, and how many hits the fixed-width band passes over.
+  const recorded = { contrastMin: measured.length ? Math.min(...measured.map(r => r.contrast)) : null, contrastThreshold: thresholds.contrast,
+    contrastMet: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
+    hits: measured.reduce((n, r) => n + r.hits, 0), hitsUnderBand: measured.reduce((n, r) => n + r.hitsCovered, 0) };
+  return { strikes: results.length, pass, recorded, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Hits under the band and contrast are recorded only (judged again with the painted sprites). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside .6 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 
@@ -298,15 +305,18 @@ function checkOrbits(directory, manifest, shape) {
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const evolvedElement = shape === 'tornado' ? (p.vortexFrames ?? 0) : (p.shieldThrows ?? 0);
+  const contrastMet = results.length > 0 && results.every(r => r.contrast >= thresholds.contrast);
   const pass = {
-    contrast: results.length > 0 && results.every(r => r.contrast >= thresholds.contrast),
+    // Guard ring contrast is recorded only until the shield sprite is in.
+    ...(shape === 'tornado' ? { contrast: contrastMet } : {}),
     size: results.length > 0 && results.every(r => shape === 'tornado' ? r.orbiterSizePixels >= r.heroHeightPixels * .95
       : r.orbiterSizePixels >= .34 * r.heroHeightPixels && r.orbiterSizePixels <= .46 * r.heroHeightPixels && r.drawn <= 6),
     colour: results.length > 0 && results.every(r => r.colouredPixels >= 20),
     stage: stage === 'evolved' ? evolvedElement > 0 : evolvedElement === 0,
     reaction: (p.orbitContactFlashes ?? 0) > 0 && (p.enemyDeathDropped ?? 0) === 0,
   };
-  return { activations: results.length, pass, contactFlashes: p.orbitContactFlashes, vortexFrames: p.vortexFrames, shieldThrows: p.shieldThrows,
+  const recorded = shape === 'shield' ? { contrastMet, contrastMin: results.length ? Math.min(...results.map(r => r.contrast)) : null, contrastThreshold: thresholds.contrast } : undefined;
+  return { activations: results.length, pass, recorded, contactFlashes: p.orbitContactFlashes, vortexFrames: p.vortexFrames, shieldThrows: p.shieldThrows,
     note: 'Measured on the frame each activation finishes spreading, around its first orbiter (tornado from the foot up, shield around its centre), against the median luma of the play area 20 frames earlier (orbit activations run back to back, so the same box would still hold orbiters). Size: tornado height >= hero height (x.95); shield height .35-.45 hero heights whatever the Core collision radius, at most 6 drawn per activation. Colour: teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
     rows: results };
 }

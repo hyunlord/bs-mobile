@@ -59,7 +59,7 @@ namespace Game.View
             public readonly Vector2[] Kills = new Vector2[M1BladeKillCapacity]; public int KillCount, KillsDropped;
             // On-screen hit positions of this strike (the arc reaches in over them; the evolved sword plants at their centre).
             public readonly Vector2[] Hits = new Vector2[64]; public int HitCount; public Vector2 HitSum; public float Inner = float.PositiveInfinity;
-            public bool SwordPlaced, SwordClear; public Vector2 SwordAt, Centre; public float SwordShift, Outer, Edge, Half = GiantBladeEnvelope.CoreHalfAngle;
+            public bool SwordPlaced, SwordClear; public Vector2 SwordAt, SwordCrowd, Centre; public float SwordDropHeight, Outer, Edge, Stage, Half = GiantBladeEnvelope.CoreHalfAngle;
         }
         const int M1BladeKillCapacity = 512;
         readonly M1BladeStrike[] m1BladeStrikes = { new M1BladeStrike(), new M1BladeStrike(), new M1BladeStrike(), new M1BladeStrike() };
@@ -103,6 +103,7 @@ namespace Game.View
                 WaveGearDefinition reference = null; GearReference?.Gear.TryGetValue(value.Source, out reference);
                 strike.Strength = LightningSpec.Strength(MusterFormationRule.Ratio(waveDefinition.Gear[value.Source], EquipmentLevel(value.Source), reference));
                 if (strike.Evolved) M1BladeEvolvedStrikes++;
+                strike.Stage = strike.Evolved ? 1 : BladeSpec.NormalStageShare * GearTier(value.Source);
                 ResolveBladeHits(strike, value.Tick);
             }
         }

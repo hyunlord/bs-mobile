@@ -91,14 +91,11 @@ namespace Game.View
         }
 
         // Drawn shield radius (half its height). Not the Core collision radius (gear speed), which at review max nearly fills
-        // the orbit: contact flashes mark hits beyond the drawn rim.
+        // the orbit: contact flashes mark hits beyond the drawn rim. Grows with the gear over its canonical Lv1 (the
+        // canonical-top ratio read every gear up to the top level as 0, so review max stayed at the Lv1 size); evolved is
+        // the largest.
         float ShieldRadius(string source)
-        {
-            var gear = waveDefinition.Gear[source];
-            WaveGearDefinition reference = null; GearReference?.Gear.TryGetValue(gear.Id, out reference);
-            var strength = WeaponEvolved(source) ? 1 : LightningSpec.Strength(MusterFormationRule.Ratio(gear, EquipmentLevel(gear.Id), reference));
-            return HeroHeight * Mathf.Lerp(OrbitSpec.MinShieldHeroHeights, OrbitSpec.MaxShieldHeroHeights, strength) * .5f;
-        }
+            => HeroHeight * Mathf.Lerp(OrbitSpec.MinShieldHeroHeights, OrbitSpec.MaxShieldHeroHeights, WeaponEvolved(source) ? 1 : GearTier(source) * .8f) * .5f;
 
         // Called for each Core orbit attack (one per orbiter) from DrawM1CombatAttack.
         void DrawOrbitAttack(WaveAttackView attack, Vector2 center, int tick, float alpha, Vector2 lordPoint, string shape)

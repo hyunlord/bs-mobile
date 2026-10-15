@@ -43,10 +43,11 @@ namespace Tests.PlayMode
             yield return null;
         }
 
-        // P5 alpha cap on the GPU: an own effect drawn over an enemy shows at most half strength there (stacked effects do
-        // not add up past it), full strength where no enemy is; a full-screen tint layer is not capped.
+        // P5 alpha cap on the GPU: a wide own effect drawn over an enemy shows at most half strength there and full strength
+        // on open ground; a thin element (bolt core, line: wide = false) keeps full strength over the enemy; a full-screen
+        // tint layer is not capped.
         [UnityTest]
-        public IEnumerator OwnEffectsAreCappedAtHalfAlphaOverEnemiesOnly()
+        public IEnumerator WideEffectsAreCappedOverEnemiesThinOnesAndTintsAreNot()
         {
             var owner = new GameObject("Alpha cap camera"); var camera = owner.AddComponent<Camera>();
             camera.orthographic = true; camera.orthographicSize = 1; camera.transform.position = new Vector3(0, 0, -10);
@@ -55,26 +56,27 @@ namespace Tests.PlayMode
             var shader = Resources.Load<Shader>("WorldShape");
             using (var meshes = new ShapeMeshes())
             using (var enemies = new ShapeBatch(meshes[WorldShape.Square], shader, camera, GameVisualTokens.EnemyLayer))
-            using (var projectile = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.ProjectileLayer))
-            using (var glow = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.LightningLayer))
+            using (var wide = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.ProjectileLayer))
+            using (var thin = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.LightningLayer, wide: false))
             using (var sky = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.StormSkyLayer))
             {
                 for (var frame = 0; frame < 3; frame++)
                 {
-                    enemies.BeginFrame(); projectile.BeginFrame(); glow.BeginFrame(); sky.BeginFrame();
-                    enemies.Add(Vector2.left, Vector2.one * .4f, 0, Color.green); enemies.Add(Vector2.right, Vector2.one * .4f, 0, Color.green);
-                    projectile.Add(Vector2.left, Vector2.one * .4f, 0, Color.white); projectile.Add(Vector2.zero, Vector2.one * .4f, 0, Color.white);
-                    glow.Add(Vector2.left, Vector2.one * .4f, 0, Color.white);
-                    sky.Add(Vector2.right, Vector2.one * .4f, 0, Color.red);
-                    enemies.Flush(); projectile.Flush(); glow.Flush(); sky.Flush(); yield return null;
+                    enemies.BeginFrame(); wide.BeginFrame(); thin.BeginFrame(); sky.BeginFrame();
+                    foreach (var x in new[] { -1.5f, .5f, 1.5f }) enemies.Add(new Vector2(x, 0), Vector2.one * .3f, 0, Color.green);
+                    wide.Add(new Vector2(-1.5f, 0), Vector2.one * .3f, 0, Color.white); wide.Add(new Vector2(-.5f, 0), Vector2.one * .3f, 0, Color.white);
+                    thin.Add(new Vector2(.5f, 0), Vector2.one * .3f, 0, Color.white);
+                    sky.Add(new Vector2(1.5f, 0), Vector2.one * .3f, 0, Color.red);
+                    enemies.Flush(); wide.Flush(); thin.Flush(); sky.Flush(); yield return null;
                 }
-                Assert.That(projectile.DrawCalls, Is.EqualTo(2), "Effect batches draw once off enemies and once, capped, over them.");
-                Assert.That(enemies.DrawCalls, Is.EqualTo(1)); Assert.That(sky.DrawCalls, Is.EqualTo(1));
+                Assert.That(wide.DrawCalls, Is.EqualTo(2), "Wide effect batches draw once off enemies and once, capped, over them.");
+                Assert.That(thin.DrawCalls, Is.EqualTo(1)); Assert.That(enemies.DrawCalls, Is.EqualTo(1)); Assert.That(sky.DrawCalls, Is.EqualTo(1));
                 var before = RenderTexture.active; RenderTexture.active = target;
                 var capture = new Texture2D(128, 64, TextureFormat.RGB24, false); capture.ReadPixels(new Rect(0, 0, 128, 64), 0, 0); capture.Apply(); RenderTexture.active = before;
-                var overEnemy = capture.GetPixel(32, 32); var open = capture.GetPixel(64, 32); var tinted = capture.GetPixel(96, 32);
+                var capped = capture.GetPixel(16, 32); var open = capture.GetPixel(48, 32); var core = capture.GetPixel(80, 32); var tinted = capture.GetPixel(112, 32);
+                Assert.That(capped.g, Is.GreaterThan(.95f)); Assert.That(capped.r, Is.InRange(.3f, .8f), "A wide white effect over a green enemy stays at the half cap.");
                 Assert.That(open.r, Is.GreaterThan(.95f), "Full strength where no enemy is.");
-                Assert.That(overEnemy.g, Is.GreaterThan(.95f)); Assert.That(overEnemy.r, Is.InRange(.3f, .85f), "Two stacked white effects over a green enemy stay at the half cap.");
+                Assert.That(core.r, Is.GreaterThan(.95f), "Thin cores keep full strength over enemies.");
                 Assert.That(tinted.r, Is.GreaterThan(.95f), "Full-screen tint layers are not capped (checked separately)."); Assert.That(tinted.g, Is.LessThan(.05f));
                 Object.Destroy(capture);
             }
