@@ -60,7 +60,7 @@ wave 런타임 정의에 선택 블록 `cardOffer`를 둔다. 필드가 없으�
 |---|---|---|
 | `evolutionPriority` | `none`: 지금처럼 같은 풀에서 추첨. `first-slot`: 해금된 진화가 있으면 보장·잠금 카드 다음 첫 빈 칸을 해금된 진화 중에서 먼저 뽑고, 나머지 칸은 원래 풀에서 뽑는다. | `none` |
 | `ownedGearWeight`, `unownedGearWeight` | 보유 장비 재제시 비율. 별도 확률 추첨을 더하지 않고 같은 한 번의 가중 추첨에서 상대 가중치로 표현한다. `ownedGearWeight: 0`이면 보유 장비를 다시 내지 않는다. | `1`, `1` |
-| `cards.<id>.weight` | 카드별 가중치(정수). 장비의 실제 가중치는 `weight × 보유/미보유 가중치`. | `1` |
+| `cards.<id>.weight` | 카드별 가중치(정수, 0 허용). 0이면 그 카드를 제시하지 않는다. 장비의 실제 가중치는 `weight × 보유/미보유 가중치`. | `1` |
 | `cards.<id>.maxPicks` | 판당 선택 상한. 기존 `world.Cards` 선택 기록에서 계산하므로 새 상태가 없다. 상한에 이르면 풀에서 뺀다. | 없음(무제한) |
 
 - 가중치 0인 카드는 추첨 전에 풀에서 뺀다. 남은 가중치는 **최대공약수로 나눈 뒤** `random.Next(합)`으로 한 번 뽑는다. 가중치가 모두 같으면 합이 `pool.Count`가 되어 `random.Next(pool.Count)`와 같은 값·같은 인덱스가 나온다. 그래서 기본값에서는 추첨 횟수와 범위가 바뀌지 않는다.
@@ -149,7 +149,7 @@ wave 런타임 정의에 선택 블록 `cardOffer`를 둔다. 필드가 없으�
       "additionalProperties": {
         "type": "object", "additionalProperties": false,
         "properties": {
-          "weight": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 1 },
+          "weight": { "type": "integer", "minimum": 0, "maximum": 1000, "default": 1 },
           "maxPicks": { "type": "integer", "minimum": 1, "maximum": 100 }
         }
       }
@@ -158,7 +158,7 @@ wave 런타임 정의에 선택 블록 `cardOffer`를 둔다. 필드가 없으�
 }
 ```
 
-검사기 추가 규칙(스키마 밖): `unlock.inputs[].id`는 그 진화의 `inputIds`와 같은 집합이어야 한다. `unlock.events`와 `unit:event-gate.condition`이 함께 있으면 서로 같아야 한다(전환 기간). `cardOffer.cards`의 키는 그 런타임의 장비·물품·진화 ID여야 한다. 사건 enum은 Core의 사건 생산자 목록과 같아야 한다.
+검사기 추가 규칙(스키마 밖): `uniqueItems`는 객체 전체를 비교하므로 같은 `id`에 다른 `minLevel`을 준 항목을 막지 못한다. 따라서 `unlock.inputs[].id`와 `unlock.events[].event`는 각각 중복 없이 한 번만 나와야 한다. `unlock.inputs[].id`는 그 진화의 `inputIds`와 같은 집합이어야 한다. `unlock.events`와 `unit:event-gate.condition`이 함께 있으면 서로 같아야 한다(전환 기간). `cardOffer.cards`의 키는 그 런타임의 장비·물품·진화 ID여야 한다. 사건 enum은 Core의 사건 생산자 목록과 같아야 한다.
 
 ## 결과·비용
 
