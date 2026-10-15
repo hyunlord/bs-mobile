@@ -248,12 +248,25 @@ namespace Game.View
             }
             var landing = crowd;
             var mx = Mathf.Max(visible.width * BladeSpec.SwordScreenMargin, width * .5f); var my = visible.height * BladeSpec.SwordScreenMargin;
-            for (var pass = 0; pass < 2; pass++)
+            var clear = HeroHeight * BladeSpec.SwordHeroClear;
+            Vector2 Inside(Vector2 point) => new Vector2(Mathf.Clamp(point.x, visible.xMin + mx, visible.xMax - mx), Mathf.Clamp(point.y, visible.yMin + my, visible.yMax - my));
+            var away = landing - heroCentre;
+            if (away.magnitude < clear) landing = heroCentre + (away.sqrMagnitude > 1e-6f ? away.normalized : M1Direction(strike.Aim)) * clear;
+            landing = Inside(landing);
+            if ((landing - heroCentre).magnitude < clear * .999f)
             {
-                var away = landing - heroCentre; var clear = HeroHeight * BladeSpec.SwordHeroClear;
-                if (away.magnitude < clear) landing = heroCentre + (away.sqrMagnitude > 1e-6f ? away.normalized : M1Direction(strike.Aim)) * clear;
-                landing.x = Mathf.Clamp(landing.x, visible.xMin + mx, visible.xMax - mx);
-                landing.y = Mathf.Clamp(landing.y, visible.yMin + my, visible.yMax - my);
+                // The margins pulled it back toward the hero: take the point on the clearance circle (or just past it) that
+                // stays inside and lies nearest the crowd.
+                var nearest = float.PositiveInfinity; var chosen = landing;
+                for (var step = 0; step < 72; step++)
+                for (var ring = 0; ring < 4; ring++)
+                {
+                    var point = heroCentre + M1Direction(step * 5) * (clear * (1 + ring * .15f));
+                    if (Inside(point) != point) continue;
+                    var cost = (point - crowd).sqrMagnitude;
+                    if (cost < nearest) { nearest = cost; chosen = point; }
+                }
+                landing = chosen;
             }
             return landing;
         }
@@ -288,6 +301,7 @@ namespace Game.View
             {
                 strike.SwordAt = SwordLanding(strike, width, out strike.SwordCrowd); strike.SwordPlaced = true;
                 strike.SwordClear = !SwordOverlapsHero(strike.SwordAt, length, width, SwordHeroBox(strike));
+                strike.SwordFromHero = (strike.SwordAt - SwordHeroBox(strike).center).magnitude / HeroHeight;   // at landing time
                 // Drop from as high as allowed while the blade stays in view for the last SwordShownFallFrames.
                 var room = M1BladeVisibleBounds().yMax - HeroHeight * BladeSpec.SwordShownBlade - strike.SwordAt.y;
                 strike.SwordDropHeight = BladeSpec.SwordDropFor(room, CameraWorldViewport.height * BladeSpec.SwordDropHeight);
@@ -572,7 +586,7 @@ namespace Game.View
                 SwordClearOfHero = !strike.Evolved || strike.SwordClear,
                 Stage = strike.Stage, ArcFullyVisible = GiantBladeEnvelope.FullyVisible(strike.Centre, strike.Aim, outer, strike.Half, visible),
                 ShortHalfPixels = Mathf.Min(visible.width, visible.height) * .5f / PixelsToWorld,
-                SwordFromHeroHeroHeights = strike.Evolved ? (swordAt - SwordHeroBox(strike).center).magnitude / HeroHeight : 0,
+                SwordFromHeroHeroHeights = strike.Evolved ? strike.SwordFromHero : 0,
                 SwordInsideMargin = !strike.Evolved || swordInside, SwordShownFallFrames = strike.Evolved ? SwordShownFallFrames(strike) : 0 });
         }
     }
