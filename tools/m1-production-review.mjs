@@ -216,7 +216,8 @@ async function runCaptures(plan, app, selection) {
     const replay = run.replay ?? plan.replay; assert.equal(hash(replay), run.replaySha256 ?? plan.replaySha256);
     if (fs.existsSync(run.directory)) { validateProductionRun(plan, run); console.log(`SKIP validated ${run.role}`); continue; }
     const log = run.directory + '.player.log'; assert(!fs.existsSync(log), 'Partial capture logs exist'); fs.mkdirSync(path.dirname(log), { recursive: true });
-    const args = ['--wave-benchmark', replay, '--wave-benchmark-output', run.directory, ...run.args, '--offline-replay-capture', '--offline-replay-audio', '-screen-width', String(plan.width), '-screen-height', String(plan.height), '-logFile', log];
+    // M1_REVIEW_LOSSLESS=1 also keeps lossless PNG frames (offline-frames-png) for pixel measurements; JPEG frames are unchanged.
+  const args = ['--wave-benchmark', replay, '--wave-benchmark-output', run.directory, ...run.args, '--offline-replay-capture', '--offline-replay-audio', ...(process.env.M1_REVIEW_LOSSLESS === '1' ? ['--offline-replay-lossless'] : []), '-screen-width', String(plan.width), '-screen-height', String(plan.height), '-logFile', log];
     save(run.directory + '.invocation.json', { app, args, utc: new Date().toISOString() }); console.log(`START ${run.role}`);
     await new Promise((resolve, reject) => { const child = spawn(path.join(app, 'Contents/MacOS/Sow and Siege'), args, { stdio: 'inherit' }); let kill;
       const timeout = setTimeout(() => { child.kill('SIGTERM'); kill = setTimeout(() => child.kill('SIGKILL'), 5000); }, 1800000);

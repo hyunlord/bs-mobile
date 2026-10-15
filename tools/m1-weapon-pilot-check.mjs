@@ -12,8 +12,11 @@ const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const rows = file => fs.existsSync(file) ? parseCsv(fs.readFileSync(file, 'utf8')) : [];
 const thresholds = { contrast: 40, arcPeak: 95, corePixels: 4, glowPixels: 16, telegraphFrames: [2, 4], fadeFrames: [8, 10], stationaryRatio: .2 };
 
+// Measurements read the lossless PNG frames when the capture kept them (M1_REVIEW_LOSSLESS=1), else the JPEG frames.
+const losslessFrames = directory => fs.existsSync(path.join(directory, 'offline-frames-png'));
 function frame(directory, index) {
-  const file = path.join(directory, 'offline-frames', `frame-${String(index).padStart(6, '0')}.jpg`);
+  const name = `frame-${String(index).padStart(6, '0')}`;
+  const file = losslessFrames(directory) ? path.join(directory, 'offline-frames-png', name + '.png') : path.join(directory, 'offline-frames', name + '.jpg');
   const raw = execFileSync('ffmpeg', ['-nostdin', '-v', 'error', '-i', file, '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 64 * 1024 * 1024 });
   const probe = execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', file], { encoding: 'utf8' }).trim().split(',').map(Number);
   const [width, height] = probe;
@@ -162,7 +165,7 @@ function checkBlade(directory, manifest) {
     const aim = Number(s.aim), half = Number(s.halfAngle), points = [];
     for (let a = aim - half; a <= aim + half + .01; a += 5) {
       const x = ox + Math.cos(a * Math.PI / 180) * outer * .93, y = swept.height - (oy + Math.sin(a * Math.PI / 180) * outer * .93);
-      if (x >= 3 && y >= 3 && x < swept.width - 3 && y < swept.height - 3 && luma(before.at(x, y)) > 5) points.push([x, y]);
+      if (x >= 3 && y >= 3 && x < swept.width - 3 && y < swept.height - 3 && luma(before.at(x, y)) > 5) points.push([x, y, a]);
     }
     if (points.length < 3) { results.push({ frame: at, skipped: 'arc off screen' }); continue; }
     const ground = points.reduce((n, [x, y]) => n + luma(before.at(x, y)), 0) / points.length;
@@ -171,6 +174,9 @@ function checkBlade(directory, manifest) {
     const band = (image, [x, y]) => { const iy = image.height - oy; let best = 0;
       for (let k = from; k <= 1.02; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, iy + (y - iy) * k / .93, 2)); return best; };
     const peak = median(points.map(p => band(swept, p)));
+    // Band peak for the brightness rule: only the middle 70% of the swing's length (the tapered ends are by design).
+    const central = points.filter(([, , a]) => Math.abs(a - aim) <= .7 * half);
+    const peakCentral = central.length ? median(central.map(p => band(swept, p))) : peak;
     // Fade: sky-blue samples across the band must be nearly all gone (white damage numbers and grey steel do not count).
     const glow = image => { const iy = image.height - oy; let count = 0;
       for (const [x, y] of points) for (let k = Math.max(.5, inner / Math.max(1, outer)); k <= 1.02; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, iy + (y - iy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
@@ -185,7 +191,7 @@ function checkBlade(directory, manifest) {
       swordLengthPixels: +Number(s.swordLengthPixels ?? 0).toFixed(1), swordFallFrames: Number(s.swordFallFrames ?? 0), swordShownFallFrames: Number(s.swordShownFallFrames ?? 0),
       swordFromHeroHeroHeights: +Number(s.swordFromHeroHeroHeights ?? 0).toFixed(2), swordInsideMargin: s.swordInsideMargin !== 'False',
       swordFromCrowdPixels: evolved ? +Math.hypot(Number(s.swordTipScreenX) - Number(s.crowdScreenX), Number(s.swordTipScreenY) - Number(s.crowdScreenY)).toFixed(1) : 0,
-      ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), glowSwept, glowGone, glowBefore });
+      ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), arcPeakCentral: +peakCentral.toFixed(1), frames: losslessFrames(directory) ? 'png' : 'jpg', contrast: +(peak - ground).toFixed(1), glowSwept, glowGone, glowBefore });
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const measured = results.filter(r => !r.skipped);
@@ -205,15 +211,15 @@ function checkBlade(directory, manifest) {
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
     // Arc band (painted slash v2): every strike's contrast >= 40, or its brightest band pixel >= 95 (on bright ground pure
     // white is the best a band can do).
-    contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast || r.arcPeak >= thresholds.arcPeak),
+    contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast || r.arcPeakCentral >= thresholds.arcPeak),
   };
   const recorded = { contrastMin: measured.length ? Math.min(...measured.map(r => r.contrast)) : null, contrastThreshold: thresholds.contrast, arcPeakThreshold: thresholds.arcPeak,
     contrastMet: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
-    strikesByPeakOnly: measured.filter(r => r.contrast < thresholds.contrast && r.arcPeak >= thresholds.arcPeak).map(r => ({ tick: r.tick, contrast: r.contrast, arcPeak: r.arcPeak, ground: r.ground })),
-    strikesBelow: measured.filter(r => r.contrast < thresholds.contrast && r.arcPeak < thresholds.arcPeak).map(r => ({ tick: r.tick, contrast: r.contrast, arcPeak: r.arcPeak, ground: r.ground })),
+    strikesByPeakOnly: measured.filter(r => r.contrast < thresholds.contrast && r.arcPeakCentral >= thresholds.arcPeak).map(r => ({ tick: r.tick, contrast: r.contrast, arcPeakCentral: r.arcPeakCentral, arcPeak: r.arcPeak, ground: r.ground })),
+    strikesBelow: measured.filter(r => r.contrast < thresholds.contrast && r.arcPeakCentral < thresholds.arcPeak).map(r => ({ tick: r.tick, contrast: r.contrast, arcPeakCentral: r.arcPeakCentral, arcPeak: r.arcPeak, ground: r.ground })),
     hits: measured.reduce((n, r) => n + r.hits, 0), hitsUnderBand: measured.reduce((n, r) => n + r.hitsCovered, 0) };
   return { strikes: results.length, pass, recorded, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Contrast per strike: >= 40, or the band\'s brightest pixel (median over arc angles) >= 95. Hits under the band are recorded only. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the whole band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Contrast per strike: >= 40, or the band\'s brightest pixel (median over the arc angles in the middle 70% of the swing) >= 95; frames are the lossless PNGs when the capture kept them. Hits under the band are recorded only. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the whole band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 
