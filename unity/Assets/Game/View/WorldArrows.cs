@@ -21,9 +21,11 @@ namespace Game.View
         public static readonly Color Water = new Color(.5f, .82f, 1f);   // silver-white + water sky blue
         public static float Seconds(int frames) => frames / 60f;
         public static int RainArrows(float radius, float bodyWidth) => Mathf.Clamp(Mathf.RoundToInt(radius / Mathf.Max(.0001f, bodyWidth) * 1.2f), MinRainArrows, MaxRainArrows);
-        // Parabolic flight from launch to landing; 0..1.
-        public static Vector2 Flight(Vector2 from, Vector2 to, float t)
-            => Vector2.Lerp(from, to, t) + Vector2.up * ((to - from).magnitude * ArcOfDistance * 4 * t * (1 - t));
+        // Parabolic flight from launch to landing; 0..1. Core's nearest targets often stand beside the hero, so the arc has a
+        // floor (in body widths) that lofts a short volley up and down where it can be seen.
+        public const float MinimumArcBodyWidths = 1.5f;
+        public static Vector2 Flight(Vector2 from, Vector2 to, float t, float minimumArc = 0)
+            => Vector2.Lerp(from, to, t) + Vector2.up * (Mathf.Max((to - from).magnitude * ArcOfDistance, minimumArc) * 4 * t * (1 - t));
     }
 
     public sealed partial class WorldRenderer
@@ -175,11 +177,12 @@ namespace Game.View
                 return;
             }
             var t = age / flight;
-            var at = ArrowSpec.Flight(from, point, t);
-            var ahead = ArrowSpec.Flight(from, point, Mathf.Min(1, t + .05f));
+            var arc = ArrowSpec.MinimumArcBodyWidths * w;
+            var at = ArrowSpec.Flight(from, point, t, arc);
+            var ahead = ArrowSpec.Flight(from, point, Mathf.Min(1, t + .05f), arc);
             var direction = (ahead - at).sqrMagnitude > .0000001f ? (ahead - at).normalized : (point - from).normalized;
             // Tail of water-blue light along the path behind the arrow.
-            var trailStart = ArrowSpec.Flight(from, point, Mathf.Max(0, t - ArrowSpec.TrailOfDistance));
+            var trailStart = ArrowSpec.Flight(from, point, Mathf.Max(0, t - ArrowSpec.TrailOfDistance), arc);
             var trail = at - trailStart;
             if (trail.magnitude > .0001f)
             {
