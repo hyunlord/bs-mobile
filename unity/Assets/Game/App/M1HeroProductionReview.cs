@@ -10,6 +10,7 @@ namespace Game.App
         public string Direction { get; private set; }
         public string ManifestSha256 { get; private set; }
         public int TerminalTailFrames {get;private set;}
+        public bool WalkingPilot { get; private set; }
         public static M1HeroProductionReview Parse(string[] args)
         {
             var at = Array.IndexOf(args,"--hero-production");
@@ -19,7 +20,8 @@ namespace Game.App
                 if (directionAt >= 0) throw new ArgumentException("Production direction requires --hero-production.");
                 return null;
             }
-            if (M1CombatReview.Parse(args) == null && KnightReview.Parse(args) == null) throw new ArgumentException("Production comparison requires an explicit knight or actual combat review.");
+            var forge = ForgeWalkReview.Parse(args);
+            if (forge == null && M1CombatReview.Parse(args) == null && KnightReview.Parse(args) == null) throw new ArgumentException("Production comparison requires an explicit knight, actual combat or Forge walk review.");
             var path = ReadValue(args,"--hero-production");
             if (!Path.IsPathRooted(path) || Path.GetExtension(path) != ".json") throw new ArgumentException("Hero production requires an absolute manifest.json path.");
             var direction = directionAt < 0 ? "follow" : ReadValue(args,"--hero-production-direction");
@@ -33,7 +35,7 @@ namespace Game.App
                 throw new ArgumentException("Terminal presentation tail requires one explicit offline capture flag.");
             using var hash = SHA256.Create();
             var digest = hash.ComputeHash(File.ReadAllBytes(path));
-            return new M1HeroProductionReview { TerminalTailFrames=tail?60:0, ManifestPath = Path.GetFullPath(path), Direction = direction,
+            return new M1HeroProductionReview { WalkingPilot=forge!=null, TerminalTailFrames=tail?60:0, ManifestPath = Path.GetFullPath(path), Direction = direction,
                 ManifestSha256 = BitConverter.ToString(digest).Replace("-","").ToLowerInvariant() };
         }
         static string ReadValue(string[] args,string flag)

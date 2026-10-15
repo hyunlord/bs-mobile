@@ -15,6 +15,8 @@ namespace Game.App
         public bool CaptureFrame(int tick, float alpha) => InWindow(tick) && (tick > StartTick || alpha > 0);
         public static CameraScaleComparison Parse(string[] args)
         {
+            var forge = ForgeWalkReview.Parse(args);
+            if (forge != null) return new CameraScaleComparison(forge.Case.cameraScale, "forge-walk", 0, forge.Case.endTick);
             var combat = M1CombatReview.Parse(args);
             if (combat != null) return new CameraScaleComparison(1.4f,"combat-proposal",combat.Definition.captureStartTick,combat.Definition.endTick);
             var knight = KnightReview.Parse(args);

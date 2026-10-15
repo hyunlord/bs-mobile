@@ -28,7 +28,7 @@ namespace Game.App
                 productionTextureBytes = world.HeroProductionTextureBytes, productionTextureBytesAvailable = world.HeroProductionTextureBytesAvailable, productionNominalRgbaBytes = world.HeroProductionNominalRgbaBytes,
                 impactFeedback = knightReview?.ImpactFeedback ?? true, cameraScale = cameraScaleComparison.Magnification,
                 edgeWarnings = knightReview?.EdgeWarnings ?? true, replayVerified = verified, replaySha256 = benchmarkReplaySha,
-                fixture = combatReview!=null ? "actual-combat-case" : knightReview?.DamageReplay == true ? "distinct-dense-approach-candidate2" : "original-frozen-c05",
+                fixture = forgeWalkReview!=null ? "forge-walk-review-v1" : combatReview!=null ? "actual-combat-case" : knightReview?.DamageReplay == true ? "distinct-dense-approach-candidate2" : "original-frozen-c05",
                 startTick = cameraScaleComparison.StartTick, endTick = cameraScaleComparison.EndTick,
                 terminalPresentationFrames=heroTerminalTailFrames, offlineAudio = offlineAudioRequested
             }, true));

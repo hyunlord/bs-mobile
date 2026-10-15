@@ -28,7 +28,7 @@ namespace Game.View
         HeroProductionManifest productionHero;
         readonly Dictionary<string, Texture2D> productionTextures = new Dictionary<string, Texture2D>();
         string productionDirection = "E", productionAction;
-        bool productionFollowFacing,productionEightDirections;
+        bool productionFollowFacing,productionEightDirections,productionWalkingPilot;
         static readonly string[] ProductionDirections={"E","NE","N","NW","W","SW","S","SE"};
         Vector2 productionPreviousPosition;
         bool productionHasPosition, productionWasHit;
@@ -55,7 +55,7 @@ namespace Game.View
             productionAttackDirection=ProductionDirection(delta);NotifyHeroMotionAttack(value.Source=="core:sowing_sworddance");
         }
 #if UNITY_EDITOR
-        public void EditorPrepareProductionAttackTest(HeroProductionManifest manifest) {productionHero=manifest;}
+        public void EditorPrepareProductionAttackTest(HeroProductionManifest manifest, bool walkingPilot=false) {productionHero=manifest;productionWalkingPilot=walkingPilot;}
         public void EditorAcceptProductionAttack(WaveEvent value,float time) {visualTime=time;AcceptHeroProductionAttack(value);}
         public float EditorProductionAttackStarted => motionAttackStarted;
         public bool EditorProductionAttackEvolved => motionAttackEvolved;
@@ -107,11 +107,21 @@ namespace Game.View
 
         static bool PositiveFinite(float value) => value > 0 && !float.IsInfinity(value);
 
-        public void ConfigureHeroProduction(string manifestPath, string direction, bool requireAuthoredFrames=false)
+        public static void ValidateWalkingPilot(HeroProductionManifest value, string direction)
+        {
+            ValidateProductionManifest(value);
+            if (value.method != "3d-baked" || direction != "E" || value.clips.Length != 1 ||
+                value.clips[0].id != "walk" || value.clips[0].direction != "E" || value.clips[0].mirror ||
+                value.clips[0].frames < 12 || value.clips[0].frames > 16)
+                throw new InvalidDataException("Forge pilot requires one unmirrored 12–16-frame baked east walk, with no unapproved actions.");
+        }
+
+        public void ConfigureHeroProduction(string manifestPath, string direction, bool requireAuthoredFrames=false, bool walkingPilot=false)
         {
             if (productionHero != null) throw new InvalidOperationException("Production comparison is already configured.");
             var value = JsonUtility.FromJson<HeroProductionManifest>(File.ReadAllText(manifestPath));
             ValidateProductionManifest(value,requireAuthoredFrames);
+            if (walkingPilot) ValidateWalkingPilot(value, direction);
             var directory = Path.GetDirectoryName(Path.GetFullPath(manifestPath)) + Path.DirectorySeparatorChar;
             productionEightDirections=value.method=="frame-drawn" && Array.Exists(value.clips,c=>!string.IsNullOrEmpty(c.authoredDirection));
             productionFollowFacing = direction == "follow";
@@ -139,7 +149,8 @@ namespace Game.View
                     frameMs = Mathf.Max(1, Mathf.RoundToInt(1000 / clip.fps)), tween = "none" }, texture);
             }
             productionHero = value;
-            if (ProductionClip("walk") == null || ProductionClip("slash-light") == null)
+            productionWalkingPilot = walkingPilot;
+            if (ProductionClip("walk") == null || !walkingPilot && ProductionClip("slash-light") == null)
                 throw new InvalidDataException("Comparison requires walk and slash for the chosen direction.");
             if (productionFollowFacing)
             {
@@ -159,6 +170,7 @@ namespace Game.View
 
         bool ResolveProductionAttack(float age, out HeroProductionClip slash)
         {
+            if (productionWalkingPilot) { slash = null; return false; }
             var direction = productionFollowFacing
                 ? productionEightDirections ? productionAttackDirection : HeroProductionTargetDirection.x < 0 ? "W" : "E"
                 : productionDirection;
@@ -189,7 +201,8 @@ namespace Game.View
             productionWasHit=hit;
             var hitClip=ProductionClip("hit");
             var reacting=hit || hitClip!=null && visualTime-productionHitStarted<hitClip.frames/hitClip.fps;
-            var id = dead ? "death" : reacting ? "hit" : attack ? slash.id : walking ? "walk" : "idle";
+            var id = productionWalkingPilot ? walking && !dead ? "walk" : "idle-unavailable" :
+                dead ? "death" : reacting ? "hit" : attack ? slash.id : walking ? "walk" : "idle";
             var clip = ProductionClip(id);
             if (clip == null) { clip = ProductionClip("walk"); id = "idle-unavailable"; }
             if (id != productionAction) { productionAction = id; productionActionStarted = visualTime; }
