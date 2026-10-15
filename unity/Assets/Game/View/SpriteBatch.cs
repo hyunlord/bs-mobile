@@ -36,6 +36,8 @@ namespace Game.View
         readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
         readonly Material material;
         readonly Mesh mesh;
+        readonly Texture2D texture;
+        readonly int layer;
         int count;
         bool linearColorSpace;
         bool heroRigBoundsConfigured;
@@ -51,6 +53,7 @@ namespace Game.View
             if (shader == null) throw new ArgumentNullException(nameof(shader));
             if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("The world renderer requires GPU instancing.");
+            this.texture = texture; this.layer = layer;
             material = new Material(shader) { name = "World sprites " + layer, mainTexture = texture, enableInstancing = true, renderQueue = 3000 + layer, hideFlags = HideFlags.HideAndDontSave };
             mesh = new Mesh { name = "Instanced sprite quad", hideFlags = HideFlags.HideAndDontSave };
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -120,6 +123,7 @@ namespace Game.View
             using (DrawMarker.Auto())
 #endif
             {
+                OcclusionProbe.Active?.Record(layer, mesh, matrices, count, texture, colors, uvs);
                 Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
             }
             SubmittedInstances += count; DrawCalls++; count = 0;

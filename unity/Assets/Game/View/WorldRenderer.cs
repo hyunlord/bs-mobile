@@ -482,11 +482,14 @@ namespace Game.View
             }
 #endif
             SubmittedInstances = 0; DrawCalls = 0;
+            var occlusion = OcclusionProbe.Active;
+            occlusion?.Begin(renderCamera, occlusion.FrameSource?.Invoke() ?? PresentedFrames);
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
             if(musterRings!=null){musterRings.Flush();SubmittedInstances+=musterRings.SubmittedInstances;DrawCalls+=musterRings.DrawCalls;}
             FlushOrbitShapes();
             actorGrounding.Flush(); actorWings.Flush();
+            occlusion?.End();
             SubmittedInstances+=actorGrounding.SubmittedInstances+actorWings.SubmittedInstances;
             DrawCalls+=actorGrounding.DrawCalls+actorWings.DrawCalls;
             if (presentationDiagnosticsActive) diagnostics.SpriteBatchSubmitMs = DiagnosticInterval(ref diagnosticCheckpoint);

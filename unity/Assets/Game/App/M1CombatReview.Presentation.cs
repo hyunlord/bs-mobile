@@ -14,6 +14,9 @@ namespace Game.App
             public string interpretation = "View-only feel counters from the rendered run. Giant-blade kill points are on-screen kill positions (Core and last rendered) tested against the drawn envelope. Muster path RuntimeEvolution requires an active runtime evolution; GearRatio is the runtime gear count/range over the canonical maximum level, capped at 5 soldiers and 1.3x. Evolution-only elements (storm sky, flag bearer, giant sword, arrow rain) follow the View-only display stage table (WeaponDisplayStages.json). Blade hits are presented when the sweep reaches them after a 4-frame wind-up; arrows land on the Core impact tick. Lightning hits are presented when their strike becomes visible (3-frame telegraph). Minion stationary frames exclude spawn, attack and despawn animation.";
             public int bladeEvolvedStrikes, bladeDeferredHits, bladePresentedHits, arrowVolleys, arrowRainVolleys, arrowImpacts, arrowLandedOnTime;
             public int orbitActivations, orbitContactFlashes, vortexFrames, shieldThrows;
+            // P5 budget: share of enemy sprite pixels covered by own weapon effects per frame (mask readback, half resolution).
+            public int occlusionFrames, occlusionFramesOver25;
+            public float occlusionP95, occlusionMax;
             public int lightningStrikes, lightningStormStrikes, lightningDeferredHits, lightningPresentedHits, minionGroupHits, minionThrustsOnHitFrame, minionBearerFrames, minionChargeShoves;
             public long minionAgentFrames, minionStationaryFrames;
             public float minionStationaryRatio;
@@ -41,8 +44,13 @@ namespace Game.App
             };
         }
 
+        Game.View.OcclusionProbe occlusion;
+
         void ObserveFeel(WorldRenderer world)
         {
+            occlusion?.Dispose();
+            occlusion = new Game.View.OcclusionProbe { FrameSource = () => frameCount };
+            Game.View.OcclusionProbe.Active = occlusion;
             world.LightningStrikeSample = r => { if (lightningRows.Count < 1024) lightningRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.VisibleFrame - r.AcceptedFrame},{r.Tick},{r.Links},{r.SkyBolts},{r.CoveredSkyBolts},{r.OnScreenTargets},{r.Storm},{r.Strength:R},{r.CorePixels:R},{r.GlowPixels:R},{r.FirstSkyTargetScreen.x:R},{r.FirstSkyTargetScreen.y:R},{r.FirstSkyTopScreen.x:R},{r.FirstSkyTopScreen.y:R},{r.ScreenFlash:R}")); };
             world.BladeStrikeSample = r => { if (bladeRows.Count < 1024) bladeRows.Add(FormattableString.Invariant(
@@ -58,6 +66,14 @@ namespace Game.App
 
         void SaveFeelLogs(string directory)
         {
+            if (occlusion != null)
+            {
+                UnityEngine.Rendering.AsyncGPUReadback.WaitAllRequests();
+                var lines = new List<string> { "frameIndex,enemyPixels,coveredPixels,ratio" };
+                foreach (var sample in occlusion.Samples)
+                    lines.Add(FormattableString.Invariant($"{sample.Frame},{sample.EnemyPixels},{sample.CoveredPixels:R},{sample.Ratio:R}"));
+                System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-occlusion.csv"), lines);
+            }
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-lightning-strikes.csv"),
                 new[] { "frameIndex,telegraphFrames,tick,links,skyBolts,coveredSkyBolts,onScreenTargets,storm,strength,corePixels,glowPixels,firstSkyScreenX,firstSkyScreenY,firstSkyTopScreenX,firstSkyTopScreenY,screenFlash" }.Concat(lightningRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-minion-thrusts.csv"), new[] { "frameIndex,group,kind,soldiers" }.Concat(thrustRows));
@@ -88,6 +104,17 @@ namespace Game.App
                 minionAgentFrames = world.MinionAgentFrames, minionStationaryFrames = world.MinionStationaryFrames,
                 minionStationaryRatio = world.MinionAgentFrames > 0 ? (float)world.MinionStationaryFrames / world.MinionAgentFrames : 0
             };
+            if (occlusion != null)
+            {
+                UnityEngine.Rendering.AsyncGPUReadback.WaitAllRequests();
+                var ratios = new List<float>(occlusion.Samples.Count);
+                foreach (var sample in occlusion.Samples) if (sample.Frame > 0 && sample.EnemyPixels > 0) ratios.Add(sample.Ratio);
+                ratios.Sort();
+                presentation.occlusionFrames = ratios.Count;
+                presentation.occlusionP95 = ratios.Count > 0 ? ratios[Mathf.Min(ratios.Count - 1, Mathf.CeilToInt(ratios.Count * .95f) - 1)] : 0;
+                presentation.occlusionMax = ratios.Count > 0 ? ratios[ratios.Count - 1] : 0;
+                foreach (var ratio in ratios) if (ratio > .25f) presentation.occlusionFramesOver25++;
+            }
         }
     }
 }

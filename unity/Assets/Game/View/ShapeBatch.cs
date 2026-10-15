@@ -17,6 +17,7 @@ namespace Game.View
         private readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
         private readonly Material material;
         private readonly Mesh mesh;
+        private readonly int layer;
         private int count;
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
@@ -25,7 +26,7 @@ namespace Game.View
         {
             if (mesh == null || shader == null || camera == null) throw new ArgumentNullException(nameof(mesh));
             if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("The world renderer requires GPU instancing.");
-            this.mesh = mesh;
+            this.mesh = mesh; this.layer = layer;
             material = new Material(shader) { name = "World instances " + layer, enableInstancing = true, renderQueue = 3000 + layer, hideFlags = HideFlags.HideAndDontSave };
         }
 
@@ -55,6 +56,7 @@ namespace Game.View
                 camera = null, layer = 0, matProps = properties, shadowCastingMode = ShadowCastingMode.Off,
                 receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off
             };
+            OcclusionProbe.Active?.Record(layer, mesh, matrices, count, null, colors, null);
             Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
