@@ -182,7 +182,8 @@ namespace Game.View
 
         static float BladeLingerSeconds => Mathf.Max(GiantBladeEnvelope.LifetimeSeconds + BladeSpec.Seconds(BladeSpec.ShockwaveFrames), BladeSpec.CrackSeconds);
         float PixelsToWorld => renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-        float HeroHeight => heroSilhouetteKnown ? heroSilhouetteLocal.size.y : 2.2f * (heroBodyWidth > 0 ? heroBodyWidth : .6f);
+        // Visible hero height (not the padded overlap box): the size reference for weapon effects.
+        float HeroHeight => heroFigureHeight > 0 ? heroFigureHeight : 2.2f * (heroBodyWidth > 0 ? heroBodyWidth : .6f);
 
         // Point down, tip at `tip`. Each part is drawn as an ink outline then its fill (normal blend, above enemies).
         void DrawGiantSword(Vector2 tip, float length, float opacity)

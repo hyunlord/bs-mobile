@@ -20,6 +20,8 @@ namespace Game.View
         public Action<string, MusterFormation> MusterPresentationChanged;
         // Last drawn hero box relative to the hero anchor, and its body width; groups draw before the hero each frame.
         Rect heroSilhouetteLocal;
+        const float HeroFigureOfRigCanvas = .62f;
+        float heroFigureHeight;
         bool heroSilhouetteKnown;
         float heroBodyWidth;
         public Action<Rect> RenderedMusterSoldierBounds;
@@ -125,6 +127,8 @@ namespace Game.View
             var box = Union(Union(MusterFormationRule.SpriteRect(anchor, hero.WorldSize, hero.Pivot), MusterFormationRule.SpriteRect(anchor, hero.WorldSize, mirrored)),
                 Union(MusterFormationRule.SpriteRect(anchor, rig, HeroGaitState.Pivot), MusterFormationRule.SpriteRect(anchor, rig, rigMirrored)));
             heroBodyWidth = hero.WorldSize.x * GameVisualTokens.HeroBodyWidthFraction;
+            // The knight figure fills about 62% of its 512px rig canvas height (feet at 420, head near 100): the visible hero.
+            heroFigureHeight = rig.y * HeroFigureOfRigCanvas;
             var push = heroBodyWidth * HeroHitFeedback.PushBodyFraction;
             box = Rect.MinMaxRect(box.xMin - push, box.yMin - push, box.xMax + push, box.yMax + push);
             RenderedHeroSilhouette = box;

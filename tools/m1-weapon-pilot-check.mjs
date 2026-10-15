@@ -175,7 +175,8 @@ function checkBlade(directory, manifest) {
     const peak = median(points.map(p => band(swept, p)));
     // Fade: sky-blue glow samples across the band (white damage numbers do not count) must be nearly all gone.
     const glow = image => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let count = 0;
-      for (const [x, y] of points) for (let k = .35; k <= 1.1; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, oy + (y - oy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
+      // From .5R: the hero's blue cape (brightened on hit frames) sits inside the inner band.
+      for (const [x, y] of points) for (let k = .5; k <= 1.1; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, oy + (y - oy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
     const glowSwept = glow(swept), glowGone = glow(gone), glowBefore = glow(before);
     const hero = Number(s.heroHeightPixels ?? 0), radiusPx = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY));
     results.push({ frame: at, tick: Number(s.tick), evolved: s.evolved === 'True', windupFrames: Number(s.windupFrames), samples: points.length,
