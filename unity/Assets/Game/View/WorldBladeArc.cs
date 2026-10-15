@@ -243,9 +243,9 @@ namespace Game.View
                 landing.x = hero.center.x + side * away;
                 if (landing.x - width * .5f < visible.xMin || landing.x + width * .5f > visible.xMax) landing.x = hero.center.x - side * away;
             }
-            // The whole sword stays on screen, hilt included.
+            // On screen with at least the lower blade in view; the hilt may run past the top edge (the crowd centre wins).
             landing.x = Mathf.Clamp(landing.x, visible.xMin + width * .5f, visible.xMax - width * .5f);
-            landing.y = Mathf.Clamp(landing.y, visible.yMin + HeroHeight * .2f, visible.yMax - length * (1 + BladeSpec.SwordSquash));
+            landing.y = Mathf.Clamp(landing.y, visible.yMin + HeroHeight * .2f, visible.yMax - HeroHeight * .8f);
             if (SwordOverlapsHero(landing, length, width, hero))
             {
                 // Lowered under the top edge into the hero's column: step aside again.
