@@ -160,6 +160,12 @@ namespace Tests.EditMode
             for (var k = BladeSpec.SwordFallFrames - BladeSpec.SwordShownFallFrames + 1; k <= BladeSpec.SwordFallFrames; k++)
                 Assert.That(BladeSpec.SwordDrop(BladeSpec.Seconds(k), drop), Is.LessThanOrEqualTo(room + 1e-4f), $"Blade in view on fall frame {k}.");
             Assert.That(BladeSpec.SwordShownFallFrames, Is.GreaterThanOrEqualTo(5));
+            Assert.That(BladeSpec.SwordHeroClear, Is.GreaterThanOrEqualTo(1f), "The sword plants at least a hero height from the hero's centre.");
+            Assert.That(BladeSpec.Seconds(BladeSpec.SwordVanishFrames), Is.EqualTo(.25f).Within(1e-4f), "Sinks and dissolves over the last 0.25 s.");
+            Assert.That(BladeSpec.SwordSinkHeroHeights, Is.EqualTo(.15f).Within(1e-5f));
+            Assert.That(BladeSpec.SwordSparks, Is.InRange(6, 10), "6-10 bright shards rise off the blade.");
+            Assert.That(BladeSpec.SwordDissolved(0), Is.Zero); Assert.That(BladeSpec.SwordDissolved(1), Is.EqualTo(1));
+            Assert.That(BladeSpec.SwordDissolved(.5f), Is.GreaterThan(BladeSpec.SwordDissolved(.25f)), "The dissolve line rises from the point up.");
             Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
             Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");

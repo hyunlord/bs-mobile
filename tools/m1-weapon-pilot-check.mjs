@@ -195,10 +195,10 @@ function checkBlade(directory, manifest) {
     geometry: measured.length > 0 && measured.every(r => r.centreFromHeroPixels <= .1 * r.heroHeightPixels
       && Math.abs(r.outerPixels - Math.min(r.corePixels, .85 * r.shortHalfPixels)) <= 1.5 && r.arcFullyVisible),
     size: measured.length > 0 && measured.every(r => r.thicknessPixels >= .54 * r.heroHeightPixels && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
-    // Evolved sword: 8-10 frame fall with the blade in view for at least the last 5; plants outside .6 hero heights of the
+    // Evolved sword: 8-10 frame fall with the blade in view for at least the last 5; plants outside 1.0 hero heights of the
     // hero's centre and 10% inside the play area's edges.
     sword: measured.every(r => !r.evolved || (r.swordFallFrames >= 8 && r.swordFallFrames <= 10 && r.swordShownFallFrames >= 5
-      && r.swordFromHeroHeroHeights >= .59 && r.swordInsideMargin)),
+      && r.swordFromHeroHeroHeights >= .99 && r.swordInsideMargin)),
     fade: measured.length > 0 && measured.every(r => r.glowSwept > 0 && r.glowGone - r.glowBefore <= Math.max(2, .1 * r.glowSwept)),
     reaction: p.bladeDeferredHits === p.bladePresentedHits && (p.giantBladeKillsOutside ?? 0) === 0 && (p.enemyDeathDropped ?? 0) === 0,
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
@@ -208,7 +208,7 @@ function checkBlade(directory, manifest) {
     contrastMet: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
     hits: measured.reduce((n, r) => n + r.hits, 0), hitsUnderBand: measured.reduce((n, r) => n + r.hitsCovered, 0) };
   return { strikes: results.length, pass, recorded, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Hits under the band and contrast are recorded only (judged again with the painted sprites). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside .6 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the drawn hero; radius fixed per stage = min(Core reach, .85 x the play area\'s short half-width); the whole swing on screen. Hits under the band and contrast are recorded only (judged again with the painted sprites). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 8 frames after it appears (the 9-frame sweep nearly done), minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames with the blade in view for at least the last 5, plants outside 1.0 hero heights of the hero\'s centre and 10% inside the play area. Size = band >= .55 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 

@@ -30,11 +30,16 @@ namespace Game.View
         // Evolution element: a giant sword falls point first, speeding up, onto the densest cluster of struck enemies (never
         // within SwordHeroClear hero heights of the hero's centre, and SwordScreenMargin of the play area inside its edges so
         // the blade and where it plants are never cut; only the hilt may run past the top), squashes as it plants, stays,
-        // then its two halves part sideways and fade. The blade is on screen for at least the last SwordShownFallFrames of
-        // the fall.
-        public const int SwordFallFrames = 9, SwordSquashFrames = 2, SwordSplitFrames = 9, SwordShownFallFrames = 5;
-        public const float SwordStaySeconds = .5f, SwordHeroHeights = 3.2f, SwordDropHeight = .6f;
-        public const float SwordHeroClear = .6f, SwordClusterHeroHeights = .8f, SwordScreenMargin = .1f, SwordShownBlade = .3f;
+        // then over SwordVanishFrames sinks SwordSinkHeroHeights into the ground while it dissolves from the bottom up, and
+        // SwordSparks bright shards (white, steel blue) rise off the blade. The blade is on screen for at least the last
+        // SwordShownFallFrames of the fall.
+        public const int SwordFallFrames = 9, SwordSquashFrames = 2, SwordVanishFrames = 15, SwordShownFallFrames = 5, SwordSparks = 8;
+        public const float SwordStaySeconds = .5f, SwordHeroHeights = 3.2f, SwordDropHeight = .6f, SwordSinkHeroHeights = .15f;
+        public const float SwordHeroClear = 1f, SwordClusterHeroHeights = .8f, SwordScreenMargin = .1f, SwordShownBlade = .3f;
+        public const float SwordDissolveEdge = .08f;   // soft band at the dissolve line, as a share of the sword's length
+        public static readonly Color SparkSteel = new Color(.62f, .8f, 1f);
+        // Share of the sword dissolved from the point up, s = 0..1 through the vanish.
+        public static float SwordDissolved(float s) { s = Mathf.Clamp01(s); return s * s * (3 - 2 * s); }
         // Highest drop (tip above the landing point) that keeps the tip SwordShownBlade hero heights under the top edge from
         // fall frame SwordFallFrames - SwordShownFallFrames + 1 on.
         public static float SwordDropFor(float roomAbove, float preferred)
@@ -42,15 +47,14 @@ namespace Game.View
             var f = (SwordFallFrames - SwordShownFallFrames + 1) / (float)SwordFallFrames;
             return Mathf.Max(0, Mathf.Min(preferred, roomAbove / (1 - f * f)));
         }
-        public const float SwordSquash = .14f;
-        // Height of the painted split line above the point, as a share of the sword's length (mask boundary ~ rows 650-705 of 1280).
-        public const float SwordCutHeight = .47f;       // plant: x wider, y shorter by this fraction on the first squash frame
+        public const float SwordSquash = .14f;       // plant: x wider, y shorter by this fraction on the first squash frame
         public const int DustPuffs = 8;
         public const float CrackRevealSeconds = 6 / 60f;
         public static readonly Color Core = new Color(1f, 1f, 1f);
         public static readonly Color Glow = new Color(.55f, .82f, 1f);   // steel white + sky blue
         public static float Seconds(int frames) => frames / 60f;
-        public static float SwordLifetimeSeconds => Seconds(SwordFallFrames) + SwordStaySeconds + Seconds(SwordSplitFrames);
+        public static float SwordSparkSeconds => Seconds(SwordVanishFrames) + .1f;
+        public static float SwordLifetimeSeconds => Seconds(SwordFallFrames) + SwordStaySeconds + SwordSparkSeconds;
         // Height of the falling sword's tip above where it lands, t seconds after the strike (accelerating fall).
         public static float SwordDrop(float t, float height)
         {
@@ -73,7 +77,7 @@ namespace Game.View
         public System.Action<BladeStrikeRecord> BladeStrikeSample;
         // Painted roles (docs/design/m1-weapon-effect-sprites.md); temporary generated pictures until they are in the manifest.
         const string SlashRole = "fx.iron_blade.slash", SwordRole = "fx.iron_blade.giant_sword", CrackRole = "fx.iron_blade.ground_crack", DustRole = "fx.common.dust.";
-        ArtVisual bladeSlash, bladeSword, bladeCrack, bladeSwordUpper, bladeSwordLower;
+        ArtVisual bladeSlash, bladeSword, bladeCrack;
         bool bladeDustPainted;
         readonly ArtVisual[] bladeDust = new ArtVisual[3];
         readonly List<Texture2D> temporaryEffectTextures = new List<Texture2D>(4);
@@ -275,7 +279,8 @@ namespace Game.View
         float SwordLength => HeroHeight * BladeSpec.SwordHeroHeights;
         float SwordWidth => SwordLength * bladeSword.WorldSize.x / bladeSword.WorldSize.y;
 
-        // t: seconds since the Core strike. Falls over SwordFallFrames, plants (squash, cracks, dust, shake), stays, splits.
+        // t: seconds since the Core strike. Falls over SwordFallFrames, plants (squash, cracks, dust, shake), stays, then sinks
+        // and dissolves from the bottom up while bright shards rise off the blade.
         void DrawGiantSwordDrop(M1BladeStrike strike, float t)
         {
             var length = SwordLength; var width = SwordWidth;
@@ -290,8 +295,8 @@ namespace Game.View
             var landing = strike.SwordAt;
             var fall = BladeSpec.Seconds(BladeSpec.SwordFallFrames);
             var since = t - fall;
-            var split = since - BladeSpec.SwordStaySeconds;
-            if (split > BladeSpec.Seconds(BladeSpec.SwordSplitFrames)) return;
+            var vanish = since - BladeSpec.SwordStaySeconds;
+            if (vanish > BladeSpec.SwordSparkSeconds) return;
             var drop = BladeSpec.SwordDrop(t, strike.SwordDropHeight);
             var tip = landing + Vector2.up * drop;
             if (since < 0)
@@ -304,40 +309,60 @@ namespace Game.View
             if (since >= 0) DrawSwordImpact(strike, landing, length, since);
             var scale = BladeSpec.SwordScale(since);
             var size = new Vector2(width * scale.x, length * scale.y);
-            if (split < 0) { Draw(bladeSword, ProjectileLayer, tip, 0, size, 0, 1, Color.white, applyTween: false); return; }
-            // Split: the left and right halves part sideways, tilt outward and fade (the painted shard mask replaces the
-            // straight cut); each keeps its full width, so the sword never thins into a bar.
-            var s = split / BladeSpec.Seconds(BladeSpec.SwordSplitFrames);
-            var color = Color.white; color.a = 1 - s * s;
-            if (bladeSwordUpper != null)
-            {
-                // Painted pieces cut by the zigzag line across the blade: the upper piece (hilt and upper blade) swings off to
-                // one side and the lower piece (point) to the other, each turning about the middle of the cut.
-                var cut = tip + Vector2.up * (length * BladeSpec.SwordCutHeight);
-                for (var side = -1; side <= 1; side += 2)
-                {
-                    var degrees = -side * 18 * s;
-                    var turned = (Vector2)(Quaternion.Euler(0, 0, degrees) * (tip - cut));
-                    var drift = new Vector2(side * width * .7f * s, (side < 0 ? .08f : -.04f) * length * s);
-                    Draw(side < 0 ? bladeSwordUpper : bladeSwordLower, ProjectileLayer, cut + turned + drift, 0, new Vector2(width, length), degrees, 1, color, applyTween: false);
-                }
-                return;
-            }
+            if (vanish < 0) { Draw(bladeSword, ProjectileLayer, tip, 0, size, 0, 1, Color.white, applyTween: false); return; }
+            var s = vanish / BladeSpec.Seconds(BladeSpec.SwordVanishFrames);
+            DrawSwordSparks(strike, landing, length, width, vanish);
+            if (s >= 1) return;
+            // Sinks into the ground while the part below the dissolve line (rising from the point) is gone, with a soft band
+            // at the line. The picture is cropped in UV, so the painted sword itself is unchanged.
+            var sunk = tip + Vector2.down * (HeroHeight * BladeSpec.SwordSinkHeroHeights * s);
+            var gone = BladeSpec.SwordDissolved(s); var edge = BladeSpec.SwordDissolveEdge;
+            var bottom = sunk + Vector2.down * (length * bladeSword.Pivot.y);   // the picture's bottom edge
+            DrawSwordSlice(bottom, width, length, Mathf.Min(1, gone + edge), 1, 1);
+            DrawSwordSlice(bottom, width, length, gone, Mathf.Min(1, gone + edge), .45f);
+        }
+
+        // Draws the rows from..to (0 = picture bottom, 1 = top) of the sword picture standing on `bottom`.
+        void DrawSwordSlice(Vector2 bottom, float width, float length, float from, float to, float alpha)
+        {
+            if (to - from <= .001f) return;
             var rect = bladeSword.UvRects[0];
-            for (var side = -1; side <= 1; side += 2)
+            var slice = new Rect(rect.x, rect.y + rect.height * from, rect.width, rect.height * (to - from));
+            var height = length * (to - from);
+            // Draw puts the picture's pivot at the position; keep the slice where it sits in the whole picture.
+            var position = bottom + Vector2.up * (length * from + height * bladeSword.Pivot.y);
+            var color = Color.white; color.a = alpha;
+            Draw(bladeSword, ProjectileLayer, position, 0, new Vector2(width, height), 0, 1, color, applyTween: false, uv: slice);
+        }
+
+        // Bright shards rising off the blade as the sword dissolves: a soft spark with a thin bright streak along its path.
+        void DrawSwordSparks(M1BladeStrike strike, Vector2 landing, float length, float width, float vanish)
+        {
+            var duration = BladeSpec.SwordSparkSeconds;
+            for (var k = 0; k < BladeSpec.SwordSparks; k++)
             {
-                var halfRect = new Rect(side < 0 ? rect.x : rect.x + rect.width * .5f, rect.y, rect.width * .5f, rect.height);
-                // Each half keeps the picture's pivot (near the point), so it tilts outward from where it stands.
-                Draw(bladeSword, ProjectileLayer, tip + new Vector2(side * width * (.25f + .75f * s), 0), 0, new Vector2(width * .5f, length), -side * 16 * s, 1, color, applyTween: false, uv: halfRect);
+                var seed = LightningBolt.Hash(strike.EventId, 130 + k);
+                var start = (seed & 255) / 255f * BladeSpec.Seconds(BladeSpec.SwordVanishFrames) * .6f;
+                var age = vanish - start;
+                if (age < 0 || age > duration - start) continue;
+                var life = age / (duration - start);
+                var height = length * Mathf.Lerp(.08f, .7f, ((seed >> 8) & 255) / 255f);
+                var origin = landing + new Vector2((((seed >> 16) & 255) / 255f - .5f) * width * .3f, height);
+                var drift = new Vector2((((seed >> 4) & 255) / 255f - .5f) * HeroHeight * .9f, HeroHeight * Mathf.Lerp(.7f, 1.3f, ((seed >> 12) & 255) / 255f));
+                var at = origin + drift * (1 - (1 - life) * (1 - life));
+                var color = (k & 1) == 0 ? BladeSpec.Core : BladeSpec.SparkSteel; color.a = 1 - life * life;
+                var direction = drift.normalized;
+                Draw(lightningFlash, LightningLayer, at, 0, Vector2.one * HeroHeight * .16f, 0, 1, color, applyTween: false);
+                Draw(lightningCore, LightningLayer, at - direction * (HeroHeight * .06f), 0, new Vector2(HeroHeight * .16f, HeroHeight * .05f), Angle(direction), 1, color, applyTween: false);
             }
         }
 
         // Where the giant sword lands: the crack picture revealed from the centre, and dust puffs bursting out.
         void DrawSwordImpact(M1BladeStrike strike, Vector2 impact, float length, float since)
         {
-            var end = BladeSpec.SwordStaySeconds + BladeSpec.Seconds(BladeSpec.SwordSplitFrames);
+            var end = BladeSpec.SwordStaySeconds + BladeSpec.Seconds(BladeSpec.SwordVanishFrames);
             if (since > end) return;
-            var fade = 1 - Mathf.Clamp01((since - BladeSpec.SwordStaySeconds) / BladeSpec.Seconds(BladeSpec.SwordSplitFrames));
+            var fade = 1 - Mathf.Clamp01((since - BladeSpec.SwordStaySeconds) / BladeSpec.Seconds(BladeSpec.SwordVanishFrames));
             var reveal = Mathf.Lerp(.3f, 1, Mathf.Clamp01(since / BladeSpec.CrackRevealSeconds));
             var crackWidth = length * .62f;
             var crack = Color.white; crack.a = fade;
@@ -370,9 +395,6 @@ namespace Game.View
             bladeCrack = EffectArt(CrackRole, () => TemporaryCrack());
             for (var i = 0; i < bladeDust.Length; i++) bladeDust[i] = EffectArt(DustRole + (i + 1), () => impactDust ?? Resolve("feedback", "death", "default"));
             bladeDustPainted = art != null && art.TryResolveRole(DustRole + 1, out _);
-            // The split mask, applied offline at packing: two full-canvas pieces sharing the sword's pivot.
-            if (art == null || !art.TryResolveRole(SwordRole + ".piece_upper", out bladeSwordUpper) || !art.TryResolveRole(SwordRole + ".piece_lower", out bladeSwordLower))
-                bladeSwordUpper = bladeSwordLower = null;
         }
 
         // The painted role when the art manifest has it; otherwise the temporary picture (same pivot and proportions).
