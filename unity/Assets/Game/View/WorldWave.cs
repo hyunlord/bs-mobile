@@ -107,6 +107,7 @@ namespace Game.View
                 }
                 AcceptFallowEvent(value);
                 AcceptM1Blade(value);
+                AcceptLightningLink(value);
                 AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -273,30 +274,17 @@ namespace Game.View
                 var id=kind==WaveAttackKind.WaterFan?"xp-water":kind==WaveAttackKind.ConstructionSlam?"xp-timber":kind==WaveAttackKind.MusterWave?"xp-mission":"xp-grain";
                 WaveSprite(id,GameVisualTokens.GrowthLayer+1,reward.Position,GameVisualTokens.WaveRewardOpacity,GameVisualTokens.WaveRewardScale);
             }
+            minions.BeginSync();
             for(var groupIndex=0;groupIndex<wave.Groups.Count;groupIndex++)
             {
                 var group=wave.Groups[groupIndex];
-                var activity=group.Phase=="returning"?"return":group.Phase=="idle"?"idle":"muster";
-                var representative=Resolve("person",group.Formation=="cover"?"guard":"militia",activity);
                 var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
                 RenderedEntitySample?.Invoke("group",group.Id,position);
-                var groupFacing=Facing("group",group.Id,waveMotion.GroupDirection(group));
-                var muster=WaveMusterFormation(group,group.Training>0?2:1);
-                if(muster.Path!=MusterPresentationPath.None)
-                {
-                    DrawMusterFormation(group.Id,muster,representative,Resolve("person",group.Formation=="cover"?"militia":"guard",activity),GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,group.Phase!="idle",groupFacing);
-                    if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
-                    continue;
-                }
-                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
-                if(group.Training>0)
-                {
-                    var second=Resolve("person",group.Formation=="cover"?"militia":"guard",activity);
-                    var spacing=representative.WorldSize*GameVisualTokens.GroupRepresentativeOffset;
-                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
-                }
+                // Soldiers are moving bodies anchored to the Core group (spawn, seek, thrust on Core hits, return, disperse).
+                SyncMinionGroup(group,position,lordPoint,current.TickRate);
                 if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
             }
+            StepAndDrawMinions();
             drawnRepairAnchors.Clear();
             for(var attackIndex=0;attackIndex<wave.Attacks.Count;attackIndex++)
             {
@@ -401,6 +389,7 @@ namespace Game.View
                     DrawWaveAttackEdge(brace,a,age,size,Angle(b-a),GameVisualTokens.Attack,opacity);
                     continue;
                 }
+                if(value.Kind=="chain-link"&&IsChainSource(value.Source))continue; // drawn by DrawLightning
                 if(value.Kind=="chain-link")
                 {
                     var revealed=Vector2.Lerp(a,b,Mathf.Clamp01(age/(duration*.18f)));
@@ -430,6 +419,7 @@ namespace Game.View
                 }
             }
             DrawM1WeaponShowcase(lordPoint);
+            DrawLightning();
         }
         void DrawWaveAttackEdge(ArtVisual visual,Vector2 position,float time,Vector2 size,float direction,Color color,float opacity=1)
             =>Draw(visual,GameVisualTokens.WaveAttackEdgeLayer,position,time,size,direction,opacity*GameVisualTokens.WaveEdgeOpacity,tint:Color.Lerp(color,GameVisualTokens.Ink,.8f),edgeTexels:GameVisualTokens.WaveEdgeTexels);

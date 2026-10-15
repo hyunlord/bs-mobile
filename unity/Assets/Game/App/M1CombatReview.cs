@@ -119,6 +119,7 @@ namespace Game.App
         public void Save(string directory, bool verified)
         {
             if (IsCombined) { SaveCombined(directory,verified); return; }
+            SaveFeelLogs(directory);
             using var writer = new StreamWriter(Path.Combine(directory,"m1-combat-events.csv"));
             writer.WriteLine("frameIndex,snapshotTick,eventId,eventTick,kind,source,subjectId,amount,worldX,worldY,screenX,screenY,inViewport");
             foreach(var s in events) { var e=s.value; writer.WriteLine(FormattableString.Invariant($"{s.frame},{s.snapshot},{e.Id},{e.Tick},{e.Kind},{e.Source},{e.SubjectId},{e.Amount},{e.Position.X},{e.Position.Y},{s.screen.x:R},{s.screen.y:R},{s.visible}")); }

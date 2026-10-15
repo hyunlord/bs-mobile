@@ -226,9 +226,7 @@ namespace Game.View
             var a=Point(value.Position);var b=Point(value.Target);
             if(value.Kind=="chain-link")
             {
-                var length=(b-a).magnitude;
-                M1Draw("attack","core:storm_fork","chain",(a+b)*.5f,new Vector2(length,.36f),Angle(b-a),opacity*.3f,new Color(.55f,.8f,1));
-                M1Draw("attack","core:storm_fork","chain",(a+b)*.5f,new Vector2(length,.18f),Angle(b-a),opacity,Color.white);
+                // Drawn by DrawLightning (zigzag core + violet bloom + branches); the old thin ribbon is retired.
             }
             else if(value.Kind=="review-impact")
             {
@@ -270,6 +268,16 @@ namespace Game.View
             degrees=90-Mathf.Atan2(axis.y,axis.x)*Mathf.Rad2Deg;
             var footOffset=Quaternion.Euler(0,0,degrees)*Vector2.Scale(Foot-pivot,size);
             position=ground-new Vector2(footOffset.x,footOffset.y);
+        }
+
+        // Same authored spear laid along a direction: foot at the hand, tip `length` away.
+        public static void PoseAlong(Vector2 foot, Vector2 direction, float length, Vector2 pivot, out Vector2 position, out Vector2 size, out float degrees)
+        {
+            var axis=Tip-Foot;
+            size=Vector2.one*(Mathf.Max(0,length)/axis.magnitude);
+            degrees=Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg-Mathf.Atan2(axis.y,axis.x)*Mathf.Rad2Deg;
+            var footOffset=Quaternion.Euler(0,0,degrees)*Vector2.Scale(Foot-pivot,size);
+            position=foot-new Vector2(footOffset.x,footOffset.y);
         }
     }
 }

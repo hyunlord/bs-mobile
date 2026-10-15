@@ -32,7 +32,7 @@ namespace Game.View
 
         void ResetMuster()
         {
-            musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false;
+            musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false; ResetMinions();
             MusterPath = MusterPresentationPath.None; MusterEvolutionId = null; MusterRatio = 1; MusterSoldiers = 0; MusterScale = 1; MusterLunges = 0;
         }
 
@@ -87,7 +87,7 @@ namespace Game.View
                 var distance = (Point(group.Position) - target).sqrMagnitude;
                 if (distance < best) { best = distance; id = group.Id; }
             }
-            if (id >= 0) RecordMusterStrike(id, target);
+            if (id >= 0) { QueueGroupHit(id, target); MusterLunges++; }
         }
 
         // First-playable soldiers attack through Core attack presentation events originating at the person.

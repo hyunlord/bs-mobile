@@ -784,6 +784,7 @@ namespace Game.View
         void OnDestroy()
         {
             DisposeHeroMotion();
+            DisposeLightning();
             DisposeHeroConceptReview();
             DisposeFallow();
             DisposeThreatWarnings();

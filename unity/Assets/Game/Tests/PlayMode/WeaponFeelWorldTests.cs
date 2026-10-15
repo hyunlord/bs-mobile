@@ -132,6 +132,64 @@ namespace Tests.PlayMode
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }
 
+        [UnityTest]
+        public IEnumerator LightningStrikeDrawsABrightCoreAboveItsTarget()
+        {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName = CanonicalContent.ProfileName;
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var frame = session.View.CaptureFrame() with { Enemies = System.Array.Empty<EnemyView>() };
+            var lord = frame.Lord.Position;
+            var target = new WorldPoint(lord.X + 900, lord.Y + 300);
+            var wave = ((IWaveRunView)session.View).CaptureWaveRuntime() with { Enemies = System.Array.Empty<WaveEnemyView>(), Events = System.Array.Empty<WaveEvent>() };
+            var strike = wave with { Events = new[] {
+                new WaveEvent(960000, frame.Tick + 1, "chain-link", "core:storm_fork", 1, lord, target, 0),
+                new WaveEvent(960001, frame.Tick + 1, "hit", "core:storm_fork", 1, target, lord, 18) } };
+            var owner = new GameObject("Lightning pixels QA"); var cameraOwner = new GameObject("Lightning pixels camera");
+            var camera = cameraOwner.AddComponent<Camera>(); var texture = new RenderTexture(390, 844, 24); camera.targetTexture = texture;
+            try
+            {
+                var world = CreateWorld(owner, camera, catalog, frame);
+                var records = new System.Collections.Generic.List<LightningStrikeRecord>();
+                world.LightningStrikeSample = records.Add;
+                world.AcceptWave(catalog, wave);
+                world.Present(frame, frame, WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), wave), 1, 0, new Rect(0, 0, 390, 844));
+                yield return null;
+                world.AcceptWave(catalog, strike);
+                var instances = new System.Collections.Generic.List<int>();
+                for (var i = 0; i <= LightningSpec.TelegraphFrames; i++)
+                {
+                    world.Present(frame, frame, WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), strike), 1, Frame, new Rect(0, 0, 390, 844));
+                    instances.Add(world.SubmittedInstances);
+                    yield return null;
+                }
+                Assert.That(records.Count, Is.EqualTo(1), "The strike becomes visible after its telegraph: " + string.Join(",", instances));
+                Assert.That(records[0].CorePixels, Is.GreaterThanOrEqualTo(4)); Assert.That(records[0].GlowPixels, Is.GreaterThanOrEqualTo(16));
+                camera.Render();
+                RenderTexture.active = texture;
+                var read = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+                read.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0); read.Apply();
+                RenderTexture.active = null;
+                var at = records[0].FirstSkyTargetScreen;
+                float Luma(Color c) => .2126f * c.r + .7152f * c.g + .0722f * c.b;
+                var brightest = 0f;
+                for (var y = (int)at.y + 20; y < Mathf.Min(texture.height, (int)at.y + 120); y++)
+                    for (var x = (int)at.x - 12; x <= (int)at.x + 12; x++) brightest = Mathf.Max(brightest, Luma(read.GetPixel(Mathf.Clamp(x, 0, texture.width - 1), y)));
+                // Surrounding ground: mean luminance of a box well clear of the pillar's bloom.
+                var grass = 0f; var samples = 0;
+                for (var y = (int)at.y + 30; y < (int)at.y + 90; y += 3)
+                    for (var x = (int)at.x + 70; x < (int)at.x + 130; x += 3)
+                    { grass += Luma(read.GetPixel(Mathf.Clamp(x, 0, texture.width - 1), Mathf.Clamp(y, 0, texture.height - 1))); samples++; }
+                grass /= Mathf.Max(1, samples);
+                Object.Destroy(read);
+                // The 40/100 contrast gate is measured on real capture frames; this fixture's ground is brighter than play.
+                Assert.That(brightest, Is.GreaterThanOrEqualTo(.9f), $"pillar core luminance {brightest:0.00}");
+                Assert.That(brightest - grass, Is.GreaterThanOrEqualTo(.3f), $"pillar core luminance {brightest:0.00} vs ground {grass:0.00}");
+            }
+            finally { DestroyFixture(owner, cameraOwner, texture); }
+        }
+
         // P5: enemies > own attacks > allies. Muster soldiers, including a group standing on the hero and a lunge toward the hero
         // side, must never overlap the hero's drawn box.
         [UnityTest]
@@ -156,7 +214,7 @@ namespace Tests.PlayMode
                 var world = CreateWorld(owner, camera, catalog, frame);
                 world.GearReference = reference;
                 var soldiers = new System.Collections.Generic.List<Rect>();
-                world.RenderedMusterSoldierBounds = soldiers.Add;
+                world.RenderedMinionBounds = (bounds, state) => soldiers.Add(bounds);
                 for (var i = 0; i < 12; i++)
                 {
                     soldiers.Clear();

@@ -15,6 +15,12 @@ namespace Game.View
         public int FrameMs { get; }
         public string Tween { get; }
         public Sprite Sprite { get; }
+        // Runtime-generated effect texture (lightning glow, flash, scorch): one full-texture frame, centred pivot, no tween.
+        internal ArtVisual(string roleId, Texture2D texture, Vector2 worldSize)
+        {
+            RoleId = roleId; Texture = texture; Pivot = new Vector2(.5f, .5f); WorldSize = worldSize; FrameMs = 1000; Tween = "none";
+            UvRects = Array.AsReadOnly(new[] { new Rect(0, 0, 1, 1) });
+        }
         internal ArtVisual(ArtRoleDefinition role, Texture2D texture)
         {
             RoleId = role.id; Texture = texture; Pivot = role.pivot; WorldSize = role.worldSize;

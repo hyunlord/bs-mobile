@@ -123,6 +123,7 @@ namespace Game.App
 #endif
         void SaveCombined(string directory,bool verified)
         {
+            SaveFeelLogs(directory);
             var global=0; var visible=0; var both=0; var all=sourceCounts!=null;
             using(var writer=new StreamWriter(Path.Combine(directory,"m1-combat-density.csv")))
             {

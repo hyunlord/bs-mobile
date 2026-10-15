@@ -42,6 +42,7 @@ namespace Game.View
             var delay = 0f;
             var direction = at - (PredictedLordPosition ?? RenderedLordPosition);
             if (M1BladeKill(value, origin, at, hasPose, out var bladeDelay, out var bladeDirection)) { delay = bladeDelay; direction = bladeDirection; }
+            else if (LightningKillDelay(value, out var lightningDelay)) delay = lightningDelay;
             var tier = enemyDeaths.Kill(value.SubjectId, value.Id, pose, hasPose, direction, visualTime, delay, value.Amount > 0);
             if (tier == EnemyDeathTier.None) impactParticles.Kill(value.Id, origin, value.Amount > 0);
         }
