@@ -289,7 +289,7 @@ namespace Game.View
             }
             StepAndDrawMinions();
             drawnRepairAnchors.Clear();
-            orbitMarkedActivations.Clear();
+            orbitMarkedActivations.Clear(); orbitSeen.Clear();
             for(var attackIndex=0;attackIndex<wave.Attacks.Count;attackIndex++)
             {
                 var attack=wave.Attacks[attackIndex];

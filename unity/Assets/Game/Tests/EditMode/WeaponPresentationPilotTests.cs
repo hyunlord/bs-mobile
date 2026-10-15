@@ -140,20 +140,47 @@ namespace Tests.EditMode
             Assert.That(BladeSpec.WindupFrames, Is.InRange(3, 4), "Hero pulls the sword back 3–4 frames.");
             Assert.That(BladeSpec.HitHoldFrames, Is.InRange(3, 5));
             Assert.That(GiantBladeEnvelope.FadeSeconds * 60, Is.InRange(6f, 8f), "The trail fades over 6–8 frames.");
-            Assert.That(BladeSpec.Taper(0), Is.LessThan(.2f)); Assert.That(BladeSpec.Taper(1), Is.EqualTo(1).Within(1e-5f), "Thick at the leading edge, thin toward the start.");
             Assert.That(BladeSpec.SwordHeroHeights, Is.GreaterThanOrEqualTo(3f), "The evolved sword is at least three hero heights.");
-            Assert.That(BladeSpec.MinThicknessHeroHeights, Is.GreaterThanOrEqualTo(.4f), "The Lv1 crescent is not a hairline.");
+            Assert.That(BladeSpec.MinBandHeroHeights, Is.GreaterThanOrEqualTo(.4f), "The Lv1 arc band is not a hairline.");
+            Assert.That(BladeSpec.AfterimageOpacity, Is.LessThan(.5f), "One faint afterimage.");
+            Assert.That(BladeSpec.SwordFallFrames, Is.InRange(8, 10), "The giant sword falls over 8–10 frames.");
+            var fall = BladeSpec.Seconds(BladeSpec.SwordFallFrames);
+            Assert.That(BladeSpec.SwordDrop(0, 1), Is.EqualTo(1)); Assert.That(BladeSpec.SwordDrop(fall, 1), Is.Zero);
+            Assert.That(BladeSpec.SwordDrop(fall * 2 / 3, 1) - BladeSpec.SwordDrop(fall, 1), Is.GreaterThan(BladeSpec.SwordDrop(0, 1) - BladeSpec.SwordDrop(fall / 3, 1)),
+                "The fall speeds up: the last third covers more than the first.");
+            Assert.That(BladeSpec.SwordSquashFrames, Is.InRange(1, 2));
+            Assert.That(BladeSpec.SwordScale(0).y, Is.LessThan(1)); Assert.That(BladeSpec.SwordScale(0).x, Is.GreaterThan(1), "Squashes as it plants.");
+            Assert.That(BladeSpec.SwordScale(BladeSpec.Seconds(BladeSpec.SwordSquashFrames)), Is.EqualTo(Vector2.one));
+            Assert.That(BladeSpec.SwordStaySeconds, Is.EqualTo(.5f).Within(1e-5f), "Stays planted half a second before it splits away.");
             Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
             Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");
             Assert.That(OrbitSpec.Shown(0), Is.InRange(.3f, .6f), "Back-to-back activations shrink part way, not to nothing (no blinking).");
-            Assert.That(OrbitSpec.TornadoHeroHeights, Is.GreaterThanOrEqualTo(1f)); Assert.That(OrbitSpec.MinShieldHeroHeights * 2, Is.GreaterThanOrEqualTo(.8f));
+            Assert.That(OrbitSpec.TornadoHeroHeights, Is.GreaterThanOrEqualTo(1f));
+            Assert.That(OrbitSpec.MinShieldHeroHeights, Is.EqualTo(.35f).Within(1e-5f)); Assert.That(OrbitSpec.MaxShieldHeroHeights, Is.EqualTo(.45f).Within(1e-5f));
+            Assert.That(OrbitSpec.MaxShields, Is.EqualTo(6));
+            Assert.That(Enumerable.Range(0, 12).Count(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(6), "Twelve orbiters draw six shields.");
+            Assert.That(Enumerable.Range(0, 12).Where(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(new[] { 1, 3, 5, 7, 9, 11 }), "Evenly spaced.");
+            Assert.That(Enumerable.Range(0, 4).All(i => OrbitSpec.ShieldDrawn(i, 4)), Is.True);
+            Assert.That(Enumerable.Range(0, 7).Count(i => OrbitSpec.ShieldDrawn(i, 7)), Is.EqualTo(6));
             Assert.That(ArrowSpec.MuzzleFlashFrames, Is.EqualTo(1));
             Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 0), Is.EqualTo(Vector2.zero));
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 1), Is.EqualTo(new Vector2(10, 0)));
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), .5f).y, Is.GreaterThan(0), "Arcs above the straight line.");
             Assert.That(ArrowSpec.RainArrows(.1f, 1), Is.EqualTo(ArrowSpec.MinRainArrows)); Assert.That(ArrowSpec.RainArrows(100, 1), Is.EqualTo(ArrowSpec.MaxRainArrows));
+        }
+
+        [Test]
+        public void AlphaCapCoversOwnEffectsOverEnemiesButNotFullScreenTints()
+        {
+            Assert.That(EffectAlphaCap.OverEnemies, Is.EqualTo(.5f));
+            Assert.That(EffectAlphaCap.IsEnemyLayer(GameVisualTokens.EnemyLayer), Is.True); Assert.That(EffectAlphaCap.IsEnemyLayer(GameVisualTokens.EnemyLayer + 19), Is.True);
+            Assert.That(EffectAlphaCap.IsEnemyLayer(GameVisualTokens.WaveAttackEdgeLayer), Is.False);
+            foreach (var layer in new[] { 70, 71, WorldRenderer.ProjectileLayer, WorldRenderer.LightningLayer, WorldRenderer.ProjectileLayer + 2 })
+                Assert.That(EffectAlphaCap.IsEffectLayer(layer), Is.True, layer.ToString());
+            foreach (var layer in new[] { GameVisualTokens.WaveDangerLayer, WorldRenderer.StormSkyLayer, WorldRenderer.ScreenFlashLayer, GameVisualTokens.LordLayer, GameVisualTokens.AttackLayer })
+                Assert.That(EffectAlphaCap.IsEffectLayer(layer), Is.False, layer.ToString());
         }
 
         [Test]

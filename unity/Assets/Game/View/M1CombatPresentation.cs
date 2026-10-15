@@ -54,9 +54,12 @@ namespace Game.View
         }
         sealed class M1BladeStrike
         {
-            public long EventId = -1; public int Tick; public Vector2 Origin; public float Aim, CoreRadius, Radius, HalfAngle, Accepted, Strength, Thickness; public bool Fitted, Evolved, ShakeFired, Recorded; public int AcceptedFrame;
+            public long EventId = -1; public int Tick; public Vector2 Origin; public float Aim, CoreRadius, Radius, HalfAngle, Accepted, Strength; public bool Fitted, Evolved, ShakeFired, Recorded; public int AcceptedFrame;
             public float Visible => Accepted + BladeSpec.Seconds(BladeSpec.WindupFrames);
             public readonly Vector2[] Kills = new Vector2[M1BladeKillCapacity]; public int KillCount, KillsDropped;
+            // On-screen hit positions of this strike (the arc reaches in over them; the evolved sword plants at their centre).
+            public readonly Vector2[] Hits = new Vector2[64]; public int HitCount; public Vector2 HitSum; public float Inner = float.PositiveInfinity;
+            public bool SwordPlaced; public Vector2 SwordAt; public float SwordShift;
         }
         const int M1BladeKillCapacity = 512;
         readonly M1BladeStrike[] m1BladeStrikes = { new M1BladeStrike(), new M1BladeStrike(), new M1BladeStrike(), new M1BladeStrike() };

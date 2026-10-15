@@ -19,6 +19,11 @@ namespace Game.View
     public sealed partial class WorldRenderer
     {
         public const int LightningLayer = 75, ProjectileLayer = 74, StormSkyLayer = 73, ScorchLayer = GameVisualTokens.GrowthLayer + 3;
+        // Full-screen tints (storm sky darkening, storm screen flash) are not covered by the P5 occlusion budget; they are
+        // checked on their own (ScreenTintAlpha). The flash sits on its own layer so the occlusion mask and cap skip it.
+        public const int ScreenFlashLayer = 77;
+        // Strongest full-screen darkening tint drawn this frame (normal blend), for the review's separate tint check.
+        public float ScreenTintAlpha { get; private set; }
         const int LightningLinkCapacity = 64, LightningStrikeCapacity = 12;
         sealed class LightningStrike
         {
@@ -220,6 +225,7 @@ namespace Game.View
             if (additive == null || !additive.isSupported) throw new InvalidOperationException("Additive world sprite shader is unavailable.");
             foreach (var visual in new[] { lightningGlow, lightningCore, lightningFlash, lightningSolid })
                 batches.Add((LightningLayer, visual.Texture), new SpriteBatch(visual.Texture, additive, renderCamera, LightningLayer));
+            batches.Add((ScreenFlashLayer, lightningSolid.Texture), new SpriteBatch(lightningSolid.Texture, additive, renderCamera, ScreenFlashLayer));
         }
 
         void DrawBolt(Vector2[] points, int count, float coreWidth, float glowWidth, float opacity)
@@ -262,7 +268,7 @@ namespace Game.View
                     var envelope = age < 0 ? Mathf.Clamp01((age + LightningSpec.Seconds(LightningSpec.TelegraphFrames)) / LightningSpec.Seconds(LightningSpec.TelegraphFrames))
                         : 1 - Mathf.Clamp01((age - LightningSpec.Seconds(LightningSpec.StrikeFrames + LightningSpec.FadeFrames)) / .25f);
                     var sky = LightningSpec.StormSky; sky.a = LightningSpec.StormDarkness(strike.Strength) * envelope;
-                    if (sky.a > 0) Draw(stormSolid, StormSkyLayer, view.center, 0, view.size * 1.1f, 0, 1, sky, applyTween: false);
+                    if (sky.a > 0) { Draw(stormSolid, StormSkyLayer, view.center, 0, view.size * 1.1f, 0, 1, sky, applyTween: false); ScreenTintAlpha = Mathf.Max(ScreenTintAlpha, sky.a); }
                 }
                 if (age < 0)
                 {
@@ -292,7 +298,7 @@ namespace Game.View
                 if (age < LightningSpec.Seconds(LightningSpec.ScreenBrightenFrames) && LightningSpec.ScreenBrighten(strike.Storm) > 0)
                 {
                     var light = Color.white; light.a = LightningSpec.ScreenBrighten(strike.Storm);
-                    Draw(lightningSolid, LightningLayer, view.center, 0, view.size * 1.1f, 0, 1, light, applyTween: false);
+                    Draw(lightningSolid, ScreenFlashLayer, view.center, 0, view.size * 1.1f, 0, 1, light, applyTween: false);
                 }
                 var branches = LightningSpec.Branches(strike.Strength);
                 for (var i = 0; i < strike.Count; i++)

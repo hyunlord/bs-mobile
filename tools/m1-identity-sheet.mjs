@@ -19,6 +19,11 @@ function pick(directory, id) {
   const late = r => Number(r.frameIndex) > 60;
   if (id === 'core:iron_blade') {
     const s = rows(path.join(directory, 'm1-blade-strikes.csv')).filter(late)[1];
+    // Evolved: the planted giant sword (it lands 5 frames after the arc appears and stays half a second).
+    if (s.evolved === 'True' && Number(s.swordTipScreenX) >= 0) {
+      const length = Number(s.swordLengthPixels);
+      return { frame: Number(s.frameIndex) + 12, x: Number(s.swordTipScreenX), y: FrameHeight - Number(s.swordTipScreenY) - length * .45, size: length * 1.1 };
+    }
     const aim = Number(s.aim) * Math.PI / 180, r = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY));
     return { frame: Number(s.frameIndex) + 7, x: Number(s.originScreenX) + Math.cos(aim) * r * .6, y: FrameHeight - (Number(s.originScreenY) + Math.sin(aim) * r * .6), size: r * 1.4 };
   }

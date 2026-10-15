@@ -6,6 +6,12 @@ Shader "Game/View/WorldSprite"
         _InstanceColor ("Color", Color) = (1,1,1,1)
         _InstanceUv ("Atlas rectangle", Vector) = (0,0,1,1)
         _InstanceFlash ("Hit flash and edge style", Vector) = (0,0,1,0)
+        // P5 alpha cap: enemy sprites mark the stencil, own weapon effects draw over marked pixels at most at _AlphaCap.
+        _StencilRef ("Stencil reference", Float) = 0
+        _StencilComp ("Stencil compare", Float) = 8
+        _StencilPass ("Stencil pass", Float) = 0
+        _AlphaCap ("Alpha cap", Float) = 1
+        _AlphaClip ("Alpha clip", Float) = 0
     }
     SubShader
     {
@@ -17,12 +23,15 @@ Shader "Game/View/WorldSprite"
             Cull Off
             ZWrite Off
             ZTest Always
+            Stencil { Ref [_StencilRef] Comp [_StencilComp] Pass [_StencilPass] }
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile_instancing
             #pragma instancing_options forcemaxcount:511
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            float _AlphaCap;
+            float _AlphaClip;
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
             float4 _MainTex_TexelSize;
@@ -67,7 +76,10 @@ Shader "Game/View/WorldSprite"
                 }
                 sample.a *= lerp(1, style.z, smoothstep(0.25, 0.65, input.local.y));
                 sample.rgb = lerp(sample.rgb, half3(1,1,1), style.x);
-                return sample * color;
+                half4 result = sample * color;
+                clip(result.a - _AlphaClip);
+                result.a = min(result.a, _AlphaCap);
+                return result;
             }
             ENDHLSL
         }

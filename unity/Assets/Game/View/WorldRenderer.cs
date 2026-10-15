@@ -309,6 +309,7 @@ namespace Game.View
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
+            ScreenTintAlpha = 0;
             lordMarker?.BeginFrame(); musterRings?.BeginFrame();
             actorGrounding.BeginFrame(); actorWings.BeginFrame();
             if (presentationDiagnosticsActive) diagnostics.CameraUiMs = DiagnosticInterval(ref diagnosticCheckpoint);
@@ -487,8 +488,9 @@ namespace Game.View
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
             if(musterRings!=null){musterRings.Flush();SubmittedInstances+=musterRings.SubmittedInstances;DrawCalls+=musterRings.DrawCalls;}
-            FlushOrbitShapes();
+            FlushOrbitShapes(); FlushBladeRibbons();
             actorGrounding.Flush(); actorWings.Flush();
+            if (occlusion != null) occlusion.Tint = ScreenTintAlpha;
             occlusion?.End();
             SubmittedInstances+=actorGrounding.SubmittedInstances+actorWings.SubmittedInstances;
             DrawCalls+=actorGrounding.DrawCalls+actorWings.DrawCalls;
@@ -792,7 +794,7 @@ namespace Game.View
         void OnDestroy()
         {
             DisposeHeroMotion();
-            DisposeLightning();
+            DisposeLightning(); DisposeBladeArt();
             DisposeHeroConceptReview();
             DisposeFallow();
             DisposeThreatWarnings();

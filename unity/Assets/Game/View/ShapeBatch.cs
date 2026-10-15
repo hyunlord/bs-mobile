@@ -15,7 +15,7 @@ namespace Game.View
         private readonly Vector4[] colors = new Vector4[MaximumInstances];
         private readonly Vector4[] styles = new Vector4[MaximumInstances];
         private readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
-        private readonly Material material;
+        private readonly Material material, overEnemies;
         private readonly Mesh mesh;
         private readonly int layer;
         private int count;
@@ -28,14 +28,19 @@ namespace Game.View
             if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("The world renderer requires GPU instancing.");
             this.mesh = mesh; this.layer = layer;
             material = new Material(shader) { name = "World instances " + layer, enableInstancing = true, renderQueue = 3000 + layer, hideFlags = HideFlags.HideAndDontSave };
+            overEnemies = EffectAlphaCap.Configure(material, layer);
         }
 
         public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; }
 
         public void SetClipRect(Rect bounds)
         {
-            material.SetVector(ClipId, new Vector4(bounds.xMin, bounds.yMin, bounds.xMax, bounds.yMax));
-            material.SetFloat(ClipEnabledId, 1);
+            foreach (var target in new[] { material, overEnemies })
+            {
+                if (target == null) continue;
+                target.SetVector(ClipId, new Vector4(bounds.xMin, bounds.yMin, bounds.xMax, bounds.yMax));
+                target.SetFloat(ClipEnabledId, 1);
+            }
         }
 
         public void Add(Vector2 position, Vector2 scale, float degrees, Color color, float innerRadius = -1)
@@ -58,12 +63,14 @@ namespace Game.View
             };
             OcclusionProbe.Active?.Record(layer, mesh, matrices, count, null, colors, null);
             Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
+            if (overEnemies != null) { parameters.material = overEnemies; Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count); DrawCalls++; }
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
 
         public void Dispose()
         {
-            if (Application.isPlaying) UnityEngine.Object.Destroy(material); else UnityEngine.Object.DestroyImmediate(material);
+            if (Application.isPlaying) { UnityEngine.Object.Destroy(material); if (overEnemies != null) UnityEngine.Object.Destroy(overEnemies); }
+            else { UnityEngine.Object.DestroyImmediate(material); if (overEnemies != null) UnityEngine.Object.DestroyImmediate(overEnemies); }
         }
     }
 }

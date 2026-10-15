@@ -13,19 +13,21 @@ namespace Game.View
     {
         public static OcclusionProbe Active;
         public Func<int> FrameSource;
+        // Full-screen tint alpha of the frame being recorded (kept out of the coverage, checked on its own).
+        public float Tint;
         public const int Downscale = 2;
-        // Enemies are depth-sorted on EnemyLayer..+19. Own weapon effects that can cover them sit above: attack edges (70),
-        // impact particles (71), storm sky (73), projectiles and shield discs (74), additive glow (75), shield emblems (76).
-        // Threat markers (72), the hero (80) and UI warnings (90) are not own attacks.
-        public static bool IsEnemyLayer(int layer) => layer >= GameVisualTokens.EnemyLayer && layer < GameVisualTokens.EnemyLayer + 20;
-        public static bool IsEffectLayer(int layer) => layer >= 70 && layer <= 79 && layer != 72;
+        public static bool IsEnemyLayer(int layer) => EffectAlphaCap.IsEnemyLayer(layer);
+        public static bool IsEffectLayer(int layer) => EffectAlphaCap.IsEffectLayer(layer);
 
         public readonly struct Sample
         {
             public readonly int Frame, EnemyPixels;
-            public readonly float CoveredPixels;
-            public Sample(int frame, int enemy, float covered) { Frame = frame; EnemyPixels = enemy; CoveredPixels = covered; }
+            public readonly float CoveredPixels, UncappedPixels, Tint;
+            public Sample(int frame, int enemy, float covered, float uncapped, float tint) { Frame = frame; EnemyPixels = enemy; CoveredPixels = covered; UncappedPixels = uncapped; Tint = tint; }
+            // A uniform normal-blend tint of alpha a scales every luminance difference, enemy against ground included, by 1 − a.
+            public float TintContrast => 1 - Tint;
             public float Ratio => EnemyPixels > 0 ? CoveredPixels / EnemyPixels : 0;
+            public float UncappedRatio => EnemyPixels > 0 ? UncappedPixels / EnemyPixels : 0;
         }
 
         static readonly int ChannelId = Shader.PropertyToID("_MaskChannel");
@@ -83,24 +85,26 @@ namespace Game.View
             if (!recording) return;
             recording = false;
             Graphics.ExecuteCommandBuffer(commands);
-            var index = frame; Pending++;
+            var index = frame; var tint = Tint; Pending++;
             AsyncGPUReadback.Request(target, 0, TextureFormat.RGBA32, request =>
             {
                 Pending--;
                 if (request.hasError) return;
-                Count(index, request.GetData<byte>());
+                Count(index, tint, request.GetData<byte>());
             });
         }
 
-        void Count(int index, NativeArray<byte> data)
+        void Count(int index, float tint, NativeArray<byte> data)
         {
-            int enemy = 0; float covered = 0;
+            int enemy = 0; float covered = 0, raw = 0;
             for (var i = 0; i + 3 < data.Length; i += 4)
             {
                 if (data[i] < 128) continue;
-                enemy++; covered += data[i + 1] / 255f;
+                // The mask holds the strongest effect alpha before the cap; the screen shows it capped over enemies.
+                var alpha = data[i + 1] / 255f;
+                enemy++; covered += Mathf.Min(alpha, EffectAlphaCap.OverEnemies); raw += alpha;
             }
-            samples.Add(new Sample(index, enemy, covered));
+            samples.Add(new Sample(index, enemy, covered, raw, tint));
         }
 
         public void Dispose()
@@ -108,6 +112,45 @@ namespace Game.View
             commands.Release();
             if (target != null) { target.Release(); UnityEngine.Object.Destroy(target); }
             if (Active == this) Active = null;
+        }
+    }
+
+    // P5 alpha cap. Enemy sprites mark the stencil buffer where they are drawn; own weapon effects drawn above them are
+    // split into two passes: full alpha where no enemy is, and at most OverEnemies over an enemy pixel. The capped pass
+    // also bumps the mark, so effects stacked on one enemy pixel add up to the cap at most (the first one drawn wins).
+    // Full-screen tints (storm sky 73, storm screen flash 77) are checked separately; threat markers (72) are not own attacks.
+    public static class EffectAlphaCap
+    {
+        public const float OverEnemies = .5f;
+        public const int EnemyMark = 1;
+        // Enemies are depth-sorted on EnemyLayer..+19. Own weapon effects that can cover them sit above: attack edges (70),
+        // impact particles (71), projectiles and shield discs (74), additive glow (75), shield emblems (76).
+        public static bool IsEnemyLayer(int layer) => layer >= GameVisualTokens.EnemyLayer && layer < GameVisualTokens.EnemyLayer + 20;
+        public static bool IsEffectLayer(int layer) => layer >= 70 && layer <= 79 && layer != GameVisualTokens.WaveDangerLayer
+            && layer != WorldRenderer.StormSkyLayer && layer != WorldRenderer.ScreenFlashLayer;
+        static readonly int RefId = Shader.PropertyToID("_StencilRef"), CompId = Shader.PropertyToID("_StencilComp"), PassId = Shader.PropertyToID("_StencilPass");
+        static readonly int CapId = Shader.PropertyToID("_AlphaCap"), ClipId = Shader.PropertyToID("_AlphaClip");
+
+        // Configures a batch material for its layer; returns the capped twin an effect batch draws over enemies, else null.
+        public static Material Configure(Material material, int layer)
+        {
+            if (IsEnemyLayer(layer))
+            {
+                // Mark only where the enemy is actually painted, not its transparent quad corners.
+                Set(material, EnemyMark, CompareFunction.Always, StencilOp.Replace, 1, .05f);
+                return null;
+            }
+            if (!IsEffectLayer(layer)) return null;
+            var capped = new Material(material) { name = material.name + " over enemies", hideFlags = HideFlags.HideAndDontSave };
+            Set(material, 0, CompareFunction.Equal, StencilOp.Keep, 1, 0);
+            Set(capped, EnemyMark, CompareFunction.Equal, StencilOp.IncrementSaturate, OverEnemies, 1 / 255f);
+            return capped;
+        }
+
+        static void Set(Material material, int reference, CompareFunction compare, StencilOp pass, float cap, float clip)
+        {
+            material.SetFloat(RefId, reference); material.SetFloat(CompId, (float)compare); material.SetFloat(PassId, (float)pass);
+            material.SetFloat(CapId, cap); material.SetFloat(ClipId, clip);
         }
     }
 }

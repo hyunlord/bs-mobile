@@ -18,7 +18,13 @@ namespace Game.View
         // Guard ring: gold-rimmed shields with a blue crest and a gold motion trail; evolution throws a shield out to the
         // struck enemy and back with a gold shockwave on contact.
         public const int ThrowFrames = 10, ShockwaveFrames = 10, MaxThrows = 16;
-        public const float MinShieldHeroHeights = .45f, MaxShieldHeroHeights = .75f, ShieldOfCollision = .85f, ShieldWobble = 12;
+        // Shields are drawn 0.35–0.45 hero heights tall by gear strength, whatever the Core collision radius; at most
+        // MaxShields per activation are drawn (evenly picked), hits by the others still flash.
+        public const float MinShieldHeroHeights = .35f, MaxShieldHeroHeights = .45f, ShieldWobble = 12;
+        public const int MaxShields = 6;
+        // Which of `count` orbiters (0-based index) are drawn: all up to MaxShields, else MaxShields evenly spaced.
+        public static bool ShieldDrawn(int index, int count)
+            => count <= MaxShields || (index + 1) * MaxShields / count > index * MaxShields / count;
         public static readonly Color Gold = new Color(.97f, .8f, .32f), Crest = new Color(.2f, .38f, .82f);
         public static float Seconds(int frames) => frames / 60f;
         // 1 while the activation runs, ramping in over the spread and out over the shrink.
@@ -36,18 +42,20 @@ namespace Game.View
         readonly List<ShieldThrow> shieldThrows = new List<ShieldThrow>(OrbitSpec.MaxThrows);
         readonly HashSet<int> orbitMarkedActivations = new HashSet<int>();
         readonly HashSet<int> orbitRecordedActivations = new HashSet<int>();
+        readonly Dictionary<int, int> orbitSeen = new Dictionary<int, int>();   // orbiters met per activation this frame
         ShapeBatch orbitShapes; ShapeMeshes orbitShapeMeshes;
         const int ShieldEmblemLayer = ProjectileLayer + 2;   // above the shield discs, below the hero; normal blend
         public int OrbitActivations { get; private set; }
         public int OrbitContactFlashes { get; private set; }
         public int VortexFrames { get; private set; }
         public int ShieldThrows { get; private set; }
+        public int ShieldsDrawn { get; private set; }   // shield draws summed over frames (at most MaxShields per activation per frame)
         public System.Action<OrbitActivationRecord> OrbitActivationSample;
 
         void ResetOrbits()
         {
-            shieldThrows.Clear(); orbitMarkedActivations.Clear(); orbitRecordedActivations.Clear();
-            OrbitActivations = OrbitContactFlashes = VortexFrames = ShieldThrows = 0;
+            shieldThrows.Clear(); orbitMarkedActivations.Clear(); orbitRecordedActivations.Clear(); orbitSeen.Clear();
+            OrbitActivations = OrbitContactFlashes = VortexFrames = ShieldThrows = ShieldsDrawn = 0;
         }
 
         bool IsOrbitShape(string source, out string shape)
@@ -82,10 +90,15 @@ namespace Game.View
             return Mathf.Min(range, (point - hero).magnitude);
         }
 
+        // Drawn shield radius (half its height). Not the Core collision radius (gear speed), which at review max nearly fills
+        // the orbit: contact flashes mark hits beyond the drawn rim.
         float ShieldRadius(string source)
-            // Core collision radius is the gear speed; at review max it nearly fills the orbit, so the drawn shield is capped and
-            // contact flashes mark the hits beyond its rim.
-            => Mathf.Clamp(waveDefinition.Gear[source].Speed / (float)settings.WorldUnitsPerUnityUnit * OrbitSpec.ShieldOfCollision, HeroHeight * OrbitSpec.MinShieldHeroHeights, HeroHeight * OrbitSpec.MaxShieldHeroHeights);
+        {
+            var gear = waveDefinition.Gear[source];
+            WaveGearDefinition reference = null; GearReference?.Gear.TryGetValue(gear.Id, out reference);
+            var strength = WeaponEvolved(source) ? 1 : LightningSpec.Strength(MusterFormationRule.Ratio(gear, EquipmentLevel(gear.Id), reference));
+            return HeroHeight * Mathf.Lerp(OrbitSpec.MinShieldHeroHeights, OrbitSpec.MaxShieldHeroHeights, strength) * .5f;
+        }
 
         // Called for each Core orbit attack (one per orbiter) from DrawM1CombatAttack.
         void DrawOrbitAttack(WaveAttackView attack, Vector2 center, int tick, float alpha, Vector2 lordPoint, string shape)
@@ -112,8 +125,9 @@ namespace Game.View
                 if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
             }
             var shown = OrbitSpec.Shown(presence);
-            if (shape == "tornado") DrawTornado(center, shown, attack.ActivationId, gear);
-            else DrawShield(center, lordPoint, ShieldRadius(attack.Source) * shown, shown, age);
+            if (shape == "tornado") { DrawTornado(center, shown, attack.ActivationId, gear); return; }
+            orbitSeen.TryGetValue(attack.ActivationId, out var index); orbitSeen[attack.ActivationId] = index + 1;
+            if (OrbitSpec.ShieldDrawn(index, gear.Count)) { DrawShield(center, lordPoint, ShieldRadius(attack.Source) * shown, shown, age); ShieldsDrawn++; }
         }
 
         float TornadoHeight(WaveGearDefinition gear)
@@ -281,13 +295,14 @@ namespace Game.View
             var size = shape == "tornado" ? TornadoHeight(gear) : ShieldRadius(attack.Source) * 2;
             OrbitActivationSample(new OrbitActivationRecord { Activation = attack.ActivationId, Evolved = evolved, Count = gear.Count, Shape = shape,
                 OrbitRadiusPixels = orbitRadius / pixel, OrbiterSizePixels = size / pixel, HeroHeightPixels = HeroHeight / pixel,
-                FirstOrbiterScreen = renderCamera.WorldToScreenPoint(center), FrameOffsetFromStart = Mathf.RoundToInt(OrbitSpec.SpreadFrames) });
+                FirstOrbiterScreen = renderCamera.WorldToScreenPoint(center), FrameOffsetFromStart = Mathf.RoundToInt(OrbitSpec.SpreadFrames),
+                Drawn = shape == "shield" ? Mathf.Min(gear.Count, OrbitSpec.MaxShields) : gear.Count });
         }
     }
 
     public struct OrbitActivationRecord
     {
-        public int Activation, Count, FrameOffsetFromStart;
+        public int Activation, Count, FrameOffsetFromStart, Drawn;
         public bool Evolved;
         public string Shape;
         public float OrbitRadiusPixels, OrbiterSizePixels, HeroHeightPixels;

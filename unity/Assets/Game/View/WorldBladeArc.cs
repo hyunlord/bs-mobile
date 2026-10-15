@@ -1,42 +1,69 @@
+using System.Collections.Generic;
 using SowSiege.Core;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Game.View
 {
-    // Melee swing spec ("무기 연출 레퍼런스·이론", melee row). Frames are 60Hz display frames.
+    // Melee swing spec ("무기 연출 레퍼런스·이론", melee row; docs/design/m1-weapon-effect-sprites.md). Frames are 60Hz.
+    // Each drawn element is one picture (painted role when the manifest has it, else a temporary generated texture) moved,
+    // bent, scaled and faded by code.
     public static class BladeSpec
     {
         // The knight swing clip draws the sword fully back at 0.072s (frame 1 of 6 over 0.36s) and brings it through by
-        // 0.216s; the crescent waits for the draw-back and sweeps over the downswing (GiantBladeEnvelope.SweepSeconds .15s).
+        // 0.216s; the arc waits for the draw-back and sweeps over the downswing (GiantBladeEnvelope.SweepSeconds .15s).
         public const int WindupFrames = 4;           // hero pulls the sword back (3–4)
         public const int HitHoldFrames = 4;          // struck enemies freeze (3–5) and are pushed along the swing
         public const float PushTangent = .75f, PushOutward = .55f;
-        // Crescent thickness at its leading edge, as a fraction of the drawn radius, with a floor in 390pt-screen points.
-        public const float GlowFraction = .15f, CoreFraction = .38f, MinGlowPoints = 22, MaxGlowPoints = 40, TrailTaper = .12f;
-        public const float FillOpacity = .16f;
-        // Evolution element: a giant sword drives down from the sky into the fan's centre during the wind-up, then a 360°
-        // shockwave rings out from where it lands, with a screen shake.
-        public const float SwordDropHeight = .6f, ImpactAlong = .5f;
-        // The giant sword is a drawn silhouette at least 3 hero heights long: outlined blade with a bright fuller, gold
-        // crossguard, dark grip and pommel. Where it lands the ground cracks and dust bursts out.
-        public const float SwordHeroHeights = 3.2f, SwordBladeWidth = .12f, SwordGuardWidth = .34f, SwordGripLength = .17f;
-        public const float CrackSeconds = .6f; public const int Cracks = 7, DustPuffs = 6;
-        // The crescent is at least this many hero heights thick at its leading edge, with an opaque white core so it reads
-        // over the dark enemy crowd (an additive core is lost on dark enemies).
-        public const float MinThicknessHeroHeights = .45f;
-        public const int ShockwaveFrames = 12;
-        public const float ShockwaveRadiusOfFan = .75f;
+        // Arc band: one curved ribbon centred on the hero. Its outer edge is the Core reach (clipped to the visible play
+        // area), its inner edge reaches in over the strike's hit enemies, never nearer the hero than InnerClear hero heights
+        // and never thinner than MinBand hero heights. One afterimage trails it by AfterimageFrames.
+        public const float MinBandHeroHeights = .45f, InnerClearHeroHeights = .3f, VisibleReachFill = .96f;
+        public const int ArcColumns = 40, AfterimageFrames = 2;
+        public const float AfterimageOpacity = .35f;
+        // Evolution element: a giant sword falls point first, speeding up, onto the centre of the struck enemies, squashes
+        // as it plants, stays, then splits in two and fades. It never overlaps the hero.
+        public const int SwordFallFrames = 9, SwordSquashFrames = 2, SwordSplitFrames = 9;
+        public const float SwordStaySeconds = .5f, SwordHeroHeights = 3.2f, SwordDropHeight = .6f, SwordHeroGap = .15f;
+        public const float SwordSquash = .14f;       // plant: x wider, y shorter by this fraction on the first squash frame
+        public const int DustPuffs = 8;
+        public const float CrackRevealSeconds = 6 / 60f;
         public static readonly Color Core = new Color(1f, 1f, 1f);
         public static readonly Color Glow = new Color(.55f, .82f, 1f);   // steel white + sky blue
         public static float Seconds(int frames) => frames / 60f;
-        public static float GlowPoints(float strength) => Mathf.Lerp(MinGlowPoints, MaxGlowPoints, strength);
-        // Thickness along the drawn trail: thin at its oldest end, full at the leading edge (motion blur toward the start).
-        public static float Taper(float along) => TrailTaper + (1 - TrailTaper) * Mathf.Pow(Mathf.Clamp01(along), 1.5f);
+        public static float SwordLifetimeSeconds => Seconds(SwordFallFrames) + SwordStaySeconds + Seconds(SwordSplitFrames);
+        // Height of the falling sword's tip above where it lands, t seconds after the strike (accelerating fall).
+        public static float SwordDrop(float t, float height)
+        {
+            var fall = Mathf.Clamp01(t / Seconds(SwordFallFrames));
+            return height * (1 - fall * fall);
+        }
+        // Squash on the planting frames: (x, y) scale.
+        public static Vector2 SwordScale(float sinceLanding)
+        {
+            if (sinceLanding < 0) return Vector2.one;
+            var frame = Mathf.FloorToInt(sinceLanding * 60);
+            if (frame >= SwordSquashFrames) return Vector2.one;
+            var k = SwordSquash * (1 - frame / (float)SwordSquashFrames);
+            return new Vector2(1 + k, 1 - k);
+        }
     }
 
     public sealed partial class WorldRenderer
     {
         public System.Action<BladeStrikeRecord> BladeStrikeSample;
+        // Painted roles (docs/design/m1-weapon-effect-sprites.md); temporary generated pictures until they are in the manifest.
+        const string SlashRole = "fx.iron_blade.slash", SwordRole = "fx.iron_blade.giant_sword", CrackRole = "fx.iron_blade.ground_crack", DustRole = "fx.common.dust.";
+        ArtVisual bladeSlash, bladeSword, bladeCrack;
+        readonly ArtVisual[] bladeDust = new ArtVisual[3];
+        readonly List<Texture2D> temporaryEffectTextures = new List<Texture2D>(4);
+        // Arc ribbons are curved meshes submitted with the batches (so the P5 mask and alpha cap see them).
+        sealed class Ribbon { public Mesh Mesh; public Color Color; public bool Used; }
+        readonly List<Ribbon> bladeRibbons = new List<Ribbon>(8);
+        Material ribbonMaterial, ribbonOverEnemies;
+        MaterialPropertyBlock ribbonProperties;   // created on first use (not allowed in a MonoBehaviour field initializer)
+        static readonly Matrix4x4[] RibbonMatrix = { Matrix4x4.identity };
+        readonly Vector4[] ribbonColor = new Vector4[1], ribbonUv = new Vector4[1];
 
         // Blade hits are held until the blade passes them: Core emits them before the strike's attack event in the same
         // tick, so they wait as pending and get their due time when the attack arrives.
@@ -51,6 +78,8 @@ namespace Game.View
 
         void ResolveBladeHits(M1BladeStrike strike, int tick)
         {
+            strike.HitCount = 0; strike.HitSum = Vector2.zero; strike.Inner = float.PositiveInfinity; strike.SwordPlaced = false;
+            var visible = M1BladeVisibleBounds();
             for (var i = 0; i < deferredHits.Count; i++)
             {
                 var hit = deferredHits[i];
@@ -62,7 +91,21 @@ namespace Game.View
                 var tangent = new Vector2(-outward.y, outward.x);   // the sweep runs counter-clockwise from aim − half to aim + half
                 hit.Direction = (tangent * BladeSpec.PushTangent + outward * BladeSpec.PushOutward).normalized;
                 deferredHits[i] = hit;
+                if (!visible.Contains(hit.Origin) || strike.HitCount == strike.Hits.Length) continue;
+                strike.Hits[strike.HitCount++] = hit.Origin; strike.HitSum += hit.Origin;
+                strike.Inner = Mathf.Min(strike.Inner, radial.magnitude);
             }
+        }
+
+        // Outer edge of the arc along a bearing: the Core reach, clipped to the visible play area.
+        float BladeOuter(M1BladeStrike strike, float degrees, Rect visible)
+            => Mathf.Min(strike.CoreRadius, GiantBladeEnvelope.VisibleReach(strike.Origin, M1Direction(degrees), visible) * BladeSpec.VisibleReachFill);
+
+        float BladeInner(M1BladeStrike strike, float outer)
+        {
+            var clear = HeroHeight * BladeSpec.InnerClearHeroHeights;
+            var inner = float.IsInfinity(strike.Inner) ? outer - HeroHeight * BladeSpec.MinBandHeroHeights : strike.Inner - HeroHeight * .1f;
+            return Mathf.Max(0, Mathf.Min(Mathf.Max(clear, inner), outer - HeroHeight * BladeSpec.MinBandHeroHeights));
         }
 
         void DrawBladeStrikes()
@@ -70,189 +113,372 @@ namespace Game.View
             if (waveDefinition == null) return;
             var any = false;
             foreach (var strike in m1BladeStrikes)
-                if (strike.EventId >= 0 && visualTime - strike.Accepted < BladeSpec.Seconds(BladeSpec.WindupFrames) + BladeLingerSeconds) { any = true; break; }
+                if (strike.EventId >= 0 && visualTime - strike.Accepted < BladeLingerSeconds) { any = true; break; }
             if (!any) return;
-            EnsureLightningArt();
-            var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            var pointsToWorld = renderCamera.pixelWidth / 390f * pixelsToWorld;
+            EnsureLightningArt(); EnsureBladeArt();
             foreach (var strike in m1BladeStrikes)
             {
-                if (strike.EventId < 0) continue;
+                if (strike.EventId < 0 || visualTime - strike.Accepted >= BladeLingerSeconds) continue;
+                FitM1Blade(strike);   // kill envelope metrics (kills stay inside the drawn fan)
+                if (strike.Evolved) DrawGiantSwordDrop(strike, visualTime - strike.Accepted);
                 var age = visualTime - strike.Visible;
-                if (age > BladeLingerSeconds) continue;
-                FitM1Blade(strike);
-                if (strike.Evolved) DrawGiantSwordDrop(strike, age);
                 if (age < 0 || age > GiantBladeEnvelope.LifetimeSeconds) continue;
-                DrawBladeCrescent(strike, age, pointsToWorld);
+                DrawBladeArc(strike, age, 1);
+                var echo = age - BladeSpec.Seconds(BladeSpec.AfterimageFrames);
+                if (echo > 0) DrawBladeArc(strike, echo, BladeSpec.AfterimageOpacity);
+                if (!strike.Recorded) RecordBladeStrike(strike);
             }
         }
 
-        void DrawBladeCrescent(M1BladeStrike strike, float age, float pointsToWorld)
+        // One curved ribbon from the trail's oldest end to the blade's leading edge; the picture runs tail (u 0) to tip
+        // (u 1) along the arc and inner (v 0) to outer edge (v 1) across it. After the hold it disappears toward the tip.
+        void DrawBladeArc(M1BladeStrike strike, float age, float opacity)
         {
-            var opacity = GiantBladeEnvelope.Opacity(age);
+            opacity *= GiantBladeEnvelope.Opacity(age);
             if (opacity <= 0) return;
-            var origin = strike.Origin; var radius = strike.Radius; var half = strike.HalfAngle; var aim = strike.Aim;
-            var start = aim - half; var end = aim + half;
+            var half = GiantBladeEnvelope.CoreHalfAngle; var aim = strike.Aim;
+            var start = aim - half;
             var lead = GiantBladeEnvelope.SweepAngle(aim, half, age);
-            // After the hold the trail disappears toward the blade tip: its oldest end runs up to the leading edge.
             var hold = Mathf.Max(GiantBladeEnvelope.SweepSeconds, GiantBladeEnvelope.HoldSeconds);
             var fade = Mathf.Clamp01((age - hold) / GiantBladeEnvelope.FadeSeconds);
             var tail = Mathf.Lerp(start, lead, fade * fade);
             if (lead - tail < .5f) return;
-            // Faint swept area so the whole trajectory reads and encloses its victims.
-            var arc = Resolve("attack", "core:iron_blade", "sector90");
-            var extra = Mathf.Max(0, half - GiantBladeEnvelope.CoreHalfAngle);
-            var stamps = extra <= 0 ? 1 : 2 + Mathf.CeilToInt(extra / GiantBladeEnvelope.CoreHalfAngle);
-            for (var i = 0; i < stamps; i++)
-            {
-                var angle = stamps == 1 ? aim : Mathf.Lerp(aim - extra, aim + extra, i / (float)(stamps - 1));
-                Draw(arc, GameVisualTokens.AttackLayer, origin, age, arc.WorldSize * radius, angle, opacity * BladeSpec.FillOpacity, BladeSpec.Glow, applyTween: false);
-            }
-            var thickness = Mathf.Max(BladeSpec.GlowPoints(strike.Strength) * pointsToWorld, radius * BladeSpec.GlowFraction, HeroHeight * BladeSpec.MinThicknessHeroHeights);
-            thickness = Mathf.Min(thickness, radius * .45f); strike.Thickness = thickness;
-            if (!strike.Recorded) RecordBladeStrike(strike);
-            var segments = Mathf.Clamp(Mathf.CeilToInt((lead - tail) / 4f), 2, 48);
-            // The fitted envelope may reach the screen edge to enclose edge kills; the crescent itself stays on screen by
-            // following the visible reach in each direction (the faint fill above still encloses every kill).
             var visible = M1BladeVisibleBounds();
-            for (var pass = 0; pass < 2; pass++)
+            var ribbon = NextRibbon();
+            var columns = BladeSpec.ArcColumns;
+            var vertices = new Vector3[(columns + 1) * 2]; var uvs = new Vector2[vertices.Length]; var triangles = new int[columns * 6];
+            // The picture spans the whole swing: the drawn part shows the slice from the tail to the leading edge.
+            for (var i = 0; i <= columns; i++)
             {
-                var visual = pass == 0 ? lightningGlow : lightningCore;
-                for (var s = 0; s < segments; s++)
-                {
-                    var a = Mathf.Lerp(tail, lead, s / (float)segments); var b = Mathf.Lerp(tail, lead, (s + 1) / (float)segments);
-                    var along = Mathf.InverseLerp(start, lead, (a + b) * .5f);
-                    var middle = (a + b) * .5f;
-                    var reach = Mathf.Min(radius, GiantBladeEnvelope.VisibleReach(origin, M1Direction(middle), visible) * .96f);
-                    var band = Mathf.Min(thickness, reach * .45f) * BladeSpec.Taper(along);
-                    var width = band * (pass == 0 ? 1 : BladeSpec.CoreFraction);
-                    // The band hugs the outer edge of the fan (the blade tip's path).
-                    var centre = reach - band * .5f;
-                    var length = centre * (b - a) * Mathf.Deg2Rad * 1.25f;
-                    var color = pass == 0 ? BladeSpec.Glow : BladeSpec.Core;
-                    color.a = opacity * Mathf.Lerp(.35f, 1, along);
-                    Draw(visual, pass == 0 ? LightningLayer : ProjectileLayer, origin + M1Direction(middle) * centre, 0, new Vector2(length, width), middle + 90, 1, color, applyTween: false);
-                }
+                var degrees = Mathf.Lerp(tail, lead, i / (float)columns);
+                var outer = BladeOuter(strike, degrees, visible); var inner = BladeInner(strike, outer);
+                var direction = M1Direction(degrees);
+                vertices[i * 2] = strike.Origin + direction * inner; vertices[i * 2 + 1] = strike.Origin + direction * outer;
+                var u = Mathf.InverseLerp(start, lead, degrees);
+                uvs[i * 2] = new Vector2(u, 0); uvs[i * 2 + 1] = new Vector2(u, 1);
+                if (i == columns) continue;
+                var t = i * 6; var v = i * 2;
+                triangles[t] = v; triangles[t + 1] = v + 1; triangles[t + 2] = v + 3; triangles[t + 3] = v; triangles[t + 4] = v + 3; triangles[t + 5] = v + 2;
+            }
+            var mesh = ribbon.Mesh; mesh.Clear(); mesh.vertices = vertices; mesh.uv = uvs; mesh.triangles = triangles; mesh.RecalculateBounds();
+            var color = Color.white; color.a = opacity; ribbon.Color = color;
+        }
+
+        Ribbon NextRibbon()
+        {
+            foreach (var ribbon in bladeRibbons) if (!ribbon.Used) { ribbon.Used = true; return ribbon; }
+            var created = new Ribbon { Mesh = new Mesh { name = "Blade arc ribbon", hideFlags = HideFlags.HideAndDontSave }, Used = true };
+            created.Mesh.MarkDynamic(); bladeRibbons.Add(created);
+            return created;
+        }
+
+        // Submitted with the batches: normal blend above enemies, alpha capped over them like every own weapon effect.
+        void FlushBladeRibbons()
+        {
+            if (bladeRibbons.Count == 0) return;
+            if (ribbonMaterial == null)
+            {
+                ribbonMaterial = new Material(shader) { name = "Blade arc ribbon", mainTexture = bladeSlash.Texture, renderQueue = 3000 + ProjectileLayer, hideFlags = HideFlags.HideAndDontSave };
+                ribbonOverEnemies = EffectAlphaCap.Configure(ribbonMaterial, ProjectileLayer);
+                ribbonProperties = new MaterialPropertyBlock();
+            }
+            var rect = bladeSlash.UvRects[0];
+            ribbonUv[0] = new Vector4(rect.x, rect.y, rect.width, rect.height);
+            var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
+            foreach (var ribbon in bladeRibbons)
+            {
+                if (!ribbon.Used) continue;
+                ribbon.Used = false;
+                ribbonColor[0] = linear ? ribbon.Color.linear : ribbon.Color;
+                ribbonProperties.SetTexture("_MainTex", bladeSlash.Texture);
+                ribbonProperties.SetVector("_InstanceColor", ribbonColor[0]); ribbonProperties.SetVector("_InstanceUv", ribbonUv[0]);
+                ribbonProperties.SetVector("_InstanceFlash", new Vector4(0, 0, 1, 0));
+                var parameters = new RenderParams(ribbonMaterial) { camera = null, layer = 0, matProps = ribbonProperties, shadowCastingMode = ShadowCastingMode.Off,
+                    receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off };
+                OcclusionProbe.Active?.Record(ProjectileLayer, ribbon.Mesh, RibbonMatrix, 1, bladeSlash.Texture, ribbonColor, ribbonUv);
+                Graphics.RenderMesh(parameters, ribbon.Mesh, 0, Matrix4x4.identity);
+                parameters.material = ribbonOverEnemies;
+                Graphics.RenderMesh(parameters, ribbon.Mesh, 0, Matrix4x4.identity);
+                DrawCalls += 2;
             }
         }
 
-        void DrawGiantSwordDrop(M1BladeStrike strike, float age)
+        // Where the giant sword plants: the centre of the strike's on-screen hits (or along the aim without any), moved
+        // sideways off the hero and kept inside the visible play area.
+        Vector2 SwordLanding(M1BladeStrike strike, float length, float width, out float shift)
         {
-            var windup = BladeSpec.Seconds(BladeSpec.WindupFrames);
-            var impact = strike.Origin + M1Direction(strike.Aim) * (strike.Radius * BladeSpec.ImpactAlong);
+            var visible = M1BladeVisibleBounds();
+            var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount : strike.Origin + M1Direction(strike.Aim) * (BladeOuter(strike, strike.Aim, visible) * .6f);
+            var landing = crowd;
+            var hero = SwordHeroBox(strike);
+            if (SwordOverlapsHero(landing, length, width, hero))
+            {
+                var side = Mathf.Sign(landing.x - hero.center.x); if (side == 0) side = Mathf.Sign(M1Direction(strike.Aim).x); if (side == 0) side = 1;
+                var away = hero.width * .5f + width * .5f + HeroHeight * BladeSpec.SwordHeroGap;
+                landing.x = hero.center.x + side * away;
+                if (landing.x - width * .5f < visible.xMin || landing.x + width * .5f > visible.xMax) landing.x = hero.center.x - side * away;
+            }
+            landing.x = Mathf.Clamp(landing.x, visible.xMin + width * .5f, visible.xMax - width * .5f);
+            landing.y = Mathf.Clamp(landing.y, visible.yMin + HeroHeight * .2f, visible.yMax - HeroHeight * .2f);
+            shift = (landing - crowd).magnitude;
+            return landing;
+        }
+
+        // The hero's drawn silhouette box (or a figure-sized box at the strike origin before it is known).
+        Rect SwordHeroBox(M1BladeStrike strike)
+            => heroSilhouetteLocal.width > 0 ? HeroBox
+                : Rect.MinMaxRect(strike.Origin.x - HeroHeight * .35f, strike.Origin.y - HeroHeight * .1f, strike.Origin.x + HeroHeight * .35f, strike.Origin.y + HeroHeight * 1.05f);
+
+        // The planted sword's box (tip at the landing point) against the hero's box.
+        static bool SwordOverlapsHero(Vector2 tip, float length, float width, Rect hero)
+            => hero.Overlaps(Rect.MinMaxRect(tip.x - width * .5f, tip.y, tip.x + width * .5f, tip.y + length));
+
+        float SwordLength => HeroHeight * BladeSpec.SwordHeroHeights;
+        float SwordWidth => SwordLength * bladeSword.WorldSize.x / bladeSword.WorldSize.y;
+
+        // t: seconds since the Core strike. Falls over SwordFallFrames, plants (squash, cracks, dust, shake), stays, splits.
+        void DrawGiantSwordDrop(M1BladeStrike strike, float t)
+        {
+            var length = SwordLength; var width = SwordWidth;
+            if (!strike.SwordPlaced) { strike.SwordAt = SwordLanding(strike, length, width, out strike.SwordShift); strike.SwordPlaced = true; }
+            var landing = strike.SwordAt;
+            var fall = BladeSpec.Seconds(BladeSpec.SwordFallFrames);
+            var since = t - fall;
+            var split = since - BladeSpec.SwordStaySeconds;
+            if (split > BladeSpec.Seconds(BladeSpec.SwordSplitFrames)) return;
             var view = CameraWorldViewport;
-            var length = HeroHeight * BladeSpec.SwordHeroHeights;
-            var opacity = age < 0 ? 1 : GiantBladeEnvelope.Opacity(age);
-            if (age > -windup && opacity > 0)
+            var drop = BladeSpec.SwordDrop(t, view.height * BladeSpec.SwordDropHeight);
+            var tip = landing + Vector2.up * drop;
+            if (since < 0)
             {
-                // Falls point first from above the screen and lands exactly when the sweep begins.
-                var fall = Mathf.Clamp01((age + windup) / windup);
-                var drop = view.height * BladeSpec.SwordDropHeight * (1 - fall * fall);
-                var tip = impact + Vector2.up * drop;
-                if (age < 0)
-                {
-                    var streak = BladeSpec.Glow; streak.a = .6f * fall;
-                    Draw(lightningGlow, LightningLayer, tip + Vector2.up * (length * .9f), 0, new Vector2(length * 1.3f, length * .3f), 90, 1, streak, applyTween: false);
-                }
-                DrawGiantSword(tip, length, opacity);
+                // A faint streak above the falling sword (code motion, not part of the picture).
+                var streak = BladeSpec.Glow; streak.a = .35f * Mathf.Clamp01(t / fall);
+                Draw(lightningGlow, LightningLayer, tip + Vector2.up * (length * .9f), 0, new Vector2(length * 1.2f, width * .45f), 90, 1, streak, applyTween: false);
             }
-            if (age >= 0) DrawSwordImpact(strike, impact, length, age);
-            if (age < 0) return;
-            if (!strike.ShakeFired) { strike.ShakeFired = true; impactShakeUntil = visualTime + GameVisualTokens.ImpactShakeSeconds; }
-            var t = age / BladeSpec.Seconds(BladeSpec.ShockwaveFrames);
-            if (t > 1) return;
-            // 360° shockwave from the landing point: a bright ring that expands and thins out.
-            var ring = strike.Radius * BladeSpec.ShockwaveRadiusOfFan * Mathf.Sqrt(t);
-            var width = Mathf.Lerp(strike.Radius * .12f, strike.Radius * .03f, t);
-            var alpha = 1 - t;
-            const int segments = 40;
-            for (var pass = 0; pass < 2; pass++)
+            else if (!strike.ShakeFired) { strike.ShakeFired = true; impactShakeUntil = visualTime + GameVisualTokens.ImpactShakeSeconds; }
+            if (since >= 0) DrawSwordImpact(strike, landing, length, since);
+            var scale = BladeSpec.SwordScale(since);
+            var size = new Vector2(width * scale.x, length * scale.y);
+            if (split < 0) { Draw(bladeSword, ProjectileLayer, tip, 0, size, 0, 1, Color.white, applyTween: false); return; }
+            // Split: the two halves slide apart, tilt and fade (the painted shard mask replaces the straight cut).
+            var s = split / BladeSpec.Seconds(BladeSpec.SwordSplitFrames);
+            var rect = bladeSword.UvRects[0];
+            var color = Color.white; color.a = 1 - s * s;
+            for (var side = -1; side <= 1; side += 2)
             {
-                var visual = pass == 0 ? lightningGlow : lightningCore;
-                var color = pass == 0 ? BladeSpec.Glow : BladeSpec.Core; color.a = alpha * (pass == 0 ? .9f : .8f);
-                for (var s = 0; s < segments; s++)
-                {
-                    var middle = (s + .5f) * 360f / segments;
-                    Draw(visual, LightningLayer, impact + M1Direction(middle) * ring, 0, new Vector2(ring * Mathf.PI * 2 / segments * 1.2f, pass == 0 ? width : width * .35f), middle + 90, 1, color, applyTween: false);
-                }
+                var halfRect = new Rect(side < 0 ? rect.x : rect.x + rect.width * .5f, rect.y, rect.width * .5f, rect.height);
+                // Each half keeps the picture's pivot (near the point), so it tilts outward from where it stands.
+                Draw(bladeSword, ProjectileLayer, tip + new Vector2(side * width * (.25f + .35f * s), 0), 0, new Vector2(width * .5f, length), -side * 8 * s, 1, color, applyTween: false, uv: halfRect);
             }
-            var flash = BladeSpec.Core; flash.a = alpha;
-            Draw(lightningFlash, LightningLayer, impact, 0, Vector2.one * strike.Radius * .5f * (1 - t * .5f), 0, 1, flash, applyTween: false);
         }
 
-        static float BladeLingerSeconds => Mathf.Max(GiantBladeEnvelope.LifetimeSeconds + BladeSpec.Seconds(BladeSpec.ShockwaveFrames), BladeSpec.CrackSeconds);
-        float PixelsToWorld => renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-        // Visible hero height (not the padded overlap box): the size reference for weapon effects.
-        float HeroHeight => heroFigureHeight > 0 ? heroFigureHeight : 2.2f * (heroBodyWidth > 0 ? heroBodyWidth : .6f);
-
-        // Point down, tip at `tip`. Each part is drawn as an ink outline then its fill (normal blend, above enemies).
-        void DrawGiantSword(Vector2 tip, float length, float opacity)
+        // Where the giant sword lands: the crack picture revealed from the centre, and dust puffs bursting out.
+        void DrawSwordImpact(M1BladeStrike strike, Vector2 impact, float length, float since)
         {
-            var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            var outline = 2.5f * pixel;
-            var blade = length * (1 - BladeSpec.SwordGripLength - .12f); var bladeWidth = length * BladeSpec.SwordBladeWidth;
-            var guardY = blade; var guardHeight = length * .05f; var gripY = guardY + guardHeight; var grip = length * BladeSpec.SwordGripLength;
-            Color Fill(Color c) { c.a = opacity; return c; }
-            var ink = Fill(GameVisualTokens.Ink);
-            void Part(Vector2 centre, Vector2 size, float degrees, Color fill)
-            {
-                Draw(lightningSolid, ProjectileLayer, centre, 0, size + Vector2.one * (outline * 2), degrees, 1, ink, applyTween: false);
-                Draw(lightningSolid, ProjectileLayer, centre, 0, size, degrees, 1, fill, applyTween: false);
-            }
-            var up = Vector2.up;
-            // Blade: a long steel band ending in a point (a square turned 45 degrees), with a bright fuller down its middle.
-            var tipSize = bladeWidth * .72f;
-            Part(tip + up * (tipSize * .5f), Vector2.one * tipSize, 45, Fill(new Color(.86f, .9f, .95f)));
-            Part(tip + up * (tipSize * .5f + (blade - tipSize * .5f) * .5f), new Vector2(blade - tipSize * .5f, bladeWidth), 90, Fill(new Color(.86f, .9f, .95f)));
-            Draw(lightningSolid, ProjectileLayer, tip + up * (blade * .55f), 0, new Vector2(blade * .8f, bladeWidth * .2f), 90, 1, Fill(Color.white), applyTween: false);
-            // Crossguard, grip, pommel.
-            Part(tip + up * (guardY + guardHeight * .5f), new Vector2(length * BladeSpec.SwordGuardWidth, guardHeight), 0, Fill(new Color(.86f, .68f, .3f)));
-            Part(tip + up * (gripY + grip * .5f), new Vector2(grip, bladeWidth * .55f), 90, Fill(new Color(.38f, .23f, .12f)));
-            Part(tip + up * (gripY + grip + bladeWidth * .35f), Vector2.one * (bladeWidth * .7f), 45, Fill(new Color(.86f, .68f, .3f)));
-        }
-
-        // Where the giant sword lands: radial cracks in the ground and a burst of dust, outlasting the shockwave.
-        void DrawSwordImpact(M1BladeStrike strike, Vector2 impact, float length, float age)
-        {
-            if (age > BladeSpec.CrackSeconds) return;
-            var fade = 1 - age / BladeSpec.CrackSeconds;
-            var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            var open = Mathf.Clamp01(age / BladeSpec.Seconds(4));
-            for (var k = 0; k < BladeSpec.Cracks; k++)
-            {
-                var seed = LightningBolt.Hash(strike.EventId, 70 + k);
-                var angle = k * 360f / BladeSpec.Cracks + ((seed & 255) / 255f - .5f) * 30;
-                var reach = length * Mathf.Lerp(.22f, .4f, ((seed >> 8) & 255) / 255f) * open;
-                var direction = M1Direction(angle);
-                var crack = GameVisualTokens.Ink; crack.a = .8f * fade;
-                Draw(lightningSolid, ScorchLayer, impact + direction * (reach * .5f), 0, new Vector2(reach, Mathf.Max(3 * pixel, length * .012f)), angle, 1, crack, applyTween: false);
-            }
+            var end = BladeSpec.SwordStaySeconds + BladeSpec.Seconds(BladeSpec.SwordSplitFrames);
+            if (since > end) return;
+            var fade = 1 - Mathf.Clamp01((since - BladeSpec.SwordStaySeconds) / BladeSpec.Seconds(BladeSpec.SwordSplitFrames));
+            var reveal = Mathf.Lerp(.3f, 1, Mathf.Clamp01(since / BladeSpec.CrackRevealSeconds));
+            var crackWidth = length * .62f;
+            var crack = Color.white; crack.a = fade;
+            Draw(bladeCrack, ScorchLayer, impact, 0, new Vector2(crackWidth, crackWidth * bladeCrack.WorldSize.y / bladeCrack.WorldSize.x) * reveal, 0, 1, crack, applyTween: false);
+            if (since > .6f) return;
             for (var k = 0; k < BladeSpec.DustPuffs; k++)
             {
                 var seed = LightningBolt.Hash(strike.EventId, 90 + k);
                 var direction = M1Direction(k * 360f / BladeSpec.DustPuffs + (seed & 63));
-                var travel = length * .3f * Mathf.Sqrt(Mathf.Clamp01(age / .35f));
-                var dust = new Color(.84f, .8f, .72f, .7f * fade);
-                Draw(impactDust, GameVisualTokens.WaveTransientCueLayer, impact + direction * travel, 0, impactDust.WorldSize * (length * .22f * (.8f + age) / Mathf.Max(impactDust.WorldSize.x, impactDust.WorldSize.y)), 0, 1, dust, applyTween: false);
+                direction.y *= .5f;   // 3/4 view: the burst spreads along the ground
+                var travel = length * .32f * Mathf.Sqrt(Mathf.Clamp01(since / .35f));
+                var puff = bladeDust[k % bladeDust.Length];
+                var dust = new Color(.84f, .8f, .72f, .75f * (1 - since / .6f));
+                var size = length * .2f * (.8f + since) * (.85f + ((seed >> 8) & 63) / 210f);
+                Draw(puff, GameVisualTokens.WaveTransientCueLayer, impact + direction * travel, 0, puff.WorldSize * (size / Mathf.Max(puff.WorldSize.x, puff.WorldSize.y)), (seed >> 4) & 255, 1, dust, applyTween: false);
             }
+        }
+
+        static float BladeLingerSeconds => Mathf.Max(BladeSpec.Seconds(BladeSpec.WindupFrames) + GiantBladeEnvelope.LifetimeSeconds, BladeSpec.SwordLifetimeSeconds);
+        float PixelsToWorld => renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+        // Visible hero height (not the padded overlap box): the size reference for weapon effects.
+        float HeroHeight => heroFigureHeight > 0 ? heroFigureHeight : 2.2f * (heroBodyWidth > 0 ? heroBodyWidth : .6f);
+
+        void EnsureBladeArt()
+        {
+            if (bladeSlash != null) return;
+            bladeSlash = EffectArt(SlashRole, () => TemporarySlash());
+            bladeSword = EffectArt(SwordRole, () => TemporarySword());
+            bladeCrack = EffectArt(CrackRole, () => TemporaryCrack());
+            for (var i = 0; i < bladeDust.Length; i++) bladeDust[i] = EffectArt(DustRole + (i + 1), () => impactDust ?? Resolve("feedback", "death", "default"));
+        }
+
+        // The painted role when the art manifest has it; otherwise the temporary picture (same pivot and proportions).
+        ArtVisual EffectArt(string role, System.Func<ArtVisual> temporary)
+            => art != null && art.TryResolveRole(role, out var painted) ? painted : temporary();
+
+        Texture2D PaintTexture(string name, int width, int height, System.Func<int, int, Color> paint)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false, false) { name = name, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.HideAndDontSave };
+            var pixels = new Color32[width * height];
+            for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) pixels[y * width + x] = paint(x, y);
+            texture.SetPixels32(pixels); texture.Apply(false, true);
+            temporaryEffectTextures.Add(texture);
+            return texture;
+        }
+
+        // Band picture: outer edge (v 1) white with a thin ink line, sky blue below fading toward the inner edge; thin and
+        // faint at the tail (u 0), full at the tip (u 1).
+        ArtVisual TemporarySlash()
+        {
+            const int width = 256, height = 128;
+            var ink = GameVisualTokens.Ink;
+            var texture = PaintTexture("Temporary blade slash", width, height, (x, y) =>
+            {
+                var u = (x + .5f) / width; var v = (y + .5f) / height;
+                var thick = .3f + .7f * Mathf.Pow(u, 1.2f);
+                var across = (v - (1 - thick)) / thick;   // 0 at the band's inner edge, 1 at the outer edge
+                if (across <= 0) return new Color(1, 1, 1, 0);
+                var tailFade = Mathf.SmoothStep(0, 1, u / .3f);
+                if (y == height - 1) { var line = ink; line.a = .9f * tailFade; return line; }
+                var color = Color.Lerp(BladeSpec.Glow, BladeSpec.Core, Mathf.SmoothStep(.55f, .9f, across));
+                color.a = tailFade * Mathf.SmoothStep(0, .15f, across) * (.22f + .78f * Mathf.Pow(across, 1.5f));
+                return color;
+            });
+            return new ArtVisual(SlashRole, texture, new Vector2(width, height) / 384f, new Vector2(0, .5f));
+        }
+
+        // Two-handed sword, point down: steel blade lit from the upper left with a bright fuller, gold guard and pommel,
+        // brown grip; charcoal ink outline. Pivot at the point.
+        ArtVisual TemporarySword()
+        {
+            const int width = 140, height = 400; const float cx = width * .5f;
+            int Part(float x, float y)
+            {
+                var dx = Mathf.Abs(x - cx);
+                if (y >= 8 && y < 290) { var half = y < 48 ? 22 * (y - 8) / 40f : 22; if (dx <= half) return 1; }
+                if (y >= 290 && y < 312 && dx <= 62 - (y - 290) * .3f) return 2;
+                if (y >= 312 && y < 366 && dx <= 11) return 3;
+                if ((new Vector2(x, y) - new Vector2(cx, 378)).magnitude <= 14) return 4;
+                return 0;
+            }
+            var parts = new int[width * height];
+            for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) parts[y * width + x] = Part(x + .5f, y + .5f);
+            int At(int x, int y) => x < 0 || y < 0 || x >= width || y >= height ? 0 : parts[y * width + x];
+            var ink = GameVisualTokens.Ink; ink.a = 1;
+            var texture = PaintTexture("Temporary giant sword", width, height, (x, y) =>
+            {
+                var part = At(x, y);
+                if (part == 0)
+                {
+                    // 4px ink outline around the silhouette.
+                    for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++)
+                        if (dx * dx + dy * dy <= 16 && At(x + dx, y + dy) != 0) return ink;
+                    return new Color(0, 0, 0, 0);
+                }
+                // 2px ink line between parts.
+                for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++)
+                { var other = At(x + dx, y + dy); if (other != 0 && other != part && part != 1 && dx * dx + dy * dy <= 4) return ink; }
+                var left = x + .5f < cx;
+                switch (part)
+                {
+                    case 1:
+                        if (Mathf.Abs(x + .5f - cx) < 4 && y > 60 && y < 272) return new Color(.98f, .98f, .97f);
+                        return left ? new Color(.9f, .9f, .9f) : new Color(.62f, .62f, .64f);
+                    case 2: return y > 304 ? new Color(.96f, .82f, .45f) : new Color(.78f, .58f, .24f);
+                    case 3: return (y / 9) % 2 == 0 ? new Color(.38f, .23f, .12f) : new Color(.3f, .17f, .09f);
+                    default: return left && y > 378 ? new Color(.96f, .82f, .45f) : new Color(.8f, .6f, .26f);
+                }
+            });
+            return new ArtVisual(SwordRole, texture, new Vector2(width, height) / 384f, new Vector2(.5f, .02f));
+        }
+
+        // Radial ground cracks in a 3/4-view ellipse: ink cracks tapering outward, a warm brown lip along each.
+        ArtVisual TemporaryCrack()
+        {
+            const int width = 256, height = 128;
+            var segments = new List<(Vector2 a, Vector2 b, float wa, float wb)>(32);
+            for (var k = 0; k < 8; k++)
+            {
+                var seed = LightningBolt.Hash(266, k);
+                var angle = (k * 45 + ((seed & 255) / 255f - .5f) * 28) * Mathf.Deg2Rad;
+                var reach = Mathf.Lerp(.62f, .95f, ((seed >> 8) & 255) / 255f);
+                var previous = Vector2.zero; var steps = 3;
+                for (var s = 1; s <= steps; s++)
+                {
+                    var t = s / (float)steps;
+                    var bend = s < steps ? (((seed >> (12 + s * 3)) & 7) / 7f - .5f) * .35f : 0;
+                    var direction = new Vector2(Mathf.Cos(angle + bend), Mathf.Sin(angle + bend));
+                    var point = direction * (reach * t);
+                    segments.Add((previous, point, Mathf.Lerp(5, 1, t - 1f / steps), Mathf.Lerp(5, 1, t)));
+                    previous = point;
+                }
+            }
+            var ink = GameVisualTokens.Ink; ink.a = 1; var lip = new Color(.55f, .44f, .33f);
+            var texture = PaintTexture("Temporary ground crack", width, height, (x, y) =>
+            {
+                // Map to the unit circle of the ellipse (x radius 120px, y radius 60px).
+                var p = new Vector2((x + .5f - width * .5f) / 120f, (y + .5f - height * .5f) / 60f);
+                var best = float.PositiveInfinity; var widthAt = 1f;
+                foreach (var (a, b, wa, wb) in segments)
+                {
+                    var ab = b - a; var t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(1e-6f, ab.sqrMagnitude));
+                    var d = (p - (a + ab * t)); d.x *= 120; d.y *= 60;
+                    var distance = d.magnitude;
+                    if (distance < best) { best = distance; widthAt = Mathf.Lerp(wa, wb, t); }
+                }
+                if (best <= widthAt * .5f) return ink;
+                if (best <= widthAt * .5f + 2) { var c = lip; c.a = .85f; return c; }
+                return new Color(0, 0, 0, 0);
+            });
+            return new ArtVisual(CrackRole, texture, new Vector2(width, height) / 384f, new Vector2(.5f, .5f));
+        }
+
+        void DisposeBladeArt()
+        {
+            foreach (var texture in temporaryEffectTextures) if (texture != null) Destroy(texture);
+            temporaryEffectTextures.Clear();
+            foreach (var ribbon in bladeRibbons) if (ribbon.Mesh != null) Destroy(ribbon.Mesh);
+            bladeRibbons.Clear();
+            if (ribbonMaterial != null) Destroy(ribbonMaterial);
+            if (ribbonOverEnemies != null) Destroy(ribbonOverEnemies);
+            bladeSlash = bladeSword = bladeCrack = null;
         }
 
         void RecordBladeStrike(M1BladeStrike strike)
         {
             strike.Recorded = true;
             if (BladeStrikeSample == null) return;
+            var visible = M1BladeVisibleBounds();
+            var outer = BladeOuter(strike, strike.Aim, visible); var inner = BladeInner(strike, outer);
+            // Hits the drawn band passes over: inside the Core fan, between the band's inner and outer edge on their bearing.
+            var covered = 0;
+            for (var i = 0; i < strike.HitCount; i++)
+            {
+                var offset = strike.Hits[i] - strike.Origin; var bearing = Angle(offset);
+                if (Mathf.Abs(Mathf.DeltaAngle(strike.Aim, bearing)) > GiantBladeEnvelope.CoreHalfAngle + 1) continue;
+                var edge = BladeOuter(strike, bearing, visible);
+                if (offset.magnitude >= BladeInner(strike, edge) - HeroHeight * .05f && offset.magnitude <= edge + HeroHeight * .05f) covered++;
+            }
+            Vector2 Screen(Vector2 world) => renderCamera.WorldToScreenPoint(world);
+            var crowd = strike.HitCount > 0 ? strike.HitSum / strike.HitCount : strike.Origin;
+            var swordAt = strike.Evolved ? SwordLanding(strike, SwordLength, SwordWidth, out _) : Vector2.zero;
             BladeStrikeSample(new BladeStrikeRecord { Tick = strike.Tick, AcceptedFrame = strike.AcceptedFrame, VisibleFrame = PresentedFrames, Evolved = strike.Evolved,
-                Radius = strike.Radius, HalfAngle = strike.HalfAngle, OriginScreen = renderCamera.WorldToScreenPoint(strike.Origin), Aim = strike.Aim,
-                RadiusPixels = (Vector2)renderCamera.WorldToScreenPoint(strike.Origin + M1Direction(strike.Aim) * strike.Radius) - (Vector2)renderCamera.WorldToScreenPoint(strike.Origin),
-                HeroHeightPixels = HeroHeight / PixelsToWorld, ThicknessPixels = strike.Thickness / PixelsToWorld, SwordLengthPixels = strike.Evolved ? HeroHeight * BladeSpec.SwordHeroHeights / PixelsToWorld : 0 });
+                Radius = strike.CoreRadius, HalfAngle = GiantBladeEnvelope.CoreHalfAngle, OriginScreen = Screen(strike.Origin), Aim = strike.Aim,
+                HeroScreen = Screen(RenderedLordPosition),
+                CoreRadiusPixels = strike.CoreRadius / PixelsToWorld,
+                RadiusPixels = Screen(strike.Origin + M1Direction(strike.Aim) * outer) - Screen(strike.Origin),
+                InnerPixels = inner / PixelsToWorld, HeroHeightPixels = HeroHeight / PixelsToWorld, ThicknessPixels = (outer - inner) / PixelsToWorld,
+                Hits = strike.HitCount, HitsCovered = covered,
+                SwordLengthPixels = strike.Evolved ? SwordLength / PixelsToWorld : 0, SwordWidthPixels = strike.Evolved ? SwordWidth / PixelsToWorld : 0,
+                SwordFallFrames = strike.Evolved ? BladeSpec.SwordFallFrames : 0,
+                SwordTipScreen = strike.Evolved ? Screen(swordAt) : new Vector2(-1, -1), CrowdScreen = Screen(crowd),
+                SwordClearOfHero = !strike.Evolved || !SwordOverlapsHero(swordAt, SwordLength, SwordWidth, SwordHeroBox(strike)) });
         }
     }
 
     public struct BladeStrikeRecord
     {
-        public int Tick, AcceptedFrame, VisibleFrame;
-        public bool Evolved;
-        public float Radius, HalfAngle, Aim, HeroHeightPixels, ThicknessPixels, SwordLengthPixels;
-        public Vector2 OriginScreen, RadiusPixels;
+        public int Tick, AcceptedFrame, VisibleFrame, Hits, HitsCovered, SwordFallFrames;
+        public bool Evolved, SwordClearOfHero;
+        public float Radius, HalfAngle, Aim, HeroHeightPixels, ThicknessPixels, InnerPixels, CoreRadiusPixels, SwordLengthPixels, SwordWidthPixels;
+        public Vector2 OriginScreen, HeroScreen, RadiusPixels, SwordTipScreen, CrowdScreen;
     }
 }

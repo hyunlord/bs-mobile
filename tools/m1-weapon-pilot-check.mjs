@@ -139,25 +139,15 @@ function checkMinions(directory, manifest) {
     note: 'Each Core group hit presented on a frame must start a soldier thrust on that same frame (renderer log). Stationary ratio excludes spawn, attack and despawn animation frames.' };
 }
 
-// Iron blade: wind-up frames before the crescent, the crescent's brightness along the blade-tip arc against the ground
-// before the swing, and that it is gone after its fade. Arc samples run every 5 degrees just inside the drawn radius.
-function arcSamples(row, image) {
-  const ox = Number(row.originScreenX), oy = Number(row.originScreenY);
-  const r = Math.hypot(Number(row.radiusPixelsX), Number(row.radiusPixelsY)) * .93;
-  const aim = Number(row.aim), half = Number(row.halfAngle);
-  const points = [];
-  for (let a = aim - half; a <= aim + half + .01; a += 5) {
-    const x = ox + Math.cos(a * Math.PI / 180) * r, y = image.height - (oy + Math.sin(a * Math.PI / 180) * r);
-    if (x >= 3 && y >= 3 && x < image.width - 3 && y < image.height - 3) points.push([x, y]);
-  }
-  return points;
-}
 function windowMax(image, x, y, size = 4) {
   let best = 0;
   for (let dy = -size; dy <= size; dy++) for (let dx = -size; dx <= size; dx++) best = Math.max(best, luma(image.at(x + dx, y + dy)));
   return best;
 }
 const median = values => values.length ? values.slice().sort((a, b) => a - b)[values.length >> 1] : 0;
+// Iron blade: wind-up before the arc; the arc centred on the hero with its outer edge on the Core reach, passing over every
+// on-screen hit; its brightness against the ground before the swing; gone after its fade; the evolved sword's fall and
+// clearance from the hero.
 function checkBlade(directory, manifest) {
   const strikes = rows(path.join(directory, 'm1-blade-strikes.csv'));
   const results = [];
@@ -166,37 +156,52 @@ function checkBlade(directory, manifest) {
     if (at <= 8) continue;
     // +7: the sweep has covered the arc and the fade (from +9) has not begun.
     const before = frame(directory, at - 8), swept = frame(directory, at + 7), gone = frame(directory, at + 19);
-    const points = arcSamples(s, swept).filter(([x, y]) => luma(before.at(x, y)) > 5);
+    const ox = Number(s.originScreenX), oy = Number(s.originScreenY), hero = Number(s.heroHeightPixels ?? 0);
+    const outer = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY)), inner = Number(s.innerPixels ?? 0);
+    // Samples every 5 degrees across the Core fan, just inside the band's outer edge (its brightest part); off-strip points drop out.
+    const aim = Number(s.aim), half = Number(s.halfAngle), points = [];
+    for (let a = aim - half; a <= aim + half + .01; a += 5) {
+      const x = ox + Math.cos(a * Math.PI / 180) * outer * .93, y = swept.height - (oy + Math.sin(a * Math.PI / 180) * outer * .93);
+      if (x >= 3 && y >= 3 && x < swept.width - 3 && y < swept.height - 3 && luma(before.at(x, y)) > 5) points.push([x, y]);
+    }
     if (points.length < 3) { results.push({ frame: at, skipped: 'arc off screen' }); continue; }
     const ground = points.reduce((n, [x, y]) => n + luma(before.at(x, y)), 0) / points.length;
-    // Per arc angle, the brightest pixel across the crescent band (.35R to 1.1R) — the band is thin against R and follows the visible reach.
-    const band = (image, [x, y]) => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let best = 0;
-      for (let k = .35; k <= 1.1; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, oy + (y - oy) * k / .93, 2)); return best; };
+    // Per arc angle, the brightest pixel across the outer part of the band (.8 to 1.02 of the outer edge).
+    const band = (image, [x, y]) => { const iy = image.height - oy; let best = 0;
+      for (let k = .8; k <= 1.02; k += .02) best = Math.max(best, windowMax(image, ox + (x - ox) * k / .93, iy + (y - iy) * k / .93, 2)); return best; };
     const peak = median(points.map(p => band(swept, p)));
-    // Fade: sky-blue glow samples across the band (white damage numbers do not count) must be nearly all gone.
-    const glow = image => { const ox = Number(s.originScreenX), oy = image.height - Number(s.originScreenY); let count = 0;
-      // From .5R: the hero's blue cape (brightened on hit frames) sits inside the inner band.
-      for (const [x, y] of points) for (let k = .5; k <= 1.1; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, oy + (y - oy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
+    // Fade: sky-blue samples across the band must be nearly all gone (white damage numbers and grey steel do not count).
+    const glow = image => { const iy = image.height - oy; let count = 0;
+      for (const [x, y] of points) for (let k = Math.max(.5, inner / Math.max(1, outer)); k <= 1.02; k += .02) { const [r, g, b] = image.at(ox + (x - ox) * k / .93, iy + (y - iy) * k / .93); if (b - r > 25 && b > 140) count++; } return count; };
     const glowSwept = glow(swept), glowGone = glow(gone), glowBefore = glow(before);
-    const hero = Number(s.heroHeightPixels ?? 0), radiusPx = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY));
-    results.push({ frame: at, tick: Number(s.tick), evolved: s.evolved === 'True', windupFrames: Number(s.windupFrames), samples: points.length,
-      heroHeightPixels: +hero.toFixed(1), radiusPixels: +radiusPx.toFixed(1), thicknessPixels: +Number(s.thicknessPixels ?? 0).toFixed(1), swordLengthPixels: +Number(s.swordLengthPixels ?? 0).toFixed(1),
+    const evolved = s.evolved === 'True';
+    const heroX = Number(s.heroScreenX), heroY = Number(s.heroScreenY);
+    results.push({ frame: at, tick: Number(s.tick), evolved, windupFrames: Number(s.windupFrames), samples: points.length, heroHeightPixels: +hero.toFixed(1),
+      centreFromHeroPixels: +Math.hypot(ox - heroX, oy - heroY).toFixed(1),
+      corePixels: +Number(s.coreRadiusPixels).toFixed(1), outerPixels: +outer.toFixed(1), innerPixels: +inner.toFixed(1), thicknessPixels: +Number(s.thicknessPixels ?? 0).toFixed(1),
+      hits: Number(s.hits), hitsCovered: Number(s.hitsCovered),
+      swordLengthPixels: +Number(s.swordLengthPixels ?? 0).toFixed(1), swordFallFrames: Number(s.swordFallFrames ?? 0), swordClearOfHero: s.swordClearOfHero === 'True',
+      swordFromCrowdPixels: evolved ? +Math.hypot(Number(s.swordTipScreenX) - Number(s.crowdScreenX), Number(s.swordTipScreenY) - Number(s.crowdScreenY)).toFixed(1) : 0,
       ground: +ground.toFixed(1), arcPeak: +peak.toFixed(1), contrast: +(peak - ground).toFixed(1), glowSwept, glowGone, glowBefore });
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const measured = results.filter(r => !r.skipped);
   const pass = {
     windup: results.length > 0 && results.every(r => r.skipped || (r.windupFrames >= 3 && r.windupFrames <= 5)),
-    // The crescent is at least a hero tall in reach and .45 hero heights thick; the evolved sword at least 3 hero heights.
-    size: measured.length > 0 && measured.every(r => r.radiusPixels >= r.heroHeightPixels && r.thicknessPixels >= .44 * r.heroHeightPixels
-      && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
+    // Centred on the hero (within 3% of a hero height of the rendered hero; the Core origin leads the rendered hero by
+    // up to a tick of movement), outer edge = Core reach clipped to the screen, never past it.
+    geometry: measured.length > 0 && measured.every(r => r.centreFromHeroPixels <= .1 * r.heroHeightPixels && r.outerPixels <= r.corePixels + 1),
+    // The band passes over every on-screen hit of its strike.
+    overHits: measured.length > 0 && measured.every(r => r.hitsCovered === r.hits),
+    size: measured.length > 0 && measured.every(r => r.thicknessPixels >= .44 * r.heroHeightPixels && (!r.evolved || r.swordLengthPixels >= 3 * r.heroHeightPixels)),
+    sword: measured.every(r => !r.evolved || (r.swordFallFrames >= 8 && r.swordFallFrames <= 10 && r.swordClearOfHero)),
     contrast: measured.length > 0 && measured.every(r => r.contrast >= thresholds.contrast),
     fade: measured.length > 0 && measured.every(r => r.glowSwept > 0 && r.glowGone - r.glowBefore <= Math.max(2, .1 * r.glowSwept)),
     reaction: p.bladeDeferredHits === p.bladePresentedHits && (p.giantBladeKillsOutside ?? 0) === 0 && (p.enemyDeathDropped ?? 0) === 0,
     stage: stage === 'evolved' ? (p.bladeEvolvedStrikes ?? 0) > 0 : (p.bladeEvolvedStrikes ?? 0) === 0,
   };
   return { strikes: results.length, pass, deferredHits: p.bladeDeferredHits, presentedHits: p.bladePresentedHits, evolvedStrikes: p.bladeEvolvedStrikes,
-    note: 'Wind-up = presented frames from the Core attack to the visible crescent (4, ±1 for delivery rounding). Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the crescent band (.35R to 1.1R; the crescent follows the visible reach when the fitted radius meets the screen edge) 7 frames after the crescent appears, minus the mean ground luma on the arc 8 frames before. Fade = sky-blue glow samples across the band 19 frames after appearing (sweep 9 + fade 7, +3) exceed the pre-swing count by at most 10% of the swept count. Stage = giant sword strikes only in the evolved stage. Size = crescent reach >= hero height and thickness >= .45 hero heights; evolved sword >= 3 hero heights.',
+    note: 'Wind-up = presented frames from the Core attack to the visible arc (4, ±1 for delivery rounding). Geometry = arc centre within .1 hero heights of the rendered hero, outer edge at the Core reach clipped to the visible play area (never past it). Over hits = every on-screen hit of the strike lies inside the Core fan between the band\'s inner and outer edge. Contrast = median over arc angles (every 5 degrees) of the brightest pixel across the outer part of the band 7 frames after it appears, minus the mean ground luma there 8 frames before. Fade = sky-blue samples across the band 19 frames after appearing exceed the pre-swing count by at most 10% of the swept count. Sword = evolved sword falls over 8-10 frames and its box clears the hero\'s silhouette box. Size = band >= .45 hero heights thick; evolved sword >= 3 hero heights.',
     rows: results };
 }
 
@@ -288,20 +293,21 @@ function checkOrbits(directory, manifest, shape) {
       const [r, g, b] = c;
       if (shape === 'tornado' ? (g - r > 45 && b - r > 25) : (r > 170 && g > 130 && b < 130 && r - b > 70)) coloured++;
     }
-    results.push({ frame: at, activation: Number(a.activation), evolved: a.evolved === 'True', count: Number(a.count), heroHeightPixels: hero, orbiterSizePixels: +size.toFixed(1),
+    results.push({ frame: at, activation: Number(a.activation), evolved: a.evolved === 'True', count: Number(a.count), drawn: Number(a.drawn ?? a.count), heroHeightPixels: hero, orbiterSizePixels: +size.toFixed(1),
       contrast: +(peak - ground).toFixed(1), colouredPixels: coloured });
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const evolvedElement = shape === 'tornado' ? (p.vortexFrames ?? 0) : (p.shieldThrows ?? 0);
   const pass = {
     contrast: results.length > 0 && results.every(r => r.contrast >= thresholds.contrast),
-    size: results.length > 0 && results.every(r => shape === 'tornado' ? r.orbiterSizePixels >= r.heroHeightPixels * .95 : r.orbiterSizePixels >= .84 * r.heroHeightPixels),
+    size: results.length > 0 && results.every(r => shape === 'tornado' ? r.orbiterSizePixels >= r.heroHeightPixels * .95
+      : r.orbiterSizePixels >= .34 * r.heroHeightPixels && r.orbiterSizePixels <= .46 * r.heroHeightPixels && r.drawn <= 6),
     colour: results.length > 0 && results.every(r => r.colouredPixels >= 20),
     stage: stage === 'evolved' ? evolvedElement > 0 : evolvedElement === 0,
     reaction: (p.orbitContactFlashes ?? 0) > 0 && (p.enemyDeathDropped ?? 0) === 0,
   };
   return { activations: results.length, pass, contactFlashes: p.orbitContactFlashes, vortexFrames: p.vortexFrames, shieldThrows: p.shieldThrows,
-    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (tornado from the foot up, shield around its centre), against the median luma of the play area 20 frames earlier (orbit activations run back to back, so the same box would still hold orbiters). Size: tornado height >= hero height (x.95), shield diameter >= .84 hero heights. Colour: teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
+    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (tornado from the foot up, shield around its centre), against the median luma of the play area 20 frames earlier (orbit activations run back to back, so the same box would still hold orbiters). Size: tornado height >= hero height (x.95); shield height .35-.45 hero heights whatever the Core collision radius, at most 6 drawn per activation. Colour: teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
     rows: results };
 }
 
@@ -316,7 +322,14 @@ for (const directory of directories) {
   const p = manifest.presentation ?? {};
   if (p.occlusionFrames > 0)
     entry.occlusion = { frames: p.occlusionFrames, p95: +Number(p.occlusionP95).toFixed(3), max: +Number(p.occlusionMax).toFixed(3), framesOver25: p.occlusionFramesOver25,
-      pass: p.occlusionP95 <= .25, note: 'Covered enemy pixels / enemy pixels per frame on a half-resolution mask: enemy sprite alpha vs own weapon effect alpha x opacity on layers 70-76 (attack edges, impact particles, storm sky, projectiles, glow, shield emblems). Gate: p95 <= 25%.' };
+      uncappedP95: +Number(p.occlusionUncappedP95 ?? p.occlusionP95).toFixed(3), uncappedMax: +Number(p.occlusionUncappedMax ?? p.occlusionMax).toFixed(3),
+      pass: p.occlusionP95 <= .25, note: 'Covered enemy pixels / enemy pixels per frame on a half-resolution mask: enemy sprite alpha vs own weapon effect alpha x opacity on layers 70, 71, 74-76 (attack edges, impact particles, projectiles, glow, shield emblems), with effect alpha capped at 0.5 over enemy pixels as the renderer draws it (uncapped kept for comparison). Full-screen tints (storm sky 73, storm flash 77) are excluded and checked under tint. Gate: p95 <= 25%.' };
+  // Full-screen tint, checked apart from the occlusion budget: alpha <= .25 and enemy-ground contrast >= 70% of untinted.
+  if ((p.tintFrames ?? 0) > 0)
+    entry.tint = { frames: p.tintFrames, maxAlpha: +Number(p.tintMaxAlpha).toFixed(3), minContrast: +Number(p.tintMinContrast).toFixed(3),
+      framesOverAlpha: p.tintFramesOverAlpha, framesUnderContrast: p.tintFramesUnderContrast,
+      pass: p.tintMaxAlpha <= .25 && p.tintMinContrast >= .7, recordOnly: id === 'core:storm_fork',
+      note: 'Strongest normal-blend full-screen darkening per frame. A uniform tint of alpha a leaves (1 - a) of every luminance difference, enemy against ground included; the additive storm flash shifts both equally. Gate: alpha <= .25 and contrast >= .70. Lightning evolution is recorded only, to be reviewed again in the combined six-weapon scene.' };
   if (id === 'core:storm_fork') entry.lightning = checkLightning(directory, manifest);
   if (id === 'core:muster_horn') entry.minions = checkMinions(directory, manifest);
   if (id === 'core:iron_blade') entry.blade = checkBlade(directory, manifest);

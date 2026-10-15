@@ -21,6 +21,8 @@ namespace Game.View
             RoleId = roleId; Texture = texture; Pivot = new Vector2(.5f, .5f); WorldSize = worldSize; FrameMs = 1000; Tween = "none";
             UvRects = Array.AsReadOnly(new[] { new Rect(0, 0, 1, 1) });
         }
+        // Temporary weapon effect art standing in for a painted role until it is in the manifest: same pivot as the spec.
+        internal ArtVisual(string roleId, Texture2D texture, Vector2 worldSize, Vector2 pivot) : this(roleId, texture, worldSize) { Pivot = pivot; }
         internal ArtVisual(ArtRoleDefinition role, Texture2D texture)
         {
             RoleId = role.id; Texture = texture; Pivot = role.pivot; WorldSize = role.worldSize;
