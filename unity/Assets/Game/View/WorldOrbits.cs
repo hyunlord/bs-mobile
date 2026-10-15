@@ -12,13 +12,13 @@ namespace Game.View
         public const int ContactFlashFrames = 3;     // hits flash briefly; no freeze (orbits hit many enemies)
         // Spore fan: a bright teal tornado cone of stacked spinning bands; evolution merges them into one giant vortex
         // around the hero whose arms run through the tornadoes and draw struck enemies inward.
-        public const int TornadoBands = 6, TornadoSegments = 12, VortexArms = 3, VortexArmPoints = 24;
+        public const int TornadoBands = 6, TornadoSegments = 12, VortexArms = 3, VortexArmPoints = 44;
         public const float TornadoHeroHeights = 1.2f, TornadoSpin = 540, VortexSpin = 140, VortexTurns = 1.4f, VortexReach = 1.18f;
         public static readonly Color Spore = new Color(.35f, 1f, .85f);       // bright teal, distinct from the grass
         // Guard ring: gold-rimmed shields with a blue crest and a gold motion trail; evolution throws a shield out to the
         // struck enemy and back with a gold shockwave on contact.
         public const int ThrowFrames = 10, ShockwaveFrames = 10, MaxThrows = 16;
-        public const float MinShieldHeroHeights = .42f, MaxShieldHeroHeights = .75f, ShieldOfCollision = .85f, ShieldSpin = 200;
+        public const float MinShieldHeroHeights = .45f, MaxShieldHeroHeights = .75f, ShieldOfCollision = .85f, ShieldWobble = 12;
         public static readonly Color Gold = new Color(.97f, .8f, .32f), Crest = new Color(.2f, .38f, .82f);
         public static float Seconds(int frames) => frames / 60f;
         // 1 while the activation runs, ramping in over the spread and out over the shrink.
@@ -108,7 +108,7 @@ namespace Game.View
                 if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
             }
             if (presence <= 0) return;
-            if (shape == "tornado") DrawTornado(center, presence * (evolved ? .75f : 1), attack.ActivationId, gear);
+            if (shape == "tornado") DrawTornado(center, presence, attack.ActivationId, gear);
             else DrawShield(center, lordPoint, ShieldRadius(attack.Source) * Mathf.Lerp(.2f, 1, presence), presence, age);
         }
 
@@ -140,10 +140,10 @@ namespace Game.View
                     var span = p1 - p0; var front = Mathf.Sin((a0 + a1) * .5f) < 0;   // the near half of each band reads brighter
                     var glow = OrbitSpec.Spore; glow.a = (front ? .75f : .35f) * presence;
                     Draw(lightningGlow, LightningLayer, (p0 + p1) * .5f, 0, new Vector2(span.magnitude * 1.3f, height * .1f), Angle(span), 1, glow, applyTween: false);
-                    if (front && (s + band) % 3 == 0)
+                    if (front && (s + band) % 2 == 0)
                     {
                         var streak = Color.white; streak.a = .85f * presence;
-                        Draw(lightningCore, LightningLayer, (p0 + p1) * .5f, 0, new Vector2(span.magnitude * 1.2f, Mathf.Max(height * .025f, .01f)), Angle(span), 1, streak, applyTween: false);
+                        Draw(lightningCore, LightningLayer, (p0 + p1) * .5f, 0, new Vector2(span.magnitude * 1.2f, Mathf.Max(height * .04f, .012f)), Angle(span), 1, streak, applyTween: false);
                     }
                 }
             }
@@ -220,11 +220,19 @@ namespace Game.View
             orbitShapes.Add(at, Vector2.one * (radius + 2.5f * pixel), 0, ink, 0);
             orbitShapes.Add(at, Vector2.one * radius, 0, gold, 0);
             orbitShapes.Add(at, Vector2.one * (radius * .76f), 0, crest, 0);
-            var spin = age * OrbitSpec.ShieldSpin;
-            Draw(lightningSolid, ShieldEmblemLayer, at, 0, new Vector2(radius * 1.1f, radius * .2f), spin, 1, gold, applyTween: false);
-            Draw(lightningSolid, ShieldEmblemLayer, at, 0, new Vector2(radius * 1.1f, radius * .2f), spin + 90, 1, gold, applyTween: false);
-            var shine = Color.white; shine.a = .55f * presence;
-            Draw(lightningFlash, ShieldEmblemLayer, at + new Vector2(-.35f, .35f) * radius, 0, Vector2.one * radius * .55f, 0, 1, shine, applyTween: false);
+            // Upright gold cross crest (a slight wobble, not a spin, so it never reads as an X) with an ink edge.
+            var wobble = Mathf.Sin(age * 9) * OrbitSpec.ShieldWobble;
+            var edge = 1.8f * pixel;
+            Draw(lightningSolid, ShieldEmblemLayer, at, 0, new Vector2(radius * 1.08f + edge * 2, radius * .24f + edge * 2), wobble + 90, 1, ink, applyTween: false);
+            Draw(lightningSolid, ShieldEmblemLayer, at + M1Direction(wobble + 90) * (radius * .12f), 0, new Vector2(radius * .78f + edge * 2, radius * .24f + edge * 2), wobble, 1, ink, applyTween: false);
+            Draw(lightningSolid, ShieldEmblemLayer, at, 0, new Vector2(radius * 1.08f, radius * .24f), wobble + 90, 1, gold, applyTween: false);
+            Draw(lightningSolid, ShieldEmblemLayer, at + M1Direction(wobble + 90) * (radius * .12f), 0, new Vector2(radius * .78f, radius * .24f), wobble, 1, gold, applyTween: false);
+            // Near-white highlight along the upper-left rim: the bright core of the shape.
+            for (var k = 0; k < 5; k++)
+            {
+                var a = 105 + k * 16; var highlight = Color.white; highlight.a = .95f * presence;
+                Draw(lightningSolid, ShieldEmblemLayer, at + M1Direction(a) * (radius * .88f), 0, new Vector2(radius * .3f, Mathf.Max(3 * pixel, radius * .09f)), a + 90, 1, highlight, applyTween: false);
+            }
         }
 
         // Evolution element for the guard ring: thrown shields fly out to the struck enemy and back; a gold shockwave rings
@@ -266,7 +274,7 @@ namespace Game.View
             OrbitActivations++;
             if (OrbitActivationSample == null) return;
             var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            var size = shape == "tornado" ? TornadoHeight(gear) * (evolved ? .75f : 1) : ShieldRadius(attack.Source) * 2;
+            var size = shape == "tornado" ? TornadoHeight(gear) : ShieldRadius(attack.Source) * 2;
             OrbitActivationSample(new OrbitActivationRecord { Activation = attack.ActivationId, Evolved = evolved, Count = gear.Count, Shape = shape,
                 OrbitRadiusPixels = orbitRadius / pixel, OrbiterSizePixels = size / pixel, HeroHeightPixels = HeroHeight / pixel,
                 FirstOrbiterScreen = renderCamera.WorldToScreenPoint(center), FrameOffsetFromStart = Mathf.RoundToInt(OrbitSpec.SpreadFrames) });
