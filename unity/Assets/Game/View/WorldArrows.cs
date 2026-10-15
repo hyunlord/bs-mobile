@@ -205,7 +205,8 @@ namespace Game.View
             {
                 var grow = Mathf.Clamp01(sinceTell / ArrowSpec.Seconds(ArrowSpec.WarningGrowFrames));
                 var pulse = .6f + .4f * Mathf.Sin(sinceTell * 30);
-                DrawGlowRing(point, radius * Mathf.Lerp(.35f, 1, grow), Mathf.Max(w * .22f, radius * .1f), ArrowSpec.Water, .95f * pulse);
+                // Translucent: many overlapping circles must not hide enemy silhouettes (area-effect rule).
+                DrawGlowRing(point, radius * Mathf.Lerp(.35f, 1, grow), Mathf.Max(w * .14f, radius * .06f), ArrowSpec.Water, .6f * pulse);
                 var fill = ArrowSpec.Water; fill.a = .18f * grow;
                 Draw(lightningFlash, LightningLayer, point, 0, Vector2.one * radius * 2.1f, 0, 1, fill, applyTween: false);
             }
@@ -237,7 +238,7 @@ namespace Game.View
             for (var pass = 0; pass < 2; pass++)
             {
                 var visual = pass == 0 ? lightningGlow : lightningCore;
-                var tint = pass == 0 ? color : Color.white; tint.a = alpha * (pass == 0 ? 1 : .7f);
+                var tint = pass == 0 ? color : Color.white; tint.a = alpha * (pass == 0 ? 1 : .45f);
                 for (var s = 0; s < segments; s++)
                 {
                     var middle = (s + .5f) * 360f / segments;
