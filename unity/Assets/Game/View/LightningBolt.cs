@@ -14,7 +14,7 @@ namespace Game.View
         public const float ScreenBrighten = .1f;
         public const float ScorchSeconds = .9f;
         // Core width 4–6 px and glow 16–24 px on a 390 pt portrait screen, scaled continuously with gear strength.
-        public const float CoreMinPoints = 4.5f, CoreMaxPoints = 6, GlowMinPoints = 18, GlowMaxPoints = 24;
+        public const float CoreMinPoints = 5, CoreMaxPoints = 6, GlowMinPoints = 20, GlowMaxPoints = 24;
         public const int MinBranches = 3, MaxBranches = 6, MaxSkyBolts = 8;
         // Strength (log2 of max(count, range) ratio) at which widths, branches and storm darkness reach their caps.
         public const float FullStrengthDoublings = 2.5f, StormDarknessMax = .4f;

@@ -23,6 +23,14 @@ function frame(directory, index) {
 const luma = ([r, g, b]) => (.2126 * r + .7152 * g + .0722 * b) / 2.55;   // 0..100
 const violet = ([r, g, b]) => b - g > 18 && r - g > 4;
 
+// Lightning core pixels in the pillar band: near-white and flanked by violet bloom, so white damage numbers do not count.
+function corePixels(directory, index, screenX, screenY) {
+  const image = frame(directory, index); const y0 = image.height - screenY;
+  let count = 0;
+  for (let y = y0 - 110; y <= y0 - 20; y++) for (let x = screenX - 26; x <= screenX + 26; x++)
+    if (luma(image.at(x, y)) >= 88 && (violet(image.at(x - 6, y)) || violet(image.at(x + 6, y)))) count++;
+  return count;
+}
 // Pillar region: from 20 to 110 px above the target in image rows (Unity screen y is bottom-up).
 function pillar(directory, index, screenX, screenY) {
   const image = frame(directory, index); const y0 = image.height - screenY;
@@ -65,16 +73,16 @@ function checkLightning(directory, manifest) {
     if (x < 0) continue;
     const before = Math.max(0, at - 8);
     const background = ground(directory, before, x, y);
-    const baseline = pillar(directory, before, x, y).core;
     const strike = pillar(directory, at, x, y);
     const measured = widths(strike.image, strike.y0, x, background);
     const telegraph = Number(s.telegraphFrames);
-    // Fade: first frame after the strike whose pillar region is back to its own pre-telegraph peak brightness.
+    // Fade: first frame after the strike with at most 5% of the strike frame's lightning-core pixels left in the pillar band.
+    const peak = corePixels(directory, at, x, y);
     let fadeFrame = null;
-    for (let k = 2; k <= 14; k++) { if (pillar(directory, at + k, x, y).core <= Math.max(baseline, background + 12) + 3) { fadeFrame = k; break; } }
+    for (let k = 1; k <= 14 && peak > 0; k++) { if (corePixels(directory, at + k, x, y) <= peak * .05) { fadeFrame = k; break; } }
     results.push({ frame: at, tick: Number(s.tick), storm: s.storm === 'True', links: Number(s.links), skyBolts: Number(s.skyBolts), core: +strike.core.toFixed(1), background: +background.toFixed(1),
       contrast: +(strike.core - background).toFixed(1), corePixelsReported: +Number(s.corePixels).toFixed(2), glowPixelsReported: +Number(s.glowPixels).toFixed(2),
-      corePixelsMeasured: measured.core, glowPixelsMeasured: measured.glow, measuredRows: measured.rows, telegraphFrames: telegraph, fadeFrames: fadeFrame });
+      corePixelsMeasured: measured.core, glowPixelsMeasured: measured.glow, measuredRows: measured.rows, strikeCorePixelCount: peak, telegraphFrames: telegraph, fadeFrames: fadeFrame });
   }
   const p = manifest.presentation ?? {};
   const pass = {
@@ -82,11 +90,11 @@ function checkLightning(directory, manifest) {
     size: results.length > 0 && results.every(r => r.corePixelsReported >= thresholds.corePixels && r.glowPixelsReported >= thresholds.glowPixels)
       && results.filter(r => r.measuredRows >= 3).every(r => r.corePixelsMeasured >= thresholds.corePixels && r.glowPixelsMeasured >= thresholds.glowPixels),
     timing: results.length > 0 && results.every(r => r.telegraphFrames >= thresholds.telegraphFrames[0] && r.telegraphFrames <= thresholds.telegraphFrames[1]
-      && r.fadeFrames !== null && r.fadeFrames <= thresholds.fadeFrames[1]),
+      && r.fadeFrames !== null && r.fadeFrames >= 3 && r.fadeFrames <= thresholds.fadeFrames[1] + 1),
     reaction: p.lightningDeferredHits === p.lightningPresentedHits && (p.enemyDeathDropped ?? 0) === 0,
   };
   return { strikes: results.length, stormStrikes: results.filter(r => r.storm).length, pass, thresholds: { contrast: thresholds.contrast, corePixels: thresholds.corePixels, glowPixels: thresholds.glowPixels, telegraphFrames: thresholds.telegraphFrames, fadeFrames: thresholds.fadeFrames },
-    note: 'Telegraph frames = presented frames between the chain-link delivery and the visible strike (renderer log). Fade = first frame after the strike whose pillar region is back to its pre-telegraph peak. Pixel widths are medians over rows whose peak is a lightning core; strikes with fewer than 3 such rows (pillar crossing other effects) are reported but not gated on measured width.',
+    note: 'Telegraph frames = presented frames between the chain-link delivery and the visible strike (renderer log). Fade = first frame after the strike with <=5% of its near-white, violet-flanked core pixels left in the pillar band (+1 frame tolerance for JPEG and bloom tails). Pixel widths are medians over rows whose peak is a lightning core; strikes with fewer than 3 such rows (pillar crossing other effects) are reported but not gated on measured width.',
     deferredHits: p.lightningDeferredHits, presentedHits: p.lightningPresentedHits, rows: results };
 }
 

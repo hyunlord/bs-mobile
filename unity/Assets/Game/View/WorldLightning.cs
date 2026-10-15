@@ -149,8 +149,8 @@ namespace Game.View
         {
             if (lightningGlow != null) return;
             float Across(float v, float sigma) { var d = (v - .5f) / sigma; return Mathf.Exp(-.5f * d * d); }
-            lightningGlow = new ArtVisual("effect.lightning.glow", EffectTexture("Lightning glow", 8, 64, (u, v) => Across(v, .2f), Color.white), Vector2.one);
-            lightningCore = new ArtVisual("effect.lightning.core", EffectTexture("Lightning core", 8, 32, (u, v) => Mathf.SmoothStep(0, 1, (.5f - Mathf.Abs(v - .5f)) / .18f), Color.white), Vector2.one);
+            lightningGlow = new ArtVisual("effect.lightning.glow", EffectTexture("Lightning glow", 8, 64, (u, v) => Across(v, .26f), Color.white), Vector2.one);
+            lightningCore = new ArtVisual("effect.lightning.core", EffectTexture("Lightning core", 8, 32, (u, v) => Mathf.SmoothStep(0, 1, (.5f - Mathf.Abs(v - .5f)) / .08f), Color.white), Vector2.one);
             lightningFlash = new ArtVisual("effect.lightning.flash", EffectTexture("Lightning flash", 64, 64, (u, v) => { var r = new Vector2(u - .5f, v - .5f).magnitude * 2; return Mathf.Exp(-4 * r * r) * (1 - Mathf.SmoothStep(.85f, 1, r)); }, Color.white), Vector2.one);
             lightningSolid = new ArtVisual("effect.lightning.solid", EffectTexture("Lightning solid", 4, 4, (u, v) => 1, Color.white), Vector2.one);
             stormSolid = new ArtVisual("effect.storm.sky", EffectTexture("Storm sky", 4, 4, (u, v) => 1, Color.white), Vector2.one);
@@ -172,7 +172,7 @@ namespace Game.View
             {
                 var visual = pass == 0 ? lightningGlow : lightningCore;
                 var width = pass == 0 ? glowWidth : coreWidth;
-                var color = pass == 0 ? LightningSpec.Glow : LightningSpec.Core; color.a = opacity * (pass == 0 ? .9f : 1);
+                var color = pass == 0 ? LightningSpec.Glow : LightningSpec.Core; color.a = opacity;
                 for (var i = 0; i + 1 < count; i++)
                 {
                     var a = points[i]; var b = points[i + 1]; var span = b - a; var length = span.magnitude;
