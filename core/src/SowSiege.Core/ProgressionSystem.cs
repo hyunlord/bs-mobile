@@ -13,6 +13,7 @@ namespace SowSiege.Core
         private readonly TrackedRandom random;
         private readonly RuntimeSystem? runtime;
         private readonly ExperimentSystem? experiment;
+        private WaveRuntimeSystem? wave;
 
         public ProgressionSystem(ContentCatalog catalog, RunOptions options, WorldState world, TrackedRandom random, RuntimeSystem? runtime = null, ExperimentSystem? experiment = null, DiagnosticObserver? diagnostics = null)
         {
@@ -24,6 +25,9 @@ namespace SowSiege.Core
             this.runtime = runtime;
             this.experiment = experiment;
         }
+
+        // Wave items and evolutions are offered through the wave system's single data-driven unlock evaluator (ADR0058).
+        internal void AttachWave(WaveRuntimeSystem wave) => this.wave = wave;
 
         public void Tick()
         {
@@ -119,11 +123,7 @@ namespace SowSiege.Core
         }
 
         internal long RequiredExperience() => experiment?.RequiredExperience(world.Level) ?? catalog.Tuning.World.Progression.BaseExperience + (long)(world.Level - 1) * catalog.Tuning.World.Progression.ExperiencePerLevel;
-        private IEnumerable<string> WaveCards()
-        {
-            if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) { return Enumerable.Empty<string>(); }
-            return d.Items.Values.Where(i => !w.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(d.Evolutions.Values.Where(e => !w.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) && (e.Kind switch { WaveEvolutionKind.PlantingArc => w.BladePlotKill, WaveEvolutionKind.RepairOrbit => w.RepairCompleted, WaveEvolutionKind.ShelteredPlot => w.HarvestNearBuilding, _ => false })).Select(e => e.Id));
-        }
+        private IEnumerable<string> WaveCards() => wave?.ExtraCards() ?? Enumerable.Empty<string>();
         private bool SelectWave(string id)
         {
             if (catalog.WaveRuntime is not { } d || world.WaveRuntime is not { } w) { return false; }
