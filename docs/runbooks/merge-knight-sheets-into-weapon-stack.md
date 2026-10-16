@@ -21,6 +21,7 @@
 | `unity/Assets/Resources/Wave1aArt.asset` | atlas 목록 끝 | 스택의 atlas 두 줄 뒤에 `hero-knight`(guid `fdfeddd402e34c31baf3bdb2985b54d0`)을 둔다. 매니페스트 atlas 순서와 같아야 한다 |
 | `docs/design/gdd/06-feedback.md` | 양쪽이 절 추가 | 스택 절 뒤에 main의 "영웅 전신 스프라이트 시트" 절을 둔다(둘 다 유지) |
 | `unity/Assets/Game/App/RunCoordinator.Smoothness.cs`(충돌 없음, 병합 뒤 수정) | main은 라이브 캡처가 아니면 `world.HeroSheetPoseSampled = null`로 둔다. 스택의 M1 검토(`M1CombatReview.ObserveFeel`)가 먼저 붙인 자세 기록이 그 뒤에 지워져 `m1-hero-poses.csv`가 비었다(임시 병합 `0e05039`) | `if (AutoplayCapture.Active != null) world.HeroSheetPoseSampled = ObserveHeroPose;` — 라이브 캡처일 때만 덮어쓴다(임시 병합 `3d8a39f`) |
+| `unity/Assets/Game/View/HeroSheet.cs`(`OfferHeroAction`, 충돌 없음) | main은 진화 여부를 `wave.Evolutions`로만 본다. 스택의 검토 진화 사례는 표시 단계(`WeaponEvolved`, `WeaponDisplayStages`)로 진화해서, 수호 고리 진화의 던지기가 한 번도 나오지 않았다 | `evolved = HeroWeaponEvolved(weapon) \|\| WeaponEvolved(weapon)`(임시 병합 `4292f57`) |
 | `unity/Assets/Game/Tests/PlayMode/WeaponFeelWorldTests.cs`(자동 병합 뒤 수정) | #267 임시 대체 테스트가 `[hero-art] ... missing ... #268` 경고와 `HeroRigRolesMissing`을 기대한다 | `FirstPlayableKnightDrawsTheSheetsAndTheWorld`로 바꾼다. 경고를 기대하지 않고(`LogAssert.NoUnexpectedReceived`), `world.HeroSheetDrawsHero`가 참인지 본다 |
 
 ## 병합 뒤 남는 문제
