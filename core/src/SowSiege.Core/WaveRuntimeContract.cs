@@ -23,7 +23,9 @@ namespace SowSiege.Core
     // radius, even one an earlier impact of the same activation already struck (a patch pulsing in place).
     // Bounces (ADR0062, "ricochet" placement only, absent otherwise): after striking its target an arrow flies on to the nearest
     // enemy it has not struck, at most Bounces times; the first flight takes DelayTicks and each bounce StepTicks.
-    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius, [property: OmitWhenNull] bool? RehitEachImpact = null, [property: OmitWhenNull] int? Bounces = null)
+    // LureTicks (ADR0063, "lure-bomb" placement only, absent otherwise): a sack lands on the nearest enemy after DelayTicks,
+    // draws the normal enemies within Radius toward it at their own speed for LureTicks, then bursts over Radius.
+    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius, [property: OmitWhenNull] bool? RehitEachImpact = null, [property: OmitWhenNull] int? Bounces = null, [property: OmitWhenNull] int? LureTicks = null)
     {
         public const int MaximumImpacts = 64;
     }

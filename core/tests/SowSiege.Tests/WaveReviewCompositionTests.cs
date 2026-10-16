@@ -204,6 +204,53 @@ public sealed class WaveReviewCompositionTests
         }
     }
     [Fact]
+    public void LureSackDrawsEnemiesWithinItsRadiusThenBurstsOnce()
+    {
+        // ADR0063: lands after 2 ticks where the nearest enemy stood at the cast (580 after its first step), lures for 4 ticks,
+        // then bursts over radius 200.
+        var (catalog, _, world, near) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gear = catalog.WaveRuntime!.Gear.Values.Single();
+        ((Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear)[gear.Id] = gear with
+        { Composition = new(1, "lure-bomb", 2, 0, 0, 200, null, null, 4), Count = 1, CooldownTicks = 100 };
+        ((Dictionary<string, EnemyDefinition>)catalog.Enemies)[near.Definition] = catalog.Enemies[near.Definition] with { Speed = 20 };
+        var inside = new EnemyState { Id = 11, Definition = near.Definition, Position = new(800, 500), Health = 100 };
+        var outside = new EnemyState { Id = 12, Definition = near.Definition, Position = new(1000, 500), Health = 100 };
+        world.Enemies.Add(inside); world.Enemies.Add(outside);
+        var system = new WaveRuntimeSystem(catalog, world, new(1, true), null);
+        var events = Run(system, world, 2);
+        var lure = Assert.Single(events, e => e.Kind == "review-lure");
+        Assert.Equal((2, 580, 200), (lure.Tick, lure.Position.X, lure.Amount));
+        Assert.Single(world.WaveRuntime!.Lures);
+        var before = inside.Position.X;
+        for (var tick = 3; tick <= 8; tick++)
+        {
+            world.Tick = tick; system.Tick(world.Lord); events.AddRange(world.WaveRuntime.Events);
+            if (tick == 6) { Assert.Equal(before - 80, inside.Position.X); }   // four lured steps of 20 toward the sack
+        }
+        Assert.Equal(new[] { 6 }, events.Where(e => e.Kind == "review-impact").Select(e => e.Tick));
+        Assert.Equal((90, 90, 100), (near.Health, inside.Health, outside.Health));
+        Assert.Empty(world.WaveRuntime.PendingImpacts);
+        Assert.Equal(1, world.WaveRuntime.Counters["successful-activation"]);
+    }
+    [Fact]
+    public void LureTicksAreAbsentFromHashesUntilSetAndOnlyValidForLureBomb()
+    {
+        var (catalog, _, world, _) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gears = (Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime!.Gear;
+        var gear = gears.Values.Single();
+        gears[gear.Id] = gear with { Composition = new(1, "nearest-target", 2, 0, 0, 20) };
+        var unset = PortableStateCodec.HashCatalog(catalog);
+        gears[gear.Id] = gear with { Composition = new(1, "nearest-target", 2, 0, 0, 20, null, null, null) };
+        Assert.Equal(unset, PortableStateCodec.HashCatalog(catalog));
+        foreach (var bad in new WaveAttackComposition[] { new(1, "nearest-target", 2, 0, 0, 20, null, null, 4), new(1, "lure-bomb", 2, 0, 0, 20), new(1, "lure-bomb", 2, 0, 0, 20, null, null, 0), new(1, "lure-bomb", 2, 1, 0, 20, null, null, 4), new(1, "lure-bomb", 2, 0, 0, 20, true, null, 4), new(1, "lure-bomb", 2, 0, 0, 20, null, 1, 4) })
+        {
+            gears[gear.Id] = gear with { Composition = bad, CooldownTicks = 100 };
+            world.Equipment[0].ReadyTick = 0;
+            var system = new WaveRuntimeSystem(catalog, world, new(1, true), null);
+            Assert.Throws<ArgumentException>(() => system.Tick(world.Lord));
+        }
+    }
+    [Fact]
     public void MovingOutOfLockedImpactAvoidsDamage()
     {
         var (catalog, _, world, enemy) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);

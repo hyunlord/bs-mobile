@@ -36,7 +36,8 @@ namespace SowSiege.Core
                 if (g.Composition is { } composition)
                 { Write("wave-review-impact-v1"); Write(composition.Version); Write(composition.Placement); Write(composition.DelayTicks); Write(composition.StepTicks); Write(composition.Spacing); Write(composition.Radius);
                   if (composition.RehitEachImpact == true) { Write("wave-review-rehit-v1"); }
-                  if (composition.Bounces is { } bounces) { Write("wave-review-ricochet-v1"); Write(bounces); } }
+                  if (composition.Bounces is { } bounces) { Write("wave-review-ricochet-v1"); Write(bounces); }
+                  if (composition.LureTicks is { } lure) { Write("wave-review-lure-v1"); Write(lure); } }
                 if (g.Aim is not null) { Write("wave-gear-aim-v1"); Write(g.Aim); }
                 Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null)
                 {
@@ -75,7 +76,13 @@ namespace SowSiege.Core
             {
                 Write("wave-pending-impact-v1");
                 WriteList(s.PendingImpacts, p => { Write(p.Id); Write(p.Source); Write(p.Position); Write(p.Tick); Write(p.Radius); Write(p.Damage); Write(p.Knockback); Write(p.ActivationId);
-                    if (p.Struck is { } struck) { Write("wave-ricochet-v1"); Write(p.TargetId); Write(p.BouncesLeft); Write(p.From); WriteList(struck, Write); } });
+                    if (p.Struck is { } struck) { Write("wave-ricochet-v1"); Write(p.TargetId); Write(p.BouncesLeft); Write(p.From); WriteList(struck, Write); }
+                    if (p.LureTicks > 0) { Write("wave-lure-pending-v1"); Write(p.LureTicks); } });
+            }
+            if (s.Lures.Count > 0)
+            {
+                Write("wave-review-lures-v1");
+                WriteList(s.Lures, l => { Write(l.Id); Write(l.Source); Write(l.Position); Write(l.Radius); Write(l.UntilTick); });
             }
             Write("wave-runtime-state-v1");
             Write(s.Water);

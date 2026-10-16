@@ -45,6 +45,8 @@ namespace SowSiege.Core
             ripeAvailabilityKnown = false;
             for (var index = State.Detours.Count - 1; index >= 0; index--)
             { if (State.Detours[index].UntilTick <= world.Tick) { State.Detours.RemoveAt(index); } }
+            for (var index = State.Lures.Count - 1; index >= 0; index--)
+            { if (State.Lures[index].UntilTick <= world.Tick) { State.Lures.RemoveAt(index); } }
             liveEnemies.Clear();
             foreach (var enemy in world.Enemies) { if (enemy.Health > 0) { liveEnemies.Add(enemy); } }
             liveEnemies.Sort(EnemyOrder);
@@ -63,7 +65,7 @@ namespace SowSiege.Core
                         if (separation is not null && !modules.Enemy(rule.Id).Boss && action.Phase == "charge" && world.Tick >= action.UntilTick) { Recover(rule, action); }
                         continue;
                     }
-                    Advance(enemy, rule, action, ref pathsCollected);
+                    if (!Lured(enemy, rule, action)) { Advance(enemy, rule, action, ref pathsCollected); }
                     if (interactive?.Field is { } field) { enemy.Position = field.Constrain(enemy.Position); }
                     Contact(enemy, rule);
                 }
@@ -177,6 +179,20 @@ namespace SowSiege.Core
             }
         }
 
+        // ADR0063: a normal enemy within a landed lure walks to it at its own speed instead of advancing (the earliest lure wins).
+        private bool Lured(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action)
+        {
+            if (State.Lures.Count == 0 || modules.Enemy(rule.Id).Boss) { return false; }
+            foreach (var lure in State.Lures)
+            {
+                if (enemy.Position.DistanceSquared(lure.Position) > (long)lure.Radius * lure.Radius) { continue; }
+                var body = catalog.Enemies[enemy.Definition];
+                var speed = action.WetUntil > world.Tick ? Math.Max(1, body.Speed / Definition.Behavior.WetSpeedDivisor) : body.Speed;
+                enemy.Position = enemy.Position.MoveToward(lure.Position, speed);
+                return true;
+            }
+            return false;
+        }
         private void Advance(EnemyState enemy, WaveEnemyDefinition rule, WaveEnemyAction action, ref bool pathsCollected)
         {
             var body = catalog.Enemies[enemy.Definition];
