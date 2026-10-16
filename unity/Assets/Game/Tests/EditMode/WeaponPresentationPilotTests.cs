@@ -175,8 +175,14 @@ namespace Tests.EditMode
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");
             Assert.That(OrbitSpec.Shown(0), Is.InRange(.3f, .6f), "Back-to-back activations shrink part way, not to nothing (no blinking).");
             Assert.That(OrbitSpec.FanDegrees, Is.EqualTo(60).Within(1e-5f), "Spore clouds fan out within 60 degrees.");
-            Assert.That(OrbitSpec.Puffs(0), Is.EqualTo(4)); Assert.That(OrbitSpec.Puffs(1), Is.EqualTo(5));
-            Assert.That(OrbitSpec.PuffHeroHeights(0), Is.EqualTo(.5f).Within(1e-5f)); Assert.That(OrbitSpec.PuffHeroHeights(1), Is.EqualTo(.6f).Within(1e-5f));
+            Assert.That(OrbitSpec.CloudPuffs, Is.EqualTo(4), "Four puffs per orbiter make one cloud.");
+            Assert.That(OrbitSpec.CloudOverlap, Is.InRange(.3f, .5f), "Neighbouring puffs overlap 30-50%.");
+            Assert.That(OrbitSpec.CloudOffset(1) - OrbitSpec.CloudOffset(0), Is.EqualTo(OrbitSpec.CloudSpacing).Within(1e-5f));
+            Assert.That(OrbitSpec.CloudOffset(0), Is.EqualTo(-OrbitSpec.CloudOffset(OrbitSpec.CloudPuffs - 1)).Within(1e-5f), "Centred on the fan's line.");
+            Assert.That(OrbitSpec.PuffHeroHeights(0), Is.EqualTo(.6f).Within(1e-5f)); Assert.That(OrbitSpec.PuffHeroHeights(1), Is.EqualTo(.75f).Within(1e-5f));
+            Assert.That(OrbitSpec.CloudPuffFrames, Is.EqualTo(OrbitSpec.PuffFrames * 3 / 2), "Cloud puffs live 1.5x as long.");
+            Assert.That(OrbitSpec.CloudReach / OrbitSpec.CloudPuffFrames, Is.EqualTo(1.1f / OrbitSpec.PuffFrames * .7f).Within(1e-5f), "and drift at 0.7x the speed.");
+            Assert.That(OrbitSpec.CloudPuffs * 5, Is.LessThanOrEqualTo(OrbitSpec.MaxPuffs), "Five orbiters stay within the puff cap.");
             Assert.That(OrbitSpec.PuffScale(0), Is.EqualTo(OrbitSpec.PuffFrom).Within(1e-5f)); Assert.That(OrbitSpec.PuffScale(1), Is.EqualTo(OrbitSpec.PuffTo).Within(1e-5f));
             Assert.That(OrbitSpec.PuffAlpha(0), Is.Zero, "Puffs fade in."); Assert.That(OrbitSpec.PuffAlpha(1), Is.Zero, "Puffs fade out.");
             Assert.That(OrbitSpec.PuffAlpha(.4f), Is.EqualTo(1).Within(1e-5f));
