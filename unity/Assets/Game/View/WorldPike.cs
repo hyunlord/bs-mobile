@@ -63,6 +63,7 @@ namespace Game.View
             public readonly int[] Ids = new int[PikeImpactCapacity];
             public readonly Vector2[] Points = new Vector2[PikeImpactCapacity];
             public readonly float[] Landed = new float[PikeImpactCapacity];
+            public readonly bool[] Sampled = new bool[PikeImpactCapacity];
             public Vector2 Launch;
             // The last impact that landed inside the visible portrait column: its screen position and frame as it landed.
             public Vector2 SeenScreen; public int SeenFrame = -1, SeenIndex = -1;
@@ -107,7 +108,7 @@ namespace Game.View
                 }
                 if (cast.Count == PikeImpactCapacity) return;
                 var i = cast.Count++;
-                cast.Ids[i] = value.SubjectId; cast.Points[i] = Point(value.Position); cast.Landed[i] = -1;
+                cast.Ids[i] = value.SubjectId; cast.Points[i] = Point(value.Position); cast.Landed[i] = -1; cast.Sampled[i] = false;
                 PikeImpacts++;
             }
             else if (value.Kind == "review-impact")
@@ -190,10 +191,11 @@ namespace Game.View
                 }
                 for (var i = 0; i < cast.Count; i++)
                 {
-                    // An impact that landed this frame: where it is on screen now that the camera is set (events are accepted
-                    // before the capture camera takes this frame's size), kept when inside the portrait column.
-                    if (cast.Landed[i] >= 0 && Mathf.Abs(cast.Landed[i] - now) < 1e-5f)
+                    // An impact on the first draw after it landed: where it is on screen with this frame's camera (review frames
+                    // accept their events outside Present, before the capture camera is set), kept when inside the portrait column.
+                    if (cast.Landed[i] >= 0 && !cast.Sampled[i])
                     {
+                        cast.Sampled[i] = true;
                         var screen = (Vector2)renderCamera.WorldToScreenPoint(cast.Points[i]);
                         if (InPortraitColumn(screen)) { cast.SeenScreen = screen; cast.SeenFrame = PresentedFrames; cast.SeenIndex = i; }
                     }
