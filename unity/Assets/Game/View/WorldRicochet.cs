@@ -72,7 +72,9 @@ namespace Game.View
                 hop.First = !bounce; hop.Flash = false;
                 if (bounce)
                 {
-                    hop.Chain = last.Chain; hop.Hop = last.Hop + 1; hop.From = from;
+                    // A bounce whose earlier flight was cast before the View started still bounces (a chain of its own).
+                    if (last.Index < 0) { hop.Chain = ricochetChains++; hop.Hop = 1; } else { hop.Chain = last.Chain; hop.Hop = last.Hop + 1; }
+                    hop.From = from;
                     if (last.Index >= 0 && ricochetHops[last.Index].Id >= 0) ricochetHops[last.Index].Turns = true;
                     RicochetBounces++;
                 }
@@ -91,6 +93,7 @@ namespace Game.View
             }
             else if (value.Kind == "review-impact")
             {
+                ricochetLastImpact = (value.Tick, value.Source, Point(value.Position), 0, 0, -1);
                 for (var i = 0; i < ricochetHops.Length; i++)
                 {
                     var hop = ricochetHops[i];

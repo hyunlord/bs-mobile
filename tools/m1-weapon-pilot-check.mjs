@@ -326,10 +326,12 @@ function checkRicochet(directory, manifest) {
     if (mx >= 0) { let peak = 0; box(at(landed + Number(h.midOffset)), mx, my, 14, p => { peak = Math.max(peak, luma(p)); }); entry.arrowContrast = +(peak - ground(mx, my, 14)).toFixed(1); }
     const tx = Number(h.toScreenX), ty = height - Number(h.toScreenY);
     let splash = 0; box(at(landed + 1), tx, ty, 20, p => { splash = Math.max(splash, luma(p)); }); entry.landingContrast = +(splash - ground(tx, ty, 20)).toFixed(1);
-    if (evolved) {
-      // Channel: of 9 points along the flown path, the share with water-blue pixels 6 frames after landing that were not
-      // water-blue on the ground before the cast.
-      const fx = Number(h.fromScreenX), fy = height - Number(h.fromScreenY), after = at(landed + 6);
+    entry.pathPixels = +Math.hypot(tx - Number(h.fromScreenX), ty - (height - Number(h.fromScreenY))).toFixed(1);
+    if (evolved && entry.pathPixels >= .5 * entry.heroHeightPixels) {
+      // Channel (flights at least half a hero long; shorter ones lie under the hero and the crowd): of 9 points along the
+      // flown path, the share with water-blue pixels on the frame after landing (the camera follows the walking hero, so
+      // later frames no longer match the recorded screen points) that were not water-blue before the cast.
+      const fx = Number(h.fromScreenX), fy = height - Number(h.fromScreenY), after = at(landed + 1);
       let cut = 0;
       for (let k = 1; k <= 9; k++) {
         const x = fx + (tx - fx) * k / 10, y = fy + (ty - fy) * k / 10;
@@ -348,14 +350,15 @@ function checkRicochet(directory, manifest) {
     landing: results.length > 0 && share(results, r => r.landingContrast >= thresholds.contrast) >= .9,
     size: results.length > 0 && results.every(r => r.arrowLengthPixels >= .5 * r.heroHeightPixels),
     bounces: stage === 'lv1' ? (p.ricochetBounces ?? 0) === 0 : (p.ricochetBounces ?? 0) > 0,
-    stage: stage === 'evolved' ? (p.ricochetChannelDraws ?? 0) > 0 && median(results.map(r => r.channelShare ?? 0)) >= .5 : (p.ricochetChannelDraws ?? 0) === 0,
+    stage: stage === 'evolved' ? (p.ricochetChannelDraws ?? 0) > 0 && median(results.filter(r => r.channelShare !== undefined).map(r => r.channelShare)) >= .5 : (p.ricochetChannelDraws ?? 0) === 0,
     reaction: (p.enemyDeathDropped ?? 0) === 0,
   };
   const contrasts = measured.map(r => r.arrowContrast);
   return { flights: p.ricochetHops, bounces: p.ricochetBounces, landed: p.ricochetLanded, landedOnTime: p.ricochetLandedOnTime, channelDraws: p.ricochetChannelDraws,
     measured: results.length, arrowContrastMin: contrasts.length ? Math.min(...contrasts) : null, arrowContrastMedian: median(contrasts),
-    landingContrastMedian: median(results.map(r => r.landingContrast)), channelShareMedian: stage === 'evolved' ? median(results.map(r => r.channelShare ?? 0)) : null, pass,
-    note: 'On time = every flight that landed did so within 2 frames of its Core due time. Visible = arrow peak within 14px of where it was drawn 5 frames before landing minus the darker of the mean ground 30 and 40 frames before its cast, >= 40 for 90% of measured flights (up to 48 spread through the capture); landing the same for the splash 1 frame after landing (20px). Bounces only from the max stage up. Evolved: water channel drawn and water-blue gained on at least half of 9 points along the flown path 6 frames after landing (median over flights).',
+    landingContrastMedian: median(results.map(r => r.landingContrast)), pathPixelsMedian: median(results.map(r => r.pathPixels)),
+    channelMeasured: results.filter(r => r.channelShare !== undefined).length, channelShareMedian: stage === 'evolved' ? median(results.filter(r => r.channelShare !== undefined).map(r => r.channelShare)) : null, pass,
+    note: 'On time = every flight that landed did so within 2 frames of its Core due time. Visible = arrow peak within 14px of where it was drawn 5 frames before landing minus the darker of the mean ground 30 and 40 frames before its cast, >= 40 for 90% of measured flights (up to 48 spread through the capture); landing the same for the splash 1 frame after landing (20px). Bounces only from the max stage up. Evolved: water channel drawn and water-blue gained on at least half of 9 points along the flown path 1 frame after landing (median over flights at least half a hero long; shorter flights lie under the hero and the crowd).',
     rows: results };
 }
 
