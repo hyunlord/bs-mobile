@@ -347,10 +347,16 @@ namespace Game.View
         {
             if (bowstringRoot != null) return true;
             var template = Resources.Load<Material>("HeroMotion/live-material");
-            if (template == null || lightningFlash == null) return false;
-            var texture = lightningFlash.Texture; var uv = lightningFlash.UvRects[0];
-            var rect = new Rect(uv.x * texture.width, uv.y * texture.height, uv.width * texture.width, uv.height * texture.height);
-            bowstringSprite = Sprite.Create(texture, rect, new Vector2(.5f, .5f), rect.width);   // one world unit across
+            if (template == null) return false;
+            // Its own round picture, opaque at the centre (the shared lightning flash texture peaks at alpha .15, which read
+            // as a grey smudge over the hero's armour).
+            const int size = 64;
+            var texture = PaintTexture("Bowstring flash", size, size, (x, y) =>
+            {
+                var t = Mathf.Clamp01(1 - new Vector2(x + .5f - size * .5f, y + .5f - size * .5f).magnitude / (size * .5f - 1));
+                var c = Color.white; c.a = t * t * (3 - 2 * t); return c;
+            });
+            bowstringSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(.5f, .5f), size, 0, SpriteMeshType.FullRect);   // one world unit across
             bowstringMaterial = new Material(template) { name = "Bowstring flash", renderQueue = 3000 + GameVisualTokens.LordLayer + 3, hideFlags = HideFlags.DontSave };
             bowstringRoot = new GameObject("Bowstring flashes");
             return true;
