@@ -34,9 +34,15 @@ namespace Game.View
         // Spiral point of a stream (0 = inner end, 1 = outer end) as a reach share and an angle offset in degrees.
         public static float StreamReach(float t) => Mathf.Lerp(StreamInner, 1, t);
         public static float StreamAngle(float t) => t * StreamTurns * 360;
-        // Guard ring: gold-rimmed shields with a blue crest and a gold motion trail; evolution throws a shield out to the
-        // struck enemy and back with a gold shockwave on contact.
-        public const int ThrowFrames = 10, ShockwaveFrames = 10, MaxThrows = 16;
+        // Guard ring (docs/design/m1-weapon-effect-sprites.md): an upright heater shield picture per drawn orbiter, front face
+        // always shown (it only wobbles on the orbit), a gold trail picture bent along the orbit behind it; evolution throws
+        // the nearest shield out to the struck enemy and back without turning it, trailing gold, and a gold shockwave spreads
+        // ShockFrom -> ShockTo of ShockOfShieldHeight where it lands.
+        public const int ThrowFrames = 10, ShockwaveFrames = 10, MaxThrows = 16, MaxShocks = 4, TrailSegments = 8;
+        public const float ThrownShieldDegrees = 0;
+        public const float ShockFrom = .3f, ShockTo = 1.2f, ShockOfShieldHeight = 2.4f, TrailShieldWidths = 2.5f, TrailOfShieldHeight = .6f;
+        // A thrown shield's place along its flight (0 at the orbit, 1 at the struck enemy) at share t of the throw: out and back.
+        public static float ThrowReach(float t) { var r = t < .5f ? t * 2 : (1 - t) * 2; r = Mathf.Clamp01(r); return r * r * (3 - 2 * r); }
         // Shields are drawn 0.35–0.45 hero heights tall by gear strength, whatever the Core collision radius; at most
         // MaxShields per activation are drawn (evenly picked), hits by the others still flash.
         public const float MinShieldHeroHeights = .35f, MaxShieldHeroHeights = .45f, ShieldWobble = 12;
@@ -72,6 +78,7 @@ namespace Game.View
         ArtVisual[] sporePuffs, sporeGrains; ArtVisual sporeStream;
         public int ShieldThrows { get; private set; }
         public int ShieldsDrawn { get; private set; }   // shield draws summed over frames (at most MaxShields per activation per frame)
+        ArtVisual wardShield, wardTrail, wardShock;
         public System.Action<OrbitActivationRecord> OrbitActivationSample;
 
         void ResetOrbits()
@@ -330,52 +337,61 @@ namespace Game.View
             orbitShapes.BeginFrame();
         }
 
-        // Gold rim, blue crest disc and a gold cross that spins, outlined in ink, with a gold trail along the orbit.
+        // The shield picture upright at `at` (front face), `radius` half its height; it wobbles on the orbit only. The gold
+        // trail bends back along the orbit behind it.
         void DrawShield(Vector2 at, Vector2 hero, float radius, float presence, float age)
         {
             if (radius <= 0) return;
-            EnsureOrbitShapes();
-            var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            // Trail: three fading glow arcs behind the shield along its orbit (the orbit turns counter-clockwise).
+            EnsureWardArt();
             var offset = at - hero; var orbit = offset.magnitude;
             if (orbit > .0001f)
             {
+                // The orbit turns counter-clockwise, so the trail lies at smaller angles behind the shield.
                 var angle = Angle(offset);
-                for (var k = 1; k <= 3; k++)
-                {
-                    var back = angle - k * radius / orbit * Mathf.Rad2Deg * .9f;
-                    var trail = OrbitSpec.Gold; trail.a = .5f * presence * (1 - k / 4f);
-                    Draw(lightningGlow, LightningLayer, hero + M1Direction(back) * orbit, 0, new Vector2(radius * 1.1f, radius * (1.2f - k * .2f)), back + 90, 1, trail, applyTween: false);
-                }
+                var sweep = ShieldWidth(radius) * OrbitSpec.TrailShieldWidths / orbit * Mathf.Rad2Deg;
+                DrawWardTrail(t => hero + M1Direction(angle - t * sweep) * orbit, radius, presence);
             }
-            var ink = GameVisualTokens.Ink; ink.a = presence;
-            var gold = OrbitSpec.Gold; gold.a = presence;
-            var crest = OrbitSpec.Crest; crest.a = presence;
-            orbitShapes.Add(at, Vector2.one * (radius + 2.5f * pixel), 0, ink, 0);
-            orbitShapes.Add(at, Vector2.one * radius, 0, gold, 0);
-            orbitShapes.Add(at, Vector2.one * (radius * .76f), 0, crest, 0);
-            // Upright gold cross crest (a slight wobble, not a spin, so it never reads as an X) with an ink edge.
             var wobble = Mathf.Sin(age * 9) * OrbitSpec.ShieldWobble;
-            var edge = 1.8f * pixel;
-            Draw(lightningSolid, ShieldEmblemLayer, at, 0, new Vector2(radius * 1.08f + edge * 2, radius * .24f + edge * 2), wobble + 90, 1, ink, applyTween: false);
-            Draw(lightningSolid, ShieldEmblemLayer, at + M1Direction(wobble + 90) * (radius * .12f), 0, new Vector2(radius * .78f + edge * 2, radius * .24f + edge * 2), wobble, 1, ink, applyTween: false);
-            Draw(lightningSolid, ShieldEmblemLayer, at, 0, new Vector2(radius * 1.08f, radius * .24f), wobble + 90, 1, gold, applyTween: false);
-            Draw(lightningSolid, ShieldEmblemLayer, at + M1Direction(wobble + 90) * (radius * .12f), 0, new Vector2(radius * .78f, radius * .24f), wobble, 1, gold, applyTween: false);
-            // Near-white highlight along the upper-left rim: the bright core of the shape.
-            for (var k = 0; k < 5; k++)
+            DrawShieldPicture(at, radius, presence, wobble);
+        }
+
+        float ShieldWidth(float radius) => radius * 2 * wardShield.WorldSize.x / wardShield.WorldSize.y;
+
+        void DrawShieldPicture(Vector2 at, float radius, float presence, float degrees)
+        {
+            var colour = Color.white; colour.a = presence;
+            Draw(wardShield, ProjectileLayer, at, 0, new Vector2(ShieldWidth(radius), radius * 2), degrees, 1, colour, applyTween: false);
+        }
+
+        // Gold trail picture laid along `path` (0 = at the shield, 1 = the trail's far end) in TrailSegments slices, its bright
+        // right end at the shield. Under the shield (layer 71); a wide element, capped over enemies.
+        void DrawWardTrail(System.Func<float, Vector2> path, float radius, float presence)
+        {
+            var uv = wardTrail.UvRects[0];
+            var width = radius * 2 * OrbitSpec.TrailOfShieldHeight;
+            var near = path(0);
+            for (var k = 0; k < OrbitSpec.TrailSegments; k++)
             {
-                var a = 105 + k * 16; var highlight = Color.white; highlight.a = .95f * presence;
-                Draw(lightningSolid, ShieldEmblemLayer, at + M1Direction(a) * (radius * .88f), 0, new Vector2(radius * .3f, Mathf.Max(3 * pixel, radius * .09f)), a + 90, 1, highlight, applyTween: false);
+                var t0 = k / (float)OrbitSpec.TrailSegments; var t1 = (k + 1) / (float)OrbitSpec.TrailSegments;
+                var far = path(t1); var span = near - far;
+                if (span.sqrMagnitude > 1e-10f)
+                {
+                    var slice = new Rect(uv.x + uv.width * (1 - t1), uv.y, uv.width * (t1 - t0), uv.height);
+                    var colour = Color.white; colour.a = .9f * presence;
+                    Draw(wardTrail, GameVisualTokens.WaveTransientCueLayer, near, 0, new Vector2(span.magnitude * 1.06f, width), Angle(span), 1, colour, uv: slice, applyTween: false);
+                }
+                near = far;
             }
         }
 
-        // Evolution element for the guard ring: thrown shields fly out to the struck enemy and back; a gold shockwave rings
-        // out where they hit.
+        // Evolution element for the guard ring: thrown shields fly out to the struck enemy and back, front face kept upright
+        // (no turn, no wobble), trailing gold along the flight; a gold shockwave spreads where they hit (at most MaxShocks).
         void DrawShieldThrows()
         {
             if (shieldThrows.Count == 0) return;
-            EnsureLightningArt();
+            EnsureLightningArt(); EnsureWardArt();
             var throwSeconds = OrbitSpec.Seconds(OrbitSpec.ThrowFrames);
+            var shocks = 0;
             for (var i = shieldThrows.Count - 1; i >= 0; i--)
             {
                 var item = shieldThrows[i];
@@ -383,18 +399,153 @@ namespace Game.View
                 if (age > Mathf.Max(throwSeconds, OrbitSpec.Seconds(OrbitSpec.ShockwaveFrames) + throwSeconds * .5f)) { shieldThrows.RemoveAt(i); continue; }
                 if (age < throwSeconds)
                 {
-                    var t = age / throwSeconds; var reach = t < .5f ? t * 2 : (1 - t) * 2;
-                    DrawShield(Vector2.Lerp(item.From, item.To, reach * reach * (3 - 2 * reach)), item.From, item.Size, 1, age * 3);
+                    var t = age / throwSeconds;
+                    var at = Vector2.Lerp(item.From, item.To, OrbitSpec.ThrowReach(t));
+                    // Behind the shield along the flight: toward the orbit on the way out, toward the enemy on the way back.
+                    var start = t < .5f ? item.From : item.To;
+                    var behind = start - at; var travelled = behind.magnitude;
+                    if (travelled > 1e-5f)
+                    {
+                        var length = Mathf.Min(travelled, ShieldWidth(item.Size) * OrbitSpec.TrailShieldWidths);
+                        var direction = behind / travelled;
+                        DrawWardTrail(d => at + direction * (length * d), item.Size, 1);
+                    }
+                    DrawShieldPicture(at, item.Size, 1, OrbitSpec.ThrownShieldDegrees);   // front face kept: never turns
                 }
                 var hit = age - throwSeconds * .5f;
-                if (hit < 0) continue;
+                if (hit < 0 || shocks >= OrbitSpec.MaxShocks) continue;
                 var s = hit / OrbitSpec.Seconds(OrbitSpec.ShockwaveFrames);
                 if (s > 1) continue;
-                var ring = OrbitSpec.Gold; ring.a = 1 - s;
-                DrawMusterRing(item.To, item.Size * (1 + 2.2f * Mathf.Sqrt(s)), ring, 1);
-                var flash = OrbitSpec.Gold; flash.a = (1 - s) * .9f;
-                Draw(lightningFlash, LightningLayer, item.To, 0, Vector2.one * item.Size * 2.4f * (1 - s * .4f), 0, 1, flash, applyTween: false);
+                shocks++;
+                var size = item.Size * 2 * OrbitSpec.ShockOfShieldHeight * Mathf.Lerp(OrbitSpec.ShockFrom, OrbitSpec.ShockTo, Mathf.Sqrt(s));
+                var colour = Color.white; colour.a = 1 - s * s;
+                Draw(wardShock, ShieldEmblemLayer, item.To, 0, new Vector2(size, size * wardShock.WorldSize.y / wardShock.WorldSize.x), 0, 1, colour, applyTween: false);
             }
+        }
+
+        const string WardShieldRole = "fx.ward_orbit.shield", WardTrailRole = "fx.ward_orbit.trail", WardShockRole = "fx.ward_orbit.shock";
+
+        void EnsureWardArt()
+        {
+            if (wardShield != null) return;
+            wardShield = EffectArt(WardShieldRole, TemporaryWardShield);
+            wardTrail = EffectArt(WardTrailRole, TemporaryWardTrail);
+            wardShock = EffectArt(WardShockRole, TemporaryWardShock);
+        }
+
+        static readonly Color WardInk = new Color32(0x29, 0x28, 0x22, 255);
+        static readonly Color[] WardGold = { new Color32(0xF6, 0xD7, 0x7A, 255), new Color32(0xE2, 0xB5, 0x4A, 255), new Color32(0xB4, 0x86, 0x2E, 255) };
+        static readonly Color[] WardBlue = { new Color32(0x4C, 0x78, 0xD8, 255), new Color32(0x33, 0x59, 0xB8, 255), new Color32(0x24, 0x40, 0x8A, 255) };
+
+        // Temporary heater shield (128x160, front face): flat top, sides curving down to a point, charcoal outline, a gold rim
+        // in three tones, a blue field, a gold wheat-sheaf crest and an upper-left highlight. Lit from the upper left.
+        ArtVisual TemporaryWardShield()
+        {
+            const int width = 128, height = 160;
+            var outline = new List<Vector2> { new Vector2(10, 150), new Vector2(118, 150), new Vector2(118, 100) };
+            for (var k = 1; k <= 16; k++)
+            {
+                var t = k / 16f;   // right side down to the point: a quadratic curve
+                var a = new Vector2(118, 100); var c = new Vector2(116, 40); var b = new Vector2(64, 8);
+                outline.Add((1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b);
+            }
+            for (var k = outline.Count - 2; k >= 2; k--) outline.Add(new Vector2(width - outline[k].x, outline[k].y));
+            bool Inside(Vector2 q)
+            {
+                var inside = false;
+                for (int i = 0, j = outline.Count - 1; i < outline.Count; j = i++)
+                    if ((outline[i].y > q.y) != (outline[j].y > q.y) && q.x < (outline[j].x - outline[i].x) * (q.y - outline[i].y) / (outline[j].y - outline[i].y) + outline[i].x) inside = !inside;
+                return inside;
+            }
+            float Edge(Vector2 q)
+            {
+                var best = float.MaxValue;
+                for (int i = 0, j = outline.Count - 1; i < outline.Count; j = i++)
+                {
+                    var a = outline[j]; var ab = outline[i] - a;
+                    var t = Mathf.Clamp01(Vector2.Dot(q - a, ab) / Mathf.Max(1e-5f, ab.sqrMagnitude));
+                    best = Mathf.Min(best, (q - (a + ab * t)).magnitude);
+                }
+                return best;
+            }
+            bool Crest(Vector2 q)
+            {
+                // Three wheat stalks bound by a band: stems, grain ovals along their upper halves, the band across.
+                for (var k = -1; k <= 1; k++)
+                {
+                    var top = new Vector2(64 + k * 14, 120); var foot = new Vector2(64 + k * 6, 44);
+                    var ab = top - foot; var t = Mathf.Clamp01(Vector2.Dot(q - foot, ab) / ab.sqrMagnitude);
+                    if ((q - (foot + ab * t)).magnitude < 2.4f) return true;
+                    for (var g = 0; g < 5; g++)
+                    {
+                        var at = Vector2.Lerp(foot, top, .5f + g * .11f);
+                        for (var side = -1; side <= 1; side += 2)
+                        {
+                            var grain = at + new Vector2(side * 4.5f, 1.5f);
+                            var d = q - grain; var tilt = side * .6f;
+                            var u = d.x * Mathf.Cos(tilt) + d.y * Mathf.Sin(tilt); var v = -d.x * Mathf.Sin(tilt) + d.y * Mathf.Cos(tilt);
+                            if (u * u / 9f + v * v / 20f < 1) return true;
+                        }
+                    }
+                }
+                return Mathf.Abs(q.y - 72) < 4 && Mathf.Abs(q.x - 64) < 16;
+            }
+            var texture = PaintTexture("Temporary ward shield", width, height, (x, y) =>
+            {
+                var q = new Vector2(x + .5f, y + .5f);
+                if (!Inside(q)) return new Color(0, 0, 0, 0);
+                var edge = Edge(q);
+                if (edge < 3) return WardInk;
+                var light = Mathf.Clamp01(.5f + ((64 - q.x) / 128f + (q.y - 80) / 160f));   // upper left is lit
+                var tone = light > .62f ? 0 : light > .38f ? 1 : 2;
+                if (edge < 14)
+                {
+                    var rim = WardGold[tone];
+                    if (edge < 6 && light > .6f) rim = Color.Lerp(rim, Color.white, .5f);
+                    return rim;
+                }
+                if (edge < 15.5f) return WardInk;
+                if (Crest(q)) return light > .5f ? WardGold[0] : WardGold[1];
+                var field = WardBlue[tone];
+                if (edge < 24 && q.x < 64 && q.y > 96) field = Color.Lerp(field, Color.white, .45f);
+                return field;
+            });
+            return new ArtVisual(WardShieldRole, texture, new Vector2(width, height) / 384f, new Vector2(.5f, .5f));
+        }
+
+        // Temporary gold trail (256x64): bright toward its right end (white core line), fading to the left and to the edges.
+        ArtVisual TemporaryWardTrail()
+        {
+            const int width = 256, height = 64;
+            var texture = PaintTexture("Temporary ward trail", width, height, (x, y) =>
+            {
+                var u = (x + .5f) / width; var across = Mathf.Abs(y + .5f - height * .5f) / (height * .5f - 6);
+                if (across >= 1) return new Color(0, 0, 0, 0);
+                var grain = .06f * Mathf.Sin(x * .08f + y * .9f);
+                var alpha = Mathf.Clamp01(Mathf.Pow(u, 1.4f) * (1 - across * across) + grain * u);
+                var c = Color.Lerp(WardGold[1], WardGold[0], u);
+                c = Color.Lerp(c, Color.white, Mathf.Clamp01(Mathf.Pow(u, 6) * (1 - across * 2.5f)));
+                c.a = alpha * .95f; return c;
+            });
+            return new ArtVisual(WardTrailRole, texture, new Vector2(width, height) / 384f, new Vector2(1, .5f));
+        }
+
+        // Temporary gold shockwave (256x128): one flat gold ring seen from above at an angle, white along its inner edge.
+        ArtVisual TemporaryWardShock()
+        {
+            const int width = 256, height = 128;
+            var texture = PaintTexture("Temporary ward shock", width, height, (x, y) =>
+            {
+                var e = new Vector2((x + .5f - width * .5f) / (width * .5f - 8), (y + .5f - height * .5f) / (height * .5f - 8)).magnitude;
+                var ring = 1 - Mathf.Abs(e - .82f) / .13f;
+                var bloom = Mathf.Clamp01(1 - Mathf.Abs(e - .86f) / .2f) * .35f;
+                var alpha = Mathf.Clamp01(Mathf.Max(ring, bloom));
+                if (alpha <= 0) return new Color(0, 0, 0, 0);
+                var c = Color.Lerp(WardGold[1], WardGold[0], Mathf.Clamp01(ring));
+                if (e < .82f && ring > .4f) c = Color.Lerp(c, Color.white, .75f);
+                c.a = alpha; return c;
+            });
+            return new ArtVisual(WardShockRole, texture, new Vector2(width, height) / 384f, new Vector2(.5f, .5f));
         }
 
         void FlushOrbitShapes()

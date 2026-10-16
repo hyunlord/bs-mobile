@@ -186,6 +186,11 @@ namespace Tests.EditMode
             Assert.That(OrbitSpec.MaxPuffs, Is.EqualTo(24)); Assert.That(OrbitSpec.MaxGrains, Is.EqualTo(60));
             Assert.That(OrbitSpec.MinShieldHeroHeights, Is.EqualTo(.35f).Within(1e-5f)); Assert.That(OrbitSpec.MaxShieldHeroHeights, Is.EqualTo(.45f).Within(1e-5f));
             Assert.That(OrbitSpec.MaxShields, Is.EqualTo(6));
+            Assert.That(OrbitSpec.ThrownShieldDegrees, Is.Zero, "A thrown shield keeps its front face upright.");
+            Assert.That(OrbitSpec.ThrowReach(0), Is.Zero); Assert.That(OrbitSpec.ThrowReach(.5f), Is.EqualTo(1).Within(1e-5f), "Reaches the struck enemy halfway.");
+            Assert.That(OrbitSpec.ThrowReach(1), Is.Zero, "Comes back to the orbit.");
+            Assert.That(OrbitSpec.ShockFrom, Is.EqualTo(.3f).Within(1e-5f)); Assert.That(OrbitSpec.ShockTo, Is.EqualTo(1.2f).Within(1e-5f));
+            Assert.That(OrbitSpec.MaxShocks, Is.EqualTo(4));
             Assert.That(Enumerable.Range(0, 12).Count(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(6), "Twelve orbiters draw six shields.");
             Assert.That(Enumerable.Range(0, 12).Where(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(new[] { 1, 3, 5, 7, 9, 11 }), "Evenly spaced.");
             Assert.That(Enumerable.Range(0, 4).All(i => OrbitSpec.ShieldDrawn(i, 4)), Is.True);
