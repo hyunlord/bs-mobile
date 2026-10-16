@@ -12,7 +12,8 @@ namespace Game.View
         // FadeFrames after its last pulse. Each pulse bursts PulsePuffs puffs up off the patch and scatters PulseGrains grains.
         public const int SpreadFrames = 6, PulseFrames = 4, FadeFrames = 24, PulsePuffs = 3, PulseGrains = 6, BurstFrames = 30;
         // The decal is drawn PatchOfRadius of the Core patch radius across (its painted stain fills ~85% of the canvas).
-        public const float PatchOfRadius = 2.1f, PatchAlpha = .6f, PulseBrighten = .35f, BurstHeroHeights = .55f;
+        // PatchAlpha brings the painted colony rim (median alpha .976) to about .85 (user decision).
+        public const float PatchOfRadius = 2.1f, PatchAlpha = .87f, PulseBrighten = .35f, BurstHeroHeights = .55f;
         // Evolution element: the patch turns into the spore vortex (the approved three streams), reaching the patch's edge.
         public const float VortexOfRadius = .85f;
         public static float Seconds(int frames) => frames / 60f;

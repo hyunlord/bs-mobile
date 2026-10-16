@@ -493,7 +493,7 @@
       "id": "wave1a-weapon-fx",
       "path": "Assets/Art/wave1a-weapon-fx.png",
       "width": 2016,
-      "height": 1400,
+      "height": 1560,
       "padding": 4,
       "license": "generated-wave1a-weapon-fx"
     }
@@ -11195,6 +11195,28 @@
       "worldSize": {
         "x": 0.25,
         "y": 0.25
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.patch",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1016,
+          "y": 1296,
+          "width": 384,
+          "height": 256
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 0.666667
       },
       "frameMs": 1000,
       "tween": "none"
