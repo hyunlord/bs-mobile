@@ -269,7 +269,7 @@ function checkArrows(directory, manifest) {
       if (mx >= 0) {
         const mid = frame(directory, due + Number(v.midFlightImpactOffset ?? 0) - 5), my = mid.height - myRaw;
         let peakArrow = 0, groundArrow = 0, k = 0;
-        for (let dy = -14; dy <= 14; dy += 2) for (let dx = -14; dx <= 14; dx += 2) { peakArrow = Math.max(peakArrow, luma(mid.at(mx + dx, my + dy))); groundArrow += luma(before.at(mx + dx, my + dy)); k++; }
+        for (let dy = -14; dy <= 14; dy++) for (let dx = -14; dx <= 14; dx++) { peakArrow = Math.max(peakArrow, luma(mid.at(mx + dx, my + dy))); groundArrow += luma(before.at(mx + dx, my + dy)); k++; }
         entry.arrowPeak = +peakArrow.toFixed(1); entry.arrowContrast = +(peakArrow - groundArrow / k).toFixed(1);
       }
     }

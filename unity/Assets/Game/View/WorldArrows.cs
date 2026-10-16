@@ -10,6 +10,8 @@ namespace Game.View
         public const int MuzzleFlashFrames = 1;      // small flash when shot
         public const int LaunchBloomFrames = 1;      // the arrow's first frame is a round bloom
         public const int LandFrames = 8, PlantedFrames = 14;
+        // Rain arrows land 7-11 at a time one step apart; planted they stay only briefly so they do not pile up over the crowd.
+        public const int RainPlantedFrames = 6;
         public const int HitHoldFrames = 2;          // projectile hits freeze briefly (1–2) and push away from the impact
         public const float ArcOfDistance = .12f, TrailOfDistance = .3f;
         // Evolution element: warning circles on the ground at every impact, then arrows drive down from the sky onto each one
@@ -231,7 +233,7 @@ namespace Game.View
                 var angle = (seed & 1023) / 1023f * 360; var distance = Mathf.Sqrt(((seed >> 10) & 1023) / 1023f) * radius * .85f;
                 var landing = point + M1Direction(angle) * distance;
                 var down = new Vector2(ArrowSpec.RainSlant, -1).normalized;
-                if (age >= fall) { DrawPlantedArrow(landing, down, visualTime - landed, ArrowLength(volley)); continue; }
+                if (age >= fall) { DrawPlantedArrow(landing, down, visualTime - landed, ArrowLength(volley), ArrowSpec.RainPlantedFrames); continue; }
                 var t = age / fall;
                 var drop = view.height * ArrowSpec.RainDropHeight * (.85f + .3f * (((seed >> 20) & 255) / 255f));
                 var at = landing - down * (drop * (1 - t));
@@ -274,10 +276,10 @@ namespace Game.View
             Draw(bowSplash, ProjectileLayer, point, 0, new Vector2(width, width * bowSplash.WorldSize.y / bowSplash.WorldSize.x), 0, 1, color, applyTween: false);
         }
 
-        void DrawPlantedArrow(Vector2 tip, Vector2 direction, float age, float length)
+        void DrawPlantedArrow(Vector2 tip, Vector2 direction, float age, float length, int frames = ArrowSpec.PlantedFrames)
         {
-            if (age < 0 || age > ArrowSpec.Seconds(ArrowSpec.PlantedFrames)) return;
-            var opacity = 1 - Mathf.Clamp01(age / ArrowSpec.Seconds(ArrowSpec.PlantedFrames));
+            if (age < 0 || age > ArrowSpec.Seconds(frames)) return;
+            var opacity = 1 - Mathf.Clamp01(age / ArrowSpec.Seconds(frames));
             DrawArrowPicture(tip - direction * (length * .2f), direction, length, opacity);
         }
 
