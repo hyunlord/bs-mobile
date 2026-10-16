@@ -15,7 +15,7 @@ namespace Game.View
         // Only the newest luring sack shows its dashed lure ring; earlier rings vanish at once (2026-10-17). The evolved giant
         // sack shows no lure ring but its blast range for the last RangeFrames before it bursts, and its burst is the weapon's
         // biggest moment: one short screen shake and GiantShards grains thrown outward (normal bursts throw Shards).
-        public const int RangeFrames = 18, Shards = 8, GiantShards = 18;
+        public const int RangeFrames = 18, Shards = 6, GiantShards = 18, NormalBurstFrames = 12;
         public const float ScentRingFrom = 1, ScentRingTo = .3f, ScentLinePixels = 2.5f;   // shares of the Core radius
         public const float BurstFrom = .3f, BurstTo = 1.05f;
         public static readonly Color Grain = new Color(.96f, .80f, .36f), Scent = new Color(1f, .86f, .45f);
@@ -172,9 +172,11 @@ namespace Game.View
                     if (cast.Evolved) SlingVortexFrames++;
                     continue;
                 }
-                // Burst: a gold flash, a grain ring spreading to the Core radius and dust puffs thrown outward.
+                // Burst: a gold flash, a grain ring spreading to the Core radius and dust puffs thrown outward. Normal bursts
+                // (up to four sacks overlap at max) are shorter and lighter than the evolved giant sack's.
                 var age = visualTime - burst;
-                var k = Mathf.Clamp01(age / SlingSpec.Seconds(SlingSpec.BurstFrames));
+                var burstFrames = cast.Evolved ? SlingSpec.BurstFrames : SlingSpec.NormalBurstFrames;
+                var k = Mathf.Clamp01(age / SlingSpec.Seconds(burstFrames));
                 if (age < SlingSpec.Seconds(SlingSpec.FlashFrames))
                 {
                     var flash = SlingSpec.Grain; flash.a = 1 - age / SlingSpec.Seconds(SlingSpec.FlashFrames);
@@ -186,9 +188,9 @@ namespace Game.View
                 if (cast.Evolved && !cast.Shaken) { cast.Shaken = true; SlingShakes++; impactShakeUntil = visualTime + GameVisualTokens.ImpactShakeSeconds * 2; }
                 DrawShards(cast, age, cast.Evolved ? SlingSpec.GiantShards : SlingSpec.Shards);
                 var width = cast.Radius * 2 * Mathf.Lerp(SlingSpec.BurstFrom, SlingSpec.BurstTo, Mathf.Sqrt(k));
-                var ring = Color.white; ring.a = Mathf.Pow(1 - k, 1.5f) * (cast.Evolved ? 1 : .8f);
+                var ring = Color.white; ring.a = Mathf.Pow(1 - k, 1.5f) * (cast.Evolved ? 1 : .6f);
                 Draw(slingBurst, ProjectileLayer, cast.Point, 0, Vector2.one * width, cast.Id * 37 % 360, 1, ring, applyTween: false);
-                DrawSlingDust(cast.Point, cast.Radius * .55f, age, .6f, SlingSpec.DustPuffs, cast.Id + 7);
+                DrawSlingDust(cast.Point, cast.Radius * .55f, age, cast.Evolved ? .6f : .4f, cast.Evolved ? SlingSpec.DustPuffs : 2, cast.Id + 7);
                 if (!cast.Recorded) { cast.Recorded = true; RecordSlingCast(cast); }
             }
             if (ringDrawn) SlingRingFrames++;
@@ -197,7 +199,7 @@ namespace Game.View
         // Grain shards thrown outward from the burst to just past the Core radius, spinning and fading.
         void DrawShards(SlingCast cast, float age, int count)
         {
-            var t = Mathf.Clamp01(age / SlingSpec.Seconds(SlingSpec.BurstFrames));
+            var t = Mathf.Clamp01(age / SlingSpec.Seconds(cast.Evolved ? SlingSpec.BurstFrames : SlingSpec.NormalBurstFrames));
             if (t >= 1) return;
             var size = HeroHeight * (cast.Evolved ? .11f : .08f);
             for (var s = 0; s < count; s++)
