@@ -80,7 +80,9 @@ namespace Game.Tests
             s.Offer(1, "core:iron_blade", HeroAction.Slash, false, 10, 0, false);
             var hit = s.Pose(Ticks(10), false, true, false, 0, Stride);
             Assert.That((hit.Clip, hit.Frame), Is.EqualTo((HeroClip.Hit, 0)));
-            Assert.That(s.Pose(Ticks(10 + HeroSheetSpec.HitTicks), false, true, false, 0, Stride).Frame, Is.EqualTo(1));
+            Assert.That(s.Pose(Ticks(10 + 6), false, true, false, 0, Stride).Frame, Is.EqualTo(0));
+            Assert.That(s.Pose(Ticks(10 + 8), false, true, false, 0, Stride).Frame, Is.EqualTo(1), "r5 recoil holds 7 ticks");
+            Assert.That(s.Pose(Ticks(10 + 40), false, true, false, 0, Stride).Frame, Is.EqualTo(1), "the last hit frame holds while the hit lasts");
             Assert.That(s.Offer(9, "core:canal_bow", HeroAction.Aim, false, 50, Ticks(20), false), Is.False, "attacks during the hit are dropped");
             Assert.That(s.Pose(Ticks(30), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
             Assert.That(s.Pose(Ticks(31), false, false, true, 0, Stride).Clip, Is.EqualTo(HeroClip.Death));
@@ -145,7 +147,10 @@ namespace Game.Tests
             foreach (var clip in new[] { "hero-a-aim", "hero-a-cast", "hero-a-blow", "hero-a-throw" }) Assert.That(TicksOf(clip), Is.EqualTo(HeroSheetSpec.ActionTicks), clip);
             Assert.That(TicksOf("hero-a-moving-keys"), Is.EqualTo(HeroSheetSpec.KeyTicks));
             Assert.That(TicksOf("hero-a-idle"), Is.EqualTo(HeroSheetSpec.IdleTicks));
-            Assert.That(TicksOf("hero-a-hit"), Is.EqualTo(HeroSheetSpec.HitTicks));
+            Assert.That(TicksOf("hero-a-hit-r5"), Is.EqualTo(HeroSheetSpec.HitFrameTicks[0]));
+            var hit = text.IndexOf("\"clip\": \"hero-a-hit-r5\"", StringComparison.Ordinal);
+            var second = text.IndexOf("\"frameTicks60\": ", text.IndexOf("\"frameTicks60\": ", hit, StringComparison.Ordinal) + 1, StringComparison.Ordinal) + "\"frameTicks60\": ".Length;
+            Assert.That(int.Parse(new string(text.Skip(second).TakeWhile(char.IsDigit).ToArray())), Is.EqualTo(HeroSheetSpec.HitFrameTicks[1]));
         }
     }
 }

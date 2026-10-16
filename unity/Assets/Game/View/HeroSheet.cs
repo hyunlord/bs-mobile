@@ -13,7 +13,8 @@ namespace Game.View
     {
         // Delivered frame timings in 60 Hz ticks (manifest frameTicks60; manifest frameMs is only rounded for reading).
         public const int WalkFrames = 8, WalkTicks = 10, SlashFrames = 8, SlashTicks = 9, ActionFrames = 6, ActionTicks = 10;
-        public const int IdleFrames = 6, IdleTicks = 12, HitFrames = 2, HitTicks = 8, KeyTicks = 7;
+        public const int IdleFrames = 6, IdleTicks = 12, HitFrames = 2, KeyTicks = 7;
+        public static readonly int[] HitFrameTicks = { 7, 8 };   // approved hit r5: recoil, then half recovery
         public const float MinRepeatSeconds = .4f;   // the same action starts at most every 0.4 s
         public const string KnightId = "core:frontier_knight", RolePrefix = "hero.core.frontier_knight.";
         public static readonly string[] ActionNames = { "", "slash", "aim", "cast", "blow", "throw" };
@@ -117,7 +118,9 @@ namespace Game.View
             if (hit)
             {
                 if (!wasHit) { wasHit = true; hitStarted = time; current = HeroAction.None; }
-                return new HeroSheetPose(HeroClip.Hit, HeroAction.None, Mathf.Min(HeroSheetSpec.HitFrames - 1, Mathf.FloorToInt((time - hitStarted) / HeroSheetSpec.Seconds(HeroSheetSpec.HitTicks))));
+                var into = time - hitStarted; var hitFrame = 0;
+                while (hitFrame < HeroSheetSpec.HitFrames - 1 && into >= HeroSheetSpec.Seconds(HeroSheetSpec.HitFrameTicks[hitFrame])) { into -= HeroSheetSpec.Seconds(HeroSheetSpec.HitFrameTicks[hitFrame]); hitFrame++; }
+                return new HeroSheetPose(HeroClip.Hit, HeroAction.None, hitFrame);
             }
             wasHit = false;
             if (current != HeroAction.None && !key && moving) { current = HeroAction.None; CutByMovement++; }

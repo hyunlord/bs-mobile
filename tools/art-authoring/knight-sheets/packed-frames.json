@@ -4,10 +4,10 @@
     "approved": "knight-game-sheets-r4-20261016",
     "additions": "knight-game-sheets-r4-additions-review-20261016"
   },
-  "approvedManifestSha256": "dfd7b2cae502bd4c6a159cfd663a2a29ae6f672b720588dab1f1b14d9d0e550f",
+  "approvedManifestSha256": "d35fae4df008524eabe519500f43258527643ab0c00ae72df858a076f19d79d4",
   "additionsManifestSha256": "210fb6d1e9bd48449051b69acf796f8ad3c0e301b68c06878362ecf40e4a13a5",
   "atlas": "unity/Assets/Art/hero-knight.png",
-  "atlasSha256": "7d226a6eead6c78a2713a81891bb333884a2403ba01cb95040cc6d33b3ee2472",
+  "atlasSha256": "81d553661bfa890cc9d58fa192cd55bbf559a4790b37b97f71fabd67e564b837",
   "width": 2564,
   "height": 2164,
   "padding": 2,
@@ -459,7 +459,7 @@
     {
       "clip": "hero-a-idle",
       "role": "idle",
-      "status": "review-candidate-temporary",
+      "status": "approved-2026-10-17",
       "sheet": "hero-a-idle.png",
       "sheetSha256": "e6a29c8296cb82b52918e429605e4f721bbaf7272259fa9a544a4deaff224873",
       "frames": [
@@ -514,19 +514,19 @@
       ]
     },
     {
-      "clip": "hero-a-hit",
+      "clip": "hero-a-hit-r5",
       "role": "hit",
-      "status": "review-candidate-temporary",
-      "sheet": "hero-a-hit.png",
-      "sheetSha256": "d09f0ae44e86cd590a6c15346a1a5549727a54e10f5f10a6fdf154a3fcd1cf64",
+      "status": "approved-r5",
+      "sheet": "hero-a-hit-r5.png",
+      "sheetSha256": "89aa780829daab44dacd20ab6a752122f120041c37fb44f2e7ae308002ac08c2",
       "frames": [
         {
           "x": 2,
           "y": 1922,
           "width": 320,
           "height": 240,
-          "frameTicks60": 8,
-          "decodedRgbaSha256": "a2e4c5acf700e7a16464ad828e4099324e1c5a18b99ea6cb6b9dd8e7356a840a"
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "fc17d6d9ebb524f0ca2e0e0de76b197bc1dba27cbe2302aea37cde0acc4b9cf5"
         },
         {
           "x": 322,
@@ -534,7 +534,7 @@
           "width": 320,
           "height": 240,
           "frameTicks60": 8,
-          "decodedRgbaSha256": "c797042e6085cdfaae513f7472042a078d83966f83f77670f5827ac7588e8ee5"
+          "decodedRgbaSha256": "cf7f9ed7914a2cfff282ccc1afd8cae42d8554060ab5e729927ef4a52925a4ba"
         }
       ]
     }

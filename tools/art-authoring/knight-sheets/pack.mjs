@@ -1,5 +1,5 @@
-// Offline authoring only. Packs Astra's knight game sheets (Release knight-game-sheets-r4-20261016, approved r3 art, plus
-// the idle/hit review candidates from knight-game-sheets-r4-additions-review-20261016) into one atlas without resampling,
+// Offline authoring only. Packs Astra's knight game sheets (Release knight-game-sheets-r4-20261016: approved r3 art and the
+// approved hit r5; idle from knight-game-sheets-r4-additions-review-20261016, approved 2026-10-17) into one atlas without resampling,
 // and registers the same hero roles in the first-playable and wave-1a manifests so no profile lacks a hero role (#268).
 // Usage: node tools/art-authoring/knight-sheets/pack.mjs <approved release dir> <additions release dir>
 import fs from 'node:fs';
@@ -16,7 +16,7 @@ assert.ok(approvedDir && additionsDir, 'usage: pack.mjs <approved release dir> <
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 
-// One row per clip, cells left to right as delivered. Status: approved r3 art or a review candidate used temporarily.
+// One row per clip, cells left to right as delivered, with each clip's approval.
 const clips = [
   { clip: 'hero-a-walk', role: 'walk', status: 'approved-r3' },
   { clip: 'hero-a-slash', role: 'action.slash', status: 'approved-r3' },
@@ -25,8 +25,8 @@ const clips = [
   { clip: 'hero-a-blow', role: 'action.blow', status: 'approved-r3' },
   { clip: 'hero-a-throw', role: 'action.throw', status: 'approved-r3' },
   { clip: 'hero-a-moving-keys', role: 'key', status: 'approved-r3', keys: ['slash', 'aim', 'cast', 'blow', 'throw'] },
-  { clip: 'hero-a-idle', role: 'idle', status: 'review-candidate-temporary', additions: true },
-  { clip: 'hero-a-hit', role: 'hit', status: 'review-candidate-temporary', additions: true },
+  { clip: 'hero-a-idle', role: 'idle', status: 'approved-2026-10-17', additions: true },
+  { clip: 'hero-a-hit-r5', role: 'hit', status: 'approved-r5' },
 ];
 const approved = read(path.join(approvedDir, 'manifest.json'));
 const additions = read(path.join(additionsDir, 'additions-manifest.json'));
