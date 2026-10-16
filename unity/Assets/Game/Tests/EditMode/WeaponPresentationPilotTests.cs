@@ -174,7 +174,16 @@ namespace Tests.EditMode
             Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");
             Assert.That(OrbitSpec.Shown(0), Is.InRange(.3f, .6f), "Back-to-back activations shrink part way, not to nothing (no blinking).");
-            Assert.That(OrbitSpec.TornadoHeroHeights, Is.GreaterThanOrEqualTo(1f));
+            Assert.That(OrbitSpec.FanDegrees, Is.EqualTo(60).Within(1e-5f), "Spore clouds fan out within 60 degrees.");
+            Assert.That(OrbitSpec.Puffs(0), Is.EqualTo(4)); Assert.That(OrbitSpec.Puffs(1), Is.EqualTo(5));
+            Assert.That(OrbitSpec.PuffHeroHeights(0), Is.EqualTo(.35f).Within(1e-5f)); Assert.That(OrbitSpec.PuffHeroHeights(1), Is.EqualTo(.45f).Within(1e-5f));
+            Assert.That(OrbitSpec.PuffScale(0), Is.EqualTo(OrbitSpec.PuffFrom).Within(1e-5f)); Assert.That(OrbitSpec.PuffScale(1), Is.EqualTo(OrbitSpec.PuffTo).Within(1e-5f));
+            Assert.That(OrbitSpec.PuffAlpha(0), Is.Zero, "Puffs fade in."); Assert.That(OrbitSpec.PuffAlpha(1), Is.Zero, "Puffs fade out.");
+            Assert.That(OrbitSpec.PuffAlpha(.4f), Is.EqualTo(1).Within(1e-5f));
+            Assert.That(OrbitSpec.VortexArms, Is.EqualTo(3), "Three spore streams.");
+            Assert.That(OrbitSpec.StreamAngle(1), Is.LessThan(360f / OrbitSpec.VortexArms * 2.5f), "Streams do not wind into stacked rings.");
+            Assert.That(OrbitSpec.StreamReach(0), Is.LessThan(OrbitSpec.StreamReach(1)));
+            Assert.That(OrbitSpec.MaxPuffs, Is.EqualTo(24)); Assert.That(OrbitSpec.MaxGrains, Is.EqualTo(60));
             Assert.That(OrbitSpec.MinShieldHeroHeights, Is.EqualTo(.35f).Within(1e-5f)); Assert.That(OrbitSpec.MaxShieldHeroHeights, Is.EqualTo(.45f).Within(1e-5f));
             Assert.That(OrbitSpec.MaxShields, Is.EqualTo(6));
             Assert.That(Enumerable.Range(0, 12).Count(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(6), "Twelve orbiters draw six shields.");

@@ -4,17 +4,36 @@ using UnityEngine;
 
 namespace Game.View
 {
-    // Orbit spec ("무기 연출 레퍼런스·이론", area/orbit row): spore fan tornadoes and guard ring shields. Frames are 60Hz.
+    // Orbit spec ("무기 연출 레퍼런스·이론", area/orbit row): spore fan clouds and guard ring shields. Frames are 60Hz.
     public static class OrbitSpec
     {
         public const int SpreadFrames = 6;           // ground marker spreads from the hero to the orbit radius
         public const int ShrinkFrames = 6;           // orbiters shrink inward as their activation ends
         public const int ContactFlashFrames = 3;     // hits flash briefly; no freeze (orbits hit many enemies)
-        // Spore fan: a bright teal tornado cone of stacked spinning bands; evolution merges them into one giant vortex
-        // around the hero whose arms run through the tornadoes and draw struck enemies inward.
-        public const int TornadoBands = 6, TornadoSegments = 12, VortexArms = 3, VortexArmPoints = 44;
-        public const float TornadoHeroHeights = 1.2f, TornadoSpin = 540, VortexSpin = 140, VortexTurns = 1.4f, VortexReach = 1.18f;
+        // Spore fan (option A, docs/design/m1-weapon-effect-sprites.md): each orbiter puffs a small fan of spore clouds
+        // outward (away from the hero) within FanDegrees, PuffsLv1..PuffsMax puffs on a staggered PuffFrames cycle, each
+        // pushed out by the Core orbiter radius while it grows PuffFrom -> PuffTo and fades, with grains blown out faster.
+        // Puffs are PuffHeroHeights tall by gear strength. Evolution: three continuous spore streams spiralling
+        // StreamTurns from near the hero out past the orbit, grains flowing inward along them, and a pair of puffs at each
+        // orbiter; no ground ring and no stacked turns (the old 1.4-turn segmented spiral read as dotted concentric rings).
+        public const int PuffsLv1 = 4, PuffsMax = 5, PuffFrames = 30, PuffInFrames = 6, PuffOutFrames = 15, GrainsLv1 = 6, GrainsMax = 8, GrainFrames = 24;
+        public const float FanDegrees = 60, PuffFrom = .5f, PuffTo = 1.1f, PuffSwayDegrees = 20, MinPuffHeroHeights = .35f, MaxPuffHeroHeights = .45f;
+        public const float GrainHeroHeights = .06f;
+        public const int VortexArms = 3, StreamSegments = 18, StreamGrains = 8, EvolvedPuffs = 2;
+        public const float StreamTurns = .6f, VortexSpin = 140, VortexReach = 1.18f, StreamInner = .15f, StreamInnerHeroHeights = .12f, StreamOuterHeroHeights = .3f;
+        // Per-frame caps (docs/design/m1-weapon-effect-sprites.md).
+        public const int MaxPuffs = 24, MaxGrains = 60;
         public static readonly Color Spore = new Color(.35f, 1f, .85f);       // bright teal, distinct from the grass
+        public static readonly Color SporeLeaf = new Color(.85f, .93f, .48f), SporeTeal = new Color(.56f, .94f, .86f);   // yellow-green, teal
+        // A puff's shown size and alpha over its life (0..1).
+        public static float PuffScale(float life) => Mathf.Lerp(PuffFrom, PuffTo, Mathf.Sqrt(Mathf.Clamp01(life)));
+        public static float PuffAlpha(float life)
+            => Mathf.Clamp01(life * PuffFrames / PuffInFrames) * Mathf.Clamp01((1 - life) * PuffFrames / PuffOutFrames);
+        public static int Puffs(float tier) => Mathf.RoundToInt(Mathf.Lerp(PuffsLv1, PuffsMax, Mathf.Clamp01(tier)));
+        public static float PuffHeroHeights(float tier) => Mathf.Lerp(MinPuffHeroHeights, MaxPuffHeroHeights, Mathf.Clamp01(tier));
+        // Spiral point of a stream (0 = inner end, 1 = outer end) as a reach share and an angle offset in degrees.
+        public static float StreamReach(float t) => Mathf.Lerp(StreamInner, 1, t);
+        public static float StreamAngle(float t) => t * StreamTurns * 360;
         // Guard ring: gold-rimmed shields with a blue crest and a gold motion trail; evolution throws a shield out to the
         // struck enemy and back with a gold shockwave on contact.
         public const int ThrowFrames = 10, ShockwaveFrames = 10, MaxThrows = 16;
@@ -48,6 +67,9 @@ namespace Game.View
         public int OrbitActivations { get; private set; }
         public int OrbitContactFlashes { get; private set; }
         public int VortexFrames { get; private set; }
+        public int SporePuffsDrawn { get; private set; }   // puff draws summed over frames (at most MaxPuffs per frame)
+        int puffBudget = OrbitSpec.MaxPuffs, grainBudget = OrbitSpec.MaxGrains;
+        ArtVisual[] sporePuffs, sporeGrains; ArtVisual sporeStream;
         public int ShieldThrows { get; private set; }
         public int ShieldsDrawn { get; private set; }   // shield draws summed over frames (at most MaxShields per activation per frame)
         public System.Action<OrbitActivationRecord> OrbitActivationSample;
@@ -55,7 +77,7 @@ namespace Game.View
         void ResetOrbits()
         {
             shieldThrows.Clear(); orbitMarkedActivations.Clear(); orbitRecordedActivations.Clear(); orbitSeen.Clear();
-            OrbitActivations = OrbitContactFlashes = VortexFrames = ShieldThrows = ShieldsDrawn = 0;
+            OrbitActivations = OrbitContactFlashes = VortexFrames = ShieldThrows = ShieldsDrawn = SporePuffsDrawn = 0;
         }
 
         bool IsOrbitShape(string source, out string shape)
@@ -109,98 +131,195 @@ namespace Game.View
             var evolved = WeaponEvolved(attack.Source);
             var orbitRadius = (center - lordPoint).magnitude;
             var color = shape == "tornado" ? OrbitSpec.Spore : OrbitSpec.Gold;
+            if (shape == "tornado") EnsureSporeArt();
             if (orbitMarkedActivations.Add(attack.ActivationId))
             {
-                // Once per activation and frame: the ground marker spreading out to the orbit, and the evolved vortex.
-                if (age < OrbitSpec.Seconds(OrbitSpec.SpreadFrames + 4))
+                // Once per activation and frame: the ground marker spreading out to the orbit (not under the evolved spore
+                // vortex), and the evolved vortex.
+                if (age < OrbitSpec.Seconds(OrbitSpec.SpreadFrames + 4) && !(shape == "tornado" && evolved))
                 {
                     var spread = Mathf.Clamp01(age / OrbitSpec.Seconds(OrbitSpec.SpreadFrames));
                     var marker = color; marker.a = .8f * (1 - Mathf.Clamp01((age - OrbitSpec.Seconds(OrbitSpec.SpreadFrames)) / OrbitSpec.Seconds(4)));
                     DrawMusterRing(lordPoint, Mathf.Max(.01f, orbitRadius * spread), marker, 1);
                 }
-                if (shape == "tornado" && evolved) { DrawVortex(lordPoint, orbitRadius, OrbitSpec.Shown(presence), attack.ActivationId); VortexFrames++; }
+                if (shape == "tornado" && evolved) { DrawSporeVortex(lordPoint, orbitRadius, OrbitSpec.Shown(presence)); VortexFrames++; }
                 if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
             }
             var shown = OrbitSpec.Shown(presence);
-            if (shape == "tornado") { DrawTornado(center, shown, attack.ActivationId, gear); return; }
+            if (shape == "tornado")
+            {
+                orbitSeen.TryGetValue(attack.ActivationId, out var orbiter); orbitSeen[attack.ActivationId] = orbiter + 1;
+                DrawSporeFan(center, lordPoint, attack.Radius / (float)settings.WorldUnitsPerUnityUnit, shown, attack.ActivationId * 31 + orbiter, attack.Source, evolved);
+                return;
+            }
             orbitSeen.TryGetValue(attack.ActivationId, out var index); orbitSeen[attack.ActivationId] = index + 1;
             if (OrbitSpec.ShieldDrawn(index, gear.Count)) { DrawShield(center, lordPoint, ShieldRadius(attack.Source) * shown, shown, age); ShieldsDrawn++; }
         }
 
-        float TornadoHeight(WaveGearDefinition gear)
+        float PuffSize(string source) => HeroHeight * OrbitSpec.PuffHeroHeights(WeaponEvolved(source) ? 1 : GearTier(source));
+
+        static float SporeHash(int a, int b) { unchecked { var h = (uint)(a * 73856093 ^ b * 19349663); h ^= h >> 13; h *= 0x5bd1e995; h ^= h >> 15; return (h & 0xffff) / 65535f; } }
+        static Vector2 Rotate(Vector2 v, float degrees) { var r = degrees * Mathf.Deg2Rad; var c = Mathf.Cos(r); var s = Mathf.Sin(r); return new Vector2(v.x * c - v.y * s, v.x * s + v.y * c); }
+
+        // Spore fan cloud at one orbiter: puffs fanning out away from the hero (the evolved pair swirls with the vortex) and
+        // grains blown out faster. Puffs are wide (capped over enemies), grains thin.
+        void DrawSporeFan(Vector2 orbiter, Vector2 hero, float radius, float shown, int seed, string source, bool evolved)
         {
-            WaveGearDefinition reference = null; GearReference?.Gear.TryGetValue(gear.Id, out reference);
-            var strength = LightningSpec.Strength(MusterFormationRule.Ratio(gear, EquipmentLevel(gear.Id), reference));
-            return HeroHeight * OrbitSpec.TornadoHeroHeights * (.85f + .35f * strength);
+            if (shown <= 0) return;
+            var outward = orbiter - hero; outward = outward.sqrMagnitude > 1e-8f ? outward.normalized : Vector2.up;
+            if (evolved) outward = Rotate(outward, 90);   // along the vortex's turn (it spins clockwise, struck enemies are pulled in)
+            var tier = evolved ? 1 : GearTier(source);
+            var size = PuffSize(source) * shown;
+            var puffs = evolved ? OrbitSpec.EvolvedPuffs : OrbitSpec.Puffs(tier);
+            var cycle = OrbitSpec.Seconds(OrbitSpec.PuffFrames);
+            for (var k = 0; k < puffs && puffBudget > 0; k++)
+            {
+                var clock = visualTime / cycle + k / (float)puffs + SporeHash(seed, 7) ;
+                var born = Mathf.FloorToInt(clock); var life = clock - born;
+                var spread = (SporeHash(seed * 17 + k, born) - .5f) * OrbitSpec.FanDegrees;
+                var push = radius * (evolved ? .5f : 1) * Mathf.Lerp(-.1f, 1, 1 - (1 - life) * (1 - life));
+                var at = orbiter + Rotate(outward, spread) * push;
+                var colour = Color.white; colour.a = .85f * OrbitSpec.PuffAlpha(life) * shown;
+                var picture = sporePuffs[(k + born) % sporePuffs.Length];
+                var scale = size * OrbitSpec.PuffScale(life);
+                var sway = (SporeHash(seed + 3, born * 5 + k) - .5f) * 2 * OrbitSpec.PuffSwayDegrees + life * OrbitSpec.PuffSwayDegrees;
+                Draw(picture, ProjectileLayer, at, 0, new Vector2(scale, scale * picture.WorldSize.y / picture.WorldSize.x), sway, 1, colour, applyTween: false);
+                puffBudget--; SporePuffsDrawn++;
+            }
+            if (evolved) return;
+            var grains = Mathf.RoundToInt(Mathf.Lerp(OrbitSpec.GrainsLv1, OrbitSpec.GrainsMax, tier));
+            var grainCycle = OrbitSpec.Seconds(OrbitSpec.GrainFrames);
+            for (var g = 0; g < grains && grainBudget > 0; g++)
+            {
+                var clock = visualTime / grainCycle + g / (float)grains + SporeHash(seed, 11);
+                var born = Mathf.FloorToInt(clock); var life = clock - born;
+                var spread = (SporeHash(seed * 13 + g, born) - .5f) * OrbitSpec.FanDegrees * 1.2f;
+                var at = orbiter + Rotate(outward, spread) * (radius * Mathf.Lerp(.1f, 1.4f, life));
+                DrawSporeGrain(at, g + born, shown * Mathf.Sin(life * Mathf.PI));
+            }
         }
 
-        // Stacked spinning bands narrowing to the ground: translucent teal bloom with bright streaks, debris specks around.
-        void DrawTornado(Vector2 foot, float presence, int seed, WaveGearDefinition gear)
+        void DrawSporeGrain(Vector2 at, int variant, float alpha)
         {
-            var height = TornadoHeight(gear) * presence;
-            if (height <= 0) return;
-            var spin = visualTime * OrbitSpec.TornadoSpin;
-            for (var band = 0; band < OrbitSpec.TornadoBands; band++)
-            {
-                var t = band / (float)(OrbitSpec.TornadoBands - 1);
-                var y = foot.y + height * (.08f + t * .92f);
-                var half = height * Mathf.Lerp(.08f, .42f, t * t);
-                var depth = half * .32f;
-                for (var s = 0; s < OrbitSpec.TornadoSegments; s++)
-                {
-                    var a0 = (s / (float)OrbitSpec.TornadoSegments * 360 + spin + band * 37) * Mathf.Deg2Rad;
-                    var a1 = ((s + 1) / (float)OrbitSpec.TornadoSegments * 360 + spin + band * 37) * Mathf.Deg2Rad;
-                    var p0 = new Vector2(foot.x + Mathf.Cos(a0) * half, y + Mathf.Sin(a0) * depth);
-                    var p1 = new Vector2(foot.x + Mathf.Cos(a1) * half, y + Mathf.Sin(a1) * depth);
-                    var span = p1 - p0; var front = Mathf.Sin((a0 + a1) * .5f) < 0;   // the near half of each band reads brighter
-                    var glow = OrbitSpec.Spore; glow.a = (front ? .75f : .35f) * presence;
-                    Draw(lightningGlow, LightningLayer, (p0 + p1) * .5f, 0, new Vector2(span.magnitude * 1.3f, height * .1f), Angle(span), 1, glow, applyTween: false);
-                    if (front && (s + band) % 2 == 0)
-                    {
-                        var streak = Color.white; streak.a = .85f * presence;
-                        Draw(lightningCore, LightningLayer, (p0 + p1) * .5f, 0, new Vector2(span.magnitude * 1.2f, Mathf.Max(height * .04f, .012f)), Angle(span), 1, streak, applyTween: false);
-                    }
-                }
-            }
-            for (var k = 0; k < 4; k++)
-            {
-                var a = (spin * 1.6f + k * 90 + seed * 13) * Mathf.Deg2Rad;
-                var speck = OrbitSpec.Spore; speck.a = .9f * presence;
-                Draw(lightningFlash, LightningLayer, foot + new Vector2(Mathf.Cos(a) * height * .5f, height * (.3f + .15f * k) + Mathf.Sin(a) * height * .12f), 0, Vector2.one * height * .09f, 0, 1, speck, applyTween: false);
-            }
+            if (alpha <= 0 || grainBudget <= 0) return;
+            var colour = Color.white; colour.a = alpha;
+            Draw(sporeGrains[((variant % sporeGrains.Length) + sporeGrains.Length) % sporeGrains.Length], ThinEffectLayer, at, 0, Vector2.one * HeroHeight * OrbitSpec.GrainHeroHeights, 0, 1, colour, applyTween: false);
+            grainBudget--;
         }
 
-        // Evolution element: the tornadoes merge into one vortex around the hero, its spiral arms running out through the
-        // orbit to just past it.
-        void DrawVortex(Vector2 centre, float orbitRadius, float presence, int seed)
+        // Evolution element: three continuous spore streams spiralling StreamTurns around the hero from near it out past the
+        // orbit, each the stream picture stretched once along it (drawn as StreamSegments slices of the picture), tapered at
+        // both ends, the whole vortex turning slowly; grains flow inward along the streams.
+        void DrawSporeVortex(Vector2 centre, float orbitRadius, float shown)
         {
-            if (presence <= 0 || orbitRadius <= 0) return;
-            var reach = orbitRadius * OrbitSpec.VortexReach;
+            if (shown <= 0 || orbitRadius <= 0) return;
+            var reach = orbitRadius * OrbitSpec.VortexReach * shown;
             var spin = -visualTime * OrbitSpec.VortexSpin;
+            var uv = sporeStream.UvRects[0];
             for (var arm = 0; arm < OrbitSpec.VortexArms; arm++)
             {
-                var previous = Vector2.zero;
-                for (var k = 0; k <= OrbitSpec.VortexArmPoints; k++)
+                var start = spin + arm * 360f / OrbitSpec.VortexArms;
+                Vector2 Along(float t) => centre + M1Direction(start + OrbitSpec.StreamAngle(t)) * (reach * OrbitSpec.StreamReach(t));
+                var previous = Along(0);
+                for (var k = 0; k < OrbitSpec.StreamSegments; k++)
                 {
-                    var t = k / (float)OrbitSpec.VortexArmPoints;
-                    var angle = spin + arm * 360f / OrbitSpec.VortexArms + t * OrbitSpec.VortexTurns * 360;
-                    var point = centre + M1Direction(angle) * (reach * Mathf.Lerp(.15f, 1, t)) * presence;
-                    if (k > 0)
-                    {
-                        var span = point - previous;
-                        var glow = OrbitSpec.Spore; glow.a = .6f * presence * Mathf.Lerp(.4f, 1, t);
-                        Draw(lightningGlow, LightningLayer, (point + previous) * .5f, 0, new Vector2(span.magnitude * 1.25f, reach * Mathf.Lerp(.05f, .14f, t)), Angle(span), 1, glow, applyTween: false);
-                        if (k % 2 == 0)
-                        {
-                            var core = Color.white; core.a = .7f * presence * t;
-                            Draw(lightningCore, LightningLayer, (point + previous) * .5f, 0, new Vector2(span.magnitude * 1.2f, reach * .018f), Angle(span), 1, core, applyTween: false);
-                        }
-                    }
-                    previous = point;
+                    var t0 = k / (float)OrbitSpec.StreamSegments; var t1 = (k + 1) / (float)OrbitSpec.StreamSegments;
+                    var next = Along(t1); var span = next - previous; var mid = (t0 + t1) * .5f;
+                    var taper = Mathf.SmoothStep(0, 1, mid / .15f) * Mathf.SmoothStep(0, 1, (1 - mid) / .2f);
+                    var colour = Color.white; colour.a = .85f * shown * taper;
+                    var width = HeroHeight * Mathf.Lerp(OrbitSpec.StreamInnerHeroHeights, OrbitSpec.StreamOuterHeroHeights, mid) * Mathf.Lerp(.6f, 1, taper);
+                    var slice = new Rect(uv.x + uv.width * t0, uv.y, uv.width / OrbitSpec.StreamSegments, uv.height);
+                    Draw(sporeStream, ProjectileLayer, previous, 0, new Vector2(span.magnitude * 1.06f, width), Angle(span), 1, colour, uv: slice, applyTween: false);
+                    previous = next;
+                }
+                for (var g = 0; g < OrbitSpec.StreamGrains; g++)
+                {
+                    var t = Mathf.Repeat(-visualTime * .9f + g / (float)OrbitSpec.StreamGrains + arm * .33f, 1);
+                    DrawSporeGrain(Along(t) + M1Direction(start + OrbitSpec.StreamAngle(t) + 90) * (HeroHeight * .06f * Mathf.Sin(g * 2.3f)), arm * 5 + g, shown * Mathf.SmoothStep(0, 1, t / .1f) * Mathf.SmoothStep(0, 1, (1 - t) / .1f));
                 }
             }
-            var eye = OrbitSpec.Spore; eye.a = .35f * presence;
-            Draw(lightningFlash, LightningLayer, centre, 0, Vector2.one * reach * .7f, 0, 1, eye, applyTween: false);
+        }
+
+        const string SporePuffRole = "fx.spore_fan.puff", SporeGrainRole = "fx.spore_fan.grain", SporeStreamRole = "fx.spore_fan.stream";
+
+        void EnsureSporeArt()
+        {
+            if (sporePuffs != null) return;
+            sporePuffs = new ArtVisual[3]; sporeGrains = new ArtVisual[4];
+            for (var i = 0; i < sporePuffs.Length; i++) { var v = i; sporePuffs[i] = EffectArt($"{SporePuffRole}.{i + 1}", () => TemporarySporePuff(v)); }
+            for (var i = 0; i < sporeGrains.Length; i++) { var v = i; sporeGrains[i] = EffectArt($"{SporeGrainRole}.{i + 1}", () => TemporarySporeGrain(v)); }
+            sporeStream = EffectArt(SporeStreamRole, TemporarySporeStream);
+        }
+
+        // Temporary pictures (docs/design/m1-weapon-effect-sprites.md, spore fan): yellow-green and teal only, no outline and
+        // no pixel darker than the grass (Rec.709 luma >= 140 wherever alpha >= .1).
+        static Color SporeShade(float leaf, float light)
+        {
+            var c = Color.Lerp(OrbitSpec.SporeTeal, OrbitSpec.SporeLeaf, Mathf.Clamp01(leaf));
+            return Color.Lerp(c, Color.white, Mathf.Clamp01(light));
+        }
+
+        ArtVisual TemporarySporePuff(int variant)
+        {
+            const int width = 192, height = 160;
+            var lobes = variant == 0 ? new[] { new Vector3(96, 80, 58), new Vector3(70, 92, 34), new Vector3(122, 70, 36) }
+                : variant == 1 ? new[] { new Vector3(70, 82, 40), new Vector3(112, 78, 44), new Vector3(146, 84, 30), new Vector3(92, 100, 30) }
+                : new[] { new Vector3(72, 70, 34), new Vector3(118, 92, 38), new Vector3(96, 58, 26) };
+            var texture = PaintTexture($"Temporary spore puff {variant + 1}", width, height, (x, y) =>
+            {
+                var density = 0f;
+                foreach (var lobe in lobes)
+                {
+                    var d = new Vector2(x - lobe.x, y - lobe.y).magnitude / lobe.z;
+                    density = Mathf.Max(density, 1 - d * d);
+                }
+                var lump = .08f * Mathf.Sin(x * .21f + variant) * Mathf.Sin(y * .17f - variant * 2);
+                var alpha = Mathf.Clamp01((density + lump) * 1.4f) * .8f;
+                if (alpha < .02f) return new Color(0, 0, 0, 0);
+                var c = SporeShade((x - (height - y)) / (float)width + .5f, density * .35f);
+                var speck = Mathf.Sin(x * 1.31f + y * .73f + variant * 5) * Mathf.Sin(x * .57f - y * 1.13f);
+                if (speck > .93f && density > .3f) c = Color.Lerp(c, Color.white, .7f);
+                c.a = alpha; return c;
+            });
+            return new ArtVisual($"{SporePuffRole}.{variant + 1}", texture, new Vector2(width, height) / 384f, new Vector2(.5f, .5f));
+        }
+
+        ArtVisual TemporarySporeGrain(int variant)
+        {
+            const int size = 32; const float c0 = 15.5f;
+            var texture = PaintTexture($"Temporary spore grain {variant + 1}", size, size, (x, y) =>
+            {
+                var p = new Vector2(x - c0, y - c0);
+                float d;
+                switch (variant)
+                {
+                    case 0: d = p.magnitude / 6; break;
+                    case 1: d = new Vector2(p.x / 8, p.y / 5).magnitude; break;
+                    case 2: d = Mathf.Min((p - new Vector2(-3.5f, 1)).magnitude / 4.5f, (p - new Vector2(4, -2)).magnitude / 3.5f); break;
+                    default: d = Mathf.Min(new Vector2(p.x / 8, p.y / 1.6f).magnitude, new Vector2(p.x / 1.6f, p.y / 8).magnitude); break;
+                }
+                if (d >= 1) return new Color(0, 0, 0, 0);
+                var c = SporeShade(variant % 2 == 0 ? 1 : 0, (1 - d) * .8f);
+                c.a = Mathf.Clamp01((1 - d) * 3); return c;
+            });
+            return new ArtVisual($"{SporeGrainRole}.{variant + 1}", texture, new Vector2(size, size) / 384f, new Vector2(.5f, .5f));
+        }
+
+        ArtVisual TemporarySporeStream()
+        {
+            const int width = 512, height = 64;
+            var texture = PaintTexture("Temporary spore stream", width, height, (x, y) =>
+            {
+                var across = Mathf.Abs(y - 31.5f) / 26f;   // 0 at the core, 1 at the band's edge (8px margin)
+                if (across >= 1) return new Color(0, 0, 0, 0);
+                var grain = .1f * Mathf.Sin(x * .09f + y * .4f) + .06f * Mathf.Sin(x * .31f - y * .9f);
+                var alpha = Mathf.Clamp01((1 - across * across) * 1.1f + grain) * .85f;
+                var c = SporeShade(Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.25f, .8f, across)), Mathf.Clamp01(1 - across * 3) * .7f);
+                var speck = Mathf.Sin(x * 1.7f + y * 2.3f) * Mathf.Sin(x * .53f - y * 1.9f);
+                if (speck > .95f) c = Color.Lerp(c, Color.white, .6f);
+                c.a = alpha; return c;
+            });
+            return new ArtVisual(SporeStreamRole, texture, new Vector2(width, height) / 384f, new Vector2(0, .5f));
         }
 
         void EnsureOrbitShapes()
@@ -289,7 +408,7 @@ namespace Game.View
             OrbitActivations++;
             if (OrbitActivationSample == null) return;
             var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            var size = shape == "tornado" ? TornadoHeight(gear) : ShieldRadius(attack.Source) * 2;
+            var size = shape == "tornado" ? PuffSize(attack.Source) : ShieldRadius(attack.Source) * 2;
             OrbitActivationSample(new OrbitActivationRecord { Activation = attack.ActivationId, Evolved = evolved, Count = gear.Count, Shape = shape,
                 OrbitRadiusPixels = orbitRadius / pixel, OrbiterSizePixels = size / pixel, HeroHeightPixels = HeroHeight / pixel,
                 FirstOrbiterScreen = renderCamera.WorldToScreenPoint(center), FrameOffsetFromStart = Mathf.RoundToInt(OrbitSpec.SpreadFrames),
