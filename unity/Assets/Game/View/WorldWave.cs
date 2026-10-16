@@ -109,6 +109,7 @@ namespace Game.View
                 AcceptM1Blade(value);
                 AcceptLightningLink(value);
                 AcceptArrowEvent(value);
+                AcceptPikeEvent(value);
                 AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -425,6 +426,7 @@ namespace Game.View
             DrawM1WeaponShowcase(lordPoint);
             DrawBladeStrikes();
             DrawArrowVolleys();
+            DrawPikeCasts();
             DrawShieldThrows();
             DrawLightning();
         }

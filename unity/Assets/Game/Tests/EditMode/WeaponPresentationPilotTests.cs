@@ -191,6 +191,16 @@ namespace Tests.EditMode
             Assert.That(OrbitSpec.ThrowReach(1), Is.Zero, "Comes back to the orbit.");
             Assert.That(OrbitSpec.ShockFrom, Is.EqualTo(.3f).Within(1e-5f)); Assert.That(OrbitSpec.ShockTo, Is.EqualTo(1.2f).Within(1e-5f));
             Assert.That(OrbitSpec.MaxShocks, Is.EqualTo(4));
+            // Furrow pike: the point leaves the hero before the first impact, reaches each impact on its Core tick.
+            Assert.That(PikeSpec.Reach(0, 1, .1f, 6), Is.EqualTo(-1), "At the hero until the thrust starts.");
+            Assert.That(PikeSpec.Reach(1, 1, .1f, 6), Is.EqualTo(0).Within(1e-5f), "On the first impact at its tick.");
+            Assert.That(PikeSpec.Reach(1.3f, 1, .1f, 6), Is.EqualTo(3).Within(1e-4f), "On impact 3 three steps later.");
+            Assert.That(PikeSpec.Reach(9, 1, .1f, 6), Is.EqualTo(5), "Stops at the last impact.");
+            Assert.That(PikeSpec.Extension(1, 1), Is.EqualTo(1)); Assert.That(PikeSpec.Extension(1 + PikeSpec.Seconds(PikeSpec.HoldFrames + PikeSpec.RetractFrames), 1), Is.Zero, "Retracts after the hold.");
+            Assert.That(PikeSpec.FurrowHeroHeights(0, false), Is.LessThan(PikeSpec.FurrowHeroHeights(PikeSpec.NormalStageShare, false)), "Furrow widens Lv1 < max.");
+            Assert.That(PikeSpec.FurrowHeroHeights(PikeSpec.NormalStageShare, false), Is.LessThan(PikeSpec.FurrowHeroHeights(1, true)), "max < evolved.");
+            Assert.That(PikeSpec.Erupted(-.01f), Is.Zero); Assert.That(PikeSpec.Erupted(PikeSpec.Seconds(PikeSpec.EruptRiseFrames + 1)), Is.EqualTo(1));
+            Assert.That(PikeSpec.Erupted(PikeSpec.Seconds(PikeSpec.EruptRiseFrames + PikeSpec.EruptHoldFrames + PikeSpec.EruptSinkFrames)), Is.Zero, "Erupted pikes sink away.");
             Assert.That(Enumerable.Range(0, 12).Count(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(6), "Twelve orbiters draw six shields.");
             Assert.That(Enumerable.Range(0, 12).Where(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(new[] { 1, 3, 5, 7, 9, 11 }), "Evenly spaced.");
             Assert.That(Enumerable.Range(0, 4).All(i => OrbitSpec.ShieldDrawn(i, 4)), Is.True);

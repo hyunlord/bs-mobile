@@ -307,6 +307,35 @@ function checkArrows(directory, manifest) {
     rows: results };
 }
 
+// Furrow pike: impacts land on their Core ticks; the pike's point stands out on the frame its last on-screen impact lands;
+// the furrow is wider Lv1 < max < evolved; the palisade (erupted pikes) only in the evolved stage.
+function checkPikes(directory, manifest) {
+  const casts = rows(path.join(directory, 'm1-pike-casts.csv'));
+  const results = [];
+  for (const c of casts) {
+    const at = Number(c.frameIndex);
+    if (at <= 40 || c.lastImpactOnScreen !== 'True') continue;
+    const last = at + Number(c.shownToDueFrames) + Number(c.stepFrames) * (Number(c.impacts) - 1);
+    const x = Number(c.lastImpactScreenX), image = frame(directory, last + 1), y = image.height - Number(c.lastImpactScreenY);
+    const before = frame(directory, at - 30), earlier = frame(directory, Math.max(0, at - 40));
+    let peak = 0, groundA = 0, groundB = 0, k = 0;
+    for (let dy = -14; dy <= 14; dy++) for (let dx = -14; dx <= 14; dx++) { peak = Math.max(peak, luma(image.at(x + dx, y + dy))); groundA += luma(before.at(x + dx, y + dy)); groundB += luma(earlier.at(x + dx, y + dy)); k++; }
+    results.push({ frame: at, tick: Number(c.tick), impacts: Number(c.impacts), onScreen: Number(c.onScreenImpacts), evolved: c.evolved === 'True', stage: Number(c.stage),
+      tipContrast: +(peak - Math.min(groundA, groundB) / k).toFixed(1), pikeLengthPixels: +Number(c.pikeLengthPixels).toFixed(1), furrowWidthPixels: +Number(c.furrowWidthPixels).toFixed(1), heroHeightPixels: +Number(c.heroHeightPixels).toFixed(1) });
+  }
+  const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
+  const pass = {
+    onTime: (p.pikeImpacts ?? 0) > 0 && p.pikeLandedOnTime === p.pikeImpacts,
+    visible: results.length > 0 && results.every(r => r.tipContrast >= thresholds.contrast),
+    size: results.length > 0 && results.every(r => r.pikeLengthPixels >= r.heroHeightPixels),
+    stage: stage === 'evolved' ? (p.pikeEruptions ?? 0) > 0 : (p.pikeEruptions ?? 0) === 0,
+    reaction: (p.enemyDeathDropped ?? 0) === 0,
+  };
+  return { casts: results.length, pass, impacts: p.pikeImpacts, landedOnTime: p.pikeLandedOnTime, eruptions: p.pikeEruptions,
+    note: 'On time = every Core impact landed within 2 frames of its predicted tick. Visible = brightest pixel within 14px of the last on-screen impact on the frame after it lands (the point flash and the pike point) minus the darker of the mean ground 30 and 40 frames before the cast. Size = pike at least a hero tall. Stage = erupted pikes only in the evolved stage. Furrow width is recorded (Lv1 < max < evolved by construction).',
+    rows: results };
+}
+
 // Spore fan / guard ring: the orbiter stands out from the ground, is at least hero sized, carries its weapon colour (teal /
 // gold), and the evolution element appears only in the evolved stage.
 function checkOrbits(directory, manifest, shape) {
@@ -377,6 +406,7 @@ for (const directory of directories) {
   if (id === 'core:canal_bow') entry.arrows = checkArrows(directory, manifest);
   if (id === 'core:spore_fan') entry.orbits = checkOrbits(directory, manifest, 'tornado');
   if (id === 'core:ward_orbit') entry.orbits = checkOrbits(directory, manifest, 'shield');
+  if (id === 'core:ditch_pike') entry.pikes = checkPikes(directory, manifest);
   report.captures.push(entry);
 }
 console.log(JSON.stringify(report, null, 2));

@@ -24,13 +24,13 @@ namespace Game.View
             if(attack.Kind=="review-ground-impact")
             {
                 if(m1CombatShape=="arrowrain")return true;   // drawn by DrawArrowVolleys (flight, warning circles, landing)
+                if(m1CombatShape=="spears")return true;      // drawn by DrawPikeCasts (furrow, thrust, point flashes)
                 var center=Point(attack.Position);
                 var composition=waveDefinition.Gear[attack.Source].Composition;
                 var remaining=Mathf.Max(0,attack.ExpireTick-tick-alpha);
                 var progress=1-Mathf.Clamp01(remaining/Mathf.Max(1,composition.DelayTicks));
                 M1Draw("attack","core:muster_horn","wave",center,Vector2.one*radius*2,0,.2f+progress*.35f,new Color(.85f,.78f,.35f));
                 if(m1CombatShape=="meteor")M1Draw("attack","core:ember_wand","projectile",center+new Vector2(.3f,1)*radius*(1-progress)*3,Vector2.one*radius*.8f,-100,1,new Color(1,.75f,.35f));
-                else DrawM1CombatSpear(center,radius*progress,.4f+progress*.6f);
             }
             else
             {
@@ -38,12 +38,6 @@ namespace Game.View
                 if(m1CombatShape=="tornado"||m1CombatShape=="shield")DrawOrbitAttack(attack,center,tick,alpha,lordPoint,m1CombatShape);
             }
             return true;
-        }
-        void DrawM1CombatSpear(Vector2 ground, float height, float opacity)
-        {
-            var visual=Resolve("icon","core:ditch_pike","default");
-            M1CombatSpearGeometry.Pose(ground,height*1.35f,visual.Pivot,out var position,out var size,out var degrees);
-            Draw(visual,GameVisualTokens.AttackLayer,position,0,size,degrees,opacity,Color.white,applyTween:false);
         }
         bool DrawM1CombatProjectile(WaveProjectileView projectile, Vector2 position, float direction)
         {
@@ -200,7 +194,7 @@ namespace Game.View
             else if(value.Kind=="review-impact")
             {
                 var radius=value.Amount/(float)settings.WorldUnitsPerUnityUnit;
-                if(m1CombatShape=="spears")DrawM1CombatSpear(a,radius,opacity);
+                if(m1CombatShape=="spears"){}   // point flash drawn by DrawPikeCasts
                 else if(m1CombatShape=="arrowrain"){}   // landing drawn by DrawArrowVolleys
                 else M1Draw("attack","core:muster_horn","wave",a,Vector2.one*radius*2,0,opacity,new Color(1,.8f,.3f));
             }
