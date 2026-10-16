@@ -150,7 +150,9 @@ namespace Game.View
                     DrawMusterRing(lordPoint, Mathf.Max(.01f, orbitRadius * spread), marker, 1);
                 }
                 if (shape == "tornado" && evolved) { DrawSporeVortex(lordPoint, orbitRadius, OrbitSpec.Shown(presence)); VortexFrames++; }
-                if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
+                // Spore fans are recorded at the activation's first orbiter; guard rings at the first shield actually drawn
+                // (with more than MaxShields orbiters some are not drawn, and the first may be one of them).
+                if (shape == "tornado" && age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
             }
             var shown = OrbitSpec.Shown(presence);
             if (shape == "tornado")
@@ -160,7 +162,9 @@ namespace Game.View
                 return;
             }
             orbitSeen.TryGetValue(attack.ActivationId, out var index); orbitSeen[attack.ActivationId] = index + 1;
-            if (OrbitSpec.ShieldDrawn(index, gear.Count)) { DrawShield(center, lordPoint, ShieldRadius(attack.Source) * shown, shown, age); ShieldsDrawn++; }
+            if (!OrbitSpec.ShieldDrawn(index, gear.Count)) return;
+            DrawShield(center, lordPoint, ShieldRadius(attack.Source) * shown, shown, age); ShieldsDrawn++;
+            if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
         }
 
         float PuffSize(string source) => HeroHeight * OrbitSpec.PuffHeroHeights(WeaponEvolved(source) ? 1 : GearTier(source));
