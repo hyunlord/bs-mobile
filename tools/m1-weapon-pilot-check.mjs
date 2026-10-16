@@ -307,6 +307,58 @@ function checkArrows(directory, manifest) {
     rows: results };
 }
 
+// Canal bow ricochet (ADR0062): every flight lands on its Core tick; the arrow stands out 5 frames before it lands; each
+// landing splashes; bounces only from the max stage up; the evolved water channel is cut along the flown path.
+function checkRicochet(directory, manifest) {
+  const hops = rows(path.join(directory, 'm1-ricochet-hops.csv')).filter(h => h.onScreen === 'True' && Number(h.frameIndex) > 48);
+  const cache = new Map(); const at = index => { if (!cache.has(index)) cache.set(index, frame(directory, index)); return cache.get(index); };
+  const box = (image, x, y, size, fn) => { for (let dy = -size; dy <= size; dy++) for (let dx = -size; dx <= size; dx++) fn(image.at(x + dx, y + dy)); };
+  const water = ([r, g, b]) => b > 150 && b - r > 60;
+  // At most 48 flights, evenly spread through the capture, are measured (each needs several frames decoded).
+  const step = Math.max(1, Math.ceil(hops.length / 48)), results = [];
+  for (let i = 0; i < hops.length; i += step) {
+    const h = hops[i], landed = Number(h.frameIndex), cast = landed + Number(h.acceptedOffset), evolved = h.evolved === 'True';
+    const g30 = at(Math.max(0, cast - 30)), g40 = at(Math.max(0, cast - 40)), height = g30.height;
+    const ground = (x, y, size) => { let a = 0, b = 0, k = 0; box(g30, x, y, size, p => { a += luma(p); k++; }); box(g40, x, y, size, p => { b += luma(p); }); return Math.min(a, b) / k; };
+    const entry = { frame: landed, tick: Number(h.tick), chain: Number(h.chain), hop: Number(h.hop), evolved, turns: h.turns === 'True',
+      arrowLengthPixels: +Number(h.arrowLengthPixels).toFixed(1), heroHeightPixels: +Number(h.heroHeightPixels).toFixed(1) };
+    const mx = Number(h.midScreenX), my = height - Number(h.midScreenY);
+    if (mx >= 0) { let peak = 0; box(at(landed + Number(h.midOffset)), mx, my, 14, p => { peak = Math.max(peak, luma(p)); }); entry.arrowContrast = +(peak - ground(mx, my, 14)).toFixed(1); }
+    const tx = Number(h.toScreenX), ty = height - Number(h.toScreenY);
+    let splash = 0; box(at(landed + 1), tx, ty, 20, p => { splash = Math.max(splash, luma(p)); }); entry.landingContrast = +(splash - ground(tx, ty, 20)).toFixed(1);
+    if (evolved) {
+      // Channel: of 9 points along the flown path, the share with water-blue pixels 6 frames after landing that were not
+      // water-blue on the ground before the cast.
+      const fx = Number(h.fromScreenX), fy = height - Number(h.fromScreenY), after = at(landed + 6);
+      let cut = 0;
+      for (let k = 1; k <= 9; k++) {
+        const x = fx + (tx - fx) * k / 10, y = fy + (ty - fy) * k / 10;
+        let now = 0, before = 0; box(after, x, y, 3, p => { if (water(p)) now++; }); box(g30, x, y, 3, p => { if (water(p)) before++; });
+        if (now >= 6 && before < 6) cut++;
+      }
+      entry.channelShare = +(cut / 9).toFixed(2);
+    }
+    results.push(entry);
+  }
+  const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
+  const measured = results.filter(r => r.arrowContrast !== undefined), share = (list, test) => list.length ? list.filter(test).length / list.length : 0;
+  const pass = {
+    onTime: (p.ricochetLanded ?? 0) > 0 && p.ricochetLandedOnTime === p.ricochetLanded,
+    visible: measured.length > 0 && share(measured, r => r.arrowContrast >= thresholds.contrast) >= .9,
+    landing: results.length > 0 && share(results, r => r.landingContrast >= thresholds.contrast) >= .9,
+    size: results.length > 0 && results.every(r => r.arrowLengthPixels >= .5 * r.heroHeightPixels),
+    bounces: stage === 'lv1' ? (p.ricochetBounces ?? 0) === 0 : (p.ricochetBounces ?? 0) > 0,
+    stage: stage === 'evolved' ? (p.ricochetChannelDraws ?? 0) > 0 && median(results.map(r => r.channelShare ?? 0)) >= .5 : (p.ricochetChannelDraws ?? 0) === 0,
+    reaction: (p.enemyDeathDropped ?? 0) === 0,
+  };
+  const contrasts = measured.map(r => r.arrowContrast);
+  return { flights: p.ricochetHops, bounces: p.ricochetBounces, landed: p.ricochetLanded, landedOnTime: p.ricochetLandedOnTime, channelDraws: p.ricochetChannelDraws,
+    measured: results.length, arrowContrastMin: contrasts.length ? Math.min(...contrasts) : null, arrowContrastMedian: median(contrasts),
+    landingContrastMedian: median(results.map(r => r.landingContrast)), channelShareMedian: stage === 'evolved' ? median(results.map(r => r.channelShare ?? 0)) : null, pass,
+    note: 'On time = every flight that landed did so within 2 frames of its Core due time. Visible = arrow peak within 14px of where it was drawn 5 frames before landing minus the darker of the mean ground 30 and 40 frames before its cast, >= 40 for 90% of measured flights (up to 48 spread through the capture); landing the same for the splash 1 frame after landing (20px). Bounces only from the max stage up. Evolved: water channel drawn and water-blue gained on at least half of 9 points along the flown path 6 frames after landing (median over flights).',
+    rows: results };
+}
+
 // Furrow pike: impacts land on their Core ticks; the pike's point stands out on the frame its last on-screen impact lands;
 // the furrow is wider Lv1 < max < evolved; the palisade (erupted pikes) only in the evolved stage.
 function checkPikes(directory, manifest) {
@@ -440,7 +492,7 @@ for (const directory of directories) {
   if (id === 'core:storm_fork') entry.lightning = checkLightning(directory, manifest);
   if (id === 'core:muster_horn') entry.minions = checkMinions(directory, manifest);
   if (id === 'core:iron_blade') entry.blade = checkBlade(directory, manifest);
-  if (id === 'core:canal_bow') entry.arrows = checkArrows(directory, manifest);
+  if (id === 'core:canal_bow') { if (rows(path.join(directory, 'm1-ricochet-hops.csv')).length > 0) entry.ricochet = checkRicochet(directory, manifest); else entry.arrows = checkArrows(directory, manifest); }
   if (id === 'core:spore_fan') entry.patches = checkSporePatches(directory, manifest);
   if (id === 'core:ward_orbit') entry.orbits = checkOrbits(directory, manifest, 'shield');
   if (id === 'core:ditch_pike') entry.pikes = checkPikes(directory, manifest);
