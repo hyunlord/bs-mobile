@@ -237,6 +237,10 @@
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 12000
+                  },
+                  "rehitEachImpact": {
+                    "type": "boolean",
+                    "description": "ADR0061: each impact strikes every enemy in its radius again (review catalog only; default off)."
                   }
                 }
               }
