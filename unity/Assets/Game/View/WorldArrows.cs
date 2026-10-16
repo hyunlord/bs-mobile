@@ -12,7 +12,7 @@ namespace Game.View
         // lingers TraceFrames after it lands. Normal-shot splashes are NormalSplashScale larger, and a volley's overlapping
         // splashes merge into one.
         public const int BowstringFlashFrames = 3, TraceFrames = 5;
-        public const float NormalSplashScale = 1.5f, TracePixels = 3, BowstringHeroHeights = .5f;
+        public const float NormalSplashScale = 1.5f, TracePixels = 3, BowstringHeroHeights = .8f;
         public static readonly Color Trace = new Color(.78f, .93f, 1f);
         public const int LaunchBloomFrames = 1;      // the arrow's first frame is a round bloom
         public const int LandFrames = 8, PlantedFrames = 14;
@@ -205,11 +205,13 @@ namespace Game.View
             {
                 // Bowstring flash at the hand: a water-blue bloom with a white core, fading over its frames. The hand is over the
                 // hero's figure, so it is drawn above the hero (like the arrows in flight).
-                var fade = 1 - age / ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames);
-                var glow = ArrowSpec.Water; glow.a = .9f * fade;
+                // Full strength for all but the last frame, then gone.
+                var fade = Mathf.Clamp01((ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) - age) / ArrowSpec.Seconds(1));
+                var glow = ArrowSpec.Water; glow.a = fade;
                 Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
                 var core = Color.white; core.a = fade;
-                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .4f, 0, 1, core, applyTween: false);
+                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .45f, 0, 1, core, applyTween: false);
+                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .3f, 0, 1, core, applyTween: false);
             }
             DrawArrowTrace(from, point, Mathf.Min(1, age / flight), visualTime - landed, w, pixel);
             if (age >= flight)
