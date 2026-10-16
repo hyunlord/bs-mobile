@@ -315,9 +315,11 @@ function checkPikes(directory, manifest) {
   for (const c of casts) {
     const at = Number(c.frameIndex);
     if (at <= 40 || c.lastImpactOnScreen !== 'True') continue;
-    const last = at + Number(c.shownToDueFrames) + Number(c.stepFrames) * (Number(c.impacts) - 1);
+    // The row is written as the cast's last impact lands; lastImpactFrameOffset (<= 0) is the last on-screen impact's landing.
+    const last = c.lastImpactFrameOffset !== undefined ? at + Number(c.lastImpactFrameOffset) : at + Number(c.shownToDueFrames) + Number(c.stepFrames) * (Number(c.impacts) - 1);
     const x = Number(c.lastImpactScreenX), image = frame(directory, last + 1), y = image.height - Number(c.lastImpactScreenY);
-    const before = frame(directory, at - 30), earlier = frame(directory, Math.max(0, at - 40));
+    const cast = c.lastImpactFrameOffset !== undefined ? at + Number(c.lastImpactFrameOffset) - Number(c.stepFrames) * (Number(c.impacts) - 1) - 30 : at;   // the cast: 15 ticks (30 frames) before the first impact
+    const before = frame(directory, Math.max(0, cast - 30)), earlier = frame(directory, Math.max(0, cast - 40));
     let peak = 0, groundA = 0, groundB = 0, k = 0;
     for (let dy = -14; dy <= 14; dy++) for (let dx = -14; dx <= 14; dx++) { peak = Math.max(peak, luma(image.at(x + dx, y + dy))); groundA += luma(before.at(x + dx, y + dy)); groundB += luma(earlier.at(x + dx, y + dy)); k++; }
     results.push({ frame: at, tick: Number(c.tick), impacts: Number(c.impacts), onScreen: Number(c.onScreenImpacts), evolved: c.evolved === 'True', stage: Number(c.stage),
@@ -332,7 +334,7 @@ function checkPikes(directory, manifest) {
     reaction: (p.enemyDeathDropped ?? 0) === 0,
   };
   return { casts: results.length, pass, impacts: p.pikeImpacts, landedOnTime: p.pikeLandedOnTime, eruptions: p.pikeEruptions,
-    note: 'On time = every Core impact landed within 2 frames of its predicted tick. Visible = brightest pixel within 14px of the last on-screen impact on the frame after it lands (the point flash and the pike point) minus the darker of the mean ground 30 and 40 frames before the cast. Size = pike at least a hero tall. Stage = erupted pikes only in the evolved stage. Furrow width is recorded (Lv1 < max < evolved by construction).',
+    note: 'On time = every Core impact landed within 2 frames of its predicted tick. Visible = brightest pixel within 14px of the last on-screen impact (its screen position as it lands) on the frame after it lands (the point flash and the pike point) minus the darker of the mean ground 30 and 40 frames before the cast. Size = pike at least a hero tall. Stage = erupted pikes only in the evolved stage. Furrow width is recorded (Lv1 < max < evolved by construction).',
     rows: results };
 }
 

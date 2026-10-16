@@ -161,7 +161,8 @@ namespace Game.View
                 var eruptEnd = cast.LastDue + PikeSpec.Seconds(PikeSpec.EruptRiseFrames + PikeSpec.EruptHoldFrames + PikeSpec.EruptSinkFrames);
                 var end = Mathf.Max(retracted, cast.Evolved ? eruptEnd : 0) + PikeSpec.Seconds(PikeSpec.FurrowFadeFrames);
                 if (now > end) continue;
-                if (!cast.Recorded && now >= cast.Due - PikeSpec.Seconds(PikeSpec.ThrustLeadFrames)) RecordPikeCast(cast, view);
+                // Recorded as its last impact lands, at the last impact then on screen (the camera follows the hero meanwhile).
+                if (!cast.Recorded && now >= cast.LastDue) RecordPikeCast(cast, view);
                 var far = cast.Points[cast.Count - 1];
                 var line = far - cast.Launch; var length = line.magnitude;
                 if (length < 1e-5f) continue;
@@ -332,11 +333,14 @@ namespace Game.View
             cast.Recorded = true;
             if (PikeCastSample == null) return;
             var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+            var last = -1;
+            for (var i = 0; i < cast.Count; i++) if (view.Contains(cast.Points[i])) last = i;
             var record = new PikeCastRecord { Tick = cast.Tick, Impacts = cast.Count, Evolved = cast.Evolved, Stage = cast.Stage, ShownFrame = PresentedFrames,
                 FirstDueFrame = PresentedFrames + Mathf.RoundToInt((cast.Due - visualTime) * 60), StepFrames = Mathf.RoundToInt(cast.Step * 60),
-                LaunchScreen = renderCamera.WorldToScreenPoint(cast.Launch), LastImpactScreen = renderCamera.WorldToScreenPoint(cast.Points[cast.Count - 1]),
+                LaunchScreen = renderCamera.WorldToScreenPoint(cast.Launch), LastImpactScreen = renderCamera.WorldToScreenPoint(cast.Points[Mathf.Max(0, last)]),
+                LastImpactFrame = PresentedFrames + Mathf.RoundToInt((cast.DueOf(Mathf.Max(0, last)) - visualTime) * 60),
                 PikeLengthPixels = HeroHeight * PikeSpec.PikeHeroHeights / pixelsToWorld, FurrowWidthPixels = HeroHeight * PikeSpec.FurrowHeroHeights(cast.Stage, cast.Evolved) / pixelsToWorld,
-                HeroHeightPixels = HeroHeight / pixelsToWorld, LastImpactOnScreen = view.Contains(cast.Points[cast.Count - 1]) };
+                HeroHeightPixels = HeroHeight / pixelsToWorld, LastImpactOnScreen = last >= 0 };
             for (var i = 0; i < cast.Count; i++) if (view.Contains(cast.Points[i])) record.OnScreenImpacts++;
             PikeCastSample(record);
         }
@@ -344,7 +348,7 @@ namespace Game.View
 
     public struct PikeCastRecord
     {
-        public int Tick, Impacts, OnScreenImpacts, ShownFrame, FirstDueFrame, StepFrames;
+        public int Tick, Impacts, OnScreenImpacts, ShownFrame, FirstDueFrame, StepFrames, LastImpactFrame;
         public bool Evolved, LastImpactOnScreen;
         public float Stage, PikeLengthPixels, FurrowWidthPixels, HeroHeightPixels;
         public Vector2 LaunchScreen, LastImpactScreen;

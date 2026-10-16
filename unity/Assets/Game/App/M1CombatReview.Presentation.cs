@@ -64,7 +64,7 @@ namespace Game.App
             world.ArrowVolleySample = r => { if (arrowRows.Count < 1024) arrowRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R},{r.MidFlightScreen.x:R},{r.MidFlightScreen.y:R},{r.MidFlightImpactOffset},{r.Stage:R},{r.HandScreen.x:R},{r.HandScreen.y:R}")); };
             world.PikeCastSample = r => { if (pikeRows.Count < 1024) pikeRows.Add(FormattableString.Invariant(
-                $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.Stage:R},{r.FirstDueFrame - r.ShownFrame},{r.StepFrames},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.LastImpactScreen.x:R},{r.LastImpactScreen.y:R},{r.LastImpactOnScreen},{r.PikeLengthPixels:R},{r.FurrowWidthPixels:R},{r.HeroHeightPixels:R}")); };
+                $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.Stage:R},{r.FirstDueFrame - r.ShownFrame},{r.StepFrames},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.LastImpactScreen.x:R},{r.LastImpactScreen.y:R},{r.LastImpactOnScreen},{r.PikeLengthPixels:R},{r.FurrowWidthPixels:R},{r.HeroHeightPixels:R},{r.LastImpactFrame - r.ShownFrame}")); };
             world.SporePatchSample = r => { if (sporeRows.Count < 1024) sporeRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Pulses},{r.StepFrames},{r.Evolved},{r.OnScreen},{r.CentreScreen.x:R},{r.CentreScreen.y:R},{r.RadiusPixels:R},{r.HeroHeightPixels:R}")); };
             world.OrbitActivationSample = r => { if (orbitRows.Count < 1024) orbitRows.Add(FormattableString.Invariant(
@@ -95,7 +95,7 @@ namespace Game.App
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-spore-patches.csv"),
                 new[] { "frameIndex,tick,pulses,stepFrames,evolved,onScreen,centreScreenX,centreScreenY,radiusPixels,heroHeightPixels" }.Concat(sporeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-pike-casts.csv"),
-                new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,stage,shownToDueFrames,stepFrames,launchScreenX,launchScreenY,lastImpactScreenX,lastImpactScreenY,lastImpactOnScreen,pikeLengthPixels,furrowWidthPixels,heroHeightPixels" }.Concat(pikeRows));
+                new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,stage,shownToDueFrames,stepFrames,launchScreenX,launchScreenY,lastImpactScreenX,lastImpactScreenY,lastImpactOnScreen,pikeLengthPixels,furrowWidthPixels,heroHeightPixels,lastImpactFrameOffset" }.Concat(pikeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-arrow-volleys.csv"),
                 new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,tellToShownFrames,shownToDueFrames,firstImpactScreenX,firstImpactScreenY,firstImpactRadiusPixels,launchScreenX,launchScreenY,arrowLengthPixels,heroHeightPixels,midFlightScreenX,midFlightScreenY,midFlightImpactOffset,stage,handScreenX,handScreenY" }.Concat(arrowRows));
         }
