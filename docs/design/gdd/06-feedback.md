@@ -212,7 +212,7 @@ c656471의 코드 도형 판은 불통과였고, 핵심 그림(Astra) + 코드 �
 | 무기 | 동작 | 시작 사건(Core) | 비고 |
 |---|---|---|---|
 | 철날 검 `core:iron_blade` | 베기 | `attack` | 진화(거대 검)도 베기 |
-| 고랑 장창 `core:ditch_pike` | 베기 | `review-impact-tell`(시전 틱의 첫 사건) | 실제 장비 경로에서는 `attack` |
+| 고랑 장창 `core:ditch_pike` | 베기 | `review-impact-tell`(시전 틱의 첫 사건) | 검토 장면 기준. 다른 경로에서 내는 사건은 구현 때 확인 |
 | 수로 활 `core:canal_bow` | 쏘기 | `review-impact-tell`(시전 틱의 첫 사건) | 진화 화살비도 쏘기 |
 | 곡창 투석끈 `core:granary_sling` | 쏘기 | `review-impact-tell`(시전 틱의 첫 사건) | |
 | 빗물 쇠스랑 `core:storm_fork` | 시전 | `chain-link`(틱의 첫 고리) | 같은 틱의 나머지 고리는 무시 |
