@@ -384,12 +384,13 @@ function checkSling(directory, manifest) {
     landedOnTime: (p.slingLanded ?? 0) > 0 && p.slingLandedOnTime === p.slingLanded,
     burstOnTime: (p.slingBursts ?? 0) > 0 && p.slingBurstsOnTime === p.slingBursts,
     burst: results.length > 0 && results.every(r => r.burstContrast >= thresholds.contrast),
-    stage: stage === 'evolved' ? (p.slingVortexFrames ?? 0) > 0 : (p.slingVortexFrames ?? 0) === 0,
+    stage: stage === 'evolved' ? (p.slingVortexFrames ?? 0) > 0 && (p.slingRangeFrames ?? 0) > 0 && p.slingShakes === p.slingBursts : (p.slingVortexFrames ?? 0) === 0 && (p.slingRangeFrames ?? 0) === 0 && (p.slingShakes ?? 0) === 0,
+    occlusion: (manifest.presentation?.occlusionP95 ?? 1) <= .15,
     reaction: (p.enemyDeathDropped ?? 0) === 0,
   };
-  return { casts: p.slingCasts, landed: p.slingLanded, landedOnTime: p.slingLandedOnTime, bursts: p.slingBursts, burstsOnTime: p.slingBurstsOnTime, vortexFrames: p.slingVortexFrames,
+  return { casts: p.slingCasts, ringFrames: p.slingRingFrames, rangeFrames: p.slingRangeFrames, shakes: p.slingShakes, landed: p.slingLanded, landedOnTime: p.slingLandedOnTime, bursts: p.slingBursts, burstsOnTime: p.slingBurstsOnTime, vortexFrames: p.slingVortexFrames,
     measured: results.length, burstContrastMin: results.length ? Math.min(...results.map(r => r.burstContrast)) : null, pass,
-    note: 'On time = every sack landed (Core review-lure) and burst (review-impact) within 2 frames of its predicted frame. Burst = brightest pixel within half the Core radius 2 frames after the burst minus the darker of the mean ground 30 and 40 frames before the cast, >= 40 on every on-screen burst. Stage = the giant sack swirl only in the evolved stage.',
+    note: 'On time = every sack landed (Core review-lure) and burst (review-impact) within 2 frames of its predicted frame. Burst = brightest pixel within half the Core radius 2 frames after the burst minus the darker of the mean ground 30 and 40 frames before the cast, >= 40 on every on-screen burst. Stage = the giant sack swirl, the blast range before the burst and one shake per burst only in the evolved stage. Occlusion = p95 <= 15% (2026-10-17 target; one ring at a time).',
     rows: results };
 }
 
