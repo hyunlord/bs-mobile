@@ -41,6 +41,11 @@ function pick(directory, id) {
     const lx = Number(v.launchScreenX), ly = Number(v.launchScreenY), ix = Number(v.firstImpactScreenX), iy = Number(v.firstImpactScreenY);
     return { frame: due - 4, x: (lx + ix) / 2, y: FrameHeight - (ly + iy) / 2, size: Math.max(hero * 1.6, Math.hypot(ix - lx, iy - ly) * 1.2) };
   }
+  if (id === 'core:spore_fan' && fs.existsSync(path.join(directory, 'm1-spore-patches.csv'))) {
+    // The designed ground patch, two frames after its first pulse.
+    const c = rows(path.join(directory, 'm1-spore-patches.csv')).filter(late).filter(r => r.onScreen === 'True')[1];
+    return { frame: Number(c.frameIndex) + 2, x: Number(c.centreScreenX), y: FrameHeight - Number(c.centreScreenY), size: Math.max(Number(c.heroHeightPixels) * 1.6, Number(c.radiusPixels) * 2.2) };
+  }
   if (id === 'core:spore_fan' || id === 'core:ward_orbit') {
     const a = rows(path.join(directory, 'm1-orbit-activations.csv')).filter(late)[1];
     // The old spore tornado stood up from its foot; option A clouds sit around the orbiter.

@@ -336,6 +336,40 @@ function checkPikes(directory, manifest) {
     rows: results };
 }
 
+// Spore fan (designed ground patch): Core pulses land on their ticks; the patch reads on the frame after its first pulse
+// (spore colour and contrast inside it against the darker of the ground 30 and 40 frames before it was laid); the vortex
+// only in the evolved stage.
+function checkSporePatches(directory, manifest) {
+  const patches = rows(path.join(directory, 'm1-spore-patches.csv'));
+  const results = [];
+  for (const c of patches) {
+    const at = Number(c.frameIndex);
+    if (at <= 40 || c.onScreen !== 'True') continue;
+    const x = Number(c.centreScreenX), image = frame(directory, at + 2), y = image.height - Number(c.centreScreenY), radius = Number(c.radiusPixels) * .8;
+    const before = frame(directory, at - 30), earlier = frame(directory, Math.max(0, at - 40));
+    let peak = 0, groundA = 0, groundB = 0, k = 0, coloured = 0;
+    for (let dy = -radius; dy <= radius; dy += 3) for (let dx = -radius; dx <= radius; dx += 3) {
+      if (dx * dx + dy * dy > radius * radius || x + dx < 710 || x + dx > 1210) continue;
+      const c2 = image.at(x + dx, y + dy); peak = Math.max(peak, luma(c2)); groundA += luma(before.at(x + dx, y + dy)); groundB += luma(earlier.at(x + dx, y + dy)); k++;
+      const [r, g] = c2; if (g >= 190 && g - r >= 15) coloured++;
+    }
+    if (!k) continue;
+    results.push({ frame: at, tick: Number(c.tick), pulses: Number(c.pulses), stepFrames: Number(c.stepFrames), evolved: c.evolved === 'True',
+      contrast: +(peak - Math.min(groundA, groundB) / k).toFixed(1), colouredPixels: coloured, radiusPixels: +Number(c.radiusPixels).toFixed(1), heroHeightPixels: +Number(c.heroHeightPixels).toFixed(1) });
+  }
+  const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
+  const pass = {
+    onTime: (p.sporePulses ?? 0) > 0 && p.sporePulsesOnTime === p.sporePulses,
+    contrast: results.length > 0 && results.every(r => r.contrast >= thresholds.contrast),
+    colour: results.length > 0 && results.every(r => r.colouredPixels >= 20),
+    stage: stage === 'evolved' ? (p.vortexFrames ?? 0) > 0 : (p.vortexFrames ?? 0) === 0,
+    reaction: (p.enemyDeathDropped ?? 0) === 0,
+  };
+  return { patches: results.length, pass, pulses: p.sporePulses, pulsesOnTime: p.sporePulsesOnTime, vortexFrames: p.vortexFrames,
+    note: 'On time = every Core pulse landed within 2 frames of its predicted tick. Contrast = brightest pixel inside 0.8 of the patch radius (inside the 500px play column) 2 frames after the first pulse minus the darker of the mean ground there 30 and 40 frames before the patch was laid. Colour = bright yellow-green or teal pixels there. Stage = vortex only in the evolved stage.',
+    rows: results };
+}
+
 // Spore fan / guard ring: the orbiter stands out from the ground, is at least hero sized, carries its weapon colour (teal /
 // gold), and the evolution element appears only in the evolved stage.
 function checkOrbits(directory, manifest, shape) {
@@ -404,7 +438,7 @@ for (const directory of directories) {
   if (id === 'core:muster_horn') entry.minions = checkMinions(directory, manifest);
   if (id === 'core:iron_blade') entry.blade = checkBlade(directory, manifest);
   if (id === 'core:canal_bow') entry.arrows = checkArrows(directory, manifest);
-  if (id === 'core:spore_fan') entry.orbits = checkOrbits(directory, manifest, 'tornado');
+  if (id === 'core:spore_fan') entry.patches = checkSporePatches(directory, manifest);
   if (id === 'core:ward_orbit') entry.orbits = checkOrbits(directory, manifest, 'shield');
   if (id === 'core:ditch_pike') entry.pikes = checkPikes(directory, manifest);
   report.captures.push(entry);

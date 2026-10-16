@@ -110,6 +110,7 @@ namespace Game.View
                 AcceptLightningLink(value);
                 AcceptArrowEvent(value);
                 AcceptPikeEvent(value);
+                AcceptSporePatchEvent(value);
                 AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -427,6 +428,7 @@ namespace Game.View
             DrawBladeStrikes();
             DrawArrowVolleys();
             DrawPikeCasts();
+            DrawSporePatches();
             DrawShieldThrows();
             DrawLightning();
         }
