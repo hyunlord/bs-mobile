@@ -196,8 +196,10 @@ namespace Game.View
                     if (cast.Landed[i] >= 0 && !cast.Sampled[i])
                     {
                         cast.Sampled[i] = true;
-                        var screen = (Vector2)renderCamera.WorldToScreenPoint(cast.Points[i]);
-                        if (InPortraitColumn(screen)) { cast.SeenScreen = screen; cast.SeenFrame = PresentedFrames; cast.SeenIndex = i; }
+                        // Inside the camera's world view (the portrait column in review captures), 14px clear of its edges.
+                        var margin = 14 * renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+                        var inner = new Rect(view.xMin + margin, view.yMin + margin, view.width - 2 * margin, view.height - 2 * margin);
+                        if (inner.Contains(cast.Points[i])) { cast.SeenScreen = renderCamera.WorldToScreenPoint(cast.Points[i]); cast.SeenFrame = PresentedFrames; cast.SeenIndex = i; }
                     }
                     var landed = cast.Landed[i] >= 0 ? cast.Landed[i] : cast.DueOf(i);
                     var age = now - landed;
@@ -338,13 +340,6 @@ namespace Game.View
                 c.a = Mathf.Clamp01((1 - a) * 4) * .85f; return c;
             });
             return new ArtVisual(PikeFurrowRole, texture, new Vector2(width, height) / 384f, new Vector2(0, .5f));
-        }
-
-        // The capture's portrait column: the middle of the frame, as wide as a 500:1080 portrait view of its height.
-        bool InPortraitColumn(Vector2 screen)
-        {
-            var half = renderCamera.pixelHeight * (500f / 1080) * .5f;
-            return screen.y >= 0 && screen.y <= renderCamera.pixelHeight && Mathf.Abs(screen.x - renderCamera.pixelWidth * .5f) <= half - 14;
         }
 
         void RecordPikeCast(PikeCast cast, Rect view)
