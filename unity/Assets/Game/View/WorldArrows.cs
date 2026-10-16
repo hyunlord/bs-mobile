@@ -204,16 +204,17 @@ namespace Game.View
             var length = ArrowLength(volley);
             if (age < ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) && index == 0)
             {
-                // Bowstring flash at the hand: a water-blue bloom with a white core, fading over its frames. The hand is over the
-                // hero's figure, so it is drawn above the hero (like the arrows in flight).
+                // Bowstring flash: a water-blue bloom with a white core where the arrow leaves the hero's figure (the hero's
+                // sprites draw over every effect layer, so a flash at the hand itself is hidden).
                 // Full strength for all but the last frame, then gone.
                 var fade = Mathf.Clamp01((ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) - age) / ArrowSpec.Seconds(1));
                 BowstringFlashDraws++;
                 var glow = ArrowSpec.Water; glow.a = fade;
-                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
+                var bow = BowstringPoint(from, point, w);
+                Draw(lightningFlash, OverHeroThinLayer, bow, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
                 var core = Color.white; core.a = fade;
-                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .45f, 0, 1, core, applyTween: false);
-                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .3f, 0, 1, core, applyTween: false);
+                Draw(lightningFlash, OverHeroThinLayer, bow, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .45f, 0, 1, core, applyTween: false);
+                Draw(lightningFlash, OverHeroThinLayer, bow, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .3f, 0, 1, core, applyTween: false);
             }
             DrawArrowTrace(from, point, Mathf.Min(1, age / flight), visualTime - landed, w, pixel);
             if (age >= flight)
@@ -304,6 +305,20 @@ namespace Game.View
             var width = (Mathf.Max(w * 1.2f, radius * 2 * ArrowSpec.SplashOfImpactDiameter) * scale + spread * 2) * Mathf.Lerp(ArrowSpec.SplashFrom, ArrowSpec.SplashTo, Mathf.Sqrt(t));
             var color = Color.white; color.a = 1 - t * t;
             Draw(bowSplash, ProjectileLayer, point, 0, new Vector2(width, width * bowSplash.WorldSize.y / bowSplash.WorldSize.x), 0, 1, color, applyTween: false);
+        }
+
+        // The first point of the flight path outside the hero's drawn silhouette box (where the arrow is first seen).
+        Vector2 BowstringPoint(Vector2 from, Vector2 point, float w)
+        {
+            var arc = ArrowSpec.MinimumArcBodyWidths * w;
+            if (heroSilhouetteLocal.width <= 0) return ArrowSpec.Flight(from, point, .2f, arc);
+            var box = HeroBox;
+            for (var t = 0f; t <= 1f; t += .02f)
+            {
+                var at = ArrowSpec.Flight(from, point, t, arc);
+                if (!box.Contains(at)) return at;
+            }
+            return point;
         }
 
         // Thin water line along the flight path from the hand to where the arrow is (shown = 0..1 of the path), lingering
@@ -456,7 +471,7 @@ namespace Game.View
                 if (volley.Evolved) continue;
                 // Where this arrow's point is MidFlightFramesBeforeDue frames before it lands (for the arrow contrast check).
                 var from = volley.Launch + (volley.Points[i] - volley.Launch).normalized * (.35f * w) + Vector2.up * (.45f * w);
-                record.HandScreen = renderCamera.WorldToScreenPoint(from);   // the bowstring flash
+                record.HandScreen = renderCamera.WorldToScreenPoint(BowstringPoint(from, volley.Points[i], w));   // the bowstring flash
                 var t = 1 - ArrowSpec.MidFlightFramesBeforeDue / (float)ArrowSpec.FlightFrames;
                 record.MidFlightScreen = renderCamera.WorldToScreenPoint(ArrowSpec.Flight(from, volley.Points[i], t, ArrowSpec.MinimumArcBodyWidths * w));
                 record.MidFlightImpactOffset = i * Mathf.RoundToInt(volley.Step * 60);   // frames after the volley's first due
