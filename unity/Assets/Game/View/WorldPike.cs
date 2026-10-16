@@ -118,8 +118,6 @@ namespace Game.View
                         if (cast.Ids[i] != value.SubjectId || cast.Landed[i] >= 0) continue;
                         cast.Landed[i] = visualTime; PikeImpactsLanded++;
                         if (Mathf.Abs(visualTime - cast.DueOf(i)) <= PikeSpec.Seconds(2)) PikeLandedOnTime++;
-                        var screen = (Vector2)renderCamera.WorldToScreenPoint(cast.Points[i]);
-                        if (InPortraitColumn(screen)) { cast.SeenScreen = screen; cast.SeenFrame = PresentedFrames; cast.SeenIndex = i; }
                     }
             }
         }
@@ -166,8 +164,6 @@ namespace Game.View
                 var eruptEnd = cast.LastDue + PikeSpec.Seconds(PikeSpec.EruptRiseFrames + PikeSpec.EruptHoldFrames + PikeSpec.EruptSinkFrames);
                 var end = Mathf.Max(retracted, cast.Evolved ? eruptEnd : 0) + PikeSpec.Seconds(PikeSpec.FurrowFadeFrames);
                 if (now > end) continue;
-                // Recorded as its last impact lands, at the last impact then on screen (the camera follows the hero meanwhile).
-                if (!cast.Recorded && now >= cast.LastDue) RecordPikeCast(cast, view);
                 var far = cast.Points[cast.Count - 1];
                 var line = far - cast.Launch; var length = line.magnitude;
                 if (length < 1e-5f) continue;
@@ -194,6 +190,13 @@ namespace Game.View
                 }
                 for (var i = 0; i < cast.Count; i++)
                 {
+                    // An impact that landed this frame: where it is on screen now that the camera is set (events are accepted
+                    // before the capture camera takes this frame's size), kept when inside the portrait column.
+                    if (cast.Landed[i] >= 0 && Mathf.Abs(cast.Landed[i] - now) < 1e-5f)
+                    {
+                        var screen = (Vector2)renderCamera.WorldToScreenPoint(cast.Points[i]);
+                        if (InPortraitColumn(screen)) { cast.SeenScreen = screen; cast.SeenFrame = PresentedFrames; cast.SeenIndex = i; }
+                    }
                     var landed = cast.Landed[i] >= 0 ? cast.Landed[i] : cast.DueOf(i);
                     var age = now - landed;
                     if (age >= 0 && age < PikeSpec.Seconds(PikeSpec.TipFlashFrames))
@@ -217,6 +220,8 @@ namespace Game.View
                         eruptBudget--; PikeEruptions++;
                     }
                 }
+                // Recorded once its last impact has landed, with the last impact seen landing inside the portrait column.
+                if (!cast.Recorded && (cast.Landed[cast.Count - 1] >= 0 || now >= cast.LastDue + PikeSpec.Seconds(2))) RecordPikeCast(cast, view);
             }
         }
 
