@@ -217,11 +217,11 @@ c656471의 코드 도형 판은 불통과였고, 핵심 그림(Astra) + 코드 �
 | 곡창 투석끈 `core:granary_sling` | 쏘기 | `review-impact-tell`(시전 틱의 첫 사건) | |
 | 빗물 쇠스랑 `core:storm_fork` | 시전 | `chain-link`(틱의 첫 고리) | 같은 틱의 나머지 고리는 무시 |
 | 뿔나팔 `core:muster_horn` | 불기 | `attack` | |
-| 수호 고리 `core:ward_orbit` | 던지기 | `orbit-fragment`(활성화의 첫 사건) | 진화의 방패 던지기(적중마다)도 던지기. 0.4초 간격 규칙으로 걸러짐 |
-| 포자 부채 `core:spore_fan` | **미정** | `orbit-fragment`(활성화의 첫 사건) | 5종에 없다. 시전을 같이 쓸지, 동작 없이 둘지 사용자 결정이 필요하다 |
+| 수호 고리 `core:ward_orbit` | 던지기(진화만) | 진화 단계의 `hit`(core:ward_orbit) — View가 그 적중에 방패를 던지는 순간 | Lv1·최대의 궤도 회전에는 동작 없음(사용자 결정 2026-10-16). 적중마다 오므로 0.4초 간격 규칙으로 걸러짐 |
+| 포자 부채 `core:spore_fan` | 없음 | — | 사용자 결정(2026-10-16): 동작 없음 |
 | 그 밖의 장비 | 없음 | `attack` | 지금처럼 `heroAttackUntil`만 갱신 |
 
-`review-impact-tell`·`orbit-fragment`·`chain-link`는 한 번의 공격에 여러 개가 같은 틱에 온다. 선택기는 (출처, 틱)마다 처음 것 하나만 받는다.
+`review-impact-tell`·`chain-link`·`hit`는 한 번의 공격에 여러 개가 같은 틱에 온다. 선택기는 (출처, 틱)마다 처음 것 하나만 받는다.
 
 **우선순위와 간격**
 
