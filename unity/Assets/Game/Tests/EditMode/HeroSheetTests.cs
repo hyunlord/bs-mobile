@@ -88,6 +88,17 @@ namespace Game.Tests
             Assert.That(s.Pose(Ticks(31), false, false, true, 0, Stride).Clip, Is.EqualTo(HeroClip.Death));
         }
 
+        [Test] public void HitAgeStartsWithTheHitPoseSoTheFlashLastsTwoFrames()
+        {
+            var s = new HeroActionSelector();
+            Assert.That(s.HitAge(1), Is.EqualTo(-1));
+            s.Pose(1, false, true, false, 0, Stride);
+            Assert.That(s.HitAge(1 + Ticks(1)), Is.LessThan(HeroSheetSpec.HitFlashFrames / 60f), "flash on the first frames");
+            Assert.That(s.HitAge(1 + Ticks(3)), Is.GreaterThan(HeroSheetSpec.HitFlashFrames / 60f), "then the r5 pose alone");
+            s.Pose(1.5f, false, false, false, 0, Stride);
+            Assert.That(s.HitAge(1.5f), Is.EqualTo(-1));
+        }
+
         [Test] public void WalkCycleFollowsDistanceSoPlaybackMatchesSpeed()
         {
             var s = new HeroActionSelector();
@@ -110,6 +121,8 @@ namespace Game.Tests
             Assert.That(HeroSheetSpec.ActionFor("core:ward_orbit", true, "hit"), Is.EqualTo(HeroAction.Throw));
             Assert.That(HeroSheetSpec.ActionFor("core:spore_fan", true, "attack"), Is.EqualTo(HeroAction.None));
             Assert.That(HeroSheetSpec.ActionFor("core:iron_blade", false, "hit"), Is.EqualTo(HeroAction.None));
+            Assert.That(HeroSheetSpec.ActionFor("core:canal_bow", false, "review-impact-tell"), Is.EqualTo(HeroAction.Aim), "review composition cast");
+            Assert.That(HeroSheetSpec.ActionFor("core:storm_fork", false, "chain-link"), Is.EqualTo(HeroAction.Cast));
         }
 
         // #268: the hero must resolve only roles every profile registers, with the delivered frame counts.

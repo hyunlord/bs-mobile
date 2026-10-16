@@ -366,8 +366,7 @@ namespace Game.View
             DrawActorGrounding(lord,HeroFigureSize(snapshot.HeroId,heroVisual),heroMovement,visualTime,WaveEnemyKind.Pursuer);
             if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
                 heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity)&&
-               !DrawHeroSheet(snapshot.HeroId,lord,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,
-                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):(Color?)null,heroHit&&!HitFeedbackEnabled?.8f:0,current.TickRate))
+               !DrawHeroSheet(snapshot.HeroId,lord,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,HitFeedbackEnabled,current.TickRate))
                 DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
             heroGaitDiscontinuity=false;
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);

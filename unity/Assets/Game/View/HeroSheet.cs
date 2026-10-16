@@ -14,6 +14,10 @@ namespace Game.View
         // Delivered frame timings in 60 Hz ticks (manifest frameTicks60; manifest frameMs is only rounded for reading).
         public const int WalkFrames = 8, WalkTicks = 10, SlashFrames = 8, SlashTicks = 9, ActionFrames = 6, ActionTicks = 10;
         public const int IdleFrames = 6, IdleTicks = 12, HitFrames = 2, KeyTicks = 7;
+        // Hero hit (user decision 2026-10-17): no full-body red tint; the r5 recoil pose, brightened for its first
+        // HitFlashFrames display frames, with a red outline when hit feedback is on.
+        public const int HitFlashFrames = 2;
+        public const float HitFlash = .8f;
         public static readonly int[] HitFrameTicks = { 7, 8 };   // approved hit r5: recoil, then half recovery
         public const float MinRepeatSeconds = .4f;   // the same action starts at most every 0.4 s
         public const string KnightId = "core:frontier_knight", RolePrefix = "hero.core.frontier_knight.";
@@ -31,14 +35,16 @@ namespace Game.View
 
         // Weapon -> action (06-feedback mapping). The guard ring throws only in its evolved stage, on its hits; the spore fan
         // and every other source have no action.
+        // Start events: the runtime's attack, a review composition's cast tell (review-impact-tell) or a chain's first link.
+        static bool Starts(string kind) => kind == "attack" || kind == "review-impact-tell" || kind == "chain-link";
         public static HeroAction ActionFor(string weaponId, bool evolved, string kind)
         {
             switch (weaponId)
             {
-                case "core:iron_blade": case "core:ditch_pike": return kind == "attack" ? HeroAction.Slash : HeroAction.None;
-                case "core:canal_bow": case "core:granary_sling": return kind == "attack" ? HeroAction.Aim : HeroAction.None;
-                case "core:storm_fork": return kind == "attack" ? HeroAction.Cast : HeroAction.None;
-                case "core:muster_horn": return kind == "attack" ? HeroAction.Blow : HeroAction.None;
+                case "core:iron_blade": case "core:ditch_pike": return Starts(kind) ? HeroAction.Slash : HeroAction.None;
+                case "core:canal_bow": case "core:granary_sling": return Starts(kind) ? HeroAction.Aim : HeroAction.None;
+                case "core:storm_fork": return Starts(kind) ? HeroAction.Cast : HeroAction.None;
+                case "core:muster_horn": return Starts(kind) ? HeroAction.Blow : HeroAction.None;
                 case "core:ward_orbit": return evolved && kind == "hit" ? HeroAction.Throw : HeroAction.None;
                 default: return HeroAction.None;
             }
@@ -63,6 +69,8 @@ namespace Game.View
         HeroAction current; bool key; float started; int startedTick = -1; bool evolved; int damage; string source;
         readonly float[] lastStart = new float[6];
         float hitStarted; bool wasHit; float walkPhase;
+        // Seconds since the current hero hit began, or -1 when no hit is shown.
+        public float HitAge(float time) => wasHit ? time - hitStarted : -1;
         public int Started { get; private set; }
         public int KeysShown { get; private set; }
         public int FullShown { get; private set; }
@@ -141,6 +149,7 @@ namespace Game.View
         // Lord speed per Core tick at base speed (set by the run); the walk cycle plays faster or slower with the actual speed.
         public float HeroLocomotionPerTick { get; set; }
         public Action<HeroSheetPose> HeroSheetPoseSampled { get; set; }
+        public Action<float, float, bool> HeroSheetDrawn { get; set; }   // hit age (-1 none), flash, red outline drawn
         public HeroActionSelector HeroActions { get; } = new HeroActionSelector();
         bool heroSheetChecked, heroSheetAvailable;
         ArtVisual heroSheetIdle, heroSheetWalk, heroSheetHit, heroSheetDeath;
@@ -173,14 +182,20 @@ namespace Game.View
         }
 
         // A Core attack the knight may act on: weapon id (an evolution's attack counts as its first input weapon, evolved).
+        // One offer per (weapon, tick): a cast emits several tells or links in its tick. A review ricochet's bounce is a tell that
+        // leaves from an impact the same weapon landed in the same tick (the impact comes first), not a new cast.
+        int heroOfferTick = -1; string heroOfferWeapon; (int Tick, string Source, WorldPoint Point) heroLastImpact = (-1, null, default);
         void OfferHeroAction(WaveEvent value, int tick)
         {
+            if (value.Kind == "review-impact") { heroLastImpact = (value.Tick, value.Source, value.Position); return; }
             if (!heroSheetAvailable || waveDefinition == null || value.Source == null) return;
+            if (value.Kind == "review-impact-tell" && heroLastImpact.Tick == value.Tick && heroLastImpact.Source == value.Source && heroLastImpact.Point.X == value.Position.X && heroLastImpact.Point.Y == value.Position.Y) return;
             var weapon = value.Source; var evolved = false;
             if (waveDefinition.Evolutions.TryGetValue(value.Source, out var evolution) && evolution.InputIds.Length > 0) { weapon = evolution.InputIds[0]; evolved = true; }
             else if (value.Kind == "hit") evolved = HeroWeaponEvolved(weapon);
             var action = HeroSheetSpec.ActionFor(weapon, evolved, value.Kind);
-            if (action == HeroAction.None) return;
+            if (action == HeroAction.None || (tick == heroOfferTick && weapon == heroOfferWeapon)) return;
+            heroOfferTick = tick; heroOfferWeapon = weapon;
             var damage = waveDefinition.Gear.TryGetValue(weapon, out var gear) ? gear.Damage : 0;
             HeroActions.Offer(tick, weapon, action, evolved, damage, visualTime, heroSheetMoving);
         }
@@ -198,7 +213,7 @@ namespace Game.View
         // The hero's footprint for shadow and camera margins: the sheet cell's figure share, or the visual's own size.
         Vector2 HeroFigureSize(string heroId, ArtVisual visual) => !heroRigActive && EnsureHeroSheet(heroId) ? Vector2.Scale(visual.WorldSize, HeroSheetSpec.FigureShareOfCell) : visual.WorldSize;
 
-        bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, Color? tint, float flash, int tickRate)
+        bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, bool hitOutline, int tickRate)
         {
             if (heroRigActive || !EnsureHeroSheet(heroId)) return false;
             heroSheetMoving = walking;
@@ -212,7 +227,12 @@ namespace Game.View
             var frame = pose.Clip == HeroClip.Key ? 0 : pose.Frame;
             // Left/right mirror the single 3/4 view (facing keeps the last horizontal direction); up/down use the same sheet.
             var size = visual.WorldSize; size.x *= facing.SignedWidth;
-            Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, tint, flash, uv: visual.UvRects[frame], applyTween: false);
+            var hitAge = HeroActions.HitAge(visualTime);
+            var flash = hitAge >= 0 && hitAge < HeroSheetSpec.HitFlashFrames / 60f ? HeroSheetSpec.HitFlash : 0;
+            Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, null, flash, uv: visual.UvRects[frame], applyTween: false);
+            if (hitAge >= 0 && hitOutline)
+                Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, GameVisualTokens.Hostile, 0, uv: visual.UvRects[frame], edgeTexels: GameVisualTokens.WaveEdgeTexels, applyTween: false);
+            HeroSheetDrawn?.Invoke(hitAge, flash, hitAge >= 0 && hitOutline);
             HeroSheetPoseSampled?.Invoke(pose);
             return true;
         }
