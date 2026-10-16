@@ -72,8 +72,18 @@ namespace SowSiege.Core
         {
             var pending = new WavePendingImpact
             {
-                Id = world.AllocateId(), Source = gear.Id, Position = target.Position, Tick = tick, Radius = radius, Damage = gear.Damage,
-                Knockback = gear.Knockback, ActivationId = activation, TargetId = target.Id, BouncesLeft = bounces, Struck = struck, From = from
+                Id = world.AllocateId(),
+                Source = gear.Id,
+                Position = target.Position,
+                Tick = tick,
+                Radius = radius,
+                Damage = gear.Damage,
+                Knockback = gear.Knockback,
+                ActivationId = activation,
+                TargetId = target.Id,
+                BouncesLeft = bounces,
+                Struck = struck,
+                From = from
             };
             state.PendingImpacts.Add(pending);
             state.Emit(world.Tick, "review-impact-tell", gear.Id, pending.Id, from, target.Position, radius);
