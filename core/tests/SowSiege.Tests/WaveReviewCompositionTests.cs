@@ -18,6 +18,22 @@ public sealed class WaveReviewCompositionTests
         Assert.Equal(0, x); Assert.Equal(0, y);
     }
     [Fact]
+    public void ShowcaseOrbitInputIsFullMovementAndClosesEachLapOnAboutThreeHeroHeights()
+    {
+        // Lord speed 24 per tick; the truncated per-tick steps of a lap sum to zero and the circle's radius is about 3 H (618).
+        long x = 0, y = 0, maxX = long.MinValue, minX = long.MaxValue;
+        for (var tick = 0; tick < ShowcaseFixtureCli.OrbitLapTicks; tick++)
+        {
+            var input = ShowcaseFixtureCli.OrbitInput(tick);
+            Assert.InRange(Math.Sqrt((double)input.X * input.X + (double)input.Y * input.Y), 999, 1001);
+            Assert.Equal(input, ShowcaseFixtureCli.OrbitInput(tick + ShowcaseFixtureCli.OrbitLapTicks));
+            x += input.X * 24L / PlayerInput.Scale; y += input.Y * 24L / PlayerInput.Scale;
+            maxX = Math.Max(maxX, x); minX = Math.Min(minX, x);
+        }
+        Assert.Equal((0L, 0L), (x, y));
+        Assert.InRange((maxX - minX) / 2, 3 * 618 - 120, 3 * 618 + 60);
+    }
+    [Fact]
     public void ReviewFactoryIsImmutableAndHashesStageAndRealDamage()
     {
         var baseline = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), profileName: "wave-1a");
