@@ -23,7 +23,8 @@ namespace SowSiege.Core
             var ricochet = c.Placement == "ricochet"; var lure = c.Placement == "lure-bomb";
             if (c.Version != 1 || c.Placement is not ("nearest-target" or "forward-line" or "ricochet" or "lure-bomb") || c.DelayTicks < 1 || c.StepTicks < 0 || c.Spacing < 0 || c.Radius < 1 || gear.Count < 1 || gear.Count > WaveAttackComposition.MaximumImpacts ||
                 ricochet != (c.Bounces is not null) || (ricochet && (c.Bounces is not (>= 0 and <= WaveAttackComposition.MaximumImpacts) || c.StepTicks < 1 || c.RehitEachImpact is not null)) ||
-                lure != (c.LureTicks is not null) || (lure && (c.LureTicks < 1 || c.StepTicks != 0 || c.RehitEachImpact is not null)))
+                lure != (c.LureTicks is not null) || (lure && (c.LureTicks < 1 || c.StepTicks != 0 || c.RehitEachImpact is not null)) ||
+                (c.BounceMinDistance is not null && (!ricochet || c.BounceMinDistance < 1)))
             { throw new ArgumentException("Unsupported review impact composition."); }
             if (ricochet) { ScheduleRicochet(gear, c); return; }
             queries.ByDistance(targets, world.Lord, gear.Range, world.Lord);
@@ -102,12 +103,20 @@ namespace SowSiege.Core
             if (impact.BouncesLeft > 0)
             {
                 queries.ByDistance(secondaryTargets, impact.Position, gear.Range, impact.Position);
+                // Nearest live enemy this arrow has not struck; with BounceMinDistance the nearest at least that far, else the farthest.
+                var min = gear.Composition!.BounceMinDistance is { } m ? (long)m * m : 0;
+                EnemyState? next = null, farthest = null;
                 foreach (var enemy in secondaryTargets)
                 {
                     if (enemy.Health <= 0 || struck.Contains(enemy.Id)) { continue; }
+                    farthest = enemy;
+                    if (enemy.Position.DistanceSquared(impact.Position) >= min) { next = enemy; break; }
+                }
+                next ??= farthest;
+                if (next is not null)
+                {
                     state.AddChild(impact.ActivationId);
-                    QueueArrow(gear, impact.Radius, impact.ActivationId, enemy, impact.BouncesLeft - 1, struck, world.Tick + gear.Composition!.StepTicks, impact.Position);
-                    break;
+                    QueueArrow(gear, impact.Radius, impact.ActivationId, next, impact.BouncesLeft - 1, struck, world.Tick + gear.Composition.StepTicks, impact.Position);
                 }
             }
             state.ResolveChild(impact.ActivationId);

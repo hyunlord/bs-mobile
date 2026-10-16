@@ -201,6 +201,45 @@ public sealed class WaveReviewCompositionTests
         Assert.Equal(90, enemies[0].Health);
         Assert.Equal(640, events.Single(e => e.Kind == "review-impact").Position.X);
     }
+    [Theory]
+    [InlineData(null, new[] { 600, 750, 900 })]
+    [InlineData(200, new[] { 600, 900, 750 })]
+    public void BounceMinDistanceSkipsCloseEnemiesThenFallsBackToTheFarthest(int? minimum, int[] impactX)
+    {
+        // ADR0062 supplement: from 600 the enemy at 750 is 150 away (< 200) and 900 is 300 away; from 900 only 750 remains,
+        // closer than 200, so the arrow takes the farthest remaining one.
+        var (catalog, _, world, first) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gear = catalog.WaveRuntime!.Gear.Values.Single();
+        ((Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear)[gear.Id] = gear with
+        { Composition = new(1, "ricochet", 2, 3, 0, 20, null, 2, null, minimum), Count = 1, CooldownTicks = 100, Range = 400 };
+        first.Position = new(600, 500);
+        world.Enemies.Add(new EnemyState { Id = 11, Definition = first.Definition, Position = new(750, 500), Health = 100 });
+        world.Enemies.Add(new EnemyState { Id = 12, Definition = first.Definition, Position = new(900, 500), Health = 100 });
+        var system = new WaveRuntimeSystem(catalog, world, new(1, true), null);
+        var events = Run(system, world, 12);
+        Assert.Equal(impactX, events.Where(e => e.Kind == "review-impact").Select(e => e.Position.X));
+        Assert.All(world.Enemies, e => Assert.Equal(90, e.Health));
+    }
+    [Fact]
+    public void BounceMinDistanceIsAbsentFromHashesUntilSetAndOnlyValidForRicochet()
+    {
+        var (catalog, _, world, _) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gears = (Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime!.Gear;
+        var gear = gears.Values.Single();
+        gears[gear.Id] = gear with { Composition = new(1, "ricochet", 2, 3, 0, 20, null, 1) };
+        var unset = PortableStateCodec.HashCatalog(catalog);
+        gears[gear.Id] = gear with { Composition = new(1, "ricochet", 2, 3, 0, 20, null, 1, null, null) };
+        Assert.Equal(unset, PortableStateCodec.HashCatalog(catalog));
+        gears[gear.Id] = gear with { Composition = new(1, "ricochet", 2, 3, 0, 20, null, 1, null, 742) };
+        Assert.NotEqual(unset, PortableStateCodec.HashCatalog(catalog));
+        foreach (var bad in new WaveAttackComposition[] { new(1, "nearest-target", 2, 0, 0, 20, null, null, null, 742), new(1, "ricochet", 2, 3, 0, 20, null, 1, null, 0) })
+        {
+            gears[gear.Id] = gear with { Composition = bad, CooldownTicks = 100 };
+            world.Equipment[0].ReadyTick = 0;
+            var system = new WaveRuntimeSystem(catalog, world, new(1, true), null);
+            Assert.Throws<ArgumentException>(() => system.Tick(world.Lord));
+        }
+    }
     [Fact]
     public void RicochetBouncesAreAbsentFromHashesUntilSetAndOnlyValidForRicochet()
     {

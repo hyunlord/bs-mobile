@@ -39,6 +39,7 @@ namespace SowSiege.Core
                     if (composition.RehitEachImpact == true) { Write("wave-review-rehit-v1"); }
                     if (composition.Bounces is { } bounces) { Write("wave-review-ricochet-v1"); Write(bounces); }
                     if (composition.LureTicks is { } lure) { Write("wave-review-lure-v1"); Write(lure); }
+                    if (composition.BounceMinDistance is { } hop) { Write("wave-review-bounce-min-v1"); Write(hop); }
                 }
                 if (g.Aim is not null) { Write("wave-gear-aim-v1"); Write(g.Aim); }
                 Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null)
