@@ -772,13 +772,13 @@
         "id": "core:canal_bow",
         "designRef": "data/review/m1-weapon-combat-cases.json#core:canal_bow/lv1",
         "kind": "Arc",
-        "damage": 24,
-        "range": 1600,
-        "cooldownTicks": 30,
+        "damage": 19,
+        "range": 1900,
+        "cooldownTicks": 34,
         "speed": 220,
         "count": 1,
         "lifetimeTicks": 120,
-        "knockback": 0,
+        "knockback": 10,
         "workTicks": 1,
         "workRadius": 1000,
         "rewardExperience": 15,
@@ -786,11 +786,12 @@
         "aim": "nearest-enemy",
         "composition": {
           "version": 1,
-          "placement": "nearest-target",
+          "placement": "ricochet",
           "delayTicks": 12,
-          "stepTicks": 1,
+          "stepTicks": 6,
           "spacing": 0,
-          "radius": 250
+          "radius": 90,
+          "bounces": 0
         }
       },
       "arena": {
@@ -818,13 +819,13 @@
         "id": "core:canal_bow",
         "designRef": "data/review/m1-weapon-combat-cases.json#core:canal_bow/max",
         "kind": "Arc",
-        "damage": 80,
-        "range": 3200,
-        "cooldownTicks": 24,
+        "damage": 63,
+        "range": 2285,
+        "cooldownTicks": 12,
         "speed": 360,
-        "count": 8,
+        "count": 4,
         "lifetimeTicks": 120,
-        "knockback": 0,
+        "knockback": 10,
         "workTicks": 1,
         "workRadius": 1000,
         "rewardExperience": 15,
@@ -832,11 +833,12 @@
         "aim": "nearest-enemy",
         "composition": {
           "version": 1,
-          "placement": "nearest-target",
+          "placement": "ricochet",
           "delayTicks": 12,
-          "stepTicks": 1,
+          "stepTicks": 6,
           "spacing": 0,
-          "radius": 400
+          "radius": 90,
+          "bounces": 2
         }
       },
       "arena": {
@@ -864,13 +866,13 @@
         "id": "core:canal_bow",
         "designRef": "data/review/m1-weapon-combat-cases.json#core:canal_bow/evolved",
         "kind": "Arc",
-        "damage": 140,
-        "range": 6000,
-        "cooldownTicks": 30,
+        "damage": 63,
+        "range": 2285,
+        "cooldownTicks": 12,
         "speed": 500,
-        "count": 32,
+        "count": 4,
         "lifetimeTicks": 120,
-        "knockback": 0,
+        "knockback": 10,
         "workTicks": 1,
         "workRadius": 1000,
         "rewardExperience": 15,
@@ -878,11 +880,12 @@
         "aim": "nearest-enemy",
         "composition": {
           "version": 1,
-          "placement": "nearest-target",
+          "placement": "ricochet",
           "delayTicks": 12,
-          "stepTicks": 1,
+          "stepTicks": 6,
           "spacing": 0,
-          "radius": 650
+          "radius": 90,
+          "bounces": 2
         }
       },
       "arena": {
