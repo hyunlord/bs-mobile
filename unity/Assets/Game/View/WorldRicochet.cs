@@ -105,11 +105,12 @@ namespace Game.View
             }
         }
 
-        // Core moves a pending arrow's impact with the enemy it follows; the arrow homes on it until it lands.
+        // Core moves a pending arrow's impact with the enemy it follows (its attack view carries the impact id in ActivationId);
+        // the arrow homes on it until it lands.
         void TrackRicochet(WaveAttackView attack)
         {
             foreach (var hop in ricochetHops)
-                if (hop.Id == attack.Id && hop.Landed < 0) { hop.To = Point(attack.Position); return; }
+                if (hop.Id == attack.ActivationId && hop.Landed < 0) { hop.To = Point(attack.Position); return; }
         }
 
         // Ricochet hits push along the flight of the arrow that struck them.
