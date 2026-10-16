@@ -268,8 +268,12 @@ function checkArrows(directory, manifest) {
       const mx = Number(v.midFlightScreenX ?? -1), myRaw = Number(v.midFlightScreenY ?? -1);
       if (mx >= 0) {
         const mid = frame(directory, due + Number(v.midFlightImpactOffset ?? 0) - 5), my = mid.height - myRaw;
-        let peakArrow = 0, groundArrow = 0, k = 0;
-        for (let dy = -14; dy <= 14; dy++) for (let dx = -14; dx <= 14; dx++) { peakArrow = Math.max(peakArrow, luma(mid.at(mx + dx, my + dy))); groundArrow += luma(before.at(mx + dx, my + dy)); k++; }
+        // Ground: the darker of 30 and 40 frames before the cast, so a previous volley's splash or trace lingering in one
+        // reference frame does not count as ground.
+        const earlier = frame(directory, Math.max(0, at - 40));
+        let peakArrow = 0, groundA = 0, groundB = 0, k = 0;
+        for (let dy = -14; dy <= 14; dy++) for (let dx = -14; dx <= 14; dx++) { peakArrow = Math.max(peakArrow, luma(mid.at(mx + dx, my + dy))); groundA += luma(before.at(mx + dx, my + dy)); groundB += luma(earlier.at(mx + dx, my + dy)); k++; }
+        const groundArrow = Math.min(groundA, groundB);
         entry.arrowPeak = +peakArrow.toFixed(1); entry.arrowContrast = +(peakArrow - groundArrow / k).toFixed(1);
         // The trace left on the path after landing: the same spot 3 frames after the first impact lands.
         const after = frame(directory, due + Number(v.midFlightImpactOffset ?? 0) + 3);

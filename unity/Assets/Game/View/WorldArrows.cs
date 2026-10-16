@@ -203,12 +203,13 @@ namespace Game.View
             var length = ArrowLength(volley);
             if (age < ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) && index == 0)
             {
-                // Bowstring flash at the hand: a water-blue bloom with a white core, fading over its frames.
+                // Bowstring flash at the hand: a water-blue bloom with a white core, fading over its frames. The hand is over the
+                // hero's figure, so it is drawn above the hero (like the arrows in flight).
                 var fade = 1 - age / ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames);
-                var glow = ArrowSpec.Water; glow.a = .95f * fade;
-                Draw(lightningFlash, LightningLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
+                var glow = ArrowSpec.Water; glow.a = .9f * fade;
+                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
                 var core = Color.white; core.a = fade;
-                Draw(lightningFlash, LightningLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .4f, 0, 1, core, applyTween: false);
+                Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .4f, 0, 1, core, applyTween: false);
             }
             DrawArrowTrace(from, point, Mathf.Min(1, age / flight), visualTime - landed, w, pixel);
             if (age >= flight)
