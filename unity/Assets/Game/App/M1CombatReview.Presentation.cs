@@ -38,6 +38,8 @@ namespace Game.App
         readonly List<string> orbitRows = new List<string>(64);
         readonly List<string> ricochetRows = new List<string>(256);
         readonly List<string> slingRows = new List<string>(64);
+        readonly List<string> heroPoseRows = new List<string>(4096);
+        float heroHitAge = -1, heroFlash; bool heroOutline;
         PresentationSummary presentation;
 
         public void Observe(WorldRenderer world)
@@ -71,6 +73,9 @@ namespace Game.App
                 $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.Stage:R},{r.FirstDueFrame - r.ShownFrame},{r.StepFrames},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.LastImpactScreen.x:R},{r.LastImpactScreen.y:R},{r.LastImpactOnScreen},{r.PikeLengthPixels:R},{r.FurrowWidthPixels:R},{r.HeroHeightPixels:R},{r.LastImpactFrame - r.ShownFrame}")); };
             world.RicochetHopSample = r => { if (ricochetRows.Count < 4096) ricochetRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Chain},{r.Hop},{r.Evolved},{r.Turns},{r.OnScreen},{r.AcceptedOffset},{r.MidOffset},{r.FromScreen.x:R},{r.FromScreen.y:R},{r.ToScreen.x:R},{r.ToScreen.y:R},{r.MidScreen.x:R},{r.MidScreen.y:R},{r.Stage:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R},{r.ChannelWidthPixels:R}")); };
+            world.HeroSheetDrawn = (age, flash, outline) => { heroHitAge = age; heroFlash = flash; heroOutline = outline; };
+            world.HeroSheetPoseSampled = pose => { if (heroPoseRows.Count < 20000) heroPoseRows.Add(FormattableString.Invariant(
+                $"{frameCount},{pose.Clip},{pose.Action},{pose.Frame},{heroHitAge:R},{heroFlash:R},{heroOutline}")); };
             world.SlingCastSample = r => { if (slingRows.Count < 1024) slingRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Evolved},{r.OnScreen},{r.AcceptedOffset},{r.FlightFrames},{r.LureFrames},{r.CentreScreen.x:R},{r.CentreScreen.y:R},{r.RadiusPixels:R},{r.HeroHeightPixels:R},{r.SackPixels:R}")); };
             world.SporePatchSample = r => { if (sporeRows.Count < 1024) sporeRows.Add(FormattableString.Invariant(
@@ -104,6 +109,8 @@ namespace Game.App
                 new[] { "frameIndex,tick,pulses,stepFrames,evolved,onScreen,centreScreenX,centreScreenY,radiusPixels,heroHeightPixels" }.Concat(sporeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-pike-casts.csv"),
                 new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,stage,shownToDueFrames,stepFrames,launchScreenX,launchScreenY,lastImpactScreenX,lastImpactScreenY,lastImpactOnScreen,pikeLengthPixels,furrowWidthPixels,heroHeightPixels,lastImpactFrameOffset" }.Concat(pikeRows));
+            System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-hero-poses.csv"),
+                new[] { "frameIndex,clip,action,frame,hitAgeSeconds,flash,redOutline" }.Concat(heroPoseRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-sling-casts.csv"),
                 new[] { "frameIndex,tick,evolved,onScreen,acceptedOffset,flightFrames,lureFrames,centreScreenX,centreScreenY,radiusPixels,heroHeightPixels,sackPixels" }.Concat(slingRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-ricochet-hops.csv"),
