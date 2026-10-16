@@ -176,7 +176,7 @@ namespace Tests.EditMode
             Assert.That(OrbitSpec.Shown(0), Is.InRange(.3f, .6f), "Back-to-back activations shrink part way, not to nothing (no blinking).");
             Assert.That(OrbitSpec.FanDegrees, Is.EqualTo(60).Within(1e-5f), "Spore clouds fan out within 60 degrees.");
             Assert.That(OrbitSpec.Puffs(0), Is.EqualTo(4)); Assert.That(OrbitSpec.Puffs(1), Is.EqualTo(5));
-            Assert.That(OrbitSpec.PuffHeroHeights(0), Is.EqualTo(.35f).Within(1e-5f)); Assert.That(OrbitSpec.PuffHeroHeights(1), Is.EqualTo(.45f).Within(1e-5f));
+            Assert.That(OrbitSpec.PuffHeroHeights(0), Is.EqualTo(.5f).Within(1e-5f)); Assert.That(OrbitSpec.PuffHeroHeights(1), Is.EqualTo(.6f).Within(1e-5f));
             Assert.That(OrbitSpec.PuffScale(0), Is.EqualTo(OrbitSpec.PuffFrom).Within(1e-5f)); Assert.That(OrbitSpec.PuffScale(1), Is.EqualTo(OrbitSpec.PuffTo).Within(1e-5f));
             Assert.That(OrbitSpec.PuffAlpha(0), Is.Zero, "Puffs fade in."); Assert.That(OrbitSpec.PuffAlpha(1), Is.Zero, "Puffs fade out.");
             Assert.That(OrbitSpec.PuffAlpha(.4f), Is.EqualTo(1).Within(1e-5f));

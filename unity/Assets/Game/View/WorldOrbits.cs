@@ -17,8 +17,8 @@ namespace Game.View
         // StreamTurns from near the hero out past the orbit, grains flowing inward along them, and a pair of puffs at each
         // orbiter; no ground ring and no stacked turns (the old 1.4-turn segmented spiral read as dotted concentric rings).
         public const int PuffsLv1 = 4, PuffsMax = 5, PuffFrames = 30, PuffInFrames = 6, PuffOutFrames = 15, GrainsLv1 = 6, GrainsMax = 8, GrainFrames = 24;
-        public const float FanDegrees = 60, PuffFrom = .5f, PuffTo = 1.1f, PuffSwayDegrees = 20, MinPuffHeroHeights = .35f, MaxPuffHeroHeights = .45f;
-        public const float GrainHeroHeights = .06f;
+        public const float FanDegrees = 60, PuffFrom = .5f, PuffTo = 1.1f, PuffSwayDegrees = 20, MinPuffHeroHeights = .5f, MaxPuffHeroHeights = .6f;
+        public const float GrainHeroHeights = .11f;   // the grain fills about half its canvas: 5-8px on screen
         public const int VortexArms = 3, StreamSegments = 18, StreamGrains = 8, EvolvedPuffs = 2;
         public const float StreamTurns = .6f, VortexSpin = 140, VortexReach = 1.18f, StreamInner = .15f, StreamInnerHeroHeights = .12f, StreamOuterHeroHeights = .3f;
         // Per-frame caps (docs/design/m1-weapon-effect-sprites.md).
@@ -179,7 +179,7 @@ namespace Game.View
                 var spread = (SporeHash(seed * 17 + k, born) - .5f) * OrbitSpec.FanDegrees;
                 var push = radius * (evolved ? .5f : 1) * Mathf.Lerp(-.1f, 1, 1 - (1 - life) * (1 - life));
                 var at = orbiter + Rotate(outward, spread) * push;
-                var colour = Color.white; colour.a = .85f * OrbitSpec.PuffAlpha(life) * shown;
+                var colour = Color.white; colour.a = .95f * OrbitSpec.PuffAlpha(life) * shown;
                 var picture = sporePuffs[(k + born) % sporePuffs.Length];
                 var scale = size * OrbitSpec.PuffScale(life);
                 var sway = (SporeHash(seed + 3, born * 5 + k) - .5f) * 2 * OrbitSpec.PuffSwayDegrees + life * OrbitSpec.PuffSwayDegrees;
@@ -226,7 +226,7 @@ namespace Game.View
                     var t0 = k / (float)OrbitSpec.StreamSegments; var t1 = (k + 1) / (float)OrbitSpec.StreamSegments;
                     var next = Along(t1); var span = next - previous; var mid = (t0 + t1) * .5f;
                     var taper = Mathf.SmoothStep(0, 1, mid / .15f) * Mathf.SmoothStep(0, 1, (1 - mid) / .2f);
-                    var colour = Color.white; colour.a = .85f * shown * taper;
+                    var colour = Color.white; colour.a = .95f * shown * taper;
                     var width = HeroHeight * Mathf.Lerp(OrbitSpec.StreamInnerHeroHeights, OrbitSpec.StreamOuterHeroHeights, mid) * Mathf.Lerp(.6f, 1, taper);
                     var slice = new Rect(uv.x + uv.width * t0, uv.y, uv.width / OrbitSpec.StreamSegments, uv.height);
                     Draw(sporeStream, ProjectileLayer, previous, 0, new Vector2(span.magnitude * 1.06f, width), Angle(span), 1, colour, uv: slice, applyTween: false);
@@ -274,9 +274,9 @@ namespace Game.View
                     density = Mathf.Max(density, 1 - d * d);
                 }
                 var lump = .08f * Mathf.Sin(x * .21f + variant) * Mathf.Sin(y * .17f - variant * 2);
-                var alpha = Mathf.Clamp01((density + lump) * 1.4f) * .8f;
+                var alpha = Mathf.Clamp01((density + lump) * 1.5f) * .9f;
                 if (alpha < .02f) return new Color(0, 0, 0, 0);
-                var c = SporeShade((x - (height - y)) / (float)width + .5f, density * .35f);
+                var c = SporeShade((x - (height - y)) / (float)width + .5f, density * .2f);
                 var speck = Mathf.Sin(x * 1.31f + y * .73f + variant * 5) * Mathf.Sin(x * .57f - y * 1.13f);
                 if (speck > .93f && density > .3f) c = Color.Lerp(c, Color.white, .7f);
                 c.a = alpha; return c;
