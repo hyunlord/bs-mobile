@@ -47,6 +47,8 @@ namespace Game.View
         ArtVisual slingSack, slingGrain, slingBurst;
         const string SackRole = "fx.granary_sling.sack", GiantSackRole = "fx.granary_sling.giant_sack", GrainRole = "fx.granary_sling.grain", BurstRole = "fx.granary_sling.burst";
         ArtVisual slingGiantSack;
+        bool slingGrainPainted;   // Astra's painted grain carries its own gold; the temporary white grain is tinted gold
+        Color SlingGrainColour(float alpha) { var c = slingGrainPainted ? Color.white : SlingSpec.Grain; c.a = alpha; return c; }
 
         static SlingCast[] CreateSlingCasts()
         {
@@ -207,7 +209,7 @@ namespace Game.View
                 var seed = LightningBolt.Hash(cast.Id, 700 + s);
                 var angle = s * 360f / count + ((seed & 255) / 255f - .5f) * 20;
                 var reach = cast.Radius * Mathf.Lerp(.1f, 1.05f, 1 - (1 - t) * (1 - t)) * (.8f + .2f * (((seed >> 8) & 255) / 255f));
-                var colour = SlingSpec.Grain; colour.a = 1 - t * t;
+                var colour = SlingGrainColour(1 - t * t);
                 Draw(slingGrain, ProjectileLayer, cast.Point + M1Direction(angle) * reach + Vector2.up * (HeroHeight * .5f * 4 * t * (1 - t)), 0, new Vector2(size * .6f, size), angle + 90 + t * 360, 1, colour, applyTween: false);
             }
         }
@@ -243,7 +245,7 @@ namespace Game.View
                 var reach = cast.Radius * Mathf.Lerp(SlingSpec.ScentRingFrom, .15f, phase) * Mathf.Lerp(1, .6f, lure);
                 var angle = ((seed >> 10) & 1023) / 1023f * 360;
                 if (cast.Evolved) angle = g % SlingSpec.VortexArms * 360f / SlingSpec.VortexArms + phase * 220 + since * 120;
-                var colour = SlingSpec.Grain; colour.a = Mathf.Sin(phase * Mathf.PI) * (cast.Evolved ? .95f : .8f);
+                var colour = SlingGrainColour(Mathf.Sin(phase * Mathf.PI) * (cast.Evolved ? .95f : .8f));
                 Draw(slingGrain, ProjectileLayer, cast.Point + M1Direction(angle) * reach, 0, Vector2.one * size, angle + 90, 1, colour, applyTween: false);
             }
         }
@@ -269,6 +271,7 @@ namespace Game.View
             slingSack = EffectArt(SackRole, () => TemporarySack("Temporary grain sack", false));
             slingGiantSack = EffectArt(GiantSackRole, () => TemporarySack("Temporary giant grain sack", true));
             slingGrain = EffectArt(GrainRole, TemporaryGrain);
+            slingGrainPainted = art != null && art.TryResolveRole(GrainRole, out _);
             slingBurst = EffectArt(BurstRole, TemporaryBurst);
         }
 
