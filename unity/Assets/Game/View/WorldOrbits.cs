@@ -21,7 +21,9 @@ namespace Game.View
         public const float GrainHeroHeights = .11f;   // the grain fills about half its canvas: 5-8px on screen
         // StreamSegments slices per stream: fine enough that the end taper (alpha and width) and the bend change in small steps
         // (at 18 the painted stream's square-cut slices showed as steps at both ends and joints at the bends).
-        public const int VortexArms = 3, StreamSegments = 60, StreamGrains = 8, EvolvedPuffs = 2;
+        public const int VortexArms = 3, StreamSegments = 60, StreamGrains = 8, EvolvedPuffs = 2, StreamTileSlices = 8;
+        // Consecutive stream tiles overlap by this share of a tile (107 of the picture's 512px) so their soft ends join.
+        public const float StreamTileOverlap = 107f / 512;
         public const float StreamTurns = .6f, VortexSpin = 140, VortexReach = 1.18f, StreamInner = .15f, StreamInnerHeroHeights = .12f, StreamOuterHeroHeights = .3f;
         // Per-frame caps (docs/design/m1-weapon-effect-sprites.md).
         public const int MaxPuffs = 24, MaxGrains = 60;
@@ -42,6 +44,8 @@ namespace Game.View
         // ShockFrom -> ShockTo of ShockOfShieldHeight where it lands.
         public const int ThrowFrames = 10, ShockwaveFrames = 10, MaxThrows = 16, MaxShocks = 4, TrailSegments = 8;
         public const float ThrownShieldDegrees = 0;
+        // The shockwave's alpha falls fast as it spreads, so its painted band never reads heavy at full size.
+        public static float ShockAlpha(float share) => Mathf.Pow(1 - Mathf.Clamp01(share), 2.5f);
         public const float ShockFrom = .3f, ShockTo = 1.2f, ShockOfShieldHeight = 2.4f, TrailShieldWidths = 2.5f, TrailOfShieldHeight = .6f;
         // A thrown shield's place along its flight (0 at the orbit, 1 at the struck enemy) at share t of the throw: out and back.
         public static float ThrowReach(float t) { var r = t < .5f ? t * 2 : (1 - t) * 2; r = Mathf.Clamp01(r); return r * r * (3 - 2 * r); }
@@ -223,6 +227,17 @@ namespace Game.View
         // Evolution element: three continuous spore streams spiralling StreamTurns around the hero from near it out past the
         // orbit, each the stream picture stretched once along it (drawn as StreamSegments slices of the picture), tapered at
         // both ends, the whole vortex turning slowly; grains flow inward along the streams.
+        readonly Vector2[] streamPoints = new Vector2[OrbitSpec.StreamSegments + 1];
+        readonly float[] streamLengths = new float[OrbitSpec.StreamSegments + 1];
+        float StreamWidth(float t) => HeroHeight * Mathf.Lerp(OrbitSpec.StreamInnerHeroHeights, OrbitSpec.StreamOuterHeroHeights, t);
+        Vector2 StreamPoint(float distance)
+        {
+            var k = 1;
+            while (k < OrbitSpec.StreamSegments && streamLengths[k] < distance) k++;
+            var span = streamLengths[k] - streamLengths[k - 1];
+            return Vector2.Lerp(streamPoints[k - 1], streamPoints[k], span > 1e-6f ? (distance - streamLengths[k - 1]) / span : 0);
+        }
+
         void DrawSporeVortex(Vector2 centre, float orbitRadius, float shown)
         {
             if (shown <= 0 || orbitRadius <= 0) return;
@@ -233,17 +248,34 @@ namespace Game.View
             {
                 var start = spin + arm * 360f / OrbitSpec.VortexArms;
                 Vector2 Along(float t) => centre + M1Direction(start + OrbitSpec.StreamAngle(t)) * (reach * OrbitSpec.StreamReach(t));
-                var previous = Along(0);
-                for (var k = 0; k < OrbitSpec.StreamSegments; k++)
+                // The arm as a polyline with its running length, so tiles can be laid by distance along the curve.
+                for (var k = 0; k <= OrbitSpec.StreamSegments; k++)
                 {
-                    var t0 = k / (float)OrbitSpec.StreamSegments; var t1 = (k + 1) / (float)OrbitSpec.StreamSegments;
-                    var next = Along(t1); var span = next - previous; var mid = (t0 + t1) * .5f;
-                    var taper = Mathf.SmoothStep(0, 1, mid / .15f) * Mathf.SmoothStep(0, 1, (1 - mid) / .2f);
-                    var colour = Color.white; colour.a = .95f * shown * taper;
-                    var width = HeroHeight * Mathf.Lerp(OrbitSpec.StreamInnerHeroHeights, OrbitSpec.StreamOuterHeroHeights, mid) * Mathf.Lerp(.6f, 1, taper);
-                    var slice = new Rect(uv.x + uv.width * t0, uv.y, uv.width / OrbitSpec.StreamSegments, uv.height);
-                    Draw(sporeStream, ProjectileLayer, previous, 0, new Vector2(span.magnitude * 1.06f, width), Angle(span), 1, colour, uv: slice, applyTween: false);
-                    previous = next;
+                    streamPoints[k] = Along(k / (float)OrbitSpec.StreamSegments);
+                    streamLengths[k] = k == 0 ? 0 : streamLengths[k - 1] + (streamPoints[k] - streamPoints[k - 1]).magnitude;
+                }
+                var total = streamLengths[OrbitSpec.StreamSegments];
+                if (total <= 1e-5f) continue;
+                // Tiles of the stream picture at its own aspect (its soft ends overlap StreamTileOverlap of a tile, as
+                // Astra's 107px-of-512 demonstration), each bent along the curve in StreamTileSlices slices.
+                for (var from = 0f; from < total; )
+                {
+                    var tileWidth = StreamWidth(from / total);
+                    var tile = tileWidth * sporeStream.WorldSize.x / sporeStream.WorldSize.y;
+                    for (var k = 0; k < OrbitSpec.StreamTileSlices; k++)
+                    {
+                        var s0 = from + tile * k / OrbitSpec.StreamTileSlices; if (s0 >= total) break;
+                        var s1 = Mathf.Min(total, from + tile * (k + 1) / OrbitSpec.StreamTileSlices);
+                        var a = StreamPoint(s0); var b = StreamPoint(s1); var span = b - a;
+                        if (span.sqrMagnitude < 1e-10f) continue;
+                        var mid = (s0 + s1) * .5f / total;
+                        var taper = Mathf.SmoothStep(0, 1, mid / .15f) * Mathf.SmoothStep(0, 1, (1 - mid) / .2f);
+                        var colour = Color.white; colour.a = .95f * shown * taper;
+                        var u0 = (s0 - from) / tile; var u1 = (s1 - from) / tile;
+                        var slice = new Rect(uv.x + uv.width * u0, uv.y, uv.width * (u1 - u0), uv.height);
+                        Draw(sporeStream, ProjectileLayer, a, 0, new Vector2(span.magnitude * 1.02f, StreamWidth(mid) * Mathf.Lerp(.6f, 1, taper)), Angle(span), 1, colour, uv: slice, applyTween: false);
+                    }
+                    from += tile * (1 - OrbitSpec.StreamTileOverlap);
                 }
                 for (var g = 0; g < OrbitSpec.StreamGrains; g++)
                 {
@@ -424,7 +456,7 @@ namespace Game.View
                 if (s > 1) continue;
                 shocks++;
                 var size = item.Size * 2 * OrbitSpec.ShockOfShieldHeight * Mathf.Lerp(OrbitSpec.ShockFrom, OrbitSpec.ShockTo, Mathf.Sqrt(s));
-                var colour = Color.white; colour.a = 1 - s * s;
+                var colour = Color.white; colour.a = OrbitSpec.ShockAlpha(s);
                 Draw(wardShock, ShieldEmblemLayer, item.To, 0, new Vector2(size, size * wardShock.WorldSize.y / wardShock.WorldSize.x), 0, 1, colour, applyTween: false);
             }
         }

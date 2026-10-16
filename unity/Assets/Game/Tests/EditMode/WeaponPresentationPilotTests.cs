@@ -191,6 +191,8 @@ namespace Tests.EditMode
             Assert.That(OrbitSpec.ThrowReach(1), Is.Zero, "Comes back to the orbit.");
             Assert.That(OrbitSpec.ShockFrom, Is.EqualTo(.3f).Within(1e-5f)); Assert.That(OrbitSpec.ShockTo, Is.EqualTo(1.2f).Within(1e-5f));
             Assert.That(OrbitSpec.MaxShocks, Is.EqualTo(4));
+            Assert.That(OrbitSpec.ShockAlpha(0), Is.EqualTo(1)); Assert.That(OrbitSpec.ShockAlpha(.5f), Is.LessThan(.25f), "The shockwave is mostly gone by half its spread.");
+            Assert.That(OrbitSpec.StreamTileOverlap, Is.EqualTo(107f / 512).Within(1e-6f), "Stream tiles overlap as Astra's demonstration.");
             // Furrow pike: the point leaves the hero before the first impact, reaches each impact on its Core tick.
             Assert.That(PikeSpec.Reach(0, 1, .1f, 6), Is.EqualTo(-1), "At the hero until the thrust starts.");
             Assert.That(PikeSpec.Reach(1, 1, .1f, 6), Is.EqualTo(0).Within(1e-5f), "On the first impact at its tick.");
