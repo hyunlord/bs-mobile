@@ -277,7 +277,7 @@
       "id": "equipment",
       "path": "Assets/Art/equipment.png",
       "width": 1402,
-      "height": 1122,
+      "height": 1290,
       "padding": 2,
       "license": "generated-equipment"
     },
@@ -493,7 +493,7 @@
       "id": "wave1a-weapon-fx",
       "path": "Assets/Art/wave1a-weapon-fx.png",
       "width": 2016,
-      "height": 1288,
+      "height": 1400,
       "padding": 4,
       "license": "generated-wave1a-weapon-fx"
     }
@@ -11107,6 +11107,94 @@
       "worldSize": {
         "x": 0.333333,
         "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.furrow",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 4,
+          "y": 1296,
+          "width": 512,
+          "height": 96
+        }
+      ],
+      "pivot": {
+        "x": 0,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.333333,
+        "y": 0.25
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.pike",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 524,
+          "y": 1296,
+          "width": 384,
+          "height": 48
+        }
+      ],
+      "pivot": {
+        "x": 0.97,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.0,
+        "y": 0.125
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.thrust",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 524,
+          "y": 1348,
+          "width": 256,
+          "height": 48
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.125
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.tip_flash",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 912,
+          "y": 1296,
+          "width": 96,
+          "height": 96
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.25,
+        "y": 0.25
       },
       "frameMs": 1000,
       "tween": "none"
