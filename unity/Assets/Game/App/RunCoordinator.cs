@@ -379,6 +379,7 @@ namespace Game.App
                 world.ShowTransientText=screen!=UiScreen.Revive;
                 PredictLord(movement);
                 var probeDrawStart=ProbeEnabled?ProbeTimestamp():0;
+                world.HeroLocomotionPerTick=(float)(Session?.LocomotionSpeedPerTick??0);
                 using(RunProfilerMarkers.WorldPresent.Auto())
                 using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,CurrentFrame,FirstPlayable,renderInterpolation.Present(CurrentFrame.Tick,(float)(accumulator*CurrentFrame.TickRate),Paused,Time.unscaledDeltaTime,CurrentFrame.TickRate),Time.unscaledDeltaTime,visible);
                 LongFrameViewPresented();

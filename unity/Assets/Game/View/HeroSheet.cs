@@ -1,0 +1,209 @@
+using System;
+using SowSiege.Core;
+using UnityEngine;
+
+namespace Game.View
+{
+    // Full-body knight sprite sheets (Astra knight-game-sheets-r4, docs/design/gdd/06-feedback.md "공격 동작"). View only:
+    // Core events choose the pose; nothing here changes when damage happens.
+    public enum HeroAction { None, Slash, Aim, Cast, Blow, Throw }
+    public enum HeroClip { Idle, Walk, Hit, Death, Action, Key }
+
+    public static class HeroSheetSpec
+    {
+        // Delivered frame timings in 60 Hz ticks (manifest frameTicks60; manifest frameMs is only rounded for reading).
+        public const int WalkFrames = 8, WalkTicks = 10, SlashFrames = 8, SlashTicks = 9, ActionFrames = 6, ActionTicks = 10;
+        public const int IdleFrames = 6, IdleTicks = 12, HitFrames = 2, HitTicks = 8, KeyTicks = 7;
+        public const float MinRepeatSeconds = .4f;   // the same action starts at most every 0.4 s
+        public const string RolePrefix = "hero.core.frontier_knight.";
+        public static readonly string[] ActionNames = { "", "slash", "aim", "cast", "blow", "throw" };
+        public static float Seconds(int ticks60) => ticks60 / 60f;
+        public static int Frames(HeroAction action) => action == HeroAction.Slash ? SlashFrames : ActionFrames;
+        public static int Ticks(HeroAction action) => action == HeroAction.Slash ? SlashTicks : ActionTicks;
+        public static float FullSeconds(HeroAction action) => Seconds(Frames(action) * Ticks(action));
+        public static float KeySeconds => Seconds(KeyTicks);
+        public static float WalkCycleSeconds => Seconds(WalkFrames * WalkTicks);
+        // The sheets were fitted to the previous knight's figure (its 242 px frame = 0.6 world units, figure 209 px): that
+        // frame's footprint is this share of a 320x240 cell, used for the shadow and camera margins instead of the cell.
+        public const float BodyReferencePx = 115, CellWidthPx = 320, CellHeightPx = 240;
+        public static Vector2 FigureShareOfCell => new Vector2(BodyReferencePx * 188f / 209 / CellWidthPx, BodyReferencePx * 242f / 209 / CellHeightPx);
+
+        // Weapon -> action (06-feedback mapping). The guard ring throws only in its evolved stage, on its hits; the spore fan
+        // and every other source have no action.
+        public static HeroAction ActionFor(string weaponId, bool evolved, string kind)
+        {
+            switch (weaponId)
+            {
+                case "core:iron_blade": case "core:ditch_pike": return kind == "attack" ? HeroAction.Slash : HeroAction.None;
+                case "core:canal_bow": case "core:granary_sling": return kind == "attack" ? HeroAction.Aim : HeroAction.None;
+                case "core:storm_fork": return kind == "attack" ? HeroAction.Cast : HeroAction.None;
+                case "core:muster_horn": return kind == "attack" ? HeroAction.Blow : HeroAction.None;
+                case "core:ward_orbit": return evolved && kind == "hit" ? HeroAction.Throw : HeroAction.None;
+                default: return HeroAction.None;
+            }
+        }
+    }
+
+    public readonly struct HeroSheetPose
+    {
+        public readonly HeroClip Clip; public readonly HeroAction Action; public readonly int Frame;
+        public HeroSheetPose(HeroClip clip, HeroAction action, int frame) { Clip = clip; Action = action; Frame = frame; }
+        public override string ToString() => Clip == HeroClip.Action || Clip == HeroClip.Key ? $"{Clip}:{Action}[{Frame}]" : $"{Clip}[{Frame}]";
+    }
+
+    // Chooses the knight's pose each frame. Rules (06-feedback):
+    // - Moving: an accepted attack shows that action's key pose for 7/60 s, then walking resumes. Standing: the full action.
+    // - Starting to move during a full action ends it at once (user approved 2026-10-17).
+    // - Same tick: evolved before higher damage before lower weapon id. During an action a higher-priority attack replaces it
+    //   from its start; equal or lower ones are dropped. The same action starts at most every 0.4 s (dropped, not queued).
+    // - A hero hit overrides the action, which does not resume afterwards.
+    public sealed class HeroActionSelector
+    {
+        HeroAction current; bool key; float started; int startedTick = -1; bool evolved; int damage; string source;
+        readonly float[] lastStart = new float[6];
+        float hitStarted; bool wasHit; float walkPhase;
+        public int Started { get; private set; }
+        public int KeysShown { get; private set; }
+        public int FullShown { get; private set; }
+        public int Dropped { get; private set; }
+        public int Replaced { get; private set; }
+        public int CutByMovement { get; private set; }
+
+        public HeroActionSelector() { Reset(); }
+        public void Reset()
+        {
+            current = HeroAction.None; key = false; started = 0; startedTick = -1; source = null; evolved = false; damage = 0;
+            for (var i = 0; i < lastStart.Length; i++) lastStart[i] = float.NegativeInfinity;
+            hitStarted = 0; wasHit = false; walkPhase = 0;
+            Started = KeysShown = FullShown = Dropped = Replaced = CutByMovement = 0;
+        }
+
+        static int Compare(bool evolvedA, int damageA, string sourceA, bool evolvedB, int damageB, string sourceB)
+        {
+            if (evolvedA != evolvedB) return evolvedA ? 1 : -1;
+            if (damageA != damageB) return damageA > damageB ? 1 : -1;
+            return -string.CompareOrdinal(sourceA, sourceB);   // lower id first
+        }
+
+        bool Active(float time, bool moving)
+        {
+            if (current == HeroAction.None) return false;
+            if (key) return time < started + HeroSheetSpec.KeySeconds;
+            return time < started + HeroSheetSpec.FullSeconds(current);
+        }
+
+        // Offers one Core attack. Returns whether it started (or replaced) the shown action.
+        public bool Offer(int tick, string weaponSource, HeroAction action, bool isEvolved, int weaponDamage, float time, bool moving)
+        {
+            if (action == HeroAction.None) return false;
+            if (wasHit) { Dropped++; return false; }   // the hit pose wins; attacks during it are not shown afterwards
+            var active = Active(time, moving);
+            if (active && Compare(isEvolved, weaponDamage, weaponSource, evolved, damage, source) <= 0) { Dropped++; return false; }
+            var sameTickChoice = active && tick == startedTick;
+            if (!sameTickChoice && time - lastStart[(int)action] < HeroSheetSpec.MinRepeatSeconds) { Dropped++; return false; }
+            if (active) Replaced++;
+            current = action; key = moving; started = time; startedTick = tick;
+            evolved = isEvolved; damage = weaponDamage; source = weaponSource; lastStart[(int)action] = time;
+            Started++; if (key) KeysShown++; else FullShown++;
+            return true;
+        }
+
+        // walkDistance: distance moved since the last call; stride: distance of one walk cycle at the hero's base speed
+        // (playback follows the actual speed). hit: the hero hit flash is on.
+        public HeroSheetPose Pose(float time, bool moving, bool hit, bool dead, float walkDistance, float stride)
+        {
+            if (moving && stride > 0) walkPhase = Mathf.Repeat(walkPhase + walkDistance / stride, 1);
+            if (dead) { wasHit = false; current = HeroAction.None; return new HeroSheetPose(HeroClip.Death, HeroAction.None, 0); }
+            if (hit)
+            {
+                if (!wasHit) { wasHit = true; hitStarted = time; current = HeroAction.None; }
+                return new HeroSheetPose(HeroClip.Hit, HeroAction.None, Mathf.Min(HeroSheetSpec.HitFrames - 1, Mathf.FloorToInt((time - hitStarted) / HeroSheetSpec.Seconds(HeroSheetSpec.HitTicks))));
+            }
+            wasHit = false;
+            if (current != HeroAction.None && !key && moving) { current = HeroAction.None; CutByMovement++; }
+            if (Active(time, moving))
+            {
+                if (key) return new HeroSheetPose(HeroClip.Key, current, (int)current - 1);
+                var frame = Mathf.Min(HeroSheetSpec.Frames(current) - 1, Mathf.FloorToInt((time - started) / HeroSheetSpec.Seconds(HeroSheetSpec.Ticks(current))));
+                return new HeroSheetPose(HeroClip.Action, current, frame);
+            }
+            current = HeroAction.None;
+            if (moving) return new HeroSheetPose(HeroClip.Walk, HeroAction.None, Mathf.Min(HeroSheetSpec.WalkFrames - 1, Mathf.FloorToInt(walkPhase * HeroSheetSpec.WalkFrames)));
+            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time) / HeroSheetSpec.Seconds(HeroSheetSpec.IdleTicks)) % HeroSheetSpec.IdleFrames);
+        }
+    }
+
+    public sealed partial class WorldRenderer
+    {
+        // Lord speed per Core tick at base speed (set by the run); the walk cycle plays faster or slower with the actual speed.
+        public float HeroLocomotionPerTick { get; set; }
+        public Action<HeroSheetPose> HeroSheetPoseSampled { get; set; }
+        public HeroActionSelector HeroActions { get; } = new HeroActionSelector();
+        bool heroSheetChecked, heroSheetAvailable;
+        ArtVisual heroSheetIdle, heroSheetWalk, heroSheetHit, heroSheetDeath;
+        readonly ArtVisual[] heroSheetActions = new ArtVisual[6], heroSheetKeys = new ArtVisual[6];
+
+        bool EnsureHeroSheet(string heroId)
+        {
+            if (heroSheetChecked) return heroSheetAvailable;
+            heroSheetChecked = true;
+            if (heroId != "core:frontier_knight" || art == null || !art.TryResolveRole(HeroSheetSpec.RolePrefix + "action.slash", out _)) return heroSheetAvailable = false;
+            heroSheetIdle = Resolve("hero", heroId, "idle"); heroSheetWalk = Resolve("hero", heroId, "walk");
+            heroSheetHit = Resolve("hero", heroId, "hit"); heroSheetDeath = Resolve("hero", heroId, "death");
+            for (var a = 1; a < heroSheetActions.Length; a++)
+            {
+                heroSheetActions[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "action." + HeroSheetSpec.ActionNames[a]);
+                heroSheetKeys[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "key." + HeroSheetSpec.ActionNames[a]);
+            }
+            if (heroSheetWalk.UvRects.Count != HeroSheetSpec.WalkFrames || heroSheetIdle.UvRects.Count != HeroSheetSpec.IdleFrames || heroSheetHit.UvRects.Count != HeroSheetSpec.HitFrames ||
+                heroSheetActions[(int)HeroAction.Slash].UvRects.Count != HeroSheetSpec.SlashFrames || heroSheetActions[(int)HeroAction.Aim].UvRects.Count != HeroSheetSpec.ActionFrames)
+                throw new InvalidOperationException("Knight sheet roles do not match the delivered frame counts.");
+            return heroSheetAvailable = true;
+        }
+
+        // A Core attack the knight may act on: weapon id (an evolution's attack counts as its first input weapon, evolved).
+        void OfferHeroAction(WaveEvent value, int tick)
+        {
+            if (!heroSheetAvailable || waveDefinition == null || value.Source == null) return;
+            var weapon = value.Source; var evolved = false;
+            if (waveDefinition.Evolutions.TryGetValue(value.Source, out var evolution) && evolution.InputIds.Length > 0) { weapon = evolution.InputIds[0]; evolved = true; }
+            else if (value.Kind == "hit") evolved = HeroWeaponEvolved(weapon);
+            var action = HeroSheetSpec.ActionFor(weapon, evolved, value.Kind);
+            if (action == HeroAction.None) return;
+            var damage = waveDefinition.Gear.TryGetValue(weapon, out var gear) ? gear.Damage : 0;
+            HeroActions.Offer(tick, weapon, action, evolved, damage, visualTime, heroSheetMoving);
+        }
+
+        bool HeroWeaponEvolved(string weapon)
+        {
+            if (wave == null) return false;
+            foreach (var id in wave.Evolutions)
+                if (waveDefinition.Evolutions.TryGetValue(id, out var e) && e.InputIds.Length > 0 && e.InputIds[0] == weapon) return true;
+            return false;
+        }
+
+        bool heroSheetMoving;
+
+        // The hero's footprint for shadow and camera margins: the sheet cell's figure share, or the visual's own size.
+        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => EnsureHeroSheet(heroId) ? Vector2.Scale(visual.WorldSize, HeroSheetSpec.FigureShareOfCell) : visual.WorldSize;
+
+        bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, Color? tint, float flash, int tickRate)
+        {
+            if (!EnsureHeroSheet(heroId)) return false;
+            heroSheetMoving = walking;
+            var stride = HeroLocomotionPerTick > 0 ? HeroLocomotionPerTick * tickRate / settings.WorldUnitsPerUnityUnit * HeroSheetSpec.WalkCycleSeconds : 0;
+            var pose = HeroActions.Pose(visualTime, walking, hit, dead, movement.magnitude, stride);
+            var visual = pose.Clip switch
+            {
+                HeroClip.Walk => heroSheetWalk, HeroClip.Hit => heroSheetHit, HeroClip.Death => heroSheetDeath,
+                HeroClip.Action => heroSheetActions[(int)pose.Action], HeroClip.Key => heroSheetKeys[(int)pose.Action], _ => heroSheetIdle
+            };
+            var frame = pose.Clip == HeroClip.Key ? 0 : pose.Frame;
+            // Left/right mirror the single 3/4 view (facing keeps the last horizontal direction); up/down use the same sheet.
+            var size = visual.WorldSize; size.x *= facing.SignedWidth;
+            Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, tint, flash, uv: visual.UvRects[frame], applyTween: false);
+            HeroSheetPoseSampled?.Invoke(pose);
+            return true;
+        }
+    }
+}

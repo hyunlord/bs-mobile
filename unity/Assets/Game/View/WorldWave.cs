@@ -120,6 +120,7 @@ namespace Game.View
                 }
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+GameVisualTokens.HitFlashSeconds;
                 if(value.Kind=="attack")heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
+                if(value.Kind=="attack"||value.Kind=="hit")OfferHeroAction(value,value.Tick);
             }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             RecordCapacityGrowth("waveEffects", effectsCapacity, waveEffects.Capacity, waveEffects.Count);

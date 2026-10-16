@@ -425,6 +425,7 @@ namespace Game.App
                     if (!warming) PredictLord(benchmarkMovement, presentationDelta);
                     alpha = renderInterpolation.Present(CurrentFrame.Tick, alpha, warming, presentationDelta, CurrentFrame.TickRate);
                 }
+                world.HeroLocomotionPerTick = (float)(Session?.LocomotionSpeedPerTick ?? 0);
                 using (RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous, CurrentFrame, FirstPlayable, alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 LongFrameViewPresented();
