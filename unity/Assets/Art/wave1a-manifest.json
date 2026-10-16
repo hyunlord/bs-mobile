@@ -10780,6 +10780,94 @@
       },
       "frameMs": 1000,
       "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.arrow",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 636,
+          "width": 192,
+          "height": 40
+        }
+      ],
+      "pivot": {
+        "x": 0.96,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.104167
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.streak",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1572,
+          "y": 636,
+          "width": 256,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.rain_streak",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1836,
+          "y": 636,
+          "width": 128,
+          "height": 24
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.333333,
+        "y": 0.0625
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.splash",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 684,
+          "width": 192,
+          "height": 144
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.08
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.375
+      },
+      "frameMs": 1000,
+      "tween": "none"
     }
   ],
   "bindings": [

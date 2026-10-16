@@ -69,6 +69,7 @@ namespace Game.View
         public int ArrowRainVolleys { get; private set; }
         public int ArrowImpacts { get; private set; }
         public int ArrowLandedOnTime { get; private set; }
+        public int BowstringFlashDraws { get; private set; }   // frames a bowstring flash was drawn (review counter)
         public System.Action<ArrowVolleyRecord> ArrowVolleySample;
 
         static ArrowVolley[] CreateVolleys()
@@ -81,7 +82,7 @@ namespace Game.View
         void ResetArrows()
         {
             foreach (var volley in arrowVolleys) { volley.Tick = -1; volley.Count = 0; }
-            arrowNext = 0; ArrowVolleys = ArrowRainVolleys = ArrowImpacts = ArrowLandedOnTime = 0;
+            arrowNext = 0; ArrowVolleys = ArrowRainVolleys = ArrowImpacts = ArrowLandedOnTime = BowstringFlashDraws = 0;
         }
 
         bool IsArrowSource(string source) => source != null && m1CombatShapes.TryGetValue(source, out var shape) && shape == "arrowrain";
@@ -207,6 +208,7 @@ namespace Game.View
                 // hero's figure, so it is drawn above the hero (like the arrows in flight).
                 // Full strength for all but the last frame, then gone.
                 var fade = Mathf.Clamp01((ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) - age) / ArrowSpec.Seconds(1));
+                BowstringFlashDraws++;
                 var glow = ArrowSpec.Water; glow.a = fade;
                 Draw(lightningFlash, OverHeroThinLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
                 var core = Color.white; core.a = fade;
