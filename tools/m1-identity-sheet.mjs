@@ -43,8 +43,9 @@ function pick(directory, id) {
   }
   if (id === 'core:spore_fan' || id === 'core:ward_orbit') {
     const a = rows(path.join(directory, 'm1-orbit-activations.csv')).filter(late)[1];
+    // The old spore tornado stood up from its foot; option A clouds sit around the orbiter.
     const hero = Number(a.heroHeightPixels);
-    return { frame: Number(a.frameIndex), x: Number(a.firstOrbiterScreenX), y: FrameHeight - Number(a.firstOrbiterScreenY) - (id === 'core:spore_fan' ? hero * .5 : 0), size: Math.max(hero * 1.6, Number(a.orbiterSizePixels) * 1.6) };
+    return { frame: Number(a.frameIndex), x: Number(a.firstOrbiterScreenX), y: FrameHeight - Number(a.firstOrbiterScreenY) - (id === 'core:spore_fan' && Number(a.orbiterSizePixels) > hero * .9 ? hero * .5 : 0), size: Math.max(hero * 1.6, Number(a.orbiterSizePixels) * 1.6) };
   }
   if (id === 'core:storm_fork') {
     // A strike with a sky bolt: from the bolt's top down to its target, on the frame the strike becomes visible.
