@@ -119,6 +119,10 @@ namespace Game.View
             if (!any) return;
             EnsureSporeArt(); EnsureSporePatchArt();
             var view = CameraWorldViewport;
+            // Only the newest evolved patch carries the vortex (four overlapping patches turning four vortices read as clutter).
+            SporePatch newest = null;
+            foreach (var patch in sporePatches)
+                if (patch.Tick >= 0 && patch.Count > 0 && patch.Evolved && SporePatchSpec.Fade(visualTime - patch.LastPulse) > 0 && (newest == null || patch.Tick > newest.Tick)) newest = patch;
             foreach (var patch in sporePatches)
             {
                 if (patch.Tick < 0 || patch.Count == 0) continue;
@@ -133,7 +137,7 @@ namespace Game.View
                 var width = patch.Radius * SporePatchSpec.PatchOfRadius * Mathf.Lerp(.6f, 1, spread);
                 var colour = Color.white; colour.a = SporePatchSpec.PatchAlpha * spread * fade * (1 + SporePatchSpec.PulseBrighten * pulse);
                 Draw(sporePatchPicture, GameVisualTokens.AttackLayer, patch.Centre, 0, new Vector2(width, width * sporePatchPicture.WorldSize.y / sporePatchPicture.WorldSize.x), 0, 1, colour, applyTween: false);
-                if (patch.Evolved) { DrawSporeVortex(patch.Centre, patch.Radius * SporePatchSpec.VortexOfRadius / OrbitSpec.VortexReach, spread * fade); VortexFrames++; }
+                if (patch == newest) { DrawSporeVortex(patch.Centre, patch.Radius * SporePatchSpec.VortexOfRadius / OrbitSpec.VortexReach, spread * fade); VortexFrames++; }
                 // Each pulse bursts puffs up off the patch and scatters grains outward (inward toward the vortex when evolved).
                 for (var i = 0; i < patch.Count; i++)
                 {

@@ -20,6 +20,7 @@ namespace Game.View
         public const float PikeHeroHeights = 1.3f, TipFlashHeroHeights = .5f, StreakHeroHeights = .2f, EvolvedStreakHeroHeights = .3f;
         public const float MinFurrowHeroHeights = .35f, MaxFurrowHeroHeights = .5f, EvolvedFurrowHeroHeights = .7f, NormalStageShare = .75f;
         public const int HitHoldFrames = 2;   // struck enemies freeze briefly and are pushed along the thrust line
+        public const float FurrowTileU0 = 39f / 512, FurrowTileU1 = 473f / 512;
         public static float Seconds(int frames) => frames / 60f;
         public static float FurrowHeroHeights(float stage, bool evolved)
             => evolved ? EvolvedFurrowHeroHeights : Mathf.Lerp(MinFurrowHeroHeights, MaxFurrowHeroHeights, Mathf.Clamp01(stage / NormalStageShare));
@@ -213,18 +214,20 @@ namespace Game.View
             }
         }
 
-        // The furrow picture tiled along the line from `from` (each tile one picture long at `width`), the last tile cut.
+        // The furrow picture tiled along the line from `from`, the last tile cut. Tiles use the picture's content columns
+        // (FurrowTileU0..U1: Astra's contentRect, its transparent side margins left out) so they join without gaps.
         void DrawPikeFurrow(Vector2 from, Vector2 direction, float length, float width, float alpha)
         {
             if (length <= 0 || alpha <= 0) return;
             var uv = pikeFurrow.UvRects[0];
-            var tile = width * pikeFurrow.WorldSize.x / pikeFurrow.WorldSize.y;
+            var share = PikeSpec.FurrowTileU1 - PikeSpec.FurrowTileU0;
+            var tile = width * pikeFurrow.WorldSize.x / pikeFurrow.WorldSize.y * share;
             var angle = Angle(direction);
             var colour = Color.white; colour.a = alpha;
             for (var start = 0f; start < length; start += tile)
             {
                 var piece = Mathf.Min(tile, length - start);
-                var slice = new Rect(uv.x, uv.y, uv.width * piece / tile, uv.height);
+                var slice = new Rect(uv.x + uv.width * PikeSpec.FurrowTileU0, uv.y, uv.width * share * piece / tile, uv.height);
                 Draw(pikeFurrow, GameVisualTokens.AttackLayer, from + direction * start, 0, new Vector2(piece, width), angle, 1, colour, uv: slice, applyTween: false);
             }
         }
