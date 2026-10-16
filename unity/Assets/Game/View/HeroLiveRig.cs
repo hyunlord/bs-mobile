@@ -27,7 +27,7 @@ namespace Game.View
         readonly HeroLiveJoint[] pose;
         readonly HeroLiveClip swing, evolvedSwing, hitClip;
         readonly Texture2D partsTexture, swordTexture;
-        readonly int farKnee, nearKnee, nearShoulder;
+        readonly int farKnee, nearKnee, nearShoulder, hand;
         public int SpriteSkinCount => renderers.Length;
         public int BoneCount => bones.Length;
         public int DeformedSkinCount
@@ -48,6 +48,7 @@ namespace Game.View
             data = HeroLiveRigData.Load(resourceRoot);
             farKnee = data.JointIndex("farKnee"); nearKnee = data.JointIndex("nearKnee");
             nearShoulder = data.JointIndex("nearShoulder");
+            hand = Array.IndexOf(data.jointNames, "sword"); if (hand < 0) hand = Array.IndexOf(data.jointNames, "nearElbow");
             swing = data.Clip("swing"); evolvedSwing = data.Clip("evolved-swing"); hitClip = data.Clip("hit");
             partsTexture = Resources.Load<Texture2D>(string.IsNullOrEmpty(data.partsResource) ? resourceRoot + "/parts" : data.partsResource);
             swordTexture = Resources.Load<Texture2D>(string.IsNullOrEmpty(data.swordResource) ? resourceRoot + "/sword" : data.swordResource);
@@ -220,6 +221,15 @@ namespace Game.View
         }
 
         public bool Flashing => flashing;
+
+        // The hero's near hand in world space (the sword's grip joint), as posed by the last Present.
+        public bool TryHand(out Vector2 world)
+        {
+            world = default;
+            if (hand < 0 || !root.activeSelf) return false;
+            world = bones[hand].position;
+            return true;
+        }
 
         // A tint can only darken the cutouts, so the hit flash swaps in a material that draws the parts 40% brighter.
         void ApplyFlash(bool active)

@@ -469,6 +469,7 @@ namespace Game.View
             if(!DrawHeroRig(heroVisual,heroDrawn,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
                 Color.white,heroFlash,heroGaitDiscontinuity,seconds))
                 DrawActor(heroVisual,GameVisualTokens.LordLayer,heroDrawn,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroFlash*.3f,facing:heroFacing);
+            PlaceBowstringFlashes();   // at the hand the hero was just posed with
             heroGaitDiscontinuity=false;
             RecordHeroSilhouette(heroVisual,lord);
             RenderedHeroAnchorScreenPosition = renderCamera.WorldToScreenPoint(lord);
@@ -794,7 +795,7 @@ namespace Game.View
         void OnDestroy()
         {
             DisposeHeroMotion();
-            DisposeLightning(); DisposeBladeArt();
+            DisposeLightning(); DisposeBladeArt(); DisposeBowstringFlashes();
             DisposeHeroConceptReview();
             DisposeFallow();
             DisposeThreatWarnings();

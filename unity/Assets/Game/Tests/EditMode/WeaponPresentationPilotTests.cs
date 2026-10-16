@@ -182,6 +182,7 @@ namespace Tests.EditMode
             Assert.That(Enumerable.Range(0, 4).All(i => OrbitSpec.ShieldDrawn(i, 4)), Is.True);
             Assert.That(Enumerable.Range(0, 7).Count(i => OrbitSpec.ShieldDrawn(i, 7)), Is.EqualTo(6));
             Assert.That(ArrowSpec.BowstringFlashFrames, Is.InRange(2, 3), "Bowstring flash at the hand for 2-3 frames.");
+            Assert.That(ArrowSpec.BowstringHeroHeights, Is.GreaterThan(0).And.LessThanOrEqualTo(.25f), "Bowstring flash at most a quarter of the hero's height.");
             Assert.That(ArrowSpec.TraceFrames, Is.InRange(4, 6), "The flight trace lingers 4-6 frames after landing.");
             Assert.That(ArrowSpec.NormalSplashScale, Is.EqualTo(1.5f).Within(1e-5f), "Normal-shot splashes are 1.5x larger.");
             Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");

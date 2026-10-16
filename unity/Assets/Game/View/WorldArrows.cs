@@ -8,11 +8,11 @@ namespace Game.View
     {
         public const int FlightFrames = 10;          // launched so it lands exactly on the Core impact tick
         // Short shots (Lv1 and max targets often stand beside the hero, 20-30px away) still read as shots: a bowstring flash at
-        // the hand for BowstringFlashFrames, and a thin water trace of the flight path from the hero to the impact that
-        // lingers TraceFrames after it lands. Normal-shot splashes are NormalSplashScale larger, and a volley's overlapping
-        // splashes merge into one.
+        // the hero's hand for BowstringFlashFrames, at most BowstringHeroHeights across and drawn above the hero's figure, and
+        // a thin water trace of the flight path from the hero to the impact that lingers TraceFrames after it lands.
+        // Normal-shot splashes are NormalSplashScale larger, and a volley's overlapping splashes merge into one.
         public const int BowstringFlashFrames = 3, TraceFrames = 5;
-        public const float NormalSplashScale = 1.5f, TracePixels = 3, BowstringHeroHeights = .8f;
+        public const float NormalSplashScale = 1.5f, TracePixels = 3, BowstringHeroHeights = .25f;
         public static readonly Color Trace = new Color(.78f, .93f, 1f);
         public const int LaunchBloomFrames = 1;      // the arrow's first frame is a round bloom
         public const int LandFrames = 8, PlantedFrames = 14;
@@ -158,6 +158,7 @@ namespace Game.View
 
         void DrawArrowVolleys()
         {
+            bowstringRequests.Clear();
             if (waveDefinition == null) return;
             var any = false;
             foreach (var volley in arrowVolleys)
@@ -206,17 +207,10 @@ namespace Game.View
             var length = ArrowLength(volley);
             if (age < ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) && index == 0)
             {
-                // Bowstring flash: a water-blue bloom with a white core where the arrow leaves the hero's figure (the hero's
-                // sprites draw over every effect layer, so a flash at the hand itself is hidden).
-                // Full strength for all but the last frame, then gone.
-                var fade = Mathf.Clamp01((ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) - age) / ArrowSpec.Seconds(1));
+                // Bowstring flash at the hero's hand, full strength for all but the last frame, then gone. It is placed after
+                // the hero is drawn this frame (PlaceBowstringFlashes); `from` stands in when the hero has no live rig.
                 BowstringFlashDraws++;
-                var glow = ArrowSpec.Water; glow.a = fade;
-                var bow = BowstringPoint(from, point, w);
-                Draw(lightningFlash, OverHeroThinLayer, bow, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
-                var core = Color.white; core.a = fade;
-                Draw(lightningFlash, OverHeroThinLayer, bow, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .45f, 0, 1, core, applyTween: false);
-                Draw(lightningFlash, OverHeroThinLayer, bow, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .3f, 0, 1, core, applyTween: false);
+                bowstringRequests.Add((from, Mathf.Clamp01((ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) - age) / ArrowSpec.Seconds(1))));
             }
             DrawArrowTrace(from, point, Mathf.Min(1, age / flight), visualTime - landed, w, pixel);
             if (age >= flight)
@@ -309,18 +303,65 @@ namespace Game.View
             Draw(bowSplash, ProjectileLayer, point, 0, new Vector2(width, width * bowSplash.WorldSize.y / bowSplash.WorldSize.x), 0, 1, color, applyTween: false);
         }
 
-        // The first point of the flight path outside the hero's drawn silhouette box (where the arrow is first seen).
-        Vector2 BowstringPoint(Vector2 from, Vector2 point, float w)
+        // The hero's hand (the live rig's sword-grip joint), or `fallback` when the hero is not drawn by the live rig.
+        Vector2 HeroHand(Vector2 fallback) => heroLiveRig != null && heroLiveRig.TryHand(out var hand) ? hand : fallback;
+
+        // The hero's live rig draws sprite renderers sorted over every instanced effect layer, so the bowstring flash is drawn
+        // by sprite renderers sorted above it: a water-blue bloom (BowstringHeroHeights across) with a white core.
+        const int BowstringSortingOrder = 1000;
+        readonly System.Collections.Generic.List<(Vector2 fallback, float fade)> bowstringRequests = new System.Collections.Generic.List<(Vector2, float)>();
+        readonly System.Collections.Generic.List<SpriteRenderer> bowstringRenderers = new System.Collections.Generic.List<SpriteRenderer>();
+        GameObject bowstringRoot; Sprite bowstringSprite; Material bowstringMaterial;
+        static readonly float[] BowstringPieces = { 1, .45f, .3f };
+
+        void PlaceBowstringFlashes()
         {
-            var arc = ArrowSpec.MinimumArcBodyWidths * w;
-            if (heroSilhouetteLocal.width <= 0) return ArrowSpec.Flight(from, point, .2f, arc);
-            var box = HeroBox;
-            for (var t = 0f; t <= 1f; t += .02f)
-            {
-                var at = ArrowSpec.Flight(from, point, t, arc);
-                if (!box.Contains(at)) return at;
-            }
-            return point;
+            var used = 0;
+            if (bowstringRequests.Count > 0 && EnsureBowstringFlash())
+                foreach (var (fallback, fade) in bowstringRequests)
+                {
+                    var hand = HeroHand(fallback);
+                    for (var p = 0; p < BowstringPieces.Length; p++)
+                    {
+                        if (used == bowstringRenderers.Count)
+                        {
+                            var piece = new GameObject("Bowstring flash");
+                            piece.transform.SetParent(bowstringRoot.transform, false);
+                            var created = piece.AddComponent<SpriteRenderer>();
+                            created.sprite = bowstringSprite; created.sharedMaterial = bowstringMaterial; created.sortingOrder = BowstringSortingOrder + p;
+                            bowstringRenderers.Add(created);
+                        }
+                        var renderer = bowstringRenderers[used++];
+                        var colour = p == 0 ? ArrowSpec.Water : Color.white; colour.a = fade;
+                        renderer.color = colour; renderer.sortingOrder = BowstringSortingOrder + p;
+                        renderer.transform.position = new Vector3(hand.x, hand.y, 0);
+                        renderer.transform.localScale = Vector3.one * HeroHeight * ArrowSpec.BowstringHeroHeights * BowstringPieces[p];
+                        renderer.enabled = true;
+                    }
+                }
+            for (var i = used; i < bowstringRenderers.Count; i++) bowstringRenderers[i].enabled = false;
+            bowstringRequests.Clear();
+        }
+
+        bool EnsureBowstringFlash()
+        {
+            if (bowstringRoot != null) return true;
+            var template = Resources.Load<Material>("HeroMotion/live-material");
+            if (template == null || lightningFlash == null) return false;
+            var texture = lightningFlash.Texture; var uv = lightningFlash.UvRects[0];
+            var rect = new Rect(uv.x * texture.width, uv.y * texture.height, uv.width * texture.width, uv.height * texture.height);
+            bowstringSprite = Sprite.Create(texture, rect, new Vector2(.5f, .5f), rect.width);   // one world unit across
+            bowstringMaterial = new Material(template) { name = "Bowstring flash", renderQueue = 3000 + GameVisualTokens.LordLayer + 3, hideFlags = HideFlags.DontSave };
+            bowstringRoot = new GameObject("Bowstring flashes");
+            return true;
+        }
+
+        void DisposeBowstringFlashes()
+        {
+            if (bowstringRoot != null) Destroy(bowstringRoot);
+            if (bowstringSprite != null) Destroy(bowstringSprite);
+            if (bowstringMaterial != null) Destroy(bowstringMaterial);
+            bowstringRenderers.Clear(); bowstringRequests.Clear(); bowstringRoot = null;
         }
 
         // Thin water line along the flight path from the hand to where the arrow is (shown = 0..1 of the path), lingering
@@ -473,7 +514,7 @@ namespace Game.View
                 if (volley.Evolved) continue;
                 // Where this arrow's point is MidFlightFramesBeforeDue frames before it lands (for the arrow contrast check).
                 var from = volley.Launch + (volley.Points[i] - volley.Launch).normalized * (.35f * w) + Vector2.up * (.45f * w);
-                record.HandScreen = renderCamera.WorldToScreenPoint(BowstringPoint(from, volley.Points[i], w));   // the bowstring flash
+                record.HandScreen = renderCamera.WorldToScreenPoint(HeroHand(from));   // the bowstring flash
                 var t = 1 - ArrowSpec.MidFlightFramesBeforeDue / (float)ArrowSpec.FlightFrames;
                 record.MidFlightScreen = renderCamera.WorldToScreenPoint(ArrowSpec.Flight(from, volley.Points[i], t, ArrowSpec.MinimumArcBodyWidths * w));
                 record.MidFlightImpactOffset = i * Mathf.RoundToInt(volley.Step * 60);   // frames after the volley's first due

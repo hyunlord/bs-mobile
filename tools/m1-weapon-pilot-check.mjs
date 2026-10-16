@@ -280,13 +280,14 @@ function checkArrows(directory, manifest) {
         let peakTrace = 0; for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) peakTrace = Math.max(peakTrace, luma(after.at(mx + dx, my + dy)));
         entry.traceContrast = +(peakTrace - groundArrow / k).toFixed(1);
       }
-      // Bowstring flash at the hand on the frame after launch (flight 10 frames).
+      // Bowstring flash at the hand on the frame after launch (flight 10 frames). Ground: the darker of 30 and 40 frames
+      // before the cast, as for the arrow (a previous volley's splash lingering in one reference frame is not ground).
       const hx = Number(v.handScreenX ?? -1);
       if (hx >= 0) {
-        const launch = frame(directory, due - 10 + 1), hy = launch.height - Number(v.handScreenY);
-        let peakFlash = 0, groundFlash = 0, k2 = 0;
-        for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { peakFlash = Math.max(peakFlash, luma(launch.at(hx + dx, hy + dy))); groundFlash += luma(before.at(hx + dx, hy + dy)); k2++; }
-        entry.bowstringContrast = +(peakFlash - groundFlash / k2).toFixed(1);
+        const launch = frame(directory, due - 10 + 1), hy = launch.height - Number(v.handScreenY), earlierFlash = frame(directory, Math.max(0, at - 40));
+        let peakFlash = 0, groundFlashA = 0, groundFlashB = 0, k2 = 0;
+        for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { peakFlash = Math.max(peakFlash, luma(launch.at(hx + dx, hy + dy))); groundFlashA += luma(before.at(hx + dx, hy + dy)); groundFlashB += luma(earlierFlash.at(hx + dx, hy + dy)); k2++; }
+        entry.bowstringContrast = +(peakFlash - Math.min(groundFlashA, groundFlashB) / k2).toFixed(1);
       }
     }
     results.push(entry);
