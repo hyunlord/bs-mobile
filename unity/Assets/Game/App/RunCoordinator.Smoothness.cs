@@ -14,11 +14,33 @@ namespace Game.App
         NormalPlayTrace normalTrace;
         bool normalTraceChecked;
         float presentationUnits = 1000;
+        // Capture evidence for the knight sheets: the pose drawn each frame, kept in preallocated arrays (no capture-time
+        // allocation) and written as hero-poses.csv with the smoothness diagnostics.
+        const int HeroPoseCapacity = 1 << 15;
+        readonly int[] heroPoseFrame = new int[HeroPoseCapacity], heroPoseTick = new int[HeroPoseCapacity], heroPoseIndex = new int[HeroPoseCapacity];
+        readonly HeroClip[] heroPoseClip = new HeroClip[HeroPoseCapacity];
+        readonly HeroAction[] heroPoseAction = new HeroAction[HeroPoseCapacity];
+        int heroPoses;
+        void ObserveHeroPose(HeroSheetPose pose)
+        {
+            if (heroPoses >= HeroPoseCapacity) return;
+            heroPoseFrame[heroPoses] = Time.renderedFrameCount; heroPoseTick[heroPoses] = CurrentFrame?.Tick ?? -1;
+            heroPoseClip[heroPoses] = pose.Clip; heroPoseAction[heroPoses] = pose.Action; heroPoseIndex[heroPoses] = pose.Frame; heroPoses++;
+        }
+        void WriteHeroPoses(string folder)
+        {
+            if (world == null || heroPoses == 0) return;
+            using var file = new System.IO.StreamWriter(System.IO.Path.Combine(folder, "hero-poses.csv"));
+            file.WriteLine("renderFrame,tick,clip,action,frame");
+            for (var i = 0; i < heroPoses; i++) file.WriteLine($"{heroPoseFrame[i]},{heroPoseTick[i]},{heroPoseClip[i]},{heroPoseAction[i]},{heroPoseIndex[i]}");
+            var s = world.HeroActions;
+            file.WriteLine($"# started {s.Started}, keys {s.KeysShown}, full {s.FullShown}, dropped {s.Dropped}, replaced {s.Replaced}, cutByMovement {s.CutByMovement}, overflow {heroPoses >= HeroPoseCapacity}");
+        }
         public Vector2 PresentedLordPosition => world != null ? world.RenderedLordPosition : Vector2.zero;
         public void BeginSmoothnessDiagnostics() => smoothness.Begin();
         public void SuspendSmoothnessDiagnostics() => smoothness.Suspend();
         public void NotifySmoothnessEndOfFrame() => smoothness.EndOfFrame();
-        public void WriteSmoothnessDiagnostics(string folder) => smoothness.Write(folder);
+        public void WriteSmoothnessDiagnostics(string folder) { smoothness.Write(folder); WriteHeroPoses(folder); }
         public void RefreshCapturePresentation()
         {
             if(AutoplayCapture.Active==null||CurrentFrame==null||CurrentFrame.Tick!=0||world==null||hud==null||Paused||screen!=UiScreen.Run)
@@ -43,6 +65,8 @@ namespace Game.App
                 initialSpeed * CurrentFrame.TickRate / presentationUnits, 1f / CurrentFrame.TickRate, CurrentFrame.Tick,
                 expectedLocomotion, 2f / presentationUnits, activeFeelRules?.FasterLord == false ? 1f / presentationUnits : 0);
             world.RenderedEntitySample = ObserveRenderedEntity;
+            heroPoses = 0;
+            world.HeroSheetPoseSampled = AutoplayCapture.Active != null ? ObserveHeroPose : null;
             normalTrace?.BeginSession();
             if(AutoplayCapture.Active != null) BeginSmoothnessDiagnostics();
         }
