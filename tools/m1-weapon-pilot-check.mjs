@@ -327,14 +327,15 @@ function checkPikes(directory, manifest) {
   }
   const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
   const pass = {
-    onTime: (p.pikeImpacts ?? 0) > 0 && p.pikeLandedOnTime === p.pikeImpacts,
+    // Impacts are counted as they land: those due after the capture's last frame never land and are not late.
+    onTime: (p.pikeImpactsLanded ?? p.pikeImpacts ?? 0) > 0 && p.pikeLandedOnTime === (p.pikeImpactsLanded ?? p.pikeImpacts),
     visible: results.length > 0 && results.every(r => r.tipContrast >= thresholds.contrast),
     size: results.length > 0 && results.every(r => r.pikeLengthPixels >= r.heroHeightPixels),
     stage: stage === 'evolved' ? (p.pikeEruptions ?? 0) > 0 : (p.pikeEruptions ?? 0) === 0,
     reaction: (p.enemyDeathDropped ?? 0) === 0,
   };
-  return { casts: results.length, pass, impacts: p.pikeImpacts, landedOnTime: p.pikeLandedOnTime, eruptions: p.pikeEruptions,
-    note: 'On time = every Core impact landed within 2 frames of its predicted tick. Visible = brightest pixel within 14px of the last on-screen impact (its screen position as it lands) on the frame after it lands (the point flash and the pike point) minus the darker of the mean ground 30 and 40 frames before the cast. Size = pike at least a hero tall. Stage = erupted pikes only in the evolved stage. Furrow width is recorded (Lv1 < max < evolved by construction).',
+  return { casts: results.length, pass, impacts: p.pikeImpacts, impactsLanded: p.pikeImpactsLanded, landedOnTime: p.pikeLandedOnTime, eruptions: p.pikeEruptions,
+    note: 'On time = every Core impact landed within 2 frames of its predicted tick. Visible = brightest pixel within 14px of the last on-screen impact (its screen position on the frame it lands, inside the 500px portrait column) on the frame after it lands (the point flash and the pike point) minus the darker of the mean ground 30 and 40 frames before the cast. Size = pike at least a hero tall. Stage = erupted pikes only in the evolved stage. Furrow width is recorded (Lv1 < max < evolved by construction).',
     rows: results };
 }
 

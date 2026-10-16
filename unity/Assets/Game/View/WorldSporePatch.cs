@@ -85,7 +85,7 @@ namespace Game.View
                     for (var i = 0; i < patch.Count; i++)
                     {
                         if (patch.Ids[i] != value.SubjectId || patch.Landed[i] >= 0) continue;
-                        patch.Landed[i] = visualTime; SporePulses++;
+                        patch.Landed[i] = visualTime; SporePulses++;   // counted as they land (pulses due after the capture ends never land)
                         if (Mathf.Abs(visualTime - patch.Due[i]) <= SporePatchSpec.Seconds(2)) SporePulsesOnTime++;
                     }
             }

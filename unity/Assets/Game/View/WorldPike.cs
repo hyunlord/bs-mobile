@@ -64,12 +64,15 @@ namespace Game.View
             public readonly Vector2[] Points = new Vector2[PikeImpactCapacity];
             public readonly float[] Landed = new float[PikeImpactCapacity];
             public Vector2 Launch;
+            // The last impact that landed inside the visible portrait column: its screen position and frame as it landed.
+            public Vector2 SeenScreen; public int SeenFrame = -1, SeenIndex = -1;
         }
         readonly PikeCast[] pikeCasts = { new PikeCast(), new PikeCast(), new PikeCast(), new PikeCast() };
         int pikeNext;
         ArtVisual pikePicture, pikeThrust, pikeTipFlash, pikeFurrow;
         public int PikeCasts { get; private set; }
         public int PikeImpacts { get; private set; }
+        public int PikeImpactsLanded { get; private set; }   // counted as they land (impacts due after the capture ends never land)
         public int PikeLandedOnTime { get; private set; }
         public int PikeEruptions { get; private set; }   // erupted pike draws summed over frames (evolution element)
         public System.Action<PikeCastRecord> PikeCastSample;
@@ -77,7 +80,7 @@ namespace Game.View
         void ResetPikes()
         {
             foreach (var cast in pikeCasts) { cast.Tick = -1; cast.Count = 0; }
-            pikeNext = 0; PikeCasts = PikeImpacts = PikeLandedOnTime = PikeEruptions = 0;
+            pikeNext = 0; PikeCasts = PikeImpacts = PikeImpactsLanded = PikeLandedOnTime = PikeEruptions = 0;
         }
 
         bool IsPikeSource(string source) => source != null && m1CombatShapes.TryGetValue(source, out var shape) && shape == "spears";
@@ -93,7 +96,7 @@ namespace Game.View
                 {
                     cast = pikeCasts[pikeNext++ % pikeCasts.Length];
                     var composition = waveDefinition.Gear[value.Source].Composition;
-                    cast.Tick = value.Tick; cast.Source = value.Source; cast.Count = 0; cast.Recorded = false;
+                    cast.Tick = value.Tick; cast.Source = value.Source; cast.Count = 0; cast.Recorded = false; cast.SeenFrame = cast.SeenIndex = -1;
                     cast.Accepted = visualTime; cast.AcceptedFrame = PresentedFrames + 1;
                     cast.Due = visualTime + (composition?.DelayTicks ?? 15) / (float)Mathf.Max(1, waveTickRate);
                     cast.Step = (composition?.StepTicks ?? 0) / (float)Mathf.Max(1, waveTickRate);
@@ -113,8 +116,10 @@ namespace Game.View
                     for (var i = 0; i < cast.Count; i++)
                     {
                         if (cast.Ids[i] != value.SubjectId || cast.Landed[i] >= 0) continue;
-                        cast.Landed[i] = visualTime;
+                        cast.Landed[i] = visualTime; PikeImpactsLanded++;
                         if (Mathf.Abs(visualTime - cast.DueOf(i)) <= PikeSpec.Seconds(2)) PikeLandedOnTime++;
+                        var screen = (Vector2)renderCamera.WorldToScreenPoint(cast.Points[i]);
+                        if (InPortraitColumn(screen)) { cast.SeenScreen = screen; cast.SeenFrame = PresentedFrames; cast.SeenIndex = i; }
                     }
             }
         }
@@ -328,17 +333,23 @@ namespace Game.View
             return new ArtVisual(PikeFurrowRole, texture, new Vector2(width, height) / 384f, new Vector2(0, .5f));
         }
 
+        // The capture's portrait column: the middle of the frame, as wide as a 500:1080 portrait view of its height.
+        bool InPortraitColumn(Vector2 screen)
+        {
+            var half = renderCamera.pixelHeight * (500f / 1080) * .5f;
+            return screen.y >= 0 && screen.y <= renderCamera.pixelHeight && Mathf.Abs(screen.x - renderCamera.pixelWidth * .5f) <= half - 14;
+        }
+
         void RecordPikeCast(PikeCast cast, Rect view)
         {
             cast.Recorded = true;
             if (PikeCastSample == null) return;
             var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            var last = -1;
-            for (var i = 0; i < cast.Count; i++) if (view.Contains(cast.Points[i])) last = i;
+            var last = cast.SeenIndex;
             var record = new PikeCastRecord { Tick = cast.Tick, Impacts = cast.Count, Evolved = cast.Evolved, Stage = cast.Stage, ShownFrame = PresentedFrames,
                 FirstDueFrame = PresentedFrames + Mathf.RoundToInt((cast.Due - visualTime) * 60), StepFrames = Mathf.RoundToInt(cast.Step * 60),
-                LaunchScreen = renderCamera.WorldToScreenPoint(cast.Launch), LastImpactScreen = renderCamera.WorldToScreenPoint(cast.Points[Mathf.Max(0, last)]),
-                LastImpactFrame = PresentedFrames + Mathf.RoundToInt((cast.DueOf(Mathf.Max(0, last)) - visualTime) * 60),
+                LaunchScreen = renderCamera.WorldToScreenPoint(cast.Launch), LastImpactScreen = last >= 0 ? cast.SeenScreen : new Vector2(-1, -1),
+                LastImpactFrame = last >= 0 ? cast.SeenFrame : PresentedFrames,
                 PikeLengthPixels = HeroHeight * PikeSpec.PikeHeroHeights / pixelsToWorld, FurrowWidthPixels = HeroHeight * PikeSpec.FurrowHeroHeights(cast.Stage, cast.Evolved) / pixelsToWorld,
                 HeroHeightPixels = HeroHeight / pixelsToWorld, LastImpactOnScreen = last >= 0 };
             for (var i = 0; i < cast.Count; i++) if (view.Contains(cast.Points[i])) record.OnScreenImpacts++;

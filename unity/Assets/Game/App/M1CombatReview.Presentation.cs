@@ -12,7 +12,7 @@ namespace Game.App
         [Serializable] public sealed class PresentationSummary
         {
             public string interpretation = "View-only feel counters from the rendered run. Giant-blade kill points are on-screen kill positions (Core and last rendered) tested against the drawn envelope. Muster path RuntimeEvolution requires an active runtime evolution; GearRatio is the runtime gear count/range over the canonical maximum level, capped at 5 soldiers and 1.3x. Evolution-only elements (storm sky, flag bearer, giant sword, arrow rain) follow the View-only display stage table (WeaponDisplayStages.json). Blade hits are presented when the sweep reaches them after a 4-frame wind-up; arrows land on the Core impact tick. Lightning hits are presented when their strike becomes visible (3-frame telegraph). Minion stationary frames exclude spawn, attack and despawn animation.";
-            public int bladeEvolvedStrikes, bladeDeferredHits, bladePresentedHits, arrowVolleys, arrowRainVolleys, arrowImpacts, arrowLandedOnTime, bowstringFlashDraws, pikeCasts, pikeImpacts, pikeLandedOnTime, pikeEruptions, sporePatches, sporePulses, sporePulsesOnTime;
+            public int bladeEvolvedStrikes, bladeDeferredHits, bladePresentedHits, arrowVolleys, arrowRainVolleys, arrowImpacts, arrowLandedOnTime, bowstringFlashDraws, pikeCasts, pikeImpacts, pikeImpactsLanded, pikeLandedOnTime, pikeEruptions, sporePatches, sporePulses, sporePulsesOnTime;
             public int orbitActivations, orbitContactFlashes, vortexFrames, shieldThrows;
             // P5 budget: share of enemy sprite pixels covered by own weapon effects per frame (mask readback, half resolution),
             // with effect alpha capped at 0.5 over enemies as drawn; the uncapped share is kept for comparison. Full-screen
@@ -112,7 +112,7 @@ namespace Game.App
                 bladeEvolvedStrikes = world.M1BladeEvolvedStrikes, bladeDeferredHits = world.BladeDeferredHits, bladePresentedHits = world.BladePresentedHits,
                 orbitActivations = world.OrbitActivations, orbitContactFlashes = world.OrbitContactFlashes, vortexFrames = world.VortexFrames, shieldThrows = world.ShieldThrows,
                 arrowVolleys = world.ArrowVolleys, arrowRainVolleys = world.ArrowRainVolleys, arrowImpacts = world.ArrowImpacts, arrowLandedOnTime = world.ArrowLandedOnTime, bowstringFlashDraws = world.BowstringFlashDraws,
-                pikeCasts = world.PikeCasts, pikeImpacts = world.PikeImpacts, pikeLandedOnTime = world.PikeLandedOnTime, pikeEruptions = world.PikeEruptions,
+                pikeCasts = world.PikeCasts, pikeImpacts = world.PikeImpacts, pikeImpactsLanded = world.PikeImpactsLanded, pikeLandedOnTime = world.PikeLandedOnTime, pikeEruptions = world.PikeEruptions,
                 sporePatches = world.SporePatches, sporePulses = world.SporePulses, sporePulsesOnTime = world.SporePulsesOnTime,
                 lightningStrikes = world.LightningStrikes, lightningStormStrikes = world.LightningStormStrikes,
                 lightningDeferredHits = world.LightningDeferredHits, lightningPresentedHits = world.LightningPresentedHits,
