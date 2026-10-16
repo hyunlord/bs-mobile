@@ -60,7 +60,7 @@ namespace Game.App
             world.BladeStrikeSample = r => { if (bladeRows.Count < 1024) bladeRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.VisibleFrame - r.AcceptedFrame},{r.Tick},{r.Evolved},{r.Radius:R},{r.HalfAngle:R},{r.Aim:R},{r.OriginScreen.x:R},{r.OriginScreen.y:R},{r.RadiusPixels.x:R},{r.RadiusPixels.y:R},{r.HeroHeightPixels:R},{r.ThicknessPixels:R},{r.SwordLengthPixels:R},{r.HeroScreen.x:R},{r.HeroScreen.y:R},{r.CoreRadiusPixels:R},{r.InnerPixels:R},{r.Hits},{r.HitsCovered},{r.SwordWidthPixels:R},{r.SwordFallFrames},{r.SwordTipScreen.x:R},{r.SwordTipScreen.y:R},{r.CrowdScreen.x:R},{r.CrowdScreen.y:R},{r.SwordClearOfHero},{r.Stage:R},{r.ArcFullyVisible},{r.ShortHalfPixels:R},{r.SwordFromHeroHeroHeights:R},{r.SwordInsideMargin},{r.SwordShownFallFrames}")); };
             world.ArrowVolleySample = r => { if (arrowRows.Count < 1024) arrowRows.Add(FormattableString.Invariant(
-                $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R}")); };
+                $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R},{r.MidFlightScreen.x:R},{r.MidFlightScreen.y:R},{r.MidFlightImpactOffset},{r.Stage:R}")); };
             world.OrbitActivationSample = r => { if (orbitRows.Count < 1024) orbitRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Activation},{r.Shape},{r.Evolved},{r.Count},{r.OrbitRadiusPixels:R},{r.OrbiterSizePixels:R},{r.HeroHeightPixels:R},{r.FirstOrbiterScreen.x:R},{r.FirstOrbiterScreen.y:R},{r.Drawn}")); };
             world.MinionThrustSample = (group, soldiers) => { if (thrustRows.Count < 8192) thrustRows.Add(FormattableString.Invariant($"{frameCount},{group},thrust,{soldiers}")); };
@@ -87,7 +87,7 @@ namespace Game.App
                 new[] { "frameIndex,windupFrames,tick,evolved,radius,halfAngle,aim,originScreenX,originScreenY,radiusPixelsX,radiusPixelsY,heroHeightPixels,thicknessPixels,swordLengthPixels," +
                     "heroScreenX,heroScreenY,coreRadiusPixels,innerPixels,hits,hitsCovered,swordWidthPixels,swordFallFrames,swordTipScreenX,swordTipScreenY,crowdScreenX,crowdScreenY,swordClearOfHero,stage,arcFullyVisible,shortHalfPixels,swordFromHeroHeroHeights,swordInsideMargin,swordShownFallFrames" }.Concat(bladeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-arrow-volleys.csv"),
-                new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,tellToShownFrames,shownToDueFrames,firstImpactScreenX,firstImpactScreenY,firstImpactRadiusPixels,launchScreenX,launchScreenY,arrowLengthPixels,heroHeightPixels" }.Concat(arrowRows));
+                new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,tellToShownFrames,shownToDueFrames,firstImpactScreenX,firstImpactScreenY,firstImpactRadiusPixels,launchScreenX,launchScreenY,arrowLengthPixels,heroHeightPixels,midFlightScreenX,midFlightScreenY,midFlightImpactOffset,stage" }.Concat(arrowRows));
         }
 
         public void CapturePresentation(WorldRenderer world)

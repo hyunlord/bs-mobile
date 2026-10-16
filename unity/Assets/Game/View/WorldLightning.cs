@@ -24,6 +24,9 @@ namespace Game.View
         public const int ScreenFlashLayer = 77;
         // Thin effect elements drawn from shared atlases (the canal bow's arrow): batches on this layer skip the P5 cap.
         public const int ThinEffectLayer = 78;
+        // Arrows in flight leave from the hero and cross its figure: drawn above the hero, a thin element like layer 78.
+        public const int OverHeroThinLayer = GameVisualTokens.LordLayer + 2;
+        public static bool IsThinEffectLayer(int layer) => layer == ThinEffectLayer || layer == OverHeroThinLayer;
         // Strongest full-screen darkening tint drawn this frame (normal blend), for the review's separate tint check.
         public float ScreenTintAlpha { get; private set; }
         const int LightningLinkCapacity = 64, LightningStrikeCapacity = 12;

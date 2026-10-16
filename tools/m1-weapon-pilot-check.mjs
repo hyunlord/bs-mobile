@@ -263,13 +263,15 @@ function checkArrows(directory, manifest) {
       }
       entry.rainPixels = gained;
     } else {
-      // Arrow in flight halfway: bright silver pixels near the straight path's midpoint.
-      const mid = frame(directory, due - 5);
-      const lx = Number(v.launchScreenX), ly = Number(v.launchScreenY);
-      const mx = (lx + x) / 2, my = mid.height - (ly + y) / 2;
-      let bright = 0;
-      for (let dy = -45; dy <= 45; dy++) for (let dx = -45; dx <= 45; dx++) { const px = mid.at(mx + dx, my + dy); if (luma(px) >= 85 && Math.max(...px) - Math.min(...px) < 60) bright++; }
-      entry.arrowPixels = bright;
+      // Arrow contrast: the brightest pixel within 14px of where the renderer put the first arrow's point 5 frames before it
+      // lands, against the mean ground there before the cast (the old midpoint box mostly counted white damage numbers).
+      const mx = Number(v.midFlightScreenX ?? -1), myRaw = Number(v.midFlightScreenY ?? -1);
+      if (mx >= 0) {
+        const mid = frame(directory, due + Number(v.midFlightImpactOffset ?? 0) - 5), my = mid.height - myRaw;
+        let peakArrow = 0, groundArrow = 0, k = 0;
+        for (let dy = -14; dy <= 14; dy += 2) for (let dx = -14; dx <= 14; dx += 2) { peakArrow = Math.max(peakArrow, luma(mid.at(mx + dx, my + dy))); groundArrow += luma(before.at(mx + dx, my + dy)); k++; }
+        entry.arrowPeak = +peakArrow.toFixed(1); entry.arrowContrast = +(peakArrow - groundArrow / k).toFixed(1);
+      }
     }
     results.push(entry);
   }
@@ -277,7 +279,7 @@ function checkArrows(directory, manifest) {
   const pass = {
     onTime: (p.arrowImpacts ?? 0) > 0 && p.arrowLandedOnTime === p.arrowImpacts,   // per impact: Core lands a cast's impacts one step apart
     landing: results.length > 0 && results.every(r => r.landingContrast >= thresholds.contrast),
-    visible: results.length > 0 && results.every(r => r.evolved ? r.rainPixels >= 40 : r.arrowPixels >= 6),
+    visible: results.length > 0 && results.every(r => r.evolved ? r.rainPixels >= 40 : r.arrowContrast !== undefined && r.arrowContrast >= thresholds.contrast),
     size: results.length > 0 && results.every(r => r.arrowLengthPixels >= .5 * r.heroHeightPixels),
     flight: results.filter(r => !r.evolved).every(r => r.shownToDue >= 8 && r.shownToDue <= 12),
     stage: stage === 'evolved' ? (p.arrowRainVolleys ?? 0) > 0 && p.arrowRainVolleys === p.arrowVolleys : (p.arrowRainVolleys ?? 0) === 0,

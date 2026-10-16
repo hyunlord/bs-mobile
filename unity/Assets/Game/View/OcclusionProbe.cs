@@ -132,7 +132,7 @@ namespace Game.View
         // impact particles (71), projectiles and shield discs (74), additive glow (75), shield emblems (76).
         public static bool IsEnemyLayer(int layer) => layer >= GameVisualTokens.EnemyLayer && layer < GameVisualTokens.EnemyLayer + 20;
         public static bool IsEffectLayer(int layer) => layer >= 70 && layer <= 79 && layer != GameVisualTokens.WaveDangerLayer
-            && layer != WorldRenderer.StormSkyLayer && layer != WorldRenderer.ScreenFlashLayer;
+            && layer != WorldRenderer.StormSkyLayer && layer != WorldRenderer.ScreenFlashLayer || layer == WorldRenderer.OverHeroThinLayer;
         static readonly int RefId = Shader.PropertyToID("_StencilRef"), CompId = Shader.PropertyToID("_StencilComp"), PassId = Shader.PropertyToID("_StencilPass");
         static readonly int CapId = Shader.PropertyToID("_AlphaCap"), ClipId = Shader.PropertyToID("_AlphaClip");
 
