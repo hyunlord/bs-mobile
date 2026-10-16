@@ -349,6 +349,7 @@ namespace Game.View
             var heroWalking=Point(previous.Lord.Position)!=Point(current.Lord.Position);
             var heroAttackProgress=heroAttackUntil>visualTime?1-(heroAttackUntil-visualTime)/GameVisualTokens.ActorAttackSeconds:-1;
             var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/(HitFeedbackEnabled?.2f:GameVisualTokens.HitFlashSeconds):-1;
+            SelectHeroRig(snapshot.HeroId);
             var heroVisual=HeroVisual(snapshot.HeroId,heroState,heroWalking,heroAttackProgress,seconds,out var heroAnimationTime);
             if(wave!=null)
             {
@@ -362,7 +363,7 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
             }
-            DrawActorGrounding(lord,HeroRigPreviewEnabled?heroVisual.WorldSize:HeroFigureSize(snapshot.HeroId,heroVisual),heroMovement,visualTime,WaveEnemyKind.Pursuer);
+            DrawActorGrounding(lord,HeroFigureSize(snapshot.HeroId,heroVisual),heroMovement,visualTime,WaveEnemyKind.Pursuer);
             if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
                 heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity)&&
                !DrawHeroSheet(snapshot.HeroId,lord,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,

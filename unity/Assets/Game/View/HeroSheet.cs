@@ -15,7 +15,7 @@ namespace Game.View
         public const int WalkFrames = 8, WalkTicks = 10, SlashFrames = 8, SlashTicks = 9, ActionFrames = 6, ActionTicks = 10;
         public const int IdleFrames = 6, IdleTicks = 12, HitFrames = 2, HitTicks = 8, KeyTicks = 7;
         public const float MinRepeatSeconds = .4f;   // the same action starts at most every 0.4 s
-        public const string RolePrefix = "hero.core.frontier_knight.";
+        public const string KnightId = "core:frontier_knight", RolePrefix = "hero.core.frontier_knight.";
         public static readonly string[] ActionNames = { "", "slash", "aim", "cast", "blow", "throw" };
         public static float Seconds(int ticks60) => ticks60 / 60f;
         public static int Frames(HeroAction action) => action == HeroAction.Slash ? SlashFrames : ActionFrames;
@@ -143,11 +143,19 @@ namespace Game.View
         ArtVisual heroSheetIdle, heroSheetWalk, heroSheetHit, heroSheetDeath;
         readonly ArtVisual[] heroSheetActions = new ArtVisual[6], heroSheetKeys = new ArtVisual[6];
 
+        // The knight sprite sheets replace the cutout B rig (#268): the B rig draws only when a comparison or benchmark asks for
+        // it explicitly, or when the hero has no sheet roles. Decided each frame, after the art is loaded.
+        public bool HeroRigExplicit { get; set; }
+        bool heroRigActive;
+        void SelectHeroRig(string heroId) => heroRigActive = HeroRigPreviewEnabled && (HeroRigExplicit || !EnsureHeroSheet(heroId));
+
         bool EnsureHeroSheet(string heroId)
         {
+            if (heroId != HeroSheetSpec.KnightId) return false;
             if (heroSheetChecked) return heroSheetAvailable;
+            if (art == null) return false;
             heroSheetChecked = true;
-            if (heroId != "core:frontier_knight" || art == null || !art.TryResolveRole(HeroSheetSpec.RolePrefix + "action.slash", out _)) return heroSheetAvailable = false;
+            if (!art.TryResolveRole(HeroSheetSpec.RolePrefix + "action.slash", out _)) return heroSheetAvailable = false;
             heroSheetIdle = Resolve("hero", heroId, "idle"); heroSheetWalk = Resolve("hero", heroId, "walk");
             heroSheetHit = Resolve("hero", heroId, "hit"); heroSheetDeath = Resolve("hero", heroId, "death");
             for (var a = 1; a < heroSheetActions.Length; a++)
@@ -185,11 +193,11 @@ namespace Game.View
         bool heroSheetMoving;
 
         // The hero's footprint for shadow and camera margins: the sheet cell's figure share, or the visual's own size.
-        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => EnsureHeroSheet(heroId) ? Vector2.Scale(visual.WorldSize, HeroSheetSpec.FigureShareOfCell) : visual.WorldSize;
+        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => !heroRigActive && EnsureHeroSheet(heroId) ? Vector2.Scale(visual.WorldSize, HeroSheetSpec.FigureShareOfCell) : visual.WorldSize;
 
         bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, Color? tint, float flash, int tickRate)
         {
-            if (!EnsureHeroSheet(heroId)) return false;
+            if (heroRigActive || !EnsureHeroSheet(heroId)) return false;
             heroSheetMoving = walking;
             var stride = HeroLocomotionPerTick > 0 ? HeroLocomotionPerTick * tickRate / settings.WorldUnitsPerUnityUnit * HeroSheetSpec.WalkCycleSeconds : 0;
             var pose = HeroActions.Pose(visualTime, walking, hit, dead, movement.magnitude, stride);

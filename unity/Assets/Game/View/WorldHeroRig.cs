@@ -14,7 +14,7 @@ namespace Game.View
         ArtVisual HeroVisual(string heroId,string state,bool walking,float attackProgress,float seconds,out float animationTime)
         {
             animationTime=visualTime;
-            if(!HeroRigPreviewEnabled){heroGait.Reset();return Resolve("hero",heroId,state);}
+            if(!heroRigActive){heroGait.Reset();return Resolve("hero",heroId,state);}
             if(rigIdle==null)
             {
                 rigIdle=art.ResolveRole("hero.preview-b.idle");
@@ -32,7 +32,7 @@ namespace Game.View
         bool DrawHeroRig(ArtVisual visual,Vector2 position,bool walking,float attackProgress,bool hit,bool dead,
             ActorFacingPose facing,Color color,float flash,bool discontinuity)
         {
-            if(!HeroRigPreviewEnabled)return false;
+            if(!heroRigActive)return false;
             if(heroRigShader==null)
             {
                 heroRigShader=Resources.Load<Shader>("HeroRig");

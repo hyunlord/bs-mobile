@@ -509,7 +509,7 @@ namespace Game.App
         }
         private void ApplyPreferences(bool save=false)
         {
-            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;}
+            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;world.HeroRigExplicit=explicitHeroRig;}
             sound?.SetPreferences(preferences.MusicVolume,preferences.EffectsVolume,preferences.Haptics);waveSound?.SetVolume(preferences.EffectsVolume);
             if(save)preferences.Save();
         }
