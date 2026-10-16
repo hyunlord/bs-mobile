@@ -369,7 +369,7 @@ function checkOrbits(directory, manifest, shape) {
   const pass = {
     // Guard ring contrast is recorded only until the shield sprite is in.
     ...(shape === 'tornado' ? { contrast: contrastMet } : {}),
-    size: results.length > 0 && results.every(r => shape === 'tornado' ? r.orbiterSizePixels >= .59 * r.heroHeightPixels && r.orbiterSizePixels <= .76 * r.heroHeightPixels
+    size: results.length > 0 && results.every(r => shape === 'tornado' ? r.orbiterSizePixels >= .49 * r.heroHeightPixels && r.orbiterSizePixels <= .61 * r.heroHeightPixels
       : r.orbiterSizePixels >= .34 * r.heroHeightPixels && r.orbiterSizePixels <= .46 * r.heroHeightPixels && r.drawn <= 6),
     colour: results.length > 0 && results.every(r => r.colouredPixels >= 20),
     stage: stage === 'evolved' ? evolvedElement > 0 : evolvedElement === 0,
@@ -377,7 +377,7 @@ function checkOrbits(directory, manifest, shape) {
   };
   const recorded = shape === 'shield' ? { contrastMet, contrastMin: results.length ? Math.min(...results.map(r => r.contrast)) : null, contrastThreshold: thresholds.contrast } : undefined;
   return { activations: results.length, pass, recorded, contactFlashes: p.orbitContactFlashes, vortexFrames: p.vortexFrames, shieldThrows: p.shieldThrows,
-    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (spore fan: a box 1.8 puff heights each way; shield: around its centre), against the median luma of the play area 20 frames earlier (orbit activations run back to back, so the same box would still hold orbiters). Size: spore puff .6-.75 and shield .35-.45 hero heights whatever the Core collision radius, at most 6 shields drawn per activation. Colour: bright yellow-green or teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
+    note: 'Measured on the frame each activation finishes spreading, around its first orbiter (spore fan: a box 1.8 puff heights each way; shield: around its centre), against the median luma of the play area 20 frames earlier (orbit activations run back to back, so the same box would still hold orbiters). Size: spore puff .5-.6 and shield .35-.45 hero heights whatever the Core collision radius, at most 6 shields drawn per activation. Colour: bright yellow-green or teal (spore) or gold (guard) pixels in the box. Stage: vortex (spore) or thrown shields (guard) only in the evolved stage.',
     rows: results };
 }
 

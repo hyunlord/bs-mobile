@@ -10,18 +10,14 @@ namespace Game.View
         public const int SpreadFrames = 6;           // ground marker spreads from the hero to the orbit radius
         public const int ShrinkFrames = 6;           // orbiters shrink inward as their activation ends
         public const int ContactFlashFrames = 3;     // hits flash briefly; no freeze (orbits hit many enemies)
-        // Spore fan (option A, docs/design/m1-weapon-effect-sprites.md): each orbiter puffs a fan-shaped spore cloud outward
-        // (away from the hero); puffs grow PuffFrom -> PuffTo and fade over their life. Evolution: three continuous spore streams spiralling
+        // Spore fan (option A, docs/design/m1-weapon-effect-sprites.md): each orbiter puffs a small fan of spore clouds
+        // outward (away from the hero) within FanDegrees, PuffsLv1..PuffsMax puffs on a staggered PuffFrames cycle, each
+        // pushed out by the Core orbiter radius while it grows PuffFrom -> PuffTo and fades, with grains blown out faster.
+        // Puffs are PuffHeroHeights tall by gear strength. Evolution: three continuous spore streams spiralling
         // StreamTurns from near the hero out past the orbit, grains flowing inward along them, and a pair of puffs at each
         // orbiter; no ground ring and no stacked turns (the old 1.4-turn segmented spiral read as dotted concentric rings).
-        // Normal stages (user review of 346d110): CloudPuffs puffs per orbiter side by side across the fan, CloudSpacing of a
-        // puff's painted width apart (30-50% overlap), so they read as one fan-shaped cloud; CloudPuffFrames long (1.5x the
-        // evolved puffs) drifting out CloudReach of the orbiter radius over it (0.7x their speed); grains blow off its edge.
-        public const int CloudPuffs = 4, CloudPuffFrames = 45, CloudInFrames = 9, CloudOutFrames = 22;
-        public const float CloudSpacing = .6f, CloudReach = 1.155f, PuffPaintedShare = .78f, MinPuffHeroHeights = .6f, MaxPuffHeroHeights = .75f;
-        // Evolved: a pair of puffs per orbiter swirling with the vortex (approved as is).
-        public const int PuffFrames = 30, PuffInFrames = 6, PuffOutFrames = 15, GrainsLv1 = 6, GrainsMax = 8, GrainFrames = 24;
-        public const float FanDegrees = 60, PuffFrom = .5f, PuffTo = 1.1f, PuffSwayDegrees = 20, EvolvedPuffHeroHeights = .6f;
+        public const int PuffsLv1 = 4, PuffsMax = 5, PuffFrames = 30, PuffInFrames = 6, PuffOutFrames = 15, GrainsLv1 = 6, GrainsMax = 8, GrainFrames = 24;
+        public const float FanDegrees = 60, PuffFrom = .5f, PuffTo = 1.1f, PuffSwayDegrees = 20, MinPuffHeroHeights = .5f, MaxPuffHeroHeights = .6f;
         public const float GrainHeroHeights = .11f;   // the grain fills about half its canvas: 5-8px on screen
         // StreamSegments slices per stream: fine enough that the end taper (alpha and width) and the bend change in small steps
         // (at 18 the painted stream's square-cut slices showed as steps at both ends and joints at the bends).
@@ -37,13 +33,8 @@ namespace Game.View
         public static float PuffScale(float life) => Mathf.Lerp(PuffFrom, PuffTo, Mathf.Sqrt(Mathf.Clamp01(life)));
         public static float PuffAlpha(float life)
             => Mathf.Clamp01(life * PuffFrames / PuffInFrames) * Mathf.Clamp01((1 - life) * PuffFrames / PuffOutFrames);
-        public static float CloudAlpha(float life)
-            => Mathf.Clamp01(life * CloudPuffFrames / CloudInFrames) * Mathf.Clamp01((1 - life) * CloudPuffFrames / CloudOutFrames);
+        public static int Puffs(float tier) => Mathf.RoundToInt(Mathf.Lerp(PuffsLv1, PuffsMax, Mathf.Clamp01(tier)));
         public static float PuffHeroHeights(float tier) => Mathf.Lerp(MinPuffHeroHeights, MaxPuffHeroHeights, Mathf.Clamp01(tier));
-        // Puff k of CloudPuffs across the fan, in painted puff widths from the fan's middle line.
-        public static float CloudOffset(int k) => (k - (CloudPuffs - 1) * .5f) * CloudSpacing;
-        // Neighbouring puffs' overlap, as a share of a painted puff width.
-        public static float CloudOverlap => 1 - CloudSpacing;
         // Spiral point of a stream (0 = inner end, 1 = outer end) as a reach share and an angle offset in degrees.
         public static float StreamReach(float t) => Mathf.Lerp(StreamInner, 1, t);
         public static float StreamAngle(float t) => t * StreamTurns * 360;
@@ -182,66 +173,28 @@ namespace Game.View
             if (age >= OrbitSpec.Seconds(OrbitSpec.SpreadFrames) && orbitRecordedActivations.Add(attack.ActivationId)) RecordOrbitActivation(attack, shape, evolved, center, orbitRadius, gear);
         }
 
-        float PuffSize(string source) => HeroHeight * (WeaponEvolved(source) ? OrbitSpec.EvolvedPuffHeroHeights : OrbitSpec.PuffHeroHeights(GearTier(source)));
+        float PuffSize(string source) => HeroHeight * OrbitSpec.PuffHeroHeights(WeaponEvolved(source) ? 1 : GearTier(source));
 
         static float SporeHash(int a, int b) { unchecked { var h = (uint)(a * 73856093 ^ b * 19349663); h ^= h >> 13; h *= 0x5bd1e995; h ^= h >> 15; return (h & 0xffff) / 65535f; } }
         static Vector2 Rotate(Vector2 v, float degrees) { var r = degrees * Mathf.Deg2Rad; var c = Mathf.Cos(r); var s = Mathf.Sin(r); return new Vector2(v.x * c - v.y * s, v.x * s + v.y * c); }
 
-        // Spore fan cloud at one orbiter. Normal stages: CloudPuffs puffs side by side across the fan, overlapping into one
-        // cloud that drifts outward, grains blowing off its edge. Evolved: a pair of puffs swirling with the vortex. Puffs are
-        // wide (capped over enemies), grains thin.
+        // Spore fan cloud at one orbiter: puffs fanning out away from the hero (the evolved pair swirls with the vortex) and
+        // grains blown out faster. Puffs are wide (capped over enemies), grains thin.
         void DrawSporeFan(Vector2 orbiter, Vector2 hero, float radius, float shown, int seed, string source, bool evolved)
         {
             if (shown <= 0) return;
             var outward = orbiter - hero; outward = outward.sqrMagnitude > 1e-8f ? outward.normalized : Vector2.up;
+            if (evolved) outward = Rotate(outward, 90);   // along the vortex's turn (it spins clockwise, struck enemies are pulled in)
+            var tier = evolved ? 1 : GearTier(source);
             var size = PuffSize(source) * shown;
-            if (evolved) { DrawEvolvedSporePuffs(orbiter, Rotate(outward, 90), radius, size, shown, seed); return; }   // along the vortex's turn
-            var across = new Vector2(-outward.y, outward.x);
-            var cycle = OrbitSpec.Seconds(OrbitSpec.CloudPuffFrames);
-            for (var k = 0; k < OrbitSpec.CloudPuffs && puffBudget > 0; k++)
-            {
-                CloudPuff(orbiter, outward, across, radius, size, seed, k, cycle, out var at, out var width, out var life, out var born);
-                var colour = Color.white; colour.a = .95f * OrbitSpec.CloudAlpha(life) * shown;
-                var picture = sporePuffs[(k + born) % sporePuffs.Length];
-                var sway = (SporeHash(seed + 3, born * 5 + k) - .5f) * 2 * OrbitSpec.PuffSwayDegrees + life * OrbitSpec.PuffSwayDegrees;
-                Draw(picture, ProjectileLayer, at, 0, new Vector2(width / OrbitSpec.PuffPaintedShare, width / OrbitSpec.PuffPaintedShare * picture.WorldSize.y / picture.WorldSize.x), sway, 1, colour, applyTween: false);
-                puffBudget--; SporePuffsDrawn++;
-            }
-            // Grains blow off the cloud's edge: from a puff's rim outward (within 90 degrees of the fan's direction).
-            var grains = OrbitSpec.GrainsLv1;
-            var grainCycle = OrbitSpec.Seconds(OrbitSpec.GrainFrames);
-            for (var g = 0; g < grains && grainBudget > 0; g++)
-            {
-                var clock = visualTime / grainCycle + g / (float)grains + SporeHash(seed, 11);
-                var grainBorn = Mathf.FloorToInt(clock); var grainLife = clock - grainBorn;
-                CloudPuff(orbiter, outward, across, radius, size, seed, g % OrbitSpec.CloudPuffs, cycle, out var puffAt, out var puffWidth, out var puffLife, out _);
-                var direction = Rotate(outward, (SporeHash(seed * 13 + g, grainBorn) - .5f) * 180);
-                var at = puffAt + direction * (puffWidth * .5f + HeroHeight * .35f * grainLife);
-                DrawSporeGrain(at, g + grainBorn, shown * Mathf.Sin(grainLife * Mathf.PI) * Mathf.Clamp01(OrbitSpec.CloudAlpha(puffLife) * 2));
-            }
-        }
-
-        // Puff k of the cloud: where it is, its painted width, and its life share (staggered by k across the cycle).
-        void CloudPuff(Vector2 orbiter, Vector2 outward, Vector2 across, float radius, float size, int seed, int k, float cycle, out Vector2 at, out float width, out float life, out int born)
-        {
-            var clock = visualTime / cycle + k / (float)OrbitSpec.CloudPuffs + SporeHash(seed, 7);
-            born = Mathf.FloorToInt(clock); life = clock - born;
-            width = size * OrbitSpec.PuffPaintedShare * OrbitSpec.PuffScale(life);
-            var push = radius * (-.1f + OrbitSpec.CloudReach * (1 - (1 - life) * (1 - life)));
-            var jitter = (SporeHash(seed * 17 + k, born) - .5f) * .16f;
-            at = orbiter + outward * (push + jitter * width) + across * ((OrbitSpec.CloudOffset(k) + jitter * .5f) * width);
-        }
-
-        // Evolved: a pair of puffs per orbiter, pushed along the vortex's turn (unchanged since its approval).
-        void DrawEvolvedSporePuffs(Vector2 orbiter, Vector2 outward, float radius, float size, float shown, int seed)
-        {
+            var puffs = evolved ? OrbitSpec.EvolvedPuffs : OrbitSpec.Puffs(tier);
             var cycle = OrbitSpec.Seconds(OrbitSpec.PuffFrames);
-            for (var k = 0; k < OrbitSpec.EvolvedPuffs && puffBudget > 0; k++)
+            for (var k = 0; k < puffs && puffBudget > 0; k++)
             {
-                var clock = visualTime / cycle + k / (float)OrbitSpec.EvolvedPuffs + SporeHash(seed, 7);
+                var clock = visualTime / cycle + k / (float)puffs + SporeHash(seed, 7) ;
                 var born = Mathf.FloorToInt(clock); var life = clock - born;
                 var spread = (SporeHash(seed * 17 + k, born) - .5f) * OrbitSpec.FanDegrees;
-                var push = radius * .5f * Mathf.Lerp(-.1f, 1, 1 - (1 - life) * (1 - life));
+                var push = radius * (evolved ? .5f : 1) * Mathf.Lerp(-.1f, 1, 1 - (1 - life) * (1 - life));
                 var at = orbiter + Rotate(outward, spread) * push;
                 var colour = Color.white; colour.a = .95f * OrbitSpec.PuffAlpha(life) * shown;
                 var picture = sporePuffs[(k + born) % sporePuffs.Length];
@@ -249,6 +202,17 @@ namespace Game.View
                 var sway = (SporeHash(seed + 3, born * 5 + k) - .5f) * 2 * OrbitSpec.PuffSwayDegrees + life * OrbitSpec.PuffSwayDegrees;
                 Draw(picture, ProjectileLayer, at, 0, new Vector2(scale, scale * picture.WorldSize.y / picture.WorldSize.x), sway, 1, colour, applyTween: false);
                 puffBudget--; SporePuffsDrawn++;
+            }
+            if (evolved) return;
+            var grains = Mathf.RoundToInt(Mathf.Lerp(OrbitSpec.GrainsLv1, OrbitSpec.GrainsMax, tier));
+            var grainCycle = OrbitSpec.Seconds(OrbitSpec.GrainFrames);
+            for (var g = 0; g < grains && grainBudget > 0; g++)
+            {
+                var clock = visualTime / grainCycle + g / (float)grains + SporeHash(seed, 11);
+                var born = Mathf.FloorToInt(clock); var life = clock - born;
+                var spread = (SporeHash(seed * 13 + g, born) - .5f) * OrbitSpec.FanDegrees * 1.2f;
+                var at = orbiter + Rotate(outward, spread) * (radius * Mathf.Lerp(.1f, 1.4f, life));
+                DrawSporeGrain(at, g + born, shown * Mathf.Sin(life * Mathf.PI));
             }
         }
 
