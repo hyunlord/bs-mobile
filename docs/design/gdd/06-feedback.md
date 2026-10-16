@@ -214,9 +214,9 @@ c656471의 코드 도형 판은 불통과였고, 핵심 그림(Astra) + 코드 �
 | 철날 검 `core:iron_blade` | 베기 | `attack` | 진화(거대 검)도 베기 |
 | 고랑 장창 `core:ditch_pike` | 베기 | `review-impact-tell`(시전 틱의 첫 사건) | 실제 장비 경로에서는 `attack` |
 | 수로 활 `core:canal_bow` | 쏘기 | `review-impact-tell`(시전 틱의 첫 사건) | 진화 화살비도 쏘기 |
-| 곡식 투석끈 `core:granary_sling` | 쏘기 | `review-impact-tell`(시전 틱의 첫 사건) | |
-| 갈래 번개 `core:storm_fork` | 시전 | `chain-link`(틱의 첫 고리) | 같은 틱의 나머지 고리는 무시 |
-| 소집 뿔나팔 `core:muster_horn` | 불기 | `attack` | |
+| 곡창 투석끈 `core:granary_sling` | 쏘기 | `review-impact-tell`(시전 틱의 첫 사건) | |
+| 빗물 쇠스랑 `core:storm_fork` | 시전 | `chain-link`(틱의 첫 고리) | 같은 틱의 나머지 고리는 무시 |
+| 뿔나팔 `core:muster_horn` | 불기 | `attack` | |
 | 수호 고리 `core:ward_orbit` | 던지기 | `orbit-fragment`(활성화의 첫 사건) | 진화의 방패 던지기(적중마다)도 던지기. 0.4초 간격 규칙으로 걸러짐 |
 | 포자 부채 `core:spore_fan` | **미정** | `orbit-fragment`(활성화의 첫 사건) | 5종에 없다. 시전을 같이 쓸지, 동작 없이 둘지 사용자 결정이 필요하다 |
 | 그 밖의 장비 | 없음 | `attack` | 지금처럼 `heroAttackUntil`만 갱신 |
