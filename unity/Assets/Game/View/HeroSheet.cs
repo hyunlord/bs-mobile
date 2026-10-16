@@ -201,7 +201,7 @@ namespace Game.View
             if (value.Kind == "review-impact-tell" && heroLastImpact.Tick == value.Tick && heroLastImpact.Source == value.Source && heroLastImpact.Point.X == value.Position.X && heroLastImpact.Point.Y == value.Position.Y) return;
             var weapon = value.Source; var evolved = false;
             if (waveDefinition.Evolutions.TryGetValue(value.Source, out var evolution) && evolution.InputIds.Length > 0) { weapon = evolution.InputIds[0]; evolved = true; }
-            else if (value.Kind == "hit") evolved = HeroWeaponEvolved(weapon);
+            else if (value.Kind == "hit") evolved = HeroWeaponEvolved(weapon) || WeaponEvolved(weapon);   // composite: the stack's display stage (review evolved cases)
             var action = HeroSheetSpec.ActionFor(weapon, evolved, value.Kind);
             if (action == HeroAction.None || (tick == heroOfferTick && weapon == heroOfferWeapon)) return;
             heroOfferTick = tick; heroOfferWeapon = weapon;
