@@ -46,9 +46,13 @@ public static class ShowcaseFixtureCli
     public static int Run(string[] args)
     {
 
-        if (args.Length != 4)
+        // Review composite only (knight sheets on the #266 stack): --stand-from <tick> stops the walk from that tick so the
+        // knight's standing full actions appear in the capture window next to the moving key poses.
+        var standFrom = int.MaxValue;
+        if (args.Length == 6 && args[4] == "--stand-from") standFrom = int.Parse(args[5], System.Globalization.CultureInfo.InvariantCulture);
+        else if (args.Length != 4)
         {
-            throw new ArgumentException("showcase-fixtures <frozen-C05-data> <case-json> <output>");
+            throw new ArgumentException("showcase-fixtures <frozen-C05-data> <case-json> <output> [--stand-from <tick>]");
         }
 
         var baseline = ContentLoader.Load(args[1], profileName: "wave-1a");
@@ -82,7 +86,7 @@ public static class ShowcaseFixtureCli
                 ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
                 while (session.View.Status != RunStatus.Completed && tick < review.Arena.DurationTicks)
                 {
-                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, OrbitInput(tick));
+                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, tick >= standFrom ? new PlayerInput(0, 0) : OrbitInput(tick));
                     session.Apply(command); ReplayCodec.WriteCommand(output, command); tick++;
                     var frame = session.View.CaptureFrame(); maximumEnemies = Math.Max(maximumEnemies, frame.Enemies.Count);
                     foreach (var e in ((IWaveRunView)session.View).CaptureWaveRuntime()!.Events)
@@ -130,7 +134,7 @@ public static class ShowcaseFixtureCli
                 review.Classification,
                 review.Gear,
                 review.Arena,
-                inputContract = "orbit-walk-v1: full movement around a 32-gon of radius ~1836 (about 3 H), 15 ticks per edge, 480-tick lap, counter-clockwise from +X, same input for all 24 cases",
+                inputContract = "orbit-walk-v1: full movement around a 32-gon of radius ~1836 (about 3 H), 15 ticks per edge, 480-tick lap, counter-clockwise from +X, same input for all 24 cases" + (standFrom == int.MaxValue ? "" : $"; review composite: standing from tick {standFrom}"),
                 scope = "review-only numeric hypotheses; 10s setup +10s capture; evolved is preconfigured proposal, not earned progression",
                 positiveHits = hits,
                 kills,
