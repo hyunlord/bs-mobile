@@ -19,7 +19,9 @@ namespace Game.View
         public const int PuffsLv1 = 4, PuffsMax = 5, PuffFrames = 30, PuffInFrames = 6, PuffOutFrames = 15, GrainsLv1 = 6, GrainsMax = 8, GrainFrames = 24;
         public const float FanDegrees = 60, PuffFrom = .5f, PuffTo = 1.1f, PuffSwayDegrees = 20, MinPuffHeroHeights = .5f, MaxPuffHeroHeights = .6f;
         public const float GrainHeroHeights = .11f;   // the grain fills about half its canvas: 5-8px on screen
-        public const int VortexArms = 3, StreamSegments = 18, StreamGrains = 8, EvolvedPuffs = 2;
+        // StreamSegments slices per stream: fine enough that the end taper (alpha and width) and the bend change in small steps
+        // (at 18 the painted stream's square-cut slices showed as steps at both ends and joints at the bends).
+        public const int VortexArms = 3, StreamSegments = 60, StreamGrains = 8, EvolvedPuffs = 2;
         public const float StreamTurns = .6f, VortexSpin = 140, VortexReach = 1.18f, StreamInner = .15f, StreamInnerHeroHeights = .12f, StreamOuterHeroHeights = .3f;
         // Per-frame caps (docs/design/m1-weapon-effect-sprites.md).
         public const int MaxPuffs = 24, MaxGrains = 60;
