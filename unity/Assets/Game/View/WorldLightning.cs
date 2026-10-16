@@ -22,6 +22,8 @@ namespace Game.View
         // Full-screen tints (storm sky darkening, storm screen flash) are not covered by the P5 occlusion budget; they are
         // checked on their own (ScreenTintAlpha). The flash sits on its own layer so the occlusion mask and cap skip it.
         public const int ScreenFlashLayer = 77;
+        // Thin effect elements drawn from shared atlases (the canal bow's arrow): batches on this layer skip the P5 cap.
+        public const int ThinEffectLayer = 78;
         // Strongest full-screen darkening tint drawn this frame (normal blend), for the review's separate tint check.
         public float ScreenTintAlpha { get; private set; }
         const int LightningLinkCapacity = 64, LightningStrikeCapacity = 12;

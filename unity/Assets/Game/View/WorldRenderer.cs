@@ -787,7 +787,7 @@ namespace Game.View
             {
                 var surfaceShader = FallowActive && layer < GameVisualTokens.AllyLayer && layer != GameVisualTokens.ExperienceLayer
                     ? layer <= GameVisualTokens.TerrainLayer + 1 ? fallowGroundShader : fallowShader : shader;
-                batch = new SpriteBatch(visual.Texture, surfaceShader, renderCamera, layer, !thinEffectTextures.Contains(visual.Texture)); batches.Add(key, batch);
+                batch = new SpriteBatch(visual.Texture, surfaceShader, renderCamera, layer, layer != ThinEffectLayer && !thinEffectTextures.Contains(visual.Texture)); batches.Add(key, batch);
             }
             batch.Add(position, dimensions, visual.Pivot, uv ?? visual.UvRects[frame], degrees, color, flash, edgeTexels, upperOpacity);
         }

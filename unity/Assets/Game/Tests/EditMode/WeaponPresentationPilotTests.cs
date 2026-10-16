@@ -166,7 +166,11 @@ namespace Tests.EditMode
             Assert.That(BladeSpec.SwordSparks, Is.InRange(6, 10), "6-10 bright shards rise off the blade.");
             Assert.That(BladeSpec.SwordDissolved(0), Is.Zero); Assert.That(BladeSpec.SwordDissolved(1), Is.EqualTo(1));
             Assert.That(BladeSpec.SwordDissolved(.5f), Is.GreaterThan(BladeSpec.SwordDissolved(.25f)), "The dissolve line rises from the point up.");
-            Assert.That(ArrowSpec.ArrowHeroHeights, Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
+            Assert.That(ArrowSpec.ArrowHeroHeights(0), Is.GreaterThanOrEqualTo(.5f), "Arrows are at least half a hero tall.");
+            Assert.That(ArrowSpec.ArrowHeroHeights(0), Is.LessThan(ArrowSpec.ArrowHeroHeights(ArrowSpec.NormalStageShare)), "Arrow length grows Lv1 < max.");
+            Assert.That(ArrowSpec.ArrowHeroHeights(ArrowSpec.NormalStageShare), Is.LessThan(ArrowSpec.ArrowHeroHeights(1)), "Arrow length grows max < evolved.");
+            Assert.That(ArrowSpec.TailHeroHeights(0), Is.LessThan(ArrowSpec.TailHeroHeights(1)), "Water tail widens with the stage.");
+            Assert.That(ArrowSpec.Seconds(ArrowSpec.SplashFrames), Is.EqualTo(.2f).Within(1e-4f), "The splash grows and fades over 0.2 s.");
             Assert.That(OrbitSpec.Presence(0, 1), Is.Zero, "Orbit marker spreads in."); Assert.That(OrbitSpec.Presence(1, 1), Is.EqualTo(1));
             Assert.That(OrbitSpec.Presence(1, 0), Is.Zero, "Orbiters shrink away as the activation ends.");
             Assert.That(OrbitSpec.Shown(0), Is.InRange(.3f, .6f), "Back-to-back activations shrink part way, not to nothing (no blinking).");

@@ -11,14 +11,21 @@ namespace Game.View
         public const int LaunchBloomFrames = 1;      // the arrow's first frame is a round bloom
         public const int LandFrames = 8, PlantedFrames = 14;
         public const int HitHoldFrames = 2;          // projectile hits freeze briefly (1–2) and push away from the impact
-        public const float ArcOfDistance = .12f, ArrowBodyWidths = 1.1f, TrailOfDistance = .3f;
-        public const float ShaftPixels = 3, OutlinePixels = 1.5f, HeadPixels = 10;
+        public const float ArcOfDistance = .12f, TrailOfDistance = .3f;
         // Evolution element: warning circles on the ground at every impact, then arrows drive down from the sky onto each one
         // as Core lands it (a cast's impacts land one step apart, so the rain rolls across the circles).
         public const int WarningGrowFrames = 4, FallFrames = 8, MinRainArrows = 6, MaxRainArrows = 12, MaxRainArrowsTotal = 260;
-        // Arrows are at least half a hero tall with a white shaft (the core) and a water-blue tail; rain arrows trail long
-        // streaks so the rain reads above its warning circles, which are merged where they overlap and drawn as thin outlines.
-        public const float ArrowHeroHeights = .55f, RainStreakHeroHeights = 1f, WarningLinePixels = 2.5f;
+        // Each drawn element is one picture (painted role when the manifest has it, else a temporary generated texture):
+        // the arrow (head, shaft, fletching), a water tail behind it in flight, a water splash where it lands, and in the
+        // evolution short slanted rain streaks behind the falling arrows. Arrow length and tail width grow with the stage
+        // (Lv1 < max < evolved). Warning circles are code: merged where they overlap, thin outlines.
+        public const float MinArrowHeroHeights = .55f, MaxArrowHeroHeights = .7f, MinTailHeroHeights = .18f, MaxTailHeroHeights = .26f;
+        public const float RainStreakHeroHeights = .6f, RainStreakWidthHeroHeights = .09f, WarningLinePixels = 2.5f;
+        public const int SplashFrames = 12;
+        public const float SplashFrom = .4f, SplashTo = 1.1f;
+        public const float NormalStageShare = .75f;
+        public static float ArrowHeroHeights(float stage) => Mathf.Lerp(MinArrowHeroHeights, MaxArrowHeroHeights, stage);
+        public static float TailHeroHeights(float stage) => Mathf.Lerp(MinTailHeroHeights, MaxTailHeroHeights, stage);
         public const float RainDropHeight = .55f, RainSlant = .18f;
         public static readonly Color Silver = new Color(.9f, .93f, .97f);
         public static readonly Color Water = new Color(.5f, .82f, 1f);   // silver-white + water sky blue
@@ -36,7 +43,7 @@ namespace Game.View
         const int ArrowVolleyCapacity = 8, ArrowImpactCapacity = 32;
         sealed class ArrowVolley
         {
-            public int Tick = -1, Count; public string Source; public float Accepted, Due, Step; public bool Evolved, Recorded; public int AcceptedFrame;
+            public int Tick = -1, Count; public string Source; public float Accepted, Due, Step, Stage; public bool Evolved, Recorded; public int AcceptedFrame;
             // Core lands a cast's impacts StepTicks apart (review compositions use 1 tick), so each has its own due time.
             public float DueOf(int index) => Due + index * Step;
             public readonly int[] Ids = new int[ArrowImpactCapacity];
@@ -94,6 +101,7 @@ namespace Game.View
                     volley.Due = visualTime + (composition?.DelayTicks ?? 12) / (float)Mathf.Max(1, waveTickRate);
                     volley.Step = (composition?.StepTicks ?? 0) / (float)Mathf.Max(1, waveTickRate);
                     volley.Evolved = WeaponEvolved(value.Source);
+                    volley.Stage = volley.Evolved ? 1 : ArrowSpec.NormalStageShare * GearTier(value.Source);
                     volley.Launch = PredictedLordPosition ?? RenderedLordPosition;
                     ArrowVolleys++; if (volley.Evolved) ArrowRainVolleys++;
                 }
@@ -140,7 +148,7 @@ namespace Game.View
             foreach (var volley in arrowVolleys)
                 if (volley.Tick >= 0 && visualTime - volley.DueOf(volley.Count) < ArrowSpec.Seconds(ArrowSpec.PlantedFrames) + .2f) { any = true; break; }
             if (!any) return;
-            EnsureLightningArt();
+            EnsureLightningArt(); EnsureBowArt();
             var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
             var w = heroBodyWidth > 0 ? heroBodyWidth : .6f;
             var view = CameraWorldViewport;
@@ -156,19 +164,20 @@ namespace Game.View
                     var landed = volley.Landed[i] >= 0 ? volley.Landed[i] : volley.DueOf(i);
                     var point = volley.Points[i]; var radius = volley.Radii[i];
                     if (volley.Evolved) DrawArrowRain(volley, i, point, radius, landed, w, pixel, view, ref rainBudget);
-                    else DrawArrowShot(volley, i, point, landed, w, pixel);
-                    DrawArrowLanding(point, radius, landed, w, volley.Evolved);
+                    else DrawArrowShot(volley, i, point, landed, w);
+                    DrawArrowLanding(point, radius, landed, w);
                 }
             }
         }
 
-        void DrawArrowShot(ArrowVolley volley, int index, Vector2 point, float landed, float w, float pixel)
+        void DrawArrowShot(ArrowVolley volley, int index, Vector2 point, float landed, float w)
         {
             var flight = ArrowSpec.Seconds(ArrowSpec.FlightFrames);
             var launchAt = landed - flight;
             var age = visualTime - launchAt;
             var from = volley.Launch + (point - volley.Launch).normalized * (.35f * w) + Vector2.up * (.45f * w);
             if (age < 0) return;
+            var length = ArrowLength(volley);
             if (age < ArrowSpec.Seconds(ArrowSpec.MuzzleFlashFrames) && index == 0)
             {
                 var flash = ArrowSpec.Water; flash.a = .95f;
@@ -176,7 +185,7 @@ namespace Game.View
             }
             if (age >= flight)
             {
-                DrawPlantedArrow(point, (point - from).normalized, visualTime - landed, w, pixel);
+                DrawPlantedArrow(point, (point - from).normalized, visualTime - landed, length);
                 return;
             }
             var t = age / flight;
@@ -184,20 +193,18 @@ namespace Game.View
             var at = ArrowSpec.Flight(from, point, t, arc);
             var ahead = ArrowSpec.Flight(from, point, Mathf.Min(1, t + .05f), arc);
             var direction = (ahead - at).sqrMagnitude > .0000001f ? (ahead - at).normalized : (point - from).normalized;
-            // Tail of water-blue light along the path behind the arrow.
+            // Water tail along the path behind the arrow's fletching.
+            var tail = at - direction * (length * .85f);
             var trailStart = ArrowSpec.Flight(from, point, Mathf.Max(0, t - ArrowSpec.TrailOfDistance), arc);
-            var trail = at - trailStart;
-            if (trail.magnitude > .0001f)
-            {
-                var glow = ArrowSpec.Water; glow.a = .95f;
-                Draw(lightningGlow, LightningLayer, (at + trailStart) * .5f, 0, new Vector2(trail.magnitude, HeroHeight * .25f), Angle(trail), 1, glow, applyTween: false);
-            }
+            var trail = tail - trailStart;
+            if (Vector2.Dot(trail, direction) > .0001f)
+                Draw(bowStreak, ProjectileLayer, tail, 0, new Vector2(trail.magnitude, HeroHeight * ArrowSpec.TailHeroHeights(volley.Stage)), Angle(trail), 1, Color.white, applyTween: false);
             if (age < ArrowSpec.Seconds(ArrowSpec.LaunchBloomFrames))
             {
                 var bloom = ArrowSpec.Silver; bloom.a = 1;
                 Draw(lightningFlash, LightningLayer, at, 0, Vector2.one * w * .75f, 0, 1, bloom, applyTween: false);
             }
-            DrawArrowBody(at, direction, w, pixel, 1);
+            DrawArrowPicture(at, direction, length, 1);
         }
 
         void DrawArrowRain(ArrowVolley volley, int index, Vector2 point, float radius, float landed, float w, float pixel, Rect view, ref int budget)
@@ -220,17 +227,15 @@ namespace Game.View
                 var angle = (seed & 1023) / 1023f * 360; var distance = Mathf.Sqrt(((seed >> 10) & 1023) / 1023f) * radius * .85f;
                 var landing = point + M1Direction(angle) * distance;
                 var down = new Vector2(ArrowSpec.RainSlant, -1).normalized;
-                if (age >= fall) { DrawPlantedArrow(landing, down, visualTime - landed, w, pixel); continue; }
+                if (age >= fall) { DrawPlantedArrow(landing, down, visualTime - landed, ArrowLength(volley)); continue; }
                 var t = age / fall;
                 var drop = view.height * ArrowSpec.RainDropHeight * (.85f + .3f * (((seed >> 20) & 255) / 255f));
                 var at = landing - down * (drop * (1 - t));
-                // Streak: a long white line with a water-blue bloom behind the falling arrow.
-                var streak = height * ArrowSpec.RainStreakHeroHeights;
-                var glow = ArrowSpec.Water; glow.a = .9f;
-                Draw(lightningGlow, LightningLayer, at - down * (streak * .6f), 0, new Vector2(streak * 1.2f, height * .14f), Angle(down), 1, glow, applyTween: false);
-                var core = Color.white; core.a = .95f;
-                Draw(lightningCore, ProjectileLayer, at - down * (streak * .5f), 0, new Vector2(streak, Mathf.Max(3 * pixel, height * .025f)), Angle(down), 1, core, applyTween: false);
-                DrawArrowBody(at, down, w, pixel, 1);
+                // Short slanted rain streak behind the falling arrow (capped over enemies like every wide effect).
+                var length = ArrowLength(volley);
+                var streakAt = at - down * (length * .85f);
+                Draw(bowRainStreak, ProjectileLayer, streakAt, 0, new Vector2(height * ArrowSpec.RainStreakHeroHeights, height * ArrowSpec.RainStreakWidthHeroHeights), Angle(down), 1, Color.white, applyTween: false);
+                DrawArrowPicture(at, down, length, 1);
             }
         }
 
@@ -252,47 +257,125 @@ namespace Game.View
             }
         }
 
-        void DrawArrowLanding(Vector2 point, float radius, float landed, float w, bool rain)
+        // Water splash where an arrow lands: the splash picture grows from SplashFrom to SplashTo of the Core impact
+        // diameter over SplashFrames and fades.
+        void DrawArrowLanding(Vector2 point, float radius, float landed, float w)
         {
             var age = visualTime - landed;
-            if (age < 0 || age > ArrowSpec.Seconds(ArrowSpec.LandFrames)) return;
-            var t = age / ArrowSpec.Seconds(ArrowSpec.LandFrames);
-            // Debris and dust at the impact: a bright splash that spreads to the Core impact radius and fades.
-            var ring = ArrowSpec.Silver; ring.a = (1 - t) * .9f;
-            DrawMusterRing(point, radius * Mathf.Lerp(.4f, 1, Mathf.Sqrt(t)), ring, 1);
-            var dust = new Color(.86f, .84f, .78f, (1 - t) * .55f);
-            Draw(impactDust, GameVisualTokens.WaveTransientCueLayer, point, 0, impactDust.WorldSize * (radius * (rain ? 1.6f : 1.1f) * (.7f + .5f * t) / Mathf.Max(impactDust.WorldSize.x, impactDust.WorldSize.y)), 0, 1, dust, applyTween: false);
-            var flash = ArrowSpec.Silver; flash.a = (1 - t);
-            Draw(lightningFlash, LightningLayer, point, 0, Vector2.one * Mathf.Max(w * .8f, radius * .7f) * (1 - .4f * t), 0, 1, flash, applyTween: false);
+            if (age < 0 || age > ArrowSpec.Seconds(ArrowSpec.SplashFrames)) return;
+            var t = age / ArrowSpec.Seconds(ArrowSpec.SplashFrames);
+            var width = Mathf.Max(w * 1.2f, radius * 2) * Mathf.Lerp(ArrowSpec.SplashFrom, ArrowSpec.SplashTo, Mathf.Sqrt(t));
+            var color = Color.white; color.a = 1 - t * t;
+            Draw(bowSplash, ProjectileLayer, point, 0, new Vector2(width, width * bowSplash.WorldSize.y / bowSplash.WorldSize.x), 0, 1, color, applyTween: false);
         }
 
-        void DrawPlantedArrow(Vector2 tip, Vector2 direction, float age, float w, float pixel)
+        void DrawPlantedArrow(Vector2 tip, Vector2 direction, float age, float length)
         {
             if (age < 0 || age > ArrowSpec.Seconds(ArrowSpec.PlantedFrames)) return;
             var opacity = 1 - Mathf.Clamp01(age / ArrowSpec.Seconds(ArrowSpec.PlantedFrames));
-            DrawArrowBody(tip - direction * (w * .25f), direction, w, pixel, opacity);
+            DrawArrowPicture(tip - direction * (length * .2f), direction, length, opacity);
         }
 
-        // Outlined white shaft with a white core glow and a bright head, the tip at `tip`.
-        void DrawArrowBody(Vector2 tip, Vector2 direction, float w, float pixel, float opacity)
+        float ArrowLength(ArrowVolley volley) => HeroHeight * ArrowSpec.ArrowHeroHeights(volley.Stage);
+
+        // The arrow picture, its point at `tip`: a thin element on its own layer, exempt from the P5 cap over enemies.
+        void DrawArrowPicture(Vector2 tip, Vector2 direction, float length, float opacity)
         {
-            var length = Mathf.Max(w * ArrowSpec.ArrowBodyWidths, HeroHeight * ArrowSpec.ArrowHeroHeights); var angle = Angle(direction);
-            var shaft = Mathf.Max(ArrowSpec.ShaftPixels * pixel, .035f * length); var outline = ArrowSpec.OutlinePixels * pixel;
-            var head = Mathf.Max(ArrowSpec.HeadPixels * pixel, .22f * length);
-            var middle = tip - direction * (length * .5f);
-            var ink = GameVisualTokens.Ink; ink.a = opacity;
-            var bright = Color.white; bright.a = opacity;
-            Draw(lightningSolid, ProjectileLayer, middle, 0, new Vector2(length + outline * 2, shaft + outline * 2), angle, 1, ink, applyTween: false);
-            Draw(lightningSolid, ProjectileLayer, middle, 0, new Vector2(length, shaft), angle, 1, bright, applyTween: false);
-            // White core glow along the shaft.
-            var halo = Color.white; halo.a = .55f * opacity;
-            Draw(lightningGlow, LightningLayer, middle, 0, new Vector2(length * 1.05f, shaft * 5), angle, 1, halo, applyTween: false);
-            var headAt = tip - direction * (head * .5f);
-            Draw(lightningSolid, ProjectileLayer, headAt, 0, new Vector2(head + outline * 2, shaft * 2.2f + outline * 2), angle, 1, ink, applyTween: false);
-            Draw(lightningSolid, ProjectileLayer, headAt, 0, new Vector2(head, shaft * 2.2f), angle, 1, bright, applyTween: false);
-            // Fletching at the back, water blue.
-            var fletch = ArrowSpec.Water; fletch.a = opacity;
-            Draw(lightningSolid, ProjectileLayer, tip - direction * (length - head * .4f), 0, new Vector2(head * .8f, shaft * 2.4f), angle, 1, fletch, applyTween: false);
+            var color = Color.white; color.a = opacity;
+            Draw(bowArrow, ThinEffectLayer, tip, 0, new Vector2(length, length * bowArrow.WorldSize.y / bowArrow.WorldSize.x), Angle(direction), 1, color, applyTween: false);
+        }
+
+        // Painted roles (docs/design/m1-weapon-effect-sprites.md, canal bow); temporary generated pictures until they are in.
+        const string ArrowRole = "fx.canal_bow.arrow", StreakRole = "fx.canal_bow.streak", SplashRole = "fx.canal_bow.splash", RainStreakRole = "fx.canal_bow.rain_streak";
+        ArtVisual bowArrow, bowStreak, bowSplash, bowRainStreak;
+
+        void EnsureBowArt()
+        {
+            if (bowArrow != null) return;
+            bowArrow = EffectArt(ArrowRole, () => TemporaryArrow());
+            bowStreak = EffectArt(StreakRole, () => TemporaryStreak("Temporary bow streak", 256, 32, StreakRole));
+            bowSplash = EffectArt(SplashRole, () => TemporarySplash());
+            bowRainStreak = art != null && art.TryResolveRole(RainStreakRole, out var rain) ? rain : bowStreak;
+        }
+
+        // Arrow pointing right: silver head (point = pivot, right), light wood shaft, two water-blue vanes, 3px ink outline.
+        ArtVisual TemporaryArrow()
+        {
+            const int width = 192, height = 40; const float cy = height * .5f;
+            int Part(float x, float y)
+            {
+                var dy = Mathf.Abs(y - cy);
+                if (x >= 150 && x <= 184 && dy <= (184 - x) * .33f) return 1;                         // head
+                if (x >= 30 && x < 152 && dy <= 2.2f) return 2;                                          // shaft
+                if (x >= 10 && x < 46 && dy >= 2 && dy <= Mathf.Lerp(4, 13, (46 - x) / 36f)) return 3;   // vanes
+                return 0;
+            }
+            var parts = new int[width * height];
+            for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) parts[y * width + x] = Part(x + .5f, y + .5f);
+            int At(int x, int y) => x < 0 || y < 0 || x >= width || y >= height ? 0 : parts[y * width + x];
+            var ink = GameVisualTokens.Ink; ink.a = 1;
+            var texture = PaintTexture("Temporary bow arrow", width, height, (x, y) =>
+            {
+                var part = At(x, y);
+                if (part == 0)
+                {
+                    for (var dy = -3; dy <= 3; dy++) for (var dx = -3; dx <= 3; dx++)
+                        if (dx * dx + dy * dy <= 9 && At(x + dx, y + dy) != 0) return ink;
+                    return new Color(0, 0, 0, 0);
+                }
+                var upper = y + .5f > cy;   // lit from the upper left
+                switch (part)
+                {
+                    case 1: return upper ? new Color(.95f, .96f, .98f) : new Color(.7f, .74f, .8f);
+                    case 2: return upper ? new Color(.86f, .72f, .5f) : new Color(.66f, .52f, .33f);
+                    default: return upper ? new Color(.62f, .86f, 1f) : new Color(.38f, .66f, .88f);
+                }
+            });
+            return new ArtVisual(ArrowRole, texture, new Vector2(width, height) / 384f, new Vector2(.96f, .5f));
+        }
+
+        // Horizontal band: a white core at the right end fading left to water blue and clear; soft top and bottom edges.
+        ArtVisual TemporaryStreak(string name, int width, int height, string role)
+        {
+            var texture = PaintTexture(name, width, height, (x, y) =>
+            {
+                var u = (x + .5f) / width; var v = Mathf.Abs((y + .5f) / height - .5f) * 2;
+                var across = Mathf.Clamp01(1 - v * v);
+                var color = Color.Lerp(ArrowSpec.Water, Color.white, Mathf.SmoothStep(.55f, 1, u) * (1 - v));
+                color.a = Mathf.Pow(u, 1.4f) * across;
+                return color;
+            });
+            return new ArtVisual(role, texture, new Vector2(width, height) / 384f, new Vector2(1, .5f));
+        }
+
+        // Water crown rising from the ground: droplets on outward arcs, water blue and white, thin ink rims.
+        ArtVisual TemporarySplash()
+        {
+            const int width = 192, height = 144;
+            var drops = new System.Collections.Generic.List<(Vector2 c, float r, bool white)>();
+            for (var k = 0; k < 11; k++)
+            {
+                var a = Mathf.Lerp(20, 160, k / 10f) * Mathf.Deg2Rad; var seed = LightningBolt.Hash(266, 200 + k);
+                var reach = Mathf.Lerp(.55f, 1, ((seed & 255) / 255f));
+                drops.Add((new Vector2(96 + Mathf.Cos(a) * 80 * reach, 12 + Mathf.Sin(a) * 118 * reach), Mathf.Lerp(5, 9, ((seed >> 8) & 255) / 255f), (k & 1) == 0));
+                drops.Add((new Vector2(96 + Mathf.Cos(a) * 46 * reach, 12 + Mathf.Sin(a) * 64 * reach), 4, (k & 1) == 1));
+            }
+            var ink = GameVisualTokens.Ink; ink.a = 1;
+            var texture = PaintTexture("Temporary bow splash", width, height, (x, y) =>
+            {
+                var p = new Vector2(x + .5f, y + .5f);
+                // Low water rim at the base.
+                var e = new Vector2((p.x - 96) / 70f, (p.y - 14) / 8f);
+                if (e.sqrMagnitude <= 1) { var c = e.sqrMagnitude > .55f ? ArrowSpec.Water : new Color(.85f, .95f, 1f); c.a = .85f; return c; }
+                foreach (var (c, r, white) in drops)
+                {
+                    var d = (p - c).magnitude;
+                    if (d <= r) return white ? new Color(.97f, .99f, 1f) : ArrowSpec.Water;
+                    if (d <= r + 1.5f) return ink;
+                }
+                return new Color(0, 0, 0, 0);
+            });
+            return new ArtVisual(SplashRole, texture, new Vector2(width, height) / 384f, new Vector2(.5f, .08f));
         }
 
         void RecordArrowVolley(ArrowVolley volley, Rect view)
@@ -303,7 +386,7 @@ namespace Game.View
                 DueFrame = PresentedFrames + Mathf.RoundToInt((volley.Due - visualTime) * 60), FirstImpactScreen = new Vector2(-1, -1), LaunchScreen = renderCamera.WorldToScreenPoint(volley.Launch) };
             var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
             var w = heroBodyWidth > 0 ? heroBodyWidth : .6f;
-            record.ArrowLengthPixels = Mathf.Max(w * ArrowSpec.ArrowBodyWidths, HeroHeight * ArrowSpec.ArrowHeroHeights) / pixelsToWorld; record.HeroHeightPixels = HeroHeight / pixelsToWorld;
+            record.ArrowLengthPixels = ArrowLength(volley) / pixelsToWorld; record.HeroHeightPixels = HeroHeight / pixelsToWorld; record.Stage = volley.Stage;
             for (var i = 0; i < volley.Count; i++)
             {
                 if (!view.Contains(volley.Points[i])) continue;
@@ -318,7 +401,7 @@ namespace Game.View
     {
         public int Tick, Impacts, OnScreenImpacts, AcceptedFrame, FirstShownFrame, DueFrame;
         public bool Evolved;
-        public float FirstImpactRadiusPixels, ArrowLengthPixels, HeroHeightPixels;
+        public float FirstImpactRadiusPixels, ArrowLengthPixels, HeroHeightPixels, Stage;
         public Vector2 FirstImpactScreen, LaunchScreen;
     }
 }
