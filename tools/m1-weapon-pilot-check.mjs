@@ -362,6 +362,37 @@ function checkRicochet(directory, manifest) {
     rows: results };
 }
 
+// Granary sling lure-bomb (ADR0063): every sack lands and bursts on its Core tick; the burst stands out from the ground;
+// the giant sack (swirl) only in the evolved stage.
+function checkSling(directory, manifest) {
+  const casts = rows(path.join(directory, 'm1-sling-casts.csv')).filter(c => c.onScreen === 'True' && Number(c.frameIndex) > 48);
+  const results = [];
+  for (const c of casts) {
+    const burst = Number(c.frameIndex), cast = burst + Number(c.acceptedOffset);
+    const now = frame(directory, burst + 2), g30 = frame(directory, Math.max(0, cast - 30)), g40 = frame(directory, Math.max(0, cast - 40));
+    const x = Number(c.centreScreenX), y = now.height - Number(c.centreScreenY), r = Math.max(8, .5 * Number(c.radiusPixels));
+    let peak = 0, a = 0, b = 0, n = 0;
+    for (let dy = -r; dy <= r; dy += 3) for (let dx = -r; dx <= r; dx += 3) {
+      if (dx * dx + dy * dy > r * r) continue;
+      peak = Math.max(peak, luma(now.at(x + dx, y + dy))); a += luma(g30.at(x + dx, y + dy)); b += luma(g40.at(x + dx, y + dy)); n++;
+    }
+    results.push({ frame: burst, tick: Number(c.tick), evolved: c.evolved === 'True', flightFrames: Number(c.flightFrames), lureFrames: Number(c.lureFrames),
+      burstContrast: +(peak - Math.min(a, b) / Math.max(1, n)).toFixed(1), radiusPixels: +Number(c.radiusPixels).toFixed(1), sackPixels: +Number(c.sackPixels).toFixed(1), heroHeightPixels: +Number(c.heroHeightPixels).toFixed(1) });
+  }
+  const p = manifest.presentation ?? {}, stage = manifest.definition.stage;
+  const pass = {
+    landedOnTime: (p.slingLanded ?? 0) > 0 && p.slingLandedOnTime === p.slingLanded,
+    burstOnTime: (p.slingBursts ?? 0) > 0 && p.slingBurstsOnTime === p.slingBursts,
+    burst: results.length > 0 && results.every(r => r.burstContrast >= thresholds.contrast),
+    stage: stage === 'evolved' ? (p.slingVortexFrames ?? 0) > 0 : (p.slingVortexFrames ?? 0) === 0,
+    reaction: (p.enemyDeathDropped ?? 0) === 0,
+  };
+  return { casts: p.slingCasts, landed: p.slingLanded, landedOnTime: p.slingLandedOnTime, bursts: p.slingBursts, burstsOnTime: p.slingBurstsOnTime, vortexFrames: p.slingVortexFrames,
+    measured: results.length, burstContrastMin: results.length ? Math.min(...results.map(r => r.burstContrast)) : null, pass,
+    note: 'On time = every sack landed (Core review-lure) and burst (review-impact) within 2 frames of its predicted frame. Burst = brightest pixel within half the Core radius 2 frames after the burst minus the darker of the mean ground 30 and 40 frames before the cast, >= 40 on every on-screen burst. Stage = the giant sack swirl only in the evolved stage.',
+    rows: results };
+}
+
 // Furrow pike: impacts land on their Core ticks; the pike's point stands out on the frame its last on-screen impact lands;
 // the furrow is wider Lv1 < max < evolved; the palisade (erupted pikes) only in the evolved stage.
 function checkPikes(directory, manifest) {
@@ -497,6 +528,7 @@ for (const directory of directories) {
   if (id === 'core:iron_blade') entry.blade = checkBlade(directory, manifest);
   if (id === 'core:canal_bow') { if (rows(path.join(directory, 'm1-ricochet-hops.csv')).length > 0) entry.ricochet = checkRicochet(directory, manifest); else entry.arrows = checkArrows(directory, manifest); }
   if (id === 'core:spore_fan') entry.patches = checkSporePatches(directory, manifest);
+  if (id === 'core:granary_sling' && rows(path.join(directory, 'm1-sling-casts.csv')).length > 0) entry.sling = checkSling(directory, manifest);
   if (id === 'core:ward_orbit') entry.orbits = checkOrbits(directory, manifest, 'shield');
   if (id === 'core:ditch_pike') entry.pikes = checkPikes(directory, manifest);
   report.captures.push(entry);

@@ -111,6 +111,7 @@ namespace Game.View
                 AcceptArrowEvent(value);
                 AcceptPikeEvent(value);
                 AcceptSporePatchEvent(value);
+                AcceptSlingEvent(value);
                 AcceptImpactFeedback(value);
                 if(value.Kind=="reward-collected"&&value.Amount>0)
                 {
@@ -429,6 +430,7 @@ namespace Game.View
             DrawArrowVolleys();
             DrawPikeCasts();
             DrawSporePatches();
+            DrawSlingCasts();
             DrawShieldThrows();
             DrawLightning();
         }
