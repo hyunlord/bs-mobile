@@ -52,6 +52,11 @@ function pick(directory, id) {
     const hero = Number(a.heroHeightPixels);
     return { frame: Number(a.frameIndex), x: Number(a.firstOrbiterScreenX), y: FrameHeight - Number(a.firstOrbiterScreenY) - (id === 'core:spore_fan' && Number(a.orbiterSizePixels) > hero * .9 ? hero * .5 : 0), size: Math.max(hero * 1.6, Number(a.orbiterSizePixels) * 1.6) };
   }
+  if (id === 'core:ditch_pike') {
+    // The pike's point on the last on-screen impact as it lands (the row is written then), with the furrow behind it.
+    const c = rows(path.join(directory, 'm1-pike-casts.csv')).filter(late).filter(r => r.lastImpactOnScreen === 'True')[1];
+    return { frame: Number(c.frameIndex) + Number(c.lastImpactFrameOffset ?? 0) + 1, x: Number(c.lastImpactScreenX), y: FrameHeight - Number(c.lastImpactScreenY), size: Number(c.heroHeightPixels) * 2.4 };
+  }
   if (id === 'core:storm_fork') {
     // A strike with a sky bolt: from the bolt's top down to its target, on the frame the strike becomes visible.
     const s = rows(path.join(directory, 'm1-lightning-strikes.csv')).filter(late).filter(r => Number(r.firstSkyScreenX) >= 0)[1];
