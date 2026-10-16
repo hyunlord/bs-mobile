@@ -28,10 +28,15 @@ function pick(directory, id) {
     return { frame: Number(s.frameIndex) + 7, x: Number(s.originScreenX) + Math.cos(aim) * r * .6, y: FrameHeight - (Number(s.originScreenY) + Math.sin(aim) * r * .6), size: r * 1.4 };
   }
   if (id === 'core:canal_bow') {
-    const v = rows(path.join(directory, 'm1-arrow-volleys.csv')).filter(late)[1];
-    const due = Number(v.frameIndex) + Number(v.shownToDueFrames);
+    const all = rows(path.join(directory, 'm1-arrow-volleys.csv')).filter(late).filter(r => Number(r.firstImpactScreenX) >= 0);
+    const v = all[1], due = Number(v.frameIndex) + Number(v.shownToDueFrames), hero = Number(v.heroHeightPixels ?? 115);
+    if (v.evolved === 'True')   // the rain falling onto the first impact, 3 frames before it lands
+      return { frame: due - 3, x: Number(v.firstImpactScreenX), y: FrameHeight - Number(v.firstImpactScreenY) - hero * .8, size: hero * 2.6 };
+    // The arrow where the renderer put its point 5 frames before landing (falls back to the path midpoint).
+    const mx = Number(v.midFlightScreenX ?? -1);
+    if (mx >= 0) return { frame: due + Number(v.midFlightImpactOffset ?? 0) - 5, x: mx, y: FrameHeight - Number(v.midFlightScreenY), size: hero * 1.6 };
     const lx = Number(v.launchScreenX), ly = Number(v.launchScreenY), ix = Number(v.firstImpactScreenX), iy = Number(v.firstImpactScreenY);
-    return { frame: due - 4, x: (lx + ix) / 2, y: FrameHeight - (ly + iy) / 2, size: Math.max(Number(v.heroHeightPixels ?? 115) * 1.6, Math.hypot(ix - lx, iy - ly) * 1.2) };
+    return { frame: due - 4, x: (lx + ix) / 2, y: FrameHeight - (ly + iy) / 2, size: Math.max(hero * 1.6, Math.hypot(ix - lx, iy - ly) * 1.2) };
   }
   if (id === 'core:spore_fan' || id === 'core:ward_orbit') {
     const a = rows(path.join(directory, 'm1-orbit-activations.csv')).filter(late)[1];
