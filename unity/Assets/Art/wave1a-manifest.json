@@ -11044,6 +11044,72 @@
       },
       "frameMs": 1000,
       "tween": "none"
+    },
+    {
+      "id": "fx.ward_orbit.shock",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 1076,
+          "width": 256,
+          "height": 128
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.333333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ward_orbit.trail",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 1212,
+          "width": 256,
+          "height": 64
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.166667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ward_orbit.shield",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1636,
+          "y": 1076,
+          "width": 128,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.333333,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
     }
   ],
   "bindings": [
