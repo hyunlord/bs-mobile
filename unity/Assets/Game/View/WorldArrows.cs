@@ -28,7 +28,9 @@ namespace Game.View
         // evolution short slanted rain streaks behind the falling arrows. Arrow length and tail width grow with the stage
         // (Lv1 < max < evolved). Warning circles are code: merged where they overlap, thin outlines.
         public const float MinArrowHeroHeights = .55f, MaxArrowHeroHeights = .7f, MinTailHeroHeights = .18f, MaxTailHeroHeights = .26f;
-        public const float RainStreakHeroHeights = .6f, RainStreakWidthHeroHeights = .09f, WarningLinePixels = 2.5f;
+        // The painted rain streak fills only its middle quarter across (rows 9-14 of 24), so it is drawn .24 hero heights
+        // wide for a ~.06 hero-height line on screen.
+        public const float RainStreakHeroHeights = .8f, RainStreakWidthHeroHeights = .24f, WarningLinePixels = 2.5f;
         public const int SplashFrames = 12;
         public const int MidFlightFramesBeforeDue = 5;
         // Per-frame caps (docs/design/m1-weapon-effect-sprites.md): evolved rain streaks and splashes on screen at once.
