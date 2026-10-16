@@ -7,7 +7,13 @@ namespace Game.View
     public static class ArrowSpec
     {
         public const int FlightFrames = 10;          // launched so it lands exactly on the Core impact tick
-        public const int MuzzleFlashFrames = 1;      // small flash when shot
+        // Short shots (Lv1 and max targets often stand beside the hero, 20-30px away) still read as shots: a bowstring flash at
+        // the hand for BowstringFlashFrames, and a thin water trace of the flight path from the hero to the impact that
+        // lingers TraceFrames after it lands. Normal-shot splashes are NormalSplashScale larger, and a volley's overlapping
+        // splashes merge into one.
+        public const int BowstringFlashFrames = 3, TraceFrames = 5;
+        public const float NormalSplashScale = 1.5f, TracePixels = 3, BowstringHeroHeights = .5f;
+        public static readonly Color Trace = new Color(.78f, .93f, 1f);
         public const int LaunchBloomFrames = 1;      // the arrow's first frame is a round bloom
         public const int LandFrames = 8, PlantedFrames = 14;
         // Rain arrows land 7-11 at a time one step apart; planted they stay only briefly so they do not pile up over the crowd.
@@ -169,14 +175,25 @@ namespace Game.View
                 {
                     var landed = volley.Landed[i] >= 0 ? volley.Landed[i] : volley.DueOf(i);
                     var point = volley.Points[i]; var radius = volley.Radii[i];
-                    if (volley.Evolved) DrawArrowRain(volley, i, point, radius, landed, w, pixel, view, ref rainBudget);
-                    else DrawArrowShot(volley, i, point, landed, w);
-                    DrawArrowLanding(point, radius, landed, w);
+                    if (volley.Evolved) { DrawArrowRain(volley, i, point, radius, landed, w, pixel, view, ref rainBudget); DrawArrowLanding(point, radius, landed, w, 1); continue; }
+                    DrawArrowShot(volley, i, point, landed, w, pixel);
+                    // One splash per group of overlapping impacts, drawn by the group's first impact at the group's centre.
+                    var reach = NormalSplashWidth(radius, w) * .5f;
+                    var leader = true;
+                    for (var j = 0; j < i && leader; j++) if ((volley.Points[j] - point).sqrMagnitude < reach * reach) leader = false;
+                    if (!leader) continue;
+                    var centre = Vector2.zero; var members = 0; var spread = 0f;
+                    for (var k = 0; k < volley.Count; k++)
+                        if ((volley.Points[k] - point).sqrMagnitude < reach * reach) { centre += volley.Points[k]; members++; }
+                    centre /= members;
+                    for (var k = 0; k < volley.Count; k++)
+                        if ((volley.Points[k] - point).sqrMagnitude < reach * reach) spread = Mathf.Max(spread, (volley.Points[k] - centre).magnitude);
+                    DrawArrowLanding(centre, radius, landed, w, ArrowSpec.NormalSplashScale, spread);
                 }
             }
         }
 
-        void DrawArrowShot(ArrowVolley volley, int index, Vector2 point, float landed, float w)
+        void DrawArrowShot(ArrowVolley volley, int index, Vector2 point, float landed, float w, float pixel)
         {
             var flight = ArrowSpec.Seconds(ArrowSpec.FlightFrames);
             var launchAt = landed - flight;
@@ -184,11 +201,16 @@ namespace Game.View
             var from = volley.Launch + (point - volley.Launch).normalized * (.35f * w) + Vector2.up * (.45f * w);
             if (age < 0) return;
             var length = ArrowLength(volley);
-            if (age < ArrowSpec.Seconds(ArrowSpec.MuzzleFlashFrames) && index == 0)
+            if (age < ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames) && index == 0)
             {
-                var flash = ArrowSpec.Water; flash.a = .95f;
-                Draw(lightningFlash, LightningLayer, from, 0, Vector2.one * w * .9f, 0, 1, flash, applyTween: false);
+                // Bowstring flash at the hand: a water-blue bloom with a white core, fading over its frames.
+                var fade = 1 - age / ArrowSpec.Seconds(ArrowSpec.BowstringFlashFrames);
+                var glow = ArrowSpec.Water; glow.a = .95f * fade;
+                Draw(lightningFlash, LightningLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights, 0, 1, glow, applyTween: false);
+                var core = Color.white; core.a = fade;
+                Draw(lightningFlash, LightningLayer, from, 0, Vector2.one * HeroHeight * ArrowSpec.BowstringHeroHeights * .4f, 0, 1, core, applyTween: false);
             }
+            DrawArrowTrace(from, point, Mathf.Min(1, age / flight), visualTime - landed, w, pixel);
             if (age >= flight)
             {
                 DrawPlantedArrow(point, (point - from).normalized, visualTime - landed, length);
@@ -265,15 +287,43 @@ namespace Game.View
 
         // Water splash where an arrow lands: the splash picture grows from SplashFrom to SplashTo of the Core impact
         // diameter over SplashFrames and fades.
-        void DrawArrowLanding(Vector2 point, float radius, float landed, float w)
+        float NormalSplashWidth(float radius, float w) => Mathf.Max(w * 1.2f, radius * 2 * ArrowSpec.SplashOfImpactDiameter) * ArrowSpec.SplashTo * ArrowSpec.NormalSplashScale;
+
+        // scale: NormalSplashScale for normal shots; spread: how far a merged group's impacts lie from its centre.
+        void DrawArrowLanding(Vector2 point, float radius, float landed, float w, float scale, float spread = 0)
         {
             var age = visualTime - landed;
             if (age < 0 || age > ArrowSpec.Seconds(ArrowSpec.SplashFrames) || splashBudget <= 0) return;
             splashBudget--;
             var t = age / ArrowSpec.Seconds(ArrowSpec.SplashFrames);
-            var width = Mathf.Max(w * 1.2f, radius * 2 * ArrowSpec.SplashOfImpactDiameter) * Mathf.Lerp(ArrowSpec.SplashFrom, ArrowSpec.SplashTo, Mathf.Sqrt(t));
+            var width = (Mathf.Max(w * 1.2f, radius * 2 * ArrowSpec.SplashOfImpactDiameter) * scale + spread * 2) * Mathf.Lerp(ArrowSpec.SplashFrom, ArrowSpec.SplashTo, Mathf.Sqrt(t));
             var color = Color.white; color.a = 1 - t * t;
             Draw(bowSplash, ProjectileLayer, point, 0, new Vector2(width, width * bowSplash.WorldSize.y / bowSplash.WorldSize.x), 0, 1, color, applyTween: false);
+        }
+
+        // Thin water line along the flight path from the hand to where the arrow is (shown = 0..1 of the path), lingering
+        // TraceFrames after landing. The line is a thin element (no P5 cap); a faint wide bloom under it is capped.
+        void DrawArrowTrace(Vector2 from, Vector2 point, float shown, float sinceLanding, float w, float pixel)
+        {
+            var fade = sinceLanding <= 0 ? 1 : 1 - sinceLanding / ArrowSpec.Seconds(ArrowSpec.TraceFrames);
+            if (fade <= 0 || shown <= 0) return;
+            const int segments = 10;
+            var arc = ArrowSpec.MinimumArcBodyWidths * w;
+            var previous = ArrowSpec.Flight(from, point, 0, arc);
+            for (var s = 1; s <= segments; s++)
+            {
+                var t = shown * s / segments;
+                var next = ArrowSpec.Flight(from, point, t, arc);
+                var span = next - previous;
+                if (span.sqrMagnitude > 1e-8f)
+                {
+                    var line = ArrowSpec.Trace; line.a = .9f * fade;
+                    Draw(lightningCore, ProjectileLayer, (previous + next) * .5f, 0, new Vector2(span.magnitude * 1.15f, ArrowSpec.TracePixels * pixel * 1.6f), Angle(span), 1, line, applyTween: false);
+                    var bloom = ArrowSpec.Water; bloom.a = .3f * fade;
+                    Draw(lightningGlow, LightningLayer, (previous + next) * .5f, 0, new Vector2(span.magnitude * 1.15f, ArrowSpec.TracePixels * pixel * 4), Angle(span), 1, bloom, applyTween: false);
+                }
+                previous = next;
+            }
         }
 
         void DrawPlantedArrow(Vector2 tip, Vector2 direction, float age, float length, int frames = ArrowSpec.PlantedFrames)
@@ -388,7 +438,7 @@ namespace Game.View
             volley.Recorded = true;
             if (ArrowVolleySample == null) return;
             var record = new ArrowVolleyRecord { Tick = volley.Tick, Impacts = volley.Count, Evolved = volley.Evolved, AcceptedFrame = volley.AcceptedFrame, FirstShownFrame = PresentedFrames,
-                DueFrame = PresentedFrames + Mathf.RoundToInt((volley.Due - visualTime) * 60), FirstImpactScreen = new Vector2(-1, -1), MidFlightScreen = new Vector2(-1, -1), LaunchScreen = renderCamera.WorldToScreenPoint(volley.Launch) };
+                DueFrame = PresentedFrames + Mathf.RoundToInt((volley.Due - visualTime) * 60), FirstImpactScreen = new Vector2(-1, -1), MidFlightScreen = new Vector2(-1, -1), HandScreen = new Vector2(-1, -1), LaunchScreen = renderCamera.WorldToScreenPoint(volley.Launch) };
             var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
             var w = heroBodyWidth > 0 ? heroBodyWidth : .6f;
             record.ArrowLengthPixels = ArrowLength(volley) / pixelsToWorld; record.HeroHeightPixels = HeroHeight / pixelsToWorld; record.Stage = volley.Stage;
@@ -401,6 +451,7 @@ namespace Game.View
                 if (volley.Evolved) continue;
                 // Where this arrow's point is MidFlightFramesBeforeDue frames before it lands (for the arrow contrast check).
                 var from = volley.Launch + (volley.Points[i] - volley.Launch).normalized * (.35f * w) + Vector2.up * (.45f * w);
+                record.HandScreen = renderCamera.WorldToScreenPoint(from);   // the bowstring flash
                 var t = 1 - ArrowSpec.MidFlightFramesBeforeDue / (float)ArrowSpec.FlightFrames;
                 record.MidFlightScreen = renderCamera.WorldToScreenPoint(ArrowSpec.Flight(from, volley.Points[i], t, ArrowSpec.MinimumArcBodyWidths * w));
                 record.MidFlightImpactOffset = i * Mathf.RoundToInt(volley.Step * 60);   // frames after the volley's first due
@@ -415,6 +466,6 @@ namespace Game.View
         public bool Evolved;
         public float FirstImpactRadiusPixels, ArrowLengthPixels, HeroHeightPixels, Stage;
         public int MidFlightImpactOffset;
-        public Vector2 FirstImpactScreen, LaunchScreen, MidFlightScreen;
+        public Vector2 FirstImpactScreen, LaunchScreen, MidFlightScreen, HandScreen;
     }
 }

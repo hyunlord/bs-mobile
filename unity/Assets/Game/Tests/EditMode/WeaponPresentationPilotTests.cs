@@ -181,7 +181,9 @@ namespace Tests.EditMode
             Assert.That(Enumerable.Range(0, 12).Where(i => OrbitSpec.ShieldDrawn(i, 12)), Is.EqualTo(new[] { 1, 3, 5, 7, 9, 11 }), "Evenly spaced.");
             Assert.That(Enumerable.Range(0, 4).All(i => OrbitSpec.ShieldDrawn(i, 4)), Is.True);
             Assert.That(Enumerable.Range(0, 7).Count(i => OrbitSpec.ShieldDrawn(i, 7)), Is.EqualTo(6));
-            Assert.That(ArrowSpec.MuzzleFlashFrames, Is.EqualTo(1));
+            Assert.That(ArrowSpec.BowstringFlashFrames, Is.InRange(2, 3), "Bowstring flash at the hand for 2-3 frames.");
+            Assert.That(ArrowSpec.TraceFrames, Is.InRange(4, 6), "The flight trace lingers 4-6 frames after landing.");
+            Assert.That(ArrowSpec.NormalSplashScale, Is.EqualTo(1.5f).Within(1e-5f), "Normal-shot splashes are 1.5x larger.");
             Assert.That(ArrowSpec.HitHoldFrames, Is.InRange(1, 2), "Projectile hits freeze briefly.");
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 0), Is.EqualTo(Vector2.zero));
             Assert.That(ArrowSpec.Flight(Vector2.zero, new Vector2(10, 0), 1), Is.EqualTo(new Vector2(10, 0)));

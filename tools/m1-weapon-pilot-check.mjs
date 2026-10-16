@@ -271,6 +271,18 @@ function checkArrows(directory, manifest) {
         let peakArrow = 0, groundArrow = 0, k = 0;
         for (let dy = -14; dy <= 14; dy++) for (let dx = -14; dx <= 14; dx++) { peakArrow = Math.max(peakArrow, luma(mid.at(mx + dx, my + dy))); groundArrow += luma(before.at(mx + dx, my + dy)); k++; }
         entry.arrowPeak = +peakArrow.toFixed(1); entry.arrowContrast = +(peakArrow - groundArrow / k).toFixed(1);
+        // The trace left on the path after landing: the same spot 3 frames after the first impact lands.
+        const after = frame(directory, due + Number(v.midFlightImpactOffset ?? 0) + 3);
+        let peakTrace = 0; for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) peakTrace = Math.max(peakTrace, luma(after.at(mx + dx, my + dy)));
+        entry.traceContrast = +(peakTrace - groundArrow / k).toFixed(1);
+      }
+      // Bowstring flash at the hand on the frame after launch (flight 10 frames).
+      const hx = Number(v.handScreenX ?? -1);
+      if (hx >= 0) {
+        const launch = frame(directory, due - 10 + 1), hy = launch.height - Number(v.handScreenY);
+        let peakFlash = 0, groundFlash = 0, k2 = 0;
+        for (let dy = -10; dy <= 10; dy++) for (let dx = -10; dx <= 10; dx++) { peakFlash = Math.max(peakFlash, luma(launch.at(hx + dx, hy + dy))); groundFlash += luma(before.at(hx + dx, hy + dy)); k2++; }
+        entry.bowstringContrast = +(peakFlash - groundFlash / k2).toFixed(1);
       }
     }
     results.push(entry);
