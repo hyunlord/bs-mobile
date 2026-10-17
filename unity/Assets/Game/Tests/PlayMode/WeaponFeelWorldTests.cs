@@ -273,10 +273,10 @@ namespace Tests.PlayMode
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }
 
-        // #268 temporary fallback: first-playable art lacks the knight's hero.preview-b roles. The world must still draw and
-        // the substitution is reported once, not every frame.
+        // #268: first-playable art has no hero.preview-b roles; the knight sheets registered in every profile draw the hero,
+        // the world is drawn and nothing is logged.
         [UnityTest]
-        public IEnumerator FirstPlayableKnightWithoutPreviewRolesDrawsTheWorldAndWarnsOnce()
+        public IEnumerator FirstPlayableKnightDrawsTheSheetsAndTheWorld()
         {
             if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             ArtCatalog.ProfileName = CanonicalContent.ProfileName;
@@ -288,8 +288,7 @@ namespace Tests.PlayMode
             try
             {
                 var world = CreateWorld(owner, camera, catalog, frame);
-                world.PrepareHeroKnight();
-                LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex(@"\[hero-art\] hero\.preview-b roles are missing.*#268"));
+                world.PrepareHeroKnight();   // the knight sheets replace the live knight in every profile (#268)
                 for (var i = 0; i < 5; i++)
                 {
                     world.AcceptWave(catalog, null);
@@ -297,7 +296,7 @@ namespace Tests.PlayMode
                     yield return null;
                 }
                 LogAssert.NoUnexpectedReceived();
-                Assert.That(world.HeroRigRolesMissing, Is.True);
+                Assert.That(world.HeroSheetDrawsHero, Is.True, "first-playable draws the knight sheets, not the wave-only preview-b rig");
                 Assert.That(world.SubmittedInstances, Is.GreaterThan(0), "World draws are submitted instead of aborting before flush.");
             }
             finally { DestroyFixture(owner, cameraOwner, texture); }
