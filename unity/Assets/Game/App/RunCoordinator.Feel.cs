@@ -7,6 +7,9 @@ namespace Game.App
     {
         FeelExperimentOptions activeFeelRules;
         bool activeHitFeedback, activeHeroRig;
+        // The knight sprite sheets replace the cutout B rig in play (#268); the B rig stays only where a comparison or the
+        // crowd benchmark asks for it explicitly, or when the hero has no sheet roles.
+        bool explicitHeroRig;
         public FeelExperimentOptions ActiveFeelRules => activeFeelRules;
         public bool ActiveHitFeedback => activeHitFeedback;
         public bool ActiveHeroRig => activeHeroRig;
@@ -16,6 +19,7 @@ namespace Game.App
             activeFeelRules = IsWave ? preferences.SnapshotFeel() : null;
             activeHitFeedback = IsWave && preferences.FeelFeedback;
             activeHeroRig = IsWave && preferences.HeroRigPreview;
+            explicitHeroRig = false;
             var trial = FeelTrialAutomation.Active?.Options;
             if (trial != null && IsWave)
             {
@@ -28,6 +32,7 @@ namespace Game.App
                 activeFeelRules = comparison.RequestedRulesOn ? new FeelExperimentOptions(true,true,true) : comparison.WalkFast ? new FeelExperimentOptions(true,false,false) : null;
                 activeHitFeedback = comparison.RequestedFeedback;
                 activeHeroRig = comparison.RequestedHeroB;
+                explicitHeroRig = comparison.RequestedHeroB;
             }
             if(IsWave && (NormalGcProbe.PreferencesPrefix != null || AutoplayCapture.Active?.FieldVideo != null))
             {
