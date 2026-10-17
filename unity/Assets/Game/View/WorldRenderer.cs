@@ -265,7 +265,7 @@ namespace Game.View
             RenderedLordPosition = lord;
             RenderedEntitySample?.Invoke("lord",0,lord);
             if (presentationDiagnosticsActive) diagnostics.SetupMs = DiagnosticInterval(ref diagnosticCheckpoint);
-            if(wave!=null){var heroSize=Resolve("hero",snapshot.HeroId,"idle").WorldSize;followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
+            if(wave!=null){var heroSize=HeroFigureSize(snapshot.HeroId,Resolve("hero",snapshot.HeroId,"idle"));followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
             followCamera.LordViewportAnchor = FallowActive && HeroMotionPreviewMode == 0 ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
@@ -383,6 +383,7 @@ namespace Game.View
             var heroWalking=Point(previous.Lord.Position)!=Point(current.Lord.Position);
             var heroAttackProgress=heroAttackUntil>visualTime?1-(heroAttackUntil-visualTime)/GameVisualTokens.ActorAttackSeconds:-1;
             var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/(HitFeedbackEnabled?.2f:GameVisualTokens.HitFlashSeconds):-1;
+            SelectHeroRig(snapshot.HeroId);
             var heroVisual=HeroVisual(snapshot.HeroId,heroState,heroWalking,heroAttackProgress,seconds,out var heroAnimationTime);
             if(wave!=null)
             {
@@ -396,9 +397,10 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
             }
-            DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
+            DrawActorGrounding(lord,HeroFigureSize(snapshot.HeroId,heroVisual),heroMovement,visualTime,WaveEnemyKind.Pursuer);
             if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
-                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity))
+                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity)&&
+               !DrawHeroSheet(snapshot.HeroId,lord,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,HitFeedbackEnabled,current.TickRate))
                 DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
             heroGaitDiscontinuity=false;
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);

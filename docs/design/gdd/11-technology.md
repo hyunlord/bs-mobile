@@ -103,4 +103,4 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR0054: 선택 보상을 재생 명령과 원자적 계정 지급으로 나눈다](../../adr/0054-opt-in-host-rewards-and-local-bm-slots.md)
 - [ADR 0055: 정상 속도의 지연 회복 틱을 여러 표시 프레임에 나눈다](../../adr/0055-defer-recovery-ticks-between-rendered-frames.md)
 - [ADR 0056: 구현 변경과 같은 PR에서 살아 있는 설계를 갱신한다](../../adr/0056-living-design-contract.md)
-- [ADR 0057: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다](../../adr/0057-view-only-impact-and-hero-motion-comparison.md)
+- [ADR 0065: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다](../../adr/0065-view-only-impact-and-hero-motion-comparison.md) (처음 번호 0057, main과 겹쳐 다시 매김)

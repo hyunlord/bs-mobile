@@ -60,6 +60,7 @@ namespace Game.View
             return bindings.TryGetValue(key, out var visual) ? visual : throw new InvalidOperationException("Missing art binding: " + key);
         }
         public ArtVisual ResolveRole(string roleId) => roles.TryGetValue(roleId, out var visual) ? visual : throw new InvalidOperationException("Missing art role: " + roleId);
+        public bool TryResolveRole(string roleId, out ArtVisual visual) => roles.TryGetValue(roleId, out visual);
         public static string Key(string kind, string contentId, string state) => kind + "|" + contentId + "|" + state;
         public static ArtManifest Parse(string json)
         {
