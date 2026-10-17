@@ -19,7 +19,9 @@ namespace SowSiege.Core
         Pursuer, SeedThief, RipeGrazer, Charger, Shield, Ranged, FloodBoss
     }
     public sealed record WaveGearLevel(int Damage, int Range, int CooldownTicks, int Speed, int Count, int LifetimeTicks, int Knockback);
-    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius)
+    // RehitEachImpact (ADR0061, default off and then absent from hashes and saves): each impact strikes every enemy in its
+    // radius, even one an earlier impact of the same activation already struck (a patch pulsing in place).
+    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius, [property: OmitWhenNull] bool? RehitEachImpact = null)
     {
         public const int MaximumImpacts = 64;
     }

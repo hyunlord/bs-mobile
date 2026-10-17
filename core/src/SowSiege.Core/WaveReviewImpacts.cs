@@ -51,9 +51,11 @@ namespace SowSiege.Core
                 var impact = state.PendingImpacts[i];
                 if (impact.Tick > world.Tick) { i++; continue; }
                 queries.ByDistance(secondaryTargets, impact.Position, impact.Radius, impact.Position);
+                // ADR0061: with RehitEachImpact each impact strikes everything in its radius (one query lists an enemy once).
+                var rehit = definition.Gear.TryGetValue(impact.Source, out var source) && source.Composition?.RehitEachImpact == true;
                 foreach (var enemy in secondaryTargets)
                 {
-                    if (state.Activations[impact.ActivationId].HitTargets.Add(enemy.Id))
+                    if (state.Activations[impact.ActivationId].HitTargets.Add(enemy.Id) || rehit)
                     {
                         Hit(enemy, impact.Damage, impact.Source, impact.Position, impact.Knockback, impact.ActivationId);
                     }

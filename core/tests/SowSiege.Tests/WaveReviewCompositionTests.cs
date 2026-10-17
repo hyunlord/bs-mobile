@@ -97,6 +97,35 @@ public sealed class WaveReviewCompositionTests
         Assert.Empty(world.WaveRuntime.PendingImpacts);
         Assert.Equal(3, world.WaveRuntime.Counters["review-impact:" + gear.Id]);
     }
+    [Theory]
+    [InlineData(false, 90)]
+    [InlineData(true, 70)]
+    public void PatchPulsesStrikeAStandingEnemyOnceOrEveryPulseWithRehit(bool rehit, int health)
+    {
+        // ADR0061: a patch at the lord (forward-line, spacing 0) pulsing three times. Off: an activation strikes an enemy once.
+        var (catalog, _, world, enemy) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gear = catalog.WaveRuntime!.Gear.Values.Single();
+        ((Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear)[gear.Id] = gear with
+        { Composition = new(1, "forward-line", 1, 2, 0, 1000, rehit ? true : null), Count = 3, CooldownTicks = 100 };
+        var system = new WaveRuntimeSystem(catalog, world, new(1, true), null);
+        system.Tick(world.Lord);
+        for (var tick = 1; tick <= 6; tick++) { world.Tick = tick; system.Tick(world.Lord); }
+        Assert.Equal(health, enemy.Health);
+        Assert.Equal(3, world.WaveRuntime!.Counters["review-impact:" + gear.Id]);
+    }
+    [Fact]
+    public void RehitOptionIsAbsentFromHashesUntilSet()
+    {
+        var (catalog, _, _, _) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gears = (Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime!.Gear;
+        var gear = gears.Values.Single();
+        gears[gear.Id] = gear with { Composition = new(1, "forward-line", 1, 2, 0, 1000) };
+        var unset = PortableStateCodec.HashCatalog(catalog);
+        gears[gear.Id] = gear with { Composition = new(1, "forward-line", 1, 2, 0, 1000, null) };
+        Assert.Equal(unset, PortableStateCodec.HashCatalog(catalog));
+        gears[gear.Id] = gear with { Composition = new(1, "forward-line", 1, 2, 0, 1000, true) };
+        Assert.NotEqual(unset, PortableStateCodec.HashCatalog(catalog));
+    }
     [Fact]
     public void MovingOutOfLockedImpactAvoidsDamage()
     {
