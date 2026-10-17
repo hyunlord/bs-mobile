@@ -55,7 +55,7 @@ namespace Game.View
         {
             animationTime=visualTime;
             if(heroConceptVisual!=null)return heroConceptVisual;
-            if(!HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
+            if(!heroRigActive){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
             if(rigIdle==null)
             {
                 rigIdle=art.ResolveRole("hero.preview-b.idle");
@@ -74,7 +74,7 @@ namespace Game.View
             ActorFacingPose facing,Color color,float flash,bool discontinuity)
         {
             if(heroConceptVisual!=null){heroLiveRig?.Hide();return false;}
-            if(!HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroLiveRig?.Hide();return false;}
+            if(!heroRigActive){heroLiveRig?.Hide();return false;}
             if(heroRigShader==null)
             {
                 heroRigShader=Resources.Load<Shader>("HeroRig");
