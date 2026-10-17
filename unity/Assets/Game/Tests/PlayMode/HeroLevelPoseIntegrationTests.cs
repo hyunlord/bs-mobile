@@ -32,6 +32,8 @@ namespace Tests.PlayMode
                 var config = CanonicalContent.Presentation.Camera;
                 world.Initialize(camera, new WorldCameraSettings(config.WorldUnitsPerUnityUnit, config.MinHalfHeight, config.MaxHalfHeight,
                     config.EstatePadding, config.FollowMilliseconds, config.ZoomMilliseconds), catalog.Tuning.DefaultEstate, baseline.MapWidth, baseline.MapHeight);
+                // The knight sprite sheets draw the hero by default (#268); this test checks the live knight rig, so ask for it.
+                world.HeroRigExplicit = true;
                 world.PrepareHeroKnight(); world.AcceptWave(catalog, wave);
                 var safe = new Rect(0, 0, 390, 844);
                 world.Present(baseline, baseline, snapshot, 1, 0, safe);
