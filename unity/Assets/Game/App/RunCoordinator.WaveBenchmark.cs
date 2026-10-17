@@ -236,7 +236,7 @@ namespace Game.App
                     Session.LordDamageObserver = actualLordDamageTelemetry;
                 }
                 Session.Diagnostics = benchmarkCoreDiagnostics;
-                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null||knightReview!=null||combatReview!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null||knightReview!=null||combatReview!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;explicitHeroRig=activeHeroRig;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
@@ -486,6 +486,7 @@ namespace Game.App
                     weaponShowcaseReview.Present(world,showcaseSeconds);
                     if (!warming && weaponShowcaseReview.PerformanceOnly) weaponShowcaseReview.ObserveEvents(CurrentWave);
                 }
+                world.HeroLocomotionPerTick = (float)(Session?.LocomotionSpeedPerTick ?? 0);
                 using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 ObserveCameraScaleFrame();
