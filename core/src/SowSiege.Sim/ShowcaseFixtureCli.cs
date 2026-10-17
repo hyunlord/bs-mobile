@@ -28,6 +28,21 @@ public static class ShowcaseFixtureCli
         2 => new(-PlayerInput.Scale, 0),
         _ => new(0, -PlayerInput.Scale)
     };
+    // Isolated weapon review cases (2026-10-17): the hero keeps walking a circle of about 3 H (radius ~1836) like real play,
+    // so pursuers trail instead of standing on him. A 32-gon, OrbitEdgeTicks per edge, from a literal integer direction table
+    // (no runtime trigonometry); opposite directions truncate symmetrically, so each 480-tick lap closes exactly.
+    public const int OrbitEdgeTicks = 15;
+    static readonly (short X, short Y)[] OrbitDirections =
+    {
+        (1000, 0), (981, 195), (924, 383), (831, 556), (707, 707), (556, 831), (383, 924), (195, 981), (0, 1000), (-195, 981), (-383, 924), (-556, 831), (-707, 707), (-831, 556), (-924, 383), (-981, 195),
+        (-1000, 0), (-981, -195), (-924, -383), (-831, -556), (-707, -707), (-556, -831), (-383, -924), (-195, -981), (0, -1000), (195, -981), (383, -924), (556, -831), (707, -707), (831, -556), (924, -383), (981, -195)
+    };
+    public static int OrbitLapTicks => OrbitEdgeTicks * OrbitDirections.Length;
+    public static PlayerInput OrbitInput(int tick)
+    {
+        var d = OrbitDirections[tick / OrbitEdgeTicks % OrbitDirections.Length];
+        return new(d.X, d.Y);
+    }
     public static int Run(string[] args)
     {
 
@@ -67,7 +82,7 @@ public static class ShowcaseFixtureCli
                 ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
                 while (session.View.Status != RunStatus.Completed && tick < review.Arena.DurationTicks)
                 {
-                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, WalkingInput(tick));
+                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, OrbitInput(tick));
                     session.Apply(command); ReplayCodec.WriteCommand(output, command); tick++;
                     var frame = session.View.CaptureFrame(); maximumEnemies = Math.Max(maximumEnemies, frame.Enemies.Count);
                     foreach (var e in ((IWaveRunView)session.View).CaptureWaveRuntime()!.Events)
@@ -115,7 +130,7 @@ public static class ShowcaseFixtureCli
                 review.Classification,
                 review.Gear,
                 review.Arena,
-                inputContract = "square-walk-v2: full movement, right/up/left/down, 30 ticks per edge, same input for all 24 cases",
+                inputContract = "orbit-walk-v1: full movement around a 32-gon of radius ~1836 (about 3 H), 15 ticks per edge, 480-tick lap, counter-clockwise from +X, same input for all 24 cases",
                 scope = "review-only numeric hypotheses; 10s setup +10s capture; evolved is preconfigured proposal, not earned progression",
                 positiveHits = hits,
                 kills,
