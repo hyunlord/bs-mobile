@@ -1,9 +1,10 @@
-# ADR 0058: 실제 피해 귀속과 소리 포함 기사 검토를 규칙 변경 없이 관측한다
+# ADR 0066: 실제 피해 귀속과 소리 포함 기사 검토를 규칙 변경 없이 관측한다
 
 - 상태: 승인 범위 구현 — 네이티브 피해·비용과 수정 후 AV 원본 확인, 진입 직후 피해 비악화 실패, 사용자 시각 판정 대기
 - 날짜: 2026-10-12
+- 번호: 처음에는 0058로 썼다. main의 [ADR0058](0058-data-driven-evolution-unlocks-and-card-offers.md)과 겹쳐서, 2026-10-17 스택을 새 main에 옮길 때 0066으로 다시 매겼다([런북](../runbooks/merge-knight-sheets-into-weapon-stack.md)). 내용은 바꾸지 않았다. 같은 때 [M1-1 표현 비교](0065-view-only-impact-and-hero-motion-comparison.md)는 0057에서 0065가 됐다.
 - 연결 이슈: [#254](https://github.com/hyunlord/bs-mobile/issues/254), [PR255](https://github.com/hyunlord/bs-mobile/pull/255)
-- 관련: [순수 Core](0002-pure-csharp-core.md), [고정 벤치마크](0044-fixed-native-wave-benchmark.md), [M1-1 표현 비교](0057-view-only-impact-and-hero-motion-comparison.md), [GDD 결정](../design/gdd/00-index.md), [손맛](../design/gdd/06-feedback.md), [아트](../design/gdd/07-art-character.md)
+- 관련: [순수 Core](0002-pure-csharp-core.md), [고정 벤치마크](0044-fixed-native-wave-benchmark.md), [M1-1 표현 비교](0065-view-only-impact-and-hero-motion-comparison.md), [GDD 결정](../design/gdd/00-index.md), [손맛](../design/gdd/06-feedback.md), [아트](../design/gdd/07-art-character.md)
 
 ## 맥락
 
@@ -76,4 +77,4 @@ candidate2는 원본 C05의 틱 13500 이전 입력을 보존하고 이후 이�
 
 FIFO·후행 배출을 적용한 `42b7ba24b35db79e4216f3495c8107b860ade003`의 실제 네이티브 전후 원본은 각각 1800장/60fps/30초, 48kHz 스테레오 1440000샘플 프레임으로 완료됐다. 실제 raw PCM은 각각1584128샘플 프레임이며 WAV가 [144000,1584000) 구간과 바이트 단위로 일치함을 검증기가 확인했다. 프레임·오디오 인덱스의 틱·alpha·시각도 일치하고 최종 상태 해시는 원본 C05 그대로다. 이 증거는 실제 게임 AV 원본의 동기·샘플 보존에 한정한다. 배포 영상 조립·시각 판정·실시간 비용 통과를 자동으로 뜻하지 않는다. `6ffa`와 FIFO 수정은 각각 제한된 범위의 독립 코드 리뷰를 받았다.
 
-번호 확인: 2026-10-12 `origin/main`과 전체 원격 가지를 갱신해 최대 번호 0057을 확인하고 0058을 사용했다. main의 `0057-local-artifact-hygiene.md`와 작업 계열의 `0057-view-only-impact-and-hero-motion-comparison.md`는 서로 다른 기존 문서이므로 여기서는 제목·파일명으로 구분한다. 기존 번호 충돌의 병합 처리는 별도이며 이 ADR이 어느 쪽도 덮어쓰지 않는다.
+번호 확인: 2026-10-12 `origin/main`과 전체 원격 가지를 갱신해 최대 번호 0057을 확인하고 0058을 사용했다. main의 `0057-local-artifact-hygiene.md`와 작업 계열의 `0065-view-only-impact-and-hero-motion-comparison.md`는 서로 다른 기존 문서이므로 여기서는 제목·파일명으로 구분한다. 기존 번호 충돌의 병합 처리는 별도이며 이 ADR이 어느 쪽도 덮어쓰지 않는다.
