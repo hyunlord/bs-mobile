@@ -1,0 +1,131 @@
+{
+  "evaluator_version": "mechanical-v8",
+  "evaluator_sha256": {
+    "evaluate.py": "c66682cb5cb812f8305b0edf5ce4778aedccc45a4b1b22bab14e73dae09520df",
+    "blender_adapter.py": "30f76fe7845f901494b348b4aef9f0c4ad52445ad359d4626ffa53dae5f13973",
+    "geometry_metrics.py": "15228b2662571d539b93b81d911478f7868cc07455506f292989a1f792e3b3b4",
+    "palm-landmarks.json": "be3c535a5fb6f1daf1e032267bf3baab65d71b023028bc2f59fbed8f5558767f"
+  },
+  "palm_source_landmarks": {
+    "expected": 523,
+    "found": 523,
+    "missing": 0,
+    "definition": "Original uncurl candidate01 B_hand_r points with axialdistance from hand_r.head alonghandaxis15..60mm. Fixed before contacts; excludeswrist<15mm and distal fingers>60mm.",
+    "band_rule": "Projected actual posed palm landmarks,5th..95thpercentiles, clamp to actualhandleextents;3interiorstations25/50/75%,16radialangles."
+  },
+  "solid_penetration_depth_mm": null,
+  "penetration_status": "UNVERIFIED_OPEN_SHELL_OR_CONTAINMENT",
+  "seam_coverage_status": "UNVERIFIED_SOURCE_CORRESPONDENCES_ONLY",
+  "grip_enclosure_status": "UNVERIFIED_CONTACT_SAMPLES_NOT_VOLUMETRIC_ENCLOSURE",
+  "candidate_sha256": "4aa0b422eccf811de948ce59c0988d7f5bf5f4babecf3f738dc5e886f5c02206",
+  "frames": 80,
+  "evaluated_visible_parts": [
+    "B_head",
+    "B_chest",
+    "B_pelvis",
+    "B_upperarm_l",
+    "B_forearm_l",
+    "B_hand_l",
+    "B_shin_l",
+    "B_foot_l",
+    "B_upperarm_r",
+    "B_forearm_r",
+    "B_shin_r",
+    "B_foot_r",
+    "B_tunic_front_left",
+    "B_tunic_front_right",
+    "B_tunic_back_left",
+    "B_tunic_back_right",
+    "Cape_three_bone",
+    "Sword_blade",
+    "Sword_crossguard",
+    "Sword_leather_grip",
+    "Sword_pommel",
+    "Fist_right_authored",
+    "JointCover_elbow_l",
+    "JointCover_elbow_r",
+    "JointCover_wrist_l",
+    "JointCover_wrist_r",
+    "JointCover_neck"
+  ],
+  "excluded_meshes": [
+    {
+      "name": "Eyebrows",
+      "reason": "hidden render"
+    },
+    {
+      "name": "Eyes",
+      "reason": "hidden render"
+    },
+    {
+      "name": "SuperHero_Male",
+      "reason": "hidden render"
+    },
+    {
+      "name": "B-Apose-Pilot",
+      "reason": "hidden render"
+    },
+    {
+      "name": "B_hand_r",
+      "reason": "hidden render"
+    }
+  ],
+  "rest_open_edges": {
+    "B_head": 987,
+    "B_chest": 2102,
+    "B_pelvis": 946,
+    "B_upperarm_l": 693,
+    "B_forearm_l": 810,
+    "B_hand_l": 169,
+    "B_shin_l": 206,
+    "B_foot_l": 96,
+    "B_upperarm_r": 735,
+    "B_forearm_r": 787,
+    "B_shin_r": 202,
+    "B_foot_r": 68,
+    "B_tunic_front_left": 723,
+    "B_tunic_front_right": 663,
+    "B_tunic_back_left": 517,
+    "B_tunic_back_right": 495,
+    "Cape_three_bone": 0,
+    "Sword_blade": 0,
+    "Sword_crossguard": 0,
+    "Sword_leather_grip": 0,
+    "Sword_pommel": 0,
+    "Fist_right_authored": 0,
+    "JointCover_elbow_l": 0,
+    "JointCover_elbow_r": 0,
+    "JointCover_wrist_l": 0,
+    "JointCover_wrist_r": 0,
+    "JointCover_neck": 0
+  },
+  "seam_correspondences": 3765,
+  "rest_height_m": 1.8000000715255737,
+  "max_surface_crossing_depth_mm": 29.609101125970483,
+  "max_anatomical_joint_sample_gap_mm": 143.42650771141052,
+  "max_source_seam_separation_mm": 314.7605613344751,
+  "max_nearest_opposite_surface_gap_mm": 305.06429076194763,
+  "min_principal_stretch": 0.9796455121567129,
+  "max_principal_stretch": 1.0205279337735826,
+  "max_grip_surface_distance_mm": null,
+  "max_grip_contact_sample_gap_mm": null,
+  "max_full_handle_contact_sample_gap_mm": null,
+  "ambiguous_open_pair_frames": 2572,
+  "topology_changed_part_frames": 0,
+  "thresholds": {
+    "penetration_mm": 2,
+    "gap_mm": 3,
+    "stretch_min": 0.85,
+    "stretch_max": 1.15,
+    "grip_mm_assumption": 3
+  },
+  "status": "FAIL",
+  "seconds": 27.021464208024554,
+  "limitations": [
+    "Open-shell triangle-plane crossing is a surface crossing excursion diagnostic, not certified solid penetration depth or a proven bound. Ambiguous crossing pairs block PASS.",
+    "Coplanar intended seam overlaps are not counted as crossings; noncoplanar narrow-band crossings remain recorded.",
+    "No broad collision-pair whitelist. Interior containment without surface crossings remains unverified on open shells.",
+    "Nearest handle-to-hand surface distance is not proof of closed fist; manual grip or authored contact contract required.",
+    "Modifier topology changes block full stretch coverage; degenerate reference triangles are recorded."
+  ]
+}

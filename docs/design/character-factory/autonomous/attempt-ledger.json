@@ -1,0 +1,99 @@
+{
+  "cap": 10,
+  "stage2": "NOT_STARTED",
+  "attempts": [
+    {
+      "attempt": 1,
+      "method": "Coherent global rest alignment and thigh-follow panels; original owner-dependent narrow joint weights.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/01/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/01/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/01/a-knight-shell.blend",
+      "blendSha256": "81b2996cf6c57282df23e78af2062d4ba2d598ff14d5eb7a6474eb65d9677b9d",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/01/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/01/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/01\""
+    },
+    {
+      "attempt": 2,
+      "method": "Canonical source-point shared two-bone boundary weights and body sliver filtering.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/02/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/02/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/02/a-knight-shell.blend",
+      "blendSha256": "0aa7dd07a4b62dcbd59b06b83def0448bc2ce10cbf12207711993f41fdda85c0",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/02/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/02/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/02\""
+    },
+    {
+      "attempt": 3,
+      "method": "Rigid pieces, corrected long garment domain, original glove distal curl and sword carry axis.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/03/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/03/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/03/a-knight-shell.blend",
+      "blendSha256": "c471bc99c31324f62510a02abb78843a36f818178bcc839909822e69ec18ee0d",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/03/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/03/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/03\""
+    },
+    {
+      "attempt": 4,
+      "method": "All-branch sliver filtering, outward sword axis, small local elbow/wrist/neck guards.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/04/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/04/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/04/a-knight-shell.blend",
+      "blendSha256": "d9caa1c310f36e75cdee6f6c070e61cd3eba18962c2fb67e82eba708a99dda0d",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/04/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/04/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/04\""
+    },
+    {
+      "attempt": 5,
+      "method": "Exact center slit, thigh-rotation auxiliary waistband pivots, glove curl radius14mm, local weld/caps.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/05/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/05/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/05/a-knight-shell.blend",
+      "blendSha256": "7573736188f15177f20cd9af90fd8129acf3a06aba3780534cc80be728cfe234",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/05/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/05/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/05\""
+    },
+    {
+      "attempt": 6,
+      "method": "Exact source triangle garment/body clipping and upper-body ownership domain; remove failed weld.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/06/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/06/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/06/a-knight-shell.blend",
+      "blendSha256": "a5509fb52ed670785dd6329894459cdd3d402f463c69bdbf4f8e87a206dac21d",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/06/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/06/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/06\""
+    },
+    {
+      "attempt": 7,
+      "method": "Faithful local weld and sampled near-source hole closures with full source aliases.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/07/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/07/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/07/a-knight-shell.blend",
+      "blendSha256": "f0f27767ab9be6cea6f8c283d3d30a943cf68216611451e70092ceff59f209d4",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/07/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/07/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/07\""
+    },
+    {
+      "attempt": 8,
+      "method": "Closed rigid right fist with actual handle bore and original glove texels; preserve source hand hidden.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/08/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/08/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/08/a-knight-shell.blend",
+      "blendSha256": "3ccb50594d3b11a42501476a4b061011c9b31004901c6fe26cd0ee653638ab2a",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/08/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/08/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/08\""
+    },
+    {
+      "attempt": 9,
+      "method": "Source-fitted elbow/wrist pivot depth and chest-held original shoulder pauldron.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/09/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/09/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/09/a-knight-shell.blend",
+      "blendSha256": "a8c3200f11a6da67e80eb39f74e176df34963cc2b6b37e82db38bf5ca76960ff",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/09/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/09/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/09\""
+    },
+    {
+      "attempt": 10,
+      "method": "Bound triangle distance-gradient overlap using analytical Lipschitz limit; preserve nearest owner coverage.",
+      "recipe": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/10/recipe.json",
+      "sourceSnapshot": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/10/source",
+      "blend": "/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/10/a-knight-shell.blend",
+      "blendSha256": "4aa0b422eccf811de948ce59c0988d7f5bf5f4babecf3f738dc5e886f5c02206",
+      "buildCommand": "\"/Users/rexxa/bs-mobile/artifacts/m1-256/3d/blender-mount/Blender.app/Contents/MacOS/Blender\" -b --python-exit-code 1 --python \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/10/source/trial2.py\" -- \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/10/recipe.json\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research\" \"/Users/rexxa/bs-mobile/.omo/evidence/m1-5-research/modular-autonomous/candidates/10\""
+    }
+  ],
+  "stopped": true,
+  "stopReason": "10 measured attempts reached; remaining mechanical failures and unverified solid penetration block stage2",
+  "selectedDiagnosticBest": 10
+}

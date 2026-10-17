@@ -1,0 +1,177 @@
+{
+  "version": 2,
+  "sources": {
+    "base": "modular-factory-1/source/unpacked/Universal Base Characters[Standard]/Base Characters/Godot - UE/Superhero_Male_FullBody.gltf",
+    "motion": "ual-pilot/source/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb",
+    "shell": "mesh-b-apose/texture-export/volume-final/b-apose-textured.glb",
+    "source_rest": "ual-pilot/rig/rest-corrected-skeleton-only.blend",
+    "cape_reference": "modular-factory-2/recipes/A-knight-reference.png"
+  },
+  "proportions": {
+    "height": 1.0,
+    "shoulder_width": 1.0,
+    "torso_depth": 1.0,
+    "arm_length": 1.0,
+    "leg_length": 1.0
+  },
+  "overlap_m": 0.025,
+  "joint_band_m": 0.025,
+  "parts": [
+    "head",
+    "chest",
+    "pelvis",
+    "upperarm_l",
+    "forearm_l",
+    "hand_l",
+    "thigh_l",
+    "shin_l",
+    "foot_l",
+    "upperarm_r",
+    "forearm_r",
+    "hand_r",
+    "thigh_r",
+    "shin_r",
+    "foot_r",
+    "tunic_front",
+    "tunic_back"
+  ],
+  "cape": {
+    "bone": "spine_03",
+    "dimensions": [
+      0.2,
+      0.19,
+      0.735
+    ],
+    "texture_patch_pixels": [
+      430,
+      650,
+      470,
+      740
+    ]
+  },
+  "target_height_m": 1.8,
+  "garment_cut": {
+    "z_min": 0.4,
+    "z_max": 1.065,
+    "abs_x_max": 0.4,
+    "front_y_max": 0.001,
+    "back_y_min": -0.001
+  },
+  "regions": [
+    {
+      "name": "head",
+      "bone": "Head",
+      "source_bones": [
+        "Head",
+        "neck_01"
+      ]
+    },
+    {
+      "name": "chest",
+      "bone": "spine_03",
+      "source_bones": [
+        "spine_01",
+        "spine_02",
+        "spine_03"
+      ]
+    },
+    {
+      "name": "pelvis",
+      "bone": "pelvis",
+      "source_bones": [
+        "pelvis"
+      ]
+    },
+    {
+      "name": "upperarm_l",
+      "bone": "upperarm_l",
+      "source_bones": [
+        "upperarm_l"
+      ]
+    },
+    {
+      "name": "forearm_l",
+      "bone": "lowerarm_l",
+      "source_bones": [
+        "lowerarm_l"
+      ]
+    },
+    {
+      "name": "hand_l",
+      "bone": "hand_l",
+      "source_bones": [
+        "hand_l"
+      ]
+    },
+    {
+      "name": "thigh_l",
+      "bone": "thigh_l",
+      "source_bones": [
+        "thigh_l"
+      ]
+    },
+    {
+      "name": "shin_l",
+      "bone": "calf_l",
+      "source_bones": [
+        "calf_l"
+      ]
+    },
+    {
+      "name": "foot_l",
+      "bone": "foot_l",
+      "source_bones": [
+        "foot_l"
+      ]
+    },
+    {
+      "name": "upperarm_r",
+      "bone": "upperarm_r",
+      "source_bones": [
+        "upperarm_r"
+      ]
+    },
+    {
+      "name": "forearm_r",
+      "bone": "lowerarm_r",
+      "source_bones": [
+        "lowerarm_r"
+      ]
+    },
+    {
+      "name": "hand_r",
+      "bone": "hand_r",
+      "source_bones": [
+        "hand_r"
+      ]
+    },
+    {
+      "name": "thigh_r",
+      "bone": "thigh_r",
+      "source_bones": [
+        "thigh_r"
+      ]
+    },
+    {
+      "name": "shin_r",
+      "bone": "calf_r",
+      "source_bones": [
+        "calf_r"
+      ]
+    },
+    {
+      "name": "foot_r",
+      "bone": "foot_r",
+      "source_bones": [
+        "foot_r"
+      ]
+    }
+  ],
+  "attempt": 10,
+  "fit_arm_depth": true,
+  "armor_assignment": {
+    "pauldron_z_min": 1.42,
+    "pauldron_abs_x_max": 0.32
+  },
+  "overlap_gradient_bound": "distance-to-bone-segment is 1-Lipschitz; pair difference <=2, overlap margin capped at overlap_m"
+}

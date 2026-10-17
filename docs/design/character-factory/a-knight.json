@@ -1,0 +1,350 @@
+{
+  "version": 1,
+  "id": "a-knight",
+  "base": {
+    "id": "quaternius-superhero-male-standard",
+    "path": "modular-factory-1/source/unpacked/Universal Base Characters[Standard]/Base Characters/Godot - UE/Superhero_Male_FullBody.gltf"
+  },
+  "motion": "ual-pilot/source/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb",
+  "head": "mesh-b-apose/texture-export/volume-final/b-apose-textured.glb",
+  "proportions": {
+    "height": 1.0,
+    "shoulder_width": 1.0,
+    "torso_depth": 1.0,
+    "arm_length": 1.0,
+    "leg_length": 1.0
+  },
+  "palette": {
+    "ivory": [
+      0.74,
+      0.68,
+      0.52
+    ],
+    "cobalt": [
+      0.025,
+      0.065,
+      0.22
+    ],
+    "steel": [
+      0.34,
+      0.39,
+      0.46
+    ],
+    "gold": [
+      0.49,
+      0.31,
+      0.09
+    ],
+    "leather": [
+      0.085,
+      0.043,
+      0.022
+    ]
+  },
+  "parts": [
+    {
+      "id": "approved_head",
+      "kind": "head",
+      "bone": "Head",
+      "color": "ivory",
+      "dimensions": [
+        0.15,
+        0.15,
+        0.225
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "quilted_tunic",
+      "kind": "tunic",
+      "bone": "spine_03",
+      "color": "ivory",
+      "dimensions": [
+        0.218,
+        0.141,
+        0.34
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "leather_belt",
+      "kind": "belt",
+      "bone": "pelvis",
+      "color": "leather",
+      "dimensions": [
+        0.195,
+        0.142,
+        0.045
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "pauldron_l",
+      "kind": "pauldron",
+      "bone": "upperarm_l",
+      "color": "steel",
+      "dimensions": [
+        0.105,
+        0.098,
+        0.15
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "bracer_l",
+      "kind": "cuff",
+      "bone": "lowerarm_l",
+      "color": "steel",
+      "dimensions": [
+        0.059,
+        0.057,
+        0.19
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "glove_l",
+      "kind": "glove",
+      "bone": "hand_l",
+      "color": "leather",
+      "dimensions": [
+        0.044,
+        0.034,
+        0.04
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "knee_l",
+      "kind": "knee",
+      "bone": "calf_l",
+      "color": "steel",
+      "dimensions": [
+        0.064,
+        0.036,
+        0.074
+      ],
+      "offset": [
+        0,
+        -0.065,
+        0
+      ]
+    },
+    {
+      "id": "boot_l",
+      "kind": "boot",
+      "bone": "foot_l",
+      "color": "leather",
+      "dimensions": [
+        0.068,
+        0.07,
+        0.2
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "pauldron_r",
+      "kind": "pauldron",
+      "bone": "upperarm_r",
+      "color": "steel",
+      "dimensions": [
+        0.105,
+        0.098,
+        0.15
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "bracer_r",
+      "kind": "cuff",
+      "bone": "lowerarm_r",
+      "color": "steel",
+      "dimensions": [
+        0.059,
+        0.057,
+        0.19
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "glove_r",
+      "kind": "glove",
+      "bone": "hand_r",
+      "color": "leather",
+      "dimensions": [
+        0.044,
+        0.034,
+        0.04
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "knee_r",
+      "kind": "knee",
+      "bone": "calf_r",
+      "color": "steel",
+      "dimensions": [
+        0.064,
+        0.036,
+        0.074
+      ],
+      "offset": [
+        0,
+        -0.065,
+        0
+      ]
+    },
+    {
+      "id": "boot_r",
+      "kind": "boot",
+      "bone": "foot_r",
+      "color": "leather",
+      "dimensions": [
+        0.068,
+        0.07,
+        0.2
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "sword",
+      "kind": "sword",
+      "bone": "hand_r",
+      "color": "steel",
+      "dimensions": [
+        0.72,
+        0.05,
+        0.01
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "front_panel_l",
+      "kind": "front_panel",
+      "bone": "thigh_l",
+      "color": "ivory",
+      "dimensions": [
+        0.145,
+        0.003,
+        0.365
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "back_panel_l",
+      "kind": "back_panel",
+      "bone": "thigh_l",
+      "color": "ivory",
+      "dimensions": [
+        0.145,
+        0.003,
+        0.365
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "front_panel_r",
+      "kind": "front_panel",
+      "bone": "thigh_r",
+      "color": "ivory",
+      "dimensions": [
+        0.145,
+        0.003,
+        0.365
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "back_panel_r",
+      "kind": "back_panel",
+      "bone": "thigh_r",
+      "color": "ivory",
+      "dimensions": [
+        0.145,
+        0.003,
+        0.365
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "cobalt_cape",
+      "kind": "cape",
+      "bone": "spine_03",
+      "color": "cobalt",
+      "dimensions": [
+        0.2,
+        0.19,
+        0.735
+      ],
+      "offset": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

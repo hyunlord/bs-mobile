@@ -1,0 +1,15 @@
+{
+  "frames": 80,
+  "samples": 15360,
+  "authored_band_halfwidth_mm": 15.0,
+  "max_contact_gap_mm": 2.606655703857541,
+  "missing_handle_samples": 0,
+  "missing_radial_enclosure_samples": 0,
+  "max_glove_nonmanifold_edges": 0,
+  "status": "SUPPLEMENTAL_UNVERIFIED",
+  "limitations": [
+    "Replacement glove uses authored 30mm central band; not identical to original anatomical palm landmarks.",
+    "Three stations and 64 rays establish sampled bore enclosure only, not continuous closure or absence of self-intersection.",
+    "Contact distance is unsigned; intersections require separate collision diagnostics."
+  ]
+}

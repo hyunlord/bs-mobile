@@ -1,0 +1,93 @@
+{
+  "candidate": "10",
+  "images": [
+    {
+      "name": "A-knight-reference.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "packedSha256": "b6f834a6cce6a73db14373cffd68b3cd90bff10c6aa4e3e13078b68e150cf9d5"
+    },
+    {
+      "name": "B-original-volume-albedo",
+      "size": [
+        4096,
+        4096
+      ],
+      "packedSha256": "aacb4f27ef2c0f4cdc1606010285fe4b6b655f2a2974c757ef9bd44f5b552242"
+    },
+    {
+      "name": "T_Eye_Brown",
+      "size": [
+        256,
+        256
+      ],
+      "packedSha256": "d08e3356a83211bc6ca21fe3a8e39f4b5c1a3b8f85457fc2c0fb57be09935025"
+    },
+    {
+      "name": "T_Eye_Normal.png",
+      "size": [
+        0,
+        0
+      ],
+      "packedSha256": null
+    },
+    {
+      "name": "T_Hair_1_BaseColor",
+      "size": [
+        2048,
+        2048
+      ],
+      "packedSha256": "bc7aa863bd22ab0a995cd838cceb4d3a5186ee54ee2fb0108fad85d20c057e6e"
+    },
+    {
+      "name": "T_Hair_1_Normal.png",
+      "size": [
+        0,
+        0
+      ],
+      "packedSha256": null
+    },
+    {
+      "name": "T_Superhero_Male_Dark",
+      "size": [
+        2048,
+        2048
+      ],
+      "packedSha256": "df680cbc1967a61e85998bfafb8f7bc0a36dd604bb3266486c4b06b1a184bb45"
+    },
+    {
+      "name": "T_Superhero_Male_Normal",
+      "size": [
+        2048,
+        2048
+      ],
+      "packedSha256": "9b25cf9200216eb754b79cf4c63b5380c419780788322f3c57cdd2b3e02679a6"
+    },
+    {
+      "name": "T_Superhero_Male_Roughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "packedSha256": "c70dabf48574cda55644d556beae1ee7cf1bdcf68a50d259d20f2f2358f27991"
+    }
+  ],
+  "heightMeters": 1.8000000715255737,
+  "motionInputSha256": "69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997",
+  "sourceInputSha256": "a8d65d591ae2da80829d409449b06eb33a065285a8268961b024e18c363a5cff",
+  "partitionAreaSquareMeters": {
+    "original": 4.705209339956401,
+    "cloth": 2.4459094608589527,
+    "body": 2.2397035364231215,
+    "intentionalCenterSlitExcluded": 0.01959634267432664
+  },
+  "actions": [
+    "Factory_Actual_UAL_Walk_Loop"
+  ],
+  "buildProvenanceMotion": {
+    "path": "ual-pilot/source/ual1/Universal Animation Library[Standard]/Unreal-Godot/UAL1_Standard.glb",
+    "sha256": "69591853d817488edaa8fd9bf8fc1d821eaeaf789f8627b3cd23b41c4ed67997"
+  }
+}
