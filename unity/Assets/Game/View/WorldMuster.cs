@@ -138,6 +138,14 @@ namespace Game.View
             // The knight figure fills about 62% of its 512px rig canvas height (feet at 420, head near 100): the visible hero.
             heroFigureHeight = rig.y * HeroFigureOfRigCanvas;
             var push = heroBodyWidth * HeroHitFeedback.PushBodyFraction;
+            if (heroSheetOn)
+            {
+                // The knight sprite sheet (#268): its role's world size is the whole cell, not the drawn knight, so the box that
+                // pillars and soldiers keep clear of is the figure footprint standing on the foot baseline (HeroSheetSpec.FigureSize,
+                // the shadow and camera margin size). heroBodyWidth and heroFigureHeight stay as before: they size weapon effects.
+                var figure = HeroSheetSpec.FigureSize(hero);
+                box = new Rect(anchor.x - figure.x * .5f, anchor.y, figure.x, figure.y);
+            }
             box = Rect.MinMaxRect(box.xMin - push, box.yMin - push, box.xMax + push, box.yMax + push);
             RenderedHeroSilhouette = box;
             heroSilhouetteLocal = new Rect(box.position - anchor, box.size);

@@ -23,10 +23,22 @@ namespace Game.View
         public static float Seconds(int ticks60) => ticks60 / 60f;
         // The pack tool writes frameMs as the delivered 60 Hz tick count rounded to milliseconds (10 ticks -> 167 ms).
         public static int TicksOf(int frameMs) => Mathf.RoundToInt(frameMs * 60 / 1000f);
-        // The sheets were fitted to the previous knight's figure (its 242 px frame = 0.6 world units, figure 209 px): that
-        // frame's footprint is this share of a 320x240 cell, used for the shadow and camera margins instead of the cell.
-        public const float BodyReferencePx = 115, CellWidthPx = 320, CellHeightPx = 240;
-        public static Vector2 FigureShareOfCell => new Vector2(BodyReferencePx * 188f / 209 / CellWidthPx, BodyReferencePx * 242f / 209 / CellHeightPx);
+        // The sheets were fitted to the previous knight's figure (its 188x242 px frame = 0.6 world units tall, figure 209 px)
+        // at the delivered 115 px body reference: in sheet pixels that frame is FigureFootprintPx. The shadow and camera
+        // margins use it instead of the whole cell. Its share comes from each role's own manifest cell and foot baseline, so a
+        // clip delivered in a different cell (a redrawn walk) keeps the same footprint in world units.
+        public const float BodyReferencePx = 115;
+        public static readonly Vector2 FigureFootprintPx = new Vector2(BodyReferencePx * 188f / 209, BodyReferencePx * 242f / 209);
+        public static Vector2 FigureShareOfCell(Vector2 cellPx, float footPivotY)
+        {
+            if (cellPx.x <= 0 || cellPx.y <= 0 || footPivotY < 0 || footPivotY >= 1)
+                throw new ArgumentException($"A knight cell needs a positive size and a foot baseline inside it ({cellPx.x}x{cellPx.y} px, pivot y {footPivotY}).");
+            // The figure stands on the foot baseline, so it must fit in the cell above it.
+            if (FigureFootprintPx.x > cellPx.x || FigureFootprintPx.y > cellPx.y * (1 - footPivotY))
+                throw new ArgumentException($"The {FigureFootprintPx.x:0.#}x{FigureFootprintPx.y:0.#} px knight figure does not fit a {cellPx.x}x{cellPx.y} px cell above its foot baseline (pivot y {footPivotY}).");
+            return new Vector2(FigureFootprintPx.x / cellPx.x, FigureFootprintPx.y / cellPx.y);
+        }
+        public static Vector2 FigureSize(ArtVisual visual) => Vector2.Scale(visual.WorldSize, FigureShareOfCell(visual.CellPixels, visual.Pivot.y));
 
         // Weapon -> action (06-feedback mapping). The guard ring throws only in its evolved stage, on its hits; the spore fan
         // and every other source have no action.
@@ -213,6 +225,11 @@ namespace Game.View
                 heroSheetActions[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "action." + HeroSheetSpec.ActionNames[a]);
                 heroSheetKeys[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "key." + HeroSheetSpec.ActionNames[a]);
             }
+            // The footprint is checked here, once, for every knight clip: a cell the figure does not fit fails at load. Indexed
+            // calls only: this runs inside the first presented frame, which must not allocate.
+            HeroSheetSpec.FigureSize(heroSheetIdle); HeroSheetSpec.FigureSize(heroSheetWalk);
+            HeroSheetSpec.FigureSize(heroSheetHit); HeroSheetSpec.FigureSize(heroSheetDeath);
+            for (var a = 1; a < heroSheetActions.Length; a++) { HeroSheetSpec.FigureSize(heroSheetActions[a]); HeroSheetSpec.FigureSize(heroSheetKeys[a]); }
             // Frame counts and frameMs come from the manifest roles, so a redrawn clip under the same role needs no code change.
             HeroActions.Timings = new HeroSheetTimings(suffix => { var v = art.ResolveRole(HeroSheetSpec.RolePrefix + suffix); return (v.UvRects.Count, v.FrameMs); });
             return heroSheetAvailable = true;
@@ -248,8 +265,8 @@ namespace Game.View
 
         bool heroSheetMoving;
 
-        // The hero's footprint for shadow and camera margins: the sheet cell's figure share, or the visual's own size.
-        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => HeroSheetShown(heroId) ? Vector2.Scale(visual.WorldSize, HeroSheetSpec.FigureShareOfCell) : visual.WorldSize;
+        // The hero's footprint for shadow and camera margins: the figure share of this role's own cell, or the visual's own size.
+        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => HeroSheetShown(heroId) ? HeroSheetSpec.FigureSize(visual) : visual.WorldSize;
 
         // flashOverride: the stack's hit feedback brightness (heroHitFeedback) replaces the sheet's own first-frames flash.
         bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, bool hitOutline, int tickRate, float? flashOverride = null)
