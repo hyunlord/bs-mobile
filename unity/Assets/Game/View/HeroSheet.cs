@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using SowSiege.Core;
 using UnityEngine;
 
@@ -217,9 +216,11 @@ namespace Game.View
                 heroSheetActions[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "action." + HeroSheetSpec.ActionNames[a]);
                 heroSheetKeys[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "key." + HeroSheetSpec.ActionNames[a]);
             }
-            // The footprint is checked here, once, for every knight clip: a cell the figure does not fit fails at load.
-            foreach (var visual in new[] { heroSheetIdle, heroSheetWalk, heroSheetHit, heroSheetDeath }.Concat(heroSheetActions.Skip(1)).Concat(heroSheetKeys.Skip(1)))
-                HeroSheetSpec.FigureSize(visual);
+            // The footprint is checked here, once, for every knight clip: a cell the figure does not fit fails at load. Indexed
+            // calls only: this runs inside the first presented frame, which must not allocate.
+            HeroSheetSpec.FigureSize(heroSheetIdle); HeroSheetSpec.FigureSize(heroSheetWalk);
+            HeroSheetSpec.FigureSize(heroSheetHit); HeroSheetSpec.FigureSize(heroSheetDeath);
+            for (var a = 1; a < heroSheetActions.Length; a++) { HeroSheetSpec.FigureSize(heroSheetActions[a]); HeroSheetSpec.FigureSize(heroSheetKeys[a]); }
             // Frame counts and frameMs come from the manifest roles, so a redrawn clip under the same role needs no code change.
             HeroActions.Timings = new HeroSheetTimings(suffix => { var v = art.ResolveRole(HeroSheetSpec.RolePrefix + suffix); return (v.UvRects.Count, v.FrameMs); });
             return heroSheetAvailable = true;
