@@ -1,7 +1,8 @@
-# ADR 0057: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다
+# ADR 0065: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다
 
 - 상태: 승인 범위 구현 — 최종 영웅·모션 방식은 사용자 영상 선택 대기
 - 날짜: 2026-10-12
+- 번호: 처음에는 0057로 썼다. main의 [ADR0057](0057-local-artifact-hygiene.md)과 겹쳐서, 2026-10-17 스택을 새 main에 옮길 때 main의 다음 빈 번호 0065로 다시 매겼다([런북](../runbooks/merge-knight-sheets-into-weapon-stack.md)). 내용은 바꾸지 않았다.
 - 관련: [#246](https://github.com/hyunlord/bs-mobile/issues/246), [손맛](../design/gdd/06-feedback.md), [아트·캐릭터](../design/gdd/07-art-character.md)
 
 ## 결정
