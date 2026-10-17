@@ -50,6 +50,7 @@ namespace SowSiege.Core
             Metric(activation.HitDamage > 0 ? "successful-activation" : "empty-activation", activation.Source, 1);
             Activations.Remove(id);
         }
+        public void AddChild(int id) => Activations[id].PendingChildren++;
         public void ResolveChild(int id)
         {
             if (!Activations.TryGetValue(id, out var activation)) { return; }

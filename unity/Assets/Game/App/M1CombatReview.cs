@@ -10,7 +10,7 @@ namespace Game.App
 {
     public sealed partial class M1CombatReview
     {
-        [Serializable] public sealed class Composition { public int version, delayTicks, stepTicks, spacing, radius; public string placement; public bool rehitEachImpact; }
+        [Serializable] public sealed class Composition { public int version, delayTicks, stepTicks, spacing, radius; public string placement; public bool rehitEachImpact; public int bounces = -1; }
         [Serializable] public sealed class Gear { public string id, designRef, kind, aim; public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback, workTicks, workRadius, rewardExperience, capacity; public Composition composition; }
         [Serializable] public sealed class Arena { public string enemyId; public int spawnPeriodTicks, enemyCap, enemySpeed, enemyHealth, durationTicks, enemyDamage, suppressedUntilTick, baseExperience, spawnRadius, recycleRadius, enemyBodyWidth; }
         [Serializable] public sealed class Case
@@ -51,7 +51,8 @@ namespace Game.App
             // JsonUtility materializes inline JSON null as an empty serializable object.
             if (value == null || value.version == 0 && string.IsNullOrEmpty(value.placement) &&
                 value.delayTicks == 0 && value.stepTicks == 0 && value.spacing == 0 && value.radius == 0) return null;
-            if (value.version != 1 || (value.placement != "nearest-target" && value.placement != "forward-line") ||
+            if (value.version != 1 || (value.placement != "nearest-target" && value.placement != "forward-line" && value.placement != "ricochet") ||
+                (value.placement == "ricochet") != (value.bounces >= 0) ||
                 value.delayTicks < 0 || value.stepTicks < 0 || value.spacing < 0 || value.radius <= 0)
                 throw new InvalidDataException("Malformed nonempty combat composition.");
             return value;
@@ -76,7 +77,7 @@ namespace Game.App
             if (!Enum.TryParse<WaveAttackKind>(g.kind,true,out var kind) || !Enum.IsDefined(typeof(WaveAttackKind),kind)) throw new InvalidDataException("Unknown review attack kind.");
             var c = g.composition;
             var gear = new WaveGearDefinition(g.id,g.designRef,kind,g.damage,g.range,g.cooldownTicks,g.speed,g.count,g.lifetimeTicks,g.knockback,g.workTicks,g.workRadius,g.rewardExperience,g.capacity,
-                Aim:string.IsNullOrEmpty(g.aim)?null:g.aim, Composition:c==null?null:new WaveAttackComposition(c.version,c.placement,c.delayTicks,c.stepTicks,c.spacing,c.radius,c.rehitEachImpact?true:(bool?)null));
+                Aim:string.IsNullOrEmpty(g.aim)?null:g.aim, Composition:c==null?null:new WaveAttackComposition(c.version,c.placement,c.delayTicks,c.stepTicks,c.spacing,c.radius,c.rehitEachImpact?true:(bool?)null,c.bounces>=0?c.bounces:(int?)null));
             var result = ReviewShowcaseCatalog.Create(baseline,new WaveShowcaseCase(d.id,d.designRef,d.proposedContract,d.stage,d.classification,gear,
                 new WaveShowcaseArena(a.enemyId,a.spawnPeriodTicks,a.enemyCap,a.enemySpeed,a.enemyHealth,a.durationTicks,a.enemyDamage,a.suppressedUntilTick,a.baseExperience,a.spawnRadius,a.recycleRadius,a.enemyBodyWidth)));
             if (ReviewShowcaseCatalog.Hash(result) != d.catalogHash) throw new InvalidDataException("Derived combat catalog hash mismatch.");
