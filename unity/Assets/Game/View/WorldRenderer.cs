@@ -300,7 +300,7 @@ namespace Game.View
             RenderedLordPosition = lord;
             RenderedEntitySample?.Invoke("lord",0,lord);
             if (presentationDiagnosticsActive) diagnostics.SetupMs = DiagnosticInterval(ref diagnosticCheckpoint);
-            if(wave!=null){var heroSize=Resolve("hero",snapshot.HeroId,"idle").WorldSize;followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
+            if(wave!=null){var heroSize=HeroFigureSize(snapshot.HeroId,Resolve("hero",snapshot.HeroId,"idle"));followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
             followCamera.LordViewportAnchor = FallowActive && HeroMotionPreviewMode == 0 ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
@@ -448,6 +448,7 @@ namespace Game.View
             var heroWalking=Point(previous.Lord.Position)!=Point(current.Lord.Position);
             var heroAttackProgress=heroAttackUntil>visualTime?1-(heroAttackUntil-visualTime)/GameVisualTokens.ActorAttackSeconds:-1;
             var heroHitProgress=heroHit?1-(heroHitUntil-visualTime)/(HitFeedbackEnabled?.2f:GameVisualTokens.HitFlashSeconds):-1;
+            SelectHeroRig(snapshot.HeroId);
             var heroVisual=HeroVisual(snapshot.HeroId,heroState,heroWalking,heroAttackProgress,seconds,out var heroAnimationTime);
             if(wave!=null)
             {
@@ -461,13 +462,15 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius,radius*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Ink,GameVisualTokens.WaveLordRingInner);
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
             }
-            DrawActorGrounding(lord,heroVisual.WorldSize,heroMovement,visualTime,WaveEnemyKind.Pursuer);
+            DrawActorGrounding(lord,HeroFigureSize(snapshot.HeroId,heroVisual),heroMovement,visualTime,WaveEnemyKind.Pursuer);
             // Hit feedback brightens the hero on two rendered frames (+40% on the knight rig, a 30% lift toward white on sprite
-            // heroes; a white fill outshone the weapon effects) and pushes the drawn hero only; no held tint.
+            // heroes; a white fill outshone the weapon effects) and pushes the drawn hero only; no held tint. The knight sheets
+            // add a red outline instead of a red fill (user decision 2026-10-17).
             var heroFlash=HitFeedbackEnabled?heroHitFeedback.NextFlash():heroHit?.8f:0;
-            var heroDrawn=HitFeedbackEnabled?lord+heroHitFeedback.Offset(visualTime,heroVisual.WorldSize.x*GameVisualTokens.HeroBodyWidthFraction):lord;
+            var heroDrawn=HitFeedbackEnabled?lord+heroHitFeedback.Offset(visualTime,HeroFigureSize(snapshot.HeroId,heroVisual).x*GameVisualTokens.HeroBodyWidthFraction):lord;
             if(!DrawHeroRig(heroVisual,heroDrawn,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
-                Color.white,heroFlash,heroGaitDiscontinuity,seconds))
+                Color.white,heroFlash,heroGaitDiscontinuity,seconds)&&
+               !DrawHeroSheet(snapshot.HeroId,heroDrawn,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,HitFeedbackEnabled,current.TickRate,heroFlash*.3f))
                 DrawActor(heroVisual,GameVisualTokens.LordLayer,heroDrawn,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroFlash*.3f,facing:heroFacing);
             PlaceBowstringFlashes();   // at the hand the hero was just posed with
             heroGaitDiscontinuity=false;
