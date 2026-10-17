@@ -15,7 +15,22 @@ namespace Game.App
         public bool CaptureFrame(int tick, float alpha) => InWindow(tick) && (tick > StartTick || alpha > 0);
         public static CameraScaleComparison Parse(string[] args)
         {
+            var combat = M1CombatReview.Parse(args);
+            if (combat != null) return new CameraScaleComparison(1.4f,"combat-proposal",combat.Definition.captureStartTick,combat.Definition.endTick);
             var knight = KnightReview.Parse(args);
+            var durationAt = Array.IndexOf(args,"--m1-review-seconds");
+            var seconds = 30;
+            if (durationAt >= 0)
+            {
+                if (knight == null || durationAt != Array.LastIndexOf(args,"--m1-review-seconds") || durationAt + 1 >= args.Length ||
+                    (args[durationAt + 1] != "10" && args[durationAt + 1] != "30") || knight.DamageReplay)
+                    throw new ArgumentException("M1 review duration requires knight C05 review and exactly 10 or 30 seconds.");
+                seconds = args[durationAt + 1] == "10" ? 10 : 30;
+            }
+            var showcaseAt = Array.IndexOf(args,"--m1-weapon-showcase");
+            var allShapes = showcaseAt >= 0 && showcaseAt + 1 < args.Length && args[showcaseAt + 1] == "all";
+            if (showcaseAt >= 0 && !allShapes && (knight == null || seconds != 10 || durationAt < 0))
+                throw new ArgumentException("Weapon showcase requires an explicit ten-second knight review window.");
             var scale = Array.IndexOf(args, "--camera-scale");
             var window = Array.IndexOf(args, "--camera-scale-window");
             if (scale < 0 && window < 0 && knight == null) return null;
@@ -34,7 +49,7 @@ namespace Game.App
             if (knight != null && knight.DamageReplay != (name == "damage")) throw new ArgumentException("Distinct damage replay requires its damage window only.");
             var start = name == "early" ? 0 : name == "mid" ? 10800 : name == "dense" || name == "damage" && knight?.DamageReplay == true ? 13500 : -1;
             if (start < 0) throw new ArgumentException("Camera window must be early, mid or dense.");
-            return new CameraScaleComparison(value, name, start, name == "damage" ? 13643 : start + 900);
+            return new CameraScaleComparison(value, name, start, name == "damage" ? 13643 : start + seconds * 30);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Game.View
         {
             this.ui=ui;this.catalog=catalog;
             if(ui.PortraitEnabled){portrait=new PortraitHud(ui,catalog,openSettings,hitFeedback);return;}
-            if(ArtCatalog.ProfileName=="wave-1a"&&catalog?.WaveRuntime?.ChapterId=="meta:chapter_1")
+            if(ArtCatalog.UsesWaveArt&&catalog?.WaveRuntime?.ChapterId=="meta:chapter_1")
             {fallow=new FallowHud(ui,catalog,openSettings,hitFeedback);return;}
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);root.sizeDelta=new Vector2(0,160);
             root.gameObject.AddComponent<Image>().color=Color.clear;

@@ -59,6 +59,7 @@ public static partial class ContentLoader
         Require(profile.TestSelection.Tools.Concat(profile.TestSelection.Weapons).Concat(profile.TestSelection.Enemies).Concat(profile.TestSelection.Heroes).Concat(profile.TestSelection.Estates).Count() == 0, "Wave test selection must be empty.");
         var file = ReadWaveFile(directory, profile.WaveRuntimeFile!);
         var wave = file.Definition;
+        Require(wave.Gear.Values.All(gear => gear.Aim is null or "nearest-enemy"), "Unsupported wave gear aim.");
         Require(file.ContractVersion == 1 && file.DesignRevision == WaveRevision && wave.Revision == WaveRevision, "Unsupported wave design revision.");
         ValidateWaveBindings(directory, file);
         Require(wave.Gear.Count == 9 && wave.Items.Count == 8 && wave.Evolutions.Count == 3 && wave.Enemies.Count == 7, "Wave runtime exact roster mismatch.");
@@ -95,7 +96,7 @@ public static partial class ContentLoader
 
     public static WaveContentFile ReadWaveFile(string directory, string relative = "runtime/wave-1a.json")
     {
-        Require(relative == "runtime/wave-1a.json", "Unsafe or unsupported wave runtime path.");
+        Require(relative is "runtime/wave-1a.json" or "runtime/m1-showcase-review.json", "Unsafe or unsupported wave runtime path.");
         var folder = Path.Combine(directory, "runtime");
         var path = Path.Combine(directory, relative);
         Require((File.GetAttributes(folder) & FileAttributes.ReparsePoint) == 0 && (File.GetAttributes(path) & FileAttributes.ReparsePoint) == 0, "Wave runtime symlink forbidden.");

@@ -8,6 +8,44 @@ namespace Tests.EditMode
     public sealed class WorldDamageNumbersTests
     {
         [Test]
+        public void EnemyCapSuppressesOnlyNewLabelsAndKeepsExactExistingTargetAggregation()
+        {
+            var owner = new GameObject("Damage number visible cap");
+            using (var numbers = new WorldDamageNumbers(owner.transform))
+            {
+                for (var i = 0; i < WorldDamageNumbers.EnemyVisibleLimit; i++)
+                    numbers.AddAggregated(i + 1, Vector2.right * i * 2, 24);
+                numbers.AddAggregated(99, Vector2.up * 2, 7);
+                numbers.AddAggregated(1, Vector2.zero, 13);
+                Assert.That(numbers.CaptureVisibleAmountsForTesting().Length, Is.EqualTo(6));
+                Assert.That(numbers.CaptureVisibleAmountsForTesting().Count(value => value == "37"), Is.EqualTo(1));
+                Assert.That(numbers.SuppressedVisualLabels, Is.EqualTo(1), "This counts omitted display labels, not lost damage or Core events.");
+                numbers.Advance(GameVisualTokens.DamageNumberSeconds, true);
+                numbers.AddAggregated(99, Vector2.zero, 9);
+                Assert.That(numbers.CaptureVisibleAmountsForTesting(), Is.EqualTo(new[] { "9" }), "A suppressed earlier hit must not contaminate a later displayed amount.");
+            }
+            Object.DestroyImmediate(owner);
+        }
+
+        [Test]
+        public void HeroNumbersHaveIndependentCapacityAndDrawAboveSmallerEnemyNumbers()
+        {
+            var enemyOwner = new GameObject("Enemy numbers");
+            var heroOwner = new GameObject("Hero numbers");
+            using (var enemies = new WorldDamageNumbers(enemyOwner.transform))
+            using (var hero = new WorldDamageNumbers(heroOwner.transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2))
+            {
+                for (var i = 0; i < 20; i++) enemies.Add(Vector2.right * i * 2, 24);
+                hero.Add(Vector2.zero, 8, GameVisualTokens.Hostile);
+                Assert.That(hero.CaptureVisibleAmountsForTesting(), Is.EqualTo(new[] { "8" }));
+                var enemyLabel = enemyOwner.GetComponentsInChildren<TextMesh>()[0];
+                var heroLabel = heroOwner.GetComponentsInChildren<TextMesh>()[0];
+                Assert.That(heroLabel.characterSize, Is.GreaterThan(enemyLabel.characterSize));
+                Assert.That(heroLabel.GetComponent<MeshRenderer>().sortingOrder, Is.GreaterThan(enemyLabel.GetComponent<MeshRenderer>().sortingOrder));
+            }
+            Object.DestroyImmediate(enemyOwner); Object.DestroyImmediate(heroOwner);
+        }
+        [Test]
         public void SameEnemyAggregatesWithinWindowButDifferentEnemiesAndLaterHitsStaySeparate()
         {
             var owner = new GameObject("Damage aggregation regression");
@@ -81,9 +119,10 @@ namespace Tests.EditMode
                 for (var i = 0; i < WorldDamageNumbers.Capacity * 3; i++) numbers.Add(Vector2.zero, 100 + i);
                 var pooled = owner.GetComponentsInChildren<TextMesh>(true);
                 Assert.That(pooled.Count(label => label.transform.parent == owner.transform), Is.EqualTo(WorldDamageNumbers.Capacity));
-                Assert.That(pooled.Length, Is.EqualTo(WorldDamageNumbers.Capacity * 5), "Continuation digits are precreated; active logical numbers remain capped at 64.");
+                Assert.That(pooled.Length, Is.EqualTo(WorldDamageNumbers.Capacity * 5), "Continuation digits are precreated independently of the smaller display cap.");
                 var labels = owner.GetComponentsInChildren<TextMesh>();
                 Assert.That(labels.Length, Is.GreaterThan(0));
+                Assert.That(labels.Length, Is.LessThanOrEqualTo(WorldDamageNumbers.EnemyVisibleLimit));
                 AssertSeparated(labels);
                 foreach (var label in labels) Assert.That(long.Parse(label.text), Is.InRange(100L, 100L + WorldDamageNumbers.Capacity * 3 - 1));
             }

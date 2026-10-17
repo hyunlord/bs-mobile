@@ -132,6 +132,7 @@ for (const mutation of ['manifest-profile', 'manifest-hash', 'bridge-profile', '
 test('Unity profile selection is explicit and bounded', () => {
   assert.equal(selectedProfile('first-playable'), 'first-playable');
   assert.equal(selectedProfile('wave-1a'), 'wave-1a');
+  assert.equal(selectedProfile('m1-showcase-review'), 'm1-showcase-review');
   assert.throws(() => selectedProfile('../wave-1a'), /Unsupported Unity content profile/);
 });
 

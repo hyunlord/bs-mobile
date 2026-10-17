@@ -4,6 +4,18 @@ using NUnit.Framework;
 
 public sealed class CameraScaleComparisonTests
 {
+    [TestCase("10",600),TestCase("30",1800)]
+    public void KnightProductionDurationIsBounded(string seconds,int frames)
+    {
+        var value = CameraScaleComparison.Parse(new[] { "--knight-review","--wave-benchmark","same.ssreplay","--camera-scale-window","mid","--m1-review-seconds",seconds });
+        Assert.That(OfflineReplayCapture.ExpectedFrames(value.EndTick-value.StartTick,30),Is.EqualTo(frames));
+    }
+    [TestCase("9"),TestCase("60")]
+    public void UnboundedProductionDurationRejected(string seconds)
+        => Assert.Throws<ArgumentException>(()=>CameraScaleComparison.Parse(new[] { "--knight-review","--wave-benchmark","same.ssreplay","--m1-review-seconds",seconds }));
+    [Test] public void OrphanProductionDurationRejected()
+        => Assert.Throws<ArgumentException>(()=>CameraScaleComparison.Parse(new[] { "--m1-review-seconds","10" }));
+
     static string[] Args(string scale = "1", string window = "early") => new[] { "--camera-scale", scale, "--camera-scale-window", window, "--wave-benchmark", "same.ssreplay", "--hero-motion", "live" };
     [Test] public void OrdinaryBenchmarkUnchanged() => Assert.That(CameraScaleComparison.Parse(new[] { "--wave-benchmark", "same.ssreplay" }), Is.Null);
     [TestCase("1", 1f), TestCase("1.4", 1.4f), TestCase("1.8", 1.8f)]

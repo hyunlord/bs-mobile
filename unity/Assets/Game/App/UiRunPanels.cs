@@ -13,7 +13,7 @@ namespace Game.App
     {
         public static void Cards(UiShell ui,RunFrame frame,FirstPlayableFrame firstPlayable,CardOfferView offer,ContentCatalog catalog,IReadOnlyDictionary<string,ContentDisplay> displays,Action<ReplayCommandKind,string> send,Action openSettings=null)
         {
-            var fallow=CanonicalContent.ProfileName=="wave-1a"&&catalog.WaveRuntime?.ChapterId=="meta:chapter_1";
+            var fallow=CanonicalContent.IsWave&&catalog.WaveRuntime?.ChapterId=="meta:chapter_1";
             if(fallow&&Screen.width>Screen.height){LandscapeCards(ui,frame,firstPlayable,offer,catalog,displays,send,openSettings);return;}
             var panel=ui.Panel("Cards");ui.Label(panel,$"레벨 {frame.Level} · 성장 선택",UiTokens.Title,56);
             ui.Label(panel,"무기와 도구를 함께 키우세요",UiTokens.Small,36);

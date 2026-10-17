@@ -87,7 +87,7 @@ function summarize(plan) {
     const observer = fs.readFileSync(entry.directory + '.foreground.jsonl', 'utf8').trim().split(/\r?\n/).map(JSON.parse); assert(observer.some(event => event.event === 'observer-end'));
     row.foregroundApps = [...new Set(observer.map(event => event.name).filter(Boolean))]; result.push(row);
   }
-  return { contract: 'm1-knight-measure-v1', interpretation: 'Capture off, eligible foreground rows only. Damage fixture is distinct 143-tick candidate2, not original C05 or 30 seconds. Same-input warning variants cannot prove avoided damage; actual damage tape must match. Zero known-hit denominator is unavailable. Unity allocated memory is not RSS; recorder-negative values unavailable.', rows: result };
+  return { contract: 'm1-knight-measure-v1', interpretation: 'Capture off, eligible foreground rows only. Replay identity and measured tick window are recorded separately in each row. Same-input warning variants cannot prove avoided damage; actual damage tape must match. Zero known-hit denominator is unavailable. Unity allocated memory is not RSS; recorder-negative values unavailable.', rows: result };
 }
 const [command, file, extra] = process.argv.slice(2);
 if (command === 'plans') { assert(file && !extra); plans(file); }

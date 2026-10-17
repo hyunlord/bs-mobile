@@ -1,0 +1,3 @@
+id,stage,hitEnemies,minimumSpawnToFirstHitTicks,maximumSpawnToFirstHitTicks
+core:ward_orbit,evolved,269,19,345
+core:spore_fan,evolved,269,19,345

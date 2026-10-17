@@ -226,6 +226,13 @@
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     },
     {
+      "id": "generated-m1-review-weapons",
+      "origin": "Generated with built-in image_gen for issue #256 dedicated pike/sling icons",
+      "source": "https://openai.com/policies/terms-of-use/",
+      "prompt": "docs/licenses/prompts/m1-review-weapons-prompt.txt",
+      "commercialUse": "Project-generated output used and distributed under applicable OpenAI output terms; no third-party character or brand reference."
+    },
+    {
       "id": "generated-knight-sheets",
       "origin": "Generated with built-in image_gen for this project (Character Forge sheet pipeline, BiRefNet matting); packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
@@ -473,6 +480,14 @@
       "height": 2304,
       "padding": 4,
       "license": "fallow-enemy-rigs"
+    },
+    {
+      "id": "m1-review-weapons",
+      "path": "Assets/Art/m1-review-weapons.png",
+      "width": 1790,
+      "height": 895,
+      "padding": 2,
+      "license": "generated-m1-review-weapons"
     },
     {
       "id": "hero-knight",
@@ -10999,6 +11014,50 @@
       },
       "frameMs": 120,
       "tween": "none"
+    },
+    {
+      "id": "m1.icon.core.ditch_pike.default",
+      "atlas": "m1-review-weapons",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 887,
+          "height": 887
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 350,
+      "tween": "none"
+    },
+    {
+      "id": "m1.icon.core.granary_sling.default",
+      "atlas": "m1-review-weapons",
+      "frames": [
+        {
+          "x": 899,
+          "y": 4,
+          "width": 887,
+          "height": 887
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 1
+      },
+      "frameMs": 350,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -13479,6 +13538,18 @@
       "contentId": "core:harvest_scythe",
       "state": "sector90",
       "roleId": "wave1a.attack.core.harvest_scythe.sector90"
+    },
+    {
+      "kind": "icon",
+      "contentId": "core:ditch_pike",
+      "state": "default",
+      "roleId": "m1.icon.core.ditch_pike.default"
+    },
+    {
+      "kind": "icon",
+      "contentId": "core:granary_sling",
+      "state": "default",
+      "roleId": "m1.icon.core.granary_sling.default"
     }
   ]
 }

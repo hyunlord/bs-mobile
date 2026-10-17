@@ -57,7 +57,8 @@ namespace Game.App
                     continue;
                 }
                 string cue=null;
-                if(value.Kind=="evolution-activated"){cue=WaveCue("evolution-",value.Source);sound?.PlayEvolutionHaptic();}
+                if(combatReview != null && combatReview.CueFor(value.Source) != null && (value.Kind=="attack"||value.Kind=="projectile-launched"||value.Kind=="chain-link"||value.Kind=="orbit-fragment"||value.Kind=="review-impact")) cue=combatReview.CueFor(value.Source);
+                else if(value.Kind=="evolution-activated"){cue=WaveCue("evolution-",value.Source);sound?.PlayEvolutionHaptic();}
                 else if(value.Kind=="enemy-tell")
                 {
                     var enemy=definition.Enemies[value.Source];

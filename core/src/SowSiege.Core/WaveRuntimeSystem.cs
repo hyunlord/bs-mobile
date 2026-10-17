@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
-    internal sealed class WaveRuntimeSystem
+    internal sealed partial class WaveRuntimeSystem
     {
         private readonly ContentCatalog catalog;
         private readonly WorldState world;
@@ -101,6 +101,7 @@ namespace SowSiege.Core
             try
             {
                 queries.Rebuild();
+                TickReviewImpacts();
                 foreach (var equipment in world.Equipment)
                 {
                     if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
@@ -186,6 +187,7 @@ namespace SowSiege.Core
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
+            if (gear.Composition is not null) { ScheduleReviewImpacts(gear); return; }
             var program = modules[evolution?.Id ?? gear.Id];
             var operations = modules.Attack(evolution?.Id ?? gear.Id);
             var shape = operations.Shape;
@@ -210,6 +212,20 @@ namespace SowSiege.Core
                 }
             }
             facing = subscriptions.Aim(gear, origin, facing);
+            if (interactive?.MeleeAim is not null && gear.Aim == "nearest-enemy" && shape is "melee-fan" or "ground-slam")
+            {
+                EnemyState? nearest = null;
+                long distance = long.MaxValue;
+                foreach (var enemy in world.Enemies)
+                {
+                    if (enemy.Health <= 0) { continue; }
+                    var candidateDistance = enemy.Position.DistanceSquared(origin);
+                    if (candidateDistance < distance || candidateDistance == distance && (nearest is null || enemy.Id < nearest.Id))
+                    { nearest = enemy; distance = candidateDistance; }
+                }
+                if (nearest is not null && nearest.Position != origin)
+                { facing = new(nearest.Position.X - origin.X, nearest.Position.Y - origin.Y); }
+            }
             var source = evolution?.Id ?? gear.Id;
             targets.Clear();
             if (shape != "chain" && shape != "orbit") { queries.ByDistance(targets, origin, gear.Range, origin); }

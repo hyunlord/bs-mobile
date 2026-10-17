@@ -1,0 +1,9 @@
+id,windowStartTick,windowEndExclusive,maxLinkedKillsPerTick,tick,attackActivationsEmittedAtTick,impactEventsAtTick,maxConfirmedSingleActivationKills,activationStartTick,unattributedKills,range,impactRadius,count,attribution
+core:iron_blade,300,600,24,420,1,0,24,420,0,6000,0,32,one source instantaneous activation per tick
+core:ward_orbit,300,600,3,357,0,0,21,540,0,3200,0,8,last orbit-fragment tick groups nonoverlapping cooldown activation
+core:storm_fork,300,600,31,570,1,0,31,570,0,6000,0,32,one source instantaneous activation per tick
+core:granary_sling,300,600,25,345,0,8,25,330,0,6000,1800,8,tell tick groups one scheduled activation; subjectId joins each resolved impact
+core:spore_fan,300,600,3,357,0,0,21,540,0,3200,0,8,last orbit-fragment tick groups nonoverlapping cooldown activation
+core:ditch_pike,300,600,9,585,0,1,31,570,0,6000,1800,10,tell tick groups one scheduled activation; subjectId joins each resolved impact
+core:canal_bow,300,600,4,377,0,1,23,330,0,6000,650,32,tell tick groups one scheduled activation; subjectId joins each resolved impact
+core:muster_horn,300,600,7,360,1,0,7,464,16,6000,0,32,instant wave only; ally tasks unattributed separately
