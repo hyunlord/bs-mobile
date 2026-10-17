@@ -56,14 +56,23 @@
       "profiles": ["wave-1a"],
       "reason": "The layered knight rig is enabled only for wave runs, and only when explicitly requested or the hero has no sheet roles; otherwise the knight sprite sheets registered in every profile draw (#268 is the failure when this gate is bypassed).",
       "evidence": [
-        { "file": "unity/Assets/Game/View/WorldHeroRig.cs", "text": "if(!heroRigActive){heroGait.Reset();return Resolve(\"hero\",heroId,state);}" },
-        { "file": "unity/Assets/Game/View/HeroSheet.cs", "text": "void SelectHeroRig(string heroId) => heroRigActive = HeroRigPreviewEnabled && (HeroRigExplicit || !EnsureHeroSheet(heroId));" },
+        { "file": "unity/Assets/Game/View/WorldHeroRig.cs", "text": "if(!heroRigActive){heroGait.Reset();heroLiveRig?.Hide();return Resolve(\"hero\",heroId,state);}" },
+        { "file": "unity/Assets/Game/View/HeroSheet.cs", "text": "heroRigActive = !heroSheetOn && (HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);" },
         { "file": "unity/Assets/Game/App/RunCoordinator.Feel.cs", "text": "activeHeroRig = IsWave && preferences.HeroRigPreview;" }
       ],
       "pinned": [
-        { "dir": "unity/Assets/Game", "pattern": "HeroRigPreviewEnabled\\s*=(?!=)", "count": 1, "reason": "Only RunCoordinator copies activeHeroRig into the renderer." },
+        { "dir": "unity/Assets/Game", "pattern": "HeroRigPreviewEnabled\\s*=(?!=)", "count": 2, "reason": "RunCoordinator copies activeHeroRig into the renderer; the wave-only visual review (it refuses non-wave profiles) sets it for the existing-b hero review." },
         { "dir": "unity/Assets/Game/App", "pattern": "activeHeroRig\\s*=(?!=)", "count": 5, "reason": "Feel.cs assigns true only inside IsWave branches, the wave benchmark rejects non-wave profiles, visual review assigns false; a new assignment must be reviewed." },
-        { "dir": "unity/Assets/Game", "pattern": "hero\\.preview-b\\.", "count": 4, "reason": "Rig roles are requested only by WorldHeroRig.HeroVisual." }
+        { "dir": "unity/Assets/Game", "pattern": "hero\\.preview-b\\.", "count": 5, "reason": "Rig roles are requested by WorldHeroRig.HeroVisual, and the wave-only concept review sizes its picture from hero.preview-b.idle." }
+      ]
+    },
+    {
+      "file": "unity/Assets/Game/View/WorldHeroConceptReview.cs",
+      "profiles": ["wave-1a"],
+      "reason": "The hero concept review runs only inside the native visual review, which refuses non-wave profiles; it sizes the concept picture from the wave-only B rig idle role.",
+      "evidence": [
+        { "file": "unity/Assets/Game/App/RunCoordinator.VisualReview.cs", "text": "if(!IsWave || AutoplayCapture.Active != null || Array.IndexOf(args,\"--wave-benchmark\") >= 0)" },
+        { "file": "unity/Assets/Game/App/RunCoordinator.VisualReview.cs", "text": "else if(heroReview!=\"existing-a\")world.ConfigureHeroConceptReview(heroReview,VisualArgument(reviewArgs,\"--hero-review-image\"));" }
       ]
     }
   ],

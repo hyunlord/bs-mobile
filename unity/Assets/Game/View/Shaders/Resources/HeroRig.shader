@@ -3,6 +3,8 @@ Shader "Game/View/HeroRig"
     Properties
     {
         _MainTex ("Layered authored atlas", 2D) = "white" {}
+        _RigUpperTex ("Optional action atlas", 2D) = "white" {}
+        _RigUseUpperTex ("Use action atlas", Float) = 0
         _InstanceColor ("Color", Color) = (1,1,1,1)
         _InstanceUv ("Atlas rectangle", Vector) = (0,0,1,1)
         _InstanceFlash ("Hit flash and edge style", Vector) = (0,0,1,0)
@@ -30,6 +32,9 @@ Shader "Game/View/HeroRig"
             #pragma instancing_options forcemaxcount:511
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
+            TEXTURE2D(_RigUpperTex); SAMPLER(sampler_RigUpperTex);
+            float4 _RigUpperTex_TexelSize;
+            float _RigUseUpperTex;
             float4 _MainTex_TexelSize, _RigFrame, _RigUpperFrame, _RigFarDelta, _RigNearDelta, _RigWarp, _RigCanvas;
             UNITY_INSTANCING_BUFFER_START(SpriteProperties)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceColor)
@@ -61,6 +66,15 @@ Shader "Game/View/HeroRig"
                 float2 uv=clamp(low+extent*local,low+_MainTex_TexelSize.xy*.5,low+extent-_MainTex_TexelSize.xy*.5);
                 return SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,uv);
             }
+            half4 UpperLayer(float2 local,float2 sheet)
+            {
+                if(_RigUseUpperTex < .5)return Layer(local,sheet,_RigUpperFrame);
+                if(any(local<0)||any(local>1))return 0;
+                float2 low=sheet+.5*_RigUpperFrame.xy;
+                float2 extent=.5*_RigUpperFrame.zw;
+                float2 uv=clamp(low+extent*local,low+_RigUpperTex_TexelSize.xy*.5,low+extent-_RigUpperTex_TexelSize.xy*.5);
+                return SAMPLE_TEXTURE2D(_RigUpperTex,sampler_RigUpperTex,uv);
+            }
             half4 Over(half4 under,half4 above)
             {
                 return half4(above.rgb*above.a+under.rgb*(1-above.a),above.a+under.a*(1-above.a));
@@ -68,10 +82,10 @@ Shader "Game/View/HeroRig"
             half4 Frag(Varyings input):SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
-                half4 sample=Layer(input.local,float2(0,.5),_RigUpperFrame);sample.rgb*=sample.a;
+                half4 sample=UpperLayer(input.local,float2(0,.5));sample.rgb*=sample.a;
                 sample=Over(sample,Layer(InverseWarp(input.local,_RigFarDelta.xy),float2(.5,.5),_RigFrame));
                 sample=Over(sample,Layer(InverseWarp(input.local,_RigNearDelta.xy),float2(0,0),_RigFrame));
-                sample=Over(sample,Layer(input.local,float2(.5,0),_RigUpperFrame));
+                sample=Over(sample,UpperLayer(input.local,float2(.5,0)));
                 sample.rgb=sample.a>0?sample.rgb/sample.a:0;
                 half4 color=UNITY_ACCESS_INSTANCED_PROP(SpriteProperties,_InstanceColor);
                 float4 style=UNITY_ACCESS_INSTANCED_PROP(SpriteProperties,_InstanceFlash);

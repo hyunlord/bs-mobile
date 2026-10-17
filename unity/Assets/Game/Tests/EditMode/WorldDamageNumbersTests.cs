@@ -8,6 +8,28 @@ namespace Tests.EditMode
     public sealed class WorldDamageNumbersTests
     {
         [Test]
+        public void SameEnemyAggregatesWithinWindowButDifferentEnemiesAndLaterHitsStaySeparate()
+        {
+            var owner = new GameObject("Damage aggregation regression");
+            using (var numbers = new WorldDamageNumbers(owner.transform))
+            {
+                numbers.AddAggregated(7, Vector2.zero, 9);
+                numbers.Advance(.05f, true);
+                numbers.AddAggregated(7, Vector2.zero, 12);
+                numbers.AddAggregated(8, Vector2.one, 20);
+                Assert.That(owner.GetComponentsInChildren<TextMesh>().Select(label => label.text), Is.EquivalentTo(new[] { "21", "20" }));
+                AssertSeparated(owner.GetComponentsInChildren<TextMesh>());
+                numbers.Advance(GameVisualTokens.DamageAggregateSeconds, true);
+                numbers.AddAggregated(7, Vector2.zero, 3);
+                Assert.That(owner.GetComponentsInChildren<TextMesh>().Select(label => label.text), Is.EquivalentTo(new[] { "21", "20", "3" }));
+                numbers.Advance(0, false);
+                numbers.AddAggregated(7, Vector2.zero, 4);
+                Assert.That(owner.GetComponentsInChildren<TextMesh>().Single().text, Is.EqualTo("4"));
+            }
+            Object.DestroyImmediate(owner);
+        }
+
+        [Test]
         public void ClusteredHitsKeepHonestAmountsAndSeparateReadableBounds()
         {
             var owner = new GameObject("Damage number regression");
@@ -29,13 +51,37 @@ namespace Tests.EditMode
         }
 
         [Test]
+        public void LargeAmountsUseExactPooledChunksAndOverflowStartsAnotherExactLabel()
+        {
+            var owner = new GameObject("Large pooled damage regression");
+            using (var numbers = new WorldDamageNumbers(owner.transform))
+            {
+                numbers.AddAggregated(1, Vector2.zero, 16383);
+                numbers.AddAggregated(1, Vector2.zero, 2);
+                Assert.That(numbers.CaptureVisibleAmountsForTesting(), Is.EqualTo(new[] { "16385" }));
+                numbers.Advance(0, false);
+                numbers.AddAggregated(2, Vector2.zero, long.MaxValue);
+                numbers.AddAggregated(2, new Vector2(0, 2), 1);
+                Assert.That(numbers.CaptureVisibleAmountsForTesting(), Is.EquivalentTo(new[] { "9223372036854775807", "1" }));
+                numbers.Advance(0, false);
+                numbers.Add(Vector2.zero, 100000001);
+                Assert.That(numbers.CaptureVisibleAmountsForTesting(), Is.EqualTo(new[] { "100000001" }));
+                numbers.Advance(0, false);
+                Assert.That(numbers.CaptureVisibleAmountsForTesting(), Is.Empty);
+            }
+            Object.DestroyImmediate(owner);
+        }
+
+        [Test]
         public void DenseBurstStaysPooledAndDoesNotOverlapVisibleAmounts()
         {
             var owner = new GameObject("Damage number capacity regression");
             using (var numbers = new WorldDamageNumbers(owner.transform))
             {
                 for (var i = 0; i < WorldDamageNumbers.Capacity * 3; i++) numbers.Add(Vector2.zero, 100 + i);
-                Assert.That(owner.GetComponentsInChildren<TextMesh>(true).Length, Is.LessThanOrEqualTo(WorldDamageNumbers.Capacity));
+                var pooled = owner.GetComponentsInChildren<TextMesh>(true);
+                Assert.That(pooled.Count(label => label.transform.parent == owner.transform), Is.EqualTo(WorldDamageNumbers.Capacity));
+                Assert.That(pooled.Length, Is.EqualTo(WorldDamageNumbers.Capacity * 5), "Continuation digits are precreated; active logical numbers remain capped at 64.");
                 var labels = owner.GetComponentsInChildren<TextMesh>();
                 Assert.That(labels.Length, Is.GreaterThan(0));
                 AssertSeparated(labels);

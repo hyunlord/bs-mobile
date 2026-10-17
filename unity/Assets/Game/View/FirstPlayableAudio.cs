@@ -39,6 +39,22 @@ namespace Game.View
         bool vibration = true;
         bool paused;
         bool initialized;
+        bool impactFeedback = true;
+
+        public void SetImpactFeedback(bool enabled) => impactFeedback = enabled;
+
+        // Presentation-only variation: no simulation RNG or mutable random sequence.
+        public static float HitPitch(long eventId)
+        {
+            unchecked
+            {
+                var value = (ulong)eventId + 0x9E3779B97F4A7C15UL;
+                value = (value ^ (value >> 30)) * 0xBF58476D1CE4E5B9UL;
+                value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
+                value ^= value >> 31;
+                return .95f + (value & 0xFFFFUL) * (.1f / 65535f);
+            }
+        }
 
         public void Initialize(ContentCatalog content)
         {
@@ -125,7 +141,6 @@ namespace Game.View
 
         void AcceptFeedback(RunFrame frame, Action<string> commonOutput)
         {
-            void Emit(Cue cue) { if(commonOutput == null) Play(cue); else commonOutput(ClipNames[(int)cue]); }
             if (!initialized) throw new InvalidOperationException("Initialize audio before accepting frames.");
             if (frame == null) throw new ArgumentNullException(nameof(frame));
             for (var i = 0; i < frame.Events.Count; i++)
@@ -135,13 +150,13 @@ namespace Game.View
                 lastEventId = value.Id;
                 switch (value.Kind)
                 {
-                    case PresentationKind.Damage: if (value.Amount > 0) Emit(Cue.Hit); break;
-                    case PresentationKind.EnemyKilled: Emit(Cue.Kill); break;
-                    case PresentationKind.HarvestExperience: Emit(Cue.Harvest); break;
+                    case PresentationKind.Damage: if (value.Amount > 0) Emit(Cue.Hit, commonOutput, value.Id); break;
+                    case PresentationKind.EnemyKilled: Emit(Cue.Kill, commonOutput); break;
+                    case PresentationKind.HarvestExperience: Emit(Cue.Harvest, commonOutput); break;
                     case PresentationKind.Evolution:
                         if(commonOutput == null) { Play(Cue.Evolution); PlayEvolutionHaptic(); }
                         break;
-                    case PresentationKind.LordHit: Emit(Cue.Hurt); Vibrate(); break;
+                    case PresentationKind.LordHit: Emit(Cue.Hurt, commonOutput); Vibrate(); break;
                     case PresentationKind.BossWarning:
                         if (commonOutput == null && catalog.FirstPlayable != null && catalog.FirstPlayable.Enemies.TryGetValue(value.SourceId, out var enemy) && enemy.Rank == "boss")
                         {
@@ -150,16 +165,23 @@ namespace Game.View
                         break;
                 }
             }
-            if (lastLevel >= 0 && frame.Level > lastLevel) { Emit(Cue.Level); Vibrate(); }
+            if (lastLevel >= 0 && frame.Level > lastLevel) { Emit(Cue.Level, commonOutput); Vibrate(); }
             lastLevel = frame.Level;
         }
 
-        void Play(Cue cue)
+        void Emit(Cue cue, Action<string> output, long eventId = 0)
+        {
+            if (output == null) Play(cue, eventId);
+            else output(ClipNames[(int)cue]);
+        }
+
+        void Play(Cue cue, long eventId = 0)
         {
             var index = (int)cue;
             var now = Time.unscaledTime;
             if (paused || effectsVolume <= 0 || now < nextCueTime[index]) return;
             nextCueTime[index] = now + Cooldowns[index];
+            voices[index].pitch = cue == Cue.Hit && impactFeedback ? HitPitch(eventId) : 1f;
             // Dedicated voices keep level/evolution/boss cues independent from combat floods.
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             PlaySource(voices[index], ref playedOnce[index]);
