@@ -30,6 +30,7 @@ namespace Game.App
 
         void PresentWorld(float alpha, float seconds, Rect visible)
         {
+            world.PresentationPaused = !waveBenchmarkRequested && Paused;
             if (bossPresentation == null)
             {
                 world.Present(previous, CurrentFrame, FirstPlayable, alpha, seconds, visible);

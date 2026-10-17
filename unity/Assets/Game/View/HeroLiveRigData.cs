@@ -7,6 +7,7 @@ namespace Game.View
     [Serializable] public sealed class HeroLiveRigData
     {
         public int schemaVersion, canvasSize;
+        public string partsResource, swordResource;
         public float groundY;
         public HeroLiveRoot root;
         public string[] jointNames;
@@ -14,10 +15,11 @@ namespace Game.View
         public HeroLivePart[] sprites;
         public HeroLiveClip[] clips;
         public HeroLiveFrame[] frames, gaitFrames;
+        public HeroLiveRoot[] farSoles, nearSoles;
 
-        public static HeroLiveRigData Load()
+        public static HeroLiveRigData Load(string resourceRoot = "HeroMotion")
         {
-            var resource = Resources.Load<TextAsset>("HeroMotion/motion-runtime");
+            var resource = Resources.Load<TextAsset>(resourceRoot + "/motion-runtime");
             if (resource == null) throw new InvalidOperationException("Hero motion authoring export is missing.");
             var data = JsonUtility.FromJson<HeroLiveRigData>(resource.text);
             if (data == null || data.schemaVersion != 1 || data.canvasSize != 512 || data.gaitFrames.Length != 13)

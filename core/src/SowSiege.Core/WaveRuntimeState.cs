@@ -31,6 +31,9 @@ namespace SowSiege.Core
     }
     internal sealed class WaveProjectile
     {
+        // Observational ownership is deliberately absent from the historical codec.
+        // A projectile created without this metadata (including restoration) stays unknown.
+        public int DiagnosticAttackerId = -1;
         public int Id, TargetId, Damage, Speed, ExpireTick, ActivationId = -1;
         public string Source = "";
         public Position Position, Previous, Direction;

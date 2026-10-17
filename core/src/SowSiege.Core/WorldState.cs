@@ -106,6 +106,7 @@ namespace SowSiege.Core
     internal sealed class WorldState
     {
         internal IRuntimeDiagnostics? Diagnostics { get; set; }
+        internal ILordDamageObserver? LordDamageObserver { get; set; }
         [OmitWhenNull] public WaveRuntimeState? WaveRuntime;
         [OmitWhenNull] public FirstPlayableState? FirstPlayable;
         [OmitWhenNull]
