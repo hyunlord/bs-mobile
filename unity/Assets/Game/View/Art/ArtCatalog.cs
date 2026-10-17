@@ -12,6 +12,8 @@ namespace Game.View
         public IReadOnlyList<Rect> UvRects { get; }
         public Vector2 Pivot { get; }
         public Vector2 WorldSize { get; }
+        // The manifest frame size in pixels (the first frame; packed sheets give every frame of a role the same cell).
+        public Vector2 CellPixels { get; }
         public int FrameMs { get; }
         public string Tween { get; }
         public Sprite Sprite { get; }
@@ -36,6 +38,7 @@ namespace Game.View
             }
             UvRects = Array.AsReadOnly(uv);
             var first = role.frames[0];
+            CellPixels = new Vector2(first.width, first.height);
             Sprite = UnityEngine.Sprite.Create(texture, new Rect(first.x, texture.height - first.y - first.height, first.width, first.height),
                 Pivot, first.width / WorldSize.x, 0, SpriteMeshType.FullRect);
             Sprite.name = RoleId;
