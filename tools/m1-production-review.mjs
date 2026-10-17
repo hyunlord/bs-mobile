@@ -119,9 +119,9 @@ function validateCombatRun(plan, run) {
   for (const key of ['id', 'stage', 'catalogHash', 'replaySha256', 'captureStartTick', 'endTick', 'classification', 'proposedContract', 'arena']) assert.deepEqual(manifest.definition[key], sidecar[key], `Combat definition ${key} mismatch`);
   for (const key of ['id', 'designRef', 'kind', 'damage', 'range', 'cooldownTicks', 'speed', 'count', 'lifetimeTicks', 'knockback', 'workTicks', 'workRadius', 'rewardExperience', 'capacity']) assert.deepEqual(manifest.definition.gear[key], sidecar.gear[key], `Combat gear ${key} mismatch`);
   assert.equal(manifest.definition.gear.aim || null, sidecar.gear.aim || null);
-  // Unity's JsonUtility echoes optional composition fields at their defaults (rehitEachImpact false, bounces -1, lureTicks -1);
+  // Unity's JsonUtility echoes optional composition fields at their defaults (rehitEachImpact false, bounces/lureTicks/bounceMinDistance -1);
   // the case sidecar leaves them out while unset (ADR0061-0063).
-  const unsetDefaults = { rehitEachImpact: false, bounces: -1, lureTicks: -1 };
+  const unsetDefaults = { rehitEachImpact: false, bounces: -1, lureTicks: -1, bounceMinDistance: -1 };
   const echoed = composition => composition && Object.fromEntries(Object.entries(composition).filter(([key, value]) => !(key in unsetDefaults && value === unsetDefaults[key])));
   if (sidecar.gear.composition) assert.deepEqual(echoed(manifest.definition.gear.composition), sidecar.gear.composition);
   const capture = read(path.join(run.directory, 'offline-capture.json')), audio = read(path.join(run.directory, 'offline-audio.json'));

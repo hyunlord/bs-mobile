@@ -794,7 +794,8 @@
           "stepTicks": 6,
           "spacing": 0,
           "radius": 90,
-          "bounces": 0
+          "bounces": 0,
+          "bounceMinDistance": 742
         }
       },
       "arena": {
@@ -841,7 +842,8 @@
           "stepTicks": 6,
           "spacing": 0,
           "radius": 90,
-          "bounces": 2
+          "bounces": 2,
+          "bounceMinDistance": 742
         }
       },
       "arena": {
@@ -888,7 +890,8 @@
           "stepTicks": 6,
           "spacing": 0,
           "radius": 90,
-          "bounces": 2
+          "bounces": 2,
+          "bounceMinDistance": 742
         }
       },
       "arena": {

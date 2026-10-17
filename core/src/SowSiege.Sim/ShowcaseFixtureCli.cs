@@ -16,7 +16,7 @@ public static class ShowcaseFixtureCli
             if (type.Type != typeof(WaveAttackComposition)) { return; }
             foreach (var property in type.Properties)
             {
-                if (property.Name is "rehitEachImpact" or "bounces" or "lureTicks") { property.ShouldSerialize = (_, value) => value is not null; }
+                if (property.Name is "rehitEachImpact" or "bounces" or "lureTicks" or "bounceMinDistance") { property.ShouldSerialize = (_, value) => value is not null; }
             }
         });
         return resolver;
