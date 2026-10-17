@@ -219,5 +219,41 @@ namespace Game.Tests
             Assert.That(HeroSheetSpec.TicksOf(117), Is.EqualTo(7));
             Assert.That(() => new HeroClipTiming(0, 167), Throws.ArgumentException);
         }
+
+        // The previous knight's frame the sheets were fitted to: 0.6 world units tall, 188x242 px.
+        static readonly Vector2 PreviousFrameWorld = new Vector2(.6f * 188 / 242, .6f);
+        static Vector2 Footprint(Vector2 worldSize, Vector2 cellPx, float footPivotY) => Vector2.Scale(worldSize, HeroSheetSpec.FigureShareOfCell(cellPx, footPivotY));
+
+        [Test] public void FootprintComesFromEachRolesOwnCellAndFootBaseline([Values("wave1a-manifest.json", "first-playable-manifest.json")] string file)
+        {
+            var roles = Manifest(file).roles.Where(r => r.id.StartsWith(HeroSheetSpec.RolePrefix, StringComparison.Ordinal)).ToArray();
+            Assert.That(roles, Is.Not.Empty);
+            foreach (var role in roles)
+            {
+                var footprint = Footprint(role.worldSize, new Vector2(role.frames[0].width, role.frames[0].height), role.pivot.y);
+                Assert.That(footprint.x, Is.EqualTo(PreviousFrameWorld.x).Within(1e-4f), role.id);
+                Assert.That(footprint.y, Is.EqualTo(PreviousFrameWorld.y).Within(1e-4f), role.id);
+            }
+        }
+
+        [Test] public void AClipInADifferentCellKeepsTheSameWorldFootprint()
+        {
+            // pack.mjs sizes a role so its 115 px body reference is the previous figure height: worldSize = figure * cell / 115.
+            const float figure = .6f * 209 / 242;
+            foreach (var (cell, foot) in new[] { (new Vector2(320, 240), 55f / 240), (new Vector2(384, 288), .25f), (new Vector2(256, 320), .1f) })
+            {
+                var worldSize = cell * (figure / HeroSheetSpec.BodyReferencePx);
+                var footprint = Footprint(worldSize, cell, foot);
+                Assert.That(footprint.x, Is.EqualTo(PreviousFrameWorld.x).Within(1e-4f), $"{cell}");
+                Assert.That(footprint.y, Is.EqualTo(PreviousFrameWorld.y).Within(1e-4f), $"{cell}");
+            }
+        }
+
+        [Test] public void ACellTheFigureDoesNotFitAboveTheFootBaselineIsRejected()
+        {
+            Assert.Throws<ArgumentException>(() => HeroSheetSpec.FigureShareOfCell(new Vector2(320, 150), 55f / 240));
+            Assert.Throws<ArgumentException>(() => HeroSheetSpec.FigureShareOfCell(new Vector2(90, 240), .2f));
+            Assert.Throws<ArgumentException>(() => HeroSheetSpec.FigureShareOfCell(new Vector2(320, 240), 1));
+        }
     }
 }
