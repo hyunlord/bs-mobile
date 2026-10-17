@@ -233,6 +233,13 @@
       "commercialUse": "Project-generated output used and distributed under applicable OpenAI output terms; no third-party character or brand reference."
     },
     {
+      "id": "generated-wave1a-weapon-fx",
+      "origin": "Generated with built-in image_gen by the Astra art pipeline for issue #266 iron blade effect pictures; background removed with BiRefNet (MIT)",
+      "source": "https://github.com/hyunlord/bs-mobile/releases/tag/weapon-266-sprites-review-20261015",
+      "prompt": "docs/licenses/prompts/m1-266-weapon-fx-prompt.txt",
+      "commercialUse": "Project-generated output used and distributed under applicable OpenAI output terms; no third-party character or brand reference."
+    },
+    {
       "id": "generated-knight-sheets",
       "origin": "Generated with built-in image_gen for this project (Character Forge sheet pipeline, BiRefNet matting); packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
@@ -277,7 +284,7 @@
       "id": "equipment",
       "path": "Assets/Art/equipment.png",
       "width": 1402,
-      "height": 1122,
+      "height": 1290,
       "padding": 2,
       "license": "generated-equipment"
     },
@@ -488,6 +495,14 @@
       "height": 895,
       "padding": 2,
       "license": "generated-m1-review-weapons"
+    },
+    {
+      "id": "wave1a-weapon-fx",
+      "path": "Assets/Art/wave1a-weapon-fx.png",
+      "width": 2016,
+      "height": 1560,
+      "padding": 4,
+      "license": "generated-wave1a-weapon-fx"
     },
     {
       "id": "hero-knight",
@@ -11057,6 +11072,622 @@
         "y": 1
       },
       "frameMs": 350,
+      "tween": "none"
+    },
+    {
+      "id": "fx.iron_blade.giant_sword",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 448,
+          "height": 1280
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.02
+      },
+      "worldSize": {
+        "x": 1.166667,
+        "y": 3.333333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.iron_blade.giant_sword.piece_upper",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 460,
+          "y": 4,
+          "width": 448,
+          "height": 1280
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.02
+      },
+      "worldSize": {
+        "x": 1.166667,
+        "y": 3.333333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.iron_blade.giant_sword.piece_lower",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 916,
+          "y": 4,
+          "width": 448,
+          "height": 1280
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.02
+      },
+      "worldSize": {
+        "x": 1.166667,
+        "y": 3.333333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.iron_blade.ground_crack",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 4,
+          "width": 640,
+          "height": 320
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.666667,
+        "y": 0.833333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.common.dust.1",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 332,
+          "width": 192,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.15
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.common.dust.2",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1572,
+          "y": 332,
+          "width": 192,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.15
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.common.dust.3",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1772,
+          "y": 332,
+          "width": 192,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.15
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.iron_blade.slash",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1377,
+          "y": 526,
+          "width": 503,
+          "height": 76
+        }
+      ],
+      "pivot": {
+        "x": 0,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.309896,
+        "y": 0.197917
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.arrow",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 636,
+          "width": 192,
+          "height": 40
+        }
+      ],
+      "pivot": {
+        "x": 0.96,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.104167
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.streak",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1572,
+          "y": 636,
+          "width": 256,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.rain_streak",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1836,
+          "y": 636,
+          "width": 128,
+          "height": 24
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.333333,
+        "y": 0.0625
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.canal_bow.splash",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 684,
+          "width": 192,
+          "height": 144
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.08
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.375
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.stream",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 836,
+          "width": 512,
+          "height": 64
+        }
+      ],
+      "pivot": {
+        "x": 0,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.333333,
+        "y": 0.166667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.puff.1",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 908,
+          "width": 192,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.puff.2",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1572,
+          "y": 908,
+          "width": 192,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.puff.3",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1772,
+          "y": 908,
+          "width": 192,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.grain.1",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1572,
+          "y": 684,
+          "width": 32,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.083333,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.grain.2",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1612,
+          "y": 684,
+          "width": 32,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.083333,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.grain.3",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1652,
+          "y": 684,
+          "width": 32,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.083333,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.grain.4",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1692,
+          "y": 684,
+          "width": 32,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.083333,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ward_orbit.shock",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 1076,
+          "width": 256,
+          "height": 128
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.333333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ward_orbit.trail",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1372,
+          "y": 1212,
+          "width": 256,
+          "height": 64
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.166667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ward_orbit.shield",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1636,
+          "y": 1076,
+          "width": 128,
+          "height": 160
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.333333,
+        "y": 0.416667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.furrow",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 4,
+          "y": 1296,
+          "width": 512,
+          "height": 96
+        }
+      ],
+      "pivot": {
+        "x": 0,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.333333,
+        "y": 0.25
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.pike",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 524,
+          "y": 1296,
+          "width": 384,
+          "height": 48
+        }
+      ],
+      "pivot": {
+        "x": 0.97,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 0.125
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.thrust",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 524,
+          "y": 1348,
+          "width": 256,
+          "height": 48
+        }
+      ],
+      "pivot": {
+        "x": 1,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
+        "y": 0.125
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.ditch_pike.tip_flash",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 912,
+          "y": 1296,
+          "width": 96,
+          "height": 96
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.25,
+        "y": 0.25
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.spore_fan.patch",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1016,
+          "y": 1296,
+          "width": 384,
+          "height": 256
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1,
+        "y": 0.666667
+      },
+      "frameMs": 1000,
       "tween": "none"
     }
   ],

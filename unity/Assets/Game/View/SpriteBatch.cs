@@ -34,15 +34,19 @@ namespace Game.View
         readonly Vector4[] uvs = new Vector4[MaximumInstances];
         readonly Vector4[] flashes = new Vector4[MaximumInstances];
         readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
-        readonly Material material;
+        readonly Material material, overEnemies;
         readonly Mesh mesh;
+        readonly Texture2D texture;
+        readonly int layer;
+        readonly bool wide;
         int count;
         bool linearColorSpace;
         bool heroRigBoundsConfigured;
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
 
-        public SpriteBatch(Texture2D texture, Shader shader, Camera camera, int layer)
+        // wide = false tags thin elements (bolt cores, lines, outlines): exempt from the P5 alpha cap over enemies.
+        public SpriteBatch(Texture2D texture, Shader shader, Camera camera, int layer, bool wide = true)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var firstUseSample = FirstUseMarker.Auto();
@@ -51,7 +55,9 @@ namespace Game.View
             if (shader == null) throw new ArgumentNullException(nameof(shader));
             if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("The world renderer requires GPU instancing.");
+            this.texture = texture; this.layer = layer; this.wide = wide;
             material = new Material(shader) { name = "World sprites " + layer, mainTexture = texture, enableInstancing = true, renderQueue = 3000 + layer, hideFlags = HideFlags.HideAndDontSave };
+            overEnemies = EffectAlphaCap.Configure(material, layer, wide);
             mesh = new Mesh { name = "Instanced sprite quad", hideFlags = HideFlags.HideAndDontSave };
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using (MeshUploadMarker.Auto())
@@ -120,7 +126,13 @@ namespace Game.View
             using (DrawMarker.Auto())
 #endif
             {
+                OcclusionProbe.Active?.Record(layer, mesh, matrices, count, texture, colors, uvs, wide);
                 Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
+                if (overEnemies != null)
+                {
+                    parameters.material = overEnemies;
+                    Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count); DrawCalls++;
+                }
             }
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
@@ -150,8 +162,8 @@ namespace Game.View
 #endif
         public void Dispose()
         {
-            if (Application.isPlaying) { UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(mesh); }
-            else { UnityEngine.Object.DestroyImmediate(material); UnityEngine.Object.DestroyImmediate(mesh); }
+            if (Application.isPlaying) { UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(mesh); if (overEnemies != null) UnityEngine.Object.Destroy(overEnemies); }
+            else { UnityEngine.Object.DestroyImmediate(material); UnityEngine.Object.DestroyImmediate(mesh); if (overEnemies != null) UnityEngine.Object.DestroyImmediate(overEnemies); }
         }
     }
 }

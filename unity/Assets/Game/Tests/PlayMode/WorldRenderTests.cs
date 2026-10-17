@@ -43,6 +43,47 @@ namespace Tests.PlayMode
             yield return null;
         }
 
+        // P5 alpha cap on the GPU: a wide own effect drawn over an enemy shows at most half strength there and full strength
+        // on open ground; a thin element (bolt core, line: wide = false) keeps full strength over the enemy; a full-screen
+        // tint layer is not capped.
+        [UnityTest]
+        public IEnumerator WideEffectsAreCappedOverEnemiesThinOnesAndTintsAreNot()
+        {
+            var owner = new GameObject("Alpha cap camera"); var camera = owner.AddComponent<Camera>();
+            camera.orthographic = true; camera.orthographicSize = 1; camera.transform.position = new Vector3(0, 0, -10);
+            camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black;
+            var target = new RenderTexture(128, 64, 24); camera.targetTexture = target;
+            var shader = Resources.Load<Shader>("WorldShape");
+            using (var meshes = new ShapeMeshes())
+            using (var enemies = new ShapeBatch(meshes[WorldShape.Square], shader, camera, GameVisualTokens.EnemyLayer))
+            using (var wide = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.ProjectileLayer))
+            using (var thin = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.LightningLayer, wide: false))
+            using (var sky = new ShapeBatch(meshes[WorldShape.Square], shader, camera, WorldRenderer.StormSkyLayer))
+            {
+                for (var frame = 0; frame < 3; frame++)
+                {
+                    enemies.BeginFrame(); wide.BeginFrame(); thin.BeginFrame(); sky.BeginFrame();
+                    foreach (var x in new[] { -1.5f, .5f, 1.5f }) enemies.Add(new Vector2(x, 0), Vector2.one * .3f, 0, Color.green);
+                    wide.Add(new Vector2(-1.5f, 0), Vector2.one * .3f, 0, Color.white); wide.Add(new Vector2(-.5f, 0), Vector2.one * .3f, 0, Color.white);
+                    thin.Add(new Vector2(.5f, 0), Vector2.one * .3f, 0, Color.white);
+                    sky.Add(new Vector2(1.5f, 0), Vector2.one * .3f, 0, Color.red);
+                    enemies.Flush(); wide.Flush(); thin.Flush(); sky.Flush(); yield return null;
+                }
+                Assert.That(wide.DrawCalls, Is.EqualTo(2), "Wide effect batches draw once off enemies and once, capped, over them.");
+                Assert.That(thin.DrawCalls, Is.EqualTo(1)); Assert.That(enemies.DrawCalls, Is.EqualTo(1)); Assert.That(sky.DrawCalls, Is.EqualTo(1));
+                var before = RenderTexture.active; RenderTexture.active = target;
+                var capture = new Texture2D(128, 64, TextureFormat.RGB24, false); capture.ReadPixels(new Rect(0, 0, 128, 64), 0, 0); capture.Apply(); RenderTexture.active = before;
+                var capped = capture.GetPixel(16, 32); var open = capture.GetPixel(48, 32); var core = capture.GetPixel(80, 32); var tinted = capture.GetPixel(112, 32);
+                Assert.That(capped.g, Is.GreaterThan(.95f)); Assert.That(capped.r, Is.InRange(.3f, .8f), "A wide white effect over a green enemy stays at the half cap.");
+                Assert.That(open.r, Is.GreaterThan(.95f), "Full strength where no enemy is.");
+                Assert.That(core.r, Is.GreaterThan(.95f), "Thin cores keep full strength over enemies.");
+                Assert.That(tinted.r, Is.GreaterThan(.95f), "Full-screen tint layers are not capped (checked separately)."); Assert.That(tinted.g, Is.LessThan(.05f));
+                Object.Destroy(capture);
+            }
+            camera.targetTexture = null; target.Release(); Object.Destroy(target); Object.Destroy(owner);
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator InstancedBatchSplits1023SubmissionsAndResetsForNextFrame()
         {
@@ -113,6 +154,8 @@ namespace Tests.PlayMode
         public IEnumerator InstancedWorldProducesActualPixelsWithoutEntityGameObjects()
         {
             var catalog = CanonicalContent.CreateCatalog();
+            // The scene reads the first-playable view, which only a catalog with a first-playable definition has.
+            if (catalog.FirstPlayable is null) Assert.Ignore($"Requires a first-playable definition (export profile {CanonicalContent.ProfileName}).");
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
             session.Apply(new(0, 0, ReplayCommandKind.Advance));
             var frame = session.View.CaptureFrame();
