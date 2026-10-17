@@ -141,6 +141,19 @@ namespace Game.View
         public int DrawCalls { get; private set; }
         public Vector2? PredictedLordPosition { get; set; }
         public Vector2 RenderedLordPosition { get; private set; }
+        float reviewCameraMagnification = 1;
+        public float ReviewCameraMagnification
+        {
+            get => reviewCameraMagnification;
+            set
+            {
+                if (float.IsNaN(value) || value < 1 || value > 1.8f)
+                    throw new ArgumentOutOfRangeException(nameof(value), "Review camera magnification must be between 1 and 1.8.");
+                reviewCameraMagnification = value;
+                if (followCamera != null) followCamera.ReviewMagnification = value;
+            }
+        }
+        public Rect CameraWorldViewport => followCamera == null ? default : followCamera.WorldViewport;
         public Action<string,int,Vector2> RenderedEntitySample { get; set; }
         public Action<string,int,Rect> RenderedEnemyBoundsSample { get; set; }
         readonly Dictionary<int,string> farmStageNames = new Dictionary<int,string>();
@@ -160,6 +173,7 @@ namespace Game.View
             if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D sprite shader is unavailable.");
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
+            followCamera.ReviewMagnification = reviewCameraMagnification;
             followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
             art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
