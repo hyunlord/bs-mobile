@@ -146,6 +146,7 @@ namespace Game.View
                         else if(value.Source=="core:sowing_sworddance")NotifyHeroMotionAttack(true);
                     }
                 }
+                if(value.Kind=="attack"||value.Kind=="hit"||value.Kind=="review-impact-tell"||value.Kind=="review-impact"||value.Kind=="chain-link")OfferHeroAction(value,value.Tick);
             }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             RecordCapacityGrowth("waveEffects", effectsCapacity, waveEffects.Capacity, waveEffects.Count);

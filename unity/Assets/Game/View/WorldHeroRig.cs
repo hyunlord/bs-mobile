@@ -73,8 +73,6 @@ namespace Game.View
             DisposeHeroProduction();
         }
         ArtVisual rigIdle, rigWalk, rigAttack, rigHit;
-        bool heroRigRolesMissing;
-        public bool HeroRigRolesMissing => heroRigRolesMissing;
         readonly HeroGaitState heroGait=new HeroGaitState();
         Shader heroRigShader;
 
@@ -82,18 +80,16 @@ namespace Game.View
         {
             animationTime=visualTime;
             if(heroConceptVisual!=null)return heroConceptVisual;
-            if(!heroKnightEnabled && !HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
-            if(rigIdle==null&&!heroRigRolesMissing)
+            if(!heroRigActive){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
+            if(rigIdle==null)
             {
-                if(!art.TryResolveRole("hero.preview-b.idle",out rigIdle)||!art.TryResolveRole("hero.preview-b.walk",out rigWalk)||
-                    !art.TryResolveRole("hero.preview-b.attack",out rigAttack)||!art.TryResolveRole("hero.preview-b.hit",out rigHit))
-                {
-                    // TODO #268: temporary. First-playable art has no hero.preview-b roles; remove once #268 decides its knight art.
-                    rigIdle=rigWalk=rigAttack=rigHit=null;heroRigRolesMissing=true;
-                    UnityEngine.Debug.LogWarning("[hero-art] hero.preview-b roles are missing from profile "+ArtCatalog.ProfileName+"; drawing the hero's own art instead (temporary, #268).");
-                }
+                // The cutout rigs draw only on explicit request (or for a hero without sheet roles); their preview-b roles are
+                // wave-1a art (#268: the knight sheets, registered in every profile, are the hero otherwise).
+                rigIdle=art.ResolveRole("hero.preview-b.idle");
+                rigWalk=art.ResolveRole("hero.preview-b.walk");
+                rigAttack=art.ResolveRole("hero.preview-b.attack");
+                rigHit=art.ResolveRole("hero.preview-b.hit");
             }
-            if(heroRigRolesMissing)return Resolve("hero",heroId,state);
             animationTime=0;
             if(state=="hit"||state=="death")return rigHit;
             if(attackProgress>=0)return rigAttack;
@@ -107,7 +103,7 @@ namespace Game.View
             RenderedHeroLevelPoseProgress = -1;
             if (DrawHeroProduction(visual, position, walking, hit, dead, facing, color, flash)) return true;
             if(heroConceptVisual!=null){heroLiveRig?.Hide();return false;}
-            if(!heroKnightEnabled && !HeroRigPreviewEnabled && HeroMotionPreviewMode == 0){heroLiveRig?.Hide();return false;}
+            if(!heroRigActive){heroLiveRig?.Hide();return false;}
             if(heroRigShader==null)
             {
                 heroRigShader=Resources.Load<Shader>("HeroRig");
