@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "releases": {
+    "approved": "knight-game-sheets-r4-20261016",
+    "additions": "knight-game-sheets-r4-additions-review-20261016"
+  },
+  "approvedManifestSha256": "d35fae4df008524eabe519500f43258527643ab0c00ae72df858a076f19d79d4",
+  "additionsManifestSha256": "210fb6d1e9bd48449051b69acf796f8ad3c0e301b68c06878362ecf40e4a13a5",
+  "atlas": "unity/Assets/Art/hero-knight.png",
+  "atlasSha256": "81d553661bfa890cc9d58fa192cd55bbf559a4790b37b97f71fabd67e564b837",
+  "width": 2564,
+  "height": 2164,
+  "padding": 2,
+  "cell": [
+    320,
+    240
+  ],
+  "pivotUnityNormalized": [
+    0.5,
+    0.22916666666666666
+  ],
+  "bodyHeightReferencePx": 115,
+  "worldSize": {
+    "x": 1.441897,
+    "y": 1.081423
+  },
+  "movingKeyHoldTicks60": 7,
+  "clips": [
+    {
+      "clip": "hero-a-walk",
+      "role": "walk",
+      "status": "approved-r3",
+      "sheet": "hero-a-walk.png",
+      "sheetSha256": "b34ffa91c182fe331be936a1efa2d14e2494dbec169d6efcd56f379de12fd124",
+      "frames": [
+        {
+          "x": 2,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "23594c64fe130261c719b065883205f95e7851546e5f85e0e72e4b88c00cdfef"
+        },
+        {
+          "x": 322,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "10c6bc1d4def34ea0236db8c71f397a9ec92881d583f464ce1f7adc5624d673e"
+        },
+        {
+          "x": 642,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "24e824fd92829fc41792929f428341e19b63bf26f87c7add282cc4a0cb6aa514"
+        },
+        {
+          "x": 962,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "671b2b804a8e5dd54df9e1bbc94404e47052964e85f20abfffbd9f4649e02699"
+        },
+        {
+          "x": 1282,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "235743474045a89c2b51bd54d091693a7ea4d3f23a69ab5f87845becce0147a3"
+        },
+        {
+          "x": 1602,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "ae2ac4c5ec53df77bec29ef888f220de79efacea160ba4b8965a2b1f11ce355c"
+        },
+        {
+          "x": 1922,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "6591682cb73750c5f90b13f2d2b1c5a93721dc741ea298a2444318fa4ad85ee8"
+        },
+        {
+          "x": 2242,
+          "y": 2,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "ddf0997b1f125d6bf50562a490d7638ef16d2323fc64edc4af7b295958e1eeb7"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-slash",
+      "role": "action.slash",
+      "status": "approved-r3",
+      "sheet": "hero-a-slash.png",
+      "sheetSha256": "311f9b8ca882d6d708b3172d66130f5ced8bdbb7e23bcc2e406316eb07c71441",
+      "frames": [
+        {
+          "x": 2,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "0628945532d2a7a0c259286e9160045005f4e5055570cd4259239d180b7af4ac"
+        },
+        {
+          "x": 322,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "5a8b61a9506e3fa737ae2adffcb17842c4977caf3fa43e503df19b2ad3e759b5"
+        },
+        {
+          "x": 642,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "078da248196cf2794433c0bb1fcefba310d68bcaf5c2f08b045e4d21d7898ded"
+        },
+        {
+          "x": 962,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "c2a67a6be5ac7c67ed095e635e05d7230fdd547ee2e2ccfdb462d3159ecfa5bd"
+        },
+        {
+          "x": 1282,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "4e32d99e8b3c4cdd250888ce13607dcd853aa21ef9088d600e1cf6728097067e"
+        },
+        {
+          "x": 1602,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "36e2fefb324da6a78963f53755f66934877de31c1b36cc52d98fab032c04d126"
+        },
+        {
+          "x": 1922,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "1dbf3d5e8b085aa552bb686ed1b83d834e711b1eebb40846e3a1ad9fb0d58841"
+        },
+        {
+          "x": 2242,
+          "y": 242,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 9,
+          "decodedRgbaSha256": "34cbb239451929420a360cdf9a8750c6daa0877ae662dfac3d6e7fb1ae0be8a0"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-aim",
+      "role": "action.aim",
+      "status": "approved-r3",
+      "sheet": "hero-a-aim.png",
+      "sheetSha256": "60a1564641d951eaa47c0b571fe2dce532693205501c50c4a16113f408fbc0eb",
+      "frames": [
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "f5313cf20e9897f6276c944a9045442dce47f771b88a7e649de93a058a074e26"
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "27b71f45191b44d5c6a60550297376b0a3d239684e9b465a111b3b998626295e"
+        },
+        {
+          "x": 642,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "457f04497c29617d8f54e60ac7e6be80b33d85fdede79e3cb68367f853017f88"
+        },
+        {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "6dbdede7d81d913231b6354dce3b47a01e4a763d14e5d0f90178ff9bf5ffc606"
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "f0f0818ee41530370273f602de8ec3d3965ffd7055a3f93f0e6a9d647123b605"
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "c0fa220a1d19151755193bcc5b7098f22199c2c9907d3b28ebe55a00c5ecd629"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-cast",
+      "role": "action.cast",
+      "status": "approved-r3",
+      "sheet": "hero-a-cast.png",
+      "sheetSha256": "5a5f26c4dc41c085c901d857828b27e4a1192a4ab8bc1725cb4a6b37e44adf98",
+      "frames": [
+        {
+          "x": 2,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "05665ba697be0acb401fc632ef68ab5741d09fea47df285e6f0e36398cbba195"
+        },
+        {
+          "x": 322,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "34197e92f0fed9591d9cbe31ad923f0e01b5f08d4245d921732aa457bba837f3"
+        },
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "33cc2ab0547b4019375a13a88c4535bb4e6fcdc8c1a5ac5227218eb5fc405ea4"
+        },
+        {
+          "x": 962,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "4529b77ba63ea43113ae91e4c65cb80d63faf051becbf7b3c7c7d537514ee4dd"
+        },
+        {
+          "x": 1282,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "26b5e939facd115ce67cab2550fd31c113252e723c660d2f30d94258105f7770"
+        },
+        {
+          "x": 1602,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "bf8d36e76350a0016046cd02ed5bf77f0bcc1f989f8578dbc7cd89c77dabdfd1"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-blow",
+      "role": "action.blow",
+      "status": "approved-r3",
+      "sheet": "hero-a-blow.png",
+      "sheetSha256": "a7094196639408dbaeed43967e7faf36c118839e6d48064b3606d725457d1e5b",
+      "frames": [
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "e6785c9993a381f99240cb6fb4f1a84d9f694e1d3162d31fbcabfa6f4ca12db6"
+        },
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "3b4dfd4fe1c4f8f2cd89a2ae41bfc7a5e3cc82a25e29fabf385eb46f11cb74c7"
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "9077431016e872d5463d0ccd5d19abb565a96dd4f68b76f041ce31040c2aa147"
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "ac5bc1b8d0841bd18dace195da24bfea7a36ea0ab0e29357d0f755c2fb2217a5"
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "96f1d31cd44467e0f671d2c85cf708e23e5ffc0999a16e7eb3b82123c1b6e19a"
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "2b029172dc8f7083d41b08174bb923953a0c168172fc281b7b6dc6bfd12f3fa4"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-throw",
+      "role": "action.throw",
+      "status": "approved-r3",
+      "sheet": "hero-a-throw.png",
+      "sheetSha256": "e8307aa3bd36954150c8b531804c45cc72ee0c729a8f128a7a76bb9429d01cb3",
+      "frames": [
+        {
+          "x": 2,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "4bca1403de65bbc369a3abc50002e136f1e26283ac9d6f217dd19e444cb3e62c"
+        },
+        {
+          "x": 322,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "bc7304e5712e809ceb92d355ae75cdfa8861de8b0e6fe0a0cfd812ffbea9619e"
+        },
+        {
+          "x": 642,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "15e4966ad91fc51a06a831e6581b262a4bf50680dfc2499b55afc11ef02232ff"
+        },
+        {
+          "x": 962,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "5f4a57ab10e9756260e0646ea412c9afaa5e5beb4acb56de70e7a9f357a7c8ac"
+        },
+        {
+          "x": 1282,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "79e9b7bc5c3a686c1763ed6337665df3b69027218677bb26247f6598f487ba33"
+        },
+        {
+          "x": 1602,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 10,
+          "decodedRgbaSha256": "6140c203f0f739a3132335540e4b50df23da7c7e4c3ebd392590a18428268f13"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-moving-keys",
+      "role": "key",
+      "status": "approved-r3",
+      "keys": [
+        "slash",
+        "aim",
+        "cast",
+        "blow",
+        "throw"
+      ],
+      "sheet": "hero-a-moving-keys.png",
+      "sheetSha256": "86ce82256fe2fc9cd1fc33208d9a325d3453826be83b6c68dce021926c1de416",
+      "frames": [
+        {
+          "x": 2,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "d84c1c3571edce6f39a259449a0f86568cb0e745ba00084f4a23c60e65d5cccd"
+        },
+        {
+          "x": 322,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "6dbdede7d81d913231b6354dce3b47a01e4a763d14e5d0f90178ff9bf5ffc606"
+        },
+        {
+          "x": 642,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "33cc2ab0547b4019375a13a88c4535bb4e6fcdc8c1a5ac5227218eb5fc405ea4"
+        },
+        {
+          "x": 962,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "9077431016e872d5463d0ccd5d19abb565a96dd4f68b76f041ce31040c2aa147"
+        },
+        {
+          "x": 1282,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "dec12a41f54eaa10bfff3054020a6a36570d8bc0fe525cd2dafff31fe4c4559a"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-idle",
+      "role": "idle",
+      "status": "approved-2026-10-17",
+      "sheet": "hero-a-idle.png",
+      "sheetSha256": "e6a29c8296cb82b52918e429605e4f721bbaf7272259fa9a544a4deaff224873",
+      "frames": [
+        {
+          "x": 2,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 12,
+          "decodedRgbaSha256": "7a1308820174b7c850c0641627d8158903f58b5d494eb697f3ca50b232eff715"
+        },
+        {
+          "x": 322,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 12,
+          "decodedRgbaSha256": "3c933050d231602605dcdadb531274d280b828f9c475165559f579f63bfd3ce0"
+        },
+        {
+          "x": 642,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 12,
+          "decodedRgbaSha256": "b8c03362da69f76f6e03041fd0eec57e44cf096cdcce1203599869dcaefaff29"
+        },
+        {
+          "x": 962,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 12,
+          "decodedRgbaSha256": "efe1c6fe8a3fffc08888265224173191930540efb3ef6784e0f94f5ba2a272b9"
+        },
+        {
+          "x": 1282,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 12,
+          "decodedRgbaSha256": "17fcd68147a5f8a8a45c4ff82b2389afc8717dc30e4454cb4b5b80adeb8db5f7"
+        },
+        {
+          "x": 1602,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 12,
+          "decodedRgbaSha256": "7b6b1ee705c86bb1163431435326bfee34a57b625138ba456e4b50521920c8c4"
+        }
+      ]
+    },
+    {
+      "clip": "hero-a-hit-r5",
+      "role": "hit",
+      "status": "approved-r5",
+      "sheet": "hero-a-hit-r5.png",
+      "sheetSha256": "89aa780829daab44dacd20ab6a752122f120041c37fb44f2e7ae308002ac08c2",
+      "frames": [
+        {
+          "x": 2,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 7,
+          "decodedRgbaSha256": "fc17d6d9ebb524f0ca2e0e0de76b197bc1dba27cbe2302aea37cde0acc4b9cf5"
+        },
+        {
+          "x": 322,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 8,
+          "decodedRgbaSha256": "cf7f9ed7914a2cfff282ccc1afd8cae42d8554060ab5e729927ef4a52925a4ba"
+        }
+      ]
+    }
+  ]
+}

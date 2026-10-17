@@ -331,7 +331,6 @@ namespace Game.App
                 Toggle(ui, body, "접촉 즉시 피격 · 잠깐 무적과 밀려남", preferences.FeelContact, v => { preferences.FeelContact = v; preferencesChanged(); }, innerWidth, ref y);
                 Toggle(ui, body, "체력 100 · 한 대 5~15", preferences.FeelHealth, v => { preferences.FeelHealth = v; preferencesChanged(); }, innerWidth, ref y);
                 Toggle(ui, body, "피격 잔상 · 붉은 테 · 피해 숫자", preferences.FeelFeedback, v => { preferences.FeelFeedback = v; preferencesChanged(); }, innerWidth, ref y);
-                Toggle(ui, body, "걷기 B · 부위별 애니메이션", preferences.HeroRigPreview, v => { preferences.HeroRigPreview = v; preferencesChanged(); }, innerWidth, ref y);
             }
             if(fakeAds != null) { Button(ui, body, "Settings.FakeAds", "개발 광고 시험", fakeAds, 0, y, innerWidth); y += 60; }
             body.sizeDelta = new Vector2(0, y + 8);
