@@ -27,6 +27,11 @@ function pick(directory, id) {
     const aim = Number(s.aim) * Math.PI / 180, r = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY));
     return { frame: Number(s.frameIndex) + 7, x: Number(s.originScreenX) + Math.cos(aim) * r * .6, y: FrameHeight - (Number(s.originScreenY) + Math.sin(aim) * r * .6), size: r * 1.4 };
   }
+  if (id === 'core:granary_sling' && rows(path.join(directory, 'm1-sling-casts.csv')).length > 0) {
+    // Lure-bomb (ADR0063): the sack and the crowd it gathered, halfway through the lure (before the burst row is written).
+    const c = rows(path.join(directory, 'm1-sling-casts.csv')).filter(late).filter(r => r.onScreen === 'True')[1], hero = Number(c.heroHeightPixels);
+    return { frame: Number(c.frameIndex) - Math.round(Number(c.lureFrames) / 2), x: Number(c.centreScreenX), y: FrameHeight - Number(c.centreScreenY), size: Math.max(hero * 1.6, Number(c.radiusPixels) * 1.4) };
+  }
   if (id === 'core:canal_bow' && rows(path.join(directory, 'm1-ricochet-hops.csv')).length > 0) {
     // Ricochet (ADR0062): the longest on-screen flight in flight, framed on its midpoint 5 frames before it lands.
     const all = rows(path.join(directory, 'm1-ricochet-hops.csv')).filter(late).filter(r => r.onScreen === 'True' && Number(r.midScreenX) >= 0);

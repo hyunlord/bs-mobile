@@ -26,6 +26,7 @@ namespace Game.View
                 if(m1CombatShape=="arrowrain"){TrackRicochet(attack);return true;}   // drawn by DrawArrowVolleys / DrawRicochetHops
                 if(m1CombatShape=="spears")return true;      // drawn by DrawPikeCasts (furrow, thrust, point flashes)
                 if(m1CombatShape=="tornado")return true;     // spore patches, drawn by DrawSporePatches
+                if(IsSlingLure(attack.Source))return true;   // lure sacks, drawn by DrawSlingCasts
                 var center=Point(attack.Position);
                 var composition=waveDefinition.Gear[attack.Source].Composition;
                 var remaining=Mathf.Max(0,attack.ExpireTick-tick-alpha);
@@ -198,6 +199,7 @@ namespace Game.View
                 if(m1CombatShape=="spears"){}   // point flash drawn by DrawPikeCasts
                 else if(m1CombatShape=="tornado"){}   // pulses drawn by DrawSporePatches
                 else if(m1CombatShape=="arrowrain"){}   // landing drawn by DrawArrowVolleys
+                else if(IsSlingLure(value.Source)){}   // burst drawn by DrawSlingCasts
                 else M1Draw("attack","core:muster_horn","wave",a,Vector2.one*radius*2,0,opacity,new Color(1,.8f,.3f));
             }
             else if(value.Kind=="attack")

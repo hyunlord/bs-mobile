@@ -23,6 +23,8 @@ namespace SowSiege.Core
         }
     }
     internal sealed class WaveDetour { public Position Position; public int Radius, UntilTick; public string Source = ""; }
+    // A landed lure sack (ADR0063): normal enemies within Radius walk to Position while UntilTick > tick.
+    internal sealed class WaveLure { public int Id, Radius, UntilTick; public Position Position; public string Source = ""; }
     internal sealed class WaveReward
     {
         public int Id, Experience;
@@ -73,6 +75,7 @@ namespace SowSiege.Core
         public List<WaveEvent> Events = new();
         public List<WaveAttackView> Attacks = new();
         public List<WavePendingImpact> PendingImpacts = new();
+        public List<WaveLure> Lures = new();
         public SortedDictionary<string, long> Counters = new(StringComparer.Ordinal);
         public void Count(string key) => Counters[key] = Counters.TryGetValue(key, out var n) ? n + 1 : 1;
         public void Emit(int tick, string kind, string source, int subject, Position position, Position target, int amount = 0)
