@@ -11,23 +11,18 @@ namespace Game.View
 
     public static class HeroSheetSpec
     {
-        // Delivered frame timings in 60 Hz ticks (manifest frameTicks60; manifest frameMs is only rounded for reading).
-        public const int WalkFrames = 8, WalkTicks = 10, SlashFrames = 8, SlashTicks = 9, ActionFrames = 6, ActionTicks = 10;
-        public const int IdleFrames = 6, IdleTicks = 12, HitFrames = 2, KeyTicks = 7;
+        // Frame counts and frame times are not fixed here: every clip reads its manifest role (HeroSheetTimings), so a clip
+        // redrawn under the same role (the walk, 2026-10-17) plays with its own frames and frameMs.
         // Hero hit (user decision 2026-10-17): no full-body red tint; the r5 recoil pose, brightened for its first
         // HitFlashFrames display frames, with a red outline when hit feedback is on.
         public const int HitFlashFrames = 2;
         public const float HitFlash = .8f;
-        public static readonly int[] HitFrameTicks = { 7, 8 };   // approved hit r5: recoil, then half recovery
         public const float MinRepeatSeconds = .4f;   // the same action starts at most every 0.4 s
         public const string KnightId = "core:frontier_knight", RolePrefix = "hero.core.frontier_knight.";
         public static readonly string[] ActionNames = { "", "slash", "aim", "cast", "blow", "throw" };
         public static float Seconds(int ticks60) => ticks60 / 60f;
-        public static int Frames(HeroAction action) => action == HeroAction.Slash ? SlashFrames : ActionFrames;
-        public static int Ticks(HeroAction action) => action == HeroAction.Slash ? SlashTicks : ActionTicks;
-        public static float FullSeconds(HeroAction action) => Seconds(Frames(action) * Ticks(action));
-        public static float KeySeconds => Seconds(KeyTicks);
-        public static float WalkCycleSeconds => Seconds(WalkFrames * WalkTicks);
+        // The pack tool writes frameMs as the delivered 60 Hz tick count rounded to milliseconds (10 ticks -> 167 ms).
+        public static int TicksOf(int frameMs) => Mathf.RoundToInt(frameMs * 60 / 1000f);
         // The sheets were fitted to the previous knight's figure (its 242 px frame = 0.6 world units, figure 209 px): that
         // frame's footprint is this share of a 320x240 cell, used for the shadow and camera margins instead of the cell.
         public const float BodyReferencePx = 115, CellWidthPx = 320, CellHeightPx = 240;
@@ -48,6 +43,39 @@ namespace Game.View
                 case "core:ward_orbit": return evolved && kind == "hit" ? HeroAction.Throw : HeroAction.None;
                 default: return HeroAction.None;
             }
+        }
+    }
+
+    // One clip's frame count and per-frame time (60 Hz ticks) from its manifest role. The last frame of a clip that outlasts
+    // it (the hit, which lasts as long as the hero hit) holds.
+    public readonly struct HeroClipTiming
+    {
+        public readonly int Frames, Ticks;
+        public HeroClipTiming(int frames, int frameMs)
+        {
+            if (frames < 1 || HeroSheetSpec.TicksOf(frameMs) < 1) throw new ArgumentException($"A knight clip needs frames and a frameMs of at least one tick ({frames} frames, {frameMs} ms).");
+            Frames = frames; Ticks = HeroSheetSpec.TicksOf(frameMs);
+        }
+        public float FrameSeconds => HeroSheetSpec.Seconds(Ticks);
+        public float Seconds => HeroSheetSpec.Seconds(Frames * Ticks);
+        public int FrameAt(float elapsed) => Mathf.Min(Frames - 1, Mathf.FloorToInt(Mathf.Max(0, elapsed) / FrameSeconds));
+    }
+
+    // The knight's clips as the art manifest registers them. role(suffix) gives the frame count and frameMs of
+    // RolePrefix + suffix (idle, walk, hit, action.<name>, key.<name>). A key clip's frame time is its moving hold.
+    public sealed class HeroSheetTimings
+    {
+        readonly HeroClipTiming[] actions = new HeroClipTiming[6], keys = new HeroClipTiming[6];
+        public HeroClipTiming Idle { get; }
+        public HeroClipTiming Walk { get; }
+        public HeroClipTiming Hit { get; }
+        public HeroClipTiming Action(HeroAction action) => actions[(int)action];
+        public HeroClipTiming Key(HeroAction action) => keys[(int)action];
+        public HeroSheetTimings(Func<string, (int Frames, int FrameMs)> role)
+        {
+            HeroClipTiming Of(string suffix) { var r = role(suffix); return new HeroClipTiming(r.Frames, r.FrameMs); }
+            Idle = Of("idle"); Walk = Of("walk"); Hit = Of("hit");
+            for (var a = 1; a < actions.Length; a++) { actions[a] = Of("action." + HeroSheetSpec.ActionNames[a]); keys[a] = Of("key." + HeroSheetSpec.ActionNames[a]); }
         }
     }
 
@@ -78,7 +106,10 @@ namespace Game.View
         public int Replaced { get; private set; }
         public int CutByMovement { get; private set; }
 
-        public HeroActionSelector() { Reset(); }
+        // Set from the art manifest when the sheets load (WorldRenderer.EnsureHeroSheet).
+        public HeroSheetTimings Timings { get; set; }
+        public HeroActionSelector(HeroSheetTimings timings = null) { Timings = timings; Reset(); }
+        HeroSheetTimings Clips => Timings ?? throw new InvalidOperationException("Knight sheet timings are not loaded.");
         public void Reset()
         {
             current = HeroAction.None; key = false; started = 0; startedTick = -1; source = null; evolved = false; damage = 0;
@@ -97,8 +128,8 @@ namespace Game.View
         bool Active(float time, bool moving)
         {
             if (current == HeroAction.None) return false;
-            if (key) return time < started + HeroSheetSpec.KeySeconds;
-            return time < started + HeroSheetSpec.FullSeconds(current);
+            if (key) return time < started + Clips.Key(current).Seconds;
+            return time < started + Clips.Action(current).Seconds;
         }
 
         // Offers one Core attack. Returns whether it started (or replaced) the shown action.
@@ -126,21 +157,19 @@ namespace Game.View
             if (hit)
             {
                 if (!wasHit) { wasHit = true; hitStarted = time; current = HeroAction.None; }
-                var into = time - hitStarted; var hitFrame = 0;
-                while (hitFrame < HeroSheetSpec.HitFrames - 1 && into >= HeroSheetSpec.Seconds(HeroSheetSpec.HitFrameTicks[hitFrame])) { into -= HeroSheetSpec.Seconds(HeroSheetSpec.HitFrameTicks[hitFrame]); hitFrame++; }
-                return new HeroSheetPose(HeroClip.Hit, HeroAction.None, hitFrame);
+                return new HeroSheetPose(HeroClip.Hit, HeroAction.None, Clips.Hit.FrameAt(time - hitStarted));
             }
             wasHit = false;
             if (current != HeroAction.None && !key && moving) { current = HeroAction.None; CutByMovement++; }
             if (Active(time, moving))
             {
                 if (key) return new HeroSheetPose(HeroClip.Key, current, (int)current - 1);
-                var frame = Mathf.Min(HeroSheetSpec.Frames(current) - 1, Mathf.FloorToInt((time - started) / HeroSheetSpec.Seconds(HeroSheetSpec.Ticks(current))));
-                return new HeroSheetPose(HeroClip.Action, current, frame);
+                return new HeroSheetPose(HeroClip.Action, current, Clips.Action(current).FrameAt(time - started));
             }
             current = HeroAction.None;
-            if (moving) return new HeroSheetPose(HeroClip.Walk, HeroAction.None, Mathf.Min(HeroSheetSpec.WalkFrames - 1, Mathf.FloorToInt(walkPhase * HeroSheetSpec.WalkFrames)));
-            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time) / HeroSheetSpec.Seconds(HeroSheetSpec.IdleTicks)) % HeroSheetSpec.IdleFrames);
+            var walk = Clips.Walk; var idle = Clips.Idle;
+            if (moving) return new HeroSheetPose(HeroClip.Walk, HeroAction.None, Mathf.Min(walk.Frames - 1, Mathf.FloorToInt(walkPhase * walk.Frames)));
+            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time) / idle.FrameSeconds) % idle.Frames);
         }
     }
 
@@ -175,9 +204,8 @@ namespace Game.View
                 heroSheetActions[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "action." + HeroSheetSpec.ActionNames[a]);
                 heroSheetKeys[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "key." + HeroSheetSpec.ActionNames[a]);
             }
-            if (heroSheetWalk.UvRects.Count != HeroSheetSpec.WalkFrames || heroSheetIdle.UvRects.Count != HeroSheetSpec.IdleFrames || heroSheetHit.UvRects.Count != HeroSheetSpec.HitFrames ||
-                heroSheetActions[(int)HeroAction.Slash].UvRects.Count != HeroSheetSpec.SlashFrames || heroSheetActions[(int)HeroAction.Aim].UvRects.Count != HeroSheetSpec.ActionFrames)
-                throw new InvalidOperationException("Knight sheet roles do not match the delivered frame counts.");
+            // Frame counts and frameMs come from the manifest roles, so a redrawn clip under the same role needs no code change.
+            HeroActions.Timings = new HeroSheetTimings(suffix => { var v = art.ResolveRole(HeroSheetSpec.RolePrefix + suffix); return (v.UvRects.Count, v.FrameMs); });
             return heroSheetAvailable = true;
         }
 
@@ -217,7 +245,7 @@ namespace Game.View
         {
             if (heroRigActive || !EnsureHeroSheet(heroId)) return false;
             heroSheetMoving = walking;
-            var stride = HeroLocomotionPerTick > 0 ? HeroLocomotionPerTick * tickRate / settings.WorldUnitsPerUnityUnit * HeroSheetSpec.WalkCycleSeconds : 0;
+            var stride = HeroLocomotionPerTick > 0 ? HeroLocomotionPerTick * tickRate / settings.WorldUnitsPerUnityUnit * HeroActions.Timings.Walk.Seconds : 0;
             var pose = HeroActions.Pose(visualTime, walking, hit, dead, movement.magnitude, stride);
             var visual = pose.Clip switch
             {

@@ -30,18 +30,20 @@ const clips = [
 ];
 const approved = read(path.join(approvedDir, 'manifest.json'));
 const additions = read(path.join(additionsDir, 'additions-manifest.json'));
-const [cellW, cellH] = approved.cellSizePx, padding = 2, columns = 8;
+const [cellW, cellH] = approved.cellSizePx, padding = 2;
 for (const m of [approved, additions]) {
   assert.deepEqual(m.cellSizePx, [cellW, cellH]);
   assert.deepEqual(m.pivotUnityNormalized, approved.pivotUnityNormalized);
   assert.equal(m.bodyHeightReferencePx, approved.bodyHeightReferencePx);
 }
+const sourceOf = entry => (entry.additions ? additions : approved).clips.find(c => c.name === entry.clip);
+// One row per clip; as many columns as the longest clip, so a redrawn clip may have more frames (8 for the current set).
+const columns = Math.max(...clips.map(entry => { const source = sourceOf(entry); assert.ok(source, entry.clip); return source.frameCount; }));
 const atlasW = padding * 2 + columns * cellW, atlasH = padding * 2 + clips.length * cellH;
 const atlas = Buffer.alloc(atlasW * atlasH * 4);
 const packed = [];
 clips.forEach((entry, row) => {
-  const source = (entry.additions ? additions : approved).clips.find(c => c.name === entry.clip);
-  assert.ok(source, entry.clip);
+  const source = sourceOf(entry);
   const dir = entry.additions ? additionsDir : approvedDir;
   const sheetBytes = fs.readFileSync(path.join(dir, source.sheet));
   const sheet = decodeRgbaPng(sheetBytes);
