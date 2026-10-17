@@ -224,7 +224,7 @@ namespace Game.App
                     Session.LordDamageObserver = actualLordDamageTelemetry;
                 }
                 Session.Diagnostics = benchmarkCoreDiagnostics;
-                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null||knightReview!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null||knightReview!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;explicitHeroRig=activeHeroRig;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
@@ -466,6 +466,7 @@ namespace Game.App
                     var audioTime = (CurrentFrame.Tick + alpha) / CurrentFrame.TickRate;
                     sound.SetPresentationClock(audioTime); waveSound?.SetPresentationClock(audioTime);
                 }
+                world.HeroLocomotionPerTick = (float)(Session?.LocomotionSpeedPerTick ?? 0);
                 using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 ObserveCameraScaleFrame();

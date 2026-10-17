@@ -100,7 +100,7 @@ Release의 나란히 표본은 `before-after-1x.mp4`와 `before-after-2x.mp4`다
 - 앱 커밋 `2bf5295effbe0ef3964878fc802f040b0f1a62b4`, sourceHash `8A76660D55B1138EE55BFA7817843AE244A06D75611EE48F34055436A66D0868`. 후속 문서·도구 커밋을 이 앱의 커밋으로 표시하지 않는다.
 - 소리 포함 원본 앱은 `42b7ba24b35db79e4216f3495c8107b860ade003`, sourceHash `C8C6FBC168F1866A498E977A1BB8C6C3B41FDE6646FDAC59EC665B917888D01C`, dataHash `942CFEA33A25F90CBD5053D711C9BBFF1279DBE481950F2081C765B6093C3FDC`다. `2bf5295` 이후 변경은 명시적 검토 오디오 경로와 문서이며 위 비용·실제 피해 표는 여전히 `2bf5295` 측정값이다. 새 앱에서 비용을 다시 측정했다고 쓰지 않는다.
 - 로컬 네이티브 정본: `artifacts/m1-254/plans-first/summary.json`, 각 실행의 `actual-lord-damage.{json,csv}`, `frames.csv`와 메모리 계측. 감사 결과는 `.omo/evidence/knight254-measurement-audit.json`이다. 작은 CSV만 저장소에 보존하고 전체 성공 원자료·재생성 가능한 보고서를 중복 업로드하지 않는다.
-- [입력 계약·생성 절차](../../benchmarks/m1-254/README.md)와 [ADR0058](../adr/0058-observational-damage-and-audible-knight-review.md)을 따른다. 실제 피해 시각 T와 스냅샷 T+1을 분리하고 관측 메타데이터를 상태 해시에서 제외했다.
+- [입력 계약·생성 절차](../../benchmarks/m1-254/README.md)와 [ADR0066](../adr/0066-observational-damage-and-audible-knight-review.md)(처음 번호 0058)을 따른다. 실제 피해 시각 T와 스냅샷 T+1을 분리하고 관측 메타데이터를 상태 해시에서 제외했다.
 - 집중 기록: Core 관측8/8·netstandard2.1 컴파일, Unity EditMode26/26·통합26/26·마지막14/14, 카드 모달3초 뒤 레벨업 포즈 PlayMode1/1. 중복 범위가 있어 고유 검사 수로 합산하지 않는다.
 - 별도 코드 리뷰는 `6ffa` 단계와 `42b7ba2` FIFO 오디오 변경을 각각 제한된 범위로 검토했다. 이는 전체 게임·모든 UI의 종합 리뷰나 사용자 시각 승인으로 확대하지 않는다.
 - PR255는 PR253 위에 쌓은 초안이다. main의 `0057-local-artifact-hygiene.md`와 작업 계열의 `0057-view-only-impact-and-hero-motion-comparison.md` 번호 충돌은 **main 병합 전 정리할 항목**이다. ADR0058 추가로 기존 충돌이 해결됐다고 쓰지 않는다.
