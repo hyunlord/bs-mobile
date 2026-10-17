@@ -26,6 +26,8 @@
 
 ## 병합 뒤 남는 문제
 
+- **`HeroSheet.cs` 시간 규칙 변경(#290 `d461711`)**: 칸 수·프레임당 시간을 `HeroSheetSpec` 상수 대신 매니페스트 role에서 읽는다(`HeroSheetTimings`). 임시 병합(`bae68cc`)은 그 전 판을 합쳤다. 실제 병합 때는 새 판 위에 스택 쪽 수정(`SelectHeroRig`의 `explicitReview`, `heroSheetOn`, `DrawHeroSheet`의 `flashOverride`, `OfferHeroAction`의 `WeaponEvolved`)을 다시 얹는다. 지워진 상수(`WalkFrames`, `HitFrameTicks` 등)를 쓰는 스택 코드는 없다.
+
 - **ADR 번호 충돌**: main의 `0057-local-artifact-hygiene`, `0058-data-driven-evolution-unlocks-and-card-offers`와 스택의 `0057-view-only-impact-and-hero-motion-comparison`, `0058-observational-damage-and-audible-knight-review`가 겹친다. 스택 쪽 0057~0063을 main 다음 번호(0059~)로 다시 매기고, 문서·PR 안의 참조를 함께 고친다.
 - **view-coverage(#275)**: 임시 병합에서 3건이 실패했다.
   1. 스택이 바꾼 `WorldRenderer.cs`의 적 리그 줄(`if(ArtCatalog.ProfileName=="wave-1a")enemyRigAtlas=...`)을 인용한 증거
