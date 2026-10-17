@@ -124,13 +124,39 @@ namespace Tests.EditMode
             Assert.That(timeline.OverflowRecoveries, Is.EqualTo(1));
         }
 
+        [Test]
+        public void ExplicitTerminalTailAdvancesDeathFramesWithoutTicksOrRedeliveredEvents()
+        {
+            var events = new List<int>();
+            var timeline = new BossPresentationTimeline(8, slot => events.Add(slot.Frame.Tick));
+            Capture(timeline, 13642); Capture(timeline, 13643, health: 0);
+            var terminal = timeline.Present(1, 1f / 60);
+            var captured = terminal.Current;
+            var elapsed = 0f;
+            var visited = new HashSet<int>();
+            for (var i = 0; i < 60; i++)
+            {
+                var sample = timeline.Present(1, 1f / 60);
+                Assert.That(sample.VisualDeltaSeconds, Is.Zero);
+                Assert.That(sample.PresentationDelta(1f / 60), Is.Zero, "Normal presentation remains frozen.");
+                elapsed += sample.PresentationDelta(1f / 60, 13643);
+                visited.Add(WorldRenderer.ProductionFrame("death", elapsed, 6, 8));
+                Assert.That(sample.Current, Is.SameAs(captured));
+                Assert.That(sample.Current.Tick, Is.EqualTo(13643));
+                Assert.That(sample.Current.Lord.Health, Is.Zero);
+            }
+            CollectionAssert.AreEquivalent(new[] { 0, 1, 2, 3, 4, 5 }, visited);
+            CollectionAssert.AreEqual(new[] { 13642, 13643 }, events);
+            Assert.That(WorldRenderer.ProductionFrame("death", elapsed, 6, 8), Is.EqualTo(5));
+        }
+
         static double Position(BossPresentationTimeline.Sample sample) =>
             sample.Previous.Tick + (sample.Current.Tick - sample.Previous.Tick) * (double)sample.Alpha;
 
-        static void Capture(BossPresentationTimeline timeline, int tick, int level = 1)
+        static void Capture(BossPresentationTimeline timeline, int tick, int level = 1, int health = 100)
         {
             var frame = new RunFrame(tick, RunStatus.Running, 0, 300, 27000, 30, 12000, 12000,
-                new LordView(new WorldPoint(tick, 0), new WorldPoint(1, 0), 100, 100), default,
+                new LordView(new WorldPoint(tick, 0), new WorldPoint(1, 0), health, 100), default,
                 0, 10, level, 0, new EntityCounts(0, 0, 0, 0, 0),
                 Array.Empty<EnemyView>(), Array.Empty<FarmView>(), Array.Empty<BuildingView>(),
                 Array.Empty<PersonView>(), Array.Empty<GroundLootView>(), Array.Empty<RemainView>(),

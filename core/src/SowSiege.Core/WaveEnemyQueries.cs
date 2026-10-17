@@ -39,6 +39,21 @@ namespace SowSiege.Core
         { Collect(result, origin, range); result.Sort(worldOrder); }
         internal void ByDistance(List<EnemyState> result, Position origin, int range, Position rankingOrigin)
         { Collect(result, origin, range); distance.Origin = rankingOrigin; result.Sort(distance); }
+        internal EnemyState? Nearest(List<EnemyState> scratch, Position origin, int range, Position rankingOrigin)
+        {
+            Collect(scratch, origin, range);
+            EnemyState? nearest = null;
+            var nearestDistance = long.MaxValue;
+            foreach (var enemy in scratch)
+            {
+                var candidateDistance = enemy.Position.DistanceSquared(rankingOrigin);
+                if (nearest is not null && (candidateDistance > nearestDistance ||
+                    (candidateDistance == nearestDistance && enemy.Id >= nearest.Id))) { continue; }
+                nearest = enemy;
+                nearestDistance = candidateDistance;
+            }
+            return nearest;
+        }
 
         private sealed class DistanceComparer : IComparer<EnemyState>
         {

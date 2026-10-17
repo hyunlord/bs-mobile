@@ -32,6 +32,14 @@ namespace Game.View
             public readonly FirstPlayableFrame FirstPlayable;
             public readonly float Alpha, VisualDeltaSeconds;
             public readonly bool Delayed;
+            public float PresentationDelta(float seconds, int terminalTick = -1)
+            {
+                // Only the explicit offline death tail may advance after the last
+                // delivered Core sample; normal hit-stop still uses the tick clock.
+                return terminalTick >= 0 && Current.Tick == terminalTick &&
+                    Current.Lord.Health <= 0 && Alpha >= 1 && !Delayed
+                    ? Math.Max(0, seconds) : VisualDeltaSeconds;
+            }
             internal Sample(CaptureSlot previous, CaptureSlot current, float alpha, float delta, bool delayed)
             {
                 Previous = previous.Frame; Current = current.Frame; Wave = current.Wave;
