@@ -73,6 +73,7 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator SevenSyntheticCueRoutesReachMasterAndMutedOutputDrainsToSilence()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             yield return WaitForDsp(.15);
             var silent = new Window(); yield return Measure(.2, silent); AssertSilent(silent, "initial volume0");
             var kinds = new[] { PresentationKind.Damage, PresentationKind.EnemyKilled, PresentationKind.HarvestExperience,

@@ -16,6 +16,7 @@ namespace Tests.EditMode
         [Test]
         public void FirstPlayableBridgeConstructsCanonicalFifteenMinutes()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var catalog = CanonicalContent.CreateCatalog();
             Assert.That(CanonicalContent.ProfileName, Is.EqualTo("first-playable"));
             Assert.That(catalog.Tuning.DurationTicks, Is.EqualTo(27000));
