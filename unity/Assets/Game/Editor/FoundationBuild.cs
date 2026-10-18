@@ -129,17 +129,24 @@ namespace Game.Editor
             var start = new ProcessStartInfo("/bin/bash")
             {
                 WorkingDirectory = RepoRoot, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
-                Arguments = "-c 'export PATH=\"$HOME/.dotnet:/usr/local/share/dotnet:/opt/homebrew/bin:/usr/local/bin:$PATH\" DOTNET_CLI_TELEMETRY_OPTOUT=1; " + command.Replace("'", "'\\''") + "'"
+                Arguments = "-c 'export PATH=\"$HOME/.dotnet:/usr/local/share/dotnet:/opt/homebrew/bin:/usr/local/bin:$PATH\" DOTNET_CLI_TELEMETRY_OPTOUT=1; exec " + command.Replace("'", "'\\''") + "'"
             };
             string output;
             int exit;
             using (var process = Process.Start(start))
             {
                 if (process == null) throw new BuildFailedException("Cannot start bash to record wave replay fixtures. Run from the repository root: " + command);
+                // Drain both streams in the background so the timeout applies even when dotnet hangs with its pipes open.
+                var stdout = process.StandardOutput.ReadToEndAsync();
                 var stderr = process.StandardError.ReadToEndAsync();
-                output = process.StandardOutput.ReadToEnd() + stderr.Result;
-                if (!process.WaitForExit(600000)) { process.Kill(); throw new BuildFailedException("Recording wave replay fixtures took longer than 10 minutes. Run from the repository root: " + command); }
+                if (!process.WaitForExit(600000))
+                {
+                    try { process.Kill(); } catch (InvalidOperationException) { }
+                    throw new BuildFailedException("Recording wave replay fixtures took longer than 10 minutes. Run from the repository root: " + command);
+                }
+                process.WaitForExit();
                 exit = process.ExitCode;
+                output = System.Threading.Tasks.Task.WaitAll(new[] { stdout, stderr }, 30000) ? stdout.Result + stderr.Result : "(output streams did not close)";
             }
             if (exit != 0 || !Current())
             {
