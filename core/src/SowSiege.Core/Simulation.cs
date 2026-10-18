@@ -7,6 +7,8 @@ namespace SowSiege.Core
     /// <summary>Seeded fixed-tick world. IO, clocks, rendering and meta progression belong to adapters.</summary>
     public sealed class Simulation : IWaveRunView
     {
+        // Bot movement that walks to the opt-in estate's sleeping buildings (ADR0069); only valid with RunOptions.EstateLoadout.
+        public const string EstateWakeMovement = "estate-wake";
         private readonly DiagnosticObserver? diagnostics;
         private readonly IStateHasher stateHasher;
         private readonly ContentCatalog catalog;
@@ -58,7 +60,10 @@ namespace SowSiege.Core
             if (catalog.WeaponCombat is not null) { World.WeaponCombat = new(); }
             if (catalog.FirstPlayable is not null) { World.FirstPlayable = new(); }
             if (catalog.Experiment is not null) { Experiment = new(catalog, options, World); }
-            else if (options.Movement is not null) { throw new ArgumentException("Movement requires an experiment profile."); }
+            else if (options.Movement is not null && !(options.Movement == EstateWakeMovement && options.EstateLoadout is not null)) { throw new ArgumentException("Movement requires an experiment profile."); }
+            if (options.EstateLoadout is not null && (interactive is not null || catalog.WaveRuntime?.EstateLight is not { } light || !light.Loadouts.ContainsKey(options.EstateLoadout)))
+            { throw new ArgumentException("Bot estate loadouts need a wave profile with an estate light definition that declares the loadout."); }
+            if (options.EstateLoadout is not null) { WaveEstateLight.Validate(catalog.WaveRuntime!.EstateLight!); }
             if (catalog.Runtime is not null) { Runtime = new(catalog, World, random, spatial, diagnostics, interactive); }
             combat = new(catalog, options, World, random, spatial, Runtime, Experiment, diagnostics, interactive);
             estate = new(catalog, options, World, peopleRule, spatial, Runtime, Experiment, diagnostics, interactive);
@@ -68,7 +73,7 @@ namespace SowSiege.Core
             World.Locks = catalog.Tuning.World.Progression.Locks;
             if (catalog.Estates[options.EstateId].RemainsLoop is { } loop) { World.Remains = new(loop); }
             if (catalog.WaveRuntime is null) { estate.Initialize(); }
-            else { Wave = new(catalog, World, random, interactive); }
+            else { Wave = new(catalog, World, random, interactive, options.EstateLoadout, options.Seed); }
             if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
             if (options.Scenario == "load") { PrepareLoadTick(); }
             Experiment?.Trace();
@@ -110,7 +115,7 @@ namespace SowSiege.Core
             var wasInside = RuntimeSystem.Within(World.Lord, World.Estate, catalog.Tuning.World.Map.EstateRadius);
             var previousLord = World.Lord;
             if (input.HasValue) { MoveManual(input.Value); }
-            else if (Experiment is null) { combat.MoveLord(); } else { Experiment.MoveLord(); }
+            else if (Experiment is null) { if (!(options.Movement == EstateWakeMovement && Wave!.GuideToEstate())) { combat.MoveLord(); } } else { Experiment.MoveLord(); }
             if (World.WeaponCombat is not null && World.Lord != previousLord)
             {
                 World.WeaponCombat.Facing = new(World.Lord.X - previousLord.X, World.Lord.Y - previousLord.Y);

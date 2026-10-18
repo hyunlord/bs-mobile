@@ -27,7 +27,8 @@ public sealed record UnityExportSnapshot(string DataHash, UnityExportFile[] File
             RequireSafeEntry(current);
             foreach (var entry in Directory.EnumerateFileSystemEntries(current))
             {
-                if (current == root && Path.GetFileName(entry) == "test") { continue; }
+                // Test dummies and opt-in experiment files (ADR0069) are not part of the Unity bundle or its data hash.
+                if (current == root && Path.GetFileName(entry) is "test" or ContentLoader.OptInDirectory) { continue; }
                 RequireSafeEntry(entry);
                 if (Directory.Exists(entry))
                 {

@@ -25,7 +25,7 @@ public sealed class UnityExportTests : IDisposable
     }
 
     [Fact]
-    public void ManifestMatchesCanonicalHashAndExcludesOnlyTestJson()
+    public void ManifestMatchesCanonicalHashAndExcludesTestAndOptInJson()
     {
         var snapshot = UnityExportSnapshot.Capture(Data);
         Assert.Equal(ContentLoader.Hash(Data, false), snapshot.DataHash);
@@ -33,6 +33,7 @@ public sealed class UnityExportTests : IDisposable
         Assert.Contains(snapshot.Files, file => file.RelativePath.StartsWith("experiments/", StringComparison.Ordinal));
         Assert.Contains(snapshot.Files, file => file.RelativePath.StartsWith("schema/", StringComparison.Ordinal));
         Assert.DoesNotContain(snapshot.Files, file => file.RelativePath.StartsWith("test/", StringComparison.Ordinal));
+        Assert.DoesNotContain(snapshot.Files, file => file.RelativePath.StartsWith(ContentLoader.OptInDirectory + "/", StringComparison.Ordinal));
         Assert.Equal(snapshot.Files.Select(file => file.RelativePath).Order(StringComparer.Ordinal), snapshot.Files.Select(file => file.RelativePath));
     }
 

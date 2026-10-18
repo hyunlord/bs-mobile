@@ -9,6 +9,8 @@ namespace SowSiege.Sim;
 public sealed record WaveDesignReference(string Catalog, string Revision, string Id);
 public sealed record WaveDesignBinding(string Id, string Kind, WaveDesignReference DesignRef, string SemanticSha256);
 public sealed record WaveParameterProvenance(string Path, string Classification, string Source, string Note);
+// ADR0069: opt-in estate light for an experiment profile; the file sits under data/opt-in and is pinned by the catalog hash.
+public sealed record WaveEstateLightFile(int ContractVersion, string Status, WaveEstateLightDefinition Light);
 public sealed record WaveContentFile(int ContractVersion, string DesignRevision, WaveDesignBinding[] Bindings,
     Tuning Tuning, Dictionary<string, EnemyDefinition> EnemyStats, WaveRuntimeDefinition Definition, WaveParameterProvenance[] Provenance);
 
@@ -90,6 +92,14 @@ public static partial class ContentLoader
         var estates = LoadSelected<EstateContent, EstateDefinition>([directory], "estates", profile.Selection.Estates, estate => estate.ToCore(), true);
         Require(heroes.Values.All(h => tools.ContainsKey(h.StartingTool)) && heroes.ContainsKey(file.Tuning.DefaultHero) && estates.ContainsKey(file.Tuning.DefaultEstate), "Wave infrastructure references unavailable content.");
         ValidateWorld(file.Tuning, weapons);
+        Require(profile.EstateLightFile is not null || profile.EstateLoadout is null, "An estate loadout needs an estate light file.");
+        if (profile.EstateLightFile is not null)
+        {
+            var light = ReadEstateLight(directory, profile.EstateLightFile).Light;
+            WaveEstateLight.Validate(light);
+            Require(profile.EstateLoadout is null || light.Loadouts.ContainsKey(profile.EstateLoadout), "Profile estate loadout is not declared by its estate light file.");
+            wave = wave with { EstateLight = light };
+        }
         return new(file.Tuning, tools, heroes, estates, weapons, file.EnemyStats, WaveRuntime: wave);
     }
 
@@ -103,6 +113,20 @@ public static partial class ContentLoader
         UniqueProperties(document.RootElement);
         ValidateWaveShape(document.RootElement, typeof(WaveContentFile), "wave");
         return document.RootElement.Deserialize<WaveContentFile>(WaveJsonOptions) ?? throw new InvalidDataException("Missing wave runtime file.");
+    }
+
+    public static WaveEstateLightFile ReadEstateLight(string directory, string relative)
+    {
+        Require(System.Text.RegularExpressions.Regex.IsMatch(relative, @"\Aopt-in/estate-light/[a-z][a-z0-9-]*\.json\z"), "Unsafe or unsupported estate light path.");
+        var path = Path.Combine(directory, relative);
+        foreach (var part in new[] { Path.Combine(directory, OptInDirectory), Path.GetDirectoryName(path)!, path })
+        { Require((File.GetAttributes(part) & FileAttributes.ReparsePoint) == 0, "Estate light symlink forbidden."); }
+        using var document = JsonDocument.Parse(File.ReadAllBytes(path));
+        UniqueProperties(document.RootElement);
+        ValidateWaveShape(document.RootElement, typeof(WaveEstateLightFile), "estate");
+        var file = document.RootElement.Deserialize<WaveEstateLightFile>(WaveJsonOptions) ?? throw new InvalidDataException("Missing estate light file.");
+        Require(file.ContractVersion == 1 && file.Status == "experiment", "Unsupported estate light contract.");
+        return file;
     }
 
     private static void ValidateWaveShape(JsonElement node, Type type, string location)

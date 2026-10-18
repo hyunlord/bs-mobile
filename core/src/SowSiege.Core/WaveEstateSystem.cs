@@ -4,7 +4,7 @@ namespace SowSiege.Core
 {
     internal sealed class WaveEstateBuilding
     {
-        public int Id, Progress, Dwell;
+        public int Id, Progress, Dwell, ReadyTick;
         public string DefinitionId = "";
         public Position Position;
         public WaveEstatePhase Phase;
@@ -17,13 +17,15 @@ namespace SowSiege.Core
     {
         private readonly WorldState world;
         private readonly WaveEstateLightDefinition light;
+        private readonly int maxHealth;
         private WaveRuntimeState State => world.WaveRuntime!;
 
-        private WaveEstateSystem(WorldState world, WaveEstateLightDefinition light) { this.world = world; this.light = light; }
+        private WaveEstateSystem(WorldState world, WaveEstateLightDefinition light, int maxHealth) { this.world = world; this.light = light; this.maxHealth = maxHealth; }
 
-        internal static WaveEstateSystem? Create(ContentCatalog catalog, WorldState world, InteractiveState? interactive)
+        // Interactive runs pass the loadout chosen in InteractiveOptions.Estate; bot runs pass RunOptions.EstateLoadout.
+        internal static WaveEstateSystem? Create(ContentCatalog catalog, WorldState world, InteractiveState? interactive, string? loadout, int seed)
         {
-            if (interactive?.EstateLoadout is not { } loadout) { return null; }
+            if (loadout is null) { return null; }
             var definition = catalog.WaveRuntime!;
             var light = definition.EstateLight ?? throw new InvalidOperationException("Estate runs require an estate light definition.");
             var state = world.WaveRuntime!;
@@ -31,7 +33,6 @@ namespace SowSiege.Core
             state.Estate = new() { new() { Id = world.AllocateId(), DefinitionId = light.HomeId, Position = world.Estate, Phase = WaveEstatePhase.Active } };
             var slots = light.Loadouts[loadout];
             var chapter = ChapterHash(definition.ChapterId);
-            var seed = interactive.EstateSeed;
             var turn = (int)(FieldState.Mix(seed, chapter, slots.Length) & (uint)(FieldState.DirectionCount - 1));
             for (var index = 0; index < slots.Length; index++)
             {
@@ -39,14 +40,15 @@ namespace SowSiege.Core
                 var direction = FieldState.Direction(turn + index * FieldState.DirectionCount / slots.Length);
                 var radius = slot.MinRadius + (int)(FieldState.Mix(seed, chapter, index) % (uint)(slot.MaxRadius - slot.MinRadius + 1));
                 var position = new Position(checked(world.Estate.X + (int)((long)direction.X * radius / PlayerInput.Scale)), checked(world.Estate.Y + (int)((long)direction.Y * radius / PlayerInput.Scale)));
-                if (interactive.Field is null)
+                if (interactive?.Field is null)
                 {
-                    var map = catalog.Tuning.World.Map;
-                    position = new(Math.Clamp(position.X, 0, map.Width), Math.Clamp(position.Y, 0, map.Height));
+                    var bounds = catalog.Tuning.World.Map;
+                    position = new(Math.Clamp(position.X, 0, bounds.Width), Math.Clamp(position.Y, 0, bounds.Height));
                 }
                 state.Estate.Add(new() { Id = world.AllocateId(), DefinitionId = slot.BuildingId, Position = position, Phase = WaveEstatePhase.Asleep });
             }
-            return new(world, light);
+            var map = catalog.Tuning.World.Map;
+            return new(world, light, interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth);
         }
         private static uint ChapterHash(string chapter)
         {
@@ -82,6 +84,87 @@ namespace SowSiege.Core
                 building.Progress++;
                 if (building.Progress >= definition.ChannelTicks) { Activate(building, definition); }
             }
+            var events = State.Events.Count;
+            foreach (var building in State.Estate!)
+            {
+                if (building.Phase != WaveEstatePhase.Active || building.DefinitionId == light.HomeId) { continue; }
+                var definition = light.Buildings[building.DefinitionId];
+                if (definition.Effect is { } effect) { Apply(building, definition, effect, events); }
+            }
+        }
+
+        // Effects reach only the building's own lit circle. Their damage and healing ignore weapon levels, evolutions and items.
+        private void Apply(WaveEstateBuilding building, WaveEstateBuildingDefinition definition, WaveEstateEffectDefinition effect, int events)
+        {
+            var radius = (long)definition.LitRadius * definition.LitRadius;
+            var lordInside = building.Position.DistanceSquared(world.Lord) <= radius;
+            if (effect.Kind == WaveEstateEffectKind.Attack)
+            {
+                if (world.Tick < building.ReadyTick) { return; }
+                EnemyState? target = null; var best = long.MaxValue;
+                foreach (var enemy in world.Enemies)
+                {
+                    if (enemy.Health <= 0) { continue; }
+                    var distance = building.Position.DistanceSquared(enemy.Position);
+                    if (distance > radius || distance > best || distance == best && target is not null && enemy.Id > target.Id) { continue; }
+                    best = distance; target = enemy;
+                }
+                if (target is null) { return; }
+                var dealt = Math.Min(target.Health, effect.Amount); target.Health -= dealt;
+                building.ReadyTick = world.Tick + effect.PeriodTicks;
+                State.Emit(world.Tick, "estate-shot", definition.Id, target.Id, building.Position, target.Position, dealt);
+                Add("estate-damage:" + definition.Id, dealt);
+                return;
+            }
+            if (effect.Kind == WaveEstateEffectKind.Heal)
+            {
+                for (var i = 0; i < events; i++)
+                {
+                    var hit = State.Events[i];
+                    if (hit.Kind == "lord-hit" && hit.Amount > 0) { building.ReadyTick = Math.Max(building.ReadyTick, world.Tick + effect.PauseTicks); break; }
+                }
+                if (!lordInside || world.Tick < building.ReadyTick || world.LordHealth <= 0 || world.LordHealth >= maxHealth) { return; }
+                var healed = Math.Min(effect.Amount, maxHealth - world.LordHealth); world.LordHealth += healed;
+                building.ReadyTick = world.Tick + effect.PeriodTicks;
+                State.Emit(world.Tick, "estate-heal", definition.Id, building.Id, building.Position, world.Lord, healed);
+                Add("estate-healing:" + definition.Id, healed);
+                return;
+            }
+            if (lordInside)
+            {
+                foreach (var reward in State.Rewards)
+                {
+                    if (building.Position.DistanceSquared(reward.Position) <= radius) { reward.Position = reward.Position.MoveToward(world.Lord, effect.Amount); }
+                }
+            }
+            if (effect.Bonus == 0) { return; }
+            for (var i = 0; i < events; i++)
+            {
+                var harvest = State.Events[i];
+                if (harvest.Kind != "harvest-complete" || building.Position.DistanceSquared(new Position(harvest.Position.X, harvest.Position.Y)) > radius) { continue; }
+                world.Food += effect.Bonus;
+                State.Emit(world.Tick, "estate-harvest-bonus", definition.Id, harvest.SubjectId, building.Position, new(harvest.Position.X, harvest.Position.Y), effect.Bonus);
+            }
+        }
+        private void Add(string key, long amount) => State.Counters[key] = State.Counters.TryGetValue(key, out var total) ? total + amount : amount;
+
+        // Bot movement "estate-wake": walk to the nearest building that can still wake (channel, already paid, or affordable)
+        // and stand in it; false when none is left, so the default movement takes over.
+        internal bool Guide(int speed)
+        {
+            WaveEstateBuilding? target = null; var best = long.MaxValue;
+            foreach (var building in State.Estate!)
+            {
+                if (building.Phase == WaveEstatePhase.Active) { continue; }
+                var definition = light.Buildings[building.DefinitionId];
+                var affordable = definition.Wake == WaveEstateWake.Channel || building.Paid || (definition.Resource == WaveEstateResource.Food ? world.Food : State.Timber) >= definition.Cost;
+                var distance = building.Position.DistanceSquared(world.Lord);
+                if (!affordable || distance > best || distance == best && target is not null && building.Id > target.Id) { continue; }
+                best = distance; target = building;
+            }
+            if (target is null) { return false; }
+            world.Lord = world.Lord.MoveToward(target.Position, speed);
+            return true;
         }
         private bool Pay(WaveEstateBuildingDefinition definition)
         {
@@ -131,7 +214,7 @@ namespace SowSiege.Core
                 }
                 var d = light.Buildings[b.DefinitionId];
                 if (b.Phase != WaveEstatePhase.Active) { sleeping++; }
-                views[i] = new(b.Id, b.DefinitionId, new(b.Position.X, b.Position.Y), b.Phase, b.Progress, d.ChannelTicks, b.Dwell, d.ConfirmTicks, b.Paid, d.Resource, d.Cost, d.WakeRadius, d.LitRadius);
+                views[i] = new(b.Id, b.DefinitionId, new(b.Position.X, b.Position.Y), b.Phase, b.Progress, d.ChannelTicks, b.Dwell, d.ConfirmTicks, b.Paid, d.Resource, d.Cost, d.WakeRadius, d.LitRadius, d.Effect?.Kind, b.ReadyTick);
             }
             var bonus = (int)Math.Min(light.DarkFinishCapPermille, (long)sleeping * light.DarkFinishPermillePerSleeping);
             return new(light.Version, state.EstateLoadout!, light.SightRadius, Array.AsReadOnly(views), sleeping, bonus);

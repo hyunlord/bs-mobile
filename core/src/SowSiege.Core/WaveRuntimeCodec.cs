@@ -21,6 +21,7 @@ namespace SowSiege.Core
                 WriteMap(light.Buildings, b =>
                 {
                     Write(b.Id); Write(b.DesignRef); Write((int)b.Wake); Write(b.WakeRadius); Write(b.LitRadius); Write(b.ChannelTicks); Write((int)b.Resource); Write(b.Cost); Write(b.ConfirmTicks);
+                    Write(b.Effect is not null); if (b.Effect is { } e) { Write((int)e.Kind); Write(e.Amount); Write(e.PeriodTicks); Write(e.PauseTicks); Write(e.Bonus); }
                 });
                 WriteMap(light.Loadouts, slots => WriteList(slots, s => { Write(s.BuildingId); Write(s.MinRadius); Write(s.MaxRadius); }));
             }
@@ -136,7 +137,7 @@ namespace SowSiege.Core
             if (s.Estate is { } estate)
             {
                 Write("wave-estate-state-v1"); Write(s.EstateLoadout);
-                WriteList(estate, b => { Write(b.Id); Write(b.DefinitionId); Write(b.Position); Write((int)b.Phase); Write(b.Progress); Write(b.Dwell); Write(b.Paid); });
+                WriteList(estate, b => { Write(b.Id); Write(b.DefinitionId); Write(b.Position); Write((int)b.Phase); Write(b.Progress); Write(b.Dwell); Write(b.Paid); Write(b.ReadyTick); });
             }
         }
     }
