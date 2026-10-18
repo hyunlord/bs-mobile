@@ -5,7 +5,7 @@
 ## 실행
 
 ```sh
-git switch <PR 가지>        # 추적 파일 변경이 없어야 한다
+git switch <PR 가지>        # 추적 파일 변경, unity/·core/·data/의 추적 안 된 파일이 없어야 한다
 ./tools/unity-tests.sh
 ```
 
@@ -25,7 +25,7 @@ wave-1a EditMode: passed N, failed 0, skipped N
 wave-1a PlayMode: passed N, failed 0, skipped N
 ```
 
-출력을 그대로 PR 본문에 붙인다. 손으로 숫자를 고치지 않는다.
+출력을 그대로 PR 본문 템플릿의 `## Unity tests` 절에 붙인다. 제목이 두 번 나와도 검사는 같은 이름의 절을 모두 합쳐 읽는다. 손으로 숫자를 고치지 않는다.
 
 ## CI가 확인하는 것 (`tools/unity-test-record.mjs`)
 

@@ -33,6 +33,11 @@ test('parses the four suites and the commit', () => {
   assert.equal(parsed.commit, 'abc1234'); assert.equal(Object.keys(parsed.suites).length, 4);
   assert.deepEqual(parsed.suites['wave-1a PlayMode'], { passed: 41, failed: 0, skipped: 11 });
 });
+test('a record pasted beneath the template heading still parses', () => {
+  const body = ['Closes #1', '## Unity tests', 'unity/를 바꾸는 PR은 필수. ./tools/unity-tests.sh 출력을 붙인다.', '', record('abc1234')].join('\n');
+  const parsed = parseUnityRecord(body);
+  assert.equal(parsed.commit, 'abc1234'); assert.equal(Object.keys(parsed.suites).length, 4);
+});
 test('a record at the head with zero failures passes; failures, gaps and later unity/ edits do not', () => {
   const r = repo();
   try {

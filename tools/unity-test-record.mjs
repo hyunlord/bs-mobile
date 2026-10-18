@@ -6,12 +6,17 @@ import { execFileSync } from 'node:child_process';
 export const SUITES = ['first-playable EditMode', 'first-playable PlayMode', 'wave-1a EditMode', 'wave-1a PlayMode'];
 
 export function parseUnityRecord(body) {
-  const text = body ?? '';
-  const start = text.search(/^## Unity tests\s*$/m);
-  if (start < 0) return null;
-  const rest = text.slice(start).split('\n').slice(1);
-  const end = rest.findIndex(line => /^## /.test(line));
-  const section = (end < 0 ? rest : rest.slice(0, end)).join('\n');
+  // Authors paste the script output (which carries its own heading) under the template's heading, so read every
+  // "## Unity tests" section together rather than only the first, which is then just the template guidance.
+  const lines = (body ?? '').split('\n');
+  let inside = false, found = false;
+  const kept = [];
+  for (const line of lines) {
+    if (/^## /.test(line)) { inside = /^## Unity tests\s*$/.test(line); found ||= inside; continue; }
+    if (inside) kept.push(line);
+  }
+  if (!found) return null;
+  const section = kept.join('\n');
   const commit = section.match(/^commit:\s*`?([0-9a-f]{7,40})`?\s*$/m)?.[1] ?? null;
   const suites = {};
   for (const name of SUITES) {

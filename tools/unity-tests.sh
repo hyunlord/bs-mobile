@@ -9,8 +9,11 @@ export DEVELOPER_DIR="${DEVELOPER_DIR:-/Library/Developer/CommandLineTools}"
 EDITOR="${UNITY_EDITOR:-/Applications/Unity/Hub/Editor/6000.6.4f1/Unity.app/Contents/MacOS/Unity}"
 OUT="${UNITY_TESTS_OUTPUT:-$ROOT/artifacts/unity-tests}"
 [[ -x "$EDITOR" ]] || { echo "Unity editor missing: $EDITOR" >&2; exit 2; }
-if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
-  echo 'Commit or discard tracked changes first: the record names the tested commit.' >&2; exit 2
+# The record names one commit, so nothing outside it may feed the run: no tracked edits anywhere and no untracked,
+# non-ignored files in the roots Unity compiles, imports or reads fixtures from.
+if [[ -n "$(git status --porcelain --untracked-files=no)$(git status --porcelain --untracked-files=all -- unity core data)" ]]; then
+  echo 'Commit or discard local changes first (tracked edits, or untracked files under unity/ core/ data/): the record names the tested commit.' >&2
+  git status --short --untracked-files=all -- unity core data >&2; exit 2
 fi
 COMMIT="$(git rev-parse HEAD)"
 rm -rf "$OUT"; mkdir -p "$OUT"
