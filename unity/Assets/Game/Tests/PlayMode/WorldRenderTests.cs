@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -143,8 +144,15 @@ namespace Tests.PlayMode
             var settings = CanonicalContent.Presentation.Camera;
             world.Initialize(camera, new(settings.WorldUnitsPerUnityUnit, settings.MinHalfHeight, settings.MaxHalfHeight, settings.EstatePadding, settings.FollowMilliseconds, settings.ZoomMilliseconds), catalog.Tuning.DefaultEstate, frame.MapWidth, frame.MapHeight);
             var safe = new Rect(0, 0, 360, 720);
-            for (var index = 0; index < 3; index++) { world.Present(frame, frame, firstPlayable, 1, 0, safe); yield return null; }
-            Assert.That(owner.transform.childCount, Is.Zero, "Entities must not create GameObjects.");
+            world.Present(frame, frame, firstPlayable, 1, 0, safe); yield return null;
+            // The renderer owns fixed pools of text meshes (damage numbers, growth captions, threat warnings) created once at
+            // initialization; entities themselves are drawn instanced and must not add GameObjects frame by frame.
+            var pooled = owner.transform.childCount;
+            for (var index = 0; index < 2; index++) { world.Present(frame, frame, firstPlayable, 1, 0, safe); yield return null; }
+            Assert.That(owner.transform.childCount, Is.EqualTo(pooled), "Entities must not create GameObjects.");
+            foreach (Transform child in owner.transform)
+                Assert.That(child.name.StartsWith("Pooled damage number", StringComparison.Ordinal) || child.name.StartsWith("Growth label", StringComparison.Ordinal), Is.True,
+                    "Only the renderer's fixed text pools are child objects: " + child.name);
             Assert.That(world.SubmittedInstances, Is.GreaterThan(frame.Enemies.Count)); Assert.That(world.DrawCalls, Is.GreaterThan(0));
             var previous = RenderTexture.active; RenderTexture.active = target;
             var capture = new Texture2D(360, 720, TextureFormat.RGB24, false); capture.ReadPixels(new Rect(0, 0, 360, 720), 0, 0); capture.Apply(); RenderTexture.active = previous;

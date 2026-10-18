@@ -26,6 +26,7 @@ namespace Tests.PlayMode
             var actor=new EnemyView(700,catalog.WaveRuntime.BossId,empty.Lord.Position,100,100);
             var occupied=empty with {Enemies=new[]{actor}};
             var marked=wave with {Enemies=new[]{new WaveEnemyView(700,"approach",actor.Position,actor.Position,100,true,false,0)}};
+            var dry=wave with {Enemies=new[]{new WaveEnemyView(700,"approach",actor.Position,actor.Position,100,false,false,0)}};
             var owner=new GameObject("Wave snapshot transition QA");var cameraOwner=new GameObject("Wave snapshot transition camera");
             var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1280,24);camera.targetTexture=texture;
             try
@@ -38,8 +39,12 @@ namespace Tests.PlayMode
                     world.Present(frame,frame,WavePresentation.Envelope(catalog,frame,session.View.CaptureCards(),state),1,0,new Rect(0,0,720,1280));
                 }
                 Present(empty,wave);yield return null;var baseline=world.SubmittedInstances;
+                // One enemy is drawn with several instances (its body and the cues around it), so measure the actual enemy first
+                // and then require exactly one more instance for its wet marker.
+                Present(occupied,dry);yield return null;var enemyOnly=world.SubmittedInstances;
+                Assert.That(enemyOnly,Is.GreaterThan(baseline),"The actual enemy is submitted.");
                 Present(occupied,marked);yield return null;var populated=world.SubmittedInstances;
-                Assert.That(populated,Is.EqualTo(baseline+2),"One actual enemy and its wet marker are submitted.");
+                Assert.That(populated,Is.EqualTo(enemyOnly+1),"The wet enemy adds exactly its one wet marker.");
                 Present(occupied,marked);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(populated),"Repeated snapshot does not duplicate presentation.");
                 Present(empty with {Tick=empty.Tick+1},marked);yield return null;
@@ -109,7 +114,9 @@ namespace Tests.PlayMode
                 Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"The regular hero-centered orbit must not imply a building anchor.");
                 Assert.That(AnchorContours(),Is.Empty);
-                Assert.That(Labels(),Does.Not.Contain("수리 중"));
+                // "수리 중" is a timed growth caption (WorldHintQueue, #198): it stays for its display time after the anchor ends.
+                Present(work with {Attacks=new[]{orbit with {Origin=frame.Lord.Position}}},GameVisualTokens.WaveCollectionLabelSeconds+.1f);yield return null;
+                Assert.That(Labels(),Does.Not.Contain("수리 중"),"The repair caption ends with its display time and is not renewed by a hero-centered orbit.");
                 Present(work with {Work=new[]{building with {Complete=true}},Attacks=new[]{orbit}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(construction+2),"Completed work is no longer a repair anchor.");
                 Assert.That(AnchorContours(),Is.Empty);
