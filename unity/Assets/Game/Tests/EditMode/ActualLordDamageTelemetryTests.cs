@@ -49,6 +49,7 @@ namespace Tests.EditMode
         [Test]
         public void RealSessionAdvanceClassifiesDamageAgainstFollowingSnapshot()
         {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");   // lord damage observations come from the wave enemy system
             var catalog = CanonicalContent.CreateCatalog();
             var enemies = new Dictionary<string, EnemyDefinition>();
             foreach (var pair in catalog.Enemies)

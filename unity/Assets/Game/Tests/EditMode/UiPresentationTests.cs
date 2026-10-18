@@ -89,6 +89,7 @@ namespace Tests.EditMode
         [Test]
         public void HudKeepsIconObjectsForFreshSnapshotsAndLevelChangesButRefreshesChangedIds()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var owner=new GameObject("HUD identity regression",typeof(RectTransform));
             var font=FontProvider.Create(Array.Empty<string>());
             try
