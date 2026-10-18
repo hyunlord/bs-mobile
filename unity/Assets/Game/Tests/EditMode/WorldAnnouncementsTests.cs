@@ -10,6 +10,7 @@ namespace Tests.EditMode
         [Test]
         public void BossTakesPriorityThenDeferredSeasonExpiresAndAvoidsUpperHero()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var owner = new GameObject("Announcement test camera"); var camera = owner.AddComponent<Camera>();
             using (var notices = new WorldAnnouncements(camera, ArtCatalog.Load()))
             {
