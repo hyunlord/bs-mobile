@@ -41,6 +41,9 @@ for profile in first-playable wave-1a; do
     lines+=("$profile $platform: $summary")
   done
 done
+# A test skipped by every profile never runs; only tools/unity-skip-exceptions.txt may excuse one, with a reason.
+skips="$(node tools/unity-skipped-everywhere.mjs tools/unity-skip-exceptions.txt "$OUT"/*.xml 2> "$OUT/skipped-everywhere.txt")" || status=1
+cat "$OUT/skipped-everywhere.txt" >&2
 UNITY_CONTENT_PROFILE=first-playable bash tools/prepare-unity.sh > "$OUT/prepare-restore.log" 2>&1
 if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
   echo 'Unity changed tracked files during the run; the record is not valid for this commit:' >&2
@@ -50,6 +53,7 @@ fi
   echo '## Unity tests'
   echo "commit: $COMMIT"
   for line in "${lines[@]}"; do echo "$line"; done
+  echo "${skips:-skipped in every profile: not checked}"
 } | tee "$OUT/record.md"
-[[ $status -eq 0 ]] || echo "A suite failed or did not report; results are in $OUT" >&2
+[[ $status -eq 0 ]] || echo "A suite failed, did not report, or a test is skipped in every profile without a listed reason; results are in $OUT" >&2
 exit $status
