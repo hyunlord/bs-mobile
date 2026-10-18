@@ -120,6 +120,21 @@ namespace Game.Tests
             Assert.That(s.Pose(Ticks(idle.Ticks * (idle.Frames + 1) + 1), false, false, false, 0, Stride).Frame, Is.EqualTo(1), "idle loops its frames");
         }
 
+        // #317: the walk cycle uses the manifest frameMs exactly; the other clips keep 60 Hz ticks.
+        [Test] public void WalkStrideUsesTheExactFrameMsWithoutTickRounding()
+        {
+            var between = new HeroClipTiming(16, 38);
+            Assert.That(between.Ticks, Is.EqualTo(2), "frame-timed clips still round to ticks");
+            Assert.That(between.Seconds, Is.EqualTo(32 / 60f).Within(1e-6f));
+            Assert.That(between.CycleSeconds, Is.EqualTo(.608f).Within(1e-6f));
+            // 31.2 world units per tick (default speed x 1.3) at 30 Hz = 0.936 Unity units per second.
+            Assert.That(HeroSheetSpec.WalkStride(31.2f, 30, 1000, between), Is.EqualTo(.936f * .608f).Within(1e-5f));
+            Assert.That(HeroSheetSpec.WalkStride(0, 30, 1000, between), Is.EqualTo(0));
+            var delivered = Manifest("wave1a-manifest.json").roles.Single(r => r.id == HeroSheetSpec.RolePrefix + "walk");
+            var walk = new HeroClipTiming(delivered.frames.Length, delivered.frameMs);
+            Assert.That(walk.CycleSeconds, Is.EqualTo(delivered.frames.Length * delivered.frameMs / 1000f).Within(1e-6f));
+        }
+
         [Test] public void WeaponMappingFollowsTheFeedbackTable()
         {
             Assert.That(HeroSheetSpec.ActionFor("core:iron_blade", false, "attack"), Is.EqualTo(HeroAction.Slash));
