@@ -22,6 +22,7 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator PortraitAndSquareRetainRunAndCaptureRealUi()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");
             yield return SceneManager.LoadSceneAsync("Boot");
