@@ -43,9 +43,11 @@ internal static partial class Guard
         }
 
         var ids = new HashSet<string>(StringComparer.Ordinal);
+        // Generated outputs under the root artifacts/ folder (for example the benchmark's copied data) are not content sources.
         foreach (var path in Directory.GetFiles(root, "*.json", SearchOption.AllDirectories)
                      .Where(path => path.Split(Path.DirectorySeparatorChar).Any(part => part is "data" or "tests")
-                         && !path.Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj" or "node_modules")))
+                         && !path.Split(Path.DirectorySeparatorChar).Any(part => part is "bin" or "obj" or "node_modules")
+                         && !IsGeneratedOutput(root, path)))
         {
             using var json = JsonDocument.Parse(File.ReadAllText(path));
             CollectIds(json.RootElement, ids, path.Contains("hero", StringComparison.OrdinalIgnoreCase)
@@ -95,6 +97,14 @@ internal static partial class Guard
             { throw new IOException("Invalid or duplicate declared mechanic grammar unit."); }
         }
         return units;
+    }
+
+    // artifacts/ at the repository root holds gitignored run outputs, including copied data trees; it never defines content.
+    private static bool IsGeneratedOutput(string root, string path)
+    {
+        var relative = Path.GetRelativePath(root, path);
+        var first = relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+        return string.Equals(first, "artifacts", StringComparison.Ordinal);
     }
 
     private static IEnumerable<string> Ancestors(string directory, string root)
