@@ -13,7 +13,7 @@
 
 ## 결정
 
-1. **opt-in 하위 트리:** `data/opt-in/` 아래 파일은 `ContentLoader.Hash`와 Unity 내보내기 스냅샷(번들·해시)에서 뺀다. 기존 파일은 그대로이므로 모든 기존 `DataHash`·Unity 번들·재생이 그대로다.
+1. **opt-in 하위 트리:** `data/opt-in/` 아래 파일은 `ContentLoader.Hash`, Unity 내보내기 스냅샷(번들·해시), 같은 해시를 JS로 다시 계산하는 `tools/diagnostic-provenance.mjs`에서 뺀다. 기존 파일은 그대로이므로 모든 기존 `DataHash`·Unity 번들·재생이 그대로다.
 2. **opt-in 프로필:** `data/opt-in/profiles/<이름>.json`. 프로필 이름은 `profiles/`와 `opt-in/profiles/` 중 한 곳에만 둘 수 있고, 두 곳에 있으면 거부한다. 첫 프로필은 `wave-2a-dark`다. wave-1a 프로필과 같고 `estateLightFile`·`estateLoadout`만 더한다.
 3. **영지 빛 파일:** `data/opt-in/estate-light/<이름>.json` = `{ contractVersion: 1, status: "experiment", light: WaveEstateLightDefinition }`. 프로필의 `estateLightFile`이 가리키고, 로더가 wave-1a 정의에 `EstateLight`를 붙인다. 건물 수치와 효과(`effect`)는 이 파일에 있다. 스키마는 `data/schema/estate-light.schema.json`이고, `validate-content`는 `opt-in/` 아래 파일을 원래 종류로 검사한다.
 4. **무결성:** opt-in 파일은 `DataHash`에 들어가지 않는다. 그 대신 다음이 실행을 고정한다.
