@@ -35,7 +35,7 @@
       "sheetSha256": "185cda3a5b469a5f21a42e678e1cdac8df5d9a478cf84b010b8fd19bb6e94ca0",
       "placement": "frames 0-7 in the former walk row, 8-13 in the hit row, 14-15 in the idle row; one 16-column row would exceed the 4096 texture limit",
       "deliveredFrameTicks60": 5,
-      "frameMs": 38,
+      "frameMs": 36,
       "frames": [
         {
           "x": 2,
@@ -181,8 +181,7 @@
           "decodedRgbaSha256": "a3b4dd76cb0f69fac3fb5967266473974e5680a1d77c96d46cb060928d2612b7",
           "sourceFrame": 75
         }
-      ],
-      "frameTiming": "The walk cycle uses frameMs exactly (16 x 38 = 0.608 s, HeroClipTiming.CycleSeconds); frameTicks60 is its 60 Hz rounding, kept for the other clips' tick contract."
+      ]
     },
     {
       "clip": "hero-a-slash",

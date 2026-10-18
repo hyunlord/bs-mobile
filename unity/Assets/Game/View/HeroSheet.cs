@@ -23,9 +23,6 @@ namespace Game.View
         public static float Seconds(int ticks60) => ticks60 / 60f;
         // The pack tool writes frameMs as the delivered 60 Hz tick count rounded to milliseconds (10 ticks -> 167 ms).
         public static int TicksOf(int frameMs) => Mathf.RoundToInt(frameMs * 60 / 1000f);
-        // World distance (Unity units) of one walk cycle at the hero's current speed; the walk frame follows distance moved.
-        public static float WalkStride(float locomotionPerTick, int tickRate, int worldUnitsPerUnityUnit, HeroClipTiming walk) =>
-            locomotionPerTick > 0 ? locomotionPerTick * tickRate / worldUnitsPerUnityUnit * walk.CycleSeconds : 0;
         // The sheets were fitted to the previous knight's figure (its 188x242 px frame = 0.6 world units tall, figure 209 px)
         // at the delivered 115 px body reference: in sheet pixels that frame is FigureFootprintPx. The shadow and camera
         // margins use it instead of the whole cell. Its share comes from each role's own manifest cell and foot baseline, so a
@@ -65,17 +62,14 @@ namespace Game.View
     // it (the hit, which lasts as long as the hero hit) holds.
     public readonly struct HeroClipTiming
     {
-        public readonly int Frames, Ticks, FrameMs;
+        public readonly int Frames, Ticks;
         public HeroClipTiming(int frames, int frameMs)
         {
             if (frames < 1 || HeroSheetSpec.TicksOf(frameMs) < 1) throw new ArgumentException($"A knight clip needs frames and a frameMs of at least one tick ({frames} frames, {frameMs} ms).");
-            Frames = frames; Ticks = HeroSheetSpec.TicksOf(frameMs); FrameMs = frameMs;
+            Frames = frames; Ticks = HeroSheetSpec.TicksOf(frameMs);
         }
         public float FrameSeconds => HeroSheetSpec.Seconds(Ticks);
         public float Seconds => HeroSheetSpec.Seconds(Frames * Ticks);
-        // The manifest's own frameMs without 60 Hz rounding. Only the distance-driven walk uses it: its cycle sets the stride
-        // (one cycle covers speed x cycle), so a frameMs between two ticks (38 ms) keeps its exact cycle (16 x 38 = 0.608 s).
-        public float CycleSeconds => Frames * FrameMs / 1000f;
         public int FrameAt(float elapsed) => Mathf.Min(Frames - 1, Mathf.FloorToInt(Mathf.Max(0, elapsed) / FrameSeconds));
     }
 
@@ -268,7 +262,7 @@ namespace Game.View
         {
             if (heroRigActive || !EnsureHeroSheet(heroId)) return false;
             heroSheetMoving = walking;
-            var stride = HeroSheetSpec.WalkStride(HeroLocomotionPerTick, tickRate, settings.WorldUnitsPerUnityUnit, HeroActions.Timings.Walk);
+            var stride = HeroLocomotionPerTick > 0 ? HeroLocomotionPerTick * tickRate / settings.WorldUnitsPerUnityUnit * HeroActions.Timings.Walk.Seconds : 0;
             var pose = HeroActions.Pose(visualTime, walking, hit, dead, movement.magnitude, stride);
             var visual = pose.Clip switch
             {

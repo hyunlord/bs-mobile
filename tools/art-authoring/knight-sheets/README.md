@@ -25,7 +25,5 @@ node tools/art-authoring/knight-sheets/pack.mjs /tmp/knight-approved /tmp/knight
   of re-running `pack.mjs`, whose one-row-per-clip layout would make a 16-column atlas (5124 px) past the 4096 texture limit.
   Frames 0-7 replace the former walk row; 8-13 use the free hit-row cells and 14-15 the free idle-row cells. The atlas size
   and every other role's pixels are unchanged. `packed-frames.json` records the walk cells, their decoded RGBA hashes and the
-  user-chosen `frameMs` (38 ms). The walk is the one clip whose cycle uses `frameMs` exactly (`CycleSeconds`, 16 x 38 =
-  0.608 s): it plays by distance and its cycle sets the stride, so 60 Hz rounding (38 -> 2 ticks = 0.533 s) would change the
-  step length. Frame-timed clips keep ticks. The delivery's own timing was 5 ticks.
+  user-chosen `frameMs` (36 ms, which the runtime plays as 2 ticks at 60 Hz; the delivery's own timing was 5 ticks).
   Re-running `pack.mjs` with the r4 Releases would restore the old 8-frame walk; update its layout first if it is needed again.
