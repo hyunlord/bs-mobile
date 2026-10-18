@@ -21,3 +21,9 @@ node tools/art-authoring/knight-sheets/pack.mjs /tmp/knight-approved /tmp/knight
   A newer delivery under the same roles replaces them by repacking.
 - After repacking, register the atlas GUID in `unity/Assets/Resources/FirstPlayableArt.asset` and `Wave1aArt.asset` if the
   atlas is new, then run `node tools/first-playable-art.mjs "$PWD"` and `node tools/wave1a-art.mjs "$PWD"`.
+- **Walk r8.3 (16 frames, Release `hero-walk-r8-3-bake16-20261018`, #317):** placed by hand into the existing atlas instead
+  of re-running `pack.mjs`, whose one-row-per-clip layout would make a 16-column atlas (5124 px) past the 4096 texture limit.
+  Frames 0-7 replace the former walk row; 8-13 use the free hit-row cells and 14-15 the free idle-row cells. The atlas size
+  and every other role's pixels are unchanged. `packed-frames.json` records the walk cells, their decoded RGBA hashes and the
+  user-chosen `frameMs` (36 ms, which the runtime plays as 2 ticks at 60 Hz; the delivery's own timing was 5 ticks).
+  Re-running `pack.mjs` with the r4 Releases would restore the old 8-frame walk; update its layout first if it is needed again.
