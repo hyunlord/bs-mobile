@@ -2,12 +2,13 @@
   "schemaVersion": 1,
   "releases": {
     "approved": "knight-game-sheets-r4-20261016",
-    "additions": "knight-game-sheets-r4-additions-review-20261016"
+    "additions": "knight-game-sheets-r4-additions-review-20261016",
+    "walk": "hero-walk-r8-3-bake16-20261018"
   },
   "approvedManifestSha256": "d35fae4df008524eabe519500f43258527643ab0c00ae72df858a076f19d79d4",
   "additionsManifestSha256": "210fb6d1e9bd48449051b69acf796f8ad3c0e301b68c06878362ecf40e4a13a5",
   "atlas": "unity/Assets/Art/hero-knight.png",
-  "atlasSha256": "81d553661bfa890cc9d58fa192cd55bbf559a4790b37b97f71fabd67e564b837",
+  "atlasSha256": "cec0641df96d7016f2b03ca6e1c132c25c85693f6784c81e7ccf436d2669e94c",
   "width": 2564,
   "height": 2164,
   "padding": 2,
@@ -27,75 +28,158 @@
   "movingKeyHoldTicks60": 7,
   "clips": [
     {
-      "clip": "hero-a-walk",
+      "clip": "hero-walk-r83-bake16",
       "role": "walk",
-      "status": "approved-r3",
-      "sheet": "hero-a-walk.png",
-      "sheetSha256": "b34ffa91c182fe331be936a1efa2d14e2494dbec169d6efcd56f379de12fd124",
+      "status": "approved-r8.3",
+      "sheet": "hero-walk-r83-bake16.png",
+      "sheetSha256": "185cda3a5b469a5f21a42e678e1cdac8df5d9a478cf84b010b8fd19bb6e94ca0",
+      "placement": "frames 0-7 in the former walk row, 8-13 in the hit row, 14-15 in the idle row; one 16-column row would exceed the 4096 texture limit",
+      "deliveredFrameTicks60": 5,
+      "frameMs": 36,
       "frames": [
         {
           "x": 2,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "23594c64fe130261c719b065883205f95e7851546e5f85e0e72e4b88c00cdfef"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "d29615eaa2f92ee1392c07e8f962f3dc68eeabf53a289ca3dec6d957548e3798",
+          "sourceFrame": 0
         },
         {
           "x": 322,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "10c6bc1d4def34ea0236db8c71f397a9ec92881d583f464ce1f7adc5624d673e"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "0e2712cc07ad9ea2a11431aff6e36bca6f4496a410cb51f498f31a597f404f70",
+          "sourceFrame": 5
         },
         {
           "x": 642,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "24e824fd92829fc41792929f428341e19b63bf26f87c7add282cc4a0cb6aa514"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "7c399a9150d9cff3ee79fe4348742b9977346319dc7e906d1ed8c57ac231d8cf",
+          "sourceFrame": 10
         },
         {
           "x": 962,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "671b2b804a8e5dd54df9e1bbc94404e47052964e85f20abfffbd9f4649e02699"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "5811d32016688212ac81e5a7448f105fddf802001ae33aa77624488a369f878b",
+          "sourceFrame": 15
         },
         {
           "x": 1282,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "235743474045a89c2b51bd54d091693a7ea4d3f23a69ab5f87845becce0147a3"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "0f50e5210d5d2a46ee41a0de9cfcbab6511fd134aca4f2bc76dadeca91556056",
+          "sourceFrame": 20
         },
         {
           "x": 1602,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "ae2ac4c5ec53df77bec29ef888f220de79efacea160ba4b8965a2b1f11ce355c"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "77ef63e0d141d808f4d800f6b5469cad8a91e413b1b4d9c2dd153ea7570599ee",
+          "sourceFrame": 25
         },
         {
           "x": 1922,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "6591682cb73750c5f90b13f2d2b1c5a93721dc741ea298a2444318fa4ad85ee8"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "def50062a37943d83aa892719e28bc426bbd30c0389b85aef0284d5ca11adaef",
+          "sourceFrame": 30
         },
         {
           "x": 2242,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "ddf0997b1f125d6bf50562a490d7638ef16d2323fc64edc4af7b295958e1eeb7"
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "3ee25b76eff3d4e8af0edfa341a14be7d4653a20162190bab4989cbd410a6603",
+          "sourceFrame": 35
+        },
+        {
+          "x": 642,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "69bc58e30fa8098e3986d3c363b5060f0d993615263f4bdd68a34000e3558bea",
+          "sourceFrame": 40
+        },
+        {
+          "x": 962,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "5c7a1d581ec20460d3db4b995f1e184f0f0946ac4932912ce7c4218f0f3a0fed",
+          "sourceFrame": 45
+        },
+        {
+          "x": 1282,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "bbedb20e0e94da7789d2a9781f45c4f720d71f886e734b9d1abf3363d610a688",
+          "sourceFrame": 50
+        },
+        {
+          "x": 1602,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "8ded33da43248bf20034c241c8b81f9f77ce4db6666b1171a7387ff4bfc191e0",
+          "sourceFrame": 55
+        },
+        {
+          "x": 1922,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "107f0ae7478b405c868b9233b91e7ef8e7c8a78efd6b3edcebe8bf1ee63a919c",
+          "sourceFrame": 60
+        },
+        {
+          "x": 2242,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "16747e8e41b30443a82638c86cfd1e2c1c7be66469823bc55885c2f73d16dfc4",
+          "sourceFrame": 65
+        },
+        {
+          "x": 1922,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "ebf73b54e17a5b9d25e207432194ac6eef674e38a2906bdfc4fec96989e6091c",
+          "sourceFrame": 70
+        },
+        {
+          "x": 2242,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "frameTicks60": 2,
+          "decodedRgbaSha256": "a3b4dd76cb0f69fac3fb5967266473974e5680a1d77c96d46cb060928d2612b7",
+          "sourceFrame": 75
         }
       ]
     },
@@ -538,5 +622,6 @@
         }
       ]
     }
-  ]
+  ],
+  "walkSheetSha256": "185cda3a5b469a5f21a42e678e1cdac8df5d9a478cf84b010b8fd19bb6e94ca0"
 }
