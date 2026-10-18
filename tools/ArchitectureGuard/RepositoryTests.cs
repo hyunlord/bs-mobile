@@ -72,6 +72,15 @@ internal static class RepositoryTests
             Console.WriteLine($"{(rejectedRegistry ? "PASS" : "FAIL")} repository concrete content cannot register as grammar");
             if (!rejectedRegistry) { failures++; }
             File.WriteAllText(registry, validRegistry);
+            var generated = Path.Combine(root, "artifacts/benchmarks/c05/data/heroes");
+            Directory.CreateDirectory(generated);
+            File.WriteAllText(Path.Combine(generated, "copied.json"), "{\"id\":\"generated_copy_knight\"}");
+            File.WriteAllText(source, "class C { string Id => \"generated_copy_knight\"; }");
+            Expect("generated artifacts/ data copy is not a content source", "AG002", false);
+            File.WriteAllText(Path.Combine(root, "data/heroes/generated-twin.json"), "{\"id\":\"generated_copy_knight\"}");
+            Expect("the same identity in data/ is still a content ID", "AG002");
+            File.Delete(Path.Combine(root, "data/heroes/generated-twin.json"));
+            Directory.Delete(Path.Combine(root, "artifacts"), recursive: true);
             File.WriteAllText(source, "class C {} ");
             File.WriteAllText(Path.Combine(root, "Directory.Build.props"),
                 "<Project><ItemGroup><PackageReference Include=\"Engine\" /></ItemGroup></Project>");
