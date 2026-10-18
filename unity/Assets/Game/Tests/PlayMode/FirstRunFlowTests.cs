@@ -54,6 +54,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator FirstIntroductionAndHintsPersistWhileCardSettingsReturnToOffer()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             var deadline=Time.realtimeSinceStartup+45;RunCoordinator app=null;
@@ -84,7 +85,7 @@ namespace Tests.PlayMode
             Assert.That(app.GetComponents<AudioSource>().Single(s=>s.loop).volume,Is.Zero);
             Click(app,"돌아가기");yield return null;
             Assert.That(app.Ui.Content.Find("Cards"),Is.Not.Null);Assert.That(app.Session.View.CaptureCards().Cards,Is.EqualTo(offered));
-            Click(app,"선택");yield return null;Assert.That(app.MenuOpen,Is.False);
+            ClickFirstCard(app);yield return null;Assert.That(app.MenuOpen,Is.False);   // the card itself is the choice (#235)
             var replayPath=app.RecordedReplayPath;
             foreach(var boot in UnityEngine.Object.FindObjectsByType<FoundationBoot>())UnityEngine.Object.Destroy(boot.gameObject);
             yield return null;
@@ -101,9 +102,19 @@ namespace Tests.PlayMode
             foreach(var boot in UnityEngine.Object.FindObjectsByType<FoundationBoot>())UnityEngine.Object.Destroy(boot.gameObject);
             yield return null;
         }
+        // Cards are chosen by tapping the card body (button "Choose <id>"); there is no separate "선택" button since #235.
+        static void ClickFirstCard(RunCoordinator app)
+        {
+            var card=app.Ui.GetComponentsInChildren<Button>().FirstOrDefault(b=>b.interactable&&b.name.StartsWith("Choose ",System.StringComparison.Ordinal));
+            Assert.That(card,Is.Not.Null,"An offered card is clickable.");
+            ExecuteEvents.Execute(card.gameObject,new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler);
+        }
         static void Click(RunCoordinator app,string label)
         {
-            var button=app.Ui.GetComponentsInChildren<Button>().First(b=>b.interactable&&b.GetComponentInChildren<Text>().text==label);
+            // Icon-only buttons (portrait HUD) have no Text; report what is actually clickable when the label is missing.
+            var buttons=app.Ui.GetComponentsInChildren<Button>();
+            var button=buttons.FirstOrDefault(b=>b.interactable&&b.GetComponentInChildren<Text>()?.text==label);
+            Assert.That(button,Is.Not.Null,"No interactable button \""+label+"\". Interactable: "+string.Join(" | ",buttons.Where(b=>b.interactable).Select(b=>b.GetComponentInChildren<Text>()?.text??"["+b.name+"]")));
             ExecuteEvents.Execute(button.gameObject,new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler);
         }
     }

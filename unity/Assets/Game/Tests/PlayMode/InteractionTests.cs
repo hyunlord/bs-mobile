@@ -20,6 +20,7 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator RealUiStartsRunConsumesCardsAndResetsJoystick()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             var deadline=Time.realtimeSinceStartup+45;
@@ -48,7 +49,7 @@ namespace Tests.PlayMode
             yield return new WaitForSecondsRealtime(.2f);Assert.That(app.Frame.Tick,Is.GreaterThan(0));
             app.Send(ReplayCommandKind.GrantLevel);var transitionTick=app.Frame.Tick;System.Threading.Thread.Sleep(70);yield return null;yield return null;
             foreach(var label in app.GetComponentsInChildren<Text>())Assert.That(FontProvider.Supports(label.font,label.text),Is.True,label.text);
-            var choice=app.Ui.GetComponentsInChildren<Button>().First(b=>b.GetComponentInChildren<Text>().text=="선택").transform as RectTransform;
+            var choice=FirstCard(app).transform as RectTransform;   // the card itself is the choice (#235)
             yield return Reveal(app,choice);AssertUiConsumes(choice);
             var tick=app.Frame.Tick;Assert.That(stick.Sample.X,Is.Zero);Assert.That(app.Frame.Status,Is.EqualTo(RunStatus.AwaitingCard));
             yield return new WaitForSecondsRealtime(.2f);Assert.That(app.Frame.Tick,Is.EqualTo(tick));
@@ -56,7 +57,7 @@ namespace Tests.PlayMode
             Click(app,"고정");yield return null;Assert.That(app.Session.NextSequence,Is.EqualTo(before+1));
             Click(app,"다시 뽑기 · "+offered.Rerolls);yield return null;
             Click(app,"금지");yield return null;
-            Click(app,"선택");yield return null;
+            ClickButton(FirstCard(app));yield return null;
             Assert.That(app.Frame.Status,Is.EqualTo(RunStatus.Running));Assert.That(app.Error,Is.Null);
             var replayPath=app.RecordedReplayPath;
             foreach(var boot in Object.FindObjectsByType<FoundationBoot>())Object.Destroy(boot.gameObject);
@@ -85,9 +86,23 @@ namespace Tests.PlayMode
             var hits=new System.Collections.Generic.List<RaycastResult>();EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current){position=point},hits);
             Assert.That(hits.Count,Is.GreaterThan(0));Assert.That(hits[0].gameObject.GetComponentInParent<Game.Input.FloatingStick>(),Is.Null,"UI must receive the raycast before the movement surface.");
         }
+        // Cards are chosen by tapping the card body (button "Choose <id>"); there is no separate "선택" button since #235.
+        private static Button FirstCard(RunCoordinator app)
+        {
+            var card=app.Ui.GetComponentsInChildren<Button>().FirstOrDefault(b=>b.interactable&&b.name.StartsWith("Choose ",System.StringComparison.Ordinal));
+            Assert.That(card,Is.Not.Null,"An offered card is clickable.");
+            return card;
+        }
+        private static void ClickButton(Button button)
+        {
+            var e=new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left};ExecuteEvents.Execute(button.gameObject,e,ExecuteEvents.pointerClickHandler);
+        }
         private static void Click(RunCoordinator app,string text)
         {
-            var button=app.Ui.GetComponentsInChildren<Button>().First(b=>b.interactable&&b.GetComponentInChildren<Text>().text==text);
+            // Icon-only buttons (portrait HUD) have no Text; report what is actually clickable when the label is missing.
+            var buttons=app.Ui.GetComponentsInChildren<Button>();
+            var button=buttons.FirstOrDefault(b=>b.interactable&&b.GetComponentInChildren<Text>()?.text==text);
+            Assert.That(button,Is.Not.Null,"No interactable button \""+text+"\". Interactable: "+string.Join(" | ",buttons.Where(b=>b.interactable).Select(b=>b.GetComponentInChildren<Text>()?.text??"["+b.name+"]")));
             var e=new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left};ExecuteEvents.Execute(button.gameObject,e,ExecuteEvents.pointerClickHandler);
         }
     }

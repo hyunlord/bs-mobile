@@ -11,6 +11,7 @@ namespace Tests.EditMode
     {
         [Test] public void PublicSnapshotsRetainEnemyValuesAcrossRepeatedBorrowedStorageReuse()
         {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             var catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
             var template = session.View.CaptureFrame();
@@ -53,6 +54,7 @@ namespace Tests.EditMode
 
         [Test] public void InternalCaptureDoesNotMaterializePublicCopiesWithoutConsumers()
         {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             var catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
             var owner = new GameObject("Snapshot capture test");

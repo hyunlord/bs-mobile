@@ -25,6 +25,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator MetaPagesUseCatalogAndAbandonPersistsExactlyOneSettlement()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
@@ -58,6 +59,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator EditorPortraitAndSquareCaptureMetaPagesAndChapterTerrain()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
@@ -118,6 +120,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator CompletedRunSaveFailureRetriesTheTerminalResultExactlyOnce()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             yield return SceneManager.LoadSceneAsync("Boot");
             RunCoordinator app=null;var deadline=Time.realtimeSinceStartup+45;
@@ -166,6 +169,7 @@ namespace Tests.PlayMode
         }
         [UnityTest] public IEnumerator IsolatedProgressionFixtureCapturesActualManorGrowthAndVassalUpgrade()
         {
+            if (Game.App.Generated.CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Drives the legacy menu screens, which only first-playable shows; wave-1a uses the portrait screens (Portrait*FlowTests).");
             using var preferences=new RunPreferenceScope();
             var catalog=Game.App.Generated.CanonicalContent.CreateMetaCatalog();
             var fixture=MetaEngine.NewGame(catalog);
@@ -212,7 +216,10 @@ namespace Tests.PlayMode
         }
         static void Click(RunCoordinator app,string label)
         {
-            var button=app.Ui.GetComponentsInChildren<Button>().First(b=>b.interactable&&b.GetComponentInChildren<Text>().text==label);
+            // Icon-only buttons (portrait HUD) have no Text; report what is actually clickable when the label is missing.
+            var buttons=app.Ui.GetComponentsInChildren<Button>();
+            var button=buttons.FirstOrDefault(b=>b.interactable&&b.GetComponentInChildren<Text>()?.text==label);
+            Assert.That(button,Is.Not.Null,"No interactable button \""+label+"\". Interactable: "+string.Join(" | ",buttons.Where(b=>b.interactable).Select(b=>b.GetComponentInChildren<Text>()?.text??"["+b.name+"]")));
             ExecuteEvents.Execute(button.gameObject,new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left},ExecuteEvents.pointerClickHandler);
         }
     }
