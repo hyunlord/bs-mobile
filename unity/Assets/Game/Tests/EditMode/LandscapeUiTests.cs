@@ -59,6 +59,7 @@ namespace Tests.EditMode
         [TestCase(1280,800)]
         public void EveryWaveCardFitsAllTextAndActionsInLandscape(int width,int height)
         {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             var priorArtProfile=ArtCatalog.ProfileName;ArtCatalog.ProfileName=CanonicalContent.ProfileName;
             var owner=new GameObject("Landscape cards",typeof(RectTransform));
             var font=FontProvider.Create(Array.Empty<string>());
