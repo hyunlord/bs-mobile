@@ -71,6 +71,7 @@ namespace Tests.EditMode
         [Test]
         public void StartupStoresAndPreferenceMigrationStayOutsideMeasurementDirectory()
         {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             var root = Path.Combine(Path.GetTempPath(), "benchmark-startup-" + Guid.NewGuid().ToString("N"));
             var account = WaveBenchmarkAccount.Parse(new[] { "--wave-benchmark", "fixture.ssreplay", "--wave-benchmark-output", Path.Combine(root, "measure") });
             var originalDefaults = PlayerPrefs.GetInt(RunPreferences.Prefix + "feelDefaultsVersion", -1);
