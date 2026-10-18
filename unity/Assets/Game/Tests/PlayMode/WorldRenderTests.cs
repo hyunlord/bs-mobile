@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -151,7 +150,7 @@ namespace Tests.PlayMode
             for (var index = 0; index < 2; index++) { world.Present(frame, frame, firstPlayable, 1, 0, safe); yield return null; }
             Assert.That(owner.transform.childCount, Is.EqualTo(pooled), "Entities must not create GameObjects.");
             foreach (Transform child in owner.transform)
-                Assert.That(child.name.StartsWith("Pooled damage number", StringComparison.Ordinal) || child.name.StartsWith("Growth label", StringComparison.Ordinal), Is.True,
+                Assert.That(child.name.StartsWith("Pooled damage number", System.StringComparison.Ordinal) || child.name.StartsWith("Growth label", System.StringComparison.Ordinal), Is.True,
                     "Only the renderer's fixed text pools are child objects: " + child.name);
             Assert.That(world.SubmittedInstances, Is.GreaterThan(frame.Enemies.Count)); Assert.That(world.DrawCalls, Is.GreaterThan(0));
             var previous = RenderTexture.active; RenderTexture.active = target;
