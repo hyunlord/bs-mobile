@@ -14,6 +14,16 @@ namespace SowSiege.Core
             {
                 Write("wave-enemy-separation-v1"); Write(separation.Version); WriteMap(separation.BodyWidths, Write);
             }
+            if (d.EstateLight is { } light)
+            {
+                Write("wave-estate-light-v1"); Write(light.Version); Write(light.HomeId); Write(light.HomeLitRadius); Write(light.SightRadius);
+                Write(light.DarkDamagePermille); Write(light.DarkFinishPermillePerSleeping); Write(light.DarkFinishCapPermille);
+                WriteMap(light.Buildings, b =>
+                {
+                    Write(b.Id); Write(b.DesignRef); Write((int)b.Wake); Write(b.WakeRadius); Write(b.LitRadius); Write(b.ChannelTicks); Write((int)b.Resource); Write(b.Cost); Write(b.ConfirmTicks);
+                });
+                WriteMap(light.Loadouts, slots => WriteList(slots, s => { Write(s.BuildingId); Write(s.MinRadius); Write(s.MaxRadius); }));
+            }
             Write("wave-runtime-definition-v1");
             Write(d.Revision);
             Write(d.ChapterId);
@@ -123,6 +133,11 @@ namespace SowSiege.Core
                 Write(e.Id); Write(e.Tick); Write(e.Kind); Write(e.Source); Write(e.SubjectId); Write(e.Position); Write(e.Target); Write(e.Amount);
             }
 );
+            if (s.Estate is { } estate)
+            {
+                Write("wave-estate-state-v1"); Write(s.EstateLoadout);
+                WriteList(estate, b => { Write(b.Id); Write(b.DefinitionId); Write(b.Position); Write((int)b.Phase); Write(b.Progress); Write(b.Dwell); Write(b.Paid); });
+            }
         }
     }
 }

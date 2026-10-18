@@ -1,6 +1,6 @@
 # ADR0064: 어둠 속 영지 — 영구 밝힘 구역과 잠든 건물의 Core 계약
 
-- 상태: **결정** — 2026-10-17 사용자가 방향과 미정 11건을 결정했다([설계 8절](../design/m2-dark-estate-buildings.md)). 구현은 아직 없다. 무기 스택(#267~)과 영웅 PR(#290)이 정리된 뒤 별도 지시로 시작한다. 수치는 모두 [가설]이며 #126 보류를 유지한다.
+- 상태: **결정** — 2026-10-17 사용자가 방향과 미정 11건을 결정했다([설계 8절](../design/m2-dark-estate-buildings.md)). Core 첫 조각이 #315로 구현됐다(기본 꺼짐, 끝의 "구현 기록"). 수치는 모두 [가설]이며 #126 보류를 유지한다.
 - 날짜: 2026-10-17
 - 연결: [#292](https://github.com/hyunlord/bs-mobile/issues/292), [설계](../design/m2-dark-estate-buildings.md)
 - 관련: [ADR0042](0042-wave1a-runtime-isolation.md), [ADR0047](0047-state-driven-fallow-kingdom.md), [ADR0049](0049-deterministic-wave-enemy-separation.md), [ADR0051](0051-versioned-endless-fallow-field.md), [ADR0053](0053-explicit-meta-claims-and-wave-accounting.md), [ADR0054](0054-opt-in-host-rewards-and-local-bm-slots.md)
@@ -124,3 +124,7 @@ Asleep ──(조건 충족 시작)──> Waking ──(진행 ≥ 필요)─�
 - 활성화 판당1회, 밝힘이 줄지 않음, 수리·저장 복구가 재활성화를 만들지 않음, 소비 부족 시 미지불, 정지 규칙, 검사용 더미 건물이 같은 경로로 실행됨을 xUnit으로 검사한다.
 - AGENTS.md 상시 성능 계약의 C05 관문 전체: 같은 기기·설정·입력의 무상한 3회, 밀도별 통합 p95를 `tools/check-wave-regression.mjs`로 기준과 비교, 20% 초과 회귀는 실패 또는 PR의 명시적 사유. 새 콘텐츠의 대표 군중 장면 비용도 따로 보고한다. 최대·25ms 초과 비율은 추가 관측일 뿐 이 관문을 대신하지 않는다. 정상 속도 Mac 영상도 남긴다. 사용자만 화면·재미 관문을 판정한다.
 - 이 ADR 자체는 구현·CI·화면 관문의 통과 증거가 아니다.
+
+## 구현 기록
+
+- **Core 첫 조각, [#315](https://github.com/hyunlord/bs-mobile/issues/315), 2026-10-18 (기본 꺼짐):** 1절의 영구 밝힘과 항상 켜진 집, 2절의 T1, 3절의 켜기 3종과 판당 1회 원장, 4절의 catalog 태그 `wave-estate-light-v1`, 상태 태그 `wave-estate-state-v1`, 실행 옵션 태그 `estate-run-options-v1`, 선택형 재생 형식 6을 구현했다. `data/`는 바꾸지 않아 기존 해시와 형식 1–5 기록이 그대로다. 구체화한 점은 [설계 9절](../design/m2-dark-estate-buildings.md#9-구현-기록--core-첫-조각-315-2026-10-18)에 있다: 개체에 `Dwell`을 두고 `Health`·`ReadyTick`은 아직 두지 않음, 고르게 나눈 슬롯 방향, catalog 전체 해시+`LoadoutId`로 목록 구별, 체감 피해 고정 뒤 T1 적용, 결산 보너스는 결과 보상 광고 기준에서 제외. 재생 형식 번호 6은 `tools/ArchitectureGuard/algorithm-constants.json`에 직렬화 구분자로 등록했다. 건물 효과·데이터 프로필·화면·두 대상 해시 비교·C05는 아직이다.

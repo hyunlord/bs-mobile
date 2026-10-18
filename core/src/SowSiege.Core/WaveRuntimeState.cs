@@ -66,6 +66,9 @@ namespace SowSiege.Core
         public Dictionary<int, WaveEnemyAction> EnemyActions = new();
         public List<WaveGroup> Groups = new();
         public List<Position> Paths = new();
+        // Opt-in dark estate (ADR0064); null for every run without EstateRunOptions so codecs and frames stay unchanged.
+        public List<WaveEstateBuilding>? Estate;
+        public string? EstateLoadout;
         public SortedSet<string> Items = new(StringComparer.Ordinal), Evolutions = new(StringComparer.Ordinal), Completed = new(StringComparer.Ordinal);
         public List<WaveEvent> Events = new();
         public List<WaveAttackView> Attacks = new();
@@ -109,7 +112,7 @@ namespace SowSiege.Core
             var items = new string[Items.Count]; Items.CopyTo(items);
             var evolutions = new string[Evolutions.Count]; Evolutions.CopyTo(evolutions);
             return new(d.Revision, d.ChapterId, Water, Timber, AvailableWorkers, BossDefeated,
-                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), buffer is null ? new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)) : buffer.Counters, Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber);
+                Array.AsReadOnly(work), Array.AsReadOnly(rewards), Array.AsReadOnly(projectiles), buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(groups), Array.AsReadOnly(paths), Array.AsReadOnly(items), Array.AsReadOnly(evolutions), Array.AsReadOnly(Events.ToArray()), buffer is null ? new System.Collections.ObjectModel.ReadOnlyDictionary<string, long>(new SortedDictionary<string, long>(Counters, StringComparer.Ordinal)) : buffer.Counters, Array.AsReadOnly(Attacks.ToArray()), CarriedWater, Array.AsReadOnly(detours), new(TimberOrigin.X, TimberOrigin.Y), ProcessedTimber, Estate is null ? null : WaveEstateSystem.Capture(d, this));
         }
     }
 }

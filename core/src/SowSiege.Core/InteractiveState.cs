@@ -12,6 +12,9 @@ namespace SowSiege.Core
         public FeelExperimentState? Feel;
         public FieldState? Field;
         public HostRewardRunState? HostRewards;
+        // Selected estate loadout and seed for slot placement; null unless InteractiveOptions.Estate is set.
+        public string? EstateLoadout;
+        public int EstateSeed;
         public List<PresentationEvent> Events = new();
         public void Attack(int tick, string source, Position origin, Position direction, string shape, int range, IEnumerable<EnemyState> hits, AttackGeometry? geometry = null)
         {

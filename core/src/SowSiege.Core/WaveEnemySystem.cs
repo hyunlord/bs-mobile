@@ -78,7 +78,7 @@ namespace SowSiege.Core
                 shot.Position = shot.Position.MoveToward(shot.Direction, shot.Speed);
                 var radius = catalog.Enemies[shot.Source].Range;
                 if (OnSegment(world.Lord, shot.Previous, shot.Position, radius))
-                { Hurt(shot.Source, shot.Damage); State.Projectiles.RemoveAt(index); }
+                { Hurt(shot.Source, shot.Damage, shot.Position); State.Projectiles.RemoveAt(index); }
                 else if (shot.Position == shot.Direction || world.Tick >= shot.ExpireTick) { State.Projectiles.RemoveAt(index); }
                 else { index++; }
             }
@@ -202,13 +202,13 @@ namespace SowSiege.Core
                     foreach (var building in State.Work)
                     { if (building.Kind != "building" || building.Health <= 0 || !OnSegment(building.Position, previous, enemy.Position, body.Range)) { continue; } if (State.Completed.Add("charge-building:" + enemy.Id + ":" + action.UntilTick + ":" + building.Id)) { DamageBuilding(building, rule.Id, body.Damage); } }
                 }
-                if (!action.Hit && OnSegment(world.Lord, previous, enemy.Position, body.Range)) { Hurt(rule.Id, body.Damage); action.Hit = true; }
+                if (!action.Hit && OnSegment(world.Lord, previous, enemy.Position, body.Range)) { Hurt(rule.Id, body.Damage, enemy.Position); action.Hit = true; }
                 if (enemy.Position == action.Target || world.Tick >= action.UntilTick) { Recover(rule, action); }
                 return;
             }
             if (action.Phase == "water")
             {
-                if (!action.Hit && OnSegment(world.Lord, action.Origin, action.Target, body.Range)) { Hurt(rule.Id, body.Damage); action.Hit = true; }
+                if (!action.Hit && OnSegment(world.Lord, action.Origin, action.Target, body.Range)) { Hurt(rule.Id, body.Damage, enemy.Position); action.Hit = true; }
                 foreach (var work in State.Work)
                 { if (work.Kind != "grain" || work.Complete || work.Health <= 0 || work.DormantUntil >= action.UntilTick || !OnSegment(work.Position, action.Origin, action.Target, body.Range)) { continue; } work.DormantUntil = action.UntilTick; State.Emit(world.Tick, "growth-dormant", rule.Id, work.Id, work.Position, work.Position, action.UntilTick - world.Tick); }
                 if (world.Tick >= action.UntilTick) { action.BossPhase++; Recover(rule, action); }
@@ -263,7 +263,7 @@ namespace SowSiege.Core
                         }
                     }
                 }
-                else if (!ImmediateContact(rule) && world.Lord.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range) { Hurt(rule.Id, body.Damage); }
+                else if (!ImmediateContact(rule) && world.Lord.DistanceSquared(enemy.Position) <= (long)body.Range * body.Range) { Hurt(rule.Id, body.Damage, enemy.Position); }
                 Recover(rule, action); return;
             }
             if (operations.Boss)
@@ -429,7 +429,7 @@ namespace SowSiege.Core
         {
             if (!ImmediateContact(rule) || Definition.EnemySeparation?.BodyWidths.TryGetValue(rule.Id, out var width) != true) { return; }
             var radius = ((long)width + FeelExperimentState.LordBodyWidth) / WaveGeometry.MidpointDivisor;
-            if (world.Lord.DistanceSquared(enemy.Position) > radius * radius || !Hurt(rule.Id, catalog.Enemies[rule.Id].Damage)) { return; }
+            if (world.Lord.DistanceSquared(enemy.Position) > radius * radius || !Hurt(rule.Id, catalog.Enemies[rule.Id].Damage, enemy.Position)) { return; }
             var away = new Position(world.Lord.X - enemy.Position.X, world.Lord.Y - enemy.Position.Y);
             if (away == new Position(0, 0)) { away = State.Facing; }
             if (away == new Position(0, 0)) { away = new(1, 0); }
@@ -438,15 +438,20 @@ namespace SowSiege.Core
             world.Lord = Clamp(new(world.Lord.X + (int)((long)away.X * distance / scale), world.Lord.Y + (int)((long)away.Y * distance / scale)));
             if (interactive?.Feel is { } feel) { feel.RemainderX = 0; feel.RemainderY = 0; }
         }
-        private bool Hurt(string source, int damage)
+        // attacker: the enemy body or hostile projectile position when the hit lands; T1 reads it against the lit zones.
+        private bool Hurt(string source, int damage, Position attacker)
         {
             var feel = interactive?.Feel;
             if (interactive?.Invulnerable == true || feel is not null && world.LordHealth <= 0 || feel is { Options: { ImmediateContact: true } } && world.Tick < feel.InvulnerableUntil) { return false; }
             damage = feel?.Damage(damage) ?? damage;
+            var darkened = State.Estate is { } estate && !WaveEstateSystem.Lit(Definition, estate, attacker);
+            var undarkened = damage;
+            if (darkened) { damage = WaveEstateSystem.Darken(damage, Definition.EstateLight!.DarkDamagePermille); }
             var dealt = Math.Min(world.LordHealth, damage); world.LordHealth -= dealt;
             if (feel is { Options: { ImmediateContact: true } }) { feel.InvulnerableUntil = world.Tick + FeelExperimentState.ImmunityTicks; }
             if (world.LordHealth == 0) { world.DeathCause = source; }
             State.Emit(world.Tick, "lord-hit", source, 0, world.Lord, world.Lord, dealt);
+            if (darkened) { State.Emit(world.Tick, "estate-dark-hit", source, 0, attacker, world.Lord, damage - undarkened); }
             interactive?.Experience(world.Tick, PresentationKind.LordHit, source, world.Lord, dealt);
             return true;
         }

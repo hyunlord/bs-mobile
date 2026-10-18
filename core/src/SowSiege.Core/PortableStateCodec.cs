@@ -740,6 +740,7 @@ namespace SowSiege.Core
                 Write("host-reward-options-v1"); Write(rewards.AllowRerollGrant); Write(rewards.Revive is not null);
                 if (rewards.Revive is { } revive) { Write(revive.RestoreHealth); Write(revive.InvulnerabilityTicks); Write((int)revive.Preservation); }
             }
+            if (value.Estate is { } estate) { Write("estate-run-options-v1"); Write(estate.Version); Write(estate.LoadoutId); Write(estate.LoadoutCatalogHash); }
         }
         private void Write(FeelExperimentOptions? value)
         {
@@ -789,6 +790,7 @@ namespace SowSiege.Core
             WriteList(value.Events, item => { Write(item); });
             if (value.HostRewards is { } rewards) { Write("host-reward-state-v1"); Write(rewards.Revived); Write(rewards.InvulnerableUntil); Write(rewards.RerollGrants); }
             if (value.Feel is not null) { Write(value.Feel); }
+            if (value.EstateLoadout is { } loadout) { Write("estate-run-state-v1"); Write(loadout); Write(value.EstateSeed); }
             if (value.Field is { } field)
             {
                 Write("field-state-v1"); Write(field.Seed); Write(field.Travel.X); Write(field.Travel.Y);
