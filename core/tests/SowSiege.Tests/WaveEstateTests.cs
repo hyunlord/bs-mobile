@@ -79,6 +79,17 @@ public sealed class WaveEstateTests
         }
     }
 
+    // Non-interactive runs hash their whole state as JSON; the opt-in estate members must not appear when they are off.
+    [Fact]
+    public void JsonStateOfRunsWithoutEstateHasNoEstateMembers()
+    {
+        var c = Wave();
+        var simulation = SimulationFactory.Create(c, new RunOptions(7, c.Tuning.DefaultHero, c.Tuning.DefaultEstate, "mixed"));
+        simulation.Tick();
+        var json = System.Text.Json.JsonSerializer.Serialize(simulation.World.WaveRuntime, HostJson.CreateOptions(includeFields: true));
+        Assert.DoesNotContain("\"Estate", json);
+    }
+
     [Fact]
     public void HomeIsLitFromTheFirstTickAndSlotsArePlacedDeterministicallyWithinTheirRings()
     {

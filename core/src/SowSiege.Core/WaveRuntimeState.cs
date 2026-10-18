@@ -66,9 +66,10 @@ namespace SowSiege.Core
         public Dictionary<int, WaveEnemyAction> EnemyActions = new();
         public List<WaveGroup> Groups = new();
         public List<Position> Paths = new();
-        // Opt-in dark estate (ADR0064); null for every run without EstateRunOptions so codecs and frames stay unchanged.
-        public List<WaveEstateBuilding>? Estate;
-        public string? EstateLoadout;
+        // Opt-in dark estate (ADR0064); null for every run without an estate loadout. OmitWhenNull keeps the JSON state hash
+        // of non-interactive runs unchanged, as the explicit codec already does.
+        [OmitWhenNull] public List<WaveEstateBuilding>? Estate;
+        [OmitWhenNull] public string? EstateLoadout;
         public SortedSet<string> Items = new(StringComparer.Ordinal), Evolutions = new(StringComparer.Ordinal), Completed = new(StringComparer.Ordinal);
         public List<WaveEvent> Events = new();
         public List<WaveAttackView> Attacks = new();
