@@ -112,6 +112,7 @@ namespace Tests.PlayMode
         [UnityTest]
         public IEnumerator InstancedWorldProducesActualPixelsWithoutEntityGameObjects()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");   // presents a first-playable snapshot
             var catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new(new(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
             session.Apply(new(0, 0, ReplayCommandKind.Advance));

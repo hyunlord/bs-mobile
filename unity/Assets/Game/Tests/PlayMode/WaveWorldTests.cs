@@ -50,7 +50,7 @@ namespace Tests.PlayMode
                 Present(empty with {Tick=empty.Tick+1},marked);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline),"No enemy or wet marker survives an actor removed from the new frame.");
                 Present(occupied,wave);yield return null;
-                Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+1),"A new wave snapshot without the status removes its wet marker.");
+                Assert.That(world.SubmittedInstances,Is.EqualTo(enemyOnly),"A new wave snapshot without the status removes its wet marker.");
                 world.AcceptWave(null,null);
                 Present(occupied,marked);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(populated),"Profile reset rebuilds presentation from the current snapshots.");
@@ -140,20 +140,25 @@ namespace Tests.PlayMode
                 var uptake=ripe with {Events=new[]{collected}};
                 Present(uptake);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"A consumed reward ID need not match a living grain ID to show actual uptake.");
-                Assert.That(Labels(),Does.Contain("수확 +10 XP"),"Real collected XP is named in the world, not only the HUD bar.");
                 Present(uptake);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"Repeated collection event IDs do not duplicate uptake.");
                 Present(ripe with {Events=new[]{collected with {Id=5,SubjectId=9902}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+3),"Several real collections have at most one visible intake.");
+                // Captions are a timed queue since #198 (WorldHintQueue): "익음" shows first, then the collected experience, with
+                // pending amounts of the same kind merged (two collections of 10).
+                Present(ripe,GameVisualTokens.WaveCollectionLabelSeconds+.05f);yield return null;
+                Assert.That(Labels(),Does.Contain("수확 +20 경험치"),"Real collected experience is named in the world, not only the HUD bar.");
                 world.AcceptWave(null,null);Present(ripe);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"A reset clears the transient collection cue.");
-                Assert.That(Labels(),Does.Not.Contain("수확 +10 XP"));
+                Assert.That(Labels().Any(label=>label.Contains("경험치")),Is.False,"A reset clears the queued experience caption.");
                 Present(ripe with {Events=new[]{collected with {Id=6,Amount=0}}});yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(baseline+2),"Zero experience cannot create an intake cue.");
-                Assert.That(Labels().Any(label=>label.Contains("XP")),Is.False);
+                Assert.That(Labels().Any(label=>label.Contains("경험치")),Is.False);
                 var dead=state with {Work=new[]{plot with {Complete=true,Health=0}}};
                 Present(dead);yield return null;var withoutGrain=world.SubmittedInstances;
                 Assert.That(withoutGrain,Is.EqualTo(baseline-1),"Death removes readiness immediately and cannot fabricate harvesting.");
+                // "익음" is a timed notice near the hero (#198), not a marker on the crop: it ends with its display time.
+                Present(dead,GameVisualTokens.WaveCollectionLabelSeconds+.05f);yield return null;withoutGrain=world.SubmittedInstances;
                 Assert.That(Labels(),Does.Not.Contain("익음"));
                 var harvest=new WaveEvent(7,frame.Tick,"harvest-complete",plot.Source,plot.Id,point,point,0);
                 Present(dead with {Events=new[]{harvest}});yield return null;
@@ -163,10 +168,12 @@ namespace Tests.PlayMode
                 Present(dead,1);yield return null;
                 Assert.That(world.SubmittedInstances,Is.EqualTo(withoutGrain),"The actual harvest cue expires.");
                 Present(ripe with {Events=new[]{collected with {Id=8}}});yield return null;
-                Present(ripe,1);yield return null;
-                Assert.That(Labels().Any(label=>label.Contains("XP")),Is.False,"Collected XP text expires independently of later live crops.");
-                var pooledLabels=owner.GetComponentsInChildren<TextMesh>(true);
-                Assert.That(pooledLabels.Length,Is.LessThanOrEqualTo(6));
+                Present(ripe,1);yield return null;Present(ripe,1);yield return null;   // the queued "익음" and then the experience caption both end
+                Assert.That(Labels().Any(label=>label.Contains("경험치")),Is.False,"Collected experience text expires independently of later live crops.");
+                // World captions use two fixed pools (growth captions and charge warnings), 3 labels with shadows each; damage
+                // numbers are their own pools on the threat layer.
+                var pooledLabels=owner.GetComponentsInChildren<TextMesh>(true).Where(label=>label.name.StartsWith("Growth label",System.StringComparison.Ordinal)).ToArray();
+                Assert.That(pooledLabels.Length,Is.LessThanOrEqualTo(12));
                 foreach(var label in pooledLabels)
                 {
                     var mesh=label.GetComponent<MeshRenderer>();
