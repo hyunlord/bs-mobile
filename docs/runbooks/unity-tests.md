@@ -23,9 +23,20 @@ first-playable EditMode: passed N, failed 0, skipped N
 first-playable PlayMode: passed N, failed 0, skipped N
 wave-1a EditMode: passed N, failed 0, skipped N
 wave-1a PlayMode: passed N, failed 0, skipped N
+skipped in every profile: 0 unexplained, N listed
 ```
 
 출력을 그대로 PR 본문 템플릿의 `## Unity tests` 절에 붙인다. 제목이 두 번 나와도 검사는 같은 이름의 절을 모두 합쳐 읽는다. 손으로 숫자를 고치지 않는다.
+
+## 모든 프로필에서 건너뛴 테스트
+
+두 프로필 결과를 합쳐, 네 결과 어디에서도 실행되지 않은 테스트를 찾는다. 그런 테스트는 아무 곳에서도 검사되지 않는다. 스크립트는 그 수를 기록 마지막 줄에 출력한다. 다음 경우 실패한다(종료 코드 1):
+
+- [`tools/unity-skip-exceptions.txt`](../../tools/unity-skip-exceptions.txt)에 없는 테스트가 모든 프로필에서 건너뛰어졌다.
+- 목록 항목에 이유가 없다.
+- 목록 항목이 이제 어느 프로필에서든 실행된다. 낡은 예외이므로 지운다.
+
+목록과 건너뜀 이유는 `artifacts/unity-tests/skipped-everywhere.txt`에 남는다. 새로 걸리면 먼저 정리한다. 낡은 테스트는 지우고, 한 프로필 전용이면 그 프로필 가드로 옮기고, 실행 환경 때문에 못 도는 검사는 실제로 돌 수 있는 방식으로 바꾼다. 수동 도구처럼 의도된 경우에만 `<전체 테스트 이름> | <이유>`로 목록에 적는다.
 
 ## CI가 확인하는 것 (`tools/unity-test-record.mjs`)
 
