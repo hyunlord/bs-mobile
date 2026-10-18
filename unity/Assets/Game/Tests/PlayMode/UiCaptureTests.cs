@@ -85,7 +85,11 @@ namespace Tests.PlayMode
             }
             debug.SetOpen(false);yield return null;Assert.That(app.Session.GetSummary().EndReason,Is.EqualTo("death"));
             PlayModeWindow.SetCustomRenderingResolution(900,1600,"Phase1B QA");yield return null;yield return Capture("death-portrait");SaveReplay(app,"death",ReplayEndKind.Death);
-            var dead=app.Session;Click(app,"다시 하기");yield return null;yield return null;Assert.That(app.Session,Is.Not.SameAs(dead));
+            // The restart loads a new session over several frames; two fixed frames flaked under load, so wait with a deadline.
+            var dead=app.Session;Click(app,"다시 하기");
+            var restartDeadline=Time.realtimeSinceStartup+10;
+            while(ReferenceEquals(app.Session,dead)&&Time.realtimeSinceStartup<restartDeadline)yield return null;
+            Assert.That(app.Session,Is.Not.SameAs(dead));
             foreach(var boot in UnityEngine.Object.FindObjectsByType<FoundationBoot>())UnityEngine.Object.Destroy(boot.gameObject);
             yield return null;
         }
