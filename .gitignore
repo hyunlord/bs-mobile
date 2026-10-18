@@ -32,6 +32,10 @@ unity/Assets/Game/App/Generated.meta
 unity/*.csproj
 unity/*.sln
 unity/*.slnx
+# Unity crash dumps and test-runner temporary scenes left by an interrupted Editor run.
+unity/mono_crash.*
+unity/Assets/InitTestScene*.unity
+unity/Assets/InitTestScene*.unity.meta
 
 # Lattice generated map; lens is tracked.
 /.lattice/cache/
