@@ -23,6 +23,7 @@ namespace Tests.PlayMode
         [UnityTest, Timeout(300000)]
         public IEnumerator StressReplayProducesActualPortraitAndSquareWorldCaptures()
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var root = Path.GetFullPath(Path.Combine(Application.dataPath, "../.."));
             var fixturePath = Path.Combine(root, "artifacts/phase1b/replays/30000.ssreplay");
             Assert.That(File.Exists(fixturePath), Is.True, "Generate the canonical first-playable fixtures first.");
