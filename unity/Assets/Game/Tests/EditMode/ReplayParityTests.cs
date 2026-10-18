@@ -15,6 +15,7 @@ namespace Tests.EditMode
         [TestCase(30004)]
         public void MonoVerifiesEntireDotNetRecordedYear(int seed)
         {
+            if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var path = Path.Combine(FoundationBuild.RepoRoot, "artifacts/phase1b/replays", seed + ".ssreplay");
             Assert.That(File.Exists(path), Is.True, "Run tools/check-unity.sh to generate canonical replay fixtures.");
             using (var input = File.OpenRead(path))
