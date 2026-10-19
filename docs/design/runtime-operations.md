@@ -162,6 +162,12 @@ node .lattice/verify-primitive-support.mjs <graph.json>
 
 2026-10-15 [#280](https://github.com/hyunlord/bs-mobile/issues/280)·[ADR0058](../adr/0058-data-driven-evolution-unlocks-and-card-offers.md): 이전에는 실제 카드 제시가 `ProgressionSystem.WaveCards()`의 진화 종류별 분기로 플래그를 골랐고, 위 `event-gate`를 읽는 판정은 테스트에서만 호출됐다. 이제 카드 제시도 `WaveRuntimeSystem.ExtraCards()`의 같은 판정을 쓴다. 현재 데이터에서는 세 대응이 종류별 분기와 같아 wave-history·C05·wave-1a 재생 해시가 그대로다. 데이터의 `condition`을 바꾸면 실제 제시가 바뀐다.
 
-2026-10-16 [#282](https://github.com/hyunlord/bs-mobile/issues/282)(ADR0058 구현 순서 2): wave 진화 정의에 선택 필드 `unlock { inputs[id, minLevel, requireMaxLevel], events[event, minCount] }`가 생겼다. 없으면 "재료 전부 보유(레벨 무관) + event-gate 1회"인 기존 규칙이다. 로더는 `inputs`가 `inputIds`와 같은 집합이고 `events`가 event-gate 조건과 같은지 검사한다. 사건 횟수 상태는 어떤 진화가 `minCount > 1`을 요구할 때만 기록하고, catalog 해시에는 기본값과 다를 때만 들어간다. `definition.cardOffer`는 로더·해시 계약만 있고 제시 규칙 적용은 구현 순서 3이다. 두 필드의 `data/schema` 정의는 데이터 해시를 바꾸므로 별도 데이터 개정에서 추가한다. 그 전까지 기본값과 다른 값은 로더가 거부한다.
+2026-10-16 [#282](https://github.com/hyunlord/bs-mobile/issues/282)(ADR0058 구현 순서 2): wave 진화 정의에 선택 필드 `unlock { inputs[id, minLevel, requireMaxLevel], events[event, minCount] }`가 생겼다. 없으면 "재료 전부 보유(레벨 무관) + event-gate 1회"인 기존 규칙이다. 로더는 `inputs`가 `inputIds`와 같은 집합이고 `events`가 event-gate 조건과 같은지 검사한다. 사건 횟수 상태는 어떤 진화가 `minCount > 1`을 요구할 때만 기록하고, catalog 해시에는 기본값과 다를 때만 들어간다. `definition.cardOffer`의 제시 규칙은 구현 순서 3(2026-10-19)에서 적용된다. 아래 문단에 있다. 두 필드의 `data/schema` 정의는 데이터 해시를 바꾸므로 별도 데이터 개정([#329](https://github.com/hyunlord/bs-mobile/issues/329))에서 추가한다.
+
+2026-10-19 ADR0058 구현 순서 3: wave 카드 제시는 보장 재료 카드와 잠금 카드를 먼저 놓는다. 그다음 남은 칸에 아래 규칙을 적용한다.
+- 가중치 0인 카드와 `maxPicks`만큼 이미 선택된 카드는 뽑기 풀에서 뺀다. 선택 횟수는 기존 카드 선택 기록(`world.Cards`)에서 세므로 새 상태가 없다.
+- `evolutionPriority: first-slot`이면 첫 빈 칸을 해금된 진화 중에서 먼저 뽑는다.
+- 나머지 칸은 `카드 가중치 × 보유/미보유 장비 가중치`로 한 번의 가중 추첨을 한다. 가중치는 최대공약수로 나눈 뒤 뽑는다. 그래서 가중치가 모두 같으면(기본값, `cardOffer` 없음 포함) `random.Next(풀 크기)`와 같은 값·같은 칸이 나와, 기존 재생과 해시가 그대로다.
+- wave-1a 데이터에는 `cardOffer`가 없다. `first-slot` 등 해시를 바꾸는 값은 새 데이터 개정에서 켠다(ADR0058 사용자 결정 1). 수치는 #126 보류다.
 
 설계 params와 실행 params는 목적이 다른 문법이다. 문자열 동일성을 요구하지 않고 설계 단위 보존·엄격한 실행 조합·위 3개에 한정한 실행 전용 대응을 검사한다. 처리기 없는 단위나 선언 없는 추가 단위는 실패한다. 선택 설계0/실행3인 `event-gate`를 설계 누락이나 전체 단위의 의미 검증 완료로 해석하지 않는다.

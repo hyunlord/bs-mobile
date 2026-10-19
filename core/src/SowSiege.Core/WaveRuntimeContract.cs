@@ -27,7 +27,7 @@ namespace SowSiege.Core
     public sealed record WaveUnlockEvent(string Event, int MinCount);
     public sealed record WaveEvolutionUnlock(WaveUnlockInput[] Inputs, WaveUnlockEvent[] Events);
     public sealed record WaveEvolutionDefinition(string Id, string DesignRef, WaveEvolutionKind Kind, string[] InputIds, [property: OmitWhenNull] WaveEvolutionUnlock? Unlock = null);
-    // ADR0058: card offer rules. Applied in implementation step 3; until then only defaults are accepted.
+    // ADR0058: card offer rules (step 3). Absent or default rules draw exactly as before.
     public sealed record WaveCardOfferCard([property: OmitWhenNull] int? Weight = null, [property: OmitWhenNull] int? MaxPicks = null);
     public sealed record WaveCardOfferDefinition([property: OmitWhenNull] string? EvolutionPriority = null, [property: OmitWhenNull] int? OwnedGearWeight = null, [property: OmitWhenNull] int? UnownedGearWeight = null, [property: OmitWhenNull] IReadOnlyDictionary<string, WaveCardOfferCard>? Cards = null)
     {
