@@ -6,9 +6,10 @@ import { parseCsv } from './csv.mjs';
 
 export const frameHeaders = 'frame tick enemies commands wallMs simulationMs snapshotMs acceptMs presentMs hudMs allocatedBytes gcCollections focused'.split(' ');
 export const timingHeaders = 'observedFrame frameStartTimestamp cpuFrameMs cpuMainThreadMs cpuRenderThreadMs cpuPresentWaitMs gpuMs'.split(' ');
-const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter'.split(' ');
+// The last three columns came with #235's foreground-stall evidence; a valid run has no background exclusion in them (#321).
+const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter partialBoundary originalWallMs excludedBackgroundMs'.split(' ');
 const timingExtensions = ['observationTimestamp'];
-const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp'.split(' '));
+const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp partialBoundary'.split(' '));
 const cpuFields = 'wallMs simulationMs snapshotMs acceptMs presentMs hudMs'.split(' ');
 const configFields = 'width height targetFrameRate vSyncCount renderWarmupFrames windows graphicsApi quality frameTimingEnabled platform'.split(' ');
 const deviceFields = 'model os unityVersion backend graphics'.split(' ');
@@ -58,6 +59,9 @@ function loadRun(directory, contract) {
   assert.ok(!identity.error, 'Benchmark reported an error');
   assert.equal(identity.developmentBuild, false, 'Development build is not acceptance evidence');
   if (Object.hasOwn(identity, 'diagnosticOnly')) assert.equal(identity.diagnosticOnly, false, 'Diagnostic-only run is not acceptance evidence');
+  // Focus loss is a validity failure, not a filterable interval (runbook): no recorded focus events or excluded intervals.
+  if (Object.hasOwn(identity, 'focusEvents')) assert.equal(identity.focusEvents.length, 0, 'Focus lost during the benchmark; the run is invalid');
+  if (Object.hasOwn(identity, 'excludedIntervals')) assert.equal(identity.excludedIntervals.length, 0, 'Background intervals were excluded; the run is invalid');
   if (Object.hasOwn(identity, 'performanceEligible')) assert.equal(identity.performanceEligible, true, 'Ineligible performance run');
   assert.equal(identity.sourceDirty, false, 'Dirty source is not a repeatable benchmark');
   assert.equal(identity.platform, 'OSXPlayer', 'Native Mac player required');
@@ -87,6 +91,7 @@ function loadRun(directory, contract) {
     if (Object.hasOwn(row, 'advances')) assert.ok(row.advances <= row.commands, 'Advance count exceeds commands');
     if (Object.hasOwn(row, 'nextEntryTimestamp')) assert.ok(row.entryTimestamp <= row.exitTimestamp && row.exitTimestamp <= row.nextEntryTimestamp, 'Invalid frame timestamp order');
     assert.equal(row.focused, 1, 'Unfocused benchmark frame'); assert.ok(row.wallMs > 0, 'Empty frame duration');
+    if (Object.hasOwn(row, 'partialBoundary')) assert.ok(row.partialBoundary === 0 && row.excludedBackgroundMs === 0, 'Background exclusion or resume boundary; the run is invalid');
     const window = contract.windows.findIndex(([start, end]) => row.tick >= start && row.tick <= end);
     assert.ok(window >= 0, 'Frame outside fixed measurement windows');
     if (previous) {
