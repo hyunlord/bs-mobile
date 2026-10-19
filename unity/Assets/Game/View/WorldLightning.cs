@@ -193,6 +193,7 @@ namespace Game.View
                 enemyImpactPoses.Hit(hit.Subject, visualTime, hit.Direction, hit.Hold, hit.Shake, true);
                 hitUntil[hit.Subject] = visualTime + GameVisualTokens.EnemyHitFlashSeconds;
                 impactParticles.Hit(hit.EventId, hit.Origin);
+                RequestBigHitStop(hit.Source);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(hit.Subject, hit.Origin, hit.Amount);
                 deferredHits[i] = deferredHits[deferredHits.Count - 1]; deferredHits.RemoveAt(deferredHits.Count - 1);
                 if (hit.Blade) BladePresentedHits++; else LightningPresentedHits++;

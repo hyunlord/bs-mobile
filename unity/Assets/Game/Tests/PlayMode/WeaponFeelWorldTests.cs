@@ -61,11 +61,11 @@ namespace Tests.PlayMode
                 Present(gone, removed, true, Frame); yield return null;
                 Assert.That(world.FullEnemyDeaths, Is.EqualTo(1));
                 Assert.That(world.ActiveImpactParticles, Is.GreaterThan(0), "Death burst starts with the flash.");
-                for (var t = 0f; t < EnemyDeathPresentationPool.FallStartSeconds + EnemyDeathPresentationPool.FallSeconds; t += Frame)
+                for (var t = 0f; t < EnemyDeathPresentationPool.FullSeconds - 2 * Frame; t += Frame)
                 {
                     Present(gone, removed, true, Frame); yield return null;
                     Assert.That(world.EnemyDeathPresented(700), Is.True);
-                    Assert.That(world.SubmittedInstances, Is.GreaterThan(baseline), "The falling body is on screen through the whole sequence.");
+                    Assert.That(world.SubmittedInstances, Is.GreaterThan(baseline), "The dying body is on screen through the whole burst.");
                 }
                 for (var t = 0f; t < EnemyDeathPresentationPool.FullSeconds; t += Frame) { Present(gone, removed, true, Frame); yield return null; }
                 Assert.That(world.EnemyDeathPresented(700), Is.False);

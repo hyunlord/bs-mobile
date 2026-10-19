@@ -65,12 +65,12 @@ namespace Game.View
             for (var i = 0; i < enemyDeaths.Count; i++)
             {
                 if (enemyDeaths.TakeBurst(i, visualTime, out var eventId, out var origin, out var experience)) impactParticles.Kill(eventId, origin, experience);
-                var sample = enemyDeaths.Sample(i, visualTime);
+                var sample = enemyDeaths.Sample(i, visualTime, HitReaction.KnockbackPixels * PixelsToWorld);
                 ref readonly var pose = ref enemyDeaths.Pose(i);
                 var actor = pose.Actor;
                 if (actor.Visual != null && sample.ActorOpacity > 0)
                 {
-                    var body = new ActorPose(actor.Body.Offset, new Vector2(actor.Body.Scale.x, actor.Body.Scale.y * (1 - sample.Squash)), actor.Body.Degrees + sample.FallDegrees);
+                    var body = new ActorPose(actor.Body.Offset, actor.Body.Scale * (1 + sample.Pop), actor.Body.Degrees);
                     var tint = pose.Tint; tint.a *= sample.ActorOpacity;
                     DrawActor(actor.Visual, pose.Layer, sample.Position, actor.AnimationTime, actor.Dimensions, false, -1, -1, tint: tint, flash: sample.Flash,
                         upperOpacity: pose.UpperOpacity, facing: actor.Facing, poseOverride: body, uv: actor.Rigged ? actor.Uv : (Rect?)null);

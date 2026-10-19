@@ -15,7 +15,7 @@ namespace Tests.EditMode
             Tint = Color.white, UpperOpacity = 1, DefinitionId = "core:raider", Kind = WaveEnemyKind.Pursuer };
 
         [Test]
-        public void VanishedEnemyStaysVisibleUntilItsKillThenFlashesPushesAndFallsWithoutAGap()
+        public void VanishedEnemyStaysVisibleUntilItsKillThenFlashesSwellsAndFadesWithinSevenFrames()
         {
             var pool = new EnemyDeathPresentationPool();
             pool.Hold(7, Pose(0), 1);
@@ -27,21 +27,38 @@ namespace Tests.EditMode
             }
             Assert.That(pool.Kill(7, 99, default, false, Vector2.right, 1 + 2 * Frame, 0), Is.EqualTo(EnemyDeathTier.Full));
             var start = 1 + 2 * Frame;
-            var flashes = 0;
-            for (var frame = 0; frame * Frame < EnemyDeathPresentationPool.FallStartSeconds + EnemyDeathPresentationPool.FallSeconds; frame++)
+            const float knock = .05f;
+            var flashes = 0; var shown = 0; var pop = 0f;
+            for (var frame = 0; frame < HitReaction.DeathFrames; frame++)
             {
-                var sample = pool.Sample(0, start + frame * Frame);
+                var sample = pool.Sample(0, start + frame * Frame, knock);
                 if (sample.Flash > 0) flashes++;
-                Assert.That(sample.ActorOpacity + sample.FallOpacity, Is.GreaterThan(0), "No frame may lose both the actor and its fallen body.");
+                if (sample.ActorOpacity > 0) shown++;
+                Assert.That(sample.FallOpacity, Is.Zero, "No fallen body is left behind.");
+                Assert.That(sample.Pop, Is.GreaterThanOrEqualTo(pop), "The body only swells while it fades.");
+                pop = sample.Pop;
             }
-            Assert.That(flashes, Is.EqualTo(2), "White flash lasts exactly two rendered frames.");
-            Assert.That(pool.Sample(0, start + EnemyDeathPresentationPool.KnockSeconds).Position.x,
-                Is.EqualTo(EnemyDeathPresentationPool.KnockBodyFraction).Within(.0001f), "Push is a fixed fraction of body width.");
+            Assert.That(flashes, Is.EqualTo(HitReaction.FlashFrames), "White flash lasts exactly two rendered frames.");
+            Assert.That(shown, Is.EqualTo(HitReaction.DeathFrames), "The burst is visible on every one of its frames.");
+            Assert.That(pop, Is.GreaterThan(HitReaction.DeathPopScale * .8f));
+            Assert.That(pool.Sample(0, start + HitReaction.DeathSeconds, knock).ActorOpacity, Is.Zero, "Gone after the death frames.");
+            Assert.That(pool.Sample(0, start + HitReaction.DeathSeconds, knock).Position.x, Is.EqualTo(knock).Within(.0001f), "Push is the given screen-pixel knock.");
             Assert.That(pool.TakeBurst(0, start, out var eventId, out _, out _), Is.True);
             Assert.That(eventId, Is.EqualTo(99));
             Assert.That(pool.TakeBurst(0, start + Frame, out _, out _, out _), Is.False, "Death burst is emitted once.");
             pool.Advance(start + EnemyDeathPresentationPool.FullSeconds + Frame);
             Assert.That(pool.Count, Is.Zero);
+        }
+
+        [Test]
+        public void HitReactionValuesStayInTheUserSpecRanges()
+        {
+            Assert.That(HitReaction.FlashFrames, Is.EqualTo(2));
+            Assert.That(HitReaction.KnockbackPixels, Is.InRange(2f, 4f));
+            Assert.That(HitReaction.DeathFrames, Is.InRange(6, 8));
+            Assert.That(HitReaction.BigHitStopSeconds, Is.InRange(.03f, .05f));
+            Assert.That(HitReaction.BigHitStopMinIntervalSeconds, Is.GreaterThanOrEqualTo(.3f), "Evolved hit streams do not stutter the screen.");
+            Assert.That(GameVisualTokens.EnemyHitFlashSeconds, Is.EqualTo(HitReaction.FlashSeconds), "One place for the flash length.");
         }
 
         [Test]

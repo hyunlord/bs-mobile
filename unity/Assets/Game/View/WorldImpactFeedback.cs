@@ -22,6 +22,10 @@ namespace Game.View
         public int DroppedEnemyImpactPoses => enemyImpactPoses.Dropped;
         // Integration owns display-only frame holding. These signals must never pause Core or change its clock.
         public Action<float> BossHitStopRequested;
+        // Display-only hitstop for big hits (evolution attacks), HitReaction.BigHitStopSeconds; the run's presentation timeline holds it.
+        public Action<float> HitStopRequested;
+        public int BigHitStops { get; private set; }
+        float lastBigHitStop = float.NegativeInfinity;
         public Action<float> BossDeathSlowRequested;
 
         void InitializeImpactFeedback()
@@ -40,7 +44,7 @@ namespace Game.View
 
         void ResetImpactFeedback()
         {
-            impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0;
+            impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0; lastBigHitStop = float.NegativeInfinity;
             ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); ResetPikes(); ResetSporePatches(); ResetSling(); ResetOrbits(); heroHitFeedback.Reset();
         }
 
@@ -65,6 +69,7 @@ namespace Game.View
                     enemyImpactPoses.Hit(value.SubjectId, visualTime, slingDirection, 0, 0, true);
                 else enemyImpactPoses.Hit(value.SubjectId, visualTime, direction);
                 impactParticles.Hit(value.Id, origin);
+                if (value.Kind == "hit") RequestBigHitStop(value.Source);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(value.SubjectId, origin, value.Amount);
             }
             else if (value.Kind == "enemy-killed")
@@ -87,7 +92,20 @@ namespace Game.View
 
         EnemyImpactPose ResolveEnemyImpactPose(int id, float bodyWidth, EnemyImpactPose pose)
         {
-            return ImpactFeedbackEnabled ? enemyImpactPoses.Sample(id, visualTime, bodyWidth, pose) : pose;
+            return ImpactFeedbackEnabled ? enemyImpactPoses.Sample(id, visualTime, bodyWidth, HitReaction.KnockbackPixels * PixelsToWorld, pose) : pose;
+        }
+
+        // World units per screen pixel of the render camera (1 when there is no camera, as in some editor tests).
+        float PixelsToWorld => renderCamera == null ? 1 : renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+
+        // A big hit: an evolution's attack (runtime evolution, or a review case shown at its evolved display stage).
+        bool BigHit(string source) => source != null && (waveDefinition.Evolutions.ContainsKey(source) || WeaponEvolved(source));
+        // Called when a hit is presented (at once, or when a deferred blade or chain hit reaches the screen); the timeline's cooldown
+        // keeps a stream of evolved hits from stopping the display continuously.
+        void RequestBigHitStop(string source)
+        {
+            if (!BigHit(source) || visualTime - lastBigHitStop < HitReaction.BigHitStopMinIntervalSeconds) return;
+            lastBigHitStop = visualTime; BigHitStops++; HitStopRequested?.Invoke(HitReaction.BigHitStopSeconds);
         }
 
         public static Color EnemyBodyTint(WaveEnemyKind kind)

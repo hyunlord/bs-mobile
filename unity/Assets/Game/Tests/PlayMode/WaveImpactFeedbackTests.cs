@@ -80,6 +80,14 @@ namespace Tests.PlayMode
                     new WaveEvent(100005, frame.Tick, "enemy-spawn", catalog.WaveRuntime.BossId, 17, point, point, 0),
                     new WaveEvent(100006, frame.Tick, "hit", "test", 17, point, point, 10) } });
                 Assert.That(globalStop, Is.Zero, "M1-3 holds only the struck enemy, including bosses.");
+                var bigStop = 0f; world.HitStopRequested = seconds => bigStop = seconds;
+                string evolution = null;
+                foreach (var id in catalog.WaveRuntime.Evolutions.Keys) { evolution = id; break; }
+                world.AcceptWave(catalog, wave with { Events = new[] { new WaveEvent(100010, frame.Tick, "hit", "test", 17, point, point, 10) } });
+                Assert.That(bigStop, Is.Zero, "An ordinary hit never stops the display.");
+                world.AcceptWave(catalog, wave with { Events = new[] { new WaveEvent(100011, frame.Tick, "hit", evolution, 17, point, point, 10) } });
+                Assert.That(bigStop, Is.EqualTo(HitReaction.BigHitStopSeconds), "An evolution's hit asks for the short display hitstop.");
+                Assert.That(globalStop, Is.Zero, "The boss stop stays the boss's own.");
                 world.AcceptWave(catalog, wave with { Events = new[] {
                     new WaveEvent(100007, frame.Tick, "enemy-killed", catalog.WaveRuntime.BossId, 17, point, point, 8) } });
                 Assert.That(bossSlow, Is.EqualTo(.3f));
