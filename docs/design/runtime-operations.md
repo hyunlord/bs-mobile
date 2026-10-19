@@ -162,7 +162,7 @@ node .lattice/verify-primitive-support.mjs <graph.json>
 
 2026-10-15 [#280](https://github.com/hyunlord/bs-mobile/issues/280)·[ADR0058](../adr/0058-data-driven-evolution-unlocks-and-card-offers.md): 이전에는 실제 카드 제시가 `ProgressionSystem.WaveCards()`의 진화 종류별 분기로 플래그를 골랐고, 위 `event-gate`를 읽는 판정은 테스트에서만 호출됐다. 이제 카드 제시도 `WaveRuntimeSystem.ExtraCards()`의 같은 판정을 쓴다. 현재 데이터에서는 세 대응이 종류별 분기와 같아 wave-history·C05·wave-1a 재생 해시가 그대로다. 데이터의 `condition`을 바꾸면 실제 제시가 바뀐다.
 
-2026-10-16 [#282](https://github.com/hyunlord/bs-mobile/issues/282)(ADR0058 구현 순서 2): wave 진화 정의에 선택 필드 `unlock { inputs[id, minLevel, requireMaxLevel], events[event, minCount] }`가 생겼다. 없으면 "재료 전부 보유(레벨 무관) + event-gate 1회"인 기존 규칙이다. 로더는 `inputs`가 `inputIds`와 같은 집합이고 `events`가 event-gate 조건과 같은지 검사한다. 사건 횟수 상태는 어떤 진화가 `minCount > 1`을 요구할 때만 기록하고, catalog 해시에는 기본값과 다를 때만 들어간다. `definition.cardOffer`의 제시 규칙은 구현 순서 3(2026-10-19)에서 적용된다. 아래 문단에 있다.
+2026-10-16 [#282](https://github.com/hyunlord/bs-mobile/issues/282)(ADR0058 구현 순서 2): wave 진화 정의에 선택 필드 `unlock { inputs[id, minLevel, requireMaxLevel], events[event, minCount] }`가 생겼다. 없으면 "재료 전부 보유(레벨 무관) + event-gate 1회"인 기존 규칙이다. 로더는 `inputs`가 `inputIds`와 같은 집합이고 `events`가 event-gate 조건과 같은지 검사한다. 사건 횟수 상태는 어떤 진화가 `minCount > 1`을 요구할 때만 기록하고, catalog 해시에는 기본값과 다를 때만 들어간다. `definition.cardOffer`의 제시 규칙은 구현 순서 3(2026-10-19)에서 적용된다. 아래 문단에 있다. 두 필드의 `data/schema` 정의는 데이터 해시를 바꾸므로 별도 데이터 개정([#329](https://github.com/hyunlord/bs-mobile/issues/329))에서 추가한다.
 
 2026-10-19 ADR0058 구현 순서 3: wave 카드 제시는 보장 재료 카드와 잠금 카드를 먼저 놓는다. 그다음 남은 칸에 아래 규칙을 적용한다.
 - 가중치 0인 카드와 `maxPicks`만큼 이미 선택된 카드는 뽑기 풀에서 뺀다. 선택 횟수는 기존 카드 선택 기록(`world.Cards`)에서 세므로 새 상태가 없다.
