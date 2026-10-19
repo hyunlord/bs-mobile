@@ -379,6 +379,7 @@ namespace Game.App
                 world.ShowTransientText=screen!=UiScreen.Revive;
                 PredictLord(movement);
                 var probeDrawStart=ProbeEnabled?ProbeTimestamp():0;
+                world.HeroLocomotionPerTick=(float)(Session?.LocomotionSpeedPerTick??0);
                 using(RunProfilerMarkers.WorldPresent.Auto())
                 using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,CurrentFrame,FirstPlayable,renderInterpolation.Present(CurrentFrame.Tick,(float)(accumulator*CurrentFrame.TickRate),Paused,Time.unscaledDeltaTime,CurrentFrame.TickRate),Time.unscaledDeltaTime,visible);
                 LongFrameViewPresented();
@@ -508,7 +509,7 @@ namespace Game.App
         }
         private void ApplyPreferences(bool save=false)
         {
-            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;}
+            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;world.HeroRigExplicit=explicitHeroRig;}
             sound?.SetPreferences(preferences.MusicVolume,preferences.EffectsVolume,preferences.Haptics);waveSound?.SetVolume(preferences.EffectsVolume);
             if(save)preferences.Save();
         }

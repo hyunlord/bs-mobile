@@ -1,5 +1,7 @@
 using Game.View;
 using NUnit.Framework;
+using UnityEngine.TestTools.Constraints;
+using Is = UnityEngine.TestTools.Constraints.Is;
 
 namespace Tests.EditMode
 {
@@ -7,13 +9,12 @@ namespace Tests.EditMode
     {
         [Test] public void SteadyQueueStorageDoesNotAllocate()
         {
-            if(!Game.App.AllocationCounterProbe.CurrentThreadAvailable())Assert.Ignore("Runtime allocation counter is unavailable; .NET probe provides allocation evidence.");
+            // Mono in the Editor has no per-thread allocation counter, so count GC.Alloc samples with the profiler recorder.
+            // It must see a known allocation first; otherwise the zero below would prove nothing.
+            Assert.That(()=>System.GC.KeepAlive(new byte[64]),Is.AllocatingGCMemory(),"GC.Alloc recorder is not recording.");
             var queue=new WorldHintQueue();
             queue.Enqueue(WorldHintKind.HarvestExperience,15);queue.Present(0,1);
-            var before=System.GC.GetAllocatedBytesForCurrentThread();
-            for(var i=0;i<10000;i++){queue.Enqueue(WorldHintKind.HarvestExperience,15);queue.Present(.5f,1);}
-            var allocated=System.GC.GetAllocatedBytesForCurrentThread()-before;
-            Assert.That(allocated,Is.Zero);
+            Assert.That(()=>{for(var i=0;i<10000;i++){queue.Enqueue(WorldHintKind.HarvestExperience,15);queue.Present(.5f,1);}},Is.Not.AllocatingGCMemory());
             Assert.That(queue.Present(1,1),Is.EqualTo("수확 +150000 경험치"));
         }
 
