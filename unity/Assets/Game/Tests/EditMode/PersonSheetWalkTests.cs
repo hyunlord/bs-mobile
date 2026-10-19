@@ -55,6 +55,7 @@ namespace Game.Tests
             Assert.That(GameVisualTokens.PersonWalkCyclePixels, Is.EqualTo(record.cyclePixels));
         }
 
+        // Steps one second apart never reach the rate cap, so the walk follows distance alone.
         [Test] public void OneStrideOfTravelPlaysEachFrameOnceInOrder()
         {
             var move = People("wave1a-manifest.json").ResolveRole("person.militia.move");
@@ -63,12 +64,13 @@ namespace Game.Tests
             Assert.That(stride, Is.EqualTo(Record().cyclePixels * Record().unitsPerPixel).Within(1e-4f));
             var walk = new PersonSheetWalk();
             var position = Vector2.zero;
-            Assert.That(walk.Frame("group", 1, position, true, move, 1), Is.EqualTo(0));
+            var time = 0f;
+            Assert.That(walk.Frame("group", 1, position, time, true, move, 1), Is.EqualTo(0));
             position.x += stride / 32;   // half a frame in, so every following step lands mid-frame
             var frames = new int[16];
-            for (var i = 0; i < 16; i++) { frames[i] = walk.Frame("group", 1, position, true, move, 1); position.x -= stride / 16; }
+            for (var i = 0; i < 16; i++) { time += 1; frames[i] = walk.Frame("group", 1, position, time, true, move, 1); position.x -= stride / 16; }
             Assert.That(frames, Is.EqualTo(Enumerable.Range(0, 16).ToArray()), "direction does not matter; distance does");
-            Assert.That(walk.Frame("group", 1, position, true, move, 1), Is.EqualTo(0), "one stride later the cycle repeats");
+            Assert.That(walk.Frame("group", 1, position, time + 1, true, move, 1), Is.EqualTo(0), "one stride later the cycle repeats");
         }
 
         [Test] public void StationaryActorsStandAndKeepTheirPhase()
@@ -76,19 +78,46 @@ namespace Game.Tests
             var move = People("wave1a-manifest.json").ResolveRole("person.guard.move");
             var walk = new PersonSheetWalk();
             var stride = PersonSheetWalk.Stride(move);
-            walk.Frame("person", 7, Vector2.zero, true, move, 1);
-            Assert.That(walk.Frame("person", 7, new Vector2(stride * 5.5f / 16, 0), true, move, 2), Is.EqualTo(5));
-            Assert.That(walk.Frame("person", 7, new Vector2(stride * 5.5f / 16, 0), false, move, 3), Is.EqualTo(-1), "no Core movement: standing role");
-            Assert.That(walk.Frame("person", 7, new Vector2(stride * 5.5f / 16, 0), true, move, 4), Is.EqualTo(5), "a pause holds the stride");
+            var at = new Vector2(stride * 5.5f / 16, 0);
+            walk.Frame("person", 7, Vector2.zero, 0, true, move, 1);
+            Assert.That(walk.Frame("person", 7, at, 1, true, move, 2), Is.EqualTo(5));
+            Assert.That(walk.Frame("person", 7, at, 2, false, move, 3), Is.EqualTo(-1), "no Core movement: standing role");
+            Assert.That(walk.Frame("person", 7, at, 3, true, move, 4), Is.EqualTo(5), "a pause holds the stride");
+        }
+
+        // Cycles per second over 10 s of 60 Hz rendering at a steady speed, counted from the frames actually returned.
+        static float CyclesPerSecond(ArtVisual move, float unitsPerSecond)
+        {
+            var walk = new PersonSheetWalk();
+            int previous = 0, wraps = 0;
+            for (var i = 0; i <= 600; i++)
+            {
+                var frame = walk.Frame("group", 1, new Vector2(unitsPerSecond * i / 60f, 0), i / 60f, true, move, 1);
+                if (frame < previous) wraps++;
+                previous = frame;
+            }
+            return wraps / 10f;
+        }
+
+        [Test] public void FastGroupsWalkAtTheRateCapAndSlowSoldiersByDistance()
+        {
+            var move = People("wave1a-manifest.json").ResolveRole("person.militia.move");
+            var stride = PersonSheetWalk.Stride(move);
+            Assert.That(GameVisualTokens.PersonWalkMaxCyclesPerSecond, Is.EqualTo(2.5f));
+            // wave-1a group: muster horn speed 90 per tick at 30 Hz = 2.7 units/s; by distance it would be 6.4 cycles/s.
+            Assert.That(2.7f / stride, Is.GreaterThan(6f));
+            Assert.That(CyclesPerSecond(move, 2.7f), Is.EqualTo(2.5f).Within(0.1f), "capped: one cycle per 0.4 s, the feet slide");
+            // first-playable militia/guard: returnSpeed 18 per tick at 30 Hz = 0.54 units/s, under the cap, so distance rules.
+            Assert.That(CyclesPerSecond(move, 0.54f), Is.EqualTo(0.54f / stride).Within(0.1f), "by distance: one cycle per 0.786 s");
         }
 
         [Test] public void ActorsNotDrawnInAGenerationAreForgotten()
         {
             var move = People("first-playable-manifest.json").ResolveRole("person.militia.move");
             var walk = new PersonSheetWalk();
-            walk.Frame("group", 1, Vector2.zero, true, move, 1);
-            walk.Frame("group", 2, Vector2.zero, true, move, 1);
-            walk.Frame("group", 2, Vector2.one, true, move, 2);
+            walk.Frame("group", 1, Vector2.zero, 0, true, move, 1);
+            walk.Frame("group", 2, Vector2.zero, 0, true, move, 1);
+            walk.Frame("group", 2, Vector2.one, 1, true, move, 2);
             walk.Retire(2);
             Assert.That(walk.Count, Is.EqualTo(1));
         }

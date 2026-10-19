@@ -267,7 +267,7 @@ namespace Game.View
                 var groupFacing=Facing("group",group.Id,groupDirection);
                 // A multi-frame move sheet walks by distance while the group moves (#331); the pair steps half a cycle apart.
                 var firstWalk=Resolve("person",firstKind,"move");
-                var walkFrame=PersonSheetWalk.Applies(firstWalk)?personWalk.Frame("group",group.Id,position,groupDirection!=Vector2.zero,firstWalk,facingGeneration):-1;
+                var walkFrame=PersonSheetWalk.Applies(firstWalk)?personWalk.Frame("group",group.Id,position,visualTime,groupDirection!=Vector2.zero,firstWalk,facingGeneration):-1;
                 if(walkFrame>=0)representative=firstWalk;
                 DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing,uv:walkFrame>=0?representative.UvRects[walkFrame]:(Rect?)null);
                 if(group.Training>0)

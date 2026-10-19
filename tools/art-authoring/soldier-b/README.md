@@ -21,4 +21,6 @@ node tools/first-playable-art.mjs "$PWD" && node tools/wave1a-art.mjs "$PWD"
 - Scale is 92% of the hero's pixel scale (user decision): `1.081423 / 240 * 0.92` units per source pixel.
 - `packed-frames.json` records the hashes, crop, pivot, scale, standing-frame measurements and `cyclePixels`, the root travel of
   one walk cycle (`stride` in the Release's `candidate-02.json`). The View plays the walk by distance with it
-  (`PersonSheetWalk`, `GameVisualTokens.PersonWalkCyclePixels`); `PersonSheetWalkTests` checks the manifests against this record.
+  (`PersonSheetWalk`, `GameVisualTokens.PersonWalkCyclePixels`), capped at `GameVisualTokens.PersonWalkMaxCyclesPerSecond` (2.5 cycles per
+  second, user decision); faster movement plays at the cap and the feet slide. `PersonSheetWalkTests` checks the manifests against
+  this record.

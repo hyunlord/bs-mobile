@@ -293,7 +293,7 @@ namespace Game.View
                 var walk = Resolve("person", person.Role, "move");
                 if (!PersonSheetWalk.Applies(walk)) { Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f); continue; }
                 var step = previousPeople.TryGetValue(person.Id, out var before) ? Point(person.Position) - before : Vector2.zero;
-                var walkFrame = personWalk.Frame("person", person.Id, personPosition, step != Vector2.zero, walk, facingGeneration);
+                var walkFrame = personWalk.Frame("person", person.Id, personPosition, visualTime, step != Vector2.zero, walk, facingGeneration);
                 var shown = walkFrame >= 0 ? walk : Resolve("person", person.Role, activity);
                 DrawActor(shown, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, -1, facing: Facing("person", person.Id, step), uv: walkFrame >= 0 ? walk.UvRects[walkFrame] : (Rect?)null);
             }
