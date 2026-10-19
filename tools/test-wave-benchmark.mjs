@@ -145,7 +145,10 @@ test('accepts the current harness columns (#321) when no background time was exc
 for (const [name, row, identity] of [
   ['a resume boundary row', ',1,0,0', null], ['excluded background time', ',0,25,5', null],
   ['a recorded focus event', ',0,0,0', value => { value.focusEvents = [{ focus: false }]; }],
-  ['an excluded interval', ',0,0,0', value => { value.excludedIntervals = [{ reason: 'background' }]; }]
+  ['an excluded interval', ',0,0,0', value => { value.excludedIntervals = [{ reason: 'background' }]; }],
+  ['no focus ledger', ',0,0,0', value => { delete value.focusEvents; }],
+  ['no excluded-interval ledger', ',0,0,0', value => { delete value.excludedIntervals; }],
+  ['a non-array focus ledger', ',0,0,0', value => { value.focusEvents = { length: 0 }; }]
 ]) test(`rejects a run with ${name}`, t => {
   const f = fixture(t);
   mutateFrames(f.run, lines => lines.map((line, index) => line + (index === 0 ? current : `,0,0,32,1409,${index * 1000},${index * 1000 + 10},${index * 1000 + 20},0.016,0,0${index === 2 ? row : ',0,0,0'}`)));

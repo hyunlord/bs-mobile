@@ -59,9 +59,6 @@ function loadRun(directory, contract) {
   assert.ok(!identity.error, 'Benchmark reported an error');
   assert.equal(identity.developmentBuild, false, 'Development build is not acceptance evidence');
   if (Object.hasOwn(identity, 'diagnosticOnly')) assert.equal(identity.diagnosticOnly, false, 'Diagnostic-only run is not acceptance evidence');
-  // Focus loss is a validity failure, not a filterable interval (runbook): no recorded focus events or excluded intervals.
-  if (Object.hasOwn(identity, 'focusEvents')) assert.equal(identity.focusEvents.length, 0, 'Focus lost during the benchmark; the run is invalid');
-  if (Object.hasOwn(identity, 'excludedIntervals')) assert.equal(identity.excludedIntervals.length, 0, 'Background intervals were excluded; the run is invalid');
   if (Object.hasOwn(identity, 'performanceEligible')) assert.equal(identity.performanceEligible, true, 'Ineligible performance run');
   assert.equal(identity.sourceDirty, false, 'Dirty source is not a repeatable benchmark');
   assert.equal(identity.platform, 'OSXPlayer', 'Native Mac player required');
@@ -85,6 +82,14 @@ function loadRun(directory, contract) {
   assert.equal(device.graphics, identity.graphicsApi);
   const rows = parseNumbers(path.join(directory, 'frames.csv'), frameHeaders, frameExtensions);
   assert.ok(rows.length > 0, 'No frame samples'); assert.equal(rows.length, identity.frames, 'Truncated frame CSV');
+  // Focus loss is a validity failure, not a filterable interval (runbook). Runs with the current columns must carry both
+  // ledgers as empty arrays; only legacy CSVs, which predate the ledgers, may omit them.
+  const currentFormat = Object.hasOwn(rows[0], 'partialBoundary');
+  for (const [key, message] of [['focusEvents', 'Focus lost during the benchmark; the run is invalid'], ['excludedIntervals', 'Background intervals were excluded; the run is invalid']]) {
+    if (!currentFormat && !Object.hasOwn(identity, key)) continue;
+    assert.ok(Array.isArray(identity[key]), `Missing or malformed ${key} ledger; the run is invalid`);
+    assert.equal(identity[key].length, 0, message);
+  }
   let previous;
   for (const row of rows) {
     for (const key of ['frame', 'tick', 'enemies', 'commands', 'allocatedBytes', 'gcCollections', 'focused']) assert.ok(Number.isSafeInteger(row[key]), `Noninteger ${key}`);
