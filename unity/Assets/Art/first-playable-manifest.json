@@ -10,7 +10,7 @@
     },
     {
       "id": "generated-crops-people",
-      "origin": "Generated with built-in image_gen for this project",
+      "origin": "Generated with built-in image_gen for this project; Soldier B walk (person.militia/guard) rigged in Unity and baked by Astra (Release soldier-b-rank-rig-r3-20261019), packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/crops-people-atlas-v1-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -3853,21 +3853,21 @@
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
+      "frameMs": 36,
       "tween": "none"
     },
     {
@@ -3875,109 +3875,199 @@
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 2,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 2,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 1049,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.work",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "work"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.muster",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.return",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.idle",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
+      "frameMs": 36,
       "tween": "none"
     },
     {
@@ -3985,88 +4075,178 @@
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 2,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 2,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 1049,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.work",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "work"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.muster",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.return",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.returning.idle",

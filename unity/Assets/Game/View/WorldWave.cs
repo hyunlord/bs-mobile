@@ -258,16 +258,26 @@ namespace Game.View
             {
                 var group=wave.Groups[groupIndex];
                 var activity=group.Phase=="returning"?"return":group.Phase=="idle"?"idle":"muster";
-                var representative=Resolve("person",group.Formation=="cover"?"guard":"militia",activity);
+                var firstKind=group.Formation=="cover"?"guard":"militia";
+                var secondKind=group.Formation=="cover"?"militia":"guard";
+                var representative=Resolve("person",firstKind,activity);
                 var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
                 RenderedEntitySample?.Invoke("group",group.Id,position);
-                var groupFacing=Facing("group",group.Id,waveMotion.GroupDirection(group));
-                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
+                var groupDirection=waveMotion.GroupDirection(group);
+                var groupFacing=Facing("group",group.Id,groupDirection);
+                // A multi-frame move sheet walks by distance while the group moves (#331); the pair steps half a cycle apart.
+                var firstWalk=Resolve("person",firstKind,"move");
+                var walkFrame=PersonSheetWalk.Applies(firstWalk)?personWalk.Frame("group",group.Id,position,groupDirection!=Vector2.zero,firstWalk,facingGeneration):-1;
+                if(walkFrame>=0)representative=firstWalk;
+                DrawActor(representative,GameVisualTokens.AllyLayer,position,visualTime+group.Id*.13f,representative.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing,uv:walkFrame>=0?representative.UvRects[walkFrame]:(Rect?)null);
                 if(group.Training>0)
                 {
-                    var second=Resolve("person",group.Formation=="cover"?"militia":"guard",activity);
+                    var second=Resolve("person",secondKind,activity);
+                    var secondWalk=Resolve("person",secondKind,"move");
+                    var secondFrame=walkFrame>=0&&PersonSheetWalk.Applies(secondWalk)?(walkFrame+secondWalk.UvRects.Count/2)%secondWalk.UvRects.Count:-1;
+                    if(secondFrame>=0)second=secondWalk;
                     var spacing=representative.WorldSize*GameVisualTokens.GroupRepresentativeOffset;
-                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing);
+                    DrawActor(second,GameVisualTokens.AllyLayer+(group.FrontRank==0?-1:1),position+new Vector2(spacing.x,group.FrontRank==0?-spacing.y:spacing.y),visualTime+group.Id*.13f,second.WorldSize,group.Phase!="idle",-1,-1,facing:groupFacing,uv:secondFrame>=0?second.UvRects[secondFrame]:(Rect?)null);
                 }
                 if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
             }

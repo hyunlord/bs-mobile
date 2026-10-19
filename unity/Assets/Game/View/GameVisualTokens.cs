@@ -52,6 +52,8 @@ namespace Game.View
         public const int WaveHarvestCueLimit = 3;
         public const float WaveGrowthLabelRise = .5f, WaveCollectionLabelRise = .9f, WaveCollectionLabelSeconds = .9f;
         public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
+        // Ground covered by one Soldier B walk cycle in source pixels (tools/art-authoring/soldier-b/packed-frames.json, #331).
+        public const float PersonWalkCyclePixels = 102.3603456f;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }
