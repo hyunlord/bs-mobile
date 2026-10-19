@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "release": "weapon-game-assets-20261019",
+  "draftManifestSha256": "dfb983e670fe9720622e0829d27be3f6ace2709c70fb6939371f47ded6f64321",
+  "atlas": "unity/Assets/Art/wave1a-weapon-fx.png",
+  "atlasSha256": "e2e5756dc0e9e2636f9b6467cb189737c8f0bf5748f5b37f1c9e9d3be25e5623",
+  "skipped": [
+    "fx.granary_sling.aroma"
+  ],
+  "replaced": [
+    {
+      "id": "fx.iron_blade.slash",
+      "atlas": "sword-atlas.png",
+      "sourceRect": [
+        4,
+        4,
+        512,
+        128
+      ],
+      "sheetSha256": "6967d574086d4bf3717c0544bcee266110dd00a2a6e13cd5028ca840c85d6f52",
+      "cellRgbaSha256": "781d0148fb86db314ab75538b20838c26c5c45610f156ae0c59610094489dea2",
+      "frame": {
+        "x": 1412,
+        "y": 1284,
+        "width": 512,
+        "height": 128
+      }
+    },
+    {
+      "id": "fx.canal_bow.arrow",
+      "atlas": "water-atlas.png",
+      "sourceRect": [
+        4,
+        4,
+        192,
+        40
+      ],
+      "sheetSha256": "d20cafcddd63f237926c148b987738821bf73f288838d87a68e8041f4ed45e55",
+      "cellRgbaSha256": "1e342a78149df0db480d1e438f7b4e7cefad75cfe97f0de936ec9b050c317e66",
+      "frame": {
+        "x": 1372,
+        "y": 636,
+        "width": 192,
+        "height": 40
+      }
+    },
+    {
+      "id": "fx.canal_bow.streak",
+      "atlas": "water-atlas.png",
+      "sourceRect": [
+        4,
+        52,
+        256,
+        32
+      ],
+      "sheetSha256": "d20cafcddd63f237926c148b987738821bf73f288838d87a68e8041f4ed45e55",
+      "cellRgbaSha256": "d9afdd7e2eba2df9e84d9982a47721ca1494351d310a69b9d78160a500f2f9a6",
+      "frame": {
+        "x": 1572,
+        "y": 636,
+        "width": 256,
+        "height": 32
+      }
+    },
+    {
+      "id": "fx.canal_bow.splash",
+      "atlas": "water-atlas.png",
+      "sourceRect": [
+        4,
+        92,
+        192,
+        144
+      ],
+      "sheetSha256": "d20cafcddd63f237926c148b987738821bf73f288838d87a68e8041f4ed45e55",
+      "cellRgbaSha256": "6c8148c928df6c32c8171a4bb89c8f1024ddcf6ac6dd20e0610c2748d1f1857f",
+      "frame": {
+        "x": 1372,
+        "y": 684,
+        "width": 192,
+        "height": 144
+      }
+    },
+    {
+      "id": "fx.ward_orbit.shield",
+      "atlas": "ring-atlas.png",
+      "sourceRect": [
+        4,
+        4,
+        128,
+        160
+      ],
+      "sheetSha256": "42335bbb3fd511a45565d89a9a1f1b6ff3c38837a4455cfc24eb99c02ec18cee",
+      "cellRgbaSha256": "840cadf3c92865210e3372d1f00fcc8f785de6ac238bbebbd4488c97134a7f88",
+      "frame": {
+        "x": 1636,
+        "y": 1076,
+        "width": 128,
+        "height": 160
+      }
+    },
+    {
+      "id": "fx.ward_orbit.trail",
+      "atlas": "ring-atlas.png",
+      "sourceRect": [
+        4,
+        172,
+        256,
+        64
+      ],
+      "sheetSha256": "42335bbb3fd511a45565d89a9a1f1b6ff3c38837a4455cfc24eb99c02ec18cee",
+      "cellRgbaSha256": "21911c87052855118bc8040773d96790abc2e0532e23f354a484475c50bda12b",
+      "frame": {
+        "x": 1372,
+        "y": 1212,
+        "width": 256,
+        "height": 64
+      }
+    },
+    {
+      "id": "fx.spore_fan.patch",
+      "atlas": "spore-atlas.png",
+      "sourceRect": [
+        4,
+        4,
+        384,
+        256
+      ],
+      "sheetSha256": "3438e4b7fdf29a6402216c286f09f104726284769872bb47a3b0436623bc30ff",
+      "cellRgbaSha256": "f08f3c1aa2f52646d0fe582bd5bfbd54efb4f00ad72329a62b3a45f1edfe932f",
+      "frame": {
+        "x": 1016,
+        "y": 1296,
+        "width": 384,
+        "height": 256
+      }
+    },
+    {
+      "id": "fx.ditch_pike.pike",
+      "atlas": "spear-atlas.png",
+      "sourceRect": [
+        4,
+        4,
+        384,
+        48
+      ],
+      "sheetSha256": "aeb172012f9d23149087e0451604dad24f0f380dde467ea338725c4a164c883e",
+      "cellRgbaSha256": "d164efe1ec54b531ef53e5cd5c08c3a26ca51571c1080b1775178bb4350c8ba1",
+      "frame": {
+        "x": 524,
+        "y": 1296,
+        "width": 384,
+        "height": 48
+      }
+    },
+    {
+      "id": "fx.ditch_pike.thrust",
+      "atlas": "spear-atlas.png",
+      "sourceRect": [
+        4,
+        60,
+        256,
+        48
+      ],
+      "sheetSha256": "aeb172012f9d23149087e0451604dad24f0f380dde467ea338725c4a164c883e",
+      "cellRgbaSha256": "d8bf82d5b347af749d878a0546382b9d2d1fe608c12c9f77886129ea42d992b8",
+      "frame": {
+        "x": 524,
+        "y": 1348,
+        "width": 256,
+        "height": 48
+      }
+    },
+    {
+      "id": "fx.granary_sling.sack",
+      "atlas": "sack-atlas.png",
+      "sourceRect": [
+        4,
+        4,
+        160,
+        192
+      ],
+      "sheetSha256": "cf2774565aed1d49716dcaeba19c49c1b90d96064f708f26343cc64d03bc91a6",
+      "cellRgbaSha256": "3fb82a8ec789f1bcb5bc3d0210f77f7bdeb854f26e0f0584bae003d20c216889",
+      "frame": {
+        "x": 4,
+        "y": 1560,
+        "width": 160,
+        "height": 192
+      }
+    }
+  ]
+}

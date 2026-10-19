@@ -234,7 +234,7 @@
     },
     {
       "id": "generated-wave1a-weapon-fx",
-      "origin": "Generated with built-in image_gen by the Astra art pipeline for issue #266 iron blade effect pictures; background removed with BiRefNet (MIT)",
+      "origin": "Generated with built-in image_gen by the Astra art pipeline for issue #266 weapon effect pictures (first set: background removed with BiRefNet, MIT; game sprites for the iron blade, canal bow, ward orbit, spore patch, ditch pike and granary sling: Release weapon-game-assets-20261019, packed without resampling)",
       "source": "https://github.com/hyunlord/bs-mobile/releases/tag/weapon-266-sprites-review-20261015",
       "prompt": "docs/licenses/prompts/m1-266-weapon-fx-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under applicable OpenAI output terms; no third-party character or brand reference."
@@ -11233,10 +11233,10 @@
       "atlas": "wave1a-weapon-fx",
       "frames": [
         {
-          "x": 1377,
-          "y": 526,
-          "width": 503,
-          "height": 76
+          "x": 1412,
+          "y": 1284,
+          "width": 512,
+          "height": 128
         }
       ],
       "pivot": {
@@ -11244,8 +11244,8 @@
         "y": 0.5
       },
       "worldSize": {
-        "x": 1.309896,
-        "y": 0.197917
+        "x": 1.333333,
+        "y": 0.333333
       },
       "frameMs": 1000,
       "tween": "none"
@@ -11790,7 +11790,7 @@
         }
       ],
       "pivot": {
-        "x": 0.0,
+        "x": 0,
         "y": 0.5
       },
       "worldSize": {
