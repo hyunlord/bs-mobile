@@ -80,8 +80,65 @@ namespace Game.Tests
             var writer = new StringWriter(); recorder.WriteCapacityGrowthCsv(writer);
             var rows = writer.ToString().Trim().Split('\n');
             Assert.That(rows.Length, Is.EqualTo(3));
-            Assert.That(rows[1].Trim(), Is.EqualTo("11,21,301,\"enemies\",64,128,65"));
-            Assert.That(rows[2].Trim(), Is.EqualTo("12,22,302,\"effects\",16,32,17"));
+            Assert.That(rows[1].Trim(), Is.EqualTo("11,21,301,\"enemies\",64,128,65,growth"));
+            Assert.That(rows[2].Trim(), Is.EqualTo("12,22,302,\"effects\",16,32,17,growth"));
+        }
+        [Test] public void MemoryLedgerSamplesAtMostOncePerSecondAndDoesNotInventCatchUpRows()
+        {
+            using var recorder = new DevelopmentLongFrameRecorder(8, false);
+            var frame = Frame(1); frame.StartedTimestamp = 100; frame.Tick = 300; frame.RuntimeSeconds = 10; frame.Enemies = 411;
+            recorder.RecordMemoryForTesting(frame, 11, 22, 33, 44);
+            frame.StartedTimestamp += System.Diagnostics.Stopwatch.Frequency - 1;
+            recorder.RecordMemoryForTesting(frame, 99, 99, 99, 99);
+            frame.StartedTimestamp++; frame.Frame = 2; frame.Tick = 330; frame.RuntimeSeconds = 11;
+            recorder.RecordMemoryForTesting(frame, 12, 23, 34, 45);
+            frame.StartedTimestamp += 5 * System.Diagnostics.Stopwatch.Frequency; frame.Frame = 3; frame.Focused = false; frame.Paused = true;
+            recorder.RecordMemoryForTesting(frame, 13, 24, 35, 46);
+            var writer = new StringWriter(); recorder.WriteMemoryCsv(writer);
+            var rows = writer.ToString().Trim().Split('\n');
+            Assert.That(rows.Length, Is.EqualTo(4));
+            Assert.That(rows[1].Trim(), Is.EqualTo("1,100,0,300,10,411,1,0,11,22,33,44"));
+            Assert.That(rows[2], Does.Contain(",1,330,11,411,1,0,12,23,34,45"));
+            Assert.That(rows[3], Does.Contain(",6,330,11,411,0,1,13,24,35,46"));
+            Assert.That(recorder.DroppedMemorySamples, Is.Zero);
+        }
+        [Test] public void MemoryLedgerReportsOverflowWithoutOverwritingEarliestEvidence()
+        {
+            using var recorder = new DevelopmentLongFrameRecorder(8, false);
+            var frame = Frame(1);
+            for (var i = 0; i < 18003; i++)
+            {
+                frame.StartedTimestamp = i * System.Diagnostics.Stopwatch.Frequency;
+                recorder.RecordMemoryForTesting(frame, i, i, i, i);
+            }
+            Assert.That(recorder.DroppedMemorySamples, Is.EqualTo(2));
+            Assert.That(recorder.Overflowed, Is.True);
+            var writer = new StringWriter(); recorder.WriteMemoryCsv(writer);
+            Assert.That(writer.ToString().Trim().Split('\n').Length, Is.EqualTo(18002));
+        }
+        [Test] public void ActualWorldCapacityBaselineIncludesCollectionsThatNeverGrow()
+        {
+            var gameObject = new UnityEngine.GameObject("capacity-baseline-test");
+            try
+            {
+                var world = gameObject.AddComponent<Game.View.WorldRenderer>();
+                using var recorder = new DevelopmentLongFrameRecorder(8, false);
+                var collections = new HashSet<string>();
+                world.RecordDiagnosticCapacityBaselines((name, capacity, count) =>
+                {
+                    Assert.That(collections.Add(name), Is.True);
+                    Assert.That(capacity, Is.GreaterThanOrEqualTo(count));
+                    recorder.RecordCapacityBaseline(1, 2, 3, name, capacity, count);
+                });
+                Assert.That(collections.Count, Is.EqualTo(14));
+                Assert.That(collections, Does.Contain("waveMotion.previousProjectiles"));
+                Assert.That(collections, Does.Contain("fallowHarvests"));
+                var writer = new StringWriter(); recorder.WriteCapacityGrowthCsv(writer);
+                var rows = writer.ToString().Trim().Split('\n');
+                Assert.That(rows.Length, Is.EqualTo(15));
+                for (var i = 1; i < rows.Length; i++) Assert.That(rows[i].Trim(), Does.EndWith(",baseline"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(gameObject); }
         }
         [Test] public void RingPreservesFourNeighborsAndDoesNotDuplicateOverlappingWindows()
         {
