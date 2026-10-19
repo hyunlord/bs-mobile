@@ -92,11 +92,11 @@ namespace Game.View
 
         EnemyImpactPose ResolveEnemyImpactPose(int id, float bodyWidth, EnemyImpactPose pose)
         {
-            return ImpactFeedbackEnabled ? enemyImpactPoses.Sample(id, visualTime, bodyWidth, HitReaction.KnockbackPixels * PixelsToWorld, pose) : pose;
+            return ImpactFeedbackEnabled ? enemyImpactPoses.Sample(id, visualTime, bodyWidth, KnockWorldUnits, pose) : pose;
         }
 
-        // World units per screen pixel of the render camera (1 when there is no camera, as in some editor tests).
-        float PixelsToWorld => renderCamera == null ? 1 : renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
+        // HitReaction.KnockbackPixels in world units for the render camera (no push without a camera, as in some editor tests).
+        float KnockWorldUnits => renderCamera == null ? 0 : HitReaction.KnockbackPixels * PixelsToWorld;
 
         // A big hit: an evolution's attack (runtime evolution, or a review case shown at its evolved display stage).
         bool BigHit(string source) => source != null && (waveDefinition.Evolutions.ContainsKey(source) || WeaponEvolved(source));

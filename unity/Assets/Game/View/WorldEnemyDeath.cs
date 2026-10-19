@@ -65,7 +65,7 @@ namespace Game.View
             for (var i = 0; i < enemyDeaths.Count; i++)
             {
                 if (enemyDeaths.TakeBurst(i, visualTime, out var eventId, out var origin, out var experience)) impactParticles.Kill(eventId, origin, experience);
-                var sample = enemyDeaths.Sample(i, visualTime, HitReaction.KnockbackPixels * PixelsToWorld);
+                var sample = enemyDeaths.Sample(i, visualTime, KnockWorldUnits);
                 ref readonly var pose = ref enemyDeaths.Pose(i);
                 var actor = pose.Actor;
                 if (actor.Visual != null && sample.ActorOpacity > 0)
