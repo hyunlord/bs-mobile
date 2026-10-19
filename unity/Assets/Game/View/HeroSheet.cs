@@ -103,7 +103,8 @@ namespace Game.View
     // - Starting to move during a full action ends it at once (user approved 2026-10-17).
     // - Same tick: evolved before higher damage before lower weapon id. During an action a higher-priority attack replaces it
     //   from its start; equal or lower ones are dropped. The same action starts at most every 0.4 s (dropped, not queued).
-    // - A hero hit overrides the action, which does not resume afterwards.
+    // - An attack wins over a hero hit (user decision 2026-10-19): a hit during an action keeps the action and shows only as the
+    //   white flash; the hit pose is used only while no action is shown, and attacks during it start as usual.
     public sealed class HeroActionSelector
     {
         HeroAction current; bool key; float started; int startedTick = -1; bool evolved; int damage; string source;
@@ -148,7 +149,6 @@ namespace Game.View
         public bool Offer(int tick, string weaponSource, HeroAction action, bool isEvolved, int weaponDamage, float time, bool moving)
         {
             if (action == HeroAction.None) return false;
-            if (wasHit) { Dropped++; return false; }   // the hit pose wins; attacks during it are not shown afterwards
             var active = Active(time, moving);
             if (active && Compare(isEvolved, weaponDamage, weaponSource, evolved, damage, source) <= 0) { Dropped++; return false; }
             var sameTickChoice = active && tick == startedTick;
@@ -166,12 +166,8 @@ namespace Game.View
         {
             if (moving && stride > 0) walkPhase = Mathf.Repeat(walkPhase + walkDistance / stride, 1);
             if (dead) { wasHit = false; current = HeroAction.None; return new HeroSheetPose(HeroClip.Death, HeroAction.None, 0); }
-            if (hit)
-            {
-                if (!wasHit) { wasHit = true; hitStarted = time; current = HeroAction.None; }
-                return new HeroSheetPose(HeroClip.Hit, HeroAction.None, Clips.Hit.FrameAt(time - hitStarted));
-            }
-            wasHit = false;
+            if (hit) { if (!wasHit) { wasHit = true; hitStarted = time; } }
+            else wasHit = false;
             if (current != HeroAction.None && !key && moving) { current = HeroAction.None; CutByMovement++; }
             if (Active(time, moving))
             {
@@ -179,6 +175,7 @@ namespace Game.View
                 return new HeroSheetPose(HeroClip.Action, current, Clips.Action(current).FrameAt(time - started));
             }
             current = HeroAction.None;
+            if (hit) return new HeroSheetPose(HeroClip.Hit, HeroAction.None, Clips.Hit.FrameAt(time - hitStarted));
             var walk = Clips.Walk; var idle = Clips.Idle;
             if (moving) return new HeroSheetPose(HeroClip.Walk, HeroAction.None, Mathf.Min(walk.Frames - 1, Mathf.FloorToInt(walkPhase * walk.Frames)));
             return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time) / idle.FrameSeconds) % idle.Frames);
@@ -286,9 +283,11 @@ namespace Game.View
             var hitAge = HeroActions.HitAge(visualTime);
             var flash = flashOverride ?? (hitAge >= 0 && hitAge < HeroSheetSpec.HitFlashFrames / 60f ? HeroSheetSpec.HitFlash : 0);
             Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, null, flash, uv: visual.UvRects[frame], applyTween: false);
-            if (hitAge >= 0 && hitOutline)
+            // The red outline belongs to the hit pose; a hit during an attack shows only the white flash (user decision 2026-10-19).
+            var outlined = hitAge >= 0 && hitOutline && pose.Clip == HeroClip.Hit;
+            if (outlined)
                 Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, GameVisualTokens.Hostile, 0, uv: visual.UvRects[frame], edgeTexels: GameVisualTokens.WaveEdgeTexels, applyTween: false);
-            HeroSheetDrawn?.Invoke(hitAge, flash, hitAge >= 0 && hitOutline);
+            HeroSheetDrawn?.Invoke(hitAge, flash, outlined);
             HeroSheetPoseSampled?.Invoke(pose);
             return true;
         }

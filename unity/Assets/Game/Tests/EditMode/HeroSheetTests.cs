@@ -84,18 +84,32 @@ namespace Game.Tests
             Assert.That(s.Offer(26, "core:iron_blade", HeroAction.Slash, false, 30, 1.91f, true), Is.True, "0.41 s after");
         }
 
-        [Test] public void HeroHitOverridesTheActionWhichDoesNotResume()
+        [Test] public void HeroHitPoseFramesWithoutAnAttack()
         {
             var s = Selector();
-            s.Offer(1, "core:iron_blade", HeroAction.Slash, false, 10, 0, false);
             var hit = s.Pose(Ticks(10), false, true, false, 0, Stride);
             Assert.That((hit.Clip, hit.Frame), Is.EqualTo((HeroClip.Hit, 0)));
             Assert.That(s.Pose(Ticks(10 + 6), false, true, false, 0, Stride).Frame, Is.EqualTo(0));
             Assert.That(s.Pose(Ticks(10 + 8), false, true, false, 0, Stride).Frame, Is.EqualTo(1), "r5 recoil holds 7 ticks");
             Assert.That(s.Pose(Ticks(10 + 40), false, true, false, 0, Stride).Frame, Is.EqualTo(1), "the last hit frame holds while the hit lasts");
-            Assert.That(s.Offer(9, "core:canal_bow", HeroAction.Aim, false, 50, Ticks(20), false), Is.False, "attacks during the hit are dropped");
-            Assert.That(s.Pose(Ticks(30), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
-            Assert.That(s.Pose(Ticks(31), false, false, true, 0, Stride).Clip, Is.EqualTo(HeroClip.Death));
+            Assert.That(s.Pose(Ticks(60), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
+            Assert.That(s.Pose(Ticks(61), false, false, true, 0, Stride).Clip, Is.EqualTo(HeroClip.Death));
+        }
+
+        // User decision 2026-10-19: attack > hit. A hit during an attack keeps the attack (white flash only); the hit pose shows
+        // only while no attack is shown, and attacks during it start.
+        [Test] public void AttackWinsOverAHeroHitAndTheHitPoseShowsOnlyWithoutOne()
+        {
+            var s = Selector();
+            var slash = s.Timings.Action(HeroAction.Slash).Seconds;
+            Assert.That(s.Offer(1, "core:iron_blade", HeroAction.Slash, false, 10, 0, false), Is.True);
+            var during = s.Pose(Ticks(10), false, true, false, 0, Stride);
+            Assert.That((during.Clip, during.Action), Is.EqualTo((HeroClip.Action, HeroAction.Slash)), "a hit during the attack keeps the attack");
+            Assert.That(s.HitAge(Ticks(10)), Is.EqualTo(0).Within(1e-5f), "the hit still shows as the white flash");
+            Assert.That(s.Pose(slash + Ticks(1), false, true, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Hit), "no attack left: the hit pose");
+            Assert.That(s.Offer(9, "core:canal_bow", HeroAction.Aim, false, 50, slash + Ticks(2), false), Is.True, "an attack during the hit starts");
+            Assert.That(s.Pose(slash + Ticks(3), false, true, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Action));
+            Assert.That(s.Pose(slash + 2, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
         }
 
         [Test] public void HitAgeStartsWithTheHitPoseSoTheFlashLastsTwoFrames()
