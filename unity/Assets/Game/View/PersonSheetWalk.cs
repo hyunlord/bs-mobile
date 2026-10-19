@@ -21,7 +21,7 @@ namespace Game.View
         public int Frame(string kind,int id,Vector2 rendered,bool moving,ArtVisual move,int generation)
         {
             var key=(kind,id);
-            var state=phases.TryGetValue(key,out var known)?known:(rendered,0f,generation);
+            (Vector2 last,float phase,int generation) state=phases.TryGetValue(key,out var known)?known:(rendered,0f,generation);
             state.phase=Advance(state.phase,Vector2.Distance(rendered,state.last),Stride(move));
             state.last=rendered;state.generation=generation;phases[key]=state;
             return moving?FrameAt(state.phase,move.UvRects.Count):-1;
