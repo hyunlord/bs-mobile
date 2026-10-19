@@ -3,10 +3,7 @@
   "release": "weapon-game-assets-20261019",
   "draftManifestSha256": "dfb983e670fe9720622e0829d27be3f6ace2709c70fb6939371f47ded6f64321",
   "atlas": "unity/Assets/Art/wave1a-weapon-fx.png",
-  "atlasSha256": "e2e5756dc0e9e2636f9b6467cb189737c8f0bf5748f5b37f1c9e9d3be25e5623",
-  "skipped": [
-    "fx.granary_sling.aroma"
-  ],
+  "atlasSha256": "6088686a31b5e55bd21e6a7f0323ff5061a308e0472ce1425a13f5d488484ff8",
   "replaced": [
     {
       "id": "fx.iron_blade.slash",
@@ -24,6 +21,12 @@
         "y": 1284,
         "width": 512,
         "height": 128
+      },
+      "visibleBox": {
+        "left": 9,
+        "top": 11,
+        "right": 503,
+        "bottom": 117
       }
     },
     {
@@ -42,6 +45,12 @@
         "y": 636,
         "width": 192,
         "height": 40
+      },
+      "visibleBox": {
+        "left": 9,
+        "top": 8,
+        "right": 183,
+        "bottom": 32
       }
     },
     {
@@ -60,6 +69,12 @@
         "y": 636,
         "width": 256,
         "height": 32
+      },
+      "visibleBox": {
+        "left": 9,
+        "top": 8,
+        "right": 247,
+        "bottom": 24
       }
     },
     {
@@ -78,6 +93,12 @@
         "y": 684,
         "width": 192,
         "height": 144
+      },
+      "visibleBox": {
+        "left": 9,
+        "top": 9,
+        "right": 182,
+        "bottom": 135
       }
     },
     {
@@ -96,6 +117,12 @@
         "y": 1076,
         "width": 128,
         "height": 160
+      },
+      "visibleBox": {
+        "left": 9,
+        "top": 8,
+        "right": 120,
+        "bottom": 151
       }
     },
     {
@@ -114,6 +141,12 @@
         "y": 1212,
         "width": 256,
         "height": 64
+      },
+      "visibleBox": {
+        "left": 9,
+        "top": 9,
+        "right": 247,
+        "bottom": 55
       }
     },
     {
@@ -132,6 +165,12 @@
         "y": 1296,
         "width": 384,
         "height": 256
+      },
+      "visibleBox": {
+        "left": 8,
+        "top": 9,
+        "right": 376,
+        "bottom": 247
       }
     },
     {
@@ -150,6 +189,12 @@
         "y": 1296,
         "width": 384,
         "height": 48
+      },
+      "visibleBox": {
+        "left": 8,
+        "top": 8,
+        "right": 376,
+        "bottom": 40
       }
     },
     {
@@ -168,6 +213,12 @@
         "y": 1348,
         "width": 256,
         "height": 48
+      },
+      "visibleBox": {
+        "left": 13,
+        "top": 9,
+        "right": 246,
+        "bottom": 38
       }
     },
     {
@@ -186,6 +237,36 @@
         "y": 1560,
         "width": 160,
         "height": 192
+      },
+      "visibleBox": {
+        "left": 8,
+        "top": 9,
+        "right": 152,
+        "bottom": 183
+      }
+    },
+    {
+      "id": "fx.granary_sling.aroma",
+      "atlas": "sack-atlas.png",
+      "sourceRect": [
+        4,
+        204,
+        512,
+        256
+      ],
+      "sheetSha256": "cf2774565aed1d49716dcaeba19c49c1b90d96064f708f26343cc64d03bc91a6",
+      "cellRgbaSha256": "10e8b28eb3d0dc735e65af5d7f2f3ca277c6450be4779d80cd6caad364cc6f5e",
+      "frame": {
+        "x": 1412,
+        "y": 1420,
+        "width": 512,
+        "height": 256
+      },
+      "visibleBox": {
+        "left": 10,
+        "top": 10,
+        "right": 502,
+        "bottom": 247
       }
     }
   ]

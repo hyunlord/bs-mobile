@@ -89,7 +89,7 @@ namespace Game.View
         readonly ArtVisual[] bladeDust = new ArtVisual[3];
         readonly List<Texture2D> temporaryEffectTextures = new List<Texture2D>(4);
         // Arc ribbons are curved meshes submitted with the batches (so the P5 mask and alpha cap see them).
-        sealed class Ribbon { public Mesh Mesh; public Color Color; public bool Used, Core; }
+        sealed class Ribbon { public Mesh Mesh; public Color Color; public Vector4 Uv; public bool Used, Core; }   // Uv: the picture's atlas rect
         readonly List<Ribbon> bladeRibbons = new List<Ribbon>(8);
         Material ribbonMaterial, ribbonOverEnemies, ribbonCore;
         bool bladeSlashPainted;
@@ -178,6 +178,7 @@ namespace Game.View
             var tail = Mathf.Lerp(start, lead, fade * fade);
             if (lead - tail < .5f) return;
             var ribbon = NextRibbon(); ribbon.Core = core;
+            var slashRect = bladeSlash.UvRects[0]; ribbon.Uv = new Vector4(slashRect.x, slashRect.y, slashRect.width, slashRect.height);
             var columns = BladeSpec.ArcColumns;
             // Three rows per column across the band (picture v 0 = inner edge, 1 = outer edge, wrapped linearly); the core
             // pass covers only the white core rows.
@@ -224,14 +225,12 @@ namespace Game.View
                 ribbonCore.SetFloat("_AlphaBoost", BladeSpec.CoreAlphaBoost);
                 ribbonProperties = new MaterialPropertyBlock();
             }
-            var rect = bladeSlash.UvRects[0];
-            ribbonUv[0] = new Vector4(rect.x, rect.y, rect.width, rect.height);
             var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
             foreach (var ribbon in bladeRibbons)
             {
                 if (!ribbon.Used) continue;
                 ribbon.Used = false;
-                ribbonColor[0] = linear ? ribbon.Color.linear : ribbon.Color;
+                ribbonColor[0] = linear ? ribbon.Color.linear : ribbon.Color; ribbonUv[0] = ribbon.Uv;
                 ribbonProperties.SetTexture("_MainTex", bladeSlash.Texture);
                 ribbonProperties.SetVector("_InstanceColor", ribbonColor[0]); ribbonProperties.SetVector("_InstanceUv", ribbonUv[0]);
                 ribbonProperties.SetVector("_InstanceFlash", new Vector4(0, 0, 1, 0));

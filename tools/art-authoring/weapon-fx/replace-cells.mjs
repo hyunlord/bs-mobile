@@ -1,7 +1,8 @@
 // Offline authoring only. Puts Astra's approved weapon game sprites (Release weapon-game-assets-20261019) into the existing
 // wave1a-weapon-fx atlas without resampling (#266 weapon round after the six rejected videos). Each delivered role cell is copied
 // into the cell the manifest already gives that role; the iron blade slash, whose canvas grew from 503x76 to 512x128, moves to a
-// free slot and its old cell is cleared. fx.granary_sling.aroma (a proposed new role with no consumer yet) is not added.
+// free slot and its old cell is cleared. fx.granary_sling.aroma, a new role, goes to a free slot and replaces the sling's dashed
+// lure ring (user decision 2026-10-20).
 // Every other atlas pixel and every other role must stay unchanged; the script fails otherwise.
 // Usage: node tools/art-authoring/weapon-fx/replace-cells.mjs <release dir>
 import fs from 'node:fs';
@@ -35,11 +36,17 @@ const fill = (x, y, w, h, source) => {
   }
 };
 // The slash's new slot: free in the current atlas with the 4 px padding ring around it (found by scanning occupancy and alpha).
-const slashSlot = { x: 1412, y: 1284 };
+const slashSlot = { x: 1412, y: 1284 }, aromaSlot = { x: 1412, y: 1420 };
 const sheets = new Map(), replaced = [];
 for (const role of draft.roles) {
-  if (role.newRole) continue;
-  const current = manifest.roles.find(r => r.id === role.id);
+  let current = manifest.roles.find(r => r.id === role.id);
+  if (!current && role.newRole) {
+    assert.equal(role.id, 'fx.granary_sling.aroma', 'only the aroma is a new role');
+    current = { id: role.id, atlas: 'wave1a-weapon-fx', frames: [{ x: aromaSlot.x, y: aromaSlot.y, width: role.size[0], height: role.size[1] }], pivot: null, worldSize: null, frameMs: role.frameMs, tween: role.tween };
+    for (const other of manifest.roles) if (other.atlas === 'wave1a-weapon-fx')
+      for (const f of other.frames) assert.ok(aromaSlot.x >= f.x + f.width + 4 || f.x >= aromaSlot.x + role.size[0] + 4 || aromaSlot.y >= f.y + f.height + 4 || f.y >= aromaSlot.y + role.size[1] + 4, 'aroma slot overlaps ' + other.id);
+    manifest.roles.splice(manifest.roles.findIndex(r => r.id === 'fx.granary_sling.sack') + 1, 0, current);
+  }
   assert.ok(current && current.atlas === 'wave1a-weapon-fx' && current.frames.length === 1, role.id);
   if (!sheets.has(role.atlas)) {
     const bytes = fs.readFileSync(path.join(releaseDir, role.atlas));
@@ -64,7 +71,10 @@ for (const role of draft.roles) {
   current.frames = [frame];
   current.pivot = { x: role.pivot[0], y: role.pivot[1] };
   current.worldSize = { x: +role.worldSize[0].toFixed(6), y: +role.worldSize[1].toFixed(6) };
-  replaced.push({ id: role.id, atlas: role.atlas, sourceRect: role.rect, sheetSha256: sha256, cellRgbaSha256: sha(cell), frame });
+  // Visible box (alpha > 8) inside the cell: the aroma ring's outer edge sits this far inside the Core radius.
+  let [l, t, r, b] = [w, h, 0, 0];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (cell[(y * w + x) * 4 + 3] > 8) { l = Math.min(l, x); t = Math.min(t, y); r = Math.max(r, x + 1); b = Math.max(b, y + 1); }
+  replaced.push({ id: role.id, atlas: role.atlas, sourceRect: role.rect, sheetSha256: sha256, cellRgbaSha256: sha(cell), frame, visibleBox: { left: l, top: t, right: r, bottom: b } });
 }
 let outside = 0;
 for (let p = 0; p < touched.length; p++) if (!touched[p] && atlas.readUInt32BE(p * 4) !== before.pixels.readUInt32BE(p * 4)) outside++;
@@ -85,5 +95,5 @@ license.origin = 'Generated with built-in image_gen by the Astra art pipeline fo
 fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
 fs.writeFileSync(path.join(root, 'tools/art-authoring/weapon-fx/replaced-cells.json'), JSON.stringify({
   schemaVersion: 1, release, draftManifestSha256: sha(fs.readFileSync(draftFile)), atlas: path.relative(root, atlasPath), atlasSha256: sha(atlasBytes),
-  skipped: draft.roles.filter(r => r.newRole).map(r => r.id), replaced }, null, 2) + '\n');
+  replaced }, null, 2) + '\n');
 console.log(JSON.stringify({ replaced: replaced.length, atlasSha256: sha(atlasBytes), outsideChanged: outside }));

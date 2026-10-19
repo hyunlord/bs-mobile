@@ -11713,6 +11713,28 @@
       "tween": "none"
     },
     {
+      "id": "fx.granary_sling.aroma",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1412,
+          "y": 1420,
+          "width": 512,
+          "height": 256
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.333333,
+        "y": 0.666667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
       "id": "fx.granary_sling.giant_sack",
       "atlas": "wave1a-weapon-fx",
       "frames": [

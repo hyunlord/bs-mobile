@@ -1,0 +1,67 @@
+using System;
+using System.IO;
+using System.Linq;
+using Game.View;
+using NUnit.Framework;
+using UnityEngine;
+
+namespace Tests.EditMode
+{
+    // User decisions 2026-10-20 on the #335 weapon review videos (View only; Core radii and timings unchanged).
+    public sealed class WeaponReviewDecisionTests
+    {
+        [Serializable] sealed class Box { public int left, top, right, bottom; }
+        [Serializable] sealed class Frame { public int width, height; }
+        [Serializable] sealed class Replaced { public string id; public Frame frame; public Box visibleBox; }
+        [Serializable] sealed class Record { public Replaced[] replaced; }
+
+        // The aroma replaces the dashed lure ring: its visible outer edge must sit within 5% of the Core radius.
+        [Test] public void AromaRingOuterEdgeIsWithinFivePercentOfTheCoreRadius()
+        {
+            var record = JsonUtility.FromJson<Record>(File.ReadAllText(Path.Combine(Application.dataPath, "../../tools/art-authoring/weapon-fx/replaced-cells.json")));
+            var aroma = record.replaced.Single(r => r.id == "fx.granary_sling.aroma");
+            var topMargin = aroma.visibleBox.top / (float)aroma.frame.height;   // v 1 (the strip's top) is the ring's outer edge
+            var outer = SlingSpec.AromaVisibleOuter(topMargin);
+            Assert.That(outer, Is.InRange(.95f, 1.05f), $"visible outer edge {outer:0.000} x the Core radius");
+            Assert.That(SlingSpec.AromaBand, Is.InRange(.2f, .6f));
+        }
+
+        // The flying sack is 1.5x and its shadow shrinks and fades with height, matching the sack when it lands.
+        [Test] public void FlyingSackShadowShrinksAndFadesWithHeightAndIsFullOnLanding()
+        {
+            Assert.That(SlingSpec.FlightScale, Is.EqualTo(1.5f));
+            var ground = SlingSpec.Shadow(0); var apex = SlingSpec.Shadow(1);
+            Assert.That(ground.Width, Is.EqualTo(1));
+            Assert.That(ground.Alpha, Is.EqualTo(SlingSpec.ShadowAlpha));
+            Assert.That(apex.Width, Is.LessThan(ground.Width)); Assert.That(apex.Alpha, Is.LessThan(ground.Alpha));
+            for (var h = 0f; h < 1; h += .1f)
+            {
+                Assert.That(SlingSpec.Shadow(h + .1f).Width, Is.LessThanOrEqualTo(SlingSpec.Shadow(h).Width));
+                Assert.That(SlingSpec.Shadow(h + .1f).Alpha, Is.LessThanOrEqualTo(SlingSpec.Shadow(h).Alpha));
+            }
+        }
+
+        // The spore patch is drawn at .55, superseded patches fade within .3 s, and stacked patches never cover more than 1.3x one.
+        [Test] public void SporePatchStackNeverCoversMoreThanOnePointThreePatches()
+        {
+            Assert.That(SporePatchSpec.PatchAlpha, Is.EqualTo(.55f));
+            Assert.That(SporePatchSpec.PatchOfRadius, Is.EqualTo(2.1f), "the visible stain keeps matching the damage area");
+            var cap = SporePatchSpec.PatchAlpha * SporePatchSpec.OverlapCap;
+            var random = new System.Random(7);
+            for (var trial = 0; trial < 200; trial++)
+            {
+                var transmittance = 1f;
+                var layers = 1 + random.Next(8);
+                for (var k = 0; k < layers; k++)
+                    SporePatchSpec.CappedAlpha((float)random.NextDouble() * SporePatchSpec.PatchAlpha * (1 + SporePatchSpec.PulseBrighten), ref transmittance);
+                Assert.That(1 - transmittance, Is.LessThanOrEqualTo(cap + 1e-5f), $"trial {trial}: {layers} stacked patches");
+            }
+            var one = 1f;
+            Assert.That(SporePatchSpec.CappedAlpha(SporePatchSpec.PatchAlpha, ref one), Is.EqualTo(SporePatchSpec.PatchAlpha), "a lone patch keeps its alpha");
+            Assert.That(SporePatchSpec.Superseded(0), Is.EqualTo(1));
+            Assert.That(SporePatchSpec.Superseded(SporePatchSpec.SupersededFadeSeconds), Is.EqualTo(0), "gone .3 s after a newer patch is laid");
+            Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.EnemyLayer));
+            Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.LordLayer), "the decal is drawn under the enemies and the hero");
+        }
+    }
+}
