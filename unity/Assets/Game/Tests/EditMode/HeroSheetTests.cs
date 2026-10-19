@@ -29,7 +29,7 @@ namespace Game.Tests
             var key = s.Pose(1 + Ticks(1), true, false, false, 0, Stride);
             Assert.That((key.Clip, key.Action, key.Frame), Is.EqualTo((HeroClip.Key, HeroAction.Slash, 0)), "a key emits on its own frame 0");
             Assert.That(s.Pose(1 + Ticks(keyClip.Ticks + 1), true, false, false, 0, Stride).Frame, Is.EqualTo(1));
-            Assert.That(s.Pose(1 + Ticks(2 * keyClip.Ticks), true, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Walk));
+            Assert.That(s.Pose(1 + Ticks(2 * keyClip.Ticks) + .002f, true, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Walk));
             Assert.That((s.KeysShown, s.FullShown), Is.EqualTo((1, 0)));
         }
 
@@ -270,8 +270,10 @@ namespace Game.Tests
             Assert.That(s.Pose(0, true, false, false, .4f * Stride, Stride).Frame, Is.EqualTo(10));
             var slash = new HeroActionSelector(timings);
             slash.Offer(1, "core:iron_blade", HeroAction.Slash, false, 10, 0, false);
-            Assert.That(slash.Pose(Ticks(3 * 6 + 1), false, false, false, 0, Stride).Frame, Is.EqualTo(3));
-            Assert.That(slash.Pose(Ticks(4 * 6 + 1), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "4 frames x 6 ticks, then idle");
+            // Standing: enters on frame 2 (the one before the slash's effect frame 3) for one tick, then frame 3 for its 6 ticks.
+            Assert.That(slash.Pose(.001f, false, false, false, 0, Stride).Frame, Is.EqualTo(2));
+            Assert.That(slash.Pose(HeroSheetSpec.EffectLeadSeconds + Ticks(3), false, false, false, 0, Stride).Frame, Is.EqualTo(3));
+            Assert.That(slash.Pose(HeroSheetSpec.EffectLeadSeconds + Ticks(6) + .002f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "frame 3 of 4 x 6 ticks, then idle");
             var hit = new HeroActionSelector(timings);
             Assert.That(hit.Pose(1, false, true, false, 0, Stride).Frame, Is.EqualTo(0));
             Assert.That(hit.Pose(1 + Ticks(9), false, true, false, 0, Stride).Frame, Is.EqualTo(2));
