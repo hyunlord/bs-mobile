@@ -33,6 +33,29 @@ public sealed class WaveRuntimeIntegrationTests
         s.Simulation.Tick(); Assert.DoesNotContain(w.WaveRuntime.Events, e => e.Kind == "attack" && e.Source == recipe.InputIds[0]); Assert.Contains(w.WaveRuntime.Events, e => e.Kind == "attack" && e.Source == recipe.Id);
     }
     [Fact]
+    public void DataEventGateDecidesTheActualCardOffer()
+    {
+        var c = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), false, "wave-1a");
+        var definition = c.WaveRuntime!;
+        var recipe = definition.Evolutions.Values.Single(e => e.Kind == WaveEvolutionKind.PlantingArc);
+        var programs = definition.Programs!.ToDictionary(p => p.Key, p => p.Value);
+        var units = programs[recipe.Id].Params.ToDictionary(p => p.Key, p => p.Value);
+        var gate = units["unit:event-gate"].ToDictionary(p => p.Key, p => p.Value);
+        gate["condition"] = "repair-completed"; units["unit:event-gate"] = gate; programs[recipe.Id] = new(units);
+        var s = FirstPlayableTests.Session(c with { WaveRuntime = definition with { Programs = programs } });
+        var w = s.Simulation.World;
+        // Fill both slots with max-level gear and take every item so the only possible card is an unlocked evolution.
+        w.Equipment.Clear();
+        foreach (var id in new[] { "core:iron_blade", "core:ward_orbit", "core:storm_fork", "core:seed_bag", "core:rain_ladle", "core:carpenter_hammer" }) { w.Equipment.Add(new() { Id = id, Level = definition.Gear[id].Levels!.Length }); }
+        foreach (var id in definition.Items.Keys) { w.WaveRuntime!.Items.Add(id); }
+        w.WaveRuntime!.BladePlotKill = true;
+        w.Experience = 1_000_000; s.Simulation.Tick();
+        Assert.Empty(w.PendingCards);
+        w.WaveRuntime.RepairCompleted = true;
+        w.Experience = 1_000_000; s.Simulation.Tick();
+        Assert.Contains(recipe.Id, w.PendingCards);
+    }
+    [Fact]
     public void ShelteredEvolutionSuppressesBothInputsAndCreatesLinkedWork()
     {
         var s = Session(); var w = s.Simulation.World; var recipe = s.Catalog.WaveRuntime!.Evolutions.Values.Single(e => e.Kind == WaveEvolutionKind.ShelteredPlot);
