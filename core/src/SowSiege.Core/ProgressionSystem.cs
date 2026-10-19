@@ -50,9 +50,18 @@ namespace SowSiege.Core
             var offer = new List<string>();
             if (world.Cards.Count == 0 && options.TargetMaterial is not null && catalog.WaveRuntime?.MaterialTargets?.TryGetValue(options.TargetMaterial, out var guaranteed) == true && pool.Remove(guaranteed)) { offer.Add(guaranteed); }
             if (world.LockedCard is not null && pool.Remove(world.LockedCard)) { offer.Add(world.LockedCard); }
+            // ADR0058 step 3 (wave only): drop zero-weight and maxPicks-exhausted cards from the drawn slots, then let first-slot
+            // fill the first free slot from unlocked evolutions. Guaranteed and locked cards are untouched.
+            var rules = catalog.WaveRuntime?.CardOffer;
+            if (catalog.WaveRuntime is not null) { pool.RemoveAll(id => WaveOfferWeight(id, rules) == 0 || Exhausted(id, rules)); }
+            if (rules?.EvolutionPriority == FirstSlot && offer.Count < catalog.Tuning.World.Progression.CardCount)
+            {
+                var evolutions = pool.Where(id => catalog.WaveRuntime!.Evolutions.ContainsKey(id)).ToList();
+                if (evolutions.Count > 0) { var chosen = evolutions[WaveWeightedIndex(evolutions, rules)]; offer.Add(chosen); pool.Remove(chosen); }
+            }
             while (offer.Count < catalog.Tuning.World.Progression.CardCount && pool.Count > 0)
             {
-                var index = runtime is null ? random.Next(pool.Count) : WeightedOffer(pool);
+                var index = runtime is not null ? WeightedOffer(pool) : catalog.WaveRuntime is not null ? WaveWeightedIndex(pool, rules) : random.Next(pool.Count);
                 offer.Add(pool[index]); pool.RemoveAt(index);
             }
             world.PendingCards = offer.ToArray();
@@ -185,6 +194,30 @@ namespace SowSiege.Core
             for (var index = 0; index < weights.Length; index++) { roll -= weights[index]; if (roll < 0) { return index; } }
             throw new InvalidOperationException("Positive offer weights required.");
         }
+        private const string FirstSlot = "first-slot";
+        // One draw over the relative weights, reduced by their greatest common divisor: equal weights sum to pool.Count, so the
+        // default rules draw exactly random.Next(pool.Count) as before (ADR0058 (b)).
+        private int WaveWeightedIndex(IReadOnlyList<string> pool, WaveCardOfferDefinition? rules)
+        {
+            var weights = new int[pool.Count]; var divisor = 0;
+            for (var i = 0; i < weights.Length; i++) { weights[i] = WaveOfferWeight(pool[i], rules); divisor = Gcd(divisor, weights[i]); }
+            var total = 0;
+            for (var i = 0; i < weights.Length; i++) { weights[i] /= divisor; total = checked(total + weights[i]); }
+            var roll = random.Next(total);
+            for (var index = 0; index < weights.Length; index++) { roll -= weights[index]; if (roll < 0) { return index; } }
+            throw new InvalidOperationException("Positive offer weights required.");
+        }
+        private static int Gcd(int a, int b) { while (b != 0) { (a, b) = (b, a % b); } return a; }
+        private int WaveOfferWeight(string id, WaveCardOfferDefinition? rules)
+        {
+            var weight = rules?.Cards is { } cards && cards.TryGetValue(id, out var card) ? card.Weight ?? 1 : 1;
+            if (!catalog.WaveRuntime!.Gear.ContainsKey(id)) { return weight; }
+            var owned = world.Equipment.Exists(equipment => equipment.Id == id);
+            return checked(weight * (owned ? rules?.OwnedGearWeight ?? 1 : rules?.UnownedGearWeight ?? 1));
+        }
+        // maxPicks counts selections, read from the existing card record, so it adds no state (ADR0058 decision 2).
+        private bool Exhausted(string id, WaveCardOfferDefinition? rules) =>
+            rules?.Cards is { } cards && cards.TryGetValue(id, out var card) && card.MaxPicks is { } limit && world.Cards.Count(choice => choice.Chosen == id) >= limit;
         private RarityDefinition RollRarity()
         {
             var rarities = catalog.Tuning.World.Progression.Rarities;

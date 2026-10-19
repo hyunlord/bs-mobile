@@ -147,7 +147,10 @@ public sealed class WaveEvolutionUnlockTests
         {
             Assert.Contains(message, LoadError(SowingUnlock(json)));
         }
-        Assert.Contains("applied in ADR0058 implementation step 3", LoadError(definition => definition["cardOffer"] = JsonNode.Parse("""{"evolutionPriority":"first-slot"}""")));
+        // Step 3 applies the rules, so non-default values load; values outside the documented ranges still fail.
+        Assert.Equal("", LoadError(definition => definition["cardOffer"] = JsonNode.Parse("""{"evolutionPriority":"first-slot","ownedGearWeight":0,"cards":{"core:iron_blade":{"weight":3,"maxPicks":2}}}""")));
+        Assert.Contains("evolutionPriority must be none or first-slot", LoadError(definition => definition["cardOffer"] = JsonNode.Parse("""{"evolutionPriority":"last-slot"}""")));
+        Assert.Contains("gear weights out of range", LoadError(definition => definition["cardOffer"] = JsonNode.Parse("""{"unownedGearWeight":0}""")));
         Assert.Contains("unknown card", LoadError(definition => definition["cardOffer"] = JsonNode.Parse("""{"cards":{"core:absent":{"weight":1}}}""")));
         Assert.Equal("", LoadError(definition => definition["cardOffer"] = JsonNode.Parse("""{"evolutionPriority":"none","cards":{"core:iron_blade":{"weight":1}}}""")));
     }

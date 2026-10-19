@@ -165,7 +165,6 @@ public static partial class ContentLoader
                 Require(wave.Gear.ContainsKey(card.Key) || wave.Items.ContainsKey(card.Key) || wave.Evolutions.ContainsKey(card.Key), "Wave cardOffer references unknown card " + card.Key + ".");
                 Require(card.Value.Weight is null or >= 0 and <= 1000 && card.Value.MaxPicks is null or >= 1 and <= 100, "Wave cardOffer card limits out of range: " + card.Key + ".");
             }
-            Require(offer.IsDefault(), "Wave cardOffer rules are applied in ADR0058 implementation step 3; only default values are accepted until then.");
         }
     }
 
