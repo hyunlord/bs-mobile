@@ -184,7 +184,8 @@ namespace Game.View
         }
 
         float M1CombatEffectSeconds(WaveEvent value, float fallback)
-            => value.Kind == "attack" && IsM1GiantBlade(value.Source) ? BladeSpec.Seconds(BladeSpec.WindupFrames) + GiantBladeEnvelope.LifetimeSeconds : fallback;
+            => value.Kind == "attack" && IsM1GiantBlade(value.Source) ? BladeSpec.Seconds(BladeSpec.WindupFrames) + GiantBladeEnvelope.LifetimeSeconds
+                : value.Kind == "attack" && HornWaveStage(value.Source) is bool evolved ? HornWaveSpec.Seconds(evolved) : fallback;
         bool DrawM1CombatEvent(WaveEvent value, float age, float opacity)
         {
             if(value.Source==null||!m1CombatShapes.TryGetValue(value.Source,out var m1CombatShape))return false;
@@ -210,7 +211,7 @@ namespace Game.View
                 {
                     var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
                     // Astra's painted sound wave; the two thin outline rings remain only for a sheet without it.
-                    if(!DrawHornWave(a,radius,progress,WeaponEvolved(value.Source),opacity))
+                    if(!DrawHornWave(a,radius,age,WeaponEvolved(value.Source)))
                     {
                         DrawMusterRing(a,radius,new Color(.65f,.82f,1),opacity*.35f);
                         DrawMusterRing(a,radius*Mathf.Lerp(.3f,1,progress),Color.white,opacity*.55f);

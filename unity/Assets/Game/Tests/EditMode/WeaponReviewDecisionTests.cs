@@ -134,9 +134,9 @@ namespace Tests.EditMode
         [Serializable] sealed class Vec2 { public float x, y; }
         [Serializable] sealed class ArtManifestRoles { public ArtRole[] roles; }
 
-        // Muster horn sound wave (2026-10-20): the painted outer edge lands on the Core radius, the wave grows 0.3 -> 1.0 like the
-        // outline ring it replaces, and the comparison layer sits above the enemies, under the hero, at half opacity.
-        [Test] public void HornWaveOuterEdgeLandsOnTheCoreRadiusAndGrowsFromThreeTenths()
+        // Muster horn sound wave (2026-10-20): the painted outer edge lands on the Core radius; level 1 grows 0.3 -> 1.0 like the
+        // outline ring it replaces, the evolved wave 0.05 -> 1.0 over 0.30 s; drawn under the enemies and the hero.
+        [Test] public void HornWaveOuterEdgeLandsOnTheCoreRadiusAndGrowsPerStage()
         {
             var packed = JsonUtility.FromJson<HornRecord>(File.ReadAllText(Path.Combine(Application.dataPath, "../../tools/art-authoring/horn-wave/packed.json")));
             var manifest = JsonUtility.FromJson<ArtManifestRoles>(File.ReadAllText(Path.Combine(Application.dataPath, "Art/wave1a-manifest.json")));
@@ -148,10 +148,15 @@ namespace Tests.EditMode
                 Assert.That(edgeInRadii, Is.EqualTo(1).Within(.01f), id + ": painted outer edge at the radius");
                 Assert.That(role.worldSize.y / role.worldSize.x, Is.EqualTo(record.crop.height / (float)record.crop.width).Within(.001f), id + ": not stretched");
             }
-            Assert.That(HornWaveSpec.Share(0), Is.EqualTo(.3f)); Assert.That(HornWaveSpec.Share(1), Is.EqualTo(1));
-            Assert.That(HornWaveSpec.AboveEnemiesOpacity, Is.EqualTo(.5f));
-            Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.EnemyLayer), "Astra's layer: under the enemies and the hero");
-            Assert.That(GameVisualTokens.WaveTransientCueLayer, Is.GreaterThan(GameVisualTokens.EnemyLayer + 19).And.LessThan(GameVisualTokens.LordLayer), "comparison layer: above every enemy row, under the hero");
+            // Level 1: 0.3 -> 1.0 over 0.18 s, fading the whole time.
+            Assert.That(HornWaveSpec.Share(0, false), Is.EqualTo(.3f)); Assert.That(HornWaveSpec.Share(.18f, false), Is.EqualTo(1));
+            Assert.That(HornWaveSpec.Opacity(0, false), Is.EqualTo(1)); Assert.That(HornWaveSpec.Opacity(.09f, false), Is.EqualTo(.5f).Within(1e-5f));
+            Assert.That(HornWaveSpec.Seconds(false), Is.EqualTo(.18f));
+            // Evolved: 0.05 -> 1.0 over 0.30 s, full until the last 0.08 s, then gone at 0.30 s.
+            Assert.That(HornWaveSpec.Share(0, true), Is.EqualTo(.05f)); Assert.That(HornWaveSpec.Share(.30f, true), Is.EqualTo(1));
+            Assert.That(HornWaveSpec.Opacity(.22f, true), Is.EqualTo(1).Within(1e-5f)); Assert.That(HornWaveSpec.Opacity(.26f, true), Is.EqualTo(.5f).Within(1e-4f));
+            Assert.That(HornWaveSpec.Opacity(.30f, true), Is.EqualTo(0).Within(1e-5f)); Assert.That(HornWaveSpec.Seconds(true), Is.EqualTo(.30f));
+            Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.EnemyLayer), "Astra's layer (user decision): under the enemies and the hero");
         }
     }
 }

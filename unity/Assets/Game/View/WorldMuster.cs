@@ -166,15 +166,26 @@ namespace Game.View
 
         static Rect Union(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));
 
-        // Muster horn sound wave (Astra, Release muster-horn-wave-20261020; user decision 2026-10-20): the painted wave replaces the
-        // two outline rings. Like the rings it grows from HornWaveSpec.StartShare of the Core radius to all of it and fades out over
-        // the attack's 0.18 s (opacity carries the fade). Its worldSize is in units of the painted outer edge, so that edge lands on
-        // the radius. Layer: under the hero and the enemies (Astra), or, for the user's comparison only, above the enemies and under
-        // the hero at HornWaveSpec.AboveEnemiesOpacity.
-        public bool HornWaveAboveEnemies { get; set; }
+        // Muster horn sound wave (Astra, Release muster-horn-wave-20261020; user decisions 2026-10-20): the painted wave replaces the
+        // two outline rings, drawn under the hero and the enemies as Astra specified (the user chose it over drawing it above the
+        // enemies). It grows and fades as HornWaveSpec gives for its stage; its worldSize is in units of the painted outer edge, so
+        // that edge lands on the Core radius. Display only: the Core hit tick is unchanged.
         ArtVisual hornWaveLevel1, hornWaveEvolved; bool hornWaveChecked;
         public int HornWavesDrawn { get; private set; }
-        bool DrawHornWave(Vector2 center, float radius, float progress, bool evolved, float opacity)
+
+        // Whether source's attack is the horn's call, and at which stage: null for any other attack. The review composition is the
+        // "summon" shape; normal play is the horn's MusterWave gear or one of its evolutions.
+        bool? HornWaveStage(string source)
+        {
+            if (source == null || waveDefinition == null) return null;
+            if (m1CombatShapes.TryGetValue(source, out var shape)) return shape == "summon" ? WeaponEvolved(source) : (bool?)null;
+            var evolution = waveDefinition.Evolutions.ContainsKey(source);
+            var baseSource = attackSources.TryGetValue(source, out var mapped) ? mapped : source;
+            if (baseSource != "core:muster_horn" || !waveDefinition.Gear.TryGetValue(baseSource, out var gear) || gear.Kind != WaveAttackKind.MusterWave) return null;
+            return evolution;
+        }
+
+        bool DrawHornWave(Vector2 center, float radius, float age, bool evolved)
         {
             if (!hornWaveChecked)
             {
@@ -183,10 +194,9 @@ namespace Game.View
             }
             var visual = evolved && hornWaveEvolved != null ? hornWaveEvolved : hornWaveLevel1;
             if (visual == null) return false;
-            var alpha = opacity * (HornWaveAboveEnemies ? HornWaveSpec.AboveEnemiesOpacity : 1);
+            var alpha = HornWaveSpec.Opacity(age, evolved);
             if (radius <= 0 || alpha <= 0) return true;
-            Draw(visual, HornWaveAboveEnemies ? GameVisualTokens.WaveTransientCueLayer : GameVisualTokens.AttackLayer, center, 0,
-                visual.WorldSize * radius * HornWaveSpec.Share(progress), 0, alpha, applyTween: false);
+            Draw(visual, GameVisualTokens.AttackLayer, center, 0, visual.WorldSize * radius * HornWaveSpec.Share(age, evolved), 0, alpha, applyTween: false);
             HornWavesDrawn++;
             return true;
         }
@@ -246,11 +256,18 @@ namespace Game.View
     }
 
     // Muster horn sound wave values (WorldRenderer.DrawHornWave). Roles from tools/art-authoring/horn-wave/pack.mjs.
+    // Level 1, as the inner outline ring it replaced: 0.3 -> 1.0 of the Core radius over 0.18 s while fading out. Evolved (user
+    // decision 2026-10-20): its radius 6.0 (about 1,120 px on the review screen) starts past the portrait half-width even at 0.3,
+    // so it grows from 0.05 to 1.0 over 0.30 s and fades out over the last 0.08 s, so it is seen leaving the hero.
     public static class HornWaveSpec
     {
         public const string Level1Role = "fx.muster_horn.wave.lv1", EvolvedRole = "fx.muster_horn.wave.evolved";
-        public const float StartShare = .3f;            // as the inner outline ring: 0.3 -> 1.0 of the Core radius over 0.18 s
-        public const float AboveEnemiesOpacity = .5f;   // the comparison layer (above enemies, under the hero) at half opacity
-        public static float Share(float progress) => Mathf.Lerp(StartShare, 1, Mathf.Clamp01(progress));
+        public const float Level1StartShare = .3f, Level1Seconds = .18f;
+        public const float EvolvedStartShare = .05f, EvolvedSeconds = .30f, EvolvedFadeSeconds = .08f;
+        public static float Seconds(bool evolved) => evolved ? EvolvedSeconds : Level1Seconds;
+        public static float Share(float age, bool evolved)
+            => Mathf.Lerp(evolved ? EvolvedStartShare : Level1StartShare, 1, Mathf.Clamp01(age / Seconds(evolved)));
+        public static float Opacity(float age, bool evolved)
+            => evolved ? 1 - Mathf.Clamp01((age - (EvolvedSeconds - EvolvedFadeSeconds)) / EvolvedFadeSeconds) : 1 - Mathf.Clamp01(age / Level1Seconds);
     }
 }

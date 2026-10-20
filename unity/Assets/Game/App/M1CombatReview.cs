@@ -21,9 +21,6 @@ namespace Game.App
         }
         public Case Definition { get; private set; }
         public string SidecarSha256 { get; private set; }
-        // Review comparison only (user 2026-10-20): "above" draws the horn's sound wave above the enemies and under the hero at half
-        // opacity; the default is Astra's layer, under both.
-        public string HornWaveLayer { get; private set; } = "below";
         struct EventSample { public WaveEvent value; public int frame, snapshot; public bool visible; public Vector2 screen; }
         readonly List<EventSample> events = new List<EventSample>(8192);
         readonly Dictionary<int,int> selectedHits = new Dictionary<int,int>(1024);
@@ -46,11 +43,8 @@ namespace Game.App
                 if (value.contract != "m1-combat-case-v1" || value.gear == null || value.arena == null || value.classification != "hypothesis" || value.proposedContract != "m1-review-composition-v1" || value.captureStartTick != 300 || value.endTick != 600) throw new InvalidDataException("Invalid combat review sidecar.");
                 value.gear.composition = NormalizeComposition(value.gear.composition);
             }
-            var layerAt = Array.IndexOf(args, "--review-horn-wave-layer");
-            var hornLayer = layerAt < 0 ? "below" : layerAt + 1 < args.Length ? args[layerAt + 1] : "";
-            if (hornLayer != "below" && hornLayer != "above") throw new ArgumentException("--review-horn-wave-layer takes below or above.");
             using var sha = SHA256.Create();
-            return new M1CombatReview { Definition = value, SidecarSha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant(), HornWaveLayer = hornLayer };
+            return new M1CombatReview { Definition = value, SidecarSha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant() };
         }
         static Composition NormalizeComposition(Composition value)
         {
@@ -132,11 +126,11 @@ namespace Game.App
             using var writer = new StreamWriter(Path.Combine(directory,"m1-combat-events.csv"));
             writer.WriteLine("frameIndex,snapshotTick,eventId,eventTick,kind,source,subjectId,amount,worldX,worldY,screenX,screenY,inViewport");
             foreach(var s in events) { var e=s.value; writer.WriteLine(FormattableString.Invariant($"{s.frame},{s.snapshot},{e.Id},{e.Tick},{e.Kind},{e.Source},{e.SubjectId},{e.Amount},{e.Position.X},{e.Position.Y},{s.screen.x:R},{s.screen.y:R},{s.visible}")); }
-            File.WriteAllText(Path.Combine(directory,"m1-combat-review.json"),JsonUtility.ToJson(new Manifest { definition=Definition,sidecarSha256=SidecarSha256,hornWaveLayer=HornWaveLayer,replayVerified=verified,frames=frameCount,firstVisibleHitFrame=firstHit,firstVisibleDeathFrame=firstDeath,presentation=presentation,musterPresentation=musterRecords.ToArray() },true));
+            File.WriteAllText(Path.Combine(directory,"m1-combat-review.json"),JsonUtility.ToJson(new Manifest { definition=Definition,sidecarSha256=SidecarSha256,replayVerified=verified,frames=frameCount,firstVisibleHitFrame=firstHit,firstVisibleDeathFrame=firstDeath,presentation=presentation,musterPresentation=musterRecords.ToArray() },true));
         }
         [Serializable] sealed class Manifest
         {
-            public string contract="m1-combat-review-v1", sidecarSha256, hornWaveLayer;
+            public string contract="m1-combat-review-v1", sidecarSha256;
             public string interpretation="Isolated proposed Core composition, preconfigured stage rather than earned evolution. Hits use the selected source; deaths retain enemy-definition Source and are linked only to a selected-source hit on the same subject and tick. Visibility tests event center against viewport; it is not pixel segmentation or proof of readable reaction. A 12-frame sheet must start at the reported event frame, or be N/A if negative.";
             public Case definition; public bool replayVerified; public int frames,firstVisibleHitFrame,firstVisibleDeathFrame;
             public PresentationSummary presentation; public MusterRecord[] musterPresentation;
