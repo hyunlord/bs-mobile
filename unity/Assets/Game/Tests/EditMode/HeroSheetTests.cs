@@ -159,6 +159,33 @@ namespace Game.Tests
             Assert.That(without.Pose(.01f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "no gather role: straight to idle");
         }
 
+        // Gather B (user decision 2026-10-20): a stop on walk frames 4-11 plays B (drawn from walk frame 7), on 12-15 and 0-3 the
+        // frame-15 gather A; without B every stop plays A. Idle starts on frame 0 when the chosen gather ends.
+        [Test] public void StoppingOnWalkFramesFourToElevenPlaysGatherBOnceDelivered([Values(0, 3, 4, 7, 9, 11, 12, 15)] int walkFrame)
+        {
+            Assert.That(HeroSheetSpec.StopsIntoGatherB(walkFrame), Is.EqualTo(walkFrame >= 4 && walkFrame <= 11));
+            var delivered = Manifest("wave1a-manifest.json");
+            HeroActionSelector Make(bool withB) => new HeroActionSelector(new HeroSheetTimings(suffix =>
+            {
+                if (suffix == HeroSheetSpec.WalkToIdleBSuffix) return withB ? (2, 67) : (0, 0);
+                var role = delivered.roles.SingleOrDefault(r => r.id == HeroSheetSpec.RolePrefix + suffix);
+                return role == null ? (0, 0) : (role.frames.Length, role.frameMs);
+            }));
+            foreach (var withB in new[] { true, false })
+            {
+                var s = Make(withB);
+                var frames = s.Timings.Walk.Frames;
+                Assert.That(frames, Is.EqualTo(16));
+                Assert.That(s.Pose(0, true, false, false, (walkFrame + .5f) / frames * Stride, Stride).Frame, Is.EqualTo(walkFrame));
+                var expected = withB && walkFrame >= 4 && walkFrame <= 11 ? HeroClip.TransitionB : HeroClip.Transition;
+                var first = s.Pose(.01f, false, false, false, 0, Stride);
+                Assert.That((first.Clip, first.Frame), Is.EqualTo((expected, 0)), $"walk frame {walkFrame}, B delivered {withB}");
+                Assert.That(s.Pose(.01f + Ticks(5), false, false, false, 0, Stride).Frame, Is.EqualTo(1));
+                var idle = s.Pose(.01f + Ticks(9), false, false, false, 0, Stride);
+                Assert.That((idle.Clip, idle.Frame), Is.EqualTo((HeroClip.Idle, 0)));
+            }
+        }
+
         [Test] public void HitAgeStartsWithTheHitPoseSoTheFlashLastsTwoFrames()
         {
             var s = Selector();

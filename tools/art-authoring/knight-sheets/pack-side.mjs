@@ -1,7 +1,9 @@
 // Offline authoring only. Packs Astra's side-view knight action sheets (idle, five attacks, five moving keys, hit; Release
 // hero-side-actions-game-r3-20261020, #336) and the current approved walk into hero-knight.png without resampling. The walk cells
 // are copied from the current atlas (the cells packed-frames.json records). A walk-to-idle transition clip is packed only when
-// the release delivers it (Astra r4); without it the role is absent and the game skips the transition.
+// the release delivers it (Astra r4); without it the role is absent and the game skips the transition. Gather B (from walk
+// frame 7, user decision 2026-10-20) is packed the same way when delivered. Identical idle frames share one cell (the idle's
+// six frames are three pictures), so B fits in the 8x9 atlas; the idle's frame order and times are unchanged.
 // Usage: node tools/art-authoring/knight-sheets/pack-side.mjs <release tag> <release dir>
 import fs from 'node:fs';
 import path from 'node:path';
@@ -29,10 +31,12 @@ const ticks = ms => Math.round(ms * 60 / 1000), ms = t => Math.round(t * 1000 / 
 
 // Clips in atlas order: the walk first (its cells come from the current atlas), then the delivered roles.
 const order = ['idle', 'action.slash', 'action.aim', 'action.cast', 'action.blow', 'action.throw', 'hit',
-  'key.slash', 'key.aim', 'key.cast', 'key.blow', 'key.throw', 'transition.walk-to-idle'];
+  'key.slash', 'key.aim', 'key.cast', 'key.blow', 'key.throw', 'transition.walk-to-idle', 'transition.walk-to-idle-b'];
+const optional = new Set(['transition.walk-to-idle', 'transition.walk-to-idle-b']);
+const shareIdentical = new Set(['idle']);
 const prefix = 'hero.core.frontier_knight.';
 const delivered = new Map(draft.roles.map(r => [r.role.slice(prefix.length), r]));
-for (const suffix of order) if (suffix !== 'transition.walk-to-idle') assert.ok(delivered.has(suffix), `release lacks ${suffix}`);
+for (const suffix of order) if (!optional.has(suffix)) assert.ok(delivered.has(suffix), `release lacks ${suffix}`);
 
 const columns = 8, rows = 9, padding = 2;
 const atlasW = padding * 2 + columns * cellW, atlasH = padding * 2 + rows * cellH;
@@ -62,19 +66,23 @@ for (const suffix of order) {
   const bytes = fs.readFileSync(path.join(releaseDir, role.file));
   const sheet = decodeRgbaPng(bytes);
   assert.equal(sheet.height, cellH); assert.equal(sheet.width, cellW * role.frames, role.role);
+  const packed = new Map();
   const frames = role.cellPixelSha256.map((hash, i) => {
     const cell = Buffer.alloc(cellW * cellH * 4);
     for (let r = 0; r < cellH; r++) sheet.pixels.copy(cell, r * cellW * 4, (r * sheet.width + i * cellW) * 4, (r * sheet.width + (i + 1) * cellW) * 4);
     assert.equal(sha(cell), hash, `${role.role}[${i}] differs from the delivery`);
-    return { ...place(cell), frameTicks60: ticks(role.frameMs) };
+    if (shareIdentical.has(suffix) && packed.has(hash)) return { ...packed.get(hash).at, frameTicks60: ticks(role.frameMs), sharesCellOf: packed.get(hash).frame };
+    const at = place(cell);
+    if (shareIdentical.has(suffix)) packed.set(hash, { at, frame: i });
+    return { ...at, frameTicks60: ticks(role.frameMs) };
   });
   const effectFrame = effectOverride[suffix] ?? role.effectFrame;
   clips.push({ clip: path.basename(role.file, '.png'), role: suffix, status: role.approval ?? draft.status, sheet: role.file, sheetSha256: sha(bytes),
     deliveredFrameMs: role.frameMs, deliveredEffectFrame: role.effectFrame, effectFrame, frames });
   sheets[suffix] = true;
 }
-// Reserve the transition's two cells even before r4 delivers it, so adding it later moves no other cell.
-if (!sheets['transition.walk-to-idle']) next += 2;
+// Reserve each missing transition's two cells, so delivering it later moves no other cell.
+for (const suffix of optional) if (!sheets[suffix]) next += 2;
 
 function crc(bytes) { let c = 0xffffffff; for (const v of bytes) { c ^= v; for (let i = 0; i < 8; i++) c = (c >>> 1) ^ ((c & 1) ? 0xedb88320 : 0); } return (c ^ 0xffffffff) >>> 0; }
 function chunk(type, bytes) { const size = Buffer.alloc(4), sum = Buffer.alloc(4); size.writeUInt32BE(bytes.length); const data = Buffer.concat([Buffer.from(type), bytes]); sum.writeUInt32BE(crc(data)); return Buffer.concat([size, data, sum]); }
