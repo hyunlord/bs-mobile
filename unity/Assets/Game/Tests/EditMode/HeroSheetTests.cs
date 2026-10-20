@@ -204,8 +204,8 @@ namespace Game.Tests
             Assert.That(s.Pose(0, true, false, false, .5f * Stride, Stride).Frame, Is.EqualTo(walk.Frames / 2), "half a stride = half the walk cycle");
             Assert.That(s.Pose(0, true, false, false, .125f * Stride, Stride).Frame, Is.EqualTo(Mathf.FloorToInt(.625f * walk.Frames)));
             Assert.That(s.Pose(10, true, false, false, 0, Stride).Frame, Is.EqualTo(Mathf.FloorToInt(.625f * walk.Frames)), "standing still in time does not advance the walk");
-            Assert.That(s.Pose(10.001f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Transition), "stopping gathers the feet");
-            Assert.That(s.Pose(10.001f + s.Timings.WalkToIdle.Value.Seconds + .002f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "then idle");
+            Assert.That(s.Pose(10.001f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.TransitionB), "stopping on walk frame 10 gathers the feet with B");
+            Assert.That(s.Pose(10.001f + s.Timings.WalkToIdleB.Value.Seconds + .002f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "then idle");
             var standing = Selector();
             Assert.That(standing.Pose(0, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
             Assert.That(standing.Pose(Ticks(idle.Ticks * (idle.Frames + 1) + 1), false, false, false, 0, Stride).Frame, Is.EqualTo(1), "idle loops its frames");
@@ -275,6 +275,7 @@ namespace Game.Tests
                 {
                     "idle" => timings.Idle, "walk" => timings.Walk, "hit" => timings.Hit,
                     HeroSheetSpec.WalkToIdleSuffix => timings.WalkToIdle.Value,
+                    HeroSheetSpec.WalkToIdleBSuffix => timings.WalkToIdleB.Value,
                     _ when clip.role.StartsWith("key.", StringComparison.Ordinal) => timings.Key(Named("key.")),
                     _ => timings.Action(Named("action."))
                 };
