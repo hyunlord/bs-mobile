@@ -46,7 +46,6 @@ namespace Game.App
         public void Observe(WorldRenderer world)
         {
             ObserveFeel(world);
-            world.HornEvolvedVariant = HornEvolvedVariant == "x" ? global::Game.View.HornEvolvedVariant.X : HornEvolvedVariant == "y" ? global::Game.View.HornEvolvedVariant.Y : global::Game.View.HornEvolvedVariant.Current;
             world.MusterPresentationChanged = (source, formation) =>
             {
                 UnityEngine.Debug.Log($"[muster-presentation] frame={frameCount} source={source} path={formation.Path} evolution={formation.EvolutionId ?? "none"} ratio={formation.Ratio:0.###} soldiers={formation.Soldiers} scale={formation.Scale:0.###}");

@@ -170,14 +170,12 @@ namespace Game.View
         // two outline rings, drawn under the hero and the enemies as Astra specified (the user chose it over drawing it above the
         // enemies). It grows and fades as HornWaveSpec.Style gives for its stage; its worldSize is in units of the painted outer
         // edge, so that edge lands on the Core radius. Display only: the Core hit tick is unchanged.
-        // The evolved horn calls every 8 ticks (about 0.27 s), so its 0.30 s wave overlapped the next; the user compares X (every call,
-        // shorter and fainter) with Y (a full double wave on every third call, a faint outer band on the others) before choosing.
-        // HornEvolvedVariant selects one; until then the evolved wave stays as it was (Current).
-        public HornEvolvedVariant HornEvolvedVariant { get; set; }
+        // The evolved horn calls every 8 ticks (about 0.27 s): a full double wave on every third call, a faint outer band on the
+        // others (user decision 2026-10-20, Y), so its waves no longer pile up on the screen.
         public Action<HornWaveRecord> HornWaveSample;
         ArtVisual hornWaveLevel1, hornWaveEvolved, hornWaveOuter; bool hornWaveChecked;
         public int HornWavesDrawn { get; private set; }
-        // Each horn call's order in the run (by first sight of its event), for Y's fixed one-in-three beat.
+        // Each horn call's order in the run (by first sight of its event), for the evolved wave's fixed one-in-three beat.
         readonly Dictionary<long, int> hornCallOrdinals = new Dictionary<long, int>(64);
         readonly Queue<long> hornCallOrder = new Queue<long>(64);
         int nextHornCall;
@@ -189,7 +187,7 @@ namespace Game.View
             return nextHornCall++;
         }
         void ResetHornWaves() { hornCallOrdinals.Clear(); hornCallOrder.Clear(); nextHornCall = 0; }
-        HornWaveStyle HornStyle(long eventId, bool evolved) => HornWaveSpec.Style(evolved, HornEvolvedVariant, evolved ? HornCallOrdinal(eventId) : 0);
+        HornWaveStyle HornStyle(long eventId, bool evolved) => HornWaveSpec.Style(evolved, evolved ? HornCallOrdinal(eventId) : 0);
 
         // Whether source's attack is the horn's call, and at which stage: null for any other attack. The review composition is the
         // "summon" shape; normal play is the horn's MusterWave gear or one of its evolutions.
@@ -291,7 +289,6 @@ namespace Game.View
         }
     }
 
-    public enum HornEvolvedVariant { Current, X, Y }
     public enum HornWaveArt { Level1, Evolved, EvolvedOuter }
     public readonly struct HornWaveStyle
     {
@@ -308,26 +305,22 @@ namespace Game.View
 
     // Muster horn sound wave values (WorldRenderer.DrawHornWave). Roles from tools/art-authoring/horn-wave/pack.mjs.
     // Level 1, as the inner outline ring it replaced: 0.3 -> 1.0 of the Core radius over 0.18 s while fading out.
-    // Evolved: its radius 6.0 (about 1,120 px on the review screen) starts past the portrait half-width even at 0.3, so it starts
-    // at 0.05 (user decision 2026-10-20). Current: 0.05 -> 1.0 over 0.30 s, fading over the last 0.08 s. Its calls come every
-    // 8 ticks (about 0.27 s), so the user compares (2026-10-20):
-    //   X: every call, 0.05 -> 1.0 over 0.24 s, fading over the last 0.06 s, at 0.6 opacity.
-    //   Y: every third call (about 0.8 s) the full double wave as Current; the other two only the outer band at 0.35 opacity,
-    //      0.05 -> 1.0 over 0.18 s fading over the last 0.06 s. The beat counts calls from the run's start, so a run always keeps it.
+    // Evolved (user decisions 2026-10-20): its radius 6.0 (about 1,120 px on the review screen) starts past the portrait half-width
+    // even at 0.3, so it starts at 0.05; its calls come every 8 ticks (about 0.27 s), so a full wave on every call kept the screen
+    // covered. Every third call (0, 3, 6... from the run's start, about 0.8 s apart) draws the full double wave, 0.05 -> 1.0 over
+    // 0.30 s fading over the last 0.08 s; the other two only the outer band at 0.35 opacity, 0.05 -> 1.0 over 0.18 s fading over
+    // the last 0.06 s. Counting from the run's start keeps the beat the same in every run of the same input.
     // InnerShare: the painted band's inner edge over its outer edge (packed.json innerRadiusPx / outerRadiusPx), for the
     // on-screen measure.
     public static class HornWaveSpec
     {
         public const string Level1Role = "fx.muster_horn.wave.lv1", EvolvedRole = "fx.muster_horn.wave.evolved", EvolvedOuterRole = "fx.muster_horn.wave.evolved.outer";
         public static readonly HornWaveStyle Level1 = new HornWaveStyle(HornWaveArt.Level1, .3f, .18f, 0, 1);
-        public static readonly HornWaveStyle EvolvedCurrent = new HornWaveStyle(HornWaveArt.Evolved, .05f, .30f, .08f, 1);
-        public static readonly HornWaveStyle EvolvedX = new HornWaveStyle(HornWaveArt.Evolved, .05f, .24f, .06f, .6f);
-        public static readonly HornWaveStyle EvolvedYFull = EvolvedCurrent;
-        public static readonly HornWaveStyle EvolvedYOuter = new HornWaveStyle(HornWaveArt.EvolvedOuter, .05f, .18f, .06f, .35f);
-        public const int YBeat = 3;
-        public static HornWaveStyle Style(bool evolved, HornEvolvedVariant variant, int ordinal)
-            => !evolved ? Level1 : variant == HornEvolvedVariant.X ? EvolvedX
-                : variant == HornEvolvedVariant.Y ? (ordinal % YBeat == 0 ? EvolvedYFull : EvolvedYOuter) : EvolvedCurrent;
+        public static readonly HornWaveStyle EvolvedFull = new HornWaveStyle(HornWaveArt.Evolved, .05f, .30f, .08f, 1);
+        public static readonly HornWaveStyle EvolvedOuter = new HornWaveStyle(HornWaveArt.EvolvedOuter, .05f, .18f, .06f, .35f);
+        public const int EvolvedBeat = 3;
+        public static HornWaveStyle Style(bool evolved, int ordinal)
+            => !evolved ? Level1 : ordinal % EvolvedBeat == 0 ? EvolvedFull : EvolvedOuter;
         public static float Share(float age, HornWaveStyle style) => Mathf.Lerp(style.StartShare, 1, Mathf.Clamp01(age / style.Seconds));
         public static float Opacity(float age, HornWaveStyle style)
             => style.OpacityScale * (style.FadeSeconds <= 0 ? 1 - Mathf.Clamp01(age / style.Seconds)

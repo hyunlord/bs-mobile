@@ -135,7 +135,8 @@ namespace Tests.EditMode
         [Serializable] sealed class ArtManifestRoles { public ArtRole[] roles; }
 
         // Muster horn sound wave (2026-10-20): the painted outer edge lands on the Core radius; level 1 grows 0.3 -> 1.0 like the
-        // outline ring it replaces, the evolved wave 0.05 -> 1.0 over 0.30 s; drawn under the enemies and the hero.
+        // outline ring it replaces; the evolved wave keeps a one-in-three beat of full and outer-band waves; drawn under the enemies
+        // and the hero.
         [Test] public void HornWaveOuterEdgeLandsOnTheCoreRadiusAndGrowsPerStage()
         {
             var packed = JsonUtility.FromJson<HornRecord>(File.ReadAllText(Path.Combine(Application.dataPath, "../../tools/art-authoring/horn-wave/packed.json")));
@@ -150,28 +151,22 @@ namespace Tests.EditMode
                 Assert.That(role.worldSize.y / role.worldSize.x, Is.EqualTo(record.crop.height / (float)record.crop.width).Within(.001f), id + ": not stretched");
             }
             // Level 1: 0.3 -> 1.0 over 0.18 s, fading the whole time.
-            var level1 = HornWaveSpec.Style(false, HornEvolvedVariant.Y, 1);
+            var level1 = HornWaveSpec.Style(false, 1);
+            Assert.That(level1.Art, Is.EqualTo(HornWaveArt.Level1));
             Assert.That(HornWaveSpec.Share(0, level1), Is.EqualTo(.3f)); Assert.That(HornWaveSpec.Share(.18f, level1), Is.EqualTo(1));
             Assert.That(HornWaveSpec.Opacity(0, level1), Is.EqualTo(1)); Assert.That(HornWaveSpec.Opacity(.09f, level1), Is.EqualTo(.5f).Within(1e-5f));
-            // Evolved, current: 0.05 -> 1.0 over 0.30 s, full until the last 0.08 s.
-            var current = HornWaveSpec.Style(true, HornEvolvedVariant.Current, 4);
-            Assert.That((current.Art, current.StartShare, current.Seconds, current.FadeSeconds, current.OpacityScale), Is.EqualTo((HornWaveArt.Evolved, .05f, .30f, .08f, 1f)));
-            Assert.That(HornWaveSpec.Opacity(.26f, current), Is.EqualTo(.5f).Within(1e-4f)); Assert.That(HornWaveSpec.Opacity(.30f, current), Is.EqualTo(0).Within(1e-5f));
-            // X: every call, 0.24 s, last 0.06 s fading, 0.6 opacity; shorter than the 8-tick (0.267 s) call interval.
-            for (var call = 0; call < 6; call++)
-            {
-                var x = HornWaveSpec.Style(true, HornEvolvedVariant.X, call);
-                Assert.That((x.Art, x.StartShare, x.Seconds, x.FadeSeconds, x.OpacityScale), Is.EqualTo((HornWaveArt.Evolved, .05f, .24f, .06f, .6f)));
-            }
-            Assert.That(HornWaveSpec.Style(true, HornEvolvedVariant.X, 0).Seconds, Is.LessThan(8 / 30f));
-            Assert.That(HornWaveSpec.Opacity(.17f, HornWaveSpec.EvolvedX), Is.EqualTo(.6f).Within(1e-5f));
-            // Y: calls 0, 3, 6... the full double wave as current; the rest the outer band at 0.35 for 0.18 s.
+            // Evolved (user decision 2026-10-20, Y): calls 0, 3, 6... the full double wave, 0.05 -> 1.0 over 0.30 s, fading over the
+            // last 0.08 s; the rest the outer band at 0.35, 0.05 -> 1.0 over 0.18 s, fading over the last 0.06 s.
             for (var call = 0; call < 9; call++)
             {
-                var y = HornWaveSpec.Style(true, HornEvolvedVariant.Y, call);
-                if (call % 3 == 0) Assert.That((y.Art, y.Seconds, y.OpacityScale), Is.EqualTo((HornWaveArt.Evolved, .30f, 1f)), "call " + call);
-                else Assert.That((y.Art, y.StartShare, y.Seconds, y.OpacityScale), Is.EqualTo((HornWaveArt.EvolvedOuter, .05f, .18f, .35f)), "call " + call);
+                var style = HornWaveSpec.Style(true, call);
+                if (call % 3 == 0) Assert.That((style.Art, style.StartShare, style.Seconds, style.FadeSeconds, style.OpacityScale), Is.EqualTo((HornWaveArt.Evolved, .05f, .30f, .08f, 1f)), "call " + call);
+                else Assert.That((style.Art, style.StartShare, style.Seconds, style.FadeSeconds, style.OpacityScale), Is.EqualTo((HornWaveArt.EvolvedOuter, .05f, .18f, .06f, .35f)), "call " + call);
             }
+            var full = HornWaveSpec.EvolvedFull; var outerBand = HornWaveSpec.EvolvedOuter;
+            Assert.That(HornWaveSpec.Opacity(.22f, full), Is.EqualTo(1).Within(1e-5f)); Assert.That(HornWaveSpec.Opacity(.26f, full), Is.EqualTo(.5f).Within(1e-4f));
+            Assert.That(HornWaveSpec.Opacity(.11f, outerBand), Is.EqualTo(.35f).Within(1e-5f)); Assert.That(HornWaveSpec.Opacity(.15f, outerBand), Is.EqualTo(.175f).Within(1e-4f));
+            Assert.That(HornWaveSpec.Opacity(.18f, outerBand), Is.EqualTo(0).Within(1e-5f)); Assert.That(HornWaveSpec.Share(.18f, outerBand), Is.EqualTo(1));
             Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.EnemyLayer), "Astra's layer (user decision): under the enemies and the hero");
         }
     }
