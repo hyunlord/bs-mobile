@@ -227,7 +227,7 @@
     },
     {
       "id": "generated-knight-sheets",
-      "origin": "Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions hero-side-actions-game-r4-20261020); packed without resampling",
+      "origin": "Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions hero-side-actions-game-r4-20261020, gather B hero-gather-b-r2-20261020); packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/knight-sheets-r4-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -3495,25 +3495,25 @@
           "height": 240
         },
         {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 642,
           "y": 482,
           "width": 320,
           "height": 240
         },
         {
-          "x": 962,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
+          "x": 642,
           "y": 482,
           "width": 320,
           "height": 240
@@ -3535,6 +3535,24 @@
       "atlas": "hero-knight",
       "frames": [
         {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 1922,
           "y": 482,
           "width": 320,
@@ -3560,24 +3578,6 @@
         },
         {
           "x": 642,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
           "y": 722,
           "width": 320,
           "height": 240
@@ -3599,6 +3599,24 @@
       "atlas": "hero-knight",
       "frames": [
         {
+          "x": 962,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 1922,
           "y": 722,
           "width": 320,
@@ -3612,24 +3630,6 @@
         },
         {
           "x": 2,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 642,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
           "y": 962,
           "width": 320,
           "height": 240
@@ -3651,6 +3651,24 @@
       "atlas": "hero-knight",
       "frames": [
         {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 1282,
           "y": 962,
           "width": 320,
@@ -3665,24 +3683,6 @@
         {
           "x": 1922,
           "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 2242,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 2,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 1202,
           "width": 320,
           "height": 240
         }
@@ -3703,6 +3703,24 @@
       "atlas": "hero-knight",
       "frames": [
         {
+          "x": 2242,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 642,
           "y": 1202,
           "width": 320,
@@ -3716,24 +3734,6 @@
         },
         {
           "x": 1282,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1922,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 2242,
           "y": 1202,
           "width": 320,
           "height": 240
@@ -3755,6 +3755,24 @@
       "atlas": "hero-knight",
       "frames": [
         {
+          "x": 1602,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 2,
           "y": 1442,
           "width": 320,
@@ -3780,24 +3798,6 @@
         },
         {
           "x": 1282,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1922,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 2242,
           "y": 1442,
           "width": 320,
           "height": 240
@@ -3819,20 +3819,20 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 2,
-          "y": 1682,
+          "x": 1602,
+          "y": 1442,
           "width": 320,
           "height": 240
         },
         {
-          "x": 322,
-          "y": 1682,
+          "x": 1922,
+          "y": 1442,
           "width": 320,
           "height": 240
         },
         {
-          "x": 642,
-          "y": 1682,
+          "x": 2242,
+          "y": 1442,
           "width": 320,
           "height": 240
         }
@@ -3853,13 +3853,13 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 962,
+          "x": 2,
           "y": 1682,
           "width": 320,
           "height": 240
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 1682,
           "width": 320,
           "height": 240
@@ -3881,13 +3881,13 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 1602,
+          "x": 642,
           "y": 1682,
           "width": 320,
           "height": 240
         },
         {
-          "x": 1922,
+          "x": 962,
           "y": 1682,
           "width": 320,
           "height": 240
@@ -3909,14 +3909,14 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 2242,
+          "x": 1282,
           "y": 1682,
           "width": 320,
           "height": 240
         },
         {
-          "x": 2,
-          "y": 1922,
+          "x": 1602,
+          "y": 1682,
           "width": 320,
           "height": 240
         }
@@ -3937,14 +3937,14 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 322,
-          "y": 1922,
+          "x": 1922,
+          "y": 1682,
           "width": 320,
           "height": 240
         },
         {
-          "x": 642,
-          "y": 1922,
+          "x": 2242,
+          "y": 1682,
           "width": 320,
           "height": 240
         }
@@ -3965,13 +3965,13 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 962,
+          "x": 2,
           "y": 1922,
           "width": 320,
           "height": 240
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 1922,
           "width": 320,
           "height": 240
@@ -3993,13 +3993,41 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 1602,
+          "x": 642,
           "y": 1922,
           "width": 320,
           "height": 240
         },
         {
-          "x": 1922,
+          "x": 962,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.transition.walk-to-idle-b",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1282,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
           "y": 1922,
           "width": 320,
           "height": 240
@@ -4021,8 +4049,8 @@
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 642,
-          "y": 1682,
+          "x": 2242,
+          "y": 1442,
           "width": 320,
           "height": 240
         }

@@ -2,10 +2,11 @@
   "schemaVersion": 1,
   "releases": {
     "walk": "hero-walk-r8-5-review-20261019",
-    "actions": "hero-side-actions-game-r4-20261020"
+    "actions": "hero-side-actions-game-r4-20261020",
+    "gatherB": "hero-gather-b-r2-20261020"
   },
   "atlas": "unity/Assets/Art/hero-knight.png",
-  "atlasSha256": "81ac435cfaa620a9d0d5eec0c6c337ea41c8fdbed3a71352c1bdcbf45935eae6",
+  "atlasSha256": "76c75e804a9fb782207e26e2295bca7c74b8c8bb29eeb055d557610a7e8fe4c6",
   "width": 2564,
   "height": 2164,
   "padding": 2,
@@ -206,23 +207,25 @@
           "frameTicks60": 12
         },
         {
-          "x": 642,
+          "x": 322,
           "y": 482,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "874a88100e21e6da8138ed8c1c2fdb910f1022c83ccef8481fa7f9f4118080f7",
-          "frameTicks60": 12
+          "frameTicks60": 12,
+          "sharesCellOf": 1
         },
         {
-          "x": 962,
+          "x": 2,
           "y": 482,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
-          "frameTicks60": 12
+          "frameTicks60": 12,
+          "sharesCellOf": 0
         },
         {
-          "x": 1282,
+          "x": 642,
           "y": 482,
           "width": 320,
           "height": 240,
@@ -230,12 +233,13 @@
           "frameTicks60": 12
         },
         {
-          "x": 1602,
+          "x": 642,
           "y": 482,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "d0bdf1e11e66327d467ea25168c510381e3fb07c3d4a652f987f1eb5a801b023",
-          "frameTicks60": 12
+          "frameTicks60": 12,
+          "sharesCellOf": 4
         }
       ]
     },
@@ -250,7 +254,7 @@
       "effectFrame": 3,
       "frames": [
         {
-          "x": 1922,
+          "x": 962,
           "y": 482,
           "width": 320,
           "height": 240,
@@ -258,7 +262,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 2242,
+          "x": 1282,
           "y": 482,
           "width": 320,
           "height": 240,
@@ -266,31 +270,31 @@
           "frameTicks60": 6
         },
         {
-          "x": 2,
-          "y": 722,
+          "x": 1602,
+          "y": 482,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "e2ceb12d5ccc7be584736235d3df3efb60f211f3898d78525afe79603a3cb09f",
           "frameTicks60": 6
         },
         {
-          "x": 322,
-          "y": 722,
+          "x": 1922,
+          "y": 482,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "209eb2774d5e1cd6f335df7e4380e5fc1a811d8fdf07ebc07eb47158258be244",
           "frameTicks60": 6
         },
         {
-          "x": 642,
-          "y": 722,
+          "x": 2242,
+          "y": 482,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "e4a34ec8d362cb7a8302fc2f065decae938e9b79700c77a41f531aadc302f5fa",
           "frameTicks60": 6
         },
         {
-          "x": 962,
+          "x": 2,
           "y": 722,
           "width": 320,
           "height": 240,
@@ -298,7 +302,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 722,
           "width": 320,
           "height": 240,
@@ -306,7 +310,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1602,
+          "x": 642,
           "y": 722,
           "width": 320,
           "height": 240,
@@ -326,7 +330,7 @@
       "effectFrame": 3,
       "frames": [
         {
-          "x": 1922,
+          "x": 962,
           "y": 722,
           "width": 320,
           "height": 240,
@@ -334,7 +338,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 2242,
+          "x": 1282,
           "y": 722,
           "width": 320,
           "height": 240,
@@ -342,31 +346,31 @@
           "frameTicks60": 6
         },
         {
-          "x": 2,
-          "y": 962,
+          "x": 1602,
+          "y": 722,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "57509420124dbf4487b09048dcd8d9540e5eb14d4466f406de868e72eea354dd",
           "frameTicks60": 6
         },
         {
-          "x": 322,
-          "y": 962,
+          "x": 1922,
+          "y": 722,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "fa0cffce6b5fa84f63e79e834594f4590236c7ca896a352acd55d70c52000599",
           "frameTicks60": 6
         },
         {
-          "x": 642,
-          "y": 962,
+          "x": 2242,
+          "y": 722,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "af32608591755ba1984db1a4c7d5860fdf11955e4001960a4b805694e96e2a51",
           "frameTicks60": 6
         },
         {
-          "x": 962,
+          "x": 2,
           "y": 962,
           "width": 320,
           "height": 240,
@@ -386,7 +390,7 @@
       "effectFrame": 2,
       "frames": [
         {
-          "x": 1282,
+          "x": 322,
           "y": 962,
           "width": 320,
           "height": 240,
@@ -394,7 +398,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1602,
+          "x": 642,
           "y": 962,
           "width": 320,
           "height": 240,
@@ -402,7 +406,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1922,
+          "x": 962,
           "y": 962,
           "width": 320,
           "height": 240,
@@ -410,7 +414,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 2242,
+          "x": 1282,
           "y": 962,
           "width": 320,
           "height": 240,
@@ -418,16 +422,16 @@
           "frameTicks60": 6
         },
         {
-          "x": 2,
-          "y": 1202,
+          "x": 1602,
+          "y": 962,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "d2792488fe05bed6fdea39c51e07d7192ba39fbc7d780f9cca3f2b5d498cde7c",
           "frameTicks60": 6
         },
         {
-          "x": 322,
-          "y": 1202,
+          "x": 1922,
+          "y": 962,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "0b58c7d2c519412bcdd592138062bd771a5e66b57d9b393db75500846f3c38a4",
@@ -446,15 +450,15 @@
       "effectFrame": 3,
       "frames": [
         {
-          "x": 642,
-          "y": 1202,
+          "x": 2242,
+          "y": 962,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "645af5d3fcfe36aa6d40d1342be22478683bbf255d95342aa5d77f732803522f",
           "frameTicks60": 6
         },
         {
-          "x": 962,
+          "x": 2,
           "y": 1202,
           "width": 320,
           "height": 240,
@@ -462,7 +466,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 1202,
           "width": 320,
           "height": 240,
@@ -470,7 +474,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1602,
+          "x": 642,
           "y": 1202,
           "width": 320,
           "height": 240,
@@ -478,7 +482,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1922,
+          "x": 962,
           "y": 1202,
           "width": 320,
           "height": 240,
@@ -486,7 +490,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 2242,
+          "x": 1282,
           "y": 1202,
           "width": 320,
           "height": 240,
@@ -506,31 +510,31 @@
       "effectFrame": 4,
       "frames": [
         {
-          "x": 2,
-          "y": 1442,
+          "x": 1602,
+          "y": 1202,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "ec7521d0220d2b1993b53333dc7ca4bbaa5280867f9a238827438f85d11dc21f",
           "frameTicks60": 6
         },
         {
-          "x": 322,
-          "y": 1442,
+          "x": 1922,
+          "y": 1202,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "a32436177ad3f4ff4f6a4d39b933b17f764296b82d9478b35965e8c378c0af84",
           "frameTicks60": 6
         },
         {
-          "x": 642,
-          "y": 1442,
+          "x": 2242,
+          "y": 1202,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "45ef9bb8eef263608ba20f4c37b6644eb51f5a213a142016f4d2245cccc66484",
           "frameTicks60": 6
         },
         {
-          "x": 962,
+          "x": 2,
           "y": 1442,
           "width": 320,
           "height": 240,
@@ -538,7 +542,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 1442,
           "width": 320,
           "height": 240,
@@ -546,7 +550,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1602,
+          "x": 642,
           "y": 1442,
           "width": 320,
           "height": 240,
@@ -554,7 +558,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 1922,
+          "x": 962,
           "y": 1442,
           "width": 320,
           "height": 240,
@@ -562,7 +566,7 @@
           "frameTicks60": 6
         },
         {
-          "x": 2242,
+          "x": 1282,
           "y": 1442,
           "width": 320,
           "height": 240,
@@ -582,24 +586,24 @@
       "effectFrame": 0,
       "frames": [
         {
-          "x": 2,
-          "y": 1682,
+          "x": 1602,
+          "y": 1442,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "5097ddc3ad11991105edb86d13c3d5257fa383470f34c2b64406435fd80042a9",
           "frameTicks60": 5
         },
         {
-          "x": 322,
-          "y": 1682,
+          "x": 1922,
+          "y": 1442,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "e86fb3247ca53f9c995aee68509d02af706b895c4fdac55a927f2993a29c4a1c",
           "frameTicks60": 5
         },
         {
-          "x": 642,
-          "y": 1682,
+          "x": 2242,
+          "y": 1442,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
@@ -618,7 +622,7 @@
       "effectFrame": 0,
       "frames": [
         {
-          "x": 962,
+          "x": 2,
           "y": 1682,
           "width": 320,
           "height": 240,
@@ -626,7 +630,7 @@
           "frameTicks60": 4
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 1682,
           "width": 320,
           "height": 240,
@@ -646,7 +650,7 @@
       "effectFrame": 0,
       "frames": [
         {
-          "x": 1602,
+          "x": 642,
           "y": 1682,
           "width": 320,
           "height": 240,
@@ -654,7 +658,7 @@
           "frameTicks60": 4
         },
         {
-          "x": 1922,
+          "x": 962,
           "y": 1682,
           "width": 320,
           "height": 240,
@@ -674,7 +678,7 @@
       "effectFrame": 0,
       "frames": [
         {
-          "x": 2242,
+          "x": 1282,
           "y": 1682,
           "width": 320,
           "height": 240,
@@ -682,8 +686,8 @@
           "frameTicks60": 4
         },
         {
-          "x": 2,
-          "y": 1922,
+          "x": 1602,
+          "y": 1682,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "25156c0443a55c35db561fa308d3ab5a9a8f48e7e88cd2537873d1a55ed57ac9",
@@ -702,16 +706,16 @@
       "effectFrame": 0,
       "frames": [
         {
-          "x": 322,
-          "y": 1922,
+          "x": 1922,
+          "y": 1682,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "012565c9309a94225988820926d489dac3a2ab01ec378a2a85144b1c5d515527",
           "frameTicks60": 4
         },
         {
-          "x": 642,
-          "y": 1922,
+          "x": 2242,
+          "y": 1682,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "1cea59b891be86baedf1473b36492ca963098af580368bea3582a54bb16688fa",
@@ -730,7 +734,7 @@
       "effectFrame": 0,
       "frames": [
         {
-          "x": 962,
+          "x": 2,
           "y": 1922,
           "width": 320,
           "height": 240,
@@ -738,7 +742,7 @@
           "frameTicks60": 4
         },
         {
-          "x": 1282,
+          "x": 322,
           "y": 1922,
           "width": 320,
           "height": 240,
@@ -758,7 +762,7 @@
       "effectFrame": null,
       "frames": [
         {
-          "x": 1602,
+          "x": 642,
           "y": 1922,
           "width": 320,
           "height": 240,
@@ -766,11 +770,40 @@
           "frameTicks60": 4
         },
         {
-          "x": 1922,
+          "x": 962,
           "y": 1922,
           "width": 320,
           "height": 240,
           "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-gather-b-r2-2",
+      "role": "transition.walk-to-idle-b",
+      "status": "approved by the user 2026-10-20",
+      "sheet": "hero-gather-b-r2-2.png",
+      "sheetSha256": "94b2786903c7b6bd5ef813a41e5e6ec9ab7ad8d321388c71e3ecaddd068b4224",
+      "deliveredFrameMs": 72,
+      "deliveredEffectFrame": null,
+      "effectFrame": null,
+      "release": "hero-gather-b-r2-20261020",
+      "frames": [
+        {
+          "x": 1282,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "08cb4755a5f5daad8217be1efd99982abc90160afd8f7b940336831e7336f0f3",
+          "frameTicks60": 4
+        },
+        {
+          "x": 1602,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "88c7e93d18c9d2a368757194c74ae37a262af01dc3fee5fa5dd30f5a0fb890a4",
           "frameTicks60": 4
         }
       ]

@@ -4,7 +4,8 @@
 // the release delivers it (Astra r4); without it the role is absent and the game skips the transition. Gather B (from walk
 // frame 7, user decision 2026-10-20) is packed the same way when delivered. Identical idle frames share one cell (the idle's
 // six frames are three pictures), so B fits in the 8x9 atlas; the idle's frame order and times are unchanged.
-// Usage: node tools/art-authoring/knight-sheets/pack-side.mjs <release tag> <release dir>
+// Usage: node tools/art-authoring/knight-sheets/pack-side.mjs <release tag> <release dir> [<addendum tag> <addendum dir>]
+// An addendum release (gather B r2: one extra role and its manifest addendum) adds its role to the base release's roles.
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -14,7 +15,7 @@ import { createHash } from 'node:crypto';
 import { decodeRgbaPng } from '../../wave1a-art.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const [release, releaseDir] = process.argv.slice(2);
+const [release, releaseDir, addendumRelease, addendumDir] = process.argv.slice(2);
 assert.ok(release && releaseDir, 'usage: pack-side.mjs <release tag> <release dir>');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -35,7 +36,19 @@ const order = ['idle', 'action.slash', 'action.aim', 'action.cast', 'action.blow
 const optional = new Set(['transition.walk-to-idle', 'transition.walk-to-idle-b']);
 const shareIdentical = new Set(['idle']);
 const prefix = 'hero.core.frontier_knight.';
-const delivered = new Map(draft.roles.map(r => [r.role.slice(prefix.length), r]));
+const delivered = new Map(draft.roles.map(r => [r.role.slice(prefix.length), { ...r, dir: releaseDir }]));
+let addendum = null;
+if (addendumRelease) {
+  const file = fs.readdirSync(addendumDir).find(f => f.endsWith('manifest-addendum.json'));
+  assert.ok(file, 'addendum manifest missing');
+  addendum = read(path.join(addendumDir, file));
+  assert.equal(addendum.baseRelease, release, 'addendum is for another base release');
+  assert.deepEqual(addendum.cellSize, draft.cellSize); assert.deepEqual(addendum.pivotBottomLeft, draft.pivotBottomLeft);
+  const suffix = addendum.role.role.slice(prefix.length);
+  assert.ok(optional.has(suffix) && !delivered.has(suffix), `unexpected addendum role ${suffix}`);
+  // The user approved gather B r2 on 2026-10-20 (Astra's walk-7 -> B0 moving-foot gate was judged the wrong criterion).
+  delivered.set(suffix, { ...addendum.role, dir: addendumDir, release: addendumRelease, approval: 'approved by the user 2026-10-20', manifestSha256: sha(fs.readFileSync(path.join(addendumDir, file))) });
+}
 for (const suffix of order) if (!optional.has(suffix)) assert.ok(delivered.has(suffix), `release lacks ${suffix}`);
 
 const columns = 8, rows = 9, padding = 2;
@@ -63,7 +76,7 @@ const sheets = {};
 for (const suffix of order) {
   const role = delivered.get(suffix);
   if (!role) continue;
-  const bytes = fs.readFileSync(path.join(releaseDir, role.file));
+  const bytes = fs.readFileSync(path.join(role.dir, role.file));
   const sheet = decodeRgbaPng(bytes);
   assert.equal(sheet.height, cellH); assert.equal(sheet.width, cellW * role.frames, role.role);
   const packed = new Map();
@@ -78,7 +91,7 @@ for (const suffix of order) {
   });
   const effectFrame = effectOverride[suffix] ?? role.effectFrame;
   clips.push({ clip: path.basename(role.file, '.png'), role: suffix, status: role.approval ?? draft.status, sheet: role.file, sheetSha256: sha(bytes),
-    deliveredFrameMs: role.frameMs, deliveredEffectFrame: role.effectFrame, effectFrame, frames });
+    deliveredFrameMs: role.frameMs, deliveredEffectFrame: role.effectFrame, effectFrame, ...(role.release ? { release: role.release } : {}), frames });
   sheets[suffix] = true;
 }
 // Reserve each missing transition's two cells, so delivering it later moves no other cell.
@@ -103,7 +116,7 @@ const hit = clips.find(c => c.role === 'hit');
 roles.push({ id: prefix + 'death', atlas: 'hero-knight', frames: [rect(hit.frames[hit.frames.length - 1])], pivot, worldSize: previous.worldSize,
   frameMs: ms(hit.frames[0].frameTicks60), tween: 'none' });
 const license = {
-  id: 'generated-knight-sheets', origin: 'Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions ' + release + '); packed without resampling',
+  id: 'generated-knight-sheets', origin: 'Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions ' + release + (addendumRelease ? ', gather B ' + addendumRelease : '') + '); packed without resampling',
   source: 'https://openai.com/policies/terms-of-use/', prompt: 'docs/licenses/prompts/knight-sheets-r4-prompt.txt',
   commercialUse: 'Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions.'
 };
@@ -117,7 +130,7 @@ for (const file of ['unity/Assets/Art/first-playable-manifest.json', 'unity/Asse
   assert.deepEqual([spec.width, spec.height, spec.padding], [atlasW, atlasH, padding], 'atlas size stays');
   fs.writeFileSync(path.join(root, file), JSON.stringify(m, null, 2) + '\n');
 }
-const record = { ...previous, releases: { walk: previous.releases.walk, actions: release }, actionsManifestSha256: sha(fs.readFileSync(draftPath)),
+const record = { ...previous, releases: { walk: previous.releases.walk, actions: release, ...(addendumRelease ? { gatherB: addendumRelease } : {}) }, actionsManifestSha256: sha(fs.readFileSync(draftPath)),
   atlasSha256: sha(atlasBytes), width: atlasW, height: atlasH, padding, effectOverride, clips };
 delete record.approvedManifestSha256; delete record.additionsManifestSha256; delete record.movingKeyHoldTicks60;   // moving keys now play their own frames and frameMs
 fs.writeFileSync(recordPath, JSON.stringify(record, null, 2) + '\n');

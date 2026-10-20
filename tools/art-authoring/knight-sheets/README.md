@@ -41,5 +41,6 @@ node tools/art-authoring/knight-sheets/pack.mjs /tmp/knight-approved /tmp/knight
 - **Astra r4 (Release `hero-side-actions-game-r4-20261020`, packed):** r4 redraws key-blow's outline and adds the walk-to-idle
   gather (2 x 72 ms -> 4 ticks); `pack-side.mjs hero-side-actions-game-r4-20261020 <dir>` puts the gather into the two reserved
   cells and changes no other cell (71/72). r4 records the standing cast's effect frame as 2. `replace-walk.mjs` still swaps the walk.
-- **Gather B (Astra, pending):** a release that also delivers `transition.walk-to-idle-b` is packed the same way. Identical
-  idle frames then share one cell (six idle frames are three pictures), so the atlas holds 70/72 cells with B.
+- **Gather B r2 (Release `hero-gather-b-r2-20261020`, approved 2026-10-20):** an addendum to r4 with one role,
+  `transition.walk-to-idle-b`. Run `pack-side.mjs hero-side-actions-game-r4-20261020 <r4 dir> hero-gather-b-r2-20261020 <b dir>`.
+  Identical idle frames share one cell (six idle frames are three pictures), so the atlas holds 70/72 cells.
