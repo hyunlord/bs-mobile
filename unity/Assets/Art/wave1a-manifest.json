@@ -227,7 +227,7 @@
     },
     {
       "id": "generated-knight-sheets",
-      "origin": "Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions hero-side-actions-game-r3-20261020); packed without resampling",
+      "origin": "Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions hero-side-actions-game-r4-20261020); packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/knight-sheets-r4-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -3972,6 +3972,34 @@
         },
         {
           "x": 1282,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.transition.walk-to-idle",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1602,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
           "y": 1922,
           "width": 320,
           "height": 240

@@ -130,21 +130,13 @@ namespace Game.Tests
             Assert.That(s.Pose(3, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
         }
 
-        // The walk-to-idle feet gather (Astra r4) plays when the hero stops, only once its role exists; until then stopping is idle.
+        // The walk-to-idle feet gather (Astra r4, 2 x 72 ms -> 4 ticks) plays when the hero stops; a sheet without the role stops
+        // straight to idle.
         [Test] public void StoppingPlaysTheFeetGatherOnlyWhenItsClipIsDelivered()
         {
-            var off = Selector();
-            Assert.That(off.Timings.WalkToIdle.HasValue, Is.False, "r3 has no gather: off");
-            off.Pose(0, true, false, false, .1f, Stride);
-            Assert.That(off.Pose(.01f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
-            var delivered = Manifest("wave1a-manifest.json");
-            var timings = new HeroSheetTimings(suffix =>
-            {
-                if (suffix == HeroSheetSpec.WalkToIdleSuffix) return (2, 67);   // r4: 2 frames, 4 ticks
-                var role = delivered.roles.Single(r => r.id == HeroSheetSpec.RolePrefix + suffix);
-                return (role.frames.Length, role.frameMs);
-            });
-            var on = new HeroActionSelector(timings);
+            var on = Selector();
+            Assert.That(on.Timings.WalkToIdle.HasValue, Is.True, "r4 delivers the gather");
+            Assert.That((on.Timings.WalkToIdle.Value.Frames, on.Timings.WalkToIdle.Value.Ticks), Is.EqualTo((2, 4)));
             on.Pose(0, true, false, false, .1f, Stride);
             Assert.That((on.Pose(.01f, false, false, false, 0, Stride).Clip, on.Pose(.01f, false, false, false, 0, Stride).Frame), Is.EqualTo((HeroClip.Transition, 0)));
             Assert.That(on.Pose(.01f + Ticks(5), false, false, false, 0, Stride).Frame, Is.EqualTo(1));
@@ -152,6 +144,16 @@ namespace Game.Tests
             on.Pose(1, true, false, false, .1f, Stride);
             Assert.That(on.Offer(70, "core:iron_blade", HeroAction.Slash, false, 10, 1.01f, false), Is.True);
             Assert.That(on.Pose(1.01f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Action), "an attack wins over the gather");
+            var delivered = Manifest("wave1a-manifest.json");
+            var without = new HeroActionSelector(new HeroSheetTimings(suffix =>
+            {
+                if (suffix == HeroSheetSpec.WalkToIdleSuffix) return (0, 0);
+                var role = delivered.roles.Single(r => r.id == HeroSheetSpec.RolePrefix + suffix);
+                return (role.frames.Length, role.frameMs);
+            }));
+            Assert.That(without.Timings.WalkToIdle.HasValue, Is.False);
+            without.Pose(0, true, false, false, .1f, Stride);
+            Assert.That(without.Pose(.01f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "no gather role: straight to idle");
         }
 
         [Test] public void HitAgeStartsWithTheHitPoseSoTheFlashLastsTwoFrames()

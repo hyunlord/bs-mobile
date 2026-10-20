@@ -23,7 +23,7 @@ const draft = read(draftPath);
 const [cellW, cellH] = draft.cellSize;
 assert.deepEqual([cellW, cellH], previous.cell);
 assert.ok(Math.abs(draft.pivotBottomLeft[1] - previous.pivotUnityNormalized[1]) < 1e-6 && draft.pivotBottomLeft[0] === previous.pivotUnityNormalized[0], 'pivot');
-// User decision 2026-10-20: the standing cast fires on its raised-sword frame 2 (r3's 3 is the lowered sword; r4 will say 2).
+// User decision 2026-10-20: the standing cast fires on its raised-sword frame 2 (r3 recorded 3, the lowered sword; r4 records 2).
 const effectOverride = { 'action.cast': 2 };
 const ticks = ms => Math.round(ms * 60 / 1000), ms = t => Math.round(t * 1000 / 60);
 

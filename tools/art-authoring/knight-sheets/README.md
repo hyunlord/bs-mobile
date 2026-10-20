@@ -38,5 +38,6 @@ node tools/art-authoring/knight-sheets/pack.mjs /tmp/knight-approved /tmp/knight
   walk-to-idle gather. Run `node tools/art-authoring/knight-sheets/pack-side.mjs <release> <dir>`. Each cell is checked
   against the delivered RGBA hash; frameMs are the delivered times rounded to 60 Hz ticks (keys 59 ms -> 4 ticks). The record
   keeps each action's `effectFrame` (standing cast 2 by user decision; `HeroSheetSpec.EffectFrame` matches it).
-- **Astra r4 (key-blow, gather):** download it and run `pack-side.mjs` again. A delivered `transition.walk-to-idle` role is packed
-  into the reserved cells and the game plays it when the hero stops; nothing else moves. `replace-walk.mjs` still swaps the walk.
+- **Astra r4 (Release `hero-side-actions-game-r4-20261020`, packed):** r4 redraws key-blow's outline and adds the walk-to-idle
+  gather (2 x 72 ms -> 4 ticks); `pack-side.mjs hero-side-actions-game-r4-20261020 <dir>` puts the gather into the two reserved
+  cells and changes no other cell (71/72). r4 records the standing cast's effect frame as 2. `replace-walk.mjs` still swaps the walk.

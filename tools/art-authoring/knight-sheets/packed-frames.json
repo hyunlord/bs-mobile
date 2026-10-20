@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "releases": {
     "walk": "hero-walk-r8-5-review-20261019",
-    "actions": "hero-side-actions-game-r3-20261020"
+    "actions": "hero-side-actions-game-r4-20261020"
   },
   "atlas": "unity/Assets/Art/hero-knight.png",
-  "atlasSha256": "1798f7002b0095cd319c9fc2dec537035c8b01c181b648ac348a5c71b0a09b61",
+  "atlasSha256": "81ac435cfaa620a9d0d5eec0c6c337ea41c8fdbed3a71352c1bdcbf45935eae6",
   "width": 2564,
   "height": 2164,
   "padding": 2,
@@ -180,10 +180,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-idle",
+      "clip": "hero-side-game-r4-idle",
       "role": "idle",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-idle.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-idle.png",
       "sheetSha256": "bbfad56cb247c8851b1d10b983f12d320c93eb00cf94eb0d635a46daf7ecf6a7",
       "deliveredFrameMs": 200,
       "deliveredEffectFrame": null,
@@ -240,10 +240,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-slash",
+      "clip": "hero-side-game-r4-action-slash",
       "role": "action.slash",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-slash.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-slash.png",
       "sheetSha256": "20020d17872ed0e22f4e6219f960ea639f080c40758cdabbef81af8ca8be3398",
       "deliveredFrameMs": 100,
       "deliveredEffectFrame": 3,
@@ -316,10 +316,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-aim",
+      "clip": "hero-side-game-r4-action-aim",
       "role": "action.aim",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-aim.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-aim.png",
       "sheetSha256": "059385d086e8825ba7acfd3bec931df8f9414035ef4616a58f659e44eaa5bebd",
       "deliveredFrameMs": 100,
       "deliveredEffectFrame": 3,
@@ -376,13 +376,13 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-cast",
+      "clip": "hero-side-game-r4-action-cast",
       "role": "action.cast",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-cast.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-cast.png",
       "sheetSha256": "3b839fbd5112627064d3dd50e6f623b3046c60adf4b387615af5d5d0b505b2d4",
       "deliveredFrameMs": 100,
-      "deliveredEffectFrame": 3,
+      "deliveredEffectFrame": 2,
       "effectFrame": 2,
       "frames": [
         {
@@ -436,10 +436,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-blow",
+      "clip": "hero-side-game-r4-action-blow",
       "role": "action.blow",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-blow.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-blow.png",
       "sheetSha256": "7f066aadb3a9b1132c1d3f797004f6f9fe36dc8d870630b20b8c3e2b395107c9",
       "deliveredFrameMs": 100,
       "deliveredEffectFrame": 3,
@@ -496,10 +496,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-throw",
+      "clip": "hero-side-game-r4-action-throw",
       "role": "action.throw",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-throw.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-throw.png",
       "sheetSha256": "6a77772f311350adf4ebac5e28c547e688009e0e51542201af9d7886e859f756",
       "deliveredFrameMs": 100,
       "deliveredEffectFrame": 4,
@@ -572,10 +572,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-hit",
+      "clip": "hero-side-game-r4-hit",
       "role": "hit",
-      "status": "USER_APPROVED_STANDING_R2",
-      "sheet": "hero-side-game-r3-hit.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-hit.png",
       "sheetSha256": "841f8db920f1d7d9196bf95dba3eafa03d38af392b85afe1cf576df0924f3146",
       "deliveredFrameMs": 83,
       "deliveredEffectFrame": 0,
@@ -608,10 +608,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-key-slash",
+      "clip": "hero-side-game-r4-key-slash",
       "role": "key.slash",
-      "status": "MOVING_KEYS_REVIEW_PENDING",
-      "sheet": "hero-side-game-r3-key-slash.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-slash.png",
       "sheetSha256": "2a5f164d5353801aa76e77ad021b71fa961cb9342a814fcdb4031278d45c61a0",
       "deliveredFrameMs": 59,
       "deliveredEffectFrame": 0,
@@ -636,10 +636,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-key-aim",
+      "clip": "hero-side-game-r4-key-aim",
       "role": "key.aim",
-      "status": "MOVING_KEYS_REVIEW_PENDING",
-      "sheet": "hero-side-game-r3-key-aim.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-aim.png",
       "sheetSha256": "36d1ec49d63825bfcff3564750fc8a35cc3bf4e2992935cfde4edf9cc97e364b",
       "deliveredFrameMs": 59,
       "deliveredEffectFrame": 0,
@@ -664,10 +664,10 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-key-cast",
+      "clip": "hero-side-game-r4-key-cast",
       "role": "key.cast",
-      "status": "MOVING_KEYS_REVIEW_PENDING",
-      "sheet": "hero-side-game-r3-key-cast.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-cast.png",
       "sheetSha256": "1e5d3971ad0f15e91a33e4736ccc1696d069a163e2a5488e2a2aac5659a4182a",
       "deliveredFrameMs": 59,
       "deliveredEffectFrame": 0,
@@ -692,11 +692,11 @@
       ]
     },
     {
-      "clip": "hero-side-game-r3-key-blow",
+      "clip": "hero-side-game-r4-key-blow",
       "role": "key.blow",
-      "status": "MOVING_KEYS_REVIEW_PENDING",
-      "sheet": "hero-side-game-r3-key-blow.png",
-      "sheetSha256": "9cc3113d32610a30d58830c655f886b3a13b0d9d1c6388c681a66874cd2e3426",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-blow.png",
+      "sheetSha256": "85906f96783ab3b279826c3de1f1f6f0a502998c4c9adb62872fdd375f64f685",
       "deliveredFrameMs": 59,
       "deliveredEffectFrame": 0,
       "effectFrame": 0,
@@ -706,7 +706,7 @@
           "y": 1922,
           "width": 320,
           "height": 240,
-          "decodedRgbaSha256": "64c7ce18d707b8b112b86b988495aedf622594f7de8a0723dfb84bd567c8815b",
+          "decodedRgbaSha256": "012565c9309a94225988820926d489dac3a2ab01ec378a2a85144b1c5d515527",
           "frameTicks60": 4
         },
         {
@@ -714,16 +714,16 @@
           "y": 1922,
           "width": 320,
           "height": 240,
-          "decodedRgbaSha256": "c4cc0ce9eeca169eabe868d67d330e37343b685844e5c4e6d8b4279f0c911a09",
+          "decodedRgbaSha256": "1cea59b891be86baedf1473b36492ca963098af580368bea3582a54bb16688fa",
           "frameTicks60": 4
         }
       ]
     },
     {
-      "clip": "hero-side-game-r3-key-throw",
+      "clip": "hero-side-game-r4-key-throw",
       "role": "key.throw",
-      "status": "MOVING_KEYS_REVIEW_PENDING",
-      "sheet": "hero-side-game-r3-key-throw.png",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-throw.png",
       "sheetSha256": "d138c59428741e2a33dd17dfba1e8380e486a57063c60493998112975009a40c",
       "deliveredFrameMs": 59,
       "deliveredEffectFrame": 0,
@@ -746,10 +746,38 @@
           "frameTicks60": 4
         }
       ]
+    },
+    {
+      "clip": "hero-side-game-r4-transition-walk-to-idle",
+      "role": "transition.walk-to-idle",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-transition-walk-to-idle.png",
+      "sheetSha256": "e12a06bf89ec43d1b05738c9b65d9ecbd500714cd74c97dd15de471956a81e6b",
+      "deliveredFrameMs": 72,
+      "deliveredEffectFrame": null,
+      "effectFrame": null,
+      "frames": [
+        {
+          "x": 1602,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "eaa2acd68439854bdf609e98f7af645f62c477770534125832e29378738f79cb",
+          "frameTicks60": 4
+        },
+        {
+          "x": 1922,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 4
+        }
+      ]
     }
   ],
   "walkSheetSha256": "40dd9dc9bd36b7a0f74717e24a6d35080e6954afbd868edb4f1d5afd38b16ecd",
-  "actionsManifestSha256": "c1308ea02d8cd1bf66f2a9b3aa26497d50d011cb75ad92399a995327f6c81a3f",
+  "actionsManifestSha256": "0d4582213c4bdc7ec8e9d06ec8cb1abc2042bb0b31acf36267e4ba8e3dc8e9a5",
   "effectOverride": {
     "action.cast": 2
   }

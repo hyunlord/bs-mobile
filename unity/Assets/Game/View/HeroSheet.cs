@@ -92,7 +92,7 @@ namespace Game.View
         public HeroClipTiming Hit { get; }
         public HeroClipTiming Action(HeroAction action) => actions[(int)action];
         public HeroClipTiming Key(HeroAction action) => keys[(int)action];
-        // The walk-to-idle feet gather, played when the hero stops; absent (null) until its role is delivered (Astra r4).
+        // The walk-to-idle feet gather (Astra r4), played when the hero stops; absent (null) for a sheet without the role.
         public HeroClipTiming? WalkToIdle { get; }
         // role(suffix) returns 0 frames for a role the manifest does not have; only the transition may be missing.
         public HeroSheetTimings(Func<string, (int Frames, int FrameMs)> role)
