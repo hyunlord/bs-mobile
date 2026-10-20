@@ -3,9 +3,9 @@
   "release": "muster-horn-wave-20261020",
   "draftManifestSha256": "dfb00f98867710782f63e04178b8554afef4feb002d0b69698badacb6873c392",
   "atlas": "unity/Assets/Art/wave1a-horn-wave.png",
-  "atlasSha256": "f04da311ab2963bfc6ceb04ae71a8989453ed5d6f42877c641641241f042320b",
+  "atlasSha256": "49cb344452423121194e3821343c8520d375405cdc10d4b5c434b10651c57ba1",
   "width": 2028,
-  "height": 987,
+  "height": 1970,
   "roles": [
     {
       "stage": "lv1",
@@ -23,6 +23,7 @@
         "y": 0.49945
       },
       "outerRadiusPx": 503.46,
+      "innerRadiusPx": 315.3,
       "maximumAlpha": 153,
       "cellRgbaSha256": "45b573b63bdc161b35f9c7bb6864f92b927b0f2bcdcbef22c8edbe6fca3012f4",
       "frame": {
@@ -48,11 +49,39 @@
         "y": 0.499489
       },
       "outerRadiusPx": 503.15,
+      "innerRadiusPx": 244.98,
       "maximumAlpha": 153,
       "cellRgbaSha256": "9d0ab74a27bf99af7dc88e89549e8513b6b9bbbe16007070c88fee806000d0a0",
       "frame": {
         "x": 1016,
         "y": 4,
+        "width": 1008,
+        "height": 979
+      }
+    },
+    {
+      "stage": "evolved-outer",
+      "id": "fx.muster_horn.wave.evolved.outer",
+      "file": "attack.core.muster_horn.wave.evolved.png",
+      "sheetSha256": "3728ef97c9bdbddcd3fbef575d0719c4a3c0e1465ad3921b41766150f7c3683a",
+      "crop": {
+        "left": 8,
+        "top": 22,
+        "width": 1008,
+        "height": 979
+      },
+      "derived": "outer band of attack.core.muster_horn.wave.evolved.png: alpha x ramp 330-350 px from the centre",
+      "pivot": {
+        "x": 0.5,
+        "y": 0.499489
+      },
+      "outerRadiusPx": 503.15,
+      "innerRadiusPx": 331.18,
+      "maximumAlpha": 153,
+      "cellRgbaSha256": "6c325268d787a2cc44eaa0fe1e54ee375738fd3dc6205bc7fff63ba639324a36",
+      "frame": {
+        "x": 4,
+        "y": 987,
         "width": 1008,
         "height": 979
       }

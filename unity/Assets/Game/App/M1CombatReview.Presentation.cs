@@ -38,6 +38,7 @@ namespace Game.App
         readonly List<string> orbitRows = new List<string>(64);
         readonly List<string> ricochetRows = new List<string>(256);
         readonly List<string> slingRows = new List<string>(64);
+        readonly List<string> hornRows = new List<string>(1024);
         readonly List<string> heroPoseRows = new List<string>(4096);
         float heroHitAge = -1, heroFlash; bool heroOutline;
         PresentationSummary presentation;
@@ -45,6 +46,7 @@ namespace Game.App
         public void Observe(WorldRenderer world)
         {
             ObserveFeel(world);
+            world.HornEvolvedVariant = HornEvolvedVariant == "x" ? global::Game.View.HornEvolvedVariant.X : HornEvolvedVariant == "y" ? global::Game.View.HornEvolvedVariant.Y : global::Game.View.HornEvolvedVariant.Current;
             world.MusterPresentationChanged = (source, formation) =>
             {
                 UnityEngine.Debug.Log($"[muster-presentation] frame={frameCount} source={source} path={formation.Path} evolution={formation.EvolutionId ?? "none"} ratio={formation.Ratio:0.###} soldiers={formation.Soldiers} scale={formation.Scale:0.###}");
@@ -76,6 +78,8 @@ namespace Game.App
             world.HeroSheetDrawn = (age, flash, outline) => { heroHitAge = age; heroFlash = flash; heroOutline = outline; };
             world.HeroSheetPoseSampled = pose => { if (heroPoseRows.Count < 20000) heroPoseRows.Add(FormattableString.Invariant(
                 $"{frameCount},{pose.Clip},{pose.Action},{pose.Frame},{heroHitAge:R},{heroFlash:R},{heroOutline}")); };
+            world.HornWaveSample = r => { if (hornRows.Count < 8192) hornRows.Add(FormattableString.Invariant(
+                $"{frameCount},{r.EventId},{r.Evolved},{r.Ordinal},{r.Art},{r.Share:0.####},{r.Alpha:0.####},{r.OnScreen},{r.CentreScreen.x:0.##},{r.CentreScreen.y:0.##},{r.OuterRadiusPixels:0.##},{r.InnerRadiusPixels:0.##}")); };
             world.SlingCastSample = r => { if (slingRows.Count < 1024) slingRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Evolved},{r.OnScreen},{r.AcceptedOffset},{r.FlightFrames},{r.LureFrames},{r.CentreScreen.x:R},{r.CentreScreen.y:R},{r.RadiusPixels:R},{r.HeroHeightPixels:R},{r.SackPixels:R}")); };
             world.SporePatchSample = r => { if (sporeRows.Count < 1024) sporeRows.Add(FormattableString.Invariant(
@@ -111,6 +115,8 @@ namespace Game.App
                 new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,stage,shownToDueFrames,stepFrames,launchScreenX,launchScreenY,lastImpactScreenX,lastImpactScreenY,lastImpactOnScreen,pikeLengthPixels,furrowWidthPixels,heroHeightPixels,lastImpactFrameOffset" }.Concat(pikeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-hero-poses.csv"),
                 new[] { "frameIndex,clip,action,frame,hitAgeSeconds,flash,redOutline" }.Concat(heroPoseRows));
+            System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-horn-waves.csv"),
+                new[] { "frameIndex,eventId,evolved,ordinal,art,share,alpha,onScreen,centreScreenX,centreScreenY,outerRadiusPixels,innerRadiusPixels" }.Concat(hornRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-sling-casts.csv"),
                 new[] { "frameIndex,tick,evolved,onScreen,acceptedOffset,flightFrames,lureFrames,centreScreenX,centreScreenY,radiusPixels,heroHeightPixels,sackPixels" }.Concat(slingRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-ricochet-hops.csv"),

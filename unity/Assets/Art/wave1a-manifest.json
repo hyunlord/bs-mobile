@@ -523,7 +523,7 @@
       "id": "wave1a-horn-wave",
       "path": "Assets/Art/wave1a-horn-wave.png",
       "width": 2028,
-      "height": 987,
+      "height": 1970,
       "padding": 4,
       "license": "generated-wave1a-horn-wave"
     }
@@ -5572,6 +5572,28 @@
         {
           "x": 1016,
           "y": 4,
+          "width": 1008,
+          "height": 979
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.499489
+      },
+      "worldSize": {
+        "x": 2.003379,
+        "y": 1.945742
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.muster_horn.wave.evolved.outer",
+      "atlas": "wave1a-horn-wave",
+      "frames": [
+        {
+          "x": 4,
+          "y": 987,
           "width": 1008,
           "height": 979
         }
