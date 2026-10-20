@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "release": "muster-horn-wave-20261020",
+  "draftManifestSha256": "dfb00f98867710782f63e04178b8554afef4feb002d0b69698badacb6873c392",
+  "atlas": "unity/Assets/Art/wave1a-horn-wave.png",
+  "atlasSha256": "f04da311ab2963bfc6ceb04ae71a8989453ed5d6f42877c641641241f042320b",
+  "width": 2028,
+  "height": 987,
+  "roles": [
+    {
+      "stage": "lv1",
+      "id": "fx.muster_horn.wave.lv1",
+      "file": "attack.core.muster_horn.wave.lv1.png",
+      "sheetSha256": "3ba7af281132c2078039821f692dae7ee90d98a3d14f07f2928ecb4efcf7d7e5",
+      "crop": {
+        "left": 8,
+        "top": 57,
+        "width": 1008,
+        "height": 909
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.49945
+      },
+      "outerRadiusPx": 503.46,
+      "maximumAlpha": 153,
+      "cellRgbaSha256": "45b573b63bdc161b35f9c7bb6864f92b927b0f2bcdcbef22c8edbe6fca3012f4",
+      "frame": {
+        "x": 4,
+        "y": 4,
+        "width": 1008,
+        "height": 909
+      }
+    },
+    {
+      "stage": "evolved",
+      "id": "fx.muster_horn.wave.evolved",
+      "file": "attack.core.muster_horn.wave.evolved.png",
+      "sheetSha256": "3728ef97c9bdbddcd3fbef575d0719c4a3c0e1465ad3921b41766150f7c3683a",
+      "crop": {
+        "left": 8,
+        "top": 22,
+        "width": 1008,
+        "height": 979
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.499489
+      },
+      "outerRadiusPx": 503.15,
+      "maximumAlpha": 153,
+      "cellRgbaSha256": "9d0ab74a27bf99af7dc88e89549e8513b6b9bbbe16007070c88fee806000d0a0",
+      "frame": {
+        "x": 1016,
+        "y": 4,
+        "width": 1008,
+        "height": 979
+      }
+    }
+  ]
+}

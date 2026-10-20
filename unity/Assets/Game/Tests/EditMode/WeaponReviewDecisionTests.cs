@@ -126,5 +126,32 @@ namespace Tests.EditMode
             Assert.That(LightningSpec.OverHero(box, new Vector2(0, .3f)), Is.True);
             Assert.That(LightningSpec.OverHero(box, new Vector2(.5f, .3f)), Is.False);
         }
+
+        [Serializable] sealed class HornRole { public string id; public float outerRadiusPx; public Box2 crop; }
+        [Serializable] sealed class Box2 { public int left, top, width, height; }
+        [Serializable] sealed class HornRecord { public HornRole[] roles; }
+        [Serializable] sealed class ArtRole { public string id; public Vec2 worldSize; }
+        [Serializable] sealed class Vec2 { public float x, y; }
+        [Serializable] sealed class ArtManifestRoles { public ArtRole[] roles; }
+
+        // Muster horn sound wave (2026-10-20): the painted outer edge lands on the Core radius, the wave grows 0.3 -> 1.0 like the
+        // outline ring it replaces, and the comparison layer sits above the enemies, under the hero, at half opacity.
+        [Test] public void HornWaveOuterEdgeLandsOnTheCoreRadiusAndGrowsFromThreeTenths()
+        {
+            var packed = JsonUtility.FromJson<HornRecord>(File.ReadAllText(Path.Combine(Application.dataPath, "../../tools/art-authoring/horn-wave/packed.json")));
+            var manifest = JsonUtility.FromJson<ArtManifestRoles>(File.ReadAllText(Path.Combine(Application.dataPath, "Art/wave1a-manifest.json")));
+            foreach (var id in new[] { HornWaveSpec.Level1Role, HornWaveSpec.EvolvedRole })
+            {
+                var record = packed.roles.Single(r => r.id == id);
+                var role = manifest.roles.Single(r => r.id == id);
+                var edgeInRadii = record.outerRadiusPx * role.worldSize.x / record.crop.width;
+                Assert.That(edgeInRadii, Is.EqualTo(1).Within(.01f), id + ": painted outer edge at the radius");
+                Assert.That(role.worldSize.y / role.worldSize.x, Is.EqualTo(record.crop.height / (float)record.crop.width).Within(.001f), id + ": not stretched");
+            }
+            Assert.That(HornWaveSpec.Share(0), Is.EqualTo(.3f)); Assert.That(HornWaveSpec.Share(1), Is.EqualTo(1));
+            Assert.That(HornWaveSpec.AboveEnemiesOpacity, Is.EqualTo(.5f));
+            Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.EnemyLayer), "Astra's layer: under the enemies and the hero");
+            Assert.That(GameVisualTokens.WaveTransientCueLayer, Is.GreaterThan(GameVisualTokens.EnemyLayer + 19).And.LessThan(GameVisualTokens.LordLayer), "comparison layer: above every enemy row, under the hero");
+        }
     }
 }

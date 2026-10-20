@@ -245,6 +245,13 @@
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/knight-sheets-r4-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "generated-wave1a-horn-wave",
+      "origin": "Generated with built-in image_gen by the Astra art pipeline for the muster horn sound wave (Release muster-horn-wave-20261020; level 1 and evolved, matte gouache pressure bands); cropped to the nonzero alpha box, not resampled",
+      "source": "https://openai.com/policies/terms-of-use/",
+      "prompt": "docs/licenses/prompts/muster-horn-wave-prompt.md",
+      "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     }
   ],
   "atlases": [
@@ -511,6 +518,14 @@
       "height": 2164,
       "padding": 2,
       "license": "generated-knight-sheets"
+    },
+    {
+      "id": "wave1a-horn-wave",
+      "path": "Assets/Art/wave1a-horn-wave.png",
+      "width": 2028,
+      "height": 987,
+      "padding": 4,
+      "license": "generated-wave1a-horn-wave"
     }
   ],
   "roles": [
@@ -5527,6 +5542,50 @@
       },
       "frameMs": 120,
       "tween": "pulse"
+    },
+    {
+      "id": "fx.muster_horn.wave.lv1",
+      "atlas": "wave1a-horn-wave",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 1008,
+          "height": 909
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.49945
+      },
+      "worldSize": {
+        "x": 2.002145,
+        "y": 1.805506
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.muster_horn.wave.evolved",
+      "atlas": "wave1a-horn-wave",
+      "frames": [
+        {
+          "x": 1016,
+          "y": 4,
+          "width": 1008,
+          "height": 979
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.499489
+      },
+      "worldSize": {
+        "x": 2.003379,
+        "y": 1.945742
+      },
+      "frameMs": 1000,
+      "tween": "none"
     },
     {
       "id": "attack.core.muster_horn.projectile",

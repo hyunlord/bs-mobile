@@ -417,6 +417,8 @@ namespace Game.View
                     var radius=(float)value.Amount/settings.WorldUnitsPerUnityUnit;
                     var size=gear.Kind==WaveAttackKind.Arc||gear.Kind==WaveAttackKind.HarvestArc?visual.WorldSize*radius:Vector2.one*radius*2;
                     var planting=evolved!=null&&evolved.Kind==WaveEvolutionKind.PlantingArc;
+                    // The horn's call is Astra's painted sound wave (DrawHornWave) where the sheet has it.
+                    if(attackSource=="core:muster_horn"&&gear.Kind==WaveAttackKind.MusterWave&&DrawHornWave(a,radius,age/duration,evolved!=null,opacity))continue;
                     Draw(visual,GameVisualTokens.AttackLayer,a,age,size,Angle(b-a),opacity*GameVisualTokens.WaveAttackBodyOpacity,tint:planting?GameVisualTokens.Ready:Color.white);
                     DrawWaveAttackEdge(visual,a,age,size,Angle(b-a),planting?GameVisualTokens.Ready:GameVisualTokens.Attack,opacity);
                     if(planting)

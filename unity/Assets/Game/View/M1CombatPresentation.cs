@@ -209,9 +209,12 @@ namespace Game.View
                 else if(m1CombatShape=="summon")
                 {
                     var progress=Mathf.Clamp01(age/WorldEffects.AttackLifetimeSeconds);
-                    // The call is a thin expanding outline only; a filled ring would tint the whole screen over the soldiers.
-                    DrawMusterRing(a,radius,new Color(.65f,.82f,1),opacity*.35f);
-                    DrawMusterRing(a,radius*Mathf.Lerp(.3f,1,progress),Color.white,opacity*.55f);
+                    // Astra's painted sound wave; the two thin outline rings remain only for a sheet without it.
+                    if(!DrawHornWave(a,radius,progress,WeaponEvolved(value.Source),opacity))
+                    {
+                        DrawMusterRing(a,radius,new Color(.65f,.82f,1),opacity*.35f);
+                        DrawMusterRing(a,radius*Mathf.Lerp(.3f,1,progress),Color.white,opacity*.55f);
+                    }
                 }
             }
             return true;

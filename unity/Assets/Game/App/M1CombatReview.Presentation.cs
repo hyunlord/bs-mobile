@@ -45,6 +45,7 @@ namespace Game.App
         public void Observe(WorldRenderer world)
         {
             ObserveFeel(world);
+            world.HornWaveAboveEnemies = HornWaveLayer == "above";
             world.MusterPresentationChanged = (source, formation) =>
             {
                 UnityEngine.Debug.Log($"[muster-presentation] frame={frameCount} source={source} path={formation.Path} evolution={formation.EvolutionId ?? "none"} ratio={formation.Ratio:0.###} soldiers={formation.Soldiers} scale={formation.Scale:0.###}");

@@ -166,6 +166,31 @@ namespace Game.View
 
         static Rect Union(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));
 
+        // Muster horn sound wave (Astra, Release muster-horn-wave-20261020; user decision 2026-10-20): the painted wave replaces the
+        // two outline rings. Like the rings it grows from HornWaveSpec.StartShare of the Core radius to all of it and fades out over
+        // the attack's 0.18 s (opacity carries the fade). Its worldSize is in units of the painted outer edge, so that edge lands on
+        // the radius. Layer: under the hero and the enemies (Astra), or, for the user's comparison only, above the enemies and under
+        // the hero at HornWaveSpec.AboveEnemiesOpacity.
+        public bool HornWaveAboveEnemies { get; set; }
+        ArtVisual hornWaveLevel1, hornWaveEvolved; bool hornWaveChecked;
+        public int HornWavesDrawn { get; private set; }
+        bool DrawHornWave(Vector2 center, float radius, float progress, bool evolved, float opacity)
+        {
+            if (!hornWaveChecked)
+            {
+                hornWaveChecked = true;
+                if (art != null) { art.TryResolveRole(HornWaveSpec.Level1Role, out hornWaveLevel1); art.TryResolveRole(HornWaveSpec.EvolvedRole, out hornWaveEvolved); }
+            }
+            var visual = evolved && hornWaveEvolved != null ? hornWaveEvolved : hornWaveLevel1;
+            if (visual == null) return false;
+            var alpha = opacity * (HornWaveAboveEnemies ? HornWaveSpec.AboveEnemiesOpacity : 1);
+            if (radius <= 0 || alpha <= 0) return true;
+            Draw(visual, HornWaveAboveEnemies ? GameVisualTokens.WaveTransientCueLayer : GameVisualTokens.AttackLayer, center, 0,
+                visual.WorldSize * radius * HornWaveSpec.Share(progress), 0, alpha, applyTween: false);
+            HornWavesDrawn++;
+            return true;
+        }
+
         void DrawMusterRing(Vector2 center, float radius, Color color, float opacity)
         {
             if (radius <= 0 || opacity <= 0) return;
@@ -218,5 +243,14 @@ namespace Game.View
                 formation.Evolved ? GameVisualTokens.Ready : Color.white, applyTween: false);
             DrawWaveAttackEdge(slash, position, strikeAge, reachSize, angle, formation.Evolved ? GameVisualTokens.Ready : GameVisualTokens.Ally, fade);
         }
+    }
+
+    // Muster horn sound wave values (WorldRenderer.DrawHornWave). Roles from tools/art-authoring/horn-wave/pack.mjs.
+    public static class HornWaveSpec
+    {
+        public const string Level1Role = "fx.muster_horn.wave.lv1", EvolvedRole = "fx.muster_horn.wave.evolved";
+        public const float StartShare = .3f;            // as the inner outline ring: 0.3 -> 1.0 of the Core radius over 0.18 s
+        public const float AboveEnemiesOpacity = .5f;   // the comparison layer (above enemies, under the hero) at half opacity
+        public static float Share(float progress) => Mathf.Lerp(StartShare, 1, Mathf.Clamp01(progress));
     }
 }
