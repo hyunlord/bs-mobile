@@ -29,13 +29,18 @@ assert.ok(Math.abs(draft.pivot[1] - record.pivotUnityNormalized[1]) < 1e-6 && dr
 const sheet = decodeRgbaPng(sheetBytes);
 
 const atlasPath = path.join(root, record.atlas);
-const before = decodeRgbaPng(fs.readFileSync(atlasPath));
+// The input atlas must be the recorded one, so the outside-cell check below guarantees the other roles are the recorded pixels.
+const inputBytes = fs.readFileSync(atlasPath);
+assert.equal(sha(inputBytes), record.atlasSha256, 'hero-knight.png differs from packed-frames.json; restore it before replacing cells');
+const before = decodeRgbaPng(inputBytes);
 assert.deepEqual([before.width, before.height], [record.width, record.height]);
 const atlas = Buffer.from(before.pixels);
 const inWalkCell = new Uint8Array(record.width * record.height);
 const frames = clip.frames.map((f, i) => {
   const [sx, sy, w, h] = draft.frameRectsTopLeft[i];
   assert.deepEqual([w, h], [cellW, cellH]);
+  assert.ok(Number.isInteger(sx) && Number.isInteger(sy) && sx >= 0 && sy >= 0 && sx + cellW <= sheet.width && sy + cellH <= sheet.height,
+    `walk frame ${i} rect [${sx}, ${sy}, ${w}, ${h}] lies outside the ${sheet.width}x${sheet.height} sheet`);
   const cell = Buffer.alloc(cellW * cellH * 4);
   for (let r = 0; r < cellH; r++) {
     sheet.pixels.copy(cell, r * cellW * 4, ((sy + r) * sheet.width + sx) * 4, ((sy + r) * sheet.width + sx + cellW) * 4);
