@@ -103,6 +103,14 @@ namespace Tests.EditMode
                     var closest = new Vector2(Mathf.Clamp(centre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(centre.y, bounds.min.y, bounds.max.y));
                     if ((closest - centre).magnitude < radius) Assert.That(label.color.a, Is.LessThanOrEqualTo(WorldDamageNumbers.HeroFadedAlpha + 1e-4f), label.text);
                 }
+                foreach (var label in labels)
+                {
+                    var bounds = label.GetComponent<MeshRenderer>().bounds;
+                    var risen = new Vector2(Mathf.Clamp(centre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(centre.y, bounds.min.y, bounds.max.y + WorldDamageNumbers.RiseDistance));
+                    if ((risen - centre).magnitude < radius) Assert.That(label.color.a, Is.LessThanOrEqualTo(WorldDamageNumbers.HeroFadedAlpha + 1e-4f), "no full number rises into the hero: " + label.text);
+                }
+                Assert.That(numbers.NearHero(new Vector2(0, -.2f)), Is.True, "born below the feet, it would rise into the body");
+                Assert.That(numbers.NearHero(new Vector2(0, -.4f)), Is.False);
                 numbers.SetHero(centre, 0);
                 numbers.Add(new Vector2(3, 3), 7);
                 Assert.That(numbers.MovedAboveHero + numbers.FadedOverHero, Is.EqualTo(61), "away from the hero nothing changes");

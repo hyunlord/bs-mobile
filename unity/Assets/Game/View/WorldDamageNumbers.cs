@@ -11,21 +11,28 @@ namespace Game.View
         const int ContinuationChunks = 4;
         const float PlacementStep = 0.18f;
         const float LabelGap = 0.025f;
+        public const float RiseDistance = .25f;
         static readonly int[] PlacementOffsets = { 0, 1, -1, 2, -2, 3, -3 };
         // Hero keep-out (user decision 2026-10-20): a number that would appear within HeroKeepOutOfFigureHeight x the drawn
         // knight's height of its centre moves above the head through the usual free-slot search, never overlapping that circle;
-        // with no free slot there it stays where it was, drawn at HeroFadedAlpha.
+        // with no free slot there it stays where it was, drawn at HeroFadedAlpha. A number counts as near when any point of its
+        // rise (RiseDistance over its life) is inside the circle, so one born at the feet does not float up over the body.
         public const float HeroKeepOutOfFigureHeight = .6f, HeroFadedAlpha = .35f;
         Vector2 heroCentre; float heroRadius;
         readonly bool[] clearOfHero = new bool[Capacity];
         public int MovedAboveHero { get; private set; }
         public int FadedOverHero { get; private set; }
         public void SetHero(Vector2 centre, float radius) { heroCentre = centre; heroRadius = Mathf.Max(0, radius); }
-        public bool NearHero(Vector2 labelCentre) => heroRadius > 0 && (labelCentre - heroCentre).sqrMagnitude < heroRadius * heroRadius;
+        public bool NearHero(Vector2 labelCentre)
+        {
+            if (heroRadius <= 0) return false;
+            var closest = new Vector2(labelCentre.x, Mathf.Clamp(heroCentre.y, labelCentre.y, labelCentre.y + RiseDistance));
+            return (closest - heroCentre).sqrMagnitude < heroRadius * heroRadius;
+        }
         bool OverlapsHero(Bounds bounds)
         {
             if (heroRadius <= 0) return false;
-            var closest = new Vector2(Mathf.Clamp(heroCentre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(heroCentre.y, bounds.min.y, bounds.max.y));
+            var closest = new Vector2(Mathf.Clamp(heroCentre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(heroCentre.y, bounds.min.y, bounds.max.y + RiseDistance));
             return (closest - heroCentre).sqrMagnitude < heroRadius * heroRadius;
         }
         readonly MeshRenderer[] renderers = new MeshRenderer[Capacity];
@@ -224,7 +231,7 @@ namespace Game.View
                 ages[i] += Mathf.Max(0, seconds);
                 if (!visible || ages[i] >= GameVisualTokens.DamageNumberSeconds) { label.gameObject.SetActive(false); continue; }
                 var progress = ages[i] / GameVisualTokens.DamageNumberSeconds;
-                SetPosition(i, origins[i] + Vector2.up * (.14f + progress * .25f));
+                SetPosition(i, origins[i] + Vector2.up * (.14f + progress * RiseDistance));
                 var color = colors[i]; color.a *= 1 - progress * progress; SetColor(i, color);
             }
         }
