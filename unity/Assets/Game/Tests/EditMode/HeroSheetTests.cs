@@ -73,7 +73,8 @@ namespace Game.Tests
             s.Offer(1, "core:muster_horn", HeroAction.Blow, false, 10, 0, false);
             Assert.That(s.Pose(Ticks(15), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Action));
             Assert.That(s.Pose(Ticks(16), true, false, false, .01f, Stride).Clip, Is.EqualTo(HeroClip.Walk));
-            Assert.That(s.Pose(Ticks(17), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "the cut action does not resume");
+            Assert.That(s.Pose(Ticks(17), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Transition), "the cut action does not resume: stopping gathers the feet");
+            Assert.That(s.Pose(Ticks(17) + s.Timings.WalkToIdle.Value.Seconds + .002f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
             Assert.That(s.CutByMovement, Is.EqualTo(1));
         }
 
@@ -174,8 +175,11 @@ namespace Game.Tests
             Assert.That(s.Pose(0, true, false, false, .5f * Stride, Stride).Frame, Is.EqualTo(walk.Frames / 2), "half a stride = half the walk cycle");
             Assert.That(s.Pose(0, true, false, false, .125f * Stride, Stride).Frame, Is.EqualTo(Mathf.FloorToInt(.625f * walk.Frames)));
             Assert.That(s.Pose(10, true, false, false, 0, Stride).Frame, Is.EqualTo(Mathf.FloorToInt(.625f * walk.Frames)), "standing still in time does not advance the walk");
-            Assert.That(s.Pose(0, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
-            Assert.That(s.Pose(Ticks(idle.Ticks * (idle.Frames + 1) + 1), false, false, false, 0, Stride).Frame, Is.EqualTo(1), "idle loops its frames");
+            Assert.That(s.Pose(10.001f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Transition), "stopping gathers the feet");
+            Assert.That(s.Pose(10.001f + s.Timings.WalkToIdle.Value.Seconds + .002f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "then idle");
+            var standing = Selector();
+            Assert.That(standing.Pose(0, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle));
+            Assert.That(standing.Pose(Ticks(idle.Ticks * (idle.Frames + 1) + 1), false, false, false, 0, Stride).Frame, Is.EqualTo(1), "idle loops its frames");
         }
 
         [Test] public void WeaponMappingFollowsTheFeedbackTable()
