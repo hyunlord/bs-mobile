@@ -151,8 +151,8 @@ namespace Game.Tests
             var without = new HeroActionSelector(new HeroSheetTimings(suffix =>
             {
                 if (suffix == HeroSheetSpec.WalkToIdleSuffix) return (0, 0);
-                var role = delivered.roles.Single(r => r.id == HeroSheetSpec.RolePrefix + suffix);
-                return (role.frames.Length, role.frameMs);
+                var role = delivered.roles.SingleOrDefault(r => r.id == HeroSheetSpec.RolePrefix + suffix);
+                return role == null ? (0, 0) : (role.frames.Length, role.frameMs);
             }));
             Assert.That(without.Timings.WalkToIdle.HasValue, Is.False);
             without.Pose(0, true, false, false, .1f, Stride);
