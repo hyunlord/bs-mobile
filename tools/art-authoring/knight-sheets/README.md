@@ -32,3 +32,15 @@ node tools/art-authoring/knight-sheets/pack.mjs /tmp/knight-approved /tmp/knight
   copies the 16 delivered cells into the walk cells recorded here, fails if any other atlas pixel or either manifest's walk role
   (cells, `frameMs` 36) would change, and updates this record. The stride is the same as r8.3 (45% of the figure), so the
   distance-based walk timing is unchanged. Re-running it with the r8.3 delivery reproduces the r8.3 atlas byte for byte.
+- **Side-view actions r3 (Release `hero-side-actions-game-r3-20261020`, #336):** `pack-side.mjs` replaces `pack.mjs` for the
+  knight. It rebuilds the 8x9 atlas (2564x2164, padding 2): the current walk cells (copied from the atlas and checked against
+  this record), then idle, the five standing actions, hit and the five two-frame moving keys, and keeps two cells for the
+  walk-to-idle gather. Run `node tools/art-authoring/knight-sheets/pack-side.mjs <release> <dir>`. Each cell is checked
+  against the delivered RGBA hash; frameMs are the delivered times rounded to 60 Hz ticks (keys 59 ms -> 4 ticks). The record
+  keeps each action's `effectFrame` (standing cast 2 by user decision; `HeroSheetSpec.EffectFrame` matches it).
+- **Astra r4 (Release `hero-side-actions-game-r4-20261020`, packed):** r4 redraws key-blow's outline and adds the walk-to-idle
+  gather (2 x 72 ms -> 4 ticks); `pack-side.mjs hero-side-actions-game-r4-20261020 <dir>` puts the gather into the two reserved
+  cells and changes no other cell (71/72). r4 records the standing cast's effect frame as 2. `replace-walk.mjs` still swaps the walk.
+- **Gather B r2 (Release `hero-gather-b-r2-20261020`, approved 2026-10-20):** an addendum to r4 with one role,
+  `transition.walk-to-idle-b`. Run `pack-side.mjs hero-side-actions-game-r4-20261020 <r4 dir> hero-gather-b-r2-20261020 <b dir>`.
+  Identical idle frames share one cell (six idle frames are three pictures), so the atlas holds 70/72 cells.
