@@ -27,3 +27,8 @@ node tools/art-authoring/knight-sheets/pack.mjs /tmp/knight-approved /tmp/knight
   and every other role's pixels are unchanged. `packed-frames.json` records the walk cells, their decoded RGBA hashes and the
   user-chosen `frameMs` (36 ms, which the runtime plays as 2 ticks at 60 Hz; the delivery's own timing was 5 ticks).
   Re-running `pack.mjs` with the r4 Releases would restore the old 8-frame walk; update its layout first if it is needed again.
+- **Walk r8.5 (Release `hero-walk-r8-5-review-20261019`, #333):** replaces the r8.3 cells in place with
+  `node tools/art-authoring/knight-sheets/replace-walk.mjs <release> <status> <sheet.png> <walk-manifest-draft.json>`. The script
+  copies the 16 delivered cells into the walk cells recorded here, fails if any other atlas pixel or either manifest's walk role
+  (cells, `frameMs` 36) would change, and updates this record. The stride is the same as r8.3 (45% of the figure), so the
+  distance-based walk timing is unchanged. Re-running it with the r8.3 delivery reproduces the r8.3 atlas byte for byte.
