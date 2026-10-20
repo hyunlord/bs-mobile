@@ -63,5 +63,60 @@ namespace Tests.EditMode
             Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.EnemyLayer));
             Assert.That(GameVisualTokens.AttackLayer, Is.LessThan(GameVisualTokens.LordLayer), "the decal is drawn under the enemies and the hero");
         }
+
+        // Crowd flash (2026-10-20): of the enemies whose flash starts on one frame, the 8 nearest the hero flash fully, the rest at .25.
+        [Test] public void OnlyTheEightNearestOfOneFramesHitsFlashFully()
+        {
+            var crowd = new CrowdFlash();
+            for (var id = 0; id < 24; id++) crowd.Note(100 + id, 5, 1, (24 - id) * (24 - id));   // id 123 is the nearest
+            for (var id = 0; id < 3; id++) crowd.Note(500 + id, 6, 1.02f, 900);                   // another frame: its own ranking
+            var full = Enumerable.Range(100, 24).Where(id => crowd.Strength(id) == 1).ToArray();
+            Assert.That(full, Is.EqualTo(Enumerable.Range(116, 8).ToArray()), "the 8 nearest");
+            Assert.That(Enumerable.Range(100, 16).All(id => crowd.Strength(id) == HitReaction.CrowdDimFlash), Is.True);
+            Assert.That(HitReaction.CrowdDimFlash, Is.EqualTo(.25f));
+            Assert.That(Enumerable.Range(500, 3).All(id => crowd.Strength(id) == 1), Is.True, "three hits on a frame all flash fully");
+            Assert.That(crowd.Strength(42), Is.EqualTo(1), "an unranked flash is full");
+            crowd.Forget(1.01f);
+            Assert.That(crowd.Strength(100), Is.EqualTo(1), "forgotten after the flash");
+            Assert.That(crowd.Strength(500), Is.EqualTo(1));
+        }
+
+        // Damage numbers keep off the hero (2026-10-20): within .6 x the knight's height of its centre a number moves above the head;
+        // with no free slot there it stays, at .35 alpha. No full-alpha number overlaps the keep-out circle.
+        [Test] public void DamageNumbersNearTheHeroMoveAboveItsHeadOrFade()
+        {
+            Assert.That(WorldDamageNumbers.HeroKeepOutOfFigureHeight * .6f, Is.EqualTo(.36f).Within(1e-6f), "radius .36 for the .60 knight");
+            var owner = new GameObject("Damage numbers near the hero");
+            var centre = new Vector2(0, .3f); const float radius = .36f;
+            using (var numbers = new WorldDamageNumbers(owner.transform, visibleLimit: WorldDamageNumbers.Capacity))
+            {
+                numbers.SetHero(centre, radius);
+                numbers.Add(new Vector2(.05f, .2f), 24);
+                Assert.That(numbers.MovedAboveHero, Is.EqualTo(1));
+                for (var i = 0; i < 60; i++) numbers.Add(new Vector2(.05f, .2f), 25 + i);
+                Assert.That(numbers.FadedOverHero, Is.GreaterThan(0), "once the slots above are taken, numbers fade instead");
+                var labels = owner.GetComponentsInChildren<TextMesh>().Where(t => t.transform.parent == owner.transform).ToArray();
+                Assert.That(labels.Length, Is.GreaterThan(1));
+                foreach (var label in labels)
+                {
+                    var bounds = label.GetComponent<MeshRenderer>().bounds;
+                    var closest = new Vector2(Mathf.Clamp(centre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(centre.y, bounds.min.y, bounds.max.y));
+                    if ((closest - centre).magnitude < radius) Assert.That(label.color.a, Is.LessThanOrEqualTo(WorldDamageNumbers.HeroFadedAlpha + 1e-4f), label.text);
+                }
+                numbers.SetHero(centre, 0);
+                numbers.Add(new Vector2(3, 3), 7);
+                Assert.That(numbers.MovedAboveHero + numbers.FadedOverHero, Is.EqualTo(61), "away from the hero nothing changes");
+            }
+            UnityEngine.Object.DestroyImmediate(owner);
+        }
+
+        // Cast lightning over the hero (2026-10-20): inside the hero box bolt, glow and target flash are drawn at .35.
+        [Test] public void LightningInsideTheHeroBoxIsDrawnAtAThirdAndOutsideUnchanged()
+        {
+            Assert.That(LightningSpec.OverHeroAlpha, Is.EqualTo(.35f));
+            var box = new Rect(-.395f, -.16f, .79f, .92f);
+            Assert.That(LightningSpec.OverHero(box, new Vector2(0, .3f)), Is.True);
+            Assert.That(LightningSpec.OverHero(box, new Vector2(.5f, .3f)), Is.False);
+        }
     }
 }

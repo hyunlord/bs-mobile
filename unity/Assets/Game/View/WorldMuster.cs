@@ -22,6 +22,7 @@ namespace Game.View
         Rect heroSilhouetteLocal;
         const float HeroFigureOfRigCanvas = .62f;
         float heroFigureHeight;
+        float heroDrawnHeight;   // the knight as drawn (sheet figure, or the rig figure): the damage-number keep-out uses it
         bool heroSilhouetteKnown;
         float heroBodyWidth;
         public Action<Rect> RenderedMusterSoldierBounds;
@@ -137,6 +138,7 @@ namespace Game.View
             heroBodyWidth = hero.WorldSize.x * GameVisualTokens.HeroBodyWidthFraction;
             // The knight figure fills about 62% of its 512px rig canvas height (feet at 420, head near 100): the visible hero.
             heroFigureHeight = rig.y * HeroFigureOfRigCanvas;
+            heroDrawnHeight = heroFigureHeight;
             var push = heroBodyWidth * HeroHitFeedback.PushBodyFraction;
             if (heroSheetOn)
             {
@@ -144,12 +146,22 @@ namespace Game.View
                 // pillars and soldiers keep clear of is the figure footprint standing on the foot baseline (HeroSheetSpec.FigureSize,
                 // the shadow and camera margin size). heroBodyWidth and heroFigureHeight stay as before: they size weapon effects.
                 var figure = HeroSheetSpec.FigureSize(hero);
+                heroDrawnHeight = figure.y;
                 box = new Rect(anchor.x - figure.x * .5f, anchor.y, figure.x, figure.y);
             }
             box = Rect.MinMaxRect(box.xMin - push, box.yMin - push, box.xMax + push, box.yMax + push);
             RenderedHeroSilhouette = box;
             heroSilhouetteLocal = new Rect(box.position - anchor, box.size);
             heroSilhouetteKnown = true;
+        }
+
+        // Damage numbers keep off the hero (WorldDamageNumbers.HeroKeepOutOfFigureHeight): a circle round the drawn knight's centre.
+        void UpdateNumberKeepOut()
+        {
+            var known = heroSilhouetteKnown && hasRenderedLord;
+            var centre = (PredictedLordPosition ?? RenderedLordPosition) + Vector2.up * heroDrawnHeight * .5f;
+            var radius = known ? heroDrawnHeight * WorldDamageNumbers.HeroKeepOutOfFigureHeight : 0;
+            numbers?.SetHero(centre, radius); lordDamageNumbers?.SetHero(centre, radius);
         }
 
         static Rect Union(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));

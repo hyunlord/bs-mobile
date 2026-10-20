@@ -192,6 +192,7 @@ namespace Game.View
                 if (!hit.Pending && visualTime < hit.Due) continue;
                 enemyImpactPoses.Hit(hit.Subject, visualTime, hit.Direction, hit.Hold, hit.Shake, true);
                 hitUntil[hit.Subject] = visualTime + GameVisualTokens.EnemyHitFlashSeconds;
+                NoteCrowdFlash(hit.Subject, hit.Origin);
                 impactParticles.Hit(hit.EventId, hit.Origin);
                 RequestBigHitStop(hit.Source);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(hit.Subject, hit.Origin, hit.Amount);
@@ -238,6 +239,9 @@ namespace Game.View
             batches.Add((ScreenFlashLayer, lightningSolid.Texture), new SpriteBatch(lightningSolid.Texture, additive, renderCamera, ScreenFlashLayer));
         }
 
+        // The hero box for LightningSpec.OverHeroAlpha while lightning draws this frame; null before the hero is drawn.
+        Rect? lightningOverHero;
+
         void DrawBolt(Vector2[] points, int count, float coreWidth, float glowWidth, float opacity)
         {
             for (var pass = 0; pass < 2; pass++)
@@ -249,7 +253,9 @@ namespace Game.View
                 {
                     var a = points[i]; var b = points[i + 1]; var span = b - a; var length = span.magnitude;
                     if (length < .00001f) continue;
-                    Draw(visual, LightningLayer, (a + b) * .5f, 0, new Vector2(length + coreWidth, width), Angle(span), 1, color, applyTween: false);
+                    var segment = color;
+                    if (lightningOverHero is Rect hero && LightningSpec.OverHero(hero, (a + b) * .5f)) segment.a *= LightningSpec.OverHeroAlpha;
+                    Draw(visual, LightningLayer, (a + b) * .5f, 0, new Vector2(length + coreWidth, width), Angle(span), 1, segment, applyTween: false);
                 }
             }
         }
@@ -264,6 +270,7 @@ namespace Game.View
             var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
             var pointsToWorld = renderCamera.pixelWidth / 390f * pixelsToWorld;
             var view = CameraWorldViewport;
+            lightningOverHero = heroSilhouetteKnown ? HeroBox : (Rect?)null;
             foreach (var strike in lightningStrikes)
             {
                 if (strike.FirstEventId < 0 || strike.Count == 0) continue;
@@ -347,6 +354,7 @@ namespace Game.View
                     // Target flash: brightest on the strike frames, gone a few frames later.
                     var flashAge = Mathf.Clamp01((age - LightningSpec.Seconds(LightningSpec.StrikeFrames)) / LightningSpec.Seconds(6));
                     var flash = LightningSpec.Core; flash.a = 1 - flashAge;
+                    if (lightningOverHero is Rect heroBox && LightningSpec.OverHero(heroBox, to)) flash.a *= LightningSpec.OverHeroAlpha;
                     if (flash.a > 0) Draw(lightningFlash, LightningLayer, to, 0, Vector2.one * glow * (strike.Sky[i] ? 4f : 1.6f), 0, 1, flash, applyTween: false);
                 }
             }

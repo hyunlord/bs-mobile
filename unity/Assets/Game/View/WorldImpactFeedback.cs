@@ -8,6 +8,7 @@ namespace Game.View
     {
         readonly ImpactFeedbackPool impactParticles = new ImpactFeedbackPool();
         readonly EnemyImpactPosePool enemyImpactPoses = new EnemyImpactPosePool();
+        readonly CrowdFlash crowdFlash = new CrowdFlash();
         bool impactFeedbackEnabled = true;
         float impactShakeUntil;
         ArtVisual impactShard, impactDust, impactExperience;
@@ -44,7 +45,7 @@ namespace Game.View
 
         void ResetImpactFeedback()
         {
-            impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0; lastBigHitStop = float.NegativeInfinity;
+            impactParticles.Clear(); enemyImpactPoses.Clear(); crowdFlash.Clear(); impactShakeUntil = 0; lastBigHitStop = float.NegativeInfinity;
             ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); ResetPikes(); ResetSporePatches(); ResetSling(); ResetOrbits(); heroHitFeedback.Reset();
         }
 
@@ -56,6 +57,7 @@ namespace Game.View
                 ((value.Kind == "group-hit" || value.Kind == "trained-group-hit") && waveDefinition.Gear.ContainsKey(value.Source))))
             {
                 if (value.Kind == "hit" && (DeferChainHit(value, origin) || DeferBladeHit(value, origin))) return;
+                NoteCrowdFlash(value.SubjectId, origin);
                 var direction = origin - (PredictedLordPosition ?? RenderedLordPosition);
                 if (direction.sqrMagnitude < .000001f) direction = Vector2.up;
                 if (SporePatchHitDirection(value, origin, out var patchDirection))
@@ -86,9 +88,15 @@ namespace Game.View
         {
             impactParticles.Advance(seconds);
             enemyImpactPoses.Advance(visualTime);
+            crowdFlash.Forget(visualTime - HitReaction.FlashSeconds * 4);
             enemyDeaths.Advance(visualTime);
             AdvanceLightning();
         }
+
+        // The hit flash's crowd rank (HitReaction.CrowdFullFlash): grouped by the presented frame the flash starts on.
+        void NoteCrowdFlash(int id, Vector2 origin)
+            => crowdFlash.Note(id, PresentedFrames, visualTime, (origin - (PredictedLordPosition ?? RenderedLordPosition)).sqrMagnitude);
+        public float CrowdFlashStrength(int id) => crowdFlash.Strength(id);
 
         EnemyImpactPose ResolveEnemyImpactPose(int id, float bodyWidth, EnemyImpactPose pose)
         {

@@ -287,7 +287,7 @@ namespace Game.View
             var seconds = Mathf.Max(0, unscaledDeltaTime);
             PresentedFrames++;
             effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
-            AdvanceImpactFeedback(seconds);
+            UpdateNumberKeepOut(); AdvanceImpactFeedback(seconds);
             WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);
             numbers.Advance(seconds, ShowDamageNumbers&&showTransientText); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled&&ShowDamageNumbers&&showTransientText); AcceptFrame(current, snapshot, acceptEvents); IndexPrevious(previous);
             expiredHits.Clear(); foreach (var pair in hitUntil) if (pair.Value <= visualTime) expiredHits.Add(pair.Key);
@@ -435,7 +435,7 @@ namespace Game.View
                     Actor = new EnemyImpactPose { Position = position, AnimationTime = actorTime, Uv = rigUv, Facing = enemyFacing, Body = actorPose,
                         Visual = enemyArt, Dimensions = dimensions, Rigged = rigged },
                     Layer = enemyLayer, Tint = enemyTint.Value, UpperOpacity = upperOpacity, DefinitionId = enemy.DefinitionId, Kind = actorKind });
-                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:enemyTint,flash:flashing ? (wave != null && ImpactFeedbackEnabled ? 1f : .8f) : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
+                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:enemyTint,flash:flashing ? (wave != null && ImpactFeedbackEnabled ? CrowdFlashStrength(enemy.Id) : .8f) : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
                 if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Ink,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
                     RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));

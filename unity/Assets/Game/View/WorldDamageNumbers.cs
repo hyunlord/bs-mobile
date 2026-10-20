@@ -12,6 +12,22 @@ namespace Game.View
         const float PlacementStep = 0.18f;
         const float LabelGap = 0.025f;
         static readonly int[] PlacementOffsets = { 0, 1, -1, 2, -2, 3, -3 };
+        // Hero keep-out (user decision 2026-10-20): a number that would appear within HeroKeepOutOfFigureHeight x the drawn
+        // knight's height of its centre moves above the head through the usual free-slot search, never overlapping that circle;
+        // with no free slot there it stays where it was, drawn at HeroFadedAlpha.
+        public const float HeroKeepOutOfFigureHeight = .6f, HeroFadedAlpha = .35f;
+        Vector2 heroCentre; float heroRadius;
+        readonly bool[] clearOfHero = new bool[Capacity];
+        public int MovedAboveHero { get; private set; }
+        public int FadedOverHero { get; private set; }
+        public void SetHero(Vector2 centre, float radius) { heroCentre = centre; heroRadius = Mathf.Max(0, radius); }
+        public bool NearHero(Vector2 labelCentre) => heroRadius > 0 && (labelCentre - heroCentre).sqrMagnitude < heroRadius * heroRadius;
+        bool OverlapsHero(Bounds bounds)
+        {
+            if (heroRadius <= 0) return false;
+            var closest = new Vector2(Mathf.Clamp(heroCentre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(heroCentre.y, bounds.min.y, bounds.max.y));
+            return (closest - heroCentre).sqrMagnitude < heroRadius * heroRadius;
+        }
         readonly MeshRenderer[] renderers = new MeshRenderer[Capacity];
         readonly TextMesh[] labels = new TextMesh[Capacity];
         readonly TextMesh[,] continuations = new TextMesh[Capacity, ContinuationChunks];
@@ -159,6 +175,15 @@ namespace Game.View
             SetPosition(index, origin + Vector2.up * .14f);
             colors[index] = color;
             SetColor(index, color);
+            clearOfHero[index] = false;
+            if (NearHero(origin + Vector2.up * .14f))
+            {
+                clearOfHero[index] = true;
+                if (Place(index, new Vector2(origin.x, heroCentre.y + heroRadius))) { MovedAboveHero++; return index; }
+                clearOfHero[index] = false;
+                color.a *= HeroFadedAlpha; colors[index] = color; SetColor(index, color);
+                FadedOverHero++;
+            }
             if (!Place(index, origin))
             {
                 labels[index].gameObject.SetActive(false);
@@ -175,6 +200,7 @@ namespace Game.View
                     var candidate = origin + new Vector2(x * PlacementStep, y * PlacementStep);
                     SetPosition(index, candidate + Vector2.up * .14f);
                     var bounds = LabelBounds(index);
+                    if (clearOfHero[index] && OverlapsHero(bounds)) continue;
                     var available = true;
                     for (var other = 0; other < Capacity; other++)
                     {

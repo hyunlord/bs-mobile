@@ -136,7 +136,7 @@ namespace Game.View
                 AcceptWaveMusterStrike(frame,value);
                 AcceptHeroProductionAttack(value);
                 // Lightning and blade hits flash when their weapon visibly arrives (AdvanceLightning), not at the Core tick.
-                if(value.Kind=="hit"&&!(ImpactFeedbackEnabled&&(IsChainSource(value.Source)||IsM1GiantBlade(value.Source))))hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
+                if(value.Kind=="hit"&&!(ImpactFeedbackEnabled&&(IsChainSource(value.Source)||IsM1GiantBlade(value.Source)))){hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);NoteCrowdFlash(value.SubjectId,Point(value.Position));}
                 if(value.Kind=="attack")
                 {
                     heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
