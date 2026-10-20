@@ -141,7 +141,9 @@ namespace Game.Tests
             on.Pose(0, true, false, false, .1f, Stride);
             Assert.That((on.Pose(.01f, false, false, false, 0, Stride).Clip, on.Pose(.01f, false, false, false, 0, Stride).Frame), Is.EqualTo((HeroClip.Transition, 0)));
             Assert.That(on.Pose(.01f + Ticks(5), false, false, false, 0, Stride).Frame, Is.EqualTo(1));
-            Assert.That(on.Pose(.01f + Ticks(9), false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Idle), "then idle");
+            var idleAfter = on.Pose(.01f + Ticks(9), false, false, false, 0, Stride);
+            Assert.That((idleAfter.Clip, idleAfter.Frame), Is.EqualTo((HeroClip.Idle, 0)), "then idle from frame 0, which the gather leads into");
+            Assert.That(on.Pose(.01f + Ticks(8 + on.Timings.Idle.Ticks + 1), false, false, false, 0, Stride).Frame, Is.EqualTo(1));
             on.Pose(1, true, false, false, .1f, Stride);
             Assert.That(on.Offer(70, "core:iron_blade", HeroAction.Slash, false, 10, 1.01f, false), Is.True);
             Assert.That(on.Pose(1.01f, false, false, false, 0, Stride).Clip, Is.EqualTo(HeroClip.Action), "an attack wins over the gather");

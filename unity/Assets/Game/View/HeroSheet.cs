@@ -199,7 +199,9 @@ namespace Game.View
             if (moving) return new HeroSheetPose(HeroClip.Walk, HeroAction.None, Mathf.Min(walk.Frames - 1, Mathf.FloorToInt(walkPhase * walk.Frames)));
             if (Clips.WalkToIdle is HeroClipTiming gather && time - stoppedAt < gather.Seconds)
                 return new HeroSheetPose(HeroClip.Transition, HeroAction.None, gather.FrameAt(time - stoppedAt));
-            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time) / idle.FrameSeconds) % idle.Frames);
+            // The gather leads into idle frame 0 (Astra r4), so after a stop the idle loop counts from the gather's end.
+            var idleFrom = Clips.WalkToIdle is HeroClipTiming gathered && !float.IsNegativeInfinity(stoppedAt) ? stoppedAt + gathered.Seconds : 0;
+            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time - idleFrom) / idle.FrameSeconds) % idle.Frames);
         }
     }
 
