@@ -25,6 +25,7 @@ namespace Tests.EditMode
         {
             var window = RecordedReplayRender.Parse(new[] { "--wave-benchmark", "recorded.ssreplay", "--offline-replay-capture", "--recorded-replay-window", "16170", "18000" });
             Assert.That((window.StartTick, window.EndTick), Is.EqualTo((16170, 18000)));
+            Assert.That(OfflineReplayCapture.Requested(new[] { "--wave-benchmark", "recorded.ssreplay", "--offline-replay-capture", "--recorded-replay-window", "16170", "18000" }), Is.True, "offline capture accepts the recorded window");
             Assert.Throws<ArgumentException>(() => RecordedReplayRender.Parse(new[] { "--wave-benchmark", "r", "--offline-replay-capture", "--recorded-replay-window", "18000", "16170" }));
             Assert.Throws<ArgumentException>(() => RecordedReplayRender.Parse(new[] { "--wave-benchmark", "r", "--offline-replay-capture", "--recorded-replay-window", "0", "2401" }));
             Assert.Throws<ArgumentException>(() => RecordedReplayRender.Parse(new[] { "--wave-benchmark", "r", "--recorded-replay-window", "0", "600" }), "offline only");
