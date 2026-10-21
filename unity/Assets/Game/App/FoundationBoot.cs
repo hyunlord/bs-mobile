@@ -21,8 +21,12 @@ namespace Game.App
         public static string ToRequestUri(string path) => Path.IsPathRooted(path) ? new Uri(path).AbsoluteUri : path;
 
         public static bool IsOfflineReviewBoot(string[] args)
-            => Array.IndexOf(args, "--offline-replay-capture") >= 0
-                && Array.IndexOf(args, "--crowd-replay-benchmark") >= 0;
+        {
+            if (Array.IndexOf(args, "--offline-replay-capture") < 0) return false;
+            if (Array.IndexOf(args, "--crowd-replay-benchmark") >= 0) return true;
+            try { return CameraScaleComparison.Parse(args) != null; }
+            catch (ArgumentException) { return false; }
+        }
 
         private IEnumerator Start()
         {
