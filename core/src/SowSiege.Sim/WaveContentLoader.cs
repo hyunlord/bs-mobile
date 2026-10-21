@@ -71,6 +71,7 @@ public static partial class ContentLoader
         ValidateWaveDefinition(file);
         Require(new CanonicalStateHasher().Compute(file.Tuning) == new CanonicalStateHasher().Compute(Read<Tuning>(Path.Combine(directory, "first-playable-tuning.json"))), "Inherited wave tuning differs from declared source; balance remains held.");
         var programs = WavePrimitiveSupport.Resolve(wave);
+        ValidateWaveUnlocks(wave, programs);
         var tools = new Dictionary<string, ToolDefinition>(StringComparer.Ordinal);
         var weapons = new Dictionary<string, WeaponDefinition>(StringComparer.Ordinal);
         using var design = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(directory, "system-design-v1.json")));
@@ -108,6 +109,8 @@ public static partial class ContentLoader
 
     private static void ValidateWaveShape(JsonElement node, Type type, string location)
     {
+        if (Nullable.GetUnderlyingType(type) is { } underlying) { ValidateWaveShape(node, underlying, location); return; }
+        if (type == typeof(bool)) { Require(node.ValueKind is JsonValueKind.True or JsonValueKind.False, "Expected wave boolean at " + location); return; }
         if (type.IsEnum) { Require(node.ValueKind == JsonValueKind.String && Enum.GetNames(type).Contains(node.GetString(), StringComparer.Ordinal), "Unsupported wave enum at " + location); return; }
         if (type == typeof(int)) { Require(node.ValueKind == JsonValueKind.Number && node.TryGetInt32(out var number) && number >= 0 && number <= 1000000, "Wave numeric bounds at " + location); return; }
         if (type == typeof(string)) { Require(node.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(node.GetString()), "Missing wave string at " + location); return; }
@@ -129,6 +132,40 @@ public static partial class ContentLoader
             if (!node.TryGetProperty(name, out var member) && property.IsDefined(typeof(OmitWhenNullAttribute), false)) { continue; }
             Require(node.TryGetProperty(name, out member), "Missing wave property " + location + "." + name);
             ValidateWaveShape(member, property.PropertyType, location + "." + name);
+        }
+    }
+
+    // ADR0058: explicit unlock data must restate the evolution's inputs and its event gate; only levels and counts may differ.
+    private static void ValidateWaveUnlocks(WaveRuntimeDefinition wave, IReadOnlyDictionary<string, WavePrimitiveProgram> programs)
+    {
+        foreach (var evolution in wave.Evolutions.Values)
+        {
+            if (evolution.Unlock is not { } unlock) { continue; }
+            var where = "Wave evolution unlock " + evolution.Id + ": ";
+            Require(unlock.Inputs.Length > 0 && unlock.Inputs.Select(i => i.Id).Distinct(StringComparer.Ordinal).Count() == unlock.Inputs.Length, where + "input IDs must be unique.");
+            Require(SameIds(unlock.Inputs.Select(i => i.Id), evolution.InputIds), where + "inputs must equal inputIds.");
+            foreach (var input in unlock.Inputs)
+            {
+                var maximum = WaveEvolutionUnlocks.MaxLevel(wave.Gear[input.Id]);
+                Require(input.MinLevel is null || (input.MinLevel >= 1 && input.MinLevel <= maximum), where + "minLevel outside 1.." + maximum + " for " + input.Id + ".");
+            }
+            Require(unlock.Events.Select(e => e.Event).Distinct(StringComparer.Ordinal).Count() == unlock.Events.Length, where + "event names must be unique.");
+            foreach (var required in unlock.Events)
+            {
+                Require(WaveEvolutionUnlocks.Events.Contains(required.Event, StringComparer.Ordinal), where + "unsupported event " + required.Event + ".");
+                Require(required.MinCount >= 1 && required.MinCount <= 1000, where + "minCount outside 1..1000.");
+            }
+            Require(unlock.Events.Length == 1 && unlock.Events[0].Event == programs[evolution.Id].Value("unit:event-gate", "condition"), where + "events must match the program's unit:event-gate condition.");
+        }
+        if (wave.CardOffer is { } offer)
+        {
+            Require(offer.EvolutionPriority is null or "none" or "first-slot", "Wave cardOffer evolutionPriority must be none or first-slot.");
+            Require(offer.OwnedGearWeight is null or >= 0 and <= 1000 && offer.UnownedGearWeight is null or >= 1 and <= 1000, "Wave cardOffer gear weights out of range.");
+            foreach (var card in offer.Cards ?? new Dictionary<string, WaveCardOfferCard>())
+            {
+                Require(wave.Gear.ContainsKey(card.Key) || wave.Items.ContainsKey(card.Key) || wave.Evolutions.ContainsKey(card.Key), "Wave cardOffer references unknown card " + card.Key + ".");
+                Require(card.Value.Weight is null or >= 0 and <= 1000 && card.Value.MaxPicks is null or >= 1 and <= 100, "Wave cardOffer card limits out of range: " + card.Key + ".");
+            }
         }
     }
 

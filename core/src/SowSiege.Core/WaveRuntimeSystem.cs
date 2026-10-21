@@ -36,7 +36,8 @@ namespace SowSiege.Core
                 Water = definition.WaterCapacity,
                 Timber = definition.InitialTimber,
                 TimberOrigin = world.Estate,
-                AvailableWorkers = definition.InitialWorkers
+                AvailableWorkers = definition.InitialWorkers,
+                CountUnlockEvents = WaveEvolutionUnlocks.CountsEvents(definition)
             };
             modules = new(definition);
             queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
@@ -45,8 +46,8 @@ namespace SowSiege.Core
             work = new(catalog, world, interactive, modules, subscriptions, queries);
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
-        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) &&
-            WaveGrowthPrimitives.Eligible(modules[e.Id], state);
+        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) &&
+            WaveEvolutionUnlocks.Eligible(WaveEvolutionUnlocks.Effective(e, modules[e.Id]), definition, world.Equipment, state);
         public IEnumerable<string> ExtraCards() => definition.Items.Values.Where(i => !state.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(definition.Evolutions.Values.Where(EligibleEvolution).Select(e => e.Id));
         public bool Select(string id)
         {
@@ -363,7 +364,7 @@ namespace SowSiege.Core
                 foreach (var plot in state.Work)
                 {
                     if (plot.Kind != "grain" || !Within(plot.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)) { continue; }
-                    state.BladePlotKill = true;
+                    WaveEvolutionUnlocks.Record(state, WaveEvolutionUnlocks.AttackKillNearGrowth);
                     break;
                 }
             }
