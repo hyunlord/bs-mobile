@@ -286,7 +286,8 @@ namespace Game.View
                 var group=wave.Groups[groupIndex];
                 var position=waveMotion.GroupPosition(group,alpha,settings.WorldUnitsPerUnityUnit);
                 RenderedEntitySample?.Invoke("group",group.Id,position);
-                // Soldiers are moving bodies anchored to the Core group (spawn, seek, thrust on Core hits, return, disperse).
+                // Soldiers are moving bodies anchored to the Core group (spawn, seek, thrust on Core hits, return, disperse); each body
+                // walks the Soldier B sheet by its own distance (DrawMinion), in place of #332's two group representatives.
                 SyncMinionGroup(group,position,lordPoint,current.TickRate);
                 if(group.ReservedFood>0)WaveSpriteAt("ration",GameVisualTokens.AllyLayer+1,position);
             }

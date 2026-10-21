@@ -19,8 +19,11 @@ namespace Tests.EditMode
         {
             if (CanonicalContent.ProfileName != "wave-1a")
                 Assert.Ignore("Requires the isolated wave-1a export.");
-            var directory = Environment.GetEnvironmentVariable("WAVE_REPLAY_FIXTURES")
-                ?? Path.Combine(FoundationBuild.RepoRoot, "artifacts/wave1a/editor-replays");
+            // WAVE_REPLAY_FIXTURES points at fixtures recorded elsewhere and is never overwritten; otherwise the default fixtures
+            // are recorded with .NET on first use (FoundationBuild.EnsureWaveReplayFixtures), so no manual step is needed.
+            var supplied = Environment.GetEnvironmentVariable("WAVE_REPLAY_FIXTURES");
+            var directory = supplied ?? Path.Combine(FoundationBuild.RepoRoot, FoundationBuild.WaveReplayFixtureDirectory);
+            FoundationBuild.EnsureWaveReplayFixtures(directory, generate: supplied == null);
             using var input = File.OpenRead(Path.Combine(directory, seed + ".ssreplay"));
             var replay = ReplayCodec.Read(input);
             Assert.That(replay.Commands.All(command => command.Kind == ReplayCommandKind.Advance
