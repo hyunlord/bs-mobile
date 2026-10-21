@@ -1,13 +1,12 @@
 {
   "schemaVersion": 1,
   "releases": {
-    "approved": "knight-game-sheets-r4-20261016",
-    "additions": "knight-game-sheets-r4-additions-review-20261016"
+    "walk": "hero-walk-r8-5-review-20261019",
+    "actions": "hero-side-actions-game-r4-20261020",
+    "gatherB": "hero-gather-b-r2-20261020"
   },
-  "approvedManifestSha256": "d35fae4df008524eabe519500f43258527643ab0c00ae72df858a076f19d79d4",
-  "additionsManifestSha256": "210fb6d1e9bd48449051b69acf796f8ad3c0e301b68c06878362ecf40e4a13a5",
   "atlas": "unity/Assets/Art/hero-knight.png",
-  "atlasSha256": "81d553661bfa890cc9d58fa192cd55bbf559a4790b37b97f71fabd67e564b837",
+  "atlasSha256": "76c75e804a9fb782207e26e2295bca7c74b8c8bb29eeb055d557610a7e8fe4c6",
   "width": 2564,
   "height": 2164,
   "padding": 2,
@@ -24,519 +23,795 @@
     "x": 1.441897,
     "y": 1.081423
   },
-  "movingKeyHoldTicks60": 7,
   "clips": [
     {
-      "clip": "hero-a-walk",
+      "clip": "hero-walk-r85-bake16",
       "role": "walk",
-      "status": "approved-r3",
-      "sheet": "hero-a-walk.png",
-      "sheetSha256": "b34ffa91c182fe331be936a1efa2d14e2494dbec169d6efcd56f379de12fd124",
+      "status": "approved-r8.5",
+      "sheet": "hero-walk-r85-bake16.png",
+      "sheetSha256": "40dd9dc9bd36b7a0f74717e24a6d35080e6954afbd868edb4f1d5afd38b16ecd",
+      "placement": "frames 0-7 in the former walk row, 8-13 in the hit row, 14-15 in the idle row; one 16-column row would exceed the 4096 texture limit",
+      "deliveredFrameTicks60": 5,
+      "frameMs": 36,
       "frames": [
         {
           "x": 2,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "23594c64fe130261c719b065883205f95e7851546e5f85e0e72e4b88c00cdfef"
+          "decodedRgbaSha256": "6ffd7c8798a3e601f0ef2535fedb52bead66f2f0dab4c5b4d3a0c5c89ae88f57",
+          "frameTicks60": 2,
+          "sourceFrame": 0
         },
         {
           "x": 322,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "10c6bc1d4def34ea0236db8c71f397a9ec92881d583f464ce1f7adc5624d673e"
+          "decodedRgbaSha256": "5b98a07482c084946ce597322e9a38738f21d425d3f42b17b68c4c58cc260bd2",
+          "frameTicks60": 2,
+          "sourceFrame": 5
         },
         {
           "x": 642,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "24e824fd92829fc41792929f428341e19b63bf26f87c7add282cc4a0cb6aa514"
+          "decodedRgbaSha256": "1657d652e1b3ff840b8c3d09247e1116dfc73b5a8553bd3420ce387247ee9d76",
+          "frameTicks60": 2,
+          "sourceFrame": 10
         },
         {
           "x": 962,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "671b2b804a8e5dd54df9e1bbc94404e47052964e85f20abfffbd9f4649e02699"
+          "decodedRgbaSha256": "3016a59e2ea4dcc9bfedb19a8032d84fe172c80f672282a9440098bef2f8e6c7",
+          "frameTicks60": 2,
+          "sourceFrame": 15
         },
         {
           "x": 1282,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "235743474045a89c2b51bd54d091693a7ea4d3f23a69ab5f87845becce0147a3"
+          "decodedRgbaSha256": "9ad321a193b0018265f312a76d817633bb524d2f5d70eff77067d169e7c18eb0",
+          "frameTicks60": 2,
+          "sourceFrame": 20
         },
         {
           "x": 1602,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "ae2ac4c5ec53df77bec29ef888f220de79efacea160ba4b8965a2b1f11ce355c"
+          "decodedRgbaSha256": "e341fc6066f3ae181a2bef3413367456840749db5ec66eeadc367e30981cc612",
+          "frameTicks60": 2,
+          "sourceFrame": 25
         },
         {
           "x": 1922,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "6591682cb73750c5f90b13f2d2b1c5a93721dc741ea298a2444318fa4ad85ee8"
+          "decodedRgbaSha256": "bb9a562ae6a88eebb4c72613267da0b81aa6373f4d6a19fb1ec2103c9a8c4389",
+          "frameTicks60": 2,
+          "sourceFrame": 30
         },
         {
           "x": 2242,
           "y": 2,
           "width": 320,
           "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "ddf0997b1f125d6bf50562a490d7638ef16d2323fc64edc4af7b295958e1eeb7"
-        }
-      ]
-    },
-    {
-      "clip": "hero-a-slash",
-      "role": "action.slash",
-      "status": "approved-r3",
-      "sheet": "hero-a-slash.png",
-      "sheetSha256": "311f9b8ca882d6d708b3172d66130f5ced8bdbb7e23bcc2e406316eb07c71441",
-      "frames": [
+          "decodedRgbaSha256": "23756f85def787ba4c7bc8a336a8acf6421bfb1869e7e390fb9e2c5338450582",
+          "frameTicks60": 2,
+          "sourceFrame": 35
+        },
         {
           "x": 2,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "0628945532d2a7a0c259286e9160045005f4e5055570cd4259239d180b7af4ac"
+          "decodedRgbaSha256": "2ea99f531c87b00a3d0e8a9324e82383836c796153e366f8abd4cd76196f04a0",
+          "frameTicks60": 2,
+          "sourceFrame": 40
         },
         {
           "x": 322,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "5a8b61a9506e3fa737ae2adffcb17842c4977caf3fa43e503df19b2ad3e759b5"
+          "decodedRgbaSha256": "dca35998f7fa85188420856c8783843a7e7331e1c7e97d0590861a1560415f7b",
+          "frameTicks60": 2,
+          "sourceFrame": 45
         },
         {
           "x": 642,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "078da248196cf2794433c0bb1fcefba310d68bcaf5c2f08b045e4d21d7898ded"
+          "decodedRgbaSha256": "088394a75c6e5dbce9a1e9514007a81369a8b627b7984a271b0f9bc60c73c398",
+          "frameTicks60": 2,
+          "sourceFrame": 50
         },
         {
           "x": 962,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "c2a67a6be5ac7c67ed095e635e05d7230fdd547ee2e2ccfdb462d3159ecfa5bd"
+          "decodedRgbaSha256": "b3025a4db200b2385ae0644e708522759105fd178dbf8179dd20f8e9c878b5c9",
+          "frameTicks60": 2,
+          "sourceFrame": 55
         },
         {
           "x": 1282,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "4e32d99e8b3c4cdd250888ce13607dcd853aa21ef9088d600e1cf6728097067e"
+          "decodedRgbaSha256": "36986b314ef32f658a68ece0f7835eb278ecea62a51a1b0919133dec978288f0",
+          "frameTicks60": 2,
+          "sourceFrame": 60
         },
         {
           "x": 1602,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "36e2fefb324da6a78963f53755f66934877de31c1b36cc52d98fab032c04d126"
+          "decodedRgbaSha256": "cde188a7f830efbb318666291454f16963fbeaf1a281c30949424bcaa504b2a7",
+          "frameTicks60": 2,
+          "sourceFrame": 65
         },
         {
           "x": 1922,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "1dbf3d5e8b085aa552bb686ed1b83d834e711b1eebb40846e3a1ad9fb0d58841"
+          "decodedRgbaSha256": "6dbff1b7b0f59816b1eac0db7dfea443c46810e6a6ece88d0bbb42527eaa3cc9",
+          "frameTicks60": 2,
+          "sourceFrame": 70
         },
         {
           "x": 2242,
           "y": 242,
           "width": 320,
           "height": 240,
-          "frameTicks60": 9,
-          "decodedRgbaSha256": "34cbb239451929420a360cdf9a8750c6daa0877ae662dfac3d6e7fb1ae0be8a0"
+          "decodedRgbaSha256": "6679d9977d7823b1226811813affe537b3f6cd385e67fe0721c652d5dbb5503d",
+          "frameTicks60": 2,
+          "sourceFrame": 75
         }
       ]
     },
     {
-      "clip": "hero-a-aim",
-      "role": "action.aim",
-      "status": "approved-r3",
-      "sheet": "hero-a-aim.png",
-      "sheetSha256": "60a1564641d951eaa47c0b571fe2dce532693205501c50c4a16113f408fbc0eb",
-      "frames": [
-        {
-          "x": 2,
-          "y": 482,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "f5313cf20e9897f6276c944a9045442dce47f771b88a7e649de93a058a074e26"
-        },
-        {
-          "x": 322,
-          "y": 482,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "27b71f45191b44d5c6a60550297376b0a3d239684e9b465a111b3b998626295e"
-        },
-        {
-          "x": 642,
-          "y": 482,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "457f04497c29617d8f54e60ac7e6be80b33d85fdede79e3cb68367f853017f88"
-        },
-        {
-          "x": 962,
-          "y": 482,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "6dbdede7d81d913231b6354dce3b47a01e4a763d14e5d0f90178ff9bf5ffc606"
-        },
-        {
-          "x": 1282,
-          "y": 482,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "f0f0818ee41530370273f602de8ec3d3965ffd7055a3f93f0e6a9d647123b605"
-        },
-        {
-          "x": 1602,
-          "y": 482,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "c0fa220a1d19151755193bcc5b7098f22199c2c9907d3b28ebe55a00c5ecd629"
-        }
-      ]
-    },
-    {
-      "clip": "hero-a-cast",
-      "role": "action.cast",
-      "status": "approved-r3",
-      "sheet": "hero-a-cast.png",
-      "sheetSha256": "5a5f26c4dc41c085c901d857828b27e4a1192a4ab8bc1725cb4a6b37e44adf98",
-      "frames": [
-        {
-          "x": 2,
-          "y": 722,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "05665ba697be0acb401fc632ef68ab5741d09fea47df285e6f0e36398cbba195"
-        },
-        {
-          "x": 322,
-          "y": 722,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "34197e92f0fed9591d9cbe31ad923f0e01b5f08d4245d921732aa457bba837f3"
-        },
-        {
-          "x": 642,
-          "y": 722,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "33cc2ab0547b4019375a13a88c4535bb4e6fcdc8c1a5ac5227218eb5fc405ea4"
-        },
-        {
-          "x": 962,
-          "y": 722,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "4529b77ba63ea43113ae91e4c65cb80d63faf051becbf7b3c7c7d537514ee4dd"
-        },
-        {
-          "x": 1282,
-          "y": 722,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "26b5e939facd115ce67cab2550fd31c113252e723c660d2f30d94258105f7770"
-        },
-        {
-          "x": 1602,
-          "y": 722,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "bf8d36e76350a0016046cd02ed5bf77f0bcc1f989f8578dbc7cd89c77dabdfd1"
-        }
-      ]
-    },
-    {
-      "clip": "hero-a-blow",
-      "role": "action.blow",
-      "status": "approved-r3",
-      "sheet": "hero-a-blow.png",
-      "sheetSha256": "a7094196639408dbaeed43967e7faf36c118839e6d48064b3606d725457d1e5b",
-      "frames": [
-        {
-          "x": 2,
-          "y": 962,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "e6785c9993a381f99240cb6fb4f1a84d9f694e1d3162d31fbcabfa6f4ca12db6"
-        },
-        {
-          "x": 322,
-          "y": 962,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "3b4dfd4fe1c4f8f2cd89a2ae41bfc7a5e3cc82a25e29fabf385eb46f11cb74c7"
-        },
-        {
-          "x": 642,
-          "y": 962,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "9077431016e872d5463d0ccd5d19abb565a96dd4f68b76f041ce31040c2aa147"
-        },
-        {
-          "x": 962,
-          "y": 962,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "ac5bc1b8d0841bd18dace195da24bfea7a36ea0ab0e29357d0f755c2fb2217a5"
-        },
-        {
-          "x": 1282,
-          "y": 962,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "96f1d31cd44467e0f671d2c85cf708e23e5ffc0999a16e7eb3b82123c1b6e19a"
-        },
-        {
-          "x": 1602,
-          "y": 962,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "2b029172dc8f7083d41b08174bb923953a0c168172fc281b7b6dc6bfd12f3fa4"
-        }
-      ]
-    },
-    {
-      "clip": "hero-a-throw",
-      "role": "action.throw",
-      "status": "approved-r3",
-      "sheet": "hero-a-throw.png",
-      "sheetSha256": "e8307aa3bd36954150c8b531804c45cc72ee0c729a8f128a7a76bb9429d01cb3",
-      "frames": [
-        {
-          "x": 2,
-          "y": 1202,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "4bca1403de65bbc369a3abc50002e136f1e26283ac9d6f217dd19e444cb3e62c"
-        },
-        {
-          "x": 322,
-          "y": 1202,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "bc7304e5712e809ceb92d355ae75cdfa8861de8b0e6fe0a0cfd812ffbea9619e"
-        },
-        {
-          "x": 642,
-          "y": 1202,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "15e4966ad91fc51a06a831e6581b262a4bf50680dfc2499b55afc11ef02232ff"
-        },
-        {
-          "x": 962,
-          "y": 1202,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "5f4a57ab10e9756260e0646ea412c9afaa5e5beb4acb56de70e7a9f357a7c8ac"
-        },
-        {
-          "x": 1282,
-          "y": 1202,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "79e9b7bc5c3a686c1763ed6337665df3b69027218677bb26247f6598f487ba33"
-        },
-        {
-          "x": 1602,
-          "y": 1202,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 10,
-          "decodedRgbaSha256": "6140c203f0f739a3132335540e4b50df23da7c7e4c3ebd392590a18428268f13"
-        }
-      ]
-    },
-    {
-      "clip": "hero-a-moving-keys",
-      "role": "key",
-      "status": "approved-r3",
-      "keys": [
-        "slash",
-        "aim",
-        "cast",
-        "blow",
-        "throw"
-      ],
-      "sheet": "hero-a-moving-keys.png",
-      "sheetSha256": "86ce82256fe2fc9cd1fc33208d9a325d3453826be83b6c68dce021926c1de416",
-      "frames": [
-        {
-          "x": 2,
-          "y": 1442,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 7,
-          "decodedRgbaSha256": "d84c1c3571edce6f39a259449a0f86568cb0e745ba00084f4a23c60e65d5cccd"
-        },
-        {
-          "x": 322,
-          "y": 1442,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 7,
-          "decodedRgbaSha256": "6dbdede7d81d913231b6354dce3b47a01e4a763d14e5d0f90178ff9bf5ffc606"
-        },
-        {
-          "x": 642,
-          "y": 1442,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 7,
-          "decodedRgbaSha256": "33cc2ab0547b4019375a13a88c4535bb4e6fcdc8c1a5ac5227218eb5fc405ea4"
-        },
-        {
-          "x": 962,
-          "y": 1442,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 7,
-          "decodedRgbaSha256": "9077431016e872d5463d0ccd5d19abb565a96dd4f68b76f041ce31040c2aa147"
-        },
-        {
-          "x": 1282,
-          "y": 1442,
-          "width": 320,
-          "height": 240,
-          "frameTicks60": 7,
-          "decodedRgbaSha256": "dec12a41f54eaa10bfff3054020a6a36570d8bc0fe525cd2dafff31fe4c4559a"
-        }
-      ]
-    },
-    {
-      "clip": "hero-a-idle",
+      "clip": "hero-side-game-r4-idle",
       "role": "idle",
-      "status": "approved-2026-10-17",
-      "sheet": "hero-a-idle.png",
-      "sheetSha256": "e6a29c8296cb82b52918e429605e4f721bbaf7272259fa9a544a4deaff224873",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-idle.png",
+      "sheetSha256": "bbfad56cb247c8851b1d10b983f12d320c93eb00cf94eb0d635a46daf7ecf6a7",
+      "deliveredFrameMs": 200,
+      "deliveredEffectFrame": null,
+      "effectFrame": null,
+      "frames": [
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 12
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "874a88100e21e6da8138ed8c1c2fdb910f1022c83ccef8481fa7f9f4118080f7",
+          "frameTicks60": 12
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "874a88100e21e6da8138ed8c1c2fdb910f1022c83ccef8481fa7f9f4118080f7",
+          "frameTicks60": 12,
+          "sharesCellOf": 1
+        },
+        {
+          "x": 2,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 12,
+          "sharesCellOf": 0
+        },
+        {
+          "x": 642,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "d0bdf1e11e66327d467ea25168c510381e3fb07c3d4a652f987f1eb5a801b023",
+          "frameTicks60": 12
+        },
+        {
+          "x": 642,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "d0bdf1e11e66327d467ea25168c510381e3fb07c3d4a652f987f1eb5a801b023",
+          "frameTicks60": 12,
+          "sharesCellOf": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-action-slash",
+      "role": "action.slash",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-slash.png",
+      "sheetSha256": "20020d17872ed0e22f4e6219f960ea639f080c40758cdabbef81af8ca8be3398",
+      "deliveredFrameMs": 100,
+      "deliveredEffectFrame": 3,
+      "effectFrame": 3,
+      "frames": [
+        {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "c2404d160cbb5b39b5349264bfefd2e389c7f0de630bab727100b449d7e118c9",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "e2ceb12d5ccc7be584736235d3df3efb60f211f3898d78525afe79603a3cb09f",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1922,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "209eb2774d5e1cd6f335df7e4380e5fc1a811d8fdf07ebc07eb47158258be244",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2242,
+          "y": 482,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "e4a34ec8d362cb7a8302fc2f065decae938e9b79700c77a41f531aadc302f5fa",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "dbb676b3baec8392e678e00454ce6e1000b8b7285bd4456d0d475c3d7343e259",
+          "frameTicks60": 6
+        },
+        {
+          "x": 322,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "7f23ba6f64e6d3d132921a4ce65df678de88fc28841fbac17ebe5006f09847a0",
+          "frameTicks60": 6
+        },
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 6
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-action-aim",
+      "role": "action.aim",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-aim.png",
+      "sheetSha256": "059385d086e8825ba7acfd3bec931df8f9414035ef4616a58f659e44eaa5bebd",
+      "deliveredFrameMs": 100,
+      "deliveredEffectFrame": 3,
+      "effectFrame": 3,
+      "frames": [
+        {
+          "x": 962,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b7852af59b29ccfe2cb2138e89b9035ea19a8aca7d480eaec2de9369b7466b67",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1282,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "8876c42f9d52fef6e398b01e2096bfec8cc92c018d01395fa803f0d55ab706d9",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1602,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "57509420124dbf4487b09048dcd8d9540e5eb14d4466f406de868e72eea354dd",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1922,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "fa0cffce6b5fa84f63e79e834594f4590236c7ca896a352acd55d70c52000599",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2242,
+          "y": 722,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "af32608591755ba1984db1a4c7d5860fdf11955e4001960a4b805694e96e2a51",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "ab3ba7250c1413285c27824294e005c2a8171ae92622a9a8058cc10c49612704",
+          "frameTicks60": 6
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-action-cast",
+      "role": "action.cast",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-cast.png",
+      "sheetSha256": "3b839fbd5112627064d3dd50e6f623b3046c60adf4b387615af5d5d0b505b2d4",
+      "deliveredFrameMs": 100,
+      "deliveredEffectFrame": 2,
+      "effectFrame": 2,
+      "frames": [
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 6
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "784762abc8d357b4cf64fe4013f84ddc9252c5193d450c0a7aaed9f1e230eebb",
+          "frameTicks60": 6
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "c5dc77bb79b76c740de9a927616caed673d81455751ac037f54577972ced5ad0",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b7a0722dfc364cb7ed21f3bec103a73e6cad11fa2d93eae2a109c7d164443ce9",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "d2792488fe05bed6fdea39c51e07d7192ba39fbc7d780f9cca3f2b5d498cde7c",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1922,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "0b58c7d2c519412bcdd592138062bd771a5e66b57d9b393db75500846f3c38a4",
+          "frameTicks60": 6
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-action-blow",
+      "role": "action.blow",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-blow.png",
+      "sheetSha256": "7f066aadb3a9b1132c1d3f797004f6f9fe36dc8d870630b20b8c3e2b395107c9",
+      "deliveredFrameMs": 100,
+      "deliveredEffectFrame": 3,
+      "effectFrame": 3,
+      "frames": [
+        {
+          "x": 2242,
+          "y": 962,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "645af5d3fcfe36aa6d40d1342be22478683bbf255d95342aa5d77f732803522f",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "08e3fb34e473e659c5eda8049d5703067288fe15649c8dbcedb4465f4948c7ed",
+          "frameTicks60": 6
+        },
+        {
+          "x": 322,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "6b8befa5723f0279c470192045a48c83a65c58a0eaf7755b0e26da8543bc527a",
+          "frameTicks60": 6
+        },
+        {
+          "x": 642,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "30a1725329b66ed786b4d916e1547f31fe224d236c2553abeb00c6401e218c66",
+          "frameTicks60": 6
+        },
+        {
+          "x": 962,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "118604ba50e7dc10c57e87956615bc15146ddb990d601eee295ad1116eaf8f41",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1282,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "1f7b0009749d1bfee5fd06457f829d90aa49c1b805eac8674a8dfa60aa2a02d2",
+          "frameTicks60": 6
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-action-throw",
+      "role": "action.throw",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-action-throw.png",
+      "sheetSha256": "6a77772f311350adf4ebac5e28c547e688009e0e51542201af9d7886e859f756",
+      "deliveredFrameMs": 100,
+      "deliveredEffectFrame": 4,
+      "effectFrame": 4,
+      "frames": [
+        {
+          "x": 1602,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "ec7521d0220d2b1993b53333dc7ca4bbaa5280867f9a238827438f85d11dc21f",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1922,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "a32436177ad3f4ff4f6a4d39b933b17f764296b82d9478b35965e8c378c0af84",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2242,
+          "y": 1202,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "45ef9bb8eef263608ba20f4c37b6644eb51f5a213a142016f4d2245cccc66484",
+          "frameTicks60": 6
+        },
+        {
+          "x": 2,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "7bf987870b3c2d9e853aaeebbf26c1be56c3b9f1e043b199ec487b1a03c1058f",
+          "frameTicks60": 6
+        },
+        {
+          "x": 322,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "dadbf3fc3d53fe89b6649e28644960545f657e3fb55f7bd8ba1039808ba758f3",
+          "frameTicks60": 6
+        },
+        {
+          "x": 642,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "1d7161b73a2e8536e91cc8ee047e36156aa799519c72ba038b53c289dfce346c",
+          "frameTicks60": 6
+        },
+        {
+          "x": 962,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "e43954a4d9268cd1916cbb7fc9dbbc58b31ab8d01596ec5a9b2d8dedc27752f2",
+          "frameTicks60": 6
+        },
+        {
+          "x": 1282,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "5e16d386c150c572be5098121d8f30f44f25782c8c86f74df8a14708e08c98cf",
+          "frameTicks60": 6
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-hit",
+      "role": "hit",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-hit.png",
+      "sheetSha256": "841f8db920f1d7d9196bf95dba3eafa03d38af392b85afe1cf576df0924f3146",
+      "deliveredFrameMs": 83,
+      "deliveredEffectFrame": 0,
+      "effectFrame": 0,
+      "frames": [
+        {
+          "x": 1602,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "5097ddc3ad11991105edb86d13c3d5257fa383470f34c2b64406435fd80042a9",
+          "frameTicks60": 5
+        },
+        {
+          "x": 1922,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "e86fb3247ca53f9c995aee68509d02af706b895c4fdac55a927f2993a29c4a1c",
+          "frameTicks60": 5
+        },
+        {
+          "x": 2242,
+          "y": 1442,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 5
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-key-slash",
+      "role": "key.slash",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-slash.png",
+      "sheetSha256": "2a5f164d5353801aa76e77ad021b71fa961cb9342a814fcdb4031278d45c61a0",
+      "deliveredFrameMs": 59,
+      "deliveredEffectFrame": 0,
+      "effectFrame": 0,
       "frames": [
         {
           "x": 2,
           "y": 1682,
           "width": 320,
           "height": 240,
-          "frameTicks60": 12,
-          "decodedRgbaSha256": "7a1308820174b7c850c0641627d8158903f58b5d494eb697f3ca50b232eff715"
+          "decodedRgbaSha256": "c45ea45d99480732038f8d94247fc5df71ed5872e526a0e0a5ca45610d984c9d",
+          "frameTicks60": 4
         },
         {
           "x": 322,
           "y": 1682,
           "width": 320,
           "height": 240,
-          "frameTicks60": 12,
-          "decodedRgbaSha256": "3c933050d231602605dcdadb531274d280b828f9c475165559f579f63bfd3ce0"
-        },
+          "decodedRgbaSha256": "27033c1f8b13d13f81fe49c400a05b0ea83798646f69dc84dd2d4e31f3cbfc96",
+          "frameTicks60": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-key-aim",
+      "role": "key.aim",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-aim.png",
+      "sheetSha256": "36d1ec49d63825bfcff3564750fc8a35cc3bf4e2992935cfde4edf9cc97e364b",
+      "deliveredFrameMs": 59,
+      "deliveredEffectFrame": 0,
+      "effectFrame": 0,
+      "frames": [
         {
           "x": 642,
           "y": 1682,
           "width": 320,
           "height": 240,
-          "frameTicks60": 12,
-          "decodedRgbaSha256": "b8c03362da69f76f6e03041fd0eec57e44cf096cdcce1203599869dcaefaff29"
+          "decodedRgbaSha256": "e4477c8986679800d6a76aa0d8d3df51eaa037c84201d917d48c4f66d87c202d",
+          "frameTicks60": 4
         },
         {
           "x": 962,
           "y": 1682,
           "width": 320,
           "height": 240,
-          "frameTicks60": 12,
-          "decodedRgbaSha256": "efe1c6fe8a3fffc08888265224173191930540efb3ef6784e0f94f5ba2a272b9"
-        },
+          "decodedRgbaSha256": "4baccfdf3af992b403abd9dae5ea87655d1bec4d290378c6186bb6a005472c62",
+          "frameTicks60": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-key-cast",
+      "role": "key.cast",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-cast.png",
+      "sheetSha256": "1e5d3971ad0f15e91a33e4736ccc1696d069a163e2a5488e2a2aac5659a4182a",
+      "deliveredFrameMs": 59,
+      "deliveredEffectFrame": 0,
+      "effectFrame": 0,
+      "frames": [
         {
           "x": 1282,
           "y": 1682,
           "width": 320,
           "height": 240,
-          "frameTicks60": 12,
-          "decodedRgbaSha256": "17fcd68147a5f8a8a45c4ff82b2389afc8717dc30e4454cb4b5b80adeb8db5f7"
+          "decodedRgbaSha256": "91ddbc574d19b45b736e3d156f77b8678644bc42e69de7c1a6d013e8022cbd42",
+          "frameTicks60": 4
         },
         {
           "x": 1602,
           "y": 1682,
           "width": 320,
           "height": 240,
-          "frameTicks60": 12,
-          "decodedRgbaSha256": "7b6b1ee705c86bb1163431435326bfee34a57b625138ba456e4b50521920c8c4"
+          "decodedRgbaSha256": "25156c0443a55c35db561fa308d3ab5a9a8f48e7e88cd2537873d1a55ed57ac9",
+          "frameTicks60": 4
         }
       ]
     },
     {
-      "clip": "hero-a-hit-r5",
-      "role": "hit",
-      "status": "approved-r5",
-      "sheet": "hero-a-hit-r5.png",
-      "sheetSha256": "89aa780829daab44dacd20ab6a752122f120041c37fb44f2e7ae308002ac08c2",
+      "clip": "hero-side-game-r4-key-blow",
+      "role": "key.blow",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-blow.png",
+      "sheetSha256": "85906f96783ab3b279826c3de1f1f6f0a502998c4c9adb62872fdd375f64f685",
+      "deliveredFrameMs": 59,
+      "deliveredEffectFrame": 0,
+      "effectFrame": 0,
+      "frames": [
+        {
+          "x": 1922,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "012565c9309a94225988820926d489dac3a2ab01ec378a2a85144b1c5d515527",
+          "frameTicks60": 4
+        },
+        {
+          "x": 2242,
+          "y": 1682,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "1cea59b891be86baedf1473b36492ca963098af580368bea3582a54bb16688fa",
+          "frameTicks60": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-key-throw",
+      "role": "key.throw",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-key-throw.png",
+      "sheetSha256": "d138c59428741e2a33dd17dfba1e8380e486a57063c60493998112975009a40c",
+      "deliveredFrameMs": 59,
+      "deliveredEffectFrame": 0,
+      "effectFrame": 0,
       "frames": [
         {
           "x": 2,
           "y": 1922,
           "width": 320,
           "height": 240,
-          "frameTicks60": 7,
-          "decodedRgbaSha256": "fc17d6d9ebb524f0ca2e0e0de76b197bc1dba27cbe2302aea37cde0acc4b9cf5"
+          "decodedRgbaSha256": "36264b2a4322d62cc63cf75d4ac5c7536315a3f29d810475f805a50e6728e50c",
+          "frameTicks60": 4
         },
         {
           "x": 322,
           "y": 1922,
           "width": 320,
           "height": 240,
-          "frameTicks60": 8,
-          "decodedRgbaSha256": "cf7f9ed7914a2cfff282ccc1afd8cae42d8554060ab5e729927ef4a52925a4ba"
+          "decodedRgbaSha256": "4995853da6ec723d93b3c3329aa3301e9de28cff500fe41b03a4f499b17e4f41",
+          "frameTicks60": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-side-game-r4-transition-walk-to-idle",
+      "role": "transition.walk-to-idle",
+      "status": "APPROVED_STANDING_WALK_AND_OVERHEAD_CAST_HORN_GATHER_REVIEW_PENDING",
+      "sheet": "hero-side-game-r4-transition-walk-to-idle.png",
+      "sheetSha256": "e12a06bf89ec43d1b05738c9b65d9ecbd500714cd74c97dd15de471956a81e6b",
+      "deliveredFrameMs": 72,
+      "deliveredEffectFrame": null,
+      "effectFrame": null,
+      "frames": [
+        {
+          "x": 642,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "eaa2acd68439854bdf609e98f7af645f62c477770534125832e29378738f79cb",
+          "frameTicks60": 4
+        },
+        {
+          "x": 962,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "b28c905039e70cd5bfcb4be5cd180f8c8d20a108f3d392c00d7c44ef4a6cdbca",
+          "frameTicks60": 4
+        }
+      ]
+    },
+    {
+      "clip": "hero-gather-b-r2-2",
+      "role": "transition.walk-to-idle-b",
+      "status": "approved by the user 2026-10-20",
+      "sheet": "hero-gather-b-r2-2.png",
+      "sheetSha256": "94b2786903c7b6bd5ef813a41e5e6ec9ab7ad8d321388c71e3ecaddd068b4224",
+      "deliveredFrameMs": 72,
+      "deliveredEffectFrame": null,
+      "effectFrame": null,
+      "release": "hero-gather-b-r2-20261020",
+      "frames": [
+        {
+          "x": 1282,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "08cb4755a5f5daad8217be1efd99982abc90160afd8f7b940336831e7336f0f3",
+          "frameTicks60": 4
+        },
+        {
+          "x": 1602,
+          "y": 1922,
+          "width": 320,
+          "height": 240,
+          "decodedRgbaSha256": "88c7e93d18c9d2a368757194c74ae37a262af01dc3fee5fa5dd30f5a0fb890a4",
+          "frameTicks60": 4
         }
       ]
     }
-  ]
+  ],
+  "walkSheetSha256": "40dd9dc9bd36b7a0f74717e24a6d35080e6954afbd868edb4f1d5afd38b16ecd",
+  "actionsManifestSha256": "0d4582213c4bdc7ec8e9d06ec8cb1abc2042bb0b31acf36267e4ba8e3dc8e9a5",
+  "effectOverride": {
+    "action.cast": 2
+  }
 }

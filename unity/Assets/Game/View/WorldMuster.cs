@@ -169,9 +169,26 @@ namespace Game.View
         }
 
         // Draws a formation of soldiers; the representative keeps its authored size and slot when the formation is neutral.
-        void DrawMusterFormation(int id, in MusterFormation formation, ArtVisual front, ArtVisual rear, int layer, Vector2 position, float time,
-            bool walking, ActorFacingPose facing)
+        // Soldier B on muster soldiers (user decision 2026-10-21): a soldier body plays its role's multi-frame "move" sheet by its own
+        // distance (PersonSheetWalk, at most GameVisualTokens.PersonWalkMaxCyclesPerSecond) while it moves, and its state's standing
+        // role (the sheet's frame 4) when it does not. A single-frame "move" role keeps the old picture and its tweened walk.
+        readonly struct SoldierBodyPose
         {
+            public readonly ArtVisual Visual; public readonly Rect? Uv; public readonly bool Sheet, Walking;
+            public SoldierBodyPose(ArtVisual visual, Rect? uv, bool sheet, bool walking) { Visual = visual; Uv = uv; Sheet = sheet; Walking = walking; }
+        }
+        SoldierBodyPose SoldierBody(string kind, int id, string role, string activity, Vector2 at, bool moving, bool tweenWalking)
+        {
+            var walk = Resolve("person", role, "move");
+            if (!PersonSheetWalk.Applies(walk)) return new SoldierBodyPose(Resolve("person", role, activity), null, false, tweenWalking);
+            var frame = personWalk.Frame(kind, id, at, visualTime, moving, walk, facingGeneration);
+            return frame >= 0 ? new SoldierBodyPose(walk, walk.UvRects[frame], true, true) : new SoldierBodyPose(Resolve("person", role, activity), null, true, false);
+        }
+
+        void DrawMusterFormation(int id, in MusterFormation formation, string frontRole, string rearRole, string activity, int layer, Vector2 position, float time,
+            bool walking, bool moving, ActorFacingPose facing)
+        {
+            var front = Resolve("person", frontRole, activity);
             var size = front.WorldSize * formation.Scale;
             var lunge = Vector2.zero; var attack = -1f; var strikeTarget = Vector2.zero; var strikeAge = -1f;
             if (musterStrikes.TryGetValue(id, out var strike) && visualTime - strike.started < MusterLungeSeconds)
@@ -186,7 +203,8 @@ namespace Game.View
             var onHero = heroSilhouetteKnown && ((position - hero.center).magnitude < clearance + size.x || hero.Contains(position));
             for (var i = formation.Soldiers - 1; i >= 0; i--)
             {
-                var art = (i & 1) == 0 ? front : rear;
+                var role = (i & 1) == 0 ? frontRole : rearRole;
+                var art = Resolve("person", role, activity);
                 var soldierSize = art.WorldSize * formation.Scale;
                 var slot = MusterFormationRule.Slot(i, size);
                 var stagger = i * .025f;
@@ -194,8 +212,9 @@ namespace Game.View
                 var at = (onHero ? MusterFormationRule.FrontArc(i, formation.Soldiers, hero, heading, clearance + soldierSize.x * .5f) : position + slot) + reach;
                 if (heroSilhouetteKnown) at = MusterFormationRule.ClearOfHero(at, soldierSize, art.Pivot, hero, clearance, heading);
                 RenderedMusterSoldierBounds?.Invoke(MusterFormationRule.SpriteRect(at, soldierSize, art.Pivot));
-                DrawActor(art, layer + (slot.y < 0 ? 1 : 0), at, time + i * .07f, soldierSize, walking,
-                    attack >= 0 ? Mathf.Clamp01(attack - stagger) : -1, -1, facing: facing);
+                var body = SoldierBody("formation", id * 32 + i, role, activity, at, moving, walking);
+                DrawActor(body.Visual, layer + (slot.y < 0 ? 1 : 0), at, time + i * .07f, body.Visual.WorldSize * formation.Scale, body.Walking,
+                    attack >= 0 ? Mathf.Clamp01(attack - stagger) : -1, -1, facing: facing, uv: body.Uv);
             }
             if (strikeAge < 0) return;
             var slash = Resolve("attack", "core:iron_blade", "sector90");
