@@ -68,7 +68,7 @@ namespace SowSiege.Core
             World.Locks = catalog.Tuning.World.Progression.Locks;
             if (catalog.Estates[options.EstateId].RemainsLoop is { } loop) { World.Remains = new(loop); }
             if (catalog.WaveRuntime is null) { estate.Initialize(); }
-            else { Wave = new(catalog, World, random, interactive); }
+            else { Wave = new(catalog, World, random, interactive); progression.AttachWave(Wave); }
             if (Runtime is not null) { Runtime.HarvestFarm = estate.Harvest; Runtime.PlantFarm = estate.Plant; }
             if (options.Scenario == "load") { PrepareLoadTick(); }
             Experiment?.Trace();
