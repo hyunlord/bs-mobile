@@ -40,7 +40,9 @@ public sealed class WaveReviewCompositionTests
         var none = ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out" });
         Assert.Equal((int.MaxValue, int.MaxValue), none);
         for (var tick = 0; tick < 2 * ShowcaseFixtureCli.OrbitLapTicks; tick++)
+        {
             Assert.Equal(ShowcaseFixtureCli.OrbitInput(tick), ShowcaseFixtureCli.ReviewInput(tick, none.From, none.Until));
+        }
         Assert.Equal(ShowcaseFixtureCli.OrbitInputContract, ShowcaseFixtureCli.InputContract(none.From, none.Until));
         // --stand-from alone keeps its earlier meaning: standing from that tick to the end.
         var from = ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-from", "450" });
@@ -50,7 +52,9 @@ public sealed class WaveReviewCompositionTests
         var window = ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-from", "330", "--stand-until", "375" });
         Assert.Equal((330, 375), window);
         for (var tick = 0; tick < 600; tick++)
+        {
             Assert.Equal(tick >= 330 && tick < 375 ? new PlayerInput(0, 0) : ShowcaseFixtureCli.OrbitInput(tick), ShowcaseFixtureCli.ReviewInput(tick, window.From, window.Until));
+        }
         Assert.EndsWith("standing from tick 330 until tick 375", ShowcaseFixtureCli.InputContract(window.From, window.Until));
         // --stand-until needs an earlier --stand-from.
         Assert.Throws<ArgumentException>(() => ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-until", "375", "--stand-from", "330" }));

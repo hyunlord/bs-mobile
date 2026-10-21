@@ -49,9 +49,18 @@ public static class ShowcaseFixtureCli
     public static (int From, int Until) StandWindow(string[] args)
     {
         static int Tick(string value) => int.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
-        if (args.Length == 4) return (int.MaxValue, int.MaxValue);
-        if (args.Length == 6 && args[4] == "--stand-from") return (Tick(args[5]), int.MaxValue);
-        if (args.Length == 8 && args[4] == "--stand-from" && args[6] == "--stand-until" && Tick(args[7]) > Tick(args[5])) return (Tick(args[5]), Tick(args[7]));
+        if (args.Length == 4)
+        {
+            return (int.MaxValue, int.MaxValue);
+        }
+        if (args.Length == 6 && args[4] == "--stand-from")
+        {
+            return (Tick(args[5]), int.MaxValue);
+        }
+        if (args.Length == 8 && args[4] == "--stand-from" && args[6] == "--stand-until" && Tick(args[7]) > Tick(args[5]))
+        {
+            return (Tick(args[5]), Tick(args[7]));
+        }
         throw new ArgumentException("showcase-fixtures <frozen-C05-data> <case-json> <output> [--stand-from <tick> [--stand-until <later tick>]]");
     }
     public static PlayerInput ReviewInput(int tick, int standFrom, int standUntil) =>
