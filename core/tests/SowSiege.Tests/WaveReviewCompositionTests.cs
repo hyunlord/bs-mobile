@@ -34,6 +34,29 @@ public sealed class WaveReviewCompositionTests
         Assert.InRange((maxX - minX) / 2, 3 * 618 - 120, 3 * 618 + 60);
     }
     [Fact]
+    public void StandWindowIsReviewOnlyAndTheDefaultInputAndContractAreTheOrbitWalk()
+    {
+        // No flags: no stand window, every tick walks the orbit, and the case contract text is the plain orbit walk.
+        var none = ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out" });
+        Assert.Equal((int.MaxValue, int.MaxValue), none);
+        for (var tick = 0; tick < 2 * ShowcaseFixtureCli.OrbitLapTicks; tick++)
+            Assert.Equal(ShowcaseFixtureCli.OrbitInput(tick), ShowcaseFixtureCli.ReviewInput(tick, none.From, none.Until));
+        Assert.Equal(ShowcaseFixtureCli.OrbitInputContract, ShowcaseFixtureCli.InputContract(none.From, none.Until));
+        // --stand-from alone keeps its earlier meaning: standing from that tick to the end.
+        var from = ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-from", "450" });
+        Assert.Equal((450, int.MaxValue), from);
+        Assert.Equal(ShowcaseFixtureCli.OrbitInputContract + "; review composite: standing from tick 450", ShowcaseFixtureCli.InputContract(from.From, from.Until));
+        // --stand-until walks on again: walk, stand [from, until), walk.
+        var window = ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-from", "330", "--stand-until", "375" });
+        Assert.Equal((330, 375), window);
+        for (var tick = 0; tick < 600; tick++)
+            Assert.Equal(tick >= 330 && tick < 375 ? new PlayerInput(0, 0) : ShowcaseFixtureCli.OrbitInput(tick), ShowcaseFixtureCli.ReviewInput(tick, window.From, window.Until));
+        Assert.EndsWith("standing from tick 330 until tick 375", ShowcaseFixtureCli.InputContract(window.From, window.Until));
+        // --stand-until needs an earlier --stand-from.
+        Assert.Throws<ArgumentException>(() => ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-until", "375", "--stand-from", "330" }));
+        Assert.Throws<ArgumentException>(() => ShowcaseFixtureCli.StandWindow(new[] { "showcase-fixtures", "data", "cases.json", "out", "--stand-from", "375", "--stand-until", "330" }));
+    }
+    [Fact]
     public void ReviewFactoryIsImmutableAndHashesStageAndRealDamage()
     {
         var baseline = ContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data"), profileName: "wave-1a");
