@@ -83,6 +83,8 @@ namespace Game.View
             if(!heroRigActive){heroGait.Reset();heroLiveRig?.Hide();return Resolve("hero",heroId,state);}
             if(rigIdle==null)
             {
+                // The cutout rigs draw only on explicit request (or for a hero without sheet roles); their preview-b roles are
+                // wave-1a art (#268: the knight sheets, registered in every profile, are the hero otherwise).
                 rigIdle=art.ResolveRole("hero.preview-b.idle");
                 rigWalk=art.ResolveRole("hero.preview-b.walk");
                 rigAttack=art.ResolveRole("hero.preview-b.attack");
@@ -99,7 +101,7 @@ namespace Game.View
             ActorFacingPose facing,Color color,float flash,bool discontinuity,float seconds)
         {
             RenderedHeroLevelPoseProgress = -1;
-            if (DrawHeroProduction(visual, position, walking, hit, dead, facing, color)) return true;
+            if (DrawHeroProduction(visual, position, walking, hit, dead, facing, color, flash)) return true;
             if(heroConceptVisual!=null){heroLiveRig?.Hide();return false;}
             if(!heroRigActive){heroLiveRig?.Hide();return false;}
             if(heroRigShader==null)
@@ -143,7 +145,7 @@ namespace Game.View
                     if (dead) heroLevelPose.Reset();
                     var levelTime = heroKnightEnabled ? heroLevelPose.Sample(seconds, PresentationPaused, dead || hitTime >= 0 || attackTime >= 0) : -1;
                     RenderedHeroLevelPoseProgress = levelTime;
-                    heroLiveRig.Present(position,fullSize,sample,walking,attackTime,motionAttackEvolved,hitTime,color,deathTime,levelTime);
+                    heroLiveRig.Present(position,fullSize,sample,walking,attackTime,motionAttackEvolved,hitTime,color,deathTime,levelTime,flash);
                     HeroGaitSampled?.Invoke(sample);
                     return true;
                 }

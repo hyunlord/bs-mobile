@@ -41,6 +41,7 @@ namespace Game.View
         void ResetImpactFeedback()
         {
             impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0;
+            ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); ResetPikes(); ResetSporePatches(); ResetOrbits(); heroHitFeedback.Reset();
         }
 
         void AcceptImpactFeedback(WaveEvent value)
@@ -50,15 +51,23 @@ namespace Game.View
             if (value.Amount > 0 && (value.Kind == "hit" ||
                 ((value.Kind == "group-hit" || value.Kind == "trained-group-hit") && waveDefinition.Gear.ContainsKey(value.Source))))
             {
+                if (value.Kind == "hit" && (DeferChainHit(value, origin) || DeferBladeHit(value, origin))) return;
                 var direction = origin - (PredictedLordPosition ?? RenderedLordPosition);
                 if (direction.sqrMagnitude < .000001f) direction = Vector2.up;
-                enemyImpactPoses.Hit(value.SubjectId, visualTime, direction);
+                if (SporePatchHitDirection(value, origin, out var patchDirection))
+                    enemyImpactPoses.Hit(value.SubjectId, visualTime, patchDirection, 0, 0, true);
+                else if (OrbitHitReaction(value, origin)) { }
+                else if (ArrowHitDirection(value, origin, out var arrowDirection))
+                    enemyImpactPoses.Hit(value.SubjectId, visualTime, arrowDirection, ArrowSpec.Seconds(ArrowSpec.HitHoldFrames), 0, true);
+                else if (PikeHitDirection(value, origin, out var pikeDirection))
+                    enemyImpactPoses.Hit(value.SubjectId, visualTime, pikeDirection, PikeSpec.Seconds(PikeSpec.HitHoldFrames), 0, true);
+                else enemyImpactPoses.Hit(value.SubjectId, visualTime, direction);
                 impactParticles.Hit(value.Id, origin);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(value.SubjectId, origin, value.Amount);
             }
             else if (value.Kind == "enemy-killed")
             {
-                impactParticles.Kill(value.Id, origin, value.Amount > 0);
+                AcceptEnemyDeath(value, origin);
                 if (value.Source == waveDefinition.BossId) BossDeathSlowRequested?.Invoke(GameVisualTokens.BossDeathSlowSeconds);
             }
             else if (value.Kind == "evolution-activated" ||
@@ -70,6 +79,8 @@ namespace Game.View
         {
             impactParticles.Advance(seconds);
             enemyImpactPoses.Advance(visualTime);
+            enemyDeaths.Advance(visualTime);
+            AdvanceLightning();
         }
 
         EnemyImpactPose ResolveEnemyImpactPose(int id, float bodyWidth, EnemyImpactPose pose)

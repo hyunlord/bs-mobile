@@ -43,10 +43,19 @@ namespace Game.App
             if (ticks < 0 || tickRate <= 0 || FramesPerSecond % tickRate != 0) throw new ArgumentOutOfRangeException(nameof(tickRate));
             return checked(ticks * (FramesPerSecond / tickRate));
         }
+        // Review measurement only: also keep every frame as a lossless PNG in offline-frames-png (the JPEGs stay as they are for
+        // video and sheets), so pixel measurements are free of JPEG loss.
+        public const string LosslessFlag = "--offline-replay-lossless";
+        readonly string losslessOutput;
         public OfflineReplayCapture(string directory, int width, int height)
         {
             output = Path.Combine(directory, "offline-frames");
             Directory.CreateDirectory(output);
+            if (Array.IndexOf(Environment.GetCommandLineArgs(), LosslessFlag) >= 0)
+            {
+                losslessOutput = Path.Combine(directory, "offline-frames-png");
+                Directory.CreateDirectory(losslessOutput);
+            }
             index = new StreamWriter(Path.Combine(directory, "offline-frame-index.csv"));
             index.WriteLine("index,unityFrame,tick,alpha,seconds");
             target = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
@@ -97,6 +106,7 @@ namespace Game.App
                 }
                 pixels.Apply(false, false);
                 File.WriteAllBytes(Path.Combine(output, $"frame-{Frames:D6}.jpg"), pixels.EncodeToJPG(95));
+                if (losslessOutput != null) File.WriteAllBytes(Path.Combine(losslessOutput, $"frame-{Frames:D6}.png"), pixels.EncodeToPNG());
                 index.WriteLine(FormattableString.Invariant($"{Frames},{Time.frameCount},{tick},{alpha:R},{Frames * FrameSeconds:R}"));
                 lastUnityFrame = Time.frameCount;
                 Frames++;

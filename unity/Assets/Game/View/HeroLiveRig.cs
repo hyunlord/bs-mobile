@@ -22,10 +22,12 @@ namespace Game.View
         readonly SpriteSkin[] skins;
         readonly Sprite[] sprites;
         readonly Material material;
+        Material flashMaterial;
+        bool flashing;
         readonly HeroLiveJoint[] pose;
         readonly HeroLiveClip swing, evolvedSwing, hitClip;
         readonly Texture2D partsTexture, swordTexture;
-        readonly int farKnee, nearKnee, nearShoulder;
+        readonly int farKnee, nearKnee, nearShoulder, hand;
         public int SpriteSkinCount => renderers.Length;
         public int BoneCount => bones.Length;
         public int DeformedSkinCount
@@ -46,6 +48,7 @@ namespace Game.View
             data = HeroLiveRigData.Load(resourceRoot);
             farKnee = data.JointIndex("farKnee"); nearKnee = data.JointIndex("nearKnee");
             nearShoulder = data.JointIndex("nearShoulder");
+            hand = Array.IndexOf(data.jointNames, "sword"); if (hand < 0) hand = Array.IndexOf(data.jointNames, "nearElbow");
             swing = data.Clip("swing"); evolvedSwing = data.Clip("evolved-swing"); hitClip = data.Clip("hit");
             partsTexture = Resources.Load<Texture2D>(string.IsNullOrEmpty(data.partsResource) ? resourceRoot + "/parts" : data.partsResource);
             swordTexture = Resources.Load<Texture2D>(string.IsNullOrEmpty(data.swordResource) ? resourceRoot + "/sword" : data.swordResource);
@@ -71,7 +74,7 @@ namespace Game.View
         }
 
         public void Present(Vector2 position, Vector2 signedSize, HeroGaitSample gait, bool walking,
-            float attackProgress, bool evolved, float hitProgress, Color color, float deathProgress = -1, float levelProgress = -1)
+            float attackProgress, bool evolved, float hitProgress, Color color, float deathProgress = -1, float levelProgress = -1, float flash = 0)
         {
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
             using (PoseMarker.Auto())
@@ -101,6 +104,7 @@ namespace Game.View
                 root.transform.position = position;
                 root.transform.localScale = new Vector3(signedSize.x / data.canvasSize, signedSize.y / data.canvasSize, 1);
                 for (var i = 0; i < renderers.Length; i++) renderers[i].color = color;
+                ApplyFlash(flash > 0);
             }
             LastPoseMilliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - start) * 1000d / System.Diagnostics.Stopwatch.Frequency;
         }
@@ -216,12 +220,38 @@ namespace Game.View
             }
         }
 
+        public bool Flashing => flashing;
+
+        // The hero's near hand in world space (the sword's grip joint), as posed by the last Present.
+        public bool TryHand(out Vector2 world)
+        {
+            world = default;
+            if (hand < 0 || !root.activeSelf) return false;
+            world = bones[hand].position;
+            return true;
+        }
+
+        // A tint can only darken the cutouts, so the hit flash swaps in a material that draws the parts 40% brighter.
+        void ApplyFlash(bool active)
+        {
+            if (active == flashing) return;
+            if (active && flashMaterial == null)
+            {
+                var shader = Resources.Load<Shader>("HeroLiveFlash");
+                if (shader == null || !shader.isSupported) throw new InvalidOperationException("Hero hit flash shader is unavailable or unsupported.");
+                flashMaterial = new Material(shader) { name = "Hero live hit flash", renderQueue = material.renderQueue, hideFlags = HideFlags.DontSave };
+            }
+            flashing = active;
+            for (var i = 0; i < renderers.Length; i++) renderers[i].sharedMaterial = active ? flashMaterial : material;
+        }
+
         public void Hide() { if (root.activeSelf) root.SetActive(false); }
         public void Dispose()
         {
             UnityEngine.Object.Destroy(root);
             for (var i = 0; i < sprites.Length; i++) UnityEngine.Object.Destroy(sprites[i]);
             UnityEngine.Object.Destroy(material);
+            if (flashMaterial != null) UnityEngine.Object.Destroy(flashMaterial);
         }
     }
 }

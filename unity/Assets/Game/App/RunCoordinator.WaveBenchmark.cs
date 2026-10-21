@@ -157,6 +157,7 @@ namespace Game.App
             public string windows = "7200-9900,10200-12900,13200-14400", timingContract = "frames.csv: Update-to-next-Update wall includes rendering and pacing; CPU scopes disjoint. render-timings.csv: delayed FrameTimingManager observations, timestamped separately, not joined to density. Allocation delta is main-thread managed allocation; GC count is process-wide generation 0.";
         }
         M1CombatReview combatReview;
+        WaveRuntimeDefinition benchmarkGearReference;
         int heroTerminalTailFrames;
         void TryStartWaveBenchmark()
         {
@@ -212,6 +213,7 @@ namespace Game.App
                 ContentCatalog frozen = null; string hash = null;
                 if (crowdBenchmark == null) LoadFrozenWaveBenchmark(ref frozen, ref hash);
                 else { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; crowdBenchmark.Validate(benchmarkReplaySha, hash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash); }
+                benchmarkGearReference = frozen?.WaveRuntime;
                 if (combatReview != null) { combatReview.ValidateReplayOptions(benchmarkReplay.Header.Options); frozen = combatReview.Apply(frozen,hash,benchmarkReplaySha); hash = combatReview.Definition.catalogHash; }
                 if (frozen == null || hash != benchmarkReplay.Header.Options.DataHash) throw new InvalidDataException("Frozen benchmark catalog absent or mismatched; prepare the benchmark build.");
                 benchmarkCapture = Array.IndexOf(args, "--wave-benchmark-capture") >= 0;
@@ -251,6 +253,8 @@ namespace Game.App
                 world.AcceptWave(runCatalog, CurrentWave); world.AcceptFrame(CurrentFrame, FirstPlayable);
                 ConfigureCameraScaleReview();
                 combatReview?.Configure(world);
+                world.GearReference = benchmarkGearReference;
+                combatReview?.Observe(world);
                 preferences.MusicVolume = .55f; preferences.EffectsVolume = .8f; preferences.Haptics = false;
                 preferences.Shake = true; preferences.DamageNumbers = true;
                 ApplyPreferences(); sound.ResetRun(); waveSound?.ResetRun(); bossPhaseCue.Reset(); lastWaveSound = -1;
@@ -660,6 +664,7 @@ namespace Game.App
                     }
                     FinishLongFrames();
                     if (combatReview == null) SaveCameraScaleReview(result.verified);
+                    combatReview?.CapturePresentation(world);
                     combatReview?.Save(benchmarkOutput,result.verified);
                     SaveKnightReview(result.verified);
                     weaponShowcaseReview?.Save(benchmarkOutput,result.verified,benchmarkReplaySha);

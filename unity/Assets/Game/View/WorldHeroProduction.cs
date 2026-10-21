@@ -176,7 +176,7 @@ namespace Game.View
         }
 #endif
 
-        bool DrawHeroProduction(ArtVisual reference, Vector2 position, bool walking, bool hit, bool dead, ActorFacingPose facing, Color color)
+        bool DrawHeroProduction(ArtVisual reference, Vector2 position, bool walking, bool hit, bool dead, ActorFacingPose facing, Color color, float flash = 0)
         {
             if (productionHero == null) return false;
             if(productionFollowFacing && productionHasPosition && walking && (position-productionPreviousPosition).sqrMagnitude>0.000001f)
@@ -200,7 +200,7 @@ namespace Game.View
             var bodyHeight = reference.WorldSize.y * GameVisualTokens.HeroRigHeightScale * (167f / 252f);
             var size = clip.visual.WorldSize * (bodyHeight / clip.bodyHeightPixels);
             if (clip.mirror) size.x = -size.x;
-            Draw(clip.visual, GameVisualTokens.LordLayer, position, 0, size, tint: color, uv: clip.visual.UvRects[frame]);
+            Draw(clip.visual, GameVisualTokens.LordLayer, position, 0, size, tint: color, flash: flash, uv: clip.visual.UvRects[frame]);
             return true;
         }
 

@@ -492,19 +492,27 @@
       "gear": {
         "id": "core:spore_fan",
         "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/lv1",
-        "kind": "Orbit",
-        "damage": 24,
-        "range": 600,
-        "cooldownTicks": 30,
+        "kind": "Arc",
+        "damage": 11,
+        "range": 1250,
+        "cooldownTicks": 28,
         "speed": 300,
-        "count": 2,
+        "count": 1,
         "lifetimeTicks": 120,
         "knockback": 0,
         "workTicks": 1,
         "workRadius": 1000,
         "rewardExperience": 15,
         "capacity": 8,
-        "aim": "nearest-enemy"
+        "aim": "nearest-enemy",
+        "composition": {
+          "version": 1,
+          "placement": "forward-line",
+          "delayTicks": 1,
+          "stepTicks": 28,
+          "spacing": 0,
+          "radius": 742
+        }
       },
       "arena": {
         "enemyId": "core:raider",
@@ -530,19 +538,27 @@
       "gear": {
         "id": "core:spore_fan",
         "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/max",
-        "kind": "Orbit",
-        "damage": 80,
-        "range": 700,
-        "cooldownTicks": 24,
+        "kind": "Arc",
+        "damage": 55,
+        "range": 1635,
+        "cooldownTicks": 12,
         "speed": 650,
-        "count": 5,
+        "count": 4,
         "lifetimeTicks": 120,
         "knockback": 0,
         "workTicks": 1,
         "workRadius": 1000,
         "rewardExperience": 15,
         "capacity": 8,
-        "aim": "nearest-enemy"
+        "aim": "nearest-enemy",
+        "composition": {
+          "version": 1,
+          "placement": "forward-line",
+          "delayTicks": 1,
+          "stepTicks": 12,
+          "spacing": 0,
+          "radius": 742
+        }
       },
       "arena": {
         "enemyId": "core:raider",
@@ -568,19 +584,27 @@
       "gear": {
         "id": "core:spore_fan",
         "designRef": "data/review/m1-weapon-combat-cases.json#core:spore_fan/evolved",
-        "kind": "Orbit",
-        "damage": 140,
-        "range": 900,
-        "cooldownTicks": 30,
+        "kind": "Arc",
+        "damage": 55,
+        "range": 1635,
+        "cooldownTicks": 12,
         "speed": 400,
-        "count": 8,
+        "count": 4,
         "lifetimeTicks": 120,
         "knockback": 0,
         "workTicks": 1,
         "workRadius": 1000,
         "rewardExperience": 15,
         "capacity": 8,
-        "aim": "nearest-enemy"
+        "aim": "nearest-enemy",
+        "composition": {
+          "version": 1,
+          "placement": "forward-line",
+          "delayTicks": 1,
+          "stepTicks": 12,
+          "spacing": 0,
+          "radius": 742
+        }
       },
       "arena": {
         "enemyId": "core:raider",

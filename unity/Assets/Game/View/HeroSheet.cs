@@ -234,6 +234,7 @@ namespace Game.View
         // it explicitly, or when the hero has no sheet roles. Decided each frame, after the art is loaded.
         public bool HeroRigExplicit { get; set; }
         bool heroRigActive, heroSheetOn;
+        public bool HeroSheetDrawsHero => heroSheetOn;   // tests: the sheet, not a rig or the fallback, drew the hero
         // Review modes ask for their own hero explicitly: the motion comparison, the production comparison and the concept
         // review keep their rig or picture, so the sheet stays off for them.
         bool HeroReviewExplicit => HeroRigExplicit || HeroMotionPreviewMode != 0 || productionHero != null || heroConceptVisual != null;
@@ -285,7 +286,8 @@ namespace Game.View
             if (value.Kind == "review-impact-tell" && heroLastImpact.Tick == value.Tick && heroLastImpact.Source == value.Source && heroLastImpact.Point.X == value.Position.X && heroLastImpact.Point.Y == value.Position.Y) return;
             var weapon = value.Source; var evolved = false;
             if (waveDefinition.Evolutions.TryGetValue(value.Source, out var evolution) && evolution.InputIds.Length > 0) { weapon = evolution.InputIds[0]; evolved = true; }
-            else if (value.Kind == "hit") evolved = HeroWeaponEvolved(weapon);
+            // A review case evolves by its display stage (WeaponDisplayStages) rather than a runtime evolution.
+            else if (value.Kind == "hit") evolved = HeroWeaponEvolved(weapon) || WeaponEvolved(weapon);
             var action = HeroSheetSpec.ActionFor(weapon, evolved, value.Kind);
             if (action == HeroAction.None || (tick == heroOfferTick && weapon == heroOfferWeapon)) return;
             heroOfferTick = tick; heroOfferWeapon = weapon;
@@ -306,7 +308,8 @@ namespace Game.View
         // The hero's footprint for shadow and camera margins: the figure share of this role's own cell, or the visual's own size.
         Vector2 HeroFigureSize(string heroId, ArtVisual visual) => HeroSheetShown(heroId) ? HeroSheetSpec.FigureSize(visual) : visual.WorldSize;
 
-        bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, bool hitOutline, int tickRate)
+        // flashOverride: the stack's hit feedback brightness (heroHitFeedback) replaces the sheet's own first-frames flash.
+        bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, bool hitOutline, int tickRate, float? flashOverride = null)
         {
             if (!heroSheetOn) return false;
             heroSheetMoving = walking;
@@ -322,7 +325,7 @@ namespace Game.View
             // Left/right mirror the single 3/4 view (facing keeps the last horizontal direction); up/down use the same sheet.
             var size = visual.WorldSize; size.x *= facing.SignedWidth;
             var hitAge = HeroActions.HitAge(visualTime);
-            var flash = hitAge >= 0 && hitAge < HeroSheetSpec.HitFlashFrames / 60f ? HeroSheetSpec.HitFlash : 0;
+            var flash = flashOverride ?? (hitAge >= 0 && hitAge < HeroSheetSpec.HitFlashFrames / 60f ? HeroSheetSpec.HitFlash : 0);
             Draw(visual, GameVisualTokens.LordLayer, lord, 0, size, 0, 1, null, flash, uv: visual.UvRects[frame], applyTween: false);
             // The red outline belongs to the hit pose; a hit during an attack shows only the white flash (user decision 2026-10-19).
             var outlined = hitAge >= 0 && hitOutline && pose.Clip == HeroClip.Hit;

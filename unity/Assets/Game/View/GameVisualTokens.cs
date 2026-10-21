@@ -27,6 +27,8 @@ namespace Game.View
         public const float SeasonBlendSeconds = 1.8f, HitFlashSeconds = 0.09f, KillSeconds = 0.32f, HarvestSeconds = 0.48f, ExperienceSeconds = 0.42f, EmphasisSeconds = 0.45f;
         public const float EnemyHitFlashSeconds = 2f / 60, EnemyPoseHoldSeconds = 4f / 60;
         public const float EnemyRecoilSeconds = .18f, EnemyRecoilBodyFraction = .4f;
+        // Authored hero canvases carry cape and margin; the push is measured against the figure, not the canvas.
+        public const float HeroBodyWidthFraction = .45f;
         public const float DamageAggregateSeconds = .12f, ImpactShakeSeconds = .045f, BossHitStopSeconds = .06f, BossDeathSlowSeconds = .3f;
         public const float CameraOutsideMargin = 1f, CameraReferencePixelHeight = 1600f;
         public const float TerrainUvInset = 0.16f, TerrainStride = 1f, TerrainOpacity = 0.45f;

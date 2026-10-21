@@ -119,16 +119,18 @@ namespace Game.App
         public void Save(string directory, bool verified)
         {
             if (IsCombined) { SaveCombined(directory,verified); return; }
+            SaveFeelLogs(directory);
             using var writer = new StreamWriter(Path.Combine(directory,"m1-combat-events.csv"));
             writer.WriteLine("frameIndex,snapshotTick,eventId,eventTick,kind,source,subjectId,amount,worldX,worldY,screenX,screenY,inViewport");
             foreach(var s in events) { var e=s.value; writer.WriteLine(FormattableString.Invariant($"{s.frame},{s.snapshot},{e.Id},{e.Tick},{e.Kind},{e.Source},{e.SubjectId},{e.Amount},{e.Position.X},{e.Position.Y},{s.screen.x:R},{s.screen.y:R},{s.visible}")); }
-            File.WriteAllText(Path.Combine(directory,"m1-combat-review.json"),JsonUtility.ToJson(new Manifest { definition=Definition,sidecarSha256=SidecarSha256,replayVerified=verified,frames=frameCount,firstVisibleHitFrame=firstHit,firstVisibleDeathFrame=firstDeath },true));
+            File.WriteAllText(Path.Combine(directory,"m1-combat-review.json"),JsonUtility.ToJson(new Manifest { definition=Definition,sidecarSha256=SidecarSha256,replayVerified=verified,frames=frameCount,firstVisibleHitFrame=firstHit,firstVisibleDeathFrame=firstDeath,presentation=presentation,musterPresentation=musterRecords.ToArray() },true));
         }
         [Serializable] sealed class Manifest
         {
             public string contract="m1-combat-review-v1", sidecarSha256;
             public string interpretation="Isolated proposed Core composition, preconfigured stage rather than earned evolution. Hits use the selected source; deaths retain enemy-definition Source and are linked only to a selected-source hit on the same subject and tick. Visibility tests event center against viewport; it is not pixel segmentation or proof of readable reaction. A 12-frame sheet must start at the reported event frame, or be N/A if negative.";
             public Case definition; public bool replayVerified; public int frames,firstVisibleHitFrame,firstVisibleDeathFrame;
+            public PresentationSummary presentation; public MusterRecord[] musterPresentation;
         }
     }
 }
