@@ -57,7 +57,7 @@
       "reason": "The layered knight rig is enabled only for wave runs, and only when explicitly requested or the hero has no sheet roles; otherwise the knight sprite sheets registered in every profile draw (#268 is the failure when this gate is bypassed).",
       "evidence": [
         { "file": "unity/Assets/Game/View/WorldHeroRig.cs", "text": "if(!heroRigActive){heroGait.Reset();heroLiveRig?.Hide();return Resolve(\"hero\",heroId,state);}" },
-        { "file": "unity/Assets/Game/View/HeroSheet.cs", "text": "heroRigActive = !heroSheetOn && (HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);" },
+        { "file": "unity/Assets/Game/View/HeroSheet.cs", "text": "heroRigActive = !heroSheetOn && (heroKnightEnabled || HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);" },
         { "file": "unity/Assets/Game/App/RunCoordinator.Feel.cs", "text": "activeHeroRig = IsWave && preferences.HeroRigPreview;" }
       ],
       "pinned": [

@@ -10,6 +10,7 @@ namespace Game.App
     {
         CameraScaleComparison cameraScaleComparison;
         CameraScaleComparisonTelemetry cameraScaleTelemetry;
+        ActualLordDamageTelemetry actualLordDamageTelemetry;
         readonly Dictionary<int, Rect> cameraScaleBounds = new Dictionary<int, Rect>(2048);
         int cameraScaleObservedTick = -1;
         long cameraScaleLastDamageEvent = -1;
@@ -58,13 +59,18 @@ namespace Game.App
                 if (e.Kind == "lord-hit" && e.Amount > 0) damage++;
                 cameraScaleLastDamageEvent = e.Id;
             }
-            cameraScaleTelemetry.EndTick(damage); cameraScaleObservedTick = CurrentFrame.Tick;
+            cameraScaleTelemetry.EndTick(damage);
+            actualLordDamageTelemetry?.CompleteTick(CurrentFrame.Tick, cameraScaleTelemetry, offlineReplayRequested || Application.isFocused && benchmarkForeground.Focused && !benchmarkForeground.Paused);
+            cameraScaleObservedTick = CurrentFrame.Tick;
         }
         void SaveCameraScaleReview(bool verified)
         {
             if (cameraScaleTelemetry == null || benchmarkOutput == null) return;
             cameraScaleTelemetry.Save(benchmarkOutput);
+            actualLordDamageTelemetry?.Save(benchmarkOutput);
             File.WriteAllText(Path.Combine(benchmarkOutput, "camera-scale.json"), JsonUtility.ToJson(new CameraScaleManifest {
+                contract = knightReview == null ? "camera-scale-frozen-c05-v1" : "knight-camera-review-v1",
+                hero = knightReview == null ? "current B parts, live Unity 2D Animation; historical scale review" : "a-knight-live",
                 scale = cameraScaleComparison.Magnification, window = cameraScaleComparison.Window,
                 startTick = cameraScaleComparison.StartTick, endTick = cameraScaleComparison.EndTick,
                 preRollTick = cameraScaleComparison.PreRollTick, replayVerified = verified,

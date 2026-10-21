@@ -14,6 +14,7 @@ namespace SowSiege.Core
         public long NextSequence { get; private set; }
         public IReadOnlyRunView View { get; }
         public IRuntimeDiagnostics? Diagnostics { get => Simulation.World.Diagnostics; set => Simulation.World.Diagnostics = value; }
+        public ILordDamageObserver? LordDamageObserver { get => Simulation.World.LordDamageObserver; set => Simulation.World.LordDamageObserver = value; }
         public double LocomotionSpeedPerTick
         {
             get

@@ -241,7 +241,7 @@ namespace Game.View
         void SelectHeroRig(string heroId)
         {
             heroSheetOn = HeroSheetShown(heroId);
-            heroRigActive = !heroSheetOn && (HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);
+            heroRigActive = !heroSheetOn && (heroKnightEnabled || HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);
         }
 
         bool EnsureHeroSheet(string heroId)

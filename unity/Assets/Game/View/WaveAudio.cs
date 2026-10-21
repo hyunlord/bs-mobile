@@ -25,6 +25,17 @@ namespace Game.View
         float volume;
         bool paused;
         bool impactFeedback = true;
+        float? presentationClock;
+        float AudioTime => presentationClock ?? Time.unscaledTime;
+        public void SetPresentationClock(float? seconds)
+        {
+            if (seconds.HasValue && (float.IsNaN(seconds.Value) || float.IsInfinity(seconds.Value) || seconds.Value < 0))
+                throw new ArgumentOutOfRangeException(nameof(seconds), "Presentation time must be finite and nonnegative.");
+            presentationClock = seconds;
+        }
+#if UNITY_EDITOR
+        public float EditorPresentationClock => AudioTime;
+#endif
         public void SetImpactFeedback(bool enabled) => impactFeedback = enabled;
         public void Initialize()
         {
@@ -96,12 +107,12 @@ namespace Game.View
         {
             if(paused||volume<=0)return;
             if(!cues.TryGetValue(id,out var cue))throw new InvalidOperationException("Unknown wave cue: "+id);
-            if(next.TryGetValue(id,out var when)&&Time.unscaledTime<when)return;
+            if(next.TryGetValue(id,out var when)&&AudioTime<when)return;
             var first=cue.priority<=55?0:2;var slot=-1;
             for(var i=first;i<voices.Length;i++)if(!voices[i].isPlaying){slot=i;break;}
             if(slot<0)for(var i=first;i<voices.Length;i++)if(priorities[i]>cue.priority&&(slot<0||priorities[i]>priorities[slot]))slot=i;
             if(slot<0)return;
-            next[id]=Time.unscaledTime+cue.cooldownSeconds;priorities[slot]=cue.priority;
+            next[id]=AudioTime+cue.cooldownSeconds;priorities[slot]=cue.priority;
             var voice=voices[slot];var clip=clips[id];
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (playedOnce.Add(id)) using (AudioFirstPlaybackMarker.Auto()) PlayVoice(voice, clip, volume, cue.priority, pitch);

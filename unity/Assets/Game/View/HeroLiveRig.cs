@@ -8,7 +8,7 @@ using UnityEngine.U2D.Animation;
 
 namespace Game.View
 {
-    // Opt-in, one-hero comparison only. Enemies continue to use the existing baked SpriteBatch.
+    // One live hero only. Historical B remains an explicit comparison; enemies use baked SpriteBatch.
     // Every cutout is a genuine weighted Sprite mesh, deformed by Unity's SpriteSkin system.
     public sealed class HeroLiveRig : IDisposable
     {
@@ -25,7 +25,7 @@ namespace Game.View
         readonly HeroLiveJoint[] pose;
         readonly HeroLiveClip swing, evolvedSwing, hitClip;
         readonly Texture2D partsTexture, swordTexture;
-        readonly int farKnee, nearKnee;
+        readonly int farKnee, nearKnee, nearShoulder;
         public int SpriteSkinCount => renderers.Length;
         public int BoneCount => bones.Length;
         public int DeformedSkinCount
@@ -41,13 +41,14 @@ namespace Game.View
         public long TextureBytes { get; }
         public double LastPoseMilliseconds { get; private set; }
 
-        public HeroLiveRig(Transform owner)
+        public HeroLiveRig(Transform owner, string resourceRoot = "HeroMotion")
         {
-            data = HeroLiveRigData.Load();
+            data = HeroLiveRigData.Load(resourceRoot);
             farKnee = data.JointIndex("farKnee"); nearKnee = data.JointIndex("nearKnee");
+            nearShoulder = data.JointIndex("nearShoulder");
             swing = data.Clip("swing"); evolvedSwing = data.Clip("evolved-swing"); hitClip = data.Clip("hit");
-            partsTexture = Resources.Load<Texture2D>("HeroMotion/parts");
-            swordTexture = Resources.Load<Texture2D>("HeroMotion/sword");
+            partsTexture = Resources.Load<Texture2D>(string.IsNullOrEmpty(data.partsResource) ? resourceRoot + "/parts" : data.partsResource);
+            swordTexture = Resources.Load<Texture2D>(string.IsNullOrEmpty(data.swordResource) ? resourceRoot + "/sword" : data.swordResource);
             if (partsTexture == null || swordTexture == null) throw new InvalidOperationException("Hero source cutouts are missing.");
             TextureBytes = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(partsTexture) + UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(swordTexture);
             var template = Resources.Load<Material>("HeroMotion/live-material");
@@ -70,12 +71,13 @@ namespace Game.View
         }
 
         public void Present(Vector2 position, Vector2 signedSize, HeroGaitSample gait, bool walking,
-            float attackProgress, bool evolved, float hitProgress, Color color)
+            float attackProgress, bool evolved, float hitProgress, Color color, float deathProgress = -1, float levelProgress = -1)
         {
             var start = System.Diagnostics.Stopwatch.GetTimestamp();
             using (PoseMarker.Auto())
             {
                 if (!root.activeSelf) root.SetActive(true);
+                walking = walking && deathProgress < 0;
                 var gaitPosition = walking ? Mathf.Repeat(gait.Phase, 1) * 12 : 12;
                 var first = Mathf.FloorToInt(gaitPosition);
                 var second = walking ? (first + 1) % 12 : 12;
@@ -93,6 +95,8 @@ namespace Game.View
                 // Match the reference's continuous sole pinning, without moving simulation coordinates.
                 CorrectFoot(farKnee, gait.FarCorrection, first, second, blend, false);
                 CorrectFoot(nearKnee, gait.NearCorrection, first, second, blend, true);
+                if (deathProgress >= 0) ApplyDeathPose(deathProgress);
+                else if (levelProgress >= 0 && action == null) ApplyLevelPose(levelProgress);
                 ApplyBones();
                 root.transform.position = position;
                 root.transform.localScale = new Vector3(signedSize.x / data.canvasSize, signedSize.y / data.canvasSize, 1);
@@ -101,14 +105,52 @@ namespace Game.View
             LastPoseMilliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - start) * 1000d / System.Diagnostics.Stopwatch.Frequency;
         }
 
+        void ApplyDeathPose(float progress)
+        {
+            // Presentation only: settle around the planted sole without changing the Core actor.
+            var weight = Mathf.SmoothStep(0, 1, Mathf.Clamp01(progress));
+            var angle = -72 * Mathf.Deg2Rad * weight;
+            var pivot = new Vector2(data.root.x, data.groundY);
+            for (var i = 0; i < pose.Length; i++) RotateJoint(i, pivot, angle);
+        }
+
+        void ApplyLevelPose(float progress)
+        {
+            var weight = Mathf.Sin(Mathf.Clamp01(progress) * Mathf.PI);
+            var pivot = new Vector2(pose[nearShoulder].x, pose[nearShoulder].y);
+            var angle = -70 * Mathf.Deg2Rad * weight;
+            for (var i = 0; i < pose.Length; i++)
+            {
+                var ancestor = i;
+                while (ancestor >= 0 && ancestor != nearShoulder) ancestor = parents[ancestor];
+                if (ancestor == nearShoulder) RotateJoint(i, pivot, angle);
+            }
+        }
+
+        void RotateJoint(int index, Vector2 pivot, float angle)
+        {
+            var x = pose[index].x - pivot.x; var y = pose[index].y - pivot.y;
+            var cosine = Mathf.Cos(angle); var sine = Mathf.Sin(angle);
+            pose[index].x = pivot.x + x * cosine - y * sine;
+            pose[index].y = pivot.y + x * sine + y * cosine;
+            pose[index].angleRadians += angle;
+        }
+
         void CorrectFoot(int index, Vector2 correction, int first, int second, float blend, bool near)
         {
             if (first >= 12) return;
             // The discrete reference sole moves between authored poses; remove that delta as live joints interpolate.
-            var interpolatedSole = Vector2.Lerp(HeroGaitState.Sole(first, near), HeroGaitState.Sole(second, near), blend);
+            var interpolatedSole = Vector2.Lerp(AuthoredSole(first, near), AuthoredSole(second, near), blend);
             var delta = correction + HeroGaitState.Sole(first, near) - interpolatedSole;
             pose[index].x += delta.x * data.canvasSize;
             pose[index].y -= delta.y * data.canvasSize;
+        }
+
+        Vector2 AuthoredSole(int frame, bool near)
+        {
+            var soles = near ? data.nearSoles : data.farSoles;
+            if (soles == null || soles.Length <= frame) return HeroGaitState.Sole(frame, near);
+            return new Vector2(soles[frame].x / data.canvasSize, 1 - soles[frame].y / data.canvasSize);
         }
 
         void ApplyBones()

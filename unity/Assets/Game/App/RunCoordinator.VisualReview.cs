@@ -211,6 +211,7 @@ namespace Game.App
                     // Resume before camera rendering; EOF is capture-only, never a draw submission phase.
                     yield return null;
                     world.RenderedEnemyBoundsSample=warm==29?CaptureVisualEnemyBounds:null;
+                    world.PresentationPaused = false;
                     world.Present(CurrentFrame,CurrentFrame,FirstPlayable,1,1f/60,visible);
                     yield return new WaitForEndOfFrame();
                 }

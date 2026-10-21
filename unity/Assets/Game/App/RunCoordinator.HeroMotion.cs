@@ -9,6 +9,7 @@ namespace Game.App
     {
         bool heroMotionArgumentsRead;
         bool benchmarkImpactBaseline;
+        KnightReview knightReview;
         HeroMotionComparison heroMotionComparison;
         WorldRenderer configuredMotionWorld;
         HeroMotionComparisonMetrics heroMotionMetrics;
@@ -19,6 +20,7 @@ namespace Game.App
         {
             if (!heroMotionArgumentsRead)
             {
+                knightReview = KnightReview.Parse(Environment.GetCommandLineArgs());
                 heroMotionComparison = HeroMotionComparison.Parse(Environment.GetCommandLineArgs());
                 heroMotionArgumentsRead = true;
                 var args = Environment.GetCommandLineArgs();
@@ -32,8 +34,8 @@ namespace Game.App
                 var metrics = Array.IndexOf(args, "--hero-motion-metrics");
                 if (metrics >= 0)
                 {
-                    if (heroMotionComparison == null || metrics != Array.LastIndexOf(args, "--hero-motion-metrics") || metrics + 1 >= args.Length || args[metrics + 1].StartsWith("--", StringComparison.Ordinal))
-                        throw new ArgumentException("--hero-motion-metrics requires a directory and --hero-motion.");
+                    if ((heroMotionComparison == null && knightReview == null) || metrics != Array.LastIndexOf(args, "--hero-motion-metrics") || metrics + 1 >= args.Length || args[metrics + 1].StartsWith("--", StringComparison.Ordinal))
+                        throw new ArgumentException("--hero-motion-metrics requires a directory and --hero-motion or --knight-review.");
                     heroMotionMetricsDirectory = Path.GetFullPath(args[metrics + 1]);
                     heroMotionMetricsCapture = Array.IndexOf(args, "--autoplay-capture") >= 0 || Array.IndexOf(args, "--offline-replay-capture") >= 0;
                     heroMotionMetrics = new HeroMotionComparisonMetrics();
@@ -41,7 +43,13 @@ namespace Game.App
             }
             if (world == null || ReferenceEquals(configuredMotionWorld, world)) return;
             configuredMotionWorld = world;
-            if (heroMotionComparison != null) world.PrepareHeroMotionPreview(heroMotionComparison.RenderMode);
+            if (heroMotionComparison != null)
+            {
+                world.PrepareHeroMotionPreview(heroMotionComparison.RenderMode);
+                if (cameraScaleComparison == null) world.ReviewCameraMagnification = 1;
+            }
+            else world.PrepareHeroKnight();
+            world.EdgeWarningsEnabled = knightReview?.EdgeWarnings ?? true;
         }
         // Call at Update entry, before submitting this frame's pose, including benchmark mode.
         void RecordHeroMotionComparisonFrame()
@@ -59,7 +67,7 @@ namespace Game.App
         {
             if (heroMotionMetrics == null || heroMotionMetricsFinished) return;
             heroMotionMetricsFinished = true;
-            try { heroMotionMetrics.Save(heroMotionMetricsDirectory, heroMotionComparison.Mode,
+            try { heroMotionMetrics.Save(heroMotionMetricsDirectory, knightReview != null ? "a-knight-live" : heroMotionComparison.Mode,
                 benchmarkReplaySha ?? "not-a-replay-capture", Session?.ComputeStateHash() ?? "unavailable", heroMotionMetricsCapture,
                 replayVerified, benchmarkEligible); }
             finally { heroMotionMetrics.Dispose(); }

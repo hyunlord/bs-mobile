@@ -39,6 +39,14 @@ namespace Game.App
             samples = new TickSample[sampleCapacity];
         }
         public TickSample Sample(int index) => index >= 0 && index < Count ? samples[index] : throw new ArgumentOutOfRangeException(nameof(index));
+        public bool TryScreenHistory(int id, int tick, out bool visible, out bool enteredLastSecond)
+        {
+            visible = false; enteredLastSecond = false;
+            if (!history.TryGetValue(id, out var value) || value.tick != tick) return false;
+            visible = value.visible;
+            enteredLastSecond = value.enteredAt >= 0 && tick - value.enteredAt <= ticksPerSecond;
+            return tick - value.continuousSince >= ticksPerSecond || value.enteredAt >= value.continuousSince;
+        }
         public bool BeginTick(int tick, Rect viewportWorld, Vector2 lordWorld, float lordBodyRadius, bool measuredWindow, bool foregroundEligible)
         {
             if (observing) throw new InvalidOperationException("End the previous tick before observing another.");
