@@ -3,7 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { makePlan, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns, sourceHeadRatio, combatSheetTiming } from './m1-production-review.mjs';
+import * as productionReview from './m1-production-review.mjs';
+import { actualAimSheet, makePlan, makeFramePlan, validateTerminalPresentation, makeCombatPlan, validateCombatEvents, validateHeroActions, selectSheetWindows, selectWeaponRuns, sourceHeadRatio, combatSheetTiming } from './m1-production-review.mjs';
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'production-plan-test-'));
 try {
   const baked = path.join(root, 'baked.json'), drawn = path.join(root, 'drawn.json');
@@ -44,6 +45,63 @@ try {
     fs.writeFileSync(prefix + '.ssreplay', bytes);
     fs.writeFileSync(prefix + '.case.json', JSON.stringify({ contract: 'm1-combat-case-v1', classification: 'hypothesis', proposedContract: 'm1-review-composition-v1', captureStartTick: 300, endTick: 600, id, stage, replaySha256: createHash('sha256').update(bytes).digest('hex'), stateHash: 'A'.repeat(64), catalogHash: 'B'.repeat(64) }));
   }
+  const oldFrame = path.join(root, 'old-frame.json'), newFrame = path.join(root, 'new-frame.json');
+  fs.writeFileSync(oldFrame, JSON.stringify({ method: 'frame-drawn', revision: 'old' }));
+  fs.writeFileSync(newFrame, JSON.stringify({ method: 'frame-drawn', revision: 'new' }));
+  const framePlan = makeFramePlan(path.join(root, 'frame'), oldFrame, newFrame);
+  assert.equal(typeof productionReview.motionDetailCrop, 'function');
+  const centerCrop = productionReview.motionDetailCrop(framePlan, { heroX: '960', heroY: '480' });
+  assert.equal(centerCrop.width, 250); assert.equal(centerCrop.height, 250);
+  assert.equal(centerCrop.x + 125, 960);
+  assert.equal(centerCrop.y + 125 + 60, 600);
+  for (const [heroX, heroY] of [[710, 1080], [1210, 0], [-100, 2000]]) {
+    const crop = productionReview.motionDetailCrop(framePlan, { heroX, heroY });
+    assert(crop.x >= 710 && crop.x + crop.width <= 1210);
+    assert(crop.y >= 0 && crop.y + crop.height <= 1080);
+    assert(crop.clamped);
+  }
+  assert.throws(() => productionReview.motionDetailCrop(framePlan, { heroX: 'unavailable', heroY: 480 }));
+  assert.equal(framePlan.runs.length, 2); assert.equal(framePlan.sheetStep, 1);
+  assert(framePlan.runs.every(run => run.frames === 1800 && run.method === 'frame-drawn'));
+  assert.throws(() => makeFramePlan(path.join(root, 'same'), oldFrame, oldFrame));
+  const deathPlan = makeFramePlan(path.join(root, 'death'), oldFrame, newFrame, true);
+  assert(deathPlan.runs.every(run => run.frames === 346 && run.args.includes('--hero-production-terminal-tail')));
+  const unavailable = [{ method: 'frame-drawn', action: 'idle-unavailable' }];
+  validateHeroActions(unavailable, deathPlan.runs[0]);
+  assert.match(deathPlan.runs[0].limitation, /historical/i);
+  assert.throws(() => validateHeroActions(unavailable, deathPlan.runs[1]), /missing actual rendered hit/);
+  assert.throws(() => validateHeroActions([{ method: 'frame-drawn', action: 'hit' }], deathPlan.runs[1]), /missing actual rendered death/);
+  validateHeroActions([{ method: 'frame-drawn', action: 'hit' }, { method: 'frame-drawn', action: 'death' }], deathPlan.runs[1]);
+  const terminalRows = Array.from({ length: 346 }, (_, i) => ({ tick: '13643', terminalPresentation: i >= 286 ? 'True' : 'False' }));
+  validateTerminalPresentation(terminalRows, deathPlan.runs[0]);
+  assert.throws(() => validateTerminalPresentation(terminalRows.map((row, i) => i === 286 ? { ...row, tick: '13644' } : row), deathPlan.runs[0]));
+  assert.throws(() => validateTerminalPresentation(terminalRows.map((row, i) => i === 285 ? { ...row, terminalPresentation: 'True' } : row), deathPlan.runs[0]));
+  assert.deepEqual(selectSheetWindows([animated, animated], 1)[0].frames, Array.from({ length: 12 }, (_, i) => i + 10));
+  const directionRows = animated.map(row => ({ ...row, slashDirection: 'NW', drawnDirection: 'NW', attackTick: '42', targetId: '7' }));
+  const directionSheets = selectSheetWindows([directionRows, directionRows], 1);
+  assert.equal(directionSheets.find(sheet => sheet.action === 'slash-NW').startFrame, 20);
+  assert.equal(directionSheets.find(sheet => sheet.action === 'slash-NW').renderedEvidence[1].targetId, '7');
+  assert.equal(directionSheets.find(sheet => sheet.action === 'slash-SE').available, false);
+  const aimingRows = Array.from({ length: 20 }, () => ({ action: 'slash-light', attackTick: '302', targetId: '-1', targetDx: '-200', targetDy: '100', slashDirection: 'NW', drawnDirection: 'NW' }));
+  const aimingDefinition = { gear: { aim: 'nearest-enemy' }, captureStartTick: 300, endTick: 600 };
+  const aimStrip = actualAimSheet(aimingRows, aimingDefinition);
+  assert.equal(aimStrip.attackTick, 302); assert.equal(aimStrip.targetDx, -200);
+  assert.deepEqual(aimStrip.frames, Array.from({ length: 12 }, (_, i) => i));
+  assert.throws(() => actualAimSheet(aimingRows, { ...aimingDefinition, gear: {} }));
+  assert.equal(actualAimSheet(aimingRows.map(row => ({ ...row, drawnDirection: 'E' })), aimingDefinition).available, false);
+  assert.equal(actualAimSheet(aimingRows.map(row => ({ ...row, slashDirection: 'E', drawnDirection: 'E' })), aimingDefinition).available, false, 'Matching labels cannot substitute for the recorded attack vector');
+  assert.equal(actualAimSheet(aimingRows.map(row => ({ ...row, targetDx: 'Infinity' })), aimingDefinition).available, false);
+  assert.equal(actualAimSheet(aimingRows.map((row, i) => i === 5 ? { ...row, targetDx: '200' } : row), aimingDefinition).available, false, 'The entire selected action strip must retain vector alignment');
+  const leadingMismatch = actualAimSheet(aimingRows.map((row, i) => i === 0 ? { ...row, targetDx: '200' } : row), aimingDefinition);
+  assert.equal(leadingMismatch.available, false); assert.deepEqual(leadingMismatch.vectorMismatchFrames, [0]);
+  for (const [direction, x, y] of [['E', 1, 0], ['NE', 1, 1], ['N', 0, 1], ['NW', -1, 1], ['W', -1, 0], ['SW', -1, -1], ['S', 0, -1], ['SE', 1, -1]]) {
+    const proof = actualAimSheet(aimingRows.map(row => ({ ...row, targetDx: String(x), targetDy: String(y), slashDirection: direction, drawnDirection: direction })), aimingDefinition);
+    assert.equal(proof.available, true); assert.deepEqual(proof.observedDirections, [direction]);
+    assert(proof.samples.every(sample => sample.alignment.errorDegrees < .0001));
+  }
+  const selectedCombat = makeCombatPlan(path.join(root, 'selected-combat'), cases, newFrame);
+  assert(selectedCombat.runs.every(run => run.args.includes(newFrame) && run.expectedProduction.hero === 'frame-drawn'));
+  assert(selectedCombat.runs.every(run => !run.args.includes('--knight-review') && !run.args.includes('--camera-scale')));
   const combat = makeCombatPlan(path.join(root, 'combat'), cases);
   assert.equal(combat.runs.length, 24); assert.equal(combat.replay, undefined);
   assert.equal(new Set(combat.runs.map(run => run.replaySha256)).size, 24);

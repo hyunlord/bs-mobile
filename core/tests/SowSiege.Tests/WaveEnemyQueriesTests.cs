@@ -6,6 +6,39 @@ namespace SowSiege.Tests;
 public sealed class WaveEnemyQueriesTests
 {
     [Fact]
+    public void NearestRetainsSortedFirstAcrossSignedCellsTiesMovementAndDeaths()
+    {
+        var world = new WorldState();
+        for (var id = 31; id >= 0; id--)
+        {
+            world.Enemies.Add(new EnemyState { Id = id, Health = 10, Position = new((id % 8 - 4) * 17, (id / 8 - 2) * 17) });
+        }
+        var queries = new WaveEnemyQueries(world, 16, signed: true);
+        queries.Rebuild();
+        var sorted = new List<EnemyState>();
+        var scratch = new List<EnemyState>();
+        void Compare()
+        {
+            foreach (var origin in new[] { new Position(0, 0), new Position(-31, 12), new Position(1000, 1000) })
+            {
+                foreach (var rank in new[] { origin, new Position(11, -19) })
+                {
+                    foreach (var range in new[] { 0, 17, 80 })
+                    {
+                        queries.ByDistance(sorted, origin, range, rank);
+                        Assert.Same(sorted.FirstOrDefault(), queries.Nearest(scratch, origin, range, rank));
+                    }
+                }
+            }
+        }
+        Compare();
+        queries.Move(world.Enemies[0], new(-17, 0));
+        world.Enemies[1].Health = 0;
+        Compare();
+        world.Enemies.Clear(); queries.Rebuild(); Compare();
+    }
+
+    [Fact]
     public void CandidateOrdersRetainDistanceIdAndWorldOrdinalSeparately()
     {
         var world = new WorldState();

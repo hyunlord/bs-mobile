@@ -359,9 +359,14 @@ namespace SowSiege.Core
                 queries.Move(enemy, interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
             }
 
-            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
+            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact"))
             {
-                WaveEvolutionUnlocks.Record(state, WaveEvolutionUnlocks.AttackKillNearGrowth);
+                foreach (var plot in state.Work)
+                {
+                    if (plot.Kind != "grain" || !Within(plot.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)) { continue; }
+                    WaveEvolutionUnlocks.Record(state, WaveEvolutionUnlocks.AttackKillNearGrowth);
+                    break;
+                }
             }
 
             state.Emit(world.Tick, "hit", source, enemy.Id, enemy.Position, enemy.Position, actual);

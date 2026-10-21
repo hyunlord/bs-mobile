@@ -121,11 +121,12 @@ namespace Game.View
                     DiagnosticEffectCreated?.Invoke(value.Source,value.Kind);
 #endif
                 }
+                AcceptHeroProductionAttack(value);
                 if(value.Kind=="hit")hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
                 if(value.Kind=="attack")
                 {
                     heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
-                    if(HeroMotionPreviewMode!=0 || productionHero!=null)
+                    if(HeroMotionPreviewMode!=0 && productionHero==null)
                     {
                         if(value.Source=="core:iron_blade")NotifyHeroMotionAttack(false);
                         else if(value.Source=="core:sowing_sworddance")NotifyHeroMotionAttack(true);

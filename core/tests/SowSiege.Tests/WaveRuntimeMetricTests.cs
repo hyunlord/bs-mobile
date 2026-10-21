@@ -4,6 +4,27 @@ namespace SowSiege.Tests;
 public sealed class WaveRuntimeMetricTests
 {
     [Fact]
+    public void RepeatedDamageReusesMetricKeysWithoutLosingSourceTotals()
+    {
+        var state = new WaveRuntimeState();
+        var first = state.BeginActivation("test:first", 0, 100);
+        var second = state.BeginActivation("test:second", 0, 100);
+        state.RecordDamage(first, 10, 3);
+        state.RecordDamage(second, 4, 4);
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < 100; i++)
+        {
+            state.RecordDamage(first, 10, 3);
+            state.RecordDamage(second, 4, 4);
+        }
+        Assert.Equal(0, GC.GetAllocatedBytesForCurrentThread() - before);
+        Assert.Equal(1414, state.Counters["damage-requested"]);
+        Assert.Equal(1010, state.Counters["damage-requested:test:first"]);
+        Assert.Equal(404, state.Counters["damage-dealt:test:second"]);
+        Assert.Equal(707, state.Counters["overkill-waste:test:first"]);
+    }
+
+    [Fact]
     public void MultipleProjectilesResolveOneActivationOnlyAfterLastChild()
     {
         var (c, system, w, first) = WaveRuntimeTests.Arena(WaveAttackKind.Homing);

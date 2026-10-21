@@ -27,7 +27,40 @@ export function makePlan(root, baked, drawn) {
   for (const entry of catalog.entries) for (const stage of stages) plan.runs.push({ role: entry.id.replace(':', '-') + '-' + stage, kind: 'weapon', contentId: entry.id, stage, title: entry.name, limitation: entry.runtimeSupport, directory: path.join(root, 'captures', entry.id.replace(':', '-') + '-' + stage), frames: 600, args: ['--knight-review', '--camera-scale', '1.4', '--camera-scale-window', 'mid', '--m1-review-seconds', '10', '--m1-weapon-showcase', entry.id, '--showcase-stage', stage, '--m1-showcase-catalog', catalogPath], expected: { 'knight-review.json': { replayVerified: true, cameraScale: 1.4, offlineAudio: true }, 'm1-weapon-showcase.json': { contract: 'm1-weapon-showcase-v1', contentId: entry.id, stage, frames: 600, replayVerified: true, userVisualApproval: false, defaultContentChanged: false } } });
   return plan;
 }
-export function makeCombatPlan(root, casesDirectory) {
+export function makeFramePlan(root, before, after, damage = false) {
+  assert([root, before, after].every(path.isAbsolute));
+  const replay = path.join(repo, 'benchmarks/wave-c05/run.ssreplay');
+  const plan = { contract: 'm1-production-review-v1', purpose: 'frame-hero-before-after', replay,
+    replaySha256: 'f8d65a26efa2d7caad0edeec459418f1e269f7aed80980a8c7142cd7481cd9e5',
+    terminalHash: 'B056B090575693A13CEEAB514E909F5C2C346FF2B1007598A4EE6E9B2DE8AEE8',
+    width: 1920, height: 1080, crop: { x: 710, y: 0, width: 500, height: 1080 }, heroCoordinates: 'knight-rendered.csv', sheetStep: 1, runs: [] };
+  for (const [role, manifest, title] of [['before', before, '이전 2D'], ['after', after, '다듬은 2D']]) {
+    assert.equal(read(manifest).method, 'frame-drawn');
+    plan.runs.push({ role, kind: 'hero', title, method: 'frame-drawn', frames: 1800, directory: path.join(root, 'captures', role),
+      args: ['--knight-review', '--camera-scale', '1.4', '--camera-scale-window', 'early', '--m1-review-seconds', '30', '--hero-production', manifest, '--hero-production-direction', 'follow'],
+      expected: { 'knight-review.json': { hero: 'frame-drawn', replayVerified: true, cameraScale: 1.4, offlineAudio: true, productionManifestSha256: hash(manifest), productionDirection: 'follow' } } });
+  }
+  if (damage) {
+    plan.replay = path.join(repo, 'benchmarks/m1-254/dense-approach-candidate2.ssreplay');
+    plan.replaySha256 = '07f211d9d8a1e7a22110d7438c29e69106e6bf619cce681b2b89c28527b9cec6';
+    plan.terminalHash = 'F57632711CE0294F63A95668695B5281EED15E9788D00C769730A701C52F11F6';
+    plan.terminalPresentationFrames = 60;
+    for (const run of plan.runs) {
+      run.frames = 346; run.terminalPresentationFrames = 60; run.terminalTick = 13643;
+      run.requiredActions = run.role === 'after' ? ['hit', 'death'] : [];
+      if (run.role === 'before') run.limitation = 'Historical baseline lacks hit/death clips; its recorded idle-unavailable fallback is preserved, not replaced with invented reaction frames.';
+      run.args.splice(run.args.indexOf('--m1-review-seconds'), 2);
+      run.args[run.args.indexOf('--camera-scale-window') + 1] = 'damage';
+      run.args.push('--knight-damage-replay', '--hero-production-terminal-tail');
+      run.expected['knight-review.json'].terminalPresentationFrames = 60;
+    }
+  }
+  assert.notEqual(hash(before), hash(after), 'Before/after manifests must differ');
+  assert.equal(hash(plan.replay), plan.replaySha256);
+  return plan;
+}
+export function makeCombatPlan(root, casesDirectory, heroManifest) {
+  if (heroManifest) { assert(path.isAbsolute(heroManifest)); assert.equal(read(heroManifest).method, 'frame-drawn'); }
   assert(path.isAbsolute(root) && path.isAbsolute(casesDirectory));
   const catalog = read(path.join(repo, 'data/review/m1-weapon-showcase.json'));
   const files = fs.readdirSync(casesDirectory).filter(name => name.endsWith('.case.json')).sort();
@@ -42,11 +75,11 @@ export function makeCombatPlan(root, casesDirectory) {
     assert.equal(hash(replay), definition.replaySha256, 'Case replay SHA mismatch');
     for (const key of ['stateHash', 'catalogHash']) assert(/^[A-F0-9]{64}$/.test(definition[key]), `Missing ${key}`);
     const role = definition.id.replace(':', '-') + '-' + definition.stage;
-    return { role, kind: 'combat', contentId: definition.id, stage: definition.stage, title: entry.name, directory: path.join(root, 'captures', role), frames: 600, replay, replaySha256: definition.replaySha256, terminalHash: definition.stateHash, catalogHash: definition.catalogHash, sidecar, sidecarSha256: hash(sidecar), args: ['--m1-combat-case', sidecar] };
+    return { role, kind: 'combat', contentId: definition.id, stage: definition.stage, title: entry.name, directory: path.join(root, 'captures', role), frames: 600, replay, replaySha256: definition.replaySha256, terminalHash: definition.stateHash, catalogHash: definition.catalogHash, sidecar, sidecarSha256: hash(sidecar), args: ['--m1-combat-case', sidecar, ...(heroManifest ? ['--hero-production', heroManifest, '--hero-production-direction', 'follow'] : [])], ...(heroManifest ? { method: 'frame-drawn', expectedProduction: { hero: 'frame-drawn', productionManifestSha256: hash(heroManifest), productionDirection: 'follow' } } : {}) };
   });
   assert.equal(new Set(runs.map(run => run.role)).size, 24, 'Duplicate content/stage');
   assert.equal(new Set(runs.map(run => run.contentId)).size, 8);
-  return { contract: 'm1-production-review-v1', purpose: 'isolated-combat-hypotheses', width: 1920, height: 1080, crop: { x: 710, y: 0, width: 500, height: 1080 }, runs };
+  return { contract: 'm1-production-review-v1', purpose: 'isolated-combat-hypotheses', width: 1920, height: 1080, crop: { x: 710, y: 0, width: 500, height: 1080 }, heroCoordinates: 'knight-rendered.csv', runs };
 }
 export function validateCombatEvents(events, run, manifest, expected) {
   const hits = new Set(); let previous = -1, hitCount = 0, killCount = 0, firstHit = -1, firstDeath = -1;
@@ -107,6 +140,16 @@ function validateCombatRun(plan, run) {
     return [frame.index, frame.tick, frame.alpha, frame.seconds].join(',');
   }).join('\n');
   assert.equal(fs.readdirSync(path.join(run.directory, 'offline-frames')).filter(name => /^frame-\d{6}\.jpg$/.test(name)).length, run.frames);
+  if (run.expectedProduction) {
+    const knight = read(path.join(run.directory, 'knight-review.json'));
+    for (const [key, value] of Object.entries(run.expectedProduction)) assert.equal(knight[key], value);
+    const hero = rows(path.join(run.directory, plan.heroCoordinates)); assert.equal(hero.length, run.frames);
+    for (let i = 0; i < hero.length; i++) {
+      assert.equal(hero[i].method, run.method);
+      assert.equal(Number(hero[i].frameIndex), i);
+      for (const key of ['tick', 'alpha']) assert.equal(Number(hero[i][key]), Number(video[i][key]));
+    }
+  }
   const events = rows(path.join(run.directory, 'm1-combat-events.csv'));
   const evidence = validateCombatEvents(events, run, manifest, sidecar);
   for (const event of events) assert.equal(Number(event.snapshotTick), Number(video[Number(event.frameIndex)].tick), 'Event does not belong to its captured frame');
@@ -116,7 +159,7 @@ export function validateProductionRun(plan, run) {
   if (run.kind === 'combat') return validateCombatRun(plan, run);
   const result = validateRun({ ...plan, frames: run.frames }, run);
   const hero = rows(path.join(run.directory, plan.heroCoordinates));
-  if (run.kind === 'hero') validateHeroActions(hero, run);
+  if (run.kind === 'hero') { validateHeroActions(hero, run); if (run.terminalPresentationFrames) validateTerminalPresentation(hero, run); }
   if (run.kind === 'weapon') {
     const frames = rows(path.join(run.directory, 'm1-weapon-showcase-frames.csv'));
     assert.equal(frames.length, run.frames);
@@ -127,16 +170,30 @@ export function validateProductionRun(plan, run) {
 export function validateHeroActions(hero, run) {
   assert(hero.every(row => row.method === run.method), `Native method mismatch: ${run.role}`);
   if (run.method === '3d-baked' || run.method === 'frame-drawn') {
-    for (const action of ['walk', 'slash-light']) assert(hero.some(row => row.action === action), `${run.role}: missing actual rendered ${action}; production review cannot be delivered`);
+    for (const action of run.requiredActions ?? ['walk', 'slash-light']) assert(hero.some(row => row.action === action), `${run.role}: missing actual rendered ${action}; production review cannot be delivered`);
   }
 }
-export function selectSheetWindows(methodRows) {
+export function validateTerminalPresentation(hero, run) {
+  assert.equal(run.terminalPresentationFrames, 60);
+  assert.equal(hero.length, run.frames);
+  const start = run.frames - run.terminalPresentationFrames;
+  assert(start > 0); assert.equal(Number(hero[start - 1].tick), run.terminalTick);
+  hero.forEach((row, index) => {
+    assert.equal(String(row.terminalPresentation).toLowerCase(), index >= start ? 'true' : 'false');
+    if (index >= start) assert.equal(Number(row.tick), run.terminalTick, 'Core advanced during terminal presentation');
+  });
+}
+export function selectSheetWindows(methodRows, step = 5) {
+  assert(step === 1 || step === 5);
   const result = [];
-  for (const action of ['walk', 'slash-light', 'hit', 'death']) {
+  const actions = ['walk', 'slash-light', 'hit', 'death', ...(step === 1 ? ['idle', ...['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'].map(direction => 'slash-' + direction)] : [])];
+  for (const action of actions) {
+    const direction = action.startsWith('slash-') && action !== 'slash-light' ? action.slice(6) : null;
+    const sourceAction = direction ? 'slash-light' : action;
     // Choose the first evidence-bearing occurrence across methods, then use that exact instant for all.
-    const starts = methodRows.map(list => list.findIndex(row => row.action === action)).filter(index => index >= 0);
+    const starts = methodRows.map(list => list.findIndex(row => row.action === sourceAction && (!direction || row.slashDirection === direction))).filter(index => index >= 0);
     const start = starts.length ? Math.min(...starts) : -1;
-    result.push({ action, available: start >= 0 && methodRows.every(list => start + 55 < list.length), startFrame: start >= 0 ? start : null, frames: start >= 0 ? Array.from({ length: 12 }, (_, i) => start + i * 5) : [], limitation: 'Actual first action event; other methods may show different actions at the same replay time. Missing/late events are N/A.' });
+    result.push({ action, sourceAction, direction, renderedEvidence: start >= 0 ? methodRows.map(list => list[start]) : [], available: start >= 0 && methodRows.every(list => start + 11 * step < list.length), startFrame: start >= 0 ? start : null, frames: start >= 0 ? Array.from({ length: 12 }, (_, i) => start + i * step) : [], limitation: 'Actual first action event; other methods may show different actions at the same replay time. Missing/late events are N/A.' });
   }
   return result;
 }
@@ -198,7 +255,7 @@ function encodeRun(plan, run, output, zoom) {
     crop = `sendcmd=f='${commands}',crop@hero=${size.width}:${size.height}:0:0:exact=1`;
   }
   const label = path.join(output, `${run.role}-${zoom}x-label.png`), video = path.join(output, `${run.role}-${zoom}x.mp4`);
-  call(path.join(output, 'labels'), [run.title, run.kind === 'combat' ? `${run.stage} · 실제 판정 · 검토용 수치 가설` : run.kind === 'weapon' ? `${run.stage} · 시각 제안 · 추가 판정 미구현` : '같은 입력 · 오프라인 60fps · 실제 게임 소리', clipped ? `2배: 전장 경계로 ${clipped}장 중심 이탈` : run.kind === 'combat' ? '단계 사전 구성 · 실제 소리 · 오프라인 60fps' : run.kind === 'weapon' ? '배경 처치는 시연 공격의 결과가 아님' : `${zoom}배 · 원본 프레임 보존`, label]);
+  call(path.join(output, 'labels'), [run.title, run.kind === 'combat' ? `${run.stage} · 실제 판정 · 검토용 수치 가설` : run.kind === 'weapon' ? `${run.stage} · 시각 제안 · 추가 판정 미구현` : run.terminalPresentationFrames ? '실제 사망 후 60장 표현만 · Core 정지' : '같은 입력 · 오프라인 60fps · 실제 게임 소리', clipped ? `2배: 전장 경계로 ${clipped}장 중심 이탈` : run.kind === 'combat' ? '단계 사전 구성 · 실제 소리 · 오프라인 60fps' : run.kind === 'weapon' ? '배경 처치는 시연 공격의 결과가 아님' : `${zoom}배 · 원본 프레임 보존`, label]);
   call('ffmpeg', ['-nostdin', '-v', 'error', '-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg'), '-i', path.join(run.directory, 'offline-audio.wav'), '-i', label, '-filter_complex', `[0:v]${crop},scale=500:1080:flags=lanczos,setsar=1,pad=500:1180:0:100:color=0x141414[g];[g][2:v]overlay=eof_action=repeat:shortest=0[v]`, '-map', '[v]', '-map', '1:a', ...videoOptions(run.frames), video]);
   return { role: run.role, zoom, clippedFrames: clipped, video };
 }
@@ -223,28 +280,61 @@ export function sourceHeadRatio(run, action) {
   assert(ratio === null || Number.isFinite(ratio) && ratio > 0 && ratio < 1, 'Invalid source head/body ratio');
   return { originalRatio, ratio, basis, manifest: file, manifestSha256: hash(file), label: `원화 ${originalRatio.toFixed(5)} · 소스 ${ratio === null ? '미검증' : ratio.toFixed(5)} · 실화면 미측정` };
 }
+export function motionDetailCrop(plan, row) {
+  const portrait = portraitZoomCrop(plan, row), c = plan.crop;
+  const width = 250, height = 250, groundBelowCenter = 60;
+  assert(c.width >= width && c.height >= height);
+  const requestedY = Math.round(plan.height - Number(row.heroY) - groundBelowCenter - height / 2);
+  const y = Math.max(c.y, Math.min(c.y + c.height - height, requestedY));
+  return { x: portrait.x, y, width, height, groundBelowCenter,
+    clamped: portrait.x !== Math.round(Number(row.heroX) - width / 2) || y !== requestedY };
+}
+function assembleMotionDetail(plan, runs, sheet, output) {
+  const frameIndices = Array.from({ length: 12 }, (_, i) => sheet.startFrame + i);
+  const rowFiles = [], crops = [];
+  for (const run of runs) {
+    const hero = rows(path.join(run.directory, plan.heroCoordinates));
+    const samples = frameIndices.map(index => {
+      assert.equal(Number(hero[index].frameIndex), index);
+      return { index, elapsedRenderMs: (index - sheet.startFrame) * 1000 / 60, ...motionDetailCrop(plan, hero[index]) };
+    });
+    const inputs = frameIndices.flatMap(index => ['-i', path.join(run.directory, 'offline-frames', `frame-${String(index).padStart(6, '0')}.jpg`)]);
+    const filters = samples.map((crop, i) => `[${i}:v]crop=${crop.width}:${crop.height}:${crop.x}:${crop.y},scale=500:500:flags=lanczos,setsar=1[c${i}]`);
+    const label = path.join(output, `${sheet.action}-${run.role}-detail-label.png`);
+    call(path.join(output, 'labels'), [run.title, `${sheet.action} · ${sheet.startFrame}장부터 연속12장`, run.limitation ? '이전 원본: 피격·쓰러짐 동작 미구현' : '실제 영주 위치 · 250px 원본을 2배 확대', label]);
+    inputs.push('-i', label);
+    filters.push(samples.map((_, i) => `[c${i}]`).join('') + 'hstack=inputs=12[s]', '[12:v]pad=500:500:0:200:color=0x141414[l]', '[l][s]hstack=inputs=2[v]');
+    const file = path.join(output, `${sheet.action}-${run.role}-detail12.png`);
+    call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', filters.join(';'), '-map', '[v]', '-frames:v', '1', file]);
+    rowFiles.push(file); crops.push({ role: run.role, samples });
+  }
+  const file = path.join(output, `${sheet.action}-detail-contiguous12.png`);
+  call('ffmpeg', ['-nostdin', '-v', 'error', ...rowFiles.flatMap(row => ['-i', row]), '-filter_complex', rowFiles.map((_, i) => `[${i}:v]`).join('') + `vstack=inputs=${rowFiles.length}[v]`, '-map', '[v]', '-frames:v', '1', file]);
+  return { file, frameIndices, crops, policy: 'Same 12 adjacent originals for all methods; no retiming. 250x250 source enlarged 2x. Observed ground anchor is 60 source pixels below crop center to include the standing body. Each crop is clamped inside the original portrait; full-context sheet remains available.' };
+}
 function assembleHeroes(plan, output, sheetsOnly = false) {
-  const runs = plan.runs.filter(run => run.kind === 'hero'), proof = validateAll(plan, runs); assert.equal(runs.length, 3); fresh(output); labelHelper(output); const outputs = [];
+  const runs = plan.runs.filter(run => run.kind === 'hero'), proof = validateAll(plan, runs); const count = plan.purpose === 'frame-hero-before-after' ? 2 : 3; assert.equal(runs.length, count); fresh(output); labelHelper(output); const outputs = [];
   for (const zoom of sheetsOnly ? [] : [1, 2]) {
     const clips = runs.map(run => encodeRun(plan, run, output, zoom)); outputs.push(...clips);
-    const file = path.join(output, `three-methods-${zoom}x.mp4`), inputs = [...clips.flatMap(clip => ['-i', clip.video]), ...runs.map(run => ['-i', path.join(run.directory, 'offline-audio.wav')]).flat()];
-    const maps = runs.flatMap((run, index) => ['-map', `${index + 3}:a`, `-metadata:s:a:${index}`, `title=${run.title} original game audio`, `-disposition:a:${index}`, index === 0 ? 'default' : '0']);
-    call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', '[0:v][1:v][2:v]hstack=inputs=3[v]', '-map', '[v]', ...maps, ...videoOptions(runs[0].frames), file]); verifyVideo(file, runs[0].frames, 1500, 3);
+    const file = path.join(output, `${count === 2 ? 'frame-before-after' : 'three-methods'}-${zoom}x.mp4`), inputs = [...clips.flatMap(clip => ['-i', clip.video]), ...runs.map(run => ['-i', path.join(run.directory, 'offline-audio.wav')]).flat()];
+    const maps = runs.flatMap((run, index) => ['-map', `${index + count}:a`, `-metadata:s:a:${index}`, `title=${run.title} original game audio`, `-disposition:a:${index}`, index === 0 ? 'default' : '0']);
+    call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', runs.map((_, i) => `[${i}:v]`).join('') + `hstack=inputs=${count}[v]`, '-map', '[v]', ...maps, ...videoOptions(runs[0].frames), file]); verifyVideo(file, runs[0].frames, 500 * count, count);
     for (const clip of clips) verifyVideo(clip.video, runs[0].frames, 500, 1);
   }
-  const sheetWindows = selectSheetWindows(runs.map(run => rows(path.join(run.directory, plan.heroCoordinates))));
+  const sheetWindows = selectSheetWindows(runs.map(run => rows(path.join(run.directory, plan.heroCoordinates))), plan.sheetStep ?? 5);
   for (const sheet of sheetWindows.filter(item => item.available)) {
-    sheet.sourceHeadRatios = runs.map(run => ({ role: run.role, ...sourceHeadRatio(run, sheet.action) }));
+    sheet.sourceHeadRatios = runs.map(run => ({ role: run.role, ...sourceHeadRatio(run, sheet.sourceAction) }));
     const inputs = runs.flatMap(run => ['-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg')]);
     const filters = runs.map((run, i) => `[${i}:v]select='${sheet.frames.map(frame => `eq(n,${frame})`).join('+')}',crop=500:1080:710:0,scale=125:270,tile=12x1[s${i}]`);
     runs.forEach((run, i) => {
       const label = path.join(output, `${sheet.action}-${run.role}-sheet-label.png`);
-      call(path.join(output, 'labels'), [run.title, `${({walk:'걷기','slash-light':'휘두르기',hit:'피격',death:'쓰러짐'})[sheet.action]} · ${sheet.startFrame}장부터 12장 · 간격 5장`, sheet.sourceHeadRatios[i].label, label]);
-      inputs.push('-i', label); filters.push(`[${i + 3}:v]pad=500:270:0:85:color=0x141414[l${i}];[l${i}][s${i}]hstack=inputs=2[r${i}]`);
+      call(path.join(output, 'labels'), [run.title, `${({walk:'걷기','slash-light':'휘두르기',hit:'피격',death:'쓰러짐',idle:'서기'})[sheet.action] ?? sheet.action} · ${sheet.startFrame}장부터 12장 · 간격 ${plan.sheetStep ?? 5}장`, run.limitation ? '이전 원본: 피격·쓰러짐 동작 미구현' : sheet.sourceHeadRatios[i].label, label]);
+      inputs.push('-i', label); filters.push(`[${i + count}:v]pad=500:270:0:85:color=0x141414[l${i}];[l${i}][s${i}]hstack=inputs=2[r${i}]`);
     });
-    call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', [...filters, '[r0][r1][r2]vstack=inputs=3[v]'].join(';'), '-map', '[v]', '-frames:v', '1', path.join(output, `${sheet.action}-12frames.png`)]);
+    call('ffmpeg', ['-nostdin', '-v', 'error', ...inputs, '-filter_complex', [...filters, runs.map((_, i) => `[r${i}]`).join('') + `vstack=inputs=${count}[v]`].join(';'), '-map', '[v]', '-frames:v', '1', path.join(output, `${sheet.action}-12frames.png`)]);
+    sheet.motionDetail = assembleMotionDetail(plan, runs, sheet, output);
   }
-  save(path.join(output, 'production-review-provenance.json'), { contract: plan.contract, sheetsOnly, performanceEligible: false, sources: proof, outputs, sheetWindows, sheetOrder: runs.map(run => run.title), sheetTiming: '12 originals at 0,5,...55 frames after first recorded action; no new animation/interpolation. Missing death/hit means N/A.', ratioMeaning: 'Original A reference head/body 53/441; source/model landmark ratios, not native screen pixel measurements. 2D uses the E clip corresponding to each action. Baseline ratio is unverified.', limitations: 'Methods are authoring candidates, not approved default. 2x crop clamps to original portrait; sourceframes retained. Each comparison track retains one method original game mix, selectable independently.' });
+  save(path.join(output, 'production-review-provenance.json'), { contract: plan.contract, sheetsOnly, performanceEligible: false, terminalPresentationFrames: plan.terminalPresentationFrames ?? 0, sources: proof, outputs, sheetWindows, sheetOrder: runs.map(run => run.title), sheetTiming: `12 originals with step ${plan.sheetStep ?? 5}; no interpolation. Missing death/hit remains pending and cannot pass essential-action review.`, ratioMeaning: 'Original A reference head/body 53/441; source/model landmark ratios, not native screen pixel measurements. 2D uses the E clip corresponding to each action. Baseline ratio is unverified.', limitations: 'Methods are authoring candidates, not approved default. 2x crop clamps to original portrait; sourceframes retained. Each comparison track retains one method original game mix, selectable independently.' });
 }
 export function selectWeaponRuns(plan, contentId) {
   const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;
@@ -261,6 +351,25 @@ export function combatSheetTiming(events, event, start, totalFrames) {
   const eventTime = source ? { eventId: Number(source.eventId), subjectId: Number(source.subjectId), coreEventTick: Number(source.eventTick), coreEventSeconds: Number(source.eventTick) / 30, snapshotTick: Number(source.snapshotTick), firstEventRenderFrame: start } : null;
   return { eventTime, pixelVerified: false, interpretation: 'Event center entered viewport; does not prove the reaction was drawn on that frame. No inferred +2-frame offset. Contiguous strip preserves the following render frames so delayed flashes can be inspected.', strips: [5, 1].map(step => ({ step, available: start >= 0 && start + 11 * step < totalFrames, frames: start < 0 ? [] : Array.from({ length: 12 }, (_, i) => ({ index: start + i * step, elapsedRenderMs: i * step * 1000 / 60 })), spanMs: 11 * step * 1000 / 60 })) };
 }
+export function actualAimSheet(hero, definition) {
+  assert.equal(definition.gear.aim, 'nearest-enemy', 'Nearest-aim evidence requires the opt-in Core rule');
+  const directions = ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'];
+  const alignment = row => {
+    const x = Number(row.targetDx), y = Number(row.targetDy), octant = directions.indexOf(row.drawnDirection);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || Math.hypot(x, y) === 0 || octant < 0 || row.slashDirection !== row.drawnDirection) return null;
+    const angle = Math.atan2(y, x), difference = angle - octant * Math.PI / 4;
+    const errorDegrees = Math.abs(Math.atan2(Math.sin(difference), Math.cos(difference))) * 180 / Math.PI;
+    return errorDegrees <= 22.5001 ? { vectorDegrees: angle * 180 / Math.PI, errorDegrees } : null;
+  };
+  const eligible = row => row.action === 'slash-light' && Number(row.attackTick) >= definition.captureStartTick && Number(row.attackTick) < definition.endTick;
+  const vectorMismatchFrames = hero.flatMap((row, i) => eligible(row) && !alignment(row) ? [i] : []);
+  if (vectorMismatchFrames.length) return { available: false, vectorMismatchFrames, reason: 'Recorded slash frames disagree with the Core attack vector; a later valid strip cannot hide them' };
+  const start = hero.findIndex(row => eligible(row) && alignment(row));
+  if (start < 0 || start + 11 >= hero.length) return { available: false, reason: 'No complete visible action strip with a recorded Core attack vector' };
+  const samples = hero.slice(start, start + 12).map((row, i) => ({ frame: start + i, action: row.action, attackTick: Number(row.attackTick), drawnDirection: row.drawnDirection, alignment: eligible(row) ? alignment(row) : null }));
+  const row = hero[start];
+  return { available: true, startFrame: start, frames: samples.map(sample => sample.frame), samples, observedDirections: [...new Set(hero.filter(row => eligible(row) && alignment(row)).map(row => row.drawnDirection))], attackTick: Number(row.attackTick), targetId: Number(row.targetId), targetDx: Number(row.targetDx), targetDy: Number(row.targetDy), slashDirection: row.slashDirection, drawnDirection: row.drawnDirection, rule: 'Actual opt-in nearest-enemy Core attack vector independently checked against the drawn 45-degree sector throughout the strip. Observed directions are coverage, not proof of all eight directions. Full portrait retains context; target ID may be unavailable (-1). Pixel readability remains visual review.' };
+}
 function assembleWeapons(plan, output, contentId) {
   const combat = plan.purpose === 'isolated-combat-hypotheses', order = combat ? ['lv1', 'max', 'evolved'] : stages;
   const runs = selectWeaponRuns(plan, contentId), proof = validateAll(plan, runs); fresh(output); labelHelper(output); const outputs = [];
@@ -273,6 +382,17 @@ function assembleWeapons(plan, output, contentId) {
   const sheets = [];
   if (combat) for (const run of runs) {
     const evidence = proof.find(result => result.role === run.role);
+    const definition = read(run.sidecar);
+    if (run.expectedProduction && definition.gear.aim === 'nearest-enemy') {
+      const timing = actualAimSheet(rows(path.join(run.directory, plan.heroCoordinates)), definition);
+      const record = { role: run.role, event: 'actual-nearest-slash', ...timing }; sheets.push(record);
+      if (timing.available) {
+        const file = path.join(output, run.role + '-actual-aim-contiguous12.png'), label = path.join(output, run.role + '-actual-aim-label.png');
+        call(path.join(output, 'labels'), [run.title, '실제 최근접 공격 ' + timing.attackTick + '틱 · ' + timing.slashDirection, '방향 벡터 (' + timing.targetDx + ', ' + timing.targetDy + ') · 연속12장', label]);
+        call('ffmpeg', ['-nostdin', '-v', 'error', '-framerate', '60', '-i', path.join(run.directory, 'offline-frames/frame-%06d.jpg'), '-i', label, '-filter_complex', '[0:v]select=\'' + timing.frames.map(frame => 'eq(n,' + frame + ')').join('+') + '\',crop=500:1080:710:0,scale=250:540,tile=12x1[s];[1:v]pad=500:540:0:220:color=0x141414[l];[l][s]hstack=inputs=2[v]', '-map', '[v]', '-frames:v', '1', file]);
+        record.file = file;
+      }
+    }
     const events = rows(path.join(run.directory, 'm1-combat-events.csv'));
     for (const [event, start] of [['hit', evidence.firstVisibleHitFrame], ['death', evidence.firstVisibleDeathFrame]]) {
       const timing = combatSheetTiming(events, event, start, run.frames);
@@ -301,7 +421,8 @@ function assembleWeapons(plan, output, contentId) {
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const [command, file, first, second] = process.argv.slice(2);
   if (command === 'plans') { assert(first && second); const plan = makePlan(file, first, second); fresh(file); save(path.join(file, 'production-plan.json'), plan); }
-  else if (command === 'combat-plans') { assert(first); const plan = makeCombatPlan(file, first); fresh(file); save(path.join(file, 'production-plan.json'), plan); }
+  else if (command === 'frame-plans' || command === 'frame-damage-plans') { assert(first && second); const plan = makeFramePlan(file, first, second, command === 'frame-damage-plans'); fresh(file); save(path.join(file, 'production-plan.json'), plan); }
+  else if (command === 'combat-plans') { assert(first); const plan = makeCombatPlan(file, first, second); fresh(file); save(path.join(file, 'production-plan.json'), plan); }
   else { const plan = read(file); assert.equal(plan.contract, 'm1-production-review-v1');
     switch (command) {
       case 'run': assert(first); await runCaptures(plan, first, second); break;
@@ -309,7 +430,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
       case 'heroes': assert(first); assembleHeroes(plan, first); break;
       case 'hero-sheets': assert(first); assembleHeroes(plan, first, true); break;
       case 'weapons': assert(first); assembleWeapons(plan, first, second); break;
-      default: throw Error('Usage: m1-production-review.mjs plans NEWROOT BAKED_JSON DRAWN_JSON | combat-plans NEWROOT CASES_DIRECTORY | run PLAN APP [hero|weapon|combat|ROLE] | validate PLAN [hero|weapon|combat|ROLE] | heroes PLAN NEWVIDEO | hero-sheets PLAN NEWOUTPUT | weapons PLAN NEWVIDEO [contentId]');
+      default: throw Error('Usage: m1-production-review.mjs plans NEWROOT BAKED_JSON DRAWN_JSON | combat-plans NEWROOT CASES_DIRECTORY [FRAME_MANIFEST] | frame-plans NEWROOT OLD_FRAME_JSON NEW_FRAME_JSON | frame-damage-plans NEWROOT OLD_FRAME_JSON NEW_FRAME_JSON | run PLAN APP [hero|weapon|combat|ROLE] | validate PLAN [hero|weapon|combat|ROLE] | heroes PLAN NEWVIDEO | hero-sheets PLAN NEWOUTPUT | weapons PLAN NEWVIDEO [contentId]');
     }
   }
 }

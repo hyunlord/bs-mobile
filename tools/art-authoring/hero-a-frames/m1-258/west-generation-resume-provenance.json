@@ -1,0 +1,99 @@
+{
+  "historicalRecord": true,
+  "originalRelativePath": "source/west/generation-resume-provenance.json",
+  "record": {
+    "tool": "built-in image_gen",
+    "records": [
+      {
+        "name": "idle-nw-v2",
+        "prompt": "Create independentlypainted2D knight animation atlas. Four idlebreathing frames2columns2rows1536x1024. REARLEFT facingUPPERLEFT: back towardviewer, nose glimpsed on LEFTedge of head, boot toes pointupperLEFT. Not rearRIGHT. Rightanatomical swordhand is on farRIGHTside, partlyoccluded, left handempty. Body420px/head50. Match adult blond Aknight referenceidentity,8.3head proportions, restrained mattecobalt cloak, ivoryquilted knee tunic, steel armor andbrownboots. Image2motionreference only do not inherit smoother3Dlook. Everywholebody/cape/blade insidecellwith30px margins. Trulytransparentoutside silhouette, no glow/haze/grid/text.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-dd6314f3-0e9a-4302-8bbf-da4bb8948e50.png"
+      },
+      {
+        "name": "walk-sw",
+        "prompt": "Create independentlypainted2D knight animation atlas. Eight walkframes2columns4rows portrait1024x1536. FRONTLEFT facinglowerLEFT sameas SWreference. Body260px/head31. Contact-down-pass-up alternatinglegs: grounded naturalwalk, nohighknees. Sword in anatomicalRIGHT/viewerLEFT hand, viewerRIGHT handempty. Match adult blond Aknight referenceidentity,8.3head proportions, restrained mattecobalt cloak, ivoryquilted knee tunic, steel armor andbrownboots. Image2motionreference only do not inherit smoother3Dlook. Everywholebody/cape/blade insidecellwith30px margins. Trulytransparentoutside silhouette, no glow/haze/grid/text.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-c98fe64c-8384-46eb-b549-57052634257b.png"
+      },
+      {
+        "name": "slash-light-w",
+        "prompt": "Create independentlypainted2D knight animation atlas. Eight overhead diagonalCUTframes2columns4rows portrait1024x1536. WESTfaceLEFT. Ready/windback/raiseabovehead/downwardcut/lowfollowthrough/recoil/recover/ready. NEVERthrust. Body260px/head31 throughout. Sword in far anatomicalRIGHT arm; near anatomicalLEFT arm EMPTY; no mirror. Arm maycross body duringcut but maintainrightshoulder chain. Match adult blond Aknight referenceidentity,8.3head proportions, restrained mattecobalt cloak, ivoryquilted knee tunic, steel armor andbrownboots. Image2motionreference only do not inherit smoother3Dlook. Everywholebody/cape/blade insidecellwith30px margins. Trulytransparentoutside silhouette, no glow/haze/grid/text.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-b608924d-0f09-4b6f-9340-fd887a6ada39.png"
+      },
+      {
+        "name": "walk-nw",
+        "prompt": "Independentlypaint SAMEadult blondknight exactly. Eight walkposes2columns4rows1024x1536 portrait. REARLEFT facingUPPERLEFT, see cloak/back, noseLEFTedge. Alternating grounded contacts/down/pass/up. Right swordarmfarRIGHT, leftempty. Body260pxhead31, keepproportion. Mutedcobalt/ivory/steel/brown inkandgouache. Fullbodyandswordincellwith30pxmargin. True transparentbackground no haze/glow/text/grid. No mirror.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-5b60daf5-c9d6-4d67-8226-197f3ed269de.png"
+      },
+      {
+        "name": "hit-sw",
+        "prompt": "Independentlypaint SAMEadult blondknight exactly. Threehitrecoilposes1column3rows1024x1536, body400pxhead48. FRONTLEFT asreference. Smallrecoil,strongrecoil,recovery. AnatomicalRIGHT/viewerLEFT handholds sword, LEFT/viewerRIGHT staysEMPTY. Uniformbodyproportions. Mutedcobalt/ivory/steel/brown inkandgouache. Fullbodyandswordincellwith30pxmargin. True transparentbackground no haze/glow/text/grid. No mirror.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-3ffe98cb-d005-425d-8e75-b17badbc6040.png"
+      },
+      {
+        "name": "hit-w-v3",
+        "prompt": "Independentlypaint SAMEadult blondknight exactly. Threehitrecoilposes1column3rows1024x1536, body400pxhead48. WESTleft profile asreference, notfront. Smallrecoil,strongrecoil,recovery. AnatomicalRIGHT FAR handholds sword, bigNEARLEFT staysEMPTY. Reduceheadto12%ofreststandingheight. Uniformbodyproportions. Mutedcobalt/ivory/steel/brown inkandgouache. Fullbodyandswordincellwith30pxmargin. True transparentbackground no haze/glow/text/grid. No mirror.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-76a0ac14-65f6-4524-bb4d-8b157ce57fb7.png"
+      },
+      {
+        "name": "hit-nw",
+        "prompt": "Draw SAMEknight independentanimation. Threehitrecoilposes1column3rows1024x1536, body400pxhead48. REARLEFTtowardupperLEFT, seecloakback; nosetipleftedge. Mildbackrecoil,strongrecoil,recovery; feet planted. RIGHT swordarmfarviewerRIGHT, leftempty. Inkandgouache texturedpaint, mattecobalt muted samepalette asreference ivoryquilt steelbrown. No mirror. Transparent no haze/glow/text/grid. Groundflooreachrow310px.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-14c513fe-851f-4187-93d6-09270e40df61.png"
+      },
+      {
+        "name": "death-sw",
+        "prompt": "Draw SAMEknight independentanimation. Sixdeathfallframes2columns3rows1536x1024landscape. FRONTLEFT. Consistent adultbody300pxstanding length acrossallframes: stagger,kneelbuckle,kneel,fallsideways,land,lie. Corpsebodylength300pxnot600. Keephead36pxmax eachpose; no enlargement. Right/viewerLEFT handkeepssword, leftbracesfall. Fullbodybladeinside768x341cell,30pxmargin. Inkandgouache texturedpaint, mattecobalt muted samepalette asreference ivoryquilt steelbrown. No mirror. Transparent no haze/glow/text/grid. Groundflooreachrow310px.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-b85f5832-3f44-4a59-9812-fd628a3825b2.png"
+      },
+      {
+        "name": "death-w-v3",
+        "prompt": "Draw SAMEknight independentanimation. Sixdeathfallframes2columns3rows1536x1024landscape. WESTleftprofile. Consistent adultbody300pxstanding length acrossallframes: stagger,kneelbuckle,kneel,fallsideways,land,lie. Corpsebodylength300pxnot600. Keephead36pxmax eachpose; no enlargement. FARanatomicalRIGHT handkeepssword, nearLEFTbracesfall. Fullbodybladeinside768x341cell,30pxmargin. Inkandgouache texturedpaint, mattecobalt muted samepalette asreference ivoryquilt steelbrown. No mirror. Transparent no haze/glow/text/grid. Groundflooreachrow310px.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-6088f76a-547d-4c51-baba-740b92a32eaa.png"
+      },
+      {
+        "name": "hit-nw-v2",
+        "prompt": "Remove ALL ground/rocks/floor under everypose. Preserve threeknight posesexactly. Make onlybackground trulytransparent, not a paintedfloor. No shadow. Do notchangehandorbody.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-aa0af65d-8719-4b98-831f-c7be9eb15b7c.png"
+      },
+      {
+        "name": "death-nw",
+        "prompt": "Create6deathfallframes2columns3rows1536x1024. REARLEFT upperleftdirectionsameasreference, seecloakback. Stagger/kneelbuckle/kneel/fall/land/lie. Anatomicalright swordhandviewerRIGHT, leftemptybraces. Consistentadult8.3headproportions, fixedbodyscale350pxstandinglength, head42px. Lastcorpsebodylength350px. Wholeposeblademargins30px. Transparent no actualfloor/rocks/shadow.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-555f92dc-d588-4cd3-84e2-2797c4ca948b.png"
+      },
+      {
+        "name": "slash-light-w-v2",
+        "prompt": "Correctsheetall8poses facing LEFT strictlySIDEprofile, keepsequence. Frame6currently swordwronglefthand: transfer swordintoFARanatomicalRIGHT hand, nearLEFT handalwaysEMPTY. Frame4/5 can twohandassistbutrightgripprimary. Adulthead12%standingbody, mattecobalt. Independentredraw noflip. Keep2x4portraitlayout1024x1536, clear30pxmargins. Transparent no haze.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-df36f203-d128-47a9-962c-3d644eda0439.png"
+      },
+      {
+        "name": "slash-light-nw",
+        "prompt": "Eightframes overhead diagonal swordCUT2columns4rows1024x1536portrait. REARLEFT upperleft asreference. Ready,windback,raiseoverhead,cutDOWNtowardUPPERLEFT,lowfollowthrough,recoil,recover,ready. RightanatomicalarmviewerRIGHT always sword, leftempty; no switch. Body260head31. Blade/cape allinsideeach512x384cellwith30pxmargin.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-3d941838-1a10-4483-8932-b38f23454326.png"
+      },
+      {
+        "name": "slash-light-sw",
+        "prompt": "Eightframes overhead diagonal swordCUT2columns4rows1024x1536portrait. FRONTLEFT lowerleft asreference. Ready,windback,raiseoverhead,cutDOWNtowardLOWERLEFT,lowfollowthrough,recoil,recover,ready. RightanatomicalarmviewerLEFT always sword, leftempty; no switch. Body260head31. Blade/cape allinsideeach512x384cellwith30pxmargin.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-d3cfed69-aa97-460d-bf58-e79cab0afcd3.png"
+      },
+      {
+        "name": "slash-light-w-v3",
+        "prompt": "CorrectONLY clipping and palette. Frame5(row3left) swordtipclippedatleftedge; shrinkALL8wholeposesuniformly15% withinrespectivecells, preservebodyproportion andhandedness. Keep2x4layout. Reduce brightroyalbluecape to mutedmattecobalt matchingoldwalk, doNOTsaturate. Fullblade30pxinsideborder everypose. Transparent.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-1a62376e-4d7e-4ce7-9da7-e6285bdab4f9.png"
+      },
+      {
+        "name": "slash-light-nw-v2",
+        "prompt": "Correcthandonly in frame3(row2left) andframe5(row3left). Theseincorrectly show swordinleftarm. KeepnearviewerLEFT armempty, move swordgrip to anatomicalRIGHT FAR arm, emergingfromrightshoulderbehindcloak. Frame3 raise farRIGHThandaboveRIGHTshoulder, leftemptyhangs; frame5rightarmcrossesbehindtorso so swordcanemergeleftbutvisible nearleftgloveempty. Rest unchanged. No mirror.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-d47e0738-6ed4-459a-9c57-5e31884fd6f7.png"
+      },
+      {
+        "name": "death-w-v4",
+        "prompt": "Correctproportions only. Headscurrentlyoversized: reducehair-face-head silhouette by18% all6poses keepingneckattachmentandbodyunchanged. Keeprealisticadult8.3headbody. Corpseheadshouldsamephysicalsizeasstandinghead. KeepfarRIGHT swordhand, emptynearLEFT. No resizingbodyorlimbs. Transparent no haze.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-8e2cb1a7-836f-476f-9e93-50bac80ca989.png"
+      },
+      {
+        "name": "death-sw-v2",
+        "prompt": "Correctproportions only. Headscurrentlyoversized: reducehair-face-head silhouette by18% all6poses keepingneckattachmentandbodyunchanged. Keeprealisticadult8.3headbody. Corpseheadshouldsamephysicalsizeasstandinghead. KeepRIGHT/viewerLEFT swordhand. No resizingbodyorlimbs. Transparent no haze.",
+        "hint": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-f5e80a15-4dff-475e-9965-456f6e2798f5.png"
+      }
+    ]
+  }
+}

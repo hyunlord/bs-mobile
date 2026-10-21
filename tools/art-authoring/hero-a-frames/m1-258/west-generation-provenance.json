@@ -1,0 +1,80 @@
+{
+  "historicalRecord": true,
+  "originalRelativePath": "source/west/generation-provenance.json",
+  "record": {
+    "tool": "built-in image_gen imagegen",
+    "referenceOriginal": "user-reference/heroes.png",
+    "referenceMaster": "source/idle-e-v2.png",
+    "promptContract": "../../../AUTHORING-CONTRACT.md",
+    "exactPrompts": "Agent conversation functions.exec image_gen calls, retained in Orca session",
+    "sources": [
+      {
+        "file": "idle-w.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-034a14c2-64bb-491b-8654-789ea629eddd.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "idle-w-v2.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-38129510-7c11-4d67-8485-6d7671fcdd9d.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "walk-w.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-f91e1656-6510-400d-bc88-4d52c82441ef.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "walk-w-v2.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-e3ca86e0-6e0c-4e44-a4f5-f3bafb1f5a3f.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "walk-w-v3.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-1e0daafe-f55d-4aa1-9ee5-2518b8b7a308.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "hit-w.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-7ff21f78-fc3a-4786-8adb-64e3029b9f29.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "death-w.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-d304edaf-4c96-434c-b8e9-6f16c51d4a8d.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "hit-w-v2.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-023870ad-128e-4d84-99ea-f943d6ce9866.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "death-w-v2.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-55dbace6-1030-44cc-a1c2-b39949b050ba.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "idle-sw.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-8aac9d2a-a7e0-441e-9c67-4eac66c9115e.png",
+        "mirrored": false,
+        "altered": false
+      },
+      {
+        "file": "idle-nw.png",
+        "originalOutput": "generated_images/01a133d2-39f2-7e53-9b3f-caf5e54adf55/exec-ce2161db-5be1-411d-acb2-b55c88a524c2.png",
+        "mirrored": false,
+        "altered": false
+      }
+    ],
+    "stopReason": "Parent stopped direction expansion pending corrected consistent alpha/palette/body master"
+  }
+}
