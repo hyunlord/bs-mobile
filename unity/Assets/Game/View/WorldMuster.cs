@@ -16,6 +16,10 @@ namespace Game.View
         public int MusterSoldiers { get; private set; }
         public float MusterScale { get; private set; } = 1;
         public int MusterLunges { get; private set; }
+        // Soldier bodies drawn on a Soldier B walk frame or on their standing role, and the walk frames seen (bit per frame).
+        public int SoldierWalkDraws { get; private set; }
+        public int SoldierStandDraws { get; private set; }
+        public int SoldierWalkFrameMask { get; private set; }
         // Raised whenever the resolved path, evolution or ratio of a muster source changes; review logs record it.
         public Action<string, MusterFormation> MusterPresentationChanged;
         // Last drawn hero box relative to the hero anchor, and its body width; groups draw before the hero each frame.
@@ -36,6 +40,7 @@ namespace Game.View
         {
             musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false; ResetMinions();
             MusterPath = MusterPresentationPath.None; MusterEvolutionId = null; MusterRatio = 1; MusterSoldiers = 0; MusterScale = 1; MusterLunges = 0;
+            SoldierWalkDraws = SoldierStandDraws = SoldierWalkFrameMask = 0;
         }
 
         // 0..1 growth of a gear over its canonical Lv1 (MusterFormationRule.Tier).
@@ -182,6 +187,7 @@ namespace Game.View
             var walk = Resolve("person", role, "move");
             if (!PersonSheetWalk.Applies(walk)) return new SoldierBodyPose(Resolve("person", role, activity), null, false, tweenWalking);
             var frame = personWalk.Frame(kind, id, at, visualTime, moving, walk, facingGeneration);
+            if (frame >= 0) { SoldierWalkDraws++; SoldierWalkFrameMask |= 1 << frame; } else SoldierStandDraws++;
             return frame >= 0 ? new SoldierBodyPose(walk, walk.UvRects[frame], true, true) : new SoldierBodyPose(Resolve("person", role, activity), null, true, false);
         }
 
