@@ -26,6 +26,7 @@ namespace Game.View
         Rect heroSilhouetteLocal;
         const float HeroFigureOfRigCanvas = .62f;
         float heroFigureHeight;
+        float heroDrawnHeight;   // the knight as drawn (sheet figure, or the rig figure): the damage-number keep-out uses it
         bool heroSilhouetteKnown;
         float heroBodyWidth;
         public Action<Rect> RenderedMusterSoldierBounds;
@@ -38,7 +39,7 @@ namespace Game.View
 
         void ResetMuster()
         {
-            musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false; ResetMinions();
+            musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false; ResetMinions(); ResetHornWaves();
             MusterPath = MusterPresentationPath.None; MusterEvolutionId = null; MusterRatio = 1; MusterSoldiers = 0; MusterScale = 1; MusterLunges = 0;
             SoldierWalkDraws = SoldierStandDraws = SoldierWalkFrameMask = 0;
         }
@@ -142,6 +143,7 @@ namespace Game.View
             heroBodyWidth = hero.WorldSize.x * GameVisualTokens.HeroBodyWidthFraction;
             // The knight figure fills about 62% of its 512px rig canvas height (feet at 420, head near 100): the visible hero.
             heroFigureHeight = rig.y * HeroFigureOfRigCanvas;
+            heroDrawnHeight = heroFigureHeight;
             var push = heroBodyWidth * HeroHitFeedback.PushBodyFraction;
             if (heroSheetOn)
             {
@@ -149,6 +151,7 @@ namespace Game.View
                 // pillars and soldiers keep clear of is the figure footprint standing on the foot baseline (HeroSheetSpec.FigureSize,
                 // the shadow and camera margin size). heroBodyWidth and heroFigureHeight stay as before: they size weapon effects.
                 var figure = HeroSheetSpec.FigureSize(hero);
+                heroDrawnHeight = figure.y;
                 box = new Rect(anchor.x - figure.x * .5f, anchor.y, figure.x, figure.y);
             }
             box = Rect.MinMaxRect(box.xMin - push, box.yMin - push, box.xMax + push, box.yMax + push);
@@ -157,7 +160,85 @@ namespace Game.View
             heroSilhouetteKnown = true;
         }
 
+        // Damage numbers keep off the hero (WorldDamageNumbers.HeroKeepOutOfFigureHeight): a circle round the drawn knight's centre.
+        void UpdateNumberKeepOut()
+        {
+            var known = heroSilhouetteKnown && hasRenderedLord;
+            var centre = (PredictedLordPosition ?? RenderedLordPosition) + Vector2.up * heroDrawnHeight * .5f;
+            var radius = known ? heroDrawnHeight * WorldDamageNumbers.HeroKeepOutOfFigureHeight : 0;
+            numbers?.SetHero(centre, radius); lordDamageNumbers?.SetHero(centre, radius);
+        }
+
         static Rect Union(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));
+
+        // Muster horn sound wave (Astra, Release muster-horn-wave-20261020; user decisions 2026-10-20): the painted wave replaces the
+        // two outline rings, drawn under the hero and the enemies as Astra specified (the user chose it over drawing it above the
+        // enemies). It grows and fades as HornWaveSpec.Style gives for its stage; its worldSize is in units of the painted outer
+        // edge, so that edge lands on the Core radius. Display only: the Core hit tick is unchanged.
+        // The evolved horn calls every 8 ticks (about 0.27 s): a full double wave on every third call, a faint outer band on the
+        // others (user decision 2026-10-20, Y), so its waves no longer pile up on the screen.
+        public Action<HornWaveRecord> HornWaveSample;
+        ArtVisual hornWaveLevel1, hornWaveEvolved, hornWaveOuter; bool hornWaveChecked;
+        public int HornWavesDrawn { get; private set; }
+        // Each horn call's order in the run (by first sight of its event), for the evolved wave's fixed one-in-three beat.
+        readonly Dictionary<long, int> hornCallOrdinals = new Dictionary<long, int>(64);
+        readonly Queue<long> hornCallOrder = new Queue<long>(64);
+        int nextHornCall;
+        int HornCallOrdinal(long eventId)
+        {
+            if (hornCallOrdinals.TryGetValue(eventId, out var ordinal)) return ordinal;
+            if (hornCallOrder.Count == 64) hornCallOrdinals.Remove(hornCallOrder.Dequeue());
+            hornCallOrdinals[eventId] = nextHornCall; hornCallOrder.Enqueue(eventId);
+            return nextHornCall++;
+        }
+        void ResetHornWaves() { hornCallOrdinals.Clear(); hornCallOrder.Clear(); nextHornCall = 0; }
+        HornWaveStyle HornStyle(long eventId, bool evolved) => HornWaveSpec.Style(evolved, evolved ? HornCallOrdinal(eventId) : 0);
+
+        // Whether source's attack is the horn's call, and at which stage: null for any other attack. The review composition is the
+        // "summon" shape; normal play is the horn's MusterWave gear or one of its evolutions.
+        bool? HornWaveStage(string source)
+        {
+            if (source == null || waveDefinition == null) return null;
+            if (m1CombatShapes.TryGetValue(source, out var shape)) return shape == "summon" ? WeaponEvolved(source) : (bool?)null;
+            var evolution = waveDefinition.Evolutions.ContainsKey(source);
+            var baseSource = attackSources.TryGetValue(source, out var mapped) ? mapped : source;
+            if (baseSource != "core:muster_horn" || !waveDefinition.Gear.TryGetValue(baseSource, out var gear) || gear.Kind != WaveAttackKind.MusterWave) return null;
+            return evolution;
+        }
+
+        bool DrawHornWave(Vector2 center, float radius, float age, bool evolved, long eventId)
+        {
+            if (!hornWaveChecked)
+            {
+                hornWaveChecked = true;
+                if (art != null)
+                {
+                    art.TryResolveRole(HornWaveSpec.Level1Role, out hornWaveLevel1); art.TryResolveRole(HornWaveSpec.EvolvedRole, out hornWaveEvolved);
+                    art.TryResolveRole(HornWaveSpec.EvolvedOuterRole, out hornWaveOuter);
+                }
+            }
+            var style = HornStyle(eventId, evolved);
+            var visual = style.Art == HornWaveArt.EvolvedOuter && hornWaveOuter != null ? hornWaveOuter
+                : style.Art != HornWaveArt.Level1 && hornWaveEvolved != null ? hornWaveEvolved : hornWaveLevel1;
+            if (visual == null) return false;
+            var alpha = HornWaveSpec.Opacity(age, style);
+            if (radius <= 0 || alpha <= 0) return true;
+            var share = HornWaveSpec.Share(age, style);
+            Draw(visual, GameVisualTokens.AttackLayer, center, 0, visual.WorldSize * radius * share, 0, alpha, applyTween: false);
+            HornWavesDrawn++;
+            if (HornWaveSample != null)
+            {
+                var outer = radius * share; var inner = outer * HornWaveSpec.InnerShare(style.Art);
+                var view = CameraWorldViewport;
+                var near = new Vector2(Mathf.Clamp(center.x, view.xMin, view.xMax), Mathf.Clamp(center.y, view.yMin, view.yMax));
+                var far = new Vector2(Mathf.Max(Mathf.Abs(center.x - view.xMin), Mathf.Abs(center.x - view.xMax)), Mathf.Max(Mathf.Abs(center.y - view.yMin), Mathf.Abs(center.y - view.yMax)));
+                var pixels = renderCamera.pixelHeight / Mathf.Max(.0001f, renderCamera.orthographicSize * 2);
+                HornWaveSample(new HornWaveRecord { EventId = eventId, Evolved = evolved, Ordinal = evolved ? HornCallOrdinal(eventId) : -1, Art = style.Art,
+                    Share = share, Alpha = alpha, OnScreen = (near - center).magnitude <= outer && far.magnitude >= inner,
+                    CentreScreen = renderCamera.WorldToScreenPoint(center), OuterRadiusPixels = outer * pixels, InnerRadiusPixels = inner * pixels });
+            }
+            return true;
+        }
 
         void DrawMusterRing(Vector2 center, float radius, Color color, float opacity)
         {
@@ -231,5 +312,44 @@ namespace Game.View
                 formation.Evolved ? GameVisualTokens.Ready : Color.white, applyTween: false);
             DrawWaveAttackEdge(slash, position, strikeAge, reachSize, angle, formation.Evolved ? GameVisualTokens.Ready : GameVisualTokens.Ally, fade);
         }
+    }
+
+    public enum HornWaveArt { Level1, Evolved, EvolvedOuter }
+    public readonly struct HornWaveStyle
+    {
+        public readonly HornWaveArt Art; public readonly float StartShare, Seconds, FadeSeconds, OpacityScale;
+        // FadeSeconds <= 0: fades over the whole time.
+        public HornWaveStyle(HornWaveArt art, float startShare, float seconds, float fadeSeconds, float opacityScale)
+        { Art = art; StartShare = startShare; Seconds = seconds; FadeSeconds = fadeSeconds; OpacityScale = opacityScale; }
+    }
+    public struct HornWaveRecord
+    {
+        public long EventId; public bool Evolved, OnScreen; public int Ordinal; public HornWaveArt Art;
+        public float Share, Alpha, OuterRadiusPixels, InnerRadiusPixels; public Vector3 CentreScreen;
+    }
+
+    // Muster horn sound wave values (WorldRenderer.DrawHornWave). Roles from tools/art-authoring/horn-wave/pack.mjs.
+    // Level 1, as the inner outline ring it replaced: 0.3 -> 1.0 of the Core radius over 0.18 s while fading out.
+    // Evolved (user decisions 2026-10-20): its radius 6.0 (about 1,120 px on the review screen) starts past the portrait half-width
+    // even at 0.3, so it starts at 0.05; its calls come every 8 ticks (about 0.27 s), so a full wave on every call kept the screen
+    // covered. Every third call (0, 3, 6... from the run's start, about 0.8 s apart) draws the full double wave, 0.05 -> 1.0 over
+    // 0.30 s fading over the last 0.08 s; the other two only the outer band at 0.35 opacity, 0.05 -> 1.0 over 0.18 s fading over
+    // the last 0.06 s. Counting from the run's start keeps the beat the same in every run of the same input.
+    // InnerShare: the painted band's inner edge over its outer edge (packed.json innerRadiusPx / outerRadiusPx), for the
+    // on-screen measure.
+    public static class HornWaveSpec
+    {
+        public const string Level1Role = "fx.muster_horn.wave.lv1", EvolvedRole = "fx.muster_horn.wave.evolved", EvolvedOuterRole = "fx.muster_horn.wave.evolved.outer";
+        public static readonly HornWaveStyle Level1 = new HornWaveStyle(HornWaveArt.Level1, .3f, .18f, 0, 1);
+        public static readonly HornWaveStyle EvolvedFull = new HornWaveStyle(HornWaveArt.Evolved, .05f, .30f, .08f, 1);
+        public static readonly HornWaveStyle EvolvedOuter = new HornWaveStyle(HornWaveArt.EvolvedOuter, .05f, .18f, .06f, .35f);
+        public const int EvolvedBeat = 3;
+        public static HornWaveStyle Style(bool evolved, int ordinal)
+            => !evolved ? Level1 : ordinal % EvolvedBeat == 0 ? EvolvedFull : EvolvedOuter;
+        public static float Share(float age, HornWaveStyle style) => Mathf.Lerp(style.StartShare, 1, Mathf.Clamp01(age / style.Seconds));
+        public static float Opacity(float age, HornWaveStyle style)
+            => style.OpacityScale * (style.FadeSeconds <= 0 ? 1 - Mathf.Clamp01(age / style.Seconds)
+                : 1 - Mathf.Clamp01((age - (style.Seconds - style.FadeSeconds)) / style.FadeSeconds));
+        public static float InnerShare(HornWaveArt art) => art == HornWaveArt.Level1 ? .6263f : art == HornWaveArt.Evolved ? .4869f : .6582f;
     }
 }

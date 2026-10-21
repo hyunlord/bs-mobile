@@ -23,10 +23,11 @@ namespace Game.View
         // The band picture is wrapped linearly across the band (its top row on the outer edge): the painted slash (v2) is a
         // bright front fading to a clear back, and its role frame is cropped to the drawn rows.
         public const float ArcScreenFill = .85f, MinBandHeroHeights = .55f, MaxBandHeroHeights = 1f, MaxHalfAngle = 65, EdgeShare = .45f, EdgeOfPicture = EdgeShare;
-        // White core of the painted slash v2: picture rows 40-61 of 512x128 (luma 95-97, alpha .46-.91), i.e. v .526-.816 of
-        // its role frame (rows 26-101). Drawn again over the band with alpha x CoreAlphaBoost (clamped to 1) so the drawn
-        // core is opaque on bright ground; a thin element, exempt from the P5 cap over enemies.
-        public const float SlashCoreFrom = .526f, SlashCoreTo = .816f, CoreAlphaBoost = 4;
+        // Ivory core of Astra's game slash (Release weapon-game-assets-20261019): rows 70-100 of the 512x128 role frame where at
+        // least 60% of the opaque pixels are ivory (luma >= 225, not blue), i.e. v .211-.453 (v 0 = inner edge, toward the hero,
+        // as in Astra's composite). Drawn again over the band with alpha x CoreAlphaBoost (clamped to 1) so the drawn core is
+        // opaque on bright ground; a thin element, exempt from the P5 cap over enemies.
+        public const float SlashCoreFrom = .211f, SlashCoreTo = .453f, CoreAlphaBoost = 4;
         // Stage 0..1 of a strike: evolved 1, else NormalStageShare of the gear's growth over its canonical Lv1.
         public const float NormalStageShare = .75f;
         public static float BandHeroHeights(float stage) => Mathf.Lerp(MinBandHeroHeights, MaxBandHeroHeights, stage);
@@ -88,7 +89,7 @@ namespace Game.View
         readonly ArtVisual[] bladeDust = new ArtVisual[3];
         readonly List<Texture2D> temporaryEffectTextures = new List<Texture2D>(4);
         // Arc ribbons are curved meshes submitted with the batches (so the P5 mask and alpha cap see them).
-        sealed class Ribbon { public Mesh Mesh; public Color Color; public bool Used, Core; }
+        sealed class Ribbon { public Mesh Mesh; public Color Color; public Vector4 Uv; public bool Used, Core; }   // Uv: the picture's atlas rect
         readonly List<Ribbon> bladeRibbons = new List<Ribbon>(8);
         Material ribbonMaterial, ribbonOverEnemies, ribbonCore;
         bool bladeSlashPainted;
@@ -177,6 +178,7 @@ namespace Game.View
             var tail = Mathf.Lerp(start, lead, fade * fade);
             if (lead - tail < .5f) return;
             var ribbon = NextRibbon(); ribbon.Core = core;
+            var slashRect = bladeSlash.UvRects[0]; ribbon.Uv = new Vector4(slashRect.x, slashRect.y, slashRect.width, slashRect.height);
             var columns = BladeSpec.ArcColumns;
             // Three rows per column across the band (picture v 0 = inner edge, 1 = outer edge, wrapped linearly); the core
             // pass covers only the white core rows.
@@ -223,14 +225,12 @@ namespace Game.View
                 ribbonCore.SetFloat("_AlphaBoost", BladeSpec.CoreAlphaBoost);
                 ribbonProperties = new MaterialPropertyBlock();
             }
-            var rect = bladeSlash.UvRects[0];
-            ribbonUv[0] = new Vector4(rect.x, rect.y, rect.width, rect.height);
             var linear = QualitySettings.activeColorSpace == ColorSpace.Linear;
             foreach (var ribbon in bladeRibbons)
             {
                 if (!ribbon.Used) continue;
                 ribbon.Used = false;
-                ribbonColor[0] = linear ? ribbon.Color.linear : ribbon.Color;
+                ribbonColor[0] = linear ? ribbon.Color.linear : ribbon.Color; ribbonUv[0] = ribbon.Uv;
                 ribbonProperties.SetTexture("_MainTex", bladeSlash.Texture);
                 ribbonProperties.SetVector("_InstanceColor", ribbonColor[0]); ribbonProperties.SetVector("_InstanceUv", ribbonUv[0]);
                 ribbonProperties.SetVector("_InstanceFlash", new Vector4(0, 0, 1, 0));

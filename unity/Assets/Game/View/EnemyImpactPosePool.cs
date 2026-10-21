@@ -51,7 +51,8 @@ namespace Game.View
                 if (now - pair.Value.Started >= pair.Value.Recoil && now >= pair.Value.FlashUntil) expired.Add(pair.Key);
             for (var i = 0; i < expired.Count; i++) reactions.Remove(expired[i]);
         }
-        public EnemyImpactPose Sample(int id, float now, float bodyWidth, EnemyImpactPose current)
+        // knock: the push along the hit direction in world units (HitReaction.KnockbackPixels on screen, converted by the caller).
+        public EnemyImpactPose Sample(int id, float now, float bodyWidth, float knock, EnemyImpactPose current)
         {
             if (!reactions.TryGetValue(id, out var reaction)) return current;
             var age = Mathf.Max(0, now - reaction.Started);
@@ -62,7 +63,7 @@ namespace Game.View
                 reaction.Started = now; age = 0;
                 reaction.FlashUntil = reaction.Flashes ? now + GameVisualTokens.EnemyHitFlashSeconds : now;
                 reaction.Pose = current;
-                reaction.Pose.Position += reaction.Direction * (Mathf.Max(0, bodyWidth) * GameVisualTokens.EnemyRecoilBodyFraction);
+                reaction.Pose.Position += reaction.Direction * Mathf.Max(0, knock);
                 reaction.Captured = true; reactions[id] = reaction;
             }
             current.Flash = now < reaction.FlashUntil;

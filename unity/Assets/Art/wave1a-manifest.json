@@ -234,7 +234,7 @@
     },
     {
       "id": "generated-wave1a-weapon-fx",
-      "origin": "Generated with built-in image_gen by the Astra art pipeline for issue #266 iron blade effect pictures; background removed with BiRefNet (MIT)",
+      "origin": "Generated with built-in image_gen by the Astra art pipeline for issue #266 weapon effect pictures (first set: background removed with BiRefNet, MIT; game sprites for the iron blade, canal bow, ward orbit, spore patch, ditch pike and granary sling: Release weapon-game-assets-20261019, packed without resampling)",
       "source": "https://github.com/hyunlord/bs-mobile/releases/tag/weapon-266-sprites-review-20261015",
       "prompt": "docs/licenses/prompts/m1-266-weapon-fx-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under applicable OpenAI output terms; no third-party character or brand reference."
@@ -244,6 +244,13 @@
       "origin": "Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions hero-side-actions-game-r4-20261020, gather B hero-gather-b-r2-20261020); packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/knight-sheets-r4-prompt.txt",
+      "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "generated-wave1a-horn-wave",
+      "origin": "Generated with built-in image_gen by the Astra art pipeline for the muster horn sound wave (Release muster-horn-wave-20261020; level 1 and evolved, matte gouache pressure bands); cropped to the nonzero alpha box, not resampled",
+      "source": "https://openai.com/policies/terms-of-use/",
+      "prompt": "docs/licenses/prompts/muster-horn-wave-prompt.md",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     }
   ],
@@ -511,6 +518,14 @@
       "height": 2164,
       "padding": 2,
       "license": "generated-knight-sheets"
+    },
+    {
+      "id": "wave1a-horn-wave",
+      "path": "Assets/Art/wave1a-horn-wave.png",
+      "width": 2028,
+      "height": 1970,
+      "padding": 4,
+      "license": "generated-wave1a-horn-wave"
     }
   ],
   "roles": [
@@ -5859,6 +5874,72 @@
       },
       "frameMs": 120,
       "tween": "pulse"
+    },
+    {
+      "id": "fx.muster_horn.wave.lv1",
+      "atlas": "wave1a-horn-wave",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 1008,
+          "height": 909
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.49945
+      },
+      "worldSize": {
+        "x": 2.002145,
+        "y": 1.805506
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.muster_horn.wave.evolved",
+      "atlas": "wave1a-horn-wave",
+      "frames": [
+        {
+          "x": 1016,
+          "y": 4,
+          "width": 1008,
+          "height": 979
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.499489
+      },
+      "worldSize": {
+        "x": 2.003379,
+        "y": 1.945742
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.muster_horn.wave.evolved.outer",
+      "atlas": "wave1a-horn-wave",
+      "frames": [
+        {
+          "x": 4,
+          "y": 987,
+          "width": 1008,
+          "height": 979
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.499489
+      },
+      "worldSize": {
+        "x": 2.003379,
+        "y": 1.945742
+      },
+      "frameMs": 1000,
+      "tween": "none"
     },
     {
       "id": "attack.core.muster_horn.projectile",
@@ -11565,10 +11646,10 @@
       "atlas": "wave1a-weapon-fx",
       "frames": [
         {
-          "x": 1377,
-          "y": 526,
-          "width": 503,
-          "height": 76
+          "x": 1412,
+          "y": 1284,
+          "width": 512,
+          "height": 128
         }
       ],
       "pivot": {
@@ -11576,8 +11657,8 @@
         "y": 0.5
       },
       "worldSize": {
-        "x": 1.309896,
-        "y": 0.197917
+        "x": 1.333333,
+        "y": 0.333333
       },
       "frameMs": 1000,
       "tween": "none"
@@ -12045,6 +12126,28 @@
       "tween": "none"
     },
     {
+      "id": "fx.granary_sling.aroma",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 1412,
+          "y": 1420,
+          "width": 512,
+          "height": 256
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 1.333333,
+        "y": 0.666667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
       "id": "fx.granary_sling.giant_sack",
       "atlas": "wave1a-weapon-fx",
       "frames": [
@@ -12122,7 +12225,7 @@
         }
       ],
       "pivot": {
-        "x": 0.0,
+        "x": 0,
         "y": 0.5
       },
       "worldSize": {

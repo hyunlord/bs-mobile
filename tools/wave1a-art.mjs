@@ -50,7 +50,7 @@ export function validateRegistry(root, manifest) {
 // The complete outside padding ring permits alpha <=16; this is not strict zero padding.
 // Legacy atlas import/validation remains strict zero. Keep ArtPreparation's matching rule aligned.
 export const waveAtlasPaddingAlphaMaximum = 16;
-export const waveAtlasIds = ['wave1a-actors', 'wave1a-growth', 'wave1a-fx', 'wave1a-icons', 'wave1a-arcs', 'wave1a-weapon-fx'];
+export const waveAtlasIds = ['wave1a-actors', 'wave1a-growth', 'wave1a-fx', 'wave1a-icons', 'wave1a-arcs', 'wave1a-weapon-fx', 'wave1a-horn-wave'];
 export function decodeRgbaPng(png) {
   check(png.length >= 33 && png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), 'invalid PNG signature');
   const width = png.readUInt32BE(16), height = png.readUInt32BE(20);

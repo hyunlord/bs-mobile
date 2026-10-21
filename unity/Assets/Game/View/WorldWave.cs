@@ -136,7 +136,7 @@ namespace Game.View
                 AcceptWaveMusterStrike(frame,value);
                 AcceptHeroProductionAttack(value);
                 // Lightning and blade hits flash when their weapon visibly arrives (AdvanceLightning), not at the Core tick.
-                if(value.Kind=="hit"&&!(ImpactFeedbackEnabled&&(IsChainSource(value.Source)||IsM1GiantBlade(value.Source))))hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);
+                if(value.Kind=="hit"&&!(ImpactFeedbackEnabled&&(IsChainSource(value.Source)||IsM1GiantBlade(value.Source)))){hitUntil[value.SubjectId]=visualTime+(ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds);NoteCrowdFlash(value.SubjectId,Point(value.Position));}
                 if(value.Kind=="attack")
                 {
                     heroAttackUntil=visualTime+GameVisualTokens.ActorAttackSeconds;
@@ -418,6 +418,8 @@ namespace Game.View
                     var radius=(float)value.Amount/settings.WorldUnitsPerUnityUnit;
                     var size=gear.Kind==WaveAttackKind.Arc||gear.Kind==WaveAttackKind.HarvestArc?visual.WorldSize*radius:Vector2.one*radius*2;
                     var planting=evolved!=null&&evolved.Kind==WaveEvolutionKind.PlantingArc;
+                    // The horn's call is Astra's painted sound wave (DrawHornWave) where the sheet has it.
+                    if(attackSource=="core:muster_horn"&&gear.Kind==WaveAttackKind.MusterWave&&DrawHornWave(a,radius,age,evolved!=null,value.Id))continue;
                     Draw(visual,GameVisualTokens.AttackLayer,a,age,size,Angle(b-a),opacity*GameVisualTokens.WaveAttackBodyOpacity,tint:planting?GameVisualTokens.Ready:Color.white);
                     DrawWaveAttackEdge(visual,a,age,size,Angle(b-a),planting?GameVisualTokens.Ready:GameVisualTokens.Attack,opacity);
                     if(planting)

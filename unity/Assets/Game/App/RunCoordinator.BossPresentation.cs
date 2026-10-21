@@ -45,6 +45,7 @@ namespace Game.App
                 finally { initializingBossPresentation = false; }
                 bossPresentationWorld = world;
                 world.BossHitStopRequested = bossPresentation.RequestHitStop;
+                world.HitStopRequested = bossPresentation.RequestHitStop;
                 world.BossDeathSlowRequested = bossPresentation.RequestDeathSlow;
             }
             if (!world.ImpactFeedbackEnabled) bossPresentation.CancelFeedback();

@@ -43,13 +43,35 @@ public static class ShowcaseFixtureCli
         var d = OrbitDirections[tick / OrbitEdgeTicks % OrbitDirections.Length];
         return new(d.X, d.Y);
     }
+    // Review only: --stand-from <tick> stops the walk from that tick so the knight's standing full actions appear in the capture
+    // window next to the moving key poses; --stand-until <tick> (with --stand-from) walks on again from that tick: walk, stop,
+    // attack, walk (#336 hero and horn review scenes). Without the flags the input and the fixtures are the orbit walk unchanged.
+    public static (int From, int Until) StandWindow(string[] args)
+    {
+        static int Tick(string value) => int.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+        if (args.Length == 4)
+        {
+            return (int.MaxValue, int.MaxValue);
+        }
+        if (args.Length == 6 && args[4] == "--stand-from")
+        {
+            return (Tick(args[5]), int.MaxValue);
+        }
+        if (args.Length == 8 && args[4] == "--stand-from" && args[6] == "--stand-until" && Tick(args[7]) > Tick(args[5]))
+        {
+            return (Tick(args[5]), Tick(args[7]));
+        }
+        throw new ArgumentException("showcase-fixtures <frozen-C05-data> <case-json> <output> [--stand-from <tick> [--stand-until <later tick>]]");
+    }
+    public static PlayerInput ReviewInput(int tick, int standFrom, int standUntil) =>
+        tick >= standFrom && tick < standUntil ? new PlayerInput(0, 0) : OrbitInput(tick);
+    public const string OrbitInputContract = "orbit-walk-v1: full movement around a 32-gon of radius ~1836 (about 3 H), 15 ticks per edge, 480-tick lap, counter-clockwise from +X, same input for all 24 cases";
+    public static string InputContract(int standFrom, int standUntil) => OrbitInputContract +
+        (standFrom == int.MaxValue ? "" : $"; review composite: standing from tick {standFrom}" + (standUntil == int.MaxValue ? "" : $" until tick {standUntil}"));
     public static int Run(string[] args)
     {
 
-        if (args.Length != 4)
-        {
-            throw new ArgumentException("showcase-fixtures <frozen-C05-data> <case-json> <output>");
-        }
+        var (standFrom, standUntil) = StandWindow(args);
 
         var baseline = ContentLoader.Load(args[1], profileName: "wave-1a");
         var baselineDataHash = ContentLoader.Hash(args[1], false);
@@ -82,7 +104,7 @@ public static class ShowcaseFixtureCli
                 ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
                 while (session.View.Status != RunStatus.Completed && tick < review.Arena.DurationTicks)
                 {
-                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, OrbitInput(tick));
+                    var command = new ReplayCommand(session.NextSequence, tick, ReplayCommandKind.Advance, ReviewInput(tick, standFrom, standUntil));
                     session.Apply(command); ReplayCodec.WriteCommand(output, command); tick++;
                     var frame = session.View.CaptureFrame(); maximumEnemies = Math.Max(maximumEnemies, frame.Enemies.Count);
                     foreach (var e in ((IWaveRunView)session.View).CaptureWaveRuntime()!.Events)
@@ -130,7 +152,7 @@ public static class ShowcaseFixtureCli
                 review.Classification,
                 review.Gear,
                 review.Arena,
-                inputContract = "orbit-walk-v1: full movement around a 32-gon of radius ~1836 (about 3 H), 15 ticks per edge, 480-tick lap, counter-clockwise from +X, same input for all 24 cases",
+                inputContract = InputContract(standFrom, standUntil),
                 scope = "review-only numeric hypotheses; 10s setup +10s capture; evolved is preconfigured proposal, not earned progression",
                 positiveHits = hits,
                 kills,

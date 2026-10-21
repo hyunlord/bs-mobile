@@ -19,20 +19,19 @@ namespace Game.View
     public struct EnemyDeathSample
     {
         public Vector2 Position;
-        public float Flash, ActorOpacity, FallOpacity, FallDegrees, Squash;
+        public float Flash, ActorOpacity, FallOpacity, FallDegrees, Squash, Pop;
         public bool Killed;
     }
 
     // Core removes a killed actor on its kill tick; this keeps only its last rendered pose alive until the
-    // kill reaches the screen, then plays flash → push → fall. Nothing here feeds back into simulation.
+    // kill reaches the screen, then plays a short burst: flash, then swell and fade (HitReaction). Nothing here feeds back into simulation.
     public sealed class EnemyDeathPresentationPool
     {
         public const int FullCapacity = 64, LightCapacity = 512;
-        // Two 60Hz display frames (ages 0 and 1/60) with headroom for accumulated clock rounding.
-        public const float FlashSeconds = 1.5f / 60;
-        public const float PendingSeconds = .25f, KnockSeconds = .12f, KnockBodyFraction = .3f;
-        public const float FallStartSeconds = .05f, FallSeconds = .3f, FadeSeconds = .18f, FallDegrees = 78;
-        public static float FullSeconds => FallStartSeconds + FallSeconds + FadeSeconds;
+        // The flash frames less half a frame, as headroom for accumulated clock rounding (two frames: ages 0 and 1/60).
+        public const float FlashSeconds = HitReaction.FlashSeconds - HitReaction.Frame / 2;
+        public const float PendingSeconds = .25f;
+        public static float FullSeconds => HitReaction.DeathSeconds;
         struct Entry
         {
             public int Id; public long EventId; public bool Killed, Burst, Experience; public float Held, Start; public Vector2 Direction;
@@ -124,7 +123,8 @@ namespace Game.View
             return true;
         }
 
-        public EnemyDeathSample Sample(int index, float now)
+        // knock: the push along the kill direction in world units (HitReaction.KnockbackPixels on screen).
+        public EnemyDeathSample Sample(int index, float now, float knock = 0)
         {
             var isFull = index < fullCount;
             ref readonly var entry = ref (isFull ? ref full[index] : ref light[index - fullCount]);
@@ -134,16 +134,11 @@ namespace Game.View
             if (age < 0) return sample;
             sample.Flash = age < FlashSeconds ? 1 : 0;
             if (!isFull) { sample.ActorOpacity = age < FlashSeconds ? 1 : 0; return sample; }
-            var push = Mathf.SmoothStep(0, 1, Mathf.Clamp01(age / KnockSeconds));
-            sample.Position += entry.Direction * (Mathf.Max(0, entry.Pose.Actor.Dimensions.x) * KnockBodyFraction * push);
-            var fall = Mathf.Clamp01((age - FallStartSeconds) / FallSeconds);
-            var eased = fall * fall;
-            var side = entry.Direction.x >= 0 ? -1 : 1;
-            sample.FallDegrees = side * FallDegrees * eased;
-            sample.Squash = .22f * eased;
-            sample.ActorOpacity = 1 - Mathf.SmoothStep(.55f, 1, fall);
-            var fade = Mathf.Clamp01((age - FallStartSeconds - FallSeconds) / FadeSeconds);
-            sample.FallOpacity = Mathf.SmoothStep(.55f, 1, fall) * (1 - fade);
+            sample.Position += entry.Direction * (Mathf.Max(0, knock) * Mathf.SmoothStep(0, 1, Mathf.Clamp01(age / HitReaction.DeathSeconds)));
+            // After the flash frames the body swells and fades; it is gone at DeathSeconds (no fallen body is left behind).
+            var burst = Mathf.Clamp01((age - HitReaction.FlashSeconds) / (HitReaction.DeathSeconds - HitReaction.FlashSeconds));
+            sample.Pop = HitReaction.DeathPopScale * Mathf.Sin(burst * Mathf.PI * .5f);
+            sample.ActorOpacity = age >= HitReaction.DeathSeconds ? 0 : 1 - burst * burst;
             return sample;
         }
     }

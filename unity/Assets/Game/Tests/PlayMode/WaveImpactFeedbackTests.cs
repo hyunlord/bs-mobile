@@ -83,10 +83,21 @@ namespace Tests.PlayMode
                 world.AcceptWave(catalog, wave with { Events = new[] {
                     new WaveEvent(100007, frame.Tick, "enemy-killed", catalog.WaveRuntime.BossId, 17, point, point, 8) } });
                 Assert.That(bossSlow, Is.EqualTo(.3f));
+                var bigStop = 0f; world.HitStopRequested = seconds => bigStop = seconds;
+                string evolution = null;
+                // An evolution whose hits land at once (blade and chain hits are deferred until their sweep or strike shows).
+                foreach (var pair in catalog.WaveRuntime.Evolutions)
+                    if (System.Array.IndexOf(pair.Value.InputIds, "core:iron_blade") < 0 && System.Array.IndexOf(pair.Value.InputIds, "core:storm_fork") < 0) { evolution = pair.Key; break; }
+                Assert.That(evolution, Is.Not.Null);
+                world.AcceptWave(catalog, wave with { Events = new[] { new WaveEvent(100008, frame.Tick, "hit", "test", 23, point, point, 10) } });
+                Assert.That(bigStop, Is.Zero, "An ordinary hit never stops the display.");
+                world.AcceptWave(catalog, wave with { Events = new[] { new WaveEvent(100009, frame.Tick, "hit", evolution, 23, point, point, 10) } });
+                Assert.That(bigStop, Is.EqualTo(HitReaction.BigHitStopSeconds), "An evolution's hit asks for the short display hitstop.");
+                Assert.That(globalStop, Is.Zero, "The boss stop stays the boss's own.");
                 world.ImpactFeedbackEnabled = false;
                 Assert.That(world.ActiveImpactParticles, Is.Zero);
                 world.AcceptWave(catalog, wave with { Events = new[] {
-                    new WaveEvent(100008, frame.Tick, "hit", "test", 18, point, point, 12) } });
+                    new WaveEvent(100010, frame.Tick, "hit", "test", 18, point, point, 12) } });
                 Assert.That(world.ActiveImpactParticles, Is.Zero);
                 Assert.That(session.View.CaptureFrame().Tick, Is.EqualTo(frame.Tick));
                 yield return null;

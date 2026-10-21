@@ -11,9 +11,23 @@ namespace Game.View
         // The patch spreads in over SpreadFrames from its cast, brightens for PulseFrames at every Core pulse and fades over
         // FadeFrames after its last pulse. Each pulse bursts PulsePuffs puffs up off the patch and scatters PulseGrains grains.
         public const int SpreadFrames = 6, PulseFrames = 4, FadeFrames = 24, PulsePuffs = 3, PulseGrains = 6, BurstFrames = 30;
-        // The decal is drawn PatchOfRadius of the Core patch radius across (its painted stain fills ~85% of the canvas).
-        // PatchAlpha brings the painted colony rim (median alpha .976) to about .85 (user decision).
-        public const float PatchOfRadius = 2.1f, PatchAlpha = .87f, PulseBrighten = .35f, BurstHeroHeights = .55f;
+        // The decal is drawn PatchOfRadius of the Core patch radius across (its painted stain fills ~85% of the canvas), so the
+        // visible stain matches the damage area. PatchAlpha .55 (user decision 2026-10-20, was .87).
+        public const float PatchOfRadius = 2.1f, PatchAlpha = .55f, PulseBrighten = .35f, BurstHeroHeights = .55f;
+        // When a newer patch is laid the older ones fade out within SupersededFadeSeconds, and wherever patches stack the combined
+        // coverage stays within OverlapCap times one patch's (user decision 2026-10-20).
+        public const float OverlapCap = 1.3f, SupersededFadeSeconds = .3f;
+        public static float Superseded(float since) => since <= 0 ? 1 : Mathf.Clamp01(1 - since / SupersededFadeSeconds);
+        // The alpha a patch may add under `transmittance` (the product of 1 - alpha of the newer patches drawn over it), so that even
+        // fully overlapping patches never cover more than OverlapCap x PatchAlpha. Patches are capped newest first.
+        public static float CappedAlpha(float wanted, ref float transmittance)
+        {
+            var floor = 1 - PatchAlpha * OverlapCap;
+            var allowed = Mathf.Clamp01(1 - floor / Mathf.Max(1e-6f, transmittance));
+            var alpha = Mathf.Clamp(wanted, 0, allowed);
+            transmittance *= 1 - alpha;
+            return alpha;
+        }
         // Evolution element: the patch turns into the spore vortex (the approved three streams), reaching the patch's edge.
         public const float VortexOfRadius = .85f;
         public static float Seconds(int frames) => frames / 60f;
@@ -34,6 +48,8 @@ namespace Game.View
             public float LastPulse => Count == 0 ? Accepted : Mathf.Max(Landed[Count - 1] >= 0 ? Landed[Count - 1] : Due[Count - 1], Accepted);
         }
         readonly SporePatch[] sporePatches = CreateSporePatches();
+        readonly float[] sporePatchAlpha = new float[SporePatchCapacity];
+        readonly int[] sporePatchOrder = new int[SporePatchCapacity];
         int sporePatchNext;
         ArtVisual sporePatchPicture;
         public int SporePatches { get; private set; }
@@ -124,19 +140,39 @@ namespace Game.View
             SporePatch newest = null;
             foreach (var patch in sporePatches)
                 if (patch.Tick >= 0 && patch.Count > 0 && patch.Evolved && SporePatchSpec.Fade(visualTime - patch.LastPulse) > 0 && (newest == null || patch.Tick > newest.Tick)) newest = patch;
-            foreach (var patch in sporePatches)
+            // Decal alpha per patch, newest first: older patches fade once a newer one is laid and the stack is capped.
+            var ordered = 0;
+            for (var i = 0; i < sporePatches.Length; i++)
             {
+                if (sporePatches[i].Tick < 0 || sporePatches[i].Count == 0) continue;
+                var at = ordered++;
+                while (at > 0 && sporePatches[sporePatchOrder[at - 1]].Tick < sporePatches[i].Tick) { sporePatchOrder[at] = sporePatchOrder[at - 1]; at--; }
+                sporePatchOrder[at] = i;
+            }
+            var transmittance = 1f; var newerLaid = float.PositiveInfinity;
+            for (var k = 0; k < ordered; k++)
+            {
+                var patch = sporePatches[sporePatchOrder[k]];
+                var spreadNow = SporePatchSpec.Spread(visualTime - patch.Accepted);
+                var pulseNow = 0f;
+                for (var i = 0; i < patch.Count; i++) pulseNow = Mathf.Max(pulseNow, SporePatchSpec.Pulse(visualTime - (patch.Landed[i] >= 0 ? patch.Landed[i] : patch.Due[i])));
+                var wanted = SporePatchSpec.PatchAlpha * spreadNow * SporePatchSpec.Fade(visualTime - patch.LastPulse) * SporePatchSpec.Superseded(visualTime - newerLaid)
+                    * (1 + SporePatchSpec.PulseBrighten * pulseNow);
+                sporePatchAlpha[sporePatchOrder[k]] = SporePatchSpec.CappedAlpha(wanted, ref transmittance);
+                if (patch.Accepted <= visualTime) newerLaid = Mathf.Min(newerLaid, patch.Accepted);
+            }
+            for (var index = 0; index < sporePatches.Length; index++)
+            {
+                var patch = sporePatches[index];
                 if (patch.Tick < 0 || patch.Count == 0) continue;
                 var now = visualTime;
                 var fade = SporePatchSpec.Fade(now - patch.LastPulse);
                 if (fade <= 0) continue;
                 if (!patch.Recorded && now >= patch.Due[0]) RecordSporePatch(patch, view);
                 var spread = SporePatchSpec.Spread(now - patch.Accepted);
-                var pulse = 0f;
-                for (var i = 0; i < patch.Count; i++) pulse = Mathf.Max(pulse, SporePatchSpec.Pulse(now - (patch.Landed[i] >= 0 ? patch.Landed[i] : patch.Due[i])));
-                // The decal: ground layer under the enemies, brightening at each pulse.
+                // The decal: ground layer (AttackLayer) under the enemies and the hero, brightening at each pulse.
                 var width = patch.Radius * SporePatchSpec.PatchOfRadius * Mathf.Lerp(.6f, 1, spread);
-                var colour = Color.white; colour.a = SporePatchSpec.PatchAlpha * spread * fade * (1 + SporePatchSpec.PulseBrighten * pulse);
+                var colour = Color.white; colour.a = sporePatchAlpha[index];
                 Draw(sporePatchPicture, GameVisualTokens.AttackLayer, patch.Centre, 0, new Vector2(width, width * sporePatchPicture.WorldSize.y / sporePatchPicture.WorldSize.x), 0, 1, colour, applyTween: false);
                 if (patch == newest) { DrawSporeVortex(patch.Centre, patch.Radius * SporePatchSpec.VortexOfRadius / OrbitSpec.VortexReach, spread * fade); VortexFrames++; }
                 // Each pulse bursts puffs up off the patch and scatters grains outward (inward toward the vortex when evolved).

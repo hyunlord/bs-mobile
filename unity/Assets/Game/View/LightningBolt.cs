@@ -9,6 +9,10 @@ namespace Game.View
         public const int StrikeFrames = 2;         // full brightness strike and target flash
         public const int FadeFrames = 8;           // then fades out; gone 10 frames after the strike (8–10)
         public const int HitHoldFrames = 5;        // only struck enemies freeze (4–6), electric = longer than melee
+        // Over the hero (user decision 2026-10-20): from the strike until it is gone, bolt, glow and target flash inside the hero's
+        // box (the figure plus its push margin, the box pillars already steer round) are drawn at this share, so the cast pose reads.
+        public const float OverHeroAlpha = .35f;
+        public static bool OverHero(Rect heroBox, Vector2 point) => heroBox.Contains(point);
         public const float HitShakeBodyWidths = .06f;
         // Whole-screen flash only for the storm (evolution element), at half the first pilot's .13; ordinary strikes flash
         // around their targets only.

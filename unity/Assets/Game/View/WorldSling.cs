@@ -17,6 +17,21 @@ namespace Game.View
         // biggest moment: one short screen shake and GiantShards grains thrown outward (normal bursts throw Shards).
         public const int RangeFrames = 18, Shards = 6, GiantShards = 18, NormalBurstFrames = 12;
         public const float ScentRingFrom = 1, ScentRingTo = .3f, ScentLinePixels = 2.5f;   // shares of the Core radius
+        // The lure ring and the evolved blast range are Astra's grain-scent aroma (fx.granary_sling.aroma, user decision 2026-10-20):
+        // the painted strip wrapped round the landing point in AromaSegments arcs, its outer edge on the ring radius and the strip
+        // AromaBand of that radius deep, turning AromaSpin degrees a second. The picture's 10 px top margin (of 256) puts its
+        // visible outer edge AromaBand x 10/256 (about 1.6%) inside the Core radius, within the required 5%.
+        public const int AromaSegments = 5;
+        public const float AromaBand = .4f, AromaSpin = 25, AromaGap = .06f;
+        // In flight the sack is FlightScale larger (user decision 2026-10-20) and casts a ground shadow that runs to the landing point,
+        // smaller and fainter the higher the sack is, and lies under the sack when it lands.
+        public const float FlightScale = 1.5f, ShadowWidthOfSack = .9f, ShadowDepth = .32f, ShadowAlpha = .45f, ShadowShrink = .55f, ShadowFade = .7f;
+        public static float AromaVisibleOuter(float topMarginShare) => 1 - AromaBand * topMarginShare;
+        public static (float Width, float Alpha) Shadow(float heightShare)
+        {
+            var k = Mathf.Clamp01(heightShare);
+            return (1 - ShadowShrink * k, ShadowAlpha * (1 - ShadowFade * k));
+        }
         public const float BurstFrom = .3f, BurstTo = 1.05f;
         public static readonly Color Grain = new Color(.96f, .80f, .36f), Scent = new Color(1f, .86f, .45f);
         public static float Seconds(int frames) => frames / 60f;
@@ -30,7 +45,7 @@ namespace Game.View
             public int Id = -1, Tick, AcceptedFrame;
             public string Source; public bool Evolved, Recorded, Shaken;
             public float Accepted, LandDue, BurstDue, Landed = -1, Burst = -1, Radius;
-            public Vector2 From, Point;
+            public Vector2 From, Point, Ground;
         }
         readonly SlingCast[] slingCasts = CreateSlingCasts();
         int slingNext;
@@ -46,7 +61,8 @@ namespace Game.View
         public System.Action<SlingCastRecord> SlingCastSample;
         ArtVisual slingSack, slingGrain, slingBurst;
         const string SackRole = "fx.granary_sling.sack", GiantSackRole = "fx.granary_sling.giant_sack", GrainRole = "fx.granary_sling.grain", BurstRole = "fx.granary_sling.burst";
-        ArtVisual slingGiantSack;
+        ArtVisual slingGiantSack, slingAroma;
+        const string AromaRole = "fx.granary_sling.aroma";
         bool slingGrainPainted;   // Astra's painted grain carries its own gold; the temporary white grain is tinted gold
         Color SlingGrainColour(float alpha) { var c = slingGrainPainted ? Color.white : SlingSpec.Grain; c.a = alpha; return c; }
 
@@ -87,7 +103,7 @@ namespace Game.View
                 cast.Evolved = WeaponEvolved(value.Source);
                 var launch = PredictedLordPosition ?? RenderedLordPosition;
                 var w = heroBodyWidth > 0 ? heroBodyWidth : .6f;
-                cast.From = HeroHand(launch + Vector2.up * (.45f * w));
+                cast.From = HeroHand(launch + Vector2.up * (.45f * w)); cast.Ground = launch;
                 SlingCasts++;
             }
             else if (value.Kind == "review-lure")
@@ -144,11 +160,18 @@ namespace Game.View
                 var landed = cast.Landed >= 0 ? cast.Landed : cast.LandDue;
                 if (visualTime < landed)
                 {
-                    // In flight: a high arc from the hand to the landing point, turning slowly; small, so drawn on the thin layer.
+                    // In flight: a high arc from the hand to the landing point, turning slowly; small, so drawn on the thin layer. Its
+                    // shadow runs on the ground from under the hero to the landing point, shrinking and fading with the sack's height.
                     var t = Mathf.Clamp01((visualTime - cast.Accepted) / Mathf.Max(.0001f, landed - cast.Accepted));
                     var apex = Mathf.Max(HeroHeight * SlingSpec.ArcHeroHeights, (cast.Point - cast.From).magnitude * SlingSpec.ArcOfDistance);
                     var at = Vector2.Lerp(cast.From, cast.Point, t) + Vector2.up * (apex * 4 * t * (1 - t));
-                    DrawSack(picture, ThinEffectLayer, at, sack * .8f, (t - .5f) * 140, 1);
+                    var flight = sack * .8f * SlingSpec.FlightScale;
+                    var ground = Vector2.Lerp(cast.Ground, cast.Point, t);
+                    var lift = Mathf.Max(0, at.y - ground.y) / Mathf.Max(.0001f, apex + Mathf.Max(0, cast.From.y - cast.Ground.y));
+                    var shadow = SlingSpec.Shadow(lift); var shade = GameVisualTokens.Ink; shade.a = shadow.Alpha;
+                    var shadowWidth = flight * picture.WorldSize.x / picture.WorldSize.y * SlingSpec.ShadowWidthOfSack * shadow.Width;
+                    actorGrounding.Add(ground, new Vector2(shadowWidth * .5f, shadowWidth * SlingSpec.ShadowDepth * .5f), 0, shade);
+                    DrawSack(picture, ThinEffectLayer, at, flight, (t - .5f) * 140, 1);
                     continue;
                 }
                 var burst = cast.Burst;
@@ -163,12 +186,12 @@ namespace Game.View
                     var wobble = Mathf.Sin(since * 18) * 4 * (1 - lure * .5f);
                     DrawSack(picture, GameVisualTokens.AttackLayer, cast.Point, sack * swell, wobble, squash);
                     if (since < SlingSpec.Seconds(10)) DrawSlingDust(cast.Point, sack * .9f, since, .5f, 2, cast.Id);
-                    if (cast == ringCast && !cast.Evolved) { DrawScentRing(cast, Mathf.Lerp(SlingSpec.ScentRingFrom, SlingSpec.ScentRingTo, lure * lure), lure, pixel, 1); ringDrawn = true; }
+                    if (cast == ringCast && !cast.Evolved) { DrawScentRing(cast, Mathf.Lerp(SlingSpec.ScentRingFrom, SlingSpec.ScentRingTo, lure * lure), .85f * (.6f + .4f * lure), pixel, 1); ringDrawn = true; }
                     if (cast == ringCast && cast.Evolved && cast.BurstDue - visualTime <= SlingSpec.Seconds(SlingSpec.RangeFrames))
                     {
                         // Blast range just before the burst: the full Core radius, brightening and thickening toward it.
                         var near = 1 - Mathf.Clamp01((cast.BurstDue - visualTime) / SlingSpec.Seconds(SlingSpec.RangeFrames));
-                        DrawScentRing(cast, 1, 1, pixel, 1 + near); SlingRangeFrames++; ringDrawn = true;
+                        DrawScentRing(cast, 1, .75f + .25f * near, pixel, 1 + near); SlingRangeFrames++; ringDrawn = true;
                     }
                     DrawGrains(cast, since, lure, ref grainBudget);
                     if (cast.Evolved) SlingVortexFrames++;
@@ -220,16 +243,44 @@ namespace Game.View
             Draw(picture, layer, bottom, 0, size, degrees, 1, Color.white, applyTween: false);
         }
 
-        // The grain-scent ring: a thin gold outline at `share` of the Core radius, closing on the sack while it lures.
-        void DrawScentRing(SlingCast cast, float share, float lure, float pixel, float thickness)
+        // The grain-scent ring at `share` of the Core radius, closing on the sack while it lures: Astra's aroma strip wrapped round the
+        // landing point (curved ribbons, like the blade's slash). Only without the aroma role does the old dashed gold outline draw.
+        void DrawScentRing(SlingCast cast, float share, float alpha, float pixel, float thickness)
         {
+            if (slingAroma != null) { DrawAromaRing(cast, share, alpha); return; }
             const int segments = 48;
-            var radius = cast.Radius * share; var line = SlingSpec.Scent; line.a = .85f * (.6f + .4f * lure);
+            var radius = cast.Radius * share; var line = SlingSpec.Scent; line.a = alpha;
             for (var s = 0; s < segments; s++)
             {
                 if (s % 4 == 3) continue;   // a dashed ring reads as scent rather than a wall
                 var middle = (s + .5f) * 360f / segments;
                 Draw(lightningSolid, ProjectileLayer, cast.Point + M1Direction(middle) * radius, 0, new Vector2(radius * Mathf.PI * 2 / segments * 1.05f, SlingSpec.ScentLinePixels * thickness * pixel), middle + 90, 1, line, applyTween: false);
+            }
+        }
+
+        void DrawAromaRing(SlingCast cast, float share, float alpha)
+        {
+            var outer = cast.Radius * share; var inner = outer * (1 - SlingSpec.AromaBand);
+            var rect = slingAroma.UvRects[0];
+            var spin = cast.Id * 37 % 360 + (visualTime - (cast.Landed >= 0 ? cast.Landed : cast.LandDue)) * SlingSpec.AromaSpin;
+            const int columns = 10;
+            var arc = 360f / SlingSpec.AromaSegments;
+            for (var segment = 0; segment < SlingSpec.AromaSegments; segment++)
+            {
+                var ribbon = NextRibbon(); ribbon.Core = false; ribbon.Uv = new Vector4(rect.x, rect.y, rect.width, rect.height);
+                var vertices = new Vector3[(columns + 1) * 2]; var uvs = new Vector2[vertices.Length]; var triangles = new int[columns * 6];
+                var from = spin + segment * arc; var span = arc * (1 - SlingSpec.AromaGap);
+                for (var i = 0; i <= columns; i++)
+                {
+                    var u = i / (float)columns; var direction = M1Direction(from + span * u);
+                    vertices[i * 2] = cast.Point + direction * inner; uvs[i * 2] = new Vector2(u, 0);
+                    vertices[i * 2 + 1] = cast.Point + direction * outer; uvs[i * 2 + 1] = new Vector2(u, 1);
+                    if (i == columns) continue;
+                    var t = i * 6; var v = i * 2;
+                    triangles[t] = v; triangles[t + 1] = v + 1; triangles[t + 2] = v + 3; triangles[t + 3] = v; triangles[t + 4] = v + 3; triangles[t + 5] = v + 2;
+                }
+                var mesh = ribbon.Mesh; mesh.Clear(); mesh.vertices = vertices; mesh.uv = uvs; mesh.triangles = triangles; mesh.RecalculateBounds();
+                var colour = Color.white; colour.a = alpha; ribbon.Color = colour;
             }
         }
 
@@ -270,6 +321,7 @@ namespace Game.View
             if (slingSack != null) return;
             slingSack = EffectArt(SackRole, () => TemporarySack("Temporary grain sack", false));
             slingGiantSack = EffectArt(GiantSackRole, () => TemporarySack("Temporary giant grain sack", true));
+            if (art == null || !art.TryResolveRole(AromaRole, out slingAroma)) slingAroma = null;
             slingGrain = EffectArt(GrainRole, TemporaryGrain);
             slingGrainPainted = art != null && art.TryResolveRole(GrainRole, out _);
             slingBurst = EffectArt(BurstRole, TemporaryBurst);
