@@ -10,8 +10,12 @@ namespace Game.View
     {
         public const float SackHeroHeights = .38f, GiantSackHeroHeights = .75f, GiantSwell = .3f;   // giant sack swells 30% while luring
         public const float ArcHeroHeights = 1.4f, ArcOfDistance = .35f;      // the throw's apex above the straight line
-        public const int LandSquashFrames = 6, BurstFrames = 16, FlashFrames = 4, DustPuffs = 6, MaxGrains = 64;
-        public const int Grains = 12, GiantGrains = 20, VortexArms = 3;
+        public const int LandSquashFrames = 6, BurstFrames = 16, FlashFrames = 4, DustPuffs = 3, MaxGrains = 64;
+        public const int Grains = 6, GiantGrains = 14, VortexArms = 3;
+        // Only the newest luring sack shows its dashed lure ring; earlier rings vanish at once (2026-10-17). The evolved giant
+        // sack shows no lure ring but its blast range for the last RangeFrames before it bursts, and its burst is the weapon's
+        // biggest moment: one short screen shake and GiantShards grains thrown outward (normal bursts throw Shards).
+        public const int RangeFrames = 18, Shards = 6, GiantShards = 18, NormalBurstFrames = 12;
         public const float ScentRingFrom = 1, ScentRingTo = .3f, ScentLinePixels = 2.5f;   // shares of the Core radius
         public const float BurstFrom = .3f, BurstTo = 1.05f;
         public static readonly Color Grain = new Color(.96f, .80f, .36f), Scent = new Color(1f, .86f, .45f);
@@ -24,7 +28,7 @@ namespace Game.View
         sealed class SlingCast
         {
             public int Id = -1, Tick, AcceptedFrame;
-            public string Source; public bool Evolved, Recorded;
+            public string Source; public bool Evolved, Recorded, Shaken;
             public float Accepted, LandDue, BurstDue, Landed = -1, Burst = -1, Radius;
             public Vector2 From, Point;
         }
@@ -36,10 +40,15 @@ namespace Game.View
         public int SlingBursts { get; private set; }
         public int SlingBurstsOnTime { get; private set; }
         public int SlingVortexFrames { get; private set; }
+        public int SlingRingFrames { get; private set; }     // frames with a lure or blast-range ring drawn (at most one per frame)
+        public int SlingRangeFrames { get; private set; }    // frames the evolved blast range was shown
+        public int SlingShakes { get; private set; }
         public System.Action<SlingCastRecord> SlingCastSample;
         ArtVisual slingSack, slingGrain, slingBurst;
         const string SackRole = "fx.granary_sling.sack", GiantSackRole = "fx.granary_sling.giant_sack", GrainRole = "fx.granary_sling.grain", BurstRole = "fx.granary_sling.burst";
         ArtVisual slingGiantSack;
+        bool slingGrainPainted;   // Astra's painted grain carries its own gold; the temporary white grain is tinted gold
+        Color SlingGrainColour(float alpha) { var c = slingGrainPainted ? Color.white : SlingSpec.Grain; c.a = alpha; return c; }
 
         static SlingCast[] CreateSlingCasts()
         {
@@ -51,7 +60,7 @@ namespace Game.View
         void ResetSling()
         {
             foreach (var cast in slingCasts) { cast.Id = -1; cast.Landed = cast.Burst = -1; }
-            slingNext = 0; SlingCasts = SlingLanded = SlingLandedOnTime = SlingBursts = SlingBurstsOnTime = SlingVortexFrames = 0;
+            slingNext = 0; SlingCasts = SlingLanded = SlingLandedOnTime = SlingBursts = SlingBurstsOnTime = SlingVortexFrames = SlingRingFrames = SlingRangeFrames = SlingShakes = 0;
         }
 
         bool IsSlingLure(string source) => source != null && waveDefinition != null && waveDefinition.Gear.TryGetValue(source, out var gear) && gear.Composition?.Placement == "lure-bomb";
@@ -70,7 +79,7 @@ namespace Game.View
             if (value.Kind == "review-impact-tell")
             {
                 var cast = slingCasts[slingNext++ % slingCasts.Length];
-                cast.Id = value.SubjectId; cast.Source = value.Source; cast.Tick = value.Tick; cast.Recorded = false;
+                cast.Id = value.SubjectId; cast.Source = value.Source; cast.Tick = value.Tick; cast.Recorded = cast.Shaken = false;
                 cast.Accepted = visualTime; cast.AcceptedFrame = PresentedFrames + 1; cast.Landed = cast.Burst = -1;
                 cast.LandDue = visualTime + composition.DelayTicks / rate;
                 cast.BurstDue = cast.LandDue + (composition.LureTicks ?? 0) / rate;
@@ -122,6 +131,10 @@ namespace Game.View
             EnsureSlingArt(); EnsureLightningArt(); EnsureBladeArt();
             var pixel = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
             var grainBudget = SlingSpec.MaxGrains;
+            SlingCast ringCast = null;   // the newest sack that has landed and not burst
+            foreach (var cast in slingCasts)
+                if (cast.Id >= 0 && cast.Burst < 0 && visualTime >= (cast.Landed >= 0 ? cast.Landed : cast.LandDue) && (ringCast == null || (cast.Landed >= 0 ? cast.Landed : cast.LandDue) > (ringCast.Landed >= 0 ? ringCast.Landed : ringCast.LandDue))) ringCast = cast;
+            var ringDrawn = false;
             foreach (var cast in slingCasts)
             {
                 if (cast.Id < 0) continue;
@@ -149,25 +162,55 @@ namespace Game.View
                     var swell = cast.Evolved ? 1 + SlingSpec.GiantSwell * lure : 1;
                     var wobble = Mathf.Sin(since * 18) * 4 * (1 - lure * .5f);
                     DrawSack(picture, GameVisualTokens.AttackLayer, cast.Point, sack * swell, wobble, squash);
-                    if (since < SlingSpec.Seconds(10)) DrawSlingDust(cast.Point, sack * .9f, since, .5f, 3, cast.Id);
-                    DrawScentRing(cast, Mathf.Lerp(SlingSpec.ScentRingFrom, SlingSpec.ScentRingTo, lure * lure), lure, pixel);
+                    if (since < SlingSpec.Seconds(10)) DrawSlingDust(cast.Point, sack * .9f, since, .5f, 2, cast.Id);
+                    if (cast == ringCast && !cast.Evolved) { DrawScentRing(cast, Mathf.Lerp(SlingSpec.ScentRingFrom, SlingSpec.ScentRingTo, lure * lure), lure, pixel, 1); ringDrawn = true; }
+                    if (cast == ringCast && cast.Evolved && cast.BurstDue - visualTime <= SlingSpec.Seconds(SlingSpec.RangeFrames))
+                    {
+                        // Blast range just before the burst: the full Core radius, brightening and thickening toward it.
+                        var near = 1 - Mathf.Clamp01((cast.BurstDue - visualTime) / SlingSpec.Seconds(SlingSpec.RangeFrames));
+                        DrawScentRing(cast, 1, 1, pixel, 1 + near); SlingRangeFrames++; ringDrawn = true;
+                    }
                     DrawGrains(cast, since, lure, ref grainBudget);
                     if (cast.Evolved) SlingVortexFrames++;
                     continue;
                 }
-                // Burst: a gold flash, a grain ring spreading to the Core radius and dust puffs thrown outward.
+                // Burst: a gold flash, a grain ring spreading to the Core radius and dust puffs thrown outward. Normal bursts
+                // (up to four sacks overlap at max) are shorter and lighter than the evolved giant sack's.
                 var age = visualTime - burst;
-                var k = Mathf.Clamp01(age / SlingSpec.Seconds(SlingSpec.BurstFrames));
+                var burstFrames = cast.Evolved ? SlingSpec.BurstFrames : SlingSpec.NormalBurstFrames;
+                var k = Mathf.Clamp01(age / SlingSpec.Seconds(burstFrames));
                 if (age < SlingSpec.Seconds(SlingSpec.FlashFrames))
                 {
                     var flash = SlingSpec.Grain; flash.a = 1 - age / SlingSpec.Seconds(SlingSpec.FlashFrames);
                     Draw(lightningFlash, LightningLayer, cast.Point, 0, Vector2.one * sack * (cast.Evolved ? 3.2f : 2.4f), 0, 1, flash, applyTween: false);
+                    // White-hot core so the burst reads against bright ground without widening the gold flash.
+                    var core = Color.white; core.a = flash.a;
+                    Draw(lightningFlash, LightningLayer, cast.Point, 0, Vector2.one * sack * 1.1f, 0, 1, core, applyTween: false);
                 }
+                if (cast.Evolved && !cast.Shaken) { cast.Shaken = true; SlingShakes++; impactShakeUntil = visualTime + GameVisualTokens.ImpactShakeSeconds * 2; }
+                DrawShards(cast, age, cast.Evolved ? SlingSpec.GiantShards : SlingSpec.Shards);
                 var width = cast.Radius * 2 * Mathf.Lerp(SlingSpec.BurstFrom, SlingSpec.BurstTo, Mathf.Sqrt(k));
-                var ring = Color.white; ring.a = 1 - k * k;
+                var ring = Color.white; ring.a = Mathf.Pow(1 - k, 1.5f) * (cast.Evolved ? 1 : .6f);
                 Draw(slingBurst, ProjectileLayer, cast.Point, 0, Vector2.one * width, cast.Id * 37 % 360, 1, ring, applyTween: false);
-                DrawSlingDust(cast.Point, cast.Radius * .55f, age, .6f, SlingSpec.DustPuffs, cast.Id + 7);
+                DrawSlingDust(cast.Point, cast.Radius * .55f, age, cast.Evolved ? .6f : .4f, cast.Evolved ? SlingSpec.DustPuffs : 2, cast.Id + 7);
                 if (!cast.Recorded) { cast.Recorded = true; RecordSlingCast(cast); }
+            }
+            if (ringDrawn) SlingRingFrames++;
+        }
+
+        // Grain shards thrown outward from the burst to just past the Core radius, spinning and fading.
+        void DrawShards(SlingCast cast, float age, int count)
+        {
+            var t = Mathf.Clamp01(age / SlingSpec.Seconds(cast.Evolved ? SlingSpec.BurstFrames : SlingSpec.NormalBurstFrames));
+            if (t >= 1) return;
+            var size = HeroHeight * (cast.Evolved ? .11f : .08f);
+            for (var s = 0; s < count; s++)
+            {
+                var seed = LightningBolt.Hash(cast.Id, 700 + s);
+                var angle = s * 360f / count + ((seed & 255) / 255f - .5f) * 20;
+                var reach = cast.Radius * Mathf.Lerp(.1f, 1.05f, 1 - (1 - t) * (1 - t)) * (.8f + .2f * (((seed >> 8) & 255) / 255f));
+                var colour = SlingGrainColour(1 - t * t);
+                Draw(slingGrain, ProjectileLayer, cast.Point + M1Direction(angle) * reach + Vector2.up * (HeroHeight * .5f * 4 * t * (1 - t)), 0, new Vector2(size * .6f, size), angle + 90 + t * 360, 1, colour, applyTween: false);
             }
         }
 
@@ -178,7 +221,7 @@ namespace Game.View
         }
 
         // The grain-scent ring: a thin gold outline at `share` of the Core radius, closing on the sack while it lures.
-        void DrawScentRing(SlingCast cast, float share, float lure, float pixel)
+        void DrawScentRing(SlingCast cast, float share, float lure, float pixel, float thickness)
         {
             const int segments = 48;
             var radius = cast.Radius * share; var line = SlingSpec.Scent; line.a = .85f * (.6f + .4f * lure);
@@ -186,7 +229,7 @@ namespace Game.View
             {
                 if (s % 4 == 3) continue;   // a dashed ring reads as scent rather than a wall
                 var middle = (s + .5f) * 360f / segments;
-                Draw(lightningSolid, ProjectileLayer, cast.Point + M1Direction(middle) * radius, 0, new Vector2(radius * Mathf.PI * 2 / segments * 1.05f, SlingSpec.ScentLinePixels * pixel), middle + 90, 1, line, applyTween: false);
+                Draw(lightningSolid, ProjectileLayer, cast.Point + M1Direction(middle) * radius, 0, new Vector2(radius * Mathf.PI * 2 / segments * 1.05f, SlingSpec.ScentLinePixels * thickness * pixel), middle + 90, 1, line, applyTween: false);
             }
         }
 
@@ -202,7 +245,7 @@ namespace Game.View
                 var reach = cast.Radius * Mathf.Lerp(SlingSpec.ScentRingFrom, .15f, phase) * Mathf.Lerp(1, .6f, lure);
                 var angle = ((seed >> 10) & 1023) / 1023f * 360;
                 if (cast.Evolved) angle = g % SlingSpec.VortexArms * 360f / SlingSpec.VortexArms + phase * 220 + since * 120;
-                var colour = SlingSpec.Grain; colour.a = Mathf.Sin(phase * Mathf.PI) * .95f;
+                var colour = SlingGrainColour(Mathf.Sin(phase * Mathf.PI) * (cast.Evolved ? .95f : .8f));
                 Draw(slingGrain, ProjectileLayer, cast.Point + M1Direction(angle) * reach, 0, Vector2.one * size, angle + 90, 1, colour, applyTween: false);
             }
         }
@@ -228,6 +271,7 @@ namespace Game.View
             slingSack = EffectArt(SackRole, () => TemporarySack("Temporary grain sack", false));
             slingGiantSack = EffectArt(GiantSackRole, () => TemporarySack("Temporary giant grain sack", true));
             slingGrain = EffectArt(GrainRole, TemporaryGrain);
+            slingGrainPainted = art != null && art.TryResolveRole(GrainRole, out _);
             slingBurst = EffectArt(BurstRole, TemporaryBurst);
         }
 
@@ -275,9 +319,9 @@ namespace Game.View
             {
                 var u = (x + .5f) / size * 2 - 1; var v = (y + .5f) / size * 2 - 1;
                 var r = Mathf.Sqrt(u * u + v * v); if (r > 1) return new Color(0, 0, 0, 0);
-                var band = Mathf.Clamp01(1 - Mathf.Abs(r - .82f) / .14f);
+                var band = Mathf.Clamp01(1 - Mathf.Abs(r - .84f) / .09f);
                 var speck = (LightningBolt.Hash(x * 7 + y, 9) & 31) == 0 && r < .9f ? .8f : 0;
-                var a = Mathf.Max(band * .85f, speck * r);
+                var a = Mathf.Max(band * .75f, speck * r);
                 var c = Color.Lerp(new Color(1, .95f, .75f), new Color(.92f, .72f, .30f), r); c.a = a; return c;
             });
             return new ArtVisual(BurstRole, texture, Vector2.one * size / 384f, new Vector2(.5f, .5f));

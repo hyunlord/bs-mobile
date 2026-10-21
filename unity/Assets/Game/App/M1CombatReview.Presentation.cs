@@ -15,7 +15,7 @@ namespace Game.App
             public int bladeEvolvedStrikes, bladeDeferredHits, bladePresentedHits, arrowVolleys, arrowRainVolleys, arrowImpacts, arrowLandedOnTime, bowstringFlashDraws, pikeCasts, pikeImpacts, pikeImpactsLanded, pikeLandedOnTime, pikeEruptions, sporePatches, sporePulses, sporePulsesOnTime;
             public int orbitActivations, orbitContactFlashes, vortexFrames, shieldThrows;
             public int ricochetHops, ricochetBounces, ricochetLanded, ricochetLandedOnTime, ricochetChannelDraws;
-            public int slingCasts, slingLanded, slingLandedOnTime, slingBursts, slingBurstsOnTime, slingVortexFrames;
+            public int slingCasts, slingLanded, slingLandedOnTime, slingBursts, slingBurstsOnTime, slingVortexFrames, slingRingFrames, slingRangeFrames, slingShakes;
             // P5 budget: share of enemy sprite pixels covered by own weapon effects per frame (mask readback, half resolution),
             // with effect alpha capped at 0.5 over enemies as drawn; the uncapped share is kept for comparison. Full-screen
             // tints are not in it: tint frames record the darkening alpha and the enemy-ground contrast left (1 − alpha).
@@ -124,7 +124,7 @@ namespace Game.App
                 bladeEvolvedStrikes = world.M1BladeEvolvedStrikes, bladeDeferredHits = world.BladeDeferredHits, bladePresentedHits = world.BladePresentedHits,
                 orbitActivations = world.OrbitActivations, orbitContactFlashes = world.OrbitContactFlashes, vortexFrames = world.VortexFrames, shieldThrows = world.ShieldThrows,
                 ricochetHops = world.RicochetHops, ricochetBounces = world.RicochetBounces, ricochetLanded = world.RicochetLanded, ricochetLandedOnTime = world.RicochetLandedOnTime, ricochetChannelDraws = world.RicochetChannelDraws,
-                slingCasts = world.SlingCasts, slingLanded = world.SlingLanded, slingLandedOnTime = world.SlingLandedOnTime, slingBursts = world.SlingBursts, slingBurstsOnTime = world.SlingBurstsOnTime, slingVortexFrames = world.SlingVortexFrames,
+                slingCasts = world.SlingCasts, slingLanded = world.SlingLanded, slingLandedOnTime = world.SlingLandedOnTime, slingBursts = world.SlingBursts, slingBurstsOnTime = world.SlingBurstsOnTime, slingVortexFrames = world.SlingVortexFrames, slingRingFrames = world.SlingRingFrames, slingRangeFrames = world.SlingRangeFrames, slingShakes = world.SlingShakes,
                 arrowVolleys = world.ArrowVolleys, arrowRainVolleys = world.ArrowRainVolleys, arrowImpacts = world.ArrowImpacts, arrowLandedOnTime = world.ArrowLandedOnTime, bowstringFlashDraws = world.BowstringFlashDraws,
                 pikeCasts = world.PikeCasts, pikeImpacts = world.PikeImpacts, pikeImpactsLanded = world.PikeImpactsLanded, pikeLandedOnTime = world.PikeLandedOnTime, pikeEruptions = world.PikeEruptions,
                 sporePatches = world.SporePatches, sporePulses = world.SporePulses, sporePulsesOnTime = world.SporePulsesOnTime,

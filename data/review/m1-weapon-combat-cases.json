@@ -451,7 +451,7 @@
         "kind": "Arc",
         "damage": 63,
         "range": 2285,
-        "cooldownTicks": 12,
+        "cooldownTicks": 75,
         "speed": 500,
         "count": 1,
         "lifetimeTicks": 120,
@@ -467,8 +467,8 @@
           "delayTicks": 15,
           "stepTicks": 0,
           "spacing": 0,
-          "radius": 927,
-          "lureTicks": 30
+          "radius": 1390,
+          "lureTicks": 60
         }
       },
       "arena": {

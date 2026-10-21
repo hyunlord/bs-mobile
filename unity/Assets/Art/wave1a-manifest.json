@@ -500,7 +500,7 @@
       "id": "wave1a-weapon-fx",
       "path": "Assets/Art/wave1a-weapon-fx.png",
       "width": 2016,
-      "height": 1560,
+      "height": 1820,
       "padding": 4,
       "license": "generated-wave1a-weapon-fx"
     },
@@ -12017,6 +12017,94 @@
       },
       "worldSize": {
         "x": 1,
+        "y": 0.666667
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.granary_sling.sack",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 4,
+          "y": 1560,
+          "width": 160,
+          "height": 192
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.02
+      },
+      "worldSize": {
+        "x": 0.416667,
+        "y": 0.5
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.granary_sling.giant_sack",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 172,
+          "y": 1560,
+          "width": 192,
+          "height": 224
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.02
+      },
+      "worldSize": {
+        "x": 0.5,
+        "y": 0.583333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.granary_sling.grain",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 372,
+          "y": 1560,
+          "width": 32,
+          "height": 32
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.083333,
+        "y": 0.083333
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.granary_sling.burst",
+      "atlas": "wave1a-weapon-fx",
+      "frames": [
+        {
+          "x": 412,
+          "y": 1560,
+          "width": 256,
+          "height": 256
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.666667,
         "y": 0.666667
       },
       "frameMs": 1000,
