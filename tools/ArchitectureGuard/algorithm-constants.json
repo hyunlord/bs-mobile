@@ -10,6 +10,11 @@
     "Reason": "Opt-in replay wire format for host reward commands and explicit revive configuration; historical formats remain unchanged."
   },
   {
+    "Symbol": "SowSiege.Core.ReplayCodec.EstateVersion",
+    "Value": "7",
+    "Reason": "Opt-in replay wire format carrying the selected estate loadout and its catalog hash (ADR0064); formats 1-6 remain unchanged (6 is melee aim, ADR0059). Serialization discriminator only."
+  },
+  {
     "Symbol": "SowSiege.Core.HostRewardRunOptions.MaximumRerollGrants",
     "Value": "2",
     "Reason": "Explicit user-approved BM v0 contract: at most two host reroll grants per run. Protocol abuse bound, not inferred combat or economy tuning."
