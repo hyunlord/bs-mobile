@@ -12,20 +12,23 @@ namespace SowSiege.Core
         public int TargetId, BouncesLeft;
         public List<int>? Struck;
         public Position From;
+        // Lure sacks (ADR0063) first land (LureTicks > 0: the lure starts and the burst is rescheduled LureTicks later).
+        public int LureTicks;
     }
     internal sealed partial class WaveRuntimeSystem
     {
         private void ScheduleReviewImpacts(WaveGearDefinition gear)
         {
             var c = gear.Composition!;
-            var ricochet = c.Placement == "ricochet";
-            if (c.Version != 1 || c.Placement is not ("nearest-target" or "forward-line" or "ricochet") || c.DelayTicks < 1 || c.StepTicks < 0 || c.Spacing < 0 || c.Radius < 1 || gear.Count < 1 || gear.Count > WaveAttackComposition.MaximumImpacts ||
-                ricochet != (c.Bounces is not null) || (ricochet && (c.Bounces is not (>= 0 and <= WaveAttackComposition.MaximumImpacts) || c.StepTicks < 1 || c.RehitEachImpact is not null)))
+            var ricochet = c.Placement == "ricochet"; var lure = c.Placement == "lure-bomb";
+            if (c.Version != 1 || c.Placement is not ("nearest-target" or "forward-line" or "ricochet" or "lure-bomb") || c.DelayTicks < 1 || c.StepTicks < 0 || c.Spacing < 0 || c.Radius < 1 || gear.Count < 1 || gear.Count > WaveAttackComposition.MaximumImpacts ||
+                ricochet != (c.Bounces is not null) || (ricochet && (c.Bounces is not (>= 0 and <= WaveAttackComposition.MaximumImpacts) || c.StepTicks < 1 || c.RehitEachImpact is not null)) ||
+                lure != (c.LureTicks is not null) || (lure && (c.LureTicks < 1 || c.StepTicks != 0 || c.RehitEachImpact is not null)))
             { throw new ArgumentException("Unsupported review impact composition."); }
             if (ricochet) { ScheduleRicochet(gear, c); return; }
             queries.ByDistance(targets, world.Lord, gear.Range, world.Lord);
-            var count = c.Placement == "nearest-target" ? Math.Min(gear.Count, targets.Count) : gear.Count;
-            var activation = state.BeginActivation(gear.Id, count, world.Tick + c.DelayTicks + c.StepTicks * count + 1);
+            var count = c.Placement is "nearest-target" or "lure-bomb" ? Math.Min(gear.Count, targets.Count) : gear.Count;
+            var activation = state.BeginActivation(gear.Id, count, world.Tick + c.DelayTicks + c.StepTicks * count + (c.LureTicks ?? 0) + 1);
             if (count == 0) { state.ResolveActivation(activation); return; }
             var direction = state.Facing;
             if (targets.Count > 0 && targets[0].Position != world.Lord)
@@ -36,7 +39,7 @@ namespace SowSiege.Core
 
             for (var i = 0; i < count; i++)
             {
-                var point = c.Placement == "nearest-target" ? targets[i].Position
+                var point = c.Placement is "nearest-target" or "lure-bomb" ? targets[i].Position
                     : world.Lord.MoveToward(new(world.Lord.X + direction.X * gear.Range, world.Lord.Y + direction.Y * gear.Range), c.Spacing * (i + 1));
                 var pending = new WavePendingImpact
                 {
@@ -47,7 +50,8 @@ namespace SowSiege.Core
                     Radius = c.Radius,
                     Damage = gear.Damage,
                     Knockback = gear.Knockback,
-                    ActivationId = activation
+                    ActivationId = activation,
+                    LureTicks = c.LureTicks ?? 0
                 };
                 state.PendingImpacts.Add(pending);
                 state.Emit(world.Tick, "review-impact-tell", gear.Id, pending.Id, point, point, c.Radius);
@@ -116,6 +120,14 @@ namespace SowSiege.Core
                 if (impact.Struck is not null && queries.Find(impact.TargetId) is { } followed) { impact.Position = followed.Position; }
                 if (impact.Tick > world.Tick) { i++; continue; }
                 if (impact.Struck is { } struck) { state.PendingImpacts.RemoveAt(i); ResolveRicochet(impact, struck); continue; }
+                if (impact.LureTicks > 0)
+                {
+                    // The sack lands: enemies move toward it from the next enemy step through the burst tick.
+                    state.Lures.Add(new() { Id = impact.Id, Source = impact.Source, Position = impact.Position, Radius = impact.Radius, UntilTick = world.Tick + impact.LureTicks + 1 });
+                    state.Emit(world.Tick, "review-lure", impact.Source, impact.Id, impact.Position, impact.Position, impact.Radius);
+                    impact.Tick = world.Tick + impact.LureTicks; impact.LureTicks = 0;
+                    i++; continue;
+                }
                 queries.ByDistance(secondaryTargets, impact.Position, impact.Radius, impact.Position);
                 // ADR0061: with RehitEachImpact each impact strikes everything in its radius (one query lists an enemy once).
                 var rehit = definition.Gear.TryGetValue(impact.Source, out var source) && source.Composition?.RehitEachImpact == true;

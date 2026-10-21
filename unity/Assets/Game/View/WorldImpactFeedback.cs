@@ -41,7 +41,7 @@ namespace Game.View
         void ResetImpactFeedback()
         {
             impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0;
-            ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); ResetPikes(); ResetSporePatches(); ResetOrbits(); heroHitFeedback.Reset();
+            ResetEnemyDeaths(); ResetM1Blades(); ResetLightning(); ResetArrows(); ResetPikes(); ResetSporePatches(); ResetSling(); ResetOrbits(); heroHitFeedback.Reset();
         }
 
         void AcceptImpactFeedback(WaveEvent value)
@@ -61,6 +61,8 @@ namespace Game.View
                     enemyImpactPoses.Hit(value.SubjectId, visualTime, arrowDirection, ArrowSpec.Seconds(ArrowSpec.HitHoldFrames), 0, true);
                 else if (PikeHitDirection(value, origin, out var pikeDirection))
                     enemyImpactPoses.Hit(value.SubjectId, visualTime, pikeDirection, PikeSpec.Seconds(PikeSpec.HitHoldFrames), 0, true);
+                else if (SlingHitDirection(value, origin, out var slingDirection))
+                    enemyImpactPoses.Hit(value.SubjectId, visualTime, slingDirection, 0, 0, true);
                 else enemyImpactPoses.Hit(value.SubjectId, visualTime, direction);
                 impactParticles.Hit(value.Id, origin);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(value.SubjectId, origin, value.Amount);
