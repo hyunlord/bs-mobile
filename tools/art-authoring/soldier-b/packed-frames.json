@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 1,
+  "release": "soldier-b-rank-rig-r3-20261019",
+  "draftManifestSha256": "443dc63fe1f1a2430813476ae298413edb2f80d0074e3fe74fa76f7f24335965",
+  "sheetSha256": "a089f7beccf513d0239cf0111e28ca6eeefeabdc23f6dbfde487ee9b94b7bf91",
+  "atlas": "unity/Assets/Art/crops-people.png",
+  "atlasSha256": "43e8123eec7f573886a98eeebf51ba5a1778bb7dd2f623fb80f59d70866af135",
+  "cleared": [
+    [
+      0,
+      912,
+      690,
+      1254
+    ],
+    [
+      79,
+      951,
+      276,
+      1206
+    ],
+    [
+      394,
+      903,
+      583,
+      1218
+    ]
+  ],
+  "crop": {
+    "left": 119,
+    "top": 54,
+    "width": 83,
+    "height": 135
+  },
+  "pivot": {
+    "x": 0.493976,
+    "y": 0.02963
+  },
+  "baselineY": 185,
+  "unitsPerPixel": 0.004145455,
+  "heroScale": 0.92,
+  "worldSize": {
+    "x": 0.344073,
+    "y": 0.559636
+  },
+  "frameMs": 36,
+  "cyclePixels": 102.3603456,
+  "standingFrame": 4,
+  "standingSelection": [
+    {
+      "index": 0,
+      "bootSpreadPx": 65,
+      "baselineContactPx": 7
+    },
+    {
+      "index": 1,
+      "bootSpreadPx": 60,
+      "baselineContactPx": 6
+    },
+    {
+      "index": 2,
+      "bootSpreadPx": 48,
+      "baselineContactPx": 8
+    },
+    {
+      "index": 3,
+      "bootSpreadPx": 32,
+      "baselineContactPx": 14
+    },
+    {
+      "index": 4,
+      "bootSpreadPx": 24,
+      "baselineContactPx": 15
+    },
+    {
+      "index": 5,
+      "bootSpreadPx": 42,
+      "baselineContactPx": 14
+    },
+    {
+      "index": 6,
+      "bootSpreadPx": 58,
+      "baselineContactPx": 6
+    },
+    {
+      "index": 7,
+      "bootSpreadPx": 68,
+      "baselineContactPx": 8
+    },
+    {
+      "index": 8,
+      "bootSpreadPx": 72,
+      "baselineContactPx": 10
+    },
+    {
+      "index": 9,
+      "bootSpreadPx": 68,
+      "baselineContactPx": 2
+    },
+    {
+      "index": 10,
+      "bootSpreadPx": 57,
+      "baselineContactPx": 3
+    },
+    {
+      "index": 11,
+      "bootSpreadPx": 41,
+      "baselineContactPx": 5
+    },
+    {
+      "index": 12,
+      "bootSpreadPx": 24,
+      "baselineContactPx": 5
+    },
+    {
+      "index": 13,
+      "bootSpreadPx": 41,
+      "baselineContactPx": 5
+    },
+    {
+      "index": 14,
+      "bootSpreadPx": 56,
+      "baselineContactPx": 6
+    },
+    {
+      "index": 15,
+      "bootSpreadPx": 63,
+      "baselineContactPx": 5
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "x": 2,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "3a18ded857de8faaf390aafb20a5134f8ba56affd08371767c3069cde28a4c4c"
+    },
+    {
+      "index": 1,
+      "x": 87,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "764d70a88f4075df00d5aee0bcfc354b96ab2dad8b798b08a2bf8aee5399d83e"
+    },
+    {
+      "index": 2,
+      "x": 172,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "23190125f747aa00fd66813ac6179952d64e4a91bdcf5a17e3c5241b02e0c5e3"
+    },
+    {
+      "index": 3,
+      "x": 257,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "b3c91e9dec1d945a03f3521d39cce019e68cdbc69581976dc92342a775d30547"
+    },
+    {
+      "index": 4,
+      "x": 342,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "cc36a6427b30d753372b9dc37cf66cb42cb18a996fb2609893496931c050dcda"
+    },
+    {
+      "index": 5,
+      "x": 427,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "3ed1bdde32c0658cc99f98b2d7a623571430f095b07c5d5bc8bedcea166eb1b8"
+    },
+    {
+      "index": 6,
+      "x": 512,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "4154d8bb7d2e82f755b30b87d195a3b7b97062dbb8351b5c59e8c6f13ed2fe50"
+    },
+    {
+      "index": 7,
+      "x": 597,
+      "y": 912,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "17cc20eba1cffc62a9f9855a8fae4bfc0c807ad1dbdf93d1d75c7914540e0954"
+    },
+    {
+      "index": 8,
+      "x": 2,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "7cf5bc3c93285996ad553a00bda76e6f92642a8b33830586bfb4ff8da1c37687"
+    },
+    {
+      "index": 9,
+      "x": 87,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "668aade7abaeebf1782ad524b3f3df8003fd2fab8797f57c9d71bae8b381ae51"
+    },
+    {
+      "index": 10,
+      "x": 172,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "215f8d7f051b2861b10d1f9bee78064b7a0f62b096edb7792513eaef601a6425"
+    },
+    {
+      "index": 11,
+      "x": 257,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "96127ea7042ed1afd9769e91353a7c37ae7af12f9ca20320dacbb9fd1b1e179b"
+    },
+    {
+      "index": 12,
+      "x": 342,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "593193a5e0e3dfa58ca70ad5f12486b4dd8661ae425b64679b0954c896fd3960"
+    },
+    {
+      "index": 13,
+      "x": 427,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "228b3eb8e307cc97f17a79728d4dd504dc95394f587c386d8dda2f20a0ea70e0"
+    },
+    {
+      "index": 14,
+      "x": 512,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "3a3cf64d5601e700bb26a66dc1649b0ff54ce2bec0888c275cf49f713f797c80"
+    },
+    {
+      "index": 15,
+      "x": 597,
+      "y": 1049,
+      "width": 83,
+      "height": 135,
+      "sourceCellRgbaSha256": "179c8ad4d9432d0114581b7f8482002f5153113ac99b774afc5bc447e59297e1"
+    }
+  ]
+}
