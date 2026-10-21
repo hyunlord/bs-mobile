@@ -10,15 +10,15 @@ namespace Game.Editor
 {
     public static class ArtPreparation
     {
-        static string ManifestPath => "Assets/Art/" + (Game.App.Generated.CanonicalContent.ProfileName == "wave-1a" ? "wave1a" : "first-playable") + "-manifest.json";
-        static string RegistryPath => "Assets/Resources/" + (Game.App.Generated.CanonicalContent.ProfileName == "wave-1a" ? "Wave1aArt" : "FirstPlayableArt") + ".asset";
+        static string ManifestPath => "Assets/Art/" + (Game.App.Generated.CanonicalContent.IsWave ? "wave1a" : "first-playable") + "-manifest.json";
+        static string RegistryPath => "Assets/Resources/" + (Game.App.Generated.CanonicalContent.IsWave ? "Wave1aArt" : "FirstPlayableArt") + ".asset";
         [MenuItem("Sow and Siege/Prepare First Playable Art")]
         public static void Prepare()
         {
             var root = Path.GetFullPath(Path.Combine(Application.dataPath, "../.."));
             var start = new ProcessStartInfo("node") { WorkingDirectory = root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
-            start.Arguments = "\"" + Path.Combine(root, Game.App.Generated.CanonicalContent.ProfileName == "wave-1a" ? "tools/wave1a-art.mjs" : "tools/first-playable-art.mjs") + "\" \"" + root + "\"";
-            if(Game.App.Generated.CanonicalContent.ProfileName == "wave-1a")start.Arguments += " --source-only";
+            start.Arguments = "\"" + Path.Combine(root, Game.App.Generated.CanonicalContent.IsWave ? "tools/wave1a-art.mjs" : "tools/first-playable-art.mjs") + "\" \"" + root + "\"";
+            if(Game.App.Generated.CanonicalContent.IsWave)start.Arguments += " --source-only";
             RunValidator(start);
             AssetDatabase.ImportAsset(ManifestPath, ImportAssetOptions.ForceSynchronousImport);
             var manifestAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(ManifestPath);
@@ -49,10 +49,10 @@ namespace Game.Editor
             var registry = AssetDatabase.LoadAssetAtPath<ArtRegistry>(RegistryPath);
             if (registry == null) { registry = ScriptableObject.CreateInstance<ArtRegistry>(); AssetDatabase.CreateAsset(registry, RegistryPath); }
             registry.manifest = manifestAsset; registry.atlases = textures;
-            if(Game.App.Generated.CanonicalContent.ProfileName == "wave-1a") registry.audioManifest = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Art/wave1a-audio.json");
+            if(Game.App.Generated.CanonicalContent.IsWave) registry.audioManifest = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Art/wave1a-audio.json");
             EditorUtility.SetDirty(registry); AssetDatabase.SaveAssets();
             ArtCatalog.InvalidateCache();
-            if(Game.App.Generated.CanonicalContent.ProfileName == "wave-1a")
+            if(Game.App.Generated.CanonicalContent.IsWave)
             { start.Arguments=start.Arguments.Replace(" --source-only", "");RunValidator(start); }
         }
         static void RunValidator(ProcessStartInfo start)

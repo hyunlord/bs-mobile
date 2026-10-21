@@ -7,6 +7,7 @@ namespace Game.View
     public sealed class WorldDamageNumbers : IDisposable
     {
         public const int Capacity = 64;
+        public const int EnemyVisibleLimit = 6;
         const int ContinuationChunks = 4;
         const float PlacementStep = 0.18f;
         const float LabelGap = 0.025f;
@@ -26,6 +27,8 @@ namespace Game.View
         readonly long[] amounts = new long[Capacity];
         readonly bool[] aggregate = new bool[Capacity];
         readonly Transform parent;
+        readonly int visibleLimit;
+        public int SuppressedVisualLabels { get; private set; }
         Font font;
         int next;
         readonly string[] amountText;
@@ -43,8 +46,10 @@ namespace Game.View
             for (var i = 0; i < values.Length; i++) values[i] = i.ToString("D4", CultureInfo.InvariantCulture);
             return values;
         }
-        public WorldDamageNumbers(Transform parent)
+        public WorldDamageNumbers(Transform parent, int visibleLimit = EnemyVisibleLimit, float characterSize = .032f, int sortingOffset = 1)
         {
+            if (visibleLimit < 1 || visibleLimit > Capacity) throw new ArgumentOutOfRangeException(nameof(visibleLimit));
+            this.visibleLimit = visibleLimit;
             this.parent = parent; amountText = AmountText;
             font = FontProvider.Create(new[] { "0123456789" });
             font.material.renderQueue = 3100;
@@ -52,9 +57,9 @@ namespace Game.View
             for (var index = 0; index < Capacity; index++)
             {
                 var owner = new GameObject("Pooled damage number"); owner.transform.SetParent(parent, false);
-                var label = owner.AddComponent<TextMesh>(); label.font = font; label.fontSize = 48; label.characterSize = 0.045f;
+                var label = owner.AddComponent<TextMesh>(); label.font = font; label.fontSize = 48; label.characterSize = characterSize;
                 label.anchor = TextAnchor.MiddleCenter; label.alignment = TextAlignment.Center;
-                var renderer = owner.GetComponent<MeshRenderer>(); renderer.sharedMaterial = font.material; renderer.sortingOrder = GameVisualTokens.ThreatLayer + 1;
+                var renderer = owner.GetComponent<MeshRenderer>(); renderer.sharedMaterial = font.material; renderer.sortingOrder = GameVisualTokens.ThreatLayer + sortingOffset;
                 labels[index] = label; renderers[index] = renderer; owner.SetActive(false);
                 for (var chunk = 0; chunk < ContinuationChunks; chunk++)
                 {
@@ -80,11 +85,15 @@ namespace Game.View
                 amounts[i] += amount;
                 var oldDigits = digitCounts[i];
                 SetAmount(i, amounts[i]);
-                if (oldDigits != digitCounts[i] && !Place(i, origins[i])) labels[i].gameObject.SetActive(false);
+                if (oldDigits != digitCounts[i] && !Place(i, origins[i]))
+                {
+                    labels[i].gameObject.SetActive(false);
+                    SuppressedVisualLabels++;
+                }
                 return;
             }
-            var slot = next;
-            Add(origin, amount, GameVisualTokens.Attack);
+            var slot = TryAdd(origin, amount, GameVisualTokens.Attack);
+            if (slot < 0) return;
             subjects[slot] = subjectId; amounts[slot] = amount; aggregate[slot] = true;
         }
         void SetAmount(int index, long amount)
@@ -135,15 +144,28 @@ namespace Game.View
             return result;
         }
         public void Add(Vector2 origin, long amount, Color color)
+            => TryAdd(origin, amount, color);
+        int TryAdd(Vector2 origin, long amount, Color color)
         {
-            if (amount <= 0) return;
-            var index = next; next = (next + 1) % Capacity;
+            if (amount <= 0) return -1;
+            var visible = 0;
+            for (var i = 0; i < Capacity; i++) if (labels[i].gameObject.activeSelf) visible++;
+            if (visible >= visibleLimit) { SuppressedVisualLabels++; return -1; }
+            var index = next;
+            while (labels[index].gameObject.activeSelf) index = (index + 1) % Capacity;
+            next = (index + 1) % Capacity;
             SetAmount(index, amount); aggregate[index] = false;
             origins[index] = origin; ages[index] = 0; labels[index].gameObject.SetActive(true);
             SetPosition(index, origin + Vector2.up * .14f);
             colors[index] = color;
             SetColor(index, color);
-            if (!Place(index, origin)) labels[index].gameObject.SetActive(false);
+            if (!Place(index, origin))
+            {
+                labels[index].gameObject.SetActive(false);
+                SuppressedVisualLabels++;
+                return -1;
+            }
+            return index;
         }
         bool Place(int index, Vector2 origin)
         {

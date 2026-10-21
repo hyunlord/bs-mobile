@@ -44,7 +44,7 @@ export function waveSemanticSignature(record) {
 }
 export function validateWaveContent(profile, runtime, design) {
   assert.ok(runtime && design, 'Wave runtime and approved design catalog required');
-  assert.equal(profile.waveRuntimeFile, 'runtime/wave-1a.json', 'Unsafe wave runtime path');
+  assert.ok(['runtime/wave-1a.json', 'runtime/m1-showcase-review.json'].includes(profile.waveRuntimeFile), 'Unsafe wave runtime path');
   for (const extension of ['runtime', 'firstPlayable', 'runtimeOverrides', 'experiment', 'gameplay', 'weaponCombat', 'tuningFile']) assert.equal(profile[extension], undefined, `Wave cannot mix ${extension}`);
   assert.equal(runtime.contractVersion, 1);
   assert.equal(runtime.designRevision, 'designed-v1.1');

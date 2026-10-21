@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using SowSiege.Core;
 using UnityEngine;
 
@@ -8,11 +7,9 @@ namespace Game.View
     public sealed partial class WorldRenderer
     {
         readonly ImpactFeedbackPool impactParticles = new ImpactFeedbackPool();
-        readonly Dictionary<int, (float started, Vector2 direction)> impactRecoil = new Dictionary<int, (float, Vector2)>(1024);
-        readonly List<int> expiredRecoil = new List<int>(1024);
+        readonly EnemyImpactPosePool enemyImpactPoses = new EnemyImpactPosePool();
         bool impactFeedbackEnabled = true;
         float impactShakeUntil;
-        int impactBossId = -1;
         ArtVisual impactShard, impactDust, impactExperience;
         public bool ImpactFeedbackEnabled
         {
@@ -21,6 +18,8 @@ namespace Game.View
         }
         public int ActiveImpactParticles => impactParticles.Count;
         public int DroppedImpactParticles => impactParticles.Dropped;
+        public int ActiveEnemyImpactPoses => enemyImpactPoses.Count;
+        public int DroppedEnemyImpactPoses => enemyImpactPoses.Dropped;
         // Integration owns display-only frame holding. These signals must never pause Core or change its clock.
         public Action<float> BossHitStopRequested;
         public Action<float> BossDeathSlowRequested;
@@ -41,25 +40,21 @@ namespace Game.View
 
         void ResetImpactFeedback()
         {
-            impactParticles.Clear(); impactRecoil.Clear(); expiredRecoil.Clear(); impactShakeUntil = 0; impactBossId = -1;
+            impactParticles.Clear(); enemyImpactPoses.Clear(); impactShakeUntil = 0;
         }
 
         void AcceptImpactFeedback(WaveEvent value)
         {
             if (!ImpactFeedbackEnabled) return;
             var origin = Point(value.Position);
-            if (value.Kind == "enemy-spawn" && value.Source == waveDefinition.BossId) impactBossId = value.SubjectId;
-            if (value.Kind == "hit")
+            if (value.Amount > 0 && (value.Kind == "hit" ||
+                ((value.Kind == "group-hit" || value.Kind == "trained-group-hit") && waveDefinition.Gear.ContainsKey(value.Source))))
             {
                 var direction = origin - (PredictedLordPosition ?? RenderedLordPosition);
                 if (direction.sqrMagnitude < .000001f) direction = Vector2.up;
-                if (impactRecoil.Count < 1024 || impactRecoil.ContainsKey(value.SubjectId))
-                    impactRecoil[value.SubjectId] = (visualTime, direction.normalized);
+                enemyImpactPoses.Hit(value.SubjectId, visualTime, direction);
                 impactParticles.Hit(value.Id, origin);
                 if (ShowDamageNumbers && showTransientText) numbers?.AddAggregated(value.SubjectId, origin, value.Amount);
-                if (value.SubjectId == impactBossId ||
-                    (waveActorById.TryGetValue(value.SubjectId, out var actor) && actor.DefinitionId == waveDefinition.BossId))
-                    BossHitStopRequested?.Invoke(GameVisualTokens.BossHitStopSeconds);
             }
             else if (value.Kind == "enemy-killed")
             {
@@ -74,18 +69,23 @@ namespace Game.View
         void AdvanceImpactFeedback(float seconds)
         {
             impactParticles.Advance(seconds);
-            expiredRecoil.Clear();
-            foreach (var pair in impactRecoil)
-                if (visualTime - pair.Value.started >= GameVisualTokens.EnemyRecoilSeconds) expiredRecoil.Add(pair.Key);
-            for (var i = 0; i < expiredRecoil.Count; i++) impactRecoil.Remove(expiredRecoil[i]);
+            enemyImpactPoses.Advance(visualTime);
         }
 
-        Vector2 EnemyImpactOffset(int id)
+        EnemyImpactPose ResolveEnemyImpactPose(int id, float bodyWidth, EnemyImpactPose pose)
         {
-            if (!ImpactFeedbackEnabled || !impactRecoil.TryGetValue(id, out var recoil)) return Vector2.zero;
-            var progress = Mathf.Clamp01((visualTime - recoil.started) / GameVisualTokens.EnemyRecoilSeconds);
-            var pixelsToWorld = renderCamera.orthographicSize * 2 / Mathf.Max(1, renderCamera.pixelHeight);
-            return recoil.direction * (GameVisualTokens.EnemyRecoilPixels * pixelsToWorld * (1 - progress));
+            return ImpactFeedbackEnabled ? enemyImpactPoses.Sample(id, visualTime, bodyWidth, pose) : pose;
+        }
+
+        public static Color EnemyBodyTint(WaveEnemyKind kind)
+        {
+            switch (kind)
+            {
+                case WaveEnemyKind.Ranged: return new Color32(205, 191, 121, 255);
+                case WaveEnemyKind.Charger: return new Color32(185, 165, 137, 255);
+                case WaveEnemyKind.FloodBoss: return new Color32(175, 185, 195, 255);
+                default: return new Color32(199, 206, 179, 255);
+            }
         }
 
         Vector2 ImpactCameraOffset

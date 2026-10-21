@@ -181,8 +181,8 @@ namespace Game.View
             followCamera.ReviewMagnification = reviewCameraMagnification;
             followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
-            if(ArtCatalog.ProfileName=="wave-1a")enemyRigAtlas=new EnemyRigAtlas(art);
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
             InitializeActorGrounding();
             InitializeImpactFeedback();
@@ -380,11 +380,22 @@ namespace Game.View
                 if(FieldActive)enemyLayer=GameVisualTokens.EnemyLayer+Mathf.Clamp(19-Mathf.FloorToInt(20f*renderCamera.WorldToViewportPoint(position).y),0,19);
                 var actorTime=visualTime+enemy.Id*.13f;
                 var actorPose=rigged?new ActorPose(Vector2.zero,Vector2.one,0):ActorMotion.SampleEnemy(actorKind,actorTime,moved);
+                if (wave != null)
+                {
+                    var held = ResolveEnemyImpactPose(enemy.Id, dimensions.x, new EnemyImpactPose {
+                        Position = position, AnimationTime = actorTime, Uv = rigUv, Facing = enemyFacing, Body = actorPose,
+                        Visual = enemyArt, Dimensions = dimensions, Rigged = rigged, Flash = flashing });
+                    position = held.Position; actorTime = held.AnimationTime; rigUv = held.Uv;
+                    enemyFacing = held.Facing; actorPose = held.Body;
+                    enemyArt = held.Visual; dimensions = held.Dimensions; rigged = held.Rigged;
+                    flashing = held.Flash;
+                }
                 if(!FieldActive||FieldVisible(position,dimensions))DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind,rigged);
-                position += EnemyImpactOffset(enemy.Id);
                 RenderedEntitySample?.Invoke("enemy",enemy.Id,position);
-                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:rigged&&EnemyRigAtlas.IsChargeDanger(actorKind,actionPhase,state)?GameVisualTokens.Hostile:(Color?)null,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
-                if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
+                var enemyTint = wave == null ? (Color?)null : EnemyRigAtlas.IsChargeDanger(actorKind,actionPhase,state)
+                    ? GameVisualTokens.Hostile : EnemyBodyTint(actorKind);
+                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:enemyTint,flash:flashing ? (wave != null && ImpactFeedbackEnabled ? 1f : .8f) : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
+                if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Ink,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
                     RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));
             }

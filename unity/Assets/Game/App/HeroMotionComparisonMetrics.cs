@@ -58,7 +58,7 @@ namespace Game.App
                 }
             }
             File.WriteAllText(Path.Combine(directory, "hero-motion-metrics.json"), JsonUtility.ToJson(new Manifest {
-                contract = mode == "a-knight-live" ? "a-knight-live-v1" : HeroMotionComparison.Contract,
+                contract = mode == "3d-baked" || mode == "frame-drawn" ? "m1-hero-production-v1" : mode == "a-knight-live" ? "a-knight-live-v1" : HeroMotionComparison.Contract,
                 mode = mode, replaySha256 = replaySha256, finalStateHash = finalStateHash,
                 frames = count, dropped = DroppedSamples, captureActive = captureActive,
                 replayVerified = replayVerified, developmentBuild = UnityEngine.Debug.isDebugBuild,

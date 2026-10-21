@@ -40,12 +40,13 @@ namespace Game.View
     public sealed class ArtCatalog
     {
         public static string ProfileName { get; set; } = "first-playable";
+        public static bool UsesWaveArt => ProfileName == "wave-1a" || ProfileName == "m1-showcase-review";
         static readonly Dictionary<string, ArtCatalog> cache = new Dictionary<string, ArtCatalog>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> roles = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> bindings = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         public static ArtCatalog Load()
         {
-            var name = ProfileName == "wave-1a" ? "Wave1aArt" : "FirstPlayableArt";
+            var name = UsesWaveArt ? "Wave1aArt" : "FirstPlayableArt";
             if (cache.TryGetValue(name, out var cached)) return cached;
             var registry = Resources.Load<ArtRegistry>(name);
             if (registry == null || registry.manifest == null) throw new InvalidOperationException("FirstPlayableArt registry missing; run ArtPreparation.Prepare.");

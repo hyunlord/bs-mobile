@@ -23,6 +23,7 @@ public static partial class UnityExport
         source.AppendLine("    public static class CanonicalContent\n    {");
         source.AppendLine($"        public const string ProfileName = {Literal(profileName)};");
         source.AppendLine($"        public const string ProfileHash = {Literal(profileHash)};");
+        source.AppendLine($"        public const bool IsWave = {(catalog.WaveRuntime is not null ? "true" : "false")};");
         source.AppendLine($"        public const string DataHash = {Literal(snapshot.DataHash)};");
         var camera = presentation.Camera;
         source.AppendLine(FormattableString.Invariant($"        public static readonly PresentationSettings Presentation = new PresentationSettings(new CameraSettings({camera.WorldUnitsPerUnityUnit}, {camera.MinHalfHeight}, {camera.MaxHalfHeight}, {camera.EstatePadding}, {camera.FollowMilliseconds}, {camera.ZoomMilliseconds}));"));

@@ -234,9 +234,9 @@ namespace Game.View
         // it explicitly, or when the hero has no sheet roles. Decided each frame, after the art is loaded.
         public bool HeroRigExplicit { get; set; }
         bool heroRigActive, heroSheetOn;
-        // Review modes ask for their own hero explicitly: the motion comparison and the concept review keep their rig or
-        // picture, so the sheet stays off for them.
-        bool HeroReviewExplicit => HeroRigExplicit || HeroMotionPreviewMode != 0 || heroConceptVisual != null;
+        // Review modes ask for their own hero explicitly: the motion comparison, the production comparison and the concept
+        // review keep their rig or picture, so the sheet stays off for them.
+        bool HeroReviewExplicit => HeroRigExplicit || HeroMotionPreviewMode != 0 || productionHero != null || heroConceptVisual != null;
         bool HeroSheetShown(string heroId) => !HeroReviewExplicit && EnsureHeroSheet(heroId);
         void SelectHeroRig(string heroId)
         {

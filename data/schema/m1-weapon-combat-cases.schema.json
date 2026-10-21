@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "status",
+    "baselineSourceCommit",
+    "cases"
+  ],
+  "properties": {
+    "contract": {
+      "const": "m1-combat-cases-v1"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baselineSourceCommit": {
+      "const": "5118e2c2a06f6449be672a77a64b61c9a349d69b"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "designRef",
+          "proposedContract",
+          "stage",
+          "classification",
+          "gear",
+          "arena"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^core:[a-z][a-z0-9_]*$"
+          },
+          "designRef": {
+            "type": "string",
+            "pattern": "^data/review/m1-weapon-combat-cases.json#core:"
+          },
+          "proposedContract": {
+            "const": "m1-review-composition-v1"
+          },
+          "stage": {
+            "enum": [
+              "lv1",
+              "max",
+              "evolved"
+            ]
+          },
+          "classification": {
+            "const": "hypothesis"
+          },
+          "gear": {
+            "type": "object",
+            "properties": {
+              "aim": {
+                "type": "string",
+                "enum": [
+                  "nearest-enemy"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "designRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "Arc",
+                  "Orbit",
+                  "Chain",
+                  "Homing",
+                  "HarvestArc",
+                  "SeedFan",
+                  "WaterFan",
+                  "ConstructionSlam",
+                  "MusterWave"
+                ]
+              },
+              "damage": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "range": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "cooldownTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "speed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "lifetimeTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "knockback": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "workTicks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "workRadius": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "rewardExperience": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "capacity": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "damage": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "range": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "cooldownTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "speed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "lifetimeTicks": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "knockback": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    }
+                  },
+                  "required": [
+                    "damage",
+                    "range",
+                    "cooldownTicks",
+                    "speed",
+                    "count",
+                    "lifetimeTicks",
+                    "knockback"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 12,
+                "minItems": 12
+              },
+              "composition": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "version",
+                  "placement",
+                  "delayTicks",
+                  "stepTicks",
+                  "spacing",
+                  "radius"
+                ],
+                "properties": {
+                  "version": {
+                    "const": 1
+                  },
+                  "placement": {
+                    "enum": [
+                      "nearest-target",
+                      "forward-line"
+                    ]
+                  },
+                  "delayTicks": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 12000
+                  },
+                  "stepTicks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12000
+                  },
+                  "spacing": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12000
+                  },
+                  "radius": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 12000
+                  }
+                }
+              }
+            },
+            "required": [
+              "id",
+              "designRef",
+              "kind",
+              "damage",
+              "range",
+              "cooldownTicks",
+              "speed",
+              "count",
+              "lifetimeTicks",
+              "knockback",
+              "workTicks",
+              "workRadius",
+              "rewardExperience",
+              "capacity"
+            ],
+            "additionalProperties": false
+          },
+          "arena": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "enemyId",
+              "spawnPeriodTicks",
+              "enemyCap",
+              "enemySpeed",
+              "enemyHealth",
+              "durationTicks",
+              "enemyDamage",
+              "suppressedUntilTick",
+              "baseExperience",
+              "spawnRadius",
+              "recycleRadius",
+              "enemyBodyWidth"
+            ],
+            "properties": {
+              "enemyId": {
+                "const": "core:raider"
+              },
+              "durationTicks": {
+                "const": 600
+              },
+              "spawnPeriodTicks": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "enemyCap": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "enemySpeed": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "enemyHealth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "enemyDamage": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "suppressedUntilTick": {
+                "type": "integer",
+                "minimum": 601
+              },
+              "baseExperience": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "spawnRadius": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "recycleRadius": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "enemyBodyWidth": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

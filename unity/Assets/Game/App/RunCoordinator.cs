@@ -54,7 +54,7 @@ namespace Game.App
             }
         }
         public event Action<WaveRuntimeFrame> WaveFrameAccepted;
-        public bool IsWave => CanonicalContent.ProfileName == "wave-1a";
+        public bool IsWave => CanonicalContent.IsWave;
         public FloatingStick Stick { get; private set; }
         public UiShell Ui { get; private set; }
         public int Speed { get; private set; } = 1;
@@ -283,7 +283,7 @@ namespace Game.App
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;resultFragments.Clear();metaRun=useMeta;abandoned=false;
                 SnapshotFeelPreferences();
-                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions(),DepartureHostRewards(useMeta));
+                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions(),DepartureHostRewards(useMeta),MeleeAim:CatalogRunOptions.MeleeAim(c));
                 Session=new InteractiveSession(c,options);guardedOffer=null;portraitCardActions=null;CaptureSnapshots();previous=CurrentFrame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(MetaDirectory,options,BuildIdentity.Commit);if(started?.ReplayContext!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;

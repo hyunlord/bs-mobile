@@ -119,7 +119,7 @@ namespace SowSiege.Core
                     if (projected != enemy.Position) { Relocate(enemy, projected); }
                     continue;
                 }
-                if (modules.Enemy(enemy.Definition).Boss || enemy.Position.DistanceSquared(world.Lord) <= (long)FieldRules.RecycleRadius * FieldRules.RecycleRadius || ContactingProsperity(enemy)) { continue; }
+                if (modules.Enemy(enemy.Definition).Boss || enemy.Position.DistanceSquared(world.Lord) <= (long)field.RecycleRadius * field.RecycleRadius || ContactingProsperity(enemy)) { continue; }
                 Relocate(enemy, field.Recycle(world.Lord, world.Tick, enemy.Id));
             }
         }
