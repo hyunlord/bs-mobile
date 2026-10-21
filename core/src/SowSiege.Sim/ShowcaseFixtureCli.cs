@@ -5,7 +5,22 @@ using SowSiege.Core;
 namespace SowSiege.Sim;
 public static class ShowcaseFixtureCli
 {
-    public static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
+    public static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, WriteIndented = true, Converters = { new JsonStringEnumConverter() }, TypeInfoResolver = CaseResolver() };
+    // Optional composition fields added after the cases were frozen (ADR0061) are left out while unset, so sidecars of cases
+    // that do not use them stay byte-identical; the older null members keep their existing explicit nulls.
+    static System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver CaseResolver()
+    {
+        var resolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
+        resolver.Modifiers.Add(type =>
+        {
+            if (type.Type != typeof(WaveAttackComposition)) { return; }
+            foreach (var property in type.Properties)
+            {
+                if (property.Name == "rehitEachImpact") { property.ShouldSerialize = (_, value) => value is not null; }
+            }
+        });
+        return resolver;
+    }
     public static PlayerInput WalkingInput(int tick) => (tick / 30 % 4) switch
     {
         0 => new(PlayerInput.Scale, 0),

@@ -51,7 +51,10 @@ namespace SowSiege.Core
             WriteMap(d.Gear, g =>
             {
                 if (g.Composition is { } composition)
-                { Write("wave-review-impact-v1"); Write(composition.Version); Write(composition.Placement); Write(composition.DelayTicks); Write(composition.StepTicks); Write(composition.Spacing); Write(composition.Radius); }
+                {
+                    Write("wave-review-impact-v1"); Write(composition.Version); Write(composition.Placement); Write(composition.DelayTicks); Write(composition.StepTicks); Write(composition.Spacing); Write(composition.Radius);
+                    if (composition.RehitEachImpact == true) { Write("wave-review-rehit-v1"); }
+                }
                 if (g.Aim is not null) { Write("wave-gear-aim-v1"); Write(g.Aim); }
                 Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null)
                 {
