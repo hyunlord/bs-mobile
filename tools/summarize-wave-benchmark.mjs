@@ -6,9 +6,10 @@ import { parseCsv } from './csv.mjs';
 
 export const frameHeaders = 'frame tick enemies commands wallMs simulationMs snapshotMs acceptMs presentMs hudMs allocatedBytes gcCollections focused'.split(' ');
 export const timingHeaders = 'observedFrame frameStartTimestamp cpuFrameMs cpuMainThreadMs cpuRenderThreadMs cpuPresentWaitMs gpuMs'.split(' ');
-const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter'.split(' ');
+// The last three columns came with #235's foreground-stall evidence; a valid run has no background exclusion in them (#321).
+const frameExtensions = 'advances advanceMs worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp inputDeltaSeconds accumulatorBefore accumulatorAfter partialBoundary originalWallMs excludedBackgroundMs'.split(' ');
 const timingExtensions = ['observationTimestamp'];
-const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp'.split(' '));
+const integerExtensions = new Set('advances worldBatchDrawCalls worldInstances entryTimestamp exitTimestamp nextEntryTimestamp observationTimestamp partialBoundary'.split(' '));
 const cpuFields = 'wallMs simulationMs snapshotMs acceptMs presentMs hudMs'.split(' ');
 const configFields = 'width height targetFrameRate vSyncCount renderWarmupFrames windows graphicsApi quality frameTimingEnabled platform'.split(' ');
 const deviceFields = 'model os unityVersion backend graphics'.split(' ');
@@ -81,12 +82,21 @@ function loadRun(directory, contract) {
   assert.equal(device.graphics, identity.graphicsApi);
   const rows = parseNumbers(path.join(directory, 'frames.csv'), frameHeaders, frameExtensions);
   assert.ok(rows.length > 0, 'No frame samples'); assert.equal(rows.length, identity.frames, 'Truncated frame CSV');
+  // Focus loss is a validity failure, not a filterable interval (runbook). Runs with the current columns must carry both
+  // ledgers as empty arrays; only legacy CSVs, which predate the ledgers, may omit them.
+  const currentFormat = Object.hasOwn(rows[0], 'partialBoundary');
+  for (const [key, message] of [['focusEvents', 'Focus lost during the benchmark; the run is invalid'], ['excludedIntervals', 'Background intervals were excluded; the run is invalid']]) {
+    if (!currentFormat && !Object.hasOwn(identity, key)) continue;
+    assert.ok(Array.isArray(identity[key]), `Missing or malformed ${key} ledger; the run is invalid`);
+    assert.equal(identity[key].length, 0, message);
+  }
   let previous;
   for (const row of rows) {
     for (const key of ['frame', 'tick', 'enemies', 'commands', 'allocatedBytes', 'gcCollections', 'focused']) assert.ok(Number.isSafeInteger(row[key]), `Noninteger ${key}`);
     if (Object.hasOwn(row, 'advances')) assert.ok(row.advances <= row.commands, 'Advance count exceeds commands');
     if (Object.hasOwn(row, 'nextEntryTimestamp')) assert.ok(row.entryTimestamp <= row.exitTimestamp && row.exitTimestamp <= row.nextEntryTimestamp, 'Invalid frame timestamp order');
     assert.equal(row.focused, 1, 'Unfocused benchmark frame'); assert.ok(row.wallMs > 0, 'Empty frame duration');
+    if (Object.hasOwn(row, 'partialBoundary')) assert.ok(row.partialBoundary === 0 && row.excludedBackgroundMs === 0, 'Background exclusion or resume boundary; the run is invalid');
     const window = contract.windows.findIndex(([start, end]) => row.tick >= start && row.tick <= end);
     assert.ok(window >= 0, 'Frame outside fixed measurement windows');
     if (previous) {
