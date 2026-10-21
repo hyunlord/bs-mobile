@@ -26,6 +26,7 @@ namespace Game.App
         bool waveBenchmarkRequested, waveBenchmarkReady, waveBenchmarkEnded, benchmarkCapture, benchmarkInterrupted;
         string benchmarkMode = "capped";
         CrowdReplayBenchmark crowdBenchmark;
+        string crowdDataHashWarning;
         bool offlineReplayRequested, offlineAudioRequested;
         OfflineReplayCapture offlineReplayCapture;
         HeroMotionComparisonWindow heroMotionWindow;
@@ -136,6 +137,7 @@ namespace Game.App
         [Serializable] sealed class BenchmarkResult
         {
             public string commit, sourceHash, dataHash, replaySha256, stateHash, expectedStateHash, error, graphicsApi, quality, platform;
+            public string currentDataHash, dataHashWarning;
             public bool sourceDirty, verified, developmentBuild, frameTimingEnabled, interrupted, profilerEnabled, allocationCounterAvailable, heroRig;
             public bool performanceEligible = true;
             public bool diagnosticOnly, actorGroundingSkipped;
@@ -212,7 +214,14 @@ namespace Game.App
                 if (combatReview != null && (benchmarkReplay.End.Tick != combatReview.Definition.endTick || benchmarkReplay.End.StateHash != combatReview.Definition.stateHash)) throw new InvalidDataException("Combat replay end tick mismatch.");
                 ContentCatalog frozen = null; string hash = null;
                 if (crowdBenchmark == null) LoadFrozenWaveBenchmark(ref frozen, ref hash);
-                else { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; crowdBenchmark.Validate(benchmarkReplaySha, hash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash); }
+                else
+                {
+                    frozen = FoundationBoot.Catalog;
+                    crowdDataHashWarning = crowdBenchmark.Validate(benchmarkReplaySha, benchmarkReplay.Header.Options.DataHash, CanonicalContent.DataHash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash);
+                    if (crowdDataHashWarning != null) UnityEngine.Debug.LogWarning(crowdDataHashWarning);
+                    // The replay runs on its own recorded options; the current tree's hash is recorded beside it (ADR0058 보충).
+                    hash = benchmarkReplay.Header.Options.DataHash;
+                }
                 benchmarkGearReference = frozen?.WaveRuntime;
                 if (combatReview != null) { combatReview.ValidateReplayOptions(benchmarkReplay.Header.Options); frozen = combatReview.Apply(frozen,hash,benchmarkReplaySha); hash = combatReview.Definition.catalogHash; }
                 if (frozen == null || hash != benchmarkReplay.Header.Options.DataHash) throw new InvalidDataException("Frozen benchmark catalog absent or mismatched; prepare the benchmark build.");
@@ -611,6 +620,7 @@ namespace Game.App
             if (crowdBenchmark != null)
             {
                 result.fixture = "rules-off-six-minute-8c94ce2";
+                result.currentDataHash = CanonicalContent.DataHash; result.dataHashWarning = crowdDataHashWarning;
                 result.windows = CrowdStartTick + "-" + CrowdEndTick;
                 result.playbackBoundary = "Capture-free native replay, not live input. Original accepted commands are pre-rolled without rendering to tick10800; 120 rendered warmup frames then 1x playback until original terminal state. No JPEG, readback, audio recording or forced survival. Card commands replay immediately; original human pause durations are not encoded. Draw calls are world batch submissions, excluding Unity UI and render-pipeline passes. Allocation bytes unavailable are -1.";
             }
@@ -633,7 +643,7 @@ namespace Game.App
                     result.tick = summary.Tick; result.commands = benchmarkCommand; result.stateHash = summary.StateHash;
                     result.expectedStateHash = benchmarkReplay.End.StateHash; result.dataHash = benchmarkReplay.Header.Options.DataHash;
                     var kind = summary.EndReason == "death" ? ReplayEndKind.Death : summary.EndReason == "duration" ? ReplayEndKind.Duration : ReplayEndKind.Quit;
-                    result.verified = summary.Tick == benchmarkReplay.End.Tick && summary.StateHash == benchmarkReplay.End.StateHash && kind == benchmarkReplay.End.Kind && Session.NextSequence == benchmarkReplay.End.AppliedCommands;
+                    result.verified = summary.Tick == benchmarkReplay.End.Tick && summary.StateHash == benchmarkReplay.End.StateHash && kind == benchmarkReplay.End.Kind && Session.NextSequence == benchmarkReplay.End.AppliedCommands && (crowdBenchmark == null || CrowdReplayBenchmark.TerminalMatches(summary.StateHash));
                     if (!result.verified) result.error = "Original replay terminal state mismatch.";
                 }
                 if (offlineReplayCapture != null) offlineReplayCapture.Finish(OfflineReplayCapture.ExpectedFrames(cameraScaleComparison == null ? CrowdEndTick - CrowdStartTick : cameraScaleComparison.EndTick - cameraScaleComparison.StartTick, CurrentFrame.TickRate)+heroTerminalTailFrames, result.verified);
