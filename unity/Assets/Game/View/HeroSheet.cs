@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace Game.View
 {
-    // Full-body knight sprite sheets (Astra knight-game-sheets-r4, docs/design/gdd/06-feedback.md "공격 동작"). View only:
+    // Full-body knight sprite sheets (Astra side-view actions, #336; docs/design/gdd/06-feedback.md "공격 동작"). View only:
     // Core events choose the pose; nothing here changes when damage happens.
     public enum HeroAction { None, Slash, Aim, Cast, Blow, Throw }
-    public enum HeroClip { Idle, Walk, Hit, Death, Action, Key }
+    public enum HeroClip { Idle, Walk, Hit, Death, Action, Key, Transition, TransitionB }
 
     public static class HeroSheetSpec
     {
@@ -20,6 +20,20 @@ namespace Game.View
         public const float MinRepeatSeconds = .4f;   // the same action starts at most every 0.4 s
         public const string KnightId = "core:frontier_knight", RolePrefix = "hero.core.frontier_knight.";
         public static readonly string[] ActionNames = { "", "slash", "aim", "cast", "blow", "throw" };
+        public const string WalkToIdleSuffix = "transition.walk-to-idle";
+        // Gather B (user decision 2026-10-20): drawn to follow walk frame 7, where the back leg is forward. A stop on walk frames
+        // 4-11 plays B, on 12-15 and 0-3 the frame-15 gather A, so the legs never swap places on the first gather frame. Until
+        // B's role is delivered every stop plays A.
+        public const string WalkToIdleBSuffix = "transition.walk-to-idle-b";
+        public static bool StopsIntoGatherB(int walkFrame) => walkFrame >= 4 && walkFrame <= 11;
+        // Effect frame of each standing action (0-based: the frame on which its weapon effect fires), from Astra's side-view
+        // manifest; the standing cast fires on its raised-sword frame 2 (user decision 2026-10-20). packed-frames.json records it.
+        static readonly int[] EffectFrames = { 0, 3, 3, 2, 3, 4 };
+        public static int EffectFrame(HeroAction action) => EffectFrames[(int)action];
+        // Effect alignment (user decision 2026-10-20, option A): an accepted standing attack starts on the frame just before its
+        // effect frame, shown for one 30 Hz Core tick, then the effect frame, so it trails the weapon effect by at most a tick.
+        // Moving key poses emit on their own frame 0 and start there.
+        public const float EffectLeadSeconds = 1f / 30;
         public static float Seconds(int ticks60) => ticks60 / 60f;
         // The pack tool writes frameMs as the delivered 60 Hz tick count rounded to milliseconds (10 ticks -> 167 ms).
         public static int TicksOf(int frameMs) => Mathf.RoundToInt(frameMs * 60 / 1000f);
@@ -83,11 +97,19 @@ namespace Game.View
         public HeroClipTiming Hit { get; }
         public HeroClipTiming Action(HeroAction action) => actions[(int)action];
         public HeroClipTiming Key(HeroAction action) => keys[(int)action];
+        // The walk-to-idle feet gather (Astra r4), played when the hero stops; absent (null) for a sheet without the role.
+        public HeroClipTiming? WalkToIdle { get; }
+        public HeroClipTiming? WalkToIdleB { get; }
+        // role(suffix) returns 0 frames for a role the manifest does not have; only the transitions may be missing.
         public HeroSheetTimings(Func<string, (int Frames, int FrameMs)> role)
         {
             HeroClipTiming Of(string suffix) { var r = role(suffix); return new HeroClipTiming(r.Frames, r.FrameMs); }
             Idle = Of("idle"); Walk = Of("walk"); Hit = Of("hit");
             for (var a = 1; a < actions.Length; a++) { actions[a] = Of("action." + HeroSheetSpec.ActionNames[a]); keys[a] = Of("key." + HeroSheetSpec.ActionNames[a]); }
+            var gather = role(HeroSheetSpec.WalkToIdleSuffix);
+            WalkToIdle = gather.Frames > 0 ? new HeroClipTiming(gather.Frames, gather.FrameMs) : (HeroClipTiming?)null;
+            var gatherB = role(HeroSheetSpec.WalkToIdleBSuffix);
+            WalkToIdleB = gather.Frames > 0 && gatherB.Frames > 0 ? new HeroClipTiming(gatherB.Frames, gatherB.FrameMs) : (HeroClipTiming?)null;
         }
     }
 
@@ -99,17 +121,20 @@ namespace Game.View
     }
 
     // Chooses the knight's pose each frame. Rules (06-feedback):
-    // - Moving: an accepted attack shows that action's key pose for 7/60 s, then walking resumes. Standing: the full action.
+    // - Moving: an accepted attack plays that action's key clip (its own frames and frameMs), then walking resumes. Standing: the
+    //   full action, entered on the frame before its effect frame for one Core tick (HeroSheetSpec.EffectLeadSeconds).
     // - Starting to move during a full action ends it at once (user approved 2026-10-17).
     // - Same tick: evolved before higher damage before lower weapon id. During an action a higher-priority attack replaces it
     //   from its start; equal or lower ones are dropped. The same action starts at most every 0.4 s (dropped, not queued).
-    // - An attack wins over a hero hit (user decision 2026-10-19): a hit during an action keeps the action and shows only as the
-    //   white flash; the hit pose is used only while no action is shown, and attacks during it start as usual.
+    // - An attack wins over a hero hit (user decision 2026-10-19, as #335): a hit during an action keeps the action and shows
+    //   only as the white flash; the hit pose is used only while no action is shown, and attacks during it start.
+    // - Stopping plays the walk-to-idle gather when its clip exists (Astra r4; B for a stop on walk frames 4-11 once it exists),
+    //   then idle from frame 0.
     public sealed class HeroActionSelector
     {
         HeroAction current; bool key; float started; int startedTick = -1; bool evolved; int damage; string source;
         readonly float[] lastStart = new float[6];
-        float hitStarted; bool wasHit; float walkPhase;
+        float hitStarted; bool wasHit; float walkPhase; bool wasMoving; float stoppedAt; bool stopGatherB;
         // Seconds since the current hero hit began, or -1 when no hit is shown.
         public float HitAge(float time) => wasHit ? time - hitStarted : -1;
         public int Started { get; private set; }
@@ -127,7 +152,7 @@ namespace Game.View
         {
             current = HeroAction.None; key = false; started = 0; startedTick = -1; source = null; evolved = false; damage = 0;
             for (var i = 0; i < lastStart.Length; i++) lastStart[i] = float.NegativeInfinity;
-            hitStarted = 0; wasHit = false; walkPhase = 0;
+            hitStarted = 0; wasHit = false; walkPhase = 0; wasMoving = false; stoppedAt = float.NegativeInfinity; stopGatherB = false;
             Started = KeysShown = FullShown = Dropped = Replaced = CutByMovement = 0;
         }
 
@@ -154,7 +179,8 @@ namespace Game.View
             var sameTickChoice = active && tick == startedTick;
             if (!sameTickChoice && time - lastStart[(int)action] < HeroSheetSpec.MinRepeatSeconds) { Dropped++; return false; }
             if (active) Replaced++;
-            current = action; key = moving; started = time; startedTick = tick;
+            current = action; key = moving; startedTick = tick;
+            started = moving ? time : time - Mathf.Max(0, HeroSheetSpec.EffectFrame(action) * Clips.Action(action).FrameSeconds - HeroSheetSpec.EffectLeadSeconds);
             evolved = isEvolved; damage = weaponDamage; source = weaponSource; lastStart[(int)action] = time;
             Started++; if (key) KeysShown++; else FullShown++;
             return true;
@@ -165,20 +191,31 @@ namespace Game.View
         public HeroSheetPose Pose(float time, bool moving, bool hit, bool dead, float walkDistance, float stride)
         {
             if (moving && stride > 0) walkPhase = Mathf.Repeat(walkPhase + walkDistance / stride, 1);
+            if (wasMoving && !moving)
+            {
+                stoppedAt = time;
+                stopGatherB = Clips.WalkToIdleB.HasValue && HeroSheetSpec.StopsIntoGatherB(Mathf.Min(Clips.Walk.Frames - 1, Mathf.FloorToInt(walkPhase * Clips.Walk.Frames)));
+            }
+            wasMoving = moving;
             if (dead) { wasHit = false; current = HeroAction.None; return new HeroSheetPose(HeroClip.Death, HeroAction.None, 0); }
             if (hit) { if (!wasHit) { wasHit = true; hitStarted = time; } }
             else wasHit = false;
             if (current != HeroAction.None && !key && moving) { current = HeroAction.None; CutByMovement++; }
             if (Active(time, moving))
             {
-                if (key) return new HeroSheetPose(HeroClip.Key, current, (int)current - 1);
+                if (key) return new HeroSheetPose(HeroClip.Key, current, Clips.Key(current).FrameAt(time - started));
                 return new HeroSheetPose(HeroClip.Action, current, Clips.Action(current).FrameAt(time - started));
             }
             current = HeroAction.None;
             if (hit) return new HeroSheetPose(HeroClip.Hit, HeroAction.None, Clips.Hit.FrameAt(time - hitStarted));
             var walk = Clips.Walk; var idle = Clips.Idle;
             if (moving) return new HeroSheetPose(HeroClip.Walk, HeroAction.None, Mathf.Min(walk.Frames - 1, Mathf.FloorToInt(walkPhase * walk.Frames)));
-            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time) / idle.FrameSeconds) % idle.Frames);
+            var stopGather = stopGatherB ? Clips.WalkToIdleB : Clips.WalkToIdle;
+            if (stopGather is HeroClipTiming gather && time - stoppedAt < gather.Seconds)
+                return new HeroSheetPose(stopGatherB ? HeroClip.TransitionB : HeroClip.Transition, HeroAction.None, gather.FrameAt(time - stoppedAt));
+            // The gather leads into idle frame 0 (Astra r4), so after a stop the idle loop counts from the gather's end.
+            var idleFrom = stopGather is HeroClipTiming gathered && !float.IsNegativeInfinity(stoppedAt) ? stoppedAt + gathered.Seconds : 0;
+            return new HeroSheetPose(HeroClip.Idle, HeroAction.None, Mathf.FloorToInt(Mathf.Max(0, time - idleFrom) / idle.FrameSeconds) % idle.Frames);
         }
     }
 
@@ -190,7 +227,7 @@ namespace Game.View
         public Action<float, float, bool> HeroSheetDrawn { get; set; }   // hit age (-1 none), flash, red outline drawn
         public HeroActionSelector HeroActions { get; } = new HeroActionSelector();
         bool heroSheetChecked, heroSheetAvailable;
-        ArtVisual heroSheetIdle, heroSheetWalk, heroSheetHit, heroSheetDeath;
+        ArtVisual heroSheetIdle, heroSheetWalk, heroSheetHit, heroSheetDeath, heroSheetGather, heroSheetGatherB;
         readonly ArtVisual[] heroSheetActions = new ArtVisual[6], heroSheetKeys = new ArtVisual[6];
 
         // The knight sprite sheets replace the cutout B rig (#268): the B rig draws only when a comparison or benchmark asks for
@@ -217,6 +254,8 @@ namespace Game.View
             if (!art.TryResolveRole(HeroSheetSpec.RolePrefix + "action.slash", out _)) return heroSheetAvailable = false;
             heroSheetIdle = Resolve("hero", heroId, "idle"); heroSheetWalk = Resolve("hero", heroId, "walk");
             heroSheetHit = Resolve("hero", heroId, "hit"); heroSheetDeath = Resolve("hero", heroId, "death");
+            art.TryResolveRole(HeroSheetSpec.RolePrefix + HeroSheetSpec.WalkToIdleSuffix, out heroSheetGather);
+            art.TryResolveRole(HeroSheetSpec.RolePrefix + HeroSheetSpec.WalkToIdleBSuffix, out heroSheetGatherB);
             for (var a = 1; a < heroSheetActions.Length; a++)
             {
                 heroSheetActions[a] = art.ResolveRole(HeroSheetSpec.RolePrefix + "action." + HeroSheetSpec.ActionNames[a]);
@@ -226,9 +265,13 @@ namespace Game.View
             // calls only: this runs inside the first presented frame, which must not allocate.
             HeroSheetSpec.FigureSize(heroSheetIdle); HeroSheetSpec.FigureSize(heroSheetWalk);
             HeroSheetSpec.FigureSize(heroSheetHit); HeroSheetSpec.FigureSize(heroSheetDeath);
+            if (heroSheetGather != null) HeroSheetSpec.FigureSize(heroSheetGather);
+            if (heroSheetGatherB != null) HeroSheetSpec.FigureSize(heroSheetGatherB);
             for (var a = 1; a < heroSheetActions.Length; a++) { HeroSheetSpec.FigureSize(heroSheetActions[a]); HeroSheetSpec.FigureSize(heroSheetKeys[a]); }
             // Frame counts and frameMs come from the manifest roles, so a redrawn clip under the same role needs no code change.
-            HeroActions.Timings = new HeroSheetTimings(suffix => { var v = art.ResolveRole(HeroSheetSpec.RolePrefix + suffix); return (v.UvRects.Count, v.FrameMs); });
+            HeroActions.Timings = new HeroSheetTimings(suffix => suffix == HeroSheetSpec.WalkToIdleSuffix && heroSheetGather == null
+                || suffix == HeroSheetSpec.WalkToIdleBSuffix && heroSheetGatherB == null ? (0, 0)
+                : (art.ResolveRole(HeroSheetSpec.RolePrefix + suffix).UvRects.Count, art.ResolveRole(HeroSheetSpec.RolePrefix + suffix).FrameMs));
             return heroSheetAvailable = true;
         }
 
@@ -275,9 +318,10 @@ namespace Game.View
             var visual = pose.Clip switch
             {
                 HeroClip.Walk => heroSheetWalk, HeroClip.Hit => heroSheetHit, HeroClip.Death => heroSheetDeath,
-                HeroClip.Action => heroSheetActions[(int)pose.Action], HeroClip.Key => heroSheetKeys[(int)pose.Action], _ => heroSheetIdle
+                HeroClip.Action => heroSheetActions[(int)pose.Action], HeroClip.Key => heroSheetKeys[(int)pose.Action],
+                HeroClip.Transition => heroSheetGather, HeroClip.TransitionB => heroSheetGatherB, _ => heroSheetIdle
             };
-            var frame = pose.Clip == HeroClip.Key ? 0 : pose.Frame;
+            var frame = pose.Frame;
             // Left/right mirror the single 3/4 view (facing keeps the last horizontal direction); up/down use the same sheet.
             var size = visual.WorldSize; size.x *= facing.SignedWidth;
             var hitAge = HeroActions.HitAge(visualTime);

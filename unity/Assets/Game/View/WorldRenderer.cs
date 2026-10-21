@@ -168,6 +168,7 @@ namespace Game.View
         readonly Dictionary<(string kind,int id),(ActorFacingMotion motion,int generation)> actorFacing = new Dictionary<(string,int),(ActorFacingMotion,int)>(1024);
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
         int facingGeneration;
+        readonly PersonSheetWalk personWalk = new PersonSheetWalk();
         Vector2 previousRenderedLord;
         bool hasRenderedLord, heroGaitDiscontinuity;
 
@@ -357,18 +358,23 @@ namespace Game.View
                 var person = current.People[personIndex];
                 if (!activities.TryGetValue(person.Id, out var activity)) throw new InvalidOperationException("Missing person activity: " + person.Id);
                 var personPosition = Interpolate(previousPeople, person.Id, person.Position, alpha);
+                var step = previousPeople.TryGetValue(person.Id, out var before) ? Point(person.Position) - before : Vector2.zero;
                 if (person.Role == "militia" || person.Role == "guard")
                 {
                     var muster = PeopleMusterFormation(person);
                     if (muster.Path != MusterPresentationPath.None)
                     {
-                        var front = Resolve("person", person.Role, activity);
-                        DrawMusterFormation(person.Id, muster, front, Resolve("person", person.Role == "guard" ? "militia" : "guard", activity), GameVisualTokens.AllyLayer,
-                            personPosition, visualTime + person.Id * 0.13f, activity == "move" || activity == "muster", default);
+                        // The muster soldiers each walk the Soldier B sheet by their own distance (user decision 2026-10-21).
+                        DrawMusterFormation(person.Id, muster, person.Role, person.Role == "guard" ? "militia" : "guard", activity, GameVisualTokens.AllyLayer,
+                            personPosition, visualTime + person.Id * 0.13f, activity == "move" || activity == "muster", step != Vector2.zero, default);
                         continue;
                     }
                 }
-                Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f);
+                var walk = Resolve("person", person.Role, "move");
+                if (!PersonSheetWalk.Applies(walk)) { Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f); continue; }
+                var walkFrame = personWalk.Frame("person", person.Id, personPosition, visualTime, step != Vector2.zero, walk, facingGeneration);
+                var shown = walkFrame >= 0 ? walk : Resolve("person", person.Role, activity);
+                DrawActor(shown, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, -1, facing: Facing("person", person.Id, step), uv: walkFrame >= 0 ? walk.UvRects[walkFrame] : (Rect?)null);
             }
             if (presentationDiagnosticsActive) diagnostics.WaveWorldObjectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawEffects(lord);
@@ -502,6 +508,7 @@ namespace Game.View
             retiredFacing.Clear();
             foreach(var pair in actorFacing)if(pair.Value.generation!=facingGeneration)retiredFacing.Add(pair.Key);
             for(var i=0;i<retiredFacing.Count;i++)actorFacing.Remove(retiredFacing[i]);
+            personWalk.Retire(facingGeneration);
             if (presentationDiagnosticsActive)
             {
                 diagnostics.CleanupMs = DiagnosticInterval(ref diagnosticCheckpoint);

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
@@ -13,6 +14,22 @@ namespace SowSiege.Core
             if (d.EnemySeparation is { } separation)
             {
                 Write("wave-enemy-separation-v1"); Write(separation.Version); WriteMap(separation.BodyWidths, Write);
+            }
+            var programs = d.Programs ?? WaveLegacyCompiler.Compile(d);
+            if (d.Evolutions.Values.Any(e => !WaveEvolutionUnlocks.IsDefault(e, programs[e.Id])))
+            {
+                Write("wave-evolution-unlock-v1");
+                WriteMap(d.Evolutions, e =>
+                {
+                    var unlock = WaveEvolutionUnlocks.Effective(e, programs[e.Id]);
+                    WriteList(unlock.Inputs, input => { Write(input.Id); Write(input.MinLevel ?? 1); Write(input.RequireMaxLevel == true); });
+                    WriteList(unlock.Events, required => { Write(required.Event); Write(required.MinCount); });
+                });
+            }
+            if (d.CardOffer is { } offer && !offer.IsDefault())
+            {
+                Write("wave-card-offer-v1"); Write(offer.EvolutionPriority ?? "none"); Write(offer.OwnedGearWeight ?? 1); Write(offer.UnownedGearWeight ?? 1);
+                WriteMap(offer.Cards ?? new Dictionary<string, WaveCardOfferCard>(), card => { Write(card.Weight ?? 1); Write(card.MaxPicks ?? 0); });
             }
             Write("wave-runtime-definition-v1");
             Write(d.Revision);
@@ -147,6 +164,7 @@ namespace SowSiege.Core
                 Write(e.Id); Write(e.Tick); Write(e.Kind); Write(e.Source); Write(e.SubjectId); Write(e.Position); Write(e.Target); Write(e.Amount);
             }
 );
+            if (s.UnlockEvents.Count > 0) { Write("wave-unlock-events-v1"); WriteMap(s.UnlockEvents, Write); }
         }
     }
 }
