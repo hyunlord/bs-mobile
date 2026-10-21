@@ -1,0 +1,8 @@
+Initial brief below is a reconstructed summary, not a verbatim tool prompt. The follow-up prompt is verbatim.
+
+Initial imagegen: reference1 /Users/rexxa/Downloads/heroes.png (leftmost approvedA knight), reference2 existingHeroMotion/parts.png layoutonly; transparent_background=true.
+Create production2D skeletal cutout parts for FIRST adultmale blond traditionalpioneerknight. Preserve matureface,wavygoldenhair,adultproportions,ivorydiamondquiltlongsurcoat,steelarmor,mutedgoldtrim,cobaltcape,ink/gouache. Fourcolumns/fourrows, transparentgutters,no labels. Row1head/torso/capecollar/longcape;row2nearupperarm/nearforearmclosedhand/farupperarm/farforearmclosedhand;row3nearthigh/nearshinboot/farthigh/farshinboot;row4uprightsword/opennearhand/openfarhand/belttab. Jointoverlaps. Noassembledcharacter.
+Initialresult exec-ae88d8c2-9b72-478e-9067-3aaded83bc73.png rejected attachedswordonforearm.
+Exact follow-up prompt:
+Exact cleanup of this A knight transparent cutout atlas. Preserve canvas, all16parts, their locations, adultblondface, ivory quilt coat, cobalt cape, armor rendering. TWO CORRECTIONS ONLY: 1 remove ALL neon bright red/yellow fringe speckles around edges, replace with transparent alpha or natural charcoal ink edge. No red/yellow outlining at all anywhere. 2 row2,column2 armored forearm: remove the attached sword/blade/hilt completely. It must be forearm and closed glove alone, like row2column4, ready to have a separatelyrigged sword parented. Keep handposition. The separate sword bottom-left remains. No redesign/no captions/no background. Genuine transparent alpha.
+Acceptedforrigging outputexec-6a1a35bb-ae99-4ff8-a938-43a864a46f1a.png1254square. Alpha inspection:2024redRGBpixels nonealpha>30. Nativevisualacceptanceremains.

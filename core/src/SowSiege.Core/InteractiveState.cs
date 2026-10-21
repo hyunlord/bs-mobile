@@ -12,6 +12,7 @@ namespace SowSiege.Core
         public FeelExperimentState? Feel;
         public FieldState? Field;
         public HostRewardRunState? HostRewards;
+        public MeleeAimOptions? MeleeAim;
         // Selected estate loadout and seed for slot placement; null unless InteractiveOptions.Estate is set.
         public string? EstateLoadout;
         public int EstateSeed;

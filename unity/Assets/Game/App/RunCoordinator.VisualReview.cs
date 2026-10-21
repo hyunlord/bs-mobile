@@ -183,6 +183,13 @@ namespace Game.App
             CaptureSnapshots();previous=CurrentFrame;
             world.SetFallowChapter(runCatalog.WaveRuntime?.ChapterId=="meta:chapter_1");
             world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),runCatalog.Tuning.DefaultEstate,CurrentFrame.MapWidth,CurrentFrame.MapHeight);
+            var reviewArgs=Environment.GetCommandLineArgs();
+            if(Array.IndexOf(reviewArgs,"--hero-review")>=0)
+            {
+                var heroReview=VisualArgument(reviewArgs,"--hero-review");
+                if(heroReview=="existing-b")world.HeroRigPreviewEnabled=true;
+                else if(heroReview!="existing-a")world.ConfigureHeroConceptReview(heroReview,VisualArgument(reviewArgs,"--hero-review-image"));
+            }
             ShowHud();Ui.ShowStick(false,Vector2.zero,Vector2.zero);
             foreach(var tick in new[]{targetTick-60,targetTick,targetTick+60})
             {
@@ -204,6 +211,7 @@ namespace Game.App
                     // Resume before camera rendering; EOF is capture-only, never a draw submission phase.
                     yield return null;
                     world.RenderedEnemyBoundsSample=warm==29?CaptureVisualEnemyBounds:null;
+                    world.PresentationPaused = false;
                     world.Present(CurrentFrame,CurrentFrame,FirstPlayable,1,1f/60,visible);
                     yield return new WaitForEndOfFrame();
                 }

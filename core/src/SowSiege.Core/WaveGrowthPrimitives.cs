@@ -17,9 +17,10 @@ namespace SowSiege.Core
             if (gate == "linked-building-complete" && !world.WaveRuntime!.Work.Any(w => w.Id == work.ParentId && w.Complete && w.Health > 0)) { return false; }
             return ++work.Progress >= work.Required;
         }
-        internal static bool Eligible(WavePrimitiveProgram program, WaveRuntimeState state)
+        // The unit:event-gate handler: whether a named history event has happened at least once.
+        internal static bool Eligible(string condition, WaveRuntimeState state)
         {
-            return program.Value("unit:event-gate", "condition") switch
+            return condition switch
             {
                 "attack-kill-near-growth" => state.BladePlotKill,
                 "repair-completed" => state.RepairCompleted,

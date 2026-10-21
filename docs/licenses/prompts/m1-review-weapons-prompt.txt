@@ -1,0 +1,7 @@
+Issue #256, 2026-10-12. Built-in image_gen, transparent_background=true. No input reference image.
+Prompt: One transparent two-cell hand-painted ink/gouache medieval inventory atlas. Left: wooden ditch pike, single forged steel spearhead, ivory wrap and cobalt cord, diagonal upward-right. Right: grainkeeper sling, two braided brown cords, weathered leather stone pouch, grey stone and tiny wheat tie. Clear silhouettes, matching existing fantasy equipment art. No text, labels, UI frames, background, grids or extra objects.
+Generated source: generated_images/01a12eec-d3ca-7850-98dc-a583e6dca5a5/exec-0c60242c-d5c2-4d3f-91ef-de23586fef11.png
+Source: original RGBA PNG retained unchanged at the generated source path above, 1774x887.
+Installation: lossless spatial packing only via CoreGraphics: left source rect(0,0,887,887) to(4,4); right source rect(887,0,887,887) to(899,4), atlas1790x895. No resampling, resizing, painted pixels, or alpha-guard relaxation. 4px outer and8px intercell transparent gutter. Two explicit HUD bindings only, no generic fallback.
+Packed PNG SHA256: 41b4b0322e9580bf61237e6ec8cf2a5f4da954998e1b1323c93a33a7bcd859e2
+SHA256: d0511ad2454e58379914b25cc01b51239ec68249753ecbf0b3ef19ec850dd616

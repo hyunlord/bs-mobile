@@ -68,9 +68,9 @@ Asleep ──(조건 충족 시작)──> Waking ──(진행 ≥ 필요)─�
 - 상태: `EstateLight`가 있을 때만 `Estate` 목록과 계수기를 상태 codec에 덧붙인다. 없으면 한 바이트도 더하지 않는다(ADR0042의 "null 계약에 표식 금지").
 - **기존 해시 유지:** wave-1a 데이터에는 이 블록이 없다. 따라서 wave-1a catalog 해시(`PortableStateCodec.HashCatalog`)와 `WavePrimitiveTests.OriginalNormalInputGoldenHashesRemainUnchanged`(`core/tests/SowSiege.Tests/WavePrimitiveTests.cs:100-112`)의 기준 상태 해시가 그대로여야 한다. 재생 형식1–5의 헤더·옵션·상태 바이트도 바꾸지 않는다.
 - **데이터 트리 해시의 한계:** 재생 헤더의 `DataHash`는 `ContentLoader.Hash`(`core/src/SowSiege.Sim/ContentLoader.cs:94-106`)로 만든다. 이 값은 `data/` 아래 모든 JSON(시험용 제외)의 해시이고, `ReplayRunner.Verify`가 이를 비교한다(`core/src/SowSiege.Core/ReplayCodec.cs:209`). 따라서 (1) 같은 트리 안의 L1과 L3는 같은 값을 갖고 서로 구별되지 않는다. (2) 실험 프로필 파일을 더하는 것만으로 값이 바뀌어, 그 전에 기록한 v1–5 재생이 새 트리에서 "Consumed data hash mismatch"로 실패할 수 있다. data hash로 L1·L3를 구별한다는 0.1 초안의 문장은 틀렸고 폐기한다.
-- **M2 실험의 재생 계약:** 별도 실험 프로필(초안 `wave-2a-dark`)의 데이터에만 블록을 넣고, 건물 목록은 데이터에 고정한다(L1·L3 두 벌). 선택한 목록은 재생 헤더가 직접 담아야 한다. nullable `InteractiveOptions.Estate = EstateRunOptions(Version, LoadoutId, LoadoutCatalogHash)`와 선택형 재생 형식6을 M2부터 쓴다. `LoadoutCatalogHash`는 선택 목록이 반영된 catalog의 `HashCatalog` 값이다. 형식6은 이 값이 실제 실행 catalog와 다르면 거부한다. 옵션이 없으면 형식1–5 경로 그대로다.
-- **역사 재생 확인 의무:** 구현 PR은 실험 프로필 파일 추가가 기존 v1–5 기록의 `Verify`에 주는 영향을 실제 재생으로 확인한다. 실패하면 기록 당시 트리 해시를 보존하는 방법 또는 프로필 단위 닫힌 파일 집합 해시로 검증하는 구형 호환 경로를 같은 PR에서 정한다. 이 확인 전에는 "역사 재생 유지"를 주장하지 않는다. 이 위험은 데이터 파일 추가에 공통인 기존 성질이며, 이 ADR이 새로 만든 문제는 아니다.
-- **계정 연결 단계 [방향 결정, M2 이후 구현]:** 계정이 고른 건물 목록·레벨도 실행 입력이다. M2의 형식6 `EstateRunOptions`를 넓혀 목록 내용(건물 ID·레벨)을 헤더에 담는다. 버전 필드를 올리며 M2 기록은 그대로 재생한다. 앱의 현재 계정 상태로 옛 재생을 덮어쓰지 않는다. 이 단계는 ADR0053 경계를 건물 목록에 한해 바꾸며, 사용자가 방향을 승인했다. 효력은 그 구현 PR부터다.
+- **M2 실험의 재생 계약:** 별도 실험 프로필(초안 `wave-2a-dark`)의 데이터에만 블록을 넣고, 건물 목록은 데이터에 고정한다(L1·L3 두 벌). 선택한 목록은 재생 헤더가 직접 담아야 한다. nullable `InteractiveOptions.Estate = EstateRunOptions(Version, LoadoutId, LoadoutCatalogHash)`와 선택형 재생 형식7을 M2부터 쓴다. `LoadoutCatalogHash`는 선택 목록이 반영된 catalog의 `HashCatalog` 값이다. 형식7은 이 값이 실제 실행 catalog와 다르면 거부한다. 옵션이 없으면 형식1–6 경로 그대로다.
+- **역사 재생 확인 의무:** 구현 PR은 실험 프로필 파일 추가가 기존 v1–6 기록의 `Verify`에 주는 영향을 실제 재생으로 확인한다. 실패하면 기록 당시 트리 해시를 보존하는 방법 또는 프로필 단위 닫힌 파일 집합 해시로 검증하는 구형 호환 경로를 같은 PR에서 정한다. 이 확인 전에는 "역사 재생 유지"를 주장하지 않는다. 이 위험은 데이터 파일 추가에 공통인 기존 성질이며, 이 ADR이 새로 만든 문제는 아니다.
+- **계정 연결 단계 [방향 결정, M2 이후 구현]:** 계정이 고른 건물 목록·레벨도 실행 입력이다. M2의 형식7 `EstateRunOptions`를 넓혀 목록 내용(건물 ID·레벨)을 헤더에 담는다. 버전 필드를 올리며 M2 기록은 그대로 재생한다. 앱의 현재 계정 상태로 옛 재생을 덮어쓰지 않는다. 이 단계는 ADR0053 경계를 건물 목록에 한해 바꾸며, 사용자가 방향을 승인했다. 효력은 그 구현 PR부터다.
 - net8.0과 netstandard2.1에서 같은 정상 입력 재생 해시를 비교한다. Unity/IL2CPP 실기 일치로 확대 보고하지 않는다.
 
 ### 5. 재사용과 신규
@@ -106,7 +106,7 @@ Asleep ──(조건 충족 시작)──> Waking ──(진행 ≥ 필요)─�
 - Core에 새 상태 하나(건물 목록)와 질의 하나(밝힘 판정)가 생긴다. 선택 프로필에서만 적→영주 피해 계산이 밝힘 판정에 의존한다.
 - 효과 7종 중 망루·곡창은 기존 경로 재사용이 크다. 우물은 작은 신규다. 막사는 무리 상한을 새로 정해야 한다. 대장간·목책은 여러 기존 경로를 건드리므로 M2 첫 범위에서 뺀다.
 - 화면은 셰이더 상수 배열 9개 이하와 가장자리 표시를 더한다. 새 렌더 타깃·전체 화면 패스는 없다. 실제 비용은 측정 전 미확인이며 C05 관문(검증 절)을 따른다.
-- M2부터 선택형 재생 형식6이 생긴다. 형식1–5는 바꾸지 않는다.
+- M2부터 선택형 재생 형식7이 생긴다. 형식1–6은 바꾸지 않는다.
 
 ## 거절한 대안
 
@@ -127,4 +127,4 @@ Asleep ──(조건 충족 시작)──> Waking ──(진행 ≥ 필요)─�
 
 ## 구현 기록
 
-- **Core 첫 조각, [#315](https://github.com/hyunlord/bs-mobile/issues/315), 2026-10-18 (기본 꺼짐):** 1절의 영구 밝힘과 항상 켜진 집, 2절의 T1, 3절의 켜기 3종과 판당 1회 원장, 4절의 catalog 태그 `wave-estate-light-v1`, 상태 태그 `wave-estate-state-v1`, 실행 옵션 태그 `estate-run-options-v1`, 선택형 재생 형식 6을 구현했다. `data/`는 바꾸지 않아 기존 해시와 형식 1–5 기록이 그대로다. 구체화한 점은 [설계 9절](../design/m2-dark-estate-buildings.md#9-구현-기록--core-첫-조각-315-2026-10-18)에 있다: 개체에 `Dwell`을 두고 `Health`·`ReadyTick`은 아직 두지 않음, 고르게 나눈 슬롯 방향, catalog 전체 해시+`LoadoutId`로 목록 구별, 체감 피해 고정 뒤 T1 적용, 결산 보너스는 결과 보상 광고 기준에서 제외. 재생 형식 번호 6은 `tools/ArchitectureGuard/algorithm-constants.json`에 직렬화 구분자로 등록했다. 건물 효과·데이터 프로필·화면·두 대상 해시 비교·C05는 아직이다.
+- **Core 첫 조각, [#315](https://github.com/hyunlord/bs-mobile/issues/315), 2026-10-18 (기본 꺼짐):** 1절의 영구 밝힘과 항상 켜진 집, 2절의 T1, 3절의 켜기 3종과 판당 1회 원장, 4절의 catalog 태그 `wave-estate-light-v1`, 상태 태그 `wave-estate-state-v1`, 실행 옵션 태그 `estate-run-options-v1`, 선택형 재생 형식 7을 구현했다. `data/`는 바꾸지 않아 기존 해시와 형식 1–6 기록이 그대로다. 구체화한 점은 [설계 9절](../design/m2-dark-estate-buildings.md#9-구현-기록--core-첫-조각-315-2026-10-18)에 있다: 개체에 `Dwell`을 두고 `Health`·`ReadyTick`은 아직 두지 않음, 고르게 나눈 슬롯 방향, catalog 전체 해시+`LoadoutId`로 목록 구별, 체감 피해 고정 뒤 T1 적용, 결산 보너스는 결과 보상 광고 기준에서 제외. 재생 형식 번호 7은 `tools/ArchitectureGuard/algorithm-constants.json`에 직렬화 구분자로 등록했다. 형식 6은 main의 근접 조준(ADR0059, `MeleeAimVersion`)이 먼저 써서, 영지는 형식 7을 쓴다(2026-10-21 사용자 결정). 형식 7에서는 근접 조준과 검토용 들판 반지름을 함께 담지 않는다. 건물 효과·데이터 프로필·화면·두 대상 해시 비교·C05는 아직이다.

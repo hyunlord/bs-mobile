@@ -21,6 +21,13 @@ namespace Tests.EditMode
             Assert.That(ticks, Is.EqualTo(730));
             Assert.That(accumulator, Is.EqualTo(0d).Within(1e-10));
         }
+        [Test] public void Rgb24OfflineReadbackFlipsWholeRowsWithoutChangingPixelChannels()
+        {
+            // Two RGB pixels per row, three rows: odd height keeps the middle row intact.
+            var pixels = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+            GoldenCaptureWriter.FlipRows(pixels, 2 * 3, 3, new byte[2 * 3]);
+            CollectionAssert.AreEqual(new byte[] { 13, 14, 15, 16, 17, 18, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6 }, pixels);
+        }
         [Test] public void DefaultIsCaptureFreeAndOfflineRequiresExactCrowdMode()
         {
             Assert.That(OfflineReplayCapture.Requested(Array.Empty<string>()), Is.False);

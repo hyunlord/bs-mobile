@@ -10,7 +10,7 @@
     },
     {
       "id": "generated-crops-people",
-      "origin": "Generated with built-in image_gen for this project",
+      "origin": "Generated with built-in image_gen for this project; Soldier B walk (person.militia/guard) rigged in Unity and baked by Astra (Release soldier-b-rank-rig-r3-20261019), packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/crops-people-atlas-v1-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -115,7 +115,7 @@
     },
     {
       "id": "generated-knight-sheets",
-      "origin": "Generated with built-in image_gen for this project (Character Forge sheet pipeline, BiRefNet matting); packed without resampling",
+      "origin": "Generated with built-in image_gen for this project; side-view knight rigged in Unity SpriteSkin and baked by Astra (walk r8.5, actions hero-side-actions-game-r4-20261020, gather B hero-gather-b-r2-20261020); packed without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/knight-sheets-r4-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -158,7 +158,7 @@
       "id": "equipment",
       "path": "Assets/Art/equipment.png",
       "width": 1402,
-      "height": 1122,
+      "height": 1290,
       "padding": 2,
       "license": "generated-equipment"
     },
@@ -3195,50 +3195,50 @@
           "height": 240
         },
         {
+          "x": 2,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 242,
+          "width": 320,
+          "height": 240
+        },
+        {
           "x": 642,
-          "y": 1922,
+          "y": 242,
           "width": 320,
           "height": 240
         },
         {
           "x": 962,
-          "y": 1922,
+          "y": 242,
           "width": 320,
           "height": 240
         },
         {
           "x": 1282,
-          "y": 1922,
+          "y": 242,
           "width": 320,
           "height": 240
         },
         {
           "x": 1602,
-          "y": 1922,
+          "y": 242,
           "width": 320,
           "height": 240
         },
         {
           "x": 1922,
-          "y": 1922,
+          "y": 242,
           "width": 320,
           "height": 240
         },
         {
           "x": 2242,
-          "y": 1922,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1922,
-          "y": 1682,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 2242,
-          "y": 1682,
+          "y": 242,
           "width": 320,
           "height": 240
         }
@@ -3255,424 +3255,42 @@
       "tween": "none"
     },
     {
-      "id": "hero.core.frontier_knight.action.slash",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 2,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 642,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1922,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 2242,
-          "y": 242,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 150,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.action.aim",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 2,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 642,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 482,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 167,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.action.cast",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 2,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 642,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 722,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 167,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.action.blow",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 2,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 642,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 962,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 167,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.action.throw",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 2,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 322,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 642,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 962,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 1202,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 167,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.key.slash",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 2,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 117,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.key.aim",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 322,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 117,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.key.cast",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 642,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 117,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.key.blow",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 962,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 117,
-      "tween": "none"
-    },
-    {
-      "id": "hero.core.frontier_knight.key.throw",
-      "atlas": "hero-knight",
-      "frames": [
-        {
-          "x": 1282,
-          "y": 1442,
-          "width": 320,
-          "height": 240
-        }
-      ],
-      "pivot": {
-        "x": 0.5,
-        "y": 0.22916666666666666
-      },
-      "worldSize": {
-        "x": 1.441897,
-        "y": 1.081423
-      },
-      "frameMs": 117,
-      "tween": "none"
-    },
-    {
       "id": "hero.core.frontier_knight.idle",
       "atlas": "hero-knight",
       "frames": [
         {
           "x": 2,
-          "y": 1682,
+          "y": 482,
           "width": 320,
           "height": 240
         },
         {
           "x": 322,
-          "y": 1682,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 482,
           "width": 320,
           "height": 240
         },
         {
           "x": 642,
-          "y": 1682,
+          "y": 482,
           "width": 320,
           "height": 240
         },
         {
-          "x": 962,
-          "y": 1682,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1282,
-          "y": 1682,
-          "width": 320,
-          "height": 240
-        },
-        {
-          "x": 1602,
-          "y": 1682,
+          "x": 642,
+          "y": 482,
           "width": 320,
           "height": 240
         }
@@ -3689,7 +3307,437 @@
       "tween": "none"
     },
     {
+      "id": "hero.core.frontier_knight.action.slash",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 962,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 482,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.action.aim",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 962,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 722,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.action.cast",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 322,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.action.blow",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 2242,
+          "y": 962,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.action.throw",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1602,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 1202,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 642,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1282,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
       "id": "hero.core.frontier_knight.hit",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1602,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1922,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.key.slash",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 2,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 322,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.key.aim",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 642,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.key.cast",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1282,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.key.blow",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1922,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 2242,
+          "y": 1682,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.key.throw",
       "atlas": "hero-knight",
       "frames": [
         {
@@ -3713,15 +3761,21 @@
         "x": 1.441897,
         "y": 1.081423
       },
-      "frameMs": 117,
+      "frameMs": 67,
       "tween": "none"
     },
     {
-      "id": "hero.core.frontier_knight.death",
+      "id": "hero.core.frontier_knight.transition.walk-to-idle",
       "atlas": "hero-knight",
       "frames": [
         {
-          "x": 322,
+          "x": 642,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 962,
           "y": 1922,
           "width": 320,
           "height": 240
@@ -3735,7 +3789,57 @@
         "x": 1.441897,
         "y": 1.081423
       },
-      "frameMs": 117,
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.transition.walk-to-idle-b",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 1282,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        },
+        {
+          "x": 1602,
+          "y": 1922,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 67,
+      "tween": "none"
+    },
+    {
+      "id": "hero.core.frontier_knight.death",
+      "atlas": "hero-knight",
+      "frames": [
+        {
+          "x": 2242,
+          "y": 1442,
+          "width": 320,
+          "height": 240
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.22916666666666666
+      },
+      "worldSize": {
+        "x": 1.441897,
+        "y": 1.081423
+      },
+      "frameMs": 83,
       "tween": "none"
     },
     {
@@ -3853,21 +3957,21 @@
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
+      "frameMs": 36,
       "tween": "none"
     },
     {
@@ -3875,109 +3979,199 @@
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 2,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 2,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 1049,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.work",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "work"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.muster",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.return",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 81,
-          "y": 953,
-          "width": 193,
-          "height": 251
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.338327,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.idle",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
+      "frameMs": 36,
       "tween": "none"
     },
     {
@@ -3985,88 +4179,178 @@
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 2,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 912,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 2,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 87,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 172,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 257,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 342,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 427,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 512,
+          "y": 1049,
+          "width": 83,
+          "height": 135
+        },
+        {
+          "x": 597,
+          "y": 1049,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.work",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "work"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.muster",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.guard.return",
       "atlas": "crops-people",
       "frames": [
         {
-          "x": 396,
-          "y": 905,
-          "width": 185,
-          "height": 311
+          "x": 342,
+          "y": 912,
+          "width": 83,
+          "height": 135
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.493976,
+        "y": 0.02963
       },
       "worldSize": {
-        "x": 0.261736,
-        "y": 0.44
+        "x": 0.344073,
+        "y": 0.559636
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.returning.idle",
@@ -8643,6 +8927,28 @@
       },
       "frameMs": 1000,
       "tween": "none"
+    },
+    {
+      "id": "icon.core.ditch_pike.default",
+      "atlas": "equipment",
+      "frames": [
+        {
+          "x": 81,
+          "y": 1130,
+          "width": 149,
+          "height": 150
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.993333,
+        "y": 1.0
+      },
+      "frameMs": 350,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -10697,6 +11003,12 @@
       "contentId": "core:tithe_clerk",
       "state": "default",
       "roleId": "metaVassal.core:tithe_clerk"
+    },
+    {
+      "kind": "icon",
+      "contentId": "core:ditch_pike",
+      "state": "default",
+      "roleId": "icon.core.ditch_pike.default"
     }
   ]
 }

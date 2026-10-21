@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 namespace SowSiege.Core
 {
     public enum WaveAttackKind
@@ -19,13 +20,36 @@ namespace SowSiege.Core
         Pursuer, SeedThief, RipeGrazer, Charger, Shield, Ranged, FloodBoss
     }
     public sealed record WaveGearLevel(int Damage, int Range, int CooldownTicks, int Speed, int Count, int LifetimeTicks, int Knockback);
-    public sealed record WaveGearDefinition(string Id, string DesignRef, WaveAttackKind Kind, int Damage, int Range, int CooldownTicks, int Speed, int Count, int LifetimeTicks, int Knockback, int WorkTicks, int WorkRadius, int RewardExperience, int Capacity, [property: OmitWhenNull] WaveGearLevel[]? Levels = null);
+    // RehitEachImpact (ADR0061, default off and then absent from hashes and saves): each impact strikes every enemy in its
+    // radius, even one an earlier impact of the same activation already struck (a patch pulsing in place).
+    // Bounces (ADR0062, "ricochet" placement only, absent otherwise): after striking its target an arrow flies on to the nearest
+    // enemy it has not struck, at most Bounces times; the first flight takes DelayTicks and each bounce StepTicks.
+    // BounceMinDistance (ADR0062 supplement, ricochet only, absent otherwise): a bounce goes to the nearest such enemy at least
+    // that far from the impact, or to the farthest one when none is that far (so bounces span the crowd).
+    // LureTicks (ADR0063, "lure-bomb" placement only, absent otherwise): a sack lands on the nearest enemy after DelayTicks,
+    // draws the normal enemies within Radius toward it at their own speed for LureTicks, then bursts over Radius.
+    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius, [property: OmitWhenNull] bool? RehitEachImpact = null, [property: OmitWhenNull] int? Bounces = null, [property: OmitWhenNull] int? LureTicks = null, [property: OmitWhenNull] int? BounceMinDistance = null)
+    {
+        public const int MaximumImpacts = 64;
+    }
+    public sealed record WaveGearDefinition(string Id, string DesignRef, WaveAttackKind Kind, int Damage, int Range, int CooldownTicks, int Speed, int Count, int LifetimeTicks, int Knockback, int WorkTicks, int WorkRadius, int RewardExperience, int Capacity, [property: OmitWhenNull] WaveGearLevel[]? Levels = null, [property: OmitWhenNull] string? Aim = null, [property: OmitWhenNull] WaveAttackComposition? Composition = null);
     public sealed record WaveItemDefinition(string Id, string DesignRef, WaveItemKind Kind, string[] EquipmentIds, int Amount);
-    public sealed record WaveEvolutionDefinition(string Id, string DesignRef, WaveEvolutionKind Kind, string[] InputIds);
+    // ADR0058: optional unlock conditions; null keeps the historical rule (every input owned, the program's event gate once).
+    public sealed record WaveUnlockInput(string Id, [property: OmitWhenNull] int? MinLevel = null, [property: OmitWhenNull] bool? RequireMaxLevel = null);
+    public sealed record WaveUnlockEvent(string Event, int MinCount);
+    public sealed record WaveEvolutionUnlock(WaveUnlockInput[] Inputs, WaveUnlockEvent[] Events);
+    public sealed record WaveEvolutionDefinition(string Id, string DesignRef, WaveEvolutionKind Kind, string[] InputIds, [property: OmitWhenNull] WaveEvolutionUnlock? Unlock = null);
+    // ADR0058: card offer rules (step 3). Absent or default rules draw exactly as before.
+    public sealed record WaveCardOfferCard([property: OmitWhenNull] int? Weight = null, [property: OmitWhenNull] int? MaxPicks = null);
+    public sealed record WaveCardOfferDefinition([property: OmitWhenNull] string? EvolutionPriority = null, [property: OmitWhenNull] int? OwnedGearWeight = null, [property: OmitWhenNull] int? UnownedGearWeight = null, [property: OmitWhenNull] IReadOnlyDictionary<string, WaveCardOfferCard>? Cards = null)
+    {
+        public bool IsDefault() => (EvolutionPriority ?? "none") == "none" && (OwnedGearWeight ?? 1) == 1 && (UnownedGearWeight ?? 1) == 1
+            && (Cards is null || Cards.Values.All(card => (card.Weight ?? 1) == 1 && card.MaxPicks is null));
+    }
     public sealed record WaveEnemyDefinition(string Id, string DesignRef, WaveEnemyKind Kind, int TellTicks, int ActiveTicks, int RecoveryTicks, int ProjectileSpeed, int FirstSpawnTick);
     public sealed record WaveBehaviorSettings(int WetSpeedDivisor, int DryDamageDivisor, int RangedRangeMultiplier, int PathConnectionMultiplier);
     public sealed record WaveEnemySeparationDefinition(int Version, IReadOnlyDictionary<string, int> BodyWidths);
-    public sealed record WaveRuntimeDefinition(string Revision, string ChapterId, string ChapterDesignRef, string BossId, int BossSpawnTick, int GroupCap, int InitialWorkers, int InitialTimber, int WaterCapacity, int WaterRefillTicks, int PickupRadius, int WetTicks, int StopTicks, int PathSpacing, int PathCapacity, WaveBehaviorSettings Behavior, IReadOnlyDictionary<string, WaveGearDefinition> Gear, IReadOnlyDictionary<string, WaveItemDefinition> Items, IReadOnlyDictionary<string, WaveEvolutionDefinition> Evolutions, IReadOnlyDictionary<string, WaveEnemyDefinition> Enemies, [property: OmitWhenNull] IReadOnlyDictionary<string, string>? MaterialTargets = null, int DryAfterTicks = 0, [property: OmitWhenNull] IReadOnlyDictionary<string, WavePrimitiveProgram>? Programs = null, [property: OmitWhenNull] WaveEnemySeparationDefinition? EnemySeparation = null, [property: OmitWhenNull] WaveEstateLightDefinition? EstateLight = null);
+    public sealed record WaveRuntimeDefinition(string Revision, string ChapterId, string ChapterDesignRef, string BossId, int BossSpawnTick, int GroupCap, int InitialWorkers, int InitialTimber, int WaterCapacity, int WaterRefillTicks, int PickupRadius, int WetTicks, int StopTicks, int PathSpacing, int PathCapacity, WaveBehaviorSettings Behavior, IReadOnlyDictionary<string, WaveGearDefinition> Gear, IReadOnlyDictionary<string, WaveItemDefinition> Items, IReadOnlyDictionary<string, WaveEvolutionDefinition> Evolutions, IReadOnlyDictionary<string, WaveEnemyDefinition> Enemies, [property: OmitWhenNull] IReadOnlyDictionary<string, string>? MaterialTargets = null, int DryAfterTicks = 0, [property: OmitWhenNull] IReadOnlyDictionary<string, WavePrimitiveProgram>? Programs = null, [property: OmitWhenNull] WaveEnemySeparationDefinition? EnemySeparation = null, [property: OmitWhenNull] WaveCardOfferDefinition? CardOffer = null, [property: OmitWhenNull] WaveEstateLightDefinition? EstateLight = null);
     public interface IWaveRunView
     {
         WaveRuntimeFrame? CaptureWaveRuntime();

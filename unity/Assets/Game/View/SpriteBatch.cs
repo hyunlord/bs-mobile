@@ -21,6 +21,8 @@ namespace Game.View
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
         static readonly int FlashId = Shader.PropertyToID("_InstanceFlash");
+        static readonly int RigUpperTextureId = Shader.PropertyToID("_RigUpperTex");
+        static readonly int RigUseUpperTextureId = Shader.PropertyToID("_RigUseUpperTex");
         static readonly int RigFrameId = Shader.PropertyToID("_RigFrame");
         static readonly int RigUpperFrameId = Shader.PropertyToID("_RigUpperFrame");
         static readonly int RigFarId = Shader.PropertyToID("_RigFarDelta");
@@ -32,15 +34,19 @@ namespace Game.View
         readonly Vector4[] uvs = new Vector4[MaximumInstances];
         readonly Vector4[] flashes = new Vector4[MaximumInstances];
         readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
-        readonly Material material;
+        readonly Material material, overEnemies;
         readonly Mesh mesh;
+        readonly Texture2D texture;
+        readonly int layer;
+        readonly bool wide;
         int count;
         bool linearColorSpace;
         bool heroRigBoundsConfigured;
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
 
-        public SpriteBatch(Texture2D texture, Shader shader, Camera camera, int layer)
+        // wide = false tags thin elements (bolt cores, lines, outlines): exempt from the P5 alpha cap over enemies.
+        public SpriteBatch(Texture2D texture, Shader shader, Camera camera, int layer, bool wide = true)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var firstUseSample = FirstUseMarker.Auto();
@@ -49,7 +55,9 @@ namespace Game.View
             if (shader == null) throw new ArgumentNullException(nameof(shader));
             if (camera == null) throw new ArgumentNullException(nameof(camera));
             if (!SystemInfo.supportsInstancing) throw new InvalidOperationException("The world renderer requires GPU instancing.");
+            this.texture = texture; this.layer = layer; this.wide = wide;
             material = new Material(shader) { name = "World sprites " + layer, mainTexture = texture, enableInstancing = true, renderQueue = 3000 + layer, hideFlags = HideFlags.HideAndDontSave };
+            overEnemies = EffectAlphaCap.Configure(material, layer, wide);
             mesh = new Mesh { name = "Instanced sprite quad", hideFlags = HideFlags.HideAndDontSave };
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using (MeshUploadMarker.Auto())
@@ -62,9 +70,11 @@ namespace Game.View
             linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear;
         }
         public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear; }
-        public void SetHeroRigPose(Vector4 frame, Vector4 upperFrame, Vector2 farCorrection, Vector2 nearCorrection, Vector4 warp)
+        public void SetHeroRigPose(Vector4 frame, Vector4 upperFrame, Vector2 farCorrection, Vector2 nearCorrection, Vector4 warp, Texture2D upperTexture = null)
         {
             if(count!=0)throw new InvalidOperationException("The hero rig owns a single-instance batch.");
+            properties.SetFloat(RigUseUpperTextureId, upperTexture == null ? 0 : 1);
+            if (upperTexture != null) properties.SetTexture(RigUpperTextureId, upperTexture);
             properties.SetVector(RigFrameId,frame);
             properties.SetVector(RigUpperFrameId,upperFrame);
             properties.SetVector(RigFarId,new Vector4(farCorrection.x,farCorrection.y,0,0));
@@ -116,7 +126,13 @@ namespace Game.View
             using (DrawMarker.Auto())
 #endif
             {
+                OcclusionProbe.Active?.Record(layer, mesh, matrices, count, texture, colors, uvs, wide);
                 Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count);
+                if (overEnemies != null)
+                {
+                    parameters.material = overEnemies;
+                    Graphics.RenderMeshInstanced(parameters, mesh, 0, matrices, count); DrawCalls++;
+                }
             }
             SubmittedInstances += count; DrawCalls++; count = 0;
         }
@@ -146,8 +162,8 @@ namespace Game.View
 #endif
         public void Dispose()
         {
-            if (Application.isPlaying) { UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(mesh); }
-            else { UnityEngine.Object.DestroyImmediate(material); UnityEngine.Object.DestroyImmediate(mesh); }
+            if (Application.isPlaying) { UnityEngine.Object.Destroy(material); UnityEngine.Object.Destroy(mesh); if (overEnemies != null) UnityEngine.Object.Destroy(overEnemies); }
+            else { UnityEngine.Object.DestroyImmediate(material); UnityEngine.Object.DestroyImmediate(mesh); if (overEnemies != null) UnityEngine.Object.DestroyImmediate(overEnemies); }
         }
     }
 }

@@ -1,0 +1,64 @@
+{
+  "historicalRecord": true,
+  "originalRelativePath": "source/north/provenance-resumed.json",
+  "record": {
+    "records": [
+      {
+        "file": "slash-light-n-v2.png",
+        "prompt": "Production transparent sprite sheet PORTRAIT1024x1536 TWOcolumns FOURrows EIGHT rear-facing swordcut animation frames. Same adultAknight fromNidle reference, renderingpalette ofEslashreference but N direction alwaysrear. Body260pxstandingheight ineach512x384cell centeredwith50pxclear margins. Smalladulthead12%height,longlegs,restrainedcobaltcloakivoryquiltsteelboots. AnatomicalRIGHT ARM, atviewerRIGHTshoulder, grips sword throughout. LEFT hand always empty and visible onviewerLEFT. Sequence1ready2rightarmwindup3rightarmraised4overheadcut5rightarm downFORWARD/right 6rightarm lowRIGHTfollowthrough7recover8ready. IMPORTANT: keepblade andgrip onviewerRIGHT throughout, noacrossleftfollowthrough toavoidwronghand; cuttingarcvertical notthrust. No mirroredposes. Fullwholelimbs/bladeswithin eachcell. Inkgouacheconsistent reference no3D/chibi. Actualalpha outsidecharacter completelytransparent, NOglow/shadow/floor/grid/text.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-2d1e1144-51e6-4ed7-ba1a-44d76a13413d.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "slash-light-n-v3.png",
+        "prompt": "Edit this sprite sheet ONLY framing: keep exact8poses,adult anatomy,right-hand sword,paletteandtexture. Reduce ALL wholeposes uniformly by25percent, centered in same2columns4rows cells of1024x1536canvas. Eachwholepose including raisedblade must have at least35transparentpixels everyedge. Restore complete swordtip frame2 clipped atverytop; restore fullraisedblades. No anatomychanges,nobodywarping, do notintroducebackground glow. Genuine fullytransparentoutside silhouettes. Sameindependentlypainted8motions.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-4e01c483-da6b-4056-b04a-17dbe0499fab.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "walk-ne-v3.png",
+        "prompt": "Transparent2Dsprite sheet PORTRAIT1024x1536 TWOcolumns FOURrows. EIGHTwalking cycleframes sameadultknightNErear-rightreference. IMPORTANT SMALL FIGURES only250pxstandingheightineach512x384cell, crown80sole330 withatleast40pxcleartransparentgapbetweenrows. Centerpose,completeblade/capewithin cell. Adulthead12%height,longlegs,anatomicalRIGHT hand swordalways. Referencegouacheink restrainedcobaltivory brownsteel. Rear45degreediagonalrightcamera. Eightdistinctphases leftcontact/down/pass/up,rightcontact/down/pass/up, kneeflexnaturalnohop. Allsamebodysize/clothing notmoremuscular. No text/grid/shadow/glowfloor;realtransparentalpha.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-7833b559-63a0-4b3b-8878-eaddab18565a.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "hit-ne-v2.png",
+        "prompt": "Transparentportrait1024x1536 ONEcolumn THREErows threeHITframes exactadultknightreferenceNErear45degree. Characterstandingheight350px ineach1024x512cell, centeredx512, feetlocal440crown90. Completeblade/cape leave120pxmargin horizontally. Frames1uprightbeginhit2slightforwardflinch bentknees3recover. AnatomicalRIGHThandswordneverleft. Adultsmallhead12%height,longlegsconsistentgouache/cobaltivorypalette. Noheadenlarging,no3D,no mirroredposes,no glow/floor/text/shadows,actualalpha.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-cde455fc-4b60-4ef5-805b-878dbe136e7f.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "slash-light-ne.png",
+        "prompt": "TransparentPORTRAIT1024x1536sprite sheet2columns4rows EIGHTconsecutive sword SLASHframes same adultknightNErear-right45degree reference. Matchreferencepalette/proportions exact:head12%height,cobaltcloakivoryquiltsteelgreaves. In512x384cells figures SMALL260pxstandingheight incllegs, allraisedbladefitswith40pxmargins; no figuretouchcell. Sequence ready/rightarmwindup/rightarmraised/diagonalDOWNcut/lowrightfollowthrough/recoil/recover/ready. AnatomicalRIGHT swordhand ALWAYS fromrightshoulder atviewerright; leftarmemptyextendedleft. Keepgrip onviewerright sohandnever swaps. ThisisCUTnotthrust. Facingdiagonalupperright throughwholemotion. Realisticallyslimadult,longlegs noheadgrowth. Gouacheinkactualtransparentalpha outside,noambientglow/no text/grid/floor/shadows.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-27199369-14c1-4e3e-b43d-fa7e9e375bb8.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "slash-light-ne-v2.png",
+        "prompt": "Correct ONLY frame3(row2 LEFT) of thiseightframesheet: swordcurrentlyincorrectlyheld anatomicalLEFT. Redraw thatpose with anatomicalRIGHTarm atviewerRIGHT raised directly aboverightshoulder holdingblade pointedup-left, like frame2arm side. AnatomicalLEFTarm remains EMPTY extendedleft likeframes1/4. Keeprear-rightview, allothersame. Also reduceall8wholeposes uniformly20%insideexisting2x4cells toleavecleartransparentmargins, no bodywarping; completebladeinframe5currentlycrossescolumnmustfit. Preserveadultsmallheadratio/cloak/palette. Realalpha nofloors/glow.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-513818eb-2783-474b-ab9d-140c81bf1f0f.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "death-ne.png",
+        "prompt": "TransparentPORTRAIT1024x1536 TWOcolumns THREErows SIXdeathanimationframes referenceadultknight NErear-right45degree. Eachcell512x512, standheight330px, fullwholeposeandblade withatleast35pxmargin. Frame1standingstruck2kneesbuckle3rightkneeontheground4bothkneesfallforwardtowardupperright5bodyhitsfloorface-down6lyingstillface-down. Preserveoriginallegandheadlengths acrosscollapse; NEVERenlargecorpse tostandingheight. AnatomicalRIGHT hand maintainswordnearbodyright, leftempty. Cameraandperspectiveconsistentreference. Cobaltcloakivoryquiltsteelboots,longadultlegs,smallhead12%standingheight. Gouacheinksamepalette. Realtransparentalpha no shadows/floor/glow/grid/text. Fullblade insidecell.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-c0fd8697-4ca3-4382-8711-36281bc0d174.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      },
+      {
+        "file": "death-ne-v2.png",
+        "prompt": "Edit ONLY framing of thissixpose deathsheet. Keep all6same poses,limblengths,right-hand sword,face,body,palette. Reduce everywholepose by25%uniformly initsown2column3rowcell1024x1536canvas leavingatleast40cleartransparentpixels everyedge; lastrow blade/feet mustnotapproach neighboringcell. NO perbodydeformation NOrescalingcorpseup. Real transparentalphabackground, zero glow/shadows/haze. All6remain fullyvisible.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-9771e7b8-9a22-4ab0-876a-bbdb9b322a0c.png",
+        "status": "candidate-not-user-approved",
+        "method": "builtin-imagegen"
+      }
+    ]
+  }
+}

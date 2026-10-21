@@ -14,6 +14,7 @@ namespace SowSiege.Core
         public long NextSequence { get; private set; }
         public IReadOnlyRunView View { get; }
         public IRuntimeDiagnostics? Diagnostics { get => Simulation.World.Diagnostics; set => Simulation.World.Diagnostics = value; }
+        public ILordDamageObserver? LordDamageObserver { get => Simulation.World.LordDamageObserver; set => Simulation.World.LordDamageObserver = value; }
         public double LocomotionSpeedPerTick
         {
             get
@@ -42,6 +43,13 @@ namespace SowSiege.Core
                 }
             }
             options.HostRewards?.Validate();
+            if (options.MeleeAim is not null && (options.MeleeAim.Version != 1 || catalog.WaveRuntime is null))
+            { throw new ArgumentException("Unsupported melee aim contract."); }
+            if (catalog.WaveRuntime is { } aimWave)
+            {
+                foreach (var gear in aimWave.Gear.Values)
+                { if (gear.Aim is not null && gear.Aim != "nearest-enemy") { throw new ArgumentException("Unsupported gear aim."); } }
+            }
             if (options.HostRewards?.Revive is { } revive &&
                 (revive.RestoreHealth > (options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth) || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
             { throw new ArgumentException("Host revive rules exceed run limits.", nameof(options)); }
@@ -59,6 +67,7 @@ namespace SowSiege.Core
             if (options.Estate is not null) { State.EstateLoadout = options.Estate.LoadoutId; State.EstateSeed = options.Run.Seed; }
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
             if (options.HostRewards is not null) { State.HostRewards = new(); }
+            State.MeleeAim = options.MeleeAim;
             if (options.Field is not null) { State.Field = new(options.Field, options.Run.Seed); }
             Simulation = new(catalog, options.Run, new InteractiveHasher(), null, State);
             View = new SessionView(this);

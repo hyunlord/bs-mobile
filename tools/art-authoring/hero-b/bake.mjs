@@ -9,7 +9,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const outputDirectory = path.resolve(root, process.argv[2] || 'artifacts/grounded-motion/hero-new');
 fs.mkdirSync(outputDirectory, { recursive: true });
 const sourcePath = 'unity/Assets/Game/Editor/Authoring/HeroB/hero-b-cutout-original.png';
-const rig = JSON.parse(fs.readFileSync(path.join(root, 'tools/art-authoring/hero-b/rig.json')));
+const rigPath = process.argv[3] || 'tools/art-authoring/hero-b/rig.json';
+const rig = JSON.parse(fs.readFileSync(path.resolve(root, rigPath)));
 const sourceBytes = fs.readFileSync(path.join(root, sourcePath));
 const source = decodeRgbaPng(sourceBytes);
 const swordPath = 'unity/Assets/Game/Editor/Authoring/HeroB/hero-b-sword-clean.png';

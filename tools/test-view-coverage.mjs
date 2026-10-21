@@ -70,7 +70,7 @@ test('#268 shape: an unscoped View role literal is required in every profile', t
   edit(dir, 'unity/Assets/Game/View/WorldAnnouncements.cs', 'art.ResolveRole("ui.hint")', 'art.ResolveRole("hero.preview-b.idle")');
   const found = problems(dir).join('\n');
   assert.match(found, /missing role hero\.preview-b\.idle in first-playable \(required by literal unity\/Assets\/Game\/View\/WorldAnnouncements\.cs\)/);
-  assert.match(found, /hero\\\.preview-b\\\. occurs 5 times/);
+  assert.match(found, /hero\\\.preview-b\\\. occurs 6 times/);   // the stack's concept review adds one wave-only use (pin 5)
 });
 
 test('removing the wave-only rig gate invalidates the profile scope', t => {

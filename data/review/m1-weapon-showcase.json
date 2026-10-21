@@ -1,0 +1,15 @@
+{
+  "contract": "m1-weapon-visual-proposals-v1",
+  "secondsPerStage": 10,
+  "status": "사용자 검토용 시각 설계안 — 판정·피해·밸런스 미변경",
+  "entries": [
+    {"id":"core:iron_blade","name":"철날 검 · 거대 검격","shape":"giantblade","cue":"weapon-iron-blade","runtimeSupport":"기존 Arc 판정 있음; 확대 그림의 충돌은 미구현"},
+    {"id":"core:ward_orbit","name":"수호 고리 · 회전 방패","shape":"shield","cue":"weapon-ward-orbit","runtimeSupport":"기존 Orbit 판정 있음; 확대 그림의 충돌은 미구현"},
+    {"id":"core:storm_fork","name":"빗물 쇠스랑 · 연쇄 번개","shape":"lightning","cue":"weapon-storm-fork","runtimeSupport":"기존 Chain 판정 있음; 추가 가지의 충돌은 미구현"},
+    {"id":"core:granary_sling","name":"곡창 투석끈 · 별똥 포격","shape":"meteor","cue":"boss-bank-break","runtimeSupport":"설계 falling-bombardment 재해석; 실행 무기 미구현"},
+    {"id":"core:spore_fan","name":"포자 부채 · 포자 회오리","shape":"tornado","cue":"tool-rain-ladle","runtimeSupport":"설계 ground-zone의 회오리 재해석 제안; 실행 무기 미구현"},
+    {"id":"core:ditch_pike","name":"고랑 장창 · 땅창 행렬","shape":"spears","cue":"tool-carpenter-hammer","runtimeSupport":"설계 linear-thrust의 지면 솟음 재해석 제안; 실행 무기 미구현"},
+    {"id":"core:canal_bow","name":"수로 활 · 화살비","shape":"arrowrain","cue":"weapon-ember-wand","runtimeSupport":"기존 설계의 화살비 재해석 제안; 실행 무기 미구현"},
+    {"id":"core:muster_horn","name":"뿔나팔 · 수호대 소집","shape":"summon","cue":"tool-muster-horn","runtimeSupport":"기존 AllyTask 판정 있음; 추가 대표 그림은 전투 개체가 아님"}
+  ]
+}
