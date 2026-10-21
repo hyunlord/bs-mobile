@@ -1,6 +1,8 @@
 name: CI
 on:
   pull_request:
+    # edited: the PR body carries the Mac Unity test record that tools/pr-policy.mjs checks (ADR0068).
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
   workflow_dispatch:

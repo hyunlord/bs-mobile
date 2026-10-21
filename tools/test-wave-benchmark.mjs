@@ -134,6 +134,28 @@ test('accepts documented appended diagnostics while preserving base statistics',
   assert.equal(result.renderTimings.gpuMs.mean, 4);
 });
 
+const current = ',advances,advanceMs,worldBatchDrawCalls,worldInstances,entryTimestamp,exitTimestamp,nextEntryTimestamp,inputDeltaSeconds,accumulatorBefore,accumulatorAfter,partialBoundary,originalWallMs,excludedBackgroundMs';
+test('accepts the current harness columns (#321) when no background time was excluded', t => {
+  const f = fixture(t);
+  mutateFrames(f.run, lines => lines.map((line, index) => line + (index === 0 ? current : `,0,0,32,1409,${index * 1000},${index * 1000 + 10},${index * 1000 + 20},0.016,0,0,0,0,0`)));
+  mutateJson(path.join(f.run, 'benchmark.json'), value => { value.focusEvents = []; value.excludedIntervals = []; });
+  assert.equal(f.compare().after.bins[0].wallMs.p95, 19);
+});
+
+for (const [name, row, identity] of [
+  ['a resume boundary row', ',1,0,0', null], ['excluded background time', ',0,25,5', null],
+  ['a recorded focus event', ',0,0,0', value => { value.focusEvents = [{ focus: false }]; }],
+  ['an excluded interval', ',0,0,0', value => { value.excludedIntervals = [{ reason: 'background' }]; }],
+  ['no focus ledger', ',0,0,0', value => { delete value.focusEvents; }],
+  ['no excluded-interval ledger', ',0,0,0', value => { delete value.excludedIntervals; }],
+  ['a non-array focus ledger', ',0,0,0', value => { value.focusEvents = { length: 0 }; }]
+]) test(`rejects a run with ${name}`, t => {
+  const f = fixture(t);
+  mutateFrames(f.run, lines => lines.map((line, index) => line + (index === 0 ? current : `,0,0,32,1409,${index * 1000},${index * 1000 + 10},${index * 1000 + 20},0.016,0,0${index === 2 ? row : ',0,0,0'}`)));
+  mutateJson(path.join(f.run, 'benchmark.json'), value => { value.focusEvents = []; value.excludedIntervals = []; identity?.(value); });
+  assert.throws(() => f.compare(), /run is invalid/);
+});
+
 test('explicit minus-one allocation support remains unavailable, never averaged as negative bytes', t => {
   const f = fixture(t);
   mutateFrames(f.run, lines => lines.map((line, i) => {
