@@ -36,7 +36,8 @@ namespace SowSiege.Core
                 Water = definition.WaterCapacity,
                 Timber = definition.InitialTimber,
                 TimberOrigin = world.Estate,
-                AvailableWorkers = definition.InitialWorkers
+                AvailableWorkers = definition.InitialWorkers,
+                CountUnlockEvents = WaveEvolutionUnlocks.CountsEvents(definition)
             };
             modules = new(definition);
             queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
@@ -45,8 +46,8 @@ namespace SowSiege.Core
             work = new(catalog, world, interactive, modules, subscriptions, queries);
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
-        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) &&
-            WaveGrowthPrimitives.Eligible(modules[e.Id], state);
+        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) &&
+            WaveEvolutionUnlocks.Eligible(WaveEvolutionUnlocks.Effective(e, modules[e.Id]), definition, world.Equipment, state);
         public IEnumerable<string> ExtraCards() => definition.Items.Values.Where(i => !state.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(definition.Evolutions.Values.Where(EligibleEvolution).Select(e => e.Id));
         public bool Select(string id)
         {
@@ -344,7 +345,7 @@ namespace SowSiege.Core
 
             if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
             {
-                state.BladePlotKill = true;
+                WaveEvolutionUnlocks.Record(state, WaveEvolutionUnlocks.AttackKillNearGrowth);
             }
 
             state.Emit(world.Tick, "hit", source, enemy.Id, enemy.Position, enemy.Position, actual);
