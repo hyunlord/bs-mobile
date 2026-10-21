@@ -22,7 +22,9 @@ namespace SowSiege.Core
     public sealed record WaveGearLevel(int Damage, int Range, int CooldownTicks, int Speed, int Count, int LifetimeTicks, int Knockback);
     // RehitEachImpact (ADR0061, default off and then absent from hashes and saves): each impact strikes every enemy in its
     // radius, even one an earlier impact of the same activation already struck (a patch pulsing in place).
-    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius, [property: OmitWhenNull] bool? RehitEachImpact = null)
+    // Bounces (ADR0062, "ricochet" placement only, absent otherwise): after striking its target an arrow flies on to the nearest
+    // enemy it has not struck, at most Bounces times; the first flight takes DelayTicks and each bounce StepTicks.
+    public sealed record WaveAttackComposition(int Version, string Placement, int DelayTicks, int StepTicks, int Spacing, int Radius, [property: OmitWhenNull] bool? RehitEachImpact = null, [property: OmitWhenNull] int? Bounces = null)
     {
         public const int MaximumImpacts = 64;
     }

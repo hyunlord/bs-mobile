@@ -85,6 +85,7 @@ namespace Game.View
         {
             foreach (var volley in arrowVolleys) { volley.Tick = -1; volley.Count = 0; }
             arrowNext = 0; ArrowVolleys = ArrowRainVolleys = ArrowImpacts = ArrowLandedOnTime = BowstringFlashDraws = 0;
+            ResetRicochet();
         }
 
         bool IsArrowSource(string source) => source != null && m1CombatShapes.TryGetValue(source, out var shape) && shape == "arrowrain";
@@ -104,6 +105,7 @@ namespace Game.View
         void AcceptArrowEvent(WaveEvent value)
         {
             if (!IsArrowSource(value.Source)) return;
+            if (IsRicochetSource(value.Source)) { AcceptRicochetEvent(value); return; }
             if (value.Kind == "review-impact-tell")
             {
                 var volley = VolleyFor(value.Tick, value.Source);
@@ -144,6 +146,7 @@ namespace Game.View
         {
             direction = Vector2.zero;
             if (!IsArrowSource(value.Source)) return false;
+            if (IsRicochetSource(value.Source)) return RicochetHitDirection(value, origin, out direction);
             var best = float.PositiveInfinity;
             foreach (var volley in arrowVolleys)
                 for (var i = 0; i < volley.Count; i++)
@@ -160,6 +163,7 @@ namespace Game.View
         {
             bowstringRequests.Clear();
             if (waveDefinition == null) return;
+            DrawRicochetHops();
             var any = false;
             foreach (var volley in arrowVolleys)
                 if (volley.Tick >= 0 && visualTime - volley.DueOf(volley.Count) < ArrowSpec.Seconds(ArrowSpec.PlantedFrames) + .2f) { any = true; break; }

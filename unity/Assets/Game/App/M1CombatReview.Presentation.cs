@@ -14,6 +14,7 @@ namespace Game.App
             public string interpretation = "View-only feel counters from the rendered run. Giant-blade kill points are on-screen kill positions (Core and last rendered) tested against the drawn envelope. Muster path RuntimeEvolution requires an active runtime evolution; GearRatio is the runtime gear count/range over the canonical maximum level, capped at 5 soldiers and 1.3x. Evolution-only elements (storm sky, flag bearer, giant sword, arrow rain) follow the View-only display stage table (WeaponDisplayStages.json). Blade hits are presented when the sweep reaches them after a 4-frame wind-up; arrows land on the Core impact tick. Lightning hits are presented when their strike becomes visible (3-frame telegraph). Minion stationary frames exclude spawn, attack and despawn animation.";
             public int bladeEvolvedStrikes, bladeDeferredHits, bladePresentedHits, arrowVolleys, arrowRainVolleys, arrowImpacts, arrowLandedOnTime, bowstringFlashDraws, pikeCasts, pikeImpacts, pikeImpactsLanded, pikeLandedOnTime, pikeEruptions, sporePatches, sporePulses, sporePulsesOnTime;
             public int orbitActivations, orbitContactFlashes, vortexFrames, shieldThrows;
+            public int ricochetHops, ricochetBounces, ricochetLanded, ricochetLandedOnTime, ricochetChannelDraws;
             // P5 budget: share of enemy sprite pixels covered by own weapon effects per frame (mask readback, half resolution),
             // with effect alpha capped at 0.5 over enemies as drawn; the uncapped share is kept for comparison. Full-screen
             // tints are not in it: tint frames record the darkening alpha and the enemy-ground contrast left (1 − alpha).
@@ -34,6 +35,7 @@ namespace Game.App
         readonly List<string> pikeRows = new List<string>(64);
         readonly List<string> sporeRows = new List<string>(64);
         readonly List<string> orbitRows = new List<string>(64);
+        readonly List<string> ricochetRows = new List<string>(256);
         PresentationSummary presentation;
 
         public void Observe(WorldRenderer world)
@@ -65,6 +67,8 @@ namespace Game.App
                 $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.FirstShownFrame - r.AcceptedFrame},{r.DueFrame - r.FirstShownFrame},{r.FirstImpactScreen.x:R},{r.FirstImpactScreen.y:R},{r.FirstImpactRadiusPixels:R},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R},{r.MidFlightScreen.x:R},{r.MidFlightScreen.y:R},{r.MidFlightImpactOffset},{r.Stage:R},{r.HandScreen.x:R},{r.HandScreen.y:R}")); };
             world.PikeCastSample = r => { if (pikeRows.Count < 1024) pikeRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Impacts},{r.OnScreenImpacts},{r.Evolved},{r.Stage:R},{r.FirstDueFrame - r.ShownFrame},{r.StepFrames},{r.LaunchScreen.x:R},{r.LaunchScreen.y:R},{r.LastImpactScreen.x:R},{r.LastImpactScreen.y:R},{r.LastImpactOnScreen},{r.PikeLengthPixels:R},{r.FurrowWidthPixels:R},{r.HeroHeightPixels:R},{r.LastImpactFrame - r.ShownFrame}")); };
+            world.RicochetHopSample = r => { if (ricochetRows.Count < 4096) ricochetRows.Add(FormattableString.Invariant(
+                $"{frameCount},{r.Tick},{r.Chain},{r.Hop},{r.Evolved},{r.Turns},{r.OnScreen},{r.AcceptedOffset},{r.MidOffset},{r.FromScreen.x:R},{r.FromScreen.y:R},{r.ToScreen.x:R},{r.ToScreen.y:R},{r.MidScreen.x:R},{r.MidScreen.y:R},{r.Stage:R},{r.ArrowLengthPixels:R},{r.HeroHeightPixels:R},{r.ChannelWidthPixels:R}")); };
             world.SporePatchSample = r => { if (sporeRows.Count < 1024) sporeRows.Add(FormattableString.Invariant(
                 $"{frameCount},{r.Tick},{r.Pulses},{r.StepFrames},{r.Evolved},{r.OnScreen},{r.CentreScreen.x:R},{r.CentreScreen.y:R},{r.RadiusPixels:R},{r.HeroHeightPixels:R}")); };
             world.OrbitActivationSample = r => { if (orbitRows.Count < 1024) orbitRows.Add(FormattableString.Invariant(
@@ -96,6 +100,8 @@ namespace Game.App
                 new[] { "frameIndex,tick,pulses,stepFrames,evolved,onScreen,centreScreenX,centreScreenY,radiusPixels,heroHeightPixels" }.Concat(sporeRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-pike-casts.csv"),
                 new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,stage,shownToDueFrames,stepFrames,launchScreenX,launchScreenY,lastImpactScreenX,lastImpactScreenY,lastImpactOnScreen,pikeLengthPixels,furrowWidthPixels,heroHeightPixels,lastImpactFrameOffset" }.Concat(pikeRows));
+            System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-ricochet-hops.csv"),
+                new[] { "frameIndex,tick,chain,hop,evolved,turns,onScreen,acceptedOffset,midOffset,fromScreenX,fromScreenY,toScreenX,toScreenY,midScreenX,midScreenY,stage,arrowLengthPixels,heroHeightPixels,channelWidthPixels" }.Concat(ricochetRows));
             System.IO.File.WriteAllLines(System.IO.Path.Combine(directory, "m1-arrow-volleys.csv"),
                 new[] { "frameIndex,tick,impacts,onScreenImpacts,evolved,tellToShownFrames,shownToDueFrames,firstImpactScreenX,firstImpactScreenY,firstImpactRadiusPixels,launchScreenX,launchScreenY,arrowLengthPixels,heroHeightPixels,midFlightScreenX,midFlightScreenY,midFlightImpactOffset,stage,handScreenX,handScreenY" }.Concat(arrowRows));
         }
@@ -111,6 +117,7 @@ namespace Game.App
                 heroHitFlashes = world.HeroHitFlashes, musterLunges = world.MusterLunges,
                 bladeEvolvedStrikes = world.M1BladeEvolvedStrikes, bladeDeferredHits = world.BladeDeferredHits, bladePresentedHits = world.BladePresentedHits,
                 orbitActivations = world.OrbitActivations, orbitContactFlashes = world.OrbitContactFlashes, vortexFrames = world.VortexFrames, shieldThrows = world.ShieldThrows,
+                ricochetHops = world.RicochetHops, ricochetBounces = world.RicochetBounces, ricochetLanded = world.RicochetLanded, ricochetLandedOnTime = world.RicochetLandedOnTime, ricochetChannelDraws = world.RicochetChannelDraws,
                 arrowVolleys = world.ArrowVolleys, arrowRainVolleys = world.ArrowRainVolleys, arrowImpacts = world.ArrowImpacts, arrowLandedOnTime = world.ArrowLandedOnTime, bowstringFlashDraws = world.BowstringFlashDraws,
                 pikeCasts = world.PikeCasts, pikeImpacts = world.PikeImpacts, pikeImpactsLanded = world.PikeImpactsLanded, pikeLandedOnTime = world.PikeLandedOnTime, pikeEruptions = world.PikeEruptions,
                 sporePatches = world.SporePatches, sporePulses = world.SporePulses, sporePulsesOnTime = world.SporePulsesOnTime,

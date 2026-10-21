@@ -126,6 +126,83 @@ public sealed class WaveReviewCompositionTests
         gears[gear.Id] = gear with { Composition = new(1, "forward-line", 1, 2, 0, 1000, true) };
         Assert.NotEqual(unset, PortableStateCodec.HashCatalog(catalog));
     }
+    static (WaveRuntimeSystem System, WorldState World, string Gear, EnemyState[] Enemies) RicochetArena(int count, int? bounces, params (int X, int Y)[] at)
+    {
+        // ADR0062: the lord at (500, 500), range 200, so each bounce must stay within 200 of the last impact.
+        var (catalog, _, world, first) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gear = catalog.WaveRuntime!.Gear.Values.Single();
+        ((Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime.Gear)[gear.Id] = gear with
+        { Composition = new(1, "ricochet", 2, 3, 0, 20, null, bounces), Count = count, CooldownTicks = 100 };
+        var enemies = new EnemyState[at.Length];
+        for (var i = 0; i < at.Length; i++)
+        {
+            enemies[i] = i == 0 ? first : new EnemyState { Id = 10 + i, Definition = first.Definition, Health = 100 };
+            enemies[i].Position = new(at[i].X, at[i].Y);
+            if (i > 0) { world.Enemies.Add(enemies[i]); }
+        }
+        return (new WaveRuntimeSystem(catalog, world, new(1, true), null), world, gear.Id, enemies);
+    }
+    static List<WaveEvent> Run(WaveRuntimeSystem system, WorldState world, int ticks)
+    {
+        var events = new List<WaveEvent>();
+        for (var tick = 0; tick <= ticks; tick++) { world.Tick = tick; system.Tick(world.Lord); events.AddRange(world.WaveRuntime!.Events); }
+        return events;
+    }
+    [Theory]
+    [InlineData(0, new[] { 90, 100, 100 })]
+    [InlineData(1, new[] { 90, 90, 100 })]
+    [InlineData(2, new[] { 90, 90, 90 })]
+    [InlineData(3, new[] { 90, 90, 90 })]
+    public void RicochetArrowStrikesItsTargetThenBouncesToTheNearestEnemyItHasNotStruck(int bounces, int[] health)
+    {
+        // The second and third enemies are out of the lord's range but each within range of the previous impact.
+        var (system, world, gear, enemies) = RicochetArena(1, bounces, (600, 500), (750, 500), (900, 500));
+        var events = Run(system, world, 12);
+        Assert.Equal(health, enemies.Select(e => e.Health));
+        Assert.Equal(Math.Min(bounces, 2) + 1, world.WaveRuntime!.Counters["review-impact:" + gear]);
+        Assert.Equal(new[] { 2, 5, 8 }.Take(Math.Min(bounces, 2) + 1), events.Where(e => e.Kind == "review-impact").Select(e => e.Tick));
+        Assert.Empty(world.WaveRuntime.PendingImpacts);
+        Assert.Equal(1, world.WaveRuntime.Counters["successful-activation"]);
+        var tells = events.Where(e => e.Kind == "review-impact-tell").ToArray();
+        Assert.Equal(500, tells[0].Position.X);
+        if (bounces > 0) { Assert.Equal((600, 750), (tells[1].Position.X, tells[1].Target.X)); }
+    }
+    [Fact]
+    public void RicochetArrowsStrikeAnEnemyOncePerArrowButEachArrowMayStrikeIt()
+    {
+        var (system, world, gear, enemies) = RicochetArena(2, 1, (600, 500), (650, 500));
+        Run(system, world, 8);
+        Assert.Equal(new[] { 80, 80 }, enemies.Select(e => e.Health));
+        Assert.Equal(4, world.WaveRuntime!.Counters["review-impact:" + gear]);
+    }
+    [Fact]
+    public void RicochetArrowFollowsItsTargetUntilImpact()
+    {
+        var (system, world, _, enemies) = RicochetArena(1, 0, (600, 500));
+        system.Tick(world.Lord);
+        enemies[0].Position = new(640, 560);
+        world.Tick = 1; var events = Run(system, world, 3);
+        Assert.Equal(90, enemies[0].Health);
+        Assert.Equal(640, events.Single(e => e.Kind == "review-impact").Position.X);
+    }
+    [Fact]
+    public void RicochetBouncesAreAbsentFromHashesUntilSetAndOnlyValidForRicochet()
+    {
+        var (catalog, _, world, _) = WaveRuntimeTests.Arena(WaveAttackKind.Arc);
+        var gears = (Dictionary<string, WaveGearDefinition>)catalog.WaveRuntime!.Gear;
+        var gear = gears.Values.Single();
+        gears[gear.Id] = gear with { Composition = new(1, "nearest-target", 2, 0, 0, 20) };
+        var unset = PortableStateCodec.HashCatalog(catalog);
+        gears[gear.Id] = gear with { Composition = new(1, "nearest-target", 2, 0, 0, 20, null, null) };
+        Assert.Equal(unset, PortableStateCodec.HashCatalog(catalog));
+        foreach (var bad in new WaveAttackComposition[] { new(1, "nearest-target", 2, 0, 0, 20, null, 1), new(1, "ricochet", 2, 3, 0, 20), new(1, "ricochet", 2, 0, 0, 20, null, 1), new(1, "ricochet", 2, 3, 0, 20, true, 1), new(1, "ricochet", 2, 3, 0, 20, null, -1) })
+        {
+            gears[gear.Id] = gear with { Composition = bad, CooldownTicks = 100 };
+            world.Equipment[0].ReadyTick = 0;
+            var system = new WaveRuntimeSystem(catalog, world, new(1, true), null);
+            Assert.Throws<ArgumentException>(() => system.Tick(world.Lord));
+        }
+    }
     [Fact]
     public void MovingOutOfLockedImpactAvoidsDamage()
     {

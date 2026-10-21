@@ -27,6 +27,13 @@ function pick(directory, id) {
     const aim = Number(s.aim) * Math.PI / 180, r = Math.hypot(Number(s.radiusPixelsX), Number(s.radiusPixelsY));
     return { frame: Number(s.frameIndex) + 7, x: Number(s.originScreenX) + Math.cos(aim) * r * .6, y: FrameHeight - (Number(s.originScreenY) + Math.sin(aim) * r * .6), size: r * 1.4 };
   }
+  if (id === 'core:canal_bow' && rows(path.join(directory, 'm1-ricochet-hops.csv')).length > 0) {
+    // Ricochet (ADR0062): the longest on-screen flight in flight, framed on its midpoint 5 frames before it lands.
+    const all = rows(path.join(directory, 'm1-ricochet-hops.csv')).filter(late).filter(r => r.onScreen === 'True' && Number(r.midScreenX) >= 0);
+    const length = r => Math.hypot(Number(r.toScreenX) - Number(r.fromScreenX), Number(r.toScreenY) - Number(r.fromScreenY));
+    const h = all.reduce((best, r) => length(r) > length(best) ? r : best, all[0]), hero = Number(h.heroHeightPixels);
+    return { frame: Number(h.frameIndex) + Number(h.midOffset), x: (Number(h.fromScreenX) + Number(h.toScreenX)) / 2, y: FrameHeight - (Number(h.fromScreenY) + Number(h.toScreenY)) / 2, size: Math.max(hero * 1.6, length(h) * 1.3) };
+  }
   if (id === 'core:canal_bow') {
     const all = rows(path.join(directory, 'm1-arrow-volleys.csv')).filter(late).filter(r => Number(r.firstImpactScreenX) >= 0);
     const v = all[1], due = Number(v.frameIndex) + Number(v.shownToDueFrames), hero = Number(v.heroHeightPixels ?? 115);

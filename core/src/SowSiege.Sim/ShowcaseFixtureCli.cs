@@ -6,7 +6,7 @@ namespace SowSiege.Sim;
 public static class ShowcaseFixtureCli
 {
     public static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, WriteIndented = true, Converters = { new JsonStringEnumConverter() }, TypeInfoResolver = CaseResolver() };
-    // Optional composition fields added after the cases were frozen (ADR0061) are left out while unset, so sidecars of cases
+    // Optional composition fields added after the cases were frozen (ADR0061, ADR0062) are left out while unset, so sidecars of cases
     // that do not use them stay byte-identical; the older null members keep their existing explicit nulls.
     static System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver CaseResolver()
     {
@@ -16,7 +16,7 @@ public static class ShowcaseFixtureCli
             if (type.Type != typeof(WaveAttackComposition)) { return; }
             foreach (var property in type.Properties)
             {
-                if (property.Name == "rehitEachImpact") { property.ShouldSerialize = (_, value) => value is not null; }
+                if (property.Name is "rehitEachImpact" or "bounces") { property.ShouldSerialize = (_, value) => value is not null; }
             }
         });
         return resolver;
