@@ -168,6 +168,9 @@ namespace Tests.PlayMode
             yield return Reveal("Challenges.Claim:" + challenge.Id);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.True);
             var readyButton = Named("Challenges.Claim:" + challenge.Id);
+            var readyBorder = readyButton.transform.parent.Find("Claim ready gold border");
+            Assert.That(readyBorder, Is.Not.Null, "Claimable rewards have an explicit gold border.");
+            Assert.That(readyBorder.GetComponent<Image>().raycastTarget, Is.False);
             Assert.That(readyButton.GetComponentInChildren<Text>().text, Is.EqualTo("받기"));
             Assert.That(((RectTransform)readyButton.transform).rect.height, Is.GreaterThanOrEqualTo(44));
             Assert.That(readyButton.image.sprite.name, Does.Contain("ui-btn-cream"));
@@ -181,6 +184,7 @@ namespace Tests.PlayMode
             Assert.That(app.Progression.State.CompletedChallenges.Count(item => item == challenge.Id), Is.EqualTo(1));
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).interactable, Is.False);
+            Assert.That(Named("Challenges.Claim:" + challenge.Id).transform.parent.Find("Claim ready gold border"), Is.Null);
             Assert.That(Named("Challenges.Claim:" + challenge.Id).GetComponentInChildren<Text>().text, Is.EqualTo("받음"));
             Click("Challenges.Claim:" + challenge.Id, true); yield return null;
             AssertWallet(expected.State.Wallet, app.Progression.State.Wallet);

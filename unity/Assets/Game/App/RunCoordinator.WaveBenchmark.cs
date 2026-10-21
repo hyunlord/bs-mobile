@@ -20,6 +20,9 @@ namespace Game.App
         CrowdReplayBenchmark crowdBenchmark;
         bool offlineReplayRequested;
         OfflineReplayCapture offlineReplayCapture;
+        HeroMotionComparisonWindow heroMotionWindow;
+        int CrowdStartTick => heroMotionWindow?.StartTick ?? CrowdReplayBenchmark.StartTick;
+        int CrowdEndTick => heroMotionWindow?.EndTick ?? CrowdReplayBenchmark.EndTick;
         bool benchmarkAllocationAvailable;
         bool benchmarkSkipGrounding, benchmarkTarget60Experiment;
         BenchmarkCoreDiagnostics benchmarkCoreDiagnostics;
@@ -164,6 +167,7 @@ namespace Game.App
                 benchmarkOutput = destination;
                 crowdBenchmark = CrowdReplayBenchmark.Parse(args);
                 offlineReplayRequested = OfflineReplayCapture.Requested(args);
+                heroMotionWindow = HeroMotionComparisonWindow.Parse(args);
                 benchmarkMode = benchmarkTarget60Experiment ? "diagnostic-crowd-target60-vsync0" : crowdBenchmark == null ? ParseWaveBenchmarkMode(args) : "normal-mac-vsync";
                 benchmarkAllocationAvailable = AllocationCounterProbe.CurrentThreadAvailable();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -210,11 +214,11 @@ namespace Game.App
             {
                 Session = new InteractiveSession(runCatalog, benchmarkReplay.Header.Options);
                 Session.Diagnostics = benchmarkCoreDiagnostics;
-                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=false;activeHeroRig=crowdBenchmark?.HeroRig ?? false;explicitHeroRig=activeHeroRig;
+                activeFeelRules=benchmarkReplay.Header.Options.Feel;activeHitFeedback=heroMotionComparison!=null;activeHeroRig=crowdBenchmark?.HeroRig ?? false;explicitHeroRig=activeHeroRig;
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
-                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < (crowdBenchmark == null ? 7200 : CrowdReplayBenchmark.StartTick)) ApplyBenchmarkCommand(false, ref benchmarkPending);
+                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < (crowdBenchmark == null ? 7200 : CrowdStartTick)) ApplyBenchmarkCommand(false, ref benchmarkPending);
                 CaptureSnapshots(); previous = CurrentFrame;
                 world = new GameObject("World renderer").AddComponent<WorldRenderer>();
                 world.PresentationDiagnosticsEnabled = benchmarkCoreDiagnostics != null;
@@ -305,7 +309,7 @@ namespace Game.App
         }
         void ResetBenchmarkClock() { benchmarkFrameStart = Stopwatch.GetTimestamp(); benchmarkAllocatedStart = benchmarkAllocationAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1; benchmarkGcStart = GC.CollectionCount(0); }
         static double BenchmarkMilliseconds(long start) => (Stopwatch.GetTimestamp() - start) * 1000d / Stopwatch.Frequency;
-        bool BenchmarkWindow(int tick) => crowdBenchmark != null ? CrowdReplayBenchmark.InWindow(tick) : tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
+        bool BenchmarkWindow(int tick) => crowdBenchmark != null ? tick >= CrowdStartTick && tick <= CrowdEndTick : tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
         void UpdateWaveBenchmark()
         {
             var entryTimestamp = Stopwatch.GetTimestamp();
@@ -341,6 +345,13 @@ namespace Game.App
                     benchmarkLastTiming = benchmarkTimingBuffer[0].frameStartTimestamp;
                     if (benchmarkTimings.Count == benchmarkTimings.Capacity) throw new InvalidOperationException("Benchmark timing capacity exceeded; no observations were dropped.");
                     benchmarkTimings.Add(new BenchmarkTiming { observedFrame = Time.frameCount, observationTimestamp = Stopwatch.GetTimestamp(), value = benchmarkTimingBuffer[0] });
+                }
+                if (heroMotionWindow != null && CurrentFrame.Tick >= CrowdEndTick)
+                {
+                    // Continue the exact original suffix without rendering or fabricated input.
+                    // This proves the full terminal hash, while the review clip remains bounded.
+                    while (benchmarkCommand < benchmarkReplay.Commands.Count) ApplyBenchmarkCommand(false, ref benchmarkPending);
+                    EndWaveBenchmark(null); return;
                 }
                 if (benchmarkCommand == benchmarkReplay.Commands.Count && (offlineReplayRequested || benchmarkFrames.Count > 0 && benchmarkFrames[benchmarkFrames.Count - 1].tick == CurrentFrame.Tick)) { EndWaveBenchmark(null); return; }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -388,7 +399,7 @@ namespace Game.App
                     accumulator += offlineReplayRequested ? OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
                     var step = 1d / CurrentFrame.TickRate;
                     var advanceBudget = new FrameAdvanceBudget(!offlineReplayRequested);
-                    while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count)
+                    while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count && (heroMotionWindow == null || CurrentFrame.Tick < CrowdEndTick))
                     {
                         var command = benchmarkReplay.Commands[benchmarkCommand];
                         if (command.Kind == ReplayCommandKind.Advance && !advanceBudget.TryAdvance(ref accumulator, step)) break;
@@ -426,7 +437,7 @@ namespace Game.App
                     alpha = renderInterpolation.Present(CurrentFrame.Tick, alpha, warming, presentationDelta, CurrentFrame.TickRate);
                 }
                 world.HeroLocomotionPerTick = (float)(Session?.LocomotionSpeedPerTick ?? 0);
-                using (RunProfilerMarkers.WorldPresent.Auto()) world.Present(previous, CurrentFrame, FirstPlayable, alpha, presentationDelta, visible);
+                using (RunProfilerMarkers.WorldPresent.Auto()) PresentWorld(alpha, presentationDelta, visible);
                 sample.presentMs = BenchmarkMilliseconds(started);
                 LongFrameViewPresented();
                 sample.composition = world.LastDiagnostics;
@@ -473,8 +484,8 @@ namespace Game.App
             started = Stopwatch.GetTimestamp();
             using (RunProfilerMarkers.AcceptPresentation.Auto())
             {
-                world.AcceptWave(runCatalog, CurrentWave); world.AcceptFrame(CurrentFrame, FirstPlayable);
-                sound.AcceptCommonFeedback(CurrentFrame, waveSound.PlayCommon); AcceptWaveAudio();
+                AcceptCurrentWorldPresentation();
+
             }
             sample.acceptMs += BenchmarkMilliseconds(started);
         }
@@ -528,10 +539,11 @@ namespace Game.App
             if (crowdBenchmark != null)
             {
                 result.fixture = "rules-off-six-minute-8c94ce2";
-                result.windows = "10800-11530";
+                result.windows = CrowdStartTick + "-" + CrowdEndTick;
                 result.playbackBoundary = "Capture-free native replay, not live input. Original accepted commands are pre-rolled without rendering to tick10800; 120 rendered warmup frames then 1x playback until original terminal state. No JPEG, readback, audio recording or forced survival. Card commands replay immediately; original human pause durations are not encoded. Draw calls are world batch submissions, excluding Unity UI and render-pipeline passes. Allocation bytes unavailable are -1.";
             }
-            if (offlineReplayRequested) result.playbackBoundary = "오프라인 렌더 · 60fps · 무음. Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. See offline-capture.json and offline-frame-index.csv.";
+            if (heroMotionWindow != null && !offlineReplayRequested) result.playbackBoundary = "Hero motion comparison: original replay commands, bounded displayed window, unrendered original suffix validated to the full terminal hash. Only hero rendering differs. " + result.playbackBoundary;
+            if (offlineReplayRequested) result.playbackBoundary = "오프라인 렌더 · 60fps · 무음. Original commands and terminal hash; fixed 1/60 playback/presentation delta and end-of-frame synchronous readback. No native performance gate evidence. Hero comparison windows, when requested, validate the original unrendered suffix to the same terminal hash. See offline-capture.json and offline-frame-index.csv.";
             try
             {
                 if (exception == null)
@@ -543,7 +555,7 @@ namespace Game.App
                     result.verified = summary.Tick == benchmarkReplay.End.Tick && summary.StateHash == benchmarkReplay.End.StateHash && kind == benchmarkReplay.End.Kind && Session.NextSequence == benchmarkReplay.End.AppliedCommands;
                     if (!result.verified) result.error = "Original replay terminal state mismatch.";
                 }
-                if (offlineReplayCapture != null) offlineReplayCapture.Finish(OfflineReplayCapture.ExpectedFrames(CrowdReplayBenchmark.EndTick - CrowdReplayBenchmark.StartTick, CurrentFrame.TickRate), result.verified);
+                if (offlineReplayCapture != null) offlineReplayCapture.Finish(OfflineReplayCapture.ExpectedFrames(CrowdEndTick - CrowdStartTick, CurrentFrame.TickRate), result.verified);
                 if (benchmarkOutput != null)
                 {
                     using (var writer = new StreamWriter(Path.Combine(benchmarkOutput, "frames.csv")))
@@ -578,7 +590,7 @@ namespace Game.App
                 UnityEngine.Debug.LogException(failure); result.verified = false; result.error = failure.ToString();
                 if (benchmarkOutput != null) File.WriteAllText(Path.Combine(benchmarkOutput, "benchmark.json"), JsonUtility.ToJson(result, true));
             }
-            finally { offlineReplayCapture?.Dispose(); }
+            finally { FinishHeroMotionComparisonMetrics(result.verified, result.performanceEligible); offlineReplayCapture?.Dispose(); }
             if (!result.verified) UnityEngine.Debug.LogError(result.error ?? "Benchmark failed.");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (result.verified && !benchmarkInterrupted && benchmarkDiagnosticPass < benchmarkDiagnosticPasses)

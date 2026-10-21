@@ -233,8 +233,16 @@ namespace Game.View
         // The knight sprite sheets replace the cutout B rig (#268): the B rig draws only when a comparison or benchmark asks for
         // it explicitly, or when the hero has no sheet roles. Decided each frame, after the art is loaded.
         public bool HeroRigExplicit { get; set; }
-        bool heroRigActive;
-        void SelectHeroRig(string heroId) => heroRigActive = HeroRigPreviewEnabled && (HeroRigExplicit || !EnsureHeroSheet(heroId));
+        bool heroRigActive, heroSheetOn;
+        // Review modes ask for their own hero explicitly: the motion comparison and the concept review keep their rig or
+        // picture, so the sheet stays off for them.
+        bool HeroReviewExplicit => HeroRigExplicit || HeroMotionPreviewMode != 0 || heroConceptVisual != null;
+        bool HeroSheetShown(string heroId) => !HeroReviewExplicit && EnsureHeroSheet(heroId);
+        void SelectHeroRig(string heroId)
+        {
+            heroSheetOn = HeroSheetShown(heroId);
+            heroRigActive = !heroSheetOn && (HeroRigPreviewEnabled || HeroMotionPreviewMode != 0);
+        }
 
         bool EnsureHeroSheet(string heroId)
         {
@@ -296,11 +304,11 @@ namespace Game.View
         bool heroSheetMoving;
 
         // The hero's footprint for shadow and camera margins: the figure share of this role's own cell, or the visual's own size.
-        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => !heroRigActive && EnsureHeroSheet(heroId) ? HeroSheetSpec.FigureSize(visual) : visual.WorldSize;
+        Vector2 HeroFigureSize(string heroId, ArtVisual visual) => HeroSheetShown(heroId) ? HeroSheetSpec.FigureSize(visual) : visual.WorldSize;
 
         bool DrawHeroSheet(string heroId, Vector2 lord, Vector2 movement, bool walking, bool hit, bool dead, ActorFacingPose facing, bool hitOutline, int tickRate)
         {
-            if (heroRigActive || !EnsureHeroSheet(heroId)) return false;
+            if (!heroSheetOn) return false;
             heroSheetMoving = walking;
             var stride = HeroLocomotionPerTick > 0 ? HeroLocomotionPerTick * tickRate / settings.WorldUnitsPerUnityUnit * HeroActions.Timings.Walk.Seconds : 0;
             var pose = HeroActions.Pose(visualTime, walking, hit, dead, movement.magnitude, stride);

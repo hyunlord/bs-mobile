@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "coordinateOrigin": "top-left",
+  "interpolation": "linear-in-normalized-time",
+  "rootMotion": false,
+  "lowerBody": "existing-distance-driven-twelve-frame-walk",
+  "clips": [
+    {
+      "id": "swing",
+      "durationSeconds": 0.36,
+      "frameCount": 6,
+      "keys": [
+        {
+          "time": 0,
+          "rotations": {
+            "nearShoulder": 8,
+            "nearElbow": -10,
+            "farShoulder": -8
+          }
+        },
+        {
+          "time": 0.2,
+          "rotations": {
+            "nearShoulder": -110,
+            "nearElbow": -30,
+            "farShoulder": 25,
+            "farElbow": 15,
+            "sword": -35,
+            "capeLower": -3
+          }
+        },
+        {
+          "time": 0.4,
+          "rotations": {
+            "nearShoulder": -80,
+            "nearElbow": -12,
+            "farShoulder": 30,
+            "farElbow": 15,
+            "sword": -45,
+            "capeLower": 8
+          }
+        },
+        {
+          "time": 0.6,
+          "rotations": {
+            "nearShoulder": 32,
+            "nearElbow": -25,
+            "farShoulder": -15,
+            "sword": -20,
+            "capeLower": -10
+          }
+        },
+        {
+          "time": 1,
+          "rotations": {
+            "nearShoulder": 8,
+            "nearElbow": -10,
+            "farShoulder": -8
+          }
+        }
+      ]
+    },
+    {
+      "id": "evolved-swing",
+      "durationSeconds": 0.48,
+      "frameCount": 6,
+      "keys": [
+        {
+          "time": 0,
+          "rotations": {
+            "nearShoulder": 8,
+            "nearElbow": -10,
+            "farShoulder": -8
+          }
+        },
+        {
+          "time": 0.2,
+          "rotations": {
+            "torso": -3,
+            "head": 8,
+            "nearShoulder": -130,
+            "nearElbow": -35,
+            "farShoulder": 35,
+            "farElbow": 25,
+            "sword": -45,
+            "capeLower": -8,
+            "capeUpper": -8
+          }
+        },
+        {
+          "time": 0.4,
+          "rotations": {
+            "torso": 8,
+            "head": -8,
+            "nearShoulder": -85,
+            "nearElbow": -5,
+            "farShoulder": 35,
+            "farElbow": 15,
+            "sword": -65,
+            "capeLower": -8
+          }
+        },
+        {
+          "time": 0.6,
+          "rotations": {
+            "torso": 12,
+            "head": -10,
+            "nearShoulder": 45,
+            "nearElbow": -30,
+            "farShoulder": -25,
+            "sword": -25,
+            "capeLower": -20
+          }
+        },
+        {
+          "time": 1,
+          "rotations": {
+            "nearShoulder": 8,
+            "nearElbow": -10,
+            "farShoulder": -8
+          }
+        }
+      ]
+    },
+    {
+      "id": "hit",
+      "durationSeconds": 0.2,
+      "frameCount": 4,
+      "keys": [
+        {
+          "time": 0,
+          "rotations": {
+            "nearShoulder": 8,
+            "nearElbow": -10,
+            "farShoulder": -8
+          }
+        },
+        {
+          "time": 0.3333333333333333,
+          "rotations": {
+            "head": -8,
+            "nearShoulder": 24,
+            "nearElbow": -35,
+            "farShoulder": -35,
+            "farElbow": 24,
+            "capeLower": -8
+          }
+        },
+        {
+          "time": 0.6666666666666666,
+          "rotations": {
+            "head": -5,
+            "nearShoulder": 18,
+            "nearElbow": -25,
+            "farShoulder": -24,
+            "farElbow": 16,
+            "capeLower": -5
+          }
+        },
+        {
+          "time": 1,
+          "rotations": {
+            "nearShoulder": 8,
+            "nearElbow": -10,
+            "farShoulder": -8
+          }
+        }
+      ]
+    }
+  ]
+}

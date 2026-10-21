@@ -21,6 +21,8 @@ namespace Game.View
         static readonly int ColorId = Shader.PropertyToID("_InstanceColor");
         static readonly int UvId = Shader.PropertyToID("_InstanceUv");
         static readonly int FlashId = Shader.PropertyToID("_InstanceFlash");
+        static readonly int RigUpperTextureId = Shader.PropertyToID("_RigUpperTex");
+        static readonly int RigUseUpperTextureId = Shader.PropertyToID("_RigUseUpperTex");
         static readonly int RigFrameId = Shader.PropertyToID("_RigFrame");
         static readonly int RigUpperFrameId = Shader.PropertyToID("_RigUpperFrame");
         static readonly int RigFarId = Shader.PropertyToID("_RigFarDelta");
@@ -62,9 +64,11 @@ namespace Game.View
             linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear;
         }
         public void BeginFrame() { count = 0; SubmittedInstances = 0; DrawCalls = 0; linearColorSpace=QualitySettings.activeColorSpace==ColorSpace.Linear; }
-        public void SetHeroRigPose(Vector4 frame, Vector4 upperFrame, Vector2 farCorrection, Vector2 nearCorrection, Vector4 warp)
+        public void SetHeroRigPose(Vector4 frame, Vector4 upperFrame, Vector2 farCorrection, Vector2 nearCorrection, Vector4 warp, Texture2D upperTexture = null)
         {
             if(count!=0)throw new InvalidOperationException("The hero rig owns a single-instance batch.");
+            properties.SetFloat(RigUseUpperTextureId, upperTexture == null ? 0 : 1);
+            if (upperTexture != null) properties.SetTexture(RigUpperTextureId, upperTexture);
             properties.SetVector(RigFrameId,frame);
             properties.SetVector(RigUpperFrameId,upperFrame);
             properties.SetVector(RigFarId,new Vector4(farCorrection.x,farCorrection.y,0,0));

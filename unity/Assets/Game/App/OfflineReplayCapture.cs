@@ -15,6 +15,8 @@ namespace Game.App
         readonly bool previousBackground;
         readonly RenderTexture target;
         readonly Texture2D pixels;
+        readonly bool flipReadbackRows;
+        readonly byte[] readbackPixels, rowScratch;
         readonly WaitForEndOfFrame endOfFrame = new WaitForEndOfFrame();
         readonly StreamWriter index;
         bool disposed;
@@ -46,6 +48,12 @@ namespace Game.App
             target = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
             target.Create();
             pixels = new Texture2D(width, height, TextureFormat.RGB24, false);
+            flipReadbackRows = SystemInfo.graphicsUVStartsAtTop;
+            if (flipReadbackRows)
+            {
+                readbackPixels = new byte[checked(width * height * 3)];
+                rowScratch = new byte[checked(width * 3)];
+            }
             previousCaptureRate = Time.captureFramerate;
             previousTarget = Application.targetFrameRate;
             previousVsync = QualitySettings.vSyncCount;
@@ -68,6 +76,14 @@ namespace Game.App
                 ScreenCapture.CaptureScreenshotIntoRenderTexture(target);
                 RenderTexture.active = target;
                 pixels.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0, false);
+                // Match the realtime writer: Metal screen-target rows run top-first.
+                // ReadPixels does not normalize this captured render target for JPEG.
+                if (flipReadbackRows)
+                {
+                    pixels.GetRawTextureData<byte>().CopyTo(readbackPixels);
+                    GoldenCaptureWriter.FlipRows(readbackPixels, target.width * 3, target.height, rowScratch);
+                    pixels.LoadRawTextureData(readbackPixels);
+                }
                 pixels.Apply(false, false);
                 File.WriteAllBytes(Path.Combine(output, $"frame-{Frames:D6}.jpg"), pixels.EncodeToJPG(95));
                 index.WriteLine(FormattableString.Invariant($"{Frames},{Time.frameCount},{tick},{alpha:R},{Frames * FrameSeconds:R}"));
@@ -82,7 +98,8 @@ namespace Game.App
             index.Flush();
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(output), "offline-capture.json"), JsonUtility.ToJson(new Manifest
             {
-                frames = Frames, expectedFrames = expected, complete = verified && Error == null && !Pending && Frames == expected
+                frames = Frames, expectedFrames = expected, complete = verified && Error == null && !Pending && Frames == expected,
+                readbackRowsFlipped = flipReadbackRows
             }, true));
             if (Error != null) throw new IOException("Offline image capture failed.", Error);
             if (Pending || Frames != expected) throw new InvalidDataException("Offline capture frame count mismatch.");
@@ -92,7 +109,7 @@ namespace Game.App
             public string label = "오프라인 렌더 · 60fps · 무음";
             public string contract = "Fixed 1/60 presentation and original 30Hz replay commands; contiguous end-of-frame JPEGs. Not real-time or frame-pacing evidence. Encode frame-%06d.jpg at 60fps without frame resampling.";
             public int fps = FramesPerSecond, frames, expectedFrames;
-            public bool complete, performanceEligible = false;
+            public bool complete, readbackRowsFlipped, performanceEligible = false;
         }
         public void Dispose()
         {
