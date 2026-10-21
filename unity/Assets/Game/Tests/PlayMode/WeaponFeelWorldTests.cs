@@ -273,6 +273,51 @@ namespace Tests.PlayMode
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }
 
+        // Soldier B on muster soldiers (user decision 2026-10-21): while the hero walks, the waiting horn soldiers beside him walk
+        // their role's multi-frame sheet by distance, and once he stops every soldier stands on its state's standing role.
+        [UnityTest]
+        public IEnumerator MusterSoldiersWalkTheSoldierBSheetAndStandWhenTheHeroStops()
+        {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName = CanonicalContent.ProfileName;
+            var catalog = CanonicalContent.CreateCatalog();
+            var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, CanonicalContent.DataHash));
+            var start = session.View.CaptureFrame() with { Enemies = System.Array.Empty<EnemyView>() };
+            var lord = start.Lord.Position;
+            var runtime = ((IWaveRunView)session.View).CaptureWaveRuntime() with { Enemies = System.Array.Empty<WaveEnemyView>(), Events = System.Array.Empty<WaveEvent>(),
+                Groups = new[] { new WaveGroupView(9100, "core:muster_horn", new WorldPoint(lord.X + 300, lord.Y + 200), "engaging", 1, 0, 0, 0, "advance") } };
+            // A walking pace: three Unity units per second at 60 frames per second.
+            var step = CanonicalContent.Presentation.Camera.WorldUnitsPerUnityUnit * .05f;
+            RunFrame At(int steps) => start with { Lord = start.Lord with { Position = new WorldPoint(lord.X + (int)(steps * step), lord.Y) } };
+            var owner = new GameObject("Soldier walk QA"); var cameraOwner = new GameObject("Soldier walk camera");
+            var camera = cameraOwner.AddComponent<Camera>(); var texture = new RenderTexture(720, 1280, 24); camera.targetTexture = texture;
+            try
+            {
+                var world = CreateWorld(owner, camera, catalog, start);
+                const int Moving = 90, Still = 120, Last = 30;
+                int walked = 0, stood = 0;
+                var previous = At(0);
+                for (var i = 0; i < Moving + Still; i++)
+                {
+                    var frame = At(Mathf.Min(i, Moving));
+                    world.AcceptWave(catalog, runtime);
+                    world.Present(previous, frame, WavePresentation.Envelope(catalog, frame, session.View.CaptureCards(), runtime), 1, Frame, new Rect(0, 0, 720, 1280));
+                    previous = frame;
+                    yield return null;
+                    if (i == Moving - 1)
+                    {
+                        Assert.That(world.MinionCount, Is.GreaterThan(0));
+                        Assert.That(world.SoldierWalkDraws, Is.GreaterThan(world.MinionCount * Moving / 2), "soldiers walking beside the hero draw Soldier B walk frames");
+                        Assert.That(System.Convert.ToString(world.SoldierWalkFrameMask, 2).Count(c => c == '1'), Is.GreaterThanOrEqualTo(3), "the walk advances through the sheet");
+                    }
+                    if (i == Moving + Still - Last - 1) { walked = world.SoldierWalkDraws; stood = world.SoldierStandDraws; }
+                }
+                Assert.That(world.SoldierWalkDraws, Is.EqualTo(walked), "soldiers of a stopped hero do not walk in place");
+                Assert.That(world.SoldierStandDraws - stood, Is.EqualTo(world.MinionCount * Last), "every soldier of a stopped hero stands");
+            }
+            finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
+        }
+
         // #268: first-playable art has no hero.preview-b roles; the knight sheets registered in every profile draw the hero,
         // the world is drawn and nothing is logged.
         [UnityTest]
