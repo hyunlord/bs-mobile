@@ -27,7 +27,7 @@
 |정본 PNG|선택 생성본|정확한 프롬프트 사본|용도·수정 맥락|
 |---|---|---|---|
 |[actors.png](../../unity/Assets/Art/actors.png)|actors v2|[actors-atlas-v2-prompt.txt](prompts/actors-atlas-v2-prompt.txt)|영웅·가신·일꾼·적; v1 배치 수정|
-|[crops-people.png](../../unity/Assets/Art/crops-people.png)|crops-people v1|[crops-people-atlas-v1-prompt.txt](prompts/crops-people-atlas-v1-prompt.txt)|성장 단계 작물·사람 역할|
+|[crops-people.png](../../unity/Assets/Art/crops-people.png)|crops-people v1 + 병사 B r3|[crops-people-atlas-v1-prompt.txt](prompts/crops-people-atlas-v1-prompt.txt), [soldier-b-rank-look-prompt.txt](prompts/soldier-b-rank-look-prompt.txt)|성장 단계 작물·사람 역할; 징집병·수비대는 Astra가 생성 그림을 Unity에서 리그해 구운 병사 B 걷기 16칸(재표본 없음, #331)|
 |[buildings.png](../../unity/Assets/Art/buildings.png)|buildings v2|[buildings-atlas-v2-prompt.txt](prompts/buildings-atlas-v2-prompt.txt)|건설·완성·손상·폐허; v1 여백 확대|
 |[objects.png](../../unity/Assets/Art/objects.png)|objects v2|[objects-atlas-v2-prompt.txt](prompts/objects-atlas-v2-prompt.txt)|상인·성소·수레·상자·경계·계절 지면; v1 배치 수정|
 |[equipment.png](../../unity/Assets/Art/equipment.png)|equipment v2|[equipment-atlas-v2-prompt.txt](prompts/equipment-atlas-v2-prompt.txt)|무기·도구 아이콘·타격 재료; v1 배치 수정|

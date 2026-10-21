@@ -97,7 +97,10 @@ namespace Game.View
             var direction = a.Facing.sqrMagnitude > .000001f ? a.Facing : Vector2.right;
             var offset = Vector2.zero; var degrees = 0f; var stretch = Vector2.one;
             var speed = (a.Position - a.Previous).magnitude;
-            if (speed > MinionSpec.StationaryStep * w)
+            var moving = speed > MinionSpec.StationaryStep * w;
+            var body = SoldierBody("minion", a.Group * 64 + a.Index, (a.Index & 1) == 0 ? "militia" : "guard", "muster", a.Position, moving, false);
+            if (body.Sheet) { art = body.Visual; size = art.WorldSize * Mathf.Max(.01f, a.Scale); }
+            if (moving && !body.Sheet)
             {
                 // Procedural run: two bounces per stride, lean into the run.
                 offset.y += Mathf.Abs(Mathf.Sin(a.Stride * Mathf.PI * 1.6f)) * .07f * size.y;
@@ -130,8 +133,8 @@ namespace Game.View
             var facing = new ActorFacingPose(direction.x < 0 ? 1 : 0, 0);
             var pose = new ActorPose(Vector2.zero, Vector2.one, degrees);
             var time = visualTime + a.Index * .07f;
-            DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: MinionTint, facing: facing, poseOverride: pose);
-            DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: GameVisualTokens.Ink, facing: facing, edgeTexels: MinionOutlineTexels, poseOverride: pose);
+            DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: MinionTint, facing: facing, poseOverride: pose, uv: body.Uv);
+            DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: GameVisualTokens.Ink, facing: facing, edgeTexels: MinionOutlineTexels, poseOverride: pose, uv: body.Uv);
             RenderedMinionBounds?.Invoke(MusterFormationRule.SpriteRect(at, drawn, art.Pivot), a.State);
             if (phase >= 0)
             {

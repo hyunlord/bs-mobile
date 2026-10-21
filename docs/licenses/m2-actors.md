@@ -5,7 +5,7 @@ Asset slice #100, parent #96. Generated for this project using the built-in imag
 | Runtime path | Generation prompt |
 |---|---|
 | unity/Assets/Art/actors.png | [actors-atlas-v2](prompts/actors-atlas-v2-prompt.txt) |
-| unity/Assets/Art/crops-people.png | [crops-people-atlas-v1](prompts/crops-people-atlas-v1-prompt.txt) |
+| unity/Assets/Art/crops-people.png | [crops-people-atlas-v1](prompts/crops-people-atlas-v1-prompt.txt); militia/guard: [soldier-b-rank-look](prompts/soldier-b-rank-look-prompt.txt) rigged and baked by Astra (#331) |
 | unity/Assets/Art/buildings.png | [buildings-atlas-v2](prompts/buildings-atlas-v2-prompt.txt) |
 
 Use is governed by the applicable [OpenAI output terms](https://openai.com/policies/terms-of-use/) and [commercial-use explanation](https://help.openai.com/en/articles/6783457-what-is-chatgpt), or applicable [services agreement](https://openai.com/policies/services-agreement/). Generated output is not classified as CC0; ownership language does not establish uniqueness or third-party clearance. No external stock art or font binary is included.
