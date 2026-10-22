@@ -4,7 +4,8 @@ namespace Game.View
 {
     public sealed partial class WorldRenderer
     {
-        // #345 (user decision 2026-10-22): the collection hint ("수확/완료 +N 경험치", "익음", "수리 중") follows the damage numbers'
+        // #345 (user decisions 2026-10-22): the collection hint ("수확/완료 +N 경험치", "익음", "수리 중") sits with its bottom edge
+        // GameVisualTokens.WaveCollectionLabelBottom above the feet, clear of the head, and keeps the damage numbers'
         // hero keep-out (WorldDamageNumbers.HeroKeepOutOfFigureHeight, 0.6 x the drawn knight's height round its centre). A hint
         // whose box touches that circle moves to the first free spot above the head (clear of the circle and of the visible damage
         // numbers); with none it stays at its usual spot, drawn at WorldDamageNumbers.HeroFadedAlpha.
@@ -25,7 +26,9 @@ namespace Game.View
         void ShowGrowthHint(string hint, Vector2 lordPoint)
         {
             var screen = OverlayWorldBounds();
-            var usual = lordPoint + Vector2.up * GameVisualTokens.WaveCollectionLabelRise;
+            // The usual spot puts the hint's bottom edge WaveCollectionLabelBottom above the feet; the label is centre-anchored.
+            growthLabels.Show(0, hint, lordPoint);
+            var usual = lordPoint + Vector2.up * (GameVisualTokens.WaveCollectionLabelBottom + growthLabels.SlotBounds(0).extents.y);
             growthLabels.ShowClamped(0, hint, usual, screen);
             if (!GrowthHintKeepOutEnabled || !WorldGrowthLabels.TouchesCircle(growthLabels.SlotBounds(0), heroKeepOutCentre, heroKeepOutRadius)) return;
             var above = new Vector2(lordPoint.x, heroKeepOutCentre.y + heroKeepOutRadius + growthLabels.SlotBounds(0).extents.y + GrowthHintGap);
