@@ -31,10 +31,13 @@ namespace SowSiege.Core
         private const int DirectionNearAxis = 924;
         private const int DirectionFarAxis = 383;
         private const int DirectionDiagonal = 707;
-        private const uint SeedHashMultiplier = 73856093;
+        internal const uint SeedHashMultiplier = 73856093;
         private const uint TickHashMultiplier = 19349663;
         private const uint EnemyHashMultiplier = 83492791;
         internal static int DirectionCount => Directions.Length;
+        internal static Position Direction(int index) => Directions[index & (Directions.Length - 1)];
+        // Integer placement hash for opt-in estate slots (ADR0064 section 3); reuses the field-v1 multipliers without changing Recycle.
+        internal static uint Mix(int seed, uint salt, int index) => unchecked((uint)seed * SeedHashMultiplier ^ salt * TickHashMultiplier ^ (uint)index * EnemyHashMultiplier);
         private static readonly Position[] Directions =
         {
             new(PlayerInput.Scale, 0), new(DirectionNearAxis, DirectionFarAxis), new(DirectionDiagonal, DirectionDiagonal), new(DirectionFarAxis, DirectionNearAxis),

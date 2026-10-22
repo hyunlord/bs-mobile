@@ -28,10 +28,19 @@ namespace Game.App
             if (rig >= 0 && Array.LastIndexOf(args, "--crowd-hero-b") != rig) throw new ArgumentException("Duplicate hero rig flag.");
             return new CrowdReplayBenchmark(rig >= 0);
         }
-        public void Validate(string replayHash, string dataHash, int terminalTick, string terminalHash)
+        // Provenance (ADR0058 보충, 2026-10-21): the replay file, the data hash it was recorded with and its recorded terminal tick
+        // and state stay pinned. The current data tree may differ from the recorded one; the replay still runs on its own recorded
+        // options and passes when its actual terminal state equals TerminalHash (TerminalMatches). A different current data hash is
+        // returned as a warning for the log and the result, not a failure. Re-pinning is needed only when the terminal state changes.
+        public string Validate(string replayHash, string recordedDataHash, string currentDataHash, int terminalTick, string terminalHash)
         {
-            if (replayHash != ReplaySha256 || dataHash != DataHash || terminalTick != EndTick || terminalHash != TerminalHash)
+            if (replayHash != ReplaySha256 || recordedDataHash != DataHash || terminalTick != EndTick || terminalHash != TerminalHash)
                 throw new InvalidDataException("Crowd replay provenance or terminal contract mismatch.");
+            return currentDataHash == DataHash ? null : DataHashWarning(currentDataHash);
         }
+        public static string DataHashWarning(string currentDataHash) =>
+            "crowd-411 data hash differs: 기록 당시 " + Short(DataHash) + "… / 현재 " + Short(currentDataHash) + "…";
+        public static bool TerminalMatches(string actualTerminalHash) => actualTerminalHash == TerminalHash;
+        static string Short(string hash) => string.IsNullOrEmpty(hash) ? "none" : hash.Substring(0, Math.Min(8, hash.Length));
     }
 }

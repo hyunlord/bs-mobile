@@ -45,7 +45,8 @@ namespace SowSiege.Core
                 throw new InvalidOperationException("Run is not pending.");
             }
 
-            if (facts.Tick < 0 || facts.DurationTicks <= 0 || facts.Level < 0 || facts.Farms < 0 || facts.Buildings < 0 || facts.People < 0 || facts.Kills < 0 || facts.Harvests < 0)
+            if (facts.Tick < 0 || facts.DurationTicks <= 0 || facts.Level < 0 || facts.Farms < 0 || facts.Buildings < 0 || facts.People < 0 || facts.Kills < 0 || facts.Harvests < 0 ||
+                facts.DarkFinish is { SleepingBuildings: < 0 } or { BonusPermille: < 0 })
             {
                 throw new ArgumentOutOfRangeException(nameof(facts));
             }
@@ -55,14 +56,31 @@ namespace SowSiege.Core
             int multiplier = facts.Abandoned ? catalog.Economy.AbandonPermille : !cleared ? catalog.Economy.DeathPermille : chapter.Index <= state.HighestClearedChapter ? catalog.Economy.RepeatPermille : PlayerInput.Scale;
             var next = Clone(state) with { PendingRun = null, CompletedRuns = Saturate(state.CompletedRuns, 1), HighestClearedChapter = cleared ? Math.Max(state.HighestClearedChapter, chapter.Index) : state.HighestClearedChapter };
             var requested = new Dictionary<string, int>();
+            // The dark-finish bonus only rewards a cleared run; defeat, abandonment and short runs get nothing (ADR0064, design section 4).
+            var dark = cleared && facts.Tick >= catalog.Economy.MinimumRewardTicks && facts.DarkFinish is { BonusPermille: > 0 } finish ? finish : null;
+            var bonusRequested = new Dictionary<string, int>();
             foreach (var rule in catalog.Economy.RewardRules)
             {
                 decimal raw = (decimal)facts.Farms * rule.PerFarm + (decimal)facts.Buildings * rule.PerBuilding + (decimal)facts.People * rule.PerPerson + (decimal)facts.Harvests * rule.PerHarvest + (decimal)facts.Level * rule.PerLevel + (facts.BossDefeated ? rule.PerBoss : 0);
                 int cap = chapter.RewardCaps[rule.MaterialId];
                 requested[rule.MaterialId] = facts.Tick < catalog.Economy.MinimumRewardTicks ? 0 : (int)(Math.Min(cap, raw) * multiplier / PlayerInput.Scale);
+                if (dark is not null)
+                {
+                    // The run cap still bounds the boosted amount, so the bonus never lifts a capped reward.
+                    decimal boosted = raw * (PlayerInput.Scale + dark.BonusPermille) / PlayerInput.Scale;
+                    bonusRequested[rule.MaterialId] = (int)(Math.Min(cap, boosted) * multiplier / PlayerInput.Scale) - requested[rule.MaterialId];
+                }
             }
             var awarded = Credit(catalog, next, requested, out var overflow);
+            // The basis excludes the dark-finish bonus so a result-reward advertisement never doubles it (#277: settlement 2x is power).
             next = next with { ResultRewardBasis = new MetaResultRewardBasis(pending.Sequence, new Dictionary<string, int>(awarded)) };
+            MetaDarkFinish? darkFinish = null;
+            if (dark is not null)
+            {
+                var bonus = Credit(catalog, next, bonusRequested, out var bonusOverflow);
+                foreach (var pair in bonus) { awarded[pair.Key] += pair.Value; overflow[pair.Key] += bonusOverflow[pair.Key]; }
+                darkFinish = new MetaDarkFinish(dark.SleepingBuildings, dark.BonusPermille, bonus);
+            }
             if (facts.Tick >= catalog.Economy.MinimumRewardTicks)
             {
                 AddMetric(next, MetaMetric.Runs, 1); AddMetric(next, MetaMetric.Clears, cleared ? 1 : 0);
@@ -79,7 +97,7 @@ namespace SowSiege.Core
                 next.Vassals[id] = vassal with { Fragments = (int)Math.Min(definition.FragmentCap, (long)vassal.Fragments + fragments) };
             }
             next = CompleteProgression(catalog, next, out var grown, out var completed, delivery);
-            return new MetaSettlement(next, cleared, awarded, overflow, grown, completed);
+            return new MetaSettlement(next, cleared, awarded, overflow, grown, completed, darkFinish);
         }
 
         public static MetaIdleResult AdvanceIdle(MetaCatalog catalog, MetaState state, long observedMonotonicSeconds, long observedWallSeconds, MetaRewardDelivery delivery = MetaRewardDelivery.LegacyAutoCredit)

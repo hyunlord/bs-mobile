@@ -31,6 +31,16 @@ namespace SowSiege.Core
                 Write("wave-card-offer-v1"); Write(offer.EvolutionPriority ?? "none"); Write(offer.OwnedGearWeight ?? 1); Write(offer.UnownedGearWeight ?? 1);
                 WriteMap(offer.Cards ?? new Dictionary<string, WaveCardOfferCard>(), card => { Write(card.Weight ?? 1); Write(card.MaxPicks ?? 0); });
             }
+            if (d.EstateLight is { } light)
+            {
+                Write("wave-estate-light-v1"); Write(light.Version); Write(light.HomeId); Write(light.HomeLitRadius); Write(light.SightRadius);
+                Write(light.DarkDamagePermille); Write(light.DarkFinishPermillePerSleeping); Write(light.DarkFinishCapPermille);
+                WriteMap(light.Buildings, b =>
+                {
+                    Write(b.Id); Write(b.DesignRef); Write((int)b.Wake); Write(b.WakeRadius); Write(b.LitRadius); Write(b.ChannelTicks); Write((int)b.Resource); Write(b.Cost); Write(b.ConfirmTicks);
+                });
+                WriteMap(light.Loadouts, slots => WriteList(slots, s => { Write(s.BuildingId); Write(s.MinRadius); Write(s.MaxRadius); }));
+            }
             Write("wave-runtime-definition-v1");
             Write(d.Revision);
             Write(d.ChapterId);
@@ -165,6 +175,11 @@ namespace SowSiege.Core
             }
 );
             if (s.UnlockEvents.Count > 0) { Write("wave-unlock-events-v1"); WriteMap(s.UnlockEvents, Write); }
+            if (s.Estate is { } estate)
+            {
+                Write("wave-estate-state-v1"); Write(s.EstateLoadout);
+                WriteList(estate, b => { Write(b.Id); Write(b.DefinitionId); Write(b.Position); Write((int)b.Phase); Write(b.Progress); Write(b.Dwell); Write(b.Paid); });
+            }
         }
     }
 }
