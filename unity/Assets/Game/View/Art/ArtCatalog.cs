@@ -48,7 +48,7 @@ namespace Game.View
     public sealed class ArtCatalog
     {
         public static string ProfileName { get; set; } = "first-playable";
-        public static bool UsesWaveArt => ProfileName == "wave-1a" || ProfileName == "m1-showcase-review";
+        public static bool UsesWaveArt => ProfileName == "wave-1a" || ProfileName == "m1-showcase-review" || ProfileName == "wave-2a-dark";
         static readonly Dictionary<string, ArtCatalog> cache = new Dictionary<string, ArtCatalog>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> roles = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);
         readonly Dictionary<string, ArtVisual> bindings = new Dictionary<string, ArtVisual>(StringComparer.Ordinal);

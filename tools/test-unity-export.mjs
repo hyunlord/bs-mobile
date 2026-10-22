@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { execFileSync } from 'node:child_process';
-import { inputSnapshot, outputSnapshot, outputs, prepare, selectedCoreVariant, selectedProfile, verify } from './unity-export.mjs';
+import { inputSnapshot, outputSnapshot, outputs, prepare, profilePath, selectedCoreVariant, selectedProfile, verify } from './unity-export.mjs';
 import { validateContent } from './validate-content.mjs';
 import { buildIdentity, identitySource } from './unity-build-identity.mjs';
 
@@ -133,7 +133,28 @@ test('Unity profile selection is explicit and bounded', () => {
   assert.equal(selectedProfile('first-playable'), 'first-playable');
   assert.equal(selectedProfile('wave-1a'), 'wave-1a');
   assert.equal(selectedProfile('m1-showcase-review'), 'm1-showcase-review');
+  assert.equal(selectedProfile('wave-2a-dark'), 'wave-2a-dark');
   assert.throws(() => selectedProfile('../wave-1a'), /Unsupported Unity content profile/);
+});
+
+test('opt-in-only profile (wave-2a-dark) resolves its hash from data/opt-in/profiles', async t => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'unity-profile-path-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, 'data/profiles'), { recursive: true });
+  await mkdir(path.join(root, 'data/opt-in/profiles'), { recursive: true });
+  await writeFile(path.join(root, 'data/opt-in/profiles/wave-2a-dark.json'), '{"id":"core:wave_2a_dark"}');
+  const resolved = await profilePath(root, 'wave-2a-dark');
+  assert.equal(resolved, path.join(root, 'data/opt-in/profiles/wave-2a-dark.json'));
+});
+
+test('a profile name defined in both data/profiles and data/opt-in/profiles is rejected', async t => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'unity-profile-path-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(path.join(root, 'data/profiles'), { recursive: true });
+  await mkdir(path.join(root, 'data/opt-in/profiles'), { recursive: true });
+  await writeFile(path.join(root, 'data/profiles/wave-2a-dark.json'), '{}');
+  await writeFile(path.join(root, 'data/opt-in/profiles/wave-2a-dark.json'), '{}');
+  await assert.rejects(profilePath(root, 'wave-2a-dark'), /defined twice/);
 });
 
 test('wave bridge cannot pass verification as a historical profile', async t => {

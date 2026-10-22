@@ -78,11 +78,22 @@ namespace Game.Editor
                 throw new BuildFailedException("Unity requires the complete first-playable catalog.");
             using (var hash = System.Security.Cryptography.SHA256.Create())
             {
-                var bytes = File.ReadAllBytes(Path.Combine(RepoRoot, "data/profiles/" + CanonicalContent.ProfileName + ".json"));
+                var bytes = File.ReadAllBytes(ProfileFilePath(CanonicalContent.ProfileName));
                 var actual = BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "");
                 if (!string.Equals(actual, CanonicalContent.ProfileHash, StringComparison.Ordinal))
                     throw new BuildFailedException("Generated first-playable profile hash is stale.");
             }
+        }
+
+        // Opt-in profiles live in data/opt-in/profiles (ADR0069); a name may exist in only one of the two folders,
+        // mirroring the Core rule in core/src/SowSiege.Sim/ContentLoader.cs ProfilePath.
+        private static string ProfileFilePath(string profileName)
+        {
+            var standard = Path.Combine(RepoRoot, "data/profiles/" + profileName + ".json");
+            var optIn = Path.Combine(RepoRoot, "data/opt-in/profiles/" + profileName + ".json");
+            if (File.Exists(standard) && File.Exists(optIn))
+                throw new BuildFailedException("Profile name is defined twice: " + profileName);
+            return File.Exists(optIn) ? optIn : standard;
         }
 
         public static ReplayVerification VerifyReplayFixture(ReplayDocument replay, int seed)
