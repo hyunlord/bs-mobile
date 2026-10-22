@@ -20,8 +20,24 @@ namespace Game.App
 
         public static string ToRequestUri(string path) => Path.IsPathRooted(path) ? new Uri(path).AbsoluteUri : path;
 
+        public static bool IsOfflineReviewBoot(string[] args)
+        {
+            if (Array.IndexOf(args, "--offline-replay-capture") < 0) return false;
+            if (Array.IndexOf(args, "--crowd-replay-benchmark") >= 0) return true;
+            try { return CameraScaleComparison.Parse(args) != null; }
+            catch (ArgumentException) { return false; }
+        }
+
         private IEnumerator Start()
         {
+            // Only the explicit offline review may progress without foreground ownership.
+            // Set before the first asynchronous load, not after RunCoordinator exists.
+            var offlineReview = IsOfflineReviewBoot(Environment.GetCommandLineArgs());
+            if (offlineReview)
+            {
+                Application.runInBackground = true;
+                UnityEngine.Debug.Log("OFFLINE_REVIEW_BOOT begin background-enabled");
+            }
             gameObject.AddComponent<DisplayCadence>();
             DontDestroyOnLoad(gameObject);
             var status = gameObject.AddComponent<FoundationStatus>();
@@ -42,6 +58,7 @@ namespace Game.App
                     files.Add(file.RelativePath, request.downloadHandler.data);
                 }
             }
+            if (offlineReview) UnityEngine.Debug.Log("OFFLINE_REVIEW_BOOT files-loaded");
             try
             {
                 VerifiedDataHash = BundleVerifier.Verify(files);
@@ -53,9 +70,12 @@ namespace Game.App
             catch (Exception exception) { Fail(status, exception.Message); }
             if (Complete)
             {
+                if (offlineReview) UnityEngine.Debug.Log("OFFLINE_REVIEW_BOOT catalog-verified loading-meta");
                 yield return SceneManager.LoadSceneAsync("Meta");
+                if (offlineReview) UnityEngine.Debug.Log("OFFLINE_REVIEW_BOOT meta-loaded initializing-run");
                 Destroy(status);
                 gameObject.AddComponent<RunCoordinator>().Initialize();
+                if (offlineReview) UnityEngine.Debug.Log("OFFLINE_REVIEW_BOOT run-initialized");
             }
         }
 

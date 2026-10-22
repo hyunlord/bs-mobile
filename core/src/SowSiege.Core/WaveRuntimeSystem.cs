@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
-    internal sealed class WaveRuntimeSystem
+    internal sealed partial class WaveRuntimeSystem
     {
         private readonly ContentCatalog catalog;
         private readonly WorldState world;
@@ -37,7 +37,8 @@ namespace SowSiege.Core
                 Water = definition.WaterCapacity,
                 Timber = definition.InitialTimber,
                 TimberOrigin = world.Estate,
-                AvailableWorkers = definition.InitialWorkers
+                AvailableWorkers = definition.InitialWorkers,
+                CountUnlockEvents = WaveEvolutionUnlocks.CountsEvents(definition)
             };
             modules = new(definition);
             queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
@@ -48,8 +49,8 @@ namespace SowSiege.Core
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
         public bool GuideToEstate() => estate?.Guide(MovementSpeed(catalog.Tuning.World.Map.LordSpeed)) == true;
-        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) && e.InputIds.All(id => world.Equipment.Any(x => x.Id == id)) &&
-            WaveGrowthPrimitives.Eligible(modules[e.Id], state);
+        public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) &&
+            WaveEvolutionUnlocks.Eligible(WaveEvolutionUnlocks.Effective(e, modules[e.Id]), definition, world.Equipment, state);
         public IEnumerable<string> ExtraCards() => definition.Items.Values.Where(i => !state.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(definition.Evolutions.Values.Where(EligibleEvolution).Select(e => e.Id));
         public bool Select(string id)
         {
@@ -104,6 +105,7 @@ namespace SowSiege.Core
             try
             {
                 queries.Rebuild();
+                TickReviewImpacts();
                 foreach (var equipment in world.Equipment)
                 {
                     if (equipment.ReadyTick > world.Tick || Suppressed(equipment.Id))
@@ -189,6 +191,7 @@ namespace SowSiege.Core
         }
         private void Attack(WaveGearDefinition gear, WaveEvolutionDefinition? evolution)
         {
+            if (gear.Composition is not null) { ScheduleReviewImpacts(gear); return; }
             var program = modules[evolution?.Id ?? gear.Id];
             var operations = modules.Attack(evolution?.Id ?? gear.Id);
             var shape = operations.Shape;
@@ -213,6 +216,20 @@ namespace SowSiege.Core
                 }
             }
             facing = subscriptions.Aim(gear, origin, facing);
+            if (interactive?.MeleeAim is not null && gear.Aim == "nearest-enemy" && shape is "melee-fan" or "ground-slam")
+            {
+                EnemyState? nearest = null;
+                long distance = long.MaxValue;
+                foreach (var enemy in world.Enemies)
+                {
+                    if (enemy.Health <= 0) { continue; }
+                    var candidateDistance = enemy.Position.DistanceSquared(origin);
+                    if (candidateDistance < distance || candidateDistance == distance && (nearest is null || enemy.Id < nearest.Id))
+                    { nearest = enemy; distance = candidateDistance; }
+                }
+                if (nearest is not null && nearest.Position != origin)
+                { facing = new(nearest.Position.X - origin.X, nearest.Position.Y - origin.Y); }
+            }
             var source = evolution?.Id ?? gear.Id;
             targets.Clear();
             if (shape != "chain" && shape != "orbit") { queries.ByDistance(targets, origin, gear.Range, origin); }
@@ -345,9 +362,14 @@ namespace SowSiege.Core
                 queries.Move(enemy, interactive?.Field is { } field ? field.Constrain(target) : new(Math.Clamp(target.X, 0, catalog.Tuning.World.Map.Width), Math.Clamp(target.Y, 0, catalog.Tuning.World.Map.Height)));
             }
 
-            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact") && state.Work.Any(w => w.Kind == "grain" && Within(w.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)))
+            if (enemy.Health <= 0 && definition.Gear.TryGetValue(source, out var gear) && !programHasRemnant(source) && modules.Is(source, "unit:attack-shape", "shape", "melee-fan") && !modules.Has(source, "unit:harvest-contact"))
             {
-                state.BladePlotKill = true;
+                foreach (var plot in state.Work)
+                {
+                    if (plot.Kind != "grain" || !Within(plot.Position, enemy.Position, catalog.Tuning.World.Farms.Spacing)) { continue; }
+                    WaveEvolutionUnlocks.Record(state, WaveEvolutionUnlocks.AttackKillNearGrowth);
+                    break;
+                }
             }
 
             state.Emit(world.Tick, "hit", source, enemy.Id, enemy.Position, enemy.Position, actual);

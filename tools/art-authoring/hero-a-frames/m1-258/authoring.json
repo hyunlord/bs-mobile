@@ -1,0 +1,4604 @@
+{
+  "schemaVersion": 1,
+  "clips": [
+    {
+      "id": "idle",
+      "source": "source/idle-e-v2.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "bodyHeightPixels": 473,
+      "headHeightPixels": 58,
+      "groundAnchors": [
+        [
+          455,
+          496
+        ],
+        [
+          350,
+          496
+        ],
+        [
+          455,
+          496
+        ],
+        [
+          350,
+          496
+        ]
+      ],
+      "direction": "E",
+      "loop": true,
+      "measurementStatus": "manual landmark candidate; native QA pending"
+    },
+    {
+      "id": "walk",
+      "source": "source/walk-e.png",
+      "columns": 4,
+      "rows": 2,
+      "frames": 8,
+      "fps": 8,
+      "bodyHeightPixels": 431,
+      "headHeightPixels": 55,
+      "groundAnchors": [
+        [
+          228,
+          477
+        ],
+        [
+          231,
+          476
+        ],
+        [
+          223,
+          480
+        ],
+        [
+          220,
+          484
+        ],
+        [
+          228,
+          457
+        ],
+        [
+          230,
+          457
+        ],
+        [
+          228,
+          459
+        ],
+        [
+          230,
+          464
+        ]
+      ],
+      "direction": "E",
+      "loop": true,
+      "measurementStatus": "manual landmark candidate; native QA pending"
+    },
+    {
+      "id": "slash-light",
+      "source": "source/slash-light-e-v9.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "bodyHeightPixels": 228,
+      "headHeightPixels": 30,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          260
+        ],
+        [
+          768,
+          0,
+          768,
+          260
+        ],
+        [
+          0,
+          260,
+          768,
+          256
+        ],
+        [
+          768,
+          260,
+          768,
+          256
+        ],
+        [
+          0,
+          516,
+          768,
+          230
+        ],
+        [
+          768,
+          516,
+          768,
+          230
+        ],
+        [
+          0,
+          746,
+          768,
+          278
+        ],
+        [
+          768,
+          746,
+          768,
+          278
+        ]
+      ],
+      "groundAnchors": [
+        [
+          412,
+          245
+        ],
+        [
+          350,
+          246
+        ],
+        [
+          425,
+          246
+        ],
+        [
+          350,
+          246
+        ],
+        [
+          415,
+          225
+        ],
+        [
+          345,
+          225
+        ],
+        [
+          415,
+          250
+        ],
+        [
+          352,
+          250
+        ]
+      ],
+      "direction": "E",
+      "loop": false,
+      "measurementStatus": "manual landmark candidate; native QA pending",
+      "impactFrame": 3
+    },
+    {
+      "id": "hit",
+      "source": "source/hit-e-v5.png",
+      "columns": 3,
+      "rows": 1,
+      "frames": 3,
+      "fps": 10,
+      "bodyHeightPixels": 660,
+      "headHeightPixels": 80,
+      "groundAnchors": [
+        [
+          287,
+          850
+        ],
+        [
+          274,
+          850
+        ],
+        [
+          290,
+          850
+        ]
+      ],
+      "direction": "E",
+      "loop": false,
+      "measurementStatus": "manual landmark candidate; native QA pending",
+      "sourceRects": [
+        [
+          0,
+          0,
+          524,
+          1024
+        ],
+        [
+          524,
+          0,
+          484,
+          1024
+        ],
+        [
+          1008,
+          0,
+          528,
+          1024
+        ]
+      ]
+    },
+    {
+      "id": "death",
+      "source": "source/death-e-v3.png",
+      "columns": 3,
+      "rows": 2,
+      "frames": 6,
+      "fps": 8,
+      "bodyHeightPixels": 434,
+      "headHeightPixels": 52,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          530
+        ],
+        [
+          512,
+          0,
+          512,
+          530
+        ],
+        [
+          1024,
+          0,
+          512,
+          530
+        ],
+        [
+          0,
+          530,
+          512,
+          494
+        ],
+        [
+          512,
+          530,
+          512,
+          494
+        ],
+        [
+          1024,
+          530,
+          512,
+          494
+        ]
+      ],
+      "groundAnchors": [
+        [
+          280,
+          506
+        ],
+        [
+          280,
+          506
+        ],
+        [
+          280,
+          506
+        ],
+        [
+          280,
+          386
+        ],
+        [
+          280,
+          386
+        ],
+        [
+          280,
+          386
+        ]
+      ],
+      "direction": "E",
+      "loop": false,
+      "measurementStatus": "manual landmark candidate; native QA pending"
+    },
+    {
+      "id": "idle",
+      "direction": "S",
+      "source": "source/idle-s-v2.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "bodyHeightPixels": 475,
+      "headHeightPixels": 56,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          512
+        ],
+        [
+          768,
+          0,
+          768,
+          512
+        ],
+        [
+          0,
+          512,
+          768,
+          512
+        ],
+        [
+          768,
+          512,
+          768,
+          512
+        ]
+      ],
+      "groundAnchors": [
+        [
+          399,
+          495
+        ],
+        [
+          369,
+          495
+        ],
+        [
+          399,
+          494
+        ],
+        [
+          369,
+          494
+        ]
+      ],
+      "loop": true,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 21,
+        "chin": 77,
+        "sole": 496
+      }
+    },
+    {
+      "id": "idle",
+      "direction": "SE",
+      "source": "source/idle-se-v2.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "bodyHeightPixels": 490,
+      "headHeightPixels": 60,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          510
+        ],
+        [
+          768,
+          0,
+          768,
+          510
+        ],
+        [
+          0,
+          510,
+          768,
+          514
+        ],
+        [
+          768,
+          510,
+          768,
+          514
+        ]
+      ],
+      "groundAnchors": [
+        [
+          405,
+          498
+        ],
+        [
+          375,
+          498
+        ],
+        [
+          405,
+          498
+        ],
+        [
+          375,
+          498
+        ]
+      ],
+      "loop": true,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 9,
+        "chin": 69,
+        "sole": 499
+      }
+    },
+    {
+      "id": "walk",
+      "direction": "S",
+      "source": "source/walk-s-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 8,
+      "bodyHeightPixels": 362,
+      "headHeightPixels": 44,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          384
+        ],
+        [
+          512,
+          0,
+          512,
+          384
+        ],
+        [
+          0,
+          384,
+          512,
+          384
+        ],
+        [
+          512,
+          384,
+          512,
+          384
+        ],
+        [
+          0,
+          768,
+          512,
+          384
+        ],
+        [
+          512,
+          768,
+          512,
+          384
+        ],
+        [
+          0,
+          1152,
+          512,
+          384
+        ],
+        [
+          512,
+          1152,
+          512,
+          384
+        ]
+      ],
+      "groundAnchors": [
+        [
+          280,
+          374
+        ],
+        [
+          238,
+          374
+        ],
+        [
+          280,
+          375
+        ],
+        [
+          238,
+          375
+        ],
+        [
+          280,
+          373
+        ],
+        [
+          238,
+          368
+        ],
+        [
+          280,
+          370
+        ],
+        [
+          238,
+          370
+        ]
+      ],
+      "loop": true,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 12,
+        "chin": 56,
+        "sole": 374
+      }
+    },
+    {
+      "id": "walk",
+      "direction": "SE",
+      "source": "source/walk-se-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 8,
+      "bodyHeightPixels": 355,
+      "headHeightPixels": 43,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          384
+        ],
+        [
+          512,
+          0,
+          512,
+          384
+        ],
+        [
+          0,
+          384,
+          512,
+          384
+        ],
+        [
+          512,
+          384,
+          512,
+          384
+        ],
+        [
+          0,
+          768,
+          512,
+          384
+        ],
+        [
+          512,
+          768,
+          512,
+          384
+        ],
+        [
+          0,
+          1152,
+          512,
+          384
+        ],
+        [
+          512,
+          1152,
+          512,
+          384
+        ]
+      ],
+      "groundAnchors": [
+        [
+          310,
+          372
+        ],
+        [
+          278,
+          372
+        ],
+        [
+          310,
+          375
+        ],
+        [
+          278,
+          370
+        ],
+        [
+          310,
+          367
+        ],
+        [
+          278,
+          373
+        ],
+        [
+          310,
+          364
+        ],
+        [
+          278,
+          370
+        ]
+      ],
+      "loop": true,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 17,
+        "chin": 60,
+        "sole": 372
+      }
+    },
+    {
+      "id": "slash-light",
+      "direction": "S",
+      "source": "source/slash-light-s-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "bodyHeightPixels": 294,
+      "headHeightPixels": 36,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          384
+        ],
+        [
+          512,
+          0,
+          512,
+          384
+        ],
+        [
+          0,
+          384,
+          512,
+          376
+        ],
+        [
+          512,
+          384,
+          512,
+          376
+        ],
+        [
+          0,
+          760,
+          512,
+          350
+        ],
+        [
+          512,
+          760,
+          512,
+          350
+        ],
+        [
+          0,
+          1110,
+          512,
+          426
+        ],
+        [
+          512,
+          1110,
+          512,
+          426
+        ]
+      ],
+      "groundAnchors": [
+        [
+          282,
+          354
+        ],
+        [
+          232,
+          356
+        ],
+        [
+          273,
+          357
+        ],
+        [
+          222,
+          357
+        ],
+        [
+          278,
+          330
+        ],
+        [
+          241,
+          330
+        ],
+        [
+          273,
+          344
+        ],
+        [
+          230,
+          344
+        ]
+      ],
+      "loop": false,
+      "impactFrame": 3,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 60,
+        "chin": 96,
+        "sole": 354
+      }
+    },
+    {
+      "id": "slash-light",
+      "direction": "SE",
+      "source": "source/slash-light-se-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "bodyHeightPixels": 283,
+      "headHeightPixels": 35,
+      "sourceRects": [
+        [
+          0,
+          0,
+          570,
+          384
+        ],
+        [
+          570,
+          0,
+          454,
+          384
+        ],
+        [
+          0,
+          384,
+          570,
+          384
+        ],
+        [
+          570,
+          384,
+          454,
+          384
+        ],
+        [
+          0,
+          768,
+          570,
+          342
+        ],
+        [
+          570,
+          768,
+          454,
+          342
+        ],
+        [
+          0,
+          1110,
+          570,
+          426
+        ],
+        [
+          570,
+          1110,
+          454,
+          426
+        ]
+      ],
+      "groundAnchors": [
+        [
+          292,
+          343
+        ],
+        [
+          214,
+          343
+        ],
+        [
+          281,
+          344
+        ],
+        [
+          213,
+          344
+        ],
+        [
+          287,
+          308
+        ],
+        [
+          213,
+          306
+        ],
+        [
+          289,
+          321
+        ],
+        [
+          210,
+          321
+        ]
+      ],
+      "loop": false,
+      "impactFrame": 3,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 61,
+        "chin": 96,
+        "sole": 344
+      }
+    },
+    {
+      "id": "hit",
+      "direction": "S",
+      "source": "source/hit-s-v4.png",
+      "columns": 1,
+      "rows": 3,
+      "frames": 3,
+      "fps": 10,
+      "bodyHeightPixels": 472,
+      "headHeightPixels": 60,
+      "sourceRects": [
+        [
+          0,
+          0,
+          1024,
+          520
+        ],
+        [
+          0,
+          520,
+          1024,
+          495
+        ],
+        [
+          0,
+          1015,
+          1024,
+          521
+        ]
+      ],
+      "groundAnchors": [
+        [
+          500,
+          498
+        ],
+        [
+          500,
+          477
+        ],
+        [
+          500,
+          508
+        ]
+      ],
+      "loop": false,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 26,
+        "chin": 86,
+        "sole": 498
+      }
+    },
+    {
+      "id": "hit",
+      "direction": "SE",
+      "source": "source/hit-se-v4.png",
+      "columns": 1,
+      "rows": 3,
+      "frames": 3,
+      "fps": 10,
+      "bodyHeightPixels": 458,
+      "headHeightPixels": 57,
+      "sourceRects": [
+        [
+          0,
+          0,
+          1024,
+          495
+        ],
+        [
+          0,
+          495,
+          1024,
+          489
+        ],
+        [
+          0,
+          984,
+          1024,
+          552
+        ]
+      ],
+      "groundAnchors": [
+        [
+          550,
+          478
+        ],
+        [
+          550,
+          482
+        ],
+        [
+          540,
+          533
+        ]
+      ],
+      "loop": false,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 20,
+        "chin": 77,
+        "sole": 478
+      }
+    },
+    {
+      "id": "death",
+      "direction": "S",
+      "source": "source/death-s-v3.png",
+      "columns": 2,
+      "rows": 3,
+      "frames": 6,
+      "fps": 8,
+      "bodyHeightPixels": 495,
+      "headHeightPixels": 62,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          560
+        ],
+        [
+          512,
+          0,
+          512,
+          560
+        ],
+        [
+          0,
+          560,
+          512,
+          560
+        ],
+        [
+          512,
+          560,
+          512,
+          560
+        ],
+        [
+          0,
+          1120,
+          512,
+          416
+        ],
+        [
+          512,
+          1120,
+          512,
+          416
+        ]
+      ],
+      "groundAnchors": [
+        [
+          285,
+          546
+        ],
+        [
+          273,
+          546
+        ],
+        [
+          285,
+          434
+        ],
+        [
+          273,
+          434
+        ],
+        [
+          285,
+          264
+        ],
+        [
+          273,
+          264
+        ]
+      ],
+      "loop": false,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 51,
+        "chin": 113,
+        "sole": 546
+      }
+    },
+    {
+      "id": "death",
+      "direction": "SE",
+      "source": "source/death-se-v3.png",
+      "columns": 2,
+      "rows": 3,
+      "frames": 6,
+      "fps": 8,
+      "bodyHeightPixels": 458,
+      "headHeightPixels": 55,
+      "sourceRects": [
+        [
+          0,
+          0,
+          500,
+          590
+        ],
+        [
+          500,
+          0,
+          524,
+          590
+        ],
+        [
+          0,
+          590,
+          500,
+          558
+        ],
+        [
+          500,
+          590,
+          524,
+          558
+        ],
+        [
+          0,
+          1148,
+          500,
+          388
+        ],
+        [
+          500,
+          1148,
+          524,
+          388
+        ]
+      ],
+      "groundAnchors": [
+        [
+          280,
+          530
+        ],
+        [
+          280,
+          530
+        ],
+        [
+          280,
+          407
+        ],
+        [
+          280,
+          407
+        ],
+        [
+          280,
+          245
+        ],
+        [
+          280,
+          245
+        ]
+      ],
+      "loop": false,
+      "measurementStatus": "manual visible source landmarks; representative ratio only, native review pending",
+      "representativeLandmarks": {
+        "frame": 0,
+        "crown": 72,
+        "chin": 127,
+        "sole": 530
+      }
+    },
+    {
+      "id": "idle",
+      "direction": "N",
+      "source": "source/north/idle-n.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "bodyHeightPixels": 472,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          512
+        ],
+        [
+          768,
+          0,
+          768,
+          512
+        ],
+        [
+          0,
+          512,
+          768,
+          512
+        ],
+        [
+          768,
+          512,
+          768,
+          512
+        ]
+      ],
+      "groundAnchors": [
+        [
+          430,
+          488
+        ],
+        [
+          339,
+          488
+        ],
+        [
+          430,
+          486
+        ],
+        [
+          339,
+          486
+        ]
+      ],
+      "crownYs": [
+        16,
+        16,
+        14,
+        14
+      ],
+      "headHeightPixels": null,
+      "measurementStatus": "manual pixel landmark candidates; chin occluded; native temporal and palette QA pending",
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": true,
+      "notes": "Ground at sole plane beneath body root."
+    },
+    {
+      "id": "walk",
+      "direction": "N",
+      "source": "source/north/walk-n.png",
+      "columns": 4,
+      "rows": 2,
+      "frames": 8,
+      "fps": 8,
+      "bodyHeightPixels": 447,
+      "sourceRects": [
+        [
+          0,
+          0,
+          380,
+          512
+        ],
+        [
+          380,
+          0,
+          372,
+          512
+        ],
+        [
+          752,
+          0,
+          370,
+          512
+        ],
+        [
+          1122,
+          0,
+          414,
+          512
+        ],
+        [
+          0,
+          512,
+          380,
+          512
+        ],
+        [
+          380,
+          512,
+          372,
+          512
+        ],
+        [
+          752,
+          512,
+          370,
+          512
+        ],
+        [
+          1122,
+          512,
+          414,
+          512
+        ]
+      ],
+      "groundAnchors": [
+        [
+          212,
+          477
+        ],
+        [
+          200,
+          477
+        ],
+        [
+          205,
+          480
+        ],
+        [
+          203,
+          477
+        ],
+        [
+          210,
+          458
+        ],
+        [
+          198,
+          458
+        ],
+        [
+          204,
+          458
+        ],
+        [
+          203,
+          461
+        ]
+      ],
+      "crownYs": [
+        33,
+        30,
+        26,
+        24,
+        22,
+        21,
+        23,
+        20
+      ],
+      "headHeightPixels": null,
+      "measurementStatus": "manual pixel landmark candidates; chin occluded; native temporal and palette QA pending",
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": true,
+      "notes": "Ground anchor projects body root between soles; no foot-lock acceptance claimed."
+    },
+    {
+      "id": "hit",
+      "direction": "N",
+      "source": "source/north/hit-n.png",
+      "columns": 3,
+      "rows": 1,
+      "frames": 3,
+      "fps": 10,
+      "bodyHeightPixels": 788,
+      "sourceRects": [
+        [
+          0,
+          0,
+          504,
+          1024
+        ],
+        [
+          504,
+          0,
+          497,
+          1024
+        ],
+        [
+          1001,
+          0,
+          535,
+          1024
+        ]
+      ],
+      "groundAnchors": [
+        [
+          264,
+          911
+        ],
+        [
+          265,
+          911
+        ],
+        [
+          266,
+          911
+        ]
+      ],
+      "crownYs": [
+        124,
+        195,
+        125
+      ],
+      "headHeightPixels": null,
+      "measurementStatus": "manual pixel landmark candidates; chin occluded; native temporal and palette QA pending",
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": false,
+      "notes": "Ground at sole plane beneath body root."
+    },
+    {
+      "id": "death",
+      "direction": "N",
+      "source": "source/north/death-n.png",
+      "columns": 3,
+      "rows": 2,
+      "frames": 6,
+      "fps": 8,
+      "bodyHeightPixels": 496,
+      "sourceRects": [
+        [
+          0,
+          0,
+          544,
+          550
+        ],
+        [
+          544,
+          0,
+          451,
+          550
+        ],
+        [
+          995,
+          0,
+          541,
+          550
+        ],
+        [
+          0,
+          550,
+          544,
+          474
+        ],
+        [
+          544,
+          550,
+          451,
+          474
+        ],
+        [
+          995,
+          550,
+          541,
+          474
+        ]
+      ],
+      "groundAnchors": [
+        [
+          281,
+          518
+        ],
+        [
+          231,
+          518
+        ],
+        [
+          296,
+          518
+        ],
+        [
+          280,
+          438
+        ],
+        [
+          235,
+          438
+        ],
+        [
+          290,
+          438
+        ]
+      ],
+      "crownYs": [
+        22,
+        105,
+        180,
+        137,
+        137,
+        135
+      ],
+      "headHeightPixels": null,
+      "measurementStatus": "manual pixel landmark candidates; chin occluded; native temporal and palette QA pending",
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": false,
+      "notes": "Collapsed frames ground is projected body-root plane, not sword tip."
+    },
+    {
+      "id": "idle",
+      "direction": "NE",
+      "source": "source/north/idle-ne.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "bodyHeightPixels": 486,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          506
+        ],
+        [
+          768,
+          0,
+          768,
+          506
+        ],
+        [
+          0,
+          506,
+          768,
+          518
+        ],
+        [
+          768,
+          506,
+          768,
+          518
+        ]
+      ],
+      "groundAnchors": [
+        [
+          441,
+          498
+        ],
+        [
+          342,
+          498
+        ],
+        [
+          440,
+          500
+        ],
+        [
+          342,
+          500
+        ]
+      ],
+      "crownYs": [
+        12,
+        12,
+        15,
+        15
+      ],
+      "headHeightPixels": null,
+      "measurementStatus": "manual pixel landmark candidates; chin occluded; native temporal and palette QA pending",
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": true,
+      "notes": "Ground at sole plane beneath body root."
+    },
+    {
+      "id": "slash-light",
+      "direction": "N",
+      "source": "source/north/slash-light-n-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "bodyHeightPixels": 278,
+      "sourceRects": [
+        [
+          0,
+          0,
+          490,
+          372
+        ],
+        [
+          490,
+          0,
+          534,
+          372
+        ],
+        [
+          0,
+          372,
+          490,
+          400
+        ],
+        [
+          490,
+          372,
+          534,
+          400
+        ],
+        [
+          0,
+          772,
+          490,
+          342
+        ],
+        [
+          490,
+          772,
+          534,
+          342
+        ],
+        [
+          0,
+          1114,
+          490,
+          422
+        ],
+        [
+          490,
+          1114,
+          534,
+          422
+        ]
+      ],
+      "groundAnchors": [
+        [
+          288,
+          365
+        ],
+        [
+          278,
+          365
+        ],
+        [
+          288,
+          389
+        ],
+        [
+          283,
+          389
+        ],
+        [
+          286,
+          334
+        ],
+        [
+          285,
+          334
+        ],
+        [
+          290,
+          361
+        ],
+        [
+          282,
+          363
+        ]
+      ],
+      "crownYs": [
+        87,
+        88,
+        120,
+        122,
+        70,
+        75,
+        81,
+        83
+      ],
+      "headHeightPixels": null,
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": false,
+      "measurementStatus": "Manual crown and projected ground pixel candidates; chin occluded; temporal/native/palette QA pending",
+      "notes": "Whole-pose source rectangles use completely alpha-zero separating lines. No mirror or alpha threshold applied.",
+      "impactFrame": 4,
+      "impactFrameEvidence": "Zero-based row-major visual inspection of SourceOver sheet: N indices2/3 still raised overhead; index4 first lowered cutting blade. NE index2 raised overhead; index3 first downward-cut pose. Sprite-only timing metadata; actual contact remains Core event."
+    },
+    {
+      "id": "walk",
+      "direction": "NE",
+      "source": "source/north/walk-ne-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 8,
+      "bodyHeightPixels": 331,
+      "sourceRects": [
+        [
+          0,
+          0,
+          498,
+          360
+        ],
+        [
+          498,
+          0,
+          526,
+          360
+        ],
+        [
+          0,
+          360,
+          498,
+          378
+        ],
+        [
+          498,
+          360,
+          526,
+          378
+        ],
+        [
+          0,
+          738,
+          498,
+          390
+        ],
+        [
+          498,
+          738,
+          526,
+          390
+        ],
+        [
+          0,
+          1128,
+          498,
+          408
+        ],
+        [
+          498,
+          1128,
+          526,
+          408
+        ]
+      ],
+      "groundAnchors": [
+        [
+          290,
+          350
+        ],
+        [
+          297,
+          350
+        ],
+        [
+          295,
+          369
+        ],
+        [
+          295,
+          374
+        ],
+        [
+          288,
+          373
+        ],
+        [
+          293,
+          373
+        ],
+        [
+          290,
+          364
+        ],
+        [
+          294,
+          363
+        ]
+      ],
+      "crownYs": [
+        20,
+        20,
+        22,
+        26,
+        36,
+        33,
+        7,
+        9
+      ],
+      "headHeightPixels": null,
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": true,
+      "measurementStatus": "Manual crown and projected ground pixel candidates; chin occluded; temporal/native/palette QA pending",
+      "notes": "Whole-pose source rectangles use completely alpha-zero separating lines. No mirror or alpha threshold applied."
+    },
+    {
+      "id": "hit",
+      "direction": "NE",
+      "source": "source/north/hit-ne-v2.png",
+      "columns": 1,
+      "rows": 3,
+      "frames": 3,
+      "fps": 10,
+      "bodyHeightPixels": 487,
+      "sourceRects": [
+        [
+          0,
+          0,
+          1024,
+          510
+        ],
+        [
+          0,
+          510,
+          1024,
+          480
+        ],
+        [
+          0,
+          990,
+          1024,
+          546
+        ]
+      ],
+      "groundAnchors": [
+        [
+          506,
+          500
+        ],
+        [
+          508,
+          470
+        ],
+        [
+          509,
+          505
+        ]
+      ],
+      "crownYs": [
+        13,
+        31,
+        12
+      ],
+      "headHeightPixels": null,
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": false,
+      "measurementStatus": "Manual crown and projected ground pixel candidates; chin occluded; temporal/native/palette QA pending",
+      "notes": "Whole-pose source rectangles use completely alpha-zero separating lines. No mirror or alpha threshold applied."
+    },
+    {
+      "id": "slash-light",
+      "direction": "NE",
+      "source": "source/north/slash-light-ne-v2.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "bodyHeightPixels": 304,
+      "sourceRects": [
+        [
+          0,
+          0,
+          550,
+          369
+        ],
+        [
+          550,
+          0,
+          474,
+          369
+        ],
+        [
+          0,
+          369,
+          550,
+          417
+        ],
+        [
+          550,
+          369,
+          474,
+          417
+        ],
+        [
+          0,
+          786,
+          550,
+          336
+        ],
+        [
+          550,
+          786,
+          474,
+          336
+        ],
+        [
+          0,
+          1122,
+          550,
+          414
+        ],
+        [
+          550,
+          1122,
+          474,
+          414
+        ]
+      ],
+      "groundAnchors": [
+        [
+          263,
+          358
+        ],
+        [
+          253,
+          361
+        ],
+        [
+          268,
+          408
+        ],
+        [
+          248,
+          405
+        ],
+        [
+          274,
+          329
+        ],
+        [
+          247,
+          329
+        ],
+        [
+          272,
+          356
+        ],
+        [
+          248,
+          356
+        ]
+      ],
+      "crownYs": [
+        55,
+        63,
+        129,
+        133,
+        66,
+        64,
+        64,
+        67
+      ],
+      "headHeightPixels": null,
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": false,
+      "measurementStatus": "Manual crown and projected ground pixel candidates; chin occluded; temporal/native/palette QA pending",
+      "notes": "Whole-pose source rectangles use completely alpha-zero separating lines. No mirror or alpha threshold applied.",
+      "impactFrame": 3,
+      "impactFrameEvidence": "Zero-based row-major visual inspection of SourceOver sheet: N indices2/3 still raised overhead; index4 first lowered cutting blade. NE index2 raised overhead; index3 first downward-cut pose. Sprite-only timing metadata; actual contact remains Core event."
+    },
+    {
+      "id": "death",
+      "direction": "NE",
+      "source": "source/north/death-ne-v2.png",
+      "columns": 2,
+      "rows": 3,
+      "frames": 6,
+      "fps": 8,
+      "bodyHeightPixels": 419,
+      "sourceRects": [
+        [
+          0,
+          0,
+          510,
+          530
+        ],
+        [
+          510,
+          0,
+          514,
+          530
+        ],
+        [
+          0,
+          530,
+          510,
+          497
+        ],
+        [
+          510,
+          530,
+          514,
+          497
+        ],
+        [
+          0,
+          1027,
+          510,
+          509
+        ],
+        [
+          510,
+          1027,
+          514,
+          509
+        ]
+      ],
+      "groundAnchors": [
+        [
+          255,
+          526
+        ],
+        [
+          245,
+          526
+        ],
+        [
+          265,
+          486
+        ],
+        [
+          252,
+          486
+        ],
+        [
+          270,
+          390
+        ],
+        [
+          265,
+          390
+        ]
+      ],
+      "crownYs": [
+        107,
+        135,
+        129,
+        165,
+        168,
+        154
+      ],
+      "headHeightPixels": null,
+      "referenceHeadHeightPixels": 53,
+      "referenceBodyHeightPixels": 441,
+      "headRatioVerified": false,
+      "anatomicalSwordHand": "right",
+      "loop": false,
+      "measurementStatus": "Manual crown and projected ground pixel candidates; chin occluded; temporal/native/palette QA pending",
+      "notes": "Whole-pose source rectangles use completely alpha-zero separating lines. No mirror or alpha threshold applied."
+    },
+    {
+      "id": "idle",
+      "direction": "W",
+      "source": "source/west/idle-w-v2.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "loop": true,
+      "bodyHeightPixels": 490,
+      "headHeightPixels": 60,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          512
+        ],
+        [
+          768,
+          0,
+          768,
+          512
+        ],
+        [
+          0,
+          512,
+          768,
+          512
+        ],
+        [
+          768,
+          512,
+          768,
+          512
+        ]
+      ],
+      "groundAnchors": [
+        [
+          375,
+          503
+        ],
+        [
+          357,
+          503
+        ],
+        [
+          375,
+          503
+        ],
+        [
+          357,
+          503
+        ]
+      ],
+      "status": "candidate; no runtime approval",
+      "handedness": "anatomical RIGHT swordhand independently authored; not mirrored",
+      "measurementStatus": "manual visual landmarks, +/-3px; sourceRects exact integer disjoint bounds; no prompt-derived measurement",
+      "sha256": "aff92c4b6294bb96d8cc4c2bc9aa2a4fcb5ec1ccff19a7321a415fb19c165bdb",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1154409,
+        "lowAlpha1To10Pixels": 38128,
+        "note": "Alpha<=10 counted only for QA; source is unchanged. Low-alpha haze remains. Visual SourceOver is not proof of strict transparency."
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "sourceRect": [
+            0,
+            0,
+            768,
+            512
+          ],
+          "alphaNonzeroPixels": 102163,
+          "alpha1To10Pixels": 8935,
+          "alphaAbove10Bounds": [
+            127,
+            9,
+            616,
+            507
+          ],
+          "crownChinSoleY": [
+            14,
+            74,
+            503
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 1,
+          "sourceRect": [
+            768,
+            0,
+            768,
+            512
+          ],
+          "alphaNonzeroPixels": 106119,
+          "alpha1To10Pixels": 9833,
+          "alphaAbove10Bounds": [
+            94,
+            8,
+            620,
+            508
+          ],
+          "crownChinSoleY": [
+            14,
+            74,
+            503
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 2,
+          "sourceRect": [
+            0,
+            512,
+            768,
+            512
+          ],
+          "alphaNonzeroPixels": 104999,
+          "alpha1To10Pixels": 9961,
+          "alphaAbove10Bounds": [
+            126,
+            7,
+            620,
+            507
+          ],
+          "crownChinSoleY": [
+            10,
+            70,
+            503
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 3,
+          "sourceRect": [
+            768,
+            512,
+            768,
+            512
+          ],
+          "alphaNonzeroPixels": 105174,
+          "alpha1To10Pixels": 9399,
+          "alphaAbove10Bounds": [
+            94,
+            6,
+            610,
+            506
+          ],
+          "crownChinSoleY": [
+            10,
+            70,
+            503
+          ],
+          "landmarkUncertaintyPixels": 3
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "direction": "W",
+      "source": "source/west/walk-w-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "bodyHeightPixels": 238,
+      "headHeightPixels": 29,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          258
+        ],
+        [
+          768,
+          0,
+          768,
+          258
+        ],
+        [
+          0,
+          258,
+          768,
+          254
+        ],
+        [
+          768,
+          258,
+          768,
+          254
+        ],
+        [
+          0,
+          512,
+          768,
+          253
+        ],
+        [
+          768,
+          512,
+          768,
+          253
+        ],
+        [
+          0,
+          765,
+          768,
+          259
+        ],
+        [
+          768,
+          765,
+          768,
+          259
+        ]
+      ],
+      "groundAnchors": [
+        [
+          357,
+          250
+        ],
+        [
+          350,
+          250
+        ],
+        [
+          357,
+          247
+        ],
+        [
+          350,
+          247
+        ],
+        [
+          357,
+          246
+        ],
+        [
+          350,
+          246
+        ],
+        [
+          357,
+          250
+        ],
+        [
+          350,
+          250
+        ]
+      ],
+      "status": "candidate; needs full planted-foot temporal check",
+      "handedness": "anatomical RIGHT swordhand independently authored; not mirrored",
+      "measurementStatus": "manual visual landmarks, +/-3px; sourceRects exact integer disjoint bounds; no prompt-derived measurement",
+      "sha256": "b80e9bcda2216c40433880d3fbb1763555ccf55a1273c2fa69c1d1c69d195190",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1293080,
+        "lowAlpha1To10Pixels": 45748,
+        "note": "Alpha<=10 counted only for QA; source is unchanged. Low-alpha haze remains. Visual SourceOver is not proof of strict transparency."
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "sourceRect": [
+            0,
+            0,
+            768,
+            258
+          ],
+          "alphaNonzeroPixels": 37106,
+          "alpha1To10Pixels": 5839,
+          "alphaAbove10Bounds": [
+            211,
+            9,
+            540,
+            253
+          ],
+          "crownChinSoleY": [
+            12,
+            41,
+            250
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 1,
+          "sourceRect": [
+            768,
+            0,
+            768,
+            258
+          ],
+          "alphaNonzeroPixels": 34438,
+          "alpha1To10Pixels": 5998,
+          "alphaAbove10Bounds": [
+            209,
+            10,
+            525,
+            252
+          ],
+          "crownChinSoleY": [
+            12,
+            41,
+            250
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 2,
+          "sourceRect": [
+            0,
+            258,
+            768,
+            254
+          ],
+          "alphaNonzeroPixels": 31888,
+          "alpha1To10Pixels": 4933,
+          "alphaAbove10Bounds": [
+            210,
+            6,
+            513,
+            250
+          ],
+          "crownChinSoleY": [
+            9,
+            38,
+            247
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 3,
+          "sourceRect": [
+            768,
+            258,
+            768,
+            254
+          ],
+          "alphaNonzeroPixels": 36926,
+          "alpha1To10Pixels": 6106,
+          "alphaAbove10Bounds": [
+            209,
+            6,
+            536,
+            250
+          ],
+          "crownChinSoleY": [
+            9,
+            38,
+            247
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 4,
+          "sourceRect": [
+            0,
+            512,
+            768,
+            253
+          ],
+          "alphaNonzeroPixels": 35910,
+          "alpha1To10Pixels": 5372,
+          "alphaAbove10Bounds": [
+            210,
+            6,
+            537,
+            248
+          ],
+          "crownChinSoleY": [
+            8,
+            37,
+            246
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 5,
+          "sourceRect": [
+            768,
+            512,
+            768,
+            253
+          ],
+          "alphaNonzeroPixels": 34185,
+          "alpha1To10Pixels": 5924,
+          "alphaAbove10Bounds": [
+            209,
+            5,
+            526,
+            249
+          ],
+          "crownChinSoleY": [
+            8,
+            37,
+            246
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 6,
+          "sourceRect": [
+            0,
+            765,
+            768,
+            259
+          ],
+          "alphaNonzeroPixels": 32553,
+          "alpha1To10Pixels": 5667,
+          "alphaAbove10Bounds": [
+            210,
+            4,
+            510,
+            252
+          ],
+          "crownChinSoleY": [
+            9,
+            38,
+            250
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 7,
+          "sourceRect": [
+            768,
+            765,
+            768,
+            259
+          ],
+          "alphaNonzeroPixels": 36778,
+          "alpha1To10Pixels": 5909,
+          "alphaAbove10Bounds": [
+            209,
+            4,
+            536,
+            252
+          ],
+          "crownChinSoleY": [
+            9,
+            38,
+            250
+          ],
+          "landmarkUncertaintyPixels": 3
+        }
+      ]
+    },
+    {
+      "id": "idle",
+      "direction": "SW",
+      "source": "source/west/idle-sw.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "loop": true,
+      "bodyHeightPixels": 489,
+      "headHeightPixels": 59,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          510
+        ],
+        [
+          768,
+          0,
+          768,
+          510
+        ],
+        [
+          0,
+          510,
+          768,
+          514
+        ],
+        [
+          768,
+          510,
+          768,
+          514
+        ]
+      ],
+      "groundAnchors": [
+        [
+          410,
+          499
+        ],
+        [
+          365,
+          504
+        ],
+        [
+          416,
+          494
+        ],
+        [
+          371,
+          494
+        ]
+      ],
+      "status": "candidate; direction front-left and viewer-left right swordhand visible; native QA pending",
+      "handedness": "anatomical RIGHT swordhand independently authored; not mirrored",
+      "measurementStatus": "manual visual landmarks, +/-3px; sourceRects exact integer disjoint bounds; no prompt-derived measurement",
+      "sha256": "37cf0147555c13f2117fc354f44cecd4629099da81651dfb575b17b05f0f78aa",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1143178,
+        "lowAlpha1To10Pixels": 36144,
+        "note": "Alpha<=10 counted only for QA; source is unchanged. Low-alpha haze remains. Visual SourceOver is not proof of strict transparency."
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "sourceRect": [
+            0,
+            0,
+            768,
+            510
+          ],
+          "alphaNonzeroPixels": 106535,
+          "alpha1To10Pixels": 9030,
+          "alphaAbove10Bounds": [
+            146,
+            8,
+            653,
+            501
+          ],
+          "crownChinSoleY": [
+            12,
+            71,
+            499
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 1,
+          "sourceRect": [
+            768,
+            0,
+            768,
+            510
+          ],
+          "alphaNonzeroPixels": 104007,
+          "alpha1To10Pixels": 9210,
+          "alphaAbove10Bounds": [
+            75,
+            12,
+            590,
+            508
+          ],
+          "crownChinSoleY": [
+            14,
+            73,
+            504
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 2,
+          "sourceRect": [
+            0,
+            510,
+            768,
+            514
+          ],
+          "alphaNonzeroPixels": 110117,
+          "alpha1To10Pixels": 9122,
+          "alphaAbove10Bounds": [
+            127,
+            2,
+            667,
+            497
+          ],
+          "crownChinSoleY": [
+            7,
+            66,
+            494
+          ],
+          "landmarkUncertaintyPixels": 3
+        },
+        {
+          "frame": 3,
+          "sourceRect": [
+            768,
+            510,
+            768,
+            514
+          ],
+          "alphaNonzeroPixels": 109027,
+          "alpha1To10Pixels": 8782,
+          "alphaAbove10Bounds": [
+            100,
+            12,
+            635,
+            497
+          ],
+          "crownChinSoleY": [
+            15,
+            73,
+            494
+          ],
+          "landmarkUncertaintyPixels": 3
+        }
+      ]
+    },
+    {
+      "id": "slash-light",
+      "direction": "W",
+      "source": "source/west/slash-light-w-v3.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "loop": false,
+      "bodyHeightPixels": 310,
+      "headHeightPixels": 40,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          375
+        ],
+        [
+          512,
+          0,
+          512,
+          375
+        ],
+        [
+          0,
+          375,
+          512,
+          393
+        ],
+        [
+          512,
+          375,
+          512,
+          393
+        ],
+        [
+          0,
+          768,
+          512,
+          342
+        ],
+        [
+          512,
+          768,
+          512,
+          342
+        ],
+        [
+          0,
+          1110,
+          512,
+          426
+        ],
+        [
+          512,
+          1110,
+          512,
+          426
+        ]
+      ],
+      "groundAnchors": [
+        [
+          290,
+          350
+        ],
+        [
+          263,
+          350
+        ],
+        [
+          275,
+          355
+        ],
+        [
+          258,
+          350
+        ],
+        [
+          295,
+          302
+        ],
+        [
+          278,
+          308
+        ],
+        [
+          278,
+          340
+        ],
+        [
+          261,
+          343
+        ]
+      ],
+      "sha256": "b2f2ebdb98d9234c2c62d891083df86bfc7f02377d8e4d05dd8dbd7bfadb1f70",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1107458,
+        "lowAlpha1To10Pixels": 65428
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            57,
+            60,
+            475,
+            355
+          ],
+          "alphaNonzeroPixels": 56703,
+          "alpha1To10Pixels": 7720,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            80,
+            33,
+            449,
+            354
+          ],
+          "alphaNonzeroPixels": 58868,
+          "alpha1To10Pixels": 9860,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            137,
+            20,
+            479,
+            360
+          ],
+          "alphaNonzeroPixels": 59043,
+          "alpha1To10Pixels": 8482,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            50,
+            72,
+            423,
+            355
+          ],
+          "alphaNonzeroPixels": 55489,
+          "alpha1To10Pixels": 6927,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            47,
+            34,
+            501,
+            302
+          ],
+          "alphaNonzeroPixels": 56527,
+          "alpha1To10Pixels": 7141,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            45,
+            33,
+            454,
+            314
+          ],
+          "alphaNonzeroPixels": 55236,
+          "alpha1To10Pixels": 8226,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 6,
+          "alphaAbove10Bounds": [
+            121,
+            28,
+            463,
+            346
+          ],
+          "alphaNonzeroPixels": 61732,
+          "alpha1To10Pixels": 8030,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 7,
+          "alphaAbove10Bounds": [
+            46,
+            30,
+            455,
+            349
+          ],
+          "alphaNonzeroPixels": 61808,
+          "alpha1To10Pixels": 9042,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ],
+      "impactFrame": 3,
+      "impactFrameEvidence": "Zero-based frame3 is first lowered blade cutting toward facing-left target; frame2 remains overhead windup. Manually reviewed all eight drawings."
+    },
+    {
+      "id": "hit",
+      "direction": "W",
+      "source": "source/west/hit-w-v3.png",
+      "columns": 1,
+      "rows": 3,
+      "frames": 3,
+      "fps": 10,
+      "loop": false,
+      "bodyHeightPixels": 500,
+      "headHeightPixels": 62,
+      "sourceRects": [
+        [
+          0,
+          0,
+          1024,
+          508
+        ],
+        [
+          0,
+          508,
+          1024,
+          502
+        ],
+        [
+          0,
+          1010,
+          1024,
+          526
+        ]
+      ],
+      "groundAnchors": [
+        [
+          510,
+          494
+        ],
+        [
+          523,
+          497
+        ],
+        [
+          510,
+          510
+        ]
+      ],
+      "sha256": "852e9691d0a31de562d1ca249a6f410b3146c4d1181f6397afada6c13facc551",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1197901,
+        "lowAlpha1To10Pixels": 27694
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            167,
+            10,
+            777,
+            498
+          ],
+          "alphaNonzeroPixels": 115244,
+          "alpha1To10Pixels": 8753,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            165,
+            10,
+            846,
+            500
+          ],
+          "alphaNonzeroPixels": 131992,
+          "alpha1To10Pixels": 9662,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            174,
+            3,
+            811,
+            513
+          ],
+          "alphaNonzeroPixels": 127727,
+          "alpha1To10Pixels": 9279,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ]
+    },
+    {
+      "id": "death",
+      "direction": "W",
+      "source": "source/west/death-w-v4.png",
+      "columns": 2,
+      "rows": 3,
+      "frames": 6,
+      "fps": 8,
+      "loop": false,
+      "bodyHeightPixels": 430,
+      "headHeightPixels": 54,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          421
+        ],
+        [
+          768,
+          0,
+          768,
+          421
+        ],
+        [
+          0,
+          421,
+          768,
+          345
+        ],
+        [
+          768,
+          421,
+          768,
+          345
+        ],
+        [
+          0,
+          766,
+          768,
+          258
+        ],
+        [
+          768,
+          766,
+          768,
+          258
+        ]
+      ],
+      "groundAnchors": [
+        [
+          380,
+          385
+        ],
+        [
+          382,
+          385
+        ],
+        [
+          400,
+          279
+        ],
+        [
+          392,
+          276
+        ],
+        [
+          399,
+          203
+        ],
+        [
+          392,
+          203
+        ]
+      ],
+      "sha256": "e49ed3d305ff520d255799d3ad70b3459555276488ff2db6e4160ed1a6ca03b9",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1164917,
+        "lowAlpha1To10Pixels": 41093
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            79,
+            24,
+            607,
+            389
+          ],
+          "alphaNonzeroPixels": 86778,
+          "alpha1To10Pixels": 9352,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            84,
+            100,
+            655,
+            389
+          ],
+          "alphaNonzeroPixels": 78642,
+          "alpha1To10Pixels": 7022,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            77,
+            33,
+            686,
+            287
+          ],
+          "alphaNonzeroPixels": 66477,
+          "alpha1To10Pixels": 7389,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            52,
+            86,
+            695,
+            271
+          ],
+          "alphaNonzeroPixels": 69349,
+          "alpha1To10Pixels": 7430,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            47,
+            58,
+            728,
+            207
+          ],
+          "alphaNonzeroPixels": 52689,
+          "alpha1To10Pixels": 4509,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            33,
+            64,
+            735,
+            208
+          ],
+          "alphaNonzeroPixels": 54012,
+          "alpha1To10Pixels": 5391,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ],
+      "holdLastFrame": true
+    },
+    {
+      "id": "idle",
+      "direction": "NW",
+      "source": "source/west/idle-nw-v2.png",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "fps": 4,
+      "loop": true,
+      "bodyHeightPixels": 484,
+      "headHeightPixels": 58,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          508
+        ],
+        [
+          768,
+          0,
+          768,
+          508
+        ],
+        [
+          0,
+          508,
+          768,
+          516
+        ],
+        [
+          768,
+          508,
+          768,
+          516
+        ]
+      ],
+      "groundAnchors": [
+        [
+          400,
+          494
+        ],
+        [
+          392,
+          494
+        ],
+        [
+          400,
+          495
+        ],
+        [
+          392,
+          495
+        ]
+      ],
+      "sha256": "4a0cbdfa2ccc0661d28b16acee2e46c294daf685fc3daff10ab4dd0511b76d03",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1198420,
+        "lowAlpha1To10Pixels": 32099
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            263,
+            10,
+            651,
+            498
+          ],
+          "alphaNonzeroPixels": 94338,
+          "alpha1To10Pixels": 8423,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            222,
+            10,
+            614,
+            498
+          ],
+          "alphaNonzeroPixels": 91076,
+          "alpha1To10Pixels": 7241,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            260,
+            9,
+            656,
+            498
+          ],
+          "alphaNonzeroPixels": 94047,
+          "alpha1To10Pixels": 8346,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            224,
+            11,
+            614,
+            498
+          ],
+          "alphaNonzeroPixels": 94983,
+          "alpha1To10Pixels": 8089,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "direction": "NW",
+      "source": "source/west/walk-nw-v2.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "bodyHeightPixels": 290,
+      "headHeightPixels": 36,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          384
+        ],
+        [
+          512,
+          0,
+          512,
+          384
+        ],
+        [
+          0,
+          384,
+          512,
+          384
+        ],
+        [
+          512,
+          384,
+          512,
+          384
+        ],
+        [
+          0,
+          768,
+          512,
+          384
+        ],
+        [
+          512,
+          768,
+          512,
+          384
+        ],
+        [
+          0,
+          1152,
+          512,
+          384
+        ],
+        [
+          512,
+          1152,
+          512,
+          384
+        ]
+      ],
+      "groundAnchors": [
+        [
+          250,
+          342
+        ],
+        [
+          234,
+          342
+        ],
+        [
+          259,
+          349
+        ],
+        [
+          233,
+          351
+        ],
+        [
+          261,
+          332
+        ],
+        [
+          229,
+          332
+        ],
+        [
+          259,
+          313
+        ],
+        [
+          228,
+          321
+        ]
+      ],
+      "sha256": "9d70ee3a99f8e6e30dad07858518c10db9f09d09465701740ba2d74e360e3cad",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1186857,
+        "lowAlpha1To10Pixels": 82526
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            155,
+            53,
+            441,
+            345
+          ],
+          "alphaNonzeroPixels": 44282,
+          "alpha1To10Pixels": 8422,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            135,
+            54,
+            418,
+            346
+          ],
+          "alphaNonzeroPixels": 44136,
+          "alpha1To10Pixels": 8094,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            159,
+            47,
+            451,
+            353
+          ],
+          "alphaNonzeroPixels": 48240,
+          "alpha1To10Pixels": 9137,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            126,
+            47,
+            427,
+            355
+          ],
+          "alphaNonzeroPixels": 49968,
+          "alpha1To10Pixels": 10465,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            152,
+            40,
+            449,
+            333
+          ],
+          "alphaNonzeroPixels": 50976,
+          "alpha1To10Pixels": 11895,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            129,
+            40,
+            424,
+            338
+          ],
+          "alphaNonzeroPixels": 51965,
+          "alpha1To10Pixels": 13783,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 6,
+          "alphaAbove10Bounds": [
+            159,
+            19,
+            454,
+            317
+          ],
+          "alphaNonzeroPixels": 48382,
+          "alpha1To10Pixels": 11744,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 7,
+          "alphaAbove10Bounds": [
+            129,
+            21,
+            422,
+            324
+          ],
+          "alphaNonzeroPixels": 48058,
+          "alpha1To10Pixels": 8986,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ]
+    },
+    {
+      "id": "slash-light",
+      "direction": "NW",
+      "source": "source/west/slash-light-nw-v4.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "loop": false,
+      "bodyHeightPixels": 290,
+      "headHeightPixels": 36,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          384
+        ],
+        [
+          512,
+          0,
+          512,
+          384
+        ],
+        [
+          0,
+          384,
+          512,
+          384
+        ],
+        [
+          512,
+          384,
+          512,
+          384
+        ],
+        [
+          0,
+          768,
+          512,
+          384
+        ],
+        [
+          512,
+          768,
+          512,
+          384
+        ],
+        [
+          0,
+          1152,
+          512,
+          384
+        ],
+        [
+          512,
+          1152,
+          512,
+          384
+        ]
+      ],
+      "groundAnchors": [
+        [
+          270,
+          344
+        ],
+        [
+          265,
+          344
+        ],
+        [
+          265,
+          353
+        ],
+        [
+          254,
+          353
+        ],
+        [
+          282,
+          330
+        ],
+        [
+          278,
+          333
+        ],
+        [
+          265,
+          325
+        ],
+        [
+          264,
+          331
+        ]
+      ],
+      "sha256": "2b7e746143861194d0781700950dbb6559877c2db2411b6491589574c5be7ef0",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1188936,
+        "lowAlpha1To10Pixels": 64928
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            165,
+            55,
+            434,
+            349
+          ],
+          "alphaNonzeroPixels": 41803,
+          "alpha1To10Pixels": 6407,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            148,
+            67,
+            461,
+            347
+          ],
+          "alphaNonzeroPixels": 46647,
+          "alpha1To10Pixels": 8217,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            138,
+            29,
+            426,
+            355
+          ],
+          "alphaNonzeroPixels": 51220,
+          "alpha1To10Pixels": 9301,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            78,
+            78,
+            446,
+            356
+          ],
+          "alphaNonzeroPixels": 49455,
+          "alpha1To10Pixels": 8657,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            81,
+            59,
+            475,
+            333
+          ],
+          "alphaNonzeroPixels": 52645,
+          "alpha1To10Pixels": 8042,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            149,
+            35,
+            437,
+            340
+          ],
+          "alphaNonzeroPixels": 47818,
+          "alpha1To10Pixels": 8025,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 6,
+          "alphaAbove10Bounds": [
+            157,
+            26,
+            438,
+            333
+          ],
+          "alphaNonzeroPixels": 47026,
+          "alpha1To10Pixels": 8267,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 7,
+          "alphaAbove10Bounds": [
+            145,
+            26,
+            434,
+            334
+          ],
+          "alphaNonzeroPixels": 47314,
+          "alpha1To10Pixels": 8012,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ],
+      "impactFrame": 3,
+      "impactFrameEvidence": "Zero-based frame3 is first lowered blade cutting toward facing-left target; frame2 remains overhead windup. Manually reviewed all eight drawings."
+    },
+    {
+      "id": "hit",
+      "direction": "NW",
+      "source": "source/west/hit-nw-v2.png",
+      "columns": 1,
+      "rows": 3,
+      "frames": 3,
+      "fps": 10,
+      "loop": false,
+      "bodyHeightPixels": 484,
+      "headHeightPixels": 58,
+      "sourceRects": [
+        [
+          0,
+          0,
+          1024,
+          502
+        ],
+        [
+          0,
+          502,
+          1024,
+          478
+        ],
+        [
+          0,
+          980,
+          1024,
+          556
+        ]
+      ],
+      "groundAnchors": [
+        [
+          470,
+          485
+        ],
+        [
+          470,
+          464
+        ],
+        [
+          470,
+          508
+        ]
+      ],
+      "sha256": "b040be778d4768cebfbe5d9570e58eaf8ea559816286de3674e6c1a938f4171f",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1230321,
+        "lowAlpha1To10Pixels": 23667
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            281,
+            10,
+            805,
+            489
+          ],
+          "alphaNonzeroPixels": 111038,
+          "alpha1To10Pixels": 7224,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            280,
+            14,
+            902,
+            468
+          ],
+          "alphaNonzeroPixels": 121297,
+          "alpha1To10Pixels": 9275,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            285,
+            11,
+            786,
+            510
+          ],
+          "alphaNonzeroPixels": 110208,
+          "alpha1To10Pixels": 7168,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ]
+    },
+    {
+      "id": "death",
+      "direction": "NW",
+      "source": "source/west/death-nw.png",
+      "columns": 2,
+      "rows": 3,
+      "frames": 6,
+      "fps": 8,
+      "loop": false,
+      "bodyHeightPixels": 430,
+      "headHeightPixels": 54,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          434
+        ],
+        [
+          768,
+          0,
+          768,
+          434
+        ],
+        [
+          0,
+          434,
+          768,
+          348
+        ],
+        [
+          768,
+          434,
+          768,
+          348
+        ],
+        [
+          0,
+          782,
+          768,
+          242
+        ],
+        [
+          768,
+          782,
+          768,
+          242
+        ]
+      ],
+      "groundAnchors": [
+        [
+          370,
+          410
+        ],
+        [
+          352,
+          408
+        ],
+        [
+          367,
+          305
+        ],
+        [
+          352,
+          316
+        ],
+        [
+          400,
+          211
+        ],
+        [
+          392,
+          211
+        ]
+      ],
+      "sha256": "3846a7e6d796f279947d777d52b132bd86daa5c397076b70dd7adb81504632a5",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1087020,
+        "lowAlpha1To10Pixels": 73554
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            133,
+            13,
+            617,
+            414
+          ],
+          "alphaNonzeroPixels": 86756,
+          "alpha1To10Pixels": 13782,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            157,
+            91,
+            660,
+            405
+          ],
+          "alphaNonzeroPixels": 83310,
+          "alpha1To10Pixels": 13253,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            149,
+            20,
+            655,
+            303
+          ],
+          "alphaNonzeroPixels": 81690,
+          "alpha1To10Pixels": 14248,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            59,
+            58,
+            707,
+            323
+          ],
+          "alphaNonzeroPixels": 82816,
+          "alpha1To10Pixels": 11103,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            79,
+            26,
+            731,
+            221
+          ],
+          "alphaNonzeroPixels": 79468,
+          "alpha1To10Pixels": 11809,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            38,
+            50,
+            731,
+            212
+          ],
+          "alphaNonzeroPixels": 71804,
+          "alpha1To10Pixels": 9359,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ],
+      "holdLastFrame": true
+    },
+    {
+      "id": "walk",
+      "direction": "SW",
+      "source": "source/west/walk-sw.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "bodyHeightPixels": 360,
+      "headHeightPixels": 44,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          384
+        ],
+        [
+          512,
+          0,
+          512,
+          384
+        ],
+        [
+          0,
+          384,
+          512,
+          378
+        ],
+        [
+          512,
+          384,
+          512,
+          378
+        ],
+        [
+          0,
+          762,
+          512,
+          370
+        ],
+        [
+          512,
+          762,
+          512,
+          370
+        ],
+        [
+          0,
+          1132,
+          512,
+          404
+        ],
+        [
+          512,
+          1132,
+          512,
+          404
+        ]
+      ],
+      "groundAnchors": [
+        [
+          260,
+          372
+        ],
+        [
+          254,
+          375
+        ],
+        [
+          260,
+          367
+        ],
+        [
+          258,
+          368
+        ],
+        [
+          260,
+          361
+        ],
+        [
+          258,
+          361
+        ],
+        [
+          260,
+          366
+        ],
+        [
+          258,
+          374
+        ]
+      ],
+      "sha256": "447b500e0676d3234e8b3b6c74af0dcff2e36df4f19afe18209bc5c7e6e988cb",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1058696,
+        "lowAlpha1To10Pixels": 64358
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            57,
+            15,
+            463,
+            375
+          ],
+          "alphaNonzeroPixels": 64147,
+          "alpha1To10Pixels": 7107,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            53,
+            16,
+            439,
+            378
+          ],
+          "alphaNonzeroPixels": 61444,
+          "alpha1To10Pixels": 8243,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            54,
+            5,
+            459,
+            373
+          ],
+          "alphaNonzeroPixels": 63171,
+          "alpha1To10Pixels": 7676,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            43,
+            9,
+            449,
+            373
+          ],
+          "alphaNonzeroPixels": 65098,
+          "alpha1To10Pixels": 8269,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            54,
+            5,
+            461,
+            364
+          ],
+          "alphaNonzeroPixels": 64183,
+          "alpha1To10Pixels": 8091,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            49,
+            7,
+            456,
+            366
+          ],
+          "alphaNonzeroPixels": 67315,
+          "alpha1To10Pixels": 9029,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 6,
+          "alphaAbove10Bounds": [
+            52,
+            4,
+            463,
+            372
+          ],
+          "alphaNonzeroPixels": 63464,
+          "alpha1To10Pixels": 7738,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 7,
+          "alphaAbove10Bounds": [
+            42,
+            6,
+            455,
+            377
+          ],
+          "alphaNonzeroPixels": 65346,
+          "alpha1To10Pixels": 8205,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ]
+    },
+    {
+      "id": "slash-light",
+      "direction": "SW",
+      "source": "source/west/slash-light-sw.png",
+      "columns": 2,
+      "rows": 4,
+      "frames": 8,
+      "fps": 12,
+      "loop": false,
+      "bodyHeightPixels": 345,
+      "headHeightPixels": 42,
+      "sourceRects": [
+        [
+          0,
+          0,
+          512,
+          362
+        ],
+        [
+          512,
+          0,
+          512,
+          408
+        ],
+        [
+          0,
+          362,
+          512,
+          438
+        ],
+        [
+          512,
+          408,
+          512,
+          359
+        ],
+        [
+          0,
+          800,
+          512,
+          341
+        ],
+        [
+          512,
+          767,
+          512,
+          379
+        ],
+        [
+          0,
+          1141,
+          512,
+          395
+        ],
+        [
+          512,
+          1146,
+          512,
+          390
+        ]
+      ],
+      "groundAnchors": [
+        [
+          275,
+          358
+        ],
+        [
+          240,
+          365
+        ],
+        [
+          245,
+          407
+        ],
+        [
+          258,
+          350
+        ],
+        [
+          275,
+          333
+        ],
+        [
+          247,
+          372
+        ],
+        [
+          272,
+          368
+        ],
+        [
+          254,
+          367
+        ]
+      ],
+      "sha256": "ca4bc3b9f63a3e4233f3e23c1e536bf8b50a216b487c20735c743d10cc562728",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1011988,
+        "lowAlpha1To10Pixels": 82433
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            39,
+            20,
+            475,
+            361
+          ],
+          "alphaNonzeroPixels": 65089,
+          "alpha1To10Pixels": 9669,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            67,
+            11,
+            449,
+            367
+          ],
+          "alphaNonzeroPixels": 68750,
+          "alpha1To10Pixels": 9309,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            95,
+            1,
+            482,
+            409
+          ],
+          "alphaNonzeroPixels": 77876,
+          "alpha1To10Pixels": 11190,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            31,
+            42,
+            467,
+            355
+          ],
+          "alphaNonzeroPixels": 73780,
+          "alpha1To10Pixels": 13446,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            17,
+            33,
+            488,
+            335
+          ],
+          "alphaNonzeroPixels": 64987,
+          "alpha1To10Pixels": 9536,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            90,
+            4,
+            443,
+            375
+          ],
+          "alphaNonzeroPixels": 66325,
+          "alpha1To10Pixels": 9155,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 6,
+          "alphaAbove10Bounds": [
+            35,
+            6,
+            501,
+            371
+          ],
+          "alphaNonzeroPixels": 70935,
+          "alpha1To10Pixels": 10177,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 7,
+          "alphaAbove10Bounds": [
+            10,
+            4,
+            458,
+            370
+          ],
+          "alphaNonzeroPixels": 73134,
+          "alpha1To10Pixels": 9951,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ],
+      "impactFrame": 3,
+      "impactFrameEvidence": "Zero-based frame3 is first lowered blade cutting toward facing-left target; frame2 remains overhead windup. Manually reviewed all eight drawings."
+    },
+    {
+      "id": "hit",
+      "direction": "SW",
+      "source": "source/west/hit-sw.png",
+      "columns": 1,
+      "rows": 3,
+      "frames": 3,
+      "fps": 10,
+      "loop": false,
+      "bodyHeightPixels": 495,
+      "headHeightPixels": 62,
+      "sourceRects": [
+        [
+          0,
+          0,
+          1024,
+          500
+        ],
+        [
+          0,
+          500,
+          1024,
+          504
+        ],
+        [
+          0,
+          1004,
+          1024,
+          532
+        ]
+      ],
+      "groundAnchors": [
+        [
+          510,
+          493
+        ],
+        [
+          510,
+          501
+        ],
+        [
+          519,
+          501
+        ]
+      ],
+      "sha256": "a12f0456fd991b2bd382224f19334770df046f1e26bca9b456766a6247cd403e",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1185297,
+        "lowAlpha1To10Pixels": 27502
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            199,
+            10,
+            783,
+            496
+          ],
+          "alphaNonzeroPixels": 120104,
+          "alpha1To10Pixels": 8367,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            159,
+            6,
+            824,
+            503
+          ],
+          "alphaNonzeroPixels": 141671,
+          "alpha1To10Pixels": 10381,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            175,
+            1,
+            788,
+            505
+          ],
+          "alphaNonzeroPixels": 125792,
+          "alpha1To10Pixels": 8754,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ]
+    },
+    {
+      "id": "death",
+      "direction": "SW",
+      "source": "source/west/death-sw-v2.png",
+      "columns": 2,
+      "rows": 3,
+      "frames": 6,
+      "fps": 8,
+      "loop": false,
+      "bodyHeightPixels": 450,
+      "headHeightPixels": 54,
+      "sourceRects": [
+        [
+          0,
+          0,
+          768,
+          450
+        ],
+        [
+          768,
+          0,
+          768,
+          450
+        ],
+        [
+          0,
+          450,
+          768,
+          340
+        ],
+        [
+          768,
+          450,
+          768,
+          340
+        ],
+        [
+          0,
+          790,
+          768,
+          234
+        ],
+        [
+          768,
+          790,
+          768,
+          234
+        ]
+      ],
+      "groundAnchors": [
+        [
+          395,
+          414
+        ],
+        [
+          397,
+          414
+        ],
+        [
+          406,
+          301
+        ],
+        [
+          402,
+          297
+        ],
+        [
+          400,
+          175
+        ],
+        [
+          392,
+          175
+        ]
+      ],
+      "sha256": "a79f51ce261e94b5a6641c67ea51be8b8075576a8592f7e2fef076a0fdb4a252",
+      "status": "candidate for native temporal QA; NOT user-approved",
+      "handedness": "anatomical RIGHT independently authored; no reflection transform",
+      "measurementStatus": "manual visual scale reference estimates +/-5px; rear chin occluded and death rest height estimated from limb proportions, not proportion gate evidence",
+      "headBodyGate": "pending native/reference comparison; do not infer acceptance from these assembly scale estimates",
+      "alphaAudit": {
+        "min": 0,
+        "max": 254,
+        "zeroPixels": 1104827,
+        "lowAlpha1To10Pixels": 45110
+      },
+      "frameAudit": [
+        {
+          "frame": 0,
+          "alphaAbove10Bounds": [
+            92,
+            32,
+            665,
+            417
+          ],
+          "alphaNonzeroPixels": 98186,
+          "alpha1To10Pixels": 9062,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 1,
+          "alphaAbove10Bounds": [
+            82,
+            98,
+            638,
+            416
+          ],
+          "alphaNonzeroPixels": 94294,
+          "alpha1To10Pixels": 8666,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 2,
+          "alphaAbove10Bounds": [
+            95,
+            32,
+            709,
+            308
+          ],
+          "alphaNonzeroPixels": 80732,
+          "alpha1To10Pixels": 8473,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 3,
+          "alphaAbove10Bounds": [
+            15,
+            71,
+            687,
+            286
+          ],
+          "alphaNonzeroPixels": 77969,
+          "alpha1To10Pixels": 7215,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 4,
+          "alphaAbove10Bounds": [
+            39,
+            29,
+            741,
+            179
+          ],
+          "alphaNonzeroPixels": 60160,
+          "alpha1To10Pixels": 6323,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        },
+        {
+          "frame": 5,
+          "alphaAbove10Bounds": [
+            32,
+            33,
+            731,
+            175
+          ],
+          "alphaNonzeroPixels": 56696,
+          "alpha1To10Pixels": 5371,
+          "groundAnchorMethod": "manual boot contact / body support plane; death uses fixed floor, not blade bounds",
+          "landmarkUncertaintyPixels": 5
+        }
+      ],
+      "holdLastFrame": true
+    }
+  ]
+}

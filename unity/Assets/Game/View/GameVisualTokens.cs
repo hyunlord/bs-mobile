@@ -25,6 +25,12 @@ namespace Game.View
         public static readonly string[] SeasonNames = { "spring", "summer", "autumn", "winter" };
         public const int TerrainLayer = 0, GrowthLayer = 10, ExperienceLayer = 15, ReadyLayer = 20, AllyLayer = 30, AttackLayer = 40, EnemyLayer = 50, LordLayer = 80, ThreatLayer = 90;
         public const float SeasonBlendSeconds = 1.8f, HitFlashSeconds = 0.09f, KillSeconds = 0.32f, HarvestSeconds = 0.48f, ExperienceSeconds = 0.42f, EmphasisSeconds = 0.45f;
+        // Enemy hit flash and knockback values live in HitReaction (one place); these names keep existing callers readable.
+        public const float EnemyHitFlashSeconds = HitReaction.FlashSeconds, EnemyPoseHoldSeconds = 4f / 60;
+        public const float EnemyRecoilSeconds = HitReaction.KnockbackRecoverSeconds;
+        // Authored hero canvases carry cape and margin; the push is measured against the figure, not the canvas.
+        public const float HeroBodyWidthFraction = .45f;
+        public const float DamageAggregateSeconds = .12f, ImpactShakeSeconds = .045f, BossHitStopSeconds = .06f, BossDeathSlowSeconds = .3f;
         public const float CameraOutsideMargin = 1f, CameraReferencePixelHeight = 1600f;
         public const float TerrainUvInset = 0.16f, TerrainStride = 1f, TerrainOpacity = 0.45f;
         public const float FieldOpacity = 0.10f, AreaAttackOpacity = 0.26f, TravellingAttackOpacity = 0.72f, AttackRibbonWidth = 0.08f;
@@ -52,6 +58,10 @@ namespace Game.View
         public const int WaveHarvestCueLimit = 3;
         public const float WaveGrowthLabelRise = .5f, WaveCollectionLabelRise = .9f, WaveCollectionLabelSeconds = .9f;
         public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
+        // Ground covered by one Soldier B walk cycle in source pixels (tools/art-authoring/soldier-b/packed-frames.json, #331).
+        public const float PersonWalkCyclePixels = 102.3603456f;
+        // Fastest person sheet walk (user decision, #331): 2.5 cycles per second (0.4 s); faster movement slides the feet. Not the hero.
+        public const float PersonWalkMaxCyclesPerSecond = 2.5f;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }

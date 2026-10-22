@@ -1,0 +1,4 @@
+sample,source,crown_y,chin_y,sole_y,head_px,body_px,head_body_ratio,delta_reference_percent,reference_tolerance_10_percent,method
+Original A reference,/Users/rexxa/Downloads/heroes.png,15.0,68.0,456.0,53.0,441.0,0.12018140589569161,0.0,true,Manual pixel landmarks; ±2px
+2D authored E walk frame 0,/Users/rexxa/bs-mobile/tools/art-authoring/hero-a-frames/source/walk-e.png,47.0,109.0,482.0,62.0,435.0,0.1425287356321839,18.594664931685088,false,Authored atlas, NOT native game capture
+3D actual front34 render,/Users/rexxa/bs-mobile/artifacts/m1-256/3d/revision5/model-review-front34.png,187.86468505859375,293.61944580078125,916.3260803222656,105.7547607421875,728.4613952636719,0.1451755184691823,20.796988009263018,false,Projected skinned mesh landmarks, revision5

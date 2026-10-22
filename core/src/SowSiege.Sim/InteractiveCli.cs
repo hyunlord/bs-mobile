@@ -9,21 +9,21 @@ public static class InteractiveCli
     {
         try
         {
-            if (args.Length is not (3 or 4) || args[0] is not ("interactive-fixtures" or "interactive-replay" or "field-fixture")) { throw new ArgumentException("Usage: interactive-fixtures|field-fixture <data-directory> <output-directory> [profile] | interactive-replay <data-directory> <replay-file> [profile]"); }
+            if (args.Length is not (3 or 4) || args[0] is not ("interactive-fixtures" or "interactive-replay" or "field-fixture" or "melee-aim-fixture")) { throw new ArgumentException("Usage: interactive-fixtures|field-fixture|melee-aim-fixture <data-directory> <output-directory> [profile] | interactive-replay <data-directory> <replay-file> [profile]"); }
             var catalog = ContentLoader.Load(args[1], profileName: args.Length == 4 ? args[3] : "production"); var dataHash = ContentLoader.Hash(args[1], false);
             if (args[0] == "interactive-replay")
             {
                 using var input = File.OpenRead(args[2]); var verification = MetaReplayFile.Verify(args[2], args[1], catalog, dataHash, ReplayCodec.Read(input));
                 Console.WriteLine(JsonSerializer.Serialize(verification)); return 0;
             }
-            if (args[0] == "field-fixture")
+            if (args[0] is "field-fixture" or "melee-aim-fixture")
             {
                 Directory.CreateDirectory(args[2]); var replayPath = Path.Combine(args[2], "30001.ssreplay");
                 RunFrame final;
-                using (var output = File.Create(replayPath)) { final = RecordFieldFixture(catalog, dataHash, 30001, output); }
+                using (var output = File.Create(replayPath)) { final = RecordFieldFixture(catalog, dataHash, 30001, output, args[0] == "melee-aim-fixture" ? new() : null); }
                 using var input = File.OpenRead(replayPath); var verification = ReplayRunner.Verify(catalog, dataHash, ReplayCodec.Read(input));
                 File.WriteAllText(Path.Combine(args[2], "hashes.json"), JsonSerializer.Serialize(new[] { verification }));
-                File.WriteAllText(Path.Combine(args[2], "field-observation.json"), JsonSerializer.Serialize(new { formatVersion = 4, tick = final.Tick, crossedNegativeX = final.Lord.Position.X < 0, lord = final.Lord.Position, field = final.Field }));
+                File.WriteAllText(Path.Combine(args[2], "field-observation.json"), JsonSerializer.Serialize(new { formatVersion = args[0] == "melee-aim-fixture" ? 6 : 4, tick = final.Tick, crossedNegativeX = final.Lord.Position.X < 0, lord = final.Lord.Position, field = final.Field }));
                 Console.WriteLine(JsonSerializer.Serialize(verification)); return 0;
             }
             Directory.CreateDirectory(args[2]); var results = new List<ReplayVerification>();
@@ -48,9 +48,11 @@ public static class InteractiveCli
             Console.Error.WriteLine("Interactive replay failed: " + ex.Message); return 1;
         }
     }
-    public static RunFrame RecordFieldFixture(ContentCatalog catalog, string dataHash, int seed, Stream output)
+    public static RunFrame RecordFieldFixture(ContentCatalog catalog, string dataHash, int seed, Stream output, MeleeAimOptions? meleeAim = null)
     {
-        var options = new InteractiveOptions(new(seed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, dataHash, Field: new());
+        if (meleeAim is not null && catalog.WaveRuntime?.Gear.Values.Any(gear => gear.Aim == "nearest-enemy") != true)
+        { throw new ArgumentException("Melee aim fixture requires explicitly configured review gear."); }
+        var options = new InteractiveOptions(new(seed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement, dataHash, Field: new(), MeleeAim: meleeAim);
         var session = new InteractiveSession(catalog, options); ReplayCodec.WriteHeader(output, ReplayCodec.Header(options));
         var tick = 0;
         while (session.View.Status != RunStatus.Completed && tick < 600)

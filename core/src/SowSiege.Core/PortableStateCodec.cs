@@ -734,8 +734,9 @@ namespace SowSiege.Core
             Write(value.Run);
             Write((int)value.InitialAimMode);
             Write(value.DataHash);
+            if (value.MeleeAim is { } melee) { Write("melee-aim-options-v1"); Write(melee.Version); }
             if (FeelExperimentOptions.Normalize(value.Feel) is { } feel) { Write("feel-experiment-v1"); Write(feel); }
-            if (value.Field is { } field) { Write("field-options-v1"); Write(field.Version); }
+            if (value.Field is { } field) { Write("field-options-v1"); Write(field.Version); if (field.Version == FieldOptions.ReviewVersion) { Write(field.SpawnRadius); Write(field.RecycleRadius); } }
             if (value.HostRewards is { } rewards)
             {
                 Write("host-reward-options-v1"); Write(rewards.AllowRerollGrant); Write(rewards.Revive is not null);
@@ -784,6 +785,7 @@ namespace SowSiege.Core
         private void Write(InteractiveState? value)
         {
             Write(value is not null); if (value is null) { return; }
+            if (value.MeleeAim is { } melee) { Write("melee-aim-state-v1"); Write(melee.Version); }
             Write((int)value.Aim);
             Write(value.Invulnerable);
             Write(value.SpawnPermille);
@@ -794,6 +796,7 @@ namespace SowSiege.Core
             if (value.EstateLoadout is { } loadout) { Write("estate-run-state-v1"); Write(loadout); Write(value.EstateSeed); }
             if (value.Field is { } field)
             {
+                if (field.Options.Version == FieldOptions.ReviewVersion) { Write("review-field-radii-v1"); Write(field.Options.SpawnRadius); Write(field.Options.RecycleRadius); }
                 Write("field-state-v1"); Write(field.Seed); Write(field.Travel.X); Write(field.Travel.Y);
                 Write(field.ArenaBossId); Write(field.ArenaCenter.X); Write(field.ArenaCenter.Y);
             }

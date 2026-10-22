@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 namespace SowSiege.Core
 {
@@ -13,6 +14,22 @@ namespace SowSiege.Core
             if (d.EnemySeparation is { } separation)
             {
                 Write("wave-enemy-separation-v1"); Write(separation.Version); WriteMap(separation.BodyWidths, Write);
+            }
+            var programs = d.Programs ?? WaveLegacyCompiler.Compile(d);
+            if (d.Evolutions.Values.Any(e => !WaveEvolutionUnlocks.IsDefault(e, programs[e.Id])))
+            {
+                Write("wave-evolution-unlock-v1");
+                WriteMap(d.Evolutions, e =>
+                {
+                    var unlock = WaveEvolutionUnlocks.Effective(e, programs[e.Id]);
+                    WriteList(unlock.Inputs, input => { Write(input.Id); Write(input.MinLevel ?? 1); Write(input.RequireMaxLevel == true); });
+                    WriteList(unlock.Events, required => { Write(required.Event); Write(required.MinCount); });
+                });
+            }
+            if (d.CardOffer is { } offer && !offer.IsDefault())
+            {
+                Write("wave-card-offer-v1"); Write(offer.EvolutionPriority ?? "none"); Write(offer.OwnedGearWeight ?? 1); Write(offer.UnownedGearWeight ?? 1);
+                WriteMap(offer.Cards ?? new Dictionary<string, WaveCardOfferCard>(), card => { Write(card.Weight ?? 1); Write(card.MaxPicks ?? 0); });
             }
             if (d.EstateLight is { } light)
             {
@@ -44,6 +61,15 @@ namespace SowSiege.Core
             Write(d.Behavior.WetSpeedDivisor); Write(d.Behavior.DryDamageDivisor); Write(d.Behavior.RangedRangeMultiplier); Write(d.Behavior.PathConnectionMultiplier); Write(d.DryAfterTicks);
             WriteMap(d.Gear, g =>
             {
+                if (g.Composition is { } composition)
+                {
+                    Write("wave-review-impact-v1"); Write(composition.Version); Write(composition.Placement); Write(composition.DelayTicks); Write(composition.StepTicks); Write(composition.Spacing); Write(composition.Radius);
+                    if (composition.RehitEachImpact == true) { Write("wave-review-rehit-v1"); }
+                    if (composition.Bounces is { } bounces) { Write("wave-review-ricochet-v1"); Write(bounces); }
+                    if (composition.LureTicks is { } lure) { Write("wave-review-lure-v1"); Write(lure); }
+                    if (composition.BounceMinDistance is { } hop) { Write("wave-review-bounce-min-v1"); Write(hop); }
+                }
+                if (g.Aim is not null) { Write("wave-gear-aim-v1"); Write(g.Aim); }
                 Write(g.Id); Write(g.DesignRef); Write((int)g.Kind); Write(g.Damage); Write(g.Range); Write(g.CooldownTicks); Write(g.Speed); Write(g.Count); Write(g.LifetimeTicks); Write(g.Knockback); Write(g.WorkTicks); Write(g.WorkRadius); Write(g.RewardExperience); Write(g.Capacity); Write(g.Levels is not null); if (g.Levels is not null)
                 {
                     WriteList(g.Levels, l =>
@@ -77,6 +103,21 @@ namespace SowSiege.Core
         }
         private void WriteWave(WaveRuntimeState s)
         {
+            if (s.PendingImpacts.Count > 0)
+            {
+                Write("wave-pending-impact-v1");
+                WriteList(s.PendingImpacts, p =>
+                {
+                    Write(p.Id); Write(p.Source); Write(p.Position); Write(p.Tick); Write(p.Radius); Write(p.Damage); Write(p.Knockback); Write(p.ActivationId);
+                    if (p.Struck is { } struck) { Write("wave-ricochet-v1"); Write(p.TargetId); Write(p.BouncesLeft); Write(p.From); WriteList(struck, Write); }
+                    if (p.LureTicks > 0) { Write("wave-lure-pending-v1"); Write(p.LureTicks); }
+                });
+            }
+            if (s.Lures.Count > 0)
+            {
+                Write("wave-review-lures-v1");
+                WriteList(s.Lures, l => { Write(l.Id); Write(l.Source); Write(l.Position); Write(l.Radius); Write(l.UntilTick); });
+            }
             Write("wave-runtime-state-v1");
             Write(s.Water);
             Write(s.Timber); Write(s.TimberOrigin); Write(s.ProcessedTimber);
@@ -134,6 +175,7 @@ namespace SowSiege.Core
                 Write(e.Id); Write(e.Tick); Write(e.Kind); Write(e.Source); Write(e.SubjectId); Write(e.Position); Write(e.Target); Write(e.Amount);
             }
 );
+            if (s.UnlockEvents.Count > 0) { Write("wave-unlock-events-v1"); WriteMap(s.UnlockEvents, Write); }
             if (s.Estate is { } estate)
             {
                 Write("wave-estate-state-v1"); Write(s.EstateLoadout);

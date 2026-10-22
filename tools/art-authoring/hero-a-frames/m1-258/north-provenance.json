@@ -1,0 +1,81 @@
+{
+  "historicalRecord": true,
+  "originalRelativePath": "source/north/provenance.json",
+  "record": {
+    "status": "paused-for-master-consistency",
+    "records": [
+      {
+        "file": "idle-n.png",
+        "prompt": "Use case: stylized-concept. Production transparent sprite sheet, 1536x1024, 2 columns x 2 rows, four very subtly breathing IDLE poses of exactly the same adult blond knight in references. Reference 1 ONLY leftmost adult knight defines identity/proportions; reference 2 defines rendering/material continuity. Direction N: directly rear view, facing away, no face visible. Anatomical RIGHT hand at viewer-right holds sword lowered beside right thigh, NOT left. Cloak cobalt restrained, ivory quilted long tunic, steel shoulder and greaves, brown boots. Body proportions mature realistic, standing height 8.3 heads, head only12% total height; no chibi. Ink and gouache painted 2D sprite finish. Fixed orthographic camera/body scale across all four poses, feet same local row baseline, head crown about y30 within each512px row and feet y480; each pose centered in its768px cell; leave clear transparent margins around complete blade/cloak. Four distinct tiny breathing phases with stationary planted feet. Real alpha transparency everywhere outside silhouettes, NO background glow, floor, shadows, borders, text or labels. Do not horizontally mirror any reference. Independently paint rear anatomy. Preserve entire bodies and sword inside separate cells.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-2172cbeb-9603-44cb-823a-e2cbacbea4d3.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "N"
+      },
+      {
+        "file": "walk-n.png",
+        "prompt": "Production2D transparent sprite sheet 1536x1024,4columns x2rows,EIGHT consecutive walking cycle frames of reference adult blond knight. DirectionN directly REAR walking away. Same independently painted character as reference: small mature adult head12%standing height, long proportionate legs, cobalt cloak, ivory quilted tunic, steel shoulders/greaves,brown boots. Sword ALWAYS anatomicalRIGHT hand(viewer-right), held low so legs visible. Frame order: left contact,left down,left passing,left up,right contact,right down,right passing,right up. Genuine alternating feet with knee bending and grounded sole contact; no identical standing repeats, no hopping. Fixed camera rear orthographic, fixed bodyheight430px ineach384x512cell, centered, solebaseline480. Cape lifted enough to show both legs but same length/material. Gouache/ink finish reference, no3D. Allwholeposes/sword inside cells with margins. Real transparent alpha, no floor,no text,no lines,no ambient glow. Do not mirror. Include only8frames.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-2461e04f-67cf-4119-bf7d-7324acd49454.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "N"
+      },
+      {
+        "file": "slash-light-n.png",
+        "prompt": "Generate independently painted transparent 2D animation sheet,1536x1024,4columns2rows EIGHT consecutive sword SLASH frames. Use supplied rear knight exactly: adult realistic 8.3-head body,cobaltcloak,ivorylongquilted tunic,steelgreaves,anatomical RIGHT hand(viewer-right) always grips sword. Direction N rear facing away. Overhead diagonal CUT sequence:1ready swordlowright,2raise rightarm,3blade highover rightshoulder,4bladeabovehead apex,5rapid diagonalcut across front/away,6bladefollowthrough lowleft across body stillright hand,7recoverright,8ready. Not a thrust. Shoulder/torso rotate naturally but rear view maintained; left hand empty balancing. Clear distinct blade orientations, no effect trails. Same orthographiccamera/body proportions across frames, head12%standing height, feet480local, body430px; eachcell384x512,marginsallroundwholeblade. Gouache/ink consistentmaster. Actualtransparentalpha, no floor/backgroundglow/text/lines. Anatomicalright grips never swap. Crop nothing.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-36c4e537-6b45-4438-8844-fef7b5dbf2ee.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "N"
+      },
+      {
+        "file": "hit-n.png",
+        "prompt": "Transparent2D sprite sheet1536x1024, THREE columns ONE row. Sameadult rearview blondknightreference, directionN awayfromviewer.3consecutive HIT/RECOIL frames: first uprightbeginrecoil, second shoulders briefly flinch forward and knees compress mildly, thirdrecovery. Samebody height/limblength, head12%standingheight, doNOTshrinkorenlargehead. AnatomicalRIGHThand(viewerright)holds low sword all3,leftempty. Cobalt cloak,ivoryquilt,longlegssteelgreaves,brownboots. Each512x1024cell fullposeheightapproximately750px,solebaseline930,crown180,amplemargin. Matchgouacheinkstyle. Actualtransparentalpha, noambientglow/floor/background/text/shadows. No mirroring.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-d7fd585b-7945-473e-b3ce-cc60568f2fb4.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "N"
+      },
+      {
+        "file": "death-n.png",
+        "prompt": "Transparent2D sprite sheet1536x1024,THREEcolumns TWOrows SIX consecutive falling/death frames of exactadultknight reference. FacingN away/rear. Small maturehead12%standingheight,longadultlegs, cobaltcloak ivoryquilt steelboots. Sword anatomicallyRIGHT hand(viewerright) throughout until lies nexttorighthand. Frames rowmajor:1standing struck shouldersdroop,2kneesbuckle,3rightkneeonfloor,4bothknees fallingforward,5bodyhitsfloorface-down,6lyingface-down still withcloak spread. Samefixedlimblengths andcamera; collapsedbodymust NOT enlarged tostandingheight. In512x512cells standingbodyheight360px baseline470, allwholebladesandlimbsinsideclear16px margins. Lastlyingbodyextends towardtopofcell in perspective away fromcamera, feetnearbottombaseline. Cohesivegouacheink,actualtransparency,no floor/backgroundglow/grid/text/shadows. Swordhandnevermirror/swap.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-049827f3-acb7-4d34-84cb-73331f527c7a.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "N"
+      },
+      {
+        "file": "idle-ne.png",
+        "prompt": "Independenttransparent2D sprite sheet1536x1024,2columns2rows four subtlebreathe IDLEframes. Sameadultblondknightreference exactgouacheink render/palette/identity. DirectionNE: rear threequarter view facing45degrees towardupperRIGHT, see back and right side, mostlyrear head withsmallprofile. AnatomicalRIGHT hand sword, NOTmirrorfront. Fullbody430pxheight, headonly12%ofstandingheight, long realistic adultlegs; cobaltcloak ivoryquilttunic steelgreaves brownbboots. Swordlow forwardright, leftarmemptybehindcloak. 4tinybreathingphases feetplanted, samecamera/body scale. Clear allpose/bladeinside768x512cells crown40sole480. Realalpha transparent nofloor/glow/text/labels/borders. No chibi.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-eb8da4ce-796e-4f1e-bdda-a62e24d2fb33.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "NE"
+      },
+      {
+        "file": "walk-ne.png",
+        "prompt": "Production transparent2D sprite sheet1536x1024,4columns2rows EIGHTwalkingcycleframes exactadultknightreference. DirectionNE rear45degree THREEQUARTER, body hips chest feet ALLorienteddiagonalawaytowardRIGHT, not justheadturn. Rear/rightsidevisible, legsprogressdiagonalright. AnatomicalRIGHT handgrip sword low; leftempty. Adult8.3heads,restrainedcobaltcloak,ivoryquiltlongtunic,steelgreaves,brownboots,gouacheinkreference. Frames:leftcontact,leftdown,leftpassing,leftup,rightcontact,rightdown,rightpassing,rightup. Groundedstride distinctfootcrossing withoutjumps; cape sways. Fixedcamera/fixedbody430px in384x512cell crown40sole480; wholeblade margin, nointercelloverlap. Genuinealpha transparency nofloor/glow/text/borders. No horizontalmirror.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-99079ca1-e153-42cd-82c0-7f6a29105959.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "NE"
+      },
+      {
+        "file": "walk-ne-v2.png",
+        "prompt": "Create transparent1536x1024 sheet, TWOcolumns FOURrows eight sequentialwalkingposes of adultknight reference facingNErear-right45degrees. Eachcell768x256. Draw character only205pxstandingheight, centered, crown30feet235, wholecape/bladecomfortably inside itscell with margins. DoNOT fillcellwidth. Adult8.3heads proportions. Same anatomicalRIGHT handholds swordpointinglowright. Cobaltcloakivoryquilttunicsteelboots. Frame1leftcontact2down3pass4up5rightcontact6down7pass8up. Bothlegs alternate, no duplicatephases. Rear-rightcamera fixed, allbodyorientation45degrees. Gouacheink. Realalpha transparency, NO labels,grid,floor,glow. Preserveexactreferencebodybut new8walkingposes. Allframes samescale.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-122ae48c-60ea-42c8-8522-9be79f9f7cd2.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "NE"
+      },
+      {
+        "file": "hit-ne.png",
+        "prompt": "Transparent2D sprite sheet1536x1024, THREEcolumns ONErow THREEhit/recoilframes sameadultknight. DirectionNE rear-right45degree,bodyandfeetorientedupperright. Pose1upright,2mildforwardflinch kneesbend,3recover. Sameanatomy/scalerestrainedcobaltcloak ivoryquilttunic steelgreaves longadultproportions, head12%standingheight. SwordanatomicalRIGHT always, otherhandempty. Each512x1024cell character650pxheightground900 crown250, ampleblade/cloakmargin. Referencegouacheink. No mirroring, no enlargingheads, no floor/glow/text/borders, genuinealpha.",
+        "outputHint": "generated_images/01a133d2-697c-73b1-865b-484e838293e3/exec-9560d62f-0591-4c50-888f-4751adfe8b9b.png",
+        "status": "candidate-not-approved",
+        "method": "builtin-imagegen",
+        "direction": "NE"
+      }
+    ]
+  }
+}

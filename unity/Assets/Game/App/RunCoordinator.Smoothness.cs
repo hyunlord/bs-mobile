@@ -66,7 +66,8 @@ namespace Game.App
                 expectedLocomotion, 2f / presentationUnits, activeFeelRules?.FasterLord == false ? 1f / presentationUnits : 0);
             world.RenderedEntitySample = ObserveRenderedEntity;
             heroPoses = 0;
-            world.HeroSheetPoseSampled = AutoplayCapture.Active != null ? ObserveHeroPose : null;
+            // Live captures record poses here; leave an offline review's own pose observer in place (composite with #266).
+            if (AutoplayCapture.Active != null) world.HeroSheetPoseSampled = ObserveHeroPose;
             normalTrace?.BeginSession();
             if(AutoplayCapture.Active != null) BeginSmoothnessDiagnostics();
         }
@@ -99,6 +100,7 @@ namespace Game.App
         }
         void Update()
         {
+            RecordHeroMotionComparisonFrame();
             BeginLongFrame();
             if(ProbeEnabled)BeginProbeFrame();
             if (!normalTraceChecked) { normalTraceChecked = true; normalTrace = NormalPlayTrace.Create(this); if (normalTrace != null) ConfigureNormalTrace(normalTrace); }

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace SowSiege.Tests;
 
-// ADR0064 Core slice: opt-in permanent light, sleeping buildings, dark T1 and replay format 6.
+// ADR0064 Core slice: opt-in permanent light, sleeping buildings, dark T1 and replay format 7.
 // Building IDs are test dummies (P8): Core carries no estate building identity.
 public sealed class WaveEstateTests
 {

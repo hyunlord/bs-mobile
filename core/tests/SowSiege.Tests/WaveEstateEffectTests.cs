@@ -39,7 +39,8 @@ public sealed class WaveEstateEffectTests
         Assert.All(light.Buildings.Values, b => Assert.NotNull(b.Effect));
     }
 
-    // Golden from ac78982 (main before the estate code): a wave-1a bot run must not change.
+    // A wave-1a bot run must not change with the estate code. Golden from ac78982 was 5FAA2C4D…; main changed the encoded state
+    // (ADR0058 132eb0d, #257 92d55b6, #287 9f2e31f; every other result field equal), so it is re-pinned to main e719918 (ADR0069).
     [Fact]
     public void Wave1aBotHashIsUnchangedByTheEstateCode()
     {
@@ -48,7 +49,7 @@ public sealed class WaveEstateEffectTests
         // Same options as `SowSiege.Sim --profile wave-1a --seed 7 --duration-ticks 900` (the CLI passes the default people rule).
         var simulation = SimulationFactory.Create(c, new RunOptions(7, c.Tuning.DefaultHero, c.Tuning.DefaultEstate, "mixed", c.Tuning.World.DefaultPeopleRule));
         while (!simulation.IsComplete) { simulation.Tick(); }
-        Assert.Equal("5FAA2C4DD9FFB9BA188B6A08490894780A8B0A617DD042FCD77EC4D4BDFBDB0A", simulation.Result().Hash);
+        Assert.Equal("E7963B7C0D511AA263EE56A5C1F2197D69E06BBEFE87B6135B9EEE827BBDC570", simulation.Result().Hash);
     }
 
     private static (Simulation Simulation, ContentCatalog Catalog) Bot(string? loadout, string? movement, int ticks, int seed = 7)

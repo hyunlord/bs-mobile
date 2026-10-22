@@ -165,7 +165,7 @@ namespace SowSiege.Core
             {
                 if (!growth.AdvanceTime(w, gear)) { return; }
                 w.Complete = true; w.Progress = 0; w.Health = Math.Max(1, gear.Capacity);
-                if (w.ReadyTick == -1) { State.RepairCompleted = true; State.Completed.Remove("roof-used:" + w.Id); }
+                if (w.ReadyTick == -1) { WaveEvolutionUnlocks.Record(State, WaveEvolutionUnlocks.RepairCompleted); State.Completed.Remove("roof-used:" + w.Id); }
                 w.ReadyTick = world.Tick; Emit("building-complete", w.Source, w.Id, w.Position);
             }
             if (!w.ShipmentActive && State.Timber > 0 && Near(w.Position, State.TimberOrigin, gear.WorkRadius))
@@ -247,7 +247,7 @@ namespace SowSiege.Core
             if (!Reward(work.Source, work.Id, work.Cycle, "growth", work.Position, Gear(work.Source).RewardExperience)) { return; }
             work.Health = 0; world.Harvests++; world.Food++;
             foreach (var building in State.Work)
-            { if (building.Kind == "building" && building.Health > 0 && building.Complete && Near(building.Position, work.Position, Gear(building.Source).WorkRadius)) { State.HarvestNearBuilding = true; break; } }
+            { if (building.Kind == "building" && building.Health > 0 && building.Complete && Near(building.Position, work.Position, Gear(building.Source).WorkRadius)) { WaveEvolutionUnlocks.Record(State, WaveEvolutionUnlocks.HarvestNearBuilding); break; } }
             subscriptions.Harvest(work);
             Emit("harvest-complete", work.Source, work.Id, work.Position);
         }
@@ -303,8 +303,7 @@ namespace SowSiege.Core
                     subscriptions.ReturnMissionFood(group); group.Phase = "idle"; group.Formation = "advance"; State.AvailableWorkers++; continue;
                 }
                 var anchor = group.Phase == "guarding" ? group.Destination : world.Lord;
-                queries.ByDistance(enemyCandidates, anchor, gear.Range, group.Position);
-                var enemy = enemyCandidates.Count == 0 ? null : enemyCandidates[0];
+                var enemy = queries.Nearest(enemyCandidates, anchor, gear.Range, group.Position);
                 if (enemy is null) { group.Phase = "returning"; continue; }
                 if (group.Training > 0 && world.Tick < group.ReadyTick)
                 {

@@ -2,7 +2,16 @@ using System;
 
 namespace SowSiege.Core
 {
-    public sealed record FieldOptions(int Version = 1);
+    public sealed record FieldOptions(int Version = 1, int SpawnRadius = 0, int RecycleRadius = 0)
+    {
+        public const int ReviewVersion = 2;
+        internal void Validate()
+        {
+            if (Version == FieldRules.Version && SpawnRadius == 0 && RecycleRadius == 0) { return; }
+            if (Version == ReviewVersion && SpawnRadius > 0 && SpawnRadius <= FieldRules.SpawnRadius && RecycleRadius > SpawnRadius && RecycleRadius <= FieldRules.RecycleRadius) { return; }
+            throw new ArgumentException("Unsupported field radius contract.");
+        }
+    }
     public sealed record FieldArenaFrame(int BossId, WorldPoint Center, int Radius);
     public sealed record FieldFrame(int Version, int Seed, WorldPoint Home, WorldPoint LastTravelDirection, FieldArenaFrame? Arena);
 
@@ -37,20 +46,23 @@ namespace SowSiege.Core
             new(0, -PlayerInput.Scale), new(DirectionFarAxis, -DirectionNearAxis), new(DirectionDiagonal, -DirectionDiagonal), new(DirectionNearAxis, -DirectionFarAxis)
         };
         internal int Seed { get; }
+        internal FieldOptions Options { get; }
+        internal int RecycleRadius => Options.Version == FieldOptions.ReviewVersion ? Options.RecycleRadius : FieldRules.RecycleRadius;
         internal Position Travel = new(1, 0);
         internal int ArenaBossId = -1;
         internal Position ArenaCenter;
         internal bool ArenaActive => ArenaBossId >= 0;
         internal FieldState(FieldOptions options, int seed)
         {
-            if (options.Version != FieldRules.Version) { throw new ArgumentException("Unsupported field version."); }
+            options.Validate();
+            Options = options;
             Seed = seed;
         }
         internal void AcceptInput(PlayerInput input)
         {
             if (input.X != 0 || input.Y != 0) { Travel = new(input.X, input.Y); }
         }
-        internal FieldFrame Frame(Position home) => new(FieldRules.Version, Seed, InteractiveState.Point(home), InteractiveState.Point(Travel),
+        internal FieldFrame Frame(Position home) => new(Options.Version, Seed, InteractiveState.Point(home), InteractiveState.Point(Travel),
             ArenaActive ? new(ArenaBossId, InteractiveState.Point(ArenaCenter), FieldRules.ArenaRadius) : null);
         internal void OpenArena(int bossId, Position center) { ArenaBossId = bossId; ArenaCenter = center; }
         internal void CloseArena() { ArenaBossId = -1; ArenaCenter = default; }
@@ -58,7 +70,7 @@ namespace SowSiege.Core
         internal Position Spawn(Position lord, int direction)
         {
             var center = ArenaActive ? ArenaCenter : lord;
-            var radius = ArenaActive ? FieldRules.ArenaRadius - FieldRules.ArenaSpawnInset : FieldRules.SpawnRadius;
+            var radius = ArenaActive ? FieldRules.ArenaRadius - FieldRules.ArenaSpawnInset : Options.Version == FieldOptions.ReviewVersion ? Options.SpawnRadius : FieldRules.SpawnRadius;
             var delta = Directions[direction & (Directions.Length - 1)];
             var squared = (long)delta.X * delta.X + (long)delta.Y * delta.Y;
             var length = CeilingRoot(squared);

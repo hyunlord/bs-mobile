@@ -54,7 +54,7 @@ namespace Game.App
             }
         }
         public event Action<WaveRuntimeFrame> WaveFrameAccepted;
-        public bool IsWave => CanonicalContent.ProfileName == "wave-1a";
+        public bool IsWave => CanonicalContent.IsWave;
         public FloatingStick Stick { get; private set; }
         public UiShell Ui { get; private set; }
         public int Speed { get; private set; } = 1;
@@ -68,9 +68,6 @@ namespace Game.App
         private readonly Dictionary<string,ContentDisplay> displays=new Dictionary<string,ContentDisplay>(StringComparer.Ordinal);
         private RunFrame previous;
         private InteractiveSession snapshotSession;
-        private RunSnapshotBuffer[] runSnapshotBuffers;
-        private WaveSnapshotBuffer[] waveSnapshotBuffers;
-        private int snapshotSlot;
         private WorldRenderer world;
         private UiHud hud;
         private FirstPlayableAudio sound;
@@ -286,11 +283,12 @@ namespace Game.App
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;resultFragments.Clear();metaRun=useMeta;abandoned=false;
                 SnapshotFeelPreferences();
-                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions(),DepartureHostRewards(useMeta));
+                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions(),DepartureHostRewards(useMeta),MeleeAim:CatalogRunOptions.MeleeAim(c));
                 Session=new InteractiveSession(c,options);guardedOffer=null;portraitCardActions=null;CaptureSnapshots();previous=CurrentFrame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(MetaDirectory,options,BuildIdentity.Commit);if(started?.ReplayContext!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
                 world.SetFallowChapter(IsWave&&c.WaveRuntime?.ChapterId=="meta:chapter_1");
+                world.MusterPresentationChanged=(source,formation)=>UnityEngine.Debug.Log($"[muster-presentation] tick={CurrentFrame.Tick} source={source} path={formation.Path} evolution={formation.EvolutionId??"none"} ratio={formation.Ratio:0.###} soldiers={formation.Soldiers} scale={formation.Scale:0.###}");
                 world.Initialize(Camera.main,new WorldCameraSettings(settings.WorldUnitsPerUnityUnit,settings.MinHalfHeight,settings.MaxHalfHeight,settings.EstatePadding,settings.FollowMilliseconds,settings.ZoomMilliseconds),c.Tuning.DefaultEstate,CurrentFrame.MapWidth,CurrentFrame.MapHeight);if(useMeta&&!IsWave)world.SetChapterTerrain(Progression.Catalog.Chapters.Single(ch=>ch.Id==selectedChapter).Terrain);world.AcceptWave(c,CurrentWave);world.AcceptFrame(CurrentFrame,FirstPlayable);ApplyPreferences();sound.ResetRun();waveSound?.ResetRun();bossPhaseCue.Reset();lastWaveSound=-1;if(IsWave)sound.AcceptCommonFeedback(CurrentFrame,waveSound.PlayCommon);else sound.AcceptFrame(CurrentFrame,FirstPlayable);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 invulnerable=false;spawnPermille=1000;
@@ -337,6 +335,9 @@ namespace Game.App
             var pausedAtFrameStart=Paused;var speedAtFrameStart=Speed;
             Stick.Blocked=Paused;if(Paused){Stick.ResetStick();accumulator=0;}
             var movement=desktopControls.Sample(Stick,Paused);
+            var impactComparison=AutoplayCapture.Active?.ImpactComparison;
+            if(impactComparison!=null&&CurrentFrame!=null&&!Paused)
+                movement=DesktopControls.ResolveMovement(default,false,impactComparison.Direction(CurrentFrame.Tick,CurrentFrame.TickRate),false);
             smoothness.InputSample(PresentationInput(movement));
             Ui.ShowStick(Stick.Active,Stick.Origin,Stick.Offset);
             sound?.SetPaused(applicationPaused||focusLost);waveSound?.SetPaused(applicationPaused||focusLost);
@@ -381,7 +382,7 @@ namespace Game.App
                 var probeDrawStart=ProbeEnabled?ProbeTimestamp():0;
                 world.HeroLocomotionPerTick=(float)(Session?.LocomotionSpeedPerTick??0);
                 using(RunProfilerMarkers.WorldPresent.Auto())
-                using(smoothness.Scope(SmoothnessScope.World)) world.Present(previous,CurrentFrame,FirstPlayable,renderInterpolation.Present(CurrentFrame.Tick,(float)(accumulator*CurrentFrame.TickRate),Paused,Time.unscaledDeltaTime,CurrentFrame.TickRate),Time.unscaledDeltaTime,visible);
+                using(smoothness.Scope(SmoothnessScope.World)) PresentWorld(renderInterpolation.Present(CurrentFrame.Tick,(float)(accumulator*CurrentFrame.TickRate),Paused,Time.unscaledDeltaTime,CurrentFrame.TickRate),Time.unscaledDeltaTime,visible);
                 LongFrameViewPresented();
                 if(ProbeEnabled)probeDrawMs+=ProbeElapsed(probeDrawStart);
                 smoothness.Submit(Camera.main,CurrentFrame.Tick,Paused,lordPrediction.ResetThisFrame,lordPrediction.Speed);
@@ -403,6 +404,8 @@ namespace Game.App
             if(Session==null||finished)return;
             try
             {
+                if(kind==ReplayCommandKind.Advance&&AutoplayCapture.Active?.ImpactComparison is ImpactComparisonCapture comparison)
+                    input=DesktopControls.ResolveMovement(default,false,comparison.Direction(CurrentFrame.Tick,CurrentFrame.TickRate),false);
                 var command=new ReplayCommand(Session.NextSequence,CurrentFrame.Tick,kind,input,card,value);
                 var probeCoreStart=ProbeEnabled?ProbeTimestamp():0;
                 BeginLongFrameCommand(kind);
@@ -431,7 +434,7 @@ namespace Game.App
                 }
                 if(kind==ReplayCommandKind.Advance)ObserveLordMovement(input);
                 using(RunProfilerMarkers.AcceptPresentation.Auto())
-                using(smoothness.Scope(SmoothnessScope.AcceptPresentation)){world?.AcceptWave(runCatalog,CurrentWave);world?.AcceptFrame(CurrentFrame,FirstPlayable);if(IsWave)sound?.AcceptCommonFeedback(CurrentFrame,waveSound.PlayCommon);else sound?.AcceptFrame(CurrentFrame,FirstPlayable);AcceptWaveAudio();}
+                using(smoothness.Scope(SmoothnessScope.AcceptPresentation)){AcceptCurrentWorldPresentation();if(!IsWave)sound?.AcceptFrame(CurrentFrame,FirstPlayable);}
                 if(kind!=ReplayCommandKind.Advance){Stick.ResetStick();accumulator=0;cardsFrame=null;}
                 if(kind==ReplayCommandKind.Advance && CurrentFrame.Tick%1800==0 && CurrentFrame.Status!=RunStatus.Completed)recording.Checkpoint(Session);
                 if(CurrentFrame.Status==RunStatus.Running&&MenuOpen&&kind==ReplayCommandKind.ChooseCard)ShowHud();
@@ -445,17 +448,19 @@ namespace Game.App
             using var allocationScope=smoothness.Scope(SmoothnessScope.CoreSnapshot);
             if(!ReferenceEquals(snapshotSession,Session))
             {
-                snapshotSession=Session;snapshotSlot=0;
+                snapshotSession=Session;
                 var capacity=runCatalog.Tuning.World.Threat.EnemyCap;
-                runSnapshotBuffers=runCatalog.WaveRuntime==null?null:new[]{new RunSnapshotBuffer(capacity),new RunSnapshotBuffer(capacity)};
-                waveSnapshotBuffers=runCatalog.WaveRuntime==null?null:new[]{new WaveSnapshotBuffer(capacity),new WaveSnapshotBuffer(capacity)};
+                bossPresentation=runCatalog.WaveRuntime==null?null:new BossPresentationTimeline(capacity,DeliverBossPresentation);
+                bossPresentationWorld=null;
+                bossPresentation?.WarmStorage((IBufferedRunView)Session.View,(IBufferedWaveRunView)Session.View);
             }
+            var presentationSlot=bossPresentation?.PrepareCapture();
             RunFrame frame;FirstPlayableFrame firstPlayable;
-            using(RunProfilerMarkers.CaptureRun.Auto())frame=runSnapshotBuffers==null?Session.View.CaptureFrame():((IBufferedRunView)Session.View).CaptureFrame(runSnapshotBuffers[snapshotSlot]);
+            using(RunProfilerMarkers.CaptureRun.Auto())frame=presentationSlot==null?Session.View.CaptureFrame():((IBufferedRunView)Session.View).CaptureFrame(presentationSlot.RunBuffer);
             using(RunProfilerMarkers.CaptureFirstPlayable.Auto())firstPlayable=Session.View.CaptureFirstPlayable();
-            CurrentWave=waveSnapshotBuffers==null?(Session.View as IWaveRunView)?.CaptureWaveRuntime():((IBufferedWaveRunView)Session.View).CaptureWaveRuntime(waveSnapshotBuffers[snapshotSlot]);
-            snapshotSlot=1-snapshotSlot;
+            CurrentWave=presentationSlot==null?(Session.View as IWaveRunView)?.CaptureWaveRuntime():((IBufferedWaveRunView)Session.View).CaptureWaveRuntime(presentationSlot.WaveBuffer);
             CurrentFrame=frame;FirstPlayable=firstPlayable ?? WavePresentation.Envelope(runCatalog,frame,Session.View.CaptureCards(),CurrentWave);
+            if(presentationSlot!=null)bossPresentation.Commit(presentationSlot,frame,CurrentWave,FirstPlayable);
             var subscribers=WaveFrameAccepted;
             if(CurrentWave!=null&&subscribers!=null) subscribers(Wave);
             if(ProbeEnabled)probeSnapshotMs+=ProbeElapsed(probeSnapshotStart);
@@ -509,7 +514,10 @@ namespace Game.App
         }
         private void ApplyPreferences(bool save=false)
         {
-            if(world!=null){world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;world.HeroRigExplicit=explicitHeroRig;}
+            ConfigureHeroMotionComparison();
+            var impactEnabled=AutoplayCapture.Active?.ImpactComparison?.Enabled??!benchmarkImpactBaseline;
+            if(world!=null){world.ImpactFeedbackEnabled=impactEnabled;world.ShakeEnabled=preferences.Shake;world.ShowDamageNumbers=preferences.DamageNumbers;world.HitFeedbackEnabled=activeHitFeedback;world.HeroRigPreviewEnabled=activeHeroRig;world.HeroRigExplicit=explicitHeroRig;}
+            sound?.SetImpactFeedback(impactEnabled);waveSound?.SetImpactFeedback(impactEnabled);
             sound?.SetPreferences(preferences.MusicVolume,preferences.EffectsVolume,preferences.Haptics);waveSound?.SetVolume(preferences.EffectsVolume);
             if(save)preferences.Save();
         }
@@ -630,7 +638,7 @@ namespace Game.App
             if(!focus){PausePortraitForLifecycle();StopDiagnosticTrace("focus-lost");}
         }
         private void OnApplicationQuit(){FinishLongFrames();if(!waveBenchmarkRequested)preferences?.Save();StopRecording();}
-        private void OnDestroy(){FinishLongFrames();offlineReplayCapture?.Dispose();StopRecording();if(ownsFont&&font!=null)Destroy(font);}
+        private void OnDestroy(){FinishHeroMotionComparisonMetrics();FinishLongFrames();offlineReplayCapture?.Dispose();StopRecording();if(ownsFont&&font!=null)Destroy(font);}
         private void StopDiagnosticTrace(string reason)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "issue": 254,
+  "approval": "User selected A knight and live Unity 2D Animation (c).",
+  "sourceGeneration": "01a117ea-b0bb-74e0-a7d2-f880a17826b1/exec-6a1a35bb-ae99-4ff8-a938-43a864a46f1a.png",
+  "installedPath": "unity/Assets/Game/View/Resources/HeroKnight/parts.png",
+  "sha256": "083965ab02e5c02335ba427dbf5b8797dba0dce1733302c14f7992c49ac138ad",
+  "sourcePixels": "Verbatim generated PNG; no repainting or alpha edits.",
+  "binding": "Thirteen body cutouts plus shared existing clean sword. Rectangles, anchors and joint transforms only.",
+  "promptStatus": "generation-prompts.txt retains the reconstructed initial brief and verbatim accepted follow-up edit prompt.",
+  "historicalB": "HeroMotion resources and hero-b authoring preserved unchanged."
+}

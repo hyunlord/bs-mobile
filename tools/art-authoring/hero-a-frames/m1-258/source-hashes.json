@@ -1,0 +1,245 @@
+{
+  "root": "artifacts/m1-258/hero-frames",
+  "clips": [
+    {
+      "id": "idle",
+      "direction": "E",
+      "source": "source/idle-e-v2.png",
+      "sha256": "465dfe8ef97375f20c0eeeb50b4c659277f2493bfcbf6c7ec958b3ffcb84d4c1"
+    },
+    {
+      "id": "walk",
+      "direction": "E",
+      "source": "source/walk-e.png",
+      "sha256": "0885b2b99b3586f4847fbc760071eccecddd3c6005542e50b513c7cf2a156750"
+    },
+    {
+      "id": "slash-light",
+      "direction": "E",
+      "source": "source/slash-light-e-v9.png",
+      "sha256": "f518cab3e55443956fd78e5d0946882f89623c3dae8fa342bd34a585a03b1568"
+    },
+    {
+      "id": "hit",
+      "direction": "E",
+      "source": "source/hit-e-v5.png",
+      "sha256": "32c980829db6b33e9e999f07cc30ff3abb58d8ba9929fbaefcdfe639c1a17a65"
+    },
+    {
+      "id": "death",
+      "direction": "E",
+      "source": "source/death-e-v3.png",
+      "sha256": "9b7f66427397ccce043a224fe9d802a4e28b347aa79cd5adbba98855245986c8"
+    },
+    {
+      "id": "idle",
+      "direction": "S",
+      "source": "source/idle-s-v2.png",
+      "sha256": "9033e8df27bbeb5d1923daed237ac1dce11831644f5101a16d2fbc780ec5407c"
+    },
+    {
+      "id": "idle",
+      "direction": "SE",
+      "source": "source/idle-se-v2.png",
+      "sha256": "0ce7697389209e9aeb7556d9a1f4461f54da4cdf803650d4ef150fe177408290"
+    },
+    {
+      "id": "walk",
+      "direction": "S",
+      "source": "source/walk-s-v3.png",
+      "sha256": "3f5c00740b4a5e9d6b599a7ebab144dc25a9e241d5cc024b95c07a7ab9adbf3f"
+    },
+    {
+      "id": "walk",
+      "direction": "SE",
+      "source": "source/walk-se-v3.png",
+      "sha256": "3b27f9ab6cc4b956f3856835cbc544a8e583dc4a0409cfa70bedc2e74963463a"
+    },
+    {
+      "id": "slash-light",
+      "direction": "S",
+      "source": "source/slash-light-s-v3.png",
+      "sha256": "3e42fd6987459022b01aff4d55d8fb509d7b1ae4fd454895227d914eda12a2fe"
+    },
+    {
+      "id": "slash-light",
+      "direction": "SE",
+      "source": "source/slash-light-se-v3.png",
+      "sha256": "1cff8e0cb456dee375a94dbac6147698e95477605ec22de5ee81960e0bc38646"
+    },
+    {
+      "id": "hit",
+      "direction": "S",
+      "source": "source/hit-s-v4.png",
+      "sha256": "ae0835b16abc74ef3a20b7525b18eb7040f9aa0a0f3c80968bd64ad6c5580ed4"
+    },
+    {
+      "id": "hit",
+      "direction": "SE",
+      "source": "source/hit-se-v4.png",
+      "sha256": "5b12df4447deb6480a32bcd1339a0034a666bbfb1fce3a8f5435a85b369be920"
+    },
+    {
+      "id": "death",
+      "direction": "S",
+      "source": "source/death-s-v3.png",
+      "sha256": "2572bd37b2541d252f2c4c2c7b0c3d88ffeb288146726e834db10555c4b02e14"
+    },
+    {
+      "id": "death",
+      "direction": "SE",
+      "source": "source/death-se-v3.png",
+      "sha256": "4a4177ba9c778655281686cb2e3d58e3f54113d847031a4c6f99252f93454e0c"
+    },
+    {
+      "id": "idle",
+      "direction": "N",
+      "source": "source/north/idle-n.png",
+      "sha256": "26f8a7506a6c456678f732e3fa64a6449e200d79e61d5a190847f8a0d743263d"
+    },
+    {
+      "id": "walk",
+      "direction": "N",
+      "source": "source/north/walk-n.png",
+      "sha256": "584eea643d2f2b6316d8c02d77d48c9ba2d26443dae09adea9d87338c968e611"
+    },
+    {
+      "id": "hit",
+      "direction": "N",
+      "source": "source/north/hit-n.png",
+      "sha256": "0283d12052687bb8be687df151e4f6057c971122bbbefbc3cbf9b0eb43374795"
+    },
+    {
+      "id": "death",
+      "direction": "N",
+      "source": "source/north/death-n.png",
+      "sha256": "bf0dc250f4e2932aff1fc823ed44f931e09caafd2803c3b17a00e1b5ca8e1546"
+    },
+    {
+      "id": "idle",
+      "direction": "NE",
+      "source": "source/north/idle-ne.png",
+      "sha256": "375041f8455dbf6b7901dbd7b59ecff9b2b2962302ed4a20ec3c5d194e01046b"
+    },
+    {
+      "id": "slash-light",
+      "direction": "N",
+      "source": "source/north/slash-light-n-v3.png",
+      "sha256": "9c5167b7329234fe9c32bd4f4cd92dd26e433f68b4b046dbd3b7f3094708c7f3"
+    },
+    {
+      "id": "walk",
+      "direction": "NE",
+      "source": "source/north/walk-ne-v3.png",
+      "sha256": "c5f5403b21d6a2ce03d193aed6f5e1bedb86bb9124f3bd2c51bb58a9b9be18a9"
+    },
+    {
+      "id": "hit",
+      "direction": "NE",
+      "source": "source/north/hit-ne-v2.png",
+      "sha256": "1ee7a68bacd6009933d242eb95ee50cc4feed33c319e450d45ce0561f76c13b3"
+    },
+    {
+      "id": "slash-light",
+      "direction": "NE",
+      "source": "source/north/slash-light-ne-v2.png",
+      "sha256": "b4c250190e92e876a3a0407dd6e14c4b3cf5c39ac4b398dc5ff2e526d84a22da"
+    },
+    {
+      "id": "death",
+      "direction": "NE",
+      "source": "source/north/death-ne-v2.png",
+      "sha256": "d53e56bf1829533f6b9aecb95d638342a49a8d9ec3236acdc19b4cff6e6d2f19"
+    },
+    {
+      "id": "idle",
+      "direction": "W",
+      "source": "source/west/idle-w-v2.png",
+      "sha256": "aff92c4b6294bb96d8cc4c2bc9aa2a4fcb5ec1ccff19a7321a415fb19c165bdb"
+    },
+    {
+      "id": "walk",
+      "direction": "W",
+      "source": "source/west/walk-w-v3.png",
+      "sha256": "b80e9bcda2216c40433880d3fbb1763555ccf55a1273c2fa69c1d1c69d195190"
+    },
+    {
+      "id": "idle",
+      "direction": "SW",
+      "source": "source/west/idle-sw.png",
+      "sha256": "37cf0147555c13f2117fc354f44cecd4629099da81651dfb575b17b05f0f78aa"
+    },
+    {
+      "id": "slash-light",
+      "direction": "W",
+      "source": "source/west/slash-light-w-v3.png",
+      "sha256": "b2f2ebdb98d9234c2c62d891083df86bfc7f02377d8e4d05dd8dbd7bfadb1f70"
+    },
+    {
+      "id": "hit",
+      "direction": "W",
+      "source": "source/west/hit-w-v3.png",
+      "sha256": "852e9691d0a31de562d1ca249a6f410b3146c4d1181f6397afada6c13facc551"
+    },
+    {
+      "id": "death",
+      "direction": "W",
+      "source": "source/west/death-w-v4.png",
+      "sha256": "e49ed3d305ff520d255799d3ad70b3459555276488ff2db6e4160ed1a6ca03b9"
+    },
+    {
+      "id": "idle",
+      "direction": "NW",
+      "source": "source/west/idle-nw-v2.png",
+      "sha256": "4a0cbdfa2ccc0661d28b16acee2e46c294daf685fc3daff10ab4dd0511b76d03"
+    },
+    {
+      "id": "walk",
+      "direction": "NW",
+      "source": "source/west/walk-nw-v2.png",
+      "sha256": "9d70ee3a99f8e6e30dad07858518c10db9f09d09465701740ba2d74e360e3cad"
+    },
+    {
+      "id": "slash-light",
+      "direction": "NW",
+      "source": "source/west/slash-light-nw-v4.png",
+      "sha256": "2b7e746143861194d0781700950dbb6559877c2db2411b6491589574c5be7ef0"
+    },
+    {
+      "id": "hit",
+      "direction": "NW",
+      "source": "source/west/hit-nw-v2.png",
+      "sha256": "b040be778d4768cebfbe5d9570e58eaf8ea559816286de3674e6c1a938f4171f"
+    },
+    {
+      "id": "death",
+      "direction": "NW",
+      "source": "source/west/death-nw.png",
+      "sha256": "3846a7e6d796f279947d777d52b132bd86daa5c397076b70dd7adb81504632a5"
+    },
+    {
+      "id": "walk",
+      "direction": "SW",
+      "source": "source/west/walk-sw.png",
+      "sha256": "447b500e0676d3234e8b3b6c74af0dcff2e36df4f19afe18209bc5c7e6e988cb"
+    },
+    {
+      "id": "slash-light",
+      "direction": "SW",
+      "source": "source/west/slash-light-sw.png",
+      "sha256": "ca4bc3b9f63a3e4233f3e23c1e536bf8b50a216b487c20735c743d10cc562728"
+    },
+    {
+      "id": "hit",
+      "direction": "SW",
+      "source": "source/west/hit-sw.png",
+      "sha256": "a12f0456fd991b2bd382224f19334770df046f1e26bca9b456766a6247cd403e"
+    },
+    {
+      "id": "death",
+      "direction": "SW",
+      "source": "source/west/death-sw-v2.png",
+      "sha256": "a79f51ce261e94b5a6641c67ea51be8b8075576a8592f7e2fef076a0fdb4a252"
+    }
+  ]
+}

@@ -10,7 +10,7 @@ command -v dotnet >/dev/null || { echo 'Install .NET 8 SDK (see README).'; exit 
 npm ci --ignore-scripts
 npm test
 node --test tools/test-verify-evidence.mjs
-node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs tools/test-unity-test-record.mjs tools/test-unity-skipped-everywhere.mjs
+node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs tools/test-unity-test-record.mjs tools/test-unity-skipped-everywhere.mjs tools/test-pr-changes.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
 node --test tools/test-meta-target-parity.mjs

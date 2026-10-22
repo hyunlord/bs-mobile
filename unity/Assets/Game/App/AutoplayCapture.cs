@@ -31,6 +31,7 @@ namespace Game.App
         GoldenMinuteCapture minuteCapture;
         public FeelComparisonCapture FeelComparison { get; private set; }
         public FieldVideoCapture FieldVideo { get; private set; }
+        public ImpactComparisonCapture ImpactComparison { get; private set; }
         int portraitAttempt, portraitFrame;
         double portraitSettleAt;
         bool portraitReady;
@@ -130,7 +131,7 @@ namespace Game.App
         }
 
         public static bool IsRequested(string[] args) => args.Contains("--autoplay-capture");
-        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && (args.Contains("--golden-minute") || args.Contains("--feel-comparison") || args.Contains("--field-video"));
+        public static bool IsGoldenMinuteRequested(string[] args) => IsRequested(args) && (args.Contains("--impact-comparison") || args.Contains("--golden-minute") || args.Contains("--feel-comparison") || args.Contains("--field-video"));
 
         public static string ParseOutput(string[] args, string defaultRoot)
         {
@@ -153,6 +154,7 @@ namespace Game.App
         {
             RequireEmptyOutput(folder);
             var args=Environment.GetCommandLineArgs();
+            ImpactComparison = ImpactComparisonCapture.Parse(args);
             FeelComparison = FeelComparisonCapture.Parse(args);
             FieldVideo = FieldVideoCapture.Parse(args);
             goldenMinute = IsGoldenMinuteRequested(args);
@@ -180,6 +182,7 @@ namespace Game.App
                 automatedInput = true, timeScale = 1, isolatedProfile = ProfileDirectory, preferencesPrefix = PreferencesPrefix };
             WriteResult();
             Log("capture-start", "automated pointer and UI button input; 1x; fresh chapter1 profile; focus-independent capture; no OS-user or human-input claim");
+            if (ImpactComparison != null) Log("impact-comparison", ImpactComparison.Mode + ";input=" + ImpactComparison.InputProtocol + ";presentation only; verify recorded command and state hashes before claiming matched input");
             if (FeelComparison != null) Log("feel-comparison", FeelComparison.Mode + ";input=" + FeelComparison.InputProtocol + ";walk uses fixed direction; rules share growth/evasion policy, not identical movement commands; actual movement, legal card choices and resulting state may diverge; gameplay seconds, card pauses extend wall duration");
             if (FieldVideo != null) Log("field-video", FieldVideo.InputProtocol + ";topology=" + FieldVideo.Topology + ";actual normal pointer route; ordinary cards; 60 gameplay seconds outbound before return; no forced survival or position override");
             if (FeelComparison?.FailurePreview == true) Log("feel-failure-preview", "Diagnostic 0-30 seconds only; not the 360-390 second comparison; death preserves failure and partial frames.");
@@ -272,7 +275,7 @@ namespace Game.App
                         {
                             if (run.Session != null) throw new InvalidOperationException("Core warmup must precede the fresh run.");
                             var catalog = FoundationBoot.Catalog;
-                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash);
+                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash, MeleeAim: CatalogRunOptions.MeleeAim(catalog));
                             var warmTicks = PrewarmIsolatedCore(catalog, options);
                             Log("isolated-core-warmup", "discarded separate normal session; ticks=" + warmTicks + "; real run not created");
                             minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();
@@ -368,7 +371,8 @@ namespace Game.App
                 Log("card-click", card); cardAt = -1; return;
             }
             Vector2 direction;
-            if (FieldVideo != null) direction = FieldVideo.Direction(frame.Tick, frame.TickRate, frame.Lord.Position, frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
+            if (ImpactComparison != null) direction = ImpactComparison.Direction(frame.Tick, frame.TickRate);
+            else if (FieldVideo != null) direction = FieldVideo.Direction(frame.Tick, frame.TickRate, frame.Lord.Position, frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
             else if (FeelComparison != null && FeelComparison.Walk) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
             else
             {
@@ -385,7 +389,7 @@ namespace Game.App
         }
 
         static double Distance(WorldPoint a, WorldPoint b) => Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2);
-        static int CardRank(string id) { if(Game.App.Generated.CanonicalContent.ProfileName=="wave-1a")return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
+        static int CardRank(string id) { if(Game.App.Generated.CanonicalContent.IsWave)return WaveCaptureInput.CardRank(id); var rank = Array.IndexOf(Priority, id); return rank < 0 ? 999 : rank; }
         bool TryDepartureRoute()
         {
             if (!run.MenuOpen) return false;

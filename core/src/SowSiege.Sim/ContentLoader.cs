@@ -105,7 +105,7 @@ public static partial class ContentLoader
             var relative = Path.GetRelativePath(directory, file).Replace(Path.DirectorySeparatorChar, '/');
             if (!includeTest && relative.StartsWith("test/", StringComparison.Ordinal)) { continue; }
             // ADR0069: opt-in experiment files stay outside the data tree hash, so adding them keeps every recorded DataHash.
-            // Their runs are pinned by the catalog hash that replay format 6 records (EstateRunOptions.LoadoutCatalogHash).
+            // Their runs are pinned by the catalog hash that replay format 7 records (EstateRunOptions.LoadoutCatalogHash).
             if (relative.StartsWith(OptInDirectory + "/", StringComparison.Ordinal)) { continue; }
             hash.AppendData(Encoding.UTF8.GetBytes(relative + "\0"));
             hash.AppendData(File.ReadAllBytes(file));

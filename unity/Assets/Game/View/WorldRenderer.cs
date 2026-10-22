@@ -50,8 +50,8 @@ namespace Game.View
         readonly Dictionary<int, Vector2> previousPeople = new Dictionary<int, Vector2>();
         readonly Dictionary<int, BuildingProgressView> construction = new Dictionary<int, BuildingProgressView>();
         readonly Dictionary<int, string> activities = new Dictionary<int, string>();
-        readonly Dictionary<int, float> hitUntil = new Dictionary<int, float>();
-        readonly List<int> expiredHits = new List<int>();
+        readonly Dictionary<int, float> hitUntil = new Dictionary<int, float>(1024);
+        readonly List<int> expiredHits = new List<int>(1024);
         readonly HashSet<string> activeAttackSources = new HashSet<string>(StringComparer.Ordinal);
         readonly WorldEffects effects = new WorldEffects();
         readonly ThreatMarkers threats = new ThreatMarkers();
@@ -73,6 +73,7 @@ namespace Game.View
         string estateId;
         MetaTerrain[] chapterTerrain=Array.Empty<MetaTerrain>();
 #if UNITY_EDITOR
+        public void EditorSetCameraForTesting(RunCamera camera) => followCamera = camera ?? throw new ArgumentNullException(nameof(camera));
         public void EditorSeedTransientTextForTesting()
         {
             if (numbers == null || lordDamageNumbers == null || growthLabels == null)
@@ -92,6 +93,10 @@ namespace Game.View
         }
         int mapWidth, mapHeight, season, previousSeason, level;
         float visualTime, seasonAge, heroHitUntil, levelAge = 10;
+        readonly HeroHitFeedback heroHitFeedback = new HeroHitFeedback();
+        // Count of Present calls: events accepted between presents belong to frame PresentedFrames + 1.
+        public int PresentedFrames { get; private set; }
+        public int HeroHitFlashes => heroHitFeedback.Triggers;
         public bool ShowAnnouncements { get; set; } = true;
         bool showTransientText = true;
         public bool ShowTransientText
@@ -109,9 +114,20 @@ namespace Game.View
             lordDamageNumbers?.Advance(0, false);
             growthLabels?.Clear();
         }
-        public bool ShowDamageNumbers { get; set; } = true;
+        bool showDamageNumbers = true;
+        public bool ShowDamageNumbers
+        {
+            get => showDamageNumbers;
+            set
+            {
+                showDamageNumbers = value;
+                if (value) return;
+                numbers?.Advance(0, false);
+                lordDamageNumbers?.Advance(0, false);
+            }
+        }
         public bool ShakeEnabled { get; set; } = true;
-        public Vector2 CameraShakeOffset => Vector2.zero;
+        public Vector2 CameraShakeOffset => ImpactCameraOffset;
         public string WarningSourceId { get; private set; } = "";
         public string WarningRank { get; private set; } = "";
         public float WarningRemainingSeconds { get; private set; }
@@ -122,19 +138,37 @@ namespace Game.View
         {
             get { var count = wave == null ? 0 : wave.Projectiles.Count + wave.Attacks.Count; if (firstPlayable != null) for(var i=0;i<firstPlayable.Attacks.Count;i++) if (firstPlayable.Attacks[i].IsActive) count++; return count; }
         }
-        public int ActiveEffects => effects.ActiveCount;
-        public int DroppedEffects => effects.DroppedCount;
+        public int ActiveEffects => effects.ActiveCount + impactParticles.Count;
+        public int DroppedEffects => effects.DroppedCount + impactParticles.Dropped;
         public int UnsupportedShapeCount => effects.UnsupportedShapeCount;
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
         public Vector2? PredictedLordPosition { get; set; }
         public Vector2 RenderedLordPosition { get; private set; }
+        public Vector2 RenderedHeroAnchorScreenPosition { get; private set; }
+        public Action<Vector2> RenderedHeroAnchorScreenSample { get; set; }
+        public bool EdgeWarningsEnabled { get; set; } = true;
+        public bool PresentationPaused { get; set; }
+        float reviewCameraMagnification = 1.4f;
+        public float ReviewCameraMagnification
+        {
+            get => reviewCameraMagnification;
+            set
+            {
+                if (float.IsNaN(value) || value < 1 || value > 1.8f)
+                    throw new ArgumentOutOfRangeException(nameof(value), "Review camera magnification must be between 1 and 1.8.");
+                reviewCameraMagnification = value;
+                if (followCamera != null) followCamera.ReviewMagnification = value;
+            }
+        }
+        public Rect CameraWorldViewport => followCamera == null ? default : followCamera.WorldViewport;
         public Action<string,int,Vector2> RenderedEntitySample { get; set; }
         public Action<string,int,Rect> RenderedEnemyBoundsSample { get; set; }
         readonly Dictionary<int,string> farmStageNames = new Dictionary<int,string>();
         readonly Dictionary<(string kind,int id),(ActorFacingMotion motion,int generation)> actorFacing = new Dictionary<(string,int),(ActorFacingMotion,int)>(1024);
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
         int facingGeneration;
+        readonly PersonSheetWalk personWalk = new PersonSheetWalk();
         Vector2 previousRenderedLord;
         bool hasRenderedLord, heroGaitDiscontinuity;
 
@@ -148,30 +182,36 @@ namespace Game.View
             if (shader == null || !shader.isSupported) throw new InvalidOperationException("Instanced URP2D sprite shader is unavailable.");
             renderCamera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
             settings = cameraSettings; followCamera = new RunCamera(camera, settings); followCamera.SetMapBounds(width, height);
-            followCamera.EndlessField = acceptedFrame?.Field != null;
+            followCamera.ReviewMagnification = reviewCameraMagnification;
+            followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
-            if(ArtCatalog.ProfileName=="wave-1a")enemyRigAtlas=new EnemyRigAtlas(art);
+            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
             InitializeActorGrounding();
+            InitializeImpactFeedback();
         }
 
-        public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot)
+        public void AcceptFrame(RunFrame frame, FirstPlayableFrame snapshot, bool acceptEvents = true)
         {
             if (frame == null) throw new ArgumentNullException(nameof(frame));
             if (snapshot == null) throw new ArgumentNullException(nameof(snapshot), "The first-playable world requires its authoritative snapshot.");
             firstPlayable = snapshot;
-            if (ReferenceEquals(frame, acceptedFrame)) return;
+            if (followCamera != null) followCamera.EndlessField = frame.Field != null || HeroMotionPreviewMode > 0;
+            if (ReferenceEquals(frame, acceptedFrame))
+            {
+                if(acceptEvents)effects.Accept(frame.Events, onPresentationEvent ??= OnEvent);
+                return;
+            }
             if (acceptedFrame == null) { season = previousSeason = frame.Season; seasonAge = GameVisualTokens.SeasonBlendSeconds; level = frame.Level; }
             else
             {
                 if (frame.Season != season) { previousSeason = season; season = frame.Season; seasonAge = 0; announcements.ShowSeason(season); }
-                if (frame.Level > level) levelAge = 0;
+                if (frame.Level > level) { levelAge = 0; heroLevelPose.Queue(); }
                 level = frame.Level;
             }
-            if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) heroGaitDiscontinuity = true;
+            if (acceptedFrame != null && frame.Tick < acceptedFrame.Tick) { heroGaitDiscontinuity = true; heroLevelPose.Reset(); }
             acceptedFrame = frame;
-            if (followCamera != null) followCamera.EndlessField = frame.Field != null;
             for(var i=0;i<frame.Farms.Count;i++)
             {
                 var stage=frame.Farms[i].Stage;
@@ -180,25 +220,51 @@ namespace Game.View
             construction.Clear(); foreach (var building in snapshot.BuildingProgress) construction.Add(building.Id, building);
             activities.Clear(); foreach (var person in snapshot.People) activities.Add(person.Id, person.Activity);
             activeAttackSources.Clear(); foreach (var attack in snapshot.Attacks) if (attack.IsActive) activeAttackSources.Add(attack.SourceId);
-            effects.Accept(frame.Events, onPresentationEvent ??= OnEvent);
+            if(acceptEvents)effects.Accept(frame.Events, onPresentationEvent ??= OnEvent);
         }
 
         void OnEvent(PresentationEvent effect)
         {
             if (effect.Kind == PresentationKind.Attack)
+            {
                 foreach (var id in effect.HitEntityIds) hitUntil[id] = visualTime + GameVisualTokens.HitFlashSeconds;
+                if (wave == null) AcceptPeopleMusterStrike(effect);
+            }
             if (effect.Kind == PresentationKind.LordHit)
             {
                 heroGaitDiscontinuity = true;
                 heroHitUntil = visualTime + (HitFeedbackEnabled ? .2f : GameVisualTokens.HitFlashSeconds);
-                if(HitFeedbackEnabled)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
+                if (HitFeedbackEnabled) heroHitFeedback.Trigger(visualTime, HeroPushDirection(effect));
+                if(HitFeedbackEnabled&&ShowDamageNumbers&&showTransientText)lordDamageNumbers?.Add((PredictedLordPosition??Point(effect.Origin))+Vector2.up*.6f,effect.Amount,GameVisualTokens.Hostile);
             }
-            if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers) numbers?.Add(Point(effect.Origin), effect.Amount);
+            if (effect.Kind == PresentationKind.Damage && ShowDamageNumbers && showTransientText) numbers?.Add(Point(effect.Origin), effect.Amount);
             if (effect.Kind == PresentationKind.BossWarning)
             {
                 foreach (var boss in firstPlayable.Bosses)
                     if (boss.DefinitionId == effect.SourceId) { WarningRank = boss.Rank; WarningSourceId = effect.SourceId; WarningRemainingSeconds = 1.2f; if (boss.Rank == "boss") announcements.ShowBoss(effect.SourceId); break; }
             }
+        }
+
+        // Core reports who hit the hero, not from where; the push direction is a presentation estimate from the nearest such enemy.
+        Vector2 HeroPushDirection(PresentationEvent effect)
+        {
+            if (acceptedFrame == null) return Vector2.right;
+            var origin = Point(effect.Origin);
+            var away = NearestAway(origin, effect.SourceId);
+            return away.sqrMagnitude > 0 ? away : NearestAway(origin, null);
+        }
+
+        Vector2 NearestAway(Vector2 origin, string definitionId)
+        {
+            var best = float.PositiveInfinity; var away = Vector2.zero;
+            for (var i = 0; i < acceptedFrame.Enemies.Count; i++)
+            {
+                var enemy = acceptedFrame.Enemies[i];
+                if (definitionId != null && enemy.DefinitionId != definitionId) continue;
+                var offset = origin - Point(enemy.Position); var distance = offset.sqrMagnitude;
+                if (distance > .000001f && distance < best) { best = distance; away = offset; }
+            }
+            return away;
         }
 
         public void RefreshCaptureCamera(Rect safeAreaPixels)
@@ -209,7 +275,7 @@ namespace Game.View
             followCamera.SetVisualOffset(CameraShakeOffset);
         }
 
-        public void Present(RunFrame previous, RunFrame current, FirstPlayableFrame snapshot, float alpha, float unscaledDeltaTime, Rect safeAreaPixels)
+        public void Present(RunFrame previous, RunFrame current, FirstPlayableFrame snapshot, float alpha, float unscaledDeltaTime, Rect safeAreaPixels, bool acceptEvents = true)
         {
             presentationDiagnosticsActive = PresentationDiagnosticsEnabled;
             var diagnosticStart = presentationDiagnosticsActive ? Stopwatch.GetTimestamp() : 0;
@@ -220,9 +286,11 @@ namespace Game.View
             if (current == null) throw new ArgumentNullException(nameof(current));
             previous = previous ?? current; alpha = Mathf.Clamp01(alpha);
             var seconds = Mathf.Max(0, unscaledDeltaTime);
+            PresentedFrames++;
             effects.Advance(seconds); visualTime += seconds; seasonAge += seconds; levelAge += seconds;
+            UpdateNumberKeepOut(); AdvanceImpactFeedback(seconds);
             WarningRemainingSeconds = Mathf.Max(0, WarningRemainingSeconds - seconds);
-            numbers.Advance(seconds, ShowDamageNumbers); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled); AcceptFrame(current, snapshot); IndexPrevious(previous);
+            numbers.Advance(seconds, ShowDamageNumbers&&showTransientText); lordDamageNumbers.Advance(seconds,HitFeedbackEnabled&&ShowDamageNumbers&&showTransientText); AcceptFrame(current, snapshot, acceptEvents); IndexPrevious(previous);
             expiredHits.Clear(); foreach (var pair in hitUntil) if (pair.Value <= visualTime) expiredHits.Add(pair.Key);
             foreach (var id in expiredHits) hitUntil.Remove(id);
             var lord = PredictedLordPosition ?? Vector2.Lerp(Point(previous.Lord.Position), Point(current.Lord.Position), alpha);
@@ -234,7 +302,7 @@ namespace Game.View
             RenderedEntitySample?.Invoke("lord",0,lord);
             if (presentationDiagnosticsActive) diagnostics.SetupMs = DiagnosticInterval(ref diagnosticCheckpoint);
             if(wave!=null){var heroSize=HeroFigureSize(snapshot.HeroId,Resolve("hero",snapshot.HeroId,"idle"));followCamera.EdgeActorMargin=Mathf.Max(heroSize.x,heroSize.y)*GameVisualTokens.WaveEdgeActorMargin;}
-            followCamera.LordViewportAnchor = FallowActive ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
+            followCamera.LordViewportAnchor = FallowActive && HeroMotionPreviewMode == 0 ? GameVisualTokens.FallowLordViewportAnchor : new Vector2(.5f, .5f);
             followCamera.PresentationZoom = FallowActive ? GameVisualTokens.FallowPresentationZoom : 1;
             followCamera.Present(lord, current.EstateExtent, seconds, safeAreaPixels);
             worldOverlayPixels = safeAreaPixels;
@@ -242,7 +310,8 @@ namespace Game.View
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
-            lordMarker?.BeginFrame();
+            ScreenTintAlpha = 0;
+            lordMarker?.BeginFrame(); musterRings?.BeginFrame();
             actorGrounding.BeginFrame(); actorWings.BeginFrame();
             if (presentationDiagnosticsActive) diagnostics.CameraUiMs = DiagnosticInterval(ref diagnosticCheckpoint);
             UpdateFallowMask();
@@ -288,10 +357,28 @@ namespace Game.View
             {
                 var person = current.People[personIndex];
                 if (!activities.TryGetValue(person.Id, out var activity)) throw new InvalidOperationException("Missing person activity: " + person.Id);
-                Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, Interpolate(previousPeople, person.Id, person.Position, alpha), visualTime + person.Id * 0.13f);
+                var personPosition = Interpolate(previousPeople, person.Id, person.Position, alpha);
+                var step = previousPeople.TryGetValue(person.Id, out var before) ? Point(person.Position) - before : Vector2.zero;
+                if (person.Role == "militia" || person.Role == "guard")
+                {
+                    var muster = PeopleMusterFormation(person);
+                    if (muster.Path != MusterPresentationPath.None)
+                    {
+                        // The muster soldiers each walk the Soldier B sheet by their own distance (user decision 2026-10-21).
+                        DrawMusterFormation(person.Id, muster, person.Role, person.Role == "guard" ? "militia" : "guard", activity, GameVisualTokens.AllyLayer,
+                            personPosition, visualTime + person.Id * 0.13f, activity == "move" || activity == "muster", step != Vector2.zero, default);
+                        continue;
+                    }
+                }
+                var walk = Resolve("person", person.Role, "move");
+                if (!PersonSheetWalk.Applies(walk)) { Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f); continue; }
+                var walkFrame = personWalk.Frame("person", person.Id, personPosition, visualTime, step != Vector2.zero, walk, facingGeneration);
+                var shown = walkFrame >= 0 ? walk : Resolve("person", person.Role, activity);
+                DrawActor(shown, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, -1, facing: Facing("person", person.Id, step), uv: walkFrame >= 0 ? walk.UvRects[walkFrame] : (Rect?)null);
             }
             if (presentationDiagnosticsActive) diagnostics.WaveWorldObjectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawEffects(lord);
+            DrawImpactFeedback();
             for (var attackIndex = 0; attackIndex < snapshot.Attacks.Count; attackIndex++)
             {
                 var attack = snapshot.Attacks[attackIndex];
@@ -312,7 +399,6 @@ namespace Game.View
                 var enemyArt=Resolve("enemy",enemy.DefinitionId,state);
                 var rigged=false; var rigUv=default(Rect); string actionPhase=null;
                 var position=Interpolate(previousEnemies,enemy.Id,enemy.Position,alpha);
-                RenderedEntitySample?.Invoke("enemy",enemy.Id,position);
                 var dimensions=enemyArt.WorldSize;
                 var upperOpacity=1f;
                 var actorKind=WaveEnemyKind.Pursuer;
@@ -331,18 +417,37 @@ namespace Game.View
                         (phase.Phase.StartsWith("tell-",StringComparison.Ordinal)||phase.Phase=="charge"||phase.Phase=="water");
                     if(kind!=WaveEnemyKind.FloodBoss&&!warning&&!flashing&&body.Contains(lord))upperOpacity=GameVisualTokens.WaveEnemyUpperOpacity;
                 }
-                var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/GameVisualTokens.HitFlashSeconds:-1;
+                var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/(wave!=null&&ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds):-1;
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
                 var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
                 if(FieldActive)enemyLayer=GameVisualTokens.EnemyLayer+Mathf.Clamp(19-Mathf.FloorToInt(20f*renderCamera.WorldToViewportPoint(position).y),0,19);
                 var actorTime=visualTime+enemy.Id*.13f;
                 var actorPose=rigged?new ActorPose(Vector2.zero,Vector2.one,0):ActorMotion.SampleEnemy(actorKind,actorTime,moved);
+                if (wave != null)
+                {
+                    var held = ResolveEnemyImpactPose(enemy.Id, dimensions.x, new EnemyImpactPose {
+                        Position = position, AnimationTime = actorTime, Uv = rigUv, Facing = enemyFacing, Body = actorPose,
+                        Visual = enemyArt, Dimensions = dimensions, Rigged = rigged, Flash = flashing });
+                    position = held.Position; actorTime = held.AnimationTime; rigUv = held.Uv;
+                    enemyFacing = held.Facing; actorPose = held.Body;
+                    enemyArt = held.Visual; dimensions = held.Dimensions; rigged = held.Rigged;
+                    flashing = held.Flash;
+                }
                 if(!FieldActive||FieldVisible(position,dimensions))DrawActorGrounding(position,dimensions,moved?Point(enemy.Position)-before:Vector2.zero,actorTime,actorKind,rigged);
-                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:rigged&&EnemyRigAtlas.IsChargeDanger(actorKind,actionPhase,state)?GameVisualTokens.Hostile:(Color?)null,flash:flashing ? .8f : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
-                if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Hostile,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
+                RenderedEntitySample?.Invoke("enemy",enemy.Id,position);
+                var enemyTint = wave == null ? (Color?)null : EnemyRigAtlas.IsChargeDanger(actorKind,actionPhase,state)
+                    ? GameVisualTokens.Hostile : EnemyBodyTint(actorKind);
+                if (wave != null) RecordRenderedEnemy(enemy.Id, new DyingEnemyPose {
+                    Actor = new EnemyImpactPose { Position = position, AnimationTime = actorTime, Uv = rigUv, Facing = enemyFacing, Body = actorPose,
+                        Visual = enemyArt, Dimensions = dimensions, Rigged = rigged },
+                    Layer = enemyLayer, Tint = enemyTint.Value, UpperOpacity = upperOpacity, DefinitionId = enemy.DefinitionId, Kind = actorKind });
+                DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:enemyTint,flash:flashing ? (wave != null && ImpactFeedbackEnabled ? CrowdFlashStrength(enemy.Id) : .8f) : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
+                if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Ink,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
                 if(RenderedEnemyBoundsSample!=null)
                     RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));
             }
+            FinishRenderedEnemies();
+            DrawEnemyDeaths();
             if (presentationDiagnosticsActive) diagnostics.EnemyActorsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             var heroHit = heroHitUntil > visualTime;
             var heroState = current.Lord.Health <= 0 ? "death" : heroHit ? "hit" : "idle";
@@ -364,27 +469,46 @@ namespace Game.View
                 lordMarker.Add(lord,new Vector2(radius*GameVisualTokens.WaveLordRingAccentScale,radius*GameVisualTokens.WaveLordRingAccentScale*GameVisualTokens.WaveLordRingHeight),0,GameVisualTokens.Attack,GameVisualTokens.WaveLordRingAccentInner);
             }
             DrawActorGrounding(lord,HeroFigureSize(snapshot.HeroId,heroVisual),heroMovement,visualTime,WaveEnemyKind.Pursuer);
-            if(!DrawHeroRig(heroVisual,lord,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
-                heroHit&&HitFeedbackEnabled?new Color(1,.32f,.28f,1):Color.white,heroHit&&!HitFeedbackEnabled?.8f:0,heroGaitDiscontinuity)&&
-               !DrawHeroSheet(snapshot.HeroId,lord,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,HitFeedbackEnabled,current.TickRate))
-                DrawActor(heroVisual,GameVisualTokens.LordLayer,lord,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroHit&&!HitFeedbackEnabled ? .8f : 0,facing:heroFacing,tint:heroHit&&HitFeedbackEnabled ? new Color(1,.32f,.28f,1) : (Color?)null);
+            // Hit feedback brightens the hero on two rendered frames (+40% on the knight rig, a 30% lift toward white on sprite
+            // heroes; a white fill outshone the weapon effects) and pushes the drawn hero only; no held tint. The knight sheets
+            // add a red outline instead of a red fill (user decision 2026-10-17).
+            var heroFlash=HitFeedbackEnabled?heroHitFeedback.NextFlash():heroHit?.8f:0;
+            var heroDrawn=HitFeedbackEnabled?lord+heroHitFeedback.Offset(visualTime,HeroFigureSize(snapshot.HeroId,heroVisual).x*GameVisualTokens.HeroBodyWidthFraction):lord;
+            if(!DrawHeroRig(heroVisual,heroDrawn,heroWalking,heroAttackProgress,heroHit,current.Lord.Health<=0,heroFacing,
+                Color.white,heroFlash,heroGaitDiscontinuity,seconds)&&
+               !DrawHeroSheet(snapshot.HeroId,heroDrawn,heroMovement,heroWalking,heroHit,current.Lord.Health<=0,heroFacing,HitFeedbackEnabled,current.TickRate,heroFlash*.3f))
+                DrawActor(heroVisual,GameVisualTokens.LordLayer,heroDrawn,heroAnimationTime,heroVisual.WorldSize,heroWalking,heroAttackProgress,heroHitProgress,flash:heroFlash*.3f,facing:heroFacing);
+            PlaceBowstringFlashes();   // at the hand the hero was just posed with
             heroGaitDiscontinuity=false;
+            RecordHeroSilhouette(heroVisual,lord);
+            RenderedHeroAnchorScreenPosition = renderCamera.WorldToScreenPoint(lord);
+            RenderedHeroAnchorScreenSample?.Invoke(RenderedHeroAnchorScreenPosition);
             if (levelAge < GameVisualTokens.EmphasisSeconds) Feedback("level-up", GameVisualTokens.ExperienceLayer, lord, levelAge / GameVisualTokens.EmphasisSeconds);
-            threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
+            if (wave == null && EdgeWarningsEnabled)
+            {
+                threats.Update(renderCamera, current.Enemies, current.Lord.Position, settings.WorldUnitsPerUnityUnit, safeAreaPixels); DrawThreats();
+            }
             if (presentationDiagnosticsActive) diagnostics.HeroThreatsMs = DiagnosticInterval(ref diagnosticCheckpoint);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             }
 #endif
             SubmittedInstances = 0; DrawCalls = 0;
+            var occlusion = OcclusionProbe.Active;
+            occlusion?.Begin(renderCamera, occlusion.FrameSource?.Invoke() ?? PresentedFrames);
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
+            if(musterRings!=null){musterRings.Flush();SubmittedInstances+=musterRings.SubmittedInstances;DrawCalls+=musterRings.DrawCalls;}
+            FlushOrbitShapes(); FlushBladeRibbons();
             actorGrounding.Flush(); actorWings.Flush();
+            if (occlusion != null) occlusion.Tint = ScreenTintAlpha;
+            occlusion?.End();
             SubmittedInstances+=actorGrounding.SubmittedInstances+actorWings.SubmittedInstances;
             DrawCalls+=actorGrounding.DrawCalls+actorWings.DrawCalls;
             if (presentationDiagnosticsActive) diagnostics.SpriteBatchSubmitMs = DiagnosticInterval(ref diagnosticCheckpoint);
             retiredFacing.Clear();
             foreach(var pair in actorFacing)if(pair.Value.generation!=facingGeneration)retiredFacing.Add(pair.Key);
             for(var i=0;i<retiredFacing.Count;i++)actorFacing.Remove(retiredFacing[i]);
+            personWalk.Retire(facingGeneration);
             if (presentationDiagnosticsActive)
             {
                 diagnostics.CleanupMs = DiagnosticInterval(ref diagnosticCheckpoint);
@@ -674,16 +798,19 @@ namespace Game.View
             {
                 var surfaceShader = FallowActive && layer < GameVisualTokens.AllyLayer && layer != GameVisualTokens.ExperienceLayer
                     ? layer <= GameVisualTokens.TerrainLayer + 1 ? fallowGroundShader : fallowShader : shader;
-                batch = new SpriteBatch(visual.Texture, surfaceShader, renderCamera, layer); batches.Add(key, batch);
+                batch = new SpriteBatch(visual.Texture, surfaceShader, renderCamera, layer, !IsThinEffectLayer(layer) && !thinEffectTextures.Contains(visual.Texture)); batches.Add(key, batch);
             }
             batch.Add(position, dimensions, visual.Pivot, uv ?? visual.UvRects[frame], degrees, color, flash, edgeTexels, upperOpacity);
         }
         void OnDestroy()
         {
+            DisposeHeroMotion();
+            DisposeLightning(); DisposeBladeArt(); DisposeBowstringFlashes();
+            DisposeHeroConceptReview();
             DisposeFallow();
             DisposeThreatWarnings();
             DisposeActorGrounding();
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); musterRings?.Dispose(); musterRingMeshes?.Dispose(); orbitShapes?.Dispose(); orbitShapeMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }
