@@ -168,6 +168,7 @@ namespace Game.View
             var centre = (PredictedLordPosition ?? RenderedLordPosition) + Vector2.up * heroDrawnHeight * .5f;
             var radius = known ? heroDrawnHeight * WorldDamageNumbers.HeroKeepOutOfFigureHeight : 0;
             numbers?.SetHero(centre, radius); lordDamageNumbers?.SetHero(centre, radius);
+            heroKeepOutCentre = centre; heroKeepOutRadius = radius;
         }
 
         static Rect Union(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));
