@@ -185,7 +185,7 @@ namespace Game.View
             followCamera.ReviewMagnification = reviewCameraMagnification;
             followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            art = ArtCatalog.Load(); DarkMarker = ParseDarkMarker(Environment.GetCommandLineArgs()); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
             if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
             InitializeActorGrounding();
@@ -311,10 +311,11 @@ namespace Game.View
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
             ScreenTintAlpha = 0;
-            lordMarker?.BeginFrame(); musterRings?.BeginFrame();
+            lordMarker?.BeginFrame(); musterRings?.BeginFrame(); BeginEstateFrame();
             actorGrounding.BeginFrame(); actorWings.BeginFrame();
             if (presentationDiagnosticsActive) diagnostics.CameraUiMs = DiagnosticInterval(ref diagnosticCheckpoint);
             UpdateFallowMask();
+            UpdateEstateShader(lord);
             if (presentationDiagnosticsActive) diagnostics.FallowMaskMs = DiagnosticInterval(ref diagnosticCheckpoint);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // Inclusive draw preparation: capacity-triggered Flush samples can be nested.
@@ -323,6 +324,7 @@ namespace Game.View
 #endif
             DrawTerrain();
             DrawFallowLandmarks();
+            DrawEstate(lord);
             if (presentationDiagnosticsActive) diagnostics.TerrainLandmarksMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawWave(current,alpha,lord);
             if (!showTransientText) HideTransientText();
@@ -443,6 +445,7 @@ namespace Game.View
                     Layer = enemyLayer, Tint = enemyTint.Value, UpperOpacity = upperOpacity, DefinitionId = enemy.DefinitionId, Kind = actorKind });
                 DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:enemyTint,flash:flashing ? (wave != null && ImpactFeedbackEnabled ? CrowdFlashStrength(enemy.Id) : .8f) : 0,upperOpacity:upperOpacity,facing:enemyFacing,poseOverride:actorPose,uv:rigged?rigUv:(Rect?)null);
                 if(wave!=null&&!rigged)DrawActor(enemyArt,enemyLayer,position,actorTime,dimensions,moved,-1,hitProgress,tint:GameVisualTokens.Ink,upperOpacity:upperOpacity,facing:enemyFacing,edgeTexels:GameVisualTokens.WaveEdgeTexels,poseOverride:actorPose);
+                if(wave!=null&&enemy.Health>0)DrawEstateDarkMark(enemy.Position,enemyArt,enemyLayer,position,actorTime,dimensions,moved,hitProgress,enemyFacing,actorPose,rigged?rigUv:(Rect?)null,upperOpacity);
                 if(RenderedEnemyBoundsSample!=null)
                     RenderedEnemyBoundsSample(enemy.DefinitionId,enemy.Id,ActorBounds(enemyArt,position,dimensions,actorPose,enemyFacing));
             }
@@ -498,7 +501,7 @@ namespace Game.View
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
             if(musterRings!=null){musterRings.Flush();SubmittedInstances+=musterRings.SubmittedInstances;DrawCalls+=musterRings.DrawCalls;}
-            FlushOrbitShapes(); FlushBladeRibbons();
+            FlushOrbitShapes(); FlushBladeRibbons(); FlushEstate();
             actorGrounding.Flush(); actorWings.Flush();
             if (occlusion != null) occlusion.Tint = ScreenTintAlpha;
             occlusion?.End();
@@ -808,6 +811,7 @@ namespace Game.View
             DisposeLightning(); DisposeBladeArt(); DisposeBowstringFlashes();
             DisposeHeroConceptReview();
             DisposeFallow();
+            DisposeEstate();
             DisposeThreatWarnings();
             DisposeActorGrounding();
             foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); musterRings?.Dispose(); musterRingMeshes?.Dispose(); orbitShapes?.Dispose(); orbitShapeMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;

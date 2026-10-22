@@ -62,6 +62,17 @@ namespace Game.View
         public const float PersonWalkCyclePixels = 102.3603456f;
         // Fastest person sheet walk (user decision, #331): 2.5 cycles per second (0.4 s); faster movement slides the feet. Not the hero.
         public const float PersonWalkMaxCyclesPerSecond = 2.5f;
+        // M2 dark estate View (#347). Review pixels per Unity unit at the hero's pixel scale (the knight's 240 px cell is 1.081423
+        // units tall): the approved RIM formulas (Release m2-building-game-assets-20261019) are written in those pixels.
+        public const float EstateReviewPixelsPerUnit = 240f / 1.081423f;
+        public static readonly Color EstateRim = new Color32(0xE5, 0xC9, 0x7F, 255);
+        public const int EstateBuildingLayer = GrowthLayer + 3;
+        public const float EstateRingShowWakeRadii = 2f, EstateRingRise = .14f, EstateRingRadius = .15f, EstateRingDotRadius = .02f;
+        public const int EstateRingDots = 20;
+        public static readonly Color EstateDarkOutline = new Color(.07f, .05f, .10f, .95f);
+        public const float EstateDarkOutlineTexels = 2.5f;
+        public const float EstateEyeHeight = .74f, EstateEyeSpacing = .14f, EstateEyeRadius = .028f, EstateEyeMinimumRadius = .012f;
+        public static readonly Color EstateEyeGlint = new Color32(0xFF, 0xB0, 0x4A, 255);
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }

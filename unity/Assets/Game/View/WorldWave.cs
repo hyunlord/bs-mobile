@@ -38,6 +38,7 @@ namespace Game.View
                 waveEnemyById.Clear();waveActorById.Clear();waveWorkById.Clear();unfinishedBuildingByPosition.Clear();expiredRepairAnchors.Clear();indexedWaveActors=null;
                 repairAnchors.Clear();drawnRepairAnchors.Clear();liveGrainIds.Clear();waveEffects.Clear();lastWaveEvent=-1;
                 ResetFallow();
+                ResetEstate();
                 ResetThreatWarnings();
                 ResetImpactFeedback();
                 // First-playable presents with a null wave frame every frame; muster state resets only with the run's catalog.
@@ -106,6 +107,7 @@ namespace Game.View
                     actorFacing.Remove(("enemy",value.SubjectId));
                 }
                 AcceptFallowEvent(value);
+                AcceptEstateEvent(value);
                 AcceptM1Blade(value);
                 AcceptLightningLink(value);
                 AcceptArrowEvent(value);

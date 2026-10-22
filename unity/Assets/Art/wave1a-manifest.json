@@ -252,6 +252,13 @@
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/muster-horn-wave-prompt.md",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "generated-estate-buildings",
+      "origin": "Generated with built-in image_gen for this project by Astra (Release m2-building-art-20261019, user-approved art), packed for game use without redrawing in Release m2-building-game-assets-20261019: shared crop and scale per sleeping/awake pair",
+      "source": "https://openai.com/policies/terms-of-use/",
+      "prompt": "docs/licenses/prompts/m2-estate-buildings-provenance.txt",
+      "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     }
   ],
   "atlases": [
@@ -526,6 +533,14 @@
       "height": 1970,
       "padding": 4,
       "license": "generated-wave1a-horn-wave"
+    },
+    {
+      "id": "estate-buildings",
+      "path": "Assets/Art/estate-buildings.png",
+      "width": 736,
+      "height": 480,
+      "padding": 4,
+      "license": "generated-estate-buildings"
     }
   ],
   "roles": [
@@ -12234,6 +12249,138 @@
       },
       "frameMs": 1000,
       "tween": "none"
+    },
+    {
+      "id": "estate.core.estate_watchtower.asleep",
+      "atlas": "estate-buildings",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 225,
+          "height": 227
+        }
+      ],
+      "pivot": {
+        "x": 0.522222,
+        "y": 0.044053
+      },
+      "worldSize": {
+        "x": 1.013834,
+        "y": 1.022846
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "estate.core.estate_watchtower.active",
+      "atlas": "estate-buildings",
+      "frames": [
+        {
+          "x": 4,
+          "y": 244,
+          "width": 225,
+          "height": 227
+        }
+      ],
+      "pivot": {
+        "x": 0.522222,
+        "y": 0.044053
+      },
+      "worldSize": {
+        "x": 1.013834,
+        "y": 1.022846
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "estate.core.estate_well_shrine.asleep",
+      "atlas": "estate-buildings",
+      "frames": [
+        {
+          "x": 248,
+          "y": 4,
+          "width": 177,
+          "height": 148
+        }
+      ],
+      "pivot": {
+        "x": 0.516949,
+        "y": 0.074324
+      },
+      "worldSize": {
+        "x": 0.797549,
+        "y": 0.666878
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "estate.core.estate_well_shrine.active",
+      "atlas": "estate-buildings",
+      "frames": [
+        {
+          "x": 248,
+          "y": 244,
+          "width": 177,
+          "height": 148
+        }
+      ],
+      "pivot": {
+        "x": 0.516949,
+        "y": 0.074324
+      },
+      "worldSize": {
+        "x": 0.797549,
+        "y": 0.666878
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "estate.core.estate_granary.asleep",
+      "atlas": "estate-buildings",
+      "frames": [
+        {
+          "x": 492,
+          "y": 4,
+          "width": 223,
+          "height": 179
+        }
+      ],
+      "pivot": {
+        "x": 0.504484,
+        "y": 0.027933
+      },
+      "worldSize": {
+        "x": 1.004822,
+        "y": 0.806561
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "estate.core.estate_granary.active",
+      "atlas": "estate-buildings",
+      "frames": [
+        {
+          "x": 492,
+          "y": 244,
+          "width": 223,
+          "height": 179
+        }
+      ],
+      "pivot": {
+        "x": 0.504484,
+        "y": 0.027933
+      },
+      "worldSize": {
+        "x": 1.004822,
+        "y": 0.806561
+      },
+      "frameMs": 1000,
+      "tween": "none"
     }
   ],
   "bindings": [
@@ -14726,6 +14873,78 @@
       "contentId": "core:granary_sling",
       "state": "default",
       "roleId": "m1.icon.core.granary_sling.default"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_watchtower",
+      "state": "asleep",
+      "roleId": "estate.core.estate_watchtower.asleep"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_watchtower_l3",
+      "state": "asleep",
+      "roleId": "estate.core.estate_watchtower.asleep"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_watchtower",
+      "state": "active",
+      "roleId": "estate.core.estate_watchtower.active"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_watchtower_l3",
+      "state": "active",
+      "roleId": "estate.core.estate_watchtower.active"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_well_shrine",
+      "state": "asleep",
+      "roleId": "estate.core.estate_well_shrine.asleep"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_well_shrine_l3",
+      "state": "asleep",
+      "roleId": "estate.core.estate_well_shrine.asleep"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_well_shrine",
+      "state": "active",
+      "roleId": "estate.core.estate_well_shrine.active"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_well_shrine_l3",
+      "state": "active",
+      "roleId": "estate.core.estate_well_shrine.active"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_granary",
+      "state": "asleep",
+      "roleId": "estate.core.estate_granary.asleep"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_granary_l3",
+      "state": "asleep",
+      "roleId": "estate.core.estate_granary.asleep"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_granary",
+      "state": "active",
+      "roleId": "estate.core.estate_granary.active"
+    },
+    {
+      "kind": "estate",
+      "contentId": "core:estate_granary_l3",
+      "state": "active",
+      "roleId": "estate.core.estate_granary.active"
     }
   ]
 }

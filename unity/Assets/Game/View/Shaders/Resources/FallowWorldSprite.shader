@@ -33,6 +33,38 @@ Shader "Game/View/FallowWorldSprite"
             SAMPLER(sampler_FallowMask);
             float4 _FallowMap;
             float _FallowWindowed;
+            // M2 dark estate (#347, ADR0064 6.2): off (0) unless a run carries an estate. Circles are lit zones in Unity units.
+            float _EstateActive;
+            float4 _EstateCircles[9];
+            float _EstateCircleCount;
+            float4 _EstateSight;
+            float _EstatePixelsPerUnit;
+            float3 EstateToGamma(float3 c) { c = max(c, 0); return lerp(1.055 * pow(c, 1 / 2.4) - 0.055, c * 12.92, step(c, 0.0031308)); }
+            float3 EstateToLinear(float3 c) { c = max(c, 0); return lerp(pow((c + 0.055) / 1.055, 2.4), c / 12.92, step(c, 0.04045)); }
+            // The approved RIM 3 review formulas (Release m2-building-game-assets-20261019, RIM-PARAMETERS.md) in review pixels at
+            // the hero's pixel scale, anchored to the world. They run on gamma-encoded RGB like the review image. source is the
+            // sprite's own colour, fallow the existing grey/restored result, restored the cared-for colour and coverage its mask.
+            float3 EstateGround(float3 source, float3 fallow, float3 restored, float coverage, float2 world)
+            {
+                float2 p = world * _EstatePixelsPerUnit;
+                float d = -1e6;
+                for (int i = 0; i < 9; i++)
+                {
+                    if (i >= (int)_EstateCircleCount) break;
+                    d = max(d, (_EstateCircles[i].z - distance(world, _EstateCircles[i].xy)) * _EstatePixelsPerUnit);
+                }
+                float n = 5 * sin(.063 * p.x) * sin(.081 * p.y) + 3 * sin(.19 * (p.x + p.y));
+                float e = d + .45 * n;
+                float lit = saturate((e + 7.5) / 15);
+                float seen = saturate(((_EstateSight.z - distance(world, _EstateSight.xy)) * _EstatePixelsPerUnit + 20) / 40);
+                float luminance = dot(EstateToGamma(source), float3(.2126, .7152, .0722));
+                float3 dark = EstateToLinear(luminance * float3(.24, .27, .29) + float3(9, 10, 13) / 255);
+                float3 unlit = lerp(lerp(dark, restored, coverage), fallow, seen);
+                float3 base = lerp(unlit, lerp(source, restored, coverage), lit);
+                float grain = step(.25, sin(.49 * p.x + .27 * p.y)) * step(-.2, sin(.33 * p.y - .12 * p.x));
+                float a = .5 * exp(-(e / 2.5) * (e / 2.5)) * grain;
+                return EstateToLinear(lerp(EstateToGamma(base), float3(229, 201, 127) / 255, a));
+            }
             UNITY_INSTANCING_BUFFER_START(SpriteProperties)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceColor)
                 UNITY_DEFINE_INSTANCED_PROP(float4, _InstanceUv)
@@ -76,6 +108,7 @@ Shader "Game/View/FallowWorldSprite"
                 sample.a *= lerp(1, style.z, smoothstep(0.25, 0.65, input.local.y));
                 sample.rgb = lerp(sample.rgb, half3(1,1,1), style.x);
                 sample *= color;
+                half3 source = sample.rgb;
                 float2 maskUv = input.world * _FallowMap.xy + _FallowMap.zw;
                 half4 restoration = SAMPLE_TEXTURE2D(_FallowMask, sampler_FallowMask, maskUv);
                 restoration *= lerp(1, step(0, maskUv.x) * step(maskUv.x, 1) * step(0, maskUv.y) * step(maskUv.y, 1), _FallowWindowed);
@@ -90,6 +123,7 @@ Shader "Game/View/FallowWorldSprite"
                 half3 restoredSoil = lerp(.18 + restored * .42, pigment * (.52 + luminance * .30), .78);
                 restored = lerp(restoredSoil, restored, _FallowContrast);
                 sample.rgb = lerp(ash, restored, coverage);
+                if (_EstateActive > .5) sample.rgb = EstateGround(source, sample.rgb, restored, coverage, input.world);
                 return sample;
             }
             ENDHLSL
