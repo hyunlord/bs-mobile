@@ -374,22 +374,36 @@ namespace Game.App
                 ClickButton(ResolveButton(run.Ui.GetComponentsInChildren<Button>(), null, false, "Card.Choose:" + card, "Choose " + card));
                 Log("card-click", card); cardAt = -1; return;
             }
-            Vector2 direction;
-            if (ImpactComparison != null) direction = ImpactComparison.Direction(frame.Tick, frame.TickRate);
-            else if (FieldVideo != null) direction = FieldVideo.Direction(frame.Tick, frame.TickRate, frame.Lord.Position, frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
-            else if (FeelComparison != null && FeelComparison.Walk) direction = FeelComparison.Direction(frame.Tick, frame.TickRate);
-            else
-            {
-            var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
-            var angle = frame.Tick / 180d;
-            var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
-            if(run.CurrentWave!=null)target=weakBuild?WeakCapturePolicy.Target(frame,run.CurrentWave):WaveCaptureInput.Target(frame,run.CurrentWave,target,FoundationBoot.Catalog,goldenMinute);
-            direction = CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), FoundationBoot.Catalog.Tuning.World.Map.LordSpeed);
-            }
+            // The stick only shows the movement; RunCoordinator.Send asks TickInput for each tick's command (#343).
+            var direction = Direction(frame, run.CurrentWave);
             var pointer = new PointerEventData(EventSystem.current) { pointerId = 1701, position = new Vector2(Screen.width * .25f, Screen.height * .2f), button = PointerEventData.InputButton.Left };
             if (!run.Stick.Active) ExecuteEvents.Execute(run.Stick.gameObject, pointer, ExecuteEvents.pointerDownHandler);
             pointer.position = run.Stick.Origin + direction * run.Stick.Radius;
             ExecuteEvents.Execute(run.Stick.gameObject, pointer, ExecuteEvents.dragHandler);
+        }
+
+        // #343 (user decision 2026-10-22): autoplay movement is decided for each Core tick from the Core state just before it, in
+        // RunCoordinator.Send, so a seed gives the same commands however many ticks a rendered frame advances. It reads only Core
+        // frames and catalog values, never Time or frame counts. It steers from the run's first tick (stages 5-6), not from the
+        // first frame the stage machine reaches Play, which waited on real time.
+        public const string InputClock = "tick";
+        public bool SteersTicks => !ended && (stage == 5 || stage == 6) && run != null && run.Session != null && run.CurrentFrame != null;
+        public PlayerInput TickInput(RunFrame frame, WaveRuntimeFrame wave) => DesktopControls.ResolveMovement(default, false, Direction(frame, wave), false);
+        Vector2 Direction(RunFrame frame, WaveRuntimeFrame wave)
+        {
+            if (ImpactComparison != null) return ImpactComparison.Direction(frame.Tick, frame.TickRate);
+            if (FieldVideo != null) return FieldVideo.Direction(frame.Tick, frame.TickRate, frame.Lord.Position, frame.Field?.Home ?? frame.Estate, (float)run.Session.LocomotionSpeedPerTick);
+            if (FeelComparison != null && FeelComparison.Walk) return FeelComparison.Direction(frame.Tick, frame.TickRate);
+            return OrdinaryDirection(frame, wave, FoundationBoot.Catalog, weakBuild, goldenMinute);
+        }
+        // The ordinary autoplay route: a pure function of the Core frame, the wave frame and the catalog.
+        public static Vector2 OrdinaryDirection(RunFrame frame, WaveRuntimeFrame wave, ContentCatalog catalog, bool weakBuild, bool goldenMinute)
+        {
+            var farm = frame.Farms.Where(f => f.Ripe).OrderBy(f => Distance(f.Position, frame.Lord.Position)).FirstOrDefault();
+            var angle = frame.Tick / 180d;
+            var target = farm != null ? farm.Position : new WorldPoint(frame.Estate.X + (int)(Math.Cos(angle) * 1500), frame.Estate.Y + (int)(Math.Sin(angle) * 1500));
+            if (wave != null) target = weakBuild ? WeakCapturePolicy.Target(frame, wave) : WaveCaptureInput.Target(frame, wave, target, catalog, goldenMinute);
+            return CaptureArrivalSteering.Direction(new Vector2(target.X - frame.Lord.Position.X, target.Y - frame.Lord.Position.Y), catalog.Tuning.World.Map.LordSpeed);
         }
 
         static double Distance(WorldPoint a, WorldPoint b) => Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2);
@@ -522,6 +536,8 @@ namespace Game.App
         [Serializable] sealed class Result
         {
             public string profile, status, detail, commit, sourceHash, dataHash, unity, isolatedProfile, preferencesPrefix, replay, restartReplay, stateHash, replaySha256, metaContextSha256;
+            // "tick": movement decided per Core tick (#343); results without it decided per rendered frame.
+            public string inputClock = InputClock;
             public bool sourceDirty, automatedInput, survived, bossDefeated;
             public int timeScale, completedTick;
             public double elapsedSeconds;

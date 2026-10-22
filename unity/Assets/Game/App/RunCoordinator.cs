@@ -406,6 +406,9 @@ namespace Game.App
             {
                 if(kind==ReplayCommandKind.Advance&&AutoplayCapture.Active?.ImpactComparison is ImpactComparisonCapture comparison)
                     input=DesktopControls.ResolveMovement(default,false,comparison.Direction(CurrentFrame.Tick,CurrentFrame.TickRate),false);
+                // #343: autoplay decides each tick's movement from the Core state just before it, not from the frame's stick sample.
+                else if(kind==ReplayCommandKind.Advance&&AutoplayCapture.Active is { SteersTicks: true } autoplay)
+                    input=autoplay.TickInput(CurrentFrame,CurrentWave);
                 var command=new ReplayCommand(Session.NextSequence,CurrentFrame.Tick,kind,input,card,value);
                 var probeCoreStart=ProbeEnabled?ProbeTimestamp():0;
                 BeginLongFrameCommand(kind);
