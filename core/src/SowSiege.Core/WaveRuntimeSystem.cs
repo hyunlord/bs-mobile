@@ -15,6 +15,7 @@ namespace SowSiege.Core
         private readonly WavePrimitiveModules modules;
         private readonly WaveItemSubscriptions subscriptions;
         private readonly WaveEnemyQueries queries;
+        private readonly WaveEstateSystem? estate;
         private readonly List<EnemyState> targets = new();
         private readonly List<EnemyState> secondaryTargets = new();
         private readonly List<EnemyState> frontTargets = new();
@@ -44,6 +45,7 @@ namespace SowSiege.Core
             subscriptions = new(catalog, world, modules, queries);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
+            estate = WaveEstateSystem.Create(catalog, world, interactive);
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
         public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) &&
@@ -142,7 +144,7 @@ namespace SowSiege.Core
             }
             finally { world.Diagnostics?.End(RuntimeStage.Attack); }
             world.Diagnostics?.Begin(RuntimeStage.Work);
-            try { work.Tick(); }
+            try { work.Tick(); estate?.Tick(); }
             finally { world.Diagnostics?.End(RuntimeStage.Work); }
             foreach (var enemy in world.Enemies)
             {

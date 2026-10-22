@@ -24,7 +24,7 @@ namespace SowSiege.Core
     public enum RunStatus { Running, AwaitingCard, Completed }
     public enum ReplayCommandKind { Advance, ChooseCard, RerollCards, BanCard, LockCard, SetAimMode, SetInvulnerable, SetSpawnPermille, GrantLevel, HostGrantRerollV1, HostReviveV1 }
     public sealed record MeleeAimOptions(int Version = 1);
-    public sealed record InteractiveOptions(RunOptions Run, AimMode InitialAimMode, string DataHash, FeelExperimentOptions? Feel = null, FieldOptions? Field = null, HostRewardRunOptions? HostRewards = null, MeleeAimOptions? MeleeAim = null);
+    public sealed record InteractiveOptions(RunOptions Run, AimMode InitialAimMode, string DataHash, FeelExperimentOptions? Feel = null, FieldOptions? Field = null, HostRewardRunOptions? HostRewards = null, MeleeAimOptions? MeleeAim = null, EstateRunOptions? Estate = null);
     public sealed record ReplayCommand(long Sequence, int Tick, ReplayCommandKind Kind, PlayerInput Input = default, string? CardId = null, int Value = 0);
     public interface IReadOnlyRunView
     {

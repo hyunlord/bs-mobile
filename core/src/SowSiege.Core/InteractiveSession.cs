@@ -53,7 +53,18 @@ namespace SowSiege.Core
             if (options.HostRewards?.Revive is { } revive &&
                 (revive.RestoreHealth > (options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth) || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
             { throw new ArgumentException("Host revive rules exceed run limits.", nameof(options)); }
-            Catalog = catalog; Options = options; InitialCatalogHash = PortableStateCodec.HashCatalog(catalog); State = new() { Aim = options.InitialAimMode };
+            var initialCatalogHash = PortableStateCodec.HashCatalog(catalog);
+            if (options.Estate is { } estate)
+            {
+                WaveEstateLight.Validate(estate);
+                if (catalog.WaveRuntime?.EstateLight is not { } light) { throw new ArgumentException("Estate runs require an estate light definition.", nameof(options)); }
+                WaveEstateLight.Validate(light);
+                if (!light.Loadouts.ContainsKey(estate.LoadoutId)) { throw new ArgumentException("Unknown estate loadout.", nameof(options)); }
+                // The recorded catalog hash pins the loadout contents; the data tree hash cannot tell two loadouts of one tree apart (ADR0064 section 4).
+                if (!string.Equals(estate.LoadoutCatalogHash, initialCatalogHash, StringComparison.Ordinal)) { throw new ArgumentException("Estate loadout catalog hash mismatch.", nameof(options)); }
+            }
+            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode };
+            if (options.Estate is not null) { State.EstateLoadout = options.Estate.LoadoutId; State.EstateSeed = options.Run.Seed; }
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
             if (options.HostRewards is not null) { State.HostRewards = new(); }
             State.MeleeAim = options.MeleeAim;
