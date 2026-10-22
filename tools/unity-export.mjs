@@ -128,7 +128,8 @@ export async function prepare(root, profile = selectedProfile()) {
   run(root, ['build', 'core/src/SowSiege.Core/SowSiege.Core.csproj', '--configuration', 'Release', '--framework', 'netstandard2.1', '--no-incremental', '--nologo', ...(coreVariant === 'fine-diagnostics' ? ['--property:SowSiegeFineDiagnostics=true'] : [])]);
   run(root, ['core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll', '--export-unity', path.join(root, 'data'), bridge, profile]);
   if (process.env.UNITY_WAVE_BENCHMARK === '1') {
-    assert.equal(profile, 'wave-1a', 'Wave benchmark requires wave-1a presentation');
+    // wave-2a-dark is wave-1a plus the opt-in estate light (ADR0069); its benchmark build renders recorded estate replays (#347).
+    assert.ok(['wave-1a', 'wave-2a-dark'].includes(profile), 'Wave benchmark requires wave-1a presentation');
     await prepareWaveBenchmark();
   } else {
     await unlink(await safeOutput(root, benchmarkBridge)).catch(error => { if (error.code !== 'ENOENT') throw error; });
