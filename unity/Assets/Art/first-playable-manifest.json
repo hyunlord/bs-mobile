@@ -10,7 +10,7 @@
     },
     {
       "id": "generated-crops-people",
-      "origin": "Generated with built-in image_gen for this project; Soldier B walk (person.militia/guard) rigged in Unity and baked by Astra (Release soldier-b-rank-rig-r3-20261019), packed without resampling",
+      "origin": "Generated with built-in image_gen for this project; Soldier B walk (person.militia/guard) rigged in Unity and baked by Astra (Release soldier-b-rank-rig-r3-20261019), packed without resampling; ally marker B+ layer by Astra (Release ally-soldier-marker-bplus-20261022), shifted per walk frame without resampling",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/crops-people-atlas-v1-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -3951,6 +3951,118 @@
       },
       "frameMs": 350,
       "tween": "walk"
+    },
+    {
+      "id": "person.ally-marker.move",
+      "atlas": "crops-people",
+      "frames": [
+        {
+          "x": 50,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 72,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 94,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 116,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 138,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 160,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 182,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 204,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 226,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 248,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 270,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 292,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 314,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 336,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 358,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        },
+        {
+          "x": 380,
+          "y": 2,
+          "width": 20,
+          "height": 23
+        }
+      ],
+      "pivot": {
+        "x": 0,
+        "y": 0
+      },
+      "worldSize": {
+        "x": 0.082909,
+        "y": 0.095345
+      },
+      "frameMs": 36,
+      "tween": "none"
     },
     {
       "id": "person.militia.idle",
@@ -8945,7 +9057,7 @@
       },
       "worldSize": {
         "x": 0.993333,
-        "y": 1.0
+        "y": 1
       },
       "frameMs": 350,
       "tween": "none"

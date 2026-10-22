@@ -135,6 +135,7 @@ namespace Game.View
             var time = visualTime + a.Index * .07f;
             DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: MinionTint, facing: facing, poseOverride: pose, uv: body.Uv);
             DrawActor(art, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, -1, tint: GameVisualTokens.Ink, facing: facing, edgeTexels: MinionOutlineTexels, poseOverride: pose, uv: body.Uv);
+            DrawAllyMarker((a.Index & 1) == 0 ? "militia" : "guard", art, body.Uv, GameVisualTokens.AllyLayer, at, time, drawn, false, -1, facing, pose);
             RenderedMinionBounds?.Invoke(MusterFormationRule.SpriteRect(at, drawn, art.Pivot), a.State);
             if (phase >= 0)
             {

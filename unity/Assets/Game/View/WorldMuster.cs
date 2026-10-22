@@ -42,6 +42,7 @@ namespace Game.View
             musterStrikes.Clear(); observedMuster.Clear(); heroSilhouetteKnown = false; ResetMinions(); ResetHornWaves();
             MusterPath = MusterPresentationPath.None; MusterEvolutionId = null; MusterRatio = 1; MusterSoldiers = 0; MusterScale = 1; MusterLunges = 0;
             SoldierWalkDraws = SoldierStandDraws = SoldierWalkFrameMask = 0;
+            AllyMarkerDraws = AllyMarkerFrameMask = 0;
         }
 
         // 0..1 growth of a gear over its canonical Lv1 (MusterFormationRule.Tier).
@@ -300,8 +301,9 @@ namespace Game.View
                 if (heroSilhouetteKnown) at = MusterFormationRule.ClearOfHero(at, soldierSize, art.Pivot, hero, clearance, heading);
                 RenderedMusterSoldierBounds?.Invoke(MusterFormationRule.SpriteRect(at, soldierSize, art.Pivot));
                 var body = SoldierBody("formation", id * 32 + i, role, activity, at, moving, walking);
-                DrawActor(body.Visual, layer + (slot.y < 0 ? 1 : 0), at, time + i * .07f, body.Visual.WorldSize * formation.Scale, body.Walking,
-                    attack >= 0 ? Mathf.Clamp01(attack - stagger) : -1, -1, facing: facing, uv: body.Uv);
+                var soldierLayer = layer + (slot.y < 0 ? 1 : 0); var soldierAttack = attack >= 0 ? Mathf.Clamp01(attack - stagger) : -1;
+                DrawActor(body.Visual, soldierLayer, at, time + i * .07f, body.Visual.WorldSize * formation.Scale, body.Walking, soldierAttack, -1, facing: facing, uv: body.Uv);
+                DrawAllyMarker(role, body.Visual, body.Uv, soldierLayer, at, time + i * .07f, body.Visual.WorldSize * formation.Scale, body.Walking, soldierAttack, facing, null);
             }
             if (strikeAge < 0) return;
             var slash = Resolve("attack", "core:iron_blade", "sector90");
