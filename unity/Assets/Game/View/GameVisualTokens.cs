@@ -71,7 +71,7 @@ namespace Game.View
         public const int EstateRingDots = 20;
         public static readonly Color EstateDarkOutline = new Color(.07f, .05f, .10f, .95f);
         public const float EstateDarkOutlineTexels = 2.5f;
-        public const float EstateEyeHeight = .74f, EstateEyeSpacing = .14f, EstateEyeRadius = .028f, EstateEyeMinimumRadius = .012f;
+        public const float EstateEyeHeight = .70f, EstateEyeSpacing = .07f, EstateEyeForward = .05f, EstateEyeRadius = .012f, EstateEyeMinimumRadius = .006f;
         public static readonly Color EstateEyeGlint = new Color32(0xFF, 0xB0, 0x4A, 255);
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }

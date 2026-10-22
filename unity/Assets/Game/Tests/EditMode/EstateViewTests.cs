@@ -35,7 +35,7 @@ namespace Tests.EditMode
         }
 
         [Test]
-        public void OnlyACatalogWithAnEstateLightGetsEstateOptionsAndRecordsFormatSevenWithMeleeAim()
+        public void OnlyACatalogWithAnEstateLightGetsEstateOptionsAndRecordsFormatSeven()
         {
             if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             var plain = CanonicalContent.CreateCatalog();
@@ -45,7 +45,9 @@ namespace Tests.EditMode
             Assert.That((estate.Version, estate.LoadoutId, estate.LoadoutCatalogHash), Is.EqualTo((WaveEstateLight.Version, "L1", ReviewShowcaseCatalog.Hash(c))));
             var options = new InteractiveOptions(new RunOptions(30001, c.Tuning.DefaultHero, c.Tuning.DefaultEstate, "mixed", ManualCards: true), AimMode.Movement,
                 CanonicalContent.DataHash, MeleeAim: CatalogRunOptions.MeleeAim(c), Estate: estate);
-            Assert.That(options.MeleeAim, Is.Not.Null, "wave catalogs aim melee weapons");
+            // wave-1a gear declares no melee aim (the "aim" values in its data are attack-shape program parameters), so the
+            // estate run records format 7 schema 1; a catalog with melee aim would record schema 2 (#349).
+            Assert.That(options.MeleeAim, Is.Null, "wave-1a gear has no melee aim");
             var session = new InteractiveSession(c, options);
             Assert.That(((IWaveRunView)session.View).CaptureWaveRuntime().Estate.Buildings.Count, Is.EqualTo(4), "home and three L1 buildings");
             var header = ReplayCodec.Header(options);
@@ -54,7 +56,7 @@ namespace Tests.EditMode
             ReplayCodec.WriteHeader(bytes, header);
             ReplayCodec.WriteEnd(bytes, new(0, 0, ReplayEndKind.Quit, session.ComputeStateHash()));
             bytes.Position = 0;
-            Assert.That(ReplayCodec.Read(bytes).Header.Options.MeleeAim, Is.Not.Null, "format 7 keeps melee aim (#349)");
+            Assert.That(ReplayCodec.Read(bytes).Header.Options.MeleeAim, Is.EqualTo(options.MeleeAim), "format 7 keeps the run's melee aim either way");
         }
 
         static WaveEstateBuildingView Building(WaveEstatePhase phase, int progress = 0, int required = 0, int dwell = 0, int confirm = 0, bool paid = false, int x = 0) =>

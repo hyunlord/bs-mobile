@@ -173,14 +173,15 @@ namespace Game.View
                 return;
             }
             var bounds = ActorBounds(art, position, size, pose, facing);
-            var eye = new Vector2(bounds.center.x, bounds.yMin + bounds.height * GameVisualTokens.EstateEyeHeight);
+            // Two small glints in the face: a little toward the facing side, below the top of the sprite's cell.
+            var eye = new Vector2(bounds.center.x + bounds.width * GameVisualTokens.EstateEyeForward * facing.SignedWidth, bounds.yMin + bounds.height * GameVisualTokens.EstateEyeHeight);
             var spacing = bounds.width * GameVisualTokens.EstateEyeSpacing * .5f;
             var radius = Mathf.Max(GameVisualTokens.EstateEyeMinimumRadius, bounds.width * GameVisualTokens.EstateEyeRadius);
             var backing = GameVisualTokens.Ink; backing.a = .6f;
             for (var side = -1; side <= 1; side += 2)
             {
                 var at = eye + Vector2.right * (side * spacing);
-                estateEyes.Add(at, Vector2.one * radius * 1.8f, 0, backing);
+                estateEyes.Add(at, Vector2.one * radius * 1.6f, 0, backing);
                 estateEyes.Add(at, Vector2.one * radius, 0, GameVisualTokens.EstateEyeGlint);
             }
         }
