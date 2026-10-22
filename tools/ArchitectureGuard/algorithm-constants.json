@@ -440,6 +440,11 @@
     "Reason": "Opt-in replay wire discriminator for nearest-enemy melee aiming; historical formats remain byte-identical. No gameplay duration or balance value."
   },
   {
+    "Symbol": "SowSiege.Core.ReplayCodec.EstateMeleeAimSchema",
+    "Value": "2",
+    "Reason": "Format 7 estate header schema that appends the melee aim version (ADR0064 supplement, 2026-10-22); schema 1 without melee aim keeps its bytes. Serialization discriminator only."
+  },
+  {
     "Symbol": "SowSiege.Core.WaveAttackComposition.MaximumImpacts",
     "Value": "64",
     "Reason": "Review composition protocol fan-out bound limiting scheduled impact storage and per-activation work. Actual projectile/impact counts are explicit review data; this bound does not select gameplay tuning."
