@@ -21,7 +21,7 @@ namespace Tests.EditMode
             var catalog = CanonicalContent.CreateCatalog();
             WaveCaptureInput.ConfigureMovement(null); WaveCaptureInput.ConfigurePriority(null);
             var session = new InteractiveSession(catalog, new InteractiveOptions(new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true),
-                AimMode.Movement, CanonicalContent.DataHash, MeleeAim: CatalogRunOptions.MeleeAim(catalog), Estate: CatalogRunOptions.Estate(catalog)));
+                AimMode.Movement, CanonicalContent.DataHash, MeleeAim: CatalogRunOptions.MeleeAim(catalog)));
             var commands = new List<ReplayCommand>();
             void Apply(ReplayCommand c) { session.Apply(c); commands.Add(c); }
             PlayerInput Decide() => DesktopControls.ResolveMovement(default, false,
