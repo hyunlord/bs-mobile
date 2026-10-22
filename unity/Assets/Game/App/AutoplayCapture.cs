@@ -20,6 +20,8 @@ namespace Game.App
         public int RunSeed => stage < 8 ? captureSeed : checked(captureSeed+1);
         static readonly string[] Priority = { "core:muster_horn", "core:seed_bag", "core:ward_orbit", "core:harvest_scythe", "core:iron_blade", "core:soup_ladle", "core:rain_ladle" };
         string output, replayPath, captureTarget;
+        public bool SaveReplay { get; private set; }
+        public static bool SaveReplayRequested(string[] args) => Array.IndexOf(args, "--capture-save-replay") >= 0;
         RunCoordinator run;
         StreamWriter ledger;
         double started, nextAction, cardAt = -1, nextSample, restartAt;
@@ -160,6 +162,8 @@ namespace Game.App
             goldenMinute = IsGoldenMinuteRequested(args);
             weakBuild = Array.IndexOf(args,"--capture-weak-build") >= 0;
             if(weakBuild&&!goldenMinute)throw new ArgumentException("Weak-build capture requires the explicit golden-minute capture mode.");
+            SaveReplay = SaveReplayRequested(args);
+            if (SaveReplay && goldenMinute) throw new ArgumentException("--capture-save-replay keeps a full ordinary run; the golden minute stops before its replay is verified.");
             if (FieldVideo != null) captureSeed = 30001;
             var seedArgument=Array.IndexOf(args,"--capture-seed");
             if(seedArgument>=0&&(seedArgument+1>=args.Length||!int.TryParse(args[seedArgument+1],out captureSeed)||captureSeed<0||captureSeed==int.MaxValue))throw new ArgumentException("--capture-seed requires a nonnegative restartable integer.");
@@ -416,7 +420,13 @@ namespace Game.App
         void ClickContaining(string text, params string[] names) => ClickButton(ResolveButton(run.Ui.GetComponentsInChildren<Button>(), text, true, names));
         void ClickButton(Button button)
         {
-            if (button == null) throw new InvalidOperationException("Required autoplay UI action is unavailable on " + run.CurrentScreenName + ".");
+            if (button == null)
+            {
+                // Diagnostic for the 2026-10-21 card-screen failure: what the buttons looked like when no action was available.
+                var states = string.Join(",", run.Ui.GetComponentsInChildren<Button>(true).Select(b => b.name + ":" + (b.isActiveAndEnabled ? "on" : "off") + (b.IsInteractable() ? "+" : "-")));
+                Log("ui-unavailable", $"screen={run.CurrentScreenName};focused={Application.isFocused};unscaled={Time.unscaledTimeAsDouble:F3};frame={Time.frameCount};buttons={states}");
+                throw new InvalidOperationException("Required autoplay UI action is unavailable on " + run.CurrentScreenName + ".");
+            }
             Log("ui-click", button.name);
             var pointer = new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left };
             ExecuteEvents.Execute(button.gameObject, pointer, ExecuteEvents.pointerClickHandler);
@@ -461,6 +471,12 @@ namespace Game.App
             foreach (var name in new[] { "01-native-title.png", "02-native-run.png", "03-native-summary.png", "04-native-restart.png" })
                 if (!File.Exists(Path.Combine(output, name))) throw new IOException("Missing screenshot: " + name);
             Log("replay-verified", $"commands={replay.Commands.Count};sha256={result.replaySha256}");
+            if (SaveReplay)
+            {
+                // Review only (--capture-save-replay): keep the Core-verified recording beside the capture for later offline renders.
+                File.Copy(replayPath, Path.Combine(output, "recorded-run.ssreplay"));
+                Log("replay-saved", $"recorded-run.ssreplay;sha256={result.replaySha256};endTick={replay.End.Tick};stateHash={replay.End.StateHash}");
+            }
         }
 
         static string Hash(byte[] bytes) { using var hash = SHA256.Create(); return BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant(); }

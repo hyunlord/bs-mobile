@@ -32,8 +32,8 @@ namespace Game.App
             OfflineReplayAudio.Requested(args);
             var first = Array.IndexOf(args, "--offline-replay-capture");
             if (first < 0) return false;
-            if (first != Array.LastIndexOf(args, "--offline-replay-capture") || (Array.IndexOf(args, "--crowd-replay-benchmark") < 0 && CameraScaleComparison.Parse(args) == null))
-                throw new ArgumentException("Offline capture requires one flag and the fixed crowd replay or explicit frozen C05 camera review.");
+            if (first != Array.LastIndexOf(args, "--offline-replay-capture") || (Array.IndexOf(args, "--crowd-replay-benchmark") < 0 && Array.IndexOf(args, "--recorded-replay-window") < 0 && CameraScaleComparison.Parse(args) == null))
+                throw new ArgumentException("Offline capture requires one flag and the fixed crowd replay, a recorded replay window or explicit frozen C05 camera review.");
             foreach (var forbidden in new[] { "--wave-benchmark-profile", "--wave-benchmark-core-diagnostics", "--wave-benchmark-capture", "--wave-benchmark-mode" })
                 if (Array.IndexOf(args, forbidden) >= 0) throw new ArgumentException("Offline review capture cannot collect performance evidence: " + forbidden);
             return true;
