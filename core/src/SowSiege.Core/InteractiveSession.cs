@@ -27,6 +27,8 @@ namespace SowSiege.Core
         {
             if (catalog is null || options is null) { throw new ArgumentNullException(nameof(catalog)); }
             if (!options.Run.ManualCards || options.Run.Scenario != "normal" || options.Run.Movement is not null || !Enum.IsDefined(typeof(AimMode), options.InitialAimMode)) { throw new ArgumentException("Interactive run requires manual cards, normal scenario and manual movement."); }
+            // Interactive runs select the estate through InteractiveOptions.Estate, which replay format 7 records; RunOptions.EstateLoadout is for bot runs.
+            if (options.Run.EstateLoadout is not null) { throw new ArgumentException("Interactive runs select an estate loadout through InteractiveOptions.Estate."); }
             ReplayCodec.ValidateHash(options.DataHash);
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
             if (options.Feel is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Feel experiments require a wave runtime."); }

@@ -726,6 +726,7 @@ namespace SowSiege.Core
             Write(value.ManualCards);
             Write(value.Movement);
             if (value.TargetMaterial is not null) { Write("target-material-v1"); Write(value.TargetMaterial); }
+            if (value.EstateLoadout is not null) { Write("estate-loadout-v1"); Write(value.EstateLoadout); }
         }
         private void Write(InteractiveOptions? value)
         {

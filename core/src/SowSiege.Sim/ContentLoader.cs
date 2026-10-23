@@ -85,10 +85,16 @@ public static partial class ContentLoader
     public static string ProfileHash(string directory, string profileName = "s2-baseline") =>
         Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(ProfilePath(directory, profileName))));
 
+    public const string OptInDirectory = "opt-in";
+
+    // Opt-in profiles live in opt-in/profiles (ADR0069); a name may exist in only one of the two folders.
     private static string ProfilePath(string directory, string profileName)
     {
         Require(ProfileName().IsMatch(profileName), "Profile name must be a safe filename stem.");
-        return Path.Combine(directory, "profiles", profileName + ".json");
+        var standard = Path.Combine(directory, "profiles", profileName + ".json");
+        var optIn = Path.Combine(directory, OptInDirectory, "profiles", profileName + ".json");
+        Require(!(File.Exists(standard) && File.Exists(optIn)), "Profile name is defined twice.");
+        return File.Exists(optIn) ? optIn : standard;
     }
 
     public static string Hash(string directory, bool includeTest)
@@ -98,6 +104,9 @@ public static partial class ContentLoader
         {
             var relative = Path.GetRelativePath(directory, file).Replace(Path.DirectorySeparatorChar, '/');
             if (!includeTest && relative.StartsWith("test/", StringComparison.Ordinal)) { continue; }
+            // ADR0069: opt-in experiment files stay outside the data tree hash, so adding them keeps every recorded DataHash.
+            // Their runs are pinned by the catalog hash that replay format 7 records (EstateRunOptions.LoadoutCatalogHash).
+            if (relative.StartsWith(OptInDirectory + "/", StringComparison.Ordinal)) { continue; }
             hash.AppendData(Encoding.UTF8.GetBytes(relative + "\0"));
             hash.AppendData(File.ReadAllBytes(file));
             hash.AppendData(new byte[] { 0 });
@@ -231,7 +240,7 @@ public static partial class ContentLoader
                 if (typeof(ContentRecord).IsAssignableFrom(type) && name is "kind" or "evolutionKind"
                     || name == "effect" && type != typeof(CharterContent) && type != typeof(ItemContent) && typeof(ContentRecord).IsAssignableFrom(type)
                     || name is "runtime" or "runtimeProjection" || name == "remainsLoop" && type == typeof(EstateContent)
-                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" or "waveRuntimeFile" && type == typeof(RuntimeProfile)
+                    || name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" or "waveRuntimeFile" or "estateLightFile" or "estateLoadout" && type == typeof(RuntimeProfile)
                     || name == "evolutionGrowthRequirements" && type == typeof(FirstPlayableDefinition)
                     || name == "growth" && type == typeof(WeaponContent)
                     || name is "damage" or "range" or "cooldownTicks" or "knockback" && type == typeof(WeaponActivationContent)
@@ -243,7 +252,7 @@ public static partial class ContentLoader
                 throw new InvalidDataException($"Missing required property {location}.{name}.");
             }
             Require(!(type == typeof(EstateContent) && name == "remainsLoop" && member.ValueKind == JsonValueKind.Null), "Remains loop must be omitted or a complete object.");
-            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" or "waveRuntimeFile" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
+            Require(!(type == typeof(RuntimeProfile) && name is "experiment" or "weaponCombat" or "tuningFile" or "gameplay" or "firstPlayable" or "runtimeOverrides" or "waveRuntimeFile" or "estateLightFile" or "estateLoadout" && member.ValueKind == JsonValueKind.Null), "Profile extensions must be omitted or complete.");
             Require(!(type == typeof(WeaponContent) && name == "growth" && member.ValueKind == JsonValueKind.Null), "Weapon growth must be omitted or complete.");
             Require(!(type == typeof(WeaponActivationContent) && member.ValueKind == JsonValueKind.Null), "Activation members cannot be null.");
             Require(!(type == typeof(WeaponCombatProfileExtension) && member.ValueKind == JsonValueKind.Null), "Weapon combat members cannot be null.");

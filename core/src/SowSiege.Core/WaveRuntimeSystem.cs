@@ -26,7 +26,7 @@ namespace SowSiege.Core
         private readonly List<string> orbitSources = new();
         private readonly Dictionary<(string Id, int Level), (WaveGearDefinition Source, WaveGearLevel Parameters, WaveGearDefinition Value)> levels = new();
         private static readonly Position[] OrbitDirections = { new(1, 0), new(1, 1), new(0, 1), new(-1, 1), new(-1, 0), new(-1, -1), new(0, -1), new(1, -1) };
-        public WaveRuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive)
+        public WaveRuntimeSystem(ContentCatalog catalog, WorldState world, TrackedRandom random, InteractiveState? interactive, string? estateLoadout = null, int estateSeed = 0)
         {
             this.catalog = catalog;
             this.world = world;
@@ -45,9 +45,10 @@ namespace SowSiege.Core
             subscriptions = new(catalog, world, modules, queries);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
-            estate = WaveEstateSystem.Create(catalog, world, interactive);
+            estate = interactive is null ? WaveEstateSystem.Create(catalog, world, null, estateLoadout, estateSeed) : WaveEstateSystem.Create(catalog, world, interactive, interactive.EstateLoadout, interactive.EstateSeed);
         }
         public int MovementSpeed(int original) => original + subscriptions.Modifier("move-speed");
+        public bool GuideToEstate() => estate?.Guide(MovementSpeed(catalog.Tuning.World.Map.LordSpeed)) == true;
         public bool EligibleEvolution(WaveEvolutionDefinition e) => !state.Evolutions.Contains(e.Id) &&
             WaveEvolutionUnlocks.Eligible(WaveEvolutionUnlocks.Effective(e, modules[e.Id]), definition, world.Equipment, state);
         public IEnumerable<string> ExtraCards() => definition.Items.Values.Where(i => !state.Items.Contains(i.Id) && (i.EquipmentIds.Length == 0 || i.EquipmentIds.Any(id => world.Equipment.Any(e => e.Id == id)))).Select(i => i.Id).Concat(definition.Evolutions.Values.Where(EligibleEvolution).Select(e => e.Id));

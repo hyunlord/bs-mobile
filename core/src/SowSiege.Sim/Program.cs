@@ -14,7 +14,7 @@ try
     if (args.Length > 0 && args[0] == "combined-showcase-replay") { return CombinedShowcaseFixtureCli.Verify(args); }
     if (args.Length > 0 && args[0] == "combined-showcase-fixture") { return CombinedShowcaseFixtureCli.Run(args); }
     if (args.Length > 0 && args[0] == "showcase-fixtures") { return ShowcaseFixtureCli.Run(args); }
-    if (args.Length > 0 && args[0] is "interactive-fixtures" or "interactive-replay" or "field-fixture" or "melee-aim-fixture") { return InteractiveCli.Run(args); }
+    if (args.Length > 0 && args[0] is "interactive-fixtures" or "interactive-replay" or "field-fixture" or "melee-aim-fixture" or "estate-fixture") { return InteractiveCli.Run(args); }
     if (UnityExportCli.TryRun(args)) { return 0; }
     if (MetaEconomyCli.TryRun(args)) { return 0; }
     if (MetaParityCli.TryRun(args)) { return 0; }
@@ -37,7 +37,7 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     var valueOptions = new HashSet<string>(StringComparer.Ordinal)
 {
     "--data", "--seed", "--iterations", "--hero", "--estate", "--policy", "--output", "--metrics",
-        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement", "--target-material", "--diagnostic-variant", "--diagnostic-output", "--diagnostic-raw-output"
+        "--people-rule", "--scenario", "--duration-ticks", "--warmup-ticks", "--timings", "--profile", "--movement", "--target-material", "--estate-loadout", "--diagnostic-variant", "--diagnostic-output", "--diagnostic-raw-output"
 };
     var options = new Dictionary<string, string>(StringComparer.Ordinal);
     for (var index = 0; index < args.Length; index++)
@@ -79,7 +79,10 @@ static void Run(string[] args, CoreAssemblyMetadata coreAssembly)
     if (peopleRule is not ("A" or "B" or "C") || scenario is not ("normal" or "load")) { throw new ArgumentException("people-rule must be A/B/C; scenario must be normal/load."); }
     if (!catalog.Tuning.Policies.ContainsKey(policy) || !catalog.Heroes.ContainsKey(heroId) || !catalog.Estates.ContainsKey(estateId)) { throw new ArgumentException("Unknown policy, hero, or estate."); }
     var movement = options.TryGetValue("--movement", out var requestedMovement) ? requestedMovement : catalog.Experiment is null ? null : "circuit";
-    var run = new RunOptions(seed, heroId, estateId, policy, peopleRule, scenario, Movement: movement, TargetMaterial: options.GetValueOrDefault("--target-material"));
+    // ADR0069: an opt-in estate profile turns the dark estate on for bots with its declared loadout; --estate-loadout off|<id> overrides.
+    var estateLoadout = options.TryGetValue("--estate-loadout", out var requestedLoadout) ? (requestedLoadout == "off" ? null : requestedLoadout)
+        : catalog.WaveRuntime?.EstateLight is null ? null : profile.EstateLoadout;
+    var run = new RunOptions(seed, heroId, estateId, policy, peopleRule, scenario, Movement: movement, TargetMaterial: options.GetValueOrDefault("--target-material"), EstateLoadout: estateLoadout);
     var samples = new List<double>();
     var results = new List<SimulationResult>();
     var loadExpected = catalog.Tuning.World.Load;

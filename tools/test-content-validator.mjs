@@ -9,6 +9,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { validateContent } from './validate-content.mjs';
+import Ajv2020 from 'ajv/dist/2020.js';
 
 const id = { type: 'string', pattern: '^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$' };
 const objectSchema = (properties, required = Object.keys(properties)) => ({
@@ -435,3 +436,45 @@ for (const [label, remainsLoop, valid] of [
     if (!valid) assert.match(result.errors.join('\n'), /schema violation/);
   });
 }
+
+// ADR0069 (2026-10-22): the profile schema gains the optional opt-in fields estateLightFile and estateLoadout. Every default
+// profile must validate the same with and without them, and none of them may carry the fields.
+async function profileValidators(mutateProfileSchema = () => {}) {
+  const ajv = new Ajv2020({ allErrors: true, strict: true, validateSchema: true });
+  const schemaRoot = fileURLToPath(new URL('../data/schema', import.meta.url));
+  for (const name of (await readdir(schemaRoot)).filter(file => file.endsWith('.schema.json'))) {
+    const schema = JSON.parse(await readFile(path.join(schemaRoot, name), 'utf8'));
+    const kind = path.basename(name, '.schema.json');
+    if (kind === 'profile') mutateProfileSchema(schema);
+    ajv.addSchema(schema, kind);
+  }
+  return ajv.getSchema('profile');
+}
+const estateProfileFields = ['estateLightFile', 'estateLoadout'];
+test('default profiles validate unchanged under the profile schema with the optional estate fields', async () => {
+  const schema = JSON.parse(await readFile(new URL('../data/schema/profile.schema.json', import.meta.url), 'utf8'));
+  for (const field of estateProfileFields) {
+    assert.ok(schema.properties[field], `${field} is declared`);
+    assert.ok(!schema.required.includes(field), `${field} stays optional`);
+  }
+  const extended = await profileValidators();
+  const withoutEstate = await profileValidators(value => { for (const field of estateProfileFields) delete value.properties[field]; });
+  const profileRoot = fileURLToPath(new URL('../data/profiles', import.meta.url));
+  const names = (await readdir(profileRoot)).filter(file => file.endsWith('.json'));
+  assert.ok(names.includes('wave-1a.json'));
+  for (const name of names) {
+    const profile = JSON.parse(await readFile(path.join(profileRoot, name), 'utf8'));
+    for (const field of estateProfileFields) assert.equal(profile[field], undefined, `${name} must not carry ${field}`);
+    assert.equal(extended(profile), true, `${name}: ${JSON.stringify(extended.errors)}`);
+    assert.equal(withoutEstate(profile), true, `${name}: ${JSON.stringify(withoutEstate.errors)}`);
+  }
+});
+for (const [label, field, value, valid] of [
+  ['opt-in light file', 'estateLightFile', 'opt-in/estate-light/dark-estate-m2.json', true],
+  ['light file outside opt-in', 'estateLightFile', 'estate-light/dark-estate-m2.json', false],
+  ['empty loadout', 'estateLoadout', '', false],
+]) test(`profile schema checks ${label} only where present`, async () => {
+  const validate = await profileValidators();
+  const profile = JSON.parse(await readFile(new URL('../data/profiles/wave-1a.json', import.meta.url), 'utf8'));
+  assert.equal(validate({ ...profile, [field]: value }), valid, JSON.stringify(validate.errors));
+});
