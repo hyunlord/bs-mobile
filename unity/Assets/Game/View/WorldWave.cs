@@ -352,7 +352,7 @@ namespace Game.View
             }
             DrawThreatWarnings(current,alpha,lordPoint);
             var growthHint=growthHints.Present(visualTime,GameVisualTokens.WaveCollectionLabelSeconds);
-            if(growthHint!=null)growthLabels.ShowClamped(0,growthHint,lordPoint+Vector2.up*GameVisualTokens.WaveCollectionLabelRise,OverlayWorldBounds());
+            if(growthHint!=null)ShowGrowthHint(growthHint,lordPoint);
             var intakeDrawn=false;var harvestCues=0;
             for(var i=waveEffects.Count-1;i>=0;i--)
             {

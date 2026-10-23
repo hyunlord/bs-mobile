@@ -1,7 +1,7 @@
 # 11 기술·ADR 색인
 
-- 버전: v1.1 · 날짜: 2026-10-12
-- 바뀐 점: 살아 있는 설계 계약과 화면 전용 손맛·영웅 모션 비교 ADR을 연결한다.
+- 버전: v1.2 · 날짜: 2026-10-21
+- 바뀐 점: ADR 색인에 빠져 있던 0057–0064·0066–0068을 넣었다(무기 묶음 머지 뒤, #340). 이전 v1.1(2026-10-12): 살아 있는 설계 계약과 화면 전용 손맛·영웅 모션 비교 ADR을 연결한다.
 - 상태: 정본 — 구현 경계는 확정, 성능·실기·미선택 제작 방식은 별도 관문.
 - 근거: [AGENTS](../../../AGENTS.md), [시작 main](https://github.com/hyunlord/bs-mobile/commit/9387b7669bdc3d01790246509ad8d66f212af0ad), [기존 시스템 설계](../08_system-design-v1.md).
 
@@ -103,4 +103,15 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR0054: 선택 보상을 재생 명령과 원자적 계정 지급으로 나눈다](../../adr/0054-opt-in-host-rewards-and-local-bm-slots.md)
 - [ADR 0055: 정상 속도의 지연 회복 틱을 여러 표시 프레임에 나눈다](../../adr/0055-defer-recovery-ticks-between-rendered-frames.md)
 - [ADR 0056: 구현 변경과 같은 PR에서 살아 있는 설계를 갱신한다](../../adr/0056-living-design-contract.md)
+- [ADR 0057: 병합과 업로드가 끝난 로컬 산출물을 지운다](../../adr/0057-local-artifact-hygiene.md)
+- [ADR 0058: wave 진화 해금과 카드 제시를 데이터로 정한다](../../adr/0058-data-driven-evolution-unlocks-and-card-offers.md)
+- [ADR 0059: 검토 프로필의 근접 무기만 가까운 적을 향한다](../../adr/0059-opt-in-melee-aim-review.md)
+- [ADR 0060: 프레임 영웅의 표시 계약과 해시를 보존하는 진단 도구](../../adr/0060-frame-hero-and-observational-profiling.md)
+- [ADR 0061: 검토 합성 장판이 펄스마다 같은 적을 다시 칠 수 있게 하는 선택 옵션](../../adr/0061-review-patch-rehit-each-pulse.md)
+- [ADR 0062: 검토 장면 수로 활 — 직선으로 날아가 적 사이를 튕기는 물화살](../../adr/0062-review-canal-bow-ricochet.md)
+- [ADR 0063: 검토 장면 곡창 투석끈 — 자루가 떨어진 자리로 적을 모은 뒤 폭격](../../adr/0063-review-granary-sling-lure-bomb.md)
+- [ADR 0064: 어둠 속 영지 — 영구 밝힘 구역과 잠든 건물의 Core 계약](../../adr/0064-dark-estate-awakening-buildings.md)
 - [ADR 0065: 타격 시점과 영웅 제작 방식을 규칙 변경 없이 비교한다](../../adr/0065-view-only-impact-and-hero-motion-comparison.md) (처음 번호 0057, main과 겹쳐 다시 매김)
+- [ADR 0066: 실제 피해 귀속과 소리 포함 기사 검토를 규칙 변경 없이 관측한다](../../adr/0066-observational-damage-and-audible-knight-review.md) (처음 번호 0058, main과 겹쳐 다시 매김)
+- [ADR 0067: ArchitectureGuard는 저장소 루트 artifacts/의 생성 사본에서 콘텐츠 ID를 모으지 않는다](../../adr/0067-architecture-guard-ignores-generated-artifacts.md)
+- [ADR 0068: unity/를 바꾸는 PR은 맥 Unity 전체 실행 기록이 있어야 병합한다](../../adr/0068-mac-unity-test-record-before-merge.md)

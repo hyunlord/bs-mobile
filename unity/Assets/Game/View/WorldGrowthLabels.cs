@@ -51,17 +51,29 @@ namespace Game.View
 
         public void BeginFrame() => Clear();
 
-        public void ShowClamped(int slot, string message, Vector2 position, Rect worldBounds)
+        public void ShowClamped(int slot, string message, Vector2 position, Rect worldBounds, float opacity = 1)
         {
             if (worldBounds.width <= 0 || worldBounds.height <= 0) { Hide(slot); return; }
-            Show(slot, message, position);
+            Show(slot, message, position, opacity);
             var bounds = labelRenderers[slot].bounds;
             var center = (Vector2)bounds.center;
             var extent = (Vector2)bounds.extents + Vector2.one * .03f;
             var target = new Vector2(
                 Mathf.Clamp(center.x, worldBounds.xMin + Mathf.Min(extent.x, worldBounds.width * .5f), worldBounds.xMax - Mathf.Min(extent.x, worldBounds.width * .5f)),
                 Mathf.Clamp(center.y, worldBounds.yMin + Mathf.Min(extent.y, worldBounds.height * .5f), worldBounds.yMax - Mathf.Min(extent.y, worldBounds.height * .5f)));
-            Show(slot, message, position + target - center);
+            Show(slot, message, position + target - center, opacity);
+        }
+
+        public Bounds SlotBounds(int slot) => labelRenderers[slot].bounds;
+        public bool Shown(int slot) => labels[slot] != null && labels[slot].gameObject.activeSelf;
+        public float Opacity(int slot) => labels[slot] != null ? labels[slot].color.a : 0;
+
+        // Hero keep-out (#345, the damage numbers' rule): a label box touching the circle round the drawn hero's centre.
+        public static bool TouchesCircle(Bounds bounds, Vector2 centre, float radius)
+        {
+            if (radius <= 0) return false;
+            var closest = new Vector2(Mathf.Clamp(centre.x, bounds.min.x, bounds.max.x), Mathf.Clamp(centre.y, bounds.min.y, bounds.max.y));
+            return (closest - centre).sqrMagnitude < radius * radius;
         }
 
         public void Show(int slot, string message, Vector2 position, float opacity = 1)

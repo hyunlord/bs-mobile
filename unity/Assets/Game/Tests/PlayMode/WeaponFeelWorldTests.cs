@@ -314,6 +314,19 @@ namespace Tests.PlayMode
                 }
                 Assert.That(world.SoldierWalkDraws, Is.EqualTo(walked), "soldiers of a stopped hero do not walk in place");
                 Assert.That(world.SoldierStandDraws - stood, Is.EqualTo(world.MinionCount * Last), "every soldier of a stopped hero stands");
+                // Ally marker B+ (#352): every Soldier B body carries the marker on its own frame, in the soldier's batch.
+                Assert.That(world.AllyMarkerDraws, Is.EqualTo(world.SoldierWalkDraws + world.SoldierStandDraws), "one marker per soldier body");
+                Assert.That(world.AllyMarkerFrameMask, Is.EqualTo(world.SoldierWalkFrameMask | 1 << 4), "the marker follows the walk frames and the standing frame 4");
+                var still = At(Moving);
+                world.AllyMarkersEnabled = false;
+                world.AcceptWave(catalog, runtime);
+                world.Present(still, still, WavePresentation.Envelope(catalog, still, session.View.CaptureCards(), runtime), 1, Frame, new Rect(0, 0, 720, 1280));
+                int callsWithout = world.DrawCalls, instancesWithout = world.SubmittedInstances;
+                world.AllyMarkersEnabled = true;
+                world.AcceptWave(catalog, runtime);
+                world.Present(still, still, WavePresentation.Envelope(catalog, still, session.View.CaptureCards(), runtime), 1, Frame, new Rect(0, 0, 720, 1280));
+                Assert.That(world.DrawCalls, Is.EqualTo(callsWithout), "markers add no draw batch");
+                Assert.That(world.SubmittedInstances - instancesWithout, Is.EqualTo(world.MinionCount), "one marker instance per soldier");
             }
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }
