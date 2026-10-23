@@ -1,0 +1,10 @@
+M2 dark estate buildings (watchtower, well/shrine, granary; sleeping and awake), unity/Assets/Art/estate-buildings.png.
+
+Origin: Astra generated the six images with the built-in image generator for this project (Release
+m2-building-art-20261019, generation-provenance.json: method "built-in imagegen"; the release records the generator
+output paths, not the prompt text). The user approved the art and the RIM 3 boundary on 2026-10-19.
+
+Packing: Release m2-building-game-assets-20261019 (building-manifest-draft.json, pack-verification.json) crops each
+sleeping/awake pair to the same union rectangle and scales both by the same factor to the approved visible heights at a
+115 px hero (watchtower 210 px, well/shrine 130 px, granary 170 px). The atlas is copied byte for byte
+(sha256 ed7b706fd839a8ec3b4c573ed941a270859d8dcb427624265cac66ea88246511); nothing was redrawn.

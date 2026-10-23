@@ -279,7 +279,7 @@ namespace Game.App
                         {
                             if (run.Session != null) throw new InvalidOperationException("Core warmup must precede the fresh run.");
                             var catalog = FoundationBoot.Catalog;
-                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash, MeleeAim: CatalogRunOptions.MeleeAim(catalog));
+                            var options = new InteractiveOptions(new RunOptions(RunSeed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true, TargetMaterial: captureTarget), run.Aim, FoundationBoot.VerifiedDataHash, MeleeAim: CatalogRunOptions.MeleeAim(catalog), Estate: CatalogRunOptions.Estate(catalog));
                             var warmTicks = PrewarmIsolatedCore(catalog, options);
                             Log("isolated-core-warmup", "discarded separate normal session; ticks=" + warmTicks + "; real run not created");
                             minuteCapture = gameObject.AddComponent<GoldenMinuteCapture>();

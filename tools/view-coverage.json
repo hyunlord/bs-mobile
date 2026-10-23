@@ -35,7 +35,7 @@
     "profiles": ["wave-1a"],
     "evidence": [
       { "file": "unity/Assets/Game/View/WorldRenderer.cs", "text": "if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);" },
-      { "file": "unity/Assets/Game/View/Art/ArtCatalog.cs", "text": "public static bool UsesWaveArt => ProfileName == \"wave-1a\" || ProfileName == \"m1-showcase-review\";" }
+      { "file": "unity/Assets/Game/View/Art/ArtCatalog.cs", "text": "public static bool UsesWaveArt => ProfileName == \"wave-1a\" || ProfileName == \"m1-showcase-review\" || ProfileName == \"wave-2a-dark\";" }
     ]
   },
   "scopes": [

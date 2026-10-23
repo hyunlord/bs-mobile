@@ -8,11 +8,11 @@ namespace Game.App
     {
         static readonly string[] Priority={"core:sowing_sworddance","core:warded_masonry","core:sheltered_sowing","core:seed_bag","core:rain_ladle","core:carpenter_hammer","core:muster_horn","core:iron_blade","core:ward_orbit","core:storm_fork","core:ember_wand","core:harvest_scythe"};
         static string[] preferred;
-        static bool evasive;
+        static bool evasive,estate;
         public static void ConfigureMovement(string value)
         {
-            if(!string.IsNullOrEmpty(value)&&value!="default"&&value!="evasive")throw new ArgumentException("Capture movement must be default or evasive.",nameof(value));
-            evasive=value=="evasive";
+            if(!string.IsNullOrEmpty(value)&&value!="default"&&value!="evasive"&&value!="estate")throw new ArgumentException("Capture movement must be default, evasive or estate.",nameof(value));
+            evasive=value=="evasive";estate=value=="estate";
         }
         public static void ConfigurePriority(string value) => preferred=string.IsNullOrWhiteSpace(value)?null:value.Split(',');
         public static int CardRank(string id) { var selection=preferred??Priority;var index=Array.IndexOf(selection,id);return index<0?100:index; }
@@ -51,7 +51,39 @@ namespace Game.App
                 // do not move the estate, camera, rewards, or simulation state for the comparison.
                 if(count>0)target=Constrain(frame,new WorldPoint((int)(x/count+1800),(int)(y/count+1600)));
             }
+            if(estate&&(EstateTarget(frame,wave)??EstateTourTarget(frame,wave)) is { } building)return building;
             return evasive?EvasiveTarget(frame,wave,target,catalog):target;
+        }
+        // Review movement "estate" (#347): walk to the nearest sleeping estate building and stand on it until it wakes, as the
+        // Core bot movement estate-wake does. A paying building whose stay is complete but still unpaid cannot be afforded
+        // yet; it is skipped while another one is left. With none left the ordinary growth target takes over.
+        public static WorldPoint? EstateTarget(RunFrame frame,WaveRuntimeFrame wave)
+        {
+            if(wave?.Estate==null)return null;
+            WaveEstateBuildingView best=null;var bestDistance=double.MaxValue;var bestStalled=true;
+            foreach(var building in wave.Estate.Buildings)
+            {
+                if(building.Phase==WaveEstatePhase.Active)continue;
+                var stalled=building.ConfirmTicks>0&&!building.Paid&&building.Dwell>=building.ConfirmTicks;
+                var distance=Distance(building.Position,frame.Lord.Position);
+                if(best==null||(!stalled&&bestStalled)||(stalled==bestStalled&&distance<bestDistance)){best=building;bestDistance=distance;bestStalled=stalled;}
+            }
+            return best?.Position;
+        }
+        // With every building awake the review route tours them so each effect shows (user instruction 2026-10-23): 15 s at the
+        // watchtower, the well and the granary in turn, by the run's own tick. At the granary the hero circles inside its light, so
+        // orbs left behind are pulled in (like the Core estate fixture, SowSiege.Sim estate-fixture).
+        public const int EstateTourStopTicks=450,EstateTourGranaryCircle=1200,EstateTourGranaryPeriodTicks=300;
+        static readonly WaveEstateEffectKind[] TourOrder={WaveEstateEffectKind.Attack,WaveEstateEffectKind.Heal,WaveEstateEffectKind.Magnet};
+        public static WorldPoint? EstateTourTarget(RunFrame frame,WaveRuntimeFrame wave)
+        {
+            if(wave?.Estate==null)return null;
+            var kind=TourOrder[frame.Tick/EstateTourStopTicks%TourOrder.Length];
+            var stop=wave.Estate.Buildings.FirstOrDefault(b=>b.Phase==WaveEstatePhase.Active&&b.Effect==kind);
+            if(stop==null)return null;
+            if(kind!=WaveEstateEffectKind.Magnet)return stop.Position;
+            var angle=frame.Tick%EstateTourGranaryPeriodTicks*Math.PI*2/EstateTourGranaryPeriodTicks;
+            return new WorldPoint(stop.Position.X+(int)Math.Round(EstateTourGranaryCircle*Math.Cos(angle)),stop.Position.Y+(int)Math.Round(EstateTourGranaryCircle*Math.Sin(angle)));
         }
         static WorldPoint GrowthTarget(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog)
         {

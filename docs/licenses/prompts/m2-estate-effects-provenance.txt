@@ -1,0 +1,14 @@
+M2 dark estate building effects (watchtower arrow and impact, well heal ring, granary inward ring), unity/Assets/Art/estate-effects.png.
+
+Origin: Astra generated the images with the built-in image generator for this project. Release m2-building-fx-20261022
+holds the arrow, impact and heal ring (source-preservation.json). Release m2-granary-magnet-r2-20261022 holds the granary
+inward ring r2 (approved-source-preservation.json, grain source exec-f9ad7472-9874-42a2-af36-361fc3e8cfde.png). The
+releases record the generator outputs and the deterministic raster steps, not the prompt text. The user approved all
+three effects on 2026-10-22.
+
+Packing: tools/art-authoring/estate-effects/pack.mjs checks the delivered files' sha256 and reduces every cell to its
+approved display size at the 115 px hero by an area average over premultiplied alpha:
+- arrow 46 px wide and impact 14 px, both at 2 texels per display pixel;
+- heal ring 170 px;
+- granary ring canvas 576 px, an exact half of the 1152 px delivery cell, with the ring 2.5x the granary.
+Nothing was redrawn or recoloured. packed-frames.json records the atlas sha256.

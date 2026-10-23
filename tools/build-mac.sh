@@ -5,7 +5,7 @@ cd "$ROOT"
 export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export UNITY_CONTENT_PROFILE="${UNITY_CONTENT_PROFILE:-first-playable}"
-case "$UNITY_CONTENT_PROFILE" in first-playable|wave-1a) ;; *) echo "Unsupported Unity profile: $UNITY_CONTENT_PROFILE" >&2; exit 1 ;; esac
+case "$UNITY_CONTENT_PROFILE" in first-playable|wave-1a|wave-2a-dark) ;; *) echo "Unsupported Unity profile: $UNITY_CONTENT_PROFILE" >&2; exit 1 ;; esac
 export UNITY_MAC_DEVELOPMENT="${UNITY_MAC_DEVELOPMENT:-0}"
 case "$UNITY_MAC_DEVELOPMENT" in
   0) BUILD_METHOD=MacRelease; BUILD_KIND=RELEASE ;;

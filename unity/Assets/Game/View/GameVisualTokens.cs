@@ -67,6 +67,21 @@ namespace Game.View
         // Ally marker cell's bottom-left corner from the Soldier B foot pivot, in source pixels (x right, y up), as packed by
         // tools/art-authoring/ally-marker/pack.mjs (packed-frames.json offsetPixels, #352).
         public static readonly Vector2 AllyMarkerOffsetPixels = new Vector2(-4.000008f, 107.99995f);
+        // M2 dark estate View (#347). Review pixels per Unity unit at the hero's pixel scale (the knight's 240 px cell is 1.081423
+        // units tall): the approved RIM formulas (Release m2-building-game-assets-20261019) are written in those pixels.
+        public const float EstateReviewPixelsPerUnit = 240f / 1.081423f;
+        public static readonly Color EstateRim = new Color32(0xE5, 0xC9, 0x7F, 255);
+        public const int EstateBuildingLayer = GrowthLayer + 3;
+        public const float EstateRingShowWakeRadii = 2f, EstateRingRise = .14f, EstateRingRadius = .15f, EstateRingDotRadius = .02f;
+        public const int EstateRingDots = 20;
+        public static readonly Color EstateDarkOutline = new Color(.07f, .05f, .10f, .95f);
+        public const float EstateDarkOutlineTexels = 2.5f;
+        public const float EstateEyeHeight = .70f, EstateEyeSpacing = .07f, EstateEyeForward = .05f, EstateEyeRadius = .012f, EstateEyeMinimumRadius = .006f;
+        public static readonly Color EstateEyeGlint = new Color32(0xFF, 0xB0, 0x4A, 255);
+        // Building effects (#347, user decisions 2026-10-23): the watchtower arrow flies 0.15 s from the tower top to the hit and its
+        // impact shows 0.1 s; the well heal ring fades from its last frame within 0.2 s; both rings lie on the ground under buildings.
+        public const float EstateArrowSeconds = .15f, EstateImpactSeconds = .1f, EstateHealFadeSeconds = .2f, EstateArrowLaunchHeight = .85f, EstateArrowHitRise = .3f;
+        public const int EstateEffectRingLayer = GrowthLayer + 2, EstateArrowLayer = WaveAttackEdgeLayer;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }
