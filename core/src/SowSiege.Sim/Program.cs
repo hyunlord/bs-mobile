@@ -14,7 +14,7 @@ try
     if (args.Length > 0 && args[0] == "combined-showcase-replay") { return CombinedShowcaseFixtureCli.Verify(args); }
     if (args.Length > 0 && args[0] == "combined-showcase-fixture") { return CombinedShowcaseFixtureCli.Run(args); }
     if (args.Length > 0 && args[0] == "showcase-fixtures") { return ShowcaseFixtureCli.Run(args); }
-    if (args.Length > 0 && args[0] is "interactive-fixtures" or "interactive-replay" or "field-fixture" or "melee-aim-fixture") { return InteractiveCli.Run(args); }
+    if (args.Length > 0 && args[0] is "interactive-fixtures" or "interactive-replay" or "field-fixture" or "melee-aim-fixture" or "estate-fixture") { return InteractiveCli.Run(args); }
     if (UnityExportCli.TryRun(args)) { return 0; }
     if (MetaEconomyCli.TryRun(args)) { return 0; }
     if (MetaParityCli.TryRun(args)) { return 0; }

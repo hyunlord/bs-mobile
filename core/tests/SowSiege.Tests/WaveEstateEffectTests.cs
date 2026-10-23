@@ -186,4 +186,91 @@ public sealed class WaveEstateEffectTests
         Directory.CreateDirectory(to);
         foreach (var file in Directory.EnumerateFiles(from, "*", SearchOption.AllDirectories)) { File.Copy(file, file.Replace(from, to)); }
     }
+
+    // The format 7 estate fixture (also replayed on both Core targets by tools/verify-estate-target-parity.mjs): normal input wakes
+    // all three buildings and every effect fires (shots, heals and granary pulls). Its end is pinned so effect rules cannot drift.
+    [Fact]
+    public void EstateFixtureIsFormatSevenFiresEveryEffectAndKeepsItsEndHash()
+    {
+        var c = ContentLoader.Load(Data, false, Profile); var dataHash = ContentLoader.Hash(Data, false);
+        using var stream = new MemoryStream();
+        var observation = InteractiveCli.RecordEstateFixture(c, dataHash, InteractiveCli.EstateFixtureSeed, stream);
+        Assert.True(observation.AllAwakeTick > 0);
+        Assert.True(observation.Shots > 0 && observation.Heals > 0 && observation.MagnetPulls > 0, $"{observation}");
+        Assert.Equal(0, observation.PullsOutsideGranaries);
+        stream.Position = 0;
+        var replay = ReplayCodec.Read(stream);
+        Assert.Equal(ReplayCodec.EstateVersion, replay.Header.FormatVersion);
+        Assert.Null(replay.Header.Options.Feel);
+        var verification = ReplayRunner.Verify(c, dataHash, replay);
+        Assert.Equal((2688, ReplayEndKind.Quit, "FD73A19A584ECB7F883D6B02E46775332A35869F44F464D488F41DF5DEA8D746"),
+            (verification.Tick, (ReplayEndKind)verification.EndKind, verification.StateHash));
+    }
+
+    // A weapon and the watchtower can both reach a one-health enemy on the same tick; the kill and its experience are paid once.
+    [Fact]
+    public void WatchtowerAndWeaponOnTheSameEnemyPayTheKillOnce()
+    {
+        var c = ContentLoader.Load(Data, false, Profile);
+        var session = new InteractiveSession(c, WaveEstateTests.Options(c));
+        var world = session.Simulation.World;
+        var tower = world.WaveRuntime!.Estate!.Single(b => b.DefinitionId == "core:estate_watchtower");
+        tower.Phase = WaveEstatePhase.Active; tower.ReadyTick = 0; tower.Position = world.Lord;
+        world.Enemies.Clear();
+        var enemy = new EnemyState { Id = 9100, Definition = "core:raider", Position = new(world.Lord.X + 150, world.Lord.Y), Health = 1 };
+        world.Enemies.Add(enemy);
+        var experience = world.KillExperience;
+        session.Apply(new ReplayCommand(session.NextSequence, session.View.CaptureFrame().Tick, ReplayCommandKind.Advance));
+        var events = ((IWaveRunView)session.View).CaptureWaveRuntime()!.Events;
+        Assert.Single(events, e => e.Kind == "enemy-killed" && e.SubjectId == enemy.Id);
+        Assert.True(events.Count(e => e.Kind == "estate-shot" && e.SubjectId == enemy.Id) <= 1);
+        Assert.Equal(experience + c.Enemies["core:raider"].Experience, world.KillExperience);
+        Assert.DoesNotContain(world.Enemies, e => e.Id == enemy.Id);
+    }
+
+    // The well heals up to the run's own maximum (the readable-health feel caps it at 100, below the map value) and never raises a
+    // fallen hero.
+    [Fact]
+    public void WellHealsOnlyUpToTheFeelMaximumAndNeverRevives()
+    {
+        var c = ContentLoader.Load(Data, false, Profile);
+        var session = new InteractiveSession(c, WaveEstateTests.Options(c) with { Feel = new FeelExperimentOptions(ReadableHealth: true) });
+        var world = session.Simulation.World;
+        var system = WaveEstateSystem.Create(c, world, session.State, "L1", 1)!;
+        var well = world.WaveRuntime!.Estate!.Single(b => b.DefinitionId == "core:estate_well_shrine");
+        var effect = c.WaveRuntime!.EstateLight!.Buildings[well.DefinitionId].Effect!;
+        well.Phase = WaveEstatePhase.Active; world.Lord = well.Position;
+        world.Enemies.Clear(); world.WaveRuntime.Events.Clear();
+        var maximum = session.View.CaptureFrame().Lord.MaxHealth;
+        Assert.Equal(100, maximum);
+        Assert.True(c.Tuning.World.Map.LordHealth > maximum);
+        world.LordHealth = maximum - 5;
+        system.Tick();
+        Assert.Equal(maximum, world.LordHealth);
+        world.Tick += effect.PeriodTicks;
+        system.Tick();
+        Assert.Equal(maximum, world.LordHealth);
+        world.LordHealth = 0;
+        world.Tick += effect.PeriodTicks;
+        system.Tick();
+        Assert.Equal(0, world.LordHealth);
+        Assert.Equal(5, world.WaveRuntime.Counters["estate-healing:core:estate_well_shrine"]);
+    }
+
+    // A harvest inside both the home light and the granary light adds the granary bonus once; the home has no effect of its own.
+    [Fact]
+    public void HarvestInsideTheHomeAndGranaryLightsGetsTheBonusOnce()
+    {
+        var (session, system, granary, definition) = Effect("core:estate_granary");
+        var world = session.Simulation.World; var runtime = ContentLoader.Load(Data, false, Profile).WaveRuntime!;
+        var home = world.WaveRuntime!.Estate!.Single(b => b.DefinitionId == runtime.EstateLight!.HomeId);
+        granary.Position = new(home.Position.X + 4000, home.Position.Y);
+        var at = new Position(home.Position.X + 2000, home.Position.Y);
+        Assert.True(WaveEstateSystem.Lit(runtime, new() { home }, at));
+        var food = world.Food;
+        world.WaveRuntime.Emit(world.Tick, "harvest-complete", "core:seed_bag", 5, at, at);
+        system.Tick();
+        Assert.Equal(food + definition.Effect!.Bonus, world.Food);
+        Assert.Single(world.WaveRuntime.Events, e => e.Kind == "estate-harvest-bonus");
+    }
 }
