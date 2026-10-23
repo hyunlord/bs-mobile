@@ -279,8 +279,10 @@ M2는 데이터 고정 목록 L1·L3만 쓴다 [결정]. 계정 영지에서 목
 | 종류 | 동작 | 재사용과 신규 |
 | --- | --- | --- |
 | `Attack` 망루 | `PeriodTicks`마다 원 안에서 가장 가까운 적 하나(거리, 같으면 Id 순)에게 `Amount` 피해. 적이 없으면 다음 틱에 다시 찾는다 | 즉시 타격 사건 `estate-shot`. 처치는 기존 처치 처리를 거친다. 무기 레벨·진화·물품 배율을 받지 않는다. 피해 합계는 `estate-damage:<id>` 계수기 |
-| `Heal` 우물·사당 | 영주가 원 안에 있으면 `PeriodTicks`마다 `Amount`만큼 회복(최대 체력까지). 그 틱에 맞으면 `PauseTicks` 동안 멈춘다 | 사건 `estate-heal`, 합계 `estate-healing:<id>`. 최대 체력은 체감 실험 설정을 따른다 |
+| `Heal` 우물·사당 | 영주가 원 안에 있으면 `PeriodTicks`마다 `Amount`만큼 회복(최대 체력까지). 영웅이 맞으면 그 틱부터 `PauseTicks` 동안 멈춘다. 이 정지는 영웅의 것이라 모든 우물이 공유하고, 우물이 깨어나기 전의 피격도 포함한다(2026-10-23 사용자 결정) | 사건 `estate-heal`, 합계 `estate-healing:<id>`. 최대 체력은 체감 실험 설정을 따른다 |
 | `Magnet` 곡창 | 영주가 원 안에 있으면 원 안의 경험치 구슬을 틱당 `Amount`만큼 영주 쪽으로 끌어온다. 원 안 수확마다 곡물 `Bonus`를 더한다 | 회수는 기존 줍기 반경. 사건 `estate-harvest-bonus` |
+
+- **재생 바이트(2026-10-23 정정):** 효과가 없는 영지의 카탈로그·상태는 첫 조각과 바이트가 같다. 효과와 효과 시계(쿨다운·마지막 피격)는 별도 선택 블록(`wave-estate-effects-v1`, `wave-estate-effect-clocks-v1`)에만 들어간다. 그래서 첫 조각 Core로 만든 형식 7 기록이 그대로 검증된다([ADR0064](../adr/0064-dark-estate-awakening-buildings.md) 구현 기록).
 
 ### 실험 데이터 (`data/opt-in/estate-light/dark-estate-m2.json`, 모든 값 [가설] #126)
 

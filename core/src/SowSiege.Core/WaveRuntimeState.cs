@@ -75,6 +75,9 @@ namespace SowSiege.Core
         // of non-interactive runs unchanged, as the explicit codec already does.
         [OmitWhenNull] public List<WaveEstateBuilding>? Estate;
         [OmitWhenNull] public string? EstateLoadout;
+        // Last tick the hero was hit, kept only when the loadout has a healing building: the well's pause after a hit is the hero's,
+        // shared by every well and independent of when a well woke (user decision 2026-10-23).
+        [OmitWhenNull] public int? EstateLordHitTick;
         public SortedSet<string> Items = new(StringComparer.Ordinal), Evolutions = new(StringComparer.Ordinal), Completed = new(StringComparer.Ordinal);
         public List<WaveEvent> Events = new();
         public List<WaveAttackView> Attacks = new();
