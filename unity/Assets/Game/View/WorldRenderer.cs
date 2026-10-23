@@ -185,7 +185,7 @@ namespace Game.View
             followCamera.ReviewMagnification = reviewCameraMagnification;
             followCamera.EndlessField = acceptedFrame?.Field != null || HeroMotionPreviewMode > 0;
             estateId = estate; mapWidth = width; mapHeight = height;
-            art = ArtCatalog.Load(); DarkMarker = ParseDarkMarker(Environment.GetCommandLineArgs()); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
+            art = ArtCatalog.Load(); allyMarkerResolved = false; DarkMarker = ParseDarkMarker(Environment.GetCommandLineArgs()); numbers = new WorldDamageNumbers(transform); lordDamageNumbers = new WorldDamageNumbers(transform, visibleLimit: 3, characterSize: .04f, sortingOffset: 2); growthLabels = new WorldGrowthLabels(transform); announcements = new WorldAnnouncements(camera, art);
             if(ArtCatalog.UsesWaveArt)enemyRigAtlas=new EnemyRigAtlas(art);
             InitializeThreatWarnings();
             InitializeActorGrounding();
@@ -376,7 +376,9 @@ namespace Game.View
                 if (!PersonSheetWalk.Applies(walk)) { Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f); continue; }
                 var walkFrame = personWalk.Frame("person", person.Id, personPosition, visualTime, step != Vector2.zero, walk, facingGeneration);
                 var shown = walkFrame >= 0 ? walk : Resolve("person", person.Role, activity);
-                DrawActor(shown, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, -1, facing: Facing("person", person.Id, step), uv: walkFrame >= 0 ? walk.UvRects[walkFrame] : (Rect?)null);
+                var personFacing = Facing("person", person.Id, step); var personUv = walkFrame >= 0 ? walk.UvRects[walkFrame] : (Rect?)null;
+                DrawActor(shown, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, -1, facing: personFacing, uv: personUv);
+                DrawAllyMarker(person.Role, shown, personUv, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, personFacing, null);
             }
             if (presentationDiagnosticsActive) diagnostics.WaveWorldObjectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawEffects(lord);
@@ -814,7 +816,7 @@ namespace Game.View
             DisposeEstate();
             DisposeThreatWarnings();
             DisposeActorGrounding();
-            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); musterRings?.Dispose(); musterRingMeshes?.Dispose(); orbitShapes?.Dispose(); orbitShapeMeshes?.Dispose(); visuals.Clear(); numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
+            foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); musterRings?.Dispose(); musterRingMeshes?.Dispose(); orbitShapes?.Dispose(); orbitShapeMeshes?.Dispose(); visuals.Clear(); allyMarker = null; allyMarkerResolved = false; numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
 }
