@@ -22,6 +22,8 @@ namespace SowSiege.Core
         public const int HostRewardVersion = 5;
         public const int MeleeAimVersion = 6;
         public const int EstateVersion = 7;
+        // Format 7 estate header schemas: 1 without melee aim, 2 with the melee aim version appended (ADR0064 supplement).
+        private const int EstateSchema = 1, EstateMeleeAimSchema = 2;
         private const int ContactFlag = 2;
         private const int HealthFlag = 4;
         private const int FeelFlags = 7;
@@ -68,7 +70,8 @@ namespace SowSiege.Core
             h.Options.Field?.Validate();
             if (h.Options.Field is { Version: FieldOptions.ReviewVersion } && h.FormatVersion != MeleeAimVersion) { throw new ArgumentException("Review field radii require replay v6."); }
             if (h.FormatVersion != MeleeAimVersion && !estate && (h.Options.HostRewards is not null) != (h.FormatVersion == HostRewardVersion)) { throw new ArgumentException("Replay host reward format mismatch."); }
-            if ((h.Options.MeleeAim is not null) != (h.FormatVersion == MeleeAimVersion) || h.Options.MeleeAim is { Version: not 1 })
+            // Format 7 carries melee aim in estate header schema 2 (ADR0064 supplement, 2026-10-22); any other format keeps it to v6.
+            if (!estate && (h.Options.MeleeAim is not null) != (h.FormatVersion == MeleeAimVersion) || h.Options.MeleeAim is { Version: not 1 })
             { throw new ArgumentException("Replay melee aim format mismatch."); }
             h.Options.HostRewards?.Validate();
             if ((h.Options.Estate is not null) != estate) { throw new ArgumentException("Replay estate format mismatch."); }
@@ -125,7 +128,9 @@ namespace SowSiege.Core
                 {
                     w.Write(o.Field is not null); if (o.Field is not null) { w.Write(o.Field.Version); }
                     w.Write(o.HostRewards is not null); if (o.HostRewards is not null) { WriteHostRewards(w, o.HostRewards); }
-                    var estate = o.Estate!; w.Write(1); w.Write(estate.Version); Text(w, estate.LoadoutId); Text(w, estate.LoadoutCatalogHash);
+                    // Melee aim off keeps schema 1 and its bytes.
+                    var estate = o.Estate!; w.Write(o.MeleeAim is null ? EstateSchema : EstateMeleeAimSchema); w.Write(estate.Version); Text(w, estate.LoadoutId); Text(w, estate.LoadoutCatalogHash);
+                    if (o.MeleeAim is { } melee) { w.Write(melee.Version); }
                 }
             }
         }
@@ -201,8 +206,10 @@ namespace SowSiege.Core
                     {
                         field = Boolean(r) ? new FieldOptions(r.ReadInt32()) : null;
                         rewards = Boolean(r) ? ReadHostRewards(r) : null;
-                        if (r.ReadInt32() != 1) { throw new InvalidDataException("Unsupported estate header schema."); }
+                        var schema = r.ReadInt32();
+                        if (schema != EstateSchema && schema != EstateMeleeAimSchema) { throw new InvalidDataException("Unsupported estate header schema."); }
                         estate = new(r.ReadInt32(), RequiredText(r), RequiredText(r));
+                        if (schema == EstateMeleeAimSchema) { melee = new(r.ReadInt32()); }
                     }
                 }
                 var header = new ReplayHeader(format, rules, state, rng, new(run, aim, hash, feel, field, rewards, MeleeAim: melee, Estate: estate)); ValidateHeader(header);

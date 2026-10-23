@@ -223,6 +223,18 @@ namespace Game.View
                 }
             return false;
         }
+        // Another label (a growth hint, #345) avoiding the visible numbers with the same gap the numbers keep between themselves.
+        public bool OverlapsVisible(Bounds bounds)
+        {
+            for (var i = 0; i < Capacity; i++)
+            {
+                if (labels[i] == null || !labels[i].gameObject.activeSelf) continue;
+                var occupied = LabelBounds(i);
+                if (bounds.min.x < occupied.max.x + LabelGap && bounds.max.x > occupied.min.x - LabelGap &&
+                    bounds.min.y < occupied.max.y + LabelGap && bounds.max.y > occupied.min.y - LabelGap) return true;
+            }
+            return false;
+        }
         public void Advance(float seconds, bool visible)
         {
             for (var i = 0; i < Capacity; i++)

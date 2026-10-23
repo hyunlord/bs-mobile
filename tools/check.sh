@@ -7,7 +7,13 @@ export PATH="$HOME/.dotnet:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 mkdir -p artifacts
 command -v dotnet >/dev/null || { echo 'Install .NET 8 SDK (see README).'; exit 1; }
-npm ci --ignore-scripts
+# npm ci stalled for 7 minutes in two CI runs (2026-10-22). Cap each try at 3 minutes; on failure clear the npm cache and retry once.
+npm_ci() { perl -e 'alarm shift; exec @ARGV or die "exec: $!"' 180 npm ci --ignore-scripts; }
+if ! npm_ci; then
+  echo 'npm ci failed or ran past 3 minutes; clearing the npm cache and retrying once.' >&2
+  npm cache clean --force
+  npm_ci
+fi
 npm test
 node --test tools/test-verify-evidence.mjs
 node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs tools/test-unity-test-record.mjs tools/test-unity-skipped-everywhere.mjs tools/test-pr-changes.mjs

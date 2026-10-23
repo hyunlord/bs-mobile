@@ -56,12 +56,17 @@ namespace Game.View
         public const float WaveChainOutlinePixels = 1.25f, WaveRipeCueRadius = 1.2f, WaveRipeCueScale = .5f, WaveRipeCueRise = .25f;
         public const float WaveIntakeScale = .5f, WaveIntakeRise = .3f, WaveRepairShieldScale = .25f;
         public const int WaveHarvestCueLimit = 3;
-        public const float WaveGrowthLabelRise = .5f, WaveCollectionLabelRise = .9f, WaveCollectionLabelSeconds = .9f;
+        public const float WaveGrowthLabelRise = .5f, WaveCollectionLabelSeconds = .9f;
+        // Bottom edge of the collection hint above the hero's feet (#345, user decision 2026-10-22; was a centre at 0.9, bottom 0.82).
+        public const float WaveCollectionLabelBottom = 1.05f;
         public const float GroupRepresentativeOffset = .22f, StockBundleScale = .28f;
         // Ground covered by one Soldier B walk cycle in source pixels (tools/art-authoring/soldier-b/packed-frames.json, #331).
         public const float PersonWalkCyclePixels = 102.3603456f;
         // Fastest person sheet walk (user decision, #331): 2.5 cycles per second (0.4 s); faster movement slides the feet. Not the hero.
         public const float PersonWalkMaxCyclesPerSecond = 2.5f;
+        // Ally marker cell's bottom-left corner from the Soldier B foot pivot, in source pixels (x right, y up), as packed by
+        // tools/art-authoring/ally-marker/pack.mjs (packed-frames.json offsetPixels, #352).
+        public static readonly Vector2 AllyMarkerOffsetPixels = new Vector2(-4.000008f, 107.99995f);
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }
