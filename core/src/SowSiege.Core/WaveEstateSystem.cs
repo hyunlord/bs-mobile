@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 namespace SowSiege.Core
 {
     internal sealed class WaveEstateBuilding
@@ -18,9 +19,14 @@ namespace SowSiege.Core
         private readonly WorldState world;
         private readonly WaveEstateLightDefinition light;
         private readonly int maxHealth;
+        private readonly bool healing;
         private WaveRuntimeState State => world.WaveRuntime!;
 
-        private WaveEstateSystem(WorldState world, WaveEstateLightDefinition light, int maxHealth) { this.world = world; this.light = light; this.maxHealth = maxHealth; }
+        private WaveEstateSystem(WorldState world, WaveEstateLightDefinition light, int maxHealth)
+        {
+            this.world = world; this.light = light; this.maxHealth = maxHealth;
+            healing = light.Buildings.Values.Any(b => b.Effect?.Kind == WaveEstateEffectKind.Heal);
+        }
 
         // Interactive runs pass the loadout chosen in InteractiveOptions.Estate; bot runs pass RunOptions.EstateLoadout.
         internal static WaveEstateSystem? Create(ContentCatalog catalog, WorldState world, InteractiveState? interactive, string? loadout, int seed)
@@ -85,6 +91,14 @@ namespace SowSiege.Core
                 if (building.Progress >= definition.ChannelTicks) { Activate(building, definition); }
             }
             var events = State.Events.Count;
+            if (healing)
+            {
+                for (var i = 0; i < events; i++)
+                {
+                    var hit = State.Events[i];
+                    if (hit.Kind == "lord-hit" && hit.Amount > 0) { State.EstateLordHitTick = world.Tick; break; }
+                }
+            }
             foreach (var building in State.Estate!)
             {
                 if (building.Phase != WaveEstatePhase.Active || building.DefinitionId == light.HomeId) { continue; }
@@ -118,11 +132,7 @@ namespace SowSiege.Core
             }
             if (effect.Kind == WaveEstateEffectKind.Heal)
             {
-                for (var i = 0; i < events; i++)
-                {
-                    var hit = State.Events[i];
-                    if (hit.Kind == "lord-hit" && hit.Amount > 0) { building.ReadyTick = Math.Max(building.ReadyTick, world.Tick + effect.PauseTicks); break; }
-                }
+                if (State.EstateLordHitTick is { } hitTick && world.Tick < hitTick + effect.PauseTicks) { return; }
                 if (!lordInside || world.Tick < building.ReadyTick || world.LordHealth <= 0 || world.LordHealth >= maxHealth) { return; }
                 var healed = Math.Min(effect.Amount, maxHealth - world.LordHealth); world.LordHealth += healed;
                 building.ReadyTick = world.Tick + effect.PeriodTicks;

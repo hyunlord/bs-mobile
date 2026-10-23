@@ -364,4 +364,23 @@ public sealed class WaveEstateTests
         ReplayCodec.WriteEnd(bytes, new(session.NextSequence, summary.Tick, summary.EndReason == "death" ? ReplayEndKind.Death : summary.EndReason == "duration" ? ReplayEndKind.Duration : ReplayEndKind.Quit, summary.StateHash));
         bytes.Position = 0; return ReplayCodec.Read(bytes);
     }
+
+    // A format 7 record made by main 75ffc97 (first slice only, no effects) must keep verifying: an effect-less light and state
+    // keep the first slice's bytes; effects use their own optional blocks (Astra review on #323, 2026-10-23).
+    [Fact]
+    public void FormatSevenRecordFromMainBeforeEffectsStillVerifies()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "benchmarks"))) { directory = directory.Parent; }
+        var path = Path.Combine(directory!.FullName, "benchmarks", "estate-v7", "main-75ffc97-l1-30001.ssreplay");
+        var bytes = File.ReadAllBytes(path);
+        Assert.Equal("7E26EEEEF4A856AD69E62857D09903C3633DE27315D01538770C962AABEFF31F", Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)));
+        var c = Catalog();
+        Assert.Equal("D536D58C8F998C3C8AE3CAACF85AE0A89F33C019A6F00195631AF18FA2374508", PortableStateCodec.HashCatalog(c));
+        using var input = new MemoryStream(bytes); var replay = ReplayCodec.Read(input);
+        Assert.Equal(ReplayCodec.EstateVersion, replay.Header.FormatVersion);
+        var verification = ReplayRunner.Verify(c, DataHash, replay);
+        Assert.Equal((1800, ReplayEndKind.Quit, "57E2A2B0EA074EC4A4038B3EC3B9050F6ED09CC962D88CB54BB8DF986F484333"),
+            (verification.Tick, (ReplayEndKind)verification.EndKind, verification.StateHash));
+    }
 }

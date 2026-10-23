@@ -120,6 +120,59 @@ public sealed class WaveEstateEffectTests
         Assert.Equal(2 * effect.Amount, world.WaveRuntime!.Counters["estate-damage:core:estate_watchtower"]);
     }
 
+    // Nearest first (by distance, then the lower Id): two enemies inside the light listed far first, then two at the same distance
+    // listed in reverse Id order (Astra review on #323).
+    [Fact]
+    public void WatchtowerPicksTheNearestEnemyNotTheFirstListed()
+    {
+        var (session, system, tower, _) = Effect("core:estate_watchtower");
+        var world = session.Simulation.World;
+        var far = new EnemyState { Id = 9001, Definition = "core:raider", Position = new(tower.Position.X + 1500, tower.Position.Y), Health = 1000 };
+        var near = new EnemyState { Id = 9002, Definition = "core:raider", Position = new(tower.Position.X + 400, tower.Position.Y), Health = 1000 };
+        world.Enemies.Add(far); world.Enemies.Add(near);
+        system.Tick();
+        Assert.Equal((1000, true), (far.Health, near.Health < 1000));
+    }
+
+    [Fact]
+    public void WatchtowerBreaksADistanceTieByTheLowerId()
+    {
+        var (session, system, tower, _) = Effect("core:estate_watchtower");
+        var world = session.Simulation.World;
+        var high = new EnemyState { Id = 9200, Definition = "core:raider", Position = new(tower.Position.X + 600, tower.Position.Y), Health = 1000 };
+        var low = new EnemyState { Id = 9100, Definition = "core:raider", Position = new(tower.Position.X, tower.Position.Y - 600), Health = 1000 };
+        world.Enemies.Add(high); world.Enemies.Add(low);
+        system.Tick();
+        Assert.Equal((1000, true), (high.Health, low.Health < 1000));
+    }
+
+    // The pause after a hit belongs to the hero: a hit while the well is still waking also holds its first heal, exactly like an
+    // already awake well (user decision 2026-10-23; numbers [hypothesis] #126).
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AHitBeforeTheWellWakesStillPausesItsFirstHeal(bool awakeAlready)
+    {
+        var (session, system, well, definition) = Effect("core:estate_well_shrine");
+        var world = session.Simulation.World;
+        var effect = definition.Effect!;
+        world.Lord = well.Position; world.LordHealth -= 100; world.Food = 1000;
+        if (!awakeAlready) { well.Phase = WaveEstatePhase.Asleep; well.Dwell = 0; well.Paid = false; }
+        var hitTick = world.Tick;
+        world.WaveRuntime!.Emit(world.Tick, "lord-hit", "core:raider", 0, world.Lord, world.Lord, 5);
+        system.Tick();
+        Assert.Equal(hitTick, world.WaveRuntime.EstateLordHitTick);
+        var health = world.LordHealth;
+        world.WaveRuntime.Events.Clear();
+        for (var i = 0; i < definition.ConfirmTicks + 1; i++) { world.Tick++; system.Tick(); }
+        Assert.Equal(WaveEstatePhase.Active, well.Phase);
+        Assert.Equal(health, world.LordHealth);
+        world.Tick = hitTick + effect.PauseTicks - 1; system.Tick();
+        Assert.Equal(health, world.LordHealth);
+        world.Tick = hitTick + effect.PauseTicks; system.Tick();
+        Assert.Equal(health + effect.Amount, world.LordHealth);
+    }
+
     [Fact]
     public void WellHealsTheLordInsideItsLightUpToFullAndPausesAfterAHit()
     {
@@ -203,7 +256,7 @@ public sealed class WaveEstateEffectTests
         Assert.Equal(ReplayCodec.EstateVersion, replay.Header.FormatVersion);
         Assert.Null(replay.Header.Options.Feel);
         var verification = ReplayRunner.Verify(c, dataHash, replay);
-        Assert.Equal((2688, ReplayEndKind.Quit, "FD73A19A584ECB7F883D6B02E46775332A35869F44F464D488F41DF5DEA8D746"),
+        Assert.Equal((2688, ReplayEndKind.Quit, "1EA8EA567341A8CB978DA73ABFCED59969AACEFEBB599BFBA722EC4E15AC95E7"),
             (verification.Tick, (ReplayEndKind)verification.EndKind, verification.StateHash));
     }
 
