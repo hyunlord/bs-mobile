@@ -64,6 +64,9 @@ namespace Game.View
         public const float PersonWalkCyclePixels = 102.3603456f;
         // Fastest person sheet walk (user decision, #331): 2.5 cycles per second (0.4 s); faster movement slides the feet. Not the hero.
         public const float PersonWalkMaxCyclesPerSecond = 2.5f;
+        // Ally marker cell's bottom-left corner from the Soldier B foot pivot, in source pixels (x right, y up), as packed by
+        // tools/art-authoring/ally-marker/pack.mjs (packed-frames.json offsetPixels, #352).
+        public static readonly Vector2 AllyMarkerOffsetPixels = new Vector2(-4.000008f, 107.99995f);
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }
