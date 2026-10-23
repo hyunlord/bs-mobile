@@ -78,6 +78,10 @@ namespace Game.View
         public const float EstateDarkOutlineTexels = 2.5f;
         public const float EstateEyeHeight = .70f, EstateEyeSpacing = .07f, EstateEyeForward = .05f, EstateEyeRadius = .012f, EstateEyeMinimumRadius = .006f;
         public static readonly Color EstateEyeGlint = new Color32(0xFF, 0xB0, 0x4A, 255);
+        // Building effects (#347, user decisions 2026-10-23): the watchtower arrow flies 0.15 s from the tower top to the hit and its
+        // impact shows 0.1 s; the well heal ring fades from its last frame within 0.2 s; both rings lie on the ground under buildings.
+        public const float EstateArrowSeconds = .15f, EstateImpactSeconds = .1f, EstateHealFadeSeconds = .2f, EstateArrowLaunchHeight = .85f, EstateArrowHitRise = .3f;
+        public const int EstateEffectRingLayer = GrowthLayer + 2, EstateArrowLayer = WaveAttackEdgeLayer;
         public const float WalkSeconds = 0.36f, WalkBob = 0.018f, WalkLeanDegrees = 3, DamageNumberSeconds = 0.65f, ShakeSeconds = 0.18f, ShakeAmplitude = 0.035f;
     }
 }

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    "m2-building-fx-20261022",
+    "m2-granary-magnet-r2-20261022"
+  ],
+  "delivery": {
+    "arrow": {
+      "file": "fx.m2.watchtower.arrow.png",
+      "sha256": "0d5e2c4990436b1feaa32729dac09728c1ba38ccdf0358e7fc8e4a8dd9970db8"
+    },
+    "impact": {
+      "file": "fx.m2.watchtower.impact.png",
+      "sha256": "446b48760452c7059b8b9e333d189b4c271fbd5148f07e9d2c2642f20c3872a7"
+    },
+    "heal": {
+      "file": "fx.m2.well.heal_ring.png",
+      "sha256": "a6fd105d824a21735cc4a12511a1601f14d4b4cd32f824761ee8125e6a482dcf"
+    },
+    "fxDraft": {
+      "file": "m2-building-fx-manifest-draft.json",
+      "sha256": "9dd0d069d33b136b7315d529ccdddc3e895ca4bff6cb1c823c8be5d639ac8403"
+    },
+    "ring": {
+      "file": "fx.m2.granary.magnet_ring.png",
+      "sha256": "c9974f63c996ba6d0aa2c855d082c44106186b415b45427c8eb960ca46076890"
+    },
+    "ringDraft": {
+      "file": "m2-granary-ring-manifest-draft.json",
+      "sha256": "1f69fc5475bbb5fe4220f94f9320d514afd6e10480582b1b0fe4fb042a8f5387"
+    }
+  },
+  "reviewPixelsPerUnit": 221.929809,
+  "atlas": "unity/Assets/Art/estate-effects.png",
+  "atlasSha256": "1c2997fc26af2a6b8d4c995531a61e9c1065c788cbc815ccb72d2ea555e7aba1",
+  "width": 1164,
+  "height": 860,
+  "roles": [
+    {
+      "id": "fx.estate.granary.magnet_ring",
+      "displayWidthPx": 576,
+      "texelsPerDisplayPixel": 1,
+      "cell": [
+        576,
+        352
+      ],
+      "frames": 4,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 2.595415,
+        "y": 1.586087
+      },
+      "alphaMaximum": 153
+    },
+    {
+      "id": "fx.estate.well.heal_ring",
+      "displayWidthPx": 170,
+      "texelsPerDisplayPixel": 1,
+      "cell": [
+        170,
+        140
+      ],
+      "frames": 4,
+      "pivot": {
+        "x": 0.492391,
+        "y": 0.256614
+      },
+      "worldSize": {
+        "x": 0.766008,
+        "y": 0.629459
+      },
+      "alphaMaximum": 153
+    },
+    {
+      "id": "fx.estate.watchtower.arrow",
+      "displayWidthPx": 46,
+      "texelsPerDisplayPixel": 2,
+      "cell": [
+        92,
+        10
+      ],
+      "frames": 1,
+      "pivot": {
+        "x": 0.999475,
+        "y": 0.494774
+      },
+      "worldSize": {
+        "x": 0.207273,
+        "y": 0.022305
+      },
+      "alphaMaximum": 253
+    },
+    {
+      "id": "fx.estate.watchtower.impact",
+      "displayWidthPx": 14,
+      "texelsPerDisplayPixel": 2,
+      "cell": [
+        28,
+        28
+      ],
+      "frames": 1,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.063083,
+        "y": 0.064088
+      },
+      "alphaMaximum": 253
+    }
+  ]
+}

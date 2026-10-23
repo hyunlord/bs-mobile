@@ -324,7 +324,7 @@ namespace Game.View
 #endif
             DrawTerrain();
             DrawFallowLandmarks();
-            DrawEstate(lord);
+            DrawEstate(current, lord);
             if (presentationDiagnosticsActive) diagnostics.TerrainLandmarksMs = DiagnosticInterval(ref diagnosticCheckpoint);
             DrawWave(current,alpha,lord);
             if (!showTransientText) HideTransientText();

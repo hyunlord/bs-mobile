@@ -142,5 +142,61 @@ namespace Tests.EditMode
                 Assert.That(visibleHeight, Is.LessThanOrEqualTo(cellHeight));
             }
         }
+
+
+        // Building effects (#347, 2026-10-23): the arrow lands after 0.15 s and the heal ring is gone 0.2 s after its condition ends.
+        [Test]
+        public void ArrowFliesForPointOneFiveSecondsAndTheHealRingFadesWithinPointTwo()
+        {
+            Assert.That(WorldRenderer.EstateArrowProgress(0), Is.EqualTo(0));
+            Assert.That(WorldRenderer.EstateArrowProgress(.075f), Is.EqualTo(.5f).Within(1e-5f));
+            Assert.That(WorldRenderer.EstateArrowProgress(.15f), Is.EqualTo(1));
+            Assert.That(WorldRenderer.EstateHealFade(0), Is.EqualTo(1));
+            Assert.That(WorldRenderer.EstateHealFade(.1f), Is.EqualTo(.5f).Within(1e-5f));
+            Assert.That(WorldRenderer.EstateHealFade(.2f), Is.EqualTo(0));
+            var well = new WaveEstateBuildingView(2, Well, new WorldPoint(1000, 0), WaveEstatePhase.Active, 0, 0, 0, 15, true, WaveEstateResource.Food, 20, 450, 2200, WaveEstateEffectKind.Heal);
+            Assert.That(WorldRenderer.EstateLordInside(well, new WorldPoint(3200, 0)), Is.True);
+            Assert.That(WorldRenderer.EstateLordInside(well, new WorldPoint(3201, 0)), Is.False);
+        }
+
+        // The approved display sizes at the 115 px hero (review scale 240 px = 1.081423 units): arrow 46 px, impact 14 px, heal ring
+        // 170 px, granary ring canvas 576 px with its ring 2.5x the 203 px granary. The rings keep Astra's 0.6 alpha cap.
+        [TestCase(WorldRenderer.EstateArrowRole, 46f, 1, 2)]
+        [TestCase(WorldRenderer.EstateImpactRole, 14f, 1, 2)]
+        [TestCase(WorldRenderer.EstateHealRingRole, 170f, 4, 1)]
+        [TestCase(WorldRenderer.EstateMagnetRingRole, 576f, 4, 1)]
+        public void EffectArtKeepsTheApprovedDisplaySize(string role, float displayPixels, int frames, int texelsPerPixel)
+        {
+            var m = JsonUtility.FromJson<ArtManifest>(File.ReadAllText(Path.Combine(Application.dataPath, "Art", "wave1a-manifest.json")));
+            var r = Array.Find(m.roles, x => x.id == role);
+            Assert.That(r, Is.Not.Null, role);
+            Assert.That(r.atlas, Is.EqualTo("estate-effects"));
+            Assert.That(r.frames.Length, Is.EqualTo(frames));
+            Assert.That(r.worldSize.x, Is.EqualTo(displayPixels * 1.081423f / 240).Within(1e-5f));
+            Assert.That(r.frames[0].width, Is.EqualTo(Mathf.RoundToInt(displayPixels * texelsPerPixel)));
+            if (frames > 1) Assert.That(r.frameMs, Is.EqualTo(100));
+        }
+
+        // After every building is awake the review route tours them (15 s each): watchtower, well, then a circle inside the granary.
+        [Test]
+        public void ReviewRouteToursTheAwakeBuildingsSoEveryEffectShows()
+        {
+            var lord = new LordView(new WorldPoint(0, 0), new WorldPoint(1, 0), 100, 100);
+            RunFrame Frame(int tick) => new RunFrame(tick, RunStatus.Running, 0, 0, 0, 30, 1, 1, lord, default, 0, 1, 1, 1, new EntityCounts(0, 0, 0, 0, 0), Array.Empty<EnemyView>(), Array.Empty<FarmView>(),
+                Array.Empty<BuildingView>(), Array.Empty<PersonView>(), Array.Empty<GroundLootView>(), Array.Empty<RemainView>(), Array.Empty<EquipmentView>(), Array.Empty<PresentationEvent>());
+            WaveEstateBuildingView Awake(int id, string building, WaveEstateEffectKind kind, int x) =>
+                new(id, building, new WorldPoint(x, 0), WaveEstatePhase.Active, 0, 0, 0, 0, true, WaveEstateResource.Food, 0, 450, 2200, kind);
+            var buildings = new[] { Awake(1, Granary, WaveEstateEffectKind.Magnet, 5000), Awake(2, Tower, WaveEstateEffectKind.Attack, 9000), Awake(3, Well, WaveEstateEffectKind.Heal, 4000) };
+            var wave = new WaveRuntimeFrame("r", "c", 0, 0, 0, false, Array.Empty<WaveWorkView>(), Array.Empty<WaveRewardView>(),
+                Array.Empty<WaveProjectileView>(), Array.Empty<WaveEnemyView>(), Array.Empty<WaveGroupView>(), Array.Empty<WorldPoint>(), Array.Empty<string>(), Array.Empty<string>(),
+                Array.Empty<WaveEvent>(), new Dictionary<string, long>(), Array.Empty<WaveAttackView>(), 0, Array.Empty<WaveDetourView>(), default, 0,
+                new WaveEstateFrame(1, "L1", 2600, buildings, 0, 0));
+            Assert.That(WaveCaptureInput.EstateTarget(Frame(0), wave), Is.Null);
+            Assert.That(WaveCaptureInput.EstateTourTarget(Frame(10), wave), Is.EqualTo(new WorldPoint(9000, 0)));
+            Assert.That(WaveCaptureInput.EstateTourTarget(Frame(460), wave), Is.EqualTo(new WorldPoint(4000, 0)));
+            var circling = WaveCaptureInput.EstateTourTarget(Frame(900), wave).Value;
+            Assert.That(circling, Is.EqualTo(new WorldPoint(5000 + WaveCaptureInput.EstateTourGranaryCircle, 0)));
+            Assert.That(WaveCaptureInput.EstateTourTarget(Frame(1350), wave), Is.EqualTo(new WorldPoint(9000, 0)), "the tour repeats");
+        }
     }
 }

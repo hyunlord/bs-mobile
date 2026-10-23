@@ -51,7 +51,7 @@ namespace Game.App
                 // do not move the estate, camera, rewards, or simulation state for the comparison.
                 if(count>0)target=Constrain(frame,new WorldPoint((int)(x/count+1800),(int)(y/count+1600)));
             }
-            if(estate&&EstateTarget(frame,wave) is { } building)return building;
+            if(estate&&(EstateTarget(frame,wave)??EstateTourTarget(frame,wave)) is { } building)return building;
             return evasive?EvasiveTarget(frame,wave,target,catalog):target;
         }
         // Review movement "estate" (#347): walk to the nearest sleeping estate building and stand on it until it wakes, as the
@@ -69,6 +69,21 @@ namespace Game.App
                 if(best==null||(!stalled&&bestStalled)||(stalled==bestStalled&&distance<bestDistance)){best=building;bestDistance=distance;bestStalled=stalled;}
             }
             return best?.Position;
+        }
+        // With every building awake the review route tours them so each effect shows (user instruction 2026-10-23): 15 s at the
+        // watchtower, the well and the granary in turn, by the run's own tick. At the granary the hero circles inside its light, so
+        // orbs left behind are pulled in (like the Core estate fixture, SowSiege.Sim estate-fixture).
+        public const int EstateTourStopTicks=450,EstateTourGranaryCircle=1200,EstateTourGranaryPeriodTicks=300;
+        static readonly WaveEstateEffectKind[] TourOrder={WaveEstateEffectKind.Attack,WaveEstateEffectKind.Heal,WaveEstateEffectKind.Magnet};
+        public static WorldPoint? EstateTourTarget(RunFrame frame,WaveRuntimeFrame wave)
+        {
+            if(wave?.Estate==null)return null;
+            var kind=TourOrder[frame.Tick/EstateTourStopTicks%TourOrder.Length];
+            var stop=wave.Estate.Buildings.FirstOrDefault(b=>b.Phase==WaveEstatePhase.Active&&b.Effect==kind);
+            if(stop==null)return null;
+            if(kind!=WaveEstateEffectKind.Magnet)return stop.Position;
+            var angle=frame.Tick%EstateTourGranaryPeriodTicks*Math.PI*2/EstateTourGranaryPeriodTicks;
+            return new WorldPoint(stop.Position.X+(int)Math.Round(EstateTourGranaryCircle*Math.Cos(angle)),stop.Position.Y+(int)Math.Round(EstateTourGranaryCircle*Math.Sin(angle)));
         }
         static WorldPoint GrowthTarget(RunFrame frame,WaveRuntimeFrame wave,WorldPoint fallback,ContentCatalog catalog)
         {

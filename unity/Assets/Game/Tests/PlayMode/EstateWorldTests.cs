@@ -98,6 +98,54 @@ namespace Tests.PlayMode
             Assert.That(Shader.GetGlobalFloat(EstateActive), Is.EqualTo(0), "disposing the world switches the estate block off");
         }
 
+        // Building effects (#347, 2026-10-23) from Core events and the frame only: a watchtower shot flies 0.15 s, then shows its
+        // impact and one damage number; the heal ring loops while the hero stands hurt in the well's light and fades within 0.2 s
+        // when that ends; the granary ring loops while the hero stands in the granary's light.
+        [UnityTest]
+        public IEnumerator BuildingEffectsDrawFromCoreEventsAndTheHeroPosition()
+        {
+            if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
+            ArtCatalog.ProfileName = CanonicalContent.ProfileName;
+            var catalog = EstateCatalog();
+            var session = Session(catalog);
+            session.Apply(new ReplayCommand(session.NextSequence, 0, ReplayCommandKind.SetInvulnerable, Value: 1));
+            Advance(session, 60);
+            var owner = new GameObject("Estate effects QA"); var cameraOwner = new GameObject("Estate effects camera");
+            var camera = cameraOwner.AddComponent<Camera>(); var texture = new RenderTexture(720, 1280, 24); camera.targetTexture = texture;
+            try
+            {
+                var frame = session.View.CaptureFrame();
+                var wave = ((IWaveRunView)session.View).CaptureWaveRuntime();
+                var awake = wave.Estate.Buildings.Select(b => b with { Phase = WaveEstatePhase.Active, Effect = catalog.WaveRuntime.EstateLight.Buildings.TryGetValue(b.DefinitionId, out var d) ? d.Effect?.Kind : null }).ToArray();
+                var tower = awake.First(b => b.DefinitionId == Tower); var well = awake.First(b => b.DefinitionId == Well); var granary = awake.First(b => b.DefinitionId == Granary);
+                var lastId = wave.Events.Count > 0 ? wave.Events.Max(e => e.Id) : 0;
+                var shot = new WaveEvent(lastId + 1000, frame.Tick, "estate-shot", Tower, 777, tower.Position, new WorldPoint(tower.Position.X + 600, tower.Position.Y), 30);
+                var world = CreateWorld(owner, camera, catalog, frame);
+                RunFrame At(WorldPoint where, int health) => frame with { Lord = frame.Lord with { Position = where, Health = health } };
+                IEnumerator Show(RunFrame shown, params WaveEvent[] events)
+                {
+                    var w = wave with { Estate = wave.Estate with { Buildings = awake }, Events = events };
+                    world.AcceptWave(catalog, w);
+                    world.Present(shown, shown, WavePresentation.Envelope(catalog, shown, session.View.CaptureCards(), w), 1, Frame, new Rect(0, 0, 720, 1280));
+                    yield return null;
+                }
+                var hurt = frame.Lord.MaxHealth - 10;
+                yield return Show(At(well.Position, hurt), shot);
+                Assert.That(world.EstateArrowDraws, Is.EqualTo(1), "the arrow is in flight");
+                Assert.That(world.EstateHealRingDraws, Is.EqualTo(1), "hurt inside the well light");
+                Assert.That(world.EstateMagnetRingDraws, Is.EqualTo(0));
+                for (var i = 0; i < 9; i++) yield return Show(At(well.Position, hurt));
+                Assert.That((world.EstateArrowDraws, world.EstateImpactDraws, world.EstateArrowNumbers), Is.EqualTo((0, 1, 1)), "landed after 0.15 s: impact and one number");
+                yield return Show(At(well.Position, frame.Lord.MaxHealth));
+                Assert.That(world.EstateHealRingDraws, Is.EqualTo(1), "full health: the last frame fades");
+                for (var i = 0; i < 13; i++) yield return Show(At(granary.Position, frame.Lord.MaxHealth));
+                Assert.That(world.EstateHealRingDraws, Is.EqualTo(0), "gone within 0.2 s");
+                Assert.That(world.EstateMagnetRingDraws, Is.EqualTo(1), "inside the granary light");
+                Assert.That((world.EstateImpactDraws, world.EstateArrowNumbers), Is.EqualTo((0, 1)), "one number per shot");
+            }
+            finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
+        }
+
         [UnityTest]
         public IEnumerator DefaultRunDrawsNoEstateAndKeepsTheShaderBlockOff()
         {
@@ -122,6 +170,7 @@ namespace Tests.PlayMode
                 }
                 Assert.That(Shader.GetGlobalFloat(EstateActive), Is.EqualTo(0));
                 Assert.That((world.EstateCircleCount, world.EstateBuildingDraws, world.EstateRingDraws, world.EstateDarkMarks), Is.EqualTo((0, 0, 0, 0)));
+                Assert.That((world.EstateArrowDraws, world.EstateImpactDraws, world.EstateHealRingDraws, world.EstateMagnetRingDraws, world.EstateArrowNumbers), Is.EqualTo((0, 0, 0, 0, 0)));
             }
             finally { Object.Destroy(owner); Object.Destroy(cameraOwner); texture.Release(); Object.Destroy(texture); }
         }

@@ -259,6 +259,13 @@
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/m2-estate-buildings-provenance.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
+    },
+    {
+      "id": "generated-estate-effects",
+      "origin": "Generated with built-in image_gen for this project by Astra (Releases m2-building-fx-20261022 and m2-granary-magnet-r2-20261022, user-approved 2026-10-22), reduced to the approved display sizes by area averaging for game use without redrawing",
+      "source": "https://openai.com/policies/terms-of-use/",
+      "prompt": "docs/licenses/prompts/m2-estate-effects-provenance.txt",
+      "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
     }
   ],
   "atlases": [
@@ -541,6 +548,14 @@
       "height": 480,
       "padding": 4,
       "license": "generated-estate-buildings"
+    },
+    {
+      "id": "estate-effects",
+      "path": "Assets/Art/estate-effects.png",
+      "width": 1164,
+      "height": 860,
+      "padding": 4,
+      "license": "generated-estate-effects"
     }
   ],
   "roles": [
@@ -12490,6 +12505,130 @@
       "worldSize": {
         "x": 1.004822,
         "y": 0.806561
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.estate.granary.magnet_ring",
+      "atlas": "estate-effects",
+      "frames": [
+        {
+          "x": 4,
+          "y": 4,
+          "width": 576,
+          "height": 352
+        },
+        {
+          "x": 584,
+          "y": 4,
+          "width": 576,
+          "height": 352
+        },
+        {
+          "x": 4,
+          "y": 360,
+          "width": 576,
+          "height": 352
+        },
+        {
+          "x": 584,
+          "y": 360,
+          "width": 576,
+          "height": 352
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 2.595415,
+        "y": 1.586087
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
+      "id": "fx.estate.well.heal_ring",
+      "atlas": "estate-effects",
+      "frames": [
+        {
+          "x": 4,
+          "y": 716,
+          "width": 170,
+          "height": 140
+        },
+        {
+          "x": 178,
+          "y": 716,
+          "width": 170,
+          "height": 140
+        },
+        {
+          "x": 352,
+          "y": 716,
+          "width": 170,
+          "height": 140
+        },
+        {
+          "x": 526,
+          "y": 716,
+          "width": 170,
+          "height": 140
+        }
+      ],
+      "pivot": {
+        "x": 0.492391,
+        "y": 0.256614
+      },
+      "worldSize": {
+        "x": 0.766008,
+        "y": 0.629459
+      },
+      "frameMs": 100,
+      "tween": "none"
+    },
+    {
+      "id": "fx.estate.watchtower.arrow",
+      "atlas": "estate-effects",
+      "frames": [
+        {
+          "x": 700,
+          "y": 716,
+          "width": 92,
+          "height": 10
+        }
+      ],
+      "pivot": {
+        "x": 0.999475,
+        "y": 0.494774
+      },
+      "worldSize": {
+        "x": 0.207273,
+        "y": 0.022305
+      },
+      "frameMs": 1000,
+      "tween": "none"
+    },
+    {
+      "id": "fx.estate.watchtower.impact",
+      "atlas": "estate-effects",
+      "frames": [
+        {
+          "x": 796,
+          "y": 716,
+          "width": 28,
+          "height": 28
+        }
+      ],
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "worldSize": {
+        "x": 0.063083,
+        "y": 0.064088
       },
       "frameMs": 1000,
       "tween": "none"
