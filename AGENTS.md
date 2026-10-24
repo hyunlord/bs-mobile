@@ -52,6 +52,7 @@ S0 초기 부트스트랩 이후 모든 작업은 이슈를 먼저 만들고 짧
 - 신규 에이전트의 첫 콘텐츠 변경은 [도구·무기 추가 런북](docs/runbooks/add-content.md)을 처음부터 따른다.
 - 구조·경계·운영 계약 결정은 [ADR 런북](docs/runbooks/write-adr.md)에 따라 새 ADR 또는 명시적 대체 ADR을 PR에 포함한다.
 - `unity/`를 바꾸는 PR은 병합 전 맥에서 `./tools/unity-tests.sh`로 두 프로필(first-playable·wave-1a) EditMode·PlayMode 전체를 실행하고, 결과(커밋, 통과·실패·건너뜀 수)를 PR 본문 `## Unity tests`에 붙인다. 기록이 없거나 실패가 있으면 병합하지 않는다([Unity 테스트 기록](docs/runbooks/unity-tests.md), ADR0068). CI에는 Unity 실행기가 없다.
+- 같은 Mac에서 Unity·빌드·측정을 할 때는 [공유 Mac 운영 런북](docs/runbooks/shared-mac.md)의 잠금 파일·밤 측정 시간대(23:00~07:00)·건드리지 말 폴더·worktree 분리·멈춤 조건을 따른다.
 - 커밋 제목은 Conventional Commits 형식에서 **의도**를 설명한다. 예: `feat(data): exercise tool extensibility without core edits`. 본문에는 배경, 마지막에는 필요한 Lore git trailers(`Constraint:`, `Rejected:`, `Confidence:`, `Scope-risk:`, `Directive:`, `Tested:`, `Not-tested:`)를 쓴다. 모든 trailer는 선택적이며 검증하지 않은 내용을 `Tested:`로 쓰지 않는다.
 - TODO 주석은 이슈 번호를 포함한다(`TODO #123: ...`). 번호 없는 TODO 금지.
 - 결정 대기는 `needs-decision` 이슈로 남긴다. 확정 결정을 바꾸지 말고 가역적인 다른 작업을 계속한다.
