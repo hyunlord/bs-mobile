@@ -232,18 +232,19 @@ namespace Tests.PlayMode
             var counts = string.Join(", ", plan.GroupBy(i => i.Source).Select(g => $"\"{g.Key}\": {g.Count()}"));
             File.WriteAllText(Path.Combine(output, "estate-decor-batches.json"),
                 $"{{\"commit\": \"{BuildIdentity.Commit}\", \"screen\": \"390x844 neighbourhood\", \"decorSprites\": {sprites}, \"plan\": {{{counts}}}, " +
-                $"\"on\": {{\"batches\": {on[0]}, \"drawCalls\": {on[1]}, \"editorStatsBatches\": {on[2]}}}, \"off\": {{\"batches\": {off[0]}, \"drawCalls\": {off[1]}, \"editorStatsBatches\": {off[2]}}}, " +
-                "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count' (last of 10 frames) and UnityEditor.UnityStats.batches; Editor PlayMode, not a device\"}\n");
-            Assert.That(Math.Max(on[0], on[2]), Is.GreaterThan(0), "The batch count was measured.");
+                $"\"on\": {{\"batches\": {on[0]}, \"drawCalls\": {on[1]}, \"setPassCalls\": {on[2]}}}, \"off\": {{\"batches\": {off[0]}, \"drawCalls\": {off[1]}, \"setPassCalls\": {off[2]}}}, " +
+                "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count'/'SetPass Calls Count' (last of 10 frames); -1 = recorder unavailable; Editor PlayMode, not a device\"}\n");
+            Assert.That(Math.Max(on[0], on[1]), Is.GreaterThan(0), "The batch count was measured.");
         }
 
         static IEnumerator Batches(int[] into)
         {
             using var batches = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Batches Count");
             using var draws = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Draw Calls Count");
+            using var setPass = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "SetPass Calls Count");
             for (var i = 0; i < 10; i++) yield return null;
             into[0] = batches.Valid ? (int)batches.LastValue : -1; into[1] = draws.Valid ? (int)draws.LastValue : -1;
-            into[2] = UnityEditor.UnityStats.batches;
+            into[2] = setPass.Valid ? (int)setPass.LastValue : -1;
         }
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
