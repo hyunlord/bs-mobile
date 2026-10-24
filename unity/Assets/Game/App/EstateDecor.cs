@@ -155,16 +155,19 @@ namespace Game.App
                     if (free.Count == 0) break;
                     var centre = free[(int)(Hash(rules.seed, k, 5) % (uint)free.Count)];
                     var size = cluster.minSize + (int)(Hash(rules.seed, k, 6) % (uint)(cluster.maxSize - cluster.minSize + 1));
-                    for (var m = 0; m < size; m++)
+                    // A rejected sample (off the grid or on a used cell) is replaced by the next deterministic candidate, so a
+                    // cluster reaches its chosen size unless its neighbourhood runs out of free cells (review on #373).
+                    var placed = 0;
+                    for (var m = 0; placed < size && m < size * 8; m++)
                     {
-                        var angle = Hash(rules.seed, k * 31 + m, 7) / (float)uint.MaxValue * Mathf.PI * 2;
-                        var radius = m == 0 ? 0 : (.5f + Hash(rules.seed, k * 31 + m, 8) / (float)uint.MaxValue * .5f) * cluster.spread;
+                        var angle = Hash(rules.seed, k * 131 + m, 7) / (float)uint.MaxValue * Mathf.PI * 2;
+                        var radius = placed == 0 ? 0 : (.5f + Hash(rules.seed, k * 131 + m, 8) / (float)uint.MaxValue * .5f) * cluster.spread * (1 + m / (float)size * .5f);
                         var point = centre + new Vector2(.5f, .5f) + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
                         var cell = new Vector2Int(Mathf.FloorToInt(point.x), Mathf.FloorToInt(point.y));
-                        if (!Inside(cell) || used.Contains(cell) && m > 0) continue;
-                        var prop = cluster.props[(int)(Hash(rules.seed, k * 31 + m, 9) % (uint)cluster.props.Length)];
+                        if (!Inside(cell) || placed > 0 && used.Contains(cell)) continue;
+                        var prop = cluster.props[(int)(Hash(rules.seed, k * 131 + m, 9) % (uint)cluster.props.Length)];
                         items.Add(new EstateDecorItem(prop.role, point, prop.width, prop.flat, EstateDecorSource.Cluster, k));
-                        used.Add(cell);
+                        used.Add(cell); placed++;
                     }
                 }
             }

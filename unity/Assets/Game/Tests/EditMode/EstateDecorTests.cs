@@ -48,7 +48,8 @@ namespace Tests.EditMode
             }
             var clusters = first.Where(i => i.Source == EstateDecorSource.Cluster).GroupBy(i => i.Owner).ToArray();
             Assert.That(clusters.Length, Is.InRange(1, rules.clusters.count));
-            Assert.That(clusters.All(g => g.Count() <= rules.clusters.maxSize), Is.True);
+            Assert.That(clusters.All(g => g.Count() >= rules.clusters.minSize && g.Count() <= rules.clusters.maxSize), Is.True,
+                "Every cluster reaches its size range when free cells remain (review on #373): " + string.Join(",", clusters.Select(g => g.Count())));
             TestContext.WriteLine("plan: " + string.Join(", ", first.GroupBy(i => i.Source).Select(g => g.Key + "=" + g.Count())));
         }
 
