@@ -37,9 +37,9 @@ export function requiredBindings(root) {
   return [...new Map(result.map(b => [key(b), b])).values()];
 }
 function check(condition, message) { if (!condition) throw new Error(message); }
-function fields(value, names, label) {
+function fields(value, names, label, optional = []) {
   check(value && typeof value === 'object' && !Array.isArray(value), `${label}: expected object`);
-  for (const name of Object.keys(value)) check(names.includes(name), `${label}: unknown or gameplay field ${name}`);
+  for (const name of Object.keys(value)) check(names.includes(name) || optional.includes(name), `${label}: unknown or gameplay field ${name}`);
   for (const name of names) check(Object.hasOwn(value, name), `${label}: missing ${name}`);
 }
 const text = value => typeof value === 'string' && value.trim().length > 0;
@@ -67,7 +67,9 @@ export function validateManifest(m, required = []) {
   }
   const roles = new Set();
   for (const r of m.roles) {
-    fields(r, ['id','atlas','frames','pivot','worldSize','frameMs','tween'], 'role');
+    // cyclePixels (#363): ground one walk cycle covers, in the sheet's source pixels; a walk with it plays by distance moved.
+    fields(r, ['id','atlas','frames','pivot','worldSize','frameMs','tween'], 'role', ['cyclePixels']);
+    check(!Object.hasOwn(r, 'cyclePixels') || (finite(r.cyclePixels) && r.cyclePixels > 0 && Array.isArray(r.frames) && r.frames.length > 1), `role ${r.id}: cyclePixels needs a positive number and several frames`);
     check(text(r.id) && !roles.has(r.id), `duplicate/empty role: ${r.id}`); roles.add(r.id);
     const a = atlases.get(r.atlas); check(a, `role ${r.id}: missing atlas ${r.atlas}`);
     check(Array.isArray(r.frames) && r.frames.length, `role ${r.id}: no frames`);

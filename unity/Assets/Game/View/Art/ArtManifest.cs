@@ -23,6 +23,8 @@ namespace Game.View
         public ArtPixelRect[] frames;
         public Vector2 pivot, worldSize;
         public int frameMs;
+        // Optional (#363): ground one walk cycle covers, in the sheet's source pixels. A walk role with it plays by distance moved.
+        public float cyclePixels;
     }
     [Serializable] public sealed class ArtPixelRect { public int x, y, width, height; }
     [Serializable] public sealed class ArtBindingDefinition { public string kind, contentId, state, roleId; }
