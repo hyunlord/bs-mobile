@@ -256,13 +256,14 @@ namespace Game.App
                 if (!string.IsNullOrEmpty(piece.with) && !closed) Add(plan, piece.with, "peasant", new Vector2(piece.withU, piece.withV), art, Color.white);
             }
 
-            // The frontier: the soft ink edge along every open/closed boundary.
+            // The frontier: Astra's ink edge is painted dark toward its upper right, so it only dresses boundaries where closed land
+            // lies up-right of open land (inward = -v); it sits on the closed side. Every other edge keeps the veil's feather and rim.
             var f = rules.frontier;
             foreach (var closed in config.Zones.Where(z => !estate.OpenZones.Contains(z.Id)))
                 foreach (var openZone in open)
                     foreach (var (cell, inward, _, edgeIndex) in Boundary(closed, openZone))
-                        if (edgeIndex % f.edgeEvery == f.edgeEvery / 2 && !string.IsNullOrEmpty(f.edge))
-                            Add(plan, f.edge, "frontier-edge", cell - (Vector2)inward * .5f + new Vector2(.5f, .5f), art, new Color(1, 1, 1, f.edgeAlpha), EstateDrawLayer.Ground);
+                        if (inward == new Vector2Int(0, -1) && edgeIndex % f.edgeEvery == f.edgeEvery / 2 && !string.IsNullOrEmpty(f.edge))
+                            Add(plan, f.edge, "frontier-edge", cell + new Vector2(.5f, .5f), art, new Color(1, 1, 1, f.edgeAlpha), EstateDrawLayer.Ground);
 
             // Closed land keeps the shape of the land to come (key art C): one candidate per `every` cells, jittered by seed,
             // becomes a wood in wooded zones or a frontier trace (dead trees weighted), skipping reserved river cells.
@@ -276,7 +277,8 @@ namespace Game.App
                         if (AstraDecor.Rand(rules.astra, "closed-density", key) > cl.density) continue;
                         var at = new Vector2(u + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-x", key) - .5f) * cl.jitter),
                             v + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-y", key) - .5f) * cl.jitter));
-                        if (reserved.Contains(Vector2Int.FloorToInt(at))) continue;
+                        // The last lattice row or column can reach past a zone whose size is not a multiple of `every`.
+                        if (at.x >= zone.X + zone.Width || at.y >= zone.Y + zone.Height || reserved.Contains(Vector2Int.FloorToInt(at))) continue;
                         var variant = AstraDecor.Rand(rules.astra, "closed-variant", key);
                         if (wood != null && AstraDecor.Rand(rules.astra, "closed-wood", key) < wood.share)
                             Add(plan, wood.ids[(int)(variant * wood.ids.Length)], "wood", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
