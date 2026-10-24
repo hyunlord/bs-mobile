@@ -121,7 +121,7 @@ namespace Game.App
             else if (screen.Selected != null) liveStatus = SelectionPanel(ui, root, screen, actions, width, panelTop, panel);
             else if (screen.ZoneChoice != null) ZonePanel(ui, root, screen, actions, width, panelTop, panel);
             else if (screen.QueueOpen) QueuePanel(ui, root, screen, actions, width, panelTop, panel);
-            var work = WorkStrip(ui, root, screen, actions, width, height - BottomBar - BottomGap * 2 - WorkHeight);
+            var work = WorkStrip(ui, root, screen, actions, width, height - BottomBar - BottomGap * 2 - WorkHeight, out var claimLabel);
             // Once a second: Core applies the interval; a level, queue, zone or task change redraws (after any drag), while the
             // remaining time and stock only refresh their text.
             view.Redraw = actions.Redraw;
@@ -129,6 +129,7 @@ namespace Game.App
             {
                 if (screen.Advance()) { view.RequestRedraw(); return; }
                 work.text = screen.WorkLine();
+                if (claimLabel != null) claimLabel.text = "받기 " + screen.StockTotal;
                 if (liveStatus != null && screen.Selected != null) liveStatus.text = screen.Status(screen.Building(screen.Selected.Value));
             };
             BottomBarWithTabs(ui, root, account, actions, width, height);
@@ -323,14 +324,14 @@ namespace Game.App
 
         // The work line above the tabs: current construction and queue (tap for the queue), a claim for site stock, and the
         // development time skip that lets the prototype be reviewed without waiting.
-        static Text WorkStrip(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y)
+        static Text WorkStrip(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y, out Text claimLabel)
         {
             var strip = ColorPlate(root, "EstateMap.Work", BarInk, 8, y, width - 16, WorkHeight);
             const float skip = 62; var claim = screen.StockTotal > 0 ? 78f : 0f;
             var textWidth = width - 16 - skip * 2 - claim - 12;
             var line = Caption(ui, strip, screen.WorkLine(), 10, 0, textWidth - 10, WorkHeight, 12);
             Hit(strip, "EstateMap.QueueToggle", () => { screen.ToggleQueue(); actions.Redraw(); }, 0, 0, textWidth, WorkHeight);
-            if (claim > 0) ActionButton(ui, strip, "EstateMap.ClaimStock", "받기 " + screen.StockTotal, () => { screen.ClaimProduction(); actions.Redraw(); }, textWidth, 0, claim - 4, true, 44, "ui.button.primary");
+            claimLabel = claim > 0 ? ActionButton(ui, strip, "EstateMap.ClaimStock", "받기 " + screen.StockTotal, () => { screen.ClaimProduction(); actions.Redraw(); }, textWidth, 0, claim - 4, true, 44, "ui.button.primary").GetComponentInChildren<Text>() : null;
             ActionButton(ui, strip, "EstateMap.Skip60", "+1분", () => { screen.SkipTime(60); actions.Redraw(); }, textWidth + claim, 0, skip - 4, true, 44);
             ActionButton(ui, strip, "EstateMap.Skip600", "+10분", () => { screen.SkipTime(600); actions.Redraw(); }, textWidth + claim + skip, 0, skip - 4, true, 44);
             Compact(strip);
