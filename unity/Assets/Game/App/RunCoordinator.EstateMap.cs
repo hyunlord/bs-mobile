@@ -12,6 +12,8 @@ namespace Game.App
         AccountEstateConfig estateConfig;
         EstateMapScreen estateMap;
         byte[] estateMapSource;
+        // The prototype copy's clock: real time, or game time for the fixed-frame-rate demo recording (#376).
+        Func<double> estateClock = () => UnityEngine.Time.realtimeSinceStartupAsDouble;
 
         bool EstatePrototypeActive
         {
@@ -53,7 +55,7 @@ namespace Game.App
                 var bytes = account.Estate != null ? MetaSaveCodec.Encode(account) : null;
                 if (estateMap == null || estateMap.FromSave != (bytes != null) || bytes != null && !bytes.SequenceEqual(estateMapSource))
                 {
-                    estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, account, estateMap?.Map, () => UnityEngine.Time.realtimeSinceStartupAsDouble);
+                    estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, account, estateMap?.Map, estateClock);
                     estateMapSource = bytes;
                 }
                 estateMap.Advance();
