@@ -35,6 +35,8 @@ node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
 node --test tools/wave1a-art.test.mjs
 node tools/wave1a-art.mjs "$PWD"
+node --test tools/test-estate-art.mjs
+node tools/estate-art.mjs --check
 node tools/wave1a-audio.mjs --check
 node --test tools/test-view-coverage.mjs
 node tools/view-coverage.mjs "$PWD"

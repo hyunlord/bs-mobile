@@ -6,29 +6,39 @@ using UnityEngine;
 
 namespace Game.App
 {
-    // View-only decoration rules for the estate map (#372, Resources/EstateDecorRules.json). Astra's yard, roadside and empty-land
-    // rules will replace the numbers and art roles; the planner below is the frame they plug into. Not under data/, so Core
-    // content, saves and replay hashes are unchanged.
+    // View-only estate dressing rules (Resources/EstateDecorRules.json, estate-decor-r1, #372/#375). Not under data/, so Core
+    // content, saves and replay hashes are unchanged. Every number here is a presentation hypothesis [가설] kept in one place.
     [Serializable]
     public sealed class EstateDecorRules
     {
-        public const string ResourceName = "EstateDecorRules", Version = "estate-decor-r0";
+        public const string ResourceName = "EstateDecorRules", Version = "estate-decor-r1";
         public string version;
-        public int seed;
-        public YardRule[] yard = Array.Empty<YardRule>();
-        public RoadRule road = new RoadRule();
-        public ClusterRule clusters = new ClusterRule();
+        public AstraDecorRules astra = new AstraDecorRules();
+        public KindArt[] kindArt = Array.Empty<KindArt>();
+        public Tint[] tints = Array.Empty<Tint>();
+        public string ruinState = "fallow";
+        public float constructionSaturation = .55f, constructionAlpha = .85f;
+        public YardGround yardGround = new YardGround();
+        public Restoration restoration = new Restoration();
+        public Terrain terrain = new Terrain();
+        public Trees trees = new Trees();
+        public Frontier frontier = new Frontier();
+        public Placed[] placed = Array.Empty<Placed>();
+        public Peasants peasants = new Peasants();
+        public string fieldFenceKind = "m3a:field", fieldFenceCorner = "field-fence-corner";
 
-        // Props on the ring of cells around a footprint. The first rule whose kinds contain the building kind (or "*") applies.
-        [Serializable] public sealed class YardRule { public string[] kinds = Array.Empty<string>(); public PropRule[] props = Array.Empty<PropRule>(); public int count; }
-        // A grid road from the `from` building's door to every other building's door, drawn as ground diamonds, with roadside
-        // props every `every` cells.
-        [Serializable] public sealed class RoadRule { public string from; public PropRule[] roadside = Array.Empty<PropRule>(); public int every; }
-        // Groups on cells left free by footprints, yards and roads.
-        [Serializable] public sealed class ClusterRule { public PropRule[] props = Array.Empty<PropRule>(); public int count, minSize, maxSize; public float spread; }
-        // `width` is in grid cells (one cell is 64 canvas units wide at scale 1). A flat prop lies on the ground layer under every
-        // building; a standing one sorts with the buildings by its foot.
-        [Serializable] public sealed class PropRule { public string role; public float width; public bool flat; }
+        // Core kind to Astra art kind; `stages[level]` is the art stage for that Core level (level 0 = ruin site).
+        [Serializable] public sealed class KindArt { public string kind, art; public int[] stages = Array.Empty<int>(); }
+        // Restoration colour [가설]: saturation, brightness, light (1 - M2 darkness).
+        [Serializable] public sealed class Tint { public string state; public float saturation = 1, brightness = 1, light = 1; }
+        [Serializable] public sealed class YardGround { public string well = "yard-stone", house = "yard-grass", other = "yard-earth"; public float offsetX = -.64f, offsetY = -.35f, width = 1.28f, height = .48f, alpha = .72f; }
+        [Serializable] public sealed class Restoration { public int restoredRadius = 2, sageRadius = 5; }
+        [Serializable] public sealed class Terrain { public int patchCells = 6; public float patchScale = 1.5f, alpha = .92f; public string restored = "terrain-restoration", sage = "terrain-sage", fallow = "terrain-fallow"; }
+        [Serializable] public sealed class Trees { public string[] ids = Array.Empty<string>(); public float share; public string[] states = Array.Empty<string>(); }
+        [Serializable] public sealed class Frontier { public string[] ids = Array.Empty<string>(); public int every = 4, perBlock = 2, block = 8; public float density = .5f; public string edge = "frontier-ink-edge"; public int edgeEvery = 8; public float edgeAlpha = .85f; }
+        // Explicit terrain-skeleton pieces (rivers, bridges, a paddock): grid point of the pivot, reserved cells, layer.
+        [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
+        [Serializable] public sealed class Peasants { public string farm = "peasant-farm", carry = "peasant-carry", build = "peasant-build", carryKind = "meta:granary"; }
 
         static EstateDecorRules loaded;
 
@@ -44,151 +54,236 @@ namespace Game.App
         {
             var rules = JsonUtility.FromJson<EstateDecorRules>(json);
             if (rules == null || rules.version != Version) throw new InvalidOperationException("Unsupported estate decoration rules.");
-            if (rules.clusters.minSize < 1 || rules.clusters.maxSize < rules.clusters.minSize) throw new InvalidOperationException("Bad cluster sizes.");
-            if (rules.road.every < 1) throw new InvalidOperationException("Bad roadside spacing.");
+            if (rules.astra.slotX.Length != rules.astra.slotY.Length || rules.astra.roadsideStep <= 0) throw new InvalidOperationException("Bad yard slots or roadside step.");
             return rules;
         }
 
-        public IEnumerable<string> Roles() =>
-            yard.SelectMany(y => y.props).Concat(road.roadside).Concat(clusters.props).Select(p => p.role).Distinct();
-    }
+        public Tint TintOf(string state) => tints.FirstOrDefault(t => t.state == state) ?? new Tint { state = state };
 
-    public enum EstateDecorSource { Yard, Road, Roadside, Cluster }
+        // The vertex colour the EstateTint shader reads: (saturation, brightness, light, alpha).
+        public Color Colour(string state, float alpha = 1) { var t = TintOf(state); return new Color(t.saturation, t.brightness, t.light, alpha); }
 
-    public readonly struct EstateDecorItem
-    {
-        public readonly string Role; public readonly Vector2 Grid; public readonly float Width; public readonly bool Flat;
-        public readonly EstateDecorSource Source; public readonly int Owner;
-        public EstateDecorItem(string role, Vector2 grid, float width, bool flat, EstateDecorSource source, int owner)
-        { Role = role; Grid = grid; Width = width; Flat = flat; Source = source; Owner = owner; }
-    }
+        public KindArt ArtOf(string coreKind) => kindArt.FirstOrDefault(k => k.kind == coreKind);
 
-    // Deterministic placement from the rules, the config grid and the estate's buildings, on open land only (closed zones sit
-    // under the darkness). Same inputs, same list; a moved building takes its yard with it, while roads and clusters are
-    // recomputed around the new layout.
-    public static class EstateDecorPlanner
-    {
-        // Ring around a footprint, clockwise from its north corner, as offsets from the footprint's top-left cell.
-        static IEnumerable<Vector2Int> Ring(int width, int height)
+        public int Stage(string coreKind, int level)
         {
-            for (var u = -1; u <= width; u++) yield return new Vector2Int(u, -1);
-            for (var v = 0; v <= height; v++) yield return new Vector2Int(width, v);
-            for (var u = width - 1; u >= -1; u--) yield return new Vector2Int(u, height);
-            for (var v = height - 1; v >= 0; v--) yield return new Vector2Int(-1, v);
+            var art = ArtOf(coreKind); if (art == null || art.stages.Length == 0) return 1;
+            return art.stages[Mathf.Clamp(level, 0, art.stages.Length - 1)];
         }
+    }
 
-        public static List<EstateDecorItem> Plan(EstateDecorRules rules, AccountEstateConfig config, MetaEstateState estate)
+    public enum EstateDrawLayer { Terrain, Ground, Standing, Foreground }
+
+    // One sprite on the map: art id (or a building body), its pivot's grid point, width in scale-1 canvas units, colour for the
+    // tint shader and an optional height/width override (yard grounds are stretched ellipses).
+    public sealed class EstateDrawItem
+    {
+        public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
+        public EstateDrawLayer Layer; public int BuildingId = -1; public string BuildingArt; public int Stage; public float SortY; public string Key = "";
+    }
+
+    public sealed class EstatePlan
+    {
+        public readonly List<EstateDrawItem> Items = new List<EstateDrawItem>();
+        public readonly HashSet<Vector2Int> Road = new HashSet<Vector2Int>();
+        public readonly List<AstraObject> Astra = new List<AstraObject>();
+        public readonly Dictionary<Vector2Int, string> States = new Dictionary<Vector2Int, string>();
+        // Restoration state of a cell: restored / sage / fallow on open land, closed in closed zones, null off the zones.
+        public Func<Vector2Int, string> StateOf = _ => null;
+        public AstraScene Scene;
+        public IEnumerable<EstateDrawItem> In(EstateDrawLayer layer) => Items.Where(i => i.Layer == layer);
+        public int Count(string source) => Items.Count(i => i.Source == source);
+    }
+
+    // Deterministic dressing of the estate map from the rules, the config grid and the estate's buildings (#375). Astra's yard,
+    // roadside and empty-land rules run unchanged (AstraDecor) on the estate projected to scale-1 screen units; the grid supplies
+    // roads, restoration states and the terrain skeleton. Same inputs, same plan.
+    public static class EstatePlanner
+    {
+        static Vector2 P(Vector2 grid) => EstateMapModel.Project(grid);
+        static Vector2Int CellOf(double x, double y) => Vector2Int.FloorToInt(EstateMapModel.Unproject(new Vector2((float)x, (float)y)));
+
+        public static EstatePlan Plan(EstateDecorRules rules, EstateArt art, AccountEstateConfig config, MetaEstateState estate)
         {
-            var columns = config.Zones.Max(z => z.X + z.Width); var rows = config.Zones.Max(z => z.Y + z.Height);
+            var plan = new EstatePlan();
             var kinds = config.Buildings.ToDictionary(k => k.Kind, StringComparer.Ordinal);
-            var taken = new HashSet<Vector2Int>();
-            foreach (var building in estate.Buildings)
-                for (var u = 0; u < kinds[building.Kind].Width; u++) for (var v = 0; v < kinds[building.Kind].Height; v++)
-                    taken.Add(new Vector2Int(building.X + u, building.Y + v));
-            bool Inside(Vector2Int c) => c.x >= 0 && c.y >= 0 && c.x < columns && c.y < rows;
-            bool Open(Vector2Int c) => config.Zones.Any(z => estate.OpenZones.Contains(z.Id) && c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
-            var items = new List<EstateDecorItem>();
+            bool OpenCell(Vector2Int c) => config.Zones.Any(z => estate.OpenZones.Contains(z.Id) && c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
+            bool AnyZone(Vector2Int c) => config.Zones.Any(z => c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             var buildings = estate.Buildings.OrderBy(b => b.Id).ToArray();
+            var taken = new HashSet<Vector2Int>();
+            foreach (var b in buildings) for (var u = 0; u < kinds[b.Kind].Width; u++) for (var v = 0; v < kinds[b.Kind].Height; v++) taken.Add(new Vector2Int(b.X + u, b.Y + v));
+            var reserved = new HashSet<Vector2Int>(taken);
+            foreach (var piece in rules.placed)
+                for (var u = 0; piece.reserve.Length == 4 && u < piece.reserve[2]; u++) for (var v = 0; v < piece.reserve[3]; v++) reserved.Add(new Vector2Int(piece.reserve[0] + u, piece.reserve[1] + v));
 
-            // Roads first, so yards and clusters keep off them. Doors are the cell in front of a footprint's south-west side.
+            // Roads: L-shaped grid paths from the home door to every other building's door in open land.
             Vector2Int Door(MetaEstateBuilding b) => new Vector2Int(b.X + kinds[b.Kind].Width - 1, b.Y + kinds[b.Kind].Height);
-            var road = new List<Vector2Int>(); var roadSet = new HashSet<Vector2Int>();
-            var origin = buildings.FirstOrDefault(b => b.Kind == rules.road.from);
-            if (origin != null && !string.IsNullOrEmpty(rules.road.from))
-            {
-                var start = Door(origin);
-                foreach (var target in buildings.Where(b => b.Id != origin.Id && Open(Door(b))))
+            var routes = new List<double[][]>();
+            var origin = buildings.FirstOrDefault(b => kinds[b.Kind].StartsComplete);
+            if (origin != null)
+                foreach (var target in buildings.Where(b => b.Id != origin.Id && OpenCell(Door(b))))
                 {
-                    var end = Door(target); var cell = start;
-                    // Along u first, then v: a deterministic L that skips footprint cells it crosses.
-                    while (true)
+                    Vector2Int start = Door(origin), end = Door(target), corner = new Vector2Int(end.x, start.y);
+                    foreach (var cell in Walk(start, corner).Concat(Walk(corner, end)))
+                        if (OpenCell(cell) && !taken.Contains(cell)) plan.Road.Add(cell);
+                    routes.Add(new[] { start, corner, end }.Distinct().Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
+                }
+
+            // Restoration: tended land (built sites and roads) is in colour, fading through sage to fallow (#375) [가설].
+            var tended = buildings.Where(b => b.Level > 0).SelectMany(b => Enumerable.Range(0, kinds[b.Kind].Width * kinds[b.Kind].Height)
+                .Select(i => new Vector2Int(b.X + i % kinds[b.Kind].Width, b.Y + i / kinds[b.Kind].Width))).Concat(plan.Road).ToArray();
+            string State(Vector2Int c)
+            {
+                if (!AnyZone(c)) return null;
+                if (!OpenCell(c)) return "closed";
+                var d = tended.Length == 0 ? int.MaxValue : tended.Min(t => Mathf.Max(Mathf.Abs(t.x - c.x), Mathf.Abs(t.y - c.y)));
+                return d <= rules.restoration.restoredRadius ? "restored" : d <= rules.restoration.sageRadius ? "sage" : "fallow";
+            }
+            string StateAt(Vector2 grid) { var c = Vector2Int.FloorToInt(grid); if (!plan.States.TryGetValue(c, out var s)) plan.States[c] = s = State(c); return s; }
+            plan.StateOf = c => StateAt(c);
+
+            // Terrain patches over open land, one per patchCells block, picked by the block centre's state.
+            var t = rules.terrain;
+            foreach (var zone in config.Zones.Where(z => estate.OpenZones.Contains(z.Id)))
+                for (var u = zone.X; u < zone.X + zone.Width; u += t.patchCells)
+                    for (var v = zone.Y; v < zone.Y + zone.Height; v += t.patchCells)
                     {
-                        if (Inside(cell) && Open(cell) && !taken.Contains(cell) && roadSet.Add(cell)) road.Add(cell);
-                        if (cell == end) break;
-                        cell = cell.x != end.x ? new Vector2Int(cell.x + Math.Sign(end.x - cell.x), cell.y) : new Vector2Int(cell.x, cell.y + Math.Sign(end.y - cell.y));
+                        var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre);
+                        var role = state == "restored" ? t.restored : state == "sage" ? t.sage : t.fallow;
+                        plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
+                            Colour = new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
                     }
-                }
-                // Road cells carry no art role: the page draws them as ground diamonds.
-                foreach (var cell in road) items.Add(new EstateDecorItem("", cell, 1, true, EstateDecorSource.Road, -1));
-            }
-            var used = new HashSet<Vector2Int>(taken); used.UnionWith(roadSet);
 
-            foreach (var building in buildings)
+            // Astra's scene: built buildings (anchor = footprint centre, w = painted body width at scale 1), the roads, and the open land.
+            var scene = new AstraScene();
+            foreach (var b in buildings)
             {
-                var kind = kinds[building.Kind];
-                var rule = rules.yard.FirstOrDefault(y => y.kinds.Contains(building.Kind)) ?? rules.yard.FirstOrDefault(y => y.kinds.Contains("*"));
-                if (rule == null || rule.count <= 0 || rule.props.Length == 0) continue;
-                var ring = Ring(kind.Width, kind.Height).ToArray();
-                // The ring order starts at a building-relative offset from the seed and the building id, so the yard pattern
-                // moves with the building rather than with the grid.
-                var first = (int)(Hash(rules.seed, building.Id, 1) % (uint)ring.Length); var placed = 0;
-                // Stepping by 5 spreads the props around the ring; it visits every cell when 5 does not divide the ring length.
-                var step = ring.Length % 5 == 0 ? 1 : 5;
-                for (var i = 0; i < ring.Length && placed < rule.count; i++)
+                var kind = kinds[b.Kind]; var artKind = rules.ArtOf(b.Kind)?.art; var stage = rules.Stage(b.Kind, b.Level);
+                var anchor = P(new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f));
+                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 : 96;
+                if (b.Level > 0 && artKind != null) scene.Buildings.Add(new AstraBuilding($"estate-{b.Id:00}", artKind, stage, anchor.x, anchor.y, w));
+                else scene.Obstacles.Add((anchor.x, anchor.y - w * .25, 1, w * .5));
+            }
+            scene.Routes.AddRange(routes);
+            scene.RoadsideAllowed = (x, y) => { var c = CellOf(x, y); return OpenCell(c) && !reserved.Contains(c); };
+            scene.LandAllowed = (x, y) => { var c = CellOf(x, y); return OpenCell(c) && !reserved.Contains(c) && !plan.Road.Contains(c); };
+            scene.LandState = (x, y) => { var s = StateAt(EstateMapModel.Unproject(new Vector2((float)x, (float)y))); return s == "closed" ? null : s; };
+            var open = config.Zones.Where(z => estate.OpenZones.Contains(z.Id)).ToArray();
+            if (open.Length > 0)
+            {
+                var corners = open.SelectMany(z => new[] { P(new Vector2(z.X, z.Y)), P(new Vector2(z.X + z.Width, z.Y)), P(new Vector2(z.X, z.Y + z.Height)), P(new Vector2(z.X + z.Width, z.Y + z.Height)) }).ToArray();
+                float minX = corners.Min(c => c.x), maxX = corners.Max(c => c.x), minY = corners.Min(c => c.y), maxY = corners.Max(c => c.y);
+                scene.LandOriginX = minX + 15; scene.LandOriginY = minY + 20;
+                scene.LandColumns = Mathf.CeilToInt((maxX - minX) / (float)rules.astra.landSpacingX); scene.LandRows = Mathf.CeilToInt((maxY - minY) / (float)rules.astra.landSpacingY);
+            }
+            plan.Scene = scene;
+            var (objects, _) = AstraDecor.Layout(rules.astra, scene);
+            plan.Astra.AddRange(objects);
+            foreach (var o in objects)
+            {
+                var grid = EstateMapModel.Unproject(new Vector2((float)o.X, (float)o.Y)); var role = o.Id; var width = (float)o.W;
+                // Tree groups join Astra's empty-land candidates on tended land [가설]; the selection itself stays art-v1.
+                if (o.Kind == "empty-land" && rules.trees.ids.Length > 0 && rules.trees.states.Contains(StateAt(grid)) && AstraDecor.Rand(rules.astra, "tree", o.Key) < rules.trees.share)
                 {
-                    var offset = ring[(first + i * step) % ring.Length]; var cell = new Vector2Int(building.X + offset.x, building.Y + offset.y);
-                    if (!Inside(cell) || !Open(cell) || used.Contains(cell)) continue;
-                    var prop = rule.props[(int)(Hash(rules.seed, building.Id, 2 + placed) % (uint)rule.props.Length)];
-                    items.Add(new EstateDecorItem(prop.role, cell + Jitter(rules.seed, building.Id, 10 + placed), prop.width, prop.flat, EstateDecorSource.Yard, building.Id));
-                    used.Add(cell); placed++;
+                    role = rules.trees.ids[(int)(AstraDecor.Rand(rules.astra, "tree-variant", o.Key) * rules.trees.ids.Length)];
+                    width = art != null && art.Has(role) && art.DisplayWidth(role) > 0 ? art.DisplayWidth(role) : width;
                 }
+                plan.Items.Add(new EstateDrawItem { Role = role, Source = o.Kind, Grid = grid, Width = width, Colour = rules.Colour(StateAt(grid) ?? "restored"),
+                    Layer = EstateDrawLayer.Standing, SortY = (float)o.Y, Key = o.Key });
             }
 
-            if (rules.road.roadside.Length > 0)
-                for (var i = rules.road.every - 1; i < road.Count; i += rules.road.every)
-                {
-                    var cell = road[i]; var h = Hash(rules.seed, cell.x * 97 + cell.y, 3);
-                    var side = (h & 1) == 0 ? new Vector2Int(cell.x + 1, cell.y) : new Vector2Int(cell.x, cell.y + 1);
-                    if (!Inside(side) || !Open(side) || used.Contains(side)) side = (h & 1) == 0 ? new Vector2Int(cell.x, cell.y + 1) : new Vector2Int(cell.x + 1, cell.y);
-                    if (!Inside(side) || !Open(side) || used.Contains(side)) continue;
-                    var prop = rules.road.roadside[(int)(h >> 1) % rules.road.roadside.Length];
-                    items.Add(new EstateDecorItem(prop.role, side + Jitter(rules.seed, cell.x * 97 + cell.y, 4), prop.width, prop.flat, EstateDecorSource.Roadside, -1));
-                    used.Add(side);
-                }
-
-            var cluster = rules.clusters;
-            if (cluster.count > 0 && cluster.props.Length > 0)
+            // Buildings: yard ground (as assembly.js), shadow and body; stage art follows the Core level.
+            var yg = rules.yardGround;
+            foreach (var sb in scene.Buildings)
             {
-                for (var k = 0; k < cluster.count; k++)
+                var id = sb.Kind == "well" ? yg.well : sb.Kind == "house" ? yg.house : yg.other;
+                var grid = EstateMapModel.Unproject(new Vector2((float)sb.X, (float)(sb.Y + yg.offsetY * sb.W + yg.height * .5 * sb.W)));
+                plan.Items.Add(new EstateDrawItem { Role = id, Source = "yard-ground", Grid = grid, Width = (float)(yg.width * sb.W), Aspect = yg.height / yg.width,
+                    Colour = new Color(1, 1, 1, yg.alpha), Layer = EstateDrawLayer.Ground, Key = sb.Key + "/ground" });
+            }
+            foreach (var b in buildings)
+            {
+                var kind = kinds[b.Kind]; var artKind = rules.ArtOf(b.Kind)?.art; if (artKind == null) continue;
+                var building = estate.Active?.BuildingId == b.Id;
+                var level = building ? estate.Active.TargetLevel : b.Level;
+                var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
+                var colour = b.Level == 0 && !building ? rules.Colour(rules.ruinState) : building ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
+                plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind, Stage = rules.Stage(b.Kind, level), Grid = centre,
+                    Width = (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
+            }
+
+            // Field fences and work poses (display only; no production meaning).
+            foreach (var b in buildings.Where(b => b.Level > 0))
+            {
+                var kind = kinds[b.Kind];
+                if (b.Kind == rules.fieldFenceKind)
                 {
-                    var free = new List<Vector2Int>();
-                    for (var u = 0; u < columns; u++) for (var v = 0; v < rows; v++) { var c = new Vector2Int(u, v); if (!used.Contains(c) && Open(c)) free.Add(c); }
-                    if (free.Count == 0) break;
-                    var centre = free[(int)(Hash(rules.seed, k, 5) % (uint)free.Count)];
-                    var size = cluster.minSize + (int)(Hash(rules.seed, k, 6) % (uint)(cluster.maxSize - cluster.minSize + 1));
-                    // A rejected sample (off the grid or on a used cell) is replaced by the next deterministic candidate, so a
-                    // cluster reaches its chosen size unless its neighbourhood runs out of free cells (review on #373).
-                    var placed = 0;
-                    for (var m = 0; placed < size && m < size * 8; m++)
+                    Add(plan, rules.fieldFenceCorner, "fence", new Vector2(b.X, b.Y), art, rules.Colour(StateAt(new Vector2(b.X, b.Y)) ?? "restored"));
+                    Add(plan, rules.peasants.farm, "peasant", new Vector2(b.X + .6f, b.Y + kind.Height + .2f), art, Color.white);
+                }
+                if (b.Kind == rules.peasants.carryKind) Add(plan, rules.peasants.carry, "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + kind.Height * .6f), art, Color.white);
+            }
+            if (estate.Active != null)
+            {
+                var b = buildings.First(x => x.Id == estate.Active.BuildingId); var kind = kinds[b.Kind];
+                Add(plan, rules.peasants.build, "peasant", new Vector2(b.X - .3f, b.Y + kind.Height + .1f), art, Color.white);
+            }
+
+            // Terrain skeleton pieces placed explicitly (river, bridge with its front rail, paddock) when their zone exists.
+            foreach (var piece in rules.placed.Where(p => config.Zones.Any(z => z.Id == p.zone)))
+            {
+                var grid = new Vector2(piece.u, piece.v); var state = StateAt(grid) ?? "fallow";
+                var layer = art != null && art.Has(piece.id) && art.Layer(piece.id) == "ground" ? EstateDrawLayer.Terrain : EstateDrawLayer.Standing;
+                var colour = state == "closed" ? rules.Colour("closed") : layer == EstateDrawLayer.Terrain ? Color.white : rules.Colour(state);
+                Add(plan, piece.id, "placed", grid, art, colour, layer);
+                if (!string.IsNullOrEmpty(piece.rail)) Add(plan, piece.rail, "placed", grid, art, colour, EstateDrawLayer.Foreground);
+                if (!string.IsNullOrEmpty(piece.with)) Add(plan, piece.with, "peasant", new Vector2(piece.withU, piece.withV), art, Color.white);
+            }
+
+            // The frontier: dark traces just inside closed land and the soft ink edge along every open/closed boundary.
+            var f = rules.frontier; var perBlock = new Dictionary<Vector2Int, int>();
+            foreach (var closed in config.Zones.Where(z => !estate.OpenZones.Contains(z.Id)))
+                foreach (var openZone in open)
+                    foreach (var (cell, inward, along, edgeIndex) in Boundary(closed, openZone))
                     {
-                        var angle = Hash(rules.seed, k * 131 + m, 7) / (float)uint.MaxValue * Mathf.PI * 2;
-                        var radius = placed == 0 ? 0 : (.5f + Hash(rules.seed, k * 131 + m, 8) / (float)uint.MaxValue * .5f) * cluster.spread * (1 + m / (float)size * .5f);
-                        var point = centre + new Vector2(.5f, .5f) + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-                        var cell = new Vector2Int(Mathf.FloorToInt(point.x), Mathf.FloorToInt(point.y));
-                        if (!Inside(cell) || !Open(cell) || placed > 0 && used.Contains(cell)) continue;
-                        var prop = cluster.props[(int)(Hash(rules.seed, k * 131 + m, 9) % (uint)cluster.props.Length)];
-                        items.Add(new EstateDecorItem(prop.role, point, prop.width, prop.flat, EstateDecorSource.Cluster, k));
-                        used.Add(cell); placed++;
+                        var key = $"frontier-{closed.Id}-{edgeIndex}";
+                        if (edgeIndex % f.edgeEvery == f.edgeEvery / 2 && !string.IsNullOrEmpty(f.edge))
+                            Add(plan, f.edge, "frontier-edge", cell - (Vector2)inward * .5f + new Vector2(.5f, .5f), art, new Color(1, 1, 1, f.edgeAlpha), EstateDrawLayer.Ground);
+                        if (edgeIndex % f.every != 0 || f.ids.Length == 0 || AstraDecor.Rand(rules.astra, "frontier", key) > f.density) continue;
+                        var depth = 1 + (int)(AstraDecor.Rand(rules.astra, "frontier-depth", key) * 2);
+                        var at = cell + inward * depth; var block = new Vector2Int(at.x / f.block, at.y / f.block);
+                        perBlock.TryGetValue(block, out var used); if (used >= f.perBlock) continue; perBlock[block] = used + 1;
+                        var role = f.ids[(int)(AstraDecor.Rand(rules.astra, "frontier-type", key) * f.ids.Length)];
+                        Add(plan, role, "frontier", at + new Vector2(.5f, .5f), art, rules.Colour("closed"));
                     }
-                }
-            }
-            return items;
+            return plan;
         }
 
-        static Vector2 Jitter(int seed, int a, int b) =>
-            new Vector2(.3f + Hash(seed, a, b) % 1000 / 1000f * .4f, .3f + Hash(seed, a, b + 500) % 1000 / 1000f * .4f);
-
-        // FNV-1a over three integers: stable across platforms and runtimes, unlike System.Random or string hash codes.
-        public static uint Hash(int seed, int a, int b)
+        static void Add(EstatePlan plan, string role, string source, Vector2 grid, EstateArt art, Color colour, EstateDrawLayer layer = EstateDrawLayer.Standing)
         {
-            var h = Mix(Mix(Mix(2166136261u, seed), a), b);
-            return h;
+            var width = art != null && art.Has(role) ? art.DisplayWidth(role) : 64;
+            plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = grid, Width = width > 0 ? width : 64, Colour = colour, Layer = layer, SortY = P(grid).y, Key = source + "-" + role + "-" + grid });
         }
 
-        static uint Mix(uint h, int value)
+        static IEnumerable<Vector2Int> Walk(Vector2Int from, Vector2Int to)
         {
-            for (var shift = 0; shift < 32; shift += 8) { h ^= (uint)(value >> shift) & 0xff; h *= 16777619u; }
-            return h;
+            var cell = from; yield return cell;
+            while (cell != to) { cell += new Vector2Int(Math.Sign(to.x - cell.x), Math.Sign(to.y - cell.y)); yield return cell; }
+        }
+
+        // Cells of `closed` along its shared edge with `open`, with the inward step (into closed land) and the index along the edge.
+        static IEnumerable<(Vector2Int Cell, Vector2Int Inward, Vector2Int Along, int Index)> Boundary(AccountEstateZone closed, AccountEstateZone open)
+        {
+            if (closed.X == open.X + open.Width || open.X == closed.X + closed.Width)
+            {
+                var x = closed.X == open.X + open.Width ? closed.X : closed.X + closed.Width - 1; var inward = new Vector2Int(closed.X == open.X + open.Width ? 1 : -1, 0);
+                for (int y = Math.Max(closed.Y, open.Y), i = 0; y < Math.Min(closed.Y + closed.Height, open.Y + open.Height); y++, i++) yield return (new Vector2Int(x, y), inward, Vector2Int.up, i);
+            }
+            if (closed.Y == open.Y + open.Height || open.Y == closed.Y + closed.Height)
+            {
+                var y = closed.Y == open.Y + open.Height ? closed.Y : closed.Y + closed.Height - 1; var inward = new Vector2Int(0, closed.Y == open.Y + open.Height ? 1 : -1);
+                for (int x = Math.Max(closed.X, open.X), i = 0; x < Math.Min(closed.X + closed.Width, open.X + open.Width); x++, i++) yield return (new Vector2Int(x, y), inward, Vector2Int.right, i);
+            }
         }
     }
 }

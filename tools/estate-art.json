@@ -1,0 +1,691 @@
+{
+  "version": "estate-art-r1",
+  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24).",
+  "buildings": {
+    "release": "m3-estate-autodecor-20261024",
+    "body": "buildings-30-body-atlas.png",
+    "shadow": "buildings-30-shadow-atlas.png",
+    "shadowScale": 0.5,
+    "manifest": "buildings-manifest.json"
+  },
+  "atlasWidth": 2048,
+  "padding": 2,
+  "assets": [
+    {
+      "id": "terrain-fallow",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "terrain-fallow.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "terrain-sage",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "terrain-sage.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "terrain-path",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "terrain-path.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "terrain-restoration",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "terrain-restoration.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "river-bend-patch",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "river-bend-patch.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "layer": "ground"
+    },
+    {
+      "id": "riverbank-patch",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "riverbank-patch.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "layer": "ground"
+    },
+    {
+      "id": "bridge-landing-patch",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "bridge-landing-patch.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 192,
+      "layer": "ground"
+    },
+    {
+      "id": "frontier-ink-edge",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "frontier-ink-edge.png",
+      "atlas": "terrain",
+      "maxSize": 352,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "layer": "ground"
+    },
+    {
+      "id": "yard-earth",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "yard-earth.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "yard-grass",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "yard-grass.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "yard-stone",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "yard-stone.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground"
+    },
+    {
+      "id": "garden",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "garden.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 28,
+      "layer": "standing"
+    },
+    {
+      "id": "laundry",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "laundry.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 30,
+      "layer": "standing"
+    },
+    {
+      "id": "firewood",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "firewood.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "scrap",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "scrap.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "sacks",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "sacks.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "cart",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cart.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "books",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "books.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "rack",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "rack.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "saw",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "saw.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "bucket",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "bucket.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 21,
+      "layer": "standing"
+    },
+    {
+      "id": "grass",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "grass.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 17,
+      "layer": "standing"
+    },
+    {
+      "id": "rocks",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "rocks.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 14,
+      "layer": "standing"
+    },
+    {
+      "id": "fence",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "fence.png",
+      "atlas": "decor",
+      "maxSize": 128,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": 27,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-fallow-1",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-fallow-1.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-fallow-2",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-fallow-2.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-fallow-3",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-fallow-3.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-sage-1",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-sage-1.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-sage-2",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-sage-2.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-sage-3",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-sage-3.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-restored-1",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-restored-1.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-restored-2",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-restored-2.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "cluster-restored-3",
+      "release": "m3-estate-autodecor-20261024",
+      "file": "cluster-restored-3.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "displayWidth": null,
+      "layer": "standing"
+    },
+    {
+      "id": "tree-cluster-4",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "tree-cluster-4.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 128,
+      "layer": "standing"
+    },
+    {
+      "id": "tree-cluster-5",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "tree-cluster-5.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 128,
+      "layer": "standing"
+    },
+    {
+      "id": "house-fence-kit",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "house-fence-kit.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 180,
+      "layer": "standing"
+    },
+    {
+      "id": "field-fence-segment",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "field-fence-segment.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "field-fence-corner",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "field-fence-corner.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "sheep-paddock",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "sheep-paddock.png",
+      "atlas": "decor",
+      "maxSize": 192,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 208,
+      "layer": "standing"
+    },
+    {
+      "id": "frontier-ruin",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "frontier-ruin.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 100,
+      "layer": "standing"
+    },
+    {
+      "id": "frontier-dead-tree",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "frontier-dead-tree.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 100,
+      "layer": "standing"
+    },
+    {
+      "id": "frontier-broken-fence",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "frontier-broken-fence.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "frontier-empty-armor",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "frontier-empty-armor.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 72,
+      "layer": "standing"
+    },
+    {
+      "id": "frontier-dry-well",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "frontier-dry-well.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 88,
+      "layer": "standing"
+    },
+    {
+      "id": "frontier-stump-tracks",
+      "release": "m3-estate-life-kits-r2-20261024",
+      "file": "frontier-stump-tracks.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 88,
+      "layer": "standing"
+    },
+    {
+      "id": "bridge-ne-sw-base",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "bridge-ne-sw-base.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.5040322580645161,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "standing"
+    },
+    {
+      "id": "bridge-ne-sw-rail",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "bridge-ne-sw-foreground-rail.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.5040322580645161,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "foreground"
+    },
+    {
+      "id": "bridge-nw-se-base",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "bridge-nw-se-base.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.49603174603174605,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "standing"
+    },
+    {
+      "id": "bridge-nw-se-rail",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "bridge-nw-se-foreground-rail.png",
+      "atlas": "decor",
+      "maxSize": 224,
+      "pivot": [
+        0.49603174603174605,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "foreground"
+    },
+    {
+      "id": "peasant-farm",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "peasant-farm.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3410714285714286,
+        0.0713407134071341
+      ],
+      "displayWidth": 38.957,
+      "layer": "standing"
+    },
+    {
+      "id": "peasant-carry",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "peasant-carry.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.43722943722943725,
+        0.06871165644171784
+      ],
+      "displayWidth": 31.59,
+      "layer": "standing"
+    },
+    {
+      "id": "peasant-build",
+      "release": "m3-estate-life-kits-20261024",
+      "file": "peasant-build.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.5238095238095238,
+        0.04477611940298509
+      ],
+      "displayWidth": 35.317,
+      "layer": "standing"
+    }
+  ]
+}

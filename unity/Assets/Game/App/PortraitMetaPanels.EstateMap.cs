@@ -21,7 +21,8 @@ namespace Game.App
     public static partial class PortraitMetaPanels
     {
         public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 0123456789:";
-        static readonly Color OpenGround = new Color32(104, 124, 70, 255);
+        // Open land under the terrain patches: a mid tone of Astra's painted fallow/sage ground.
+        static readonly Color OpenGround = new Color32(124, 116, 84, 255);
         static readonly Color ClosedGround = new Color32(40, 37, 33, 255);
         // Closed land: the M2 darkness grammar (#374) — blue-grey cover with a soft edge toward open land and a faint warm rim
         // (GameVisualTokens.EstateRim in the M2 estate View) on the boundary.
@@ -41,8 +42,6 @@ namespace Game.App
         static readonly Color RoadSand = new Color32(176, 152, 104, 255);
         const float BarTop = 6, BarHeight = 40, GoalTop = 50, GoalHeight = 44, BottomBar = 56, BottomGap = 8, WorkHeight = 44;
         static readonly Color GoodInk = new Color32(168, 222, 150, 255), BadInk = new Color32(240, 140, 120, 255), Gold = new Color32(243, 213, 140, 255);
-        // Block height of a temporary plate building, in unscaled canvas units.
-        const float BlockRise = 22;
 
         public static void EstateMap(UiShell ui, EstateMapScreen screen, MetaState account, EstateMapActions actions)
         {
@@ -61,15 +60,23 @@ namespace Game.App
             // player put it so the destination preview remains visible.
             else if (screen.Selected != null && !screen.Moving && !screen.Map.InView(screen.Centre(screen.Selected.Value))) screen.Map.CentreOn(screen.Centre(screen.Selected.Value));
 
+            // Painted map (#375): flat ground under Astra's large terrain patches, grid roads, the closed-land darkness, then
+            // yard grounds, shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
+            var rules = EstateDecorRules.Load(); var art = EstateArt.Load(); var tint = art.Tint;
+            var plan = screen.Plan(rules, art);
+            bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
             var ground = Shapes(viewport, "EstateMap.Ground", view);
-            foreach (var zone in screen.Config.Zones) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, screen.Open(zone) ? OpenGround : ClosedGround);
-            // Grid lines only on open land.
-            foreach (var zone in screen.Config.Zones.Where(screen.Open))
-            {
-                for (var u = zone.X; u <= zone.X + zone.Width; u++) ground.Line(new Vector2(u, zone.Y), new Vector2(u, zone.Y + zone.Height), GridLine);
-                for (var v = zone.Y; v <= zone.Y + zone.Height; v++) ground.Line(new Vector2(zone.X, v), new Vector2(zone.X + zone.Width, v), GridLine);
-            }
-            // Darkness over closed zones: above the ground, below decoration, buildings, previews and the bars.
+            foreach (var zone in screen.Config.Zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
+            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Terrain", item);
+            var roads = Shapes(viewport, "EstateMap.Roads", view);
+            foreach (var cell in plan.Road) roads.Footprint(cell.x, cell.y, 1, 1, RoadSand);
+            if (screen.Moving)
+                foreach (var zone in screen.Config.Zones.Where(screen.Open))
+                {
+                    for (var u = zone.X; u <= zone.X + zone.Width; u++) roads.Line(new Vector2(u, zone.Y), new Vector2(u, zone.Y + zone.Height), GridLine);
+                    for (var v = zone.Y; v <= zone.Y + zone.Height; v++) roads.Line(new Vector2(zone.X, v), new Vector2(zone.X + zone.Width, v), GridLine);
+                }
+            // Darkness over closed zones: above the painted ground, below every standing sprite and the bars.
             var fog = Shapes(viewport, "EstateMap.Fog", view);
             foreach (var zone in screen.Config.Zones.Where(z => !screen.Open(z)))
             {
@@ -77,54 +84,29 @@ namespace Game.App
                 fog.Fog(zone.X, zone.Y, zone.Width, zone.Height, FogCover, FogFeatherCells, Faces(-1, 0), Faces(0, -1), Faces(1, 0), Faces(0, 1));
                 foreach (var open in screen.Config.Zones.Where(screen.Open))
                     if (SharedEdge(zone, open, out var from, out var to)) fog.Line(from, to, Rim, 2);
-                view.Pin(Caption(ui, viewport, screen.ZoneLabel(zone), 0, 0, 160, 24, 13, false, TextAnchor.MiddleCenter), new Vector2(zone.X + zone.Width * .5f, zone.Y + zone.Height * .5f), 0);
             }
-            // Decoration (#372): road cells join the ground mesh, flat props lie on the ground layer, standing props sort with
-            // the buildings by their foot.
-            var decor = screen.DecorEnabled ? screen.Decor() : new List<EstateDecorItem>();
-            foreach (var item in decor.Where(i => i.Source == EstateDecorSource.Road))
-                ground.Footprint(Mathf.FloorToInt(item.Grid.x), Mathf.FloorToInt(item.Grid.y), 1, 1, RoadSand);
+            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Edge", item);
+            foreach (var zone in screen.Config.Zones.Where(z => !screen.Open(z)))
+                view.Pin(Caption(ui, viewport, screen.ZoneLabel(zone), 0, 0, 160, 24, 13, false, TextAnchor.MiddleCenter), new Vector2(zone.X + zone.Width * .5f, zone.Y + zone.Height * .5f), 0);
             if (screen.Selected != null)
             {
                 var selected = screen.Building(screen.Selected.Value); var kind = screen.Kind(selected.Kind);
-                ground.Footprint(selected.X, selected.Y, kind.Width, kind.Height, SelectedFoot);
+                Shapes(viewport, "EstateMap.Selection", view).Footprint(selected.X, selected.Y, kind.Width, kind.Height, SelectedFoot);
             }
-            foreach (var item in decor.Where(i => i.Flat && i.Role.Length > 0)) DecorProp(viewport, view, item);
-
-            void DrawBuilding(MetaEstateBuilding building)
+            var standing = plan.In(EstateDrawLayer.Standing).Where(Decor).OrderBy(i => i.SortY).ThenBy(i => i.BuildingId < 0 ? 1 : 0).ThenBy(i => i.Key, StringComparer.Ordinal).ToArray();
+            foreach (var item in standing.Where(i => i.BuildingId >= 0))
+                Paint(viewport, view, art, tint, "EstateMap.Shadow:" + item.BuildingId, item, art.Shadow(item.BuildingArt, item.Stage), new Color(1, 1, 1, .8f));
+            foreach (var item in standing)
             {
-                var kind = screen.Kind(building.Kind); var art = EstateMapScreen.Art(building.Kind);
-                var dimmed = screen.Moving && screen.Selected == building.Id;
-                var alpha = dimmed ? .45f : 1;
-                if (art == null)
-                {
-                    var block = Shapes(viewport, "EstateMap.Building:" + building.Id, view);
-                    var tint = building.Level == 0 ? RuinTint : Color.white;
-                    block.Block(building.X, building.Y, kind.Width, kind.Height, BlockRise, Mul(BlockTop, tint, alpha), Mul(BlockLeft, tint, alpha), Mul(BlockRight, tint, alpha));
-                }
-                else
-                {
-                    var rect = PortraitWidgets.Place("EstateMap.Building:" + building.Id, viewport, 0, 0, 0, 0);
-                    var image = PortraitWidgets.Art(ui, rect, art, 0, 0, 0, 0); UiShell.Stretch(image.rectTransform);
-                    image.preserveAspect = true; image.raycastTarget = false;
-                    image.color = Mul(building.Level == 0 ? RuinTint : Color.white, Color.white, alpha);
-                    view.Standing(rect, building.X, building.Y, kind.Width, kind.Height);
-                }
+                if (item.BuildingId < 0) { Paint(viewport, view, art, tint, DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item); continue; }
+                var building = screen.Building(item.BuildingId); var kind = screen.Kind(building.Kind);
+                var colour = item.Colour; if (screen.Moving && screen.Selected == building.Id) colour.a *= .45f;
+                Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);
                 // Names stay hidden until the building is selected (#368).
                 if (screen.Selected == building.Id)
-                    view.Pin(NameTag(ui, viewport, screen.Name(building.Kind) + " Lv " + building.Level), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), art == null ? BlockRise + 34 : (kind.Width + kind.Height) * EstateMapModel.HalfWidth * .9f);
+                    view.Pin(NameTag(ui, viewport, screen.Name(building.Kind) + " Lv " + building.Level), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), 128);
             }
-
-            // Buildings and standing props in draw order: foot screen y (a footprint's front corner), buildings before props on
-            // a tie, then instance order (#368).
-            var drawables = screen.State.Estate.Buildings.Select(b => (Y: SortY(screen, b), Order: 0, Id: b.Id, Building: b, Prop: default(EstateDecorItem)))
-                .Concat(decor.Where(i => !i.Flat && i.Role.Length > 0).Select((p, i) => (Y: EstateMapModel.Project(p.Grid).y, Order: 1, Id: i, Building: (MetaEstateBuilding)null, Prop: p)))
-                .OrderBy(d => d.Y).ThenBy(d => d.Order).ThenBy(d => d.Id);
-            foreach (var drawable in drawables)
-            {
-                if (drawable.Building != null) DrawBuilding(drawable.Building);
-                else DecorProp(viewport, view, drawable.Prop);
-            }
+            foreach (var item in plan.In(EstateDrawLayer.Foreground).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Piece:" + item.Role, item);
             if (screen.Moving && screen.Selected != null)
             {
                 var kind = screen.Kind(screen.Building(screen.Selected.Value).Kind);
@@ -171,38 +153,20 @@ namespace Game.App
             BottomBarWithTabs(ui, root, account, actions, width, height);
         }
 
-        // Places one decoration sprite; a role missing from the art catalog is skipped (counted by the screen for the PR report).
-        static void DecorProp(RectTransform viewport, EstateMapView view, EstateDecorItem item)
-        {
-            ArtVisual visual;
-            try { visual = ArtCatalog.Load().ResolveRole(item.Role); }
-            catch (InvalidOperationException) { view.MissingDecor++; return; }
-            var sprite = visual.Sprite; if (sprite == null) { view.MissingDecor++; return; }
-            var rect = UiShell.Rect("EstateMap.Decor:" + item.Source, viewport);
-            var image = rect.gameObject.AddComponent<Image>(); image.sprite = sprite; image.raycastTarget = false;
-            var size = sprite.rect.size;
-            view.Prop(rect, item.Grid, item.Width, new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y), size.y / size.x);
-        }
+        // Sources the [장식 켬/끔] development switch hides (#372); terrain, buildings, the river skeleton and the darkness stay.
+        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant" };
 
-        // True when `other` lies directly on the (du, dv) side of `zone` and the two share part of that edge.
-        static bool SharesEdge(AccountEstateZone zone, AccountEstateZone other, int du, int dv) =>
-            du != 0 ? (du < 0 ? other.X + other.Width == zone.X : zone.X + zone.Width == other.X) && other.Y < zone.Y + zone.Height && zone.Y < other.Y + other.Height
-                    : (dv < 0 ? other.Y + other.Height == zone.Y : zone.Y + zone.Height == other.Y) && other.X < zone.X + zone.Width && zone.X < other.X + other.Width;
-
-        static bool SharedEdge(AccountEstateZone a, AccountEstateZone b, out Vector2 from, out Vector2 to)
+        // One estate sprite: its pivot stands on the item's grid point, `Width` is in scale-1 canvas units, and the colour goes to
+        // the EstateTint shader as (saturation, brightness, light, alpha). Without the shader the art draws untinted.
+        static Image Paint(RectTransform viewport, EstateMapView view, EstateArt art, Material tint, string name, EstateDrawItem item, Sprite sprite = null, Color? colour = null)
         {
-            from = to = default;
-            if (a.X + a.Width == b.X || b.X + b.Width == a.X)
-            {
-                var x = a.X + a.Width == b.X ? b.X : a.X; var y0 = Mathf.Max(a.Y, b.Y); var y1 = Mathf.Min(a.Y + a.Height, b.Y + b.Height);
-                if (y1 <= y0) return false; from = new Vector2(x, y0); to = new Vector2(x, y1); return true;
-            }
-            if (a.Y + a.Height == b.Y || b.Y + b.Height == a.Y)
-            {
-                var y = a.Y + a.Height == b.Y ? b.Y : a.Y; var x0 = Mathf.Max(a.X, b.X); var x1 = Mathf.Min(a.X + a.Width, b.X + b.Width);
-                if (x1 <= x0) return false; from = new Vector2(x0, y); to = new Vector2(x1, y); return true;
-            }
-            return false;
+            sprite ??= art.Get(item.Role);
+            var rect = UiShell.Rect(name, viewport); var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = sprite; image.raycastTarget = false; image.material = tint;
+            var c = colour ?? item.Colour; image.color = tint != null ? c : new Color(1, 1, 1, c.a);
+            var size = sprite.rect.size; var pivot = new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
+            view.Prop(rect, item.Grid, item.Width / (EstateMapModel.HalfWidth * 2), pivot, item.Aspect > 0 ? item.Aspect : size.y / size.x);
+            return image;
         }
 
         static float SortY(EstateMapScreen screen, MetaEstateBuilding building)
@@ -516,7 +480,6 @@ namespace Game.App
         struct Pinned { public RectTransform Rect; public Vector2 Grid; public float Lift; }
         struct PropArt { public RectTransform Rect; public Vector2 Grid; public float Width; public Vector2 Pivot; public float Aspect; }
         readonly List<PropArt> props = new List<PropArt>();
-        public int MissingDecor;
         public int DecorCount => props.Count;
         // A decoration sprite `width` cells wide whose pivot (normalized, y up) stands on a grid point.
         public void Prop(RectTransform rect, Vector2 grid, float width, Vector2 pivot, float aspect) =>

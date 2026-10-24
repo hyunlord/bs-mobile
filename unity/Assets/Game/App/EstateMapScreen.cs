@@ -18,11 +18,6 @@ namespace Game.App
             ["m3a:home"] = "우리 집", ["m3a:watchtower"] = "망루", ["m3a:well_shrine"] = "우물",
             ["m3a:field"] = "경작지", ["m3a:lumber_camp"] = "벌목장", ["m3a:ironworks"] = "철공소",
         };
-        // Existing manor sprites; the other kinds use colour blocks until Astra's estate art is approved.
-        static readonly Dictionary<string, string> KindArt = new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["meta:forge"] = "b-forge", ["meta:scriptorium"] = "b-scriptorium", ["meta:granary"] = "b-granary", ["meta:barracks"] = "b-barracks",
-        };
         // Branch names and run-side summaries from design #360 section 7 and the r2 board 03 [가설]; estate-side effects are
         // computed from the config instead.
         static readonly Dictionary<string, (string Name, string Run)> Branches = new Dictionary<string, (string, string)>(StringComparer.Ordinal)
@@ -59,7 +54,7 @@ namespace Game.App
         public string ZoneChoice { get; private set; }
         public bool QueueOpen { get; private set; }
         public bool DecorEnabled { get; private set; } = true;
-        List<EstateDecorItem> decor; string decorLayout;
+        EstatePlan plan; string planLayout;
 
         // `map` keeps the player's zoom and position when the copy is rebuilt; `realtime` is seconds since an arbitrary origin
         // (Time.realtimeSinceStartupAsDouble in the app, a fixed value in tests).
@@ -83,7 +78,6 @@ namespace Game.App
         public bool Open(AccountEstateZone zone) => State.Estate.OpenZones.Contains(zone.Id);
         public bool UnderConstruction(int id) => State.Estate.Active?.BuildingId == id;
         public bool Reserved(int id) => State.Estate.Reservations.Any(r => r.BuildingId == id);
-        public static string Art(string kind) => KindArt.TryGetValue(kind, out var art) ? art : null;
         public string BranchName(string branch) => Branches.TryGetValue(branch, out var value) ? value.Name : branch;
 
         public string Name(string kind)
@@ -125,12 +119,14 @@ namespace Game.App
         public void ToggleGoal() => GoalCollapsed = !GoalCollapsed;
         public void ToggleDecor() => DecorEnabled = !DecorEnabled;
 
-        // Decoration plan for the current layout (#372); recomputed only when a building moves or a zone opens.
-        public List<EstateDecorItem> Decor()
+        // The painted map for the current estate (#375); recomputed only when a building moves, levels up or starts building,
+        // or a zone opens.
+        public EstatePlan Plan(EstateDecorRules rules, EstateArt art)
         {
-            var layout = string.Join(";", State.Estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y)) + "|" + string.Join(",", State.Estate.OpenZones);
-            if (decor == null || layout != decorLayout) { decor = EstateDecorPlanner.Plan(EstateDecorRules.Load(), Config, State.Estate); decorLayout = layout; }
-            return decor;
+            var estate = State.Estate;
+            var layout = string.Join(";", estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y + "," + b.Level)) + "|" + estate.Active?.BuildingId + "|" + string.Join(",", estate.OpenZones);
+            if (plan == null || layout != planLayout) { plan = EstatePlanner.Plan(rules, art, Config, estate); planLayout = layout; }
+            return plan;
         }
         public void ToggleQueue() { var open = !QueueOpen; Select(null); QueueOpen = open; }
 

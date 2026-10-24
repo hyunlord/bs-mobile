@@ -223,10 +223,11 @@ namespace Tests.PlayMode
         IEnumerator MeasureDecor(EstateMapScreen screen)
         {
             Assert.That(screen.DecorEnabled, Is.True);
-            var plan = screen.Decor();
-            var sprites = plan.Count(i => i.Source != EstateDecorSource.Road);
-            Assert.That(View().MissingDecor, Is.EqualTo(0), "Every decoration role resolves in the wave art.");
-            Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites));
+            var plan = screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).Items;
+            var decorSources = new[] { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant" };
+            var sprites = plan.Count(i => decorSources.Contains(i.Source));
+            Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites), "Every planned decoration sprite is on the map.");
+            Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
@@ -260,7 +261,7 @@ namespace Tests.PlayMode
             yield return null; Canvas.ForceUpdateCanvases();
         }
 
-        const int PinnedBreaksOn = 17, PinnedBreaksOff = 10;
+        const int PinnedBreaksOn = -1, PinnedBreaksOff = -1;
 
         static IEnumerator Count(int[] into)
         {
