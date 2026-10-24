@@ -8,8 +8,9 @@ using UnityEngine.EventSystems;
 
 namespace Game.App
 {
-    // Development builds only (#376): `--estate-demo <dir>` plays a fixed 30-second tour of the estate map prototype (three zoom
-    // levels, a drag, building selection, construction start and completion, stock and task claims, a move) at a fixed 30 fps
+    // Development builds only (#376): `--estate-demo <dir>` plays a fixed 30-second tour of the estate map prototype (the first
+    // view on the lit land, then the whole estate, a neighbourhood and one building, a drag, building selection, construction
+    // start and completion, stock and task claims, a move) at a fixed 30 fps
     // and saves every frame as a PNG for ffmpeg. The prototype copy's clock follows game time here, so the run is the same on
     // every machine. Nothing is saved to the account.
     public sealed partial class RunCoordinator
@@ -28,6 +29,8 @@ namespace Game.App
         {
             Directory.CreateDirectory(directory);
             Time.captureFramerate = DemoFps; forceEstatePrototype = true; estateClock = () => Time.timeAsDouble;
+            // The tour starts from a first visit (#379): no remembered view.
+            preferences.EstateMapView = ""; preferences.Save(); estateMap = null;
             ShowPortraitEstate();
             var frame = 0;
             IEnumerator Hold(int frames)
@@ -45,11 +48,16 @@ namespace Game.App
                 view.OnEndDrag(pointer);
             }
 
-            yield return Hold(45);
-            View().Step(-1); yield return Hold(55);                 // whole estate
-            View().Step(1); yield return Hold(25);                  // neighbourhood
-            View().Step(1); yield return Hold(55);                  // one building
-            View().Step(-1); yield return Hold(25);
+            IEnumerator ZoomTo(int level, int frames)
+            {
+                for (var guard = 0; estateMap.Map.Zoom != level && guard < EstateMapModel.Levels; guard++) View().Step(estateMap.Map.Zoom < level ? 1 : -1);
+                yield return Hold(frames);
+            }
+            yield return Hold(45);                                          // first view: the lit land in its night
+            yield return ZoomTo(estateMap.Map.WholeMap, 50);                // whole estate
+            yield return ZoomTo(EstateMapModel.Neighbourhood, 25);          // neighbourhood
+            yield return ZoomTo(EstateMapModel.BuildingDetail, 50);         // one building
+            yield return ZoomTo(EstateMapModel.Neighbourhood, 25);
             yield return Pan(new Vector2(-140, 40), 30); yield return Hold(10);
             yield return Pan(new Vector2(140, -40), 30);
 
