@@ -91,6 +91,10 @@ namespace Tests.PlayMode
             Click("EstateMap.Building:" + forge.Id); yield return null;
             Assert.That(screen.Selected, Is.EqualTo(forge.Id));
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
+            var mapRect = Pixels((RectTransform)app.Ui.GetComponentsInChildren<EstateMapView>().Single().transform);
+            var panelRect = Pixels((RectTransform)app.Ui.transform.GetComponentsInChildren<RectTransform>().Single(r => r.name == "EstateMap.Selection"));
+            Assert.That(mapRect.yMin, Is.GreaterThanOrEqualTo(panelRect.yMax - .5f), "The selection panel sits below the map instead of covering rows.");
+            Assert.That(app.EstateMap.Map.MapSize.y, Is.GreaterThan(app.EstateMap.Map.Viewport.y), "The shorter map area can be dragged to reach every row.");
             yield return Capture("estate-map-selected");
             Click("EstateMap.Move"); yield return null; Assert.That(screen.Moving, Is.True);
             Tap(new Vector2Int(4, 4)); yield return null;

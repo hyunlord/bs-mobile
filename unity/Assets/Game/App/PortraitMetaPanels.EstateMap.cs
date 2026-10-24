@@ -38,8 +38,10 @@ namespace Game.App
             Caption(ui, banner, notice, 12, 0, width - 102, 44, 13);
             PortraitRunPanels.RoundIcon(ui, root, "Estate.Settings", "settings", actions.Settings, width - 60, 100);
 
-            const float top = 152; var bottom = Height(ui) - 116 - 80;
-            var viewport = PortraitWidgets.Place("EstateMap.Viewport", root, 10, top, inner, bottom - top);
+            const float top = 152, panelHeight = 168; var bottom = Height(ui) - 116 - 80;
+            // An open selection panel takes the bottom of the map area instead of covering it, so every row stays reachable.
+            var mapBottom = screen.Selected != null ? bottom - panelHeight : bottom;
+            var viewport = PortraitWidgets.Place("EstateMap.Viewport", root, 10, top, inner, mapBottom - top);
             viewport.gameObject.AddComponent<Image>().color = ClosedGround; viewport.gameObject.AddComponent<RectMask2D>();
             var view = viewport.gameObject.AddComponent<EstateMapView>(); view.Model = screen.Map;
             if (!screen.Map.Framed) { screen.Map.SetViewport(viewport.rect.size); screen.Map.CentreOn(screen.HomeCentre()); }
@@ -92,16 +94,16 @@ namespace Game.App
             PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 64, top + 8);
             PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 116, top + 8);
 
-            if (screen.Selected != null) SelectionPanel(ui, root, screen, actions, width, bottom);
+            if (screen.Selected != null) SelectionPanel(ui, root, screen, actions, width, bottom, panelHeight);
             var depart = ActionButton(ui, root, "Estate.Depart", "출정", actions.Depart, 20, bottom + 8, width - 40, true, 64, "ui.button.destructive");
             PortraitWidgets.Art(ui, depart.transform, "c-fertile_duel", 65, 11, 44, 42);
             Tabs(ui, root, account, actions.Navigate);
         }
 
-        static void SelectionPanel(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float bottom)
+        static void SelectionPanel(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float bottom, float height)
         {
             var building = screen.Building(screen.Selected.Value); var kind = screen.Kind(building.Kind);
-            const float height = 168; var panel = ColorPlate(root, "EstateMap.Selection", new Color32(52, 41, 27, 245), 10, bottom - height, width - 20, height);
+            var panel = ColorPlate(root, "EstateMap.Selection", new Color32(52, 41, 27, 245), 10, bottom - height, width - 20, height);
             panel.GetComponent<Image>().raycastTarget = true; // taps on the panel never reach the map below it
             ColorPlate(panel, "Gold rule", new Color32(139, 106, 51, 255), 0, 0, width - 20, 2);
             Caption(ui, panel, screen.Name(building.Kind) + " Lv " + building.Level + " / " + kind.MaxLevel(), 14, 10, width - 48, 28, 18);
@@ -206,7 +208,19 @@ namespace Game.App
             var rect = Rect.rect; return new Vector2(local.x - rect.xMin, rect.yMax - local.y);
         }
 
-        float Spread() { var points = fingers.Values.Take(2).ToArray(); return Vector2.Distance(points[0], points[1]); }
+        // The first two tracked fingers, read with the dictionary's struct enumerator so a pinch allocates nothing per frame.
+        bool TwoFingers(out Vector2 first, out Vector2 second)
+        {
+            first = second = default; var count = 0;
+            foreach (var pair in fingers)
+            {
+                if (count == 0) first = pair.Value; else { second = pair.Value; return true; }
+                count++;
+            }
+            return false;
+        }
+
+        float Spread() => TwoFingers(out var first, out var second) ? Vector2.Distance(first, second) : 0;
 
         public void OnBeginDrag(PointerEventData data)
         {
@@ -220,11 +234,11 @@ namespace Game.App
             fingers[data.pointerId] = data.position;
             if (fingers.Count == 1) { Model.Pan(Local(data, data.position) - Local(data, before)); Layout(); return; }
             if (pinchBase <= 0) return;
-            var spread = Spread(); var direction = EstateMapModel.PinchDirection(spread / pinchBase);
+            if (!TwoFingers(out var first, out var second)) return;
+            var spread = Vector2.Distance(first, second); var direction = EstateMapModel.PinchDirection(spread / pinchBase);
             if (direction == 0) return;
             pinchBase = spread;
-            var centre = Local(data, (fingers.Values.First() + fingers.Values.Skip(1).First()) * .5f);
-            if (Model.StepZoom(direction, centre)) { Layout(); Zoomed?.Invoke(); }
+            if (Model.StepZoom(direction, Local(data, (first + second) * .5f))) { Layout(); Zoomed?.Invoke(); }
         }
 
         public void OnEndDrag(PointerEventData data)

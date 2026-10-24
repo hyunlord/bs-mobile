@@ -4,6 +4,7 @@ using Game.App.Generated;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Tests.EditMode
 {
@@ -62,6 +63,28 @@ namespace Tests.EditMode
             Assert.That(model.TryCell(model.GridToViewport(new Vector2(-.5f, 1)), out _), Is.False);
             Assert.That(model.Anchor(new Vector2Int(15, 7), 2, 2), Is.EqualTo(new Vector2Int(14, 6)), "A footprint never hangs off the grid.");
             Assert.That(model.Anchor(new Vector2Int(5, 5), 3, 3), Is.EqualTo(new Vector2Int(4, 4)), "Odd footprints centre on the tapped cell.");
+        }
+
+        [Test] public void APinchAllocatesNothingWhileTheFingersMove()
+        {
+            var host = new GameObject("Estate map view", typeof(RectTransform));
+            try
+            {
+                var rect = (RectTransform)host.transform; rect.sizeDelta = new Vector2(370, 496);
+                var view = host.AddComponent<EstateMapView>(); view.Model = new EstateMapModel(16, 8); view.Layout();
+                var first = new PointerEventData(null) { pointerId = 1, position = new Vector2(100, 200) };
+                var second = new PointerEventData(null) { pointerId = 2, position = new Vector2(200, 200) };
+                view.OnBeginDrag(first); view.OnBeginDrag(second);
+                void Move(float x) { second.position = new Vector2(x, 200); view.OnDrag(second); }
+                for (var i = 0; i < 4; i++) Move(201 + i); // warm up
+                var before = System.GC.GetAllocatedBytesForCurrentThread();
+                for (var i = 0; i < 200; i++) Move(205 + i % 20);
+                Move(260); // one zoom step inside the measured window: 160/100 > the step ratio
+                var allocated = System.GC.GetAllocatedBytesForCurrentThread() - before;
+                Assert.That(view.Model.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
+                Assert.That(allocated, Is.EqualTo(0), "Pinch and pan must not allocate per drag event (AGENTS.md hot-loop rule).");
+            }
+            finally { Object.DestroyImmediate(host); }
         }
 
         static EstateMapScreen Screen(out MetaState account)
