@@ -233,11 +233,24 @@ namespace Tests.PlayMode
             File.WriteAllText(Path.Combine(output, "estate-decor-batches.json"),
                 $"{{\"commit\": \"{BuildIdentity.Commit}\", \"screen\": \"390x844 neighbourhood\", \"decorSprites\": {sprites}, \"plan\": {{{counts}}}, " +
                 $"\"on\": {{\"batches\": {on[0]}, \"drawCalls\": {on[1]}, \"setPassCalls\": {on[2]}}}, \"off\": {{\"batches\": {off[0]}, \"drawCalls\": {off[1]}, \"setPassCalls\": {off[2]}}}, " +
-                "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count'/'SetPass Calls Count' (last of 10 frames); -1 = recorder unavailable; Editor PlayMode, not a device\"}\n");
+                "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count'/'SetPass Calls Count' (last of 10 frames) with the UI canvas rendered through a temporary Screen Space - Camera camera; -1 = recorder unavailable; Editor PlayMode, not a device\"}\n");
             Assert.That(Math.Max(on[0], on[1]), Is.GreaterThan(0), "The batch count was measured.");
         }
 
-        static IEnumerator Batches(int[] into)
+        // Overlay canvases are not counted by the render counters, so the measurement renders the same canvas through a
+        // temporary camera (Screen Space - Camera) for its frames and restores the overlay afterwards.
+        IEnumerator Batches(int[] into)
+        {
+            var canvas = app.Ui.Canvas; var mode = canvas.renderMode;
+            var host = new GameObject("Batch measurement camera"); var camera = host.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black; camera.cullingMask = 1 << canvas.gameObject.layer;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = 10;
+            try { yield return Count(into); }
+            finally { canvas.renderMode = mode; canvas.worldCamera = null; Object.Destroy(host); }
+            yield return null; Canvas.ForceUpdateCanvases();
+        }
+
+        static IEnumerator Count(int[] into)
         {
             using var batches = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Batches Count");
             using var draws = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Draw Calls Count");
