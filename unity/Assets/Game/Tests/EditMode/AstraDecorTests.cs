@@ -16,28 +16,7 @@ namespace Tests.EditMode
 
         static Fixture Expected() => JsonUtility.FromJson<Fixture>(File.ReadAllText(Path.Combine(Application.dataPath, "Game/Tests/EditMode/Fixtures/astra-assembly-r1.json")));
 
-        // Astra's fixed B composition (assembly.js): buildings, hand-drawn routes, the church and market reservations, screen bounds.
-        static AstraScene SceneB(bool reversed = false)
-        {
-            var scene = new AstraScene { LandOriginX = 15, LandOriginY = 20, LandColumns = 8, LandRows = 15 };
-            var buildings = new[]
-            {
-                ("home-01", "house", 1, 42, 76, 70), ("home-02", "house", 2, 112, 147, 70), ("home-03", "house", 2, 149, 113, 70), ("home-04", "house", 2, 283, 154, 70),
-                ("home-05", "house", 1, 337, 197, 70), ("home-06", "house", 2, 290, 235, 70), ("home-07", "house", 3, 80, 330, 78), ("home-08", "house", 2, 177, 371, 74),
-                ("well-01", "well", 2, 74, 219, 58), ("granary-01", "granary", 2, 369, 352, 105),
-            }.Select(b => new AstraBuilding(b.Item1, b.Item2, b.Item3, b.Item4, b.Item5, b.Item6));
-            scene.Buildings.AddRange(reversed ? buildings.Reverse() : buildings);
-            double[][] R(params int[] xy) => Enumerable.Range(0, xy.Length / 2).Select(i => new double[] { xy[2 * i], xy[2 * i + 1] }).ToArray();
-            scene.Routes.Add(R(48, 70, 112, 144, 78, 207, 107, 284, 177, 364, 256, 426, 348, 466));
-            scene.Routes.Add(R(338, 198, 274, 232, 199, 270, 107, 284, 43, 325));
-            scene.Routes.Add(R(177, 364, 112, 433, 31, 477, 82, 559, 210, 602, 342, 668));
-            scene.Routes.Add(R(78, 207, 145, 178, 199, 191, 221, 255, 199, 270));
-            scene.Obstacles.Add((199, 155, .7, 45)); scene.Obstacles.Add((217, 277, 1, 28));
-            scene.RoadsideAllowed = (x, y) => !(x < 8 || x > 324);
-            scene.LandAllowed = (x, y) => !(x > 319 || x < 10 || y < 10 || y > 818 || y > 425 && y < 566 && x < 150);
-            scene.LandState = (x, y) => y < 410 ? "restored" : y < 630 ? "sage" : "fallow";
-            return scene;
-        }
+        static AstraScene SceneB(bool reversed = false) => AstraReference.SceneB(reversed);
 
         [Test] public void TheHashMatchesAssemblyJs()
         {
