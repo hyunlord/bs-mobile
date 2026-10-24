@@ -106,6 +106,9 @@ namespace Tests.EditMode
             Assert.That(screen.ZoneLabel(zone), Is.EqualTo("닫힌 구역"));
             Assert.That(screen.ZoneLabel(screen.Config.Zones.Single(z => z.Id == "zone:inner-riverside")), Is.EqualTo("탐사로 열 땅 · M3c"),
                 "Exploration zones say so instead of showing an unreachable condition (#374).");
+            // #379: the map carries no labels; a tap names the zone, and only the zone that can open next is marked.
+            Assert.That(screen.ZoneName(zone), Is.EqualTo("마을 확장")); Assert.That(screen.ZoneName(screen.Config.Zones.Single(z => z.Id == "zone:inner-riverside")), Is.EqualTo("강가"));
+            Assert.That(screen.NextZone()?.Id, Is.EqualTo(zone.Id));
             screen.SelectZone(zone.Id); Assert.That(screen.ZoneChoice, Is.EqualTo(zone.Id));
             Assert.That(screen.OpenZone(zone.Id), Is.False); Assert.That(screen.Notice, Is.EqualTo("생산 터를 더 완성해야 합니다"));
             Assert.That(EstateMapScreen.Clock(65), Is.EqualTo("1:05")); Assert.That(EstateMapScreen.Clock(3725), Is.EqualTo("1:02:05"));

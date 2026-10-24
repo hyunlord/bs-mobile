@@ -12,6 +12,7 @@ namespace Game.App
     public sealed class EstateMapActions
     {
         public Action Redraw, Depart, Settings;
+        public Action<int, Vector2> ViewChanged;
         public Action<PortraitMetaPage> Navigate;
     }
 
@@ -20,13 +21,9 @@ namespace Game.App
     // small departure button over the map. Temporary art: the four manor sprites, raised colour blocks for the other kinds.
     public static partial class PortraitMetaPanels
     {
-        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 0123456789:";
+        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 중심 마을 확장 북동 숲 서쪽 언덕 풍차 밭 휴경지 강가 영지 0123456789:";
         // Open land under the terrain patches: a mid tone of Astra's painted fallow/sage ground.
         static readonly Color OpenGround = new Color32(124, 116, 84, 255);
-        // Closed land: the M2 darkness grammar (#374) — painted land under a blue-grey veil (alpha in EstateDecorRules.closedLand,
-        // #375) with a soft edge toward open land and a faint warm rim (GameVisualTokens.EstateRim in the M2 estate View).
-        static readonly Color Fog = new Color32(38, 50, 60, 255);
-        static readonly Color Rim = new Color32(0xE5, 0xC9, 0x7F, 120);
         static readonly Color GridLine = new Color32(36, 48, 26, 110);
         static readonly Color BlockTop = new Color32(176, 154, 112, 255);
         static readonly Color BlockLeft = new Color32(132, 112, 80, 255);
@@ -36,14 +33,14 @@ namespace Game.App
         static readonly Color ValidGhost = new Color32(96, 190, 104, 150);
         static readonly Color InvalidGhost = new Color32(205, 64, 48, 150);
         static readonly Color BarInk = new Color32(20, 16, 12, 205);
-        static readonly Color RoadSand = new Color32(176, 152, 104, 255);
         const float BarTop = 6, BarHeight = 40, GoalTop = 50, GoalHeight = 44, BottomBar = 56, BottomGap = 8, WorkHeight = 44;
         static readonly Color GoodInk = new Color32(168, 222, 150, 255), BadInk = new Color32(240, 140, 120, 255), Gold = new Color32(243, 213, 140, 255);
 
         public static void EstateMap(UiShell ui, EstateMapScreen screen, MetaState account, EstateMapActions actions)
         {
             var root = Page(ui, "EstateMap", ""); var width = Width(ui); var height = Height(ui);
-            root.GetComponent<Image>().color = Fog;
+            var rules = EstateDecorRules.Load(); var night = rules.night;
+            root.GetComponent<Image>().color = night.Colour;
 
             // The map fills the page; bars and panels sit over it and become insets so every row can still be dragged into view.
             var viewport = PortraitWidgets.Place("EstateMap.Viewport", root, 0, 0, width, height);
@@ -52,51 +49,53 @@ namespace Game.App
             var top = GoalTop + GoalHeight; var panel = PanelHeightFor(screen);
             var bottom = BottomBar + BottomGap * 3 + WorkHeight + (panel > 0 ? panel + BottomGap : 0);
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
-            if (!screen.Map.Framed) screen.Map.CentreOn(screen.HomeCentre());
+            screen.Map.SetFocus(screen.OpenAreas(night.openingMargin));
+            if (!screen.Map.Framed) screen.FrameFirstView();
             // A newly selected building hidden behind the panel is brought into view; while moving, the camera stays where the
             // player put it so the destination preview remains visible.
             else if (screen.Selected != null && !screen.Moving && !screen.Map.InView(screen.Centre(screen.Selected.Value))) screen.Map.CentreOn(screen.Centre(screen.Selected.Value));
 
-            // Painted map (#375): flat ground under Astra's large terrain patches, grid roads, the closed-land darkness, then
-            // yard grounds, shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
-            var rules = EstateDecorRules.Load(); var art = EstateArt.Load(); var tint = art.Tint;
+            // Painted map (#375, #379): ground over the whole painted area, Astra's terrain patches and earth roads, the art of the
+            // land outside the open zones, one continuous night by distance from open land, warm lamps, then yard grounds,
+            // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
+            var art = EstateArt.Load(); var tint = art.Tint;
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
-            var zones = screen.Config.Zones; var closedLand = rules.closedLand;
-            // A zone face that touches no other zone borders land outside the estate.
-            bool Outside(AccountEstateZone zone, int du, int dv) => !zones.Any(o => o != zone && SharesEdge(zone, o, du, dv));
             var ground = Shapes(viewport, "EstateMap.Ground", view);
-            foreach (var zone in zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
-            // Closed land is painted too (key art C): its ground fades out toward land outside every zone.
-            foreach (var zone in zones.Where(z => !screen.Open(z)))
-                ground.Fog(zone.X, zone.Y, zone.Width, zone.Height, OpenGround, closedLand.groundFeather, Outside(zone, -1, 0), Outside(zone, 0, -1), Outside(zone, 1, 0), Outside(zone, 0, 1));
-            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Terrain", item);
-            var roads = Shapes(viewport, "EstateMap.Roads", view);
-            foreach (var cell in plan.Road) roads.Footprint(cell.x, cell.y, 1, 1, RoadSand);
+            // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
+            ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
+            foreach (var zone in screen.Config.Zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
+            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
             if (screen.Moving)
+            {
+                var grid = Shapes(viewport, "EstateMap.Grid", view);
                 foreach (var zone in screen.Config.Zones.Where(screen.Open))
                 {
-                    for (var u = zone.X; u <= zone.X + zone.Width; u++) roads.Line(new Vector2(u, zone.Y), new Vector2(u, zone.Y + zone.Height), GridLine);
-                    for (var v = zone.Y; v <= zone.Y + zone.Height; v++) roads.Line(new Vector2(zone.X, v), new Vector2(zone.X + zone.Width, v), GridLine);
+                    for (var u = zone.X; u <= zone.X + zone.Width; u++) grid.Line(new Vector2(u, zone.Y), new Vector2(u, zone.Y + zone.Height), GridLine);
+                    for (var v = zone.Y; v <= zone.Y + zone.Height; v++) grid.Line(new Vector2(zone.X, v), new Vector2(zone.X + zone.Width, v), GridLine);
                 }
-            // Closed land's traces, dead trees and woods in foot order, then the veil over them: above the painted closed land,
-            // below every open-land sprite and the bars. The veil overhangs faces toward outside land so patches that spill past the
-            // zone stay dark; it feathers toward open land.
+            }
+            // The land to come in foot order, then the night over it: above the painted land, below every open-land sprite and
+            // the bars. The night is one texture by distance from open land, so no zone edge shows inside it.
             foreach (var item in plan.In(EstateDrawLayer.Veiled).OrderBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal))
                 Paint(viewport, view, art, tint, "EstateMap.Veiled:" + item.Source, item);
-            var fog = Shapes(viewport, "EstateMap.Fog", view); var veil = new Color(Fog.r, Fog.g, Fog.b, closedLand.veil);
-            foreach (var zone in zones.Where(z => !screen.Open(z)))
+            var darkness = UiShell.Rect("EstateMap.Night", viewport); UiShell.Stretch(darkness);
+            var nightGraphic = darkness.gameObject.AddComponent<EstateNight>(); nightGraphic.raycastTarget = false; nightGraphic.Model = screen.Map;
+            nightGraphic.Show(plan.Area, EstateNight.Field(night, plan.Area, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
+            view.Track(nightGraphic);
+            var lamps = Shapes(viewport, "EstateMap.Lamps", view);
+            foreach (var (grid, cells) in plan.Lamps) lamps.Glow(grid, cells, night.Lamp);
+            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Site", item);
+            // No zone labels (#379): a tap on closed land names it; the whole view marks only the zone that can open next.
+            var next = screen.NextZone();
+            if (next != null)
             {
-                bool Faces(int du, int dv) => zones.Any(o => screen.Open(o) && SharesEdge(zone, o, du, dv));
-                int Over(int du, int dv) => Outside(zone, du, dv) ? closedLand.veilOverhang : 0;
-                int u = zone.X - Over(-1, 0), v = zone.Y - Over(0, -1);
-                fog.Fog(u, v, zone.X + zone.Width + Over(1, 0) - u, zone.Y + zone.Height + Over(0, 1) - v, veil, closedLand.veilFeather, Faces(-1, 0), Faces(0, -1), Faces(1, 0), Faces(0, 1));
-                foreach (var open in zones.Where(screen.Open))
-                    if (SharedEdge(zone, open, out var from, out var to)) fog.Line(from, to, Rim, 2);
+                var marker = ColorPlate(viewport, "EstateMap.NextZone", Gold, 0, 0, 14, 14); marker.localRotation = Quaternion.Euler(0, 0, 45);
+                ColorPlate(marker, "EstateMap.NextZone.Core", BarInk, 4, 4, 6, 6);
+                view.Pin(marker, new Vector2(next.X + next.Width * .5f, next.Y + next.Height * .5f), 0);
+                marker.gameObject.SetActive(screen.Map.Zoom == screen.Map.WholeMap);
+                view.Zoomed += () => marker.gameObject.SetActive(screen.Map.Zoom == screen.Map.WholeMap);
             }
-            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Edge", item);
-            foreach (var zone in screen.Config.Zones.Where(z => !screen.Open(z)))
-                view.Pin(Caption(ui, viewport, screen.ZoneLabel(zone), 0, 0, 160, 24, 13, false, TextAnchor.MiddleCenter), new Vector2(zone.X + zone.Width * .5f, zone.Y + zone.Height * .5f), 0);
             if (screen.Selected != null)
             {
                 var selected = screen.Building(screen.Selected.Value); var kind = screen.Kind(selected.Kind);
@@ -133,13 +132,15 @@ namespace Game.App
 
             ResourceStrip(ui, root, screen.Catalog, screen.State, actions.Navigate, width);
             GoalLine(ui, root, screen, actions, width);
-            var zoomNames = new[] { "전체", "동네", "건물" };
+            string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
             var controlsY = height - bottom - 104;
             var decorToggle = ActionButton(ui, root, "EstateMap.Decor", "장식 " + (screen.DecorEnabled ? "켬" : "끔"), () => { screen.ToggleDecor(); actions.Redraw(); }, 10, controlsY + 4, 84, true, 44);
             Compact(decorToggle.transform);
             var chip = ColorPlate(root, "EstateMap.ZoomLevel", BarInk, 10, controlsY + 60, 56, 28);
-            var zoomCaption = Caption(ui, chip, zoomNames[screen.Map.Zoom], 0, 0, 56, 28, 13, false, TextAnchor.MiddleCenter);
-            view.Zoomed = () => zoomCaption.text = zoomNames[screen.Map.Zoom];
+            var zoomCaption = Caption(ui, chip, ZoomName(), 0, 0, 56, 28, 13, false, TextAnchor.MiddleCenter);
+            view.Zoomed += () => zoomCaption.text = ZoomName();
+            // The view is remembered for the next visit (#379): written when a drag ends or the zoom changes, never per frame.
+            view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
             PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
             PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 54, controlsY + 52);
             var panelTop = height - BottomBar - BottomGap * 3 - WorkHeight - panel;
@@ -176,27 +177,6 @@ namespace Game.App
             var size = sprite.rect.size; var pivot = new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
             view.Prop(rect, item.Grid, item.Width / (EstateMapModel.HalfWidth * 2), pivot, item.Aspect > 0 ? item.Aspect : size.y / size.x);
             return image;
-        }
-
-        // True when `other` lies directly on the (du, dv) side of `zone` and the two share part of that edge.
-        static bool SharesEdge(AccountEstateZone zone, AccountEstateZone other, int du, int dv) =>
-            du != 0 ? (du < 0 ? other.X + other.Width == zone.X : zone.X + zone.Width == other.X) && other.Y < zone.Y + zone.Height && zone.Y < other.Y + other.Height
-                    : (dv < 0 ? other.Y + other.Height == zone.Y : zone.Y + zone.Height == other.Y) && other.X < zone.X + zone.Width && zone.X < other.X + other.Width;
-
-        static bool SharedEdge(AccountEstateZone a, AccountEstateZone b, out Vector2 from, out Vector2 to)
-        {
-            from = to = default;
-            if (a.X + a.Width == b.X || b.X + b.Width == a.X)
-            {
-                var x = a.X + a.Width == b.X ? b.X : a.X; var y0 = Mathf.Max(a.Y, b.Y); var y1 = Mathf.Min(a.Y + a.Height, b.Y + b.Height);
-                if (y1 <= y0) return false; from = new Vector2(x, y0); to = new Vector2(x, y1); return true;
-            }
-            if (a.Y + a.Height == b.Y || b.Y + b.Height == a.Y)
-            {
-                var y = a.Y + a.Height == b.Y ? b.Y : a.Y; var x0 = Mathf.Max(a.X, b.X); var x1 = Mathf.Min(a.X + a.Width, b.X + b.Width);
-                if (x1 <= x0) return false; from = new Vector2(x0, y); to = new Vector2(x1, y); return true;
-            }
-            return false;
         }
 
         static float SortY(EstateMapScreen screen, MetaEstateBuilding building)
@@ -353,7 +333,8 @@ namespace Game.App
             var zone = screen.Config.Zones.Single(z => z.Id == screen.ZoneChoice);
             var panel = Sheet(root, "EstateMap.Zone", width, y, height);
             var explore = screen.ZoneLabel(zone) != "닫힌 구역";
-            Caption(ui, panel, screen.ZoneLabel(zone), 14, 8, width - 44, 28, 18);
+            // The map carries no zone labels (#379); the name and its condition appear only here, on a tap.
+            Caption(ui, panel, screen.ZoneName(zone) + (explore ? " · 탐사로 열 땅" : ""), 14, 8, width - 44, 28, 18);
             var unlock = explore ? null : zone.Unlock;
             Caption(ui, panel, explore ? "탐사전(M3c)으로 여는 땅입니다 · 이 시제품에서는 열리지 않음" : unlock == null ? "아직 열 수 없는 땅입니다" : "생산 터 " + unlock.CompletedProductionSites + "곳 완성 · " + screen.Amounts(unlock.Cost) + " · " + EstateMapScreen.Clock(unlock.Seconds), 14, 36, width - 44, 22, 13);
             if (screen.Notice.Length > 0) Caption(ui, panel, screen.Notice, 14, 60, width - 44, 22, 13).color = Gold;
@@ -424,19 +405,18 @@ namespace Game.App
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateIsoShapes : MaskableGraphic
     {
-        enum Kind { Footprint, Line, Block, Fog }
+        enum Kind { Footprint, Line, Block, Glow }
         struct Shape { public Kind Kind; public Vector2 A, B; public float Rise; public Color Top, Left, Right; public int Feather; }
         readonly List<Shape> shapes = new List<Shape>();
         public EstateMapModel Model;
         public int Count => shapes.Count;
+        const int GlowSegments = 24;
 
         public void Footprint(int u, int v, int width, int height, Color color) =>
             shapes.Add(new Shape { Kind = Kind.Footprint, A = new Vector2(u, v), B = new Vector2(u + width, v + height), Top = color });
         public void Line(Vector2 from, Vector2 to, Color color, float thickness = 1) => shapes.Add(new Shape { Kind = Kind.Line, A = from, B = to, Top = color, Rise = thickness });
-        // A cover over a grid rectangle whose chosen sides (u-min, v-min, u-max, v-max) fade to transparent over `feather` cells.
-        public void Fog(int u, int v, int width, int height, Color color, float feather, bool uMin, bool vMin, bool uMax, bool vMax) =>
-            shapes.Add(new Shape { Kind = Kind.Fog, A = new Vector2(u, v), B = new Vector2(u + width, v + height), Top = color, Rise = feather,
-                Feather = (uMin ? 1 : 0) | (vMin ? 2 : 0) | (uMax ? 4 : 0) | (vMax ? 8 : 0) });
+        // Soft light: `color` at a grid point fading to clear over a circle of `cells` (an ellipse on screen), normal blending.
+        public void Glow(Vector2 centre, float cells, Color color) => shapes.Add(new Shape { Kind = Kind.Glow, A = centre, Rise = cells, Top = color });
         public void Block(int u, int v, int width, int height, float rise, Color top, Color left, Color right) =>
             shapes.Add(new Shape { Kind = Kind.Block, A = new Vector2(u, v), B = new Vector2(u + width, v + height), Rise = rise, Top = top, Left = left, Right = right });
 
@@ -444,17 +424,6 @@ namespace Game.App
         {
             var point = Model.GridToViewport(grid); var rect = rectTransform.rect;
             return new Vector2(rect.xMin + point.x, rect.yMax - point.y + rise * Model.Scale);
-        }
-
-        // Fog patch vertex (i, j) of the 4×4 grid: side lines inset by the feather on feathered sides, alpha 0 on those sides' outer line.
-        void FogVert(VertexHelper mesh, in Shape shape, int i, int j)
-        {
-            var f = shape.Rise; var feather = shape.Feather;
-            var u = i == 0 ? shape.A.x : i == 1 ? shape.A.x + ((feather & 1) != 0 ? f : 0) : i == 2 ? shape.B.x - ((feather & 4) != 0 ? f : 0) : shape.B.x;
-            var v = j == 0 ? shape.A.y : j == 1 ? shape.A.y + ((feather & 2) != 0 ? f : 0) : j == 2 ? shape.B.y - ((feather & 8) != 0 ? f : 0) : shape.B.y;
-            var clear = i == 0 && (feather & 1) != 0 || i == 3 && (feather & 4) != 0 || j == 0 && (feather & 2) != 0 || j == 3 && (feather & 8) != 0;
-            Color32 colour = shape.Top; if (clear) colour.a = 0;
-            mesh.AddVert(Local(new Vector2(u, v)), colour, Vector2.zero);
         }
 
         protected override void OnPopulateMesh(VertexHelper mesh)
@@ -473,15 +442,16 @@ namespace Game.App
                         var p = Local(a); var q = Local(b); var normal = new Vector2(q.y - p.y, p.x - q.x).normalized * (shape.Rise > 0 ? shape.Rise : 1) * .5f;
                         Quad(mesh, p + normal, q + normal, q - normal, p - normal, shape.Top); break;
                     }
-                    case Kind.Fog:
+                    case Kind.Glow:
                     {
-                        // A 3×3 patch: the outer vertex row/column of a feathered side is transparent. Coordinates are computed per
-                        // vertex (no temporary arrays): every drag frame rebuilds this mesh (review on #377).
-                        for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++)
+                        // A fan of GlowSegments triangles; the rim is computed per vertex so a rebuild allocates nothing.
+                        var start = mesh.currentVertCount; Color32 rim = shape.Top; rim.a = 0;
+                        mesh.AddVert(Local(a), shape.Top, Vector2.zero);
+                        for (var i = 0; i < GlowSegments; i++)
                         {
-                            var start = mesh.currentVertCount;
-                            FogVert(mesh, shape, i, j); FogVert(mesh, shape, i + 1, j); FogVert(mesh, shape, i + 1, j + 1); FogVert(mesh, shape, i, j + 1);
-                            mesh.AddTriangle(start, start + 1, start + 2); mesh.AddTriangle(start, start + 2, start + 3);
+                            var angle = i * Mathf.PI * 2 / GlowSegments;
+                            mesh.AddVert(Local(a + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * shape.Rise), rim, Vector2.zero);
+                            mesh.AddTriangle(start, start + 1 + i, start + 1 + (i + 1) % GlowSegments);
                         }
                         break;
                     }
@@ -507,6 +477,75 @@ namespace Game.App
     // Lays grid-anchored elements out for the current zoom and turns one-finger drags into pans, two-finger pinches and
     // mouse-wheel turns into zoom steps, and taps into diamond cells. Buildings carry no buttons: a tap picks the building whose
     // footprint contains the tapped cell, so selection follows the isometric grid rather than sprite rectangles (#368).
+    // The estate's night (#379): one texture over the plan's painted area whose alpha is the darkness at each texel's signed
+    // distance from open land (EstateDecorRules.Night.Alpha), drawn as a single projected quad. Grid to screen is affine, so the
+    // texture's bilinear gradient stays smooth on screen and no zone edge shows inside the night. The field is built once per
+    // set of open zones; a pan or zoom only moves four vertices.
+    [RequireComponent(typeof(CanvasRenderer))]
+    public sealed class EstateNight : MaskableGraphic
+    {
+        static Texture2D field; static string fieldKey;
+        public EstateMapModel Model;
+        RectInt area; Texture2D texture;
+        public override Texture mainTexture => texture != null ? texture : s_WhiteTexture;
+        public void Show(RectInt painted, Texture2D night) { area = painted; texture = night; SetAllDirty(); }
+
+        public static Texture2D Field(EstateDecorRules.Night night, RectInt area, RectInt[] open)
+        {
+            var key = area + "|" + string.Join(";", open) + "|" + JsonUtility.ToJson(night);
+            if (field != null && fieldKey == key) return field;
+            var res = Mathf.Max(1, night.texelsPerCell); int width = area.width * res, height = area.height * res;
+            bool Lit(int x, int y) { foreach (var r in open) if (x >= r.xMin && x < r.xMax && y >= r.yMin && y < r.yMax) return true; return false; }
+            // Only cells on the lit/dark border matter for the distance; cells past the area's edge count as dark.
+            var litEdge = new List<Vector2Int>(); var darkEdge = new List<Vector2Int>();
+            for (var x = area.xMin - 1; x <= area.xMax; x++)
+                for (var y = area.yMin - 1; y <= area.yMax; y++)
+                {
+                    var lit = Lit(x, y);
+                    if (lit != Lit(x - 1, y) || lit != Lit(x + 1, y) || lit != Lit(x, y - 1) || lit != Lit(x, y + 1)) (lit ? litEdge : darkEdge).Add(new Vector2Int(x, y));
+                }
+            var pixels = new Color32[width * height]; Color32 colour = night.Colour;
+            for (var j = 0; j < height; j++)
+                for (var i = 0; i < width; i++)
+                {
+                    float px = area.xMin + (i + .5f) / res, py = area.yMin + (j + .5f) / res;
+                    var inside = Lit(Mathf.FloorToInt(px), Mathf.FloorToInt(py)); var best = float.MaxValue;
+                    foreach (var c in inside ? darkEdge : litEdge)
+                    {
+                        float dx = Mathf.Max(0, Mathf.Max(c.x - px, px - (c.x + 1))), dy = Mathf.Max(0, Mathf.Max(c.y - py, py - (c.y + 1)));
+                        best = Mathf.Min(best, dx * dx + dy * dy);
+                    }
+                    var d = best == float.MaxValue ? 1e4f : Mathf.Sqrt(best);
+                    // Toward the painted area's edge the night closes to opaque, so the land fades into the page's night colour.
+                    var edge = Mathf.Min(Mathf.Min(px - area.xMin, area.xMax - px), Mathf.Min(py - area.yMin, area.yMax - py));
+                    var keep = night.areaFadeCells > 0 ? Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / night.areaFadeCells)) : 1;
+                    colour.a = (byte)Mathf.RoundToInt((1 - (1 - night.Alpha(inside ? -d : d)) * keep) * 255); pixels[j * width + i] = colour;
+                }
+            if (field == null || field.width != width || field.height != height)
+            {
+                if (field != null) { if (Application.isPlaying) Destroy(field); else DestroyImmediate(field); }
+                field = new Texture2D(width, height, TextureFormat.RGBA32, false) { name = "Estate night", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave };
+            }
+            field.SetPixels32(pixels); field.Apply(false); fieldKey = key;
+            return field;
+        }
+
+        Vector2 Local(float u, float v)
+        {
+            var point = Model.GridToViewport(new Vector2(u, v)); var rect = rectTransform.rect;
+            return new Vector2(rect.xMin + point.x, rect.yMax - point.y);
+        }
+
+        protected override void OnPopulateMesh(VertexHelper mesh)
+        {
+            mesh.Clear(); if (Model == null || texture == null) return;
+            Color32 c = color;
+            mesh.AddVert(Local(area.xMin, area.yMin), c, new Vector2(0, 0)); mesh.AddVert(Local(area.xMax, area.yMin), c, new Vector2(1, 0));
+            mesh.AddVert(Local(area.xMax, area.yMax), c, new Vector2(1, 1)); mesh.AddVert(Local(area.xMin, area.yMax), c, new Vector2(0, 1));
+            mesh.AddTriangle(0, 1, 2); mesh.AddTriangle(0, 2, 3);
+        }
+    }
+
     public sealed class EstateMapView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler, IPointerClickHandler
     {
         struct StandingArt { public RectTransform Rect; public RectInt Footprint; }
@@ -519,12 +558,12 @@ namespace Game.App
             props.Add(new PropArt { Rect = rect, Grid = grid, Width = width, Pivot = pivot, Aspect = aspect });
         readonly List<StandingArt> standing = new List<StandingArt>();
         readonly List<Pinned> pinned = new List<Pinned>();
-        readonly List<EstateIsoShapes> shapes = new List<EstateIsoShapes>();
+        readonly List<Graphic> shapes = new List<Graphic>();
         readonly Dictionary<int, Vector2> fingers = new Dictionary<int, Vector2>();
         float pinchBase;
         public EstateMapModel Model;
         public Action<Vector2Int?> Tapped;
-        public Action Zoomed, Tick, Redraw;
+        public Action Zoomed, Tick, Redraw, Moved;
         float tickClock;
         bool redrawPending;
         public bool Dragging => fingers.Count > 0;
@@ -545,7 +584,7 @@ namespace Game.App
         }
         RectTransform Rect => (RectTransform)transform;
 
-        public void Track(EstateIsoShapes graphic) => shapes.Add(graphic);
+        public void Track(Graphic graphic) => shapes.Add(graphic);
 
         // Structural draw-batch bound (#372): uGUI draws a canvas's graphics in hierarchy order and can only share a batch between
         // neighbours with the same material and texture, so the number of material/texture switches along that order is an
@@ -566,11 +605,9 @@ namespace Game.App
         public void Standing(RectTransform rect, int u, int v, int width, int height) =>
             standing.Add(new StandingArt { Rect = rect, Footprint = new RectInt(u, v, width, height) });
         // A label centred on a grid point, raised by `lift` unscaled canvas units.
-        public void Pin(Text text, Vector2 grid, float lift)
-        {
-            var rect = text.transform.parent is RectTransform parent && parent != Rect ? parent : text.rectTransform;
-            pinned.Add(new Pinned { Rect = rect, Grid = grid, Lift = lift });
-        }
+        public void Pin(Text text, Vector2 grid, float lift) =>
+            Pin(text.transform.parent is RectTransform parent && parent != Rect ? parent : text.rectTransform, grid, lift);
+        public void Pin(RectTransform rect, Vector2 grid, float lift) => pinned.Add(new Pinned { Rect = rect, Grid = grid, Lift = lift });
 
         public void Layout()
         {
@@ -598,7 +635,7 @@ namespace Game.App
         public void Step(int direction)
         {
             if (Model != null && Model.StepZoom(direction, Model.VisibleCentre))
-            { Layout(); Zoomed?.Invoke(); }
+            { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
         }
 
         void OnRectTransformDimensionsChange()
@@ -643,20 +680,21 @@ namespace Game.App
             var spread = Vector2.Distance(first, second); var direction = EstateMapModel.PinchDirection(spread / pinchBase);
             if (direction == 0) return;
             pinchBase = spread;
-            if (Model.StepZoom(direction, Local(data, (first + second) * .5f))) { Layout(); Zoomed?.Invoke(); }
+            if (Model.StepZoom(direction, Local(data, (first + second) * .5f))) { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
         }
 
         public void OnEndDrag(PointerEventData data)
         {
             fingers.Remove(data.pointerId);
             pinchBase = fingers.Count >= 2 ? Spread() : 0;
+            if (fingers.Count == 0) Moved?.Invoke();
             if (fingers.Count == 0 && redrawPending) { redrawPending = false; Redraw?.Invoke(); }
         }
 
         public void OnScroll(PointerEventData data)
         {
             if (Model == null || data.scrollDelta.y == 0) return;
-            if (Model.StepZoom(data.scrollDelta.y > 0 ? 1 : -1, Local(data, data.position))) { Layout(); Zoomed?.Invoke(); }
+            if (Model.StepZoom(data.scrollDelta.y > 0 ? 1 : -1, Local(data, data.position))) { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
         }
 
         public void OnPointerClick(PointerEventData data)

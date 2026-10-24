@@ -24,6 +24,8 @@ namespace Game.App
         public Trees trees = new Trees();
         public Frontier frontier = new Frontier();
         public ClosedLand closedLand = new ClosedLand();
+        public Night night = new Night();
+        public Sites sites = new Sites();
         public Placed[] placed = Array.Empty<Placed>();
         public Peasants peasants = new Peasants();
         public string fieldFenceKind = "m3a:field", fieldFenceCorner = "field-fence-corner";
@@ -36,17 +38,36 @@ namespace Game.App
         [Serializable] public sealed class Restoration { public int restoredRadius = 2, sageRadius = 5; }
         [Serializable] public sealed class Terrain { public int patchCells = 6; public float patchScale = 1.5f, alpha = .92f; public string restored = "terrain-restoration", sage = "terrain-sage", fallow = "terrain-fallow"; }
         [Serializable] public sealed class Trees { public string[] ids = Array.Empty<string>(); public float share; public string[] states = Array.Empty<string>(); }
-        [Serializable] public sealed class Frontier { public string[] ids = Array.Empty<string>(); public string edge = "frontier-ink-edge"; public int edgeEvery = 8; public float edgeAlpha = .85f; }
-        // Closed land is painted like open land and then veiled (key art C, m3-estate-keyarts-r2): terrain patches, rivers from
-        // `placed`, frontier traces, dead trees and woods on a jittered lattice, all under a blue-grey veil of `veil` alpha.
+        [Serializable] public sealed class Frontier { public string[] ids = Array.Empty<string>(); }
+        // Land outside the open zones (closed zones and the margin around the estate) is painted like open land, cooler, and lies
+        // under the night (key art C, m3-estate-keyarts-r2): terrain patches, rivers from `placed`, frontier traces, dead trees
+        // and woods on a jittered lattice.
         [Serializable] public sealed class ClosedLand
         {
-            public float veil = .7f, veilFeather = .9f, groundFeather = 2, sageShare = .3f;
-            public int veilOverhang = 6, every = 4;
+            public float sageShare = .3f;
+            public int every = 4;
             public float jitter = .6f, density = .55f, deadTreeShare = .35f;
             public string deadTree = "frontier-dead-tree";
             public Wood[] woods = Array.Empty<Wood>();
         }
+        // The night (#379): one continuous darkness by distance from lit (open) land, key art C's blue-grey. `margin` cells of
+        // painted land surround the estate; the first view fits the open zones plus `openingMargin` cells; lamps are soft warm
+        // light around built buildings in open land.
+        [Serializable] public sealed class Night
+        {
+            public int[] colour = { 54, 61, 73 }, ground = { 78, 82, 86 }, lampColour = { 229, 201, 127 };
+            public float edgeAlpha = .5f, fullAlpha = .88f, fullCells = 2.5f, insideCells = .5f, areaFadeCells = 3;
+            public int texelsPerCell = 4, margin = 10;
+            public float openingMargin = 2.5f, lampAlpha = .24f, homeLampCells = 3.2f, lampCells = 2.2f;
+            public Color Colour => new Color32((byte)colour[0], (byte)colour[1], (byte)colour[2], 255);
+            public Color Ground => new Color32((byte)ground[0], (byte)ground[1], (byte)ground[2], 255);
+            public Color Lamp => new Color32((byte)lampColour[0], (byte)lampColour[1], (byte)lampColour[2], (byte)Mathf.RoundToInt(lampAlpha * 255));
+            // Darkness at signed distance `d` cells from the lit edge (negative inside lit land).
+            public float Alpha(float d) => d <= -insideCells ? 0 : d <= 0 ? edgeAlpha * Mathf.SmoothStep(0, 1, (d + insideCells) / insideCells)
+                : Mathf.Lerp(edgeAlpha, fullAlpha, Mathf.SmoothStep(0, 1, Mathf.Min(1, d / fullCells)));
+        }
+        // Unbuilt sites and roads stand on Astra's painted earth instead of flat diamonds (#379).
+        [Serializable] public sealed class Sites { public string ground = "yard-earth"; public float siteWidth = 1.15f, roadWidth = 1.4f, aspect = .5f, siteAlpha = .9f, roadAlpha = .75f; }
         [Serializable] public sealed class Wood { public string zone; public string[] ids = Array.Empty<string>(); public float share = .7f; }
         // Explicit terrain-skeleton pieces (rivers, bridges, a paddock): grid point of the pivot, reserved cells, layer.
         [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
@@ -99,6 +120,10 @@ namespace Game.App
     {
         public readonly List<EstateDrawItem> Items = new List<EstateDrawItem>();
         public readonly HashSet<Vector2Int> Road = new HashSet<Vector2Int>();
+        // Grid rectangle that is painted and covered by the night: the zones' bounds plus the night margin.
+        public RectInt Area;
+        // Warm lamp light around built buildings in open land: grid centre and radius in cells.
+        public readonly List<(Vector2 Grid, float Cells)> Lamps = new List<(Vector2, float)>();
         public readonly List<AstraObject> Astra = new List<AstraObject>();
         public readonly Dictionary<Vector2Int, string> States = new Dictionary<Vector2Int, string>();
         // Restoration state of a cell: restored / sage / fallow on open land, closed in closed zones, null off the zones.
@@ -155,19 +180,29 @@ namespace Game.App
             string StateAt(Vector2 grid) { var c = Vector2Int.FloorToInt(grid); if (!plan.States.TryGetValue(c, out var s)) plan.States[c] = s = State(c); return s; }
             plan.StateOf = c => StateAt(c);
 
-            // Terrain patches over every zone, one per patchCells block, picked by the block centre's state; closed land mixes
-            // fallow and sage by seed under its veil.
-            var t = rules.terrain; var cl = rules.closedLand;
-            foreach (var zone in config.Zones)
-                for (var u = zone.X; u < zone.X + zone.Width; u += t.patchCells)
-                    for (var v = zone.Y; v < zone.Y + zone.Height; v += t.patchCells)
-                    {
-                        var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre);
-                        if (state == "closed") state = AstraDecor.Rand(rules.astra, "closed-terrain", $"{u}-{v}") < cl.sageShare ? "sage" : "fallow";
-                        var role = state == "restored" ? t.restored : state == "sage" ? t.sage : t.fallow;
-                        plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
-                            Colour = new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
-                    }
+            // The painted area: the zones' bounds plus the night margin, aligned to terrain blocks from the grid origin.
+            var t = rules.terrain; var cl = rules.closedLand; var m = rules.night.margin;
+            int minU = config.Zones.Min(z => z.X) - m, minV = config.Zones.Min(z => z.Y) - m, maxU = config.Zones.Max(z => z.X + z.Width) + m, maxV = config.Zones.Max(z => z.Y + z.Height) + m;
+            minU = Mathf.FloorToInt(minU / (float)t.patchCells) * t.patchCells; minV = Mathf.FloorToInt(minV / (float)t.patchCells) * t.patchCells;
+            plan.Area = new RectInt(minU, minV, maxU - minU, maxV - minV);
+            // Terrain patches over the whole area, one per patchCells block, picked by the block centre's state; land outside
+            // the open zones mixes fallow and sage by seed and takes the cool closed colour.
+            // Patches spill past their block, so the outermost ring of blocks stays bare: every patch ends inside the night's
+            // opaque rim at the area's edge.
+            for (var u = plan.Area.xMin + t.patchCells; u < plan.Area.xMax - t.patchCells; u += t.patchCells)
+                for (var v = plan.Area.yMin + t.patchCells; v < plan.Area.yMax - t.patchCells; v += t.patchCells)
+                {
+                    var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre) ?? "closed"; var dark = state == "closed";
+                    if (dark) state = AstraDecor.Rand(rules.astra, "closed-terrain", $"{u}-{v}") < cl.sageShare ? "sage" : "fallow";
+                    var role = state == "restored" ? t.restored : state == "sage" ? t.sage : t.fallow;
+                    plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
+                        Colour = dark ? rules.Colour("closed", t.alpha) : new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
+                }
+            // Roads: Astra's painted earth along each grid path instead of flat diamonds.
+            var sg = rules.sites;
+            foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
+                plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "road", Grid = cell + new Vector2(.5f, .5f), Width = sg.roadWidth * 2 * EstateMapModel.HalfWidth, Aspect = sg.aspect,
+                    Colour = new Color(1, 1, 1, sg.roadAlpha), Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
 
             // Astra's scene: built buildings (anchor = footprint centre, w = painted body width at scale 1), the roads, and the open land.
             var scene = new AstraScene();
@@ -216,6 +251,17 @@ namespace Game.App
                 plan.Items.Add(new EstateDrawItem { Role = id, Source = "yard-ground", Grid = grid, Width = (float)(yg.width * sb.W), Aspect = yg.height / yg.width,
                     Colour = new Color(1, 1, 1, yg.alpha), Layer = EstateDrawLayer.Ground, Key = sb.Key + "/ground" });
             }
+            var night = rules.night;
+            foreach (var b in buildings)
+            {
+                var kind = kinds[b.Kind]; var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
+                // An unbuilt site stands on painted earth; a built one in open land is lit (stakes and rope art: requested from Astra).
+                if (b.Level == 0 && estate.Active?.BuildingId != b.Id)
+                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
+                        Aspect = sg.aspect, Colour = new Color(1, 1, 1, sg.siteAlpha), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
+                else if (OpenCell(new Vector2Int(b.X, b.Y)))
+                    plan.Lamps.Add((centre, kinds[b.Kind].StartsComplete ? night.homeLampCells : night.lampCells));
+            }
             foreach (var b in buildings)
             {
                 var kind = kinds[b.Kind]; var artKind = rules.ArtOf(b.Kind)?.art; if (artKind == null) continue;
@@ -250,44 +296,37 @@ namespace Game.App
                 var grid = new Vector2(piece.u, piece.v); var state = StateAt(grid) ?? "fallow";
                 var closed = state == "closed"; var ground = art != null && art.Has(piece.id) && art.Layer(piece.id) == "ground";
                 var layer = ground ? EstateDrawLayer.Terrain : closed ? EstateDrawLayer.Veiled : EstateDrawLayer.Standing;
-                var colour = ground ? Color.white : rules.Colour(state);
+                var colour = ground && !closed ? Color.white : rules.Colour(state);
                 Add(plan, piece.id, "placed", grid, art, colour, layer);
                 if (!string.IsNullOrEmpty(piece.rail)) Add(plan, piece.rail, "placed", grid, art, colour, closed ? EstateDrawLayer.Veiled : EstateDrawLayer.Foreground);
                 if (!string.IsNullOrEmpty(piece.with) && !closed) Add(plan, piece.with, "peasant", new Vector2(piece.withU, piece.withV), art, Color.white);
             }
 
-            // The frontier: Astra's ink edge is painted dark toward its upper right, so it only dresses boundaries where closed land
-            // lies up-right of open land (inward = -v); it sits on the closed side. Every other edge keeps the veil's feather and rim.
+            // Land outside the open zones keeps the shape of the land to come (key art C): one candidate per `every` cells of the
+            // painted area, jittered by seed, becomes a wood in wooded zones or a frontier trace (dead trees weighted), skipping
+            // open and reserved cells.
             var f = rules.frontier;
-            foreach (var closed in config.Zones.Where(z => !estate.OpenZones.Contains(z.Id)))
-                foreach (var openZone in open)
-                    foreach (var (cell, inward, _, edgeIndex) in Boundary(closed, openZone))
-                        if (inward == new Vector2Int(0, -1) && edgeIndex % f.edgeEvery == f.edgeEvery / 2 && !string.IsNullOrEmpty(f.edge))
-                            Add(plan, f.edge, "frontier-edge", cell + new Vector2(.5f, .5f), art, new Color(1, 1, 1, f.edgeAlpha), EstateDrawLayer.Ground);
-
-            // Closed land keeps the shape of the land to come (key art C): one candidate per `every` cells, jittered by seed,
-            // becomes a wood in wooded zones or a frontier trace (dead trees weighted), skipping reserved river cells.
-            foreach (var zone in config.Zones.Where(z => !estate.OpenZones.Contains(z.Id)))
-            {
-                var wood = cl.woods.FirstOrDefault(w => w.zone == zone.Id && w.ids.Length > 0);
-                for (var u = zone.X; u < zone.X + zone.Width; u += cl.every)
-                    for (var v = zone.Y; v < zone.Y + zone.Height; v += cl.every)
-                    {
-                        var key = $"closed-{zone.Id}-{u}-{v}";
-                        if (AstraDecor.Rand(rules.astra, "closed-density", key) > cl.density) continue;
-                        var at = new Vector2(u + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-x", key) - .5f) * cl.jitter),
-                            v + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-y", key) - .5f) * cl.jitter));
-                        // The last lattice row or column can reach past a zone whose size is not a multiple of `every`.
-                        if (at.x >= zone.X + zone.Width || at.y >= zone.Y + zone.Height || reserved.Contains(Vector2Int.FloorToInt(at))) continue;
-                        var variant = AstraDecor.Rand(rules.astra, "closed-variant", key);
-                        if (wood != null && AstraDecor.Rand(rules.astra, "closed-wood", key) < wood.share)
-                            Add(plan, wood.ids[(int)(variant * wood.ids.Length)], "wood", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
-                        else if (AstraDecor.Rand(rules.astra, "closed-dead-tree", key) < cl.deadTreeShare || f.ids.Length == 0)
-                            Add(plan, cl.deadTree, "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
-                        else
-                            Add(plan, f.ids[(int)(variant * f.ids.Length)], "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
-                    }
-            }
+            for (var u = plan.Area.xMin; u < plan.Area.xMax; u += cl.every)
+                for (var v = plan.Area.yMin; v < plan.Area.yMax; v += cl.every)
+                {
+                    var key = $"closed-{u}-{v}";
+                    if (AstraDecor.Rand(rules.astra, "closed-density", key) > cl.density) continue;
+                    var at = new Vector2(u + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-x", key) - .5f) * cl.jitter),
+                        v + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-y", key) - .5f) * cl.jitter));
+                    var cell = Vector2Int.FloorToInt(at);
+                    var inset = Mathf.CeilToInt(rules.night.areaFadeCells) + 1;
+                    if (cell.x < plan.Area.xMin + inset || cell.y < plan.Area.yMin + inset || cell.x >= plan.Area.xMax - inset || cell.y >= plan.Area.yMax - inset
+                        || OpenCell(cell) || reserved.Contains(cell)) continue;
+                    var zone = config.Zones.FirstOrDefault(z => cell.x >= z.X && cell.x < z.X + z.Width && cell.y >= z.Y && cell.y < z.Y + z.Height);
+                    var wood = zone == null ? null : cl.woods.FirstOrDefault(w => w.zone == zone.Id && w.ids.Length > 0);
+                    var variant = AstraDecor.Rand(rules.astra, "closed-variant", key);
+                    if (wood != null && AstraDecor.Rand(rules.astra, "closed-wood", key) < wood.share)
+                        Add(plan, wood.ids[(int)(variant * wood.ids.Length)], "wood", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
+                    else if (AstraDecor.Rand(rules.astra, "closed-dead-tree", key) < cl.deadTreeShare || f.ids.Length == 0)
+                        Add(plan, cl.deadTree, "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
+                    else
+                        Add(plan, f.ids[(int)(variant * f.ids.Length)], "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
+                }
             return plan;
         }
 
@@ -301,21 +340,6 @@ namespace Game.App
         {
             var cell = from; yield return cell;
             while (cell != to) { cell += new Vector2Int(Math.Sign(to.x - cell.x), Math.Sign(to.y - cell.y)); yield return cell; }
-        }
-
-        // Cells of `closed` along its shared edge with `open`, with the inward step (into closed land) and the index along the edge.
-        static IEnumerable<(Vector2Int Cell, Vector2Int Inward, Vector2Int Along, int Index)> Boundary(AccountEstateZone closed, AccountEstateZone open)
-        {
-            if (closed.X == open.X + open.Width || open.X == closed.X + closed.Width)
-            {
-                var x = closed.X == open.X + open.Width ? closed.X : closed.X + closed.Width - 1; var inward = new Vector2Int(closed.X == open.X + open.Width ? 1 : -1, 0);
-                for (int y = Math.Max(closed.Y, open.Y), i = 0; y < Math.Min(closed.Y + closed.Height, open.Y + open.Height); y++, i++) yield return (new Vector2Int(x, y), inward, Vector2Int.up, i);
-            }
-            if (closed.Y == open.Y + open.Height || open.Y == closed.Y + closed.Height)
-            {
-                var y = closed.Y == open.Y + open.Height ? closed.Y : closed.Y + closed.Height - 1; var inward = new Vector2Int(0, closed.Y == open.Y + open.Height ? 1 : -1);
-                for (int x = Math.Max(closed.X, open.X), i = 0; x < Math.Min(closed.X + closed.Width, open.X + open.Width); x++, i++) yield return (new Vector2Int(x, y), inward, Vector2Int.right, i);
-            }
         }
     }
 }

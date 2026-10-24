@@ -34,7 +34,7 @@ namespace Tests.EditMode
             var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var roles = rules.astra.kits.SelectMany(k => k.props).Concat(new[] { "grass", "rocks" })
                 .Concat(new[] { "fallow", "sage", "restored" }.SelectMany(s => Enumerable.Range(1, rules.astra.landVariants).Select(i => $"cluster-{s}-{i}")))
-                .Concat(rules.trees.ids).Concat(rules.frontier.ids).Append(rules.frontier.edge).Append(rules.closedLand.deadTree).Concat(rules.closedLand.woods.SelectMany(w => w.ids))
+                .Concat(rules.trees.ids).Concat(rules.frontier.ids).Append(rules.sites.ground).Append(rules.closedLand.deadTree).Concat(rules.closedLand.woods.SelectMany(w => w.ids))
                 .Concat(rules.placed.SelectMany(p => new[] { p.id, p.rail, p.with })).Concat(new[] { rules.peasants.farm, rules.peasants.carry, rules.peasants.build })
                 .Concat(new[] { rules.yardGround.well, rules.yardGround.house, rules.yardGround.other, rules.terrain.restored, rules.terrain.sage, rules.terrain.fallow, rules.fieldFenceCorner })
                 .Where(r => !string.IsNullOrEmpty(r)).Distinct();
@@ -73,9 +73,14 @@ namespace Tests.EditMode
             var rules = EstateDecorRules.Load();
             Assert.That(rules.Colour("restored"), Is.EqualTo(Color.white), "Tended land keeps the art's colours.");
             Assert.That(rules.TintOf("sage").saturation, Is.GreaterThan(rules.TintOf("fallow").saturation));
-            Assert.That(rules.TintOf("closed").light, Is.EqualTo(1), "Closed land is darkened by its veil, not by the tint.");
-            Assert.That(rules.TintOf("closed").saturation, Is.LessThan(rules.TintOf("sage").saturation));
-            Assert.That(rules.closedLand.veil, Is.EqualTo(.7f).Within(.1f), "The blue-grey veil over closed land [가설].");
+            // #379: art under the night is cooler and greyer than any open state, so no day ochre shows through.
+            Assert.That(rules.TintOf("closed").saturation, Is.LessThan(rules.TintOf("fallow").saturation));
+            Assert.That(rules.TintOf("closed").light, Is.LessThan(1), "Part of the M2 darkness formula's blue-grey.");
+            var night = rules.night;
+            Assert.That(night.Alpha(-1), Is.EqualTo(0), "Open land is fully lit.");
+            Assert.That(night.Alpha(0), Is.EqualTo(.5f).Within(1e-4f), "Half dark at the lit edge [가설].");
+            Assert.That(night.Alpha(night.fullCells), Is.EqualTo(.88f).Within(1e-4f)); Assert.That(night.Alpha(20), Is.EqualTo(.88f).Within(1e-4f));
+            for (var d = -1f; d < 4; d += .25f) Assert.That(night.Alpha(d + .25f), Is.GreaterThanOrEqualTo(night.Alpha(d)), "The night only deepens away from light.");
             var (config, _, state) = Estate();
             var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
@@ -101,9 +106,15 @@ namespace Tests.EditMode
                 Assert.That(cell.x >= 20 && cell.y >= 20 && cell.x < 40 && cell.y < 40, Is.True, "on the open centre: " + item.Key);
                 Assert.That(footprints.Contains(cell) && item.Source != "yard", Is.False, "no roadside or land prop on a footprint: " + item.Key);
             }
-            // Closed land is painted under its veil (key art C): terrain, rivers, traces, dead trees and woods, all decided by seed.
+            // Land outside the open zones is painted under the night (key art C): terrain, rivers, traces, dead trees and woods.
             foreach (var item in first.In(EstateDrawLayer.Veiled))
-                Assert.That(first.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed"), "veiled art stays in closed land: " + item.Key);
+                Assert.That(first.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed").Or.Null, "the land to come stays out of open land: " + item.Key);
+            foreach (var zone in config.Zones)
+                Assert.That(first.Area.Contains(new Vector2Int(zone.X - rules.night.margin, zone.Y - rules.night.margin)) && first.Area.Contains(new Vector2Int(zone.X + zone.Width + rules.night.margin - 1, zone.Y + zone.Height + rules.night.margin - 1)), Is.True, "painted area covers " + zone.Id);
+            // #379: roads and unbuilt sites stand on Astra's earth, built buildings in open land carry a lamp.
+            Assert.That(first.Count("road"), Is.EqualTo(first.Road.Count)); Assert.That(first.Items.Where(i => i.Source == "road").All(i => i.Role == rules.sites.ground), Is.True);
+            Assert.That(first.Count("site"), Is.EqualTo(state.Estate.Buildings.Count(b => b.Level == 0)));
+            Assert.That(first.Lamps.Count, Is.EqualTo(state.Estate.Buildings.Count(b => b.Level > 0)));
             Assert.That(first.Items.Where(i => i.Source == "frontier" || i.Source == "wood").All(i => i.Layer == EstateDrawLayer.Veiled), Is.True);
             bool In(AccountEstateZone zone, Vector2 grid) => grid.x >= zone.X && grid.x < zone.X + zone.Width && grid.y >= zone.Y && grid.y < zone.Y + zone.Height;
             var wood = config.Zones.Single(z => z.Id == "zone:inner-northeast-wood");
@@ -111,7 +122,7 @@ namespace Tests.EditMode
             foreach (var zone in config.Zones.Where(z => z.Id != "zone:start"))
             {
                 Assert.That(first.Items.Count(i => i.Source == "terrain" && In(zone, i.Grid)), Is.GreaterThan(0), "Terrain patches cover " + zone.Id);
-                if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(3), "Traces or woods in " + zone.Id);
+                if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(0), "Traces or woods in " + zone.Id);
             }
             Assert.That(first.In(EstateDrawLayer.Veiled).Count(), Is.GreaterThan(30));
             // The river runs down the estate's right edge (key art A): from the north-east wood to the riverside zone.
@@ -119,8 +130,33 @@ namespace Tests.EditMode
             Assert.That(river.Length, Is.EqualTo(7));
             Assert.That(river.All(i => i.Grid.x - i.Grid.y >= 10), Is.True, "every river patch is on the right side");
             Assert.That(In(wood, river.First().Grid) && In(config.Zones.Single(z => z.Id == "zone:inner-riverside"), river.Last().Grid), Is.True);
-            Assert.That(first.Count("frontier"), Is.GreaterThan(0)); Assert.That(first.Count("wood"), Is.GreaterThan(0)); Assert.That(first.Count("frontier-edge"), Is.GreaterThan(0));
+            Assert.That(first.Count("frontier"), Is.GreaterThan(0)); Assert.That(first.Count("wood"), Is.GreaterThan(0)); Assert.That(first.Count("frontier-edge"), Is.EqualTo(0), "No ink edge smudges (#379).");
             TestContext.WriteLine("plan: " + string.Join(", ", first.Items.GroupBy(i => i.Source).Select(g => g.Key + "=" + g.Count())));
+        }
+
+        // #379: one night by distance from open land — none inside, half at the edge, full a few cells out, and the same on both
+        // sides of a boundary between two closed zones (no straight seam).
+        [Test] public void TheNightDeepensWithDistanceFromOpenLandAcrossClosedZones()
+        {
+            var (config, _, state) = Estate(); var rules = EstateDecorRules.Load(); var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
+            var open = config.Zones.Where(z => state.Estate.OpenZones.Contains(z.Id)).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray();
+            var field = EstateNight.Field(rules.night, plan.Area, open); var res = rules.night.texelsPerCell;
+            Assert.That(field.width, Is.EqualTo(plan.Area.width * res)); Assert.That(field.height, Is.EqualTo(plan.Area.height * res));
+            float At(float u, float v) => field.GetPixel(Mathf.FloorToInt((u - plan.Area.xMin) * res), Mathf.FloorToInt((v - plan.Area.yMin) * res)).a;
+            Assert.That(At(30, 30), Is.EqualTo(0).Within(.01f), "The open centre is lit.");
+            Assert.That(At(40.6f, 30), Is.InRange(.5f, .88f), "Just past the lit edge, in the village zone: between half and full.");
+            Assert.That(At(55, 50), Is.EqualTo(.88f).Within(.01f), "Deep in the land to come, full night.");
+            // The west hill (v < 20) and the windmill (v ≥ 20) meet at v = 20, two cells from the lit centre: no seam there.
+            Assert.That(At(18, 19.6f), Is.EqualTo(At(18, 20.4f)).Within(.02f), "No seam between closed zones.");
+            Assert.That(At(18, 20.4f), Is.InRange(.6f, .87f), "Two cells from light: still rising toward full night.");
+            var c = field.GetPixel(0, 0); Assert.That(new Color(c.r, c.g, c.b), Is.EqualTo((Color)rules.night.Colour).Using(ColorComparer));
+            Assert.That(c.a, Is.EqualTo(1).Within(.01f), "The painted area's edge closes to opaque night, matching the page behind it.");
+        }
+        static readonly IEqualityComparer<Color> ColorComparer = new ToleranceColour();
+        sealed class ToleranceColour : IEqualityComparer<Color>
+        {
+            public bool Equals(Color a, Color b) => Mathf.Abs(a.r - b.r) < .01f && Mathf.Abs(a.g - b.g) < .01f && Mathf.Abs(a.b - b.b) < .01f;
+            public int GetHashCode(Color c) => 0;
         }
 
         [Test] public void AMovedBuildingTakesItsAstraYardWithIt()

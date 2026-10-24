@@ -55,16 +55,36 @@ namespace Game.App
                 var bytes = account.Estate != null ? MetaSaveCodec.Encode(account) : null;
                 if (estateMap == null || estateMap.FromSave != (bytes != null) || bytes != null && !bytes.SequenceEqual(estateMapSource))
                 {
+                    var first = estateMap == null;
                     estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, account, estateMap?.Map, estateClock);
+                    if (first) estateMap.SavedView = ParseEstateView(preferences.EstateMapView);
                     estateMapSource = bytes;
                 }
                 estateMap.Advance();
                 MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions
                 {
                     Redraw = ShowEstateMap, Depart = ShowPortraitDeparture, Settings = () => ShowSettings(false), Navigate = NavigatePortraitMeta,
+                    ViewChanged = SaveEstateView,
                 }));
             }
             catch (Exception e) { Fail(e); }
+        }
+
+        // The map's last view survives restarts (#379): the first visit frames the lit land, later ones open where the player left.
+        void SaveEstateView(int zoom, UnityEngine.Vector2 centre)
+        {
+            var c = System.Globalization.CultureInfo.InvariantCulture;
+            var value = zoom.ToString(c) + ";" + centre.x.ToString("0.###", c) + ";" + centre.y.ToString("0.###", c);
+            if (value == preferences.EstateMapView) return;
+            preferences.EstateMapView = value; preferences.Save();
+        }
+
+        static (int, UnityEngine.Vector2)? ParseEstateView(string value)
+        {
+            var parts = (value ?? "").Split(';'); var c = System.Globalization.CultureInfo.InvariantCulture; var style = System.Globalization.NumberStyles.Float;
+            if (parts.Length != 3 || !int.TryParse(parts[0], System.Globalization.NumberStyles.Integer, c, out var zoom) ||
+                !float.TryParse(parts[1], style, c, out var u) || !float.TryParse(parts[2], style, c, out var v)) return null;
+            return (zoom, new UnityEngine.Vector2(u, v));
         }
 
         // Back closes the move preview, then the selection, then asks to quit like the manor page.
