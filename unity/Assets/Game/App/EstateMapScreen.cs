@@ -133,7 +133,8 @@ namespace Game.App
         // ---- Time ----
 
         // Applies the verified interval up to now. True when something the page draws changed (a level, the queue, a zone, a
-        // task), so the caller redraws; stock and remaining time are refreshed in place by the caller instead.
+        // task, or site stock appearing or running out, which adds or removes the claim button), so the caller redraws; the
+        // remaining time and the stock amounts are refreshed in place by the caller instead.
         public bool Advance()
         {
             var before = Shape(State.Estate);
@@ -149,7 +150,7 @@ namespace Game.App
         static string Shape(MetaEstateState estate) =>
             string.Join(",", estate.Buildings.Select(b => b.Level + (b.Branch ?? ""))) + "|" + estate.Active?.BuildingId + "|" +
             string.Join(",", estate.Reservations.Select(r => r.BuildingId)) + "|" + string.Join(",", estate.OpenZones) + "|" +
-            estate.ZoneWork?.ZoneId + "|" + string.Join(",", estate.AchievedTasks);
+            estate.ZoneWork?.ZoneId + "|" + string.Join(",", estate.AchievedTasks) + "|" + (estate.Buildings.Any(b => b.Stock > 0) ? "stock" : "");
 
         string Completed(string before)
         {
