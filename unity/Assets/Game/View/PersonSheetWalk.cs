@@ -17,7 +17,8 @@ namespace Game.View
         // One walk cycle of ground in Unity units: the cycle's source pixels at the role's own pixel scale.
         public static float Stride(ArtVisual move)=>GameVisualTokens.PersonWalkCyclePixels*move.WorldSize.y/move.CellPixels.y;
         // Cycles advanced by moving this distance in this time: one per stride, at most the rate cap.
-        public static float Advance(float phase,float distance,float stride,float seconds)=>Mathf.Repeat(phase+Mathf.Min(distance/stride,GameVisualTokens.PersonWalkMaxCyclesPerSecond*Mathf.Max(0,seconds)),1);
+        public static float Advance(float phase,float distance,float stride,float seconds)=>Advance(phase,distance,stride,seconds,GameVisualTokens.PersonWalkMaxCyclesPerSecond);
+        public static float Advance(float phase,float distance,float stride,float seconds,float maxCyclesPerSecond)=>Mathf.Repeat(phase+Mathf.Min(distance/stride,maxCyclesPerSecond*Mathf.Max(0,seconds)),1);
         public static int FrameAt(float phase,int frames)=>Mathf.Min(frames-1,Mathf.FloorToInt(phase*frames));
         // The sheet frame to draw, or -1 when the actor did not move between the last two Core ticks (draw its standing role).
         public int Frame(string kind,int id,Vector2 rendered,float time,bool moving,ArtVisual move,int generation)
@@ -27,6 +28,15 @@ namespace Game.View
             state.phase=Advance(state.phase,Vector2.Distance(rendered,state.last),Stride(move),time-state.time);
             state.last=rendered;state.time=time;state.generation=generation;phases[key]=state;
             return moving?FrameAt(state.phase,move.UvRects.Count):-1;
+        }
+        // Phase only (enemy walks, #363): advances by distance like Frame, at most maxCyclesPerSecond, and holds while standing.
+        public float Phase(string kind,int id,Vector2 rendered,float time,float stride,float maxCyclesPerSecond,int generation)
+        {
+            var key=(kind,id);
+            (Vector2 last,float time,float phase,int generation) state=phases.TryGetValue(key,out var known)?known:(rendered,time,0f,generation);
+            state.phase=Advance(state.phase,Vector2.Distance(rendered,state.last),stride,time-state.time,maxCyclesPerSecond);
+            state.last=rendered;state.time=time;state.generation=generation;phases[key]=state;
+            return state.phase;
         }
         // Forgets actors not drawn in this generation, as the renderer does for facing.
         public void Retire(int generation)

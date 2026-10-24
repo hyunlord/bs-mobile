@@ -14,6 +14,11 @@ function fixture() {
     bindings: [{ kind: 'hero', contentId: 'core:frontier_knight', state: 'walk', roleId: 'hero' }] };
 }
 test('presentation contract accepts one authored frame and deliberate tween', () => assert.equal(validateManifest(fixture()).roles, 1));
+// #363: a multi-frame walk may state the ground one cycle covers in source pixels.
+test('a multi-frame walk may carry a cycle length', () => {
+  const m = fixture(); m.roles[0].frames.push({ x: 32, y: 2, width: 28, height: 28 }); m.roles[0].cyclePixels = 102.36;
+  assert.equal(validateManifest(m).roles, 1);
+});
 for (const [name, mutate, error] of [
   ['gameplay metadata', m => { m.roles[0].damage = 9; }, /unknown or gameplay field damage/],
   ['duplicate roles', m => m.roles.push(m.roles[0]), /duplicate\/empty role/],
@@ -24,6 +29,8 @@ for (const [name, mutate, error] of [
   ['unresolved license', m => { m.atlases[0].license = 'unknown'; }, /missing license/],
   ['invented CC0', m => { m.licenses[0].commercialUse = 'CC0'; }, /must not claim/],
   ['unknown tween', m => { m.roles[0].tween = 'simulate'; }, /animation/],
+  ['cycle length on a single frame', m => { m.roles[0].cyclePixels = 100; }, /cyclePixels needs/],
+  ['non-positive cycle length', m => { m.roles[0].frames.push({ x: 32, y: 2, width: 28, height: 28 }); m.roles[0].cyclePixels = 0; }, /cyclePixels needs/],
 ]) test(`fails closed: ${name}`, () => { const m = fixture(); mutate(m); assert.throws(() => validateManifest(m), error); });
 test('required inventory derives all selected identities and explicit transitional people states', () => {
   const required = requiredBindings(root);
