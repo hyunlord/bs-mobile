@@ -446,6 +446,17 @@ namespace Game.App
             return new Vector2(rect.xMin + point.x, rect.yMax - point.y + rise * Model.Scale);
         }
 
+        // Fog patch vertex (i, j) of the 4×4 grid: side lines inset by the feather on feathered sides, alpha 0 on those sides' outer line.
+        void FogVert(VertexHelper mesh, in Shape shape, int i, int j)
+        {
+            var f = shape.Rise; var feather = shape.Feather;
+            var u = i == 0 ? shape.A.x : i == 1 ? shape.A.x + ((feather & 1) != 0 ? f : 0) : i == 2 ? shape.B.x - ((feather & 4) != 0 ? f : 0) : shape.B.x;
+            var v = j == 0 ? shape.A.y : j == 1 ? shape.A.y + ((feather & 2) != 0 ? f : 0) : j == 2 ? shape.B.y - ((feather & 8) != 0 ? f : 0) : shape.B.y;
+            var clear = i == 0 && (feather & 1) != 0 || i == 3 && (feather & 4) != 0 || j == 0 && (feather & 2) != 0 || j == 3 && (feather & 8) != 0;
+            Color32 colour = shape.Top; if (clear) colour.a = 0;
+            mesh.AddVert(Local(new Vector2(u, v)), colour, Vector2.zero);
+        }
+
         protected override void OnPopulateMesh(VertexHelper mesh)
         {
             mesh.Clear(); if (Model == null) return;
@@ -464,20 +475,12 @@ namespace Game.App
                     }
                     case Kind.Fog:
                     {
-                        // A 3×3 patch: the outer vertex row/column of a feathered side is transparent.
-                        var f = shape.Rise;
-                        var us = new[] { a.x, a.x + ((shape.Feather & 1) != 0 ? f : 0), b.x - ((shape.Feather & 4) != 0 ? f : 0), b.x };
-                        var vs = new[] { a.y, a.y + ((shape.Feather & 2) != 0 ? f : 0), b.y - ((shape.Feather & 8) != 0 ? f : 0), b.y };
-                        Color32 At(int i, int j)
-                        {
-                            var clear = i == 0 && (shape.Feather & 1) != 0 || i == 3 && (shape.Feather & 4) != 0 || j == 0 && (shape.Feather & 2) != 0 || j == 3 && (shape.Feather & 8) != 0;
-                            var c = shape.Top; if (clear) c.a = 0; return c;
-                        }
+                        // A 3×3 patch: the outer vertex row/column of a feathered side is transparent. Coordinates are computed per
+                        // vertex (no temporary arrays): every drag frame rebuilds this mesh (review on #377).
                         for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++)
                         {
                             var start = mesh.currentVertCount;
-                            mesh.AddVert(Local(new Vector2(us[i], vs[j])), At(i, j), Vector2.zero); mesh.AddVert(Local(new Vector2(us[i + 1], vs[j])), At(i + 1, j), Vector2.zero);
-                            mesh.AddVert(Local(new Vector2(us[i + 1], vs[j + 1])), At(i + 1, j + 1), Vector2.zero); mesh.AddVert(Local(new Vector2(us[i], vs[j + 1])), At(i, j + 1), Vector2.zero);
+                            FogVert(mesh, shape, i, j); FogVert(mesh, shape, i + 1, j); FogVert(mesh, shape, i + 1, j + 1); FogVert(mesh, shape, i, j + 1);
                             mesh.AddTriangle(start, start + 1, start + 2); mesh.AddTriangle(start, start + 2, start + 3);
                         }
                         break;
