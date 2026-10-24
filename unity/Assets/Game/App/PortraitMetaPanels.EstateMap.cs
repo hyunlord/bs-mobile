@@ -81,7 +81,10 @@ namespace Game.App
                 Paint(viewport, view, art, tint, "EstateMap.Veiled:" + item.Source, item);
             var darkness = UiShell.Rect("EstateMap.Night", viewport); UiShell.Stretch(darkness);
             var nightGraphic = darkness.gameObject.AddComponent<EstateNight>(); nightGraphic.raycastTarget = false; nightGraphic.Model = screen.Map;
-            nightGraphic.Show(plan.Area, EstateNight.Field(night, plan.Area, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
+            // The night reaches `nightOverhang` cells past the painted area: terrain patches spill past their blocks, and whatever
+            // spills stays under the night before its opaque rim.
+            var o = night.nightOverhang; var nightArea = new RectInt(plan.Area.x - o, plan.Area.y - o, plan.Area.width + 2 * o, plan.Area.height + 2 * o);
+            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
             view.Track(nightGraphic);
             var lamps = Shapes(viewport, "EstateMap.Lamps", view);
             foreach (var (grid, cells) in plan.Lamps) lamps.Glow(grid, cells, night.Lamp);
