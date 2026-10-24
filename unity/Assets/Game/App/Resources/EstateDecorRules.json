@@ -1,0 +1,93 @@
+{
+  "version": "estate-decor-r0",
+  "status": "Temporary frame values (#372). Astra's yard, roadside and empty-land rules replace the counts and roles; the props are the fallow field sprites until then.",
+  "seed": 3601,
+  "yard": [
+    {
+      "kinds": [
+        "meta:granary",
+        "m3a:field",
+        "m3a:lumber_camp"
+      ],
+      "props": [
+        {
+          "role": "fallow.prop.furrow",
+          "width": 0.9,
+          "flat": true
+        },
+        {
+          "role": "fallow.prop.stone",
+          "width": 0.45,
+          "flat": false
+        }
+      ],
+      "count": 2
+    },
+    {
+      "kinds": [
+        "m3a:home",
+        "m3a:well_shrine"
+      ],
+      "props": [
+        {
+          "role": "fallow.prop.stone",
+          "width": 0.45,
+          "flat": false
+        }
+      ],
+      "count": 2
+    },
+    {
+      "kinds": [
+        "*"
+      ],
+      "props": [
+        {
+          "role": "fallow.prop.stone",
+          "width": 0.4,
+          "flat": false
+        },
+        {
+          "role": "fallow.prop.dead-tree",
+          "width": 0.6,
+          "flat": false
+        }
+      ],
+      "count": 1
+    }
+  ],
+  "road": {
+    "from": "m3a:home",
+    "roadside": [
+      {
+        "role": "fallow.prop.stone",
+        "width": 0.35,
+        "flat": false
+      },
+      {
+        "role": "fallow.prop.dead-tree",
+        "width": 0.55,
+        "flat": false
+      }
+    ],
+    "every": 3
+  },
+  "clusters": {
+    "props": [
+      {
+        "role": "fallow.prop.dead-tree",
+        "width": 0.7,
+        "flat": false
+      },
+      {
+        "role": "fallow.prop.stone",
+        "width": 0.45,
+        "flat": false
+      }
+    ],
+    "count": 4,
+    "minSize": 3,
+    "maxSize": 5,
+    "spread": 1.4
+  }
+}

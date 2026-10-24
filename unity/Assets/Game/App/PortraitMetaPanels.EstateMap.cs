@@ -20,7 +20,7 @@ namespace Game.App
     // small departure button over the map. Temporary art: the four manor sprites, raised colour blocks for the other kinds.
     public static partial class PortraitMetaPanels
     {
-        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 0123456789:";
+        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 0123456789:";
         static readonly Color OpenGround = new Color32(104, 124, 70, 255);
         static readonly Color ClosedGround = new Color32(40, 37, 33, 255);
         static readonly Color Fog = new Color32(24, 22, 20, 255);
@@ -33,6 +33,7 @@ namespace Game.App
         static readonly Color ValidGhost = new Color32(96, 190, 104, 150);
         static readonly Color InvalidGhost = new Color32(205, 64, 48, 150);
         static readonly Color BarInk = new Color32(20, 16, 12, 205);
+        static readonly Color RoadSand = new Color32(176, 152, 104, 255);
         const float BarTop = 6, BarHeight = 40, GoalTop = 50, GoalHeight = 44, BottomBar = 56, BottomGap = 8, WorkHeight = 44;
         static readonly Color GoodInk = new Color32(168, 222, 150, 255), BadInk = new Color32(240, 140, 120, 255), Gold = new Color32(243, 213, 140, 255);
         // Block height of a temporary plate building, in unscaled canvas units.
@@ -61,14 +62,19 @@ namespace Game.App
             for (var v = 0; v <= screen.Map.Rows; v++) ground.Line(new Vector2(0, v), new Vector2(screen.Map.Columns, v), GridLine);
             foreach (var zone in screen.Config.Zones.Where(z => !screen.Open(z)))
                 view.Pin(Caption(ui, viewport, "닫힌 구역", 0, 0, 120, 24, 13, false, TextAnchor.MiddleCenter), new Vector2(zone.X + zone.Width * .5f, zone.Y + zone.Height * .5f), 0);
+            // Decoration (#372): road cells join the ground mesh, flat props lie on the ground layer, standing props sort with
+            // the buildings by their foot.
+            var decor = screen.DecorEnabled ? screen.Decor() : new List<EstateDecorItem>();
+            foreach (var item in decor.Where(i => i.Source == EstateDecorSource.Road))
+                ground.Footprint(Mathf.FloorToInt(item.Grid.x), Mathf.FloorToInt(item.Grid.y), 1, 1, RoadSand);
             if (screen.Selected != null)
             {
                 var selected = screen.Building(screen.Selected.Value); var kind = screen.Kind(selected.Kind);
                 ground.Footprint(selected.X, selected.Y, kind.Width, kind.Height, SelectedFoot);
             }
+            foreach (var item in decor.Where(i => i.Flat && i.Role.Length > 0)) DecorProp(viewport, view, item);
 
-            // Buildings in draw order: front corner screen y, then instance order (#368).
-            foreach (var building in screen.State.Estate.Buildings.OrderBy(b => SortY(screen, b)).ThenBy(b => b.Id))
+            void DrawBuilding(MetaEstateBuilding building)
             {
                 var kind = screen.Kind(building.Kind); var art = EstateMapScreen.Art(building.Kind);
                 var dimmed = screen.Moving && screen.Selected == building.Id;
@@ -91,6 +97,17 @@ namespace Game.App
                 if (screen.Selected == building.Id)
                     view.Pin(NameTag(ui, viewport, screen.Name(building.Kind) + " Lv " + building.Level), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), art == null ? BlockRise + 34 : (kind.Width + kind.Height) * EstateMapModel.HalfWidth * .9f);
             }
+
+            // Buildings and standing props in draw order: foot screen y (a footprint's front corner), buildings before props on
+            // a tie, then instance order (#368).
+            var drawables = screen.State.Estate.Buildings.Select(b => (Y: SortY(screen, b), Order: 0, Id: b.Id, Building: b, Prop: default(EstateDecorItem)))
+                .Concat(decor.Where(i => !i.Flat && i.Role.Length > 0).Select((p, i) => (Y: EstateMapModel.Project(p.Grid).y, Order: 1, Id: i, Building: (MetaEstateBuilding)null, Prop: p)))
+                .OrderBy(d => d.Y).ThenBy(d => d.Order).ThenBy(d => d.Id);
+            foreach (var drawable in drawables)
+            {
+                if (drawable.Building != null) DrawBuilding(drawable.Building);
+                else DecorProp(viewport, view, drawable.Prop);
+            }
             if (screen.Moving && screen.Selected != null)
             {
                 var kind = screen.Kind(screen.Building(screen.Selected.Value).Kind);
@@ -110,6 +127,8 @@ namespace Game.App
             GoalLine(ui, root, screen, actions, width);
             var zoomNames = new[] { "전체", "동네", "건물" };
             var controlsY = height - bottom - 104;
+            var decorToggle = ActionButton(ui, root, "EstateMap.Decor", "장식 " + (screen.DecorEnabled ? "켬" : "끔"), () => { screen.ToggleDecor(); actions.Redraw(); }, 10, controlsY + 4, 84, true, 44);
+            Compact(decorToggle.transform);
             var chip = ColorPlate(root, "EstateMap.ZoomLevel", BarInk, 10, controlsY + 60, 56, 28);
             var zoomCaption = Caption(ui, chip, zoomNames[screen.Map.Zoom], 0, 0, 56, 28, 13, false, TextAnchor.MiddleCenter);
             view.Zoomed = () => zoomCaption.text = zoomNames[screen.Map.Zoom];
@@ -132,6 +151,19 @@ namespace Game.App
                 if (liveStatus != null && screen.Selected != null) liveStatus.text = screen.Status(screen.Building(screen.Selected.Value));
             };
             BottomBarWithTabs(ui, root, account, actions, width, height);
+        }
+
+        // Places one decoration sprite; a role missing from the art catalog is skipped (counted by the screen for the PR report).
+        static void DecorProp(RectTransform viewport, EstateMapView view, EstateDecorItem item)
+        {
+            ArtVisual visual;
+            try { visual = ArtCatalog.Load().ResolveRole(item.Role); }
+            catch (InvalidOperationException) { view.MissingDecor++; return; }
+            var sprite = visual.Sprite; if (sprite == null) { view.MissingDecor++; return; }
+            var rect = UiShell.Rect("EstateMap.Decor:" + item.Source, viewport);
+            var image = rect.gameObject.AddComponent<Image>(); image.sprite = sprite; image.raycastTarget = false;
+            var size = sprite.rect.size;
+            view.Prop(rect, item.Grid, item.Width, new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y), size.y / size.x);
         }
 
         static float SortY(EstateMapScreen screen, MetaEstateBuilding building)
@@ -418,6 +450,13 @@ namespace Game.App
     {
         struct StandingArt { public RectTransform Rect; public RectInt Footprint; }
         struct Pinned { public RectTransform Rect; public Vector2 Grid; public float Lift; }
+        struct PropArt { public RectTransform Rect; public Vector2 Grid; public float Width; public Vector2 Pivot; public float Aspect; }
+        readonly List<PropArt> props = new List<PropArt>();
+        public int MissingDecor;
+        public int DecorCount => props.Count;
+        // A decoration sprite `width` cells wide whose pivot (normalized, y up) stands on a grid point.
+        public void Prop(RectTransform rect, Vector2 grid, float width, Vector2 pivot, float aspect) =>
+            props.Add(new PropArt { Rect = rect, Grid = grid, Width = width, Pivot = pivot, Aspect = aspect });
         readonly List<StandingArt> standing = new List<StandingArt>();
         readonly List<Pinned> pinned = new List<Pinned>();
         readonly List<EstateIsoShapes> shapes = new List<EstateIsoShapes>();
@@ -466,6 +505,11 @@ namespace Game.App
                 var f = item.Footprint; var foot = Model.GridToViewport(new Vector2(f.x + f.width, f.y + f.height));
                 var size = (f.width + f.height) * EstateMapModel.HalfWidth * scale;
                 PortraitWidgets.Position(item.Rect, foot.x - size * .5f, foot.y - size, size, size);
+            }
+            foreach (var item in props)
+            {
+                var point = Model.GridToViewport(item.Grid); var w = item.Width * EstateMapModel.HalfWidth * 2 * scale; var h = w * item.Aspect;
+                PortraitWidgets.Position(item.Rect, point.x - item.Pivot.x * w, point.y - (1 - item.Pivot.y) * h, w, h);
             }
             foreach (var item in pinned)
             {

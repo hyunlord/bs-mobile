@@ -77,6 +77,7 @@ namespace Tests.PlayMode
             var step = screen.Map.GridToViewport(Vector2.right) - screen.Map.GridToViewport(Vector2.zero);
             Assert.That(Vector2.Distance(step, new Vector2(32, 16)), Is.LessThan(1e-3f), "Default cells are 64×32 diamonds.");
             yield return Capture("estate-map-neighbourhood");
+            yield return MeasureDecor(screen);
 
             Click("EstateMap.ZoomOut"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.WholeMap));
             yield return Capture("estate-map-whole");
@@ -210,6 +211,39 @@ namespace Tests.PlayMode
                 var decoded = MetaSaveCodec.Decode(bytes);
                 return decoded.Valid && MetaValidation.ValidateState(catalog, decoded.State).Length == 0 ? AtomicSaveValidation.Valid : AtomicSaveValidation.Corrupt;
             });
+        }
+
+        // #372: decoration matches its plan, uses only catalogued art, and its draw-batch cost is measured with it on and off.
+        IEnumerator MeasureDecor(EstateMapScreen screen)
+        {
+            Assert.That(screen.DecorEnabled, Is.True);
+            var plan = screen.Decor();
+            var sprites = plan.Count(i => i.Source != EstateDecorSource.Road);
+            Assert.That(View().MissingDecor, Is.EqualTo(0), "Every decoration role resolves in the wave art.");
+            Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites));
+            var on = new int[3]; yield return Batches(on);
+            yield return Capture("estate-decor-on");
+            Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
+            Assert.That(Rects("EstateMap.Decor:"), Is.Empty);
+            var off = new int[3]; yield return Batches(off);
+            yield return Capture("estate-decor-off");
+            Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.True);
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
+            var counts = string.Join(", ", plan.GroupBy(i => i.Source).Select(g => $"\"{g.Key}\": {g.Count()}"));
+            File.WriteAllText(Path.Combine(output, "estate-decor-batches.json"),
+                $"{{\"commit\": \"{BuildIdentity.Commit}\", \"screen\": \"390x844 neighbourhood\", \"decorSprites\": {sprites}, \"plan\": {{{counts}}}, " +
+                $"\"on\": {{\"batches\": {on[0]}, \"drawCalls\": {on[1]}, \"editorStatsBatches\": {on[2]}}}, \"off\": {{\"batches\": {off[0]}, \"drawCalls\": {off[1]}, \"editorStatsBatches\": {off[2]}}}, " +
+                "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count' (last of 10 frames) and UnityEditor.UnityStats.batches; Editor PlayMode, not a device\"}\n");
+            Assert.That(Math.Max(on[0], on[2]), Is.GreaterThan(0), "The batch count was measured.");
+        }
+
+        static IEnumerator Batches(int[] into)
+        {
+            using var batches = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Batches Count");
+            using var draws = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Draw Calls Count");
+            for (var i = 0; i < 10; i++) yield return null;
+            into[0] = batches.Valid ? (int)batches.LastValue : -1; into[1] = draws.Valid ? (int)draws.LastValue : -1;
+            into[2] = UnityEditor.UnityStats.batches;
         }
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
