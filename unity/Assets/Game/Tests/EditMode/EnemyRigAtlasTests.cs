@@ -42,14 +42,14 @@ namespace Tests.EditMode
         }
 
 
-        // #363: the baked rigs in both manifests keep eight walk frames with no cycle length, so they keep the time-based walk and
+        // #363: the baked rigs (wave art only) keep eight walk frames with no cycle length, so they keep the time-based walk and
         // show exactly the frames they showed before (same frame for every time as the old fixed-eight formula).
-        [TestCase("wave1a-manifest.json")] [TestCase("first-playable-manifest.json")]
-        public void BakedRigsKeepTheirEightFrameTimeBasedWalk(string manifest)
+        [Test]
+        public void BakedRigsKeepTheirEightFrameTimeBasedWalk()
         {
-            var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", manifest)));
+            var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "wave1a-manifest.json")));
             var walks = System.Array.FindAll(m.roles, r => r.id.StartsWith("enemy.rig.", System.StringComparison.Ordinal) && r.id.EndsWith(".walk", System.StringComparison.Ordinal));
-            if (walks.Length == 0) Assert.Ignore("No enemy rigs in " + manifest);
+            Assert.That(walks.Length, Is.EqualTo(6), "six baked rigs");
             foreach (var walk in walks)
             {
                 Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((8, 0f)), walk.id);
