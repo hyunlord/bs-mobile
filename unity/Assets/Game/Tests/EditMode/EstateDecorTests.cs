@@ -82,7 +82,7 @@ namespace Tests.EditMode
             Assert.That(plan.StateOf(new Vector2Int(home.X - 5, home.Y - 1)), Is.EqualTo("sage"));
             Assert.That(plan.StateOf(new Vector2Int(21, 21)), Is.EqualTo("fallow"), "The far corner of the centre is untended.");
             Assert.That(plan.StateOf(new Vector2Int(45, 30)), Is.EqualTo("closed"));
-            Assert.That(plan.StateOf(new Vector2Int(5, 5)), Is.Null, "Outside every zone.");
+            Assert.That(plan.StateOf(new Vector2Int(45, 10)), Is.Null, "Outside every zone.");
             foreach (var item in plan.Items.Where(i => i.Source == "frontier" || i.Source == "wood")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
         }
 
@@ -104,14 +104,20 @@ namespace Tests.EditMode
             foreach (var item in first.In(EstateDrawLayer.Veiled))
                 Assert.That(first.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed"), "veiled art stays in closed land: " + item.Key);
             Assert.That(first.Items.Where(i => i.Source == "frontier" || i.Source == "wood").All(i => i.Layer == EstateDrawLayer.Veiled), Is.True);
-            Assert.That(first.Items.Where(i => i.Source == "wood").All(i => i.Grid.x >= 20 && i.Grid.x < 40 && i.Grid.y < 20), Is.True, "Woods only in the north-east wood zone.");
+            bool In(AccountEstateZone zone, Vector2 grid) => grid.x >= zone.X && grid.x < zone.X + zone.Width && grid.y >= zone.Y && grid.y < zone.Y + zone.Height;
+            var wood = config.Zones.Single(z => z.Id == "zone:inner-northeast-wood");
+            Assert.That(first.Items.Where(i => i.Source == "wood").All(i => In(wood, i.Grid)), Is.True, "Woods only in the north-east wood zone.");
             foreach (var zone in config.Zones.Where(z => z.Id != "zone:start"))
             {
-                bool In(EstateDrawItem i) => i.Grid.x >= zone.X && i.Grid.x < zone.X + zone.Width && i.Grid.y >= zone.Y && i.Grid.y < zone.Y + zone.Height;
-                Assert.That(first.Items.Count(i => i.Source == "terrain" && In(i)), Is.EqualTo(16), "Terrain patches cover " + zone.Id);
-                Assert.That(first.In(EstateDrawLayer.Veiled).Count(In), Is.GreaterThan(5), "Traces or woods in " + zone.Id);
+                Assert.That(first.Items.Count(i => i.Source == "terrain" && In(zone, i.Grid)), Is.GreaterThan(0), "Terrain patches cover " + zone.Id);
+                if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(3), "Traces or woods in " + zone.Id);
             }
-            Assert.That(first.Items.Count(i => i.Source == "placed" && i.Grid.y > 40), Is.EqualTo(3), "The river runs on through the riverside zone.");
+            Assert.That(first.In(EstateDrawLayer.Veiled).Count(), Is.GreaterThan(30));
+            // The river runs down the estate's right edge (key art A): from the north-east wood to the riverside zone.
+            var river = first.Items.Where(i => i.Source == "placed" && i.Role.StartsWith("river", StringComparison.Ordinal)).OrderBy(i => i.Grid.x + i.Grid.y).ToArray();
+            Assert.That(river.Length, Is.EqualTo(7));
+            Assert.That(river.All(i => i.Grid.x - i.Grid.y >= 10), Is.True, "every river patch is on the right side");
+            Assert.That(In(wood, river.First().Grid) && In(config.Zones.Single(z => z.Id == "zone:inner-riverside"), river.Last().Grid), Is.True);
             Assert.That(first.Count("frontier"), Is.GreaterThan(0)); Assert.That(first.Count("wood"), Is.GreaterThan(0)); Assert.That(first.Count("frontier-edge"), Is.GreaterThan(0));
             TestContext.WriteLine("plan: " + string.Join(", ", first.Items.GroupBy(i => i.Source).Select(g => g.Key + "=" + g.Count())));
         }

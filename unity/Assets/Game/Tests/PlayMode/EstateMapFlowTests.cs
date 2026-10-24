@@ -80,6 +80,9 @@ namespace Tests.PlayMode
             yield return MeasureDecor(screen);
 
             Click("EstateMap.ZoomOut"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.WholeMap));
+            // The vertical estate (m3a-prototype-r4) uses most of the portrait screen's height in the whole view (#375).
+            Assert.That(screen.Map.MapSize.y, Is.GreaterThanOrEqualTo(.7f * screen.Map.Viewport.y), "The whole estate fills at least 70% of the height.");
+            Assert.That(screen.Map.MapSize.x, Is.LessThanOrEqualTo(screen.Map.Viewport.x + 1e-2f));
             yield return Capture("estate-map-whole");
             Click("EstateMap.ZoomIn"); Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
             yield return Capture("estate-map-building");
@@ -98,7 +101,7 @@ namespace Tests.PlayMode
             Click("EstateMap.ZoomOut"); yield return null;
             Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(4000, 0) * app.Ui.Canvas.scaleFactor);
             yield return null;
-            Assert.That(screen.Map.GridToViewport(new Vector2(0, 40)).x, Is.GreaterThanOrEqualTo(-1e-2f), "The whole map fits, so no drag reveals space past the west zone's corner.");
+            Assert.That(screen.Map.GridToViewport(new Vector2(0, 20)).x, Is.GreaterThanOrEqualTo(-1e-2f), "The whole map fits, so no drag reveals space past the west hill's corner.");
             Click("EstateMap.ZoomIn"); yield return null;
 
             Click("EstateMap.Goal"); yield return null; Assert.That(screen.GoalCollapsed, Is.True);

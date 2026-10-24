@@ -326,38 +326,50 @@
   "placed": [
     {
       "id": "riverbank-patch",
-      "zone": "zone:start",
-      "u": 24,
-      "v": 38.5,
+      "zone": "zone:inner-northeast-wood",
+      "u": 16,
+      "v": 2,
       "reserve": [
-        20,
-        37,
-        10,
-        3
+        13,
+        0,
+        7,
+        6
       ]
     },
     {
       "id": "river-bend-patch",
-      "zone": "zone:start",
-      "u": 32,
-      "v": 38.5,
+      "zone": "zone:inner-west-hill",
+      "u": 25,
+      "v": 11,
       "reserve": [
-        28,
-        37,
-        8,
-        3
+        22,
+        10,
+        6,
+        5
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:start",
+      "u": 37,
+      "v": 21,
+      "reserve": [
+        35,
+        20,
+        5,
+        5
       ]
     },
     {
       "id": "bridge-landing-patch",
       "zone": "zone:start",
-      "u": 36.5,
-      "v": 37.5,
+      "u": 35.5,
+      "v": 23,
       "reserve": [
-        35,
-        36,
+        33,
+        22,
         3,
-        4
+        3
       ]
     },
     {
@@ -365,10 +377,58 @@
       "rail": "bridge-nw-se-rail",
       "zone": "zone:start",
       "u": 37,
-      "v": 38.6,
+      "v": 21.8,
       "with": "peasant-carry",
       "withU": 37.1,
-      "withV": 38.5
+      "withV": 21.7
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-village",
+      "u": 45,
+      "v": 31,
+      "reserve": [
+        42,
+        28,
+        6,
+        6
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-ruins",
+      "u": 54,
+      "v": 40.5,
+      "reserve": [
+        51,
+        40,
+        6,
+        4
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-riverside",
+      "u": 63,
+      "v": 49,
+      "reserve": [
+        60,
+        48,
+        6,
+        5
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-riverside",
+      "u": 66,
+      "v": 55,
+      "reserve": [
+        63,
+        52,
+        5,
+        6
+      ]
     },
     {
       "id": "sheep-paddock",
@@ -381,30 +441,6 @@
         4,
         3
       ]
-    },
-    {
-      "id": "riverbank-patch",
-      "zone": "zone:inner-riverside",
-      "u": 37,
-      "v": 45,
-      "reserve": [
-        34,
-        41,
-        6,
-        19
-      ]
-    },
-    {
-      "id": "river-bend-patch",
-      "zone": "zone:inner-riverside",
-      "u": 36,
-      "v": 52
-    },
-    {
-      "id": "riverbank-patch",
-      "zone": "zone:inner-riverside",
-      "u": 37,
-      "v": 58
     }
   ],
   "peasants": {
