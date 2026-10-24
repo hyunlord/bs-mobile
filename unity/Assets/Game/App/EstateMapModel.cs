@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Game.App
@@ -28,17 +30,26 @@ namespace Game.App
         // False until the page first centres the map (on the home building); later visits keep the player's view.
         public bool Framed { get; private set; }
 
-        public EstateMapModel(int columns, int rows)
+        // `areas` (cell rectangles, e.g. the config's zones) bound what the camera shows: the whole-map zoom fits their projected
+        // extent and panning stops at it (#375). Without areas the whole grid diamond is the map.
+        public EstateMapModel(int columns, int rows, IEnumerable<RectInt> areas = null)
         {
             Columns = Mathf.Max(1, columns); Rows = Mathf.Max(1, rows);
+            var corners = (areas ?? new[] { new RectInt(0, 0, Columns, Rows) })
+                .SelectMany(a => new[] { new Vector2(a.xMin, a.yMin), new Vector2(a.xMax, a.yMin), new Vector2(a.xMin, a.yMax), new Vector2(a.xMax, a.yMax) })
+                .Select(Project).ToArray();
+            if (corners.Length == 0) corners = new[] { Vector2.zero, Project(new Vector2(Columns, Rows)) };
+            MapMin = new Vector2(corners.Min(c => c.x), corners.Min(c => c.y));
+            MapExtent = new Vector2(corners.Max(c => c.x), corners.Max(c => c.y)) - MapMin;
         }
 
         public static Vector2 Project(Vector2 grid) => new Vector2((grid.x - grid.y) * HalfWidth, (grid.x + grid.y) * HalfHeight);
         public static Vector2 Unproject(Vector2 point) => new Vector2((point.x / HalfWidth + point.y / HalfHeight) * .5f, (point.y / HalfHeight - point.x / HalfWidth) * .5f);
 
-        // Unscaled bounds of the whole grid's diamond: left corner (0, Rows), right corner (Columns, 0), bottom (Columns, Rows).
-        public Vector2 MapMin => new Vector2(-Rows * HalfWidth, 0);
-        public Vector2 MapExtent => new Vector2((Columns + Rows) * HalfWidth, (Columns + Rows) * HalfHeight);
+        // Unscaled bounds of the map: by default the whole grid's diamond, left corner (0, Rows), right corner (Columns, 0),
+        // bottom (Columns, Rows).
+        public Vector2 MapMin { get; }
+        public Vector2 MapExtent { get; }
 
         public float Scale => ScaleAt(Zoom);
         public Vector2 MapSize => MapExtent * Scale;

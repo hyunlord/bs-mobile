@@ -10,7 +10,7 @@ public sealed class AccountEstateWideMapTests
     private static string Data => Path.Combine(AppContext.BaseDirectory, "data");
     private static readonly MetaCatalog Catalog = MetaContentLoader.Read(Data);
     private static readonly AccountEstateConfig R2 = AccountEstateConfigLoader.Load(Data, Catalog);
-    private static readonly AccountEstateConfig Wide = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.MapPrototypeVersion);
+    private static readonly AccountEstateConfig Wide = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.WideMapVersion);
     private static string Json<T>(T value) => System.Text.Json.JsonSerializer.Serialize(value);
 
     [Fact]

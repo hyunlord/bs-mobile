@@ -1,0 +1,1998 @@
+{
+  "version": "estate-art-r1",
+  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24).",
+  "atlases": [
+    {
+      "file": "estate-building-shadows.png",
+      "sha256": "9c49e034158758eaa9ce24f8d9eca96e2473954b3f95f3366a3330d9a9d206b4"
+    },
+    {
+      "file": "estate-buildings.png",
+      "sha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee"
+    },
+    {
+      "file": "estate-decor.png",
+      "sha256": "605d01bd9c0c66e32e86e10e1c3b784fe25bdc511788fde221d5dcf6fd14df55"
+    },
+    {
+      "file": "estate-terrain.png",
+      "sha256": "4838b5bc5ddf925a963f2a7a9fde927df0b32b716ac192418793aa3c9fa7faf3"
+    }
+  ],
+  "buildings": {
+    "release": "m3-estate-autodecor-20261024",
+    "body": {
+      "file": "buildings-30-body-atlas.png",
+      "sha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee"
+    },
+    "shadowScale": 0.5,
+    "canvas": [
+      256,
+      320
+    ],
+    "records": [
+      {
+        "id": "manor-s1",
+        "kind": "manor",
+        "stage": 1,
+        "rect": [
+          0,
+          0,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          39.29599999999999,
+          178.45333333333332,
+          177.40800000000002,
+          101.54666666666668
+        ],
+        "bodyWidth": 117
+      },
+      {
+        "id": "manor-s2",
+        "kind": "manor",
+        "stage": 2,
+        "rect": [
+          256,
+          0,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          32.42666666666666,
+          159.33866666666665,
+          191.14666666666668,
+          120.66133333333335
+        ],
+        "bodyWidth": 141
+      },
+      {
+        "id": "manor-s3",
+        "kind": "manor",
+        "stage": 3,
+        "rect": [
+          512,
+          0,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          15.999999999999986,
+          129.47199999999998,
+          224.00000000000003,
+          150.52800000000002
+        ],
+        "bodyWidth": 199
+      },
+      {
+        "id": "house-s1",
+        "kind": "house",
+        "stage": 1,
+        "rect": [
+          768,
+          0,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          47.869918699187,
+          193.79945799457994,
+          160.260162601626,
+          86.20054200542005
+        ],
+        "bodyWidth": 90
+      },
+      {
+        "id": "house-s2",
+        "kind": "house",
+        "stage": 2,
+        "rect": [
+          1024,
+          0,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          44.531165311653126,
+          169.51761517615176,
+          166.93766937669375,
+          110.48238482384824
+        ],
+        "bodyWidth": 118
+      },
+      {
+        "id": "house-s3",
+        "kind": "house",
+        "stage": 3,
+        "rect": [
+          0,
+          320,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16,
+          135.52303523035232,
+          224,
+          144.47696476964768
+        ],
+        "bodyWidth": 137
+      },
+      {
+        "id": "granary-s1",
+        "kind": "granary",
+        "stage": 1,
+        "rect": [
+          256,
+          320,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          52.705882352941174,
+          165.80392156862746,
+          150.58823529411765,
+          114.19607843137254
+        ],
+        "bodyWidth": 103
+      },
+      {
+        "id": "granary-s2",
+        "kind": "granary",
+        "stage": 2,
+        "rect": [
+          512,
+          320,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          29.80392156862746,
+          156.39215686274508,
+          196.39215686274508,
+          123.6078431372549
+        ],
+        "bodyWidth": 129
+      },
+      {
+        "id": "granary-s3",
+        "kind": "granary",
+        "stage": 3,
+        "rect": [
+          768,
+          320,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16,
+          136.31372549019608,
+          224,
+          143.68627450980392
+        ],
+        "bodyWidth": 175
+      },
+      {
+        "id": "field-s1",
+        "kind": "field",
+        "stage": 1,
+        "rect": [
+          1024,
+          320,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          17.731958762886606,
+          163.3814432989691,
+          220.5360824742268,
+          116.61855670103091
+        ],
+        "bodyWidth": 202
+      },
+      {
+        "id": "field-s2",
+        "kind": "field",
+        "stage": 2,
+        "rect": [
+          0,
+          640,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          17.731958762886606,
+          161.64948453608247,
+          220.5360824742268,
+          118.35051546391752
+        ],
+        "bodyWidth": 198
+      },
+      {
+        "id": "field-s3",
+        "kind": "field",
+        "stage": 3,
+        "rect": [
+          256,
+          640,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16.000000000000014,
+          161.07216494845363,
+          223.99999999999997,
+          118.92783505154638
+        ],
+        "bodyWidth": 207
+      },
+      {
+        "id": "lumberyard-s1",
+        "kind": "lumberyard",
+        "stage": 1,
+        "rect": [
+          512,
+          640,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          31.311392405063287,
+          179.62531645569618,
+          193.37721518987343,
+          100.3746835443038
+        ],
+        "bodyWidth": 95
+      },
+      {
+        "id": "lumberyard-s2",
+        "kind": "lumberyard",
+        "stage": 2,
+        "rect": [
+          768,
+          640,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          25.35696202531645,
+          168.28354430379747,
+          205.2860759493671,
+          111.71645569620253
+        ],
+        "bodyWidth": 171
+      },
+      {
+        "id": "lumberyard-s3",
+        "kind": "lumberyard",
+        "stage": 3,
+        "rect": [
+          1024,
+          640,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16,
+          158.07594936708858,
+          224,
+          121.9240506329114
+        ],
+        "bodyWidth": 205
+      },
+      {
+        "id": "forge-s1",
+        "kind": "forge",
+        "stage": 1,
+        "rect": [
+          0,
+          960,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          29.56701030927836,
+          169.73195876288662,
+          196.86597938144328,
+          110.2680412371134
+        ],
+        "bodyWidth": 148
+      },
+      {
+        "id": "forge-s2",
+        "kind": "forge",
+        "stage": 2,
+        "rect": [
+          256,
+          960,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          17.154639175257742,
+          146.63917525773198,
+          221.69072164948452,
+          133.36082474226802
+        ],
+        "bodyWidth": 191
+      },
+      {
+        "id": "forge-s3",
+        "kind": "forge",
+        "stage": 3,
+        "rect": [
+          512,
+          960,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16.000000000000014,
+          135.6701030927835,
+          223.99999999999997,
+          144.3298969072165
+        ],
+        "bodyWidth": 185
+      },
+      {
+        "id": "scriptorium-s1",
+        "kind": "scriptorium",
+        "stage": 1,
+        "rect": [
+          768,
+          960,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          28.837944664031625,
+          123.73122529644269,
+          198.32411067193675,
+          156.2687747035573
+        ],
+        "bodyWidth": 157
+      },
+      {
+        "id": "scriptorium-s2",
+        "kind": "scriptorium",
+        "stage": 2,
+        "rect": [
+          1024,
+          960,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          19.984189723320156,
+          65.73913043478262,
+          216.0316205533597,
+          214.26086956521738
+        ],
+        "bodyWidth": 192
+      },
+      {
+        "id": "scriptorium-s3",
+        "kind": "scriptorium",
+        "stage": 3,
+        "rect": [
+          0,
+          1280,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16,
+          60.42687747035572,
+          224,
+          219.57312252964428
+        ],
+        "bodyWidth": 209
+      },
+      {
+        "id": "barracks-s1",
+        "kind": "barracks",
+        "stage": 1,
+        "rect": [
+          256,
+          1280,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          23.840000000000003,
+          130.368,
+          208.32,
+          149.632
+        ],
+        "bodyWidth": 173
+      },
+      {
+        "id": "barracks-s2",
+        "kind": "barracks",
+        "stage": 2,
+        "rect": [
+          512,
+          1280,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          21.376000000000005,
+          77.50399999999999,
+          213.248,
+          202.496
+        ],
+        "bodyWidth": 197
+      },
+      {
+        "id": "barracks-s3",
+        "kind": "barracks",
+        "stage": 3,
+        "rect": [
+          768,
+          1280,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16,
+          67.648,
+          224,
+          212.352
+        ],
+        "bodyWidth": 206
+      },
+      {
+        "id": "watchtower-s1",
+        "kind": "watchtower",
+        "stage": 1,
+        "rect": [
+          1024,
+          1280,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16,
+          145.26315789473685,
+          224,
+          134.73684210526315
+        ],
+        "bodyWidth": 148
+      },
+      {
+        "id": "watchtower-s2",
+        "kind": "watchtower",
+        "stage": 2,
+        "rect": [
+          0,
+          1600,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          27.789473684210535,
+          77.89473684210526,
+          200.42105263157893,
+          202.10526315789474
+        ],
+        "bodyWidth": 129
+      },
+      {
+        "id": "watchtower-s3",
+        "kind": "watchtower",
+        "stage": 3,
+        "rect": [
+          256,
+          1600,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          28.21052631578948,
+          50.10526315789474,
+          199.57894736842104,
+          229.89473684210526
+        ],
+        "bodyWidth": 153
+      },
+      {
+        "id": "well-s1",
+        "kind": "well",
+        "stage": 1,
+        "rect": [
+          512,
+          1600,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          52.184615384615384,
+          180.06153846153848,
+          151.63076923076923,
+          99.93846153846152
+        ],
+        "bodyWidth": 106
+      },
+      {
+        "id": "well-s2",
+        "kind": "well",
+        "stage": 2,
+        "rect": [
+          768,
+          1600,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          35.52820512820513,
+          158.23589743589744,
+          184.94358974358974,
+          121.76410256410256
+        ],
+        "bodyWidth": 136
+      },
+      {
+        "id": "well-s3",
+        "kind": "well",
+        "stage": 3,
+        "rect": [
+          1024,
+          1600,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          16.000000000000014,
+          147.8974358974359,
+          223.99999999999997,
+          132.1025641025641
+        ],
+        "bodyWidth": 200
+      }
+    ]
+  },
+  "sprites": [
+    {
+      "id": "terrain-fallow",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "terrain-fallow.png",
+        "sha256": "719ee3da400924b33124f9474069772c7cdf58e0bbae944ed632cc056a958a2b",
+        "size": [
+          615,
+          598
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        2,
+        2,
+        352,
+        342
+      ]
+    },
+    {
+      "id": "terrain-sage",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "terrain-sage.png",
+        "sha256": "7d8dc5e5878ca5b71a1a81caf42e73f9a1506d4f4af3e83aa52d40bfc4c7bdbb",
+        "size": [
+          609,
+          585
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        356,
+        2,
+        352,
+        338
+      ]
+    },
+    {
+      "id": "terrain-path",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "terrain-path.png",
+        "sha256": "cf72e6492ebf2bb9fa7887f886942339c2aece5b9ff460b81171077ff29a2f2d",
+        "size": [
+          616,
+          609
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        710,
+        2,
+        352,
+        348
+      ]
+    },
+    {
+      "id": "terrain-restoration",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "terrain-restoration.png",
+        "sha256": "b06ffb33d6740fa4da2c19915564af1f2a5e9288a5c41c46d0b15c8fd92a9a0e",
+        "size": [
+          604,
+          610
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1064,
+        2,
+        349,
+        352
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "river-bend-patch.png",
+        "sha256": "eb3dbb5c0dc95d7f433730154d0ad99b02be4d815fb5fe978becaf9faa80751a",
+        "size": [
+          784,
+          515
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "layer": "ground",
+      "rect": [
+        1415,
+        2,
+        352,
+        231
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "riverbank-patch.png",
+        "sha256": "118be3d8bb43165f94de609a7d5b8ebee5dbe0ccdea59ab47a6dc226f7f1e423",
+        "size": [
+          756,
+          536
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "layer": "ground",
+      "rect": [
+        2,
+        356,
+        352,
+        250
+      ]
+    },
+    {
+      "id": "bridge-landing-patch",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "bridge-landing-patch.png",
+        "sha256": "c4faa23ca6295316a3942a358f299250171e0e910d9d0f98301bcbb33d12b508",
+        "size": [
+          784,
+          500
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 192,
+      "layer": "ground",
+      "rect": [
+        356,
+        356,
+        352,
+        224
+      ]
+    },
+    {
+      "id": "frontier-ink-edge",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "frontier-ink-edge.png",
+        "sha256": "d23c0a9761dd82105a34492f602204efb05bd9972ed73b928f4f8252504d988e",
+        "size": [
+          731,
+          500
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "layer": "ground",
+      "rect": [
+        710,
+        356,
+        352,
+        241
+      ]
+    },
+    {
+      "id": "yard-earth",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "yard-earth.png",
+        "sha256": "43f293599b0ffc91d9973c47d64032b7bbe56320bfc9db46331d649ae485563a",
+        "size": [
+          309,
+          218
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        2,
+        2,
+        224,
+        158
+      ]
+    },
+    {
+      "id": "yard-grass",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "yard-grass.png",
+        "sha256": "bd9ca6b506bef1d8530d114b4d95980db965735a3bb9234f0f0cfbb94fed0621",
+        "size": [
+          300,
+          224
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        228,
+        2,
+        224,
+        167
+      ]
+    },
+    {
+      "id": "yard-stone",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "yard-stone.png",
+        "sha256": "de39b0e73567b380ccdd502a4892158018a921d53c1ee8b0a84cb389777f25c4",
+        "size": [
+          299,
+          223
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        454,
+        2,
+        224,
+        167
+      ]
+    },
+    {
+      "id": "garden",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "garden.png",
+        "sha256": "1ca2de2495408ced2ed00b1ac5603f179132b39cdd97ea5d86d45417d2812b17",
+        "size": [
+          304,
+          239
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 28,
+      "layer": "standing",
+      "rect": [
+        680,
+        2,
+        128,
+        101
+      ]
+    },
+    {
+      "id": "laundry",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "laundry.png",
+        "sha256": "23ace0ff47150ca403886e634be08c3f831fe01ccfde1687919f334cea5dd4a4",
+        "size": [
+          308,
+          200
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 30,
+      "layer": "standing",
+      "rect": [
+        810,
+        2,
+        128,
+        83
+      ]
+    },
+    {
+      "id": "firewood",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "firewood.png",
+        "sha256": "66a1d4470ef81b050a737b4bd0fd3a9635593585f9c11e0d833af45558575404",
+        "size": [
+          291,
+          193
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        940,
+        2,
+        128,
+        85
+      ]
+    },
+    {
+      "id": "scrap",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "scrap.png",
+        "sha256": "b48d794d173d46784ef92bf7fef2f76e7c2d0a161b9212b8ebd04f0d284a1c85",
+        "size": [
+          292,
+          189
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1070,
+        2,
+        128,
+        83
+      ]
+    },
+    {
+      "id": "sacks",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "sacks.png",
+        "sha256": "efd95dcf0ff0f94a45b869eb564e48abc310e5c9a406527b33ee030b08adc7c7",
+        "size": [
+          261,
+          180
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1200,
+        2,
+        128,
+        88
+      ]
+    },
+    {
+      "id": "cart",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cart.png",
+        "sha256": "f84b5cd4224b5ef6b0db3aaafff4eacad62c7c41a6abe74fd98bdc13c1150ccf",
+        "size": [
+          309,
+          208
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1330,
+        2,
+        128,
+        86
+      ]
+    },
+    {
+      "id": "books",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "books.png",
+        "sha256": "b25693143de0f35fdb1b8d78c5eb159066b5f5356416c973e10aceb7948b0e60",
+        "size": [
+          277,
+          214
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1460,
+        2,
+        128,
+        99
+      ]
+    },
+    {
+      "id": "rack",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "rack.png",
+        "sha256": "98d5216b42ec7e3c79d0946264d14a9f047a4e8552926548d0c21162b1af3751",
+        "size": [
+          271,
+          270
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1590,
+        2,
+        128,
+        128
+      ]
+    },
+    {
+      "id": "saw",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "saw.png",
+        "sha256": "5cec714f732425131670f0f06d42aa19aae8a57462bbe8b99366e4845768ef23",
+        "size": [
+          269,
+          214
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1720,
+        2,
+        128,
+        102
+      ]
+    },
+    {
+      "id": "bucket",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "bucket.png",
+        "sha256": "07180489c3ceb80b35a46a7337c0112e5c393d4145766805e34fa2ea84471fc6",
+        "size": [
+          312,
+          201
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 21,
+      "layer": "standing",
+      "rect": [
+        1850,
+        2,
+        128,
+        82
+      ]
+    },
+    {
+      "id": "grass",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "grass.png",
+        "sha256": "f50da26184985b59688a17b5ea1070f77d6ea43ff6a8eadceef143eafcf12c74",
+        "size": [
+          284,
+          187
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 17,
+      "layer": "standing",
+      "rect": [
+        2,
+        171,
+        128,
+        84
+      ]
+    },
+    {
+      "id": "rocks",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "rocks.png",
+        "sha256": "19739506eebc8dba0ff229b0444a411293fa8aec670145df97086978c2d250f5",
+        "size": [
+          301,
+          166
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 14,
+      "layer": "standing",
+      "rect": [
+        132,
+        171,
+        128,
+        71
+      ]
+    },
+    {
+      "id": "fence",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "fence.png",
+        "sha256": "804614f03dbc8893b0e92d86e95ec3cc578a5938fa7f2ea5e21d4e924c001e67",
+        "size": [
+          278,
+          188
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": 27,
+      "layer": "standing",
+      "rect": [
+        262,
+        171,
+        128,
+        87
+      ]
+    },
+    {
+      "id": "cluster-fallow-1",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-fallow-1.png",
+        "sha256": "de80a54b9c0004dd25c6f8471dd29ae95f7e50cbf80d04efe3f1a78be7faabd0",
+        "size": [
+          390,
+          287
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        392,
+        171,
+        192,
+        141
+      ]
+    },
+    {
+      "id": "cluster-fallow-2",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-fallow-2.png",
+        "sha256": "083d0fb4aced7e769c35b23fdbf303a486b1432e52c887fb6108acacc448e6f0",
+        "size": [
+          334,
+          208
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        586,
+        171,
+        192,
+        120
+      ]
+    },
+    {
+      "id": "cluster-fallow-3",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-fallow-3.png",
+        "sha256": "d58e4e8a0bef3c818088f7b347ac88aaf105b24fc816c935b0ab417c2e907775",
+        "size": [
+          386,
+          213
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        780,
+        171,
+        192,
+        106
+      ]
+    },
+    {
+      "id": "cluster-sage-1",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-sage-1.png",
+        "sha256": "f5c3faf047e0e1767909b0594bc9b9a4581d42446c7d674b50121ceea7ba0e9d",
+        "size": [
+          333,
+          291
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        974,
+        171,
+        192,
+        168
+      ]
+    },
+    {
+      "id": "cluster-sage-2",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-sage-2.png",
+        "sha256": "9c9d3dad84f69e8ccc2d68ad36f3de84eb7cf8056b5d4b8e3a8dc714841f0aa3",
+        "size": [
+          397,
+          191
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        1168,
+        171,
+        192,
+        92
+      ]
+    },
+    {
+      "id": "cluster-sage-3",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-sage-3.png",
+        "sha256": "3e05cd3b0f00b6a9cd3c1e87f109fdd361dc2d1c4793e8d6a38856e60798dd3b",
+        "size": [
+          342,
+          285
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        1362,
+        171,
+        192,
+        160
+      ]
+    },
+    {
+      "id": "cluster-restored-1",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-restored-1.png",
+        "sha256": "c6f43c1d9c18dbd9805adb0fb50f2b22b448416154e7d29dbe096a34b5d26cc5",
+        "size": [
+          401,
+          334
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        1556,
+        171,
+        192,
+        160
+      ]
+    },
+    {
+      "id": "cluster-restored-2",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-restored-2.png",
+        "sha256": "6a0e9644d3191acd4f2645f27a9855b645fe5660fc651d84279829827d0df31a",
+        "size": [
+          414,
+          212
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        1750,
+        171,
+        192,
+        98
+      ]
+    },
+    {
+      "id": "cluster-restored-3",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-autodecor-20261024",
+        "file": "cluster-restored-3.png",
+        "sha256": "9111a4507082d9e5bc420137d8787cecdb3db0f375cb8fdca5fba1131dcce8b2",
+        "size": [
+          371,
+          304
+        ]
+      },
+      "pivot": [
+        0.5,
+        0
+      ],
+      "displayWidth": null,
+      "layer": "standing",
+      "rect": [
+        2,
+        341,
+        192,
+        157
+      ]
+    },
+    {
+      "id": "tree-cluster-4",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "tree-cluster-4.png",
+        "sha256": "e489170a856a2530e4fe9f52bd1af25b57d1db34855aa2b54e20be295d736b9d",
+        "size": [
+          478,
+          528
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 128,
+      "layer": "standing",
+      "rect": [
+        196,
+        341,
+        174,
+        192
+      ]
+    },
+    {
+      "id": "tree-cluster-5",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "tree-cluster-5.png",
+        "sha256": "e542b707ffa0354a75880d2f4b2a6b3971fb61c97d7d49435ea4fb58aeac1320",
+        "size": [
+          506,
+          528
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 128,
+      "layer": "standing",
+      "rect": [
+        372,
+        341,
+        184,
+        192
+      ]
+    },
+    {
+      "id": "house-fence-kit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "house-fence-kit.png",
+        "sha256": "1342e31360967c86d5592ea615531683d2b26312f1baedb3f1381abb8ba8fc3b",
+        "size": [
+          558,
+          528
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 180,
+      "layer": "standing",
+      "rect": [
+        558,
+        341,
+        192,
+        182
+      ]
+    },
+    {
+      "id": "field-fence-segment",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "field-fence-segment.png",
+        "sha256": "98266da1405a3e7f9265ea180688f12b8173b67f0527316bba817fe5d2ff0cf3",
+        "size": [
+          484,
+          528
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        752,
+        341,
+        176,
+        192
+      ]
+    },
+    {
+      "id": "field-fence-corner",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "field-fence-corner.png",
+        "sha256": "174c65e788d4187443cece1e6c6426a4f849eb42f4fbe13965b482e31a2ca75e",
+        "size": [
+          512,
+          507
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        930,
+        341,
+        192,
+        190
+      ]
+    },
+    {
+      "id": "sheep-paddock",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "sheep-paddock.png",
+        "sha256": "d9904a9eb4f303ba53ef74353a9c391508cfa456891e2a449a49146e87c90e4a",
+        "size": [
+          558,
+          528
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 208,
+      "layer": "standing",
+      "rect": [
+        1124,
+        341,
+        192,
+        182
+      ]
+    },
+    {
+      "id": "frontier-ruin",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "frontier-ruin.png",
+        "sha256": "93ca9d5587cf3d88f9185b4fb17f27a023cb8c5ad74e733f0c9a5740ddc7a7b4",
+        "size": [
+          556,
+          527
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 100,
+      "layer": "standing",
+      "rect": [
+        1318,
+        341,
+        160,
+        152
+      ]
+    },
+    {
+      "id": "frontier-dead-tree",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "frontier-dead-tree.png",
+        "sha256": "dbacfb93caba0319239901c08bb36be700978b9b5688ad3d2e2d8724a21fb5f0",
+        "size": [
+          494,
+          513
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 100,
+      "layer": "standing",
+      "rect": [
+        1480,
+        341,
+        154,
+        160
+      ]
+    },
+    {
+      "id": "frontier-broken-fence",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "frontier-broken-fence.png",
+        "sha256": "80b04211b6686519d98fe6617845a41c2548fadc59c7ead47693bfc1e429984c",
+        "size": [
+          511,
+          527
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1636,
+        341,
+        155,
+        160
+      ]
+    },
+    {
+      "id": "frontier-empty-armor",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "frontier-empty-armor.png",
+        "sha256": "135e4671ddd8effaeffb310cf4fec331ef1fe75b4137e0be8c999da83ed36970",
+        "size": [
+          506,
+          500
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 72,
+      "layer": "standing",
+      "rect": [
+        1793,
+        341,
+        160,
+        158
+      ]
+    },
+    {
+      "id": "frontier-dry-well",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "frontier-dry-well.png",
+        "sha256": "743816661ddc41966f4dd0dbfabf400a229405a34ae77c4ecf78c9361e2f00a4",
+        "size": [
+          494,
+          475
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 88,
+      "layer": "standing",
+      "rect": [
+        2,
+        535,
+        160,
+        154
+      ]
+    },
+    {
+      "id": "frontier-stump-tracks",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-r2-20261024",
+        "file": "frontier-stump-tracks.png",
+        "sha256": "00a2d1eee502c34d1bd2da84bbe54d70a3f61bf91e15cf5a3ff70be6d593f1a6",
+        "size": [
+          498,
+          499
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08
+      ],
+      "displayWidth": 88,
+      "layer": "standing",
+      "rect": [
+        164,
+        535,
+        160,
+        160
+      ]
+    },
+    {
+      "id": "bridge-ne-sw-base",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "bridge-ne-sw-base.png",
+        "sha256": "b20ca71f4abdfad2de40a3f38d58c6a323d03ddcdeb659ee711566ce7d7b2b78",
+        "size": [
+          744,
+          666
+        ]
+      },
+      "pivot": [
+        0.5040322580645161,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "standing",
+      "rect": [
+        326,
+        535,
+        224,
+        201
+      ]
+    },
+    {
+      "id": "bridge-ne-sw-rail",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "bridge-ne-sw-foreground-rail.png",
+        "sha256": "aac87e6bf6b53fd51090b0f8b70d084a911e0f624956dec9db3ce321f2a9dd41",
+        "size": [
+          744,
+          666
+        ]
+      },
+      "pivot": [
+        0.5040322580645161,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "foreground",
+      "rect": [
+        552,
+        535,
+        224,
+        201
+      ]
+    },
+    {
+      "id": "bridge-nw-se-base",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "bridge-nw-se-base.png",
+        "sha256": "809bbf8112201ac7093d44e5105ba9efbf41d36acc424fe61ab378f65a5933d0",
+        "size": [
+          756,
+          666
+        ]
+      },
+      "pivot": [
+        0.49603174603174605,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "standing",
+      "rect": [
+        778,
+        535,
+        224,
+        197
+      ]
+    },
+    {
+      "id": "bridge-nw-se-rail",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "bridge-nw-se-foreground-rail.png",
+        "sha256": "b0ab8ae52c17511d1cb5dae58457d2165c2652b53b3b26719724cc1bd754b139",
+        "size": [
+          756,
+          666
+        ]
+      },
+      "pivot": [
+        0.49603174603174605,
+        0.4864864864864865
+      ],
+      "displayWidth": 224,
+      "layer": "foreground",
+      "rect": [
+        1004,
+        535,
+        224,
+        197
+      ]
+    },
+    {
+      "id": "peasant-farm",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "peasant-farm.png",
+        "sha256": "854f8f7bab93bcba1074ce48b9b87175efd6ce0140e78f71c2d07be938b3422a",
+        "size": [
+          560,
+          813
+        ]
+      },
+      "pivot": [
+        0.3410714285714286,
+        0.0713407134071341
+      ],
+      "displayWidth": 38.957,
+      "layer": "standing",
+      "rect": [
+        1230,
+        535,
+        66,
+        96
+      ]
+    },
+    {
+      "id": "peasant-carry",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "peasant-carry.png",
+        "sha256": "0bdd2d8b9e43beb0e510d18ab8b3b1d04052e21fbb0c12d5f1ac3b17037e8803",
+        "size": [
+          462,
+          815
+        ]
+      },
+      "pivot": [
+        0.43722943722943725,
+        0.06871165644171784
+      ],
+      "displayWidth": 31.59,
+      "layer": "standing",
+      "rect": [
+        1298,
+        535,
+        54,
+        96
+      ]
+    },
+    {
+      "id": "peasant-build",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-life-kits-20261024",
+        "file": "peasant-build.png",
+        "sha256": "17e26cc4c61f4ddaced6b2646d2c31bf8ddd7fbfdb1c69e79b803e37906b8ddc",
+        "size": [
+          504,
+          804
+        ]
+      },
+      "pivot": [
+        0.5238095238095238,
+        0.04477611940298509
+      ],
+      "displayWidth": 35.317,
+      "layer": "standing",
+      "rect": [
+        1354,
+        535,
+        60,
+        96
+      ]
+    }
+  ]
+}

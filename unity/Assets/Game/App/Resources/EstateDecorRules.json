@@ -1,93 +1,454 @@
 {
-  "version": "estate-decor-r0",
-  "status": "Temporary frame values (#372). Astra's yard, roadside and empty-land rules replace the counts and roles; the props are the fallow field sprites until then.",
-  "seed": 3601,
-  "yard": [
+  "version": "estate-decor-r1",
+  "status": "Presentation hypotheses [가설] for the estate map (#372, #375), all in one place. 'astra' is Astra's placement contract from m3-estate-autodecor-20261024 assembly.js (art-v1, seed 20261024) and must stay identical to reproduce it; the rest maps the game grid onto it.",
+  "astra": {
+    "styleVersion": "art-v1",
+    "seed": 20261024,
+    "kits": [
+      {
+        "kind": "house",
+        "props": [
+          "garden",
+          "laundry",
+          "firewood"
+        ]
+      },
+      {
+        "kind": "manor",
+        "props": [
+          "laundry",
+          "books",
+          "bucket"
+        ]
+      },
+      {
+        "kind": "granary",
+        "props": [
+          "sacks",
+          "cart",
+          "sacks"
+        ]
+      },
+      {
+        "kind": "field",
+        "props": [
+          "garden",
+          "bucket"
+        ]
+      },
+      {
+        "kind": "lumberyard",
+        "props": [
+          "firewood",
+          "saw"
+        ]
+      },
+      {
+        "kind": "forge",
+        "props": [
+          "firewood",
+          "scrap"
+        ]
+      },
+      {
+        "kind": "scriptorium",
+        "props": [
+          "books",
+          "bucket"
+        ]
+      },
+      {
+        "kind": "barracks",
+        "props": [
+          "rack",
+          "firewood"
+        ]
+      },
+      {
+        "kind": "watchtower",
+        "props": [
+          "rack",
+          "firewood"
+        ]
+      },
+      {
+        "kind": "well",
+        "props": [
+          "bucket",
+          "grass"
+        ]
+      }
+    ],
+    "slotX": [
+      -0.4,
+      0.42,
+      -0.12
+    ],
+    "slotY": [
+      8,
+      10,
+      22
+    ],
+    "yardJitterX": 8,
+    "yardJitterY": 4,
+    "yardRoadClearance": 11,
+    "houseKind": "house",
+    "yardWidths": [
+      {
+        "id": "garden",
+        "width": 28
+      },
+      {
+        "id": "laundry",
+        "width": 30
+      }
+    ],
+    "yardWidthDefault": 21,
+    "buildingHalfWidth": 0.47,
+    "buildingTop": 0.57,
+    "buildingBottom": 9,
+    "roadsideStart": 12,
+    "roadsideStep": 36,
+    "roadsideOffset": 19,
+    "roadsideOffsetRange": 7,
+    "roadsideDensity": 0.54,
+    "roadsideGrass": 0.75,
+    "roadsideBuildingClearance": 5,
+    "roadsideRoadClearance": 16,
+    "roadsideGrassWidth": 17,
+    "roadsideRocksWidth": 14,
+    "landSpacingX": 43,
+    "landSpacingY": 56,
+    "landJitterX": 27,
+    "landJitterY": 32,
+    "landDensity": 0.6,
+    "landWidth": 68,
+    "landWidthRange": 22,
+    "landRoadClearance": 31,
+    "landBuildingClearance": 19,
+    "landSpacingFactor": 0.65,
+    "landVerticalWeight": 1.5,
+    "landSameVariantDistance": 160,
+    "landVariants": 3
+  },
+  "kindArt": [
     {
-      "kinds": [
-        "meta:granary",
-        "m3a:field",
-        "m3a:lumber_camp"
-      ],
-      "props": [
-        {
-          "role": "fallow.prop.furrow",
-          "width": 0.9,
-          "flat": true
-        },
-        {
-          "role": "fallow.prop.stone",
-          "width": 0.45,
-          "flat": false
-        }
-      ],
-      "count": 2
+      "kind": "m3a:home",
+      "art": "manor",
+      "stages": [
+        1,
+        1
+      ]
     },
     {
-      "kinds": [
-        "m3a:home",
-        "m3a:well_shrine"
-      ],
-      "props": [
-        {
-          "role": "fallow.prop.stone",
-          "width": 0.45,
-          "flat": false
-        }
-      ],
-      "count": 2
+      "kind": "meta:granary",
+      "art": "granary",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
     },
     {
-      "kinds": [
-        "*"
-      ],
-      "props": [
-        {
-          "role": "fallow.prop.stone",
-          "width": 0.4,
-          "flat": false
-        },
-        {
-          "role": "fallow.prop.dead-tree",
-          "width": 0.6,
-          "flat": false
-        }
-      ],
-      "count": 1
+      "kind": "meta:forge",
+      "art": "forge",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "meta:scriptorium",
+      "art": "scriptorium",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "meta:barracks",
+      "art": "barracks",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:watchtower",
+      "art": "watchtower",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:well_shrine",
+      "art": "well",
+      "stages": [
+        1,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:field",
+      "art": "field",
+      "stages": [
+        1,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:lumber_camp",
+      "art": "lumberyard",
+      "stages": [
+        1,
+        3
+      ]
+    },
+    {
+      "kind": "m3a:ironworks",
+      "art": "forge",
+      "stages": [
+        1,
+        1
+      ]
     }
   ],
-  "road": {
-    "from": "m3a:home",
-    "roadside": [
-      {
-        "role": "fallow.prop.stone",
-        "width": 0.35,
-        "flat": false
-      },
-      {
-        "role": "fallow.prop.dead-tree",
-        "width": 0.55,
-        "flat": false
-      }
-    ],
-    "every": 3
+  "tints": [
+    {
+      "state": "fallow",
+      "saturation": 0.35,
+      "brightness": 0.86,
+      "light": 1
+    },
+    {
+      "state": "sage",
+      "saturation": 0.7,
+      "brightness": 0.94,
+      "light": 1
+    },
+    {
+      "state": "restored",
+      "saturation": 1,
+      "brightness": 1,
+      "light": 1
+    },
+    {
+      "state": "closed",
+      "saturation": 0.45,
+      "brightness": 0.9,
+      "light": 1
+    }
+  ],
+  "ruinState": "fallow",
+  "constructionSaturation": 0.55,
+  "constructionAlpha": 0.85,
+  "yardGround": {
+    "well": "yard-stone",
+    "house": "yard-grass",
+    "other": "yard-earth",
+    "offsetX": -0.64,
+    "offsetY": -0.35,
+    "width": 1.28,
+    "height": 0.48,
+    "alpha": 0.72
   },
-  "clusters": {
-    "props": [
-      {
-        "role": "fallow.prop.dead-tree",
-        "width": 0.7,
-        "flat": false
-      },
-      {
-        "role": "fallow.prop.stone",
-        "width": 0.45,
-        "flat": false
-      }
+  "restoration": {
+    "restoredRadius": 2,
+    "sageRadius": 5
+  },
+  "terrain": {
+    "patchCells": 5,
+    "patchScale": 1.6,
+    "alpha": 0.95,
+    "restored": "terrain-restoration",
+    "sage": "terrain-sage",
+    "fallow": "terrain-fallow"
+  },
+  "trees": {
+    "ids": [
+      "tree-cluster-4",
+      "tree-cluster-5"
     ],
-    "count": 4,
-    "minSize": 3,
-    "maxSize": 5,
-    "spread": 1.4
-  }
+    "share": 0.35,
+    "states": [
+      "restored",
+      "sage"
+    ]
+  },
+  "frontier": {
+    "ids": [
+      "frontier-ruin",
+      "frontier-dead-tree",
+      "frontier-broken-fence",
+      "frontier-empty-armor",
+      "frontier-dry-well",
+      "frontier-stump-tracks"
+    ],
+    "edge": "frontier-ink-edge",
+    "edgeEvery": 8,
+    "edgeAlpha": 0.85
+  },
+  "closedLand": {
+    "status": "Closed land painted then veiled like key art C (m3-estate-keyarts-r2 C-first-login-source) [가설]: terrain patches (sage share), rivers from 'placed', one jittered candidate per 'every' cells becoming a wood (wooded zones), a dead tree or a frontier trace, all under the blue-grey veil of alpha 'veil'. The closed tint only desaturates; the veil darkens.",
+    "veil": 0.7,
+    "veilFeather": 0.9,
+    "veilOverhang": 6,
+    "groundFeather": 2,
+    "sageShare": 0.3,
+    "every": 4,
+    "jitter": 0.6,
+    "density": 0.55,
+    "deadTreeShare": 0.35,
+    "deadTree": "frontier-dead-tree",
+    "woods": [
+      {
+        "zone": "zone:inner-northeast-wood",
+        "ids": [
+          "tree-cluster-4",
+          "tree-cluster-5"
+        ],
+        "share": 0.75
+      }
+    ]
+  },
+  "placed": [
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-northeast-wood",
+      "u": 16,
+      "v": 2,
+      "reserve": [
+        13,
+        0,
+        7,
+        6
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-west-hill",
+      "u": 25,
+      "v": 11,
+      "reserve": [
+        22,
+        10,
+        6,
+        5
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:start",
+      "u": 37,
+      "v": 21,
+      "reserve": [
+        35,
+        20,
+        5,
+        5
+      ]
+    },
+    {
+      "id": "bridge-landing-patch",
+      "zone": "zone:start",
+      "u": 35.5,
+      "v": 23,
+      "reserve": [
+        33,
+        22,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "bridge-nw-se-base",
+      "rail": "bridge-nw-se-rail",
+      "zone": "zone:start",
+      "u": 37,
+      "v": 21.8,
+      "with": "peasant-carry",
+      "withU": 37.1,
+      "withV": 21.7
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-village",
+      "u": 45,
+      "v": 31,
+      "reserve": [
+        42,
+        28,
+        6,
+        6
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-ruins",
+      "u": 54,
+      "v": 40.5,
+      "reserve": [
+        51,
+        40,
+        6,
+        4
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-riverside",
+      "u": 63,
+      "v": 49,
+      "reserve": [
+        60,
+        48,
+        6,
+        5
+      ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-riverside",
+      "u": 66,
+      "v": 55,
+      "reserve": [
+        63,
+        52,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "sheep-paddock",
+      "zone": "zone:start",
+      "u": 25,
+      "v": 34,
+      "reserve": [
+        21,
+        31,
+        4,
+        3
+      ]
+    }
+  ],
+  "peasants": {
+    "farm": "peasant-farm",
+    "carry": "peasant-carry",
+    "build": "peasant-build",
+    "carryKind": "meta:granary"
+  },
+  "fieldFenceKind": "m3a:field",
+  "fieldFenceCorner": "field-fence-corner"
 }
