@@ -11,6 +11,10 @@ namespace Tests.EditMode
     public sealed class EstateMapTests
     {
         const float Top = 94, Bottom = 72;
+        // The wide prototype map (#374) keeps the r2 layout shifted by (26, 26) into its 20×20 centre zone at (20, 20);
+        // (45, 30) is closed land in the village extension.
+        static Vector2Int C(int u, int v) => new Vector2Int(u + 26, v + 26);
+        static readonly Vector2Int Closed = new Vector2Int(45, 30);
         static EstateMapModel Model()
         {
             var model = new EstateMapModel(16, 8); model.SetFrame(new Vector2(390, 844), Top, Bottom); return model;
@@ -128,8 +132,8 @@ namespace Tests.EditMode
             foreach (var building in screen.State.Estate.Buildings)
                 for (var du = 0; du < 2; du++) for (var dv = 0; dv < 2; dv++)
                     Assert.That(screen.BuildingAt(new Vector2Int(building.X + du, building.Y + dv)), Is.EqualTo(building.Id), building.Kind);
-            Assert.That(screen.BuildingAt(new Vector2Int(4, 4)), Is.Null);
-            Assert.That(screen.BuildingAt(new Vector2Int(12, 3)), Is.Null);
+            Assert.That(screen.BuildingAt(C(4, 4)), Is.Null);
+            Assert.That(screen.BuildingAt(Closed), Is.Null);
         }
 
         [Test] public void TheIsometricViewKeepsCoreGridCoordinatesAndSaveBytes()
@@ -139,15 +143,15 @@ namespace Tests.EditMode
             var forge = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:forge");
             // Select, preview two places and cancel: nothing is written, the copy's bytes stay identical.
             screen.Select(forge.Id); screen.BeginMove();
-            Assert.That(model.TryCell(model.GridToViewport(new Vector2(4.5f, 4.5f)), out var target), Is.True);
-            screen.Place(target); screen.Place(new Vector2Int(2, 2)); screen.Cancel(); screen.Select(null);
+            Assert.That(model.TryCell(model.GridToViewport(C(4, 4) + new Vector2(.5f, .5f)), out var target), Is.True);
+            screen.Place(target); screen.Place(C(2, 2)); screen.Cancel(); screen.Select(null);
             Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(copyBytes), "Viewing and previewing on the isometric map changes no saved byte.");
             // A confirmed move writes the tapped diamond's (u, v) as Core X and Y, unchanged by the projection.
             screen.Select(forge.Id); screen.BeginMove(); screen.Place(target);
             Assert.That(screen.Confirm(), Is.True);
             var result = MetaSaveCodec.Decode(MetaSaveCodec.Encode(screen.State)); Assert.That(result.Valid, Is.True, result.ErrorCode);
             var decoded = result.State.Estate.Buildings.Single(b => b.Id == forge.Id);
-            Assert.That(new Vector2Int(decoded.X, decoded.Y), Is.EqualTo(new Vector2Int(4, 4)));
+            Assert.That(new Vector2Int(decoded.X, decoded.Y), Is.EqualTo(C(4, 4)));
             Assert.That(MetaSaveCodec.Encode(account), Is.EqualTo(accountBytes), "The account the copy came from is never written.");
             Assert.That(screen.State.Estate.ElapsedSeconds, Is.EqualTo(0), "Previews and moves credit no time.");
         }
@@ -163,7 +167,7 @@ namespace Tests.EditMode
             Assert.That(screen.PreviewValid, Is.False); Assert.That(screen.PreviewReason, Is.EqualTo("overlaps:" + well.Id));
             Assert.That(screen.ReasonText(screen.PreviewReason), Is.EqualTo("우물과 겹칩니다"));
             Assert.That(screen.Confirm(), Is.False);
-            screen.Place(new Vector2Int(9, 1));
+            screen.Place(Closed);
             Assert.That(screen.ReasonText(screen.PreviewReason), Is.EqualTo("열린 구역 밖입니다"));
             screen.Cancel();
             Assert.That(screen.Building(forge.Id).X, Is.EqualTo(forge.X)); Assert.That(screen.Building(forge.Id).Y, Is.EqualTo(forge.Y));

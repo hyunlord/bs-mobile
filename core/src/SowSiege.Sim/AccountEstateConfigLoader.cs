@@ -7,6 +7,8 @@ namespace SowSiege.Sim;
 public static class AccountEstateConfigLoader
 {
     public const string PrototypeVersion = "m3a-prototype-r2";
+    // The estate screen prototype's map (#374): the r2 economy on the design r3 centre + inner ring grid.
+    public const string MapPrototypeVersion = "m3a-prototype-r2-wide";
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

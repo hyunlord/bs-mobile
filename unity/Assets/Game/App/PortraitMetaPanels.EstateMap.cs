@@ -20,10 +20,15 @@ namespace Game.App
     // small departure button over the map. Temporary art: the four manor sprites, raised colour blocks for the other kinds.
     public static partial class PortraitMetaPanels
     {
-        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 0123456789:";
+        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 0123456789:";
         static readonly Color OpenGround = new Color32(104, 124, 70, 255);
         static readonly Color ClosedGround = new Color32(40, 37, 33, 255);
-        static readonly Color Fog = new Color32(24, 22, 20, 255);
+        // Closed land: the M2 darkness grammar (#374) — blue-grey cover with a soft edge toward open land and a faint warm rim
+        // (GameVisualTokens.EstateRim in the M2 estate View) on the boundary.
+        static readonly Color Fog = new Color32(38, 50, 60, 255);
+        static readonly Color FogCover = new Color32(38, 50, 60, 236);
+        static readonly Color Rim = new Color32(0xE5, 0xC9, 0x7F, 120);
+        const float FogFeatherCells = .9f;
         static readonly Color GridLine = new Color32(36, 48, 26, 110);
         static readonly Color BlockTop = new Color32(176, 154, 112, 255);
         static readonly Color BlockLeft = new Color32(132, 112, 80, 255);
@@ -58,10 +63,22 @@ namespace Game.App
 
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             foreach (var zone in screen.Config.Zones) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, screen.Open(zone) ? OpenGround : ClosedGround);
-            for (var u = 0; u <= screen.Map.Columns; u++) ground.Line(new Vector2(u, 0), new Vector2(u, screen.Map.Rows), GridLine);
-            for (var v = 0; v <= screen.Map.Rows; v++) ground.Line(new Vector2(0, v), new Vector2(screen.Map.Columns, v), GridLine);
+            // Grid lines only on open land.
+            foreach (var zone in screen.Config.Zones.Where(screen.Open))
+            {
+                for (var u = zone.X; u <= zone.X + zone.Width; u++) ground.Line(new Vector2(u, zone.Y), new Vector2(u, zone.Y + zone.Height), GridLine);
+                for (var v = zone.Y; v <= zone.Y + zone.Height; v++) ground.Line(new Vector2(zone.X, v), new Vector2(zone.X + zone.Width, v), GridLine);
+            }
+            // Darkness over closed zones: above the ground, below decoration, buildings, previews and the bars.
+            var fog = Shapes(viewport, "EstateMap.Fog", view);
             foreach (var zone in screen.Config.Zones.Where(z => !screen.Open(z)))
-                view.Pin(Caption(ui, viewport, "닫힌 구역", 0, 0, 120, 24, 13, false, TextAnchor.MiddleCenter), new Vector2(zone.X + zone.Width * .5f, zone.Y + zone.Height * .5f), 0);
+            {
+                bool Faces(int du, int dv) => screen.Config.Zones.Any(o => screen.Open(o) && SharesEdge(zone, o, du, dv));
+                fog.Fog(zone.X, zone.Y, zone.Width, zone.Height, FogCover, FogFeatherCells, Faces(-1, 0), Faces(0, -1), Faces(1, 0), Faces(0, 1));
+                foreach (var open in screen.Config.Zones.Where(screen.Open))
+                    if (SharedEdge(zone, open, out var from, out var to)) fog.Line(from, to, Rim, 2);
+                view.Pin(Caption(ui, viewport, screen.ZoneLabel(zone), 0, 0, 160, 24, 13, false, TextAnchor.MiddleCenter), new Vector2(zone.X + zone.Width * .5f, zone.Y + zone.Height * .5f), 0);
+            }
             // Decoration (#372): road cells join the ground mesh, flat props lie on the ground layer, standing props sort with
             // the buildings by their foot.
             var decor = screen.DecorEnabled ? screen.Decor() : new List<EstateDecorItem>();
@@ -165,6 +182,27 @@ namespace Game.App
             var image = rect.gameObject.AddComponent<Image>(); image.sprite = sprite; image.raycastTarget = false;
             var size = sprite.rect.size;
             view.Prop(rect, item.Grid, item.Width, new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y), size.y / size.x);
+        }
+
+        // True when `other` lies directly on the (du, dv) side of `zone` and the two share part of that edge.
+        static bool SharesEdge(AccountEstateZone zone, AccountEstateZone other, int du, int dv) =>
+            du != 0 ? (du < 0 ? other.X + other.Width == zone.X : zone.X + zone.Width == other.X) && other.Y < zone.Y + zone.Height && zone.Y < other.Y + other.Height
+                    : (dv < 0 ? other.Y + other.Height == zone.Y : zone.Y + zone.Height == other.Y) && other.X < zone.X + zone.Width && zone.X < other.X + other.Width;
+
+        static bool SharedEdge(AccountEstateZone a, AccountEstateZone b, out Vector2 from, out Vector2 to)
+        {
+            from = to = default;
+            if (a.X + a.Width == b.X || b.X + b.Width == a.X)
+            {
+                var x = a.X + a.Width == b.X ? b.X : a.X; var y0 = Mathf.Max(a.Y, b.Y); var y1 = Mathf.Min(a.Y + a.Height, b.Y + b.Height);
+                if (y1 <= y0) return false; from = new Vector2(x, y0); to = new Vector2(x, y1); return true;
+            }
+            if (a.Y + a.Height == b.Y || b.Y + b.Height == a.Y)
+            {
+                var y = a.Y + a.Height == b.Y ? b.Y : a.Y; var x0 = Mathf.Max(a.X, b.X); var x1 = Mathf.Min(a.X + a.Width, b.X + b.Width);
+                if (x1 <= x0) return false; from = new Vector2(x0, y); to = new Vector2(x1, y); return true;
+            }
+            return false;
         }
 
         static float SortY(EstateMapScreen screen, MetaEstateBuilding building)
@@ -320,9 +358,10 @@ namespace Game.App
         {
             var zone = screen.Config.Zones.Single(z => z.Id == screen.ZoneChoice);
             var panel = Sheet(root, "EstateMap.Zone", width, y, height);
-            Caption(ui, panel, "닫힌 구역", 14, 8, width - 44, 28, 18);
-            var unlock = zone.Unlock;
-            Caption(ui, panel, unlock == null ? "아직 열 수 없는 땅입니다" : "생산 터 " + unlock.CompletedProductionSites + "곳 완성 · " + screen.Amounts(unlock.Cost) + " · " + EstateMapScreen.Clock(unlock.Seconds), 14, 36, width - 44, 22, 13);
+            var explore = screen.ZoneLabel(zone) != "닫힌 구역";
+            Caption(ui, panel, screen.ZoneLabel(zone), 14, 8, width - 44, 28, 18);
+            var unlock = explore ? null : zone.Unlock;
+            Caption(ui, panel, explore ? "탐사전(M3c)으로 여는 땅입니다 · 이 시제품에서는 열리지 않음" : unlock == null ? "아직 열 수 없는 땅입니다" : "생산 터 " + unlock.CompletedProductionSites + "곳 완성 · " + screen.Amounts(unlock.Cost) + " · " + EstateMapScreen.Clock(unlock.Seconds), 14, 36, width - 44, 22, 13);
             if (screen.Notice.Length > 0) Caption(ui, panel, screen.Notice, 14, 60, width - 44, 22, 13).color = Gold;
             var half = (width - 54) / 2;
             ActionButton(ui, panel, "EstateMap.OpenZone", "개방", () => { screen.OpenZone(zone.Id); actions.Redraw(); }, 14, 92, half, unlock != null && screen.State.Estate.ZoneWork == null, 48, "ui.button.primary");
@@ -391,15 +430,19 @@ namespace Game.App
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateIsoShapes : MaskableGraphic
     {
-        enum Kind { Footprint, Line, Block }
-        struct Shape { public Kind Kind; public Vector2 A, B; public float Rise; public Color Top, Left, Right; }
+        enum Kind { Footprint, Line, Block, Fog }
+        struct Shape { public Kind Kind; public Vector2 A, B; public float Rise; public Color Top, Left, Right; public int Feather; }
         readonly List<Shape> shapes = new List<Shape>();
         public EstateMapModel Model;
         public int Count => shapes.Count;
 
         public void Footprint(int u, int v, int width, int height, Color color) =>
             shapes.Add(new Shape { Kind = Kind.Footprint, A = new Vector2(u, v), B = new Vector2(u + width, v + height), Top = color });
-        public void Line(Vector2 from, Vector2 to, Color color) => shapes.Add(new Shape { Kind = Kind.Line, A = from, B = to, Top = color });
+        public void Line(Vector2 from, Vector2 to, Color color, float thickness = 1) => shapes.Add(new Shape { Kind = Kind.Line, A = from, B = to, Top = color, Rise = thickness });
+        // A cover over a grid rectangle whose chosen sides (u-min, v-min, u-max, v-max) fade to transparent over `feather` cells.
+        public void Fog(int u, int v, int width, int height, Color color, float feather, bool uMin, bool vMin, bool uMax, bool vMax) =>
+            shapes.Add(new Shape { Kind = Kind.Fog, A = new Vector2(u, v), B = new Vector2(u + width, v + height), Top = color, Rise = feather,
+                Feather = (uMin ? 1 : 0) | (vMin ? 2 : 0) | (uMax ? 4 : 0) | (vMax ? 8 : 0) });
         public void Block(int u, int v, int width, int height, float rise, Color top, Color left, Color right) =>
             shapes.Add(new Shape { Kind = Kind.Block, A = new Vector2(u, v), B = new Vector2(u + width, v + height), Rise = rise, Top = top, Left = left, Right = right });
 
@@ -422,8 +465,28 @@ namespace Game.App
                     case Kind.Footprint: Quad(mesh, Local(n), Local(e), Local(s), Local(w), shape.Top); break;
                     case Kind.Line:
                     {
-                        var p = Local(a); var q = Local(b); var normal = new Vector2(q.y - p.y, p.x - q.x).normalized * .5f;
+                        var p = Local(a); var q = Local(b); var normal = new Vector2(q.y - p.y, p.x - q.x).normalized * (shape.Rise > 0 ? shape.Rise : 1) * .5f;
                         Quad(mesh, p + normal, q + normal, q - normal, p - normal, shape.Top); break;
+                    }
+                    case Kind.Fog:
+                    {
+                        // A 3×3 patch: the outer vertex row/column of a feathered side is transparent.
+                        var f = shape.Rise;
+                        var us = new[] { a.x, a.x + ((shape.Feather & 1) != 0 ? f : 0), b.x - ((shape.Feather & 4) != 0 ? f : 0), b.x };
+                        var vs = new[] { a.y, a.y + ((shape.Feather & 2) != 0 ? f : 0), b.y - ((shape.Feather & 8) != 0 ? f : 0), b.y };
+                        Color32 At(int i, int j)
+                        {
+                            var clear = i == 0 && (shape.Feather & 1) != 0 || i == 3 && (shape.Feather & 4) != 0 || j == 0 && (shape.Feather & 2) != 0 || j == 3 && (shape.Feather & 8) != 0;
+                            var c = shape.Top; if (clear) c.a = 0; return c;
+                        }
+                        for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++)
+                        {
+                            var start = mesh.currentVertCount;
+                            mesh.AddVert(Local(new Vector2(us[i], vs[j])), At(i, j), Vector2.zero); mesh.AddVert(Local(new Vector2(us[i + 1], vs[j])), At(i + 1, j), Vector2.zero);
+                            mesh.AddVert(Local(new Vector2(us[i + 1], vs[j + 1])), At(i + 1, j + 1), Vector2.zero); mesh.AddVert(Local(new Vector2(us[i], vs[j + 1])), At(i, j + 1), Vector2.zero);
+                            mesh.AddTriangle(start, start + 1, start + 2); mesh.AddTriangle(start, start + 2, start + 3);
+                        }
+                        break;
                     }
                     case Kind.Block:
                     {

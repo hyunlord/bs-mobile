@@ -91,9 +91,15 @@ namespace Tests.PlayMode
             Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(-120, 0) * app.Ui.Canvas.scaleFactor);
             yield return null;
             Assert.That(screen.Map.Offset.x, Is.GreaterThan(offset.x + 100), "A one-finger drag left shows more of the east.");
-            Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(1000, 0) * app.Ui.Canvas.scaleFactor);
+            var east = screen.Map.Offset.x;
+            Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(200, 0) * app.Ui.Canvas.scaleFactor);
             yield return null;
-            Assert.That(screen.Map.GridToViewport(new Vector2(0, 8)).x, Is.EqualTo(0).Within(1e-2f), "The drag stops at the west corner.");
+            Assert.That(screen.Map.Offset.x, Is.LessThan(east - 150), "A drag right shows more of the west.");
+            Click("EstateMap.ZoomOut"); yield return null;
+            Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(4000, 0) * app.Ui.Canvas.scaleFactor);
+            yield return null;
+            Assert.That(screen.Map.GridToViewport(new Vector2(0, screen.Map.Rows)).x, Is.GreaterThanOrEqualTo(-1e-2f), "The whole map fits, so no drag reveals space past its west corner.");
+            Click("EstateMap.ZoomIn"); yield return null;
 
             Click("EstateMap.Goal"); yield return null; Assert.That(screen.GoalCollapsed, Is.True);
             yield return Capture("estate-map-goal-folded");
@@ -104,22 +110,22 @@ namespace Tests.PlayMode
             Assert.That(screen.Selected, Is.EqualTo(forge.Id), "A tap on any cell of the footprint selects the building.");
             Assert.That(Rects("EstateMap.NameTag").Length, Is.EqualTo(1), "Only the selected building shows its name.");
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
-            Assert.That(screen.Map.GridToViewport(Vector2.zero).y, Is.GreaterThanOrEqualTo(screen.Map.TopInset - .5f));
-            Assert.That(screen.Map.GridToViewport(new Vector2(16, 8)).y, Is.LessThanOrEqualTo(screen.Map.Viewport.y - screen.Map.BottomInset + .5f), "The panel never hides a row.");
+            Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.True, "The selected building stays between the bars and the panel.");
+            Assert.That(screen.Map.MapSize.y, Is.GreaterThan(screen.Map.Viewport.y - screen.Map.TopInset - screen.Map.BottomInset), "The wide map can be dragged to every row behind the panel.");
             yield return Capture("estate-map-selected");
             Click("EstateMap.Move"); yield return null; Assert.That(screen.Moving, Is.True);
             // At building zoom the original footprint leaves the screen once the player pans to the destination; the redraw
             // after the tap must keep the destination preview in view (review on #369).
             Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
-            Focus(new Vector2(4.5f, 4.5f)); Tap(new Vector2Int(4, 4)); yield return null;
-            Assert.That(screen.Preview, Is.EqualTo(new Vector2Int(4, 4))); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
-            Assert.That(screen.Map.InView(new Vector2(5, 5)), Is.True, "The destination preview stays on screen after the tap redraws the page.");
+            Focus(C(4, 4) + new Vector2(.5f, .5f)); Tap(C(4, 4)); yield return null;
+            Assert.That(screen.Preview, Is.EqualTo(C(4, 4))); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
+            Assert.That(screen.Map.InView(C(5, 5)), Is.True, "The destination preview stays on screen after the tap redraws the page.");
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.False, "The camera did not jump back to the original footprint.");
             Click("EstateMap.ZoomOut"); yield return null;
             yield return Capture("estate-map-move-valid");
             Click("EstateMap.Confirm"); yield return null;
             Assert.That(screen.Moving, Is.False);
-            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(4)); Assert.That(screen.Building(forge.Id).Y, Is.EqualTo(4));
+            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(C(4, 4).x)); Assert.That(screen.Building(forge.Id).Y, Is.EqualTo(C(4, 4).y));
 
             var home = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             Click("EstateMap.Move"); yield return null;
@@ -128,8 +134,8 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.Confirm").interactable, Is.False);
             yield return Capture("estate-map-move-blocked");
             Click("EstateMap.Cancel"); yield return null;
-            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(4), "Cancel keeps the last confirmed place.");
-            Focus(new Vector2(3.5f, .5f)); Tap(new Vector2Int(3, 0)); yield return null;
+            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(C(4, 4).x), "Cancel keeps the last confirmed place.");
+            Focus(C(3, 0) + new Vector2(.5f, .5f)); Tap(C(3, 0)); yield return null;
             Assert.That(screen.Selected, Is.Null, "A tap on empty open ground closes the selection.");
 
             Assert.That(app.Progression.State.Estate, Is.Null);
@@ -196,7 +202,7 @@ namespace Tests.PlayMode
             Click("EstateMap.BranchConfirm"); yield return null;
             Assert.That(screen.Building(granary.Id).Branch, Is.EqualTo("granary:long-away"));
 
-            Focus(new Vector2(12, 4)); Tap(new Vector2Int(12, 4)); yield return null;
+            Focus(new Vector2(45.5f, 30.5f)); Tap(new Vector2Int(45, 30)); yield return null;
             Assert.That(screen.ZoneChoice, Is.Not.Null); Assert.That(Rects("EstateMap.Zone").Count(r => r.name == "EstateMap.Zone"), Is.EqualTo(1));
             yield return Capture("estate-flow-zone");
 
@@ -265,6 +271,9 @@ namespace Tests.PlayMode
             into[0] = batches.Valid ? (int)batches.LastValue : -1; into[1] = draws.Valid ? (int)draws.LastValue : -1;
             into[2] = setPass.Valid ? (int)setPass.LastValue : -1;
         }
+
+        // The wide prototype map (#374) keeps the r2 layout shifted by (26, 26) into its centre zone.
+        static Vector2Int C(int u, int v) => new Vector2Int(u + 26, v + 26);
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
         RectTransform[] Rects(string start) => app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith(start, StringComparison.Ordinal)).ToArray();

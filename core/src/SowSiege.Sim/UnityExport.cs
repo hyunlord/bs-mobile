@@ -46,10 +46,12 @@ public static partial class UnityExport
         source.AppendLine("        };");
         source.AppendLine("        public static global::SowSiege.Core.ContentCatalog CreateCatalog() => " + UnityExportExpression.Write(catalog) + ";");
         source.AppendLine("        public static global::SowSiege.Core.MetaCatalog CreateMetaCatalog() => " + UnityExportExpression.Write(MetaContentLoader.Read(directory)) + ";");
-        // M3a account estate prototype settings (#366): opt-in data, outside the data tree hash, so the bundle DataHash is unchanged.
-        var estatePath = AccountEstateConfigLoader.PathFor(directory);
+        // M3a account estate prototype settings for the estate screen (#366; wide map since #374): opt-in data, outside the data
+        // tree hash, so the bundle DataHash is unchanged.
+        var estateVersion = AccountEstateConfigLoader.MapPrototypeVersion;
+        var estatePath = AccountEstateConfigLoader.PathFor(directory, estateVersion);
         source.AppendLine("        public static global::SowSiege.Core.AccountEstateConfig CreateAccountEstateConfig() => " +
-            (File.Exists(estatePath) ? UnityExportExpression.Write(AccountEstateConfigLoader.Load(directory, MetaContentLoader.Read(directory))) : "null") + ";");
+            (File.Exists(estatePath) ? UnityExportExpression.Write(AccountEstateConfigLoader.Load(directory, MetaContentLoader.Read(directory), estateVersion)) : "null") + ";");
         source.AppendLine("    }\n}");
         snapshot.AssertUnchanged(directory);
         return source.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);

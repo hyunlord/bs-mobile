@@ -103,6 +103,10 @@ namespace Game.App
             return null;
         }
 
+        // A closed zone's map label: exploration land when its unlock needs more production sites than the config can build.
+        public string ZoneLabel(AccountEstateZone zone) =>
+            zone.Unlock != null && zone.Unlock.CompletedProductionSites > Config.Buildings.Count(b => b.Produces != null) ? "탐사로 열 땅 · M3c" : "닫힌 구역";
+
         public AccountEstateZone ZoneAt(Vector2Int cell) =>
             Config.Zones.FirstOrDefault(z => cell.x >= z.X && cell.x < z.X + z.Width && cell.y >= z.Y && cell.y < z.Y + z.Height);
 
