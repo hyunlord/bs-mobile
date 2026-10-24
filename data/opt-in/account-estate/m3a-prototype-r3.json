@@ -1,6 +1,6 @@
 {
-  "version": "m3a-prototype-r2-wide",
-  "status": "Map-scale prototype for the estate screen (#374): the m3a-prototype-r2 economy unchanged on a wider grid, a 20x20 centre plus the design r3 inner ring of four zones (#360 section 5). Hypothesis values; not an economy decision (#126); not a release default. The three exploration zones (riverside, west hill, north-east wood) need 4 completed production sites, which this prototype (3 production kinds) cannot reach: a placeholder until exploration (M3c) opens them.",
+  "version": "m3a-prototype-r3",
+  "status": "Map-scale prototype for the estate screen (#374), named r3 for the design r3 map: the m3a-prototype-r2 economy unchanged on a wider grid, a 20x20 centre plus the design r3 inner ring of four zones (#360 section 5). Hypothesis values; not an economy decision (#126); not a release default. The three exploration zones (riverside, west hill, north-east wood) need 4 completed production sites, which this prototype (3 production kinds) cannot reach: a placeholder until exploration (M3c) opens them.",
   "maximumIntervalSeconds": 604800,
   "initialWallet": {
     "meta:grain": 120,

@@ -23,6 +23,7 @@ namespace Game.App
         public Terrain terrain = new Terrain();
         public Trees trees = new Trees();
         public Frontier frontier = new Frontier();
+        public ClosedLand closedLand = new ClosedLand();
         public Placed[] placed = Array.Empty<Placed>();
         public Peasants peasants = new Peasants();
         public string fieldFenceKind = "m3a:field", fieldFenceCorner = "field-fence-corner";
@@ -35,7 +36,18 @@ namespace Game.App
         [Serializable] public sealed class Restoration { public int restoredRadius = 2, sageRadius = 5; }
         [Serializable] public sealed class Terrain { public int patchCells = 6; public float patchScale = 1.5f, alpha = .92f; public string restored = "terrain-restoration", sage = "terrain-sage", fallow = "terrain-fallow"; }
         [Serializable] public sealed class Trees { public string[] ids = Array.Empty<string>(); public float share; public string[] states = Array.Empty<string>(); }
-        [Serializable] public sealed class Frontier { public string[] ids = Array.Empty<string>(); public int every = 4, perBlock = 2, block = 8; public float density = .5f; public string edge = "frontier-ink-edge"; public int edgeEvery = 8; public float edgeAlpha = .85f; }
+        [Serializable] public sealed class Frontier { public string[] ids = Array.Empty<string>(); public string edge = "frontier-ink-edge"; public int edgeEvery = 8; public float edgeAlpha = .85f; }
+        // Closed land is painted like open land and then veiled (key art C, m3-estate-keyarts-r2): terrain patches, rivers from
+        // `placed`, frontier traces, dead trees and woods on a jittered lattice, all under a blue-grey veil of `veil` alpha.
+        [Serializable] public sealed class ClosedLand
+        {
+            public float veil = .7f, veilFeather = .9f, groundFeather = 2, sageShare = .3f;
+            public int veilOverhang = 6, every = 4;
+            public float jitter = .6f, density = .55f, deadTreeShare = .35f;
+            public string deadTree = "frontier-dead-tree";
+            public Wood[] woods = Array.Empty<Wood>();
+        }
+        [Serializable] public sealed class Wood { public string zone; public string[] ids = Array.Empty<string>(); public float share = .7f; }
         // Explicit terrain-skeleton pieces (rivers, bridges, a paddock): grid point of the pivot, reserved cells, layer.
         [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
         [Serializable] public sealed class Peasants { public string farm = "peasant-farm", carry = "peasant-carry", build = "peasant-build", carryKind = "meta:granary"; }
@@ -72,7 +84,8 @@ namespace Game.App
         }
     }
 
-    public enum EstateDrawLayer { Terrain, Ground, Standing, Foreground }
+    // Veiled: standing art on closed land, drawn in foot order before the closed-land veil covers it.
+    public enum EstateDrawLayer { Terrain, Veiled, Ground, Standing, Foreground }
 
     // One sprite on the map: art id (or a building body), its pivot's grid point, width in scale-1 canvas units, colour for the
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
@@ -142,13 +155,15 @@ namespace Game.App
             string StateAt(Vector2 grid) { var c = Vector2Int.FloorToInt(grid); if (!plan.States.TryGetValue(c, out var s)) plan.States[c] = s = State(c); return s; }
             plan.StateOf = c => StateAt(c);
 
-            // Terrain patches over open land, one per patchCells block, picked by the block centre's state.
-            var t = rules.terrain;
-            foreach (var zone in config.Zones.Where(z => estate.OpenZones.Contains(z.Id)))
+            // Terrain patches over every zone, one per patchCells block, picked by the block centre's state; closed land mixes
+            // fallow and sage by seed under its veil.
+            var t = rules.terrain; var cl = rules.closedLand;
+            foreach (var zone in config.Zones)
                 for (var u = zone.X; u < zone.X + zone.Width; u += t.patchCells)
                     for (var v = zone.Y; v < zone.Y + zone.Height; v += t.patchCells)
                     {
                         var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre);
+                        if (state == "closed") state = AstraDecor.Rand(rules.astra, "closed-terrain", $"{u}-{v}") < cl.sageShare ? "sage" : "fallow";
                         var role = state == "restored" ? t.restored : state == "sage" ? t.sage : t.fallow;
                         plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
                             Colour = new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
@@ -233,29 +248,46 @@ namespace Game.App
             foreach (var piece in rules.placed.Where(p => config.Zones.Any(z => z.Id == p.zone)))
             {
                 var grid = new Vector2(piece.u, piece.v); var state = StateAt(grid) ?? "fallow";
-                var layer = art != null && art.Has(piece.id) && art.Layer(piece.id) == "ground" ? EstateDrawLayer.Terrain : EstateDrawLayer.Standing;
-                var colour = state == "closed" ? rules.Colour("closed") : layer == EstateDrawLayer.Terrain ? Color.white : rules.Colour(state);
+                var closed = state == "closed"; var ground = art != null && art.Has(piece.id) && art.Layer(piece.id) == "ground";
+                var layer = ground ? EstateDrawLayer.Terrain : closed ? EstateDrawLayer.Veiled : EstateDrawLayer.Standing;
+                var colour = ground ? Color.white : rules.Colour(state);
                 Add(plan, piece.id, "placed", grid, art, colour, layer);
-                if (!string.IsNullOrEmpty(piece.rail)) Add(plan, piece.rail, "placed", grid, art, colour, EstateDrawLayer.Foreground);
-                if (!string.IsNullOrEmpty(piece.with)) Add(plan, piece.with, "peasant", new Vector2(piece.withU, piece.withV), art, Color.white);
+                if (!string.IsNullOrEmpty(piece.rail)) Add(plan, piece.rail, "placed", grid, art, colour, closed ? EstateDrawLayer.Veiled : EstateDrawLayer.Foreground);
+                if (!string.IsNullOrEmpty(piece.with) && !closed) Add(plan, piece.with, "peasant", new Vector2(piece.withU, piece.withV), art, Color.white);
             }
 
-            // The frontier: dark traces just inside closed land and the soft ink edge along every open/closed boundary.
-            var f = rules.frontier; var perBlock = new Dictionary<Vector2Int, int>();
+            // The frontier: Astra's ink edge is painted dark toward its upper right, so it only dresses boundaries where closed land
+            // lies up-right of open land (inward = -v); it sits on the closed side. Every other edge keeps the veil's feather and rim.
+            var f = rules.frontier;
             foreach (var closed in config.Zones.Where(z => !estate.OpenZones.Contains(z.Id)))
                 foreach (var openZone in open)
-                    foreach (var (cell, inward, along, edgeIndex) in Boundary(closed, openZone))
+                    foreach (var (cell, inward, _, edgeIndex) in Boundary(closed, openZone))
+                        if (inward == new Vector2Int(0, -1) && edgeIndex % f.edgeEvery == f.edgeEvery / 2 && !string.IsNullOrEmpty(f.edge))
+                            Add(plan, f.edge, "frontier-edge", cell + new Vector2(.5f, .5f), art, new Color(1, 1, 1, f.edgeAlpha), EstateDrawLayer.Ground);
+
+            // Closed land keeps the shape of the land to come (key art C): one candidate per `every` cells, jittered by seed,
+            // becomes a wood in wooded zones or a frontier trace (dead trees weighted), skipping reserved river cells.
+            foreach (var zone in config.Zones.Where(z => !estate.OpenZones.Contains(z.Id)))
+            {
+                var wood = cl.woods.FirstOrDefault(w => w.zone == zone.Id && w.ids.Length > 0);
+                for (var u = zone.X; u < zone.X + zone.Width; u += cl.every)
+                    for (var v = zone.Y; v < zone.Y + zone.Height; v += cl.every)
                     {
-                        var key = $"frontier-{closed.Id}-{edgeIndex}";
-                        if (edgeIndex % f.edgeEvery == f.edgeEvery / 2 && !string.IsNullOrEmpty(f.edge))
-                            Add(plan, f.edge, "frontier-edge", cell - (Vector2)inward * .5f + new Vector2(.5f, .5f), art, new Color(1, 1, 1, f.edgeAlpha), EstateDrawLayer.Ground);
-                        if (edgeIndex % f.every != 0 || f.ids.Length == 0 || AstraDecor.Rand(rules.astra, "frontier", key) > f.density) continue;
-                        var depth = 1 + (int)(AstraDecor.Rand(rules.astra, "frontier-depth", key) * 2);
-                        var at = cell + inward * depth; var block = new Vector2Int(at.x / f.block, at.y / f.block);
-                        perBlock.TryGetValue(block, out var used); if (used >= f.perBlock) continue; perBlock[block] = used + 1;
-                        var role = f.ids[(int)(AstraDecor.Rand(rules.astra, "frontier-type", key) * f.ids.Length)];
-                        Add(plan, role, "frontier", at + new Vector2(.5f, .5f), art, rules.Colour("closed"));
+                        var key = $"closed-{zone.Id}-{u}-{v}";
+                        if (AstraDecor.Rand(rules.astra, "closed-density", key) > cl.density) continue;
+                        var at = new Vector2(u + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-x", key) - .5f) * cl.jitter),
+                            v + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-y", key) - .5f) * cl.jitter));
+                        // The last lattice row or column can reach past a zone whose size is not a multiple of `every`.
+                        if (at.x >= zone.X + zone.Width || at.y >= zone.Y + zone.Height || reserved.Contains(Vector2Int.FloorToInt(at))) continue;
+                        var variant = AstraDecor.Rand(rules.astra, "closed-variant", key);
+                        if (wood != null && AstraDecor.Rand(rules.astra, "closed-wood", key) < wood.share)
+                            Add(plan, wood.ids[(int)(variant * wood.ids.Length)], "wood", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
+                        else if (AstraDecor.Rand(rules.astra, "closed-dead-tree", key) < cl.deadTreeShare || f.ids.Length == 0)
+                            Add(plan, cl.deadTree, "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
+                        else
+                            Add(plan, f.ids[(int)(variant * f.ids.Length)], "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
                     }
+            }
             return plan;
         }
 

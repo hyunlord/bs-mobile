@@ -4,19 +4,19 @@ using Xunit;
 
 namespace SowSiege.Tests;
 
-// #374: the map-scale prototype m3a-prototype-r2-wide keeps the r2 economy on the design r3 centre + inner ring grid.
+// #374: the map-scale prototype m3a-prototype-r3 keeps the r2 economy on the design r3 centre + inner ring grid.
 public sealed class AccountEstateWideMapTests
 {
     private static string Data => Path.Combine(AppContext.BaseDirectory, "data");
     private static readonly MetaCatalog Catalog = MetaContentLoader.Read(Data);
     private static readonly AccountEstateConfig R2 = AccountEstateConfigLoader.Load(Data, Catalog);
-    private static readonly AccountEstateConfig Wide = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.MapPrototypeVersion);
+    private static readonly AccountEstateConfig Wide = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.WideMapVersion);
     private static string Json<T>(T value) => System.Text.Json.JsonSerializer.Serialize(value);
 
     [Fact]
     public void TheWideMapKeepsTheR2EconomyAndShiftsItsLayoutIntoTheCentre()
     {
-        Assert.Equal("m3a-prototype-r2-wide", Wide.Version);
+        Assert.Equal("m3a-prototype-r3", Wide.Version);
         Assert.Equal(Json(R2.InitialWallet), Json(Wide.InitialWallet));
         Assert.Equal(Json(R2.WalletCaps), Json(Wide.WalletCaps));
         Assert.Equal(Json(R2.Queue), Json(Wide.Queue));

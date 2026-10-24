@@ -23,13 +23,10 @@ namespace Game.App
         public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 0123456789:";
         // Open land under the terrain patches: a mid tone of Astra's painted fallow/sage ground.
         static readonly Color OpenGround = new Color32(124, 116, 84, 255);
-        static readonly Color ClosedGround = new Color32(40, 37, 33, 255);
-        // Closed land: the M2 darkness grammar (#374) — blue-grey cover with a soft edge toward open land and a faint warm rim
-        // (GameVisualTokens.EstateRim in the M2 estate View) on the boundary.
+        // Closed land: the M2 darkness grammar (#374) — painted land under a blue-grey veil (alpha in EstateDecorRules.closedLand,
+        // #375) with a soft edge toward open land and a faint warm rim (GameVisualTokens.EstateRim in the M2 estate View).
         static readonly Color Fog = new Color32(38, 50, 60, 255);
-        static readonly Color FogCover = new Color32(38, 50, 60, 236);
         static readonly Color Rim = new Color32(0xE5, 0xC9, 0x7F, 120);
-        const float FogFeatherCells = .9f;
         static readonly Color GridLine = new Color32(36, 48, 26, 110);
         static readonly Color BlockTop = new Color32(176, 154, 112, 255);
         static readonly Color BlockLeft = new Color32(132, 112, 80, 255);
@@ -65,8 +62,14 @@ namespace Game.App
             var rules = EstateDecorRules.Load(); var art = EstateArt.Load(); var tint = art.Tint;
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
+            var zones = screen.Config.Zones; var closedLand = rules.closedLand;
+            // A zone face that touches no other zone borders land outside the estate.
+            bool Outside(AccountEstateZone zone, int du, int dv) => !zones.Any(o => o != zone && SharesEdge(zone, o, du, dv));
             var ground = Shapes(viewport, "EstateMap.Ground", view);
-            foreach (var zone in screen.Config.Zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
+            foreach (var zone in zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
+            // Closed land is painted too (key art C): its ground fades out toward land outside every zone.
+            foreach (var zone in zones.Where(z => !screen.Open(z)))
+                ground.Fog(zone.X, zone.Y, zone.Width, zone.Height, OpenGround, closedLand.groundFeather, Outside(zone, -1, 0), Outside(zone, 0, -1), Outside(zone, 1, 0), Outside(zone, 0, 1));
             foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Terrain", item);
             var roads = Shapes(viewport, "EstateMap.Roads", view);
             foreach (var cell in plan.Road) roads.Footprint(cell.x, cell.y, 1, 1, RoadSand);
@@ -76,13 +79,19 @@ namespace Game.App
                     for (var u = zone.X; u <= zone.X + zone.Width; u++) roads.Line(new Vector2(u, zone.Y), new Vector2(u, zone.Y + zone.Height), GridLine);
                     for (var v = zone.Y; v <= zone.Y + zone.Height; v++) roads.Line(new Vector2(zone.X, v), new Vector2(zone.X + zone.Width, v), GridLine);
                 }
-            // Darkness over closed zones: above the painted ground, below every standing sprite and the bars.
-            var fog = Shapes(viewport, "EstateMap.Fog", view);
-            foreach (var zone in screen.Config.Zones.Where(z => !screen.Open(z)))
+            // Closed land's traces, dead trees and woods in foot order, then the veil over them: above the painted closed land,
+            // below every open-land sprite and the bars. The veil overhangs faces toward outside land so patches that spill past the
+            // zone stay dark; it feathers toward open land.
+            foreach (var item in plan.In(EstateDrawLayer.Veiled).OrderBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal))
+                Paint(viewport, view, art, tint, "EstateMap.Veiled:" + item.Source, item);
+            var fog = Shapes(viewport, "EstateMap.Fog", view); var veil = new Color(Fog.r, Fog.g, Fog.b, closedLand.veil);
+            foreach (var zone in zones.Where(z => !screen.Open(z)))
             {
-                bool Faces(int du, int dv) => screen.Config.Zones.Any(o => screen.Open(o) && SharesEdge(zone, o, du, dv));
-                fog.Fog(zone.X, zone.Y, zone.Width, zone.Height, FogCover, FogFeatherCells, Faces(-1, 0), Faces(0, -1), Faces(1, 0), Faces(0, 1));
-                foreach (var open in screen.Config.Zones.Where(screen.Open))
+                bool Faces(int du, int dv) => zones.Any(o => screen.Open(o) && SharesEdge(zone, o, du, dv));
+                int Over(int du, int dv) => Outside(zone, du, dv) ? closedLand.veilOverhang : 0;
+                int u = zone.X - Over(-1, 0), v = zone.Y - Over(0, -1);
+                fog.Fog(u, v, zone.X + zone.Width + Over(1, 0) - u, zone.Y + zone.Height + Over(0, 1) - v, veil, closedLand.veilFeather, Faces(-1, 0), Faces(0, -1), Faces(1, 0), Faces(0, 1));
+                foreach (var open in zones.Where(screen.Open))
                     if (SharedEdge(zone, open, out var from, out var to)) fog.Line(from, to, Rim, 2);
             }
             foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Edge", item);
@@ -437,6 +446,17 @@ namespace Game.App
             return new Vector2(rect.xMin + point.x, rect.yMax - point.y + rise * Model.Scale);
         }
 
+        // Fog patch vertex (i, j) of the 4×4 grid: side lines inset by the feather on feathered sides, alpha 0 on those sides' outer line.
+        void FogVert(VertexHelper mesh, in Shape shape, int i, int j)
+        {
+            var f = shape.Rise; var feather = shape.Feather;
+            var u = i == 0 ? shape.A.x : i == 1 ? shape.A.x + ((feather & 1) != 0 ? f : 0) : i == 2 ? shape.B.x - ((feather & 4) != 0 ? f : 0) : shape.B.x;
+            var v = j == 0 ? shape.A.y : j == 1 ? shape.A.y + ((feather & 2) != 0 ? f : 0) : j == 2 ? shape.B.y - ((feather & 8) != 0 ? f : 0) : shape.B.y;
+            var clear = i == 0 && (feather & 1) != 0 || i == 3 && (feather & 4) != 0 || j == 0 && (feather & 2) != 0 || j == 3 && (feather & 8) != 0;
+            Color32 colour = shape.Top; if (clear) colour.a = 0;
+            mesh.AddVert(Local(new Vector2(u, v)), colour, Vector2.zero);
+        }
+
         protected override void OnPopulateMesh(VertexHelper mesh)
         {
             mesh.Clear(); if (Model == null) return;
@@ -455,20 +475,12 @@ namespace Game.App
                     }
                     case Kind.Fog:
                     {
-                        // A 3×3 patch: the outer vertex row/column of a feathered side is transparent.
-                        var f = shape.Rise;
-                        var us = new[] { a.x, a.x + ((shape.Feather & 1) != 0 ? f : 0), b.x - ((shape.Feather & 4) != 0 ? f : 0), b.x };
-                        var vs = new[] { a.y, a.y + ((shape.Feather & 2) != 0 ? f : 0), b.y - ((shape.Feather & 8) != 0 ? f : 0), b.y };
-                        Color32 At(int i, int j)
-                        {
-                            var clear = i == 0 && (shape.Feather & 1) != 0 || i == 3 && (shape.Feather & 4) != 0 || j == 0 && (shape.Feather & 2) != 0 || j == 3 && (shape.Feather & 8) != 0;
-                            var c = shape.Top; if (clear) c.a = 0; return c;
-                        }
+                        // A 3×3 patch: the outer vertex row/column of a feathered side is transparent. Coordinates are computed per
+                        // vertex (no temporary arrays): every drag frame rebuilds this mesh (review on #377).
                         for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++)
                         {
                             var start = mesh.currentVertCount;
-                            mesh.AddVert(Local(new Vector2(us[i], vs[j])), At(i, j), Vector2.zero); mesh.AddVert(Local(new Vector2(us[i + 1], vs[j])), At(i + 1, j), Vector2.zero);
-                            mesh.AddVert(Local(new Vector2(us[i + 1], vs[j + 1])), At(i + 1, j + 1), Vector2.zero); mesh.AddVert(Local(new Vector2(us[i], vs[j + 1])), At(i, j + 1), Vector2.zero);
+                            FogVert(mesh, shape, i, j); FogVert(mesh, shape, i + 1, j); FogVert(mesh, shape, i + 1, j + 1); FogVert(mesh, shape, i, j + 1);
                             mesh.AddTriangle(start, start + 1, start + 2); mesh.AddTriangle(start, start + 2, start + 3);
                         }
                         break;

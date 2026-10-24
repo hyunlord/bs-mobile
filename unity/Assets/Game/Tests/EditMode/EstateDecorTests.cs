@@ -34,7 +34,7 @@ namespace Tests.EditMode
             var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var roles = rules.astra.kits.SelectMany(k => k.props).Concat(new[] { "grass", "rocks" })
                 .Concat(new[] { "fallow", "sage", "restored" }.SelectMany(s => Enumerable.Range(1, rules.astra.landVariants).Select(i => $"cluster-{s}-{i}")))
-                .Concat(rules.trees.ids).Concat(rules.frontier.ids).Append(rules.frontier.edge)
+                .Concat(rules.trees.ids).Concat(rules.frontier.ids).Append(rules.frontier.edge).Append(rules.closedLand.deadTree).Concat(rules.closedLand.woods.SelectMany(w => w.ids))
                 .Concat(rules.placed.SelectMany(p => new[] { p.id, p.rail, p.with })).Concat(new[] { rules.peasants.farm, rules.peasants.carry, rules.peasants.build })
                 .Concat(new[] { rules.yardGround.well, rules.yardGround.house, rules.yardGround.other, rules.terrain.restored, rules.terrain.sage, rules.terrain.fallow, rules.fieldFenceCorner })
                 .Where(r => !string.IsNullOrEmpty(r)).Distinct();
@@ -42,6 +42,7 @@ namespace Tests.EditMode
             foreach (var kind in rules.kindArt.Select(k => k.art).Distinct())
                 for (var stage = 1; stage <= 3; stage++) { Assert.That(art.Body(kind, stage), Is.Not.Null, kind + stage); Assert.That(art.Shadow(kind, stage), Is.Not.Null); }
             Assert.That(art.BuildingPivot("manor", 1), Is.EqualTo(new Vector2(.5f, .125f)), "Astra's anchor (128, 280) on a 256x320 canvas.");
+            Assert.That(art.BodyWidth("house", 1), Is.EqualTo(90), "Astra scales bodies by the trimmed opaque width (assembly.js bodyWidths), not drawRect.");
         }
 
         [Test] public void CoreLevelsPickTheThreeStageArt()
@@ -72,7 +73,9 @@ namespace Tests.EditMode
             var rules = EstateDecorRules.Load();
             Assert.That(rules.Colour("restored"), Is.EqualTo(Color.white), "Tended land keeps the art's colours.");
             Assert.That(rules.TintOf("sage").saturation, Is.GreaterThan(rules.TintOf("fallow").saturation));
-            Assert.That(rules.TintOf("closed").light, Is.EqualTo(0), "Closed land takes the full M2 darkness.");
+            Assert.That(rules.TintOf("closed").light, Is.EqualTo(1), "Closed land is darkened by its veil, not by the tint.");
+            Assert.That(rules.TintOf("closed").saturation, Is.LessThan(rules.TintOf("sage").saturation));
+            Assert.That(rules.closedLand.veil, Is.EqualTo(.7f).Within(.1f), "The blue-grey veil over closed land [가설].");
             var (config, _, state) = Estate();
             var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
@@ -80,8 +83,8 @@ namespace Tests.EditMode
             Assert.That(plan.StateOf(new Vector2Int(home.X - 5, home.Y - 1)), Is.EqualTo("sage"));
             Assert.That(plan.StateOf(new Vector2Int(21, 21)), Is.EqualTo("fallow"), "The far corner of the centre is untended.");
             Assert.That(plan.StateOf(new Vector2Int(45, 30)), Is.EqualTo("closed"));
-            Assert.That(plan.StateOf(new Vector2Int(5, 5)), Is.Null, "Outside every zone.");
-            foreach (var item in plan.Items.Where(i => i.Source == "frontier")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
+            Assert.That(plan.StateOf(new Vector2Int(45, 10)), Is.Null, "Outside every zone.");
+            foreach (var item in plan.Items.Where(i => i.Source == "frontier" || i.Source == "wood")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
         }
 
         [Test] public void ThePlanIsDeterministicAndKeepsDecorationOffFootprintsAndRoads()
@@ -98,12 +101,25 @@ namespace Tests.EditMode
                 Assert.That(cell.x >= 20 && cell.y >= 20 && cell.x < 40 && cell.y < 40, Is.True, "on the open centre: " + item.Key);
                 Assert.That(footprints.Contains(cell) && item.Source != "yard", Is.False, "no roadside or land prop on a footprint: " + item.Key);
             }
-            foreach (var item in first.Items.Where(i => i.Source == "frontier"))
+            // Closed land is painted under its veil (key art C): terrain, rivers, traces, dead trees and woods, all decided by seed.
+            foreach (var item in first.In(EstateDrawLayer.Veiled))
+                Assert.That(first.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed"), "veiled art stays in closed land: " + item.Key);
+            Assert.That(first.Items.Where(i => i.Source == "frontier" || i.Source == "wood").All(i => i.Layer == EstateDrawLayer.Veiled), Is.True);
+            bool In(AccountEstateZone zone, Vector2 grid) => grid.x >= zone.X && grid.x < zone.X + zone.Width && grid.y >= zone.Y && grid.y < zone.Y + zone.Height;
+            var wood = config.Zones.Single(z => z.Id == "zone:inner-northeast-wood");
+            Assert.That(first.Items.Where(i => i.Source == "wood").All(i => In(wood, i.Grid)), Is.True, "Woods only in the north-east wood zone.");
+            foreach (var zone in config.Zones.Where(z => z.Id != "zone:start"))
             {
-                var cell = Vector2Int.FloorToInt(item.Grid);
-                Assert.That(cell.x >= 20 && cell.y >= 20 && cell.x < 40 && cell.y < 40, Is.False, "frontier traces stay in closed land: " + item.Key);
+                Assert.That(first.Items.Count(i => i.Source == "terrain" && In(zone, i.Grid)), Is.GreaterThan(0), "Terrain patches cover " + zone.Id);
+                if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(3), "Traces or woods in " + zone.Id);
             }
-            Assert.That(first.Count("frontier"), Is.GreaterThan(0)); Assert.That(first.Count("frontier-edge"), Is.GreaterThan(0));
+            Assert.That(first.In(EstateDrawLayer.Veiled).Count(), Is.GreaterThan(30));
+            // The river runs down the estate's right edge (key art A): from the north-east wood to the riverside zone.
+            var river = first.Items.Where(i => i.Source == "placed" && i.Role.StartsWith("river", StringComparison.Ordinal)).OrderBy(i => i.Grid.x + i.Grid.y).ToArray();
+            Assert.That(river.Length, Is.EqualTo(7));
+            Assert.That(river.All(i => i.Grid.x - i.Grid.y >= 10), Is.True, "every river patch is on the right side");
+            Assert.That(In(wood, river.First().Grid) && In(config.Zones.Single(z => z.Id == "zone:inner-riverside"), river.Last().Grid), Is.True);
+            Assert.That(first.Count("frontier"), Is.GreaterThan(0)); Assert.That(first.Count("wood"), Is.GreaterThan(0)); Assert.That(first.Count("frontier-edge"), Is.GreaterThan(0));
             TestContext.WriteLine("plan: " + string.Join(", ", first.Items.GroupBy(i => i.Source).Select(g => g.Key + "=" + g.Count())));
         }
 
