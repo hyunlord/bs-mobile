@@ -75,7 +75,7 @@ namespace Tests.PlayMode
                 Place(root, "yard " + b.Key, art.Get(id), b.X + yg.offsetX * b.W, b.Y + yg.offsetY * b.W, yg.width * b.W, yg.height * b.W, yg.alpha);
             }
             // Everything standing, sorted by y then key/id as assembly.js does.
-            var drawables = objects.Select(o => (Y: o.Y, Key: o.Key, Draw: (System.Action)(() => Sprite(root, art.Get(o.Id), o.Id, o.X, o.Y, o.W))))
+            var drawables = objects.Select(o => (Y: o.Y, Key: o.Key, Draw: (System.Action)(() => DrawSprite(root, art.Get(o.Id), o.Id, o.X, o.Y, o.W))))
                 .Concat(scene.Buildings.Select(b => (Y: b.Y, Key: b.Key, Draw: (System.Action)(() =>
                 {
                     var s = b.W / art.BodyWidth(b.Kind, b.Stage);
@@ -85,7 +85,7 @@ namespace Tests.PlayMode
                 .Concat(AstraReference.FixedB.Select(f => (Y: (double)f.Y, Key: f.Id, Draw: (System.Action)(() =>
                 {
                     var sprite = f.Id.StartsWith("field-") ? art.Body("field", f.Id.Contains("s2") ? 2 : 3) : Review(f.Id);
-                    Sprite(root, sprite, f.Id, f.X, f.Y, f.W);
+                    DrawSprite(root, sprite, f.Id, f.X, f.Y, f.W);
                 }))));
             foreach (var d in drawables.OrderBy(d => d.Y).ThenBy(d => d.Key, System.StringComparer.Ordinal)) d.Draw();
             // assembly.js: a soft blue-grey shade over the lowest quarter.
@@ -105,7 +105,7 @@ namespace Tests.PlayMode
         }
 
         // assembly.js sprite(): bottom-centre anchored, height from the art's aspect.
-        static void Sprite(RectTransform root, Sprite sprite, string name, double x, double y, double w)
+        static void DrawSprite(RectTransform root, Sprite sprite, string name, double x, double y, double w)
         {
             var h = w * sprite.rect.height / sprite.rect.width;
             Place(root, name, sprite, x - w / 2, y - h, w, h);
