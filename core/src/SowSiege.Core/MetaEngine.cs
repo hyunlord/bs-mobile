@@ -207,6 +207,8 @@ namespace SowSiege.Core
             return new MetaModifiers(PlayerInput.Scale + values[(int)MetaAbility.Attack], PlayerInput.Scale + values[(int)MetaAbility.Health], PlayerInput.Scale + values[(int)MetaAbility.Movement], PlayerInput.Scale + values[(int)MetaAbility.Growth], PlayerInput.Scale + values[(int)MetaAbility.Allies], PlayerInput.Scale + values[(int)MetaAbility.Experience]);
         }
 
+        // The estate's records and arrays are immutable and are rebuilt, not mutated, so the clone can share them.
+        internal static MetaState CloneState(MetaState state) => Clone(state);
         private static MetaState Clone(MetaState state) => state with { RewardReceipts = (MetaRewardReceipt[])state.RewardReceipts.Clone(), ResultRewardBasis = state.ResultRewardBasis == null ? null : state.ResultRewardBasis with { Awarded = new Dictionary<string, int>(state.ResultRewardBasis.Awarded) }, Wallet = new Dictionary<string, int>(state.Wallet), ManorLevels = new Dictionary<string, int>(state.ManorLevels), Vassals = new Dictionary<string, MetaVassalState>(state.Vassals), Metrics = new Dictionary<string, long>(state.Metrics), CompletedChallenges = (string[])state.CompletedChallenges.Clone(), UnlockedContentIds = (string[])state.UnlockedContentIds.Clone(), ActiveVassalIds = (string[])state.ActiveVassalIds.Clone(), PendingClaims = state.PendingClaims.Select(x => x with { Rewards = new Dictionary<string, int>(x.Rewards) }).ToArray() };
         private static long Saturate(long a, long b) => a > long.MaxValue - b ? long.MaxValue : a + b;
         private static void AddMetric(MetaState state, MetaMetric metric, long value) { string key = metric.ToString(); state.Metrics.TryGetValue(key, out long previous); state.Metrics[key] = Math.Min(MetaValidation.MaximumMetricValue, Saturate(previous, value)); }
@@ -268,7 +270,9 @@ namespace SowSiege.Core
             string[] newlyCompleted;
             do
             {
-                grown.AddRange(Grow(catalog, state));
+                // An account estate grows only by explicit construction (design #360 section 6, migration step 4); the old
+                // automatic manor growth never runs alongside it.
+                if (state.Estate == null) { grown.AddRange(Grow(catalog, state)); }
                 state = CompleteChallenges(catalog, state, out newlyCompleted, delivery);
                 completed.AddRange(newlyCompleted);
                 // Each repeat consumes previously unclaimed challenges; building levels are also bounded.

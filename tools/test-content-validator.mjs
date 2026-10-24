@@ -478,3 +478,20 @@ for (const [label, field, value, valid] of [
   const profile = JSON.parse(await readFile(new URL('../data/profiles/wave-1a.json', import.meta.url), 'utf8'));
   assert.equal(validate({ ...profile, [field]: value }), valid, JSON.stringify(validate.errors));
 });
+
+// #361: the account estate prototype settings are opt-in only; their schema lives in data/opt-in/schema (outside the data tree
+// hash), and no other kind may put its schema there.
+test('opt-in-only account estate settings validate against the opt-in schema', async t => {
+  const source = fileURLToPath(new URL('../data', import.meta.url));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-account-estate-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(source, directory, { recursive: true });
+  assert.deepEqual((await validateContent(directory)).errors, []);
+  const file = path.join(directory, 'opt-in', 'account-estate', 'm3a-prototype-r2.json');
+  const settings = JSON.parse(await readFile(file, 'utf8'));
+  await writeFile(file, JSON.stringify({ ...settings, tasks: [{ id: 'task:x', trigger: 'tap-ten-times', reward: {} }] }));
+  assert.match((await validateContent(directory)).errors.join('\n'), /account-estate\/m3a-prototype-r2\.json: schema violation/);
+  await writeFile(file, JSON.stringify(settings));
+  await cp(path.join(directory, 'schema', 'meta.schema.json'), path.join(directory, 'opt-in', 'schema', 'meta.schema.json'));
+  assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
+});

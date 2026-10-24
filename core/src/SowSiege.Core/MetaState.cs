@@ -15,6 +15,8 @@ namespace SowSiege.Core
         public MetaResultRewardBasis? ResultRewardBasis { get; init; }
         public long NextClaimSequence { get; init; } = 1;
         public MetaPendingClaim[] PendingClaims { get; init; } = System.Array.Empty<MetaPendingClaim>();
+        // M3a account estate (#361); null for every account that has not been migrated or started as a prototype estate.
+        public MetaEstateState? Estate { get; init; }
     }
     public sealed record MetaRunPlan(MetaState State, MetaPendingRun Run);
     public sealed record MetaRunFacts(int Tick, int DurationTicks, bool Survived, bool BossDefeated, bool Abandoned,

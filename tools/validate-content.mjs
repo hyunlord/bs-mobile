@@ -11,7 +11,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate']);
+// Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
+const optInSchemaKinds = new Set(['account-estate']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -30,9 +32,18 @@ function inferKind(relative) {
   if (experimentFilename.test(relative)) return 'experiment-tuning';
   const segments = relative.split(path.sep);
   // ADR0069: opt-in experiment files (outside the data tree hash) keep their usual kind; estate-light files are opt-in only.
-  if (segments[0] === 'opt-in') { segments.shift(); if (segments[0] === 'estate-light' && segments.length === 2) return 'estate-light'; }
+  if (segments[0] === 'opt-in') {
+    segments.shift();
+    if (segments[0] === 'estate-light' && segments.length === 2) return 'estate-light';
+    if (segments[0] === 'account-estate' && segments.length === 2) return 'account-estate';
+  }
   if (segments[0] === 'test') segments.shift();
   return directoryKinds.get(segments[0]) ?? (segments.length === 1 ? path.basename(segments[0], '.json') : null);
+}
+
+function isSchemaPath(relative) {
+  const segments = relative.split(path.sep);
+  return segments[0] === 'schema' || (segments[0] === 'opt-in' && segments[1] === 'schema');
 }
 
 function isRecord(value) {
@@ -83,10 +94,11 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   }
   for (const [file, schema] of parsed) {
     const relative = path.relative(dataRoot, file);
-    if (relative.split(path.sep)[0] !== 'schema') continue;
+    if (!isSchemaPath(relative)) continue;
     const kind = path.basename(file, '.schema.json');
-    if (!file.endsWith('.schema.json') || path.dirname(relative) !== 'schema') {
-      errors.push(`${relative}: schema must be data/schema/<kind>.schema.json`);
+    const optIn = path.dirname(relative) === path.join('opt-in', 'schema');
+    if (!file.endsWith('.schema.json') || (path.dirname(relative) !== 'schema' && !optIn) || optIn !== optInSchemaKinds.has(kind)) {
+      errors.push(`${relative}: schema must be data/schema/<kind>.schema.json (opt-in-only kinds: data/opt-in/schema/<kind>.schema.json)`);
       continue;
     }
     try {
@@ -111,7 +123,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
   const ids = new Map();
   for (const [file, record] of parsed) {
     const relative = path.relative(dataRoot, file);
-    if (relative.split(path.sep)[0] === 'schema') continue;
+    if (isSchemaPath(relative)) continue;
     const kind = inferKind(relative);
     if (!kind || !schemas.has(kind)) {
       errors.push(`${relative}: missing schema for content kind ${kind ?? '(unknown directory)'}`);
@@ -125,7 +137,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate'].includes(kind) || Object.hasOwn(record, 'id')) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
