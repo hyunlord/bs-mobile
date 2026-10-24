@@ -9,7 +9,8 @@ namespace SowSiege.Core
     public sealed record AccountEstateBuildingKind(string Kind, int X, int Y, int Width, int Height, AccountEstateCost[] Levels,
         bool StartsComplete = false, string[]? Branches = null, string? Parent = null, AccountEstateProduction? Produces = null)
     {
-        public int MaxLevel => StartsComplete ? 1 : Levels.Length;
+        // A method, not a property: the Unity export writes records through their constructor parameters only.
+        public int MaxLevel() => StartsComplete ? 1 : Levels.Length;
     }
     public sealed record AccountEstateZoneUnlock(int CompletedProductionSites, Dictionary<string, int> Cost, int Seconds);
     public sealed record AccountEstateZone(string Id, int X, int Y, int Width, int Height, bool OpenAtStart, AccountEstateZoneUnlock? Unlock = null);
