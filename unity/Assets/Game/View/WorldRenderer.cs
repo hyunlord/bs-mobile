@@ -169,6 +169,8 @@ namespace Game.View
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
         int facingGeneration;
         readonly PersonSheetWalk personWalk = new PersonSheetWalk();
+        // Distance-based enemy walks for walk roles with cyclePixels (#363); time-based rigs never touch it.
+        readonly PersonSheetWalk enemyWalk = new PersonSheetWalk();
         Vector2 previousRenderedLord;
         bool hasRenderedLord, heroGaitDiscontinuity;
 
@@ -411,7 +413,13 @@ namespace Game.View
                     if(waveEnemyById.TryGetValue(enemy.Id,out var action))actionPhase=action.Phase;
                     var tellTicks=waveDefinition.Enemies[enemy.DefinitionId].TellTicks;
                     var tellProgress=action.Phase==null?0:1-(action.UntilTick-(current.Tick+alpha))/(float)Mathf.Max(1,tellTicks);
-                    rigged=enemyRigAtlas.TrySample(kind,actionPhase,moved,state,visualTime+enemy.Id*.13f,tellProgress,out var rigArt,out rigUv);
+                    var walkFrame=-1;
+                    if(enemyRigAtlas.WalkVisual(kind) is { CyclePixels: > 0 } walkArt)
+                    {
+                        var stride=walkArt.CyclePixels*WaveEnemySize(walkArt.WorldSize,kind).y/walkArt.CellPixels.y;
+                        walkFrame=PersonSheetWalk.FrameAt(enemyWalk.Phase("enemy",enemy.Id,position,visualTime,stride,GameVisualTokens.EnemyWalkMaxCyclesPerSecond,facingGeneration),walkArt.UvRects.Count);
+                    }
+                    rigged=enemyRigAtlas.TrySample(kind,actionPhase,moved,state,visualTime+enemy.Id*.13f,tellProgress,out var rigArt,out rigUv,walkFrame);
                     if(rigged){enemyArt=rigArt;dimensions=enemyArt.WorldSize;}
                     dimensions=WaveEnemySize(dimensions,kind);
                     var body=new Rect(position-Vector2.Scale(dimensions,enemyArt.Pivot),dimensions);
@@ -510,7 +518,7 @@ namespace Game.View
             retiredFacing.Clear();
             foreach(var pair in actorFacing)if(pair.Value.generation!=facingGeneration)retiredFacing.Add(pair.Key);
             for(var i=0;i<retiredFacing.Count;i++)actorFacing.Remove(retiredFacing[i]);
-            personWalk.Retire(facingGeneration);
+            personWalk.Retire(facingGeneration); enemyWalk.Retire(facingGeneration);
             if (presentationDiagnosticsActive)
             {
                 diagnostics.CleanupMs = DiagnosticInterval(ref diagnosticCheckpoint);

@@ -15,6 +15,8 @@ namespace Game.View
         // The manifest frame size in pixels (the first frame; packed sheets give every frame of a role the same cell).
         public Vector2 CellPixels { get; }
         public int FrameMs { get; }
+        // Ground one walk cycle covers in source pixels (#363); 0 when the role plays by time.
+        public float CyclePixels { get; }
         public string Tween { get; }
         public Sprite Sprite { get; }
         // Runtime-generated effect texture (lightning glow, flash, scorch): one full-texture frame, centred pivot, no tween.
@@ -28,7 +30,7 @@ namespace Game.View
         internal ArtVisual(ArtRoleDefinition role, Texture2D texture)
         {
             RoleId = role.id; Texture = texture; Pivot = role.pivot; WorldSize = role.worldSize;
-            FrameMs = role.frameMs; Tween = role.tween;
+            FrameMs = role.frameMs; Tween = role.tween; CyclePixels = role.cyclePixels;
             var uv = new Rect[role.frames.Length];
             for (var i = 0; i < uv.Length; i++)
             {
