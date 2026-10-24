@@ -58,6 +58,8 @@ namespace Game.App
         public string BranchChoice { get; private set; }
         public string ZoneChoice { get; private set; }
         public bool QueueOpen { get; private set; }
+        public bool DecorEnabled { get; private set; } = true;
+        List<EstateDecorItem> decor; string decorLayout;
 
         // `map` keeps the player's zoom and position when the copy is rebuilt; `realtime` is seconds since an arbitrary origin
         // (Time.realtimeSinceStartupAsDouble in the app, a fixed value in tests).
@@ -117,6 +119,15 @@ namespace Game.App
         }
 
         public void ToggleGoal() => GoalCollapsed = !GoalCollapsed;
+        public void ToggleDecor() => DecorEnabled = !DecorEnabled;
+
+        // Decoration plan for the current layout (#372); recomputed only when a building moves or a zone opens.
+        public List<EstateDecorItem> Decor()
+        {
+            var layout = string.Join(";", State.Estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y)) + "|" + string.Join(",", State.Estate.OpenZones);
+            if (decor == null || layout != decorLayout) { decor = EstateDecorPlanner.Plan(EstateDecorRules.Load(), Config, State.Estate); decorLayout = layout; }
+            return decor;
+        }
         public void ToggleQueue() { var open = !QueueOpen; Select(null); QueueOpen = open; }
 
         // ---- Time ----

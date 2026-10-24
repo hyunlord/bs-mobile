@@ -77,6 +77,7 @@ namespace Tests.PlayMode
             var step = screen.Map.GridToViewport(Vector2.right) - screen.Map.GridToViewport(Vector2.zero);
             Assert.That(Vector2.Distance(step, new Vector2(32, 16)), Is.LessThan(1e-3f), "Default cells are 64×32 diamonds.");
             yield return Capture("estate-map-neighbourhood");
+            yield return MeasureDecor(screen);
 
             Click("EstateMap.ZoomOut"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.WholeMap));
             yield return Capture("estate-map-whole");
@@ -210,6 +211,59 @@ namespace Tests.PlayMode
                 var decoded = MetaSaveCodec.Decode(bytes);
                 return decoded.Valid && MetaValidation.ValidateState(catalog, decoded.State).Length == 0 ? AtomicSaveValidation.Valid : AtomicSaveValidation.Corrupt;
             });
+        }
+
+        // #372: decoration matches its plan, uses only catalogued art, and its draw-batch cost is measured with it on and off.
+        IEnumerator MeasureDecor(EstateMapScreen screen)
+        {
+            Assert.That(screen.DecorEnabled, Is.True);
+            var plan = screen.Decor();
+            var sprites = plan.Count(i => i.Source != EstateDecorSource.Road);
+            Assert.That(View().MissingDecor, Is.EqualTo(0), "Every decoration role resolves in the wave art.");
+            Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites));
+            var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
+            yield return Capture("estate-decor-on");
+            Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
+            Assert.That(Rects("EstateMap.Decor:"), Is.Empty);
+            var off = new int[3]; yield return Batches(off); var breaksOff = EstateMapView.MaterialBreaks(View().transform);
+            yield return Capture("estate-decor-off");
+            Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.True);
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
+            var counts = string.Join(", ", plan.GroupBy(i => i.Source).Select(g => $"\"{g.Key}\": {g.Count()}"));
+            File.WriteAllText(Path.Combine(output, "estate-decor-batches.json"),
+                $"{{\"commit\": \"{BuildIdentity.Commit}\", \"screen\": \"390x844 neighbourhood\", \"decorSprites\": {sprites}, \"materialBreaks\": {{\"on\": {breaksOn}, \"off\": {breaksOff}}}, \"plan\": {{{counts}}}, " +
+                $"\"on\": {{\"batches\": {on[0]}, \"drawCalls\": {on[1]}, \"setPassCalls\": {on[2]}}}, \"off\": {{\"batches\": {off[0]}, \"drawCalls\": {off[1]}, \"setPassCalls\": {off[2]}}}, " +
+                "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count'/'SetPass Calls Count' (last of 10 frames) with the UI canvas rendered through a temporary Screen Space - Camera camera; -1 = recorder unavailable; Editor PlayMode, not a device\"}\n");
+            // Structural bound, pinned for the canonical new prototype estate at the default view (#372). A change here means the
+            // decoration or building layering changed its batch cost: look at estate-decor-batches.json before re-pinning.
+            TestContext.WriteLine($"materialBreaks on={breaksOn} off={breaksOff}");
+            Assert.That(breaksOn, Is.EqualTo(PinnedBreaksOn), "Material/texture switches with decoration.");
+            Assert.That(breaksOff, Is.EqualTo(PinnedBreaksOff), "Material/texture switches without decoration.");
+        }
+
+        // Overlay canvases are not counted by the render counters, so the measurement renders the same canvas through a
+        // temporary camera (Screen Space - Camera) for its frames and restores the overlay afterwards.
+        IEnumerator Batches(int[] into)
+        {
+            var canvas = app.Ui.Canvas; var mode = canvas.renderMode;
+            var host = new GameObject("Batch measurement camera"); var camera = host.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.black; camera.cullingMask = 1 << canvas.gameObject.layer;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = 10;
+            try { yield return Count(into); }
+            finally { canvas.renderMode = mode; canvas.worldCamera = null; Object.Destroy(host); }
+            yield return null; Canvas.ForceUpdateCanvases();
+        }
+
+        const int PinnedBreaksOn = 17, PinnedBreaksOff = 10;
+
+        static IEnumerator Count(int[] into)
+        {
+            using var batches = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Batches Count");
+            using var draws = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "Draw Calls Count");
+            using var setPass = Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, "SetPass Calls Count");
+            for (var i = 0; i < 10; i++) yield return null;
+            into[0] = batches.Valid ? (int)batches.LastValue : -1; into[1] = draws.Valid ? (int)draws.LastValue : -1;
+            into[2] = setPass.Valid ? (int)setPass.LastValue : -1;
         }
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();

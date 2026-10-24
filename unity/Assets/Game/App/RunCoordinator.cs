@@ -194,6 +194,9 @@ namespace Game.App
                 LandscapeUiReview.Create(this);
                 TryStartVisualReview();
                 if(!visualReviewRequested)TryStartWaveBenchmark();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                TryStartEstateDecorMeasure();
+#endif
             }
             catch(Exception e){Fail(e);}
         }
