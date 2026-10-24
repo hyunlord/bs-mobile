@@ -22,7 +22,9 @@ namespace Game.App
         public int Opening => FocusIsWider ? 0 : 1;
         float WholeFit => Mathf.Min(Visible.x / MapExtent.x, Visible.y / MapExtent.y);
         float FocusFit => FocusExtent.x > 0 && FocusExtent.y > 0 ? Mathf.Min(1, Mathf.Min(Visible.x / FocusExtent.x, Visible.y / FocusExtent.y)) : WholeFit;
-        public bool FocusIsWider => Viewport.x > 0 && Viewport.y > 0 && FocusFit < WholeFit;
+        // The order is read on the whole viewport, without the bars and panels, so opening a panel never swaps the two levels.
+        public bool FocusIsWider => FocusExtent.x > 0 && FocusExtent.y > 0 && Viewport.x > 0 && Viewport.y > 0 &&
+            Mathf.Min(Viewport.x / FocusExtent.x, Viewport.y / FocusExtent.y) < Mathf.Min(Viewport.x / MapExtent.x, Viewport.y / MapExtent.y);
         // A pinch steps one level once the finger distance has grown or shrunk by this ratio since the last step.
         public const float PinchStepRatio = 1.35f;
 
@@ -68,7 +70,7 @@ namespace Game.App
             zoom = Mathf.Clamp(zoom, 0, Levels - 1);
             if (zoom >= Neighbourhood) return ZoomScales[zoom];
             if (Viewport.x <= 0 || Viewport.y <= 0) return 1;
-            return zoom == 0 ? Mathf.Min(WholeFit, FocusFit) : Mathf.Max(WholeFit, FocusFit);
+            return zoom == Opening ? FocusFit : WholeFit;
         }
 
         // Unscaled extent of the focus (grid rectangles, e.g. the open zones plus a margin) that the Opening level fits.

@@ -79,6 +79,8 @@ namespace Tests.EditMode
             model.SetFocus(new[] { new Rect(25.5f, 25.5f, 9, 9) });
             Assert.That(model.FocusIsWider, Is.False); Assert.That((model.WholeMap, model.Opening), Is.EqualTo((0, 1)));
             Assert.That(model.ScaleAt(model.Opening), Is.InRange(model.ScaleAt(model.WholeMap), 1f), "A small lit land sits between the whole map and the neighbourhood.");
+            model.SetFocus(new[] { new Rect(17.5f, 17.5f, 25, 25) }); model.SetFrame(model.Viewport, Top, 420);
+            Assert.That((model.Opening, model.WholeMap), Is.EqualTo((0, 1)), "A tall panel does not swap the two fitted levels.");
         }
 
         [Test] public void ZoomKeepsTheGridPointUnderTheFingers()

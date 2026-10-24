@@ -79,7 +79,7 @@ namespace Tests.PlayMode
             Assert.That(map.Zoom, Is.EqualTo(map.Opening));
             Assert.That(Rects("EstateMap.Night").Length, Is.EqualTo(1)); Assert.That(Rects("EstateMap.Fog"), Is.Empty);
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("탐사로 열 땅")), Is.False, "No zone labels on the map.");
-            Assert.That(Rects("EstateMap.NextZone").Single(r => r.name == "EstateMap.NextZone").gameObject.activeSelf, Is.False);
+            Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.False);
             var lit = screen.Config.Zones.Single(z => z.OpenAtStart);
             Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThan(10), "Night shows beside the lit land.");
             yield return Capture("estate-map-first");
@@ -96,7 +96,7 @@ namespace Tests.PlayMode
             // The vertical estate (m3a-prototype-r4) uses most of the portrait screen's height in the whole view (#375).
             Assert.That(map.MapSize.y, Is.GreaterThanOrEqualTo(.7f * map.Viewport.y), "The whole estate fills at least 70% of the height.");
             Assert.That(map.MapSize.x, Is.LessThanOrEqualTo(map.Viewport.x + 1e-2f));
-            Assert.That(Rects("EstateMap.NextZone").Single(r => r.name == "EstateMap.NextZone").gameObject.activeSelf, Is.True, "The whole view marks the zone that opens next.");
+            Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.True, "The whole view marks the zone that opens next.");
             yield return Capture("estate-map-whole");
             ZoomTo(EstateMapModel.BuildingDetail);
             yield return Capture("estate-map-building");
@@ -300,6 +300,7 @@ namespace Tests.PlayMode
         static Vector2Int C(int u, int v) => new Vector2Int(u + 26, v + 26);
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
+        RectTransform Named(string name, bool includeInactive) => app.Ui.GetComponentsInChildren<RectTransform>(includeInactive).Single(r => r.name == name);
         // Steps the zoom buttons to a level.
         void ZoomTo(int level)
         {
