@@ -35,6 +35,7 @@ namespace Game.App
         public bool PreviewValid { get; private set; }
         public string PreviewReason { get; private set; } = "";
         public string Notice { get; private set; } = "";
+        public bool GoalCollapsed { get; private set; }
 
         // `map` keeps the player's zoom and position when the copy is rebuilt from a newer account state.
         public EstateMapScreen(MetaCatalog catalog, AccountEstateConfig config, MetaState account, EstateMapModel map = null)
@@ -59,6 +60,42 @@ namespace Game.App
         {
             if (KindNames.TryGetValue(kind, out var name)) return name;
             return Catalog.ManorBuildings.FirstOrDefault(b => b.Id == kind)?.Name ?? kind;
+        }
+
+        // The building whose footprint contains the cell; the map's touch test is the isometric grid, not sprite rectangles.
+        public int? BuildingAt(Vector2Int cell)
+        {
+            foreach (var building in State.Estate.Buildings)
+            {
+                var kind = Kind(building.Kind);
+                if (cell.x >= building.X && cell.x < building.X + kind.Width && cell.y >= building.Y && cell.y < building.Y + kind.Height) return building.Id;
+            }
+            return null;
+        }
+
+        public Vector2 Centre(int id)
+        {
+            var building = Building(id); var kind = Kind(building.Kind);
+            return new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f);
+        }
+
+        public void ToggleGoal() => GoalCollapsed = !GoalCollapsed;
+
+        // The first life task not yet claimed (config order), with its reward; task claiming arrives with M3a-4.
+        public string GoalText()
+        {
+            var estate = State.Estate;
+            var task = Config.Tasks.FirstOrDefault(t => !estate.ClaimedTasks.Contains(t.Id));
+            if (task == null) return "목표 · 모든 보상을 받았습니다";
+            var name = task.Trigger switch
+            {
+                "first-production-claim" => "생산 재고를 처음 받기",
+                "first-building-move" => "건물 하나 옮기기",
+                _ when task.Trigger.StartsWith("production-sites-complete-", StringComparison.Ordinal) => "생산 터 " + task.Trigger.Substring(26) + "곳 완성",
+                _ => task.Id,
+            };
+            var reward = string.Join(" ", task.Reward.Select(r => MaterialName(r.Key) + " " + r.Value));
+            return "목표 · " + name + " · 보상 " + reward + (estate.AchievedTasks.Contains(task.Id) ? " · 달성" : "");
         }
 
         public Vector2 HomeCentre()
