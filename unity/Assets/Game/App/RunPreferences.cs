@@ -9,7 +9,7 @@ namespace Game.App
     {
         const int FeelDefaultsVersion = 1;
         public const string Prefix = "sowsiege.fp.v1.";
-        public static readonly string[] Keys = { "musicVolume", "sfxVolume", "haptics", "shake", "damageNumbers", "aim", "introductionSeen", "seenHints", "feelSpeed", "feelContact", "feelHealth", "feelFeedback", "heroRigPreview", "heroRigSelectedB", "feelDefaultsVersion", "estatePrototype" };
+        public static readonly string[] Keys = { "musicVolume", "sfxVolume", "haptics", "shake", "damageNumbers", "aim", "introductionSeen", "seenHints", "feelSpeed", "feelContact", "feelHealth", "feelFeedback", "heroRigPreview", "heroRigSelectedB", "feelDefaultsVersion", "estatePrototype", "estateMapView" };
         readonly string prefix;
         public float MusicVolume { get; set; } = .55f;
         public float EffectsVolume { get; set; } = .8f;
@@ -26,6 +26,8 @@ namespace Game.App
         public bool HeroRigPreview { get; set; }
         // Development option (#366): the estate tab opens the M3a-2 map prototype instead of the manor page.
         public bool EstatePrototype { get; set; }
+        // The estate map's last view (#379), "zoom;u;v" in invariant culture; empty until the player moves the map.
+        public string EstateMapView { get; set; } = "";
         public FeelExperimentOptions SnapshotFeel() => FeelSpeed || FeelContact || FeelHealth
             ? new FeelExperimentOptions(FeelSpeed, FeelContact, FeelHealth) : null;
 
@@ -47,6 +49,7 @@ namespace Game.App
             value.FeelFeedback = PlayerPrefs.GetInt(prefix + "feelFeedback", 0) == 1;
             value.HeroRigPreview = PlayerPrefs.GetInt(prefix + "heroRigSelectedB", 1) == 1;
             value.EstatePrototype = PlayerPrefs.GetInt(prefix + "estatePrototype", 0) == 1;
+            value.EstateMapView = PlayerPrefs.GetString(prefix + "estateMapView", "");
             if (PlayerPrefs.GetInt(prefix + "feelDefaultsVersion", 0) < FeelDefaultsVersion)
             {
                 value.FeelSpeed = true;
@@ -78,6 +81,7 @@ namespace Game.App
             PlayerPrefs.SetInt(prefix + "feelFeedback", FeelFeedback ? 1 : 0);
             PlayerPrefs.SetInt(prefix + "heroRigSelectedB", HeroRigPreview ? 1 : 0);
             PlayerPrefs.SetInt(prefix + "estatePrototype", EstatePrototype ? 1 : 0);
+            PlayerPrefs.SetString(prefix + "estateMapView", EstateMapView ?? "");
             PlayerPrefs.SetInt(prefix + "feelDefaultsVersion", FeelDefaultsVersion);
             PlayerPrefs.Save();
         }

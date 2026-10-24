@@ -11,10 +11,18 @@ namespace Game.App
     public sealed class EstateMapModel
     {
         public const float HalfWidth = 32, HalfHeight = 16;
-        // Design #360 section 5: three zoom levels [가설] — the whole estate, a neighbourhood (default, 64×32 cells) and one
-        // building (128×64 cells, the source art size). Zero means "fit the whole map into the visible area".
-        public static readonly float[] ZoomScales = { 0, 1, 2 };
-        public const int WholeMap = 0, Neighbourhood = 1, BuildingDetail = 2;
+        // Design #360 section 5 zoom levels [가설], from far to near: two fitted levels — the whole estate (all zones) and the
+        // estate's lit land (#379: the first view, open zones plus a ring of night like key art C) — then a neighbourhood (64×32
+        // cells) and one building (128×64 cells, the source art size). The fitted pair is ordered by scale: when the lit land
+        // with its ring is wider than the whole estate (the r4 centre spans the estate's width), the lit view is the farther.
+        public static readonly float[] ZoomScales = { 0, 0, 1, 2 };
+        public const int Neighbourhood = 2, BuildingDetail = 3, Levels = 4;
+        // Levels of the two fitted views.
+        public int WholeMap => FocusIsWider ? 1 : 0;
+        public int Opening => FocusIsWider ? 0 : 1;
+        float WholeFit => Mathf.Min(Visible.x / MapExtent.x, Visible.y / MapExtent.y);
+        float FocusFit => FocusExtent.x > 0 && FocusExtent.y > 0 ? Mathf.Min(1, Mathf.Min(Visible.x / FocusExtent.x, Visible.y / FocusExtent.y)) : WholeFit;
+        public bool FocusIsWider => Viewport.x > 0 && Viewport.y > 0 && FocusFit < WholeFit;
         // A pinch steps one level once the finger distance has grown or shrunk by this ratio since the last step.
         public const float PinchStepRatio = 1.35f;
 
@@ -57,11 +65,26 @@ namespace Game.App
 
         public float ScaleAt(int zoom)
         {
-            var scale = ZoomScales[Mathf.Clamp(zoom, 0, ZoomScales.Length - 1)];
-            if (scale > 0) return scale;
+            zoom = Mathf.Clamp(zoom, 0, Levels - 1);
+            if (zoom >= Neighbourhood) return ZoomScales[zoom];
             if (Viewport.x <= 0 || Viewport.y <= 0) return 1;
-            return Mathf.Min(Visible.x / MapExtent.x, Visible.y / MapExtent.y);
+            return zoom == 0 ? Mathf.Min(WholeFit, FocusFit) : Mathf.Max(WholeFit, FocusFit);
         }
+
+        // Unscaled extent of the focus (grid rectangles, e.g. the open zones plus a margin) that the Opening level fits.
+        public Vector2 FocusExtent { get; private set; }
+        public Vector2 FocusCentre { get; private set; }
+
+        public void SetFocus(IEnumerable<Rect> areas)
+        {
+            var corners = areas.SelectMany(a => new[] { new Vector2(a.xMin, a.yMin), new Vector2(a.xMax, a.yMin), new Vector2(a.xMin, a.yMax), new Vector2(a.xMax, a.yMax) }).Select(Project).ToArray();
+            if (corners.Length == 0) { FocusExtent = Vector2.zero; return; }
+            var min = new Vector2(corners.Min(c => c.x), corners.Min(c => c.y)); var max = new Vector2(corners.Max(c => c.x), corners.Max(c => c.y));
+            FocusExtent = max - min; FocusCentre = Unproject((min + max) * .5f);
+        }
+
+        // Opens on a remembered view, or on the focus at the Opening level the first time (#379).
+        public void Restore(int zoom, Vector2 centre) { Zoom = Mathf.Clamp(zoom, 0, Levels - 1); CentreOn(centre); }
 
         public void SetViewport(Vector2 size) => SetFrame(size, TopInset, BottomInset);
 
@@ -80,7 +103,7 @@ namespace Game.App
         // Keeps the grid point under `focus` (viewport units) where it is while the zoom changes.
         public bool SetZoom(int zoom, Vector2 focus)
         {
-            zoom = Mathf.Clamp(zoom, 0, ZoomScales.Length - 1);
+            zoom = Mathf.Clamp(zoom, 0, Levels - 1);
             if (zoom == Zoom) return false;
             var grid = ViewportToGrid(focus);
             Zoom = zoom; Offset = Project(grid) * Scale - focus; Clamp();

@@ -246,9 +246,9 @@
     },
     {
       "state": "closed",
-      "saturation": 0.45,
-      "brightness": 0.9,
-      "light": 1
+      "saturation": 0.2,
+      "brightness": 0.8,
+      "light": 0.55
     }
   ],
   "ruinState": "fallow",
@@ -295,17 +295,10 @@
       "frontier-empty-armor",
       "frontier-dry-well",
       "frontier-stump-tracks"
-    ],
-    "edge": "frontier-ink-edge",
-    "edgeEvery": 8,
-    "edgeAlpha": 0.85
+    ]
   },
   "closedLand": {
-    "status": "Closed land painted then veiled like key art C (m3-estate-keyarts-r2 C-first-login-source) [가설]: terrain patches (sage share), rivers from 'placed', one jittered candidate per 'every' cells becoming a wood (wooded zones), a dead tree or a frontier trace, all under the blue-grey veil of alpha 'veil'. The closed tint only desaturates; the veil darkens.",
-    "veil": 0.7,
-    "veilFeather": 0.9,
-    "veilOverhang": 6,
-    "groundFeather": 2,
+    "status": "Land outside the open zones (closed zones and the night margin) painted like key art C (m3-estate-keyarts-r2 C-first-login-source) [가설]: terrain patches (sage share), rivers from 'placed', one jittered candidate per 'every' cells becoming a wood (wooded zones), a dead tree or a frontier trace. The cool 'closed' tint (low saturation, partly the M2 darkness formula) keeps day ochre from showing through the night.",
     "sageShare": 0.3,
     "every": 4,
     "jitter": 0.6,
@@ -322,6 +315,43 @@
         "share": 0.75
       }
     ]
+  },
+  "night": {
+    "status": "Continuous night by distance from open land (#379) [가설]: alpha edgeAlpha at the lit edge rising to fullAlpha fullCells outside, 0 deeper than insideCells inside; colour from key art C's dark land. margin = painted cells around the estate; openingMargin = night cells around open land in the first view. Lamps: soft warm light (M2 RIM gold, normal blend) around built buildings.",
+    "colour": [
+      54,
+      61,
+      73
+    ],
+    "ground": [
+      78,
+      82,
+      86
+    ],
+    "lampColour": [
+      229,
+      201,
+      127
+    ],
+    "edgeAlpha": 0.5,
+    "fullAlpha": 0.88,
+    "fullCells": 2.5,
+    "insideCells": 0.5,
+    "texelsPerCell": 4,
+    "margin": 6,
+    "openingMargin": 2.5,
+    "lampAlpha": 0.24,
+    "homeLampCells": 3.2,
+    "lampCells": 2.2
+  },
+  "sites": {
+    "status": "Unbuilt sites and roads stand on Astra's painted earth (yard-earth) instead of flat diamonds (#379). Stakes and rope for sites are requested from Astra.",
+    "ground": "yard-earth",
+    "siteWidth": 1.15,
+    "roadWidth": 1.4,
+    "aspect": 0.5,
+    "siteAlpha": 0.9,
+    "roadAlpha": 0.75
   },
   "placed": [
     {
