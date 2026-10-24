@@ -128,13 +128,88 @@ namespace Tests.PlayMode
             yield return Capture("estate-map-move-blocked");
             Click("EstateMap.Cancel"); yield return null;
             Assert.That(screen.Building(forge.Id).X, Is.EqualTo(4), "Cancel keeps the last confirmed place.");
-            Focus(new Vector2(12, 4)); Tap(new Vector2Int(12, 4)); yield return null;
-            Assert.That(screen.Selected, Is.Null, "A tap on empty ground closes the selection.");
+            Focus(new Vector2(3.5f, .5f)); Tap(new Vector2Int(3, 0)); yield return null;
+            Assert.That(screen.Selected, Is.Null, "A tap on empty open ground closes the selection.");
 
             Assert.That(app.Progression.State.Estate, Is.Null);
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator ASavedEstateBuildsClaimsAndSpecializesOnTheMap()
+        {
+            var catalog = CanonicalContent.CreateMetaCatalog(); var config = CanonicalContent.CreateAccountEstateConfig();
+            var old = MetaEngine.NewGame(catalog);
+            old = old with
+            {
+                ManorLevels = new Dictionary<string, int>(old.ManorLevels) { ["meta:granary"] = 3, ["meta:forge"] = 1 },
+                Wallet = new Dictionary<string, int>(old.Wallet) { ["meta:grain"] = 300, ["meta:timber"] = 400, ["meta:iron"] = 150 },
+            };
+            var fixture = AccountEstate.Migrate(catalog, config, old, 0, 0);
+            SaveFixture(catalog, fixture);
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var screen = app.EstateMap; var account = MetaSaveCodec.Encode(app.Progression.State);
+            Assert.That(screen.FromSave, Is.True, "An account that carries an estate is copied, not replaced by a new one.");
+            int Id(string kind) => screen.State.Estate.Buildings.Single(b => b.Kind == kind).Id;
+
+            var field = screen.Building(Id("m3a:field"));
+            Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
+            Assert.That(Named("EstateMap.Build").GetComponentInChildren<Text>().text, Is.EqualTo("짓기"));
+            Click("EstateMap.Build"); yield return null;
+            Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id)); Assert.That(screen.Notice, Is.EqualTo("경작지 공사 시작"));
+            yield return Capture("estate-flow-build");
+            Click("EstateMap.Skip60"); yield return null;
+            Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
+
+            var forge = screen.Building(Id("meta:forge"));
+            Focus(screen.Centre(forge.Id)); Tap(new Vector2Int(forge.X, forge.Y)); yield return null;
+            Assert.That(Named("EstateMap.Build").GetComponentInChildren<Text>().text, Is.EqualTo("올리기"));
+            Click("EstateMap.Build"); yield return null;
+            var lumber = screen.Building(Id("m3a:lumber_camp"));
+            Focus(screen.Centre(lumber.Id)); Tap(new Vector2Int(lumber.X, lumber.Y)); yield return null;
+            Click("EstateMap.Build"); yield return null; Assert.That(screen.Reserved(lumber.Id), Is.True, "A second order while busy is reserved.");
+            Click("EstateMap.QueueToggle"); yield return null; Assert.That(screen.QueueOpen, Is.True);
+            Assert.That(Rects("EstateMap.Queue").Count(r => r.name == "EstateMap.Queue"), Is.EqualTo(1));
+            yield return Capture("estate-flow-queue");
+            Click("EstateMap.CancelReservation:" + lumber.Id); yield return null; Assert.That(screen.Reserved(lumber.Id), Is.False);
+            Click("EstateMap.Close"); yield return null;
+
+            Click("EstateMap.Skip600"); yield return null;
+            Assert.That(screen.Building(forge.Id).Level, Is.EqualTo(2));
+            Assert.That(screen.StockTotal, Is.GreaterThan(0));
+            yield return Capture("estate-flow-stock");
+            var grain = screen.State.Wallet["meta:grain"]; var stock = screen.StockTotal;
+            Click("EstateMap.ClaimStock"); yield return null;
+            Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(grain + stock)); Assert.That(screen.StockTotal, Is.EqualTo(0));
+            Click("EstateMap.GoalClaim"); yield return null;
+            Assert.That(screen.State.Estate.ClaimedTasks, Does.Contain("task:m3a-first-claim"));
+
+            var granary = screen.Building(Id("meta:granary"));
+            Focus(screen.Centre(granary.Id)); Tap(new Vector2Int(granary.X + 1, granary.Y + 1)); yield return null;
+            Click("EstateMap.Specialize"); yield return null; Assert.That(screen.Specializing, Is.True);
+            Click("EstateMap.Branch:granary:long-away"); yield return null;
+            yield return Capture("estate-flow-specialize");
+            Click("EstateMap.BranchConfirm"); yield return null;
+            Assert.That(screen.Building(granary.Id).Branch, Is.EqualTo("granary:long-away"));
+
+            Focus(new Vector2(12, 4)); Tap(new Vector2Int(12, 4)); yield return null;
+            Assert.That(screen.ZoneChoice, Is.Not.Null); Assert.That(Rects("EstateMap.Zone").Count(r => r.name == "EstateMap.Zone"), Is.EqualTo(1));
+            yield return Capture("estate-flow-zone");
+
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype never writes the saved estate.");
+        }
+
+        void SaveFixture(MetaCatalog catalog, MetaState state)
+        {
+            Assert.That(MetaValidation.ValidateState(catalog, state), Is.Empty);
+            new AtomicSaveStore(directory, "progress.bin").Save(MetaSaveCodec.Encode(state), bytes =>
+            {
+                var decoded = MetaSaveCodec.Decode(bytes);
+                return decoded.Valid && MetaValidation.ValidateState(catalog, decoded.State).Length == 0 ? AtomicSaveValidation.Valid : AtomicSaveValidation.Corrupt;
+            });
         }
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
