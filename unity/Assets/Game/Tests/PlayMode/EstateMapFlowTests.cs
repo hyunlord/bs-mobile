@@ -145,6 +145,8 @@ namespace Tests.PlayMode
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
+            Assert.That(measuredBreaks.On, Is.EqualTo(PinnedBreaksOn), "Material/texture switches with decoration.");
+            Assert.That(measuredBreaks.Off, Is.EqualTo(PinnedBreaksOff), "Material/texture switches without decoration.");
         }
 
         [UnityTest, Timeout(180000)]
@@ -248,10 +250,12 @@ namespace Tests.PlayMode
                 "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count'/'SetPass Calls Count' (last of 10 frames) with the UI canvas rendered through a temporary Screen Space - Camera camera; -1 = recorder unavailable; Editor PlayMode, not a device\"}\n");
             // Structural bound, pinned for the canonical new prototype estate at the default view (#372). A change here means the
             // decoration or building layering changed its batch cost: look at estate-decor-batches.json before re-pinning.
+            // Checked at the end of the flow, so a changed count still leaves every capture of the run behind for review.
             TestContext.WriteLine($"materialBreaks on={breaksOn} off={breaksOff}");
-            Assert.That(breaksOn, Is.EqualTo(PinnedBreaksOn), "Material/texture switches with decoration.");
-            Assert.That(breaksOff, Is.EqualTo(PinnedBreaksOff), "Material/texture switches without decoration.");
+            measuredBreaks = (breaksOn, breaksOff);
         }
+
+        (int On, int Off) measuredBreaks;
 
         // Overlay canvases are not counted by the render counters, so the measurement renders the same canvas through a
         // temporary camera (Screen Space - Camera) for its frames and restores the overlay afterwards.
