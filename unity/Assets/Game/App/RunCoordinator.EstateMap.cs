@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Game.App.Generated;
 using SowSiege.Core;
 
@@ -10,7 +11,7 @@ namespace Game.App
         // map; release builds never show the option and always open the manor page. The map edits only an in-memory copy.
         AccountEstateConfig estateConfig;
         EstateMapScreen estateMap;
-        MetaState estateMapSource;
+        byte[] estateMapSource;
 
         bool EstatePrototypeActive
         {
@@ -45,13 +46,15 @@ namespace Game.App
             {
                 estateConfig ??= CanonicalContent.CreateAccountEstateConfig();
                 if (estateConfig == null) { ShowAccountEstate(); return; }
-                // A newer account state (a settled run, a claim) rebuilds the copy; the view keeps its zoom and position.
-                if (estateMap == null || !ReferenceEquals(estateMapSource, Progression.State))
+                // A changed account (a settled run, a claim) rebuilds the copy; the view keeps its zoom and position.
+                // Progression.State is a fresh copy on every read, so the account is compared by its save bytes.
+                var account = Progression.State; var bytes = MetaSaveCodec.Encode(account);
+                if (estateMap == null || estateMapSource == null || !estateMapSource.SequenceEqual(bytes))
                 {
-                    estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, Progression.State, estateMap?.Map);
-                    estateMapSource = Progression.State;
+                    estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, account, estateMap?.Map);
+                    estateMapSource = bytes;
                 }
-                MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, Progression.State, new EstateMapActions
+                MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions
                 {
                     Redraw = ShowEstateMap, Depart = ShowPortraitDeparture, Settings = () => ShowSettings(false), Navigate = NavigatePortraitMeta,
                 }));
