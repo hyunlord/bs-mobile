@@ -35,7 +35,7 @@ namespace SowSiege.Core
             if (state.Estate != null) { throw new InvalidOperationException("The account estate already exists."); }
             if (state.PendingRun != null) { throw new InvalidOperationException("Settle the pending run under the old rules before the estate migration."); }
             // Auto start needs the player's explicit consent after a migration (step 4).
-            var estate = Create(config, MigratedOrigin, kind => kind.StartsComplete ? 1 : state.ManorLevels.TryGetValue(kind.Kind, out int level) ? Math.Min(level, kind.MaxLevel) : 0,
+            var estate = Create(config, MigratedOrigin, kind => kind.StartsComplete ? 1 : state.ManorLevels.TryGetValue(kind.Kind, out int level) ? Math.Min(level, kind.MaxLevel()) : 0,
                 false, monotonicSeconds, wallSeconds);
             return MetaEngine.CloneState(state) with { SchemaVersion = MetaSaveCodec.EstateVersion, Estate = estate };
         }
@@ -122,9 +122,9 @@ namespace SowSiege.Core
                 Check(kind.Produces == null || (kind.Parent != null && config.Storage.BaseStock.ContainsKey(kind.Produces.Resource) && kind.Produces.PerMinute > 0), kind.Kind + " production");
                 Check(kind.Branches == null || kind.Branches.Distinct(StringComparer.Ordinal).Count() == kind.Branches.Length, kind.Kind + " branches");
             }
-            int maxLevel = config.Buildings.Max(x => x.MaxLevel);
+            int maxLevel = config.Buildings.Max(x => x.MaxLevel());
             var storage = config.Buildings.SingleOrDefault(x => x.Kind == config.Storage.StorageKind);
-            Check(storage != null && config.Storage.GranaryLevelSeconds.Length > storage.MaxLevel && config.Storage.GranaryLevelStockPermille.Length > storage.MaxLevel
+            Check(storage != null && config.Storage.GranaryLevelSeconds.Length > storage.MaxLevel() && config.Storage.GranaryLevelStockPermille.Length > storage.MaxLevel()
                 && config.Storage.GranaryLevelSeconds.All(x => x > 0 && x <= config.Storage.MaximumSeconds) && config.Storage.GranaryLevelStockPermille.All(x => x > 0 && x <= config.Storage.MaximumStockPermille)
                 && Materials(config.Storage.BaseStock) && config.Storage.LongAwayBonusSeconds >= 0 && config.Storage.LongAwayStockPermille >= 0, "storage");
             Check(config.Production.ParentLevelPermille.Length > maxLevel && config.Production.ParentLevelPermille[0] == 0 && config.Production.ParentLevelPermille.All(x => x >= 0)
@@ -294,7 +294,7 @@ namespace SowSiege.Core
             private (bool, string) CanStart(MetaEstateBuilding building, out AccountEstateBuildingKind kind)
             {
                 kind = Kind(building.Kind);
-                if (building.Level >= kind.MaxLevel) { return (false, "max-level"); }
+                if (building.Level >= kind.MaxLevel()) { return (false, "max-level"); }
                 var k = kind;
                 if (!InOpenZone(building.X, building.Y, k.Width, k.Height)) { return (false, "zone-closed"); }
                 if (kind.Parent != null && LevelOf(kind.Parent) < 1) { return (false, "parent-required"); }
@@ -347,7 +347,7 @@ namespace SowSiege.Core
             private (bool, string) CanStartLater(MetaEstateBuilding building)
             {
                 var kind = Kind(building.Kind);
-                if (building.Level >= kind.MaxLevel) { return (false, "max-level"); }
+                if (building.Level >= kind.MaxLevel()) { return (false, "max-level"); }
                 if (!InOpenZone(building.X, building.Y, kind.Width, kind.Height)) { return (false, "zone-closed"); }
                 return (true, "");
             }
@@ -396,7 +396,7 @@ namespace SowSiege.Core
                 if (state.PendingRun != null) { return (false, "run-pending"); }
                 var building = buildings[index]; var kind = Kind(building.Kind);
                 if (kind.Branches == null || !kind.Branches.Contains(branch)) { return (false, "unknown-branch"); }
-                if (building.Level < kind.MaxLevel) { return (false, "level-required"); }
+                if (building.Level < kind.MaxLevel()) { return (false, "level-required"); }
                 buildings[index] = building with { Branch = branch };
                 return (true, "specialized");
             }
