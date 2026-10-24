@@ -86,7 +86,7 @@ namespace Tests.EditMode
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             Assert.That(plan.StateOf(new Vector2Int(home.X, home.Y - 1)), Is.EqualTo("restored"), "Next to the built home.");
             Assert.That(plan.StateOf(new Vector2Int(home.X - 5, home.Y - 1)), Is.EqualTo("sage"));
-            Assert.That(plan.StateOf(new Vector2Int(21, 21)), Is.EqualTo("fallow"), "The far corner of the centre is untended.");
+            Assert.That(plan.StateOf(new Vector2Int(21, 21)), Is.EqualTo("closed"), "r5: the old centre's corner is outskirts, outside the lit start.");
             Assert.That(plan.StateOf(new Vector2Int(45, 30)), Is.EqualTo("closed"));
             Assert.That(plan.StateOf(new Vector2Int(45, 10)), Is.Null, "Outside every zone.");
             foreach (var item in plan.Items.Where(i => i.Source == "frontier" || i.Source == "wood")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
@@ -144,11 +144,11 @@ namespace Tests.EditMode
             Assert.That(field.width, Is.EqualTo(plan.Area.width * res)); Assert.That(field.height, Is.EqualTo(plan.Area.height * res));
             float At(float u, float v) => field.GetPixel(Mathf.FloorToInt((u - plan.Area.xMin) * res), Mathf.FloorToInt((v - plan.Area.yMin) * res)).a;
             Assert.That(At(30, 30), Is.EqualTo(0).Within(.01f), "The open centre is lit.");
-            Assert.That(At(40.6f, 30), Is.InRange(.5f, .88f), "Just past the lit edge, in the village zone: between half and full.");
+            Assert.That(At(37.6f, 30), Is.InRange(.5f, .8f), "Just past the lit edge, in the east outskirts: between half and full.");
             Assert.That(At(55, 50), Is.EqualTo(.88f).Within(.01f), "Deep in the land to come, full night.");
-            // The west hill (v < 20) and the windmill (v ≥ 20) meet at v = 20, two cells from the lit centre: no seam there.
-            Assert.That(At(18, 19.6f), Is.EqualTo(At(18, 20.4f)).Within(.02f), "No seam between closed zones.");
-            Assert.That(At(18, 20.4f), Is.InRange(.6f, .87f), "Two cells from light: still rising toward full night.");
+            // The north outskirts (v < 23) and the west outskirts (v ≥ 23) meet at v = 23, 1.5 cells from the lit start: no seam.
+            Assert.That(At(21.5f, 22.6f), Is.EqualTo(At(21.5f, 23.4f)).Within(.02f), "No seam between closed zones.");
+            Assert.That(At(21.5f, 23.4f), Is.InRange(.6f, .87f), "1.5 cells from light: still rising toward full night.");
             var c = field.GetPixel(0, 0); Assert.That(new Color(c.r, c.g, c.b), Is.EqualTo((Color)rules.night.Colour).Using(ColorComparer));
             Assert.That(c.a, Is.EqualTo(1).Within(.01f), "The painted area's edge closes to opaque night, matching the page behind it.");
         }

@@ -11,7 +11,7 @@ public sealed class AccountEstateVerticalMapTests
     private static string Data => Path.Combine(AppContext.BaseDirectory, "data");
     private static readonly MetaCatalog Catalog = MetaContentLoader.Read(Data);
     private static readonly AccountEstateConfig R3 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.WideMapVersion);
-    private static readonly AccountEstateConfig R4 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.MapPrototypeVersion);
+    private static readonly AccountEstateConfig R4 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.VerticalMapVersion);
     private static string Json<T>(T value) => System.Text.Json.JsonSerializer.Serialize(value);
 
     private static (double D, double S) Centre(AccountEstateZone z) => (z.X + z.Width / 2.0 - (z.Y + z.Height / 2.0), z.X + z.Width / 2.0 + z.Y + z.Height / 2.0);

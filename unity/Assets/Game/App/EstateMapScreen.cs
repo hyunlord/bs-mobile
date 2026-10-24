@@ -101,7 +101,8 @@ namespace Game.App
         // Display names of the prototype's zones [가설] (#379): shown only when a closed zone is tapped.
         static readonly Dictionary<string, string> ZoneNames = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["zone:start"] = "중심 마을", ["zone:inner-village"] = "마을 확장", ["zone:inner-northeast-wood"] = "북동 숲", ["zone:inner-west-hill"] = "서쪽 언덕",
+            ["zone:start"] = "중심 마을", ["zone:inner-village"] = "마을 확장",
+            ["zone:outskirts-north"] = "마을 둘레", ["zone:outskirts-east"] = "마을 둘레", ["zone:outskirts-south"] = "마을 둘레", ["zone:outskirts-west"] = "마을 둘레", ["zone:inner-northeast-wood"] = "북동 숲", ["zone:inner-west-hill"] = "서쪽 언덕",
             ["zone:inner-windmill"] = "풍차 언덕", ["zone:inner-fields"] = "밭", ["zone:inner-fallow"] = "휴경지", ["zone:inner-ruins"] = "폐허", ["zone:inner-riverside"] = "강가",
         };
         public string ZoneName(AccountEstateZone zone) => ZoneNames.TryGetValue(zone.Id, out var name) ? name : "닫힌 구역";

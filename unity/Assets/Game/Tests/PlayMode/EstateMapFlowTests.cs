@@ -83,6 +83,7 @@ namespace Tests.PlayMode
             var lit = screen.Config.Zones.Single(z => z.OpenAtStart);
             Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThan(10), "Night shows beside the lit land.");
             yield return Capture("estate-map-first");
+            yield return NightComparison("estate-map-first");
             Assert.That(PlayerPrefs.GetString(prefix + "estateMapView", ""), Is.Empty, "Nothing is remembered until the player moves the map.");
 
             ZoomTo(EstateMapModel.Neighbourhood);
@@ -98,6 +99,7 @@ namespace Tests.PlayMode
             Assert.That(map.MapSize.x, Is.LessThanOrEqualTo(map.Viewport.x + 1e-2f));
             Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.True, "The whole view marks the zone that opens next.");
             yield return Capture("estate-map-whole");
+            yield return NightComparison("estate-map-whole");
             ZoomTo(EstateMapModel.BuildingDetail);
             yield return Capture("estate-map-building");
             Click("EstateMap.ZoomIn"); yield return null; Assert.That(map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail), "Four levels only.");
@@ -302,6 +304,20 @@ namespace Tests.PlayMode
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
         RectTransform Named(string name, bool includeInactive) => app.Ui.GetComponentsInChildren<RectTransform>(includeInactive).Single(r => r.name == name);
+        // #379 review: the same view with the far night at 0.75 instead of 0.88 [가설], for the user's side-by-side. The rules
+        // object is the loaded one, so the value is restored before anything else draws.
+        IEnumerator NightComparison(string name)
+        {
+            var night = EstateDecorRules.Load().night; var full = night.fullAlpha;
+            try
+            {
+                night.fullAlpha = .75f; Click("EstateMap.Goal"); Click("EstateMap.Goal"); yield return null;
+                yield return Capture(name + "-night075");
+            }
+            finally { night.fullAlpha = full; }
+            Click("EstateMap.Goal"); Click("EstateMap.Goal"); yield return null;
+        }
+
         // Steps the zoom buttons to a level.
         void ZoomTo(int level)
         {
