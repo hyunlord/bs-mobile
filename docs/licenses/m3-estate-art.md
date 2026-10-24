@@ -13,6 +13,7 @@ Runtime files are in `unity/Assets/Resources/EstateArt/`. `tools/estate-art.mjs`
 - The building body atlas is copied byte for byte. The shadow atlas is downsampled to half size.
 - Every other asset is downsampled with a premultiplied-alpha box filter to its listed `maxSize`, so it is never larger than its source, and packed onto the decor and terrain atlases.
 - `estate-art.json` records each source file's SHA-256, its size, pivot, display width and layer.
+- For each building stage it also records the body's opaque width inside its 256×320 cell (alpha above 8, as `assembly.js` `trim()` measures it). Buildings are drawn at screen width ÷ that width, like Astra's assembly.
 - Pixels are not repainted, recoloured or thresholded. Restoration colours are applied at draw time by the `Game/UI/EstateTint` shader.
 - Some sources carry saturated RGB in near-transparent edge pixels; they are kept as delivered.
 
