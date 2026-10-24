@@ -50,7 +50,9 @@ namespace Game.App
             var bottom = BottomBar + BottomGap * 2 + (screen.Selected != null ? PanelHeight + BottomGap : 0);
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
             if (!screen.Map.Framed) screen.Map.CentreOn(screen.HomeCentre());
-            else if (screen.Selected != null && !screen.Map.InView(screen.Centre(screen.Selected.Value))) screen.Map.CentreOn(screen.Centre(screen.Selected.Value));
+            // A newly selected building hidden behind the panel is brought into view; while moving, the camera stays where the
+            // player put it so the destination preview remains visible.
+            else if (screen.Selected != null && !screen.Moving && !screen.Map.InView(screen.Centre(screen.Selected.Value))) screen.Map.CentreOn(screen.Centre(screen.Selected.Value));
 
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             foreach (var zone in screen.Config.Zones) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, screen.Open(zone) ? OpenGround : ClosedGround);

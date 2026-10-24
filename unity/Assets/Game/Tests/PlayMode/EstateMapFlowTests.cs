@@ -107,8 +107,14 @@ namespace Tests.PlayMode
             Assert.That(screen.Map.GridToViewport(new Vector2(16, 8)).y, Is.LessThanOrEqualTo(screen.Map.Viewport.y - screen.Map.BottomInset + .5f), "The panel never hides a row.");
             yield return Capture("estate-map-selected");
             Click("EstateMap.Move"); yield return null; Assert.That(screen.Moving, Is.True);
+            // At building zoom the original footprint leaves the screen once the player pans to the destination; the redraw
+            // after the tap must keep the destination preview in view (review on #369).
+            Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
             Focus(new Vector2(4.5f, 4.5f)); Tap(new Vector2Int(4, 4)); yield return null;
             Assert.That(screen.Preview, Is.EqualTo(new Vector2Int(4, 4))); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
+            Assert.That(screen.Map.InView(new Vector2(5, 5)), Is.True, "The destination preview stays on screen after the tap redraws the page.");
+            Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.False, "The camera did not jump back to the original footprint.");
+            Click("EstateMap.ZoomOut"); yield return null;
             yield return Capture("estate-map-move-valid");
             Click("EstateMap.Confirm"); yield return null;
             Assert.That(screen.Moving, Is.False);
