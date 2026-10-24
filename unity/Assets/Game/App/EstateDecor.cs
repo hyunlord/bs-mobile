@@ -187,8 +187,10 @@ namespace Game.App
             plan.Area = new RectInt(minU, minV, maxU - minU, maxV - minV);
             // Terrain patches over the whole area, one per patchCells block, picked by the block centre's state; land outside
             // the open zones mixes fallow and sage by seed and takes the cool closed colour.
-            for (var u = plan.Area.xMin; u < plan.Area.xMax; u += t.patchCells)
-                for (var v = plan.Area.yMin; v < plan.Area.yMax; v += t.patchCells)
+            // Patches spill past their block, so the outermost ring of blocks stays bare: every patch ends inside the night's
+            // opaque rim at the area's edge.
+            for (var u = plan.Area.xMin + t.patchCells; u < plan.Area.xMax - t.patchCells; u += t.patchCells)
+                for (var v = plan.Area.yMin + t.patchCells; v < plan.Area.yMax - t.patchCells; v += t.patchCells)
                 {
                     var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre) ?? "closed"; var dark = state == "closed";
                     if (dark) state = AstraDecor.Rand(rules.astra, "closed-terrain", $"{u}-{v}") < cl.sageShare ? "sage" : "fallow";
@@ -312,7 +314,9 @@ namespace Game.App
                     var at = new Vector2(u + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-x", key) - .5f) * cl.jitter),
                         v + cl.every * (.5f + ((float)AstraDecor.Rand(rules.astra, "closed-y", key) - .5f) * cl.jitter));
                     var cell = Vector2Int.FloorToInt(at);
-                    if (!plan.Area.Contains(cell) || OpenCell(cell) || reserved.Contains(cell)) continue;
+                    var inset = Mathf.CeilToInt(rules.night.areaFadeCells) + 1;
+                    if (cell.x < plan.Area.xMin + inset || cell.y < plan.Area.yMin + inset || cell.x >= plan.Area.xMax - inset || cell.y >= plan.Area.yMax - inset
+                        || OpenCell(cell) || reserved.Contains(cell)) continue;
                     var zone = config.Zones.FirstOrDefault(z => cell.x >= z.X && cell.x < z.X + z.Width && cell.y >= z.Y && cell.y < z.Y + z.Height);
                     var wood = zone == null ? null : cl.woods.FirstOrDefault(w => w.zone == zone.Id && w.ids.Length > 0);
                     var variant = AstraDecor.Rand(rules.astra, "closed-variant", key);

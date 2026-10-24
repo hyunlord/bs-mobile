@@ -246,9 +246,9 @@
     },
     {
       "state": "closed",
-      "saturation": 0.2,
-      "brightness": 0.8,
-      "light": 0.55
+      "saturation": 0.25,
+      "brightness": 0.95,
+      "light": 0.75
     }
   ],
   "ruinState": "fallow",
