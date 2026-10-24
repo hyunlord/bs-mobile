@@ -480,6 +480,7 @@ namespace Game.App
     // distance from open land (EstateDecorRules.Night.Alpha), drawn as a single projected quad. Grid to screen is affine, so the
     // texture's bilinear gradient stays smooth on screen and no zone edge shows inside the night. The field is built once per
     // set of open zones; a pan or zoom only moves four vertices.
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateNight : MaskableGraphic
     {
         static Texture2D field; static string fieldKey;

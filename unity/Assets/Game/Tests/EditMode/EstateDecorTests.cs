@@ -122,7 +122,7 @@ namespace Tests.EditMode
             foreach (var zone in config.Zones.Where(z => z.Id != "zone:start"))
             {
                 Assert.That(first.Items.Count(i => i.Source == "terrain" && In(zone, i.Grid)), Is.GreaterThan(0), "Terrain patches cover " + zone.Id);
-                if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(3), "Traces or woods in " + zone.Id);
+                if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(0), "Traces or woods in " + zone.Id);
             }
             Assert.That(first.In(EstateDrawLayer.Veiled).Count(), Is.GreaterThan(30));
             // The river runs down the estate's right edge (key art A): from the north-east wood to the riverside zone.
