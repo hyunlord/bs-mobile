@@ -46,14 +46,17 @@ namespace Game.App
             {
                 estateConfig ??= CanonicalContent.CreateAccountEstateConfig();
                 if (estateConfig == null) { ShowAccountEstate(); return; }
-                // A changed account (a settled run, a claim) rebuilds the copy; the view keeps its zoom and position.
-                // Progression.State is a fresh copy on every read, so the account is compared by its save bytes.
-                var account = Progression.State; var bytes = MetaSaveCodec.Encode(account);
-                if (estateMap == null || estateMapSource == null || !estateMapSource.SequenceEqual(bytes))
+                // Without a saved estate the prototype keeps its own new estate for the session (#370). An account that does
+                // carry an estate is copied again whenever it changes; Progression.State is a fresh copy on every read, so it is
+                // compared by its save bytes. Either way the view keeps its zoom and position.
+                var account = Progression.State;
+                var bytes = account.Estate != null ? MetaSaveCodec.Encode(account) : null;
+                if (estateMap == null || estateMap.FromSave != (bytes != null) || bytes != null && !bytes.SequenceEqual(estateMapSource))
                 {
-                    estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, account, estateMap?.Map);
+                    estateMap = new EstateMapScreen(Progression.Catalog, estateConfig, account, estateMap?.Map, () => UnityEngine.Time.realtimeSinceStartupAsDouble);
                     estateMapSource = bytes;
                 }
+                estateMap.Advance();
                 MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions
                 {
                     Redraw = ShowEstateMap, Depart = ShowPortraitDeparture, Settings = () => ShowSettings(false), Navigate = NavigatePortraitMeta,
