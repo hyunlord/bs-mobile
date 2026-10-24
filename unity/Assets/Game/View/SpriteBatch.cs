@@ -42,6 +42,8 @@ namespace Game.View
         int count;
         bool linearColorSpace;
         bool heroRigBoundsConfigured;
+        // Enemy runs share one render queue. Only their aggregate sorting bounds move in depth; sprite geometry stays at z=0.
+        public float? SortingDepth { get; set; }
         public int SubmittedInstances { get; private set; }
         public int DrawCalls { get; private set; }
 
@@ -122,6 +124,20 @@ namespace Game.View
                 camera = null, layer = 0, matProps = properties, shadowCastingMode = ShadowCastingMode.Off,
                 receiveShadows = false, lightProbeUsage = LightProbeUsage.Off, reflectionProbeUsage = ReflectionProbeUsage.Off
             };
+            if (SortingDepth.HasValue)
+            {
+                var bounds = new Bounds(matrices[0].MultiplyPoint3x4(Vector3.zero), Vector3.zero);
+                for (var i = 0; i < count; i++)
+                {
+                    bounds.Encapsulate(matrices[i].MultiplyPoint3x4(Vector3.zero));
+                    bounds.Encapsulate(matrices[i].MultiplyPoint3x4(Vector3.right));
+                    bounds.Encapsulate(matrices[i].MultiplyPoint3x4(Vector3.up));
+                    bounds.Encapsulate(matrices[i].MultiplyPoint3x4(new Vector3(1, 1, 0)));
+                }
+                var center = bounds.center; center.z = SortingDepth.Value; bounds.center = center;
+                var extents = bounds.extents; extents.z = Mathf.Abs(center.z) + .01f; bounds.extents = extents;
+                parameters.worldBounds = bounds;
+            }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             using (DrawMarker.Auto())
 #endif
