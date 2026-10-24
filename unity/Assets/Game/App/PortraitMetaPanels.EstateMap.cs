@@ -62,7 +62,8 @@ namespace Game.App
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
             var ground = Shapes(viewport, "EstateMap.Ground", view);
-            ground.Footprint(plan.Area.x, plan.Area.y, plan.Area.width, plan.Area.height, night.Ground);
+            // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
+            ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
             foreach (var zone in screen.Config.Zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
             foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
             if (screen.Moving)
