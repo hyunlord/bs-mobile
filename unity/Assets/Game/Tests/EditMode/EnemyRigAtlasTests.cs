@@ -40,5 +40,48 @@ namespace Tests.EditMode
             Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Tell, 999, 80, .5f), Is.EqualTo(1));
             Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Tell, 999, 80, 2), Is.EqualTo(1));
         }
+
+
+        // #363: the baked rigs (wave art only) keep eight walk frames with no cycle length, so they keep the time-based walk and
+        // show exactly the frames they showed before (same frame for every time as the old fixed-eight formula).
+        [Test]
+        public void BakedRigsKeepTheirEightFrameTimeBasedWalk()
+        {
+            var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "wave1a-manifest.json")));
+            var walks = System.Array.FindAll(m.roles, r => r.id.StartsWith("enemy.rig.", System.StringComparison.Ordinal) && r.id.EndsWith(".walk", System.StringComparison.Ordinal));
+            Assert.That(walks.Length, Is.EqualTo(6), "six baked rigs");
+            foreach (var walk in walks)
+            {
+                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((8, 0f)), walk.id);
+                for (var frame = 0; frame < 2000; frame++)
+                {
+                    var time = frame / 60f;
+                    Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Walk, time, walk.frameMs, 0, walk.frames.Length),
+                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % 8), walk.id);
+                }
+            }
+        }
+
+        // A sixteen-frame sheet with a cycle length plays by distance: one stride is one cycle across the sixteen frames, a standing
+        // enemy holds its frame, and a fast move is capped at the walk rate.
+        [Test]
+        public void SixteenFrameWalkWithACycleLengthPlaysByDistance()
+        {
+            var walk = new PersonSheetWalk(); const float stride = 1.6f; var max = GameVisualTokens.EnemyWalkMaxCyclesPerSecond;
+            var at = UnityEngine.Vector2.zero; var time = 0f;
+            Assert.That(PersonSheetWalk.FrameAt(walk.Phase("enemy", 7, at, time, stride, max, 1), 16), Is.EqualTo(0));
+            for (var step = 1; step <= 16; step++)
+            {
+                at += UnityEngine.Vector2.right * (stride / 16); time += 1f;
+                Assert.That(PersonSheetWalk.FrameAt(walk.Phase("enemy", 7, at, time, stride, max, 1), 16), Is.EqualTo(step % 16));
+            }
+            time += 1f;
+            Assert.That(PersonSheetWalk.FrameAt(walk.Phase("enemy", 7, at, time, stride, max, 1), 16), Is.EqualTo(0), "standing holds the frame");
+            var before = walk.Phase("enemy", 8, at, time, stride, max, 1);
+            var after = walk.Phase("enemy", 8, at + UnityEngine.Vector2.right * 100, time + .1f, stride, max, 1);
+            Assert.That(UnityEngine.Mathf.Repeat(after - before, 1), Is.EqualTo(max * .1f).Within(1e-4f), "capped at the walk rate");
+            Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Walk, 1.6f, 100, 0, 16), Is.EqualTo(0));
+            Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Walk, 1.5f, 100, 0, 16), Is.EqualTo(15));
+        }
     }
 }
