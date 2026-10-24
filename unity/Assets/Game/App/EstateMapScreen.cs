@@ -65,7 +65,8 @@ namespace Game.App
             FromSave = account.Estate != null;
             State = FromSave ? account : AccountEstate.NewPrototype(catalog, config, 0, 0);
             baseMonotonic = Math.Max(0, State.Estate.LastMonotonicSeconds); baseWall = Math.Max(0, State.Estate.LastWallSeconds);
-            Map = map ?? new EstateMapModel(config.Zones.Max(z => z.X + z.Width), config.Zones.Max(z => z.Y + z.Height));
+            Map = map ?? new EstateMapModel(config.Zones.Max(z => z.X + z.Width), config.Zones.Max(z => z.Y + z.Height),
+                config.Zones.Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)));
         }
 
         // The copy's clock: whole seconds of real time since it was made plus the development skip, on both Core clocks.

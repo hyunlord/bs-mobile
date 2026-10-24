@@ -246,9 +246,9 @@
     },
     {
       "state": "closed",
-      "saturation": 0.4,
-      "brightness": 1,
-      "light": 0
+      "saturation": 0.45,
+      "brightness": 0.9,
+      "light": 1
     }
   ],
   "ruinState": "fallow",
@@ -296,13 +296,32 @@
       "frontier-dry-well",
       "frontier-stump-tracks"
     ],
-    "every": 4,
-    "perBlock": 2,
-    "block": 8,
-    "density": 0.6,
     "edge": "frontier-ink-edge",
     "edgeEvery": 8,
     "edgeAlpha": 0.85
+  },
+  "closedLand": {
+    "status": "Closed land painted then veiled like key art C (m3-estate-keyarts-r2 C-first-login-source) [가설]: terrain patches (sage share), rivers from 'placed', one jittered candidate per 'every' cells becoming a wood (wooded zones), a dead tree or a frontier trace, all under the blue-grey veil of alpha 'veil'. The closed tint only desaturates; the veil darkens.",
+    "veil": 0.7,
+    "veilFeather": 0.9,
+    "veilOverhang": 6,
+    "groundFeather": 2,
+    "sageShare": 0.3,
+    "every": 4,
+    "jitter": 0.6,
+    "density": 0.55,
+    "deadTreeShare": 0.35,
+    "deadTree": "frontier-dead-tree",
+    "woods": [
+      {
+        "zone": "zone:inner-northeast-wood",
+        "ids": [
+          "tree-cluster-4",
+          "tree-cluster-5"
+        ],
+        "share": 0.75
+      }
+    ]
   },
   "placed": [
     {
@@ -362,6 +381,30 @@
         4,
         3
       ]
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-riverside",
+      "u": 37,
+      "v": 45,
+      "reserve": [
+        34,
+        41,
+        6,
+        19
+      ]
+    },
+    {
+      "id": "river-bend-patch",
+      "zone": "zone:inner-riverside",
+      "u": 36,
+      "v": 52
+    },
+    {
+      "id": "riverbank-patch",
+      "zone": "zone:inner-riverside",
+      "u": 37,
+      "v": 58
     }
   ],
   "peasants": {

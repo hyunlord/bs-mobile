@@ -98,7 +98,7 @@ namespace Tests.PlayMode
             Click("EstateMap.ZoomOut"); yield return null;
             Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(4000, 0) * app.Ui.Canvas.scaleFactor);
             yield return null;
-            Assert.That(screen.Map.GridToViewport(new Vector2(0, screen.Map.Rows)).x, Is.GreaterThanOrEqualTo(-1e-2f), "The whole map fits, so no drag reveals space past its west corner.");
+            Assert.That(screen.Map.GridToViewport(new Vector2(0, 40)).x, Is.GreaterThanOrEqualTo(-1e-2f), "The whole map fits, so no drag reveals space past the west zone's corner.");
             Click("EstateMap.ZoomIn"); yield return null;
 
             Click("EstateMap.Goal"); yield return null; Assert.That(screen.GoalCollapsed, Is.True);
@@ -228,6 +228,8 @@ namespace Tests.PlayMode
             var sprites = plan.Count(i => decorSources.Contains(i.Source));
             Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites), "Every planned decoration sprite is on the map.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");
+            Assert.That(Rects("EstateMap.Veiled:").Length, Is.EqualTo(screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).In(EstateDrawLayer.Veiled).Count()), "Closed land is painted under its veil.");
+            var veil = Rects("EstateMap.Fog").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < veil.GetSiblingIndex()), Is.True, "The veil covers closed-land art.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);

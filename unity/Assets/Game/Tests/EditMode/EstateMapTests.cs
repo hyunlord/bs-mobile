@@ -44,6 +44,22 @@ namespace Tests.EditMode
             Assert.That(model.GridToViewport(new Vector2(16, 0)).x, Is.LessThanOrEqualTo(390 + 1e-3f));
         }
 
+        [Test] public void TheWholeMapZoomFitsTheZonesNotTheEmptyGridCorners()
+        {
+            // The design r3 centre + inner ring (#374): a plus of five 20×20 zones on a 60×60 grid. Its projected extent is
+            // 2560×1280 (u − v from −40 to 40, u + v from 20 to 100), so the empty grid corners are not part of the map (#375).
+            var zones = new[] { new RectInt(20, 20, 20, 20), new RectInt(40, 20, 20, 20), new RectInt(20, 40, 20, 20), new RectInt(0, 20, 20, 20), new RectInt(20, 0, 20, 20) };
+            var model = new EstateMapModel(60, 60, zones); model.SetFrame(new Vector2(390, 844), Top, Bottom);
+            Assert.That(model.MapExtent, Is.EqualTo(new Vector2(2560, 1280)));
+            Assert.That(model.ScaleAt(EstateMapModel.WholeMap), Is.EqualTo(390f / 2560).Within(1e-5f), "The plus fits the width.");
+            model.SetZoom(EstateMapModel.WholeMap, model.VisibleCentre);
+            Assert.That(model.GridToViewport(new Vector2(0, 40)).x, Is.EqualTo(0).Within(1e-3f), "West zone's corner at the left edge.");
+            Assert.That(model.GridToViewport(new Vector2(60, 20)).x, Is.EqualTo(390).Within(1e-3f), "East zone's corner at the right edge.");
+            var top = model.GridToViewport(new Vector2(20, 0)).y; var bottom = model.GridToViewport(new Vector2(60, 40)).y;
+            Assert.That(top, Is.GreaterThanOrEqualTo(Top - 1e-3f)); Assert.That(bottom, Is.LessThanOrEqualTo(844 - Bottom + 1e-3f), "Every zone is on screen.");
+            Assert.That(new EstateMapModel(16, 8).MapExtent, Is.EqualTo(new Vector2(24 * 32, 24 * 16)), "Without zones the grid diamond is the map.");
+        }
+
         [Test] public void ZoomKeepsTheGridPointUnderTheFingers()
         {
             var model = Model(); model.SetZoom(EstateMapModel.BuildingDetail, model.VisibleCentre); model.CentreOn(new Vector2(8, 4));
