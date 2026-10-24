@@ -286,9 +286,9 @@ namespace Game.App
     // footprint contains the tapped cell, so selection follows the isometric grid rather than sprite rectangles (#368).
     public sealed class EstateMapView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler, IPointerClickHandler
     {
-        struct Standing { public RectTransform Rect; public RectInt Footprint; }
+        struct StandingArt { public RectTransform Rect; public RectInt Footprint; }
         struct Pinned { public RectTransform Rect; public Vector2 Grid; public float Lift; }
-        readonly List<Standing> standing = new List<Standing>();
+        readonly List<StandingArt> standing = new List<StandingArt>();
         readonly List<Pinned> pinned = new List<Pinned>();
         readonly List<EstateIsoShapes> shapes = new List<EstateIsoShapes>();
         readonly Dictionary<int, Vector2> fingers = new Dictionary<int, Vector2>();
@@ -301,7 +301,7 @@ namespace Game.App
         public void Track(EstateIsoShapes graphic) => shapes.Add(graphic);
         // Art stands on its footprint: bottom centre on the footprint's front corner, as wide as the footprint diamond.
         public void Standing(RectTransform rect, int u, int v, int width, int height) =>
-            standing.Add(new Standing { Rect = rect, Footprint = new RectInt(u, v, width, height) });
+            standing.Add(new StandingArt { Rect = rect, Footprint = new RectInt(u, v, width, height) });
         // A label centred on a grid point, raised by `lift` unscaled canvas units.
         public void Pin(Text text, Vector2 grid, float lift)
         {
