@@ -5,6 +5,16 @@
     "Reason": "Binary account save schema for reward receipts and settlement reward basis; serialization discriminator only."
   },
   {
+    "Symbol": "SowSiege.Core.MetaSaveCodec.EstateVersion",
+    "Value": "6",
+    "Reason": "Binary account save schema that adds the M3a account estate (ADR0071); written only for accounts with an estate, so version 5 bytes stay unchanged. Serialization discriminator only."
+  },
+  {
+    "Symbol": "SowSiege.Core.AccountEstate.SecondsPerMinute",
+    "Value": "60",
+    "Reason": "Unit conversion for per-minute production rates in the account estate's integer remainder (ADR0071). The rates themselves are opt-in prototype data."
+  },
+  {
     "Symbol": "SowSiege.Core.ReplayCodec.HostRewardVersion",
     "Value": "5",
     "Reason": "Opt-in replay wire format for host reward commands and explicit revive configuration; historical formats remain unchanged."

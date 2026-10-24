@@ -13,7 +13,7 @@ namespace SowSiege.Core
             var errors = new List<string>();
             void Check(bool valid, string message) { if (!valid) { errors.Add(message); } }
             bool Same(IEnumerable<string> actual, IEnumerable<string> expected) => new HashSet<string>(actual).SetEquals(expected);
-            Check(state.SchemaVersion == MetaSaveCodec.CurrentVersion, "schema-version");
+            Check(state.Estate == null ? state.SchemaVersion == MetaSaveCodec.CurrentVersion : state.SchemaVersion == MetaSaveCodec.EstateVersion, "schema-version");
             Check(state.HighestClearedChapter >= 0 && state.HighestClearedChapter <= catalog.Chapters.Max(x => x.Index), "highest-chapter");
             Check(Same(state.Wallet.Keys, catalog.Materials.Select(x => x.Id)), "wallet-keys");
             foreach (var material in catalog.Materials)
