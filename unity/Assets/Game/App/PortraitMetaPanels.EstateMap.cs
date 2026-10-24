@@ -486,6 +486,22 @@ namespace Game.App
         RectTransform Rect => (RectTransform)transform;
 
         public void Track(EstateIsoShapes graphic) => shapes.Add(graphic);
+
+        // Structural draw-batch bound (#372): uGUI draws a canvas's graphics in hierarchy order and can only share a batch between
+        // neighbours with the same material and texture, so the number of material/texture switches along that order is an
+        // upper bound on the batches this subtree costs (the batcher may merge more when graphics do not overlap). Counts every
+        // active graphic regardless of the mask, so the number depends on the layout, not on the camera position.
+        public static int MaterialBreaks(Transform root)
+        {
+            var breaks = 0; Material material = null; Texture texture = null; var first = true;
+            foreach (var graphic in root.GetComponentsInChildren<Graphic>())
+            {
+                if (!graphic.isActiveAndEnabled) continue;
+                var nextMaterial = graphic.materialForRendering; var nextTexture = graphic.mainTexture;
+                if (first || nextMaterial != material || nextTexture != texture) { breaks++; material = nextMaterial; texture = nextTexture; first = false; }
+            }
+            return breaks;
+        }
         // Art stands on its footprint: bottom centre on the footprint's front corner, as wide as the footprint diamond.
         public void Standing(RectTransform rect, int u, int v, int width, int height) =>
             standing.Add(new StandingArt { Rect = rect, Footprint = new RectInt(u, v, width, height) });

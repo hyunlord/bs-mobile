@@ -18,7 +18,7 @@ namespace Game.App
             get
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                return IsWave && preferences.EstatePrototype;
+                return IsWave && (preferences.EstatePrototype || forceEstatePrototype);
 #else
                 return false;
 #endif

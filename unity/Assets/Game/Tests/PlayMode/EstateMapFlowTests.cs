@@ -221,20 +221,24 @@ namespace Tests.PlayMode
             var sprites = plan.Count(i => i.Source != EstateDecorSource.Road);
             Assert.That(View().MissingDecor, Is.EqualTo(0), "Every decoration role resolves in the wave art.");
             Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites));
-            var on = new int[3]; yield return Batches(on);
+            var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
             Assert.That(Rects("EstateMap.Decor:"), Is.Empty);
-            var off = new int[3]; yield return Batches(off);
+            var off = new int[3]; yield return Batches(off); var breaksOff = EstateMapView.MaterialBreaks(View().transform);
             yield return Capture("estate-decor-off");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.True);
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
             var counts = string.Join(", ", plan.GroupBy(i => i.Source).Select(g => $"\"{g.Key}\": {g.Count()}"));
             File.WriteAllText(Path.Combine(output, "estate-decor-batches.json"),
-                $"{{\"commit\": \"{BuildIdentity.Commit}\", \"screen\": \"390x844 neighbourhood\", \"decorSprites\": {sprites}, \"plan\": {{{counts}}}, " +
+                $"{{\"commit\": \"{BuildIdentity.Commit}\", \"screen\": \"390x844 neighbourhood\", \"decorSprites\": {sprites}, \"materialBreaks\": {{\"on\": {breaksOn}, \"off\": {breaksOff}}}, \"plan\": {{{counts}}}, " +
                 $"\"on\": {{\"batches\": {on[0]}, \"drawCalls\": {on[1]}, \"setPassCalls\": {on[2]}}}, \"off\": {{\"batches\": {off[0]}, \"drawCalls\": {off[1]}, \"setPassCalls\": {off[2]}}}, " +
                 "\"source\": \"ProfilerRecorder Render 'Batches Count'/'Draw Calls Count'/'SetPass Calls Count' (last of 10 frames) with the UI canvas rendered through a temporary Screen Space - Camera camera; -1 = recorder unavailable; Editor PlayMode, not a device\"}\n");
-            Assert.That(Math.Max(on[0], on[1]), Is.GreaterThan(0), "The batch count was measured.");
+            // Structural bound, pinned for the canonical new prototype estate at the default view (#372). A change here means the
+            // decoration or building layering changed its batch cost: look at estate-decor-batches.json before re-pinning.
+            TestContext.WriteLine($"materialBreaks on={breaksOn} off={breaksOff}");
+            Assert.That(breaksOn, Is.EqualTo(PinnedBreaksOn), "Material/texture switches with decoration.");
+            Assert.That(breaksOff, Is.EqualTo(PinnedBreaksOff), "Material/texture switches without decoration.");
         }
 
         // Overlay canvases are not counted by the render counters, so the measurement renders the same canvas through a
@@ -249,6 +253,8 @@ namespace Tests.PlayMode
             finally { canvas.renderMode = mode; canvas.worldCamera = null; Object.Destroy(host); }
             yield return null; Canvas.ForceUpdateCanvases();
         }
+
+        const int PinnedBreaksOn = -1, PinnedBreaksOff = -1;
 
         static IEnumerator Count(int[] into)
         {
