@@ -254,7 +254,7 @@ namespace Tests.PlayMode
             yield return null; Canvas.ForceUpdateCanvases();
         }
 
-        const int PinnedBreaksOn = -1, PinnedBreaksOff = -1;
+        const int PinnedBreaksOn = 17, PinnedBreaksOff = 10;
 
         static IEnumerator Count(int[] into)
         {
