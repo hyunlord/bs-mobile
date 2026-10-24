@@ -208,6 +208,13 @@ namespace Game.App
         static float PanelHeightFor(EstateMapScreen screen) =>
             screen.Specializing ? 300 : screen.Selected != null ? 206 : screen.ZoneChoice != null ? 150 : screen.QueueOpen ? 214 : 0;
 
+        // Sheet and strip buttons are narrower than the portrait default, so their labels drop to 14 to stay inside.
+        static void Compact(Transform parent)
+        {
+            foreach (var button in parent.GetComponentsInChildren<Button>())
+                foreach (var text in button.GetComponentsInChildren<Text>()) { text.resizeTextForBestFit = false; text.fontSize = Mathf.Min(text.fontSize, 14); }
+        }
+
         static RectTransform Sheet(RectTransform root, string name, float width, float y, float height)
         {
             var panel = ColorPlate(root, name, new Color32(52, 41, 27, 245), 8, y, width - 16, height);
@@ -244,6 +251,7 @@ namespace Game.App
             ActionButton(ui, panel, "EstateMap.Move", "이동", () => { screen.BeginMove(); actions.Redraw(); }, 24 + third, 146, third, !screen.UnderConstruction(id), 48);
             ActionButton(ui, panel, "EstateMap.Close", "닫기", () => { screen.Select(null); actions.Redraw(); }, 34 + third * 2, 146, third, true, 48);
             if (next == null && building.Branch != null && primary != null) primary.GetComponentInChildren<Text>().text = "전문화 변경";
+            Compact(panel);
             return status;
         }
 
@@ -263,7 +271,8 @@ namespace Game.App
                 var card = ColorPlate(panel, "EstateMap.BranchCard:" + branch, new Color32(236, 224, 196, 255), 14, cardY, width - 44, 76);
                 Caption(ui, card, screen.BranchName(branch) + (building.Branch == branch ? " · 지금" : ""), 12, 6, width - 120, 24, 15, true).fontStyle = FontStyle.Bold;
                 Caption(ui, card, screen.BranchEffect(branch), 12, 30, width - 72, 20, 13, true);
-                Caption(ui, card, screen.BranchNote(branch), 12, 50, width - 72, 20, 11, true);
+                var note = screen.BranchNote(branch);
+                if (note != screen.BranchEffect(branch)) Caption(ui, card, note, 12, 50, width - 72, 20, 11, true);
                 if (chosen) Caption(ui, card, "선택", width - 104, 6, 48, 24, 13, true, TextAnchor.MiddleRight).color = new Color32(163, 39, 30, 255);
                 Hit(card, "EstateMap.Branch:" + branch, () => { screen.ChooseBranch(branch); actions.Redraw(); }, 0, 0, width - 44, 76);
             }
@@ -283,6 +292,7 @@ namespace Game.App
             var half = (width - 54) / 2;
             ActionButton(ui, panel, "EstateMap.OpenZone", "개방", () => { screen.OpenZone(zone.Id); actions.Redraw(); }, 14, 92, half, unlock != null && screen.State.Estate.ZoneWork == null, 48, "ui.button.primary");
             ActionButton(ui, panel, "EstateMap.Close", "닫기", () => { screen.Select(null); actions.Redraw(); }, 24 + half, 92, half, true, 48);
+            Compact(panel);
         }
 
         static void QueuePanel(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y, float height)
@@ -306,6 +316,7 @@ namespace Game.App
             ActionButton(ui, panel, "EstateMap.AutoStart", "자동 착공 " + (estate.AutoStart ? "켬" : "끔"), () => { screen.ToggleAutoStart(); actions.Redraw(); }, 14, 158, third, true, 48);
             ActionButton(ui, panel, "EstateMap.StartReserved", "예약 시작", () => { screen.StartReserved(); actions.Redraw(); }, 24 + third, 158, third, estate.Active == null && estate.Reservations.Length > 0, 48, "ui.button.primary");
             ActionButton(ui, panel, "EstateMap.Close", "닫기", () => { screen.Select(null); actions.Redraw(); }, 34 + third * 2, 158, third, true, 48);
+            Compact(panel);
         }
 
         // The work line above the tabs: current construction and queue (tap for the queue), a claim for site stock, and the
@@ -313,13 +324,14 @@ namespace Game.App
         static Text WorkStrip(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y)
         {
             var strip = ColorPlate(root, "EstateMap.Work", BarInk, 8, y, width - 16, WorkHeight);
-            const float skip = 56; var claim = screen.StockTotal > 0 ? 70f : 0f;
+            const float skip = 62; var claim = screen.StockTotal > 0 ? 78f : 0f;
             var textWidth = width - 16 - skip * 2 - claim - 12;
             var line = Caption(ui, strip, screen.WorkLine(), 10, 0, textWidth - 10, WorkHeight, 12);
             Hit(strip, "EstateMap.QueueToggle", () => { screen.ToggleQueue(); actions.Redraw(); }, 0, 0, textWidth, WorkHeight);
             if (claim > 0) ActionButton(ui, strip, "EstateMap.ClaimStock", "받기 " + screen.StockTotal, () => { screen.ClaimProduction(); actions.Redraw(); }, textWidth, 0, claim - 4, true, 44, "ui.button.primary");
             ActionButton(ui, strip, "EstateMap.Skip60", "+1분", () => { screen.SkipTime(60); actions.Redraw(); }, textWidth + claim, 0, skip - 4, true, 44);
             ActionButton(ui, strip, "EstateMap.Skip600", "+10분", () => { screen.SkipTime(600); actions.Redraw(); }, textWidth + claim + skip, 0, skip - 4, true, 44);
+            Compact(strip);
             return line;
         }
 
