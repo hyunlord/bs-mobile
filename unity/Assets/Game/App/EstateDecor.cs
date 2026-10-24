@@ -63,8 +63,9 @@ namespace Game.App
         { Role = role; Grid = grid; Width = width; Flat = flat; Source = source; Owner = owner; }
     }
 
-    // Deterministic placement from the rules, the config grid and the estate's buildings. Same inputs, same list; a moved
-    // building takes its yard with it, while roads and clusters are recomputed around the new layout.
+    // Deterministic placement from the rules, the config grid and the estate's buildings, on open land only (closed zones sit
+    // under the darkness). Same inputs, same list; a moved building takes its yard with it, while roads and clusters are
+    // recomputed around the new layout.
     public static class EstateDecorPlanner
     {
         // Ring around a footprint, clockwise from its north corner, as offsets from the footprint's top-left cell.
@@ -126,7 +127,7 @@ namespace Game.App
                 for (var i = 0; i < ring.Length && placed < rule.count; i++)
                 {
                     var offset = ring[(first + i * step) % ring.Length]; var cell = new Vector2Int(building.X + offset.x, building.Y + offset.y);
-                    if (!Inside(cell) || used.Contains(cell)) continue;
+                    if (!Inside(cell) || !Open(cell) || used.Contains(cell)) continue;
                     var prop = rule.props[(int)(Hash(rules.seed, building.Id, 2 + placed) % (uint)rule.props.Length)];
                     items.Add(new EstateDecorItem(prop.role, cell + Jitter(rules.seed, building.Id, 10 + placed), prop.width, prop.flat, EstateDecorSource.Yard, building.Id));
                     used.Add(cell); placed++;
@@ -138,8 +139,8 @@ namespace Game.App
                 {
                     var cell = road[i]; var h = Hash(rules.seed, cell.x * 97 + cell.y, 3);
                     var side = (h & 1) == 0 ? new Vector2Int(cell.x + 1, cell.y) : new Vector2Int(cell.x, cell.y + 1);
-                    if (!Inside(side) || used.Contains(side)) side = (h & 1) == 0 ? new Vector2Int(cell.x, cell.y + 1) : new Vector2Int(cell.x + 1, cell.y);
-                    if (!Inside(side) || used.Contains(side)) continue;
+                    if (!Inside(side) || !Open(side) || used.Contains(side)) side = (h & 1) == 0 ? new Vector2Int(cell.x, cell.y + 1) : new Vector2Int(cell.x + 1, cell.y);
+                    if (!Inside(side) || !Open(side) || used.Contains(side)) continue;
                     var prop = rules.road.roadside[(int)(h >> 1) % rules.road.roadside.Length];
                     items.Add(new EstateDecorItem(prop.role, side + Jitter(rules.seed, cell.x * 97 + cell.y, 4), prop.width, prop.flat, EstateDecorSource.Roadside, -1));
                     used.Add(side);
@@ -151,7 +152,7 @@ namespace Game.App
                 for (var k = 0; k < cluster.count; k++)
                 {
                     var free = new List<Vector2Int>();
-                    for (var u = 0; u < columns; u++) for (var v = 0; v < rows; v++) { var c = new Vector2Int(u, v); if (!used.Contains(c)) free.Add(c); }
+                    for (var u = 0; u < columns; u++) for (var v = 0; v < rows; v++) { var c = new Vector2Int(u, v); if (!used.Contains(c) && Open(c)) free.Add(c); }
                     if (free.Count == 0) break;
                     var centre = free[(int)(Hash(rules.seed, k, 5) % (uint)free.Count)];
                     var size = cluster.minSize + (int)(Hash(rules.seed, k, 6) % (uint)(cluster.maxSize - cluster.minSize + 1));
@@ -164,7 +165,7 @@ namespace Game.App
                         var radius = placed == 0 ? 0 : (.5f + Hash(rules.seed, k * 131 + m, 8) / (float)uint.MaxValue * .5f) * cluster.spread * (1 + m / (float)size * .5f);
                         var point = centre + new Vector2(.5f, .5f) + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
                         var cell = new Vector2Int(Mathf.FloorToInt(point.x), Mathf.FloorToInt(point.y));
-                        if (!Inside(cell) || placed > 0 && used.Contains(cell)) continue;
+                        if (!Inside(cell) || !Open(cell) || placed > 0 && used.Contains(cell)) continue;
                         var prop = cluster.props[(int)(Hash(rules.seed, k * 131 + m, 9) % (uint)cluster.props.Length)];
                         items.Add(new EstateDecorItem(prop.role, point, prop.width, prop.flat, EstateDecorSource.Cluster, k));
                         used.Add(cell); placed++;

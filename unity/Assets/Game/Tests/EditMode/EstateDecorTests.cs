@@ -42,7 +42,7 @@ namespace Tests.EditMode
             foreach (var item in first.Where(i => i.Source != EstateDecorSource.Road))
             {
                 var cell = Vector2Int.FloorToInt(item.Grid);
-                Assert.That(cell.x >= 0 && cell.y >= 0 && cell.x < 16 && cell.y < 8, Is.True, Key(item));
+                Assert.That(cell.x >= 20 && cell.y >= 20 && cell.x < 40 && cell.y < 40, Is.True, "Decoration stays on the open centre zone (#374): " + Key(item));
                 Assert.That(footprints.Contains(cell), Is.False, "No decoration on a footprint: " + Key(item));
                 Assert.That(road.Contains(cell), Is.False, "No decoration on a road: " + Key(item));
             }
@@ -59,7 +59,7 @@ namespace Tests.EditMode
             var forge = state.Estate.Buildings.Single(b => b.Kind == "meta:forge");
             var scriptorium = state.Estate.Buildings.Single(b => b.Kind == "meta:scriptorium");
             var before = EstateDecorPlanner.Plan(rules, config, state.Estate);
-            var moved = AccountEstate.Move(catalog, config, state, 0, 0, forge.Id, 2, 0);
+            var moved = AccountEstate.Move(catalog, config, state, 0, 0, forge.Id, 28, 26);
             Assert.That(moved.Done, Is.True, moved.Reason);
             var after = EstateDecorPlanner.Plan(rules, config, moved.State.Estate);
             Assert.That(after.Where(i => i.Owner == scriptorium.Id && i.Source == EstateDecorSource.Yard).Select(Key),
@@ -69,7 +69,7 @@ namespace Tests.EditMode
             foreach (var item in yard)
             {
                 var cell = Vector2Int.FloorToInt(item.Grid);
-                Assert.That(cell.x >= 1 && cell.x <= 4 && cell.y >= -1 && cell.y <= 2, Is.True, "The forge yard follows it to (2, 0): " + Key(item));
+                Assert.That(cell.x >= 27 && cell.x <= 30 && cell.y >= 25 && cell.y <= 28, Is.True, "The forge yard follows it to (28, 26): " + Key(item));
             }
             Assert.That(after.Select(Key), Is.Not.EqualTo(before.Select(Key)), "Moving a building re-places the decoration.");
         }

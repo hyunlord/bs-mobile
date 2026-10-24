@@ -101,8 +101,11 @@ namespace Tests.EditMode
         [Test] public void AClosedZoneExplainsItsUnlockCondition()
         {
             var screen = Screen();
-            var zone = screen.Config.Zones.Single(z => !z.OpenAtStart);
-            Assert.That(screen.ZoneAt(new Vector2Int(12, 3)).Id, Is.EqualTo(zone.Id));
+            var zone = screen.Config.Zones.Single(z => z.Id == "zone:inner-village");
+            Assert.That(screen.ZoneAt(new Vector2Int(45, 30)).Id, Is.EqualTo(zone.Id));
+            Assert.That(screen.ZoneLabel(zone), Is.EqualTo("닫힌 구역"));
+            Assert.That(screen.ZoneLabel(screen.Config.Zones.Single(z => z.Id == "zone:inner-riverside")), Is.EqualTo("탐사로 열 땅 · M3c"),
+                "Exploration zones say so instead of showing an unreachable condition (#374).");
             screen.SelectZone(zone.Id); Assert.That(screen.ZoneChoice, Is.EqualTo(zone.Id));
             Assert.That(screen.OpenZone(zone.Id), Is.False); Assert.That(screen.Notice, Is.EqualTo("생산 터를 더 완성해야 합니다"));
             Assert.That(EstateMapScreen.Clock(65), Is.EqualTo("1:05")); Assert.That(EstateMapScreen.Clock(3725), Is.EqualTo("1:02:05"));
