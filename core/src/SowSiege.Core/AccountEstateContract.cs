@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace SowSiege.Core
 {
     // M3a-1 account estate (design #360 section 6, issue #361). The prototype numbers live in a versioned opt-in file
-    // (data/opt-in/meta/m3a-prototype-r2.json); every value there is a hypothesis (#126), not a release default.
+    // (data/opt-in/account-estate/m3a-prototype-r2.json); every value there is a hypothesis (#126), not a release default.
     public sealed record AccountEstateCost(Dictionary<string, int> Cost, int Seconds);
     public sealed record AccountEstateProduction(string Resource, int PerMinute);
     public sealed record AccountEstateBuildingKind(string Kind, int X, int Y, int Width, int Height, AccountEstateCost[] Levels,

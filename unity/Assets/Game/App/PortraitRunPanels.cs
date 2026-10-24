@@ -305,7 +305,7 @@ namespace Game.App
         }
 
         public static void Settings(UiShell ui, RunPreferences preferences, AimMode aim, Action preferencesChanged,
-            Action<AimMode> changeAim, Action back, bool showFeel = true, Action fakeAds = null)
+            Action<AimMode> changeAim, Action back, bool showFeel = true, Action fakeAds = null, Action<bool> estatePrototype = null)
         {
             var root = Root(ui, "Portrait.Settings"); var width = Width(ui); var height = Height(ui);
             Text(ui, root, "설정", 12, 12, width - 24, PortraitTokens.Title);
@@ -333,6 +333,7 @@ namespace Game.App
                 Toggle(ui, body, "피격 잔상 · 붉은 테 · 피해 숫자", preferences.FeelFeedback, v => { preferences.FeelFeedback = v; preferencesChanged(); }, innerWidth, ref y);
             }
             if(fakeAds != null) { Button(ui, body, "Settings.FakeAds", "개발 광고 시험", fakeAds, 0, y, innerWidth); y += 60; }
+            if (estatePrototype != null) Toggle(ui, body, "영지 지도 시제품 (개발)", preferences.EstatePrototype, estatePrototype, innerWidth, ref y);
             body.sizeDelta = new Vector2(0, y + 8);
             Button(ui, root, "Settings.Back", "돌아가기", back, 12, height - 60, width - 24);
         }
