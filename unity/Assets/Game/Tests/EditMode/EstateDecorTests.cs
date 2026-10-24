@@ -150,6 +150,7 @@ namespace Tests.EditMode
             Assert.That(At(18, 19.6f), Is.EqualTo(At(18, 20.4f)).Within(.02f), "No seam between closed zones.");
             Assert.That(At(18, 20.4f), Is.InRange(.6f, .87f), "Two cells from light: still rising toward full night.");
             var c = field.GetPixel(0, 0); Assert.That(new Color(c.r, c.g, c.b), Is.EqualTo((Color)rules.night.Colour).Using(ColorComparer));
+            Assert.That(c.a, Is.EqualTo(1).Within(.01f), "The painted area's edge closes to opaque night, matching the page behind it.");
         }
         static readonly IEqualityComparer<Color> ColorComparer = new ToleranceColour();
         sealed class ToleranceColour : IEqualityComparer<Color>

@@ -515,7 +515,10 @@ namespace Game.App
                         best = Mathf.Min(best, dx * dx + dy * dy);
                     }
                     var d = best == float.MaxValue ? 1e4f : Mathf.Sqrt(best);
-                    colour.a = (byte)Mathf.RoundToInt(night.Alpha(inside ? -d : d) * 255); pixels[j * width + i] = colour;
+                    // Toward the painted area's edge the night closes to opaque, so the land fades into the page's night colour.
+                    var edge = Mathf.Min(Mathf.Min(px - area.xMin, area.xMax - px), Mathf.Min(py - area.yMin, area.yMax - py));
+                    var keep = night.areaFadeCells > 0 ? Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / night.areaFadeCells)) : 1;
+                    colour.a = (byte)Mathf.RoundToInt((1 - (1 - night.Alpha(inside ? -d : d)) * keep) * 255); pixels[j * width + i] = colour;
                 }
             if (field == null || field.width != width || field.height != height)
             {

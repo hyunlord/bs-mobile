@@ -317,7 +317,7 @@
     ]
   },
   "night": {
-    "status": "Continuous night by distance from open land (#379) [가설]: alpha edgeAlpha at the lit edge rising to fullAlpha fullCells outside, 0 deeper than insideCells inside; colour from key art C's dark land. margin = painted cells around the estate; openingMargin = night cells around open land in the first view. Lamps: soft warm light (M2 RIM gold, normal blend) around built buildings.",
+    "status": "Continuous night by distance from open land (#379) [가설]: alpha edgeAlpha at the lit edge rising to fullAlpha fullCells outside, 0 deeper than insideCells inside; colour from key art C's dark land. margin = painted cells around the estate, closing to opaque night over the last areaFadeCells so it meets the page's night colour; openingMargin = night cells around open land in the first view. Lamps: soft warm light (M2 RIM gold, normal blend) around built buildings.",
     "colour": [
       54,
       61,
@@ -337,8 +337,9 @@
     "fullAlpha": 0.88,
     "fullCells": 2.5,
     "insideCells": 0.5,
+    "areaFadeCells": 3,
     "texelsPerCell": 4,
-    "margin": 6,
+    "margin": 10,
     "openingMargin": 2.5,
     "lampAlpha": 0.24,
     "homeLampCells": 3.2,

@@ -56,8 +56,8 @@ namespace Game.App
         [Serializable] public sealed class Night
         {
             public int[] colour = { 54, 61, 73 }, ground = { 78, 82, 86 }, lampColour = { 229, 201, 127 };
-            public float edgeAlpha = .5f, fullAlpha = .88f, fullCells = 2.5f, insideCells = .5f;
-            public int texelsPerCell = 4, margin = 6;
+            public float edgeAlpha = .5f, fullAlpha = .88f, fullCells = 2.5f, insideCells = .5f, areaFadeCells = 3;
+            public int texelsPerCell = 4, margin = 10;
             public float openingMargin = 2.5f, lampAlpha = .24f, homeLampCells = 3.2f, lampCells = 2.2f;
             public Color Colour => new Color32((byte)colour[0], (byte)colour[1], (byte)colour[2], 255);
             public Color Ground => new Color32((byte)ground[0], (byte)ground[1], (byte)ground[2], 255);
