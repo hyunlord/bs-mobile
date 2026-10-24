@@ -12,7 +12,7 @@ namespace Game.App
     {
         [Serializable] sealed class Manifest { public string version; public BuildingSet buildings; public Entry[] sprites; }
         [Serializable] sealed class BuildingSet { public float shadowScale; public int[] canvas; public BuildingRecord[] records; }
-        [Serializable] sealed class BuildingRecord { public string id, kind; public int stage; public int[] rect; public float[] pivot; public float[] drawRect; }
+        [Serializable] sealed class BuildingRecord { public string id, kind; public int stage; public int[] rect; public float[] pivot; public float[] drawRect; public float bodyWidth; }
         [Serializable] sealed class Entry { public string id, atlas, layer; public int[] rect; public float[] pivot; public float displayWidth; }
 
         public const string Directory = "EstateArt";
@@ -80,8 +80,9 @@ namespace Game.App
         public bool HasBuilding(string kind, int stage) => manifest.buildings.records.Any(r => r.kind == kind && r.stage == stage);
         public Vector2 BuildingCanvas => new Vector2(manifest.buildings.canvas[0], manifest.buildings.canvas[1]);
         public Vector2 BuildingPivot(string kind, int stage) { var r = Building(kind, stage); return new Vector2(r.pivot[0], r.pivot[1]); }
-        // Width of the painted body inside its 256-wide canvas: Astra scales yard slots by this (assembly.js bodyWidths).
-        public float BodyWidth(string kind, int stage) => Building(kind, stage).drawRect[2];
+        // Opaque width of the painted body inside its 256-wide canvas (alpha > 8, measured by tools/estate-art.mjs): Astra draws a
+        // building of screen width w at scale w / bodyWidth (assembly.js bodyWidths, trim()).
+        public float BodyWidth(string kind, int stage) => Building(kind, stage).bodyWidth;
 
         public Sprite Body(string kind, int stage)
         {

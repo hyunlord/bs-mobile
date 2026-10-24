@@ -83,6 +83,16 @@ export function pack(images, atlasWidth, padding) {
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
+// Width of the opaque body inside an atlas cell, as assembly.js trim() measures it (alpha > 8): Astra scales a building by
+// screenWidth / bodyWidth, so the game must use the same number (not the manifest's looser drawRect).
+export function opaqueWidth(image, [x, y, w, h]) {
+  let left = w, right = -1;
+  for (let row = y; row < y + h; row++)
+    for (let col = x; col < x + w; col++)
+      if (image.pixels[(row * image.width + col) * 4 + 3] > 8) { left = Math.min(left, col - x); right = Math.max(right, col - x); }
+  return right < 0 ? 0 : right - left + 1;
+}
+
 export function build(spec, readSource) {
   const files = {}, entries = [];
   for (const atlasId of [...new Set(spec.assets.map(a => a.atlas))]) {
@@ -98,11 +108,12 @@ export function build(spec, readSource) {
     members.forEach((asset, i) => { entries.find(e => e.id === asset.id).rect = rects[i]; });
     files[`estate-${atlasId}.png`] = encodeRgbaPng(atlas);
   }
-  const b = spec.buildings, body = readSource(b.body), shadow = decodeRgbaPng(readSource(b.shadow));
+  const b = spec.buildings, body = readSource(b.body), bodyImage = decodeRgbaPng(body), shadow = decodeRgbaPng(readSource(b.shadow));
   files['estate-buildings.png'] = body;
   files['estate-building-shadows.png'] = encodeRgbaPng(downsample(shadow, Math.round(shadow.width * b.shadowScale), Math.round(shadow.height * b.shadowScale)));
   const records = JSON.parse(readSource(b.manifest).toString('utf8')).records;
-  const buildings = records.map(r => ({ id: r.id, kind: r.kind, stage: r.stage, rect: r.atlasRect, pivot: r.pivotNormalizedBottomLeft, drawRect: r.drawRect }));
+  const buildings = records.map(r => ({ id: r.id, kind: r.kind, stage: r.stage, rect: r.atlasRect, pivot: r.pivotNormalizedBottomLeft, drawRect: r.drawRect,
+    bodyWidth: opaqueWidth(bodyImage, r.atlasRect) }));
   const manifest = { version: spec.version, note: spec.note,
     atlases: Object.keys(files).sort().map(name => ({ file: name, sha256: sha256(files[name]) })),
     buildings: { release: b.release, body: { file: b.body, sha256: sha256(body) }, shadowScale: b.shadowScale, canvas: [256, 320], records: buildings },
@@ -124,6 +135,7 @@ export function check(directory = path.join(root, outputDirectory)) {
     if (!(sprite.pivot?.length === 2)) fail(sprite.id + ' pivot');
   }
   if (manifest.buildings.records.length !== 30) fail('expected 10 building kinds x 3 stages');
+  if (manifest.buildings.records.some(r => !(r.bodyWidth > 0))) fail('every building stage needs its opaque body width');
   return manifest;
 }
 

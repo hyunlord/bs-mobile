@@ -42,6 +42,7 @@ namespace Tests.EditMode
             foreach (var kind in rules.kindArt.Select(k => k.art).Distinct())
                 for (var stage = 1; stage <= 3; stage++) { Assert.That(art.Body(kind, stage), Is.Not.Null, kind + stage); Assert.That(art.Shadow(kind, stage), Is.Not.Null); }
             Assert.That(art.BuildingPivot("manor", 1), Is.EqualTo(new Vector2(.5f, .125f)), "Astra's anchor (128, 280) on a 256x320 canvas.");
+            Assert.That(art.BodyWidth("house", 1), Is.EqualTo(90), "Astra scales bodies by the trimmed opaque width (assembly.js bodyWidths), not drawRect.");
         }
 
         [Test] public void CoreLevelsPickTheThreeStageArt()

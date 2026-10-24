@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { decodeRgbaPng } from './wave1a-art.mjs';
-import { build, check, downsample, encodeRgbaPng, pack } from './estate-art.mjs';
+import { build, check, downsample, encodeRgbaPng, opaqueWidth, pack } from './estate-art.mjs';
 
 const image = (width, height, fill) => ({ width, height, pixels: Buffer.from(Array.from({ length: width * height }, (_, i) => fill(i % width, Math.floor(i / width))).flat()) });
 
@@ -37,8 +37,15 @@ test('a replaced source file only changes its own sprite and the manifest hashes
   assert.notEqual(second.sprites[1].source.sha256, first.sprites[1].source.sha256);
 });
 
+test('the body width is the opaque width inside the cell, ignoring near-transparent pixels like assembly.js trim()', () => {
+  const cell = image(10, 2, (x, y) => [0, 0, 0, x === 0 ? 8 : x >= 3 && x <= 6 ? 255 : x === 8 && y === 1 ? 9 : 0]);
+  assert.equal(opaqueWidth(cell, [0, 0, 10, 2]), 6, 'columns 3..8; alpha 8 at column 0 does not count');
+  assert.equal(opaqueWidth(cell, [3, 0, 4, 2]), 4);
+});
+
 test('the committed estate art matches its manifest', () => {
   const manifest = check();
   assert.equal(manifest.version, 'estate-art-r1');
   assert.ok(manifest.sprites.length >= 50);
+  assert.equal(manifest.buildings.records.find(r => r.id === 'house-s1').bodyWidth, 90, "Astra's trimmed house body (assembly.js bodyWidths)");
 });
