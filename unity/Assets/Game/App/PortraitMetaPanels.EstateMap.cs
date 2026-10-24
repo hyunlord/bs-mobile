@@ -169,6 +169,27 @@ namespace Game.App
             return image;
         }
 
+        // True when `other` lies directly on the (du, dv) side of `zone` and the two share part of that edge.
+        static bool SharesEdge(AccountEstateZone zone, AccountEstateZone other, int du, int dv) =>
+            du != 0 ? (du < 0 ? other.X + other.Width == zone.X : zone.X + zone.Width == other.X) && other.Y < zone.Y + zone.Height && zone.Y < other.Y + other.Height
+                    : (dv < 0 ? other.Y + other.Height == zone.Y : zone.Y + zone.Height == other.Y) && other.X < zone.X + zone.Width && zone.X < other.X + other.Width;
+
+        static bool SharedEdge(AccountEstateZone a, AccountEstateZone b, out Vector2 from, out Vector2 to)
+        {
+            from = to = default;
+            if (a.X + a.Width == b.X || b.X + b.Width == a.X)
+            {
+                var x = a.X + a.Width == b.X ? b.X : a.X; var y0 = Mathf.Max(a.Y, b.Y); var y1 = Mathf.Min(a.Y + a.Height, b.Y + b.Height);
+                if (y1 <= y0) return false; from = new Vector2(x, y0); to = new Vector2(x, y1); return true;
+            }
+            if (a.Y + a.Height == b.Y || b.Y + b.Height == a.Y)
+            {
+                var y = a.Y + a.Height == b.Y ? b.Y : a.Y; var x0 = Mathf.Max(a.X, b.X); var x1 = Mathf.Min(a.X + a.Width, b.X + b.Width);
+                if (x1 <= x0) return false; from = new Vector2(x0, y); to = new Vector2(x1, y); return true;
+            }
+            return false;
+        }
+
         static float SortY(EstateMapScreen screen, MetaEstateBuilding building)
         {
             var kind = screen.Kind(building.Kind); return EstateMapModel.SortY(building.X, building.Y, kind.Width, kind.Height);
