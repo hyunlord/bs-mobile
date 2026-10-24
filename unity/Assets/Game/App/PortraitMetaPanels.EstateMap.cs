@@ -88,8 +88,9 @@ namespace Game.App
             var chip = ColorPlate(root, "EstateMap.ZoomLevel", new Color32(52, 41, 27, 220), 18, top + 8, 64, 28);
             var zoomCaption = Caption(ui, chip, zoomNames[screen.Map.Zoom], 0, 0, 64, 28, 13, false, TextAnchor.MiddleCenter);
             view.Zoomed = () => zoomCaption.text = zoomNames[screen.Map.Zoom];
+            // Side by side in the strip above the map so they do not cover the north-east buildings at the default zoom.
             PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 64, top + 8);
-            PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 64, top + 58);
+            PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 116, top + 8);
 
             if (screen.Selected != null) SelectionPanel(ui, root, screen, actions, width, bottom);
             var depart = ActionButton(ui, root, "Estate.Depart", "출정", actions.Depart, 20, bottom + 8, width - 40, true, 64, "ui.button.destructive");
