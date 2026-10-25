@@ -287,7 +287,7 @@ namespace Tests.PlayMode
             yield return null; Canvas.ForceUpdateCanvases();
         }
 
-        const int PinnedBreaksOn = 22, PinnedBreaksOff = 13;
+        const int PinnedBreaksOn = 22, PinnedBreaksOff = 12;
 
         static IEnumerator Count(int[] into)
         {
@@ -311,11 +311,11 @@ namespace Tests.PlayMode
             var night = EstateDecorRules.Load().night; var full = night.fullAlpha;
             try
             {
-                night.fullAlpha = .75f; Click("EstateMap.Goal"); Click("EstateMap.Goal"); yield return null;
+                night.fullAlpha = .75f; Click("EstateMap.Goal"); yield return null; Click("EstateMap.Goal"); yield return null;
                 yield return Capture(name + "-night075");
             }
             finally { night.fullAlpha = full; }
-            Click("EstateMap.Goal"); Click("EstateMap.Goal"); yield return null;
+            Click("EstateMap.Goal"); yield return null; Click("EstateMap.Goal"); yield return null;
         }
 
         // Steps the zoom buttons to a level.

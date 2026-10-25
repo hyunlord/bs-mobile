@@ -164,12 +164,12 @@ namespace Tests.EditMode
             var (config, catalog, state) = Estate(); var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             var before = EstatePlanner.Plan(rules, art, config, state.Estate);
-            var moved = AccountEstate.Move(catalog, config, state, 0, 0, home.Id, 22, 22);
+            var moved = AccountEstate.Move(catalog, config, state, 0, 0, home.Id, 24, 24);
             Assert.That(moved.Done, Is.True, moved.Reason);
             var after = EstatePlanner.Plan(rules, art, config, moved.State.Estate);
             var key = $"estate-{home.Id:00}";
             var a = before.Astra.Where(o => o.Owner == key).ToArray(); var b = after.Astra.Where(o => o.Owner == key).ToArray();
-            var shift = EstateMapModel.Project(new Vector2(22 - home.X, 22 - home.Y));
+            var shift = EstateMapModel.Project(new Vector2(24 - home.X, 24 - home.Y));
             foreach (var o in b.Where(o => a.Any(p => p.Key == o.Key)))
             {
                 var p = a.Single(q => q.Key == o.Key);
