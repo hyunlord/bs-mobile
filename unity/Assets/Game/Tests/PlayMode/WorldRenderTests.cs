@@ -31,7 +31,7 @@ namespace Tests.PlayMode
                 }
                 var before = RenderTexture.active; RenderTexture.active = target;
                 var capture = new Texture2D(128, 64, TextureFormat.RGB24, false);
-                capture.ReadPixels(new Rect(0, 0, 128, 64), 0, 0); capture.Apply(); RenderTexture.active = before;
+                try { PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, 128, 64), 0, 0, "WorldRenderTests:readback1"); capture.Apply(); } finally { RenderTexture.active = before; }
                 var enemy = capture.GetPixel(32, 32); var blue = capture.GetPixel(96, 32);
                 Assert.That(enemy.r, Is.EqualTo(GamePalette.Enemy.r).Within(2f / 255));
                 Assert.That(enemy.g, Is.EqualTo(GamePalette.Enemy.g).Within(2f / 255));
@@ -72,7 +72,7 @@ namespace Tests.PlayMode
                 Assert.That(wide.DrawCalls, Is.EqualTo(2), "Wide effect batches draw once off enemies and once, capped, over them.");
                 Assert.That(thin.DrawCalls, Is.EqualTo(1)); Assert.That(enemies.DrawCalls, Is.EqualTo(1)); Assert.That(sky.DrawCalls, Is.EqualTo(1));
                 var before = RenderTexture.active; RenderTexture.active = target;
-                var capture = new Texture2D(128, 64, TextureFormat.RGB24, false); capture.ReadPixels(new Rect(0, 0, 128, 64), 0, 0); capture.Apply(); RenderTexture.active = before;
+                var capture = new Texture2D(128, 64, TextureFormat.RGB24, false); try { PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, 128, 64), 0, 0, "WorldRenderTests:readback2"); capture.Apply(); } finally { RenderTexture.active = before; }
                 var capped = capture.GetPixel(16, 32); var open = capture.GetPixel(48, 32); var core = capture.GetPixel(80, 32); var tinted = capture.GetPixel(112, 32);
                 Assert.That(capped.g, Is.GreaterThan(.95f)); Assert.That(capped.r, Is.InRange(.3f, .8f), "A wide white effect over a green enemy stays at the half cap.");
                 Assert.That(open.r, Is.GreaterThan(.95f), "Full strength where no enemy is.");
@@ -138,7 +138,7 @@ namespace Tests.PlayMode
                 }
                 Assert.That(batch.SubmittedInstances, Is.EqualTo(3)); Assert.That(batch.DrawCalls, Is.EqualTo(1));
                 var before = RenderTexture.active; RenderTexture.active = target;
-                var capture = new Texture2D(128, 64, TextureFormat.RGB24, false); capture.ReadPixels(new Rect(0, 0, 128, 64), 0, 0); capture.Apply(); RenderTexture.active = before;
+                var capture = new Texture2D(128, 64, TextureFormat.RGB24, false); try { PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, 128, 64), 0, 0, "WorldRenderTests:readback3"); capture.Apply(); } finally { RenderTexture.active = before; }
                 var left = capture.GetPixel(32, 32); var right = capture.GetPixel(96, 32);
                 Assert.That(left.r, Is.EqualTo(0.6f).Within(0.08f), "Per-instance tint must preserve sRGB color."); Assert.That(left.g, Is.LessThan(0.05f));
                 var flash = capture.GetPixel(64, 32);
@@ -198,7 +198,7 @@ namespace Tests.PlayMode
                     "Only the renderer's fixed text pools are child objects: " + child.name);
             Assert.That(world.SubmittedInstances, Is.GreaterThan(frame.Enemies.Count)); Assert.That(world.DrawCalls, Is.GreaterThan(0));
             var previous = RenderTexture.active; RenderTexture.active = target;
-            var capture = new Texture2D(360, 720, TextureFormat.RGB24, false); capture.ReadPixels(new Rect(0, 0, 360, 720), 0, 0); capture.Apply(); RenderTexture.active = previous;
+            var capture = new Texture2D(360, 720, TextureFormat.RGB24, false); try { PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, 360, 720), 0, 0, "WorldRenderTests:readback4"); capture.Apply(); } finally { RenderTexture.active = previous; }
 #if UNITY_EDITOR
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/unity")); Directory.CreateDirectory(output);
             File.WriteAllBytes(Path.Combine(output, "instanced-world-portrait.png"), capture.EncodeToPNG());
@@ -242,7 +242,7 @@ namespace Tests.PlayMode
                 frame.Enemies, frame.Farms, frame.Buildings, frame.People, frame.Loot, frame.Remains, frame.Equipment, System.Array.AsReadOnly(System.Array.Empty<PresentationEvent>()));
             for (var index = 0; index < 3; index++) { world.Present(withoutExperience, withoutExperience, firstPlayable, 1, 0, safe); yield return null; }
             previous = RenderTexture.active; RenderTexture.active = target;
-            var background = new Texture2D(360, 720, TextureFormat.RGB24, false); background.ReadPixels(new Rect(0, 0, 360, 720), 0, 0); background.Apply(); RenderTexture.active = previous;
+            var background = new Texture2D(360, 720, TextureFormat.RGB24, false); try { PlayModeCaptureGuard.ReadPixels(background, new Rect(0, 0, 360, 720), 0, 0, "WorldRenderTests:readback5"); background.Apply(); } finally { RenderTexture.active = previous; }
             AssertAuthoredPixel(ArtCatalog.Load().Resolve("feedback", "kill-experience", "default"), unobstructedExperience, "Unobstructed translucent XP", background);
             Object.Destroy(background);
 #endif

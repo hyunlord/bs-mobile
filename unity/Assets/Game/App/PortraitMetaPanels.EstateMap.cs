@@ -48,9 +48,9 @@ namespace Game.App
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
             screen.Map.SetFocus(screen.OpenAreas(night.openingMargin));
             if (!screen.Map.Framed) screen.FrameFirstView();
-            // A newly selected building hidden behind the panel is brought into view; while moving, the camera stays where the
+            // Centre the selected foundation in the unobscured band above the sheet; while moving, the camera stays where the
             // player put it so the destination preview remains visible.
-            else if (screen.Selected != null && !screen.Moving && !screen.Map.InView(screen.Centre(screen.Selected.Value))) screen.Map.CentreOn(screen.Centre(screen.Selected.Value));
+            else if (screen.Selected != null && !screen.Moving) screen.Map.CentreOn(screen.Centre(screen.Selected.Value));
 
             // Painted map (#375, #379): ground over the whole painted area, Astra's terrain patches and earth roads, the art of the
             // land outside the open zones, one continuous night by distance from open land, warm lamps, then yard grounds,
@@ -116,11 +116,14 @@ namespace Game.App
                 var building = screen.Building(item.BuildingId); var kind = screen.Kind(building.Kind);
                 var colour = item.Colour; if (screen.Moving && screen.Selected == building.Id) colour.a *= .45f;
                 Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);
-                // Names stay hidden until the building is selected (#368).
-                if (screen.Selected == building.Id)
-                    view.Pin(NameTag(ui, viewport, screen.Name(building.Kind) + " Lv " + building.Level), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), 128);
             }
             foreach (var item in plan.In(EstateDrawLayer.Foreground).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Piece:" + item.Role, item);
+            // Keep the small site sign readable after neighbouring buildings are drawn; names stay in the sheet.
+            foreach (var building in screen.State.Estate.Buildings.Where(b => screen.UnderConstruction(b.Id)))
+            {
+                var kind = screen.Kind(building.Kind);
+                view.Pin(NameTag(ui, viewport, "공사 중"), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), -18);
+            }
             if (screen.Moving && screen.Selected != null)
             {
                 var kind = screen.Kind(screen.Building(screen.Selected.Value).Kind);
@@ -147,8 +150,13 @@ namespace Game.App
             view.Zoomed += () => zoomCaption.text = ZoomName();
             // The view is remembered for the next visit (#379): written when a drag ends or the zoom changes, never per frame.
             view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
-            PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
-            PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 54, controlsY + 52);
+            var zoomIn = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
+            var zoomOut = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 54, controlsY + 52);
+            if (panel > 0)
+            {
+                decorToggle.gameObject.SetActive(false); chip.gameObject.SetActive(false);
+                zoomIn.gameObject.SetActive(false); zoomOut.gameObject.SetActive(false);
+            }
             var panelTop = height - BottomBar - BottomGap * 3 - WorkHeight - panel;
             Text liveStatus = null;
             if (screen.Specializing) SpecializePanel(ui, root, screen, actions, width, panelTop, panel);
@@ -219,8 +227,8 @@ namespace Game.App
 
         static Text NameTag(UiShell ui, RectTransform viewport, string value)
         {
-            var plate = ColorPlate(viewport, "EstateMap.NameTag", BarInk, 0, 0, 150, 26);
-            Caption(ui, plate, value, 0, 0, 150, 26, 13, false, TextAnchor.MiddleCenter).fontStyle = FontStyle.Bold;
+            var plate = ColorPlate(viewport, "EstateMap.ConstructionSign", BarInk, 0, 0, 54, 32);
+            Caption(ui, plate, value, 0, 0, 54, 32, 12, false, TextAnchor.MiddleCenter).fontStyle = FontStyle.Bold;
             return plate.GetComponentInChildren<Text>();
         }
 

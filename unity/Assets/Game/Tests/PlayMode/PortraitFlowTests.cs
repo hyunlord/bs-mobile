@@ -142,7 +142,7 @@ namespace Tests.PlayMode
             var guardCapture = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-run/guard-offer-before-pointer.png"));
             Directory.CreateDirectory(Path.GetDirectoryName(guardCapture));
             if (File.Exists(guardCapture)) File.Delete(guardCapture);
-            ScreenCapture.CaptureScreenshot(guardCapture);
+            var guardCyanProbe = PlayModeCaptureGuard.Begin(guardCapture); ScreenCapture.CaptureScreenshot(guardCapture);
             yield return null;
             Assert.That(ButtonNamed("Card.Choose:" + offered.Cards[0]).interactable, Is.False, "Capture preparation must remain inside the 300 ms guard.");
             Assert.That(ButtonNamed("Cards.Ban").interactable, Is.False);
@@ -155,6 +155,8 @@ namespace Tests.PlayMode
             Assert.That(app.Frame.Status, Is.EqualTo(RunStatus.AwaitingCard));
             yield return new WaitForSecondsRealtime(.35f);
             yield return null;
+            Assert.That(File.Exists(guardCapture), Is.True, guardCapture);
+            PlayModeCaptureGuard.CheckFile(guardCapture, guardCyanProbe);
             Canvas.ForceUpdateCanvases();
             foreach (var name in new[] { "Cards.Reroll", "Cards.Ban", "Cards.Lock" })
             {
@@ -511,10 +513,10 @@ namespace Tests.PlayMode
             Directory.CreateDirectory(output);
             var path = Path.Combine(output, screen + "-" + size.x + "x" + size.y + ".png");
             if (File.Exists(path)) File.Delete(path);
-            ScreenCapture.CaptureScreenshot(path);
+            var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);
             var deadline = Time.realtimeSinceStartup + 10;
             while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.That(File.Exists(path), Is.True, path);
+            Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
             var image = new Texture2D(2, 2);
             try
             {

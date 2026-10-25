@@ -67,7 +67,7 @@ namespace Tests.PlayMode
                     }
                     Assert.That(rig.DeformedSkinCount, Is.EqualTo(14), names[action]);
                     var previous = RenderTexture.active;
-                    try { RenderTexture.active = target; image.ReadPixels(new Rect(0, 0, 390, 844), 0, 0); image.Apply(); }
+                    try { RenderTexture.active = target; PlayModeCaptureGuard.ReadPixels(image, new Rect(0, 0, 390, 844), 0, 0, "HeroKnightPoseTests:readback1"); image.Apply(); }
                     finally { RenderTexture.active = previous; }
                     var painted = 0;
                     var background = image.GetPixel(0, 0);

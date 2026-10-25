@@ -36,9 +36,14 @@ namespace Tests.PlayMode
                 yield return null;
                 if (frame <= 5 || frame == 30)
                 {
-                    var gameView = ReadGameView(); Record(gameView, "game-view", frame);
+                    var viewProbe = PlayModeCaptureGuard.Begin("estate-entry-game-view-" + frame);
+                    var gameView = ReadGameView();
+                    PlayModeCaptureGuard.Check(gameView, viewProbe);
+                    Record(gameView, "game-view", frame);
                     var displayedPixels = gameView.GetPixels32(); Object.Destroy(gameView);
+                    var captureProbe = PlayModeCaptureGuard.Begin("estate-entry-capture-" + frame);
                     var capture = ScreenCapture.CaptureScreenshotAsTexture();
+                    PlayModeCaptureGuard.Check(capture, captureProbe);
                     Record(capture, "screen-capture", frame);
                     if (!displayedPixels.SequenceEqual(capture.GetPixels32())) failedFrames.Add($"{frame}: capture differs from Game View");
                     Object.Destroy(capture);

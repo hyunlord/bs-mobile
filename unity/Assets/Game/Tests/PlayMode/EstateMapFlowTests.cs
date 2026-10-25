@@ -134,7 +134,9 @@ namespace Tests.PlayMode
             var forge = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:forge");
             Focus(screen.Centre(forge.Id)); Tap(new Vector2Int(forge.X + 1, forge.Y + 1)); yield return null;
             Assert.That(screen.Selected, Is.EqualTo(forge.Id), "A tap on any cell of the footprint selects the building.");
-            Assert.That(Rects("EstateMap.NameTag").Length, Is.EqualTo(1), "Only the selected building shows its name.");
+            Assert.That(Rects("EstateMap.NameTag"), Is.Empty, "Names stay in the sheet instead of hiding building art.");
+            Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(forge.Id)), screen.Map.VisibleCentre), Is.LessThan(1), "Selection centres its foundation above the sheet.");
+            Assert.That(Buttons("EstateMap.Zoom"), Is.Empty); Assert.That(Buttons("EstateMap.Decor"), Is.Empty);
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.True, "The selected building stays between the bars and the panel.");
             Assert.That(screen.Map.MapSize.y, Is.GreaterThan(screen.Map.Viewport.y - screen.Map.TopInset - screen.Map.BottomInset), "The wide map can be dragged to every row behind the panel.");
@@ -142,12 +144,12 @@ namespace Tests.PlayMode
             Click("EstateMap.Move"); yield return null; Assert.That(screen.Moving, Is.True);
             // At building zoom the original footprint leaves the screen once the player pans to the destination; the redraw
             // after the tap must keep the destination preview in view (review on #369).
-            Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
+            View().Step(1); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
             Focus(C(4, 4) + new Vector2(.5f, .5f)); Tap(C(4, 4)); yield return null;
             Assert.That(screen.Preview, Is.EqualTo(C(4, 4))); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
             Assert.That(screen.Map.InView(C(5, 5)), Is.True, "The destination preview stays on screen after the tap redraws the page.");
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.False, "The camera did not jump back to the original footprint.");
-            Click("EstateMap.ZoomOut"); yield return null;
+            View().Step(-1); yield return null;
             yield return Capture("estate-map-move-valid");
             Click("EstateMap.Confirm"); yield return null;
             Assert.That(screen.Moving, Is.False);
@@ -195,6 +197,11 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.Build").GetComponentInChildren<Text>().text, Is.EqualTo("짓기"));
             Click("EstateMap.Build"); yield return null;
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id)); Assert.That(screen.Notice, Is.EqualTo("경작지 공사 시작"));
+            Assert.That(Rects("EstateMap.ConstructionSign").Length, Is.EqualTo(1));
+            var fieldArt = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
+            Assert.That(fieldArt.sprite, Is.SameAs(EstateArt.Load().Body("field", 1)), "Construction uses empty start-stage furrows.");
+            Assert.That(fieldArt.color, Is.EqualTo(Color.white));
+            Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(field.Id)), screen.Map.VisibleCentre), Is.LessThan(1));
             yield return Capture("estate-flow-build");
             Click("EstateMap.Skip60"); yield return null;
             Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
@@ -486,6 +493,7 @@ namespace Tests.PlayMode
             }
             var compilingBefore = ShaderUtil.anythingCompiling;
             Debug.Log($"M3A7_CAPTURE before name={name} mode={ShaderProbeMode} anythingCompiling={compilingBefore} async={EditorSettings.asyncShaderCompilation} frame={Time.frameCount}");
+            var captureProbe = PlayModeCaptureGuard.Begin(name);
             var image = ScreenCapture.CaptureScreenshotAsTexture();
             var compilingAfter = ShaderUtil.anythingCompiling;
             try
@@ -499,10 +507,12 @@ namespace Tests.PlayMode
                 File.WriteAllBytes(Path.Combine(probe, name + ".png"), image.EncodeToPNG());
                 if (cyan > 0)
                 {
+                    var viewProbe = PlayModeCaptureGuard.Begin(name + "-failure-gameview");
                     var view = ReadGameView();
-                    try { File.WriteAllBytes(Path.Combine(probe, name + "-gameview.png"), view.EncodeToPNG()); }
+                    try { PlayModeCaptureGuard.Check(view, viewProbe); File.WriteAllBytes(Path.Combine(probe, name + "-gameview.png"), view.EncodeToPNG()); }
                     finally { Object.Destroy(view); }
                 }
+                PlayModeCaptureGuard.Check(image, captureProbe, path, compilingAfter);
                 Assert.That(cyan, Is.Zero, "Cyan capture regression: " + name);
             }
             finally { Object.Destroy(image); }

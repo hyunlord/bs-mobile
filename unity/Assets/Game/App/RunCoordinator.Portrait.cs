@@ -20,6 +20,9 @@ namespace Game.App
         {
             get
             {
+#if DEVELOPMENT_BUILD && UNITY_STANDALONE_OSX && !UNITY_EDITOR
+                if (EstateEntryProbe.PreferencesPrefix != null) return EstateEntryProbe.PreferencesPrefix;
+#endif
                 if (WaveBenchmarkAccount.Current != null) return WaveBenchmarkAccount.Current.PreferencesPrefix;
                 var automated = AutoplayCapture.Active?.PreferencesPrefix ?? FeelTrialAutomation.Active?.PreferencesPrefix ?? NormalGcProbe.PreferencesPrefix;
                 if (automated != null) return automated;

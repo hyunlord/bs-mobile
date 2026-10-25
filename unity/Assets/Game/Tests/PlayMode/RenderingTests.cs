@@ -33,9 +33,8 @@ namespace Tests.PlayMode
             var previous = RenderTexture.active;
             RenderTexture.active = target;
             var capture = new Texture2D(64, 64, TextureFormat.RGB24, false);
-            capture.ReadPixels(new Rect(0, 0, 64, 64), 0, 0);
-            capture.Apply();
-            RenderTexture.active = previous;
+            try { PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, 64, 64), 0, 0, "RenderingTests:readback1");
+            capture.Apply(); } finally { RenderTexture.active = previous; }
             var center = capture.GetPixel(32, 32);
             var edge = capture.GetPixel(1, 1);
             Assert.That(center.r + center.g + center.b, Is.GreaterThan(edge.r + edge.g + edge.b + 0.05f));

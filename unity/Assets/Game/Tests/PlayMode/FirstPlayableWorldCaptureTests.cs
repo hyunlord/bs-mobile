@@ -167,7 +167,7 @@ namespace Tests.PlayMode
                 {
                     RenderTexture.active = target;
                     image = new Texture2D(width, height, TextureFormat.RGB24, false);
-                    image.ReadPixels(new Rect(0, 0, width, height), 0, 0); image.Apply();
+                    PlayModeCaptureGuard.ReadPixels(image, new Rect(0, 0, width, height), 0, 0, "FirstPlayableWorldCaptureTests:readback1"); image.Apply();
                 }
                 finally { RenderTexture.active = before; }
                 Assert.That(image.GetPixels32().Select(value => (value.r >> 4) * 256 + (value.g >> 4) * 16 + (value.b >> 4)).Distinct().Count(), Is.GreaterThan(20), "The GPU capture must contain authored textured pixels.");

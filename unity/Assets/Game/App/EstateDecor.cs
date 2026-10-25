@@ -274,7 +274,9 @@ namespace Game.App
                 var level = building ? estate.Active.TargetLevel : b.Level;
                 var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
                 // The authored start stage already depicts damage; colour is not a second ruin state.
-                var colour = building ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
+                var fieldWork = building && b.Kind == rules.fieldFenceKind;
+                if (fieldWork) level = 0; // Empty authored furrows, not desaturated finished crops, while building.
+                var colour = building && !fieldWork ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
                 plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind, Stage = rules.Stage(b.Kind, level), Grid = centre,
                     Width = rules.buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
             }
