@@ -25,11 +25,15 @@ namespace Tests.PlayMode
         string directory, prefix, priorDirectory, priorPrefix;
         int priorWidth, priorHeight;
         RunCoordinator app;
+        bool? priorAsyncCompilation;
+        static string ShaderProbeMode => Environment.GetEnvironmentVariable("M3A7_SHADER_PROBE") ?? "baseline";
 
         [UnitySetUp] public IEnumerator Setup()
         {
             if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty);
+            priorAsyncCompilation = EditorSettings.asyncShaderCompilation;
+            if (ShaderProbeMode == "off") EditorSettings.asyncShaderCompilation = false;
             priorDirectory = RunCoordinator.MetaDirectoryOverride; priorPrefix = RunCoordinator.PreferencePrefixOverride;
             priorWidth = Screen.width; priorHeight = Screen.height;
             var id = Guid.NewGuid().ToString("N");
@@ -44,6 +48,7 @@ namespace Tests.PlayMode
 
         [UnityTearDown] public IEnumerator Cleanup()
         {
+            if (priorAsyncCompilation.HasValue) { EditorSettings.asyncShaderCompilation = priorAsyncCompilation.Value; priorAsyncCompilation = null; }
             foreach (var boot in Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None)) Object.Destroy(boot.gameObject);
             yield return null;
             if (directory != null)
@@ -473,14 +478,35 @@ namespace Tests.PlayMode
             var path = Path.Combine(output, name + "-" + Screen.width + "x" + Screen.height + ".png");
             // Copy pixels synchronously before the next UI action can redraw/destroy this page. File existence from
             // CaptureScreenshot is not a frame-completion fence and cannot bind the old PNG to current screen metadata.
+            var waitStarted = Time.realtimeSinceStartup;
+            var compilingAtWait = ShaderUtil.anythingCompiling;
+            if (ShaderProbeMode == "wait")
+            {
+                while (ShaderUtil.anythingCompiling && Time.realtimeSinceStartup - waitStarted < 10) yield return null;
+            }
+            var compilingBefore = ShaderUtil.anythingCompiling;
+            Debug.Log($"M3A7_CAPTURE before name={name} mode={ShaderProbeMode} anythingCompiling={compilingBefore} async={EditorSettings.asyncShaderCompilation} frame={Time.frameCount}");
             var image = ScreenCapture.CaptureScreenshotAsTexture();
+            var compilingAfter = ShaderUtil.anythingCompiling;
             try
             {
                 File.WriteAllBytes(path, image.EncodeToPNG());
-                Assert.That(image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230), Is.Zero, "Cyan capture regression: " + name);
+                var cyan = image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
+                var probe = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/m3a7-shader-" + ShaderProbeMode)); Directory.CreateDirectory(probe);
+                var csv = Path.Combine(probe, "captures.csv");
+                if (!File.Exists(csv)) File.WriteAllText(csv, "name,frame,screen,async,compilingAtWait,compilingBefore,compilingAfter,elapsedThroughCaptureSeconds,cyanPixels\n");
+                File.AppendAllText(csv, $"{name},{Time.frameCount},{app.CurrentScreenName},{EditorSettings.asyncShaderCompilation},{compilingAtWait},{compilingBefore},{compilingAfter},{(Time.realtimeSinceStartup-waitStarted).ToString(System.Globalization.CultureInfo.InvariantCulture)},{cyan}\n");
+                File.WriteAllBytes(Path.Combine(probe, name + ".png"), image.EncodeToPNG());
+                if (cyan > 0)
+                {
+                    var view = ReadGameView();
+                    try { File.WriteAllBytes(Path.Combine(probe, name + "-gameview.png"), view.EncodeToPNG()); }
+                    finally { Object.Destroy(view); }
+                }
+                Assert.That(cyan, Is.Zero, "Cyan capture regression: " + name);
             }
             finally { Object.Destroy(image); }
-            File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; screen={app.CurrentScreenName}; option=estatePrototype(development); zoom={app.EstateMap.Map.Zoom}; commit={BuildIdentity.Commit}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; projection=isometric 64x32; art=temporary manor sprites and solid colour blocks\n");
+            File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; screen={app.CurrentScreenName}; option=estatePrototype(development); zoom={app.EstateMap.Map.Zoom}; commit={BuildIdentity.Commit}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; projection=isometric 64x32; art=Astra estate terrain, building and decor atlases\n");
         }
 
         IEnumerator Boot()
