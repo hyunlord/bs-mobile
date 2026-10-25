@@ -334,7 +334,7 @@
       127
     ],
     "edgeAlpha": 0.5,
-    "fullAlpha": 0.88,
+    "fullAlpha": 0.75,
     "fullCells": 2.5,
     "insideCells": 0.5,
     "areaFadeCells": 3,
