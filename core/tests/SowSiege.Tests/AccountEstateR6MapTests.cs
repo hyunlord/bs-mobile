@@ -22,7 +22,9 @@ public sealed class AccountEstateR6MapTests
         Assert.Contains("CreateAccountEstateConfig(string version = null)", source);
         Assert.Contains("(version ?? \"m3a-prototype-r7\") switch", source);
         foreach (var version in new[] { "r2", "r3", "r4", "r5", "r6", "r7" })
+        {
             Assert.Contains("\"m3a-prototype-" + version + "\" => new global::SowSiege.Core.AccountEstateConfig", source);
+        }
         Assert.Contains("_ => null", source);
         Assert.DoesNotContain(UnityExportSnapshot.Capture(Data).Files, f => f.RelativePath.StartsWith("opt-in/", StringComparison.Ordinal));
     }
@@ -42,12 +44,16 @@ public sealed class AccountEstateR6MapTests
         Assert.All(outskirts, z => Assert.Equal(Json(R5.Zones.Single(old => old.Id == z.Id).Unlock), Json(z.Unlock)));
         var cells = new HashSet<(int X, int Y)>();
         foreach (var z in outskirts.Append(start))
+        {
             for (var x = z.X; x < z.X + z.Width; x++)
+            {
                 for (var y = z.Y; y < z.Y + z.Height; y++)
                 {
                     Assert.InRange(x, 20, 39); Assert.InRange(y, 20, 39);
                     Assert.True(cells.Add((x, y)), $"Centre cell {x},{y} occurs twice.");
                 }
+            }
+        }
         Assert.Equal(400, cells.Count);
         Assert.Equal(R5.Zones.Where(z => !z.OpenAtStart && !z.Id.StartsWith("zone:outskirts-", StringComparison.Ordinal)).Select(Json),
             R6.Zones.Where(z => !z.OpenAtStart && !z.Id.StartsWith("zone:outskirts-", StringComparison.Ordinal)).Select(Json));
