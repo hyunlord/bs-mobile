@@ -386,7 +386,7 @@ namespace Tests.PlayMode
                 Assert.That(image.GetPixels32().Select(p=>(p.r>>4)*256+(p.g>>4)*16+(p.b>>4)).Distinct().Count(),Is.GreaterThan(20));
                 var output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/wave1a/editor"));Directory.CreateDirectory(output);
                 File.WriteAllBytes(Path.Combine(output,captureName+".png"),image.EncodeToPNG());
-                File.WriteAllText(Path.Combine(output,captureName+".txt"),$"{provenance}profile={CanonicalContent.ProfileName}\ntick={current.Tick}\nstateHash={session.ComputeStateHash()}\nenemies={current.Enemies.Length}\ndrawCalls={world.DrawCalls}\nsubmittedInstances={world.SubmittedInstances}\nclassification=accelerated component QA; not normal-play footage\n");
+                File.WriteAllText(Path.Combine(output,captureName+".txt"),$"{provenance}profile={CanonicalContent.ProfileName}\ntick={current.Tick}\nstateHash={session.ComputeStateHash()}\nenemies={current.Enemies.Count}\ndrawCalls={world.DrawCalls}\nsubmittedInstances={world.SubmittedInstances}\nclassification=accelerated component QA; not normal-play footage\n");
             }
             finally{if(image!=null)Object.Destroy(image);Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
         }
