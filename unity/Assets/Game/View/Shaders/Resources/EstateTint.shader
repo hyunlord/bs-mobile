@@ -65,13 +65,24 @@ Shader "Game/UI/EstateTint"
                     }
                     input.color.rgb = lerp(float3(1,1,1), _EstateClosed.rgb, smoothstep(-.5, 2.5, distance));
                 }
+                fixed3 source = sample.rgb;
                 fixed luma = dot(sample.rgb, fixed3(.2126, .7152, .0722));
                 fixed3 tinted = lerp(luma.xxx, sample.rgb, input.color.r) * input.color.g;
                 fixed3 dark = luma * fixed3(.24, .27, .29) + fixed3(9, 10, 13) / 255.0;
                 sample.rgb = lerp(dark, tinted, input.color.b);
                 // Above-night landmarks retain contour and texture, never original-colour river banks.
                 // The shared material batches these cool silhouettes with other estate sprites.
-                if (input.grid.z > .5) sample.rgb = luma * fixed3(.65, .8, 1) * input.color.g;
+                if (input.grid.z > .5)
+                {
+                    sample.rgb = luma * fixed3(.65, .8, 1) * input.color.g;
+                    // Source hue identifies water only; the dark overlay never restores its original colour.
+                    if (input.grid.z > 1.5)
+                    {
+                        fixed water = smoothstep(.005, .035, min(source.g - source.r, source.b - source.r));
+                        fixed3 deepWater = lerp(fixed3(.022, .055, .09), fixed3(.09, .19, .25), luma * luma);
+                        sample.rgb = lerp(sample.rgb, deepWater, water);
+                    }
+                }
                 sample.a *= input.color.a;
                 #ifdef UNITY_UI_CLIP_RECT
                 sample.a *= UnityGet2DClipping(input.local.xy, _ClipRect);

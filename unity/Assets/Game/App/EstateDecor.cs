@@ -16,6 +16,7 @@ namespace Game.App
         public AstraDecorRules astra = new AstraDecorRules();
         public KindArt[] kindArt = Array.Empty<KindArt>();
         public Tint[] tints = Array.Empty<Tint>();
+        public float buildingScale = 1;
         public float constructionSaturation = .55f, constructionAlpha = .85f;
         public YardGround yardGround = new YardGround();
         public Restoration restoration = new Restoration();
@@ -214,7 +215,7 @@ namespace Game.App
             {
                 var kind = kinds[b.Kind]; var artKind = rules.ArtOf(b.Kind)?.art; var stage = rules.Stage(b.Kind, b.Level);
                 var anchor = P(new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f));
-                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 : 96;
+                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 * rules.buildingScale : 96 * rules.buildingScale;
                 if (b.Level > 0 && artKind != null) scene.Buildings.Add(new AstraBuilding($"estate-{b.Id:00}", artKind, stage, anchor.x, anchor.y, w));
                 else scene.Obstacles.Add((anchor.x, anchor.y - w * .25, 1, w * .5));
             }
@@ -261,7 +262,7 @@ namespace Game.App
                 var kind = kinds[b.Kind]; var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
                 // An unbuilt site stands on painted earth; a built one in open land is lit (stakes and rope art: requested from Astra).
                 if (b.Level == 0 && estate.Active?.BuildingId != b.Id)
-                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
+                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = rules.buildingScale * sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
                         Aspect = sg.aspect, Colour = new Color(1, 1, 1, sg.siteAlpha), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
                 else if (OpenCell(new Vector2Int(b.X, b.Y)))
                     plan.Lamps.Add((centre, kinds[b.Kind].StartsComplete ? night.homeLampCells : night.lampCells));
@@ -275,7 +276,7 @@ namespace Game.App
                 // The authored start stage already depicts damage; colour is not a second ruin state.
                 var colour = building ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
                 plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind, Stage = rules.Stage(b.Kind, level), Grid = centre,
-                    Width = (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
+                    Width = rules.buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
             }
 
             // Field fences and work poses (display only; no production meaning).

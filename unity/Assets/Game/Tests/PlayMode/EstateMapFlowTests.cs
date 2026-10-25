@@ -19,12 +19,11 @@ using Object = UnityEngine.Object;
 namespace Tests.PlayMode
 {
     // M3a-2 estate map prototype (#366) behind its development option, on the real portrait app.
-    public sealed class EstateMapFlowTests
+    public sealed partial class EstateMapFlowTests
     {
         const string Toggle = "Settings.영지 지도 시제품 (개발)";
         string directory, prefix, priorDirectory, priorPrefix;
         int priorWidth, priorHeight;
-        bool priorAsyncShaders;
         RunCoordinator app;
 
         [UnitySetUp] public IEnumerator Setup()
@@ -33,8 +32,6 @@ namespace Tests.PlayMode
             Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty);
             priorDirectory = RunCoordinator.MetaDirectoryOverride; priorPrefix = RunCoordinator.PreferencePrefixOverride;
             priorWidth = Screen.width; priorHeight = Screen.height;
-            priorAsyncShaders = ShaderUtil.allowAsyncCompilation;
-            ShaderUtil.allowAsyncCompilation = false;
             var id = Guid.NewGuid().ToString("N");
             directory = Path.Combine(Path.GetTempPath(), "sowsiege-estate-map-" + id);
             prefix = "sowsiege.test.estate-map." + id + ".";
@@ -58,7 +55,6 @@ namespace Tests.PlayMode
                 PlayModeWindow.SetCustomRenderingResolution((uint)priorWidth, (uint)priorHeight, "Restored test viewport");
             }
             app = null;
-            ShaderUtil.allowAsyncCompilation = priorAsyncShaders;
             yield return null;
         }
 
@@ -167,8 +163,8 @@ namespace Tests.PlayMode
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
-            Assert.That(measuredBreaks.On, Is.EqualTo(PinnedBreaksOn), "Material/texture switches with decoration.");
-            Assert.That(measuredBreaks.Off, Is.EqualTo(PinnedBreaksOff), "Material/texture switches without decoration.");
+            Assert.That(measuredBreaks.On, Is.LessThanOrEqualTo(17 + 4), "Base on17 plus at most four landmark batches.");
+            Assert.That(measuredBreaks.Off, Is.LessThanOrEqualTo(9 + 4), "Base off9 plus at most four landmark batches.");
         }
 
         [UnityTest, Timeout(180000)]
@@ -287,7 +283,10 @@ namespace Tests.PlayMode
             Click("Title.Enter"); yield return ScreenIs("EstateMap");
             Assert.That(app.EstateMap.Config.Version, Is.EqualTo(config.Version));
             Assert.That(app.EstateMap.Config.Zones.Single(z => z.OpenAtStart).Width, Is.EqualTo(openedWidth));
-            TraceMaterialBreaks(version);
+            CheckBatchBudget(version, "on");
+            Click("EstateMap.Decor"); yield return null;
+            CheckBatchBudget(version, "off");
+            Click("EstateMap.Decor"); yield return null;
             AssertHistoricalBytes("first map entry");
             Click("Tab.Vassals"); yield return ScreenIs("Vassals");
             AssertHistoricalBytes("map closed");
@@ -331,12 +330,12 @@ namespace Tests.PlayMode
             Assert.That(Rects("EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
-            TraceMaterialBreaks("on");
+            CheckBatchBudget("m3a-prototype-r6", "on");
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
             Assert.That(Rects("EstateMap.Decor:"), Is.Empty);
             var off = new int[3]; yield return Batches(off); var breaksOff = EstateMapView.MaterialBreaks(View().transform);
-            TraceMaterialBreaks("off");
+            CheckBatchBudget("m3a-prototype-r6", "off");
             yield return Capture("estate-decor-off");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.True);
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
@@ -354,30 +353,30 @@ namespace Tests.PlayMode
 
         (int On, int Off) measuredBreaks;
 
-        void TraceMaterialBreaks(string state)
+        void CheckBatchBudget(string version, string state)
         {
             var graphics = View().GetComponentsInChildren<Graphic>().Where(g => g.isActiveAndEnabled).ToArray();
-            int Count(bool landmarks, bool sharedGround)
+            int WithoutLandmarks()
             {
-                Material previous = null; Texture texture = null; var count = 0;
+                Material prior = null; Texture texture = null; var count = 0;
                 foreach (var graphic in graphics)
                 {
-                    if (!landmarks && graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)) continue;
-                    var material = sharedGround && graphic is EstateTerrainImage ? EstateArt.Load().Tint : graphic.material;
-                    if (count == 0 || material != previous || texture != graphic.mainTexture)
-                    { count++; previous = material; texture = graphic.mainTexture; }
+                    if (graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)) continue;
+                    var material = graphic.materialForRendering;
+                    if (count == 0 || material != prior || texture != graphic.mainTexture)
+                    { count++; prior = material; texture = graphic.mainTexture; }
                 }
                 return count;
             }
-            Debug.Log($"Estate batch attribution {state}: actual={EstateMapView.MaterialBreaks(View().transform)}, raw={Count(true, false)}, without-landmarks={Count(false, false)}, without-landmarks-shared-ground={Count(false, true)}");
-            Material prior = null; Texture priorTexture = null;
-            foreach (var graphic in graphics)
-            {
-                var material = graphic.materialForRendering;
-                if (material == prior && graphic.mainTexture == priorTexture) continue;
-                Debug.Log($"Estate batch boundary {state}: {graphic.name}, material={material.name}, texture={graphic.mainTexture.name}");
-                prior = material; priorTexture = graphic.mainTexture;
-            }
+            var actual = EstateMapView.MaterialBreaks(View().transform); var baseline = WithoutLandmarks();
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
+            Directory.CreateDirectory(output);
+            File.WriteAllText(Path.Combine(output, $"batch-{version}-{state}.csv"),
+                $"version,decoration,base,landmarks,total\n{version},{state},{baseline},{actual - baseline},{actual}\n");
+            Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
+            Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
+            if (version == "m3a-prototype-r6")
+                Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");
         }
 
         // Overlay canvases are not counted by the render counters, so the measurement renders the same canvas through a
@@ -392,10 +391,6 @@ namespace Tests.PlayMode
             finally { canvas.renderMode = mode; canvas.worldCamera = null; Object.Destroy(host); }
             yield return null; Canvas.ForceUpdateCanvases();
         }
-
-        // r6: pixel-restored ground uses a separate material; the post-night landmark layer adds texture switches.
-        // Actual neighbourhood capture: 32/24 (was 22/12 in r5); this is a structural count, not native frame cost.
-        const int PinnedBreaksOn = 32, PinnedBreaksOff = 24;
 
         static IEnumerator Count(int[] into)
         {
@@ -476,9 +471,15 @@ namespace Tests.PlayMode
             yield return null; Canvas.ForceUpdateCanvases();
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
             var path = Path.Combine(output, name + "-" + Screen.width + "x" + Screen.height + ".png");
-            if (File.Exists(path)) File.Delete(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
-            while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.That(File.Exists(path), Is.True, path);
+            // Copy pixels synchronously before the next UI action can redraw/destroy this page. File existence from
+            // CaptureScreenshot is not a frame-completion fence and cannot bind the old PNG to current screen metadata.
+            var image = ScreenCapture.CaptureScreenshotAsTexture();
+            try
+            {
+                File.WriteAllBytes(path, image.EncodeToPNG());
+                Assert.That(image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230), Is.Zero, "Cyan capture regression: " + name);
+            }
+            finally { Object.Destroy(image); }
             File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; screen={app.CurrentScreenName}; option=estatePrototype(development); zoom={app.EstateMap.Map.Zoom}; commit={BuildIdentity.Commit}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; projection=isometric 64x32; art=temporary manor sprites and solid colour blocks\n");
         }
 

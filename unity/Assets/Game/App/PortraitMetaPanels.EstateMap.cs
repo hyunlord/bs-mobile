@@ -64,7 +64,8 @@ namespace Game.App
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
-            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, item.Source == "terrain" ? terrainTint.Material : tint, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
+            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
+            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, terrainTint.Material, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Site", item);
             if (screen.Moving)
             {
                 var grid = Shapes(viewport, "EstateMap.Grid", view);
@@ -78,7 +79,6 @@ namespace Game.App
             // the bars. The night is one texture by distance from open land, so no zone edge shows inside it.
             foreach (var item in plan.In(EstateDrawLayer.Veiled).OrderBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal))
                 Paint(viewport, view, art, tint, "EstateMap.Veiled:" + item.Source, item);
-            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Site", item);
             var darkness = UiShell.Rect("EstateMap.Night", viewport); UiShell.Stretch(darkness);
             var nightGraphic = darkness.gameObject.AddComponent<EstateNight>(); nightGraphic.raycastTarget = false; nightGraphic.Model = screen.Map;
             // The night reaches `nightOverhang` cells past the painted area: terrain patches spill past their blocks, and whatever
@@ -86,7 +86,7 @@ namespace Game.App
             var o = night.nightOverhang; var nightArea = new RectInt(plan.Area.x - o, plan.Area.y - o, plan.Area.width + 2 * o, plan.Area.height + 2 * o);
             nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
             view.Track(nightGraphic);
-            foreach (var item in plan.In(EstateDrawLayer.Landmark).OrderBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal))
+            foreach (var item in OrderedEstateLandmarks(plan, art))
                 Paint(viewport, view, art, tint, "EstateMap.Landmark:" + item.Role, item);
             var lamps = Shapes(viewport, "EstateMap.Lamps", view);
             foreach (var (grid, cells) in plan.Lamps) lamps.Glow(grid, cells, night.Lamp);
@@ -169,6 +169,12 @@ namespace Game.App
             BottomBarWithTabs(ui, root, account, actions, width, height);
         }
 
+        // Rivers stay beneath bridges; within those planes, atlas grouping bounds the new overlay's batch cost (#386).
+        public static IEnumerable<EstateDrawItem> OrderedEstateLandmarks(EstatePlan plan, EstateArt art) =>
+            plan.In(EstateDrawLayer.Landmark).OrderBy(i => art.Layer(i.Role) == "ground" ? 0 : 1)
+                .ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)
+                .ThenBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal);
+
         // Sources the [장식 켬/끔] development switch hides (#372); terrain, buildings, the river skeleton and the darkness stay.
         static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant" };
 
@@ -179,10 +185,10 @@ namespace Game.App
             sprite ??= art.Get(item.Role);
             var rect = UiShell.Rect(name, viewport);
             Image image;
-            if (item.Source == "terrain" || item.Source == "landmark")
+            if (item.Layer == EstateDrawLayer.Terrain || item.Layer == EstateDrawLayer.Ground || item.Layer == EstateDrawLayer.Landmark)
             {
                 var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
-                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.Landmark = item.Source == "landmark"; image = terrain;
+                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
             else image = rect.gameObject.AddComponent<Image>();
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
@@ -439,7 +445,7 @@ namespace Game.App
     {
         public Vector2 Grid;
         public float PaintedWidth;
-        public bool Landmark;
+        public bool Landmark, WaterLandmark;
         protected override void OnPopulateMesh(VertexHelper mesh)
         {
             base.OnPopulateMesh(mesh);
@@ -453,7 +459,7 @@ namespace Game.App
                 var fraction = new Vector2((vertex.position.x - rect.xMin) / rect.width, (vertex.position.y - rect.yMin) / rect.height);
                 var offset = fraction - pivot;
                 var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * size.y / size.x));
-                vertex.uv1 = new Vector4(grid.x, grid.y, Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
+                vertex.uv1 = new Vector4(grid.x, grid.y, WaterLandmark ? 2 : Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
             }
         }
     }

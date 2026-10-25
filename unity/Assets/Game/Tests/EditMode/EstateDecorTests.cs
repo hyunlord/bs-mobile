@@ -164,6 +164,37 @@ namespace Tests.EditMode
             Assert.That(landmarks.Any(i => i.Source == "roadside" || i.Role == "grass" || i.Role == "rocks"), Is.False);
         }
 
+        [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")]
+        [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")]
+        public void LandmarkAtlasGroupsKeepRiversBelowBridgesWithinFourRuns(string version)
+        {
+            var (config, _, state) = Estate(version); var art = EstateArt.Load();
+            var plan = EstatePlanner.Plan(EstateDecorRules.Load(), art, config, state.Estate);
+            var ordered = PortraitMetaPanels.OrderedEstateLandmarks(plan, art).ToArray();
+            Assert.That(ordered.Select(i => i.Key), Is.EquivalentTo(plan.In(EstateDrawLayer.Landmark).Select(i => i.Key)), "Grouping retains every landmark exactly once.");
+            Assert.That(ordered, Is.Not.Empty);
+            var standingSeen = false; Texture previousTexture = null; var runs = 0;
+            for (var index = 0; index < ordered.Length; index++)
+            {
+                var item = ordered[index]; var ground = art.Layer(item.Role) == "ground";
+                Assert.That(ground && standingSeen, Is.False, "Water and banks must never paint over bridges or ruins: " + item.Key);
+                standingSeen |= !ground;
+                var texture = art.Get(item.Role).texture;
+                if (texture != previousTexture) runs++;
+                else if (index > 0 && ground == (art.Layer(ordered[index - 1].Role) == "ground"))
+                {
+                    var before = ordered[index - 1];
+                    Assert.That(item.SortY, Is.GreaterThanOrEqualTo(before.SortY), "Each atlas group retains foot order.");
+                    if (item.SortY == before.SortY)
+                        Assert.That(StringComparer.Ordinal.Compare(before.Key, item.Key), Is.LessThanOrEqualTo(0), "Equal feet use the stable key tie-break.");
+                }
+                previousTexture = texture;
+            }
+            Assert.That(runs, Is.LessThanOrEqualTo(4), version + ": landmark overlay atlas runs (the PlayMode gate measures its whole-view increment).");
+        }
+
         // #379: one night by distance from open land — none inside, half at the edge, full a few cells out, and the same on both
         // sides of a boundary between two closed zones (no straight seam).
         [Test] public void TheNightDeepensWithDistanceFromOpenLandAcrossClosedZones()

@@ -293,7 +293,10 @@
       "frontier-broken-fence",
       "frontier-empty-armor",
       "frontier-dry-well",
-      "frontier-stump-tracks"
+      "frontier-stump-tracks",
+      "cluster-fallow-1",
+      "cluster-fallow-2",
+      "cluster-fallow-3"
     ]
   },
   "closedLand": {
@@ -302,7 +305,7 @@
     "every": 4,
     "jitter": 0.6,
     "density": 0.55,
-    "deadTreeShare": 0.35,
+    "deadTreeShare": 0.1,
     "deadTree": "frontier-dead-tree",
     "woods": [
       {
@@ -383,11 +386,11 @@
     {
       "id": "riverbank-patch",
       "zone": "zone:start",
-      "u": 37,
-      "v": 21,
+      "u": 35,
+      "v": 23,
       "reserve": [
-        35,
-        20,
+        33,
+        22,
         5,
         5
       ]
@@ -395,11 +398,11 @@
     {
       "id": "bridge-landing-patch",
       "zone": "zone:start",
-      "u": 35.5,
-      "v": 23,
+      "u": 33.5,
+      "v": 25,
       "reserve": [
-        33,
-        22,
+        31,
+        24,
         3,
         3
       ]
@@ -408,11 +411,11 @@
       "id": "bridge-nw-se-base",
       "rail": "bridge-nw-se-rail",
       "zone": "zone:start",
-      "u": 37,
-      "v": 21.8,
+      "u": 35,
+      "v": 23.8,
       "with": "peasant-carry",
-      "withU": 37.1,
-      "withV": 21.7
+      "withU": 35.1,
+      "withV": 23.7
     },
     {
       "id": "river-bend-patch",
@@ -482,5 +485,6 @@
     "carryKind": "meta:granary"
   },
   "fieldFenceKind": "m3a:field",
-  "fieldFenceCorner": "field-fence-corner"
+  "fieldFenceCorner": "field-fence-corner",
+  "buildingScale": 1.4
 }
