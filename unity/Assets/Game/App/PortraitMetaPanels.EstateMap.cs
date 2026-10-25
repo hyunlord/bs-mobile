@@ -58,7 +58,7 @@ namespace Game.App
             // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
             var art = EstateArt.Load(); var tint = art.Tint;
             var terrainTint = viewport.gameObject.AddComponent<EstateTerrainMaterial>();
-            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"));
+            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), screen.Config.Version == "m3a-prototype-r7");
             ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
@@ -85,7 +85,7 @@ namespace Game.App
             // The night reaches `nightOverhang` cells past the painted area: terrain patches spill past their blocks, and whatever
             // spills stays under the night before its opaque rim.
             var o = night.nightOverhang; var nightArea = new RectInt(plan.Area.x - o, plan.Area.y - o, plan.Area.width + 2 * o, plan.Area.height + 2 * o);
-            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
+            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray(), screen.Config.Version == "m3a-prototype-r7"));
             view.Track(nightGraphic);
             foreach (var item in OrderedEstateLandmarks(plan, art))
                 Paint(viewport, view, art, tint, "EstateMap.Landmark:" + item.Role, item);
@@ -439,21 +439,27 @@ namespace Game.App
         }
     }
 
-    // Pixel-wise open-land tint stops a large warm ground patch spilling colour beyond its open cells (#385).
+    // Pixel-wise restoration shares the night field; r7 adds presentation-only light beyond edge foundations (#389).
     public sealed class EstateTerrainMaterial : MonoBehaviour
     {
         public Material Material { get; private set; }
-        public void Configure(Material source, IEnumerable<AccountEstateZone> zones, Color closed)
+        public void Configure(Material source, IEnumerable<AccountEstateZone> zones, Color closed, bool edgeFoundations = false)
         {
             if (source == null) return;
             var areas = zones.Select(z => new Vector4(z.X, z.Y, z.X + z.Width, z.Y + z.Height)).ToArray();
             if (areas.Length > 32) throw new InvalidOperationException("Estate ground supports at most 32 open zones.");
             var padded = new Vector4[32]; Array.Copy(areas, padded, areas.Length);
             Material = new Material(source) { name = "Estate ground", hideFlags = HideFlags.HideAndDontSave };
+            Material.SetFloat("_EstateCornerRadius", edgeFoundations ? EstateNight.FoundationCornerCells : 0);
+            Material.SetFloat("_EstateLightSpread", edgeFoundations ? EstateNight.FoundationSpreadCells : 0);
             Material.SetFloat("_EstateGround", 1); Material.SetInt("_EstateOpenCount", areas.Length);
             Material.SetVectorArray("_EstateOpenAreas", padded); Material.SetColor("_EstateClosed", closed);
         }
-        void OnDestroy() { if (Material != null) Destroy(Material); }
+        void OnDestroy()
+        {
+            if (Material == null) return;
+            if (Application.isPlaying) Destroy(Material); else DestroyImmediate(Material);
+        }
     }
 
     public sealed class EstateTerrainImage : Image
@@ -562,6 +568,8 @@ namespace Game.App
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateNight : MaskableGraphic
     {
+        public const float FoundationCornerCells = 2;
+        public const float FoundationSpreadCells = 2;
         static Texture2D field; static string fieldKey;
         public EstateMapModel Model;
         RectInt area; Texture2D texture;
@@ -570,23 +578,24 @@ namespace Game.App
 
         // View-only rounded light; the square account grid and open-cell rules remain unchanged.
         // Keep this radial distance identical to EstateTint's ground restoration field.
-        public static float LightDistance(Vector2 point, RectInt[] open)
+        public static float LightDistance(Vector2 point, RectInt[] open, bool edgeFoundations = false)
         {
             var distance = 10000f;
             foreach (var r in open)
             {
                 var half = new Vector2(r.width, r.height) * .5f;
                 var radius = Mathf.Min(half.x, half.y);
+                if (edgeFoundations) radius = Mathf.Min(radius, FoundationCornerCells);
                 var offset = point - r.center;
                 var q = new Vector2(Mathf.Abs(offset.x), Mathf.Abs(offset.y)) - half + Vector2.one * radius;
                 distance = Mathf.Min(distance, Vector2.Max(q, Vector2.zero).magnitude + Mathf.Min(Mathf.Max(q.x, q.y), 0) - radius);
             }
-            return distance;
+            return distance - (edgeFoundations ? FoundationSpreadCells : 0);
         }
 
-        public static Texture2D Field(EstateDecorRules.Night night, RectInt area, RectInt[] open)
+        public static Texture2D Field(EstateDecorRules.Night night, RectInt area, RectInt[] open, bool edgeFoundations = false)
         {
-            var key = area + "|" + string.Join(";", open) + "|" + JsonUtility.ToJson(night);
+            var key = area + "|" + string.Join(";", open) + "|" + JsonUtility.ToJson(night) + "|" + edgeFoundations;
             if (field != null && fieldKey == key) return field;
             var res = Mathf.Max(1, night.texelsPerCell); int width = area.width * res, height = area.height * res;
             var pixels = new Color32[width * height];
@@ -594,7 +603,7 @@ namespace Game.App
                 for (var i = 0; i < width; i++)
                 {
                     float px = area.xMin + (i + .5f) / res, py = area.yMin + (j + .5f) / res;
-                    var d = LightDistance(new Vector2(px, py), open);
+                    var d = LightDistance(new Vector2(px, py), open, edgeFoundations);
                     // A narrow warm RIM, not an opaque gold cloud over the buildings.
                     var rim = .28f * Mathf.Exp(-d * d / .72f);
                     Color32 colour = Color.Lerp(night.Colour, night.Lamp, rim);

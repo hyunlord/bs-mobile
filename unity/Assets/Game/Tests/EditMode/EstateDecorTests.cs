@@ -282,6 +282,43 @@ namespace Tests.EditMode
             var c = field.GetPixel(0, 0); Assert.That(new Color(c.r, c.g, c.b), Is.EqualTo((Color)rules.night.Colour).Using(ColorComparer));
             Assert.That(c.a, Is.EqualTo(1).Within(.01f), "The painted area's edge closes to opaque night, matching the page behind it.");
         }
+        [Test] public void R7FoundationLightAndGroundExtendWithoutOpeningLogicalLand()
+        {
+            var (config, _, state) = Estate("m3a-prototype-r7");
+            var bytes = MetaSaveCodec.Encode(state); var ids = state.Estate.OpenZones.ToArray();
+            var open = config.Zones.Where(z => state.Estate.OpenZones.Contains(z.Id)).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray();
+            var rules = EstateDecorRules.Load(); var area = new RectInt(10, 10, 40, 40);
+            foreach (var building in state.Estate.Buildings)
+            {
+                var kind = config.Buildings.Single(k => k.Kind == building.Kind);
+                foreach (var corner in new[] { new Vector2(building.X, building.Y), new Vector2(building.X + kind.Width, building.Y),
+                    new Vector2(building.X, building.Y + kind.Height), new Vector2(building.X + kind.Width, building.Y + kind.Height) })
+                    Assert.That(rules.night.Alpha(EstateNight.LightDistance(corner, open, true)), Is.Zero, "Foundation corner stays in full light: " + building.Kind + " / " + corner);
+            }
+            var legacy = EstateNight.LightDistance(new Vector2(24, 24), open);
+            Assert.That(legacy, Is.GreaterThan(2), "The unexpanded circular field cut the corner foundation.");
+            Assert.That(EstateNight.LightDistance(new Vector2(23, 30), open, true), Is.EqualTo(-1).Within(.001f));
+            Assert.That(EstateNight.LightDistance(new Vector2(22, 30), open, true), Is.EqualTo(0).Within(.001f));
+            Assert.That(EstateNight.LightDistance(new Vector2(21, 30), open, true), Is.EqualTo(1).Within(.001f));
+            var field = EstateNight.Field(rules.night, area, open, true);
+            Assert.That(field.GetPixel((24 - area.x) * rules.night.texelsPerCell, (24 - area.y) * rules.night.texelsPerCell).a, Is.Zero);
+            // Switching profile must invalidate the cached field even when the zones happen to be identical.
+            var legacyField = EstateNight.Field(rules.night, area, open);
+            Assert.That(legacyField.GetPixel((24 - area.x) * rules.night.texelsPerCell, (24 - area.y) * rules.night.texelsPerCell).a, Is.GreaterThan(.5f));
+            var holder = new GameObject("Foundation ground test");
+            try
+            {
+                var tint = holder.AddComponent<EstateTerrainMaterial>();
+                tint.Configure(EstateArt.Load().Tint, config.Zones.Where(z => state.Estate.OpenZones.Contains(z.Id)), rules.Colour("closed"), true);
+                Assert.That(tint.Material.GetFloat("_EstateCornerRadius"), Is.EqualTo(EstateNight.FoundationCornerCells));
+                Assert.That(tint.Material.GetFloat("_EstateLightSpread"), Is.EqualTo(EstateNight.FoundationSpreadCells));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+            Assert.That(open.Any(r => r.Contains(new Vector2Int(23, 30))), Is.False, "The lit fringe remains logically closed.");
+            Assert.That(state.Estate.OpenZones, Is.EquivalentTo(ids));
+            Assert.That(MetaSaveCodec.Encode(state), Is.EqualTo(bytes), "Rendering the fringe writes no saved byte.");
+        }
+
         static readonly IEqualityComparer<Color> ColorComparer = new ToleranceColour();
         sealed class ToleranceColour : IEqualityComparer<Color>
         {
