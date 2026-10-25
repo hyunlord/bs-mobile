@@ -53,23 +53,91 @@ namespace Tests.EditMode
             var (config, catalog, state) = Estate(); var art = EstateArt.Load();
             var granary = state.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
-            var item = plan.Items.Single(i => i.BuildingId == granary.Id);
-            Assert.That((item.BuildingArt, item.Stage), Is.EqualTo(("granary", 1)));
-            Assert.That(item.Colour, Is.EqualTo(Color.white), "The authored level-0 start-stage art keeps its original colours inside the light.");
+            Assert.That(plan.Items.Any(i => i.BuildingId == granary.Id), Is.False, "Lv0 has no completed body.");
+            Assert.That(plan.Items.Count(i => i.SiteId == granary.Id), Is.EqualTo(4), "Reclaimable foundation, fence, stones and dry grass.");
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             var homeArt = plan.Items.Single(i => i.BuildingId == home.Id);
             Assert.That((homeArt.Stage, homeArt.Colour), Is.EqualTo((2, Color.white)), "The starting home is complete, not the ruined manor stage.");
             Assert.That(plan.Lamps.Any(l => l.Item1 == new Vector2(home.X + 1, home.Y + 1) && l.Item2 == rules.night.homeLampCells), Is.True);
             var started = AccountEstate.StartConstruction(catalog, config, state, 0, 0, granary.Id).State;
-            item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.BuildingId == granary.Id);
-            Assert.That(item.Stage, Is.EqualTo(rules.Stage("meta:granary", 1)), "Construction shows the target level's art, faded.");
-            Assert.That(item.Colour.a, Is.EqualTo(rules.constructionAlpha));
+            var item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.BuildingId == granary.Id);
+            Assert.That((item.BuildingArt, item.Stage), Is.EqualTo(("field", rules.Stage(rules.fieldFenceKind, 0))), "Construction shows empty furrows, with the separate UI work sign.");
+            Assert.That(item.Colour, Is.EqualTo(Color.white));
             var done = AccountEstate.Advance(catalog, config, started, 60, 60).State;
             done = AccountEstate.StartConstruction(catalog, config, done, 60, 60, granary.Id).State;
             done = AccountEstate.Advance(catalog, config, done, 400, 400).State;
             Assert.That(done.Estate.Buildings.Single(b => b.Id == granary.Id).Level, Is.EqualTo(2));
             item = EstatePlanner.Plan(rules, art, config, done.Estate).Items.Single(i => i.BuildingId == granary.Id);
             Assert.That((item.Stage, item.Colour), Is.EqualTo((2, Color.white)));
+        }
+
+
+        [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")]
+        [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")]
+        [TestCase("m3a-prototype-r7")]
+        public void AllUnbuiltSitesUseExistingReclaimablePartsAndRetainTheirHitFootprint(string version)
+        {
+            var (config, catalog, state) = Estate(version); var art = EstateArt.Load(); var rules = EstateDecorRules.Load();
+            var screen = new EstateMapScreen(catalog, config, state, realtime: () => 0);
+            var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
+            foreach (var site in state.Estate.Buildings.Where(b => b.Level == 0))
+            {
+                Assert.That(plan.Items.Any(i => i.BuildingId == site.Id), Is.False);
+                var pieces = plan.Items.Where(i => i.SiteId == site.Id).ToArray();
+                Assert.That(pieces.Select(i => i.Role), Is.EquivalentTo(new[] { "frontier-ruin", "frontier-broken-fence", "rocks", "grass" }));
+                foreach (var piece in pieces) Assert.That(art.Get(piece.Role), Is.Not.Null);
+                Assert.That(pieces.Select(i => art.Get(i.Role).texture).Distinct().Count(), Is.EqualTo(1), "The four site pieces share one atlas, without extra texture switches.");
+                Assert.That(screen.BuildingAt(new Vector2Int(site.X, site.Y)), Is.EqualTo(site.Id));
+                screen.Select(site.Id); Assert.That(screen.Selected, Is.EqualTo(site.Id));
+            }
+        }
+
+        [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")]
+        [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")]
+        public void HistoricalCompactLayoutsKeepTheirOriginalRoadCellsEvenWhenADoorIsBlocked(string version)
+        {
+            var (config, _, state) = Estate(version);
+            var plan = EstatePlanner.Plan(EstateDecorRules.Load(), EstateArt.Load(), config, state.Estate);
+            // Baseline #386 (7715c49): the old L routes retain their visible free segments even when the door
+            // of one tightly packed building falls inside another footprint. r7 alone adopts obstacle routing.
+            var expected = new[] { new Vector2Int(27, 28), new Vector2Int(27, 29), new Vector2Int(28, 30),
+                new Vector2Int(29, 30), new Vector2Int(29, 31), new Vector2Int(30, 30), new Vector2Int(31, 30),
+                new Vector2Int(31, 31), new Vector2Int(32, 30), new Vector2Int(33, 30), new Vector2Int(33, 31) }.ToList();
+            if (version != "m3a-prototype-r6")
+                expected.AddRange(new[] { new Vector2Int(27, 34), new Vector2Int(29, 34), new Vector2Int(31, 34), new Vector2Int(33, 34) });
+            Assert.That(plan.Road, Is.EquivalentTo(expected));
+            Assert.That(plan.Scene.Routes.Count, Is.EqualTo(9), "All historical decoration routes remain present, including blocked door endpoints.");
+        }
+
+        [Test] public void R7EveryDoorHasAContinuousRoadToTheHome()
+        {
+            var (config, _, state) = Estate("m3a-prototype-r7");
+            var plan = EstatePlanner.Plan(EstateDecorRules.Load(), EstateArt.Load(), config, state.Estate);
+            Vector2Int Door(MetaEstateBuilding b)
+            {
+                var kind = config.Buildings.Single(k => k.Kind == b.Kind);
+                return new Vector2Int(b.X + kind.Width - 1, b.Y + kind.Height);
+            }
+            var home = Door(state.Estate.Buildings.Single(b => b.Kind == "m3a:home"));
+            foreach (var site in state.Estate.Buildings)
+                Assert.That(EstatePlanner.RoadPath(home, Door(site), plan.Road.Contains), Is.Not.Empty, site.Kind);
+            Assert.That(plan.Road.Overlaps(Footprints(config, state.Estate)), Is.False);
+        }
+
+        [Test] public void RoadsDetourAroundFootprintsWithoutBreakingDoorConnectivity()
+        {
+            var area = new RectInt(0, 0, 8, 8); var blocked = new RectInt(3, 1, 2, 4);
+            var from = new Vector2Int(1, 3); var to = new Vector2Int(6, 3);
+            var path = EstatePlanner.RoadPath(from, to, c => area.Contains(c) && !blocked.Contains(c));
+            Assert.That(path.First(), Is.EqualTo(from)); Assert.That(path.Last(), Is.EqualTo(to));
+            Assert.That(path.All(c => !blocked.Contains(c)), Is.True);
+            for (var i = 1; i < path.Count; i++)
+                Assert.That(Mathf.Abs(path[i].x - path[i - 1].x) + Mathf.Abs(path[i].y - path[i - 1].y), Is.EqualTo(1));
+            Assert.That(EstatePlanner.RoadPath(from, to, c => area.Contains(c) && !blocked.Contains(c)), Is.EqualTo(path));
         }
 
         [Test] public void RestorationColoursFollowTendedLand()
@@ -141,7 +209,7 @@ namespace Tests.EditMode
 
         [Test] public void LargeLandmarksHaveFortyPercentSilhouettesButSmallPropsStayUnderTheNight()
         {
-            var (config, _, state) = Estate(); var rules = EstateDecorRules.Load();
+            var (config, _, state) = Estate("m3a-prototype-r6"); var rules = EstateDecorRules.Load();
             var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
             var landmarks = plan.In(EstateDrawLayer.Landmark).ToArray();
             Assert.That(landmarks, Is.Not.Empty);
@@ -199,7 +267,7 @@ namespace Tests.EditMode
         // sides of a boundary between two closed zones (no straight seam).
         [Test] public void TheNightDeepensWithDistanceFromOpenLandAcrossClosedZones()
         {
-            var (config, _, state) = Estate(); var rules = EstateDecorRules.Load(); var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
+            var (config, _, state) = Estate("m3a-prototype-r6"); var rules = EstateDecorRules.Load(); var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
             var open = config.Zones.Where(z => state.Estate.OpenZones.Contains(z.Id)).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray();
             var field = EstateNight.Field(rules.night, plan.Area, open); var res = rules.night.texelsPerCell;
             Assert.That(field.width, Is.EqualTo(plan.Area.width * res)); Assert.That(field.height, Is.EqualTo(plan.Area.height * res));
@@ -223,7 +291,7 @@ namespace Tests.EditMode
 
         [Test] public void AMovedBuildingTakesItsAstraYardWithIt()
         {
-            var (config, catalog, state) = Estate(); var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
+            var (config, catalog, state) = Estate("m3a-prototype-r6"); var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             var before = EstatePlanner.Plan(rules, art, config, state.Estate);
             var moved = AccountEstate.Move(catalog, config, state, 0, 0, home.Id, 30, 30);

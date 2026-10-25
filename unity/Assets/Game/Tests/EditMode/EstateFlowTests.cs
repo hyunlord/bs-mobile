@@ -39,6 +39,16 @@ namespace Tests.EditMode
             Assert.That(CanonicalContent.CreateAccountEstateConfig("unknown-version"), Is.Null);
         }
 
+        [Test] public void FreshFieldRejectionRetainsCoreReasonWithoutGrantingResources()
+        {
+            var screen = Screen();
+            var before = screen.State.Wallet.OrderBy(pair => pair.Key).ToArray();
+            Assert.That(screen.StartWork(Id(screen, "m3a:field")), Is.False);
+            Assert.That(screen.LastConstructionReason, Is.EqualTo("parent-required"));
+            Assert.That(screen.State.Wallet.OrderBy(pair => pair.Key).ToArray(), Is.EqualTo(before));
+            Assert.That(screen.State.Estate.Active, Is.Null);
+        }
+
         [Test] public void ANewPrototypeEstateStartsWithTheConfigWallet()
         {
             var screen = Screen();

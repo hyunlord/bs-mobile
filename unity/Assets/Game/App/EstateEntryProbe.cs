@@ -87,7 +87,7 @@ namespace Game.App
             Click("EstateMap.Build");
             yield return null; // Normal UI queues the account action for the following update.
             if (app.EstateMap.State.Estate.Active == null || app.EstateMap.State.Estate.Active.BuildingId != field.Id)
-                throw new InvalidOperationException("Normal build button did not start field construction.");
+                throw new InvalidOperationException("Normal build button did not start field construction: config=" + app.EstateMap.Config.Version + " reason=" + app.EstateMap.LastConstructionReason);
             yield return rendered;
             Capture("construction");
         }

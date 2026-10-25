@@ -46,7 +46,8 @@ namespace Game.App
             var top = GoalTop + GoalHeight; var panel = PanelHeightFor(screen);
             var bottom = BottomBar + BottomGap * 3 + WorkHeight + (panel > 0 ? panel + BottomGap : 0);
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
-            screen.Map.SetFocus(screen.OpenAreas(night.openingMargin));
+            // The spaced r7 opening fits all 12×12 cells; legacy openings keep their authored night margin.
+            screen.Map.SetFocus(screen.OpenAreas(screen.Config.Version == "m3a-prototype-r7" ? 0 : night.openingMargin));
             if (!screen.Map.Framed) screen.FrameFirstView();
             // Centre the selected foundation in the unobscured band above the sheet; while moving, the camera stays where the
             // player put it so the destination preview remains visible.
@@ -112,7 +113,13 @@ namespace Game.App
                 Paint(viewport, view, art, tint, "EstateMap.Shadow:" + item.BuildingId, item, art.Shadow(item.BuildingArt, item.Stage), new Color(1, 1, 1, .8f));
             foreach (var item in standing)
             {
-                if (item.BuildingId < 0) { Paint(viewport, view, art, tint, DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item); continue; }
+                if (item.BuildingId < 0)
+                {
+                    var siteColour = item.Colour;
+                    if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) siteColour.a *= .45f;
+                    Paint(viewport, view, art, tint, item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item, colour: siteColour);
+                    continue;
+                }
                 var building = screen.Building(item.BuildingId); var kind = screen.Kind(building.Kind);
                 var colour = item.Colour; if (screen.Moving && screen.Selected == building.Id) colour.a *= .45f;
                 Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);

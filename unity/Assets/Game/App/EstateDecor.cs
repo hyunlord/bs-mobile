@@ -114,7 +114,7 @@ namespace Game.App
     public sealed class EstateDrawItem
     {
         public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
-        public EstateDrawLayer Layer; public int BuildingId = -1; public string BuildingArt; public int Stage; public float SortY; public string Key = "";
+        public EstateDrawLayer Layer; public int SiteId = -1; public int BuildingId = -1; public string BuildingArt; public int Stage; public float SortY; public string Key = "";
     }
 
     public sealed class EstatePlan
@@ -145,6 +145,7 @@ namespace Game.App
         public static EstatePlan Plan(EstateDecorRules rules, EstateArt art, AccountEstateConfig config, MetaEstateState estate)
         {
             var plan = new EstatePlan();
+            var buildingScale = config.Version == "m3a-prototype-r7" ? 1.5f : rules.buildingScale;
             var kinds = config.Buildings.ToDictionary(k => k.Kind, StringComparer.Ordinal);
             bool OpenCell(Vector2Int c) => config.Zones.Any(z => estate.OpenZones.Contains(z.Id) && c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             bool AnyZone(Vector2Int c) => config.Zones.Any(z => c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
@@ -155,7 +156,7 @@ namespace Game.App
             foreach (var piece in rules.placed)
                 for (var u = 0; piece.reserve.Length == 4 && u < piece.reserve[2]; u++) for (var v = 0; v < piece.reserve[3]; v++) reserved.Add(new Vector2Int(piece.reserve[0] + u, piece.reserve[1] + v));
 
-            // Roads: L-shaped grid paths from the home door to every other building's door in open land.
+            // Roads follow free open cells, so a building between two doors cannot break the path (#389).
             Vector2Int Door(MetaEstateBuilding b)
             {
                 var outside = new Vector2Int(b.X + kinds[b.Kind].Width - 1, b.Y + kinds[b.Kind].Height);
@@ -166,10 +167,21 @@ namespace Game.App
             if (origin != null)
                 foreach (var target in buildings.Where(b => b.Id != origin.Id && OpenCell(Door(b))))
                 {
-                    Vector2Int start = Door(origin), end = Door(target), corner = new Vector2Int(end.x, start.y);
-                    foreach (var cell in Walk(start, corner).Concat(Walk(corner, end)))
-                        if (OpenCell(cell) && !taken.Contains(cell)) plan.Road.Add(cell);
-                    routes.Add(new[] { start, corner, end }.Distinct().Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
+                    if (config.Version == "m3a-prototype-r7")
+                    {
+                        var path = RoadPath(Door(origin), Door(target), c => OpenCell(c) && !taken.Contains(c));
+                        foreach (var cell in path) plan.Road.Add(cell);
+                        if (path.Count > 0) routes.Add(path.Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
+                    }
+                    else
+                    {
+                        // Historical compact layouts can have doors inside neighbouring footprints. Preserve their
+                        // original road/decor routes rather than dropping those routes when BFS rejects an endpoint.
+                        Vector2Int start = Door(origin), end = Door(target), corner = new Vector2Int(end.x, start.y);
+                        foreach (var cell in Walk(start, corner).Concat(Walk(corner, end)))
+                            if (OpenCell(cell) && !taken.Contains(cell)) plan.Road.Add(cell);
+                        routes.Add(new[] { start, corner, end }.Distinct().Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
+                    }
                 }
 
             // Restoration: tended land (built sites and roads) is in colour, fading through sage to fallow (#375) [가설].
@@ -215,7 +227,7 @@ namespace Game.App
             {
                 var kind = kinds[b.Kind]; var artKind = rules.ArtOf(b.Kind)?.art; var stage = rules.Stage(b.Kind, b.Level);
                 var anchor = P(new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f));
-                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 * rules.buildingScale : 96 * rules.buildingScale;
+                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 * buildingScale : 96 * buildingScale;
                 if (b.Level > 0 && artKind != null) scene.Buildings.Add(new AstraBuilding($"estate-{b.Id:00}", artKind, stage, anchor.x, anchor.y, w));
                 else scene.Obstacles.Add((anchor.x, anchor.y - w * .25, 1, w * .5));
             }
@@ -262,7 +274,7 @@ namespace Game.App
                 var kind = kinds[b.Kind]; var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
                 // An unbuilt site stands on painted earth; a built one in open land is lit (stakes and rope art: requested from Astra).
                 if (b.Level == 0 && estate.Active?.BuildingId != b.Id)
-                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = rules.buildingScale * sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
+                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = buildingScale * sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
                         Aspect = sg.aspect, Colour = new Color(1, 1, 1, sg.siteAlpha), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
                 else if (OpenCell(new Vector2Int(b.X, b.Y)))
                     plan.Lamps.Add((centre, kinds[b.Kind].StartsComplete ? night.homeLampCells : night.lampCells));
@@ -273,12 +285,22 @@ namespace Game.App
                 var building = estate.Active?.BuildingId == b.Id;
                 var level = building ? estate.Active.TargetLevel : b.Level;
                 var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
-                // The authored start stage already depicts damage; colour is not a second ruin state.
-                var fieldWork = building && b.Kind == rules.fieldFenceKind;
-                if (fieldWork) level = 0; // Empty authored furrows, not desaturated finished crops, while building.
-                var colour = building && !fieldWork ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
-                plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind, Stage = rules.Stage(b.Kind, level), Grid = centre,
-                    Width = rules.buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
+                // Lv0 is a reclaimable footprint, never an already finished building (#389). Each piece follows the
+                // existing hit footprint and remains visible when optional decoration is disabled.
+                if (b.Level == 0 && !building)
+                {
+                    AddSite(plan, b.Id, "frontier-ruin", centre + new Vector2(-.22f, -.22f), 70, "foundation");
+                    AddSite(plan, b.Id, "frontier-broken-fence", centre + new Vector2(.35f, -.3f), 43, "fence");
+                    AddSite(plan, b.Id, "rocks", centre + new Vector2(-.35f, .35f), 22, "stones");
+                    AddSite(plan, b.Id, "grass", centre + new Vector2(.45f, .35f), 22, "grass", rules.Colour("fallow"));
+                    continue;
+                }
+                // Every construction site uses the authored empty furrows and the UI's work sign, not a faded finished body.
+                if (building) { artKind = "field"; level = 0; }
+                plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind,
+                    Stage = building ? rules.Stage(rules.fieldFenceKind, 0) : rules.Stage(b.Kind, level), Grid = centre,
+                    Width = buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = Color.white,
+                    Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
             }
 
             // Field fences and work poses (display only; no production meaning).
@@ -352,10 +374,40 @@ namespace Game.App
             plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = grid, Width = width > 0 ? width : 64, Colour = colour, Layer = layer, SortY = P(grid).y, Key = source + "-" + role + "-" + grid });
         }
 
+        static void AddSite(EstatePlan plan, int siteId, string role, Vector2 grid, float width, string part, Color? colour = null)
+        {
+            plan.Items.Add(new EstateDrawItem { Role = role, Source = "reclaimable-site", SiteId = siteId, Grid = grid,
+                Width = width, Colour = colour ?? Color.white, Layer = EstateDrawLayer.Standing, SortY = P(grid).y,
+                Key = $"site-{siteId:00}-{part}" });
+        }
+
         static IEnumerable<Vector2Int> Walk(Vector2Int from, Vector2Int to)
         {
             var cell = from; yield return cell;
             while (cell != to) { cell += new Vector2Int(Math.Sign(to.x - cell.x), Math.Sign(to.y - cell.y)); yield return cell; }
+        }
+
+        // Stable neighbour order gives equal-length paths the same result on every redraw. This is presentation only.
+        static readonly Vector2Int[] RoadSteps = { Vector2Int.right, Vector2Int.up, Vector2Int.left, Vector2Int.down };
+        public static List<Vector2Int> RoadPath(Vector2Int from, Vector2Int to, Func<Vector2Int, bool> allowed)
+        {
+            var path = new List<Vector2Int>();
+            if (!allowed(from) || !allowed(to)) return path;
+            var parents = new Dictionary<Vector2Int, Vector2Int> { [from] = from };
+            var pending = new Queue<Vector2Int>(); pending.Enqueue(from);
+            while (pending.Count > 0 && !parents.ContainsKey(to))
+            {
+                var cell = pending.Dequeue();
+                foreach (var step in RoadSteps)
+                {
+                    var next = cell + step;
+                    if (parents.ContainsKey(next) || !allowed(next)) continue;
+                    parents.Add(next, cell); pending.Enqueue(next);
+                }
+            }
+            if (!parents.ContainsKey(to)) return path;
+            for (var cell = to; ; cell = parents[cell]) { path.Add(cell); if (cell == from) break; }
+            path.Reverse(); return path;
         }
     }
 }

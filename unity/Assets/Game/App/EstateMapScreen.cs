@@ -48,6 +48,7 @@ namespace Game.App
         public bool PreviewValid { get; private set; }
         public string PreviewReason { get; private set; } = "";
         public string Notice { get; private set; } = "";
+        public string LastConstructionReason { get; private set; } = "";
         public bool GoalCollapsed { get; private set; }
         public bool Specializing { get; private set; }
         public string BranchChoice { get; private set; }
@@ -203,8 +204,16 @@ namespace Game.App
             State = result.State; Notice = notice(result.Reason); return result;
         }
 
-        public bool StartWork(int id) => Apply(AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id),
-            reason => reason == "started" ? Name(Building(id).Kind) + " 공사 시작" : reason == "reserved" ? Name(Building(id).Kind) + " 예약" : ReasonText(reason)).Done;
+        public bool StartWork(int id)
+        {
+            var result = AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id);
+            LastConstructionReason = result.Reason;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!result.Done) Debug.Log("Estate construction rejected: config=" + Config.Version + " building=" + id + " reason=" + result.Reason);
+#endif
+            return Apply(result, reason => reason == "started" ? Name(Building(id).Kind) + " 공사 시작" :
+                reason == "reserved" ? Name(Building(id).Kind) + " 예약" : ReasonText(reason)).Done;
+        }
 
         public bool CancelReservation(int id) => Apply(AccountEstate.CancelReservation(Catalog, Config, State, Monotonic, Wall, id),
             reason => reason == "cancelled" ? "예약을 취소했습니다" : ReasonText(reason)).Done;
