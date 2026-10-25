@@ -73,21 +73,37 @@ namespace Tests.PlayMode
             Assert.That(Buttons("Estate.Priority:"), Is.Empty);
             var expected = screen.State.Estate.Buildings.OrderBy(b => EstateMapModel.SortY(b.X, b.Y, 2, 2)).ThenBy(b => b.Id).Select(b => "EstateMap.Building:" + b.Id).ToArray();
             Assert.That(Rects("EstateMap.Building:").OrderBy(r => r.GetSiblingIndex()).Select(r => r.name).ToArray(), Is.EqualTo(expected), "Draw order is front corner y, then instance order.");
-            Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.Neighbourhood));
-            var step = screen.Map.GridToViewport(Vector2.right) - screen.Map.GridToViewport(Vector2.zero);
-            Assert.That(Vector2.Distance(step, new Vector2(32, 16)), Is.LessThan(1e-3f), "Default cells are 64×32 diamonds.");
+            // #379: the first visit frames the lit land with a ring of night (key art C); the map carries no zone labels and one
+            // continuous night; the marker for the next zone shows only in the whole view.
+            var map = screen.Map;
+            Assert.That(map.Zoom, Is.EqualTo(map.Opening));
+            Assert.That(Rects("EstateMap.Night").Length, Is.EqualTo(1)); Assert.That(Rects("EstateMap.Fog"), Is.Empty);
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("탐사로 열 땅")), Is.False, "No zone labels on the map.");
+            Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.False);
+            var lit = screen.Config.Zones.Single(z => z.OpenAtStart);
+            Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThan(10), "Night shows beside the lit land.");
+            yield return Capture("estate-map-first");
+            yield return NightComparison("estate-map-first");
+            Assert.That(PlayerPrefs.GetString(prefix + "estateMapView", ""), Is.Empty, "Nothing is remembered until the player moves the map.");
+
+            ZoomTo(EstateMapModel.Neighbourhood);
+            var step = map.GridToViewport(Vector2.right) - map.GridToViewport(Vector2.zero);
+            Assert.That(Vector2.Distance(step, new Vector2(32, 16)), Is.LessThan(1e-3f), "Neighbourhood cells are 64×32 diamonds.");
+            Assert.That(PlayerPrefs.GetString(prefix + "estateMapView", ""), Does.StartWith(EstateMapModel.Neighbourhood + ";"), "A zoom change is remembered.");
             yield return Capture("estate-map-neighbourhood");
             yield return MeasureDecor(screen);
 
-            Click("EstateMap.ZoomOut"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.WholeMap));
+            ZoomTo(map.WholeMap);
             // The vertical estate (m3a-prototype-r4) uses most of the portrait screen's height in the whole view (#375).
-            Assert.That(screen.Map.MapSize.y, Is.GreaterThanOrEqualTo(.7f * screen.Map.Viewport.y), "The whole estate fills at least 70% of the height.");
-            Assert.That(screen.Map.MapSize.x, Is.LessThanOrEqualTo(screen.Map.Viewport.x + 1e-2f));
+            Assert.That(map.MapSize.y, Is.GreaterThanOrEqualTo(.7f * map.Viewport.y), "The whole estate fills at least 70% of the height.");
+            Assert.That(map.MapSize.x, Is.LessThanOrEqualTo(map.Viewport.x + 1e-2f));
+            Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.True, "The whole view marks the zone that opens next.");
             yield return Capture("estate-map-whole");
-            Click("EstateMap.ZoomIn"); Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
+            yield return NightComparison("estate-map-whole");
+            ZoomTo(EstateMapModel.BuildingDetail);
             yield return Capture("estate-map-building");
-            Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail), "Three levels only.");
-            Click("EstateMap.ZoomOut"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.Neighbourhood));
+            Click("EstateMap.ZoomIn"); yield return null; Assert.That(map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail), "Four levels only.");
+            Click("EstateMap.ZoomOut"); yield return null; Assert.That(map.Zoom, Is.EqualTo(EstateMapModel.Neighbourhood));
 
             var viewport = (RectTransform)View().transform;
             var offset = screen.Map.Offset;
@@ -98,11 +114,11 @@ namespace Tests.PlayMode
             Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(200, 0) * app.Ui.Canvas.scaleFactor);
             yield return null;
             Assert.That(screen.Map.Offset.x, Is.LessThan(east - 150), "A drag right shows more of the west.");
-            Click("EstateMap.ZoomOut"); yield return null;
+            ZoomTo(map.WholeMap);
             Drag(viewport, Pixels(viewport).center, Pixels(viewport).center + new Vector2(4000, 0) * app.Ui.Canvas.scaleFactor);
             yield return null;
             Assert.That(screen.Map.GridToViewport(new Vector2(0, 20)).x, Is.GreaterThanOrEqualTo(-1e-2f), "The whole map fits, so no drag reveals space past the west hill's corner.");
-            Click("EstateMap.ZoomIn"); yield return null;
+            ZoomTo(EstateMapModel.Neighbourhood);
 
             Click("EstateMap.Goal"); yield return null; Assert.That(screen.GoalCollapsed, Is.True);
             yield return Capture("estate-map-goal-folded");
@@ -233,8 +249,9 @@ namespace Tests.PlayMode
             var sprites = plan.Count(i => decorSources.Contains(i.Source));
             Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites), "Every planned decoration sprite is on the map.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");
-            Assert.That(Rects("EstateMap.Veiled:").Length, Is.EqualTo(screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).In(EstateDrawLayer.Veiled).Count()), "Closed land is painted under its veil.");
-            var veil = Rects("EstateMap.Fog").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < veil.GetSiblingIndex()), Is.True, "The veil covers closed-land art.");
+            Assert.That(Rects("EstateMap.Veiled:").Length, Is.EqualTo(screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).In(EstateDrawLayer.Veiled).Count()), "The land to come is painted under the night.");
+            var night = Rects("EstateMap.Night").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "The night covers the land to come.");
+            Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
@@ -286,6 +303,28 @@ namespace Tests.PlayMode
         static Vector2Int C(int u, int v) => new Vector2Int(u + 26, v + 26);
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
+        RectTransform Named(string name, bool includeInactive) => app.Ui.GetComponentsInChildren<RectTransform>(includeInactive).Single(r => r.name == name);
+        // #379 review: the same view with the far night at 0.75 instead of 0.88 [가설], for the user's side-by-side. The rules
+        // object is the loaded one, so the value is restored before anything else draws.
+        IEnumerator NightComparison(string name)
+        {
+            var night = EstateDecorRules.Load().night; var full = night.fullAlpha;
+            try
+            {
+                night.fullAlpha = .75f; Click("EstateMap.Goal"); yield return null; Click("EstateMap.Goal"); yield return null;
+                yield return Capture(name + "-night075");
+            }
+            finally { night.fullAlpha = full; }
+            Click("EstateMap.Goal"); yield return null; Click("EstateMap.Goal"); yield return null;
+        }
+
+        // Steps the zoom buttons to a level.
+        void ZoomTo(int level)
+        {
+            for (var guard = 0; app.EstateMap.Map.Zoom != level && guard < EstateMapModel.Levels; guard++)
+            { Click(app.EstateMap.Map.Zoom < level ? "EstateMap.ZoomIn" : "EstateMap.ZoomOut"); Canvas.ForceUpdateCanvases(); }
+            Assert.That(app.EstateMap.Map.Zoom, Is.EqualTo(level));
+        }
         RectTransform[] Rects(string start) => app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith(start, StringComparison.Ordinal)).ToArray();
         // Moves the camera the way a drag would, so the next tap lands inside the visible band.
         void Focus(Vector2 grid) { var view = View(); view.Model.CentreOn(grid); view.Layout(); Canvas.ForceUpdateCanvases(); }

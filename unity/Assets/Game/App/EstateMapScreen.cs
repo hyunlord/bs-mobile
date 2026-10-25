@@ -98,6 +98,39 @@ namespace Game.App
             return null;
         }
 
+        // Display names of the prototype's zones [가설] (#379): shown only when a closed zone is tapped.
+        static readonly Dictionary<string, string> ZoneNames = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["zone:start"] = "중심 마을", ["zone:inner-village"] = "마을 확장",
+            ["zone:outskirts-north"] = "마을 둘레", ["zone:outskirts-east"] = "마을 둘레", ["zone:outskirts-south"] = "마을 둘레", ["zone:outskirts-west"] = "마을 둘레", ["zone:inner-northeast-wood"] = "북동 숲", ["zone:inner-west-hill"] = "서쪽 언덕",
+            ["zone:inner-windmill"] = "풍차 언덕", ["zone:inner-fields"] = "밭", ["zone:inner-fallow"] = "휴경지", ["zone:inner-ruins"] = "폐허", ["zone:inner-riverside"] = "강가",
+        };
+        public string ZoneName(AccountEstateZone zone) => ZoneNames.TryGetValue(zone.Id, out var name) ? name : "닫힌 구역";
+
+        // The one closed zone the whole view marks (#379): it touches open land and its unlock is reachable in this config.
+        public AccountEstateZone NextZone()
+        {
+            var open = Config.Zones.Where(Open).ToArray(); var sites = Config.Buildings.Count(b => b.Produces != null);
+            bool Touches(AccountEstateZone a, AccountEstateZone b) =>
+                (a.X + a.Width == b.X || b.X + b.Width == a.X) && a.Y < b.Y + b.Height && b.Y < a.Y + a.Height ||
+                (a.Y + a.Height == b.Y || b.Y + b.Height == a.Y) && a.X < b.X + b.Width && b.X < a.X + a.Width;
+            return Config.Zones.Where(z => !Open(z) && z.Unlock != null && z.Unlock.CompletedProductionSites <= sites && open.Any(o => Touches(o, z)))
+                .OrderBy(z => z.Id, StringComparer.Ordinal).FirstOrDefault();
+        }
+
+        // Open zones grown by `margin` cells: the first view's focus.
+        public IEnumerable<Rect> OpenAreas(float margin) =>
+            Config.Zones.Where(Open).Select(z => new Rect(z.X - margin, z.Y - margin, z.Width + 2 * margin, z.Height + 2 * margin));
+
+        // A view remembered from an earlier visit (zoom level, centre grid point), applied the first time the map is framed.
+        public (int Zoom, Vector2 Centre)? SavedView;
+
+        public void FrameFirstView()
+        {
+            if (SavedView is { } saved) Map.Restore(saved.Zoom, saved.Centre);
+            else Map.Restore(Map.Opening, Map.FocusExtent.x > 0 ? Map.FocusCentre : HomeCentre());
+        }
+
         // A closed zone's map label: exploration land when its unlock needs more production sites than the config can build.
         public string ZoneLabel(AccountEstateZone zone) =>
             zone.Unlock != null && zone.Unlock.CompletedProductionSites > Config.Buildings.Count(b => b.Produces != null) ? "탐사로 열 땅 · M3c" : "닫힌 구역";
