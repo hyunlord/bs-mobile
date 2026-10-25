@@ -176,9 +176,10 @@ namespace Tests.EditMode
             Assert.That(At(30, 30), Is.EqualTo(0).Within(.01f), "The open centre is lit.");
             Assert.That(At(34.6f, 30), Is.InRange(.5f, .75f), "Just past the r6 lit edge, in the east outskirts: between half and full.");
             Assert.That(At(55, 50), Is.EqualTo(.75f).Within(.01f), "Deep in the land to come, full night.");
-            // North and west outskirts meet at v=26; both samples remain about 1.5 cells from the light.
-            Assert.That(At(24.5f, 25.6f), Is.EqualTo(At(24.5f, 26.4f)).Within(.02f), "No seam between closed zones.");
-            Assert.That(At(24.5f, 26.4f), Is.InRange(.6f, .74f), "1.5 cells from light: still rising toward full night.");
+            // Equal radial distance receives equal light, irrespective of rectangular zone boundaries.
+            Assert.That(At(24.5f, 30), Is.EqualTo(At(30, 24.5f)).Within(.02f), "No directional seam between closed zones.");
+            Assert.That(At(24.5f, 30), Is.InRange(.6f, .74f), "1.5 cells from light: still rising toward full night.");
+            Assert.That(EstateNight.LightDistance(new Vector2(26, 26), open), Is.GreaterThan(1.5f), "The old diamond corner is outside the round light.");
             var c = field.GetPixel(0, 0); Assert.That(new Color(c.r, c.g, c.b), Is.EqualTo((Color)rules.night.Colour).Using(ColorComparer));
             Assert.That(c.a, Is.EqualTo(1).Within(.01f), "The painted area's edge closes to opaque night, matching the page behind it.");
         }

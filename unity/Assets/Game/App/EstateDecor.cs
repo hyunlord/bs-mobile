@@ -57,7 +57,7 @@ namespace Game.App
             public int[] colour = { 54, 61, 73 }, ground = { 78, 82, 86 }, lampColour = { 229, 201, 127 };
             public float edgeAlpha = .5f, fullAlpha = .75f, fullCells = 2.5f, insideCells = .5f, areaFadeCells = 3;
             public int texelsPerCell = 4, margin = 10, nightOverhang = 6;
-            public float openingMargin = 4, lampAlpha = .24f, homeLampCells = 3.2f, lampCells = 2.2f;
+            public float openingMargin = .75f, lampAlpha = .24f, homeLampCells = 3.2f, lampCells = 2.2f;
             public float landmarkBrightness = .4f;
             public Color Colour => new Color32((byte)colour[0], (byte)colour[1], (byte)colour[2], 255);
             public Color Ground => new Color32((byte)ground[0], (byte)ground[1], (byte)ground[2], 255);
@@ -338,7 +338,7 @@ namespace Game.App
                 (i.Source == "placed" || i.Role == "frontier-ruin")).ToArray();
             foreach (var item in silhouettes)
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
-                    Colour = new Color(item.Role.StartsWith("river", StringComparison.Ordinal) ? .8f : .25f, night.landmarkBrightness, 1, 1),
+                    Colour = new Color(0, night.landmarkBrightness, 1, 1),
                     Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
             return plan;
         }

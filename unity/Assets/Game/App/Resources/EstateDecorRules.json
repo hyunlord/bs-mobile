@@ -316,7 +316,7 @@
     ]
   },
   "night": {
-    "status": "Continuous night by distance from open land (#379) [가설]: alpha edgeAlpha at the lit edge rising to fullAlpha fullCells outside, 0 deeper than insideCells inside; colour from key art C's dark land. margin = painted cells around the estate, under a night that reaches nightOverhang cells further and closes to opaque over its last areaFadeCells, meeting the page's night colour; openingMargin = night cells around open land in the first view. Lamps: soft warm light (M2 RIM gold, normal blend) around built buildings.",
+    "status": "Rounded light from each open zone centre (#386) [가설]: rounded rectangle with radius half its shortest extent (circle for square zones), projected with the ground; terrain and night share the distance field. Night reaches fullAlpha across fullCells=2.5 outside, with a narrow M2-gold RIM. openingMargin=.75 fits the r6 radial lit width at about 60% of the first viewport. Closed landmarks keep luminance and contours at .4 brightness in blue-grey, without original bank colours. margin/nightOverhang/areaFadeCells close the painted outer edge to page colour; built-building lamps stay below night.",
     "colour": [
       54,
       61,
@@ -340,7 +340,7 @@
     "texelsPerCell": 4,
     "margin": 10,
     "nightOverhang": 6,
-    "openingMargin": 4,
+    "openingMargin": 0.75,
     "lampAlpha": 0.24,
     "homeLampCells": 3.2,
     "lampCells": 2.2,

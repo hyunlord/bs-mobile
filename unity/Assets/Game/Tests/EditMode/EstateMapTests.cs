@@ -94,7 +94,7 @@ namespace Tests.EditMode
 
         [TestCase(390, 844)]
         [TestCase(390, 932)]
-        public void FirstLoginLightCoversHalfTheViewportWidth(int width, int height)
+        public void FirstLoginRoundedLightCoversSixtyPercentOfTheViewportWidth(int width, int height)
         {
             var screen = Screen(out _); var model = screen.Map; var rules = EstateDecorRules.Load();
             var start = screen.Config.Zones.Single(z => z.OpenAtStart);
@@ -102,9 +102,8 @@ namespace Tests.EditMode
             model.SetFrame(new Vector2(width, height), Top, Bottom);
             model.SetFocus(screen.OpenAreas(rules.night.openingMargin));
             model.Restore(model.Opening, model.FocusCentre);
-            var left = model.GridToViewport(new Vector2(start.X, start.Y + start.Height)).x;
-            var right = model.GridToViewport(new Vector2(start.X + start.Width, start.Y)).x;
-            Assert.That((right - left) / width, Is.EqualTo(.5f).Within(.01f));
+            var diameter = Mathf.Max(start.Width, start.Height) * Mathf.Sqrt(2) * EstateMapModel.HalfWidth * model.Scale;
+            Assert.That(diameter / width, Is.EqualTo(.6f).Within(.02f));
             Assert.That(model.ScaleAt(model.Opening), Is.GreaterThan(model.ScaleAt(model.WholeMap)));
             Assert.That(model.ScaleAt(model.Opening), Is.LessThan(model.ScaleAt(EstateMapModel.Neighbourhood)));
         }
