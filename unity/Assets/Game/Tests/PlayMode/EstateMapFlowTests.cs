@@ -231,6 +231,21 @@ namespace Tests.PlayMode
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype never writes the saved estate.");
         }
 
+        [UnityTest, Timeout(180000)]
+        public IEnumerator HistoricalR5SaveKeepsItsGridThroughTheRealEstateEntry()
+        {
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var config = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r5");
+            var fixture = AccountEstate.Migrate(catalog, config, MetaEngine.NewGame(catalog), 0, 0);
+            SaveFixture(catalog, fixture);
+            var bytes = MetaSaveCodec.Encode(fixture);
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            Assert.That(app.EstateMap.Config.Version, Is.EqualTo(config.Version));
+            Assert.That(app.EstateMap.Config.Zones.Single(z => z.OpenAtStart).Width, Is.EqualTo(20));
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(bytes));
+        }
+
         void SaveFixture(MetaCatalog catalog, MetaState state)
         {
             Assert.That(MetaValidation.ValidateState(catalog, state), Is.Empty);
