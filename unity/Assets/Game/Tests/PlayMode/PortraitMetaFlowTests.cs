@@ -304,7 +304,7 @@ namespace Tests.PlayMode
                     yield return null; yield return null; Canvas.ForceUpdateCanvases(); AssertGeometry();
                     var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
                     var path = Path.Combine(output, name + "-" + size.x + "x" + size.y + (position == 0 ? "-bottom" : "") + ".png");
-                    if (File.Exists(path)) File.Delete(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
+                    if (File.Exists(path)) File.Delete(path); yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
                     while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
                     Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
                     var image = new Texture2D(2, 2);
