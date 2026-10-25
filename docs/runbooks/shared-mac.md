@@ -14,12 +14,11 @@
 - **잡는 때:**
   - Unity Editor를 띄우는 모든 작업: `tools/unity-tests.sh`, Mac 빌드, Editor 캡처.
   - 몇 분 넘게 CPU를 크게 쓰는 작업.
-- **잡는 법:** 파일이 이미 있으면 기다린다. 남의 잠금은 지우지 않는다. 없으면 만들고, 끝날 때(실패해도) 지운다.
+- **잡는 법:** 파일 만들기 자체로 잡는다. `noclobber`로 이미 있으면 실패하게 해서, 두 에이전트가 동시에 잡지 못하게 한다. 실패하면 기다렸다가 다시 시도한다. 남의 잠금은 지우지 않는다. 잡은 뒤에만 지우기 `trap`을 걸고, 끝날 때(실패해도) 지운다.
 
 ```bash
 L="$MV/agent-busy.lock"
-while [[ -e "$L" ]]; do sleep 30; done
-echo "$(date '+%F %T') unity-tests feat/x (pid $$)" > "$L"
+until ( set -o noclobber; echo "$(date '+%F %T') unity-tests feat/x (pid $$)" > "$L" ) 2>/dev/null; do sleep 30; done
 trap 'rm -f "$L"' EXIT
 while pgrep -x "Sow and Siege" > /dev/null; do sleep 15; done   # 측정 중인 앱이 끝나기를 기다림
 ./tools/unity-tests.sh
