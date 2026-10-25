@@ -48,10 +48,19 @@ public static partial class UnityExport
         source.AppendLine("        public static global::SowSiege.Core.MetaCatalog CreateMetaCatalog() => " + UnityExportExpression.Write(MetaContentLoader.Read(directory)) + ";");
         // M3a account estate prototype settings for the estate screen (#366; wide map since #374): opt-in data, outside the data
         // tree hash, so the bundle DataHash is unchanged.
-        var estateVersion = AccountEstateConfigLoader.MapPrototypeVersion;
-        var estatePath = AccountEstateConfigLoader.PathFor(directory, estateVersion);
-        source.AppendLine("        public static global::SowSiege.Core.AccountEstateConfig CreateAccountEstateConfig() => " +
-            (File.Exists(estatePath) ? UnityExportExpression.Write(AccountEstateConfigLoader.Load(directory, MetaContentLoader.Read(directory), estateVersion)) : "null") + ";");
+        // A saved estate keeps its historical configuration; only a new prototype chooses the current map.
+        source.AppendLine("        public static global::SowSiege.Core.AccountEstateConfig CreateAccountEstateConfig(string version = null) => (version ?? " + Literal(AccountEstateConfigLoader.MapPrototypeVersion) + ") switch");
+        source.AppendLine("        {");
+        foreach (var estateVersion in new[] { AccountEstateConfigLoader.PrototypeVersion, AccountEstateConfigLoader.WideMapVersion,
+            AccountEstateConfigLoader.VerticalMapVersion, AccountEstateConfigLoader.NightMapVersion, AccountEstateConfigLoader.MapPrototypeVersion })
+        {
+            var estatePath = AccountEstateConfigLoader.PathFor(directory, estateVersion);
+            if (File.Exists(estatePath))
+            {
+                source.AppendLine("            " + Literal(estateVersion) + " => " + UnityExportExpression.Write(AccountEstateConfigLoader.Load(directory, MetaContentLoader.Read(directory), estateVersion)) + ",");
+            }
+        }
+        source.AppendLine("            _ => null\n        };");
         source.AppendLine("    }\n}");
         snapshot.AssertUnchanged(directory);
         return source.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);

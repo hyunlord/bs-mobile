@@ -92,6 +92,23 @@ namespace Tests.EditMode
             Assert.That(model.GridToViewport(grid).x, Is.EqualTo(focus.x).Within(1e-2f));
         }
 
+        [TestCase(390, 844)]
+        [TestCase(390, 932)]
+        public void FirstLoginLightCoversHalfTheViewportWidth(int width, int height)
+        {
+            var screen = Screen(out _); var model = screen.Map; var rules = EstateDecorRules.Load();
+            var start = screen.Config.Zones.Single(z => z.OpenAtStart);
+            Assert.That((start.Width, start.Height), Is.EqualTo((8, 8)));
+            model.SetFrame(new Vector2(width, height), Top, Bottom);
+            model.SetFocus(screen.OpenAreas(rules.night.openingMargin));
+            model.Restore(model.Opening, model.FocusCentre);
+            var left = model.GridToViewport(new Vector2(start.X, start.Y + start.Height)).x;
+            var right = model.GridToViewport(new Vector2(start.X + start.Width, start.Y)).x;
+            Assert.That((right - left) / width, Is.EqualTo(.5f).Within(.01f));
+            Assert.That(model.ScaleAt(model.Opening), Is.GreaterThan(model.ScaleAt(model.WholeMap)));
+            Assert.That(model.ScaleAt(model.Opening), Is.LessThan(model.ScaleAt(EstateMapModel.Neighbourhood)));
+        }
+
         [Test] public void PanStopsAtTheDiamondCornersAndKeepsTheMapBetweenTheBars()
         {
             var model = Model();

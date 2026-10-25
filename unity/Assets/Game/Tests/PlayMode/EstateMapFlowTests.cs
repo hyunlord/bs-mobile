@@ -82,6 +82,7 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.False);
             var lit = screen.Config.Zones.Single(z => z.OpenAtStart);
             Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThan(10), "Night shows beside the lit land.");
+            Assert.That((lit.Width + lit.Height) * EstateMapModel.HalfWidth * map.Scale / map.Viewport.x, Is.EqualTo(.5f).Within(.01f), "The first light occupies half the portrait width (#385).");
             yield return Capture("estate-map-first");
             yield return NightComparison("estate-map-first");
             Assert.That(PlayerPrefs.GetString(prefix + "estateMapView", ""), Is.Empty, "Nothing is remembered until the player moves the map.");
@@ -251,6 +252,10 @@ namespace Tests.PlayMode
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");
             Assert.That(Rects("EstateMap.Veiled:").Length, Is.EqualTo(screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).In(EstateDrawLayer.Veiled).Count()), "The land to come is painted under the night.");
             var night = Rects("EstateMap.Night").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "The night covers the land to come.");
+            Assert.That(Rects("EstateMap.Landmark:").Length, Is.GreaterThan(0));
+            Assert.That(Rects("EstateMap.Landmark:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Large silhouettes remain readable above the night.");
+            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(7), "All seven river patches remain readable.");
+            Assert.That(Rects("EstateMap.Lamps").Single().GetSiblingIndex(), Is.LessThan(night.GetSiblingIndex()), "Warm lamps cannot paint brown clouds above the night.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
             yield return Capture("estate-decor-on");

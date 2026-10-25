@@ -10,7 +10,7 @@ public sealed class AccountEstateR5MapTests
     private static string Data => Path.Combine(AppContext.BaseDirectory, "data");
     private static readonly MetaCatalog Catalog = MetaContentLoader.Read(Data);
     private static readonly AccountEstateConfig R4 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.VerticalMapVersion);
-    private static readonly AccountEstateConfig R5 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.MapPrototypeVersion);
+    private static readonly AccountEstateConfig R5 = AccountEstateConfigLoader.Load(Data, Catalog, "m3a-prototype-r5");
     private static string Json<T>(T value) => System.Text.Json.JsonSerializer.Serialize(value);
     private static bool Adjacent(AccountEstateZone a, AccountEstateZone b) =>
         (a.X + a.Width == b.X || b.X + b.Width == a.X) && a.Y < b.Y + b.Height && b.Y < a.Y + a.Height ||

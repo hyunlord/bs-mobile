@@ -137,7 +137,7 @@
       "art": "manor",
       "stages": [
         1,
-        1
+        2
       ]
     },
     {
@@ -251,7 +251,6 @@
       "light": 0.75
     }
   ],
-  "ruinState": "fallow",
   "constructionSaturation": 0.55,
   "constructionAlpha": 0.85,
   "yardGround": {
@@ -341,10 +340,11 @@
     "texelsPerCell": 4,
     "margin": 10,
     "nightOverhang": 6,
-    "openingMargin": 2.5,
+    "openingMargin": 4,
     "lampAlpha": 0.24,
     "homeLampCells": 3.2,
-    "lampCells": 2.2
+    "lampCells": 2.2,
+    "landmarkBrightness": 0.4
   },
   "sites": {
     "status": "Unbuilt sites and roads stand on Astra's painted earth (yard-earth) instead of flat diamonds (#379). Stakes and rope for sites are requested from Astra.",

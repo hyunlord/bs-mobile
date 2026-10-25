@@ -7,6 +7,7 @@ Shader "Game/UI/EstateTint"
     {
         [PerRendererData] _MainTex ("Art", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
+        _EstateGround ("Pixel ground restoration", Float) = 0
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
         _StencilOp ("Stencil Operation", Float) = 0
@@ -27,25 +28,41 @@ Shader "Game/UI/EstateTint"
             CGPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
+            #pragma target 3.0
             #pragma multi_compile_local _ UNITY_UI_CLIP_RECT
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            struct Attributes { float4 vertex : POSITION; float4 color : COLOR; float2 uv : TEXCOORD0; UNITY_VERTEX_INPUT_INSTANCE_ID };
-            struct Varyings { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 uv : TEXCOORD0; float4 local : TEXCOORD1; UNITY_VERTEX_OUTPUT_STEREO };
+            struct Attributes { float4 vertex : POSITION; float4 color : COLOR; float2 uv : TEXCOORD0; float2 grid : TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct Varyings { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 uv : TEXCOORD0; float4 local : TEXCOORD1; float2 grid : TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
             sampler2D _MainTex;
             fixed4 _Color, _TextureSampleAdd;
             float4 _MainTex_ST, _ClipRect;
+            float _EstateGround;
+            int _EstateOpenCount;
+            float4 _EstateOpenAreas[32];
+            fixed4 _EstateClosed;
             Varyings Vert(Attributes input)
             {
                 Varyings output;
                 UNITY_SETUP_INSTANCE_ID(input); UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
                 output.local = input.vertex; output.vertex = UnityObjectToClipPos(input.vertex);
-                output.uv = TRANSFORM_TEX(input.uv, _MainTex); output.color = input.color; return output;
+                output.uv = TRANSFORM_TEX(input.uv, _MainTex); output.color = input.color; output.grid = input.grid; return output;
             }
             fixed4 Frag(Varyings input) : SV_Target
             {
                 fixed4 sample = tex2D(_MainTex, input.uv) + _TextureSampleAdd;
+                if (_EstateGround > .5)
+                {
+                    float distance = 10000;
+                    for (int i = 0; i < _EstateOpenCount; i++)
+                    {
+                        float4 area = _EstateOpenAreas[i];
+                        float2 outside = max(area.xy - input.grid, input.grid - area.zw);
+                        distance = min(distance, max(outside.x, outside.y));
+                    }
+                    input.color.rgb = lerp(float3(1,1,1), _EstateClosed.rgb, smoothstep(-.5, 0, distance));
+                }
                 fixed luma = dot(sample.rgb, fixed3(.2126, .7152, .0722));
                 fixed3 tinted = lerp(luma.xxx, sample.rgb, input.color.r) * input.color.g;
                 fixed3 dark = luma * fixed3(.24, .27, .29) + fixed3(9, 10, 13) / 255.0;

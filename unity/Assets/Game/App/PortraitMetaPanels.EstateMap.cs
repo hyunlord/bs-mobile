@@ -18,7 +18,7 @@ namespace Game.App
 
     // Estate map prototype page (#366, development option only). Since #368 the map is isometric and fills the screen like the
     // approved key art (m3-estate-keyarts-r2 A-30day-ui): a thin resource bar, a collapsible goal line, compact tabs and a
-    // small departure button over the map. Temporary art: the four manor sprites, raised colour blocks for the other kinds.
+    // small departure button over the map. Astra's approved stage sprites provide the building silhouettes.
     public static partial class PortraitMetaPanels
     {
         public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 중심 마을 확장 북동 숲 서쪽 언덕 풍차 밭 휴경지 강가 영지 둘레 0123456789:";
@@ -28,7 +28,6 @@ namespace Game.App
         static readonly Color BlockTop = new Color32(176, 154, 112, 255);
         static readonly Color BlockLeft = new Color32(132, 112, 80, 255);
         static readonly Color BlockRight = new Color32(104, 88, 62, 255);
-        static readonly Color RuinTint = new Color32(128, 128, 128, 255);
         static readonly Color SelectedFoot = new Color32(243, 213, 140, 150);
         static readonly Color ValidGhost = new Color32(96, 190, 104, 150);
         static readonly Color InvalidGhost = new Color32(205, 64, 48, 150);
@@ -59,13 +58,16 @@ namespace Game.App
             // land outside the open zones, one continuous night by distance from open land, warm lamps, then yard grounds,
             // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
             var art = EstateArt.Load(); var tint = art.Tint;
+            var terrainTint = viewport.gameObject.AddComponent<EstateTerrainMaterial>();
+            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"));
+            ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
             foreach (var zone in screen.Config.Zones.Where(screen.Open)) ground.Footprint(zone.X, zone.Y, zone.Width, zone.Height, OpenGround);
-            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
+            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor)) Paint(viewport, view, art, item.Source == "terrain" ? terrainTint.Material : tint, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
             if (screen.Moving)
             {
                 var grid = Shapes(viewport, "EstateMap.Grid", view);
@@ -86,8 +88,12 @@ namespace Game.App
             var o = night.nightOverhang; var nightArea = new RectInt(plan.Area.x - o, plan.Area.y - o, plan.Area.width + 2 * o, plan.Area.height + 2 * o);
             nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
             view.Track(nightGraphic);
+            foreach (var item in plan.In(EstateDrawLayer.Landmark).OrderBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal))
+                Paint(viewport, view, art, tint, "EstateMap.Landmark:" + item.Role, item);
             var lamps = Shapes(viewport, "EstateMap.Lamps", view);
             foreach (var (grid, cells) in plan.Lamps) lamps.Glow(grid, cells, night.Lamp);
+            // Warm light is ground illumination, never a gold cloud floating over the night.
+            lamps.transform.SetSiblingIndex(darkness.GetSiblingIndex());
             foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, tint, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Site", item);
             // No zone labels (#379): a tap on closed land names it; the whole view marks only the zone that can open next.
             var next = screen.NextZone();
@@ -174,7 +180,14 @@ namespace Game.App
         static Image Paint(RectTransform viewport, EstateMapView view, EstateArt art, Material tint, string name, EstateDrawItem item, Sprite sprite = null, Color? colour = null)
         {
             sprite ??= art.Get(item.Role);
-            var rect = UiShell.Rect(name, viewport); var image = rect.gameObject.AddComponent<Image>();
+            var rect = UiShell.Rect(name, viewport);
+            Image image;
+            if (item.Source == "terrain")
+            {
+                var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
+                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; image = terrain;
+            }
+            else image = rect.gameObject.AddComponent<Image>();
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
             var c = colour ?? item.Colour; image.color = tint != null ? c : new Color(1, 1, 1, c.a);
             var size = sprite.rect.size; var pivot = new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
@@ -403,8 +416,46 @@ namespace Game.App
         }
     }
 
-    // Grid-anchored isometric shapes (ground diamonds, grid lines, raised blocks, footprints) drawn in one mesh in viewport space.
-    // The model's projection is re-read on every rebuild, so a pan or zoom only marks the mesh dirty.
+    // Pixel-wise open-land tint stops a large warm ground patch spilling colour beyond its open cells (#385).
+    public sealed class EstateTerrainMaterial : MonoBehaviour
+    {
+        public Material Material { get; private set; }
+        public void Configure(Material source, IEnumerable<AccountEstateZone> zones, Color closed)
+        {
+            if (source == null) return;
+            var areas = zones.Select(z => new Vector4(z.X, z.Y, z.X + z.Width, z.Y + z.Height)).ToArray();
+            if (areas.Length > 32) throw new InvalidOperationException("Estate ground supports at most 32 open zones.");
+            var padded = new Vector4[32]; Array.Copy(areas, padded, areas.Length);
+            Material = new Material(source) { name = "Estate ground", hideFlags = HideFlags.HideAndDontSave };
+            Material.SetFloat("_EstateGround", 1); Material.SetInt("_EstateOpenCount", areas.Length);
+            Material.SetVectorArray("_EstateOpenAreas", padded); Material.SetColor("_EstateClosed", closed);
+        }
+        void OnDestroy() { if (Material != null) Destroy(Material); }
+    }
+
+    public sealed class EstateTerrainImage : Image
+    {
+        public Vector2 Grid;
+        public float PaintedWidth;
+        protected override void OnPopulateMesh(VertexHelper mesh)
+        {
+            base.OnPopulateMesh(mesh);
+            if (sprite == null) return;
+            var rect = rectTransform.rect; var size = sprite.rect.size;
+            if (rect.width <= 0 || rect.height <= 0 || size.x <= 0 || size.y <= 0) return;
+            var pivot = sprite.pivot / size; var vertex = new UIVertex();
+            for (var i = 0; i < mesh.currentVertCount; i++)
+            {
+                mesh.PopulateUIVertex(ref vertex, i);
+                var fraction = new Vector2((vertex.position.x - rect.xMin) / rect.width, (vertex.position.y - rect.yMin) / rect.height);
+                var offset = fraction - pivot;
+                var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * size.y / size.x));
+                vertex.uv1 = new Vector4(grid.x, grid.y, 0, 0); mesh.SetUIVertex(vertex, i);
+            }
+        }
+    }
+
+    // Grid-anchored shapes are rebuilt from the current projection when the map pans or zooms.
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateIsoShapes : MaskableGraphic
     {
