@@ -189,7 +189,12 @@ namespace Game.App
             }
             else image = rect.gameObject.AddComponent<Image>();
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
-            var c = colour ?? item.Colour; image.color = tint != null ? c : new Color(1, 1, 1, c.a);
+            var c = colour ?? item.Colour;
+            // Landmark RGB carries shader parameters, not display colours. Linear canvases otherwise convert .4 brightness
+            // to .133 before EstateTint sees it, making the river a black trench. Pre-encode only this new overlay contract.
+            if (tint != null && item.Source == "landmark" && QualitySettings.activeColorSpace == ColorSpace.Linear && !image.canvas.vertexColorAlwaysGammaSpace)
+                c = c.gamma;
+            image.color = tint != null ? c : new Color(1, 1, 1, c.a);
             var size = sprite.rect.size; var pivot = new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
             view.Prop(rect, item.Grid, item.Width / (EstateMapModel.HalfWidth * 2), pivot, item.Aspect > 0 ? item.Aspect : size.y / size.x);
             return image;

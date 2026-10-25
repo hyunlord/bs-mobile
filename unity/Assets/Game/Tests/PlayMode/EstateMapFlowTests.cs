@@ -242,7 +242,7 @@ namespace Tests.PlayMode
             PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
             Assert.That(app.EstateMap.Config.Version, Is.EqualTo(config.Version));
-            Assert.That(app.EstateMap.Config.Zones.Single(z => z.OpenAtStart).Width, Is.EqualTo(20));
+            Assert.That(app.EstateMap.Config.Zones.Single(z => z.OpenAtStart).Width, Is.EqualTo(14));
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(bytes));
         }
 
@@ -307,7 +307,9 @@ namespace Tests.PlayMode
             yield return null; Canvas.ForceUpdateCanvases();
         }
 
-        const int PinnedBreaksOn = 22, PinnedBreaksOff = 12;
+        // r6: pixel-restored ground uses a separate material; the post-night landmark layer adds texture switches.
+        // Actual neighbourhood capture: 32/24 (was 22/12 in r5); this is a structural count, not native frame cost.
+        const int PinnedBreaksOn = 32, PinnedBreaksOff = 24;
 
         static IEnumerator Count(int[] into)
         {

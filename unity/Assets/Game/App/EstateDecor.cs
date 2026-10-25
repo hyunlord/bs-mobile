@@ -335,10 +335,11 @@ namespace Game.App
             // Only large silhouettes rise above the night. Small grass, pebbles and armour traces remain veiled.
             var silhouettes = plan.Items.Where(i => (i.Layer == EstateDrawLayer.Terrain || i.Layer == EstateDrawLayer.Veiled) &&
                 (StateAt(i.Grid) == "closed" || StateAt(i.Grid) == null) &&
-                (i.Source == "placed" || i.Role == "frontier-ruin" || i.Role == "frontier-dead-tree" || i.Role == "frontier-broken-fence")).ToArray();
+                (i.Source == "placed" || i.Role == "frontier-ruin")).ToArray();
             foreach (var item in silhouettes)
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
-                    Colour = new Color(.25f, night.landmarkBrightness, 1, 1), Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
+                    Colour = new Color(item.Role.StartsWith("river", StringComparison.Ordinal) ? .8f : .25f, night.landmarkBrightness, 1, 1),
+                    Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
             return plan;
         }
 

@@ -157,6 +157,8 @@ namespace Tests.EditMode
                 Assert.That(landmarks.Any(i => i.Role == river.Role && i.Grid == river.Grid), Is.True, "The closed river stays legible: " + river.Key);
             Assert.That(landmarks.Any(i => i.Role.StartsWith("bridge", StringComparison.Ordinal)), Is.True);
             Assert.That(landmarks.Any(i => i.Role == "frontier-ruin"), Is.True);
+            Assert.That(landmarks.Any(i => i.Role == "frontier-dead-tree" || i.Role == "frontier-broken-fence"), Is.False,
+                "Small repeated traces stay beneath the night; only the authored large fence kits rise above it.");
             foreach (var item in plan.Items.Where(i => i.Role == "frontier-empty-armor" || i.Role == "frontier-stump-tracks"))
                 Assert.That(item.Layer, Is.EqualTo(EstateDrawLayer.Veiled), "Small traces remain under the night.");
             Assert.That(landmarks.Any(i => i.Source == "roadside" || i.Role == "grass" || i.Role == "rocks"), Is.False);
