@@ -207,7 +207,7 @@ namespace Tests.PlayMode
             yield return null;yield return null;
             var path=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/phase2a/p2/editor-captures",name+".png"));Directory.CreateDirectory(Path.GetDirectoryName(path));
             if(File.Exists(path))File.Delete(path);
-            var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);var deadline=Time.realtimeSinceStartup+10;
+            yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);var deadline=Time.realtimeSinceStartup+10;
             while(!File.Exists(path)&&Time.realtimeSinceStartup<deadline)yield return null;
             Assert.That(File.Exists(path),Is.True,"Capture missing: "+name); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
             var image=new Texture2D(2,2);Assert.That(image.LoadImage(File.ReadAllBytes(path)),Is.True);

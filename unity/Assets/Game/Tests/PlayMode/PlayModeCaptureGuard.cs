@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using NUnit.Framework;
 using UnityEngine;
@@ -52,6 +53,25 @@ namespace Tests.PlayMode
             }
         }
         public static Probe Begin(string label) => new Probe(label, Compiling);
+        public static IEnumerator WaitForShaders(string label)
+        {
+#if UNITY_EDITOR
+            var started = Time.realtimeSinceStartupAsDouble;
+            var compilingAtStart = ShaderUtil.anythingCompiling;
+            while (ShaderUtil.anythingCompiling)
+            {
+                if (Time.realtimeSinceStartupAsDouble - started >= 10)
+                {
+                    var message = $"SHADER_CAPTURE_TIMEOUT capture={label} elapsed=10 anythingCompiling=true frame={Time.frameCount} precedingDomainReloadObserved={PrecedingReloadObserved}";
+                    Debug.Log(message);
+                    Assert.Fail(message);
+                }
+                yield return null;
+            }
+            Debug.Log($"SHADER_CAPTURE_READY capture={label} compilingAtStart={compilingAtStart} anythingCompiling=false waitedSeconds={Time.realtimeSinceStartupAsDouble-started:F3} frame={Time.frameCount}");
+#endif
+            yield break;
+        }
         public static void ReadPixels(Texture2D image, Rect region, int x, int y, string label)
         {
             var probe = Begin(label);

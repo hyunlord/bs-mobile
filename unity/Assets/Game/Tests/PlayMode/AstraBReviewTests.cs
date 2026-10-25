@@ -98,7 +98,7 @@ namespace Tests.PlayMode
             yield return null; yield return null; Canvas.ForceUpdateCanvases();
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
             var path = Path.Combine(output, "astra-b-unity-390x844.png");
-            if (File.Exists(path)) File.Delete(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
+            if (File.Exists(path)) File.Delete(path); yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
             while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.That(File.Exists(path), Is.True); PlayModeCaptureGuard.CheckFile(path, cyanProbe);
             File.WriteAllText(path + ".txt", $"surface=Unity Editor PlayMode render of Astra's B board; rules=EstateDecorRules astra (seed {rules.astra.seed}, {rules.astra.styleVersion}); art=EstateArt packed atlases; objects=59 (yard 16, roadside 30, empty-land 13); commit={BuildIdentity.Commit}; sourceDirty={BuildIdentity.SourceDirty}\n");

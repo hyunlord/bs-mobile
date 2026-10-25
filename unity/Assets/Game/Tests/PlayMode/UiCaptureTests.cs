@@ -186,7 +186,7 @@ namespace Tests.PlayMode
             yield return null;yield return null;
             var path=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/phase1b/m3-runtime",name+".png"));Directory.CreateDirectory(Path.GetDirectoryName(path));
             if(File.Exists(path))File.Delete(path);
-            var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);
+            yield return PlayModeCaptureGuard.WaitForShaders(path); var cyanProbe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);
             var deadline=Time.realtimeSinceStartup+10;
             while(!File.Exists(path)&&Time.realtimeSinceStartup<deadline)yield return null;
             Assert.That(File.Exists(path),Is.True,"Capture missing: "+name); PlayModeCaptureGuard.CheckFile(path, cyanProbe);

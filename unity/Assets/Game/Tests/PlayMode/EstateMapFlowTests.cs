@@ -487,13 +487,9 @@ namespace Tests.PlayMode
             // CaptureScreenshot is not a frame-completion fence and cannot bind the old PNG to current screen metadata.
             var waitStarted = Time.realtimeSinceStartup;
             var compilingAtWait = ShaderUtil.anythingCompiling;
-            if (ShaderProbeMode == "wait")
-            {
-                while (ShaderUtil.anythingCompiling && Time.realtimeSinceStartup - waitStarted < 10) yield return null;
-            }
             var compilingBefore = ShaderUtil.anythingCompiling;
             Debug.Log($"M3A7_CAPTURE before name={name} mode={ShaderProbeMode} anythingCompiling={compilingBefore} async={EditorSettings.asyncShaderCompilation} frame={Time.frameCount}");
-            var captureProbe = PlayModeCaptureGuard.Begin(name);
+            yield return PlayModeCaptureGuard.WaitForShaders(name); var captureProbe = PlayModeCaptureGuard.Begin(name);
             var image = ScreenCapture.CaptureScreenshotAsTexture();
             var compilingAfter = ShaderUtil.anythingCompiling;
             try

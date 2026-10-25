@@ -35,7 +35,7 @@ namespace Tests.PlayMode
                 yield return null;
                 if (frame <= 5 || frame == 30)
                 {
-                    var captureProbe = PlayModeCaptureGuard.Begin("estate-entry-capture-" + frame);
+                    yield return PlayModeCaptureGuard.WaitForShaders("estate-entry-capture-" + frame); var captureProbe = PlayModeCaptureGuard.Begin("estate-entry-capture-" + frame);
                     var capture = ScreenCapture.CaptureScreenshotAsTexture();
                     try
                     {
