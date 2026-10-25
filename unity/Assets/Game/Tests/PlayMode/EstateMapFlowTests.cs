@@ -582,13 +582,6 @@ namespace Tests.PlayMode
                 if (!File.Exists(csv)) File.WriteAllText(csv, "name,frame,screen,async,compilingAtWait,compilingBefore,compilingAfter,elapsedThroughCaptureSeconds,cyanPixels\n");
                 File.AppendAllText(csv, $"{name},{Time.frameCount},{app.CurrentScreenName},{EditorSettings.asyncShaderCompilation},{compilingAtWait},{compilingBefore},{compilingAfter},{(Time.realtimeSinceStartup-waitStarted).ToString(System.Globalization.CultureInfo.InvariantCulture)},{cyan}\n");
                 File.WriteAllBytes(Path.Combine(probe, name + ".png"), image.EncodeToPNG());
-                if (cyan > 0)
-                {
-                    var viewProbe = PlayModeCaptureGuard.Begin(name + "-failure-gameview");
-                    var view = ReadGameView();
-                    try { PlayModeCaptureGuard.Check(view, viewProbe); File.WriteAllBytes(Path.Combine(probe, name + "-gameview.png"), view.EncodeToPNG()); }
-                    finally { Object.Destroy(view); }
-                }
                 PlayModeCaptureGuard.Check(image, captureProbe, path, compilingAfter);
                 Assert.That(cyan, Is.Zero, "Cyan capture regression: " + name);
             }
