@@ -429,12 +429,13 @@ namespace Tests.PlayMode
         void CheckBatchBudget(string version, string state)
         {
             var graphics = View().GetComponentsInChildren<Graphic>().Where(g => g.isActiveAndEnabled).ToArray();
-            int WithoutLandmarks()
+            int WithoutLandmarks(bool omitSites = false)
             {
                 Material prior = null; Texture texture = null; var count = 0;
                 foreach (var graphic in graphics)
                 {
                     if (graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)) continue;
+                    if (omitSites && graphic.name.StartsWith("EstateMap.Site:", StringComparison.Ordinal)) continue;
                     var material = graphic.materialForRendering;
                     if (count == 0 || material != prior || texture != graphic.mainTexture)
                     { count++; prior = material; texture = graphic.mainTexture; }
@@ -444,9 +445,20 @@ namespace Tests.PlayMode
             var actual = EstateMapView.MaterialBreaks(View().transform); var baseline = WithoutLandmarks();
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
             Directory.CreateDirectory(output);
+            var transitions = new System.Text.StringBuilder("index,layer,name,material,texture,newRun,isLandmark,isLv0\n");
+            Material previousMaterial = null; Texture previousTexture = null;
+            for (var index = 0; index < graphics.Length; index++)
+            {
+                var graphic = graphics[index]; var material = graphic.materialForRendering; var texture = graphic.mainTexture;
+                string Quote(string value) => "\"" + (value ?? "").Replace("\"", "\"\"") + "\"";
+                transitions.AppendLine($"{index},{Quote(graphic.transform.parent?.name)},{Quote(graphic.name)},{Quote(material?.name)},{Quote(texture?.name)},{(index == 0 || material != previousMaterial || texture != previousTexture ? 1 : 0)},{graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)},{graphic.name.StartsWith("EstateMap.Site:", StringComparison.Ordinal)}");
+                previousMaterial = material; previousTexture = texture;
+            }
+            File.WriteAllText(Path.Combine(output, $"batch-runs-{version}-{state}.csv"), transitions.ToString());
             File.WriteAllText(Path.Combine(output, $"batch-{version}-{state}.csv"),
-                $"version,decoration,base,landmarks,total\n{version},{state},{baseline},{actual - baseline},{actual}\n");
+                $"version,decoration,actualDecorEnabled,base,landmarks,total,withoutLv0Parts,lv0PartsDelta\n{version},{state},{app.EstateMap.DecorEnabled},{baseline},{actual - baseline},{actual},{WithoutLandmarks(true)},{baseline - WithoutLandmarks(true)}\n");
             Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
+            Assert.That(app.EstateMap.DecorEnabled, Is.EqualTo(state == "on"), "Batch label must match the actual decoration switch.");
             Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
             if (version == "m3a-prototype-r6" || version == "m3a-prototype-r7")
                 Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");

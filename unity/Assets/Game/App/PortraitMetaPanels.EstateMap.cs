@@ -66,7 +66,13 @@ namespace Game.App
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
             foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
-            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, terrainTint.Material, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Site", item);
+            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor))
+            {
+                var colour = item.Colour;
+                if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) colour.a *= .45f;
+                var name = item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : "EstateMap.Site";
+                Paint(viewport, view, art, terrainTint.Material, name, item, colour: colour);
+            }
             if (screen.Moving)
             {
                 var grid = Shapes(viewport, "EstateMap.Grid", view);
@@ -604,8 +610,8 @@ namespace Game.App
                 {
                     float px = area.xMin + (i + .5f) / res, py = area.yMin + (j + .5f) / res;
                     var d = LightDistance(new Vector2(px, py), open, edgeFoundations);
-                    // A narrow warm RIM, not an opaque gold cloud over the buildings.
-                    var rim = .28f * Mathf.Exp(-d * d / .72f);
+                    // Broad, faint warmth blends into night instead of tracing a pale outline around each cell.
+                    var rim = .14f * Mathf.Exp(-d * d / 3.2f);
                     Color32 colour = Color.Lerp(night.Colour, night.Lamp, rim);
                     // Toward the painted area's edge the night closes to opaque, so the land fades into the page's night colour.
                     var edge = Mathf.Min(Mathf.Min(px - area.xMin, area.xMax - px), Mathf.Min(py - area.yMin, area.yMax - py));

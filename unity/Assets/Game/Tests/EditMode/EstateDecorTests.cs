@@ -54,7 +54,7 @@ namespace Tests.EditMode
             var granary = state.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
             Assert.That(plan.Items.Any(i => i.BuildingId == granary.Id), Is.False, "Lv0 has no completed body.");
-            Assert.That(plan.Items.Count(i => i.SiteId == granary.Id), Is.EqualTo(4), "Reclaimable foundation, fence, stones and dry grass.");
+            Assert.That(plan.Items.Count(i => i.SiteId == granary.Id), Is.EqualTo(6), "Reclaimable foundation, fence, stones and dry grass.");
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             var homeArt = plan.Items.Single(i => i.BuildingId == home.Id);
             Assert.That((homeArt.Stage, homeArt.Colour), Is.EqualTo((2, Color.white)), "The starting home is complete, not the ruined manor stage.");
@@ -72,6 +72,23 @@ namespace Tests.EditMode
         }
 
 
+        [Test]
+        public void R7NeighbouringFlatSitesUseDistinctLayoutsBeforeTheStandingLayer()
+        {
+            var (config, _, state) = Estate("m3a-prototype-r7");
+            var plan = EstatePlanner.Plan(EstateDecorRules.Load(), EstateArt.Load(), config, state.Estate);
+            var sites = state.Estate.Buildings.Where(b => b.Level == 0).ToArray();
+            Assert.That(plan.SiteVariants.Values.Distinct().Count(), Is.GreaterThanOrEqualTo(3));
+            foreach (var site in sites)
+            {
+                foreach (var neighbour in sites.Where(b => b.Id < site.Id && Mathf.Max(Mathf.Abs(b.X - site.X), Mathf.Abs(b.Y - site.Y)) <= 4))
+                    Assert.That(plan.SiteVariants[site.Id], Is.Not.EqualTo(plan.SiteVariants[neighbour.Id]), site.Kind + " / " + neighbour.Kind);
+                var pieces = plan.Items.Where(i => i.SiteId == site.Id).ToArray();
+                Assert.That(pieces.All(i => i.Layer == EstateDrawLayer.Ground), Is.True, "Flat foundations draw before all standing bodies.");
+                Assert.That(pieces.All(i => i.Aspect > 0 && i.Aspect <= .35f), Is.True, "Existing art is kept low, not a vertical ruin wall.");
+            }
+        }
+
         [TestCase("m3a-prototype-r3")]
         [TestCase("m3a-prototype-r4")]
         [TestCase("m3a-prototype-r5")]
@@ -86,9 +103,9 @@ namespace Tests.EditMode
             {
                 Assert.That(plan.Items.Any(i => i.BuildingId == site.Id), Is.False);
                 var pieces = plan.Items.Where(i => i.SiteId == site.Id).ToArray();
-                Assert.That(pieces.Select(i => i.Role), Is.EquivalentTo(new[] { "frontier-ruin", "frontier-broken-fence", "rocks", "grass" }));
+                Assert.That(pieces.Select(i => i.Role), Is.EquivalentTo(new[] { "rocks", "rocks", "rocks", "rocks", "frontier-broken-fence", "grass" }));
                 foreach (var piece in pieces) Assert.That(art.Get(piece.Role), Is.Not.Null);
-                Assert.That(pieces.Select(i => art.Get(i.Role).texture).Distinct().Count(), Is.EqualTo(1), "The four site pieces share one atlas, without extra texture switches.");
+                Assert.That(pieces.Select(i => art.Get(i.Role).texture).Distinct().Count(), Is.EqualTo(1), "The six flat site pieces share one atlas.");
                 Assert.That(screen.BuildingAt(new Vector2Int(site.X, site.Y)), Is.EqualTo(site.Id));
                 screen.Select(site.Id); Assert.That(screen.Selected, Is.EqualTo(site.Id));
             }

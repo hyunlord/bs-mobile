@@ -121,6 +121,7 @@ namespace Game.App
     {
         public readonly List<EstateDrawItem> Items = new List<EstateDrawItem>();
         public readonly HashSet<Vector2Int> Road = new HashSet<Vector2Int>();
+        public readonly Dictionary<int, int> SiteVariants = new Dictionary<int, int>();
         // Grid rectangle that is painted and covered by the night: the zones' bounds plus the night margin.
         public RectInt Area;
         // Warm lamp light around built buildings in open land: grid centre and radius in cells.
@@ -150,6 +151,19 @@ namespace Game.App
             bool OpenCell(Vector2Int c) => config.Zones.Any(z => estate.OpenZones.Contains(z.Id) && c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             bool AnyZone(Vector2Int c) => config.Zones.Any(z => c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             var buildings = estate.Buildings.OrderBy(b => b.Id).ToArray();
+            // Colour the nearby-site graph in stable ID order. Prefer an unused neighbouring layout over ID modulo,
+            // which repeated the granary and field. Four layouts also cover the compact historical opening.
+            foreach (var site in buildings.Where(b => b.Level == 0))
+            {
+                var usage = new int[4];
+                foreach (var other in buildings)
+                    if (plan.SiteVariants.TryGetValue(other.Id, out var used) &&
+                        Mathf.Max(Mathf.Abs(site.X - other.X), Mathf.Abs(site.Y - other.Y)) <= 4) usage[used]++;
+                var variant = site.Id % usage.Length;
+                for (var candidate = 0; candidate < usage.Length; candidate++)
+                    if (usage[candidate] < usage[variant]) variant = candidate;
+                plan.SiteVariants.Add(site.Id, variant);
+            }
             var taken = new HashSet<Vector2Int>();
             foreach (var b in buildings) for (var u = 0; u < kinds[b.Kind].Width; u++) for (var v = 0; v < kinds[b.Kind].Height; v++) taken.Add(new Vector2Int(b.X + u, b.Y + v));
             var reserved = new HashSet<Vector2Int>(taken);
@@ -215,11 +229,23 @@ namespace Game.App
                     plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
                         Colour = dark ? rules.Colour("closed", t.alpha) : new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
                 }
+            // Break up restored sand with the existing low-contrast sage painting. Keep road cells clear so the
+            // earth route remains readable; these are terrain patches, not optional decoration or rule cells.
+            foreach (var zone in config.Zones.Where(z => estate.OpenZones.Contains(z.Id)))
+                for (var u = zone.X; u < zone.X + zone.Width; u += 3)
+                    for (var v = zone.Y; v < zone.Y + zone.Height; v += 3)
+                    {
+                        var cell = new Vector2Int(u, v);
+                        if (plan.Road.Contains(cell) || taken.Contains(cell)) continue;
+                        plan.Items.Add(new EstateDrawItem { Role = t.sage, Source = "terrain", Grid = cell + new Vector2(.7f, .7f),
+                            Width = 3 * 2 * EstateMapModel.HalfWidth, Aspect = .5f, Colour = new Color(1, 1, 1, .65f),
+                            Layer = EstateDrawLayer.Terrain, Key = $"grass-patch-{u}-{v}" });
+                    }
             // Roads: Astra's painted earth along each grid path instead of flat diamonds.
             var sg = rules.sites;
             foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
                 plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "road", Grid = cell + new Vector2(.5f, .5f), Width = sg.roadWidth * 2 * EstateMapModel.HalfWidth, Aspect = sg.aspect,
-                    Colour = new Color(1, 1, 1, sg.roadAlpha), Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
+                    Colour = new Color(1, 1, 1, Mathf.Max(.9f, sg.roadAlpha)), Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
 
             // Astra's scene: built buildings (anchor = footprint centre, w = painted body width at scale 1), the roads, and the open land.
             var scene = new AstraScene();
@@ -274,8 +300,9 @@ namespace Game.App
                 var kind = kinds[b.Kind]; var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
                 // An unbuilt site stands on painted earth; a built one in open land is lit (stakes and rope art: requested from Astra).
                 if (b.Level == 0 && estate.Active?.BuildingId != b.Id)
-                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = buildingScale * sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
-                        Aspect = sg.aspect, Colour = new Color(1, 1, 1, sg.siteAlpha), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
+                    plan.Items.Add(new EstateDrawItem { Role = plan.SiteVariants[b.Id] == 1 ? yg.house : sg.ground, Source = "site", Grid = centre,
+                        Width = (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
+                        Aspect = sg.aspect, Colour = new Color(1, 1, 1, .65f), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
                 else if (OpenCell(new Vector2Int(b.X, b.Y)))
                     plan.Lamps.Add((centre, kinds[b.Kind].StartsComplete ? night.homeLampCells : night.lampCells));
             }
@@ -289,10 +316,17 @@ namespace Game.App
                 // existing hit footprint and remains visible when optional decoration is disabled.
                 if (b.Level == 0 && !building)
                 {
-                    AddSite(plan, b.Id, "frontier-ruin", centre + new Vector2(-.22f, -.22f), 70, "foundation");
-                    AddSite(plan, b.Id, "frontier-broken-fence", centre + new Vector2(.35f, -.3f), 43, "fence");
-                    AddSite(plan, b.Id, "rocks", centre + new Vector2(-.35f, .35f), 22, "stones");
-                    AddSite(plan, b.Id, "grass", centre + new Vector2(.45f, .35f), 22, "grass", rules.Colour("fallow"));
+                    // Four stable layouts of low fragments. A tall frontier wall is a landmark, never a Lv0 building.
+                    var variant = plan.SiteVariants[b.Id];
+                    var inset = variant == 0 ? .72f : variant == 1 ? .6f : .8f;
+                    AddSite(plan, b.Id, "rocks", centre + new Vector2(-inset, -inset), 32, "foundation-back", aspect: .24f);
+                    AddSite(plan, b.Id, "rocks", centre + new Vector2(inset, inset), 30, "foundation-front", aspect: .24f);
+                    AddSite(plan, b.Id, "rocks", centre + new Vector2(-inset, inset), 26, "foundation-left", aspect: .3f);
+                    AddSite(plan, b.Id, "rocks", centre + new Vector2(inset, -inset), 24, "foundation-right", aspect: .3f);
+                    var fenceAt = variant == 0 ? new Vector2(.15f, -.7f) : variant == 1 ? new Vector2(-.7f, .1f)
+                        : variant == 2 ? new Vector2(.65f, .2f) : new Vector2(.1f, .7f);
+                    AddSite(plan, b.Id, "frontier-broken-fence", centre + fenceAt, variant == 2 ? 38 : 46, "fence", aspect: .26f);
+                    AddSite(plan, b.Id, "grass", centre - fenceAt * .6f, variant == 1 ? 27 : 20, "grass", rules.Colour("fallow"), .35f);
                     continue;
                 }
                 // Every construction site uses the authored empty furrows and the UI's work sign, not a faded finished body.
@@ -374,10 +408,10 @@ namespace Game.App
             plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = grid, Width = width > 0 ? width : 64, Colour = colour, Layer = layer, SortY = P(grid).y, Key = source + "-" + role + "-" + grid });
         }
 
-        static void AddSite(EstatePlan plan, int siteId, string role, Vector2 grid, float width, string part, Color? colour = null)
+        static void AddSite(EstatePlan plan, int siteId, string role, Vector2 grid, float width, string part, Color? colour = null, float aspect = -1)
         {
             plan.Items.Add(new EstateDrawItem { Role = role, Source = "reclaimable-site", SiteId = siteId, Grid = grid,
-                Width = width, Colour = colour ?? Color.white, Layer = EstateDrawLayer.Standing, SortY = P(grid).y,
+                Width = width, Aspect = aspect, Colour = colour ?? Color.white, Layer = EstateDrawLayer.Ground, SortY = P(grid).y,
                 Key = $"site-{siteId:00}-{part}" });
         }
 
