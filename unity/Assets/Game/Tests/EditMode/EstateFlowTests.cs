@@ -111,7 +111,9 @@ namespace Tests.EditMode
             // r5 (#379): the outskirts around the lit start open first; the village waits behind them.
             Assert.That(screen.NextZone()?.Id, Is.EqualTo("zone:outskirts-east"));
             screen.SelectZone(zone.Id); Assert.That(screen.ZoneChoice, Is.EqualTo(zone.Id));
-            Assert.That(screen.OpenZone(zone.Id), Is.False); Assert.That(screen.Notice, Is.EqualTo("생산 터를 더 완성해야 합니다"));
+            Assert.That(screen.OpenZone(zone.Id), Is.False); Assert.That(screen.Notice, Is.EqualTo("열린 구역과 이어져 있지 않습니다"), "r5: the village lies behind the outskirts.");
+            screen.SelectZone("zone:outskirts-east");
+            Assert.That(screen.OpenZone("zone:outskirts-east"), Is.False); Assert.That(screen.Notice, Is.EqualTo("생산 터를 더 완성해야 합니다"));
             Assert.That(EstateMapScreen.Clock(65), Is.EqualTo("1:05")); Assert.That(EstateMapScreen.Clock(3725), Is.EqualTo("1:02:05"));
         }
     }
