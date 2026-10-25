@@ -209,7 +209,7 @@ namespace Game.App
             var result = AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id);
             LastConstructionReason = result.Reason;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (!result.Done) Debug.Log("Estate construction rejected: config=" + Config.Version + " building=" + id + " reason=" + result.Reason);
+            if (!result.Done) UnityEngine.Debug.Log("Estate construction rejected: config=" + Config.Version + " building=" + id + " reason=" + result.Reason);
 #endif
             return Apply(result, reason => reason == "started" ? Name(Building(id).Kind) + " 공사 시작" :
                 reason == "reserved" ? Name(Building(id).Kind) + " 예약" : ReasonText(reason)).Done;
