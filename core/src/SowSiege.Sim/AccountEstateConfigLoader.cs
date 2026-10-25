@@ -9,8 +9,10 @@ public static class AccountEstateConfigLoader
     public const string PrototypeVersion = "m3a-prototype-r2";
     // The design r3 centre + inner ring grid with the r2 economy (#374), kept for its tests.
     public const string WideMapVersion = "m3a-prototype-r3";
-    // The estate screen prototype's map (#375): the r3 centre with its zones laid along the portrait screen's vertical.
-    public const string MapPrototypeVersion = "m3a-prototype-r4";
+    // The r3 centre with its zones laid along the portrait screen's vertical (#375), kept for its tests.
+    public const string VerticalMapVersion = "m3a-prototype-r4";
+    // The estate screen prototype's map (#379): r4 with a 14x14 lit start inside four outskirts zones.
+    public const string MapPrototypeVersion = "m3a-prototype-r5";
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

@@ -30,16 +30,17 @@ namespace Tests.EditMode
                 Assert.That(Vector2.Distance(EstateMapModel.Unproject(EstateMapModel.Project(grid)), grid), Is.LessThan(1e-4f));
         }
 
-        [Test] public void ThreeZoomLevelsShowTheWholeMapANeighbourhoodAndOneBuilding()
+        [Test] public void FourZoomLevelsShowTheWholeMapTheLitLandANeighbourhoodAndOneBuilding()
         {
             var model = Model();
             Assert.That(model.Zoom, Is.EqualTo(EstateMapModel.Neighbourhood));
             Assert.That(model.ScaleAt(EstateMapModel.Neighbourhood), Is.EqualTo(1), "Default cells are 64×32 on screen.");
             Assert.That(model.ScaleAt(EstateMapModel.BuildingDetail), Is.EqualTo(2), "Building zoom shows cells at the 128×64 source size.");
-            Assert.That(model.ScaleAt(EstateMapModel.WholeMap), Is.EqualTo(390f / (24 * 32)).Within(1e-4f), "The whole 16×8 diamond fits the width.");
+            Assert.That(model.ScaleAt(model.WholeMap), Is.EqualTo(390f / (24 * 32)).Within(1e-4f), "The whole 16×8 diamond fits the width.");
+            Assert.That(model.ScaleAt(model.Opening), Is.EqualTo(model.ScaleAt(model.WholeMap)), "Without a focus the lit-land level fits the whole map too.");
             var centre = model.VisibleCentre;
-            Assert.That(model.StepZoom(1, centre), Is.True); Assert.That(model.StepZoom(1, centre), Is.False, "There is no fourth level.");
-            Assert.That(model.SetZoom(EstateMapModel.WholeMap, centre), Is.True); Assert.That(model.StepZoom(-1, centre), Is.False);
+            Assert.That(model.StepZoom(1, centre), Is.True); Assert.That(model.StepZoom(1, centre), Is.False, "There is no fifth level.");
+            Assert.That(model.SetZoom(model.WholeMap, centre), Is.True); Assert.That(model.StepZoom(-1, centre), Is.False);
             Assert.That(model.GridToViewport(new Vector2(0, 8)).x, Is.GreaterThanOrEqualTo(-1e-3f));
             Assert.That(model.GridToViewport(new Vector2(16, 0)).x, Is.LessThanOrEqualTo(390 + 1e-3f));
         }
@@ -51,13 +52,35 @@ namespace Tests.EditMode
             var zones = new[] { new RectInt(20, 20, 20, 20), new RectInt(40, 20, 20, 20), new RectInt(20, 40, 20, 20), new RectInt(0, 20, 20, 20), new RectInt(20, 0, 20, 20) };
             var model = new EstateMapModel(60, 60, zones); model.SetFrame(new Vector2(390, 844), Top, Bottom);
             Assert.That(model.MapExtent, Is.EqualTo(new Vector2(2560, 1280)));
-            Assert.That(model.ScaleAt(EstateMapModel.WholeMap), Is.EqualTo(390f / 2560).Within(1e-5f), "The plus fits the width.");
-            model.SetZoom(EstateMapModel.WholeMap, model.VisibleCentre);
+            Assert.That(model.ScaleAt(model.WholeMap), Is.EqualTo(390f / 2560).Within(1e-5f), "The plus fits the width.");
+            model.SetZoom(model.WholeMap, model.VisibleCentre);
             Assert.That(model.GridToViewport(new Vector2(0, 40)).x, Is.EqualTo(0).Within(1e-3f), "West zone's corner at the left edge.");
             Assert.That(model.GridToViewport(new Vector2(60, 20)).x, Is.EqualTo(390).Within(1e-3f), "East zone's corner at the right edge.");
             var top = model.GridToViewport(new Vector2(20, 0)).y; var bottom = model.GridToViewport(new Vector2(60, 40)).y;
             Assert.That(top, Is.GreaterThanOrEqualTo(Top - 1e-3f)); Assert.That(bottom, Is.LessThanOrEqualTo(844 - Bottom + 1e-3f), "Every zone is on screen.");
             Assert.That(new EstateMapModel(16, 8).MapExtent, Is.EqualTo(new Vector2(24 * 32, 24 * 16)), "Without zones the grid diamond is the map.");
+        }
+
+        // #379: the first view fits the open land plus a ring of night (key art C). The two fitted levels are ordered by scale:
+        // with r4's centre as wide as the estate, the lit land with its ring is the farther view; a narrow open zone puts it
+        // between the whole map and the neighbourhood.
+        [Test] public void TheLitLandLevelFitsOpenZonesWithARingOfNight()
+        {
+            var r4 = new[] { new RectInt(20, 20, 20, 20), new RectInt(40, 28, 8, 12), new RectInt(0, 0, 20, 10), new RectInt(0, 10, 28, 10), new RectInt(8, 20, 12, 8),
+                new RectInt(32, 40, 8, 12), new RectInt(40, 40, 10, 20), new RectInt(50, 40, 10, 20), new RectInt(60, 48, 8, 12) };
+            var model = new EstateMapModel(68, 60, r4); model.SetFrame(new Vector2(390, 844), Top, Bottom);
+            model.SetFocus(new[] { new Rect(17.5f, 17.5f, 25, 25) });
+            Assert.That(model.FocusIsWider, Is.True); Assert.That((model.Opening, model.WholeMap), Is.EqualTo((0, 1)));
+            Assert.That(model.ScaleAt(model.Opening), Is.EqualTo(390f / 1600).Within(1e-5f), "The centre plus 2.5 cells each side fits the width.");
+            Assert.That(model.ScaleAt(model.WholeMap), Is.EqualTo(390f / 1280).Within(1e-5f));
+            model.Restore(model.Opening, model.FocusCentre);
+            Assert.That(model.GridToViewport(new Vector2(20, 40)).x, Is.GreaterThan(30), "Night shows left of the lit centre.");
+            Assert.That(model.GridToViewport(new Vector2(40, 20)).x, Is.LessThan(360), "Night shows right of the lit centre.");
+            model.SetFocus(new[] { new Rect(25.5f, 25.5f, 9, 9) });
+            Assert.That(model.FocusIsWider, Is.False); Assert.That((model.WholeMap, model.Opening), Is.EqualTo((0, 1)));
+            Assert.That(model.ScaleAt(model.Opening), Is.InRange(model.ScaleAt(model.WholeMap), 1f), "A small lit land sits between the whole map and the neighbourhood.");
+            model.SetFocus(new[] { new Rect(17.5f, 17.5f, 25, 25) }); model.SetFrame(model.Viewport, Top, 420);
+            Assert.That((model.Opening, model.WholeMap), Is.EqualTo((0, 1)), "A tall panel does not swap the two fitted levels.");
         }
 
         [Test] public void ZoomKeepsTheGridPointUnderTheFingers()
