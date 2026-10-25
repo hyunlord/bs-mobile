@@ -196,6 +196,7 @@ namespace Game.App
                 if(!visualReviewRequested)TryStartWaveBenchmark();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 TryStartEstateDecorMeasure();
+                TryStartEstateDemo();
 #endif
             }
             catch(Exception e){Fail(e);}
