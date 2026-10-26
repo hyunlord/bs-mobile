@@ -235,7 +235,16 @@ namespace Tests.EditMode
             Assert.That(first.Items.Where(i => i.Source == "wood").All(i => In(wood, i.Grid)), Is.True, "Woods only in the north-east wood zone.");
             foreach (var zone in config.Zones.Where(z => z.Id != "zone:start"))
             {
-                Assert.That(first.Items.Count(i => i.Source == "terrain" && In(zone, i.Grid)), Is.GreaterThan(0), "Terrain patches cover " + zone.Id);
+                if (config.Version == "m3a-prototype-r7")
+                {
+                    for (var x = zone.X; x < zone.X + zone.Width; x++)
+                        for (var y = zone.Y; y < zone.Y + zone.Height; y++)
+                            Assert.That(first.Items.Any(i => i.IsometricGround &&
+                                Mathf.Abs(i.Grid.x - (x + .5f)) < i.Width / (4 * EstateMapModel.HalfWidth) &&
+                                Mathf.Abs(i.Grid.y - (y + .5f)) < i.Width / (4 * EstateMapModel.HalfWidth)), Is.True,
+                                "Continuous grass covers every cell of " + zone.Id + ": " + x + "," + y);
+                }
+                else Assert.That(first.Items.Count(i => i.Source == "terrain" && In(zone, i.Grid)), Is.GreaterThan(0), "Terrain patches cover " + zone.Id);
                 if (zone.Width * zone.Height >= 200) Assert.That(first.In(EstateDrawLayer.Veiled).Count(i => In(zone, i.Grid)), Is.GreaterThan(0), "Traces or woods in " + zone.Id);
             }
             Assert.That(first.In(EstateDrawLayer.Veiled).Count(), Is.GreaterThan(30));
