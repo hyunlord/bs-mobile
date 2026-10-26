@@ -95,7 +95,7 @@ namespace Tests.PlayMode
                 var path = Path.Combine(Output, "roles-15-" + name + "-fixture.png");
                 yield return PlayModeCaptureGuard.WaitForShaders(path); yield return null; yield return null;
                 camera.Render(); yield return null; yield return PlayModeCaptureGuard.WaitForShaders(path);
-                camera.Render(); Save(target, path);
+                Save(target, path, camera);
             }
             finally { camera.targetTexture = null; Object.DestroyImmediate(owner); target.Release(); Object.DestroyImmediate(target); }
         }
@@ -133,7 +133,7 @@ namespace Tests.PlayMode
                     for (var i = 0; i < 5; i++) { world.Present(frame, frame, snapshot, 1, 1f / 60, new Rect(0, 0, 900, 1600)); yield return null; }
                     yield return PlayModeCaptureGuard.WaitForShaders(path);
                     world.Present(frame, frame, snapshot, 1, 0, new Rect(0, 0, 900, 1600)); yield return null;
-                    Assert.That(world.SubmittedInstances, Is.GreaterThan(3)); Save(target, path);
+                    Assert.That(world.SubmittedInstances, Is.GreaterThan(3)); Save(target, path, camera);
                     File.WriteAllText(path + ".txt", "Actual WorldRenderer; presentation-state fixture, not normal play. Left-to-right house states complete/damaged/ruin; vassal idle. Canonical profile=" + CanonicalContent.ProfileName);
                 }
                 finally { camera.targetTexture = null; Object.DestroyImmediate(owner); Object.DestroyImmediate(cameraOwner); target.Release(); Object.DestroyImmediate(target); }
@@ -141,12 +141,13 @@ namespace Tests.PlayMode
             finally { ArtCatalog.ProfileName = oldProfile; }
         }
 
-        static void Save(RenderTexture target, string path)
+        static void Save(RenderTexture target, string path, Camera camera)
         {
             var active = RenderTexture.active; var image = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
             try
             {
-                RenderTexture.active = target; var probe = PlayModeCaptureGuard.Begin(path);
+                var probe = PlayModeCaptureGuard.Begin(path);
+                camera.Render(); RenderTexture.active = target;
                 image.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0); image.Apply();
                 Assert.That(image.GetPixels32().Select(c => (c.r >> 4) * 256 + (c.g >> 4) * 16 + (c.b >> 4)).Distinct().Count(), Is.GreaterThan(20));
                 PlayModeCaptureGuard.Check(image, probe, path); File.WriteAllBytes(path, image.EncodeToPNG());
