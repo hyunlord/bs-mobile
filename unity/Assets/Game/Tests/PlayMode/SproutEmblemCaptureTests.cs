@@ -132,7 +132,7 @@ namespace Tests.PlayMode
                     yield return PlayModeCaptureGuard.WaitForShaders(path);
                     for (var i = 0; i < 5; i++) { world.Present(frame, frame, snapshot, 1, 1f / 60, new Rect(0, 0, 900, 1600)); yield return null; }
                     yield return PlayModeCaptureGuard.WaitForShaders(path);
-                    world.Present(frame, frame, snapshot, 1, 0, new Rect(0, 0, 900, 1600)); yield return null;
+                    world.Present(frame, frame, snapshot, 1, 0, new Rect(0, 0, 900, 1600));
                     Assert.That(world.SubmittedInstances, Is.GreaterThan(3)); Save(target, path, camera);
                     File.WriteAllText(path + ".txt", "Actual WorldRenderer; presentation-state fixture, not normal play. Left-to-right house states complete/damaged/ruin; vassal idle. Canonical profile=" + CanonicalContent.ProfileName);
                 }
