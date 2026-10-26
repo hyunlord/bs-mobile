@@ -14,12 +14,30 @@ namespace Tests.EditMode
         double now;
         EstateMapScreen Screen(MetaState account = null)
         {
-            var config = CanonicalContent.CreateAccountEstateConfig(); var catalog = CanonicalContent.CreateMetaCatalog();
+            var config = CanonicalContent.CreateAccountEstateConfig(account?.Estate?.ConfigVersion); var catalog = CanonicalContent.CreateMetaCatalog();
             now = 0;
             return new EstateMapScreen(catalog, config, account ?? MetaEngine.NewGame(catalog), realtime: () => now);
         }
         static int Id(EstateMapScreen screen, string kind) => screen.State.Estate.Buildings.Single(b => b.Kind == kind).Id;
         static int Wallet(EstateMapScreen screen, string material) => screen.State.Wallet.TryGetValue(material, out var value) ? value : 0;
+
+        [Test] public void HistoricalR5EstateOpensWithItsOwnConfigWithoutRewritingAccountBytes()
+        {
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var historical = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r5");
+            var account = AccountEstate.NewPrototype(catalog, historical, 0, 0);
+            var before = MetaSaveCodec.Encode(account);
+            var screen = Screen(account);
+            Assert.That(screen.FromSave, Is.True);
+            Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r5"));
+            Assert.That(screen.Config.Zones.Single(z => z.OpenAtStart).Width, Is.EqualTo(14));
+            screen.Select(Id(screen, "meta:granary"));
+            Assert.That(screen.StartWork(Id(screen, "meta:granary")), Is.True);
+            now = 61; Assert.That(screen.Advance(), Is.True);
+            Assert.That(screen.Building(Id(screen, "meta:granary")).Level, Is.EqualTo(1));
+            Assert.That(MetaSaveCodec.Encode(account), Is.EqualTo(before), "Commands affect only the prototype copy, not the historical account.");
+            Assert.That(CanonicalContent.CreateAccountEstateConfig("unknown-version"), Is.Null);
+        }
 
         [Test] public void ANewPrototypeEstateStartsWithTheConfigWallet()
         {

@@ -291,7 +291,7 @@ namespace Tests.PlayMode
                             {
                                 Assert.That(frame.Tick,Is.EqualTo(start+written),"Missing or repeated output tick.");
                                 var previous=RenderTexture.active;
-                                try{RenderTexture.active=texture;image.ReadPixels(new Rect(0,0,720,1560),0,0);image.Apply();}
+                                try{RenderTexture.active=texture;PlayModeCaptureGuard.ReadPixels(image, new Rect(0,0,720,1560),0,0, "WaveWorldTests:readback1");image.Apply();}
                                 finally{RenderTexture.active=previous;}
                                 File.WriteAllBytes(Path.Combine(output,$"frame-{written:D6}.png"),image.EncodeToPNG());
                                 ledger.WriteLine($"{written}\t{frame.Tick}\t{session.NextSequence}\t{session.ComputeStateHash()}");written++;
@@ -381,7 +381,7 @@ namespace Tests.PlayMode
                 for(var i=0;i<3;i++){world.Present(current,current,envelope,1,1f/30,new Rect(0,0,720,1280));yield return null;}
                 Assert.That(world.UnsupportedShapeCount,Is.Zero);Assert.That(world.DrawCalls,Is.GreaterThan(0));
                 var previous=RenderTexture.active;
-                try{RenderTexture.active=texture;image=new Texture2D(720,1280,TextureFormat.RGB24,false);image.ReadPixels(new Rect(0,0,720,1280),0,0);image.Apply();}
+                try{RenderTexture.active=texture;image=new Texture2D(720,1280,TextureFormat.RGB24,false);PlayModeCaptureGuard.ReadPixels(image, new Rect(0,0,720,1280),0,0, "WaveWorldTests:readback2");image.Apply();}
                 finally{RenderTexture.active=previous;}
                 Assert.That(image.GetPixels32().Select(p=>(p.r>>4)*256+(p.g>>4)*16+(p.b>>4)).Distinct().Count(),Is.GreaterThan(20));
                 var output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../artifacts/wave1a/editor"));Directory.CreateDirectory(output);

@@ -16,7 +16,7 @@ namespace Game.App
         public AstraDecorRules astra = new AstraDecorRules();
         public KindArt[] kindArt = Array.Empty<KindArt>();
         public Tint[] tints = Array.Empty<Tint>();
-        public string ruinState = "fallow";
+        public float buildingScale = 1;
         public float constructionSaturation = .55f, constructionAlpha = .85f;
         public YardGround yardGround = new YardGround();
         public Restoration restoration = new Restoration();
@@ -58,7 +58,8 @@ namespace Game.App
             public int[] colour = { 54, 61, 73 }, ground = { 78, 82, 86 }, lampColour = { 229, 201, 127 };
             public float edgeAlpha = .5f, fullAlpha = .75f, fullCells = 2.5f, insideCells = .5f, areaFadeCells = 3;
             public int texelsPerCell = 4, margin = 10, nightOverhang = 6;
-            public float openingMargin = 2.5f, lampAlpha = .24f, homeLampCells = 3.2f, lampCells = 2.2f;
+            public float openingMargin = .75f, lampAlpha = .24f, homeLampCells = 3.2f, lampCells = 2.2f;
+            public float landmarkBrightness = .4f;
             public Color Colour => new Color32((byte)colour[0], (byte)colour[1], (byte)colour[2], 255);
             public Color Ground => new Color32((byte)ground[0], (byte)ground[1], (byte)ground[2], 255);
             public Color Lamp => new Color32((byte)lampColour[0], (byte)lampColour[1], (byte)lampColour[2], (byte)Mathf.RoundToInt(lampAlpha * 255));
@@ -106,7 +107,7 @@ namespace Game.App
     }
 
     // Veiled: standing art on closed land, drawn in foot order before the closed-land veil covers it.
-    public enum EstateDrawLayer { Terrain, Veiled, Ground, Standing, Foreground }
+    public enum EstateDrawLayer { Terrain, Veiled, Landmark, Ground, Standing, Foreground }
 
     // One sprite on the map: art id (or a building body), its pivot's grid point, width in scale-1 canvas units, colour for the
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
@@ -155,7 +156,11 @@ namespace Game.App
                 for (var u = 0; piece.reserve.Length == 4 && u < piece.reserve[2]; u++) for (var v = 0; v < piece.reserve[3]; v++) reserved.Add(new Vector2Int(piece.reserve[0] + u, piece.reserve[1] + v));
 
             // Roads: L-shaped grid paths from the home door to every other building's door in open land.
-            Vector2Int Door(MetaEstateBuilding b) => new Vector2Int(b.X + kinds[b.Kind].Width - 1, b.Y + kinds[b.Kind].Height);
+            Vector2Int Door(MetaEstateBuilding b)
+            {
+                var outside = new Vector2Int(b.X + kinds[b.Kind].Width - 1, b.Y + kinds[b.Kind].Height);
+                return OpenCell(outside) ? outside : outside + Vector2Int.down;
+            }
             var routes = new List<double[][]>();
             var origin = buildings.FirstOrDefault(b => kinds[b.Kind].StartsComplete);
             if (origin != null)
@@ -210,7 +215,7 @@ namespace Game.App
             {
                 var kind = kinds[b.Kind]; var artKind = rules.ArtOf(b.Kind)?.art; var stage = rules.Stage(b.Kind, b.Level);
                 var anchor = P(new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f));
-                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 : 96;
+                var w = art != null && artKind != null && art.HasBuilding(artKind, stage) ? art.BodyWidth(artKind, stage) * .5 * rules.buildingScale : 96 * rules.buildingScale;
                 if (b.Level > 0 && artKind != null) scene.Buildings.Add(new AstraBuilding($"estate-{b.Id:00}", artKind, stage, anchor.x, anchor.y, w));
                 else scene.Obstacles.Add((anchor.x, anchor.y - w * .25, 1, w * .5));
             }
@@ -257,7 +262,7 @@ namespace Game.App
                 var kind = kinds[b.Kind]; var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
                 // An unbuilt site stands on painted earth; a built one in open land is lit (stakes and rope art: requested from Astra).
                 if (b.Level == 0 && estate.Active?.BuildingId != b.Id)
-                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
+                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "site", Grid = centre + new Vector2(.15f, .15f), Width = rules.buildingScale * sg.siteWidth * (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
                         Aspect = sg.aspect, Colour = new Color(1, 1, 1, sg.siteAlpha), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
                 else if (OpenCell(new Vector2Int(b.X, b.Y)))
                     plan.Lamps.Add((centre, kinds[b.Kind].StartsComplete ? night.homeLampCells : night.lampCells));
@@ -268,9 +273,12 @@ namespace Game.App
                 var building = estate.Active?.BuildingId == b.Id;
                 var level = building ? estate.Active.TargetLevel : b.Level;
                 var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
-                var colour = b.Level == 0 && !building ? rules.Colour(rules.ruinState) : building ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
+                // The authored start stage already depicts damage; colour is not a second ruin state.
+                var fieldWork = building && b.Kind == rules.fieldFenceKind;
+                if (fieldWork) level = 0; // Empty authored furrows, not desaturated finished crops, while building.
+                var colour = building && !fieldWork ? new Color(rules.constructionSaturation, 1, 1, rules.constructionAlpha) : Color.white;
                 plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind, Stage = rules.Stage(b.Kind, level), Grid = centre,
-                    Width = (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
+                    Width = rules.buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = colour, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
             }
 
             // Field fences and work poses (display only; no production meaning).
@@ -327,6 +335,14 @@ namespace Game.App
                     else
                         Add(plan, f.ids[(int)(variant * f.ids.Length)], "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
                 }
+            // Only large silhouettes rise above the night. Small grass, pebbles and armour traces remain veiled.
+            var silhouettes = plan.Items.Where(i => (i.Layer == EstateDrawLayer.Terrain || i.Layer == EstateDrawLayer.Veiled) &&
+                (StateAt(i.Grid) == "closed" || StateAt(i.Grid) == null) &&
+                (i.Source == "placed" || i.Role == "frontier-ruin")).ToArray();
+            foreach (var item in silhouettes)
+                plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
+                    Colour = new Color(0, night.landmarkBrightness, 1, 1),
+                    Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
             return plan;
         }
 

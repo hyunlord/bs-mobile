@@ -44,12 +44,16 @@ namespace Game.App
         {
             try
             {
-                estateConfig ??= CanonicalContent.CreateAccountEstateConfig();
-                if (estateConfig == null) { ShowAccountEstate(); return; }
                 // Without a saved estate the prototype keeps its own new estate for the session (#370). An account that does
                 // carry an estate is copied again whenever it changes; Progression.State is a fresh copy on every read, so it is
                 // compared by its save bytes. Either way the view keeps its zoom and position.
                 var account = Progression.State;
+                // A new preview uses r6; a saved prototype keeps its own historical grid and economics.
+                if (estateConfig == null || (account.Estate != null
+                    ? estateConfig.Version != account.Estate.ConfigVersion
+                    : estateMap?.FromSave == true))
+                    estateConfig = CanonicalContent.CreateAccountEstateConfig(account.Estate?.ConfigVersion);
+                if (estateConfig == null) { ShowAccountEstate(); return; }
                 var bytes = account.Estate != null ? MetaSaveCodec.Encode(account) : null;
                 if (estateMap == null || estateMap.FromSave != (bytes != null) || bytes != null && !bytes.SequenceEqual(estateMapSource))
                 {

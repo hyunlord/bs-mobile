@@ -91,6 +91,9 @@ namespace Game.App
         {
             get
             {
+#if DEVELOPMENT_BUILD && UNITY_STANDALONE_OSX && !UNITY_EDITOR
+                if(EstateEntryProbe.ProfileDirectory != null)return EstateEntryProbe.ProfileDirectory;
+#endif
                 if(WaveBenchmarkAccount.Current != null)return WaveBenchmarkAccount.Current.ProfileDirectory;
                 if(AutoplayCapture.Active!=null)return AutoplayCapture.Active.ProfileDirectory;
                 if(FeelTrialAutomation.Active!=null)return FeelTrialAutomation.Active.ProfileDirectory;

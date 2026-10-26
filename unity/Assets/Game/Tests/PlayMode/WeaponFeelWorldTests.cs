@@ -167,10 +167,11 @@ namespace Tests.PlayMode
                 Assert.That(records.Count, Is.EqualTo(1), "The strike becomes visible after its telegraph: " + string.Join(",", instances));
                 Assert.That(records[0].CorePixels, Is.GreaterThanOrEqualTo(4)); Assert.That(records[0].GlowPixels, Is.GreaterThanOrEqualTo(16));
                 camera.Render();
+                var readbackPrevious = RenderTexture.active;
                 RenderTexture.active = texture;
                 var read = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
-                read.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0); read.Apply();
-                RenderTexture.active = null;
+                try { PlayModeCaptureGuard.ReadPixels(read, new Rect(0, 0, texture.width, texture.height), 0, 0, "WeaponFeelWorldTests:readback1"); read.Apply(); }
+                finally { RenderTexture.active = readbackPrevious; }
                 var at = records[0].FirstSkyTargetScreen;
                 float Luma(Color c) => .2126f * c.r + .7152f * c.g + .0722f * c.b;
                 var brightest = 0f;

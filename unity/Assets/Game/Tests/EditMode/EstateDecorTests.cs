@@ -13,9 +13,9 @@ namespace Tests.EditMode
     // placement invariants on the game grid.
     public sealed class EstateDecorTests
     {
-        static (AccountEstateConfig Config, MetaCatalog Catalog, MetaState State) Estate()
+        static (AccountEstateConfig Config, MetaCatalog Catalog, MetaState State) Estate(string version = null)
         {
-            var catalog = CanonicalContent.CreateMetaCatalog(); var config = CanonicalContent.CreateAccountEstateConfig();
+            var catalog = CanonicalContent.CreateMetaCatalog(); var config = CanonicalContent.CreateAccountEstateConfig(version);
             return (config, catalog, AccountEstate.NewPrototype(catalog, config, 0, 0));
         }
         static HashSet<Vector2Int> Footprints(AccountEstateConfig config, MetaEstateState estate) =>
@@ -55,7 +55,11 @@ namespace Tests.EditMode
             var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
             var item = plan.Items.Single(i => i.BuildingId == granary.Id);
             Assert.That((item.BuildingArt, item.Stage), Is.EqualTo(("granary", 1)));
-            Assert.That(item.Colour, Is.EqualTo(rules.Colour(rules.ruinState)), "A level-0 ruin is drawn in the fallow colour.");
+            Assert.That(item.Colour, Is.EqualTo(Color.white), "The authored level-0 start-stage art keeps its original colours inside the light.");
+            var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
+            var homeArt = plan.Items.Single(i => i.BuildingId == home.Id);
+            Assert.That((homeArt.Stage, homeArt.Colour), Is.EqualTo((2, Color.white)), "The starting home is complete, not the ruined manor stage.");
+            Assert.That(plan.Lamps.Any(l => l.Item1 == new Vector2(home.X + 1, home.Y + 1) && l.Item2 == rules.night.homeLampCells), Is.True);
             var started = AccountEstate.StartConstruction(catalog, config, state, 0, 0, granary.Id).State;
             item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.BuildingId == granary.Id);
             Assert.That(item.Stage, Is.EqualTo(rules.Stage("meta:granary", 1)), "Construction shows the target level's art, faded.");
@@ -81,7 +85,8 @@ namespace Tests.EditMode
             Assert.That(night.Alpha(0), Is.EqualTo(.5f).Within(1e-4f), "Half dark at the lit edge [가설].");
             Assert.That(night.Alpha(night.fullCells), Is.EqualTo(.75f).Within(1e-4f)); Assert.That(night.Alpha(20), Is.EqualTo(.75f).Within(1e-4f), "Far night 0.75 (user decision 2026-10-25).");
             for (var d = -1f; d < 4; d += .25f) Assert.That(night.Alpha(d + .25f), Is.GreaterThanOrEqualTo(night.Alpha(d)), "The night only deepens away from light.");
-            var (config, _, state) = Estate();
+            // Keep the broad r5 land for the sage-distance case; the compact r6 start has less untended space.
+            var (config, _, state) = Estate("m3a-prototype-r5");
             var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             Assert.That(plan.StateOf(new Vector2Int(home.X, home.Y - 1)), Is.EqualTo("restored"), "Next to the built home.");
@@ -103,7 +108,7 @@ namespace Tests.EditMode
             foreach (var item in first.Items.Where(i => i.Source == "yard" || i.Source == "roadside" || i.Source == "empty-land"))
             {
                 var cell = Vector2Int.FloorToInt(item.Grid);
-                Assert.That(cell.x >= 20 && cell.y >= 20 && cell.x < 40 && cell.y < 40, Is.True, "on the open centre: " + item.Key);
+                Assert.That(config.Zones.Any(z => state.Estate.OpenZones.Contains(z.Id) && cell.x >= z.X && cell.y >= z.Y && cell.x < z.X + z.Width && cell.y < z.Y + z.Height), Is.True, "on the open centre: " + item.Key);
                 Assert.That(footprints.Contains(cell) && item.Source != "yard", Is.False, "no roadside or land prop on a footprint: " + item.Key);
             }
             // Land outside the open zones is painted under the night (key art C): terrain, rivers, traces, dead trees and woods.
@@ -134,6 +139,62 @@ namespace Tests.EditMode
             TestContext.WriteLine("plan: " + string.Join(", ", first.Items.GroupBy(i => i.Source).Select(g => g.Key + "=" + g.Count())));
         }
 
+        [Test] public void LargeLandmarksHaveFortyPercentSilhouettesButSmallPropsStayUnderTheNight()
+        {
+            var (config, _, state) = Estate(); var rules = EstateDecorRules.Load();
+            var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
+            var landmarks = plan.In(EstateDrawLayer.Landmark).ToArray();
+            Assert.That(landmarks, Is.Not.Empty);
+            Assert.That(rules.night.landmarkBrightness, Is.EqualTo(.4f).Within(1e-5f));
+            foreach (var item in landmarks)
+            {
+                Assert.That(item.Source, Is.EqualTo("landmark"));
+                Assert.That(item.Colour.g, Is.EqualTo(.4f).Within(1e-5f));
+                Assert.That(item.Colour.b, Is.EqualTo(1), "Brightness is applied once, without the extra closed-land darkness formula.");
+                Assert.That(plan.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed").Or.Null);
+            }
+            foreach (var river in plan.Items.Where(i => i.Source == "placed" && i.Role.StartsWith("river", StringComparison.Ordinal)))
+                Assert.That(landmarks.Any(i => i.Role == river.Role && i.Grid == river.Grid), Is.True, "The closed river stays legible: " + river.Key);
+            Assert.That(landmarks.Any(i => i.Role.StartsWith("bridge", StringComparison.Ordinal)), Is.True);
+            Assert.That(landmarks.Any(i => i.Role == "frontier-ruin"), Is.True);
+            Assert.That(landmarks.Any(i => i.Role == "frontier-dead-tree" || i.Role == "frontier-broken-fence"), Is.False,
+                "Small repeated traces stay beneath the night; only the authored large fence kits rise above it.");
+            foreach (var item in plan.Items.Where(i => i.Role == "frontier-empty-armor" || i.Role == "frontier-stump-tracks"))
+                Assert.That(item.Layer, Is.EqualTo(EstateDrawLayer.Veiled), "Small traces remain under the night.");
+            Assert.That(landmarks.Any(i => i.Source == "roadside" || i.Role == "grass" || i.Role == "rocks"), Is.False);
+        }
+
+        [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")]
+        [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")]
+        public void LandmarkAtlasGroupsKeepRiversBelowBridgesWithinFourRuns(string version)
+        {
+            var (config, _, state) = Estate(version); var art = EstateArt.Load();
+            var plan = EstatePlanner.Plan(EstateDecorRules.Load(), art, config, state.Estate);
+            var ordered = PortraitMetaPanels.OrderedEstateLandmarks(plan, art).ToArray();
+            Assert.That(ordered.Select(i => i.Key), Is.EquivalentTo(plan.In(EstateDrawLayer.Landmark).Select(i => i.Key)), "Grouping retains every landmark exactly once.");
+            Assert.That(ordered, Is.Not.Empty);
+            var standingSeen = false; Texture previousTexture = null; var runs = 0;
+            for (var index = 0; index < ordered.Length; index++)
+            {
+                var item = ordered[index]; var ground = art.Layer(item.Role) == "ground";
+                Assert.That(ground && standingSeen, Is.False, "Water and banks must never paint over bridges or ruins: " + item.Key);
+                standingSeen |= !ground;
+                var texture = art.Get(item.Role).texture;
+                if (texture != previousTexture) runs++;
+                else if (index > 0 && ground == (art.Layer(ordered[index - 1].Role) == "ground"))
+                {
+                    var before = ordered[index - 1];
+                    Assert.That(item.SortY, Is.GreaterThanOrEqualTo(before.SortY), "Each atlas group retains foot order.");
+                    if (item.SortY == before.SortY)
+                        Assert.That(StringComparer.Ordinal.Compare(before.Key, item.Key), Is.LessThanOrEqualTo(0), "Equal feet use the stable key tie-break.");
+                }
+                previousTexture = texture;
+            }
+            Assert.That(runs, Is.LessThanOrEqualTo(4), version + ": landmark overlay atlas runs (the PlayMode gate measures its whole-view increment).");
+        }
+
         // #379: one night by distance from open land — none inside, half at the edge, full a few cells out, and the same on both
         // sides of a boundary between two closed zones (no straight seam).
         [Test] public void TheNightDeepensWithDistanceFromOpenLandAcrossClosedZones()
@@ -144,11 +205,12 @@ namespace Tests.EditMode
             Assert.That(field.width, Is.EqualTo(plan.Area.width * res)); Assert.That(field.height, Is.EqualTo(plan.Area.height * res));
             float At(float u, float v) => field.GetPixel(Mathf.FloorToInt((u - plan.Area.xMin) * res), Mathf.FloorToInt((v - plan.Area.yMin) * res)).a;
             Assert.That(At(30, 30), Is.EqualTo(0).Within(.01f), "The open centre is lit.");
-            Assert.That(At(37.6f, 30), Is.InRange(.5f, .75f), "Just past the lit edge, in the east outskirts: between half and full.");
+            Assert.That(At(34.6f, 30), Is.InRange(.5f, .75f), "Just past the r6 lit edge, in the east outskirts: between half and full.");
             Assert.That(At(55, 50), Is.EqualTo(.75f).Within(.01f), "Deep in the land to come, full night.");
-            // The north outskirts (v < 23) and the west outskirts (v ≥ 23) meet at v = 23, 1.5 cells from the lit start: no seam.
-            Assert.That(At(21.5f, 22.6f), Is.EqualTo(At(21.5f, 23.4f)).Within(.02f), "No seam between closed zones.");
-            Assert.That(At(21.5f, 23.4f), Is.InRange(.6f, .74f), "1.5 cells from light: still rising toward full night.");
+            // Equal radial distance receives equal light, irrespective of rectangular zone boundaries.
+            Assert.That(At(24.5f, 30), Is.EqualTo(At(30, 24.5f)).Within(.02f), "No directional seam between closed zones.");
+            Assert.That(At(24.5f, 30), Is.InRange(.6f, .74f), "1.5 cells from light: still rising toward full night.");
+            Assert.That(EstateNight.LightDistance(new Vector2(26, 26), open), Is.GreaterThan(1.5f), "The old diamond corner is outside the round light.");
             var c = field.GetPixel(0, 0); Assert.That(new Color(c.r, c.g, c.b), Is.EqualTo((Color)rules.night.Colour).Using(ColorComparer));
             Assert.That(c.a, Is.EqualTo(1).Within(.01f), "The painted area's edge closes to opaque night, matching the page behind it.");
         }
@@ -164,12 +226,12 @@ namespace Tests.EditMode
             var (config, catalog, state) = Estate(); var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             var before = EstatePlanner.Plan(rules, art, config, state.Estate);
-            var moved = AccountEstate.Move(catalog, config, state, 0, 0, home.Id, 24, 24);
+            var moved = AccountEstate.Move(catalog, config, state, 0, 0, home.Id, 30, 30);
             Assert.That(moved.Done, Is.True, moved.Reason);
             var after = EstatePlanner.Plan(rules, art, config, moved.State.Estate);
             var key = $"estate-{home.Id:00}";
             var a = before.Astra.Where(o => o.Owner == key).ToArray(); var b = after.Astra.Where(o => o.Owner == key).ToArray();
-            var shift = EstateMapModel.Project(new Vector2(24 - home.X, 24 - home.Y));
+            var shift = EstateMapModel.Project(new Vector2(30 - home.X, 30 - home.Y));
             foreach (var o in b.Where(o => a.Any(p => p.Key == o.Key)))
             {
                 var p = a.Single(q => q.Key == o.Key);

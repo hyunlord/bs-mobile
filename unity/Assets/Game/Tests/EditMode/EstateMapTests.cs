@@ -1,6 +1,7 @@
 using System.Linq;
 using Game.App;
 using Game.App.Generated;
+using Game.View;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
@@ -18,6 +19,38 @@ namespace Tests.EditMode
         static EstateMapModel Model()
         {
             var model = new EstateMapModel(16, 8); model.SetFrame(new Vector2(390, 844), Top, Bottom); return model;
+        }
+
+        [TestCase(.5f, 1f)]
+        [TestCase(.8f, 2f)]
+        public void StretchedGroundCoordinatesFollowTheRenderedRectangle(float aspect, float zoom)
+        {
+            var owner = new GameObject("Ground coordinate regression", typeof(RectTransform), typeof(Canvas));
+            var texture = new Texture2D(32, 32);
+            var pivot = new Vector2(.25f, .75f);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 32, 32), pivot);
+            try
+            {
+                var canvas = owner.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+                var rect = UiShell.Rect("Stretched ground", owner.transform);
+                rect.pivot = new Vector2(0, 1); rect.sizeDelta = new Vector2(128 * zoom, 128 * aspect * zoom);
+                var image = rect.gameObject.AddComponent<EstateTerrainImage>();
+                image.sprite = sprite; image.Grid = new Vector2(10, 20); image.PaintedWidth = 128;
+                Canvas.ForceUpdateCanvases();
+                var mesh = image.canvasRenderer.GetMesh();
+                Assert.That(mesh.vertexCount, Is.EqualTo(4));
+                var coordinates = new System.Collections.Generic.List<Vector4>(); mesh.GetUVs(1, coordinates);
+                var anchor = rect.rect.min + Vector2.Scale(rect.rect.size, pivot);
+                for (var i = 0; i < mesh.vertexCount; i++)
+                {
+                    var offset = ((Vector2)mesh.vertices[i] - anchor) / zoom;
+                    var expected = image.Grid + EstateMapModel.Unproject(new Vector2(offset.x, -offset.y));
+                    Assert.That(Vector2.Distance(new Vector2(coordinates[i].x, coordinates[i].y), expected), Is.LessThan(.0001f),
+                        "Ground restoration and the displayed patch must describe the same map point (#386).");
+                }
+            }
+            finally { Object.DestroyImmediate(owner); Object.DestroyImmediate(sprite); Object.DestroyImmediate(texture); }
         }
 
         [Test] public void CellsAreSixtyFourByThirtyTwoDiamonds()
@@ -90,6 +123,22 @@ namespace Tests.EditMode
             Assert.That(model.StepZoom(-1, focus), Is.True);
             // The neighbourhood diamond is shorter than the visible band, so it re-centres vertically; across, the point stays put.
             Assert.That(model.GridToViewport(grid).x, Is.EqualTo(focus.x).Within(1e-2f));
+        }
+
+        [TestCase(390, 844)]
+        [TestCase(390, 932)]
+        public void FirstLoginRoundedLightCoversSixtyPercentOfTheViewportWidth(int width, int height)
+        {
+            var screen = Screen(out _); var model = screen.Map; var rules = EstateDecorRules.Load();
+            var start = screen.Config.Zones.Single(z => z.OpenAtStart);
+            Assert.That((start.Width, start.Height), Is.EqualTo((8, 8)));
+            model.SetFrame(new Vector2(width, height), Top, Bottom);
+            model.SetFocus(screen.OpenAreas(rules.night.openingMargin));
+            model.Restore(model.Opening, model.FocusCentre);
+            var diameter = Mathf.Max(start.Width, start.Height) * Mathf.Sqrt(2) * EstateMapModel.HalfWidth * model.Scale;
+            Assert.That(diameter / width, Is.EqualTo(.6f).Within(.02f));
+            Assert.That(model.ScaleAt(model.Opening), Is.GreaterThan(model.ScaleAt(model.WholeMap)));
+            Assert.That(model.ScaleAt(model.Opening), Is.LessThan(model.ScaleAt(EstateMapModel.Neighbourhood)));
         }
 
         [Test] public void PanStopsAtTheDiamondCornersAndKeepsTheMapBetweenTheBars()

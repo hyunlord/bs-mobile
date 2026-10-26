@@ -19,17 +19,21 @@ using Object = UnityEngine.Object;
 namespace Tests.PlayMode
 {
     // M3a-2 estate map prototype (#366) behind its development option, on the real portrait app.
-    public sealed class EstateMapFlowTests
+    public sealed partial class EstateMapFlowTests
     {
         const string Toggle = "Settings.영지 지도 시제품 (개발)";
         string directory, prefix, priorDirectory, priorPrefix;
         int priorWidth, priorHeight;
         RunCoordinator app;
+        bool? priorAsyncCompilation;
+        static string ShaderProbeMode => Environment.GetEnvironmentVariable("M3A7_SHADER_PROBE") ?? "baseline";
 
         [UnitySetUp] public IEnumerator Setup()
         {
             if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty);
+            priorAsyncCompilation = EditorSettings.asyncShaderCompilation;
+            if (ShaderProbeMode == "off") EditorSettings.asyncShaderCompilation = false;
             priorDirectory = RunCoordinator.MetaDirectoryOverride; priorPrefix = RunCoordinator.PreferencePrefixOverride;
             priorWidth = Screen.width; priorHeight = Screen.height;
             var id = Guid.NewGuid().ToString("N");
@@ -44,6 +48,7 @@ namespace Tests.PlayMode
 
         [UnityTearDown] public IEnumerator Cleanup()
         {
+            if (priorAsyncCompilation.HasValue) { EditorSettings.asyncShaderCompilation = priorAsyncCompilation.Value; priorAsyncCompilation = null; }
             foreach (var boot in Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None)) Object.Destroy(boot.gameObject);
             yield return null;
             if (directory != null)
@@ -82,6 +87,8 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.False);
             var lit = screen.Config.Zones.Single(z => z.OpenAtStart);
             Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThan(10), "Night shows beside the lit land.");
+            var lightDiameter = Mathf.Max(lit.Width, lit.Height) * Mathf.Sqrt(2) * EstateMapModel.HalfWidth;
+            Assert.That(lightDiameter * map.Scale / map.Viewport.x, Is.EqualTo(.6f).Within(.02f), "The rounded first light occupies about sixty percent of the portrait width (#386).");
             yield return Capture("estate-map-first");
             yield return NightComparison("estate-map-first");
             Assert.That(PlayerPrefs.GetString(prefix + "estateMapView", ""), Is.Empty, "Nothing is remembered until the player moves the map.");
@@ -127,7 +134,9 @@ namespace Tests.PlayMode
             var forge = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:forge");
             Focus(screen.Centre(forge.Id)); Tap(new Vector2Int(forge.X + 1, forge.Y + 1)); yield return null;
             Assert.That(screen.Selected, Is.EqualTo(forge.Id), "A tap on any cell of the footprint selects the building.");
-            Assert.That(Rects("EstateMap.NameTag").Length, Is.EqualTo(1), "Only the selected building shows its name.");
+            Assert.That(Rects("EstateMap.NameTag"), Is.Empty, "Names stay in the sheet instead of hiding building art.");
+            Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(forge.Id)), screen.Map.VisibleCentre), Is.LessThan(1), "Selection centres its foundation above the sheet.");
+            Assert.That(Buttons("EstateMap.Zoom"), Is.Empty); Assert.That(Buttons("EstateMap.Decor"), Is.Empty);
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.True, "The selected building stays between the bars and the panel.");
             Assert.That(screen.Map.MapSize.y, Is.GreaterThan(screen.Map.Viewport.y - screen.Map.TopInset - screen.Map.BottomInset), "The wide map can be dragged to every row behind the panel.");
@@ -135,12 +144,12 @@ namespace Tests.PlayMode
             Click("EstateMap.Move"); yield return null; Assert.That(screen.Moving, Is.True);
             // At building zoom the original footprint leaves the screen once the player pans to the destination; the redraw
             // after the tap must keep the destination preview in view (review on #369).
-            Click("EstateMap.ZoomIn"); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
+            View().Step(1); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
             Focus(C(4, 4) + new Vector2(.5f, .5f)); Tap(C(4, 4)); yield return null;
             Assert.That(screen.Preview, Is.EqualTo(C(4, 4))); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
             Assert.That(screen.Map.InView(C(5, 5)), Is.True, "The destination preview stays on screen after the tap redraws the page.");
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.False, "The camera did not jump back to the original footprint.");
-            Click("EstateMap.ZoomOut"); yield return null;
+            View().Step(-1); yield return null;
             yield return Capture("estate-map-move-valid");
             Click("EstateMap.Confirm"); yield return null;
             Assert.That(screen.Moving, Is.False);
@@ -161,8 +170,8 @@ namespace Tests.PlayMode
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
-            Assert.That(measuredBreaks.On, Is.EqualTo(PinnedBreaksOn), "Material/texture switches with decoration.");
-            Assert.That(measuredBreaks.Off, Is.EqualTo(PinnedBreaksOff), "Material/texture switches without decoration.");
+            Assert.That(measuredBreaks.On, Is.LessThanOrEqualTo(17 + 4), "Base on17 plus at most four landmark batches.");
+            Assert.That(measuredBreaks.Off, Is.LessThanOrEqualTo(9 + 4), "Base off9 plus at most four landmark batches.");
         }
 
         [UnityTest, Timeout(180000)]
@@ -188,6 +197,11 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.Build").GetComponentInChildren<Text>().text, Is.EqualTo("짓기"));
             Click("EstateMap.Build"); yield return null;
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id)); Assert.That(screen.Notice, Is.EqualTo("경작지 공사 시작"));
+            Assert.That(Rects("EstateMap.ConstructionSign").Length, Is.EqualTo(1));
+            var fieldArt = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
+            Assert.That(fieldArt.sprite, Is.SameAs(EstateArt.Load().Body("field", 1)), "Construction uses empty start-stage furrows.");
+            Assert.That(fieldArt.color, Is.EqualTo(Color.white));
+            Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(field.Id)), screen.Map.VisibleCentre), Is.LessThan(1));
             yield return Capture("estate-flow-build");
             Click("EstateMap.Skip60"); yield return null;
             Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
@@ -230,6 +244,76 @@ namespace Tests.PlayMode
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype never writes the saved estate.");
         }
 
+        [UnityTest, Timeout(180000)]
+        public IEnumerator HistoricalR3SaveKeepsItsBytesAndGridThroughTheRealEstateEntry() => HistoricalSave("m3a-prototype-r3", 20);
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator HistoricalR4SaveKeepsItsBytesAndGridThroughTheRealEstateEntry() => HistoricalSave("m3a-prototype-r4", 20);
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator HistoricalR5SaveKeepsItsGridThroughTheRealEstateEntry() => HistoricalSave("m3a-prototype-r5", 14);
+
+        IEnumerator HistoricalSave(string version, int openedWidth)
+        {
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var config = CanonicalContent.CreateAccountEstateConfig(version);
+            var fixture = AccountEstate.Migrate(catalog, config, MetaEngine.NewGame(catalog), 0, 0);
+            // #386: migration initializes Estate's clock, not the account idle clock. First boot intentionally writes
+            // the latter. Prove exact bytes at equal clock input before separating boot from the read-only View gate.
+            var initialized = fixture with { LastMonotonicSeconds = 0, LastWallSeconds = 0 };
+            SaveFixture(catalog, initialized);
+            var fixedDisk = File.ReadAllBytes(Path.Combine(directory, "progress.bin"));
+            var fixedHost = new MetaProgression(catalog, CanonicalContent.CreateCatalog(), CanonicalContent.DataHash,
+                directory, () => 0, () => 0, MetaProjectionPolicy.AccountOnlyWave, MetaRewardDelivery.PendingClaims);
+            Assert.That(MetaSaveCodec.Encode(fixedHost.State), Is.EqualTo(MetaSaveCodec.Encode(initialized)), version + ": equal-clock resume changes no state byte.");
+            Assert.That(File.ReadAllBytes(Path.Combine(directory, "progress.bin")), Is.EqualTo(fixedDisk), version + ": equal-clock resume changes no disk byte.");
+
+            SaveFixture(catalog, fixture);
+            var bytes = MetaSaveCodec.Encode(fixture);
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot();
+            var bootState = app.Progression.State;
+            Assert.That(fixture.LastMonotonicSeconds, Is.EqualTo(-1));
+            Assert.That(fixture.LastWallSeconds, Is.EqualTo(-1));
+            Assert.That(bootState.LastMonotonicSeconds, Is.GreaterThanOrEqualTo(0));
+            Assert.That(bootState.LastWallSeconds, Is.GreaterThanOrEqualTo(0));
+            // Restore only the two observed clock fields in a diagnostic copy. Any other account or Estate change fails.
+            var withoutClockInitialization = bootState with
+            {
+                LastMonotonicSeconds = fixture.LastMonotonicSeconds,
+                LastWallSeconds = fixture.LastWallSeconds
+            };
+            Assert.That(MetaSaveCodec.Encode(withoutClockInitialization), Is.EqualTo(bytes), version + ": boot must differ only in the two top-level clock fields.");
+            var account = MetaSaveCodec.Encode(bootState);
+            Assert.That(account.Length, Is.EqualTo(bytes.Length), version + ": boot must not change save layout or length.");
+            var changedByteOffsets = Enumerable.Range(0, bytes.Length).Where(i => bytes[i] != account[i])
+                .Select(i => $"{i}:{bytes[i]:X2}->{account[i]:X2}");
+            var disk = File.ReadAllBytes(Path.Combine(directory, "progress.bin"));
+            Debug.Log($"Historical estate save {version}: equal-clock state/disk bytes identical; boot LastMonotonicSeconds={fixture.LastMonotonicSeconds}->{bootState.LastMonotonicSeconds}, LastWallSeconds={fixture.LastWallSeconds}->{bootState.LastWallSeconds}; all other serialized fields identical.");
+            Debug.Log($"Historical estate save {version}: actual boot codec byte diff (offset:before->after)=[{string.Join(",", changedByteOffsets)}]; final 32 bytes are the SHA256 envelope checksum; only the two top-level clocks were normalized for the preceding diagnostic equality check.");
+
+            Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            Assert.That(app.EstateMap.Config.Version, Is.EqualTo(config.Version));
+            Assert.That(app.EstateMap.Config.Zones.Single(z => z.OpenAtStart).Width, Is.EqualTo(openedWidth));
+            CheckBatchBudget(version, "on");
+            Click("EstateMap.Decor"); yield return null;
+            CheckBatchBudget(version, "off");
+            Click("EstateMap.Decor"); yield return null;
+            AssertHistoricalBytes("first map entry");
+            Click("Tab.Vassals"); yield return ScreenIs("Vassals");
+            AssertHistoricalBytes("map closed");
+            Click("Tab.Estate"); yield return ScreenIs("EstateMap");
+            Assert.That(app.EstateMap.Config.Version, Is.EqualTo(version));
+            AssertHistoricalBytes("map reopened");
+            Debug.Log($"Historical estate save {version}: first entry, close and reopen preserve all {account.Length} account bytes and {disk.Length} disk bytes.");
+
+            void AssertHistoricalBytes(string stage)
+            {
+                Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), version + ": " + stage + " changed account bytes.");
+                Assert.That(File.ReadAllBytes(Path.Combine(directory, "progress.bin")), Is.EqualTo(disk), version + ": " + stage + " changed disk bytes.");
+            }
+        }
+
         void SaveFixture(MetaCatalog catalog, MetaState state)
         {
             Assert.That(MetaValidation.ValidateState(catalog, state), Is.Empty);
@@ -251,12 +335,19 @@ namespace Tests.PlayMode
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");
             Assert.That(Rects("EstateMap.Veiled:").Length, Is.EqualTo(screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).In(EstateDrawLayer.Veiled).Count()), "The land to come is painted under the night.");
             var night = Rects("EstateMap.Night").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "The night covers the land to come.");
+            Assert.That(Rects("EstateMap.Landmark:").Length, Is.GreaterThan(0));
+            Assert.That(Rects("EstateMap.Landmark:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Large silhouettes remain readable above the night.");
+            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(7), "All seven river patches remain readable.");
+            Assert.That(Rects("EstateMap.Lamps").Single().GetSiblingIndex(), Is.LessThan(night.GetSiblingIndex()), "Warm lamps cannot paint brown clouds above the night.");
+            Assert.That(Rects("EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
+            CheckBatchBudget("m3a-prototype-r6", "on");
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
             Assert.That(Rects("EstateMap.Decor:"), Is.Empty);
             var off = new int[3]; yield return Batches(off); var breaksOff = EstateMapView.MaterialBreaks(View().transform);
+            CheckBatchBudget("m3a-prototype-r6", "off");
             yield return Capture("estate-decor-off");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.True);
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
@@ -274,6 +365,32 @@ namespace Tests.PlayMode
 
         (int On, int Off) measuredBreaks;
 
+        void CheckBatchBudget(string version, string state)
+        {
+            var graphics = View().GetComponentsInChildren<Graphic>().Where(g => g.isActiveAndEnabled).ToArray();
+            int WithoutLandmarks()
+            {
+                Material prior = null; Texture texture = null; var count = 0;
+                foreach (var graphic in graphics)
+                {
+                    if (graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)) continue;
+                    var material = graphic.materialForRendering;
+                    if (count == 0 || material != prior || texture != graphic.mainTexture)
+                    { count++; prior = material; texture = graphic.mainTexture; }
+                }
+                return count;
+            }
+            var actual = EstateMapView.MaterialBreaks(View().transform); var baseline = WithoutLandmarks();
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
+            Directory.CreateDirectory(output);
+            File.WriteAllText(Path.Combine(output, $"batch-{version}-{state}.csv"),
+                $"version,decoration,base,landmarks,total\n{version},{state},{baseline},{actual - baseline},{actual}\n");
+            Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
+            Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
+            if (version == "m3a-prototype-r6")
+                Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");
+        }
+
         // Overlay canvases are not counted by the render counters, so the measurement renders the same canvas through a
         // temporary camera (Screen Space - Camera) for its frames and restores the overlay afterwards.
         IEnumerator Batches(int[] into)
@@ -286,8 +403,6 @@ namespace Tests.PlayMode
             finally { canvas.renderMode = mode; canvas.worldCamera = null; Object.Destroy(host); }
             yield return null; Canvas.ForceUpdateCanvases();
         }
-
-        const int PinnedBreaksOn = 22, PinnedBreaksOff = 12;
 
         static IEnumerator Count(int[] into)
         {
@@ -368,10 +483,29 @@ namespace Tests.PlayMode
             yield return null; Canvas.ForceUpdateCanvases();
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
             var path = Path.Combine(output, name + "-" + Screen.width + "x" + Screen.height + ".png");
-            if (File.Exists(path)) File.Delete(path); ScreenCapture.CaptureScreenshot(path); var deadline = Time.realtimeSinceStartup + 10;
-            while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
-            Assert.That(File.Exists(path), Is.True, path);
-            File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; screen={app.CurrentScreenName}; option=estatePrototype(development); zoom={app.EstateMap.Map.Zoom}; commit={BuildIdentity.Commit}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; projection=isometric 64x32; art=temporary manor sprites and solid colour blocks\n");
+            // Copy pixels synchronously before the next UI action can redraw/destroy this page. File existence from
+            // CaptureScreenshot is not a frame-completion fence and cannot bind the old PNG to current screen metadata.
+            var waitStarted = Time.realtimeSinceStartup;
+            var compilingAtWait = ShaderUtil.anythingCompiling;
+            var compilingBefore = ShaderUtil.anythingCompiling;
+            Debug.Log($"M3A7_CAPTURE before name={name} mode={ShaderProbeMode} anythingCompiling={compilingBefore} async={EditorSettings.asyncShaderCompilation} frame={Time.frameCount}");
+            yield return PlayModeCaptureGuard.WaitForShaders(name); var captureProbe = PlayModeCaptureGuard.Begin(name);
+            var image = ScreenCapture.CaptureScreenshotAsTexture();
+            var compilingAfter = ShaderUtil.anythingCompiling;
+            try
+            {
+                File.WriteAllBytes(path, image.EncodeToPNG());
+                var cyan = image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
+                var probe = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/m3a7-shader-" + ShaderProbeMode)); Directory.CreateDirectory(probe);
+                var csv = Path.Combine(probe, "captures.csv");
+                if (!File.Exists(csv)) File.WriteAllText(csv, "name,frame,screen,async,compilingAtWait,compilingBefore,compilingAfter,elapsedThroughCaptureSeconds,cyanPixels\n");
+                File.AppendAllText(csv, $"{name},{Time.frameCount},{app.CurrentScreenName},{EditorSettings.asyncShaderCompilation},{compilingAtWait},{compilingBefore},{compilingAfter},{(Time.realtimeSinceStartup-waitStarted).ToString(System.Globalization.CultureInfo.InvariantCulture)},{cyan}\n");
+                File.WriteAllBytes(Path.Combine(probe, name + ".png"), image.EncodeToPNG());
+                PlayModeCaptureGuard.Check(image, captureProbe, path, compilingAfter);
+                Assert.That(cyan, Is.Zero, "Cyan capture regression: " + name);
+            }
+            finally { Object.Destroy(image); }
+            File.WriteAllText(path + ".txt", $"surface=actual Unity Editor PlayMode UI; mobileAspectSimulation=true; physicalDevice=false; userAcceptance=false; automatedPointerActions=true; screen={app.CurrentScreenName}; option=estatePrototype(development); zoom={app.EstateMap.Map.Zoom}; commit={BuildIdentity.Commit}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}; projection=isometric 64x32; art=Astra estate terrain, building and decor atlases\n");
         }
 
         IEnumerator Boot()

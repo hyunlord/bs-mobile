@@ -11,8 +11,10 @@ public static class AccountEstateConfigLoader
     public const string WideMapVersion = "m3a-prototype-r3";
     // The r3 centre with its zones laid along the portrait screen's vertical (#375), kept for its tests.
     public const string VerticalMapVersion = "m3a-prototype-r4";
-    // The estate screen prototype's map (#379): r4 with a 14x14 lit start inside four outskirts zones.
-    public const string MapPrototypeVersion = "m3a-prototype-r5";
+    // The first night map (#379), retained for historical estate saves.
+    public const string NightMapVersion = "m3a-prototype-r5";
+    // The first-login map (#385): an 8x8 lit start with unchanged buildings and economy.
+    public const string MapPrototypeVersion = "m3a-prototype-r6";
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

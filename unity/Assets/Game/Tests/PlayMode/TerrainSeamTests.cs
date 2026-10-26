@@ -47,7 +47,7 @@ namespace Tests.PlayMode
                     try
                     {
                         RenderTexture.active = target;
-                        capture.ReadPixels(new Rect(0, 0, pixels, pixels), 0, 0); capture.Apply();
+                        PlayModeCaptureGuard.ReadPixels(capture, new Rect(0, 0, pixels, pixels), 0, 0, "TerrainSeamTests:readback1"); capture.Apply();
                     }
                     finally { RenderTexture.active = before; }
                     for (var i = 0; i < pixels; i++)
