@@ -5,6 +5,7 @@ using Game.App.Generated;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Tests.EditMode
 {
@@ -69,6 +70,44 @@ namespace Tests.EditMode
                 new[] { new Vector2Int(2, 1), new Vector2Int(10, 7) }, area);
             Assert.That(routes[3], Is.EqualTo(new[] { new Vector2Int(2, 4), new Vector2Int(2, 3), new Vector2Int(2, 2), new Vector2Int(2, 1) }));
             Assert.That(routes[4], Is.EqualTo(new[] { new Vector2Int(10, 4), new Vector2Int(10, 5), new Vector2Int(10, 6), new Vector2Int(10, 7) }));
+        }
+
+        [Test]
+        public void RibbonMeshUsesItsRectCentreAndOnlyTheAuthoredDirtBand()
+        {
+            var canvas = new GameObject("Road mesh test", typeof(Canvas));
+            var owner = new GameObject("Ribbon", typeof(RectTransform), typeof(CanvasRenderer), typeof(EstateTerrainImage));
+            var texture = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 512, 512), new Vector2(.5f, .5f));
+            try
+            {
+                owner.transform.SetParent(canvas.transform, false);
+                var graphic = owner.GetComponent<EstateTerrainImage>();
+                graphic.rectTransform.pivot = new Vector2(0, 1);
+                graphic.rectTransform.sizeDelta = new Vector2(128, 64);
+                graphic.sprite = sprite; graphic.Grid = Vector2.zero;
+                graphic.PaintedWidth = 128; graphic.RoadWidth = 18;
+                graphic.RoadPoints = new[] { new Vector2(-1, 0), new Vector2(1, 0) };
+                graphic.canvasRenderer.cull = false;
+                graphic.Rebuild(CanvasUpdate.PreRender);
+                var mesh = graphic.canvasRenderer.GetMesh();
+                Assert.That(mesh.vertexCount, Is.GreaterThan(0));
+                var firstCentre = mesh.vertices[4];
+                Assert.That(firstCentre.x, Is.EqualTo(32).Within(.001f));
+                Assert.That(firstCentre.y, Is.EqualTo(-16).Within(.001f), "Top-left RectTransform pivot cannot shift the road off its grid path.");
+                Assert.That(mesh.uv.Min(uv => uv.y), Is.EqualTo(.455f).Within(.001f));
+                Assert.That(mesh.uv.Max(uv => uv.y), Is.EqualTo(.545f).Within(.001f));
+                Assert.That(Vector3.Distance(mesh.vertices[0], mesh.vertices[8]), Is.EqualTo(18).Within(.001f), "Changing the sampled dirt band must not enlarge the footprint boundary.");
+                Assert.That(Vector3.Distance(mesh.vertices[0], mesh.vertices[1]), Is.EqualTo(18 * .04f).Within(.001f));
+                Assert.That(Vector3.Distance(mesh.vertices[7], mesh.vertices[8]), Is.EqualTo(18 * .04f).Within(.001f));
+                Assert.That(mesh.colors32[0].a, Is.Zero);
+                Assert.That(mesh.colors32[1].a, Is.EqualTo(255), "Only the outer lane fades; broad grass shoulders no longer consume the road width.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner); Object.DestroyImmediate(canvas);
+                Object.DestroyImmediate(sprite); Object.DestroyImmediate(texture);
+            }
         }
 
         [Test]

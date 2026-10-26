@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Game.App;
 using Game.App.Generated;
+using Game.View;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
@@ -10,6 +11,37 @@ namespace Tests.EditMode
 {
     public sealed class EstateR4GroundTests
     {
+        [TestCase(512f)]
+        [TestCase(256f)]
+        public void GroundMeshMatchesTopLeftPivotRectAndRestorationCoordinates(float width)
+        {
+            var owner = new GameObject("Ground pivot regression", typeof(RectTransform), typeof(Canvas));
+            try
+            {
+                var canvas = owner.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
+                var rect = PortraitWidgets.Place("Ground", owner.transform, 0, 0, width, width * .5f);
+                var image = rect.gameObject.AddComponent<EstateTerrainImage>();
+                image.sprite = EstateArt.Load().Get("ground-grass-r4");
+                image.IsometricGround = true; image.Grid = new Vector2(28, 28); image.PaintedWidth = 512;
+                Canvas.ForceUpdateCanvases();
+                var mesh = image.canvasRenderer.GetMesh();
+                Assert.That(mesh.vertexCount, Is.EqualTo(4));
+                Assert.That(mesh.bounds.center.x, Is.EqualTo(rect.rect.center.x).Within(.001f));
+                Assert.That(mesh.bounds.center.y, Is.EqualTo(rect.rect.center.y).Within(.001f));
+                Assert.That(mesh.bounds.size.x, Is.EqualTo(rect.rect.width).Within(.001f));
+                Assert.That(mesh.bounds.size.y, Is.EqualTo(rect.rect.height).Within(.001f));
+                var vertices = mesh.vertices; var grids = mesh.uv2;
+                for (var i = 0; i < vertices.Length; i++)
+                {
+                    var delta = grids[i] - image.Grid; var scale = width / image.PaintedWidth;
+                    Assert.That(vertices[i].x, Is.EqualTo(rect.rect.center.x + (delta.x - delta.y) * EstateMapModel.HalfWidth * scale).Within(.001f));
+                    Assert.That(vertices[i].y, Is.EqualTo(rect.rect.center.y - (delta.x + delta.y) * EstateMapModel.HalfHeight * scale).Within(.001f));
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(owner); }
+        }
+
         [Test]
         public void R7UsesOneContinuousUnmodifiedGrassTileInsteadOfPerCellRestorationPatches()
         {

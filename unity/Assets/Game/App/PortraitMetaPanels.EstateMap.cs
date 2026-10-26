@@ -566,7 +566,7 @@ namespace Game.App
             var uv = UnityEngine.Sprites.DataUtility.GetOuterUV(sprite);
             var scale = rectTransform.rect.width / PaintedWidth;
             var origin = EstateMapModel.Project(Grid);
-            // Atlas dirt is centred in v=.5. Its grassy shoulders are sampled by the outer lanes and fade to zero.
+            // The approved patch has a narrow dirt band; exclude its broad grass shoulders from the road ribbon.
             const int lanes = 8;
             var distance = 0f;
             for (var i = 0; i < curve.Count; i++)
@@ -579,18 +579,18 @@ namespace Game.App
                 if (i > 0) distance += Vector2.Distance(centre, previous);
                 for (var lane = 0; lane <= lanes; lane++)
                 {
-                    var across = lane / (float)lanes;
+                    var across = lane == 1 ? .04f : lane == lanes - 1 ? .96f : lane / (float)lanes;
                     var side = across < .5f ? -1 : 1;
                     var extent = RoadSideExtent(curve[i], EstateMapModel.Unproject(normal * side), RoadWidth * .5f, RoadFootprints);
                     var point = centre + normal * ((across - .5f) * extent * 2);
                     var local = (point - origin) * scale;
                     var vertex = UIVertex.simpleVert;
-                    vertex.position = new Vector3(local.x, -local.y);
-                    var tint = color; tint.a *= Mathf.SmoothStep(0, 1, Mathf.Min(across, 1 - across) / .24f);
+                    vertex.position = rectTransform.rect.center + new Vector2(local.x, -local.y);
+                    var tint = color; tint.a *= Mathf.SmoothStep(0, 1, Mathf.Min(across, 1 - across) / .04f);
                     vertex.color = tint;
                     // Ping-pong avoids an atlas wrap seam at the join between repeated grain spans.
                     vertex.uv0 = new Vector2(Mathf.Lerp(uv.x, uv.z, Mathf.PingPong(distance / 64f, 1)),
-                        Mathf.Lerp(uv.y, uv.w, Mathf.Lerp(.30f, .70f, across)));
+                        Mathf.Lerp(uv.y, uv.w, Mathf.Lerp(.455f, .545f, across)));
                     var grid = EstateMapModel.Unproject(point);
                     vertex.uv1 = new Vector4(grid.x, grid.y, 0, 0); mesh.AddVert(vertex);
                 }
@@ -615,7 +615,8 @@ namespace Game.App
             {
                 var offset = new Vector2(i == 1 || i == 2 ? .5f : -.5f, i >= 2 ? .5f : -.5f);
                 var point = Grid + offset * span; var vertex = UIVertex.simpleVert;
-                vertex.position = new Vector3((offset.x - offset.y) * rect.width * .5f, -(offset.x + offset.y) * rect.height * .5f);
+                vertex.position = new Vector3(rect.center.x + (offset.x - offset.y) * rect.width * .5f,
+                    rect.center.y - (offset.x + offset.y) * rect.height * .5f);
                 vertex.color = color; vertex.uv0 = new Vector2(Mathf.Lerp(uv.x, uv.z, offset.x + .5f), Mathf.Lerp(uv.y, uv.w, .5f - offset.y));
                 vertex.uv1 = new Vector4(point.x, point.y, 0, 0); mesh.AddVert(vertex);
             }
@@ -777,7 +778,11 @@ namespace Game.App
                     // Toward the painted area's edge the night closes to opaque, so the land fades into the page's night colour.
                     var edge = Mathf.Min(Mathf.Min(px - area.xMin, area.xMax - px), Mathf.Min(py - area.yMin, area.yMax - py));
                     var keep = night.areaFadeCells > 0 ? Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / night.areaFadeCells)) : 1;
-                    colour.a = (byte)Mathf.RoundToInt((1 - (1 - night.Alpha(d)) * keep) * 255); pixels[j * width + i] = colour;
+                    // r7's screenshot baseline was RGB 73/76/82: .75 night still exposed too much fallow ground.
+                    // Preserve the open interior and historical profiles, increasing only this View's closed-land opacity.
+                    var alpha = night.Alpha(d);
+                    if (edgeFoundations && night.fullAlpha > 0) alpha = Mathf.Clamp01(alpha * .90f / night.fullAlpha);
+                    colour.a = (byte)Mathf.RoundToInt((1 - (1 - alpha) * keep) * 255); pixels[j * width + i] = colour;
                 }
             if (edgeFoundations)
             {

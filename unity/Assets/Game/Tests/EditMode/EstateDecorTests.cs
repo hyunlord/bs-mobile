@@ -352,6 +352,8 @@ namespace Tests.EditMode
             Assert.That(EstateNight.LightDistance(new Vector2(21, 30), open, true), Is.EqualTo(1).Within(.001f));
             var field = EstateNight.Field(rules.night, area, open, true);
             Assert.That(field.GetPixel((24 - area.x) * (field.width / area.width), (24 - area.y) * (field.height / area.height)).a, Is.Zero);
+            Assert.That(field.GetPixel(5 * (field.width / area.width), 5 * (field.height / area.height)).a,
+                Is.EqualTo(.9f).Within(.01f), "r7 closed ground is darker without changing the lit interior.");
             // Switching profile must invalidate the cached field even when the zones happen to be identical.
             var legacyField = EstateNight.Field(rules.night, area, open);
             Assert.That(legacyField.GetPixel((24 - area.x) * rules.night.texelsPerCell, (24 - area.y) * rules.night.texelsPerCell).a, Is.GreaterThan(.5f));
