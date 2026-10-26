@@ -401,7 +401,7 @@ namespace Tests.PlayMode
             Assert.That(Rects("EstateMap.Lamps").Single().GetSiblingIndex(), Is.LessThan(night.GetSiblingIndex()), "Warm lamps cannot paint brown clouds above the night.");
             Assert.That(Rects("EstateMap.Site").Where(r => r.name == "EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");
-            Assert.That(Rects("EstateMap.Site:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Reclaimable-site pieces remain visible in the open land.");
+            Assert.That(Rects("EstateMap.Site:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Approved flat footprints share the painted ground beneath the rounded night boundary.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
             CheckBatchBudget(screen.Config.Version, "on");
             yield return Capture("estate-decor-on");
