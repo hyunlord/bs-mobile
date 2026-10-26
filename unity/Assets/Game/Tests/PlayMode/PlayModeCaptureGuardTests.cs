@@ -1,11 +1,44 @@
 using System.IO;
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Tests.PlayMode
 {
     public sealed class PlayModeCaptureGuardTests
     {
+#if UNITY_EDITOR
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CaptureSessionRestoresOriginalCompilationSetting(bool original)
+        {
+            var previous = EditorSettings.asyncShaderCompilation;
+            var session = new PlayModeCaptureSession();
+            try
+            {
+                EditorSettings.asyncShaderCompilation = original;
+                session.BeginSession();
+                Assert.That(EditorSettings.asyncShaderCompilation, Is.False);
+                session.EndSession();
+                Assert.That(EditorSettings.asyncShaderCompilation, Is.EqualTo(original));
+            }
+            finally { EditorSettings.asyncShaderCompilation = previous; }
+        }
+
+        [UnityTest]
+        public IEnumerator CaptureWaitsForTwoRenderedFrameBoundaries()
+        {
+            Assert.That(EditorSettings.asyncShaderCompilation, Is.False, "Session guard must cover every fixture.");
+            yield return new WaitForEndOfFrame();
+            var frame = Time.frameCount;
+            yield return PlayModeCaptureGuard.WaitForShaders("guard-fresh-render-test");
+            Assert.That(Time.frameCount - frame, Is.GreaterThanOrEqualTo(2));
+        }
+#endif
         [TestCase(false)]
         [TestCase(true)]
         public void CaptureGuardRecordsBeforeFailingAndAcceptsCleanPixels(bool cyan)

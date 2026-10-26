@@ -14,6 +14,8 @@ git switch <PR 가지>        # 추적 파일 변경, unity/·core/·data/의 �
 2. 프로필마다 `prepare-unity.sh`와 `FoundationBuild.Configure`를 실행한 뒤 EditMode·PlayMode 전체를 돌린다.
 3. 끝나면 first-playable로 되돌린다.
 
+EditMode는 배치 실행하고, PlayMode는 화면을 그리는 Editor로 실행한다. 설치된 Unity Test Framework는 배치 모드의 `WaitForEndOfFrame`을 오류로 거부한다. PlayMode 캡처 세션은 비동기 셰이더 컴파일을 끄고 종료 때 기존 값을 복구하며, 컴파일 대기 뒤 `WaitForEndOfFrame` 두 번을 거쳐 캡처한다. 청록 감시는 그대로 유지한다. Editor가 실행되는 동안 Game 화면을 유지한다.
+
 결과 XML과 로그는 `artifacts/unity-tests/`에 남는다. 마지막에 아래 형식의 기록을 출력한다(`artifacts/unity-tests/record.md`). 실패가 있으면 종료 코드 1이다.
 
 ```
