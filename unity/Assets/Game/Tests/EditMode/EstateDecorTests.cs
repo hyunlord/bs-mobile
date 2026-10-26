@@ -380,13 +380,16 @@ namespace Tests.EditMode
             Assert.That(resolution, Is.GreaterThanOrEqualTo(8));
             var y = (30 - area.y) * resolution;
             var prior = field.GetPixel((19 - area.x) * resolution, y).a;
+            var maximumStep = 0f;
             for (var x = (19 - area.x) * resolution + 1; x <= (25 - area.x) * resolution; x++)
             {
                 var current = field.GetPixel(x, y).a;
                 Assert.That(current, Is.LessThanOrEqualTo(prior + 1f / 255));
+                maximumStep = Mathf.Max(maximumStep, Mathf.Abs(current - prior));
                 Assert.That(Mathf.Abs(current - prior), Is.LessThan(.08f), "No one-texel hard light step.");
                 prior = current;
             }
+            TestContext.WriteLine("R7_NIGHT_MAX_ADJACENT_ALPHA=" + maximumStep.ToString("R", System.Globalization.CultureInfo.InvariantCulture));
             Assert.That(field.GetPixel((30 - area.x) * resolution, y).a, Is.Zero);
         }
 
