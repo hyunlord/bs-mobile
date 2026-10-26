@@ -113,7 +113,9 @@ namespace Game.App
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
     public sealed class EstateDrawItem
     {
+        public bool IsometricGround;
         public bool IsometricRoad; public int RoadQuarterTurns;
+        public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
         public EstateDrawLayer Layer; public int SiteId = -1; public int BuildingId = -1; public string BuildingArt; public int Stage; public float SortY; public string Key = "";
     }
@@ -179,6 +181,7 @@ namespace Game.App
                 return OpenCell(outside) ? outside : outside + Vector2Int.down;
             }
             var routes = new List<double[][]>();
+            var ribbonRoutes = new List<List<Vector2Int>>();
             var origin = buildings.FirstOrDefault(b => kinds[b.Kind].StartsComplete);
             if (origin != null && config.Version == "m3a-prototype-r7")
             {
@@ -186,8 +189,12 @@ namespace Game.App
                     .SelectMany(z => Enumerable.Range(0, z.Width * z.Height)
                         .Select(i => new Vector2Int(z.X + i % z.Width, z.Y + i / z.Width)))
                     .Where(c => !taken.Contains(c)).ToHashSet();
-                foreach (var path in TrunkRoads(Door(origin), buildings.Where(b => b.Id != origin.Id).Select(Door), openCells))
+                var bridge = rules.placed.FirstOrDefault(p => p.id == "bridge-nw-se-base");
+                Vector2Int? bridgeCell = bridge == null ? null : new Vector2Int(Mathf.FloorToInt(bridge.u), Mathf.FloorToInt(bridge.v));
+                if (bridgeCell.HasValue) openCells.Add(bridgeCell.Value);
+                foreach (var path in TrunkRoads(Door(origin), buildings.Where(b => b.Id != origin.Id).Select(Door), openCells, bridgeCell))
                 {
+                    ribbonRoutes.Add(path);
                     foreach (var cell in path) plan.Road.Add(cell);
                     routes.Add(path.Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
                 }
@@ -224,7 +231,17 @@ namespace Game.App
             // the open zones mixes fallow and sage by seed and takes the cool closed colour.
             // Patches spill past their block, so the outermost ring of blocks stays bare: every patch ends inside the night's
             // opaque rim at the area's edge.
-            for (var u = plan.Area.xMin + t.patchCells; u < plan.Area.xMax - t.patchCells; u += t.patchCells)
+            if (config.Version == "m3a-prototype-r7")
+            {
+                const int tileCells = 8;
+                for (var u = plan.Area.xMin; u < plan.Area.xMax; u += tileCells)
+                    for (var v = plan.Area.yMin; v < plan.Area.yMax; v += tileCells)
+                        plan.Items.Add(new EstateDrawItem { Role = "ground-grass-r4", Source = "terrain", Grid = new Vector2(u + tileCells * .5f, v + tileCells * .5f),
+                            Width = tileCells * 2 * EstateMapModel.HalfWidth, Aspect = .5f, IsometricGround = true,
+                            Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = $"grass-r4-{u}-{v}" });
+                AddSoilPatches(plan, rules, art, OpenCell, reserved);
+            }
+            else for (var u = plan.Area.xMin + t.patchCells; u < plan.Area.xMax - t.patchCells; u += t.patchCells)
                 for (var v = plan.Area.yMin + t.patchCells; v < plan.Area.yMax - t.patchCells; v += t.patchCells)
                 {
                     var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre) ?? "closed"; var dark = state == "closed";
@@ -235,15 +252,31 @@ namespace Game.App
                 }
             // Roads: Astra's painted earth along each grid path instead of flat diamonds.
             var sg = rules.sites;
-            foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
+            if (config.Version == "m3a-prototype-r7")
             {
-                var r7 = config.Version == "m3a-prototype-r7";
-                var style = RoadStyle(cell, plan.Road);
-                plan.Items.Add(new EstateDrawItem { Role = r7 ? style.Role : sg.ground, Source = "road",
-                    Grid = cell + new Vector2(.5f, .5f), Width = (r7 ? 1.35f : sg.roadWidth) * 2 * EstateMapModel.HalfWidth,
-                    Aspect = sg.aspect, IsometricRoad = r7, RoadQuarterTurns = style.QuarterTurns,
-                    Colour = new Color(1, 1, 1, Mathf.Max(.9f, sg.roadAlpha)), Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
+                for (var index = 0; index < ribbonRoutes.Count; index++)
+                {
+                    var path = ribbonRoutes[index];
+                    if (path.Count < 2) continue;
+                    var points = path.Select(c => (Vector2)c + new Vector2(.5f, .5f)).ToArray();
+                    var bridge = rules.placed.FirstOrDefault(p => p.id == "bridge-nw-se-base");
+                    if (index == 2 && bridge != null) points[points.Length - 1] = new Vector2(bridge.u, bridge.v);
+                    var projected = points.Select(P).ToArray();
+                    var centre = new Vector2((projected.Min(p => p.x) + projected.Max(p => p.x)) * .5f,
+                        (projected.Min(p => p.y) + projected.Max(p => p.y)) * .5f);
+                    var width = projected.Max(p => p.x) - projected.Min(p => p.x) + 48;
+                    var height = projected.Max(p => p.y) - projected.Min(p => p.y) + 48;
+                    plan.Items.Add(new EstateDrawItem { Role = "road-straight", Source = "road", Grid = EstateMapModel.Unproject(centre),
+                        Width = width, Aspect = height / width, IsometricRoad = true, RoadPoints = points, RoadWidth = (index <= 2 ? 18 : 11) / (390f / 768f),
+                        RoadFootprints = buildings.Select(b => new RectInt(b.X, b.Y, kinds[b.Kind].Width, kinds[b.Kind].Height)).ToArray(),
+                        Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = $"road-ribbon-{index}" });
+                }
             }
+            else foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
+                plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "road",
+                    Grid = cell + new Vector2(.5f, .5f), Width = sg.roadWidth * 2 * EstateMapModel.HalfWidth,
+                    Aspect = sg.aspect, Colour = new Color(1, 1, 1, Mathf.Max(.9f, sg.roadAlpha)),
+                    Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
 
             // Astra's scene: built buildings (anchor = footprint centre, w = painted body width at scale 1), the roads, and the open land.
             var scene = new AstraScene();
@@ -396,6 +429,41 @@ namespace Game.App
             plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = grid, Width = width > 0 ? width : 64, Colour = colour, Layer = layer, SortY = P(grid).y, Key = source + "-" + role + "-" + grid });
         }
 
+        public static IEnumerable<Vector2Int> GroundCanvasCells(Vector2 centre, float width, float aspect, float margin = 0)
+        {
+            var half = new Vector2(width * .5f, width * aspect * .5f);
+            var corners = new[] { new Vector2(-half.x, -half.y), new Vector2(half.x, -half.y), new Vector2(-half.x, half.y), half };
+            var grid = corners.Select(p => centre + EstateMapModel.Unproject(p)).ToArray();
+            for (var x = Mathf.FloorToInt(grid.Min(p => p.x) - margin + .0001f); x <= Mathf.FloorToInt(grid.Max(p => p.x) + margin - .0001f); x++)
+                for (var y = Mathf.FloorToInt(grid.Min(p => p.y) - margin + .0001f); y <= Mathf.FloorToInt(grid.Max(p => p.y) + margin - .0001f); y++)
+                    yield return new Vector2Int(x, y);
+        }
+
+        static void AddSoilPatches(EstatePlan plan, EstateDecorRules rules, EstateArt art, Func<Vector2Int, bool> open, HashSet<Vector2Int> reserved)
+        {
+            var occupied = new HashSet<Vector2Int>(reserved);
+            occupied.UnionWith(plan.Road);
+            for (var x = plan.Area.xMin; x < plan.Area.xMax; x++)
+                for (var y = plan.Area.yMin; y < plan.Area.yMax; y++)
+                {
+                    var cell = new Vector2Int(x, y); var key = $"soil-r4-{x}-{y}";
+                    if (!open(cell) || occupied.Contains(cell) || AstraDecor.Rand(rules.astra, "soil-density", key) > .65) continue;
+                    var variant = 1 + (int)(AstraDecor.Rand(rules.astra, "soil-variant", key) * 6);
+                    var role = "soil-patch-r4-" + variant.ToString("00");
+                    var sprite = art.Get(role); var aspect = sprite.rect.height / sprite.rect.width;
+                    var centre = cell + new Vector2(.5f, .5f);
+                    foreach (var width in new[] { 64f, 48f, 32f, 20f, 12f })
+                    {
+                        var covered = GroundCanvasCells(centre, width, aspect).ToArray();
+                        if (covered.Any(c => !open(c) || occupied.Contains(c)) ||
+                            GroundCanvasCells(centre, width, aspect, .3f).Any(plan.Road.Contains)) continue;
+                        plan.Items.Add(new EstateDrawItem { Role = role, Source = "soil", Grid = centre, Width = width,
+                            Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = key });
+                        occupied.UnionWith(covered); break;
+                    }
+                }
+        }
+
         static void AddSite(EstatePlan plan, int siteId, string role, Vector2 grid, float width, string part, Color? colour = null, float aspect = -1)
         {
             plan.Items.Add(new EstateDrawItem { Role = role, Source = "reclaimable-site", SiteId = siteId, Grid = grid,
@@ -426,14 +494,14 @@ namespace Game.App
 
         // r7 only: one plaza trunk, then shortest entrance spurs joining the existing tree once. A new cell may
         // touch only one old road cell, so merging branches cannot form loops or side-by-side duplicate routes.
-        public static List<List<Vector2Int>> TrunkRoads(Vector2Int plaza, IEnumerable<Vector2Int> doors, HashSet<Vector2Int> allowed)
+        public static List<List<Vector2Int>> TrunkRoads(Vector2Int plaza, IEnumerable<Vector2Int> doors, HashSet<Vector2Int> allowed, Vector2Int? bridge = null)
         {
             var routes = new List<List<Vector2Int>>();
             if (!allowed.Contains(plaza)) return routes;
             var road = new HashSet<Vector2Int> { plaza };
             routes.Add(new List<Vector2Int> { plaza });
             var west = allowed.OrderBy(c => c.x).ThenBy(c => Math.Abs(c.y - plaza.y)).ThenBy(c => c.y).First();
-            var east = allowed.OrderByDescending(c => c.x).ThenBy(c => Math.Abs(c.y - plaza.y)).ThenBy(c => c.y).First();
+            var east = bridge ?? allowed.OrderByDescending(c => c.x).ThenBy(c => Math.Abs(c.y - plaza.y)).ThenBy(c => c.y).First();
             foreach (var end in new[] { west, east }.Concat(doors))
             {
                 var path = JoinRoad(end, road, allowed);

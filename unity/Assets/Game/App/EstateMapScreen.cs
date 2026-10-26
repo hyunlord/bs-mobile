@@ -204,6 +204,17 @@ namespace Game.App
             State = result.State; Notice = notice(result.Reason); return result;
         }
 
+        // Core commands operate on a copy. Discard this result's state so sheet eligibility uses the same rules without
+        // spending resources, advancing the screen clock or changing its construction queue (#390).
+        public (bool Allowed, string Reason, string Text) ConstructionPreview(int id)
+        {
+            var result = AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id);
+            var parent = Kind(Building(id).Kind).Parent;
+            var text = result.Done ? "" : result.Reason == "parent-required" && parent != null
+                ? Name(parent) + " Lv1 필요" : ReasonText(result.Reason);
+            return (result.Done, result.Reason, text);
+        }
+
         public bool StartWork(int id)
         {
             var result = AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id);

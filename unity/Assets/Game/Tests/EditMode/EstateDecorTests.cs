@@ -225,7 +225,8 @@ namespace Tests.EditMode
             foreach (var zone in config.Zones)
                 Assert.That(first.Area.Contains(new Vector2Int(zone.X - rules.night.margin, zone.Y - rules.night.margin)) && first.Area.Contains(new Vector2Int(zone.X + zone.Width + rules.night.margin - 1, zone.Y + zone.Height + rules.night.margin - 1)), Is.True, "painted area covers " + zone.Id);
             // #379: roads and unbuilt sites stand on Astra's earth, built buildings in open land carry a lamp.
-            Assert.That(first.Count("road"), Is.EqualTo(first.Road.Count)); Assert.That(first.Items.Where(i => i.Source == "road").All(i => config.Version == "m3a-prototype-r7" ? i.Role.StartsWith("road-", StringComparison.Ordinal) : i.Role == rules.sites.ground), Is.True);
+            if (config.Version == "m3a-prototype-r7") Assert.That(first.Items.Where(i => i.Source == "road").All(i => i.RoadPoints != null && i.RoadPoints.Length >= 2) && first.Count("road") < first.Road.Count, Is.True);
+            else Assert.That(first.Count("road"), Is.EqualTo(first.Road.Count)); Assert.That(first.Items.Where(i => i.Source == "road").All(i => config.Version == "m3a-prototype-r7" ? i.Role.StartsWith("road-", StringComparison.Ordinal) : i.Role == rules.sites.ground), Is.True);
             Assert.That(first.Count("reclaimable-site"), Is.EqualTo(state.Estate.Buildings.Count(b => b.Level == 0)));
             Assert.That(first.Lamps.Count, Is.EqualTo(state.Estate.Buildings.Count(b => b.Level > 0)));
             Assert.That(first.Items.Where(i => i.Source == "frontier" || i.Source == "wood").All(i => i.Layer == EstateDrawLayer.Veiled), Is.True);
@@ -341,7 +342,7 @@ namespace Tests.EditMode
             Assert.That(EstateNight.LightDistance(new Vector2(22, 30), open, true), Is.EqualTo(0).Within(.001f));
             Assert.That(EstateNight.LightDistance(new Vector2(21, 30), open, true), Is.EqualTo(1).Within(.001f));
             var field = EstateNight.Field(rules.night, area, open, true);
-            Assert.That(field.GetPixel((24 - area.x) * rules.night.texelsPerCell, (24 - area.y) * rules.night.texelsPerCell).a, Is.Zero);
+            Assert.That(field.GetPixel((24 - area.x) * (field.width / area.width), (24 - area.y) * (field.height / area.height)).a, Is.Zero);
             // Switching profile must invalidate the cached field even when the zones happen to be identical.
             var legacyField = EstateNight.Field(rules.night, area, open);
             Assert.That(legacyField.GetPixel((24 - area.x) * rules.night.texelsPerCell, (24 - area.y) * rules.night.texelsPerCell).a, Is.GreaterThan(.5f));
@@ -357,6 +358,25 @@ namespace Tests.EditMode
             Assert.That(open.Any(r => r.Contains(new Vector2Int(23, 30))), Is.False, "The lit fringe remains logically closed.");
             Assert.That(state.Estate.OpenZones, Is.EquivalentTo(ids));
             Assert.That(MetaSaveCodec.Encode(state), Is.EqualTo(bytes), "Rendering the fringe writes no saved byte.");
+        }
+
+        [Test] public void R7NightMaskIsSmoothAcrossSubcellSamplesAndKeepsDeepInteriorClear()
+        {
+            var rules = EstateDecorRules.Load();
+            var area = new RectInt(10, 10, 40, 40);
+            var field = EstateNight.Field(rules.night, area, new[] { new RectInt(24, 24, 12, 12) }, true);
+            var resolution = field.width / area.width;
+            Assert.That(resolution, Is.GreaterThanOrEqualTo(8));
+            var y = (30 - area.y) * resolution;
+            var prior = field.GetPixel((19 - area.x) * resolution, y).a;
+            for (var x = (19 - area.x) * resolution + 1; x <= (25 - area.x) * resolution; x++)
+            {
+                var current = field.GetPixel(x, y).a;
+                Assert.That(current, Is.LessThanOrEqualTo(prior + 1f / 255));
+                Assert.That(Mathf.Abs(current - prior), Is.LessThan(.08f), "No one-texel hard light step.");
+                prior = current;
+            }
+            Assert.That(field.GetPixel((30 - area.x) * resolution, y).a, Is.Zero);
         }
 
         static readonly IEqualityComparer<Color> ColorComparer = new ToleranceColour();

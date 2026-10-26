@@ -1,6 +1,6 @@
 {
   "version": "estate-art-r1",
-  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24). User-approved 2026-10-26 Lv0 six lit/dark pairs use ASSET-LIST.md floor-centre anchors; roads use the approved straight/bend/fork512 only. New grass variants are deliberately excluded.",
+  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24). User-approved 2026-10-26 Lv0 six lit/dark pairs use ASSET-LIST.md floor-centre anchors; roads use the approved straight/bend/fork512 only. Approved r4 grass and six soil patches (2026-10-26) retain original pixels and central anchors; only View dressing uses them.",
   "atlases": [
     {
       "file": "estate-building-shadows.png",
@@ -16,7 +16,7 @@
     },
     {
       "file": "estate-terrain.png",
-      "sha256": "72bac34fd15866a5ebab7490b1ad04ca6ee6f3faa6df285e1856c16c1bbdae19"
+      "sha256": "2297bad7d2c47d5586dc3bfafc6e2b9655ae4bef4d169196bcb149d06cdeee12"
     }
   ],
   "buildings": {
@@ -1267,6 +1267,181 @@
         1316,
         512,
         512
+      ]
+    },
+    {
+      "id": "ground-grass-r4",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-grass-r4-512.png",
+        "sha256": "525ea7100690e958802a41315b8caa5a69c47ce613e3a1a7a51b28a1ce5c465e",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        516,
+        1316,
+        512,
+        512
+      ]
+    },
+    {
+      "id": "soil-patch-r4-01",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-01.png",
+        "sha256": "efa4af485d8d9df3eb527ed028c14a9fa1175be78e9eb3fe4480cb09b1330717",
+        "size": [
+          96,
+          67
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1030,
+        1316,
+        96,
+        67
+      ]
+    },
+    {
+      "id": "soil-patch-r4-02",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-02.png",
+        "sha256": "295536e574aa1454467bca72d875b55f4d6fd2ca646281c248009ab84ac8e4d3",
+        "size": [
+          128,
+          48
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1128,
+        1316,
+        128,
+        48
+      ]
+    },
+    {
+      "id": "soil-patch-r4-03",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-03.png",
+        "sha256": "360dc245fec563d5a0f12dc18e82f38eb153005b8efc415ff0ee8863779dd82e",
+        "size": [
+          160,
+          110
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1258,
+        1316,
+        160,
+        110
+      ]
+    },
+    {
+      "id": "soil-patch-r4-04",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-04.png",
+        "sha256": "141a77dbf5a2697af0178635921f42e9313f3fd1d599b7b5041c4c84d8ba385a",
+        "size": [
+          192,
+          133
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1420,
+        1316,
+        192,
+        133
+      ]
+    },
+    {
+      "id": "soil-patch-r4-05",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-05.png",
+        "sha256": "6aa8bad74031339aba0fc7cb9fd0e593907e4c528c31176d4eada59daa7e5fe7",
+        "size": [
+          224,
+          149
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1614,
+        1316,
+        224,
+        149
+      ]
+    },
+    {
+      "id": "soil-patch-r4-06",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-06.png",
+        "sha256": "90ab5fc60b53c11959494798a4878bfddc244e27bb1ba1f215d2061037f23cb2",
+        "size": [
+          256,
+          173
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        2,
+        1830,
+        256,
+        173
       ]
     },
     {

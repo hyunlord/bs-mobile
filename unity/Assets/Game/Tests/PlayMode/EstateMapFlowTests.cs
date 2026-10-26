@@ -203,9 +203,11 @@ namespace Tests.PlayMode
 
             var field = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:field");
             Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
-            Click("EstateMap.Build"); yield return null;
+            Assert.That(Named("EstateMap.Build").interactable, Is.False);
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "EstateMap.ConstructionReason").text, Is.EqualTo("곡물창고 Lv1 필요"));
             Assert.That(screen.State.Estate.Active, Is.Null, "A fresh field still requires the granary; do not grant resources or bypass Core.");
-            Assert.That(screen.LastConstructionReason, Is.EqualTo("parent-required"));
+            Assert.That(screen.ConstructionPreview(field.Id).Reason, Is.EqualTo("parent-required"));
+            yield return Capture("estate-r7-field-parent-required");
             var granary = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             Focus(screen.Centre(granary.Id)); Tap(new Vector2Int(granary.X, granary.Y)); yield return null;
             Click("EstateMap.Build"); yield return null;
@@ -389,7 +391,7 @@ namespace Tests.PlayMode
         {
             Assert.That(screen.DecorEnabled, Is.True);
             var plan = screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).Items;
-            var decorSources = new[] { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant" };
+            var decorSources = new[] { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil" };
             var sprites = plan.Count(i => decorSources.Contains(i.Source));
             Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites), "Every planned decoration sprite is on the map.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");

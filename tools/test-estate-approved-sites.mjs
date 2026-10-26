@@ -33,7 +33,7 @@ test('six approved Lv0 pairs retain the authored floor anchor and identical alph
   }
 });
 
-test('only the three approved 512 road patches join the unchanged ground artwork', () => {
+test('three approved road patches share the original terrain atlas', () => {
   const roads = manifest.sprites.filter(s => s.id.startsWith('road-'));
   assert.deepEqual(roads.map(s => s.id).sort(), ['road-bend', 'road-fork', 'road-straight']);
   for (const road of roads) {
@@ -44,5 +44,24 @@ test('only the three approved 512 road patches join the unchanged ground artwork
     assert.equal(road.atlas, 'terrain', 'roads and sites share the existing terrain texture');
   }
   const added = manifest.sprites.filter(s => s.source.release === release);
-  assert.equal(added.length, 15, 'no pending grass revision may enter through this Release');
+  assert.equal(added.length, 22, 'only the approved sites, roads and r4 ground enter through this Release');
+});
+
+
+test('approved r4 grass and six soil canvases preserve source size and middle anchors', () => {
+  const sizes = [[512, 512], [96, 67], [128, 48], [160, 110], [192, 133], [224, 149], [256, 173]];
+  const roles = ['ground-grass-r4', ...Array.from({ length: 6 }, (_, i) => `soil-patch-r4-${String(i + 1).padStart(2, '0')}`)];
+  roles.forEach((role, i) => {
+    const sprite = manifest.sprites.find(s => s.id === role);
+    assert.equal(sprite.source.release, release);
+    assert.deepEqual(sprite.source.size, sizes[i]);
+    assert.deepEqual(sprite.rect.slice(2), sizes[i], 'approved raster is never resampled');
+    assert.deepEqual(sprite.pivot, [.5, .5]);
+    assert.equal(sprite.atlas, 'terrain');
+    if (i > 0) {
+      const [x, y, w, h] = sprite.rect;
+      const alphas = Array.from({ length: w * h }, (_, p) => atlas.pixels[((y + Math.floor(p / w)) * atlas.width + x + p % w) * 4 + 3]);
+      assert.ok(alphas.some(a => a === 0) && alphas.some(a => a > 0 && a < 255), 'soil fades into the continuous grass');
+    }
+  });
 });
