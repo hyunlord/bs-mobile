@@ -1,0 +1,45 @@
+{
+  "release": "https://github.com/hyunlord/bs-mobile/releases/tag/enemy-walk-shield-ram-399-20261026",
+  "approval": "User approved shield_raider and ram_runner walks for View-only integration; original candidate PENDING status is historical.",
+  "sourceCommit": "e08854568b4bfb060a9dc3dbc3190e0cbfb308aa",
+  "method": "SpriteSkin CPU deformation; Camera.Render 512 RGBA to alpha-aware 256 RGBA; 16 samples at indices 0,5,...75",
+  "baseCommit": "041e1e4539c5b36031e1bedcb919d81478c196ea",
+  "basePixelsSha256": "734ba5fd14d55e518bd392bd55185caa9cb25a764c101da45497ab78fd92b3cc",
+  "baseHeight": 2304,
+  "width": 2048,
+  "height": 3328,
+  "cell": 256,
+  "padding": 4,
+  "pivot": {
+    "x": 0.5383064516129032,
+    "y": 0.12096774193548387
+  },
+  "frameMs": 40,
+  "tween": "none",
+  "walks": [
+    {
+      "id": "enemy.rig.shield_raider.walk",
+      "file": "shield-raider-16.png",
+      "sha256": "b37a147d7a1eed4a37dcf0324fae625f4a404a62e07e9054c7eeb01e79489b8c",
+      "worldSize": {
+        "x": 0.782069441860465,
+        "y": 0.782069441860465
+      },
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/shield-parts.png",
+      "sourceSha256": "bdd8e422903a9c9a782d836f1b0f4c410a7bac738c9d1c2d2457987f67132573",
+      "pixelsSha256": "afdb35a9c0013cf145aa1e73da170353fdb36414f0a321bd0ecffdba0af57dd1"
+    },
+    {
+      "id": "enemy.rig.ram_runner.walk",
+      "file": "ram-runner-16.png",
+      "sha256": "09c4b36a0e9da935f757e74eeb892ce53026ea45604091770372f1c9f5a37093",
+      "worldSize": {
+        "x": 0.66216,
+        "y": 0.66216
+      },
+      "source": "unity/Assets/Game/Editor/Authoring/EnemyRigs/charger-parts.png",
+      "sourceSha256": "d8e0111990d4a59c511f52860f12cac09e04521c858cd43ed84d03f72e79baa6",
+      "pixelsSha256": "18f87b57d6e25c588b92043c43dacb46bdc8bc1503e5afce1cde830bfccf1963"
+    }
+  ]
+}

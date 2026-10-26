@@ -1,5 +1,22 @@
 # Six articulated enemy rigs (#209)
 
+## Approved walk replacement (#399, 2026-10-26)
+
+The runtime atlas is now **2048×3328**. Its first 2048×2304 RGBA pixels remain exactly the historical atlas; the final four rows append the approved shield raider and ram runner walks, sixteen 256px cells each. Only their `.walk` roles change. Their original pivot/world size remain unchanged, `frameMs:40`, `tween:none`, no distance-cycle field: each cycle still lasts 640ms. Tell, idle and the other four species retain their original pixels and metadata. One shared texture retains the existing batch contract; the importer does not repaint, rescale or add outlines.
+
+Approved input provenance, PNG SHA-256 and original part SHA-256 are pinned in `approved-walks.json`. Source Release: [enemy-walk-shield-ram-399-20261026](https://github.com/hyunlord/bs-mobile/releases/tag/enemy-walk-shield-ram-399-20261026). The Release's original candidate/PENDING label predates user approval and is preserved as history. The ram runner is a humanoid charger, not a boar.
+
+```sh
+gh release download enemy-walk-shield-ram-399-20261026 --repo hyunlord/bs-mobile \
+  --pattern shield-raider-16.png --pattern ram-runner-16.png --dir artifacts/enemy-integration-prep
+node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --source artifacts/enemy-integration-prep
+node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --check
+```
+
+The importer is idempotent and checks the historical pixel hash before writing. It accepts the historical 2304px-high atlas or the already integrated 3328px atlas. After any historical `bake.mjs` regeneration/install below, **run this approved importer last**; never install the old fragment as the finished runtime manifest. The original baker is a preserved historical generator and does not recreate the approved SpriteSkin animation. If its historical pixels differ, the importer stops for review instead of silently dropping newer artwork. `--check` detects a reverted eight-frame runtime install. Native visual comparison, Unity suites, replay verification and the night C05 gate remain separate from this pixel/metadata validation.
+
+## Historical authoring pipeline (preserved)
+
 Generated separated-part drawings preserve the existing ink/gouache identities. Exact prompts, reference images, generation session, source file IDs and SHA256 are in `generation-provenance.json`. The actual images are 1254×1254, despite the requested 2048 size. Sources live in `unity/Assets/Game/Editor/Authoring/EnemyRigs/` and never execute in the player. No package/dependency was added.
 
 From repository root:

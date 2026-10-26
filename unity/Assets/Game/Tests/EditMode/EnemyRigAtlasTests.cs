@@ -42,22 +42,26 @@ namespace Tests.EditMode
         }
 
 
-        // #363: the baked rigs (wave art only) keep eight walk frames with no cycle length, so they keep the time-based walk and
-        // show exactly the frames they showed before (same frame for every time as the old fixed-eight formula).
+        // #399: two approved walks use sixteen keys; all six retain time-based playback and their 640ms cycle.
         [Test]
-        public void BakedRigsKeepTheirEightFrameTimeBasedWalk()
+        public void BakedRigsKeepTimeBasedWalkWithOnlyApprovedSixteenFrameReplacements()
         {
             var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "wave1a-manifest.json")));
             var walks = System.Array.FindAll(m.roles, r => r.id.StartsWith("enemy.rig.", System.StringComparison.Ordinal) && r.id.EndsWith(".walk", System.StringComparison.Ordinal));
             Assert.That(walks.Length, Is.EqualTo(6), "six baked rigs");
             foreach (var walk in walks)
             {
-                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((8, 0f)), walk.id);
+                var approved = walk.id == "enemy.rig.shield_raider.walk" || walk.id == "enemy.rig.ram_runner.walk";
+                var count = approved ? 16 : 8;
+                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((count, 0f)), walk.id);
+                Assert.That(walk.frameMs, Is.EqualTo(approved ? 40 : 80), walk.id);
+                Assert.That(walk.atlas, Is.EqualTo("fallow-enemy-rigs"), "retain one shared texture");
+                Assert.That(walk.tween, Is.EqualTo("none"), walk.id);
                 for (var frame = 0; frame < 2000; frame++)
                 {
                     var time = frame / 60f;
                     Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Walk, time, walk.frameMs, 0, walk.frames.Length),
-                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % 8), walk.id);
+                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % count), walk.id);
                 }
             }
         }
