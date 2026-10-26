@@ -33,7 +33,7 @@ namespace Tests.EditMode
                 Assert.That(road, Does.Contain(door), building.Kind);
                 for (var x = building.X; x < building.X + kind.Width; x++)
                     for (var y = building.Y; y < building.Y + kind.Height; y++)
-                        Assert.That(road, Does.Not.Contain(new Vector2Int(x, y)), building.Kind);
+                        Assert.That(road, Has.No.Member(new Vector2Int(x, y)), building.Kind);
             }
             var second = EstatePlanner.Plan(EstateDecorRules.Load(), EstateArt.Load(), config, state.Estate);
             Assert.That(second.Road, Is.EquivalentTo(road));
