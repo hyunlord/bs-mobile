@@ -508,25 +508,25 @@ namespace Game.View
             }
             bool Crest(Vector2 q)
             {
-                // Three wheat stalks bound by a band: stems, grain ovals along their upper halves, the band across.
-                for (var k = -1; k <= 1; k++)
+                // Approved sprout emblem: one seed, a curved stem, a lower left and a higher right leaf (#405).
+                var seed = q - new Vector2(64, 47);
+                if (seed.x * seed.x / 81f + seed.y * seed.y / 36f < 1) return true;
+                var previous = new Vector2(64, 49);
+                for (var k = 1; k <= 20; k++)
                 {
-                    var top = new Vector2(64 + k * 14, 120); var foot = new Vector2(64 + k * 6, 44);
-                    var ab = top - foot; var t = Mathf.Clamp01(Vector2.Dot(q - foot, ab) / ab.sqrMagnitude);
-                    if ((q - (foot + ab * t)).magnitude < 2.4f) return true;
-                    for (var g = 0; g < 5; g++)
-                    {
-                        var at = Vector2.Lerp(foot, top, .5f + g * .11f);
-                        for (var side = -1; side <= 1; side += 2)
-                        {
-                            var grain = at + new Vector2(side * 4.5f, 1.5f);
-                            var d = q - grain; var tilt = side * .6f;
-                            var u = d.x * Mathf.Cos(tilt) + d.y * Mathf.Sin(tilt); var v = -d.x * Mathf.Sin(tilt) + d.y * Mathf.Cos(tilt);
-                            if (u * u / 9f + v * v / 20f < 1) return true;
-                        }
-                    }
+                    var phase = k / 20f;
+                    var next = new Vector2(64 - 10 * Mathf.Sin(phase * Mathf.PI), 49 + phase * 64);
+                    var ab = next - previous;
+                    var t = Mathf.Clamp01(Vector2.Dot(q - previous, ab) / ab.sqrMagnitude);
+                    if ((q - (previous + ab * t)).magnitude < 2.8f) return true;
+                    previous = next;
                 }
-                return Mathf.Abs(q.y - 72) < 4 && Mathf.Abs(q.x - 64) < 16;
+                var left = q - new Vector2(45, 84);
+                var lu = left.x * .8f - left.y * .6f; var lv = left.x * .6f + left.y * .8f;
+                if (lu * lu / 225f + lv * lv / 49f < 1) return true;
+                var right = q - new Vector2(76, 107);
+                var ru = right.x * .8f + right.y * .6f; var rv = -right.x * .6f + right.y * .8f;
+                return ru * ru / 256f + rv * rv / 64f < 1;
             }
             var texture = PaintTexture("Temporary ward shield", width, height, (x, y) =>
             {

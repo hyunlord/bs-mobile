@@ -1,0 +1,103 @@
+{
+  "issue": 405,
+  "assets": 15,
+  "manifests": [
+    {
+      "name": "wave1a-manifest.json",
+      "sha256": "c3976c01cd3fb3288cb7ac43178d0cff85547db46ba76f64d0e1335dc6a19a4f"
+    },
+    {
+      "name": "first-playable-manifest.json",
+      "sha256": "25af294a7fe8d074810298f4129c8dfbab600a7842991cdca4340e77c873c902"
+    }
+  ],
+  "atlases": [
+    {
+      "atlas": "wave1a-weapon-fx.png",
+      "roles": [
+        "fx.ward_orbit.shield"
+      ],
+      "sourceSha256": "6088686a31b5e55bd21e6a7f0323ff5061a308e0472ce1425a13f5d488484ff8",
+      "outputSha256": "97d368499e29c1c763427138dc9ff0f9be2bca386bd99e446f29ebb86c775f4b",
+      "changedPixels": 11837,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "equipment.png",
+      "roles": [
+        "icon.core.levy_banner.default"
+      ],
+      "sourceSha256": "9c8ea4f642e6839147c2d6b2093922e50c012bf9d51cad6843fa8b9d5c90e847",
+      "outputSha256": "9010259835d6163f2c56e55a2d9af930cd84e06a37ac75c45dca4568b9f7fbec",
+      "changedPixels": 16113,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "charters-evolutions.png",
+      "roles": [
+        "icon.core.heirloom_service.default",
+        "icon.core.rally_boundary.default",
+        "icon.core.rally_kitchen.default",
+        "icon.core.meal_oath.default",
+        "icon.core.seed_crown.default"
+      ],
+      "sourceSha256": "9b5bfc8a876e672072e5e0bdc4bdd2fc5a33741b3ff2fb12f0a94c786bae73b9",
+      "outputSha256": "5985ab323608ae32461ca06df4d46decfc48fea4f5848047d6c89a295fa853ac",
+      "changedPixels": 105850,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "actors.png",
+      "roles": [
+        "person.vassal.idle"
+      ],
+      "sourceSha256": "b4e91a8b37127bc290b25e06caa72d5f5255090a3a445ca4ffc9d33c1f67e04c",
+      "outputSha256": "060b8316485f3d8e36b1bdee0a9d10e1040a6ac7cc35e49e863b67a9b52bae42",
+      "changedPixels": 23073,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "items-a.png",
+      "roles": [
+        "icon.core.ruin_keystone.default",
+        "icon.core.wind_seed_flag.default"
+      ],
+      "sourceSha256": "9bb09119e7ef33996c1e59235d52528c187b6fd21695971959554dcf8006882c",
+      "outputSha256": "f02affb4316373864562fd233ffa4bd0accc977beaefbb177408aff744846a75",
+      "changedPixels": 61723,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "buildings.png",
+      "roles": [
+        "building.core.carpenter_hammer.complete",
+        "building.core.carpenter_hammer.damaged",
+        "building.core.carpenter_hammer.ruin"
+      ],
+      "sourceSha256": "d97bad6da523f458545ef6eeb3aadde1badda26058a8155359f88725de822bab",
+      "outputSha256": "127845475f47d061b4724295b60d5aafe91c57e0b899b83dd74d48668bb83292",
+      "changedPixels": 50495,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "items-b.png",
+      "roles": [
+        "icon.core.crop_guard_signet.default"
+      ],
+      "sourceSha256": "1c90e9bca20575c055b59ce33a61d54ee207709b4b5e1697863c16f9917ca653",
+      "outputSha256": "587d5fb8331506fab28d90ea71b41dad8c506febc2be084a90a50a3ea5671dbf",
+      "changedPixels": 34193,
+      "outsideChanged": 0
+    },
+    {
+      "atlas": "wave1a-growth.png",
+      "roles": [
+        "wave1a.wave.harvest-flag.default"
+      ],
+      "sourceSha256": "3b2add543b042dd95a0474a988995d84823ca47fafe7cc06a6ece8b6e1253dd9",
+      "outputSha256": "4cbb6f0825dd894a15f6af7ddb2a0625949acac706c758ee957e9b949eb21c92",
+      "changedPixels": 53529,
+      "outsideChanged": 0
+    }
+  ]
+}
