@@ -56,6 +56,7 @@ public sealed class AccountEstateR7MapTests
             }
         }
         for (int i = 0; i < R7.Buildings.Length; i++)
+        {
             for (int j = i + 1; j < R7.Buildings.Length; j++)
             {
                 var a = R7.Buildings[i]; var b = R7.Buildings[j];
@@ -63,6 +64,7 @@ public sealed class AccountEstateR7MapTests
                 int gapY = Math.Max(b.Y - (a.Y + a.Height), a.Y - (b.Y + b.Height));
                 Assert.True(Math.Max(gapX, gapY) >= 1, $"{a.Kind} touches {b.Kind}.");
             }
+        }
         Assert.Equal(40, occupied.Count);
         Assert.Equal(104, start.Width * start.Height - occupied.Count);
         var home = Building("m3a:home");
@@ -91,7 +93,12 @@ public sealed class AccountEstateR7MapTests
         {
             var cell = pending.Dequeue();
             foreach (var next in new[] { (cell.X - 1, cell.Y), (cell.X + 1, cell.Y), (cell.X, cell.Y - 1), (cell.X, cell.Y + 1) })
-                if (Inside(start, next) && !blocked.Contains(next) && reached.Add(next)) pending.Enqueue(next);
+            {
+                if (Inside(start, next) && !blocked.Contains(next) && reached.Add(next))
+                {
+                    pending.Enqueue(next);
+                }
+            }
         }
         Assert.All(R7.Buildings, b => Assert.Contains(Door(b), reached));
     }
@@ -103,11 +110,13 @@ public sealed class AccountEstateR7MapTests
         Assert.Equal(R6.Zones.Skip(5).Select(Json), R7.Zones.Skip(5).Select(Json));
         var centre = new HashSet<(int X, int Y)>();
         foreach (var z in R7.Zones.Take(5))
+        {
             foreach (var cell in Cells(z.X, z.Y, z.Width, z.Height))
             {
                 Assert.InRange(cell.X, 20, 39); Assert.InRange(cell.Y, 20, 39);
                 Assert.True(centre.Add(cell), $"Zone overlap at {cell}.");
             }
+        }
         Assert.Equal(400, centre.Count);
         Assert.Equal(new[] { 144, 80, 48, 80, 48 }, R7.Zones.Take(5).Select(z => z.Width * z.Height));
     }
