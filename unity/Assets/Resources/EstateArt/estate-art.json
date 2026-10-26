@@ -1,6 +1,6 @@
 {
   "version": "estate-art-r1",
-  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24).",
+  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24). User-approved 2026-10-26 Lv0 six lit/dark pairs use ASSET-LIST.md floor-centre anchors; roads use the approved straight/bend/fork512 only. New grass variants are deliberately excluded.",
   "atlases": [
     {
       "file": "estate-building-shadows.png",
@@ -16,7 +16,7 @@
     },
     {
       "file": "estate-terrain.png",
-      "sha256": "4838b5bc5ddf925a963f2a7a9fde927df0b32b716ac192418793aa3c9fa7faf3"
+      "sha256": "72bac34fd15866a5ebab7490b1ad04ca6ee6f3faa6df285e1856c16c1bbdae19"
     }
   ],
   "buildings": {
@@ -892,6 +892,381 @@
         356,
         352,
         241
+      ]
+    },
+    {
+      "id": "lv0-stone-foundation-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "01-stone-foundation-lit-2x.png",
+        "sha256": "a5bcb446111ba81334b8bcb5285a439ef18afdb09f68db5fd8622b2d0a814850",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1064,
+        356,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-stone-foundation-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "01-stone-foundation-dark-2x.png",
+        "sha256": "95299cac8bf5919cf29975429e25e9e80e93cfa8fb8da6b4a298753d8a7b7a20",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1338,
+        356,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-broken-fence-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "02-broken-fence-lit-2x.png",
+        "sha256": "2155587535c0b318b76557025bee4ec5545a47ad6600ccfdbe68021023dbab89",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1612,
+        356,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-broken-fence-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "02-broken-fence-dark-2x.png",
+        "sha256": "d30b13d0653d2a422ca441789033cfc6edb72b8e91fba09fa6f30e43da7eee00",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        2,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-charred-frame-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "03-charred-frame-lit-2x.png",
+        "sha256": "ab2e520ae184e4e5547f172745b73fb67b1b577e35f1c284d214a9af6178164e",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        276,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-charred-frame-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "03-charred-frame-dark-2x.png",
+        "sha256": "ef524cf0a81000664052b98ac3baac3b052a8a5b6c9ff9dfd50e188909c353a0",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        550,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-weedy-field-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "04-weedy-field-lit-2x.png",
+        "sha256": "1860a30cc59cf87c338002b70126c8edc1722969ad67b8ce71f28d5ca5d92ecf",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        824,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-weedy-field-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "04-weedy-field-dark-2x.png",
+        "sha256": "6c286a608e7ad90d8867e5d9ff233e6d1dd50ad3e4831c080740420773133bf1",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1098,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-stone-corner-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "05-stone-corner-lit-2x.png",
+        "sha256": "1942f2b16d8b840ec93beacc368953f705c1d3290a58016d38cc32889c4362a8",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1372,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-stone-corner-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "05-stone-corner-dark-2x.png",
+        "sha256": "2e5c2744426b26038cb8f6970f351c14604b6b703382b3d5eb913587a51b6163",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1646,
+        608,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-survey-stakes-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "06-survey-stakes-lit-2x.png",
+        "sha256": "f7c4514729a377febd2573ed4f046ad25f1792b6d0060fa0863e151b143b4e5f",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        2,
+        802,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "lv0-survey-stakes-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "06-survey-stakes-dark-2x.png",
+        "sha256": "8aa721cde0e7d51a00df4fac8d0d59c616d0021f8035f599d554817302d64f94",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        276,
+        802,
+        272,
+        192
+      ]
+    },
+    {
+      "id": "road-straight",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-path-straight-512.png",
+        "sha256": "cbc386bfaf930dc7d5618b6ca5bd70d5a683c3a80a66a8f57855ba79e4952c5d",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        550,
+        802,
+        512,
+        512
+      ]
+    },
+    {
+      "id": "road-bend",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-path-bend-512.png",
+        "sha256": "343cc14de6813b8ca8f89dd7e4686420715f8f1d424ef440bb53af6f46ecb1e2",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1064,
+        802,
+        512,
+        512
+      ]
+    },
+    {
+      "id": "road-fork",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-path-fork-512.png",
+        "sha256": "abfa7f92dc9793dd436d488d26d5f272a115ecce3abfd388bd2de25e8dd80f79",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        2,
+        1316,
+        512,
+        512
       ]
     },
     {

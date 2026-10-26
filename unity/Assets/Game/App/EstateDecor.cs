@@ -113,6 +113,7 @@ namespace Game.App
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
     public sealed class EstateDrawItem
     {
+        public bool IsometricRoad; public int RoadQuarterTurns;
         public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
         public EstateDrawLayer Layer; public int SiteId = -1; public int BuildingId = -1; public string BuildingArt; public int Stage; public float SortY; public string Key = "";
     }
@@ -140,6 +141,7 @@ namespace Game.App
     // roads, restoration states and the terrain skeleton. Same inputs, same plan.
     public static class EstatePlanner
     {
+        static readonly string[] SiteNames = { "stone-foundation", "broken-fence", "charred-frame", "weedy-field", "stone-corner", "survey-stakes" };
         static Vector2 P(Vector2 grid) => EstateMapModel.Project(grid);
         static Vector2Int CellOf(double x, double y) => Vector2Int.FloorToInt(EstateMapModel.Unproject(new Vector2((float)x, (float)y)));
 
@@ -152,10 +154,10 @@ namespace Game.App
             bool AnyZone(Vector2Int c) => config.Zones.Any(z => c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             var buildings = estate.Buildings.OrderBy(b => b.Id).ToArray();
             // Colour the nearby-site graph in stable ID order. Prefer an unused neighbouring layout over ID modulo,
-            // which repeated the granary and field. Four layouts also cover the compact historical opening.
+            // which repeated the granary and field. Six approved layouts also cover the compact historical opening.
             foreach (var site in buildings.Where(b => b.Level == 0))
             {
-                var usage = new int[4];
+                var usage = new int[SiteNames.Length];
                 foreach (var other in buildings)
                     if (plan.SiteVariants.TryGetValue(other.Id, out var used) &&
                         Mathf.Max(Mathf.Abs(site.X - other.X), Mathf.Abs(site.Y - other.Y)) <= 4) usage[used]++;
@@ -178,24 +180,26 @@ namespace Game.App
             }
             var routes = new List<double[][]>();
             var origin = buildings.FirstOrDefault(b => kinds[b.Kind].StartsComplete);
-            if (origin != null)
+            if (origin != null && config.Version == "m3a-prototype-r7")
+            {
+                var openCells = config.Zones.Where(z => estate.OpenZones.Contains(z.Id))
+                    .SelectMany(z => Enumerable.Range(0, z.Width * z.Height)
+                        .Select(i => new Vector2Int(z.X + i % z.Width, z.Y + i / z.Width)))
+                    .Where(c => !taken.Contains(c)).ToHashSet();
+                foreach (var path in TrunkRoads(Door(origin), buildings.Where(b => b.Id != origin.Id).Select(Door), openCells))
+                {
+                    foreach (var cell in path) plan.Road.Add(cell);
+                    routes.Add(path.Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
+                }
+            }
+            else if (origin != null)
                 foreach (var target in buildings.Where(b => b.Id != origin.Id && OpenCell(Door(b))))
                 {
-                    if (config.Version == "m3a-prototype-r7")
-                    {
-                        var path = RoadPath(Door(origin), Door(target), c => OpenCell(c) && !taken.Contains(c));
-                        foreach (var cell in path) plan.Road.Add(cell);
-                        if (path.Count > 0) routes.Add(path.Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
-                    }
-                    else
-                    {
-                        // Historical compact layouts can have doors inside neighbouring footprints. Preserve their
-                        // original road/decor routes rather than dropping those routes when BFS rejects an endpoint.
-                        Vector2Int start = Door(origin), end = Door(target), corner = new Vector2Int(end.x, start.y);
-                        foreach (var cell in Walk(start, corner).Concat(Walk(corner, end)))
-                            if (OpenCell(cell) && !taken.Contains(cell)) plan.Road.Add(cell);
-                        routes.Add(new[] { start, corner, end }.Distinct().Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
-                    }
+                    // Historical compact layouts retain their original decoration routes and road coordinates.
+                    Vector2Int start = Door(origin), end = Door(target), corner = new Vector2Int(end.x, start.y);
+                    foreach (var cell in Walk(start, corner).Concat(Walk(corner, end)))
+                        if (OpenCell(cell) && !taken.Contains(cell)) plan.Road.Add(cell);
+                    routes.Add(new[] { start, corner, end }.Distinct().Select(c => { var p = P(c + new Vector2(.5f, .5f)); return new double[] { p.x, p.y }; }).ToArray());
                 }
 
             // Restoration: tended land (built sites and roads) is in colour, fading through sage to fallow (#375) [가설].
@@ -229,23 +233,17 @@ namespace Game.App
                     plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
                         Colour = dark ? rules.Colour("closed", t.alpha) : new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
                 }
-            // Break up restored sand with the existing low-contrast sage painting. Keep road cells clear so the
-            // earth route remains readable; these are terrain patches, not optional decoration or rule cells.
-            foreach (var zone in config.Zones.Where(z => estate.OpenZones.Contains(z.Id)))
-                for (var u = zone.X; u < zone.X + zone.Width; u += 3)
-                    for (var v = zone.Y; v < zone.Y + zone.Height; v += 3)
-                    {
-                        var cell = new Vector2Int(u, v);
-                        if (plan.Road.Contains(cell) || taken.Contains(cell)) continue;
-                        plan.Items.Add(new EstateDrawItem { Role = t.sage, Source = "terrain", Grid = cell + new Vector2(.7f, .7f),
-                            Width = 3 * 2 * EstateMapModel.HalfWidth, Aspect = .5f, Colour = new Color(1, 1, 1, .65f),
-                            Layer = EstateDrawLayer.Terrain, Key = $"grass-patch-{u}-{v}" });
-                    }
             // Roads: Astra's painted earth along each grid path instead of flat diamonds.
             var sg = rules.sites;
             foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
-                plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "road", Grid = cell + new Vector2(.5f, .5f), Width = sg.roadWidth * 2 * EstateMapModel.HalfWidth, Aspect = sg.aspect,
+            {
+                var r7 = config.Version == "m3a-prototype-r7";
+                var style = RoadStyle(cell, plan.Road);
+                plan.Items.Add(new EstateDrawItem { Role = r7 ? style.Role : sg.ground, Source = "road",
+                    Grid = cell + new Vector2(.5f, .5f), Width = (r7 ? 1.35f : sg.roadWidth) * 2 * EstateMapModel.HalfWidth,
+                    Aspect = sg.aspect, IsometricRoad = r7, RoadQuarterTurns = style.QuarterTurns,
                     Colour = new Color(1, 1, 1, Mathf.Max(.9f, sg.roadAlpha)), Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
+            }
 
             // Astra's scene: built buildings (anchor = footprint centre, w = painted body width at scale 1), the roads, and the open land.
             var scene = new AstraScene();
@@ -295,15 +293,12 @@ namespace Game.App
                     Colour = new Color(1, 1, 1, yg.alpha), Layer = EstateDrawLayer.Ground, Key = sb.Key + "/ground" });
             }
             var night = rules.night;
+            var litAreas = open.Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray();
             foreach (var b in buildings)
             {
                 var kind = kinds[b.Kind]; var centre = new Vector2(b.X + kind.Width * .5f, b.Y + kind.Height * .5f);
-                // An unbuilt site stands on painted earth; a built one in open land is lit (stakes and rope art: requested from Astra).
-                if (b.Level == 0 && estate.Active?.BuildingId != b.Id)
-                    plan.Items.Add(new EstateDrawItem { Role = plan.SiteVariants[b.Id] == 1 ? yg.house : sg.ground, Source = "site", Grid = centre,
-                        Width = (kind.Width + kind.Height) * EstateMapModel.HalfWidth,
-                        Aspect = sg.aspect, Colour = new Color(1, 1, 1, .65f), Layer = EstateDrawLayer.Ground, Key = $"site-{b.Id:00}" });
-                else if (OpenCell(new Vector2Int(b.X, b.Y)))
+                // Approved sites include their own painted foundation; do not add a second ground island.
+                if ((b.Level > 0 || estate.Active?.BuildingId == b.Id) && OpenCell(new Vector2Int(b.X, b.Y)))
                     plan.Lamps.Add((centre, kinds[b.Kind].StartsComplete ? night.homeLampCells : night.lampCells));
             }
             foreach (var b in buildings)
@@ -316,17 +311,10 @@ namespace Game.App
                 // existing hit footprint and remains visible when optional decoration is disabled.
                 if (b.Level == 0 && !building)
                 {
-                    // Four stable layouts of low fragments. A tall frontier wall is a landmark, never a Lv0 building.
-                    var variant = plan.SiteVariants[b.Id];
-                    var inset = variant == 0 ? .72f : variant == 1 ? .6f : .8f;
-                    AddSite(plan, b.Id, "rocks", centre + new Vector2(-inset, -inset), 32, "foundation-back", aspect: .24f);
-                    AddSite(plan, b.Id, "rocks", centre + new Vector2(inset, inset), 30, "foundation-front", aspect: .24f);
-                    AddSite(plan, b.Id, "rocks", centre + new Vector2(-inset, inset), 26, "foundation-left", aspect: .3f);
-                    AddSite(plan, b.Id, "rocks", centre + new Vector2(inset, -inset), 24, "foundation-right", aspect: .3f);
-                    var fenceAt = variant == 0 ? new Vector2(.15f, -.7f) : variant == 1 ? new Vector2(-.7f, .1f)
-                        : variant == 2 ? new Vector2(.65f, .2f) : new Vector2(.1f, .7f);
-                    AddSite(plan, b.Id, "frontier-broken-fence", centre + fenceAt, variant == 2 ? 38 : 46, "fence", aspect: .26f);
-                    AddSite(plan, b.Id, "grass", centre - fenceAt * .6f, variant == 1 ? 27 : 20, "grass", rules.Colour("fallow"), .35f);
+                    var distance = EstateNight.LightDistance(centre, litAreas, config.Version == "m3a-prototype-r7");
+                    var light = night.Alpha(distance) < night.edgeAlpha ? "lit" : "dark";
+                    var role = "lv0-" + SiteNames[plan.SiteVariants[b.Id]] + "-" + light;
+                    AddSite(plan, b.Id, role, centre, 136, "approved");
                     continue;
                 }
                 // Every construction site uses the authored empty furrows and the UI's work sign, not a faded finished body.
@@ -419,6 +407,68 @@ namespace Game.App
         {
             var cell = from; yield return cell;
             while (cell != to) { cell += new Vector2Int(Math.Sign(to.x - cell.x), Math.Sign(to.y - cell.y)); yield return cell; }
+        }
+
+        public static (string Role, int QuarterTurns) RoadStyle(Vector2Int cell, HashSet<Vector2Int> road)
+        {
+            bool Has(int direction) => road.Contains(cell + RoadSteps[direction % 4]);
+            var count = RoadSteps.Count(step => road.Contains(cell + step));
+            if (count >= 3)
+            {
+                // The source fork has a south stem and two north arms. Rotate its missing side to the empty cell.
+                for (var turn = 0; turn < 4; turn++) if (!Has((turn + 3) % 4)) return ("road-fork", turn);
+                return ("road-fork", 0);
+            }
+            for (var turn = 0; turn < 4; turn++)
+                if (Has((turn + 2) % 4) && Has((turn + 3) % 4)) return ("road-bend", turn);
+            return ("road-straight", Has(1) || Has(3) ? 1 : 0);
+        }
+
+        // r7 only: one plaza trunk, then shortest entrance spurs joining the existing tree once. A new cell may
+        // touch only one old road cell, so merging branches cannot form loops or side-by-side duplicate routes.
+        public static List<List<Vector2Int>> TrunkRoads(Vector2Int plaza, IEnumerable<Vector2Int> doors, HashSet<Vector2Int> allowed)
+        {
+            var routes = new List<List<Vector2Int>>();
+            if (!allowed.Contains(plaza)) return routes;
+            var road = new HashSet<Vector2Int> { plaza };
+            routes.Add(new List<Vector2Int> { plaza });
+            var west = allowed.OrderBy(c => c.x).ThenBy(c => Math.Abs(c.y - plaza.y)).ThenBy(c => c.y).First();
+            var east = allowed.OrderByDescending(c => c.x).ThenBy(c => Math.Abs(c.y - plaza.y)).ThenBy(c => c.y).First();
+            foreach (var end in new[] { west, east }.Concat(doors))
+            {
+                var path = JoinRoad(end, road, allowed);
+                if (path.Count == 0) continue;
+                road.UnionWith(path); routes.Add(path);
+            }
+            return routes;
+        }
+
+        static List<Vector2Int> JoinRoad(Vector2Int entrance, HashSet<Vector2Int> road, HashSet<Vector2Int> allowed)
+        {
+            var path = new List<Vector2Int>();
+            if (!allowed.Contains(entrance) || road.Contains(entrance)) return path;
+            var parents = new Dictionary<Vector2Int, Vector2Int> { [entrance] = entrance };
+            var pending = new Queue<Vector2Int>(); pending.Enqueue(entrance);
+            while (pending.Count > 0)
+            {
+                var cell = pending.Dequeue(); var contacts = 0; var junction = cell;
+                foreach (var step in RoadSteps) if (road.Contains(cell + step)) { contacts++; junction = cell + step; }
+                if (contacts > 1) continue;
+                if (contacts == 1)
+                {
+                    path.Add(junction);
+                    for (var cursor = cell; ; cursor = parents[cursor])
+                    { path.Add(cursor); if (cursor == entrance) break; }
+                    return path;
+                }
+                foreach (var step in RoadSteps)
+                {
+                    var next = cell + step;
+                    if (!allowed.Contains(next) || road.Contains(next) || parents.ContainsKey(next)) continue;
+                    parents.Add(next, cell); pending.Enqueue(next);
+                }
+            }
+            return path;
         }
 
         // Stable neighbour order gives equal-length paths the same result on every redraw. This is presentation only.

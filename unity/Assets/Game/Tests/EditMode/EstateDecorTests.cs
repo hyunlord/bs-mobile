@@ -54,7 +54,7 @@ namespace Tests.EditMode
             var granary = state.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
             Assert.That(plan.Items.Any(i => i.BuildingId == granary.Id), Is.False, "Lv0 has no completed body.");
-            Assert.That(plan.Items.Count(i => i.SiteId == granary.Id), Is.EqualTo(6), "Reclaimable foundation, fence, stones and dry grass.");
+            Assert.That(plan.Items.Count(i => i.SiteId == granary.Id), Is.EqualTo(1), "One approved Astra footprint with its authored foundation.");
             var home = state.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             var homeArt = plan.Items.Single(i => i.BuildingId == home.Id);
             Assert.That((homeArt.Stage, homeArt.Colour), Is.EqualTo((2, Color.white)), "The starting home is complete, not the ruined manor stage.");
@@ -85,7 +85,7 @@ namespace Tests.EditMode
                     Assert.That(plan.SiteVariants[site.Id], Is.Not.EqualTo(plan.SiteVariants[neighbour.Id]), site.Kind + " / " + neighbour.Kind);
                 var pieces = plan.Items.Where(i => i.SiteId == site.Id).ToArray();
                 Assert.That(pieces.All(i => i.Layer == EstateDrawLayer.Ground), Is.True, "Flat foundations draw before all standing bodies.");
-                Assert.That(pieces.All(i => i.Aspect > 0 && i.Aspect <= .35f), Is.True, "Existing art is kept low, not a vertical ruin wall.");
+                Assert.That(pieces.All(i => i.Role.StartsWith("lv0-", StringComparison.Ordinal) && i.Aspect == -1), Is.True, "Keep the approved footprint silhouette and authored aspect.");
             }
         }
 
@@ -103,9 +103,13 @@ namespace Tests.EditMode
             {
                 Assert.That(plan.Items.Any(i => i.BuildingId == site.Id), Is.False);
                 var pieces = plan.Items.Where(i => i.SiteId == site.Id).ToArray();
-                Assert.That(pieces.Select(i => i.Role), Is.EquivalentTo(new[] { "rocks", "rocks", "rocks", "rocks", "frontier-broken-fence", "grass" }));
+                Assert.That(pieces.Length, Is.EqualTo(1));
+                Assert.That(pieces[0].Role, Does.StartWith("lv0-"));
+                var sprite = art.Get(pieces[0].Role);
+                Assert.That(sprite.pivot / sprite.rect.size, Is.EqualTo(new Vector2(.5f, .375f)));
+                Assert.That(pieces[0].Width, Is.EqualTo(136));
                 foreach (var piece in pieces) Assert.That(art.Get(piece.Role), Is.Not.Null);
-                Assert.That(pieces.Select(i => art.Get(i.Role).texture).Distinct().Count(), Is.EqualTo(1), "The six flat site pieces share one atlas.");
+                Assert.That(pieces.Select(i => art.Get(i.Role).texture).Distinct().Count(), Is.EqualTo(1), "Approved sites share the terrain atlas.");
                 Assert.That(screen.BuildingAt(new Vector2Int(site.X, site.Y)), Is.EqualTo(site.Id));
                 screen.Select(site.Id); Assert.That(screen.Selected, Is.EqualTo(site.Id));
             }
@@ -202,8 +206,8 @@ namespace Tests.EditMode
             foreach (var zone in config.Zones)
                 Assert.That(first.Area.Contains(new Vector2Int(zone.X - rules.night.margin, zone.Y - rules.night.margin)) && first.Area.Contains(new Vector2Int(zone.X + zone.Width + rules.night.margin - 1, zone.Y + zone.Height + rules.night.margin - 1)), Is.True, "painted area covers " + zone.Id);
             // #379: roads and unbuilt sites stand on Astra's earth, built buildings in open land carry a lamp.
-            Assert.That(first.Count("road"), Is.EqualTo(first.Road.Count)); Assert.That(first.Items.Where(i => i.Source == "road").All(i => i.Role == rules.sites.ground), Is.True);
-            Assert.That(first.Count("site"), Is.EqualTo(state.Estate.Buildings.Count(b => b.Level == 0)));
+            Assert.That(first.Count("road"), Is.EqualTo(first.Road.Count)); Assert.That(first.Items.Where(i => i.Source == "road").All(i => config.Version == "m3a-prototype-r7" ? i.Role.StartsWith("road-", StringComparison.Ordinal) : i.Role == rules.sites.ground), Is.True);
+            Assert.That(first.Count("reclaimable-site"), Is.EqualTo(state.Estate.Buildings.Count(b => b.Level == 0)));
             Assert.That(first.Lamps.Count, Is.EqualTo(state.Estate.Buildings.Count(b => b.Level > 0)));
             Assert.That(first.Items.Where(i => i.Source == "frontier" || i.Source == "wood").All(i => i.Layer == EstateDrawLayer.Veiled), Is.True);
             bool In(AccountEstateZone zone, Vector2 grid) => grid.x >= zone.X && grid.x < zone.X + zone.Width && grid.y >= zone.Y && grid.y < zone.Y + zone.Height;

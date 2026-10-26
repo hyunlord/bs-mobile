@@ -66,7 +66,9 @@ namespace Game.App
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
             foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
-            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor))
+            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)
+                .OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1)
+                .ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal))
             {
                 var colour = item.Colour;
                 if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) colour.a *= .45f;
@@ -209,7 +211,7 @@ namespace Game.App
             if (item.Layer == EstateDrawLayer.Terrain || item.Layer == EstateDrawLayer.Ground || item.Layer == EstateDrawLayer.Landmark)
             {
                 var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
-                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
+                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
             else image = rect.gameObject.AddComponent<Image>();
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
@@ -472,9 +474,11 @@ namespace Game.App
     {
         public Vector2 Grid;
         public float PaintedWidth;
-        public bool Landmark, WaterLandmark;
+        public bool Landmark, WaterLandmark, IsometricRoad;
+        public int RoadQuarterTurns;
         protected override void OnPopulateMesh(VertexHelper mesh)
         {
+            if (IsometricRoad && sprite != null) { PopulateRoad(mesh); return; }
             base.OnPopulateMesh(mesh);
             if (sprite == null) return;
             var rect = rectTransform.rect; var size = sprite.rect.size;
@@ -489,6 +493,34 @@ namespace Game.App
                 vertex.uv1 = new Vector4(grid.x, grid.y, WaterLandmark ? 2 : Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
             }
         }
+        // Only road patches use an isometric mesh and soft perimeter. Buildings and approved Lv0 alpha stay untouched.
+        void PopulateRoad(VertexHelper mesh)
+        {
+            mesh.Clear(); const int divisions = 12;
+            var uv = UnityEngine.Sprites.DataUtility.GetOuterUV(sprite); var rect = rectTransform.rect;
+            var span = PaintedWidth / (EstateMapModel.HalfWidth * 2);
+            for (var y = 0; y <= divisions; y++)
+                for (var x = 0; x <= divisions; x++)
+                {
+                    var u = x / (float)divisions; var v = y / (float)divisions;
+                    var offset = new Vector2(u - .5f, .5f - v);
+                    for (var turn = 0; turn < RoadQuarterTurns; turn++) offset = new Vector2(-offset.y, offset.x);
+                    var edge = Mathf.Min(Mathf.Min(u, 1 - u), Mathf.Min(v, 1 - v));
+                    var tint = color; tint.a *= Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / .18f));
+                    var point = Grid + offset * span;
+                    var vertex = UIVertex.simpleVert;
+                    vertex.position = new Vector3((offset.x - offset.y) * rect.width * .5f, -(offset.x + offset.y) * rect.height * .5f);
+                    vertex.color = tint; vertex.uv0 = new Vector2(Mathf.Lerp(uv.x, uv.z, u), Mathf.Lerp(uv.y, uv.w, v));
+                    vertex.uv1 = new Vector4(point.x, point.y, 0, 0); mesh.AddVert(vertex);
+                }
+            for (var y = 0; y < divisions; y++)
+                for (var x = 0; x < divisions; x++)
+                {
+                    var i = y * (divisions + 1) + x;
+                    mesh.AddTriangle(i, i + 1, i + divisions + 2); mesh.AddTriangle(i, i + divisions + 2, i + divisions + 1);
+                }
+        }
+
     }
 
     // Grid-anchored shapes are rebuilt from the current projection when the map pans or zooms.
