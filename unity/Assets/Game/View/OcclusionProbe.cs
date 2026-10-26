@@ -128,7 +128,7 @@ namespace Game.View
     {
         public const float OverEnemies = .5f;
         public const int EnemyMark = 1;
-        // Enemies are depth-sorted on EnemyLayer..+19. Own weapon effects that can cover them sit above: attack edges (70),
+        // Enemies share EnemyLayer and use painter-sorted texture runs. Own effects sit above: attack edges (70),
         // impact particles (71), projectiles and shield discs (74), additive glow (75), shield emblems (76).
         public static bool IsEnemyLayer(int layer) => layer >= GameVisualTokens.EnemyLayer && layer < GameVisualTokens.EnemyLayer + 20;
         public static bool IsEffectLayer(int layer) => layer >= 70 && layer <= 79 && layer != GameVisualTokens.WaveDangerLayer

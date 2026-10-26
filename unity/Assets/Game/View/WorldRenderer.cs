@@ -46,6 +46,8 @@ namespace Game.View
         EnemyRigAtlas enemyRigAtlas;
         readonly Dictionary<(string kind, string id, string state), ArtVisual> visuals = new Dictionary<(string, string, string), ArtVisual>();
         readonly Dictionary<(int layer, Texture2D texture), SpriteBatch> batches = new Dictionary<(int, Texture2D), SpriteBatch>();
+        readonly EnemyDrawQueue enemyDraws = new EnemyDrawQueue();
+        public int EnemyDrawCalls => enemyDraws.DrawCalls;
         readonly Dictionary<int, Vector2> previousEnemies = new Dictionary<int, Vector2>();
         readonly Dictionary<int, Vector2> previousPeople = new Dictionary<int, Vector2>();
         readonly Dictionary<int, BuildingProgressView> construction = new Dictionary<int, BuildingProgressView>();
@@ -312,6 +314,7 @@ namespace Game.View
             announcements.SetSuppressed(!ShowAnnouncements);
             announcements.Present(seconds, safeAreaPixels, renderCamera.WorldToScreenPoint(lord));
             foreach (var batch in batches.Values) batch.BeginFrame();
+            enemyDraws.BeginFrame();
             ScreenTintAlpha = 0;
             lordMarker?.BeginFrame(); musterRings?.BeginFrame();
             actorGrounding.BeginFrame(); actorWings.BeginFrame();
@@ -429,8 +432,7 @@ namespace Game.View
                 }
                 var hitProgress=flashing?1-(hitUntil[enemy.Id]-visualTime)/(wave!=null&&ImpactFeedbackEnabled?GameVisualTokens.EnemyHitFlashSeconds:GameVisualTokens.HitFlashSeconds):-1;
                 var enemyFacing=Facing("enemy",enemy.Id,moved?Point(enemy.Position)-before:Vector2.zero);
-                var enemyLayer=GameVisualTokens.EnemyLayer+(wave==null?0:Mathf.Clamp(19-Mathf.FloorToInt(20f*enemy.Position.Y/mapHeight),0,19));
-                if(FieldActive)enemyLayer=GameVisualTokens.EnemyLayer+Mathf.Clamp(19-Mathf.FloorToInt(20f*renderCamera.WorldToViewportPoint(position).y),0,19);
+                const int enemyLayer = GameVisualTokens.EnemyLayer;
                 var actorTime=visualTime+enemy.Id*.13f;
                 var actorPose=rigged?new ActorPose(Vector2.zero,Vector2.one,0):ActorMotion.SampleEnemy(actorKind,actorTime,moved);
                 if (wave != null)
@@ -506,6 +508,8 @@ namespace Game.View
             var occlusion = OcclusionProbe.Active;
             occlusion?.Begin(renderCamera, occlusion.FrameSource?.Invoke() ?? PresentedFrames);
             foreach (var batch in batches.Values) { batch.Flush(); SubmittedInstances += batch.SubmittedInstances; DrawCalls += batch.DrawCalls; }
+            enemyDraws.Flush(shader, renderCamera);
+            SubmittedInstances += enemyDraws.SubmittedInstances; DrawCalls += enemyDraws.DrawCalls;
             if(lordMarker!=null){lordMarker.Flush();SubmittedInstances+=lordMarker.SubmittedInstances;DrawCalls+=lordMarker.DrawCalls;}
             if(musterRings!=null){musterRings.Flush();SubmittedInstances+=musterRings.SubmittedInstances;DrawCalls+=musterRings.DrawCalls;}
             FlushOrbitShapes(); FlushBladeRibbons();
@@ -787,9 +791,9 @@ namespace Game.View
             var dimensions=Vector2.Scale(size,pose.Scale);
             var angle=pose.Degrees+facing.LeanDegrees;
             dimensions.x *= facing.SignedWidth;
-            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels,uv:uv);
+            Draw(visual,layer,position+pose.Offset,time,dimensions,angle,tint:tint,flash:flash,upperOpacity:upperOpacity,applyTween:false,edgeTexels:edgeTexels,uv:uv,sortY:position.y);
         }
-        void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true)
+        void Draw(ArtVisual visual, int layer, Vector2 position, float time, Vector2? size = null, float degrees = 0, float opacity = 1, Color? tint = null, float flash = 0, Rect? uv = null, float edgeTexels = 0, float upperOpacity = 1, bool applyTween = true, float? sortY = null)
         {
             var dimensions = size ?? visual.WorldSize;
             if (FieldActive && !FieldVisible(position, dimensions)) return;
@@ -803,6 +807,12 @@ namespace Game.View
             }
             var frame = Mathf.FloorToInt(Mathf.Max(0, time) * 1000 / visual.FrameMs) % visual.UvRects.Count;
             var color = tint ?? Color.white; color.a *= Mathf.Clamp01(opacity);
+            if (layer == GameVisualTokens.EnemyLayer)
+            {
+                enemyDraws.Add(visual.Texture, position, dimensions, visual.Pivot, uv ?? visual.UvRects[frame], degrees,
+                    color, flash, edgeTexels, upperOpacity, sortY ?? position.y);
+                return;
+            }
             var key = (layer, visual.Texture);
             if (!batches.TryGetValue(key, out var batch))
             {
@@ -820,6 +830,7 @@ namespace Game.View
             DisposeFallow();
             DisposeThreatWarnings();
             DisposeActorGrounding();
+            enemyDraws.Dispose();
             foreach (var batch in batches.Values) batch.Dispose(); batches.Clear(); lordMarker?.Dispose();lordMarkerMeshes?.Dispose(); musterRings?.Dispose(); musterRingMeshes?.Dispose(); orbitShapes?.Dispose(); orbitShapeMeshes?.Dispose(); visuals.Clear(); allyMarker = null; allyMarkerResolved = false; numbers?.Dispose(); lordDamageNumbers?.Dispose(); growthLabels?.Dispose(); announcements?.Dispose(); art = null;
         }
     }
