@@ -1,6 +1,7 @@
 using System.Linq;
 using Game.App;
 using Game.App.Generated;
+using Game.View;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
@@ -18,6 +19,38 @@ namespace Tests.EditMode
         static EstateMapModel Model()
         {
             var model = new EstateMapModel(16, 8); model.SetFrame(new Vector2(390, 844), Top, Bottom); return model;
+        }
+
+        [TestCase(.5f, 1f)]
+        [TestCase(.8f, 2f)]
+        public void StretchedGroundCoordinatesFollowTheRenderedRectangle(float aspect, float zoom)
+        {
+            var owner = new GameObject("Ground coordinate regression", typeof(RectTransform), typeof(Canvas));
+            var texture = new Texture2D(32, 32);
+            var pivot = new Vector2(.25f, .75f);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 32, 32), pivot);
+            try
+            {
+                var canvas = owner.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+                var rect = UiShell.Rect("Stretched ground", owner.transform);
+                rect.pivot = new Vector2(0, 1); rect.sizeDelta = new Vector2(128 * zoom, 128 * aspect * zoom);
+                var image = rect.gameObject.AddComponent<EstateTerrainImage>();
+                image.sprite = sprite; image.Grid = new Vector2(10, 20); image.PaintedWidth = 128;
+                Canvas.ForceUpdateCanvases();
+                var mesh = image.canvasRenderer.GetMesh();
+                Assert.That(mesh.vertexCount, Is.EqualTo(4));
+                var coordinates = new System.Collections.Generic.List<Vector4>(); mesh.GetUVs(1, coordinates);
+                var anchor = rect.rect.min + Vector2.Scale(rect.rect.size, pivot);
+                for (var i = 0; i < mesh.vertexCount; i++)
+                {
+                    var offset = ((Vector2)mesh.vertices[i] - anchor) / zoom;
+                    var expected = image.Grid + EstateMapModel.Unproject(new Vector2(offset.x, -offset.y));
+                    Assert.That(Vector2.Distance(new Vector2(coordinates[i].x, coordinates[i].y), expected), Is.LessThan(.0001f),
+                        "Ground restoration and the displayed patch must describe the same map point (#386).");
+                }
+            }
+            finally { Object.DestroyImmediate(owner); Object.DestroyImmediate(sprite); Object.DestroyImmediate(texture); }
         }
 
         [Test] public void CellsAreSixtyFourByThirtyTwoDiamonds()

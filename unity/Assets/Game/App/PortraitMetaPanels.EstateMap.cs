@@ -466,7 +466,7 @@ namespace Game.App
                 mesh.PopulateUIVertex(ref vertex, i);
                 var fraction = new Vector2((vertex.position.x - rect.xMin) / rect.width, (vertex.position.y - rect.yMin) / rect.height);
                 var offset = fraction - pivot;
-                var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * size.y / size.x));
+                var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * rect.height / rect.width));
                 vertex.uv1 = new Vector4(grid.x, grid.y, WaterLandmark ? 2 : Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
             }
         }
