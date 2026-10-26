@@ -40,3 +40,11 @@ crowd411 .NET 재생은 tick11530, 종료해시 `59805294BB813DA1D34D1CF505F49A4
 실제 돌격선두 깃발·방어 궤도 방패·가신·목수집3상태·카드/진화 목록 전후는 미확인이다. 다른 작업의 worldsim_probe CPU가100%를 넘고 blocker 프로세스가 있어 공유Mac 녹화 조건을 충족하지 않았다. 다른 프로세스를 종료하지 않았다.
 
 harvest-flag는 현재 게임 그리기 consumer가 없다. 승인 crop만 교체하고 명시적 역할 목록 fixture로 확인할 예정이며 게임 연결을 추가하지 않는다. 선택 캡처 SPROUT_EMBLEM_CAPTURE는 이번 두 프로필 실행에서0으로 유지했다. 누락 role 방패 fallback도 실제 캡처 미확인이다.
+
+## 21:19 KST: test-session guard prerequisite stopped (#415)
+
+Merged the isolated #415 guard without rewriting history (a5e7b83 includes 0543c60). Added optional actual CardPool screenshots for `core:heirloom_service` and `core:seed_crown` (af8203c), rather than labeling the icon-gallery fixture as a gameplay/UI list.
+
+The prerequisite's full attempt had 236 actual cyan-free observations, but two wave-1a map interaction tests hit `Movement surface` instead of their target in graphical Editor. Graphical Editor also reserialized EditorSettings.asset. #415 preserves both failures and the invalid runner record. Under the repeated-failure rule, **no new #411 Unity run or native comparison was started**. The prior #411 failed Unity record is historical and does not validate this new head. Keep this PR draft; no merger authorization.
+
+15 approved crop checks and both importer tests passed again; pixels outside approved cells and measured_volley remain unchanged. Core/data are unchanged. Missing actual before/after surfaces remain missing, not replaced by catalog fixtures. C05 remains unnecessary for pixel-only replacements unless actual batching changes are observed.
