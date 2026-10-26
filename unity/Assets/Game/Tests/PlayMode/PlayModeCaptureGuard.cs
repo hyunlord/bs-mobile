@@ -9,6 +9,28 @@ using UnityEditor;
 
 namespace Tests.PlayMode
 {
+#if UNITY_EDITOR
+    [SetUpFixture]
+    public sealed class PlayModeCaptureSession
+    {
+        bool originalAsyncCompilation;
+
+        [OneTimeSetUp]
+        public void BeginSession()
+        {
+            originalAsyncCompilation = EditorSettings.asyncShaderCompilation;
+            EditorSettings.asyncShaderCompilation = false;
+            Debug.Log($"CAPTURE_SESSION asyncShaderCompilation=false original={originalAsyncCompilation}");
+        }
+
+        [OneTimeTearDown]
+        public void EndSession()
+        {
+            EditorSettings.asyncShaderCompilation = originalAsyncCompilation;
+            Debug.Log($"CAPTURE_SESSION_RESTORED asyncShaderCompilation={originalAsyncCompilation}");
+        }
+    }
+#endif
     // Test-only capture surveillance. Compiler-idle is evidence, not a render-completion fence.
 #if UNITY_EDITOR
     [InitializeOnLoad]
@@ -68,6 +90,10 @@ namespace Tests.PlayMode
                 }
                 yield return null;
             }
+            var readyFrame = Time.frameCount;
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
+            Debug.Log($"SHADER_CAPTURE_FRESH_FRAMES capture={label} readyFrame={readyFrame} captureFrame={Time.frameCount} endOfFrameCount=2 anythingCompiling={ShaderUtil.anythingCompiling}");
             Debug.Log($"SHADER_CAPTURE_READY capture={label} compilingAtStart={compilingAtStart} anythingCompiling=false waitedSeconds={Time.realtimeSinceStartupAsDouble-started:F3} frame={Time.frameCount}");
 #endif
             yield break;
