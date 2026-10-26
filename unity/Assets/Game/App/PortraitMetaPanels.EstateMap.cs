@@ -46,7 +46,8 @@ namespace Game.App
             var top = GoalTop + GoalHeight; var panel = PanelHeightFor(screen);
             var bottom = BottomBar + BottomGap * 3 + WorkHeight + (panel > 0 ? panel + BottomGap : 0);
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
-            screen.Map.SetFocus(screen.OpenAreas(night.openingMargin));
+            // The spaced r7 opening fits all 12×12 cells; legacy openings keep their authored night margin.
+            screen.Map.SetFocus(screen.OpenAreas(screen.Config.Version == "m3a-prototype-r7" ? 0 : night.openingMargin));
             if (!screen.Map.Framed) screen.FrameFirstView();
             // Centre the selected foundation in the unobscured band above the sheet; while moving, the camera stays where the
             // player put it so the destination preview remains visible.
@@ -57,15 +58,23 @@ namespace Game.App
             // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
             var art = EstateArt.Load(); var tint = art.Tint;
             var terrainTint = viewport.gameObject.AddComponent<EstateTerrainMaterial>();
-            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"));
+            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), screen.Config.Version == "m3a-prototype-r7");
             ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
-            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : "EstateMap.Terrain", item);
-            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)) Paint(viewport, view, art, terrainTint.Material, item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : "EstateMap.Site", item);
+            foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : item.Source == "soil" ? "EstateMap.Decor:soil" : "EstateMap.Terrain", item);
+            foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)
+                .OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1)
+                .ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal))
+            {
+                var colour = item.Colour;
+                if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) colour.a *= .45f;
+                var name = item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : "EstateMap.Site";
+                Paint(viewport, view, art, terrainTint.Material, name, item, colour: colour);
+            }
             if (screen.Moving)
             {
                 var grid = Shapes(viewport, "EstateMap.Grid", view);
@@ -84,7 +93,7 @@ namespace Game.App
             // The night reaches `nightOverhang` cells past the painted area: terrain patches spill past their blocks, and whatever
             // spills stays under the night before its opaque rim.
             var o = night.nightOverhang; var nightArea = new RectInt(plan.Area.x - o, plan.Area.y - o, plan.Area.width + 2 * o, plan.Area.height + 2 * o);
-            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray()));
+            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray(), screen.Config.Version == "m3a-prototype-r7"));
             view.Track(nightGraphic);
             foreach (var item in OrderedEstateLandmarks(plan, art))
                 Paint(viewport, view, art, tint, "EstateMap.Landmark:" + item.Role, item);
@@ -112,7 +121,13 @@ namespace Game.App
                 Paint(viewport, view, art, tint, "EstateMap.Shadow:" + item.BuildingId, item, art.Shadow(item.BuildingArt, item.Stage), new Color(1, 1, 1, .8f));
             foreach (var item in standing)
             {
-                if (item.BuildingId < 0) { Paint(viewport, view, art, tint, DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item); continue; }
+                if (item.BuildingId < 0)
+                {
+                    var siteColour = item.Colour;
+                    if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) siteColour.a *= .45f;
+                    Paint(viewport, view, art, tint, item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item, colour: siteColour);
+                    continue;
+                }
                 var building = screen.Building(item.BuildingId); var kind = screen.Kind(building.Kind);
                 var colour = item.Colour; if (screen.Moving && screen.Selected == building.Id) colour.a *= .45f;
                 Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);
@@ -184,7 +199,7 @@ namespace Game.App
                 .ThenBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal);
 
         // Sources the [장식 켬/끔] development switch hides (#372); terrain, buildings, the river skeleton and the darkness stay.
-        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant" };
+        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil" };
 
         // One estate sprite: its pivot stands on the item's grid point, `Width` is in scale-1 canvas units, and the colour goes to
         // the EstateTint shader as (saturation, brightness, light, alpha). Without the shader the art draws untinted.
@@ -196,7 +211,9 @@ namespace Game.App
             if (item.Layer == EstateDrawLayer.Terrain || item.Layer == EstateDrawLayer.Ground || item.Layer == EstateDrawLayer.Landmark)
             {
                 var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
-                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
+                terrain.IsometricGround = item.IsometricGround;
+                terrain.RoadPoints = item.RoadPoints; terrain.RoadWidth = item.RoadWidth; terrain.RoadFootprints = item.RoadFootprints;
+                terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
             else image = rect.gameObject.AddComponent<Image>();
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
@@ -206,7 +223,7 @@ namespace Game.App
             if (tint != null && item.Source == "landmark" && QualitySettings.activeColorSpace == ColorSpace.Linear && !image.canvas.vertexColorAlwaysGammaSpace)
                 c = c.gamma;
             image.color = tint != null ? c : new Color(1, 1, 1, c.a);
-            var size = sprite.rect.size; var pivot = new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
+            var size = sprite.rect.size; var pivot = item.RoadPoints != null ? new Vector2(.5f, .5f) : new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
             view.Prop(rect, item.Grid, item.Width / (EstateMapModel.HalfWidth * 2), pivot, item.Aspect > 0 ? item.Aspect : size.y / size.x);
             return image;
         }
@@ -318,13 +335,19 @@ namespace Game.App
                 return status;
             }
             var next = screen.NextStep(id);
+            var eligibility = screen.ConstructionPreview(id);
             Caption(ui, panel, next == null ? "최고 레벨" : "다음 Lv " + (building.Level + 1) + " · " + screen.Amounts(next.Value.Cost) + " · " + EstateMapScreen.Clock(next.Value.Seconds), 14, 60, width - 44, 22, 13);
-            if (screen.Notice.Length > 0) Caption(ui, panel, screen.Notice, 14, 86, width - 44, 22, 13).color = Gold;
+            if (next != null && !eligibility.Allowed && !screen.UnderConstruction(id) && !screen.Reserved(id))
+            {
+                var reason = Caption(ui, panel, eligibility.Text, 14, 86, width - 44, 22, 13);
+                reason.name = "EstateMap.ConstructionReason"; reason.color = Gold;
+            }
+            else if (screen.Notice.Length > 0) Caption(ui, panel, screen.Notice, 14, 86, width - 44, 22, 13).color = Gold;
             Button primary;
             if (screen.Reserved(id))
                 primary = ActionButton(ui, panel, "EstateMap.CancelReservation:" + id, "예약 취소", () => { screen.CancelReservation(id); actions.Redraw(); }, 14, 146, third, true, 48);
             else if (next != null)
-                primary = ActionButton(ui, panel, "EstateMap.Build", building.Level == 0 ? "짓기" : "올리기", () => { screen.StartWork(id); actions.Redraw(); }, 14, 146, third, !screen.UnderConstruction(id), 48, "ui.button.primary");
+                primary = ActionButton(ui, panel, "EstateMap.Build", building.Level == 0 ? "짓기" : "올리기", () => { screen.StartWork(id); actions.Redraw(); }, 14, 146, third, eligibility.Allowed, 48, "ui.button.primary");
             else
                 primary = ActionButton(ui, panel, "EstateMap.Specialize", "전문화", () => { screen.BeginSpecialize(); actions.Redraw(); }, 14, 146, third, kind.Branches != null && kind.Branches.Length > 0, 48, "ui.button.primary");
             ActionButton(ui, panel, "EstateMap.Move", "이동", () => { screen.BeginMove(); actions.Redraw(); }, 24 + third, 146, third, !screen.UnderConstruction(id), 48);
@@ -432,30 +455,41 @@ namespace Game.App
         }
     }
 
-    // Pixel-wise open-land tint stops a large warm ground patch spilling colour beyond its open cells (#385).
+    // Pixel-wise restoration shares the night field; r7 adds presentation-only light beyond edge foundations (#389).
     public sealed class EstateTerrainMaterial : MonoBehaviour
     {
         public Material Material { get; private set; }
-        public void Configure(Material source, IEnumerable<AccountEstateZone> zones, Color closed)
+        public void Configure(Material source, IEnumerable<AccountEstateZone> zones, Color closed, bool edgeFoundations = false)
         {
             if (source == null) return;
             var areas = zones.Select(z => new Vector4(z.X, z.Y, z.X + z.Width, z.Y + z.Height)).ToArray();
             if (areas.Length > 32) throw new InvalidOperationException("Estate ground supports at most 32 open zones.");
             var padded = new Vector4[32]; Array.Copy(areas, padded, areas.Length);
             Material = new Material(source) { name = "Estate ground", hideFlags = HideFlags.HideAndDontSave };
+            Material.SetFloat("_EstateCornerRadius", edgeFoundations ? EstateNight.FoundationCornerCells : 0);
+            Material.SetFloat("_EstateLightSpread", edgeFoundations ? EstateNight.FoundationSpreadCells : 0);
             Material.SetFloat("_EstateGround", 1); Material.SetInt("_EstateOpenCount", areas.Length);
             Material.SetVectorArray("_EstateOpenAreas", padded); Material.SetColor("_EstateClosed", closed);
         }
-        void OnDestroy() { if (Material != null) Destroy(Material); }
+        void OnDestroy()
+        {
+            if (Material == null) return;
+            if (Application.isPlaying) Destroy(Material); else DestroyImmediate(Material);
+        }
     }
 
     public sealed class EstateTerrainImage : Image
     {
         public Vector2 Grid;
         public float PaintedWidth;
-        public bool Landmark, WaterLandmark;
+        public bool Landmark, WaterLandmark, IsometricRoad, IsometricGround;
+        public int RoadQuarterTurns;
+        public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         protected override void OnPopulateMesh(VertexHelper mesh)
         {
+            if (IsometricGround && sprite != null) { PopulateGround(mesh); return; }
+            if (RoadPoints != null && sprite != null) { PopulateRoadRibbon(mesh); return; }
+            if (IsometricRoad && sprite != null) { PopulateRoad(mesh); return; }
             base.OnPopulateMesh(mesh);
             if (sprite == null) return;
             var rect = rectTransform.rect; var size = sprite.rect.size;
@@ -470,6 +504,153 @@ namespace Game.App
                 vertex.uv1 = new Vector4(grid.x, grid.y, WaterLandmark ? 2 : Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
             }
         }
+        // Round the grid path, not the texture: a single dirt strip follows the estate axes without per-cell diamonds.
+        public static List<Vector2> RoundedRoad(Vector2[] points)
+        {
+            var corners = new List<Vector2>();
+            for (var i = 0; i < points.Length; i++)
+                if (i == 0 || i == points.Length - 1 ||
+                    Vector2.Dot((points[i] - points[i - 1]).normalized, (points[i + 1] - points[i]).normalized) < .999f)
+                    corners.Add(points[i]);
+            var curve = new List<Vector2>();
+            if (corners.Count == 0) return curve;
+            curve.Add(corners[0]);
+            for (var i = 1; i < corners.Count - 1; i++)
+            {
+                var centre = corners[i];
+                var before = centre + (corners[i - 1] - centre).normalized * Mathf.Min(.3f, Vector2.Distance(centre, corners[i - 1]) * .3f);
+                var after = centre + (corners[i + 1] - centre).normalized * Mathf.Min(.3f, Vector2.Distance(centre, corners[i + 1]) * .3f);
+                curve.Add(before);
+                for (var sample = 1; sample <= 6; sample++)
+                {
+                    var t = sample / 6f;
+                    curve.Add((1 - t) * (1 - t) * before + 2 * (1 - t) * t * centre + t * t * after);
+                }
+            }
+            if (corners.Count > 1) curve.Add(corners[corners.Count - 1]);
+            var sampled = new List<Vector2> { curve[0] };
+            for (var i = 1; i < curve.Count; i++)
+            {
+                var steps = Mathf.Max(1, Mathf.CeilToInt(Vector2.Distance(EstateMapModel.Project(curve[i - 1]), EstateMapModel.Project(curve[i])) / 12));
+                for (var step = 1; step <= steps; step++) sampled.Add(Vector2.Lerp(curve[i - 1], curve[i], step / (float)steps));
+            }
+            return sampled;
+        }
+
+        // The nominal 18px trunk is wider than a one-cell alley at first zoom. Taper its feather before a site foundation.
+        public static float RoadSideExtent(Vector2 gridCentre, Vector2 gridDirection, float maximum, RectInt[] footprints)
+        {
+            if (footprints == null) return maximum;
+            var result = maximum;
+            foreach (var rect in footprints)
+            {
+                var enter = 0f; var exit = maximum; var intersects = true;
+                for (var axis = 0; axis < 2; axis++)
+                {
+                    var origin = gridCentre[axis]; var direction = gridDirection[axis];
+                    var low = axis == 0 ? rect.xMin : rect.yMin; var high = axis == 0 ? rect.xMax : rect.yMax;
+                    if (Mathf.Abs(direction) < .00001f) { if (origin <= low || origin >= high) intersects = false; continue; }
+                    var a = (low - origin) / direction; var b = (high - origin) / direction;
+                    enter = Mathf.Max(enter, Mathf.Min(a, b)); exit = Mathf.Min(exit, Mathf.Max(a, b));
+                }
+                if (intersects && enter < exit) result = Mathf.Min(result, Mathf.Max(0, enter - .2f));
+            }
+            return result;
+        }
+
+        void PopulateRoadRibbon(VertexHelper mesh)
+        {
+            mesh.Clear();
+            var curve = RoundedRoad(RoadPoints);
+            if (curve.Count < 2 || PaintedWidth <= 0) return;
+            var uv = UnityEngine.Sprites.DataUtility.GetOuterUV(sprite);
+            var scale = rectTransform.rect.width / PaintedWidth;
+            var origin = EstateMapModel.Project(Grid);
+            // The approved patch has a narrow dirt band; exclude its broad grass shoulders from the road ribbon.
+            const int lanes = 8;
+            var distance = 0f;
+            for (var i = 0; i < curve.Count; i++)
+            {
+                var centre = EstateMapModel.Project(curve[i]);
+                var previous = EstateMapModel.Project(curve[Mathf.Max(0, i - 1)]);
+                var next = EstateMapModel.Project(curve[Mathf.Min(curve.Count - 1, i + 1)]);
+                var tangent = (next - previous).normalized;
+                var normal = new Vector2(-tangent.y, tangent.x);
+                if (i > 0) distance += Vector2.Distance(centre, previous);
+                for (var lane = 0; lane <= lanes; lane++)
+                {
+                    var across = lane == 1 ? .04f : lane == lanes - 1 ? .96f : lane / (float)lanes;
+                    var side = across < .5f ? -1 : 1;
+                    var extent = RoadSideExtent(curve[i], EstateMapModel.Unproject(normal * side), RoadWidth * .5f, RoadFootprints);
+                    var point = centre + normal * ((across - .5f) * extent * 2);
+                    var local = (point - origin) * scale;
+                    var vertex = UIVertex.simpleVert;
+                    vertex.position = rectTransform.rect.center + new Vector2(local.x, -local.y);
+                    var tint = color; tint.a *= Mathf.SmoothStep(0, 1, Mathf.Min(across, 1 - across) / .04f);
+                    vertex.color = tint;
+                    // Ping-pong avoids an atlas wrap seam at the join between repeated grain spans.
+                    vertex.uv0 = new Vector2(Mathf.Lerp(uv.x, uv.z, Mathf.PingPong(distance / 64f, 1)),
+                        Mathf.Lerp(uv.y, uv.w, Mathf.Lerp(.455f, .545f, across)));
+                    var grid = EstateMapModel.Unproject(point);
+                    vertex.uv1 = new Vector4(grid.x, grid.y, 0, 0); mesh.AddVert(vertex);
+                }
+            }
+            for (var i = 0; i < curve.Count - 1; i++)
+                for (var lane = 0; lane < lanes; lane++)
+                {
+                    var a = i * (lanes + 1) + lane;
+                    mesh.AddTriangle(a, a + 1, a + lanes + 2);
+                    mesh.AddTriangle(a, a + lanes + 2, a + lanes + 1);
+                }
+        }
+
+        void PopulateGround(VertexHelper mesh)
+        {
+            mesh.Clear();
+            var uv = UnityEngine.Sprites.DataUtility.GetOuterUV(sprite); var rect = rectTransform.rect;
+            var span = PaintedWidth / (EstateMapModel.HalfWidth * 2);
+            var inset = new Vector2(.5f / sprite.texture.width, .5f / sprite.texture.height);
+            uv.x += inset.x; uv.y += inset.y; uv.z -= inset.x; uv.w -= inset.y;
+            for (var i = 0; i < 4; i++)
+            {
+                var offset = new Vector2(i == 1 || i == 2 ? .5f : -.5f, i >= 2 ? .5f : -.5f);
+                var point = Grid + offset * span; var vertex = UIVertex.simpleVert;
+                vertex.position = new Vector3(rect.center.x + (offset.x - offset.y) * rect.width * .5f,
+                    rect.center.y - (offset.x + offset.y) * rect.height * .5f);
+                vertex.color = color; vertex.uv0 = new Vector2(Mathf.Lerp(uv.x, uv.z, offset.x + .5f), Mathf.Lerp(uv.y, uv.w, .5f - offset.y));
+                vertex.uv1 = new Vector4(point.x, point.y, 0, 0); mesh.AddVert(vertex);
+            }
+            mesh.AddTriangle(0, 1, 2); mesh.AddTriangle(0, 2, 3);
+        }
+
+        // Only road patches use an isometric mesh and soft perimeter. Buildings and approved Lv0 alpha stay untouched.
+        void PopulateRoad(VertexHelper mesh)
+        {
+            mesh.Clear(); const int divisions = 12;
+            var uv = UnityEngine.Sprites.DataUtility.GetOuterUV(sprite); var rect = rectTransform.rect;
+            var span = PaintedWidth / (EstateMapModel.HalfWidth * 2);
+            for (var y = 0; y <= divisions; y++)
+                for (var x = 0; x <= divisions; x++)
+                {
+                    var u = x / (float)divisions; var v = y / (float)divisions;
+                    var offset = new Vector2(u - .5f, .5f - v);
+                    for (var turn = 0; turn < RoadQuarterTurns; turn++) offset = new Vector2(-offset.y, offset.x);
+                    var edge = Mathf.Min(Mathf.Min(u, 1 - u), Mathf.Min(v, 1 - v));
+                    var tint = color; tint.a *= Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / .18f));
+                    var point = Grid + offset * span;
+                    var vertex = UIVertex.simpleVert;
+                    vertex.position = new Vector3((offset.x - offset.y) * rect.width * .5f, -(offset.x + offset.y) * rect.height * .5f);
+                    vertex.color = tint; vertex.uv0 = new Vector2(Mathf.Lerp(uv.x, uv.z, u), Mathf.Lerp(uv.y, uv.w, v));
+                    vertex.uv1 = new Vector4(point.x, point.y, 0, 0); mesh.AddVert(vertex);
+                }
+            for (var y = 0; y < divisions; y++)
+                for (var x = 0; x < divisions; x++)
+                {
+                    var i = y * (divisions + 1) + x;
+                    mesh.AddTriangle(i, i + 1, i + divisions + 2); mesh.AddTriangle(i, i + divisions + 2, i + divisions + 1);
+                }
+        }
+
     }
 
     // Grid-anchored shapes are rebuilt from the current projection when the map pans or zooms.
@@ -555,6 +736,8 @@ namespace Game.App
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateNight : MaskableGraphic
     {
+        public const float FoundationCornerCells = 2;
+        public const float FoundationSpreadCells = 2;
         static Texture2D field; static string fieldKey;
         public EstateMapModel Model;
         RectInt area; Texture2D texture;
@@ -563,39 +746,61 @@ namespace Game.App
 
         // View-only rounded light; the square account grid and open-cell rules remain unchanged.
         // Keep this radial distance identical to EstateTint's ground restoration field.
-        public static float LightDistance(Vector2 point, RectInt[] open)
+        public static float LightDistance(Vector2 point, RectInt[] open, bool edgeFoundations = false)
         {
             var distance = 10000f;
             foreach (var r in open)
             {
                 var half = new Vector2(r.width, r.height) * .5f;
                 var radius = Mathf.Min(half.x, half.y);
+                if (edgeFoundations) radius = Mathf.Min(radius, FoundationCornerCells);
                 var offset = point - r.center;
                 var q = new Vector2(Mathf.Abs(offset.x), Mathf.Abs(offset.y)) - half + Vector2.one * radius;
                 distance = Mathf.Min(distance, Vector2.Max(q, Vector2.zero).magnitude + Mathf.Min(Mathf.Max(q.x, q.y), 0) - radius);
             }
-            return distance;
+            return distance - (edgeFoundations ? FoundationSpreadCells : 0);
         }
 
-        public static Texture2D Field(EstateDecorRules.Night night, RectInt area, RectInt[] open)
+        public static Texture2D Field(EstateDecorRules.Night night, RectInt area, RectInt[] open, bool edgeFoundations = false)
         {
-            var key = area + "|" + string.Join(";", open) + "|" + JsonUtility.ToJson(night);
+            var key = area + "|" + string.Join(";", open) + "|" + JsonUtility.ToJson(night) + "|" + edgeFoundations;
             if (field != null && fieldKey == key) return field;
-            var res = Mathf.Max(1, night.texelsPerCell); int width = area.width * res, height = area.height * res;
+            var res = edgeFoundations ? Mathf.Max(8, night.texelsPerCell) : Mathf.Max(1, night.texelsPerCell); int width = area.width * res, height = area.height * res;
             var pixels = new Color32[width * height];
             for (var j = 0; j < height; j++)
                 for (var i = 0; i < width; i++)
                 {
                     float px = area.xMin + (i + .5f) / res, py = area.yMin + (j + .5f) / res;
-                    var d = LightDistance(new Vector2(px, py), open);
-                    // A narrow warm RIM, not an opaque gold cloud over the buildings.
-                    var rim = .28f * Mathf.Exp(-d * d / .72f);
+                    var d = LightDistance(new Vector2(px, py), open, edgeFoundations);
+                    // Broad, faint warmth blends into night instead of tracing a pale outline around each cell.
+                    var rim = .14f * Mathf.Exp(-d * d / 3.2f);
                     Color32 colour = Color.Lerp(night.Colour, night.Lamp, rim);
                     // Toward the painted area's edge the night closes to opaque, so the land fades into the page's night colour.
                     var edge = Mathf.Min(Mathf.Min(px - area.xMin, area.xMax - px), Mathf.Min(py - area.yMin, area.yMax - py));
                     var keep = night.areaFadeCells > 0 ? Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / night.areaFadeCells)) : 1;
-                    colour.a = (byte)Mathf.RoundToInt((1 - (1 - night.Alpha(d)) * keep) * 255); pixels[j * width + i] = colour;
+                    // r7's screenshot baseline was RGB 73/76/82: .75 night still exposed too much fallow ground.
+                    // Preserve the open interior and historical profiles, increasing only this View's closed-land opacity.
+                    // Widen r7's feather outward without dimming foundations or moving the full-night distance (#390).
+                    var blendDistance = d;
+                    if (edgeFoundations && night.insideCells > 0 && night.fullCells > night.insideCells)
+                        blendDistance = d <= night.insideCells ? (d + night.insideCells) * .5f - night.insideCells
+                            : (d - night.insideCells) * night.fullCells / (night.fullCells - night.insideCells);
+                    var alpha = night.Alpha(blendDistance);
+                    if (edgeFoundations && night.fullAlpha > 0) alpha = Mathf.Clamp01(alpha * .90f / night.fullAlpha);
+                    colour.a = (byte)Mathf.RoundToInt((1 - (1 - alpha) * keep) * 255); pixels[j * width + i] = colour;
                 }
+            if (edgeFoundations)
+            {
+                // Blur the continuous light mask once when zones change, not individual grid-cell colours (#390).
+                // Three short box passes approximate a Gaussian across three quarters of a cell.
+                var scratch = new Color32[pixels.Length];
+                var radius = Mathf.Max(1, res / 4);
+                for (var pass = 0; pass < 3; pass++)
+                {
+                    BlurAlpha(pixels, scratch, width, height, radius, true);
+                    BlurAlpha(scratch, pixels, width, height, radius, false);
+                }
+            }
             if (field == null || field.width != width || field.height != height)
             {
                 if (field != null) { if (Application.isPlaying) Destroy(field); else DestroyImmediate(field); }
@@ -603,6 +808,23 @@ namespace Game.App
             }
             field.SetPixels32(pixels); field.Apply(false); fieldKey = key;
             return field;
+        }
+
+        static void BlurAlpha(Color32[] input, Color32[] output, int width, int height, int radius, bool horizontal)
+        {
+            for (var y = 0; y < height; y++) for (var x = 0; x < width; x++)
+            {
+                var alpha = 0;
+                for (var offset = -radius; offset <= radius; offset++)
+                {
+                    var px = horizontal ? Mathf.Clamp(x + offset, 0, width - 1) : x;
+                    var py = horizontal ? y : Mathf.Clamp(y + offset, 0, height - 1);
+                    alpha += input[py * width + px].a;
+                }
+                var pixel = input[y * width + x];
+                pixel.a = (byte)((alpha + radius) / (radius * 2 + 1));
+                output[y * width + x] = pixel;
+            }
         }
 
         Vector2 Local(float u, float v)
