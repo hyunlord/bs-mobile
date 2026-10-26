@@ -476,7 +476,7 @@ namespace Game.View
         static readonly Color[] WardBlue = { new Color32(0x4C, 0x78, 0xD8, 255), new Color32(0x33, 0x59, 0xB8, 255), new Color32(0x24, 0x40, 0x8A, 255) };
 
         // Temporary heater shield (128x160, front face): flat top, sides curving down to a point, charcoal outline, a gold rim
-        // in three tones, a blue field, a gold wheat-sheaf crest and an upper-left highlight. Lit from the upper left.
+        // in three tones, a blue field, a gold sprout crest and an upper-left highlight. Lit from the upper left.
         ArtVisual TemporaryWardShield()
         {
             const int width = 128, height = 160;
