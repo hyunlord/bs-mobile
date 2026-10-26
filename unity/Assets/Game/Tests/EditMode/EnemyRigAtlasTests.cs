@@ -42,7 +42,7 @@ namespace Tests.EditMode
         }
 
 
-        // #399: two approved walks use sixteen keys; all six retain time-based playback and their 640ms cycle.
+        // #399: the two approved replacements keep their 640ms cycle; untouched species retain their own timing.
         [Test]
         public void BakedRigsKeepTimeBasedWalkWithOnlyApprovedSixteenFrameReplacements()
         {
@@ -54,7 +54,9 @@ namespace Tests.EditMode
                 var approved = walk.id == "enemy.rig.shield_raider.walk" || walk.id == "enemy.rig.ram_runner.walk";
                 var count = approved ? 16 : 8;
                 Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((count, 0f)), walk.id);
-                Assert.That(walk.frameMs, Is.EqualTo(approved ? 40 : 80), walk.id);
+                var expectedMs = approved || walk.id == "enemy.rig.wine_wasp.walk" ? 40
+                    : walk.id == "enemy.rig.seed_mite.walk" ? 55 : 80;
+                Assert.That(walk.frameMs, Is.EqualTo(expectedMs), walk.id);
                 Assert.That(walk.atlas, Is.EqualTo("fallow-enemy-rigs"), "retain one shared texture");
                 Assert.That(walk.tween, Is.EqualTo("none"), walk.id);
                 for (var frame = 0; frame < 2000; frame++)
