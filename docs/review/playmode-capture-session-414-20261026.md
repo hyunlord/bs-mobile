@@ -50,3 +50,15 @@ Existing cross-profile skips remain unmodified:
 - #410 native comparison was **not started**. External StorageManagement processes repeatedly exceeded the recording CPU limit; no external process was stopped. C05 remains with Claude Code's night queue.
 - #390 remains draft/unmerged: this task has no separate approval to merge it.
 - Own Unity work ended before 21:19 KST. Own lock was released at 21:18:5x and confirmed absent at 21:19; no Unity/native process remained. No other `$MV` path was written or deleted.
+
+
+## Authorized batchmode correction (2026-10-26, code-only evening)
+
+The user superseded the graphical/EndOfFrame approach: both profiles and both test platforms return to batchmode. The earlier proposal to restore serialized EditorSettings bytes is withdrawn; no file-copy restoration is added.
+
+- Session setup/teardown now saves, disables and restores the nonpersistent `ShaderUtil.allowAsyncCompilation` switch. The older EstateMapFlowTests probe also uses this switch, including its log/CSV value; it no longer writes EditorSettings during cleanup.
+- API availability was verified without launching Unity in installed 6000.6.4f1: `Contents/Resources/Scripting/Managed/UnityEngine/UnityEditor.CoreModule.xml` declares `P:UnityEditor.ShaderUtil.allowAsyncCompilation` (lines 55687–55690); the matching DLL contains both getter and setter.
+- After the existing 10-second compilation wait, the guard yields null twice. This is an update wait, not an end-of-frame/render fence. Cyan counting, pre/post compiler status and immediate assertion failure remain unchanged.
+- Restoration regression cases now exercise the runtime switch and assert that the persisted EditorSettings value is unchanged. The frame-wait test uses two update frames, not WaitForEndOfFrame.
+- Static verification: shell syntax, Unity boundaries (9 assemblies), whitespace and unchanged tracked ProjectSettings all pass. No Unity, Standalone, build or full profile test was run for this revision. Runtime settings-file invariance remains to be checked after tomorrow's run.
+- Next authorized execution is after 07:00: #415 two profiles, then #411. Historical failed XML/results above are preserved and are not evidence for the corrected revision. Both PRs remain draft.

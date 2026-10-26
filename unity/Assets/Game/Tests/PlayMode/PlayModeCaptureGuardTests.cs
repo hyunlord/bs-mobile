@@ -16,26 +16,28 @@ namespace Tests.PlayMode
         [TestCase(true)]
         public void CaptureSessionRestoresOriginalCompilationSetting(bool original)
         {
-            var previous = EditorSettings.asyncShaderCompilation;
+            var previous = ShaderUtil.allowAsyncCompilation;
+            var persistedSetting = EditorSettings.asyncShaderCompilation;
             var session = new PlayModeCaptureSession();
             try
             {
-                EditorSettings.asyncShaderCompilation = original;
+                ShaderUtil.allowAsyncCompilation = original;
                 session.BeginSession();
-                Assert.That(EditorSettings.asyncShaderCompilation, Is.False);
+                Assert.That(ShaderUtil.allowAsyncCompilation, Is.False);
                 session.EndSession();
-                Assert.That(EditorSettings.asyncShaderCompilation, Is.EqualTo(original));
+                Assert.That(ShaderUtil.allowAsyncCompilation, Is.EqualTo(original));
+                Assert.That(EditorSettings.asyncShaderCompilation, Is.EqualTo(persistedSetting), "Runtime switch must not change the persisted project setting.");
             }
-            finally { EditorSettings.asyncShaderCompilation = previous; }
+            finally { ShaderUtil.allowAsyncCompilation = previous; }
         }
 
         [UnityTest]
-        public IEnumerator CaptureWaitsForTwoRenderedFrameBoundaries()
+        public IEnumerator CaptureWaitsForTwoUpdateFrames()
         {
-            Assert.That(EditorSettings.asyncShaderCompilation, Is.False, "Session guard must cover every fixture.");
-            yield return new WaitForEndOfFrame();
+            Assert.That(ShaderUtil.allowAsyncCompilation, Is.False, "Session guard must cover every fixture.");
+            yield return null;
             var frame = Time.frameCount;
-            yield return PlayModeCaptureGuard.WaitForShaders("guard-fresh-render-test");
+            yield return PlayModeCaptureGuard.WaitForShaders("guard-update-frames-test");
             Assert.That(Time.frameCount - frame, Is.GreaterThanOrEqualTo(2));
         }
 #endif

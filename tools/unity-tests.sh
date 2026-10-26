@@ -29,10 +29,7 @@ for profile in first-playable wave-1a; do
   "$EDITOR" -batchmode -quit -projectPath "$ROOT/unity" -executeMethod Game.Editor.FoundationBuild.Configure -logFile "$OUT/configure-$profile.log" || { echo "configure $profile failed (see $OUT/configure-$profile.log)" >&2; exit 1; }
   for platform in EditMode PlayMode; do
     result="$OUT/$profile-$platform.xml"
-    editor_args=(-projectPath "$ROOT/unity" -runTests -testPlatform "$platform" -testResults "$result" -logFile "$OUT/$profile-$platform.log")
-    # PlayMode captures need real end-of-frame rendering; Unity rejects that yield in batchmode.
-    if [[ "$platform" == EditMode ]]; then editor_args+=(-batchmode); fi
-    "$EDITOR" "${editor_args[@]}"
+    "$EDITOR" -batchmode -projectPath "$ROOT/unity" -runTests -testPlatform "$platform" -testResults "$result" -logFile "$OUT/$profile-$platform.log"
     summary="$(node -e '
       const fs=require("fs"); const p=process.argv[1];
       if(!fs.existsSync(p)){console.log("missing");process.exit(0);}

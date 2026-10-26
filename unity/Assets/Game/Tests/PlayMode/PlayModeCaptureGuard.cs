@@ -18,15 +18,15 @@ namespace Tests.PlayMode
         [OneTimeSetUp]
         public void BeginSession()
         {
-            originalAsyncCompilation = EditorSettings.asyncShaderCompilation;
-            EditorSettings.asyncShaderCompilation = false;
+            originalAsyncCompilation = ShaderUtil.allowAsyncCompilation;
+            ShaderUtil.allowAsyncCompilation = false;
             Debug.Log($"CAPTURE_SESSION asyncShaderCompilation=false original={originalAsyncCompilation}");
         }
 
         [OneTimeTearDown]
         public void EndSession()
         {
-            EditorSettings.asyncShaderCompilation = originalAsyncCompilation;
+            ShaderUtil.allowAsyncCompilation = originalAsyncCompilation;
             Debug.Log($"CAPTURE_SESSION_RESTORED asyncShaderCompilation={originalAsyncCompilation}");
         }
     }
@@ -91,10 +91,10 @@ namespace Tests.PlayMode
                 yield return null;
             }
             var readyFrame = Time.frameCount;
-            yield return new WaitForEndOfFrame();
-            yield return new WaitForEndOfFrame();
-            Debug.Log($"SHADER_CAPTURE_FRESH_FRAMES capture={label} readyFrame={readyFrame} captureFrame={Time.frameCount} endOfFrameCount=2 anythingCompiling={ShaderUtil.anythingCompiling}");
-            Debug.Log($"SHADER_CAPTURE_READY capture={label} compilingAtStart={compilingAtStart} anythingCompiling=false waitedSeconds={Time.realtimeSinceStartupAsDouble-started:F3} frame={Time.frameCount}");
+            yield return null;
+            yield return null;
+            Debug.Log($"SHADER_CAPTURE_FRESH_FRAMES capture={label} readyFrame={readyFrame} captureFrame={Time.frameCount} updateYieldCount=2 anythingCompiling={ShaderUtil.anythingCompiling}");
+            Debug.Log($"SHADER_CAPTURE_READY capture={label} compilingAtStart={compilingAtStart} anythingCompiling={ShaderUtil.anythingCompiling} waitedSeconds={Time.realtimeSinceStartupAsDouble-started:F3} frame={Time.frameCount}");
 #endif
             yield break;
         }
