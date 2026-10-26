@@ -154,8 +154,8 @@ namespace Game.App
             bool AnyZone(Vector2Int c) => config.Zones.Any(z => c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             var buildings = estate.Buildings.OrderBy(b => b.Id).ToArray();
             // Colour the nearby-site graph in stable ID order. Prefer an unused neighbouring layout over ID modulo,
-            // which repeated the granary and field. Six approved layouts also cover the compact historical opening.
-            foreach (var site in buildings.Where(b => b.Level == 0))
+            // which repeated the granary and field. Completed sites retain their assignment so neighbours do not change art.
+            foreach (var site in buildings)
             {
                 var usage = new int[SiteNames.Length];
                 foreach (var other in buildings)

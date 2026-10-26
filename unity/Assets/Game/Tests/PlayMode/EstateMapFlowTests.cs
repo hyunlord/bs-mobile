@@ -74,7 +74,7 @@ namespace Tests.PlayMode
             var screen = app.EstateMap;
             Assert.That(Rects("EstateMap.Building:").Length, Is.EqualTo(screen.State.Estate.Buildings.Count(b => b.Level > 0 || screen.UnderConstruction(b.Id))));
             foreach (var site in screen.State.Estate.Buildings.Where(b => b.Level == 0 && !screen.UnderConstruction(b.Id)))
-                Assert.That(Rects("EstateMap.Site:" + site.Id + ":").Length, Is.EqualTo(4), "An unbuilt site keeps its ruin, fence, rocks and grass instead of a complete building.");
+                Assert.That(Rects("EstateMap.Site:" + site.Id + ":").Length, Is.EqualTo(1), "An unbuilt site uses one approved Astra footprint instead of temporary separate fragments.");
             Assert.That(Buttons("EstateMap.Building:"), Is.Empty, "Buildings carry no rectangular buttons; taps use the diamond grid.");
             Assert.That(Rects("EstateMap.NameTag"), Is.Empty, "Names are hidden until a building is selected.");
             Assert.That(Buttons("Estate.Priority:"), Is.Empty);

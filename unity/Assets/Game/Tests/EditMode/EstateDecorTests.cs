@@ -89,6 +89,25 @@ namespace Tests.EditMode
             }
         }
 
+        [Test]
+        public void CompletingTheGranaryDoesNotReassignOtherSiteArt()
+        {
+            var (config, catalog, state) = Estate("m3a-prototype-r7");
+            var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
+            var before = EstatePlanner.Plan(rules, art, config, state.Estate);
+            var granary = state.Estate.Buildings.Single(b => b.Kind == "meta:granary");
+            var started = AccountEstate.StartConstruction(catalog, config, state, 0, 0, granary.Id).State;
+            var done = AccountEstate.Advance(catalog, config, started, 60, 60).State;
+            Assert.That(done.Estate.Buildings.Single(b => b.Id == granary.Id).Level, Is.EqualTo(1));
+            var after = EstatePlanner.Plan(rules, art, config, done.Estate);
+            foreach (var site in done.Estate.Buildings.Where(b => b.Level == 0))
+            {
+                Assert.That(after.SiteVariants[site.Id], Is.EqualTo(before.SiteVariants[site.Id]), site.Kind);
+                Assert.That(after.Items.Single(i => i.SiteId == site.Id).Role,
+                    Is.EqualTo(before.Items.Single(i => i.SiteId == site.Id).Role), site.Kind);
+            }
+        }
+
         [TestCase("m3a-prototype-r3")]
         [TestCase("m3a-prototype-r4")]
         [TestCase("m3a-prototype-r5")]
