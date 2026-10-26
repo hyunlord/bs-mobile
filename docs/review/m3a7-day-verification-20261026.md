@@ -28,3 +28,12 @@ first-playable PlayMode: passed 50, failed 0, skipped 42
 wave-1a EditMode: passed 836, failed 0, skipped 15
 wave-1a PlayMode: passed 79, failed 0, skipped 13
 skipped in every profile: 2 unexplained, 1 listed
+
+## 병합 리뷰 후속 (2026-10-26)
+
+최신 main 문서까지 반영한 `0ea1437`의 quality/secrets는 통과했으나, 미해결 리뷰 두 건 때문에 정상 병합 정책이 차단했다. 관리자 우회는 하지 않았다.
+
+- GDD 05를 v1.10으로 갱신하여 새 r6 8×8·현행 선택 창/건물/빛 표현과 역사 r5를 구분한다. r7은 #390의 별도 후속이다.
+- 일반 `EstateTerrainImage`가 늘어난 그림의 원본 가로세로 비율로 지도 좌표를 복원하던 결함을 실제 RectTransform 비율로 수정한다. Core·설정·저장 변경 없음.
+- 비대칭 피벗·높이 비율 .5/.8·배율 1/2의 실제 uGUI 메시를 검사하는 회귀 두 건: 수정 전 좌표 오차 2.12132/0.84853셀로 실패, 수정 후 2/2 통과. 최초 테스트 작성의 누락 namespace 컴파일 오류는 수정했고 해당 로그도 보존한다. 경계 검사 통과. 전체 두 프로필은 수정 커밋에서 다시 기록한다.
+- 로컬 원자료: `artifacts/m3a7-review-threads-20261026/`.
