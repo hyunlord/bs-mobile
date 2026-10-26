@@ -34,7 +34,7 @@ r7 길은 집 앞 광장을 지나는 한 큰길과 문으로 가는 짧은 가�
 
 이 수치는 UI Graphic의 연속 material/texture 구간 구조 계수이며 GPU drawcall 측정과 동일시하지 않는다. 실제 라벨과 `DecorEnabled` 일치도 검사한다. `CheckBatchBudget`가 기록한 CSV와 각 Graphic 순서로 재현한다.
 
-이전 r7 off 기본10은 standing decor의 임시 부지 조각이 building/shadow와 교차한 구간이었다. 승인 부지는 `Estate ground / estate-terrain`에 연속으로 들어가 현재 기본8로 복귀했다. 새로운 아틀라스 수는0. r7 off 기본8의 순서: DefaultUI/white → ground/terrain → tint/decor(veiled) → DefaultUI/white(lamps) → DefaultUI/night → tint/building-shadows → tint/buildings → tint/decor(paddock). 지형지물 terrain/decor가 각각1구간을 더한다. on의 +2는 yard-ground/decor와 standing roadside/decor다.
+이전 80a558b의 r7 off 기본10은 집 몸체 앞뒤로 정렬되는 임시 Lv0 standing 조각이 원인 후보였다. 당시 Graphic별 trace가 없어 +2 전체의 귀속은 미확정이다. 이번 실행에서는 승인 부지가 `Estate ground / estate-terrain` 묶음에 합쳐졌고, 제외 재계산에서도 Lv0 추가분0과 off 기본8을 확인했다. 새로운 아틀라스 수는0. r7 off 기본8의 순서: DefaultUI/white → ground/terrain → tint/decor(veiled) → DefaultUI/white(lamps) → DefaultUI/night → tint/building-shadows → tint/buildings → tint/decor(paddock). 지형지물 terrain/decor가 각각1구간을 더한다. on의 +2는 yard-ground/decor와 standing roadside/decor다.
 
 r7 실제 예산은 base on17/off9 및 landmark≤4를 만족한다. Lv0는 이번 구성에서 추가0. r6 예산은 수정하지 않았다. 역사 r3~r5 값은 보존만 한다.
 
