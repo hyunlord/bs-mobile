@@ -780,8 +780,12 @@ namespace Game.App
                     var keep = night.areaFadeCells > 0 ? Mathf.SmoothStep(0, 1, Mathf.Clamp01(edge / night.areaFadeCells)) : 1;
                     // r7's screenshot baseline was RGB 73/76/82: .75 night still exposed too much fallow ground.
                     // Preserve the open interior and historical profiles, increasing only this View's closed-land opacity.
-                    // r7 spreads the inner feather over 1.5 cells rather than .5; .90 closed opacity stays unchanged.
-                    var alpha = night.Alpha(edgeFoundations && d < 0 ? d / 3f : d);
+                    // Widen r7's feather outward without dimming foundations or moving the full-night distance (#390).
+                    var blendDistance = d;
+                    if (edgeFoundations && night.insideCells > 0 && night.fullCells > night.insideCells)
+                        blendDistance = d <= night.insideCells ? (d + night.insideCells) * .5f - night.insideCells
+                            : (d - night.insideCells) * night.fullCells / (night.fullCells - night.insideCells);
+                    var alpha = night.Alpha(blendDistance);
                     if (edgeFoundations && night.fullAlpha > 0) alpha = Mathf.Clamp01(alpha * .90f / night.fullAlpha);
                     colour.a = (byte)Mathf.RoundToInt((1 - (1 - alpha) * keep) * 255); pixels[j * width + i] = colour;
                 }
