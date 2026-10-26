@@ -37,3 +37,15 @@ skipped in every profile: 2 unexplained, 1 listed
 - 일반 `EstateTerrainImage`가 늘어난 그림의 원본 가로세로 비율로 지도 좌표를 복원하던 결함을 실제 RectTransform 비율로 수정한다. Core·설정·저장 변경 없음.
 - 비대칭 피벗·높이 비율 .5/.8·배율 1/2의 실제 uGUI 메시를 검사하는 회귀 두 건: 수정 전 좌표 오차 2.12132/0.84853셀로 실패, 수정 후 2/2 통과. 최초 테스트 작성의 누락 namespace 컴파일 오류는 수정했고 해당 로그도 보존한다. 경계 검사 통과. 전체 두 프로필은 수정 커밋에서 다시 기록한다.
 - 로컬 원자료: `artifacts/m3a7-review-threads-20261026/`.
+
+### 리뷰 수정 후 두 프로필
+
+## Unity tests
+commit: 885964dbeedfffaa31b5ca46ecb191a816c1d4b8
+first-playable EditMode: passed 828, failed 0, skipped 25
+first-playable PlayMode: passed 50, failed 0, skipped 42
+wave-1a EditMode: passed 838, failed 0, skipped 15
+wave-1a PlayMode: passed 79, failed 0, skipped 13
+skipped in every profile: 2 unexplained, 1 listed
+
+네 suite 실패0. 하네스 종료1은 위에 적은 기존 미목록 skip2건이며, 예외나 기준은 바꾸지 않았다. 경계·문서 검사 통과. 수정 전후 회귀 실패/통과와 전체 원자료는 각 artifacts 폴더에 보존한다.
