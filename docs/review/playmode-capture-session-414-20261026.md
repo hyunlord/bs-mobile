@@ -62,3 +62,11 @@ The user superseded the graphical/EndOfFrame approach: both profiles and both te
 - Restoration regression cases now exercise the runtime switch and assert that the persisted EditorSettings value is unchanged. The frame-wait test uses two update frames, not WaitForEndOfFrame.
 - Static verification: shell syntax, Unity boundaries (9 assemblies), whitespace and unchanged tracked ProjectSettings all pass. No Unity, Standalone, build or full profile test was run for this revision. Runtime settings-file invariance remains to be checked after tomorrow's run.
 - Next authorized execution is after 07:00: #415 two profiles, then #411. Historical failed XML/results above are preserved and are not evidence for the corrected revision. Both PRs remain draft.
+
+## Daytime batchmode verification (2026-10-27, 9877ccc)
+
+Owned run: `artifacts/day-20261027/pr415-tests`, 09:04:54–09:13:28 KST; own lock released at 09:13:28. First-playable EditMode 828/0/25, PlayMode 52/1/42; wave-1a EditMode 838/0/15, PlayMode 82/0/13 (pass/fail/skip). Tracked files, including ProjectSettings, remained unchanged. The prior wave-1a map pointer failures did not recur. Existing two unlisted cross-profile skips remain; no exceptions added.
+
+The first-playable failure is `UiCaptureTests.PortraitAndSquareRetainRunAndCaptureRealUi:76`: after completed-run Retry, two fixed update yields did not replace the session. The log immediately after summary capture records `Run.unity` loading in 140.505ms (82.313ms thread wait); `BeginRun` assigns Session only after asynchronous scene loading. This supports a timing race, not a cyan/pointer failure. Intentional save-denied exceptions belong to separate passing failure-recovery tests. The test now uses the same bounded session-change wait already used for its death-retry path, with an immediate error check; game code is unchanged. Revalidation is required before claiming this correction passes.
+
+The two skipped tests require extra execution environments, not exemptions: frozen C05 combat sidecars plus `UNITY_WAVE_BENCHMARK=1`, and the `m1-showcase-review` opt-in melee profile. The stock two-profile runner does not prepare those prerequisites. This limitation is preserved rather than treating the skips as a pass.
