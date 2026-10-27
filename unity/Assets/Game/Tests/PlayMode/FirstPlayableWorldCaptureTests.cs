@@ -23,6 +23,11 @@ namespace Tests.PlayMode
         [UnityTest, Timeout(300000)]
         public IEnumerator StressReplayProducesActualPortraitAndSquareWorldCaptures()
         {
+            if (Environment.GetEnvironmentVariable("FP_QA_REPLAY") != null)
+            {
+                yield return CaptureRecordedRange();
+                yield break;
+            }
             if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Requires first-playable export.");
             var root = Path.GetFullPath(Path.Combine(Application.dataPath, "../.."));
             var fixturePath = Path.Combine(root, "artifacts/phase1b/replays/30000.ssreplay");
@@ -121,6 +126,137 @@ namespace Tests.PlayMode
             Assert.That(manifest.captures.Length, Is.EqualTo(10));
             manifest.complete = true;
             File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
+        }
+
+        static IEnumerator CaptureRecordedRange()
+        {
+            Assert.That(Environment.GetEnvironmentVariable("FP_QA_FILTERED_RUN"), Is.EqualTo("1"), "Explicit filtered capture invocation required.");
+            var arguments = Environment.GetCommandLineArgs();
+            var filterIndex = Array.IndexOf(arguments, "-testFilter");
+            Assert.That(filterIndex >= 0 && filterIndex + 1 < arguments.Length && arguments[filterIndex + 1] == "Tests.PlayMode.FirstPlayableWorldCaptureTests.StressReplayProducesActualPortraitAndSquareWorldCaptures", Is.True, "Run this optional export alone with its exact test filter.");
+            Assert.That(CanonicalContent.ProfileName, Is.EqualTo("first-playable"));
+            var path = Path.GetFullPath(Environment.GetEnvironmentVariable("FP_QA_REPLAY"));
+            var outputArgument = Environment.GetEnvironmentVariable("FP_QA_OUTPUT");
+            Assert.That(string.IsNullOrWhiteSpace(outputArgument), Is.False);
+            var output = Path.GetFullPath(outputArgument);
+            Assert.That(Directory.Exists(output) || File.Exists(output), Is.False, "Fresh output required; never overwrite evidence.");
+            Assert.That(int.TryParse(Environment.GetEnvironmentVariable("FP_QA_START_TICK"), out var start) && start > 0, Is.True);
+            Assert.That(int.TryParse(Environment.GetEnvironmentVariable("FP_QA_END_TICK"), out var end) && end >= start && end - start < 1800, Is.True);
+            var stillArgument = Environment.GetEnvironmentVariable("FP_QA_STILL_COMMANDS");
+            var stillCommands = new HashSet<long>();
+            if (!string.IsNullOrWhiteSpace(stillArgument))
+                foreach (var value in stillArgument.Split(',')) { Assert.That(long.TryParse(value, out var count) && count > 0, Is.True); stillCommands.Add(count); }
+            var bytes = File.ReadAllBytes(path);
+            ReplayDocument replay;
+            using (var input = new MemoryStream(bytes, false)) replay = ReplayCodec.Read(input);
+            Assert.That(replay.Header.Options.DataHash, Is.EqualTo(CanonicalContent.DataHash));
+            Assert.That(end, Is.LessThanOrEqualTo(replay.End.Tick));
+            Assert.That(stillCommands.All(count => count <= replay.End.AppliedCommands), Is.True);
+            var catalog = CanonicalContent.CreateCatalog();
+            Assert.That(catalog.FirstPlayable, Is.Not.Null);
+            Assert.That(catalog.WaveRuntime, Is.Null);
+            Assert.That(Object.FindObjectsByType<WorldRenderer>(FindObjectsSortMode.None), Is.Empty);
+            var session = new InteractiveSession(catalog, replay.Header.Options);
+            Assert.That(session.View.CaptureFrame().TickRate, Is.EqualTo(30));
+            var checkpoints = replay.Checkpoints.ToDictionary(item => item.AppliedCommands);
+            var checkedCheckpoints = 0;
+            void VerifyCheckpoint()
+            {
+                if (!checkpoints.TryGetValue(session.NextSequence, out var check)) return;
+                Assert.That(session.View.CaptureFrame().Tick, Is.EqualTo(check.Tick));
+                Assert.That(session.ComputeStateHash(), Is.EqualTo(check.StateHash)); checkedCheckpoints++;
+            }
+            VerifyCheckpoint();
+            Directory.CreateDirectory(output);
+            var manifest = new RangeManifest { classification = "actual-command FP GPU replay; debug commands retained if present; world only; offline 60fps, not performance or normal-play evidence",
+                replay = path, replaySha256 = Hash(bytes), profile = CanonicalContent.ProfileName, dataHash = CanonicalContent.DataHash,
+                rendererCommit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty,
+                startTick = start, endTick = end, debugCommandKinds = replay.Commands.Where(c => c.Kind != ReplayCommandKind.Advance && c.Kind != ReplayCommandKind.ChooseCard && c.Kind != ReplayCommandKind.SetAimMode).Select(c => c.Kind.ToString()).Distinct().ToArray() };
+            var manifestPath = Path.Combine(output, "sequence.json");
+            File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
+            var owner = new GameObject("Actual FP range capture"); var cameraOwner = new GameObject("Actual FP range camera");
+            var camera = cameraOwner.AddComponent<Camera>();
+            const int width = 390, height = 844;
+            var target = new RenderTexture(width, height, 24); camera.targetTexture = target;
+            var image = new Texture2D(width, height, TextureFormat.RGB24, false);
+            var world = owner.AddComponent<WorldRenderer>();
+            var written = 0; var retained = new HashSet<long>();
+            try
+            {
+                var initial = session.View.CaptureFrame(); var settings = CanonicalContent.Presentation.Camera;
+                world.Initialize(camera, new WorldCameraSettings(settings.WorldUnitsPerUnityUnit, settings.MinHalfHeight, settings.MaxHalfHeight, settings.EstatePadding, settings.FollowMilliseconds, settings.ZoomMilliseconds), replay.Header.Options.Run.EstateId, initial.MapWidth, initial.MapHeight);
+                yield return PlayModeCaptureGuard.WaitForShaders("FP recorded range setup");
+                void Save(string filename, RunFrame frame, float alpha)
+                {
+                    var previousTarget = RenderTexture.active;
+                    try { RenderTexture.active = target; PlayModeCaptureGuard.ReadPixels(image, new Rect(0, 0, width, height), 0, 0, "FP range:" + filename); image.Apply(); }
+                    finally { RenderTexture.active = previousTarget; }
+                    File.WriteAllBytes(Path.Combine(output, filename), image.EncodeToPNG());
+                    manifest.frames.Add(new RangeFrame { file = filename, tick = frame.Tick, appliedCommands = session.NextSequence, stateHash = session.ComputeStateHash(), alpha = alpha,
+                        cameraPosition = camera.transform.position, cameraHalfHeight = camera.orthographicSize,
+                        enemyIds = frame.Enemies.Select(e => e.Id).ToArray(), enemyKinds = frame.Enemies.Select(e => e.DefinitionId).ToArray(),
+                        buildingStates = session.View.CaptureFirstPlayable().BuildingProgress.Select(b => b.Id + ":" + b.State).ToArray() });
+                    if (manifest.frames.Count % 120 == 0 || filename.StartsWith("command-", StringComparison.Ordinal))
+                        File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
+                }
+                foreach (var command in replay.Commands)
+                {
+                    var previous = session.View.CaptureFrame(); session.Apply(command); VerifyCheckpoint();
+                    var current = session.View.CaptureFrame(); var fp = session.View.CaptureFirstPlayable();
+                    if (command.Kind == ReplayCommandKind.Advance && current.Tick >= Math.Max(1, start - WarmupTicks) && current.Tick <= end)
+                    {
+                        Assert.That(current.Tick, Is.EqualTo(previous.Tick + 1));
+                        for (var subframe = 1; subframe <= 2; subframe++)
+                        {
+                            var alpha = subframe * .5f;
+                            world.Present(previous, current, fp, alpha, 1f / 60, new Rect(0, 0, width, height));
+                            yield return null;
+                            Assert.That(world.UnsupportedShapeCount, Is.Zero);
+                            if (current.Tick >= start) Save("frame-" + (written++).ToString("D6") + ".png", current, alpha);
+                        }
+                    }
+                    if (stillCommands.Contains(session.NextSequence))
+                    {
+                        // Separate zero-time presentation: neither Core commands nor the sequence clock advance.
+                        world.Present(current, current, fp, 1, 0, new Rect(0, 0, width, height)); yield return null;
+                        Save("command-" + session.NextSequence + ".png", current, 1); retained.Add(session.NextSequence);
+                    }
+                    if (session.NextSequence % 180 == 0) yield return null;
+                }
+                Assert.That(session.NextSequence, Is.EqualTo(replay.End.AppliedCommands));
+                Assert.That(session.View.CaptureFrame().Tick, Is.EqualTo(replay.End.Tick));
+                Assert.That(session.ComputeStateHash(), Is.EqualTo(replay.End.StateHash));
+                Assert.That(checkedCheckpoints, Is.EqualTo(replay.Checkpoints.Count));
+                Assert.That(written, Is.EqualTo((end - start + 1) * 2));
+                Assert.That(retained.SetEquals(stillCommands), Is.True);
+                manifest.complete = true; manifest.terminalHash = session.ComputeStateHash(); manifest.verifiedCheckpoints = checkedCheckpoints;
+                File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
+            }
+            finally
+            {
+                File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
+                camera.targetTexture = null; target.Release(); Object.Destroy(target); Object.Destroy(image); Object.Destroy(owner); Object.Destroy(cameraOwner);
+            }
+            yield return null;
+        }
+
+        [Serializable] sealed class RangeManifest
+        {
+            public string classification, replay, replaySha256, profile, dataHash, rendererCommit, sourceHash, terminalHash;
+            public bool sourceDirty, complete;
+            public int startTick, endTick, verifiedCheckpoints;
+            public string[] debugCommandKinds;
+            public List<RangeFrame> frames = new List<RangeFrame>();
+        }
+        [Serializable] sealed class RangeFrame
+        {
+            public string file, stateHash;
+            public int tick;
+            public long appliedCommands;
+            public float alpha, cameraHalfHeight;
+            public Vector3 cameraPosition;
+            public int[] enemyIds;
+            public string[] enemyKinds, buildingStates;
         }
 
         static bool BossVisibleInPortrait(Snapshot snapshot, ArtCatalog art)
