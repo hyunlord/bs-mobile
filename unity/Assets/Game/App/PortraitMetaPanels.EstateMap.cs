@@ -126,7 +126,7 @@ namespace Game.App
                 {
                     var siteColour = item.Colour;
                     if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) siteColour.a *= .45f;
-                    var prop = Paint(viewport, view, art, tint, item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item, colour: siteColour);
+                    var prop = Paint(viewport, view, art, tint, item.Source == "construction" ? "EstateMap.Building:" + item.SiteId : item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item, colour: siteColour);
                     depthAnchors.Add((prop.rectTransform, item.SortY));
                     continue;
                 }
