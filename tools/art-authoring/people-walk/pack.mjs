@@ -9,7 +9,7 @@ import { decodeRgbaPng } from '../../wave1a-art.mjs';
 import { encodeRgbaPng } from '../../estate-art.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const source = path.resolve(process.argv[2] || 'artifacts/people433-source');
-const base = '7e5ca6d0ca2010389ac45bea012e529907f3fd03';
+const base = 'a44bf7ae6a5811de057c8f12410ce4a5d8fb0d3f';
 const readBase = name => {
   const blob = execFileSync('git', ['show', `${base}:${name}`], { cwd: root, maxBuffer: 32 * 1024 * 1024 });
   return blob.subarray(0, 42).toString().startsWith('version https://git-lfs.github.com/spec/v1')

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "release": "m3-people-walk-review-433-20261027",
-  "base": "7e5ca6d0ca2010389ac45bea012e529907f3fd03",
+  "base": "a44bf7ae6a5811de057c8f12410ce4a5d8fb0d3f",
   "atlas": "unity/Assets/Art/actors.png",
   "originalSize": [
     1254,
@@ -11,9 +11,9 @@
     1920,
     1940
   ],
-  "originalAtlasSha256": "b4e91a8b37127bc290b25e06caa72d5f5255090a3a445ca4ffc9d33c1f67e04c",
-  "originalDecodedRgbaSha256": "fe506963b0f31c4081b44640c585519a7799cc160a5bc8810dbc8720e7d2821e",
-  "atlasSha256": "d771242400b0468b91f25785e16c270ae201845607d08335832d3826e31bd78d",
+  "originalAtlasSha256": "060b8316485f3d8e36b1bdee0a9d10e1040a6ac7cc35e49e863b67a9b52bae42",
+  "originalDecodedRgbaSha256": "bf9e83f5f58914ddc13070280961dd7d401dbbffdaf62ed6a50c35ff0eaf3dd1",
+  "atlasSha256": "09b8d9e9c41b9f51afc318f72dad3ca44a789649dc58a8e38009319e3033a704",
   "oldPixelsPreserved": 1572516,
   "importerRectsPreserved": 54,
   "textureCountDelta": 0,
