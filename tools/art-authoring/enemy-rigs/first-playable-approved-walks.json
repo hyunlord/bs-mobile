@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "atlas": {
+    "id": "first-playable-enemy-walks-429",
+    "path": "Assets/Art/first-playable-enemy-walks-429.png",
+    "width": 2080,
+    "height": 1560,
+    "padding": 2,
+    "license": "generated-actors"
+  },
+  "roles": [
+    {
+      "sourcePath": "artifacts/429/stone/stone-breaker-r3-16.png",
+      "sourceSha256": "74867a8cbd4034e041f4b487ffd411ef411306ae6ec9b5c94ac856a6460e16a2",
+      "sourcePixelSha256": "b36a9df883c4c87ae4180ef19d99cac124bf99942fd7d49a9655addc9227e4b7",
+      "release": "m3-walk-next-review-423-20261027",
+      "role": {
+        "id": "enemy.core.stone_breaker.walk",
+        "atlas": "first-playable-enemy-walks-429",
+        "frames": [
+          {
+            "x": 2,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 2,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 2,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 262,
+            "width": 256,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.12109375
+        },
+        "worldSize": {
+          "x": 0.559006211093322,
+          "y": 0.559006211093322
+        },
+        "frameMs": 45,
+        "tween": "none"
+      }
+    },
+    {
+      "sourcePath": "artifacts/429/rope-ember/rope-catcher-r1-16.png",
+      "sourceSha256": "fbaf3db0db5b3f704193110f49367d29c8f6dbf1e4f84dacab58abdb97fbbe01",
+      "sourcePixelSha256": "d2464308cc91a64006599b60b4cc5fdca8e2ffabd64ea58062744cfb9e48df57",
+      "release": "m3-rope-ember-walk-review-425-20261027",
+      "role": {
+        "id": "enemy.core.rope_catcher.walk",
+        "atlas": "first-playable-enemy-walks-429",
+        "frames": [
+          {
+            "x": 2,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 522,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 2,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 782,
+            "width": 256,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.12109375
+        },
+        "worldSize": {
+          "x": 0.5031055899839898,
+          "y": 0.5031055899839898
+        },
+        "frameMs": 40,
+        "tween": "none"
+      }
+    },
+    {
+      "sourcePath": "artifacts/429/rope-ember/ember-sapper-r1-16.png",
+      "sourceSha256": "ec70363d305aea3affdaa35e619dde337606f3e5f7a44cc734d6e8c982fcf918",
+      "sourcePixelSha256": "40914f9c8d68d7d7905ab635280f621aeb20fac6f15a86cac82b4343c1f6d721",
+      "release": "m3-rope-ember-walk-review-425-20261027",
+      "role": {
+        "id": "enemy.core.ember_sapper.walk",
+        "atlas": "first-playable-enemy-walks-429",
+        "frames": [
+          {
+            "x": 2,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 1042,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 2,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 1302,
+            "width": 256,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.4609375,
+          "y": 0.12109375
+        },
+        "worldSize": {
+          "x": 0.5217391303537672,
+          "y": 0.5217391303537672
+        },
+        "frameMs": 40,
+        "tween": "none"
+      }
+    }
+  ]
+}
