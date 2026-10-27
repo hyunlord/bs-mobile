@@ -56,3 +56,5 @@ CI 최종 실행 링크·결과는 PR 코멘트에 기록한다. #431 초안 유
 - 새 native 실행은 아직 하지 않았다. 정상 곡창→경작지 하네스 1회와 두 프로필 결과·화면 비교는 부모 세션 담당이다. 제철소 완공은 별도 명시적 Editor fixture로 검증하며 native에서 강제 완성한 것처럼 보고하지 않는다.
 
 정적 확인: Unity boundaries·diff whitespace·native launcher bash 문법 통과. 실제 실행 통과는 별도다. 주민 작업 루프 #444는 여전히 #431 병합 뒤에만 진행한다.
+
+제철소 완공 표본은 `CompletedIronworksUsesApprovedArtInAnExplicitEditorFixture`에서 r7 격리 저장 사본의 대장간·제철소 Lv1 상태를 명시적으로 준비한다. 실제 UI 진입·선택 뒤 별도 제철소 그림(대장간 재사용 아님)을 검사하고 `estate-r7-ironworks-complete-editor-fixture-390x844.png`로 캡처한다. PNG 옆 provenance에도 native 정상 건설 증거가 아님을 적는다. 진입 뒤 계정·디스크 바이트 보존을 검사한다. 이 표본은 native 곡창→경작지 진행이나 자원을 바꾸지 않는다. 아직 실행 전이다.

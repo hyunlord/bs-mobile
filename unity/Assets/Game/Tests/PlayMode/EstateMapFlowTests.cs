@@ -286,6 +286,46 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
+        public IEnumerator CompletedIronworksUsesApprovedArtInAnExplicitEditorFixture()
+        {
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var config = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            var fixture = AccountEstate.Migrate(catalog, config, MetaEngine.NewGame(catalog), 0, 0);
+            fixture = fixture with
+            {
+                Estate = fixture.Estate with
+                {
+                    Buildings = fixture.Estate.Buildings.Select(b =>
+                        b.Kind == "meta:forge" || b.Kind == "m3a:ironworks" ? b with { Level = 1 } : b).ToArray()
+                }
+            };
+            SaveFixture(catalog, fixture);
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var screen = app.EstateMap;
+            var account = MetaSaveCodec.Encode(app.Progression.State);
+            var disk = File.ReadAllBytes(Path.Combine(directory, "progress.bin"));
+            Assert.That(screen.FromSave, Is.True);
+            var ironworks = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:ironworks");
+            Assert.That(ironworks.Level, Is.EqualTo(1));
+            Assert.That(screen.State.Estate.Active, Is.Null);
+            Focus(screen.Centre(ironworks.Id)); Tap(new Vector2Int(ironworks.X, ironworks.Y)); yield return null;
+            var art = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + ironworks.Id);
+            Assert.That(art.sprite, Is.SameAs(EstateArt.Load().Body("ironworks", 1)));
+            Assert.That(art.sprite, Is.Not.SameAs(EstateArt.Load().Body("forge", 1)), "Ironworks cannot reuse forge completion art.");
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
+            const string name = "estate-r7-ironworks-complete-editor-fixture";
+            const string provenance = "fixture=Editor saved-state completed forge+ironworks; not native normal-construction evidence; no resource grants or native state mutation";
+            Debug.Log(provenance);
+            yield return Capture(name);
+            var note = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta",
+                name + "-" + Screen.width + "x" + Screen.height + ".png.txt"));
+            File.AppendAllText(note, provenance + "\n");
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account));
+            Assert.That(File.ReadAllBytes(Path.Combine(directory, "progress.bin")), Is.EqualTo(disk));
+        }
+
+        [UnityTest, Timeout(180000)]
         public IEnumerator ASavedEstateBuildsClaimsAndSpecializesOnTheMap()
         {
             var catalog = CanonicalContent.CreateMetaCatalog(); var config = CanonicalContent.CreateAccountEstateConfig();
