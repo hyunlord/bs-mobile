@@ -141,11 +141,11 @@ namespace Game.App
                 resident.gameObject.AddComponent<EstateCarryView>().Configure(art, screen.Map, plan.CarryRoute, depthAnchors);
             }
             foreach (var item in plan.In(EstateDrawLayer.Foreground).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Piece:" + item.Role, item);
-            // Keep the small site sign readable after neighbouring buildings are drawn; names stay in the sheet.
-            foreach (var building in screen.State.Estate.Buildings.Where(b => screen.UnderConstruction(b.Id)))
+            // The open sheet already names the work. Otherwise place its label below the front foundation, not over the art.
+            foreach (var building in screen.State.Estate.Buildings.Where(b => panel <= 0 && screen.UnderConstruction(b.Id)))
             {
                 var kind = screen.Kind(building.Kind);
-                view.Pin(NameTag(ui, viewport, "공사 중"), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), -18);
+                view.Pin(NameTag(ui, viewport, "공사 중"), new Vector2(building.X + kind.Width, building.Y + kind.Height), -(16 / screen.Map.Scale + 4));
             }
             if (screen.Moving && screen.Selected != null)
             {

@@ -4,6 +4,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using Game.View;
+using Game.App.Generated;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -68,6 +69,10 @@ namespace Game.App
                 if (app != null && !string.IsNullOrEmpty(app.Error)) throw new InvalidOperationException(app.Error);
                 yield return null;
             }
+            UnityEngine.Debug.Log("EstateEntryProbe title contract: profile=" + CanonicalContent.ProfileName +
+                "; isWave=" + app.IsWave + "; portrait=" + app.Ui.PortraitEnabled);
+            if (!app.Ui.PortraitEnabled)
+                throw new InvalidOperationException("Estate entry probe requires the wave-1a portrait build. The first-playable 시작 button starts combat, not the estate; no substitute click was attempted.");
             app.Ui.SynchronizeViewport();
             yield return null;
             Canvas.ForceUpdateCanvases();
