@@ -10,6 +10,7 @@ using Game.App.Generated;
 using Game.View;
 using NUnit.Framework;
 using SowSiege.Core;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
