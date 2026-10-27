@@ -112,3 +112,9 @@ The prerequisite's full attempt had 236 actual cyan-free observations, but two w
 - harvest-flag는 실제 runtime consumer 없음: 역할 목록만, 게임 연결은 추가하지 않는다. 누락 role fallback의 정상 게임 발동 화면은 별도 미확인이다.
 
 사용자의 오프라인60fps 승인에 따라 CPU/입력 idle 관문을 적용하지 않았으며, Unity/native 상호배제와 자기 잠금은 유지했다. 실시간 성능/C05 근거로 전용하지 않는다. 기존 역사 실패·중단 기록은 위에 그대로 보존한다. PR은 초안 유지, 병합·사용자 시각 판정은 별도다.
+
+## 2026-10-27 승인 병합 전 main 반영 검증
+
+main afe61f4를 merge한 소스 dbebdc8d5042700bad87957a60bb0e12a0a959a0에서 재검증했다. 첫 실행17:04:43–17:21:44의 first-playable PlayMode1건은 SevenSyntheticCueRoutesReachMasterAndMutedOutputDrainsToSilence의 AudioSettings.dspTime 정지로 실패했다. 그림·청록 실패가 아니며, 실패 XML/로그를 pr411-main-merged-tests에 보존한다. 코드·대기 한도를 변경하지 않고 한 번 재실행했다.
+
+재실행17:27:17–17:37:22 KST: first-playable EditMode857/0/25·PlayMode55/0/45, wave-1a EditMode867/0/15·PlayMode87/0/13. 기존 도구의 combat/melee 보충 검사 각각1/0/0, 합산0 unexplained/1 listed. stock runner exit1(보충 전 입력 부재)은 숨기지 않았고 wrapper exit0이다. 추적 파일 변경0, 자기 잠금 해제. 원자료 pr411-main-merged-retry-tests. 기존 실제 게임 전후 캡처의 문장 픽셀은 이번 main merge로 바뀌지 않았다. 사용자 승인 순서대로 #415 뒤에 필수 CI 최종 통과를 확인하고 squash한다.
