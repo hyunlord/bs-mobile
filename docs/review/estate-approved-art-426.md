@@ -68,3 +68,22 @@
 - 기존 `landmark`의 40% 실루엣 및 닫힌 구역 검사, `frontier`의 closed tint 검사는 유지한다. 승인 강둑에는 dark role 존재·Landmark 층·원본색을, 승인 나무에는 dark role 존재·Veiled 층·원본색을 추가 검사한다. 원화가 이미 어두운 항목에 중복 tint를 요구하지 않는다.
 - 같은 공사 단계의 Advance는 false/계획 동일 객체, 33% 경계를 넘으면 true/stage2 그림으로 검사한다. 30초 잔여·Lv0·활성 건물·예약 두 칸은 유지되고, 기존 자원 차감·완공·대기열 검사도 보존한다.
 - 이 재개 커밋의 검증은 patch 적용 가능성, diff 공백, Unity 경계 정적 검사뿐이다. 두 프로필의 새 실행·native 공사·화면/강둑 밝기 검증은 부모 세션 담당이며 아직 통과로 기록하지 않는다. 새 Unity 기록 전 push하지 않는다.
+
+## #431 재개 실행 결과 — 2026-10-27 13:16:57–13:27:11 KST
+
+소스 `bdbc578d60c51aaea42bf1460509f28660a99f58`, 부모 세션 소유 잠금 아래 batchmode 두 프로필과 기존 입력 의존 테스트 두 개를 실행했다. wrapper 최종 exit 0, 13:27:11 잠금 해제. 앞선 실패 기록은 그대로 보존한다.
+
+## Unity tests
+commit: bdbc578d60c51aaea42bf1460509f28660a99f58
+first-playable EditMode: passed 870, failed 0, skipped 25
+first-playable PlayMode: passed 53, failed 0, skipped 45
+wave-1a EditMode: passed 880, failed 0, skipped 15
+wave-1a PlayMode: passed 85, failed 0, skipped 13
+skipped in every profile: 0 unexplained, 1 listed
+
+
+기본 runner는 미제공 입력 때문에 전체 skip 두 건을 보고 exit 1이었다. 이어 기존 도구로 fixture를 생성해 `M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes`와 `MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures`를 각각 1 passed / 0 failed / 0 skipped로 실제 실행했다. 여섯 XML을 합친 결과는 unexplained 0 / listed 1이며 예외 추가 없음. listed 항목은 수동 내보내기 `WaveWorldTests.RecordedWaveRangeExportsActualTickFrames`다. 기본 기록을 덮지 않고 `record-combined.md`에 합친 기록을 남겼다.
+
+청록 감시 UTC [2026-10-27T04:16:57Z, 2026-10-27T04:27:12Z)에서 실제 캡처 관측 262건, 청록 양성 0건 / 0픽셀. 정확한 `guard-self-test-negative-control-(True|False)` 4건만 따로 제외했다. 원자료는 `artifacts/playmode-capture-monitor/events.jsonl`, 집계는 `pr431-authorized-tests/actual-cyan-summary.json`이다. 관측 수는 고유 PNG 수와 다르다.
+
+실행 XML·fixture·로그는 `artifacts/day-20261027/pr431-authorized-tests`. native 공사·키아트 비교·강둑 ROI·묶음 차이와 사용자 화면 승인은 아직 미완료다. CI 최종 결과는 이 기록 push 뒤 PR에서 확인한다. Unity 통과를 native 또는 시각 통과로 확대하지 않는다.
