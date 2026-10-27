@@ -72,8 +72,11 @@ namespace Tests.PlayMode
             }
             yield return null;Assert.That(app.Frame.Tick,Is.EqualTo(app.Frame.DurationTicks));yield return Capture("summary-square");
             var summaryScroll=app.Ui.GetComponentInChildren<ScrollRect>();summaryScroll.verticalNormalizedPosition=0;yield return null;yield return Capture("summary-square-bottom");SaveReplay(app,"duration",ReplayEndKind.Duration);
-            Click(app,"다시 하기");yield return null;yield return null;
-            Assert.That(app.Session,Is.Not.SameAs(original));Assert.That(app.Error,Is.Null);
+            Click(app,"다시 하기");
+            var completedRestartDeadline=Time.realtimeSinceStartup+10;
+            while(ReferenceEquals(app.Session,original)&&app.Error==null&&Time.realtimeSinceStartup<completedRestartDeadline)yield return null;
+            Assert.That(app.Error,Is.Null);Assert.That(app.Session,Is.Not.Null);
+            Assert.That(app.Session,Is.Not.SameAs(original),"Completed-run restart must replace the session within 10 seconds.");
             var retrySession=app.Session;debug.SetOpen(true);app.StartRun(30000);while(app.Session==retrySession)yield return null;
             while(app.Frame.Status!=RunStatus.Completed)
             {
