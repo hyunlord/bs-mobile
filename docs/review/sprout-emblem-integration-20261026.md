@@ -77,3 +77,16 @@ The prerequisite's full attempt had 236 actual cyan-free observations, but two w
 선택 실행 전용 first-playable 캡처 도우미는 실제 기록 명령을 InteractiveSession에 적용하며 체크포인트/종료 해시를 확인한다. 각 프레임의 실제 적 ID와 viewport 안 중심 ID, 그리기 묶음을 sidecar에 기록한다. 기본 테스트에서는 비활성이다. 실제 전후 영상 실행은 외부 CPU와 사용자 입력 대기 조건 때문에 아직 미실행이다.
 
 원자료: `artifacts/day-20261027/pr411-final-tests`, `pr411-final-run.log`.
+
+## 2026-10-27 실제 결산 UI 캡처 보조 경로와 재검증
+
+실제 완료된 입력 리플레이의 보유 특허장·활성 진화를 `UiRunPanels.Summary`로 표시하고 실제 ScrollRect를 이동해 아이콘을 캡처하는 opt-in `FP_QA_SUMMARY=1` 경로를 추가했다. 임의 보유 목록·게임 규칙 변경은 없다. 캡처 크기390×844·획득ID·활성 진화·완료 상태·종료 해시 불변을 검사한다. 선택 경로 자체의 캡처 실행은 공유 Mac 유휴/부하 관문 때문에 아직 하지 않았다. 기본 프로필 실행 결과가 그 선택 경로의 실행 증거는 아니다.
+
+초기 configure는 `PlayModeWindow`의 `UnityEditor` namespace 누락으로 실패했다. 한 번 수정한 `f755feba328a22efe7499ce9ba65737fa2801173`에서 11:41:04–11:51:27 소유 잠금 아래 두 프로필을 다시 실행했다. 최초 실패 `pr411-summary-tests`와 성공 `pr411-summary-retry-tests`를 모두 artifacts/day-20261027에 보존했다.
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---:|---:|
+| first-playable | 828 / 0 / 25 | 55 / 0 / 42 |
+| wave-1a | 838 / 0 / 15 | 84 / 0 / 13 |
+
+기존 도구로 생성한 combat sidecar와 opt-in melee 입력의 보충 실행은 각각1/0/0, 합산 공통 skip0 unexplained/1 listed. 새로운 skip 예외를 추가하지 않았다. 실행 뒤 추적 파일 변경0. 실제 입력 결산·combat 전후 비교 영상은 아직 대기이며 직접 만든 상태 화면으로 대신하지 않는다.
