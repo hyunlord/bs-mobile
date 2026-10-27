@@ -107,6 +107,7 @@ namespace Tests.PlayMode
             Assert.That(Named("Departure.Start").interactable, Is.True);
             yield return CaptureSizes("departure", "Departure", false);
             yield return Reveal("Departure.CardPool"); Click("Departure.CardPool"); yield return ScreenIs("CardPool");
+            if (Environment.GetEnvironmentVariable("SPROUT_EMBLEM_CAPTURE") == "1") yield return CaptureEmblemCardPool();
             app.NavigateBack(); yield return ScreenIs("Departure");
             app.EditorCaptureNotifyPause(true); app.EditorCaptureNotifyFocus(false); yield return null;
             app.EditorCaptureNotifyPause(false); app.EditorCaptureNotifyFocus(true); yield return null;
@@ -288,6 +289,33 @@ namespace Tests.PlayMode
             }
             Assert.Fail("Unreachable scroll target " + name);
         }
+        IEnumerator CaptureEmblemCardPool()
+        {
+            var scroll = app.Ui.GetComponentInChildren<ScrollRect>();
+            Assert.That(scroll, Is.Not.Null);
+            foreach (var id in new[] { "core:crop_guard_signet" })
+            {
+                var icons = app.Ui.GetComponentsInChildren<Image>();
+                var matches = icons.Where(image => image.name == "Icon " + id).ToArray();
+                Assert.That(matches.Length, Is.EqualTo(1), id + "; actual icons: " + string.Join(", ", icons.Select(image => image.name)));
+                var icon = matches[0];
+                Canvas.ForceUpdateCanvases();
+                var target = Mathf.Max(0, -icon.rectTransform.anchoredPosition.y - 80);
+                scroll.content.anchoredPosition = new Vector2(scroll.content.anchoredPosition.x,
+                    Mathf.Min(target, Mathf.Max(0, scroll.content.rect.height - scroll.viewport.rect.height)));
+                yield return null; Canvas.ForceUpdateCanvases();
+                Assert.That(Pixels(scroll.viewport).Contains(Pixels(icon.rectTransform).center), Is.True, id);
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/sprout-405/actual-captures"));
+                Directory.CreateDirectory(output);
+                var path = Path.Combine(output, "card-pool-" + id.Substring(5) + ".png");
+                yield return PlayModeCaptureGuard.WaitForShaders(path);
+                var probe = PlayModeCaptureGuard.Begin(path);
+                var image = ScreenCapture.CaptureScreenshotAsTexture();
+                try { PlayModeCaptureGuard.Check(image, probe, path); File.WriteAllBytes(path, image.EncodeToPNG()); }
+                finally { Object.Destroy(image); }
+            }
+        }
+
         IEnumerator CaptureSizes(string name, string expectedScreen, bool fixture, Action renderFixture = null)
         {
             foreach (var size in new[] { new Vector2Int(390, 844), new Vector2Int(1080, 2520) })
