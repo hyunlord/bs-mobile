@@ -101,3 +101,47 @@ Release `m3-bell-whistle-walk-review-428-20261027`의 과거 pending 문구는 �
 원인 후보: EnemyDrawQueue.cs:49는 Y painter order로 정렬하고 :54는 연속된 같은 Texture만 합친다. first-playable 신규walk는 별도atlas, 기존 적·idle/hit/death는 역사atlas라 Y순 A/B/A가 여러묶음이 될 수 있다. 이는 코드상 가능한 기전이며 해당실행의 texture-run계측으로 인과를 확정한 것은 아니다. 정렬/아틀라스 재포장 변경은 범위 밖이라 하지 않았다.
 
 작은 정본 [초별 호출표](first-playable-walks-429-drawcalls.csv)는 실제 sidecar1800쌍의60frame 구간 min/mean/max 집계다. 전체PNG/raw sidecar는 로컬보존, ZIP/중복전체업로드 없음. 원자료경로 artifacts/day-20261027/fp-five-offline-20261027-1414. 최종CI는 PR체크에서 확인하며 사용자승인 전 draft유지.
+
+## 2026-10-27 통합 텍스처 재검증 — source 1602d79
+
+관문: 호출 수 통과(+0%), 표본 시각 검사 통과. 사용자 영상 판정·최종 CI는 별도 확인한다. 앞 절의 15.47→66.88(+332.4%) 실패와 기존 CSV/Release는 역사 기록으로 보존한다.
+
+전용 atlas를2080×2600에서2080×3200으로 확장해 역사 적 고유13crop(47역할)을 기존 신규80칸과 함께 패킹했다. FP 적52역할이 같은Texture2D를 쓰며 Y순서는 그대로다. 역사13crop은 각 원본 RGBA SHA-256 및 복사 결과의 바이트 비교로 보호한다. 신규80칸 RGBA, 모든 적의 pivot/worldSize/frameMs/셀 크기, 비적 역할·bindings, 공유actors.png/wave/Core/data는 보존했다. 전체actors 파일 해시는 고정하지 않아 무관한 승인 문장 변경을 허용한다.
+
+비압축 RGBA32 산술 메모리는20.63→25.39MiB, **+4,992,000바이트(+4.76MiB)**이다. 실제 런타임 메모리 측정치가 아니다. `import-first-playable-walks.mjs --check`, 재import 바이트 동일성, Node 구문·diff 검사는 통과했다.
+
+### 실제 Unity 실행 기록
+
+정확한 tested source: `1602d79d4151340c2860f157057e6088558adce2`.
+
+| 프로필 | Suite | Passed | Failed | Skipped |
+|---|---|---:|---:|---:|
+| first-playable | EditMode | 863 | 0 | 25 |
+| first-playable | PlayMode | 53 | 0 | 45 |
+| wave-1a | EditMode | 873 | 0 | 15 |
+| wave-1a | PlayMode | 85 | 0 | 13 |
+| supplemental | combat EditMode | 1 | 0 | 0 |
+| supplemental | melee EditMode | 1 | 0 | 0 |
+| after 오프라인 캡처 | PlayMode | 1 | 0 | 0 |
+
+기본4 XML root는 `Skipped:Ignored`, failed0이다. 기본 기록의 공통 미설명skip2/listed1을 그대로 보존하며, 기존 생성 도구의 combat/melee 입력을 보충 실행한6 XML 합산에서는 미설명0/listed1이다. listed는 선택적 `WaveWorldTests.RecordedWaveRangeExportsActualTickFrames`; 예외 추가 없음. 근거는 `artifacts/day-20261027/pr432-single-texture-tests/{record.md,*Mode.xml,combat.xml,melee.xml,combined-skip-record.txt,combined-skips.txt}`이다. 최종 보충 XML은17:51:10 KST 종료, 새 캡처 XML은17:55:22 KST 종료다.
+
+### 같은 30초 호출 수
+
+| 렌더 소스 | 평균 호출 | p95 호출 | 최대 호출 | 기준 대비 |
+|---|---:|---:|---:|---|
+| baseline ff453e8 | 15.4667 | 17 | 17 | 기준 |
+| 분리 atlas 4749000 | 66.8789 | 84 | 94 | +332.4%, 실패 보존 |
+| 통합 atlas 1602d79 | 15.4667 | 17 | 17 | +0%, ≤20% 통과 |
+
+이는 **그리기 호출 수**이며 프레임 시간 p95·성능 통과가 아니다. 기존before를 그대로 재사용하고after만 다시 찍었다. 두 실행의 tick19891–20790,1800프레임,입력SHA `61aa591ea8f05dc1ec7b30968652df654aa423d824b786ede6145915fdc183ba`,종료해시 `69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5`가 일치한다. 프레임별 stateHash·tick·alpha·appliedCommands·카메라 위치/배율·submittedInstances·enemyIds/enemyKinds/viewport-centreIds·buildingStates도1800/1800 일치한다.
+
+기존 EnemyDrawQueue는 Y순의 연속 동일Texture만 묶는다. 분리atlas에서 새walk와 역사idle/hit/death·다른적이 A/B/A로 갈렸으며, baseline→분리atlas의 queue/material/renderer 코드 변경은 없다. 같은 장면에서 단일texture로 묶은 결과 호출이 기준선으로 돌아와 이 원인 설명을 뒷받침한다. Y순서 변경으로 해결하지 않았다.
+
+새 작은 정본은 [통합 후 초별 호출표](first-playable-walks-429-unified-drawcalls.csv)다. 60프레임 단위 min/mean/max를 새before/after sequence.json에서 계산했다. 재생성 입력은 `artifacts/day-20261027/fp-unified-after-1602d79/{before,after}/walk/sequence.json`이며 초i는 frames[60i..60i+59]다. 이전 실패 CSV는 변경하지 않았다. 새 검증·영상 원자료는 같은 폴더의 `pair-validation.json`, `fp-five-unified-before-after-1x.mp4`에 있다. [새 Release 게시 대상](https://github.com/hyunlord/bs-mobile/releases/tag/fp-five-unified-432-20261027)은 root 게시 후 확인한다.
+
+### 시각 검토와 한계
+
+실제PNG 전후0·50·550·741·828·851·960·1162의8쌍을 직접 보았다. stone_breaker(741/851/960), rope_catcher(1162), ember_sapper(50/1162), bell_thief(741/828/851), whistle_hunter(550)의 주요 실루엣을 확인했다. 새 사각 배경·명백한UV오류·겹침 역전·비대상 그림 교체는 발견하지 못했다. 550의 반투명 적도 전후 유지되며,0/50/741 하단 단색 지도 경계는before에도 있는 기존 표현이다. **PASS는 표본의 atlas 통합 회귀 검사에 한정**한다. 큰 물결/불꽃의 가림, 작은 적의 세부 판독 한계가 있다. 정지 표본으로 걷기 자연스러움·전체프레임 무결점·사용자 승인을 대신하지 않는다.
+
+영상 ffprobe 직접 확인: 780×844(각390×844),60/1fps,1800프레임,30.000초. 고정seed30000,debug명령 SetInvulnerable/GrantLevel 포함,world-only,Time.captureFramerate60 오프라인 렌더다. 정상플레이·실시간 성능 증거가 아니다.
