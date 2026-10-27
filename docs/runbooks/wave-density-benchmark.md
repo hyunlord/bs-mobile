@@ -163,3 +163,71 @@ Part 1 결과 보고 뒤 PR #219를 ready로 전환할 수 있다는 최신 사�
 [최종 Part 1 보고](../review/stutter-part1-219.md)의 A659/B3bb 비교는 두 fixture에서각8회 완료했으며, 입력·종결 해시와25ms 초과 비율은 모든 실행에서 만족했다. 그러나 B는8회 모두cadence 기준에 실패했고, queue1 단독 진단도p95 17.6054ms·57.9741fps로 실패했다. 두 후보를 기본값으로 사용하지 않는다. 정본 `metalUseMetalDisplayLink=0`과 기존60fps 표시 정책으로 복원한 상태가 운영 기준이다. 비채택 B 앱이나 dirty queue1 앱을 최종 배포 앱이라고 바꾸어 표기하지 않는다.
 
 후속 보고에서는 A566.593ms·B372.625ms 지연과 원인 미확정, 같은 프로세스 첫 등장 검증 공백을 유지한다. 낮은 초과 비율·해시 일치·CI 통과가 모든 끊김 해결을 뜻하지 않는다. 이 결과는 부분 종료이며 추가 표시 설정 실험을 반복하지 않는다. Part 1의 필수 CI·리뷰·병합 조건을 지킨 뒤에만 main 기반 Part 2로 이동한다.
+
+## First-playable FP01 (#443, 2026-10-27)
+
+상태: **하네스·계약 추가, main 제품 코드 기준 Native 3회는 아직 미측정**. C05는 wave-1a 전용으로 그대로
+보존한다. first-playable 적 걷기 #432와 사람 걷기 #439는 별도 FP01 입력으로도 비교한다.
+Core·기존 리플레이·골든 해시는 바꾸지 않는다.
+
+정본은 [`benchmarks/first-playable-fp01/contract.json`](../../benchmarks/first-playable-fp01/contract.json),
+입력·선정 근거는 [README](../../benchmarks/first-playable-fp01/README.md)다. 기존 #432에서 확인한 입력
+SHA `61aa591e…`, seed30000, 전체27000틱/27052명령, 종료 `69E7182A…`를 고정했다.
+`SetInvulnerable`·`GrantLevel`을 포함한 스트레스 입력이며 정상 플레이나 밸런스 증거가 아니다.
+
+측정은19891–20790틱, 30초다. 900개 고유 틱의 전체 적 수 전수 스캔으로 **0–224 / 225–249 / 250+**를
+새 성능 측정 전에 선정했다(각198/353/349틱, 실제199–283마리). 다섯 대상 적 종류가 모든 선정 틱에
+존재한다. C05400/600/800 bins를 복사하지 않으며, 샘플이 없는 bin은 `incomplete`다. 원래 명령으로
+prefix를 진행하고120프레임 warmup 뒤 첫 측정 프레임은19891틱을 유지한다. 이후 정상 시간으로
+진행하며900개 틱 전부 기록되어야 한다(같은 틱의 반복 프레임 허용, 시작/중간/끝 누락 금지).
+마지막 측정 프레임 간격을 수집한 후 suffix를
+27000틱까지 적용하여 원본 종료 해시를 검증한다. prefix/warmup/suffix 시간은 측정 window에 포함하지 않는다.
+
+### 빌드·실행
+
+[공유 Mac 런북](shared-mac.md)의 자기 잠금·시간대·전경/외부 부하 규칙을 먼저 따른다. 22:30까지
+잠금을 해제한다. 빌드는 자기 worktree의 새 출력 폴더에만 한다. `$MV`에는 만들거나 지우지 않는다.
+
+```sh
+UNITY_CONTENT_PROFILE=first-playable UNITY_WAVE_BENCHMARK=0 UNITY_MAC_DEVELOPMENT=0 \
+  UNITY_MAC_OUTPUT="$PWD/artifacts/fp01-release" bash tools/build-mac.sh
+
+APP="$PWD/artifacts/fp01-release/Sow and Siege.app/Contents/MacOS/Sow and Siege"
+# run-1/2/3은 각각 비어 있는 새 출력이어야 한다. 캡처·Profiler·다른 GPU 앱은 사용하지 않는다.
+"$APP" --wave-benchmark "$PWD/benchmarks/first-playable-fp01/run.ssreplay" \
+  --first-playable-benchmark --wave-benchmark-mode uncapped \
+  --wave-benchmark-output "$PWD/artifacts/fp01-main/uncapped/run-1" \
+  -screen-width 1600 -screen-height 900 -screen-fullscreen 0
+```
+
+같은 앱·설정으로 `run-2`, `run-3`을 순서대로 실행한다. 전경 상실 또는 경계 제외가 한 번이라도
+기록되면 해당 실행은 무효이며, 정상 프레임만 잘라 통과시키지 않는다. 계측 파일의 `profile`은
+`first-playable`, `fixture`는 `first-playable-fp01`, `performanceEligible=true`여야 한다.
+진단용 Development·Profiler 출력이나 오프라인 렌더는 기준선이 아니다.
+
+```sh
+node tools/summarize-wave-benchmark-v2.mjs uncapped artifacts/fp01-main/uncapped \
+  --contract benchmarks/first-playable-fp01/contract.json
+node tools/summarize-wave-benchmark-v2.mjs uncapped artifacts/fp01-candidate/uncapped \
+  --reference artifacts/fp01-main/uncapped --contract benchmarks/first-playable-fp01/contract.json
+```
+
+판정은 같은 기기·viewport1600×900·quality·Metal/Mono·uncapped 설정에서 3회 밀도별 통합p95.
+기준 대비20% 초과는 경고이며 PR의 회귀 판단에 사용한다. 임의 시간 제외, 고부하 프레임 제외,
+스폰/해상도 축소, 밀도 bin 재선정으로 개선시키지 않는다. 캡처 때 사용한390×844 영상은 외형 증거이며
+1600×900 성능 수치로 바꿔 부르지 않는다. worldBatchDrawCalls는 UI·파이프라인 패스를 제외한 제출 수다.
+
+### main 기준선의 provenance와 기록
+
+지원 코드가 아직 main에 없으므로, 첫 기준 앱은 **main 제품 코드 + benchmark 전용 변경**이다.
+이 앱을 수정 없는 역사 main 바이너리라고 부르지 않는다. 제품 main SHA, benchmark commit/sourceHash,
+기기·실행 설정과3회결과를 함께 기록한다. #432/#439도 동일 benchmark 패치를 사용하여 조건을 맞춘다.
+계약·통계 도구만 추가된 합성 테스트 통과를 실제 main 측정으로 대체하지 않는다.
+
+| 기준 제품 SHA | 하네스 SHA/sourceHash | 3회 실행 | 0–224 p95 | 225–249 p95 | 250+ p95 | 상태 |
+|---|---|---|---|---|---|---|
+| 미기록 | 미기록 | 미실행 | 미측정 | 미측정 | 미측정 | 기준선 대기 |
+
+C05 원본 계약과 fixture 바이트는 별도 Node 검사로 보존한다. FP01 startup 검사에는 다른 프로필,
+입력 SHA·콘텐츠 해시·종료 틱/해시·명령 수 불일치 및 캡처 혼합 거부가 포함된다. 실제 Unity 컴파일·
+두 프로필 검사·Native 재생 종료 해시는 별도 실행 기록에 남긴다.

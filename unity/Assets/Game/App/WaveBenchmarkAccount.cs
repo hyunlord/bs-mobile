@@ -55,7 +55,7 @@ namespace Game.App
             if(args == null) throw new ArgumentNullException(nameof(args));
             bool requested = false;
             foreach(var argument in args)
-                if(argument != null && (argument.StartsWith("--wave-benchmark", StringComparison.Ordinal) || argument == "--crowd-target60-experiment")) requested = true;
+                if(argument != null && (argument.StartsWith("--wave-benchmark", StringComparison.Ordinal) || argument == "--crowd-target60-experiment" || argument == "--first-playable-benchmark")) requested = true;
             if(!requested) return null;
             int replay = Array.IndexOf(args, "--wave-benchmark");
             int output = Array.IndexOf(args, "--wave-benchmark-output");

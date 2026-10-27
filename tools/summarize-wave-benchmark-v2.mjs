@@ -81,8 +81,15 @@ export function summarizeWaveBenchmarkV2(root, { mode, referenceRoot, historical
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   try {
     const [mode, root, ...options] = process.argv.slice(2);
-    assert.ok(root, 'Usage: summarize-wave-benchmark-v2.mjs uncapped ROOT [--reference ROOT] | capped ROOT [--historical-capped]');
-    assert.ok(!options.length || options.length === 1 && options[0] === '--historical-capped' || options.length === 2 && options[0] === '--reference', 'Invalid options');
-    console.log(JSON.stringify(summarizeWaveBenchmarkV2(root, { mode, historicalCapped: options[0] === '--historical-capped', referenceRoot: options[0] === '--reference' ? options[1] : undefined }), null, 2));
+    assert.ok(root, 'Usage: summarize-wave-benchmark-v2.mjs uncapped ROOT [--reference ROOT] [--contract FILE] | capped ROOT [--historical-capped] [--contract FILE]');
+    const parsed = { mode }; let contractFile; const seen = new Set();
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i]; assert.ok(!seen.has(option), 'Duplicate option'); seen.add(option);
+      if (option === '--historical-capped') { parsed.historicalCapped = true; continue; }
+      assert.ok(option === '--reference' || option === '--contract', 'Invalid option');
+      const value = options[++i]; assert.ok(value && !value.startsWith('--'), 'Missing option value');
+      if (option === '--reference') parsed.referenceRoot = value; else contractFile = value;
+    }
+    console.log(JSON.stringify(summarizeWaveBenchmarkV2(root, parsed, contractFile ? readJson(contractFile) : readJson(defaultContract)), null, 2));
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
