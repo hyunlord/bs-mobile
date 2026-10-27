@@ -42,3 +42,9 @@ skipped in every profile: 0 unexplained, 1 listed
 ## 남은 관문
 
 Native 프로필 선택·실제 900틱 계측·GPU timing·전경/외부 부하 유효성은 미확인이다. 향후 승인된 시점에 main + 같은 하네스 패치로 Release를 빌드하고 유효 3회 기준선을 기록한다. 준비된 artifact runner는 실행하지 않는다. 성능 수치·개선·퇴행 판정은 현재 없음. CI 최종 결과는 PR 게시 후 별도로 기록한다.
+
+## 최초 CI의 적용 범위 인용 누락 수정
+
+CI40483329327은 `tools/test-view-coverage.mjs`에서 실패했다. `tools/view-coverage.json`의 M1 전투 표현 범위 근거가 이전 wave 전용 진입 조건문을 인용한 채 남아 있었다. FP01 진입은 허용하지만 `FirstPlayableBenchmark.Parse`가 `--m1-combat-case`와 crowd review를 먼저 거부하므로 M1 표현·영웅 리그의 wave-only 범위는 변하지 않는다.
+
+근거 목록을 현재 진입 조건과 FP01 금지 옵션 검사로 갱신했다. 범위·고정 대입 횟수·known gap은 완화하지 않았다. 금지 목록에서 M1 옵션을 제거하면 범위 검증이 실패하는 회귀 검사를 추가했다. `node --test tools/test-view-coverage.mjs tools/test-first-playable-benchmark.mjs` 14/14 통과, 독립 읽기 검토 추가 차단 없음. Unity/Core/data/기존 C05 diff0이므로 5f48da5의 Unity 기록은 그대로 유효하다. 실패 로그는 artifacts/first-playable-fp01/ci-40483329327-failure.log에 보존한다.
