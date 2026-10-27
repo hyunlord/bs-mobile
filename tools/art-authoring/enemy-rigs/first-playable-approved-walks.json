@@ -4,7 +4,7 @@
     "id": "first-playable-enemy-walks-429",
     "path": "Assets/Art/first-playable-enemy-walks-429.png",
     "width": 2080,
-    "height": 2600,
+    "height": 3200,
     "padding": 2,
     "license": "generated-actors"
   },
@@ -599,5 +599,1174 @@
         "tween": "none"
       }
     }
-  ]
+  ],
+  "legacy": {
+    "sourceAtlas": {
+      "id": "actors",
+      "path": "Assets/Art/actors.png",
+      "width": 1254,
+      "height": 1254,
+      "padding": 2,
+      "license": "generated-actors"
+    },
+    "startY": 2600,
+    "cellWidth": 260,
+    "cellHeight": 300,
+    "columns": 8,
+    "roles": [
+      {
+        "id": "enemy.core.raider.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 74,
+            "y": 386,
+            "width": 182,
+            "height": 209
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.365742,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.raider.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 74,
+            "y": 386,
+            "width": 182,
+            "height": 209
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.365742,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.raider.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 74,
+            "y": 386,
+            "width": 182,
+            "height": 209
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.365742,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.raider.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 74,
+            "y": 386,
+            "width": 182,
+            "height": 209
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.365742,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.seed_mite.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 130,
+            "width": 182,
+            "height": 157
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.486879,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.seed_mite.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 130,
+            "width": 182,
+            "height": 157
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.486879,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.seed_mite.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 130,
+            "width": 182,
+            "height": 157
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.486879,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.seed_mite.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 130,
+            "width": 182,
+            "height": 157
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.486879,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.crop_grazer.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 367,
+            "y": 385,
+            "width": 214,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.458571,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.crop_grazer.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 367,
+            "y": 385,
+            "width": 214,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.458571,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.crop_grazer.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 367,
+            "y": 385,
+            "width": 214,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.458571,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.crop_grazer.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 367,
+            "y": 385,
+            "width": 214,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.458571,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.stone_breaker.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 669,
+            "y": 369,
+            "width": 239,
+            "height": 233
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.430815,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.stone_breaker.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 669,
+            "y": 369,
+            "width": 239,
+            "height": 233
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.430815,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.stone_breaker.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 669,
+            "y": 369,
+            "width": 239,
+            "height": 233
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.430815,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.ram_runner.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 369,
+            "width": 197,
+            "height": 234
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.35359,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.ram_runner.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 369,
+            "width": 197,
+            "height": 234
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.35359,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.ram_runner.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 369,
+            "width": 197,
+            "height": 234
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.35359,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.ram_runner.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 994,
+            "y": 369,
+            "width": 197,
+            "height": 234
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.35359,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.rope_catcher.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 63,
+            "y": 672,
+            "width": 214,
+            "height": 210
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.428,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.rope_catcher.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 63,
+            "y": 672,
+            "width": 214,
+            "height": 210
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.428,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.rope_catcher.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 63,
+            "y": 672,
+            "width": 214,
+            "height": 210
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.428,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.locust_cloud.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 368,
+            "y": 644,
+            "width": 243,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.398672,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.locust_cloud.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 368,
+            "y": 644,
+            "width": 243,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.398672,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.locust_cloud.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 368,
+            "y": 644,
+            "width": 243,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.398672,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.locust_cloud.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 368,
+            "y": 644,
+            "width": 243,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.398672,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.ember_sapper.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 702,
+            "y": 672,
+            "width": 167,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.357857,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.ember_sapper.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 702,
+            "y": 672,
+            "width": 167,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.357857,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.ember_sapper.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 702,
+            "y": 672,
+            "width": 167,
+            "height": 196
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.357857,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.bell_thief.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1010,
+            "y": 676,
+            "width": 178,
+            "height": 195
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.383385,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.bell_thief.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1010,
+            "y": 676,
+            "width": 178,
+            "height": 195
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.383385,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.bell_thief.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1010,
+            "y": 676,
+            "width": 178,
+            "height": 195
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.383385,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.whistle_hunter.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 79,
+            "y": 905,
+            "width": 176,
+            "height": 295
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.250576,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.whistle_hunter.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 79,
+            "y": 905,
+            "width": 176,
+            "height": 295
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.250576,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.whistle_hunter.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 79,
+            "y": 905,
+            "width": 176,
+            "height": 295
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.250576,
+          "y": 0.42
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.shield_raider.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 369,
+            "y": 951,
+            "width": 221,
+            "height": 224
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.710357,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.shield_raider.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 369,
+            "y": 951,
+            "width": 221,
+            "height": 224
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.710357,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.shield_raider.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 369,
+            "y": 951,
+            "width": 221,
+            "height": 224
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.710357,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.shield_raider.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 369,
+            "y": 951,
+            "width": 221,
+            "height": 224
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.710357,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.siege_cart.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 672,
+            "y": 940,
+            "width": 233,
+            "height": 238
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.704874,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.siege_cart.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 672,
+            "y": 940,
+            "width": 233,
+            "height": 238
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.704874,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.siege_cart.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 672,
+            "y": 940,
+            "width": 233,
+            "height": 238
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.704874,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.siege_cart.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 672,
+            "y": 940,
+            "width": 233,
+            "height": 238
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.704874,
+          "y": 0.72
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.winter_hart.idle",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1000,
+            "y": 931,
+            "width": 192,
+            "height": 265
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.724528,
+          "y": 1
+        },
+        "frameMs": 350,
+        "tween": "none"
+      },
+      {
+        "id": "enemy.core.winter_hart.walk",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1000,
+            "y": 931,
+            "width": 192,
+            "height": 265
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.724528,
+          "y": 1
+        },
+        "frameMs": 350,
+        "tween": "walk"
+      },
+      {
+        "id": "enemy.core.winter_hart.hit",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1000,
+            "y": 931,
+            "width": 192,
+            "height": 265
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.724528,
+          "y": 1
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      },
+      {
+        "id": "enemy.core.winter_hart.death",
+        "atlas": "actors",
+        "frames": [
+          {
+            "x": 1000,
+            "y": 931,
+            "width": 192,
+            "height": 265
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.08
+        },
+        "worldSize": {
+          "x": 0.724528,
+          "y": 1
+        },
+        "frameMs": 350,
+        "tween": "recoil"
+      }
+    ],
+    "sourceCells": [
+      {
+        "rect": {
+          "x": 74,
+          "y": 386,
+          "width": 182,
+          "height": 209
+        },
+        "pixelSha256": "1e17bccc93f4727c45220d72a06e5a74168826a22ac417c1cbdf5cefa90c9f91"
+      },
+      {
+        "rect": {
+          "x": 994,
+          "y": 130,
+          "width": 182,
+          "height": 157
+        },
+        "pixelSha256": "f353ec359049ce5dc62134feb4b01c61612b0c0c3c55414a9b4f90b99f2fe9cb"
+      },
+      {
+        "rect": {
+          "x": 367,
+          "y": 385,
+          "width": 214,
+          "height": 196
+        },
+        "pixelSha256": "e0ea55ef4997a658b82b562a5cef9c5bc0e0253c6ad97f9fe6360c6d5680dc76"
+      },
+      {
+        "rect": {
+          "x": 669,
+          "y": 369,
+          "width": 239,
+          "height": 233
+        },
+        "pixelSha256": "3498dc563981c4276785690010768e932a57ae340d1d8d3462799c19c0e86869"
+      },
+      {
+        "rect": {
+          "x": 994,
+          "y": 369,
+          "width": 197,
+          "height": 234
+        },
+        "pixelSha256": "cb19d3d723b57ff04460cb3d7e2b1be8734dad3aa1209af25493898901430fa0"
+      },
+      {
+        "rect": {
+          "x": 63,
+          "y": 672,
+          "width": 214,
+          "height": 210
+        },
+        "pixelSha256": "e58f57d7fd87f5e0ee05dcfbfb1def6c53df09dd131c94d7fa21556d0f082c45"
+      },
+      {
+        "rect": {
+          "x": 368,
+          "y": 644,
+          "width": 243,
+          "height": 256
+        },
+        "pixelSha256": "fb392bf75b63cd16996932f8ee353276d2d1c7ca45f84bdc2d0e50481af823d3"
+      },
+      {
+        "rect": {
+          "x": 702,
+          "y": 672,
+          "width": 167,
+          "height": 196
+        },
+        "pixelSha256": "4ae8d4474f65eef65136e6a0b11c4f9982978fa59f0999c03b8a4f4abd2c03ba"
+      },
+      {
+        "rect": {
+          "x": 1010,
+          "y": 676,
+          "width": 178,
+          "height": 195
+        },
+        "pixelSha256": "9eef008691f3aa4245fe7e11124d95c0498b18ca5059b10e9a495c7169c46c04"
+      },
+      {
+        "rect": {
+          "x": 79,
+          "y": 905,
+          "width": 176,
+          "height": 295
+        },
+        "pixelSha256": "02eda8f9a4c5e4966232d6d11eeb6c49dd7acb3ae40805a9bab415e73ade79b4"
+      },
+      {
+        "rect": {
+          "x": 369,
+          "y": 951,
+          "width": 221,
+          "height": 224
+        },
+        "pixelSha256": "a1f4ca6801c9f526651fa73cf2ff05659dde30fd156a5fd7521cd856f52c876c"
+      },
+      {
+        "rect": {
+          "x": 672,
+          "y": 940,
+          "width": 233,
+          "height": 238
+        },
+        "pixelSha256": "959d4b8f609ef1452cd1bf4492293a3ff01638904b6b096347422be72789db93"
+      },
+      {
+        "rect": {
+          "x": 1000,
+          "y": 931,
+          "width": 192,
+          "height": 265
+        },
+        "pixelSha256": "b67fd224f036d9385fadc38b982ae9dd4449d7dcfd1c3418291b7ca7576527e6"
+      }
+    ]
+  }
 }

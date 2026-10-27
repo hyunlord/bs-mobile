@@ -23,7 +23,22 @@ namespace Game.Tests
             Assert.That(walk.WorldSize.x, Is.EqualTo(size).Within(.000001f));
             Assert.That(walk.CyclePixels, Is.Zero, "approved contract uses frameMs, not an invented stride");
             foreach (var state in new[] { "idle", "hit", "death" })
-                Assert.That(catalog.Resolve("enemy", "core:" + enemy, state).Texture, Is.Not.SameAs(walk.Texture));
+                Assert.That(catalog.Resolve("enemy", "core:" + enemy, state).Texture, Is.SameAs(walk.Texture),
+                    "A state transition must not split the Y-sorted enemy batch.");
+        }
+
+        [Test]
+        public void HistoricalAndApprovedEnemiesShareOneTextureInEveryState()
+        {
+            var registry = Resources.Load<Game.View.ArtRegistry>("FirstPlayableArt");
+            var catalog = Game.View.ArtCatalog.FromJson(registry.manifest.text, registry.atlases);
+            var texture = catalog.Resolve("enemy", "core:stone_breaker", "walk").Texture;
+            foreach (var enemy in new[] { "seed_mite", "crop_grazer", "raider", "shield_raider",
+                "ram_runner", "locust_cloud", "siege_cart", "winter_hart", "stone_breaker",
+                "rope_catcher", "ember_sapper", "bell_thief", "whistle_hunter" })
+                foreach (var state in new[] { "idle", "walk", "hit", "death" })
+                    Assert.That(catalog.Resolve("enemy", "core:" + enemy, state).Texture,
+                        Is.SameAs(texture), enemy + "/" + state);
         }
     }
 }

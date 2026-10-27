@@ -262,7 +262,7 @@
       "id": "first-playable-enemy-walks-429",
       "path": "Assets/Art/first-playable-enemy-walks-429.png",
       "width": 2080,
-      "height": 2600,
+      "height": 3200,
       "padding": 2,
       "license": "generated-actors"
     }
@@ -2008,11 +2008,11 @@
     },
     {
       "id": "enemy.core.raider.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 74,
-          "y": 386,
+          "x": 2,
+          "y": 2602,
           "width": 182,
           "height": 209
         }
@@ -2030,11 +2030,11 @@
     },
     {
       "id": "enemy.core.raider.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 74,
-          "y": 386,
+          "x": 2,
+          "y": 2602,
           "width": 182,
           "height": 209
         }
@@ -2052,11 +2052,11 @@
     },
     {
       "id": "enemy.core.raider.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 74,
-          "y": 386,
+          "x": 2,
+          "y": 2602,
           "width": 182,
           "height": 209
         }
@@ -2074,11 +2074,11 @@
     },
     {
       "id": "enemy.core.raider.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 74,
-          "y": 386,
+          "x": 2,
+          "y": 2602,
           "width": 182,
           "height": 209
         }
@@ -2096,11 +2096,11 @@
     },
     {
       "id": "enemy.core.seed_mite.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 130,
+          "x": 262,
+          "y": 2602,
           "width": 182,
           "height": 157
         }
@@ -2118,11 +2118,11 @@
     },
     {
       "id": "enemy.core.seed_mite.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 130,
+          "x": 262,
+          "y": 2602,
           "width": 182,
           "height": 157
         }
@@ -2140,11 +2140,11 @@
     },
     {
       "id": "enemy.core.seed_mite.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 130,
+          "x": 262,
+          "y": 2602,
           "width": 182,
           "height": 157
         }
@@ -2162,11 +2162,11 @@
     },
     {
       "id": "enemy.core.seed_mite.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 130,
+          "x": 262,
+          "y": 2602,
           "width": 182,
           "height": 157
         }
@@ -2184,11 +2184,11 @@
     },
     {
       "id": "enemy.core.crop_grazer.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 367,
-          "y": 385,
+          "x": 522,
+          "y": 2602,
           "width": 214,
           "height": 196
         }
@@ -2206,11 +2206,11 @@
     },
     {
       "id": "enemy.core.crop_grazer.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 367,
-          "y": 385,
+          "x": 522,
+          "y": 2602,
           "width": 214,
           "height": 196
         }
@@ -2228,11 +2228,11 @@
     },
     {
       "id": "enemy.core.crop_grazer.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 367,
-          "y": 385,
+          "x": 522,
+          "y": 2602,
           "width": 214,
           "height": 196
         }
@@ -2250,11 +2250,11 @@
     },
     {
       "id": "enemy.core.crop_grazer.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 367,
-          "y": 385,
+          "x": 522,
+          "y": 2602,
           "width": 214,
           "height": 196
         }
@@ -2272,11 +2272,11 @@
     },
     {
       "id": "enemy.core.stone_breaker.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 669,
-          "y": 369,
+          "x": 782,
+          "y": 2602,
           "width": 239,
           "height": 233
         }
@@ -2406,11 +2406,11 @@
     },
     {
       "id": "enemy.core.stone_breaker.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 669,
-          "y": 369,
+          "x": 782,
+          "y": 2602,
           "width": 239,
           "height": 233
         }
@@ -2428,11 +2428,11 @@
     },
     {
       "id": "enemy.core.stone_breaker.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 669,
-          "y": 369,
+          "x": 782,
+          "y": 2602,
           "width": 239,
           "height": 233
         }
@@ -2450,11 +2450,11 @@
     },
     {
       "id": "enemy.core.ram_runner.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 369,
+          "x": 1042,
+          "y": 2602,
           "width": 197,
           "height": 234
         }
@@ -2472,11 +2472,11 @@
     },
     {
       "id": "enemy.core.ram_runner.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 369,
+          "x": 1042,
+          "y": 2602,
           "width": 197,
           "height": 234
         }
@@ -2494,11 +2494,11 @@
     },
     {
       "id": "enemy.core.ram_runner.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 369,
+          "x": 1042,
+          "y": 2602,
           "width": 197,
           "height": 234
         }
@@ -2516,11 +2516,11 @@
     },
     {
       "id": "enemy.core.ram_runner.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 994,
-          "y": 369,
+          "x": 1042,
+          "y": 2602,
           "width": 197,
           "height": 234
         }
@@ -2538,11 +2538,11 @@
     },
     {
       "id": "enemy.core.rope_catcher.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 63,
-          "y": 672,
+          "x": 1302,
+          "y": 2602,
           "width": 214,
           "height": 210
         }
@@ -2672,11 +2672,11 @@
     },
     {
       "id": "enemy.core.rope_catcher.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 63,
-          "y": 672,
+          "x": 1302,
+          "y": 2602,
           "width": 214,
           "height": 210
         }
@@ -2694,11 +2694,11 @@
     },
     {
       "id": "enemy.core.rope_catcher.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 63,
-          "y": 672,
+          "x": 1302,
+          "y": 2602,
           "width": 214,
           "height": 210
         }
@@ -2716,11 +2716,11 @@
     },
     {
       "id": "enemy.core.locust_cloud.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 368,
-          "y": 644,
+          "x": 1562,
+          "y": 2602,
           "width": 243,
           "height": 256
         }
@@ -2738,11 +2738,11 @@
     },
     {
       "id": "enemy.core.locust_cloud.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 368,
-          "y": 644,
+          "x": 1562,
+          "y": 2602,
           "width": 243,
           "height": 256
         }
@@ -2760,11 +2760,11 @@
     },
     {
       "id": "enemy.core.locust_cloud.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 368,
-          "y": 644,
+          "x": 1562,
+          "y": 2602,
           "width": 243,
           "height": 256
         }
@@ -2782,11 +2782,11 @@
     },
     {
       "id": "enemy.core.locust_cloud.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 368,
-          "y": 644,
+          "x": 1562,
+          "y": 2602,
           "width": 243,
           "height": 256
         }
@@ -2804,11 +2804,11 @@
     },
     {
       "id": "enemy.core.ember_sapper.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 702,
-          "y": 672,
+          "x": 1822,
+          "y": 2602,
           "width": 167,
           "height": 196
         }
@@ -2938,11 +2938,11 @@
     },
     {
       "id": "enemy.core.ember_sapper.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 702,
-          "y": 672,
+          "x": 1822,
+          "y": 2602,
           "width": 167,
           "height": 196
         }
@@ -2960,11 +2960,11 @@
     },
     {
       "id": "enemy.core.ember_sapper.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 702,
-          "y": 672,
+          "x": 1822,
+          "y": 2602,
           "width": 167,
           "height": 196
         }
@@ -2982,11 +2982,11 @@
     },
     {
       "id": "enemy.core.bell_thief.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1010,
-          "y": 676,
+          "x": 2,
+          "y": 2902,
           "width": 178,
           "height": 195
         }
@@ -3116,11 +3116,11 @@
     },
     {
       "id": "enemy.core.bell_thief.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1010,
-          "y": 676,
+          "x": 2,
+          "y": 2902,
           "width": 178,
           "height": 195
         }
@@ -3138,11 +3138,11 @@
     },
     {
       "id": "enemy.core.bell_thief.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1010,
-          "y": 676,
+          "x": 2,
+          "y": 2902,
           "width": 178,
           "height": 195
         }
@@ -3160,11 +3160,11 @@
     },
     {
       "id": "enemy.core.whistle_hunter.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 79,
-          "y": 905,
+          "x": 262,
+          "y": 2902,
           "width": 176,
           "height": 295
         }
@@ -3294,11 +3294,11 @@
     },
     {
       "id": "enemy.core.whistle_hunter.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 79,
-          "y": 905,
+          "x": 262,
+          "y": 2902,
           "width": 176,
           "height": 295
         }
@@ -3316,11 +3316,11 @@
     },
     {
       "id": "enemy.core.whistle_hunter.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 79,
-          "y": 905,
+          "x": 262,
+          "y": 2902,
           "width": 176,
           "height": 295
         }
@@ -3338,11 +3338,11 @@
     },
     {
       "id": "enemy.core.shield_raider.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 369,
-          "y": 951,
+          "x": 522,
+          "y": 2902,
           "width": 221,
           "height": 224
         }
@@ -3360,11 +3360,11 @@
     },
     {
       "id": "enemy.core.shield_raider.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 369,
-          "y": 951,
+          "x": 522,
+          "y": 2902,
           "width": 221,
           "height": 224
         }
@@ -3382,11 +3382,11 @@
     },
     {
       "id": "enemy.core.shield_raider.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 369,
-          "y": 951,
+          "x": 522,
+          "y": 2902,
           "width": 221,
           "height": 224
         }
@@ -3404,11 +3404,11 @@
     },
     {
       "id": "enemy.core.shield_raider.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 369,
-          "y": 951,
+          "x": 522,
+          "y": 2902,
           "width": 221,
           "height": 224
         }
@@ -3426,11 +3426,11 @@
     },
     {
       "id": "enemy.core.siege_cart.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 672,
-          "y": 940,
+          "x": 782,
+          "y": 2902,
           "width": 233,
           "height": 238
         }
@@ -3448,11 +3448,11 @@
     },
     {
       "id": "enemy.core.siege_cart.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 672,
-          "y": 940,
+          "x": 782,
+          "y": 2902,
           "width": 233,
           "height": 238
         }
@@ -3470,11 +3470,11 @@
     },
     {
       "id": "enemy.core.siege_cart.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 672,
-          "y": 940,
+          "x": 782,
+          "y": 2902,
           "width": 233,
           "height": 238
         }
@@ -3492,11 +3492,11 @@
     },
     {
       "id": "enemy.core.siege_cart.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 672,
-          "y": 940,
+          "x": 782,
+          "y": 2902,
           "width": 233,
           "height": 238
         }
@@ -3514,11 +3514,11 @@
     },
     {
       "id": "enemy.core.winter_hart.idle",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1000,
-          "y": 931,
+          "x": 1042,
+          "y": 2902,
           "width": 192,
           "height": 265
         }
@@ -3536,11 +3536,11 @@
     },
     {
       "id": "enemy.core.winter_hart.walk",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1000,
-          "y": 931,
+          "x": 1042,
+          "y": 2902,
           "width": 192,
           "height": 265
         }
@@ -3558,11 +3558,11 @@
     },
     {
       "id": "enemy.core.winter_hart.hit",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1000,
-          "y": 931,
+          "x": 1042,
+          "y": 2902,
           "width": 192,
           "height": 265
         }
@@ -3580,11 +3580,11 @@
     },
     {
       "id": "enemy.core.winter_hart.death",
-      "atlas": "actors",
+      "atlas": "first-playable-enemy-walks-429",
       "frames": [
         {
-          "x": 1000,
-          "y": 931,
+          "x": 1042,
+          "y": 2902,
           "width": 192,
           "height": 265
         }
