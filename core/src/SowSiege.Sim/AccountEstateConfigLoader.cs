@@ -14,7 +14,9 @@ public static class AccountEstateConfigLoader
     // The first night map (#379), retained for historical estate saves.
     public const string NightMapVersion = "m3a-prototype-r5";
     // The first-login map (#385): an 8x8 lit start with unchanged buildings and economy.
-    public const string MapPrototypeVersion = "m3a-prototype-r6";
+    public const string FirstLoginMapVersion = "m3a-prototype-r6";
+    // Layout A (#389): separated reclaimable sites around a village plaza; economics unchanged.
+    public const string MapPrototypeVersion = "m3a-prototype-r7";
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

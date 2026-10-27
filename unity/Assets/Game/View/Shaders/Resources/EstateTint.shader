@@ -39,6 +39,7 @@ Shader "Game/UI/EstateTint"
             fixed4 _Color, _TextureSampleAdd;
             float4 _MainTex_ST, _ClipRect;
             float _EstateGround;
+            float _EstateCornerRadius, _EstateLightSpread;
             int _EstateOpenCount;
             float4 _EstateOpenAreas[32];
             fixed4 _EstateClosed;
@@ -60,10 +61,11 @@ Shader "Game/UI/EstateTint"
                         float4 area = _EstateOpenAreas[i];
                         float2 halfSize = (area.zw - area.xy) * .5;
                         float radius = min(halfSize.x, halfSize.y);
+                        if (_EstateCornerRadius > 0) radius = min(radius, _EstateCornerRadius);
                         float2 q = abs(input.grid.xy - (area.xy + area.zw) * .5) - halfSize + radius;
                         distance = min(distance, length(max(q, 0)) + min(max(q.x, q.y), 0) - radius);
                     }
-                    input.color.rgb = lerp(float3(1,1,1), _EstateClosed.rgb, smoothstep(-.5, 2.5, distance));
+                    input.color.rgb = lerp(float3(1,1,1), _EstateClosed.rgb, smoothstep(-.5, 2.5, distance - _EstateLightSpread));
                 }
                 fixed3 source = sample.rgb;
                 fixed luma = dot(sample.rgb, fixed3(.2126, .7152, .0722));

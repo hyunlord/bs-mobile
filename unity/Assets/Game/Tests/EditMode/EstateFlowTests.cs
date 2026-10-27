@@ -39,6 +39,16 @@ namespace Tests.EditMode
             Assert.That(CanonicalContent.CreateAccountEstateConfig("unknown-version"), Is.Null);
         }
 
+        [Test] public void FreshFieldRejectionRetainsCoreReasonWithoutGrantingResources()
+        {
+            var screen = Screen();
+            var before = screen.State.Wallet.OrderBy(pair => pair.Key).ToArray();
+            Assert.That(screen.StartWork(Id(screen, "m3a:field")), Is.False);
+            Assert.That(screen.LastConstructionReason, Is.EqualTo("parent-required"));
+            Assert.That(screen.State.Wallet.OrderBy(pair => pair.Key).ToArray(), Is.EqualTo(before));
+            Assert.That(screen.State.Estate.Active, Is.Null);
+        }
+
         [Test] public void ANewPrototypeEstateStartsWithTheConfigWallet()
         {
             var screen = Screen();
@@ -46,6 +56,22 @@ namespace Tests.EditMode
             foreach (var pair in screen.Config.InitialWallet) Assert.That(Wallet(screen, pair.Key), Is.EqualTo(pair.Value), pair.Key);
             Assert.That(screen.Building(Id(screen, "m3a:home")).Level, Is.EqualTo(1));
             Assert.That(screen.State.Estate.Buildings.Where(b => b.Kind != "m3a:home").All(b => b.Level == 0), Is.True);
+        }
+
+        [Test] public void ConstructionPreviewNamesTheParentAndNeverMutatesTheState()
+        {
+            var screen = Screen(); var field = Id(screen, "m3a:field"); var granary = Id(screen, "meta:granary");
+            var before = MetaSaveCodec.Encode(screen.State);
+            var blocked = screen.ConstructionPreview(field);
+            Assert.That(blocked.Allowed, Is.False); Assert.That(blocked.Reason, Is.EqualTo("parent-required"));
+            Assert.That(blocked.Text, Is.EqualTo("곡물창고 Lv1 필요"));
+            Assert.That(screen.ConstructionPreview(granary).Allowed, Is.True);
+            Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(before), "Both accepted and rejected previews are read-only.");
+            Assert.That(screen.LastConstructionReason, Is.Empty);
+            Assert.That(screen.StartWork(granary), Is.True);
+            Assert.That(screen.ConstructionPreview(field).Allowed, Is.True, "Core permits reserving a child while its parent is active.");
+            now = 60; screen.Advance();
+            Assert.That(screen.ConstructionPreview(field).Reason, Is.EqualTo("started"));
         }
 
         [Test] public void ConstructionQueuesAndCompletesWithRealTimeAndTheSkip()
