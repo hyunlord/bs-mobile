@@ -186,7 +186,7 @@ namespace Tests.PlayMode
                 var initial = session.View.CaptureFrame(); var settings = CanonicalContent.Presentation.Camera;
                 world.Initialize(camera, new WorldCameraSettings(settings.WorldUnitsPerUnityUnit, settings.MinHalfHeight, settings.MaxHalfHeight, settings.EstatePadding, settings.FollowMilliseconds, settings.ZoomMilliseconds), replay.Header.Options.Run.EstateId, initial.MapWidth, initial.MapHeight);
                 yield return PlayModeCaptureGuard.WaitForShaders("FP recorded range setup");
-                void Save(string filename, RunFrame frame, float alpha)
+                void Save(string filename, RunFrame renderedPrevious, RunFrame frame, float alpha)
                 {
                     var previousTarget = RenderTexture.active;
                     try { RenderTexture.active = target; PlayModeCaptureGuard.ReadPixels(image, new Rect(0, 0, width, height), 0, 0, "FP range:" + filename); image.Apply(); }
@@ -194,7 +194,17 @@ namespace Tests.PlayMode
                     File.WriteAllBytes(Path.Combine(output, filename), image.EncodeToPNG());
                     manifest.frames.Add(new RangeFrame { file = filename, tick = frame.Tick, appliedCommands = session.NextSequence, stateHash = session.ComputeStateHash(), alpha = alpha,
                         cameraPosition = camera.transform.position, cameraHalfHeight = camera.orthographicSize,
+                        drawCalls = world.DrawCalls, submittedInstances = world.SubmittedInstances, unsupportedShapeCount = world.UnsupportedShapeCount,
                         enemyIds = frame.Enemies.Select(e => e.Id).ToArray(), enemyKinds = frame.Enemies.Select(e => e.DefinitionId).ToArray(),
+                        cameraEnemyCenterIds = frame.Enemies.Where(e =>
+                        {
+                            var prior = renderedPrevious.Enemies.FirstOrDefault(p => p.Id == e.Id);
+                            var point = new Vector3((float)e.Position.X / settings.WorldUnitsPerUnityUnit, (float)e.Position.Y / settings.WorldUnitsPerUnityUnit, 0);
+                            if (prior.DefinitionId != null)
+                                point = Vector3.Lerp(new Vector3((float)prior.Position.X / settings.WorldUnitsPerUnityUnit, (float)prior.Position.Y / settings.WorldUnitsPerUnityUnit, 0), point, alpha);
+                            var viewport = camera.WorldToViewportPoint(point);
+                            return viewport.z > 0 && viewport.x >= 0 && viewport.x <= 1 && viewport.y >= 0 && viewport.y <= 1;
+                        }).Select(e => e.Id).ToArray(),
                         buildingStates = session.View.CaptureFirstPlayable().BuildingProgress.Select(b => b.Id + ":" + b.State).ToArray() });
                     if (manifest.frames.Count % 120 == 0 || filename.StartsWith("command-", StringComparison.Ordinal))
                         File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
@@ -212,14 +222,14 @@ namespace Tests.PlayMode
                             world.Present(previous, current, fp, alpha, 1f / 60, new Rect(0, 0, width, height));
                             yield return null;
                             Assert.That(world.UnsupportedShapeCount, Is.Zero);
-                            if (current.Tick >= start) Save("frame-" + (written++).ToString("D6") + ".png", current, alpha);
+                            if (current.Tick >= start) Save("frame-" + (written++).ToString("D6") + ".png", previous, current, alpha);
                         }
                     }
                     if (stillCommands.Contains(session.NextSequence))
                     {
                         // Separate zero-time presentation: neither Core commands nor the sequence clock advance.
                         world.Present(current, current, fp, 1, 0, new Rect(0, 0, width, height)); yield return null;
-                        Save("command-" + session.NextSequence + ".png", current, 1); retained.Add(session.NextSequence);
+                        Save("command-" + session.NextSequence + ".png", current, current, 1); retained.Add(session.NextSequence);
                     }
                     if (session.NextSequence % 180 == 0) yield return null;
                 }
@@ -251,11 +261,12 @@ namespace Tests.PlayMode
         [Serializable] sealed class RangeFrame
         {
             public string file, stateHash;
-            public int tick;
+            public string visibilityBasis = "Interpolated Core enemy centre in camera viewport; not sprite bounds, occlusion, or pixel visibility.";
+            public int tick, drawCalls, submittedInstances, unsupportedShapeCount;
             public long appliedCommands;
             public float alpha, cameraHalfHeight;
             public Vector3 cameraPosition;
-            public int[] enemyIds;
+            public int[] enemyIds, cameraEnemyCenterIds;
             public string[] enemyKinds, buildingStates;
         }
 
