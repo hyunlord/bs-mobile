@@ -1,0 +1,836 @@
+{
+  "issue": 405,
+  "assets": [
+    {
+      "role": "fx.ward_orbit.shield",
+      "atlas": "wave1a-weapon-fx.png",
+      "rect": [
+        1636,
+        1076,
+        128,
+        160
+      ],
+      "sourceAtlasSha256": "6088686a31b5e55bd21e6a7f0323ff5061a308e0472ce1425a13f5d488484ff8",
+      "png": "ward-orbit-shield-sprout-r1.png",
+      "pngSha256": "846e25e3cb9563bc9a396f356e17bd3d01750ac49626f67de1ad73ed3d5a18f5",
+      "anchor": "see original REVIEW.md / source-provenance.json",
+      "locations": [
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "fx.ward_orbit.shield",
+          "frames": [
+            {
+              "x": 1636,
+              "y": 1076,
+              "width": 128,
+              "height": 160
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-replacement-402-20261026"
+    },
+    {
+      "role": "icon.core.levy_banner.default",
+      "atlas": "equipment.png",
+      "rect": [
+        1179,
+        334,
+        159,
+        165
+      ],
+      "sourceAtlasSha256": "9c8ea4f642e6839147c2d6b2093922e50c012bf9d51cad6843fa8b9d5c90e847",
+      "png": "levy-banner-sprout-r2.png",
+      "pngSha256": "a234ee1bf9b261b93740b960a4012b4afc9afaef362d39c0106b499ef7984051",
+      "anchor": "see original REVIEW.md / source-provenance.json",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.levy_banner.default",
+          "frames": [
+            {
+              "x": 1179,
+              "y": 334,
+              "width": 159,
+              "height": 165
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.levy_banner.default",
+          "frames": [
+            {
+              "x": 1179,
+              "y": 334,
+              "width": 159,
+              "height": 165
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-replacement-402-20261026"
+    },
+    {
+      "role": "icon.core.heirloom_service.default",
+      "atlas": "charters-evolutions.png",
+      "rect": [
+        126,
+        363,
+        131,
+        226
+      ],
+      "sourceAtlasSha256": "9b5bfc8a876e672072e5e0bdc4bdd2fc5a33741b3ff2fb12f0a94c786bae73b9",
+      "png": "heirloom-service-sprout-r1.png",
+      "pngSha256": "d6921fc5684e10df11c3c9d114b3c34707b819223c20f62ed731bb29ad65f66c",
+      "anchor": "`(63, 115.5)` → `(63, 115.5)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.heirloom_service.default",
+          "frames": [
+            {
+              "x": 126,
+              "y": 363,
+              "width": 131,
+              "height": 226
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.heirloom_service.default",
+          "frames": [
+            {
+              "x": 126,
+              "y": 363,
+              "width": 131,
+              "height": 226
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch2-405-20261026"
+    },
+    {
+      "role": "person.vassal.idle",
+      "atlas": "actors.png",
+      "rect": [
+        403,
+        62,
+        212,
+        236
+      ],
+      "sourceAtlasSha256": "b4e91a8b37127bc290b25e06caa72d5f5255090a3a445ca4ffc9d33c1f67e04c",
+      "png": "person-vassal-sprout-r1.png",
+      "pngSha256": "5a37f59f4cb88985951bedaaf66e861a798a6fd625ee1bc6748ac7ca2e092ce8",
+      "anchor": "`(118.5, 228)` → `(119, 228)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "person.vassal.idle",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "person.vassal.move",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "person.vassal.work",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "person.vassal.muster",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "person.vassal.return",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "person.vassal.idle",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "person.vassal.move",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "person.vassal.work",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "person.vassal.muster",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "person.vassal.return",
+          "frames": [
+            {
+              "x": 403,
+              "y": 62,
+              "width": 212,
+              "height": 236
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch2-405-20261026"
+    },
+    {
+      "role": "icon.core.rally_boundary.default",
+      "atlas": "charters-evolutions.png",
+      "rect": [
+        387,
+        47,
+        194,
+        230
+      ],
+      "sourceAtlasSha256": "9b5bfc8a876e672072e5e0bdc4bdd2fc5a33741b3ff2fb12f0a94c786bae73b9",
+      "png": "rally-boundary-sprout-r1.png",
+      "pngSha256": "23fb6b48443f62800492a6fe8cff8f58713a8c2bceb98c870b970bec84adca13",
+      "anchor": "`(92.5, 134.5)` → `(92.5, 134.5)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.rally_boundary.default",
+          "frames": [
+            {
+              "x": 387,
+              "y": 47,
+              "width": 194,
+              "height": 230
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.rally_boundary.default",
+          "frames": [
+            {
+              "x": 387,
+              "y": 47,
+              "width": 194,
+              "height": 230
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch2-405-20261026"
+    },
+    {
+      "role": "icon.core.rally_kitchen.default",
+      "atlas": "charters-evolutions.png",
+      "rect": [
+        97,
+        966,
+        174,
+        195
+      ],
+      "sourceAtlasSha256": "9b5bfc8a876e672072e5e0bdc4bdd2fc5a33741b3ff2fb12f0a94c786bae73b9",
+      "png": "rally-kitchen-sprout-r1.png",
+      "pngSha256": "a34f44797c09b45e773d49318560b62af08d12d656ef8c2975c70e8220031337",
+      "anchor": "`(86.5, 96)` → `(87, 96)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.rally_kitchen.default",
+          "frames": [
+            {
+              "x": 97,
+              "y": 966,
+              "width": 174,
+              "height": 195
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.rally_kitchen.default",
+          "frames": [
+            {
+              "x": 97,
+              "y": 966,
+              "width": 174,
+              "height": 195
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch2-405-20261026"
+    },
+    {
+      "role": "icon.core.ruin_keystone.default",
+      "atlas": "items-a.png",
+      "rect": [
+        674,
+        99,
+        224,
+        223
+      ],
+      "sourceAtlasSha256": "9bb09119e7ef33996c1e59235d52528c187b6fd21695971959554dcf8006882c",
+      "png": "ruin-keystone-sprout-r1.png",
+      "pngSha256": "4ccdb69f48ad68f4eb63f7d0b9c260f040cdf24b3239e7e48ee62c443adfe811",
+      "anchor": "`(113.5, 110.5)` → `(113.5, 110.5)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.ruin_keystone.default",
+          "frames": [
+            {
+              "x": 674,
+              "y": 99,
+              "width": 224,
+              "height": 223
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.ruin_keystone.default",
+          "frames": [
+            {
+              "x": 674,
+              "y": 99,
+              "width": 224,
+              "height": 223
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch2-405-20261026"
+    },
+    {
+      "role": "building.core.carpenter_hammer.complete",
+      "atlas": "buildings.png",
+      "rect": [
+        704,
+        79,
+        150,
+        204
+      ],
+      "sourceAtlasSha256": "d97bad6da523f458545ef6eeb3aadde1badda26058a8155359f88725de822bab",
+      "png": "carpenter-complete-sprout-r1.png",
+      "pngSha256": "3236f6e30f37f9e2db080fdd59bf177cd2a02cb5bdf47a339b4b9fbe706d4c97",
+      "anchor": "`(83, 183)` → `(83.5, 183)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "building.core.carpenter_hammer.complete",
+          "frames": [
+            {
+              "x": 704,
+              "y": 79,
+              "width": 150,
+              "height": 204
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "building.core.carpenter_hammer.complete",
+          "frames": [
+            {
+              "x": 704,
+              "y": 79,
+              "width": 150,
+              "height": 204
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "building.core.carpenter_hammer.damaged",
+      "atlas": "buildings.png",
+      "rect": [
+        1028,
+        92,
+        148,
+        183
+      ],
+      "sourceAtlasSha256": "d97bad6da523f458545ef6eeb3aadde1badda26058a8155359f88725de822bab",
+      "png": "carpenter-damaged-sprout-r1.png",
+      "pngSha256": "2f6fc8644817e69448a902f825e05f05c1419295b2daf8512677e0f9df83ed74",
+      "anchor": "`(74, 172)` → `(74, 172)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "building.core.carpenter_hammer.damaged",
+          "frames": [
+            {
+              "x": 1028,
+              "y": 92,
+              "width": 148,
+              "height": 183
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "building.core.carpenter_hammer.damaged",
+          "frames": [
+            {
+              "x": 1028,
+              "y": 92,
+              "width": 148,
+              "height": 183
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "building.core.carpenter_hammer.ruin",
+      "atlas": "buildings.png",
+      "rect": [
+        21,
+        415,
+        220,
+        150
+      ],
+      "sourceAtlasSha256": "d97bad6da523f458545ef6eeb3aadde1badda26058a8155359f88725de822bab",
+      "png": "carpenter-ruin-sprout-r1.png",
+      "pngSha256": "0a17079ee869470081b9b03144817da55b82273ecefbda082732a19b43a3f92b",
+      "anchor": "`(137, 145)` → `(137.5, 145)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "building.core.carpenter_hammer.ruin",
+          "frames": [
+            {
+              "x": 21,
+              "y": 415,
+              "width": 220,
+              "height": 150
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "building.core.carpenter_hammer.ruin",
+          "frames": [
+            {
+              "x": 21,
+              "y": 415,
+              "width": 220,
+              "height": 150
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.08
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "icon.core.crop_guard_signet.default",
+      "atlas": "items-b.png",
+      "rect": [
+        49,
+        80,
+        243,
+        194
+      ],
+      "sourceAtlasSha256": "1c90e9bca20575c055b59ce33a61d54ee207709b4b5e1697863c16f9917ca653",
+      "png": "crop-guard-signet-sprout-r1.png",
+      "pngSha256": "b6bbd8ae73dfc1b5a500a5cdd6c507f5cb6bd31c40f548be6651fc3b57ea3cd2",
+      "anchor": "`(121.5, 96)` → `(121.5, 96.5)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.crop_guard_signet.default",
+          "frames": [
+            {
+              "x": 49,
+              "y": 80,
+              "width": 243,
+              "height": 194
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.crop_guard_signet.default",
+          "frames": [
+            {
+              "x": 49,
+              "y": 80,
+              "width": 243,
+              "height": 194
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "wave1a.wave.harvest-flag.default",
+      "atlas": "wave1a-growth.png",
+      "rect": [
+        660,
+        921,
+        260,
+        289
+      ],
+      "sourceAtlasSha256": "3b2add543b042dd95a0474a988995d84823ca47fafe7cc06a6ece8b6e1253dd9",
+      "png": "harvest-flag-sprout-r1.png",
+      "pngSha256": "813d5c6b25b7afcdda3dfac4fb053bbb447007de4802a8b3f6badf01303889b4",
+      "anchor": "`(129.5, 285)` → `(129, 285)`",
+      "locations": [
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "wave1a.wave.harvest-flag.default",
+          "frames": [
+            {
+              "x": 660,
+              "y": 921,
+              "width": 260,
+              "height": 289
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "icon.core.meal_oath.default",
+      "atlas": "charters-evolutions.png",
+      "rect": [
+        89,
+        81,
+        186,
+        192
+      ],
+      "sourceAtlasSha256": "9b5bfc8a876e672072e5e0bdc4bdd2fc5a33741b3ff2fb12f0a94c786bae73b9",
+      "png": "meal-oath-sprout-r1.png",
+      "pngSha256": "7bf7acffe299583d45b3ac0deb3a9647297c3e30200c59754f543308f923c9ee",
+      "anchor": "`(93.5, 100.5)` → `(93.5, 100.5)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.meal_oath.default",
+          "frames": [
+            {
+              "x": 89,
+              "y": 81,
+              "width": 186,
+              "height": 192
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.meal_oath.default",
+          "frames": [
+            {
+              "x": 89,
+              "y": 81,
+              "width": 186,
+              "height": 192
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "icon.core.seed_crown.default",
+      "atlas": "charters-evolutions.png",
+      "rect": [
+        383,
+        988,
+        198,
+        156
+      ],
+      "sourceAtlasSha256": "9b5bfc8a876e672072e5e0bdc4bdd2fc5a33741b3ff2fb12f0a94c786bae73b9",
+      "png": "seed-crown-sprout-r1.png",
+      "pngSha256": "ffd1f13bd57e74eeaa09fba5f4a7d22225f589098811170456f06bdd368e8428",
+      "anchor": "`(96, 75.5)` → `(95.5, 76)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.seed_crown.default",
+          "frames": [
+            {
+              "x": 383,
+              "y": 988,
+              "width": 198,
+              "height": 156
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.seed_crown.default",
+          "frames": [
+            {
+              "x": 383,
+              "y": 988,
+              "width": 198,
+              "height": 156
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    },
+    {
+      "role": "icon.core.wind_seed_flag.default",
+      "atlas": "items-a.png",
+      "rect": [
+        998,
+        660,
+        222,
+        256
+      ],
+      "sourceAtlasSha256": "9bb09119e7ef33996c1e59235d52528c187b6fd21695971959554dcf8006882c",
+      "png": "wind-seed-flag-sprout-r1.png",
+      "pngSha256": "3fa1195e2dabcc2712c5cd71596a1d596f0cbd336472bfcede371ee874b8abcb",
+      "anchor": "`(109, 122)` → `(109, 122)`",
+      "locations": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "icon.core.wind_seed_flag.default",
+          "frames": [
+            {
+              "x": 998,
+              "y": 660,
+              "width": 222,
+              "height": 256
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "icon.core.wind_seed_flag.default",
+          "frames": [
+            {
+              "x": 998,
+              "y": 660,
+              "width": 222,
+              "height": 256
+            }
+          ],
+          "pivot": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      ],
+      "release": "sprout-emblem-batch3-405-20261026"
+    }
+  ]
+}

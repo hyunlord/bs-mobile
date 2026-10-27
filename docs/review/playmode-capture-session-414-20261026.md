@@ -104,3 +104,20 @@ node tools/unity-skipped-everywhere.mjs tools/unity-skip-exceptions.txt artifact
 ```
 
 Combined existing checker result: **0 unexplained,1 listed** (only the pre-existing optional recorded-input export). This is a six-result verification set, not a claim that the stock two-profile runner alone prepares those inputs. On a future Unity change, rerun the four normal suites and both supplemental exports/tests before combining results. #415 remains draft, no merge authorization inferred.
+
+## 최신 main 반영 후 사용자 병합 승인 검증 (2026-10-27)
+
+main e9b388c를 강제 push 없이 merge한58feb97에서 두 프로필을 재실행했다. 잠금16:52:51–17:02:32 KST, 추적 파일 변경 없음.
+
+```text
+commit: 58feb97107e14b6cee0054950d38665ce04bdf46
+first-playable EditMode: passed 857, failed 0, skipped 25
+first-playable PlayMode: passed 53, failed 0, skipped 45
+wave-1a EditMode: passed 867, failed 0, skipped 15
+wave-1a PlayMode: passed 85, failed 0, skipped 13
+skipped in every profile: 0 unexplained, 1 listed
+supplemental combat: passed 1, failed 0, skipped 0
+supplemental melee: passed 1, failed 0, skipped 0
+```
+
+기본 실행의 입력 부재 skip exit1은 보존했다. 정식 생성 도구로 두 fixture를 생성해 supplemental 각1/0/0 통과, 예외 추가 없이 합산했다. 원자료: artifacts/day-20261027/pr415-main-merged-tests. 최신 CI는 PR 본문에 최종 결과를 기록한다.
