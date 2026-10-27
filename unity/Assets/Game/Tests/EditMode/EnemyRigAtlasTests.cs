@@ -69,15 +69,13 @@ namespace Tests.EditMode
         }
 
         [Test]
-        public void FirstPlayableStoneWalkUsesApprovedFullCellsWithoutChangingIdle()
+        public void WaveReplacementsLeaveFirstPlayableStoneWalkHistorical()
         {
             var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "first-playable-manifest.json")));
             var walk = System.Array.Find(m.roles, r => r.id == "enemy.core.stone_breaker.walk");
-            Assert.That((walk.frames.Length, walk.frameMs, walk.tween), Is.EqualTo((16, 45, "none")));
-            Assert.That((walk.pivot.x, walk.pivot.y), Is.EqualTo((.5f, .12109375f)));
-            Assert.That(System.Array.Find(m.roles, r => r.id == "enemy.core.stone_breaker.idle").frames.Length, Is.EqualTo(1));
-            for (var i = 0; i < 16; i++)
-                Assert.That((walk.frames[i].x, walk.frames[i].y, walk.frames[i].width, walk.frames[i].height), Is.EqualTo(((i % 8) * 260 + 2, (i / 8) * 260 + 2, 256, 256)));
+            Assert.That((walk.frames.Length, walk.frameMs, walk.atlas), Is.EqualTo((1, 350, "actors")));
+            Assert.That((walk.pivot.x, walk.pivot.y), Is.EqualTo((.5f, .08f)));
+            Assert.That((walk.frames[0].x, walk.frames[0].y, walk.frames[0].width, walk.frames[0].height), Is.EqualTo((669, 369, 239, 233)));
         }
 
         // A sixteen-frame sheet with a cycle length plays by distance: one stride is one cycle across the sixteen frames, a standing

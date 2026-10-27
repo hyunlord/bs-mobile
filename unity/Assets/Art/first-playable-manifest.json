@@ -257,14 +257,6 @@
       "height": 2164,
       "padding": 2,
       "license": "generated-knight-sheets"
-    },
-    {
-      "id": "stone-breaker-approved",
-      "path": "Assets/Art/stone-breaker-r3-16.png",
-      "width": 2080,
-      "height": 520,
-      "padding": 2,
-      "license": "generated-actors"
     }
   ],
   "roles": [
@@ -2294,115 +2286,25 @@
     },
     {
       "id": "enemy.core.stone_breaker.walk",
-      "atlas": "stone-breaker-approved",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 2,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 262,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 522,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 782,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1042,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1302,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1562,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1822,
-          "y": 2,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 2,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 262,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 522,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 782,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1042,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1302,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1562,
-          "y": 262,
-          "width": 256,
-          "height": 256
-        },
-        {
-          "x": 1822,
-          "y": 262,
-          "width": 256,
-          "height": 256
+          "x": 669,
+          "y": 369,
+          "width": 239,
+          "height": 233
         }
       ],
       "pivot": {
         "x": 0.5,
-        "y": 0.12109375
+        "y": 0.08
       },
       "worldSize": {
-        "x": 0.559006211093322,
-        "y": 0.559006211093322
+        "x": 0.430815,
+        "y": 0.42
       },
-      "frameMs": 45,
-      "tween": "none"
+      "frameMs": 350,
+      "tween": "walk"
     },
     {
       "id": "enemy.core.stone_breaker.hit",

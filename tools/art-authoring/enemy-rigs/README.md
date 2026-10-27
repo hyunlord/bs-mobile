@@ -4,9 +4,9 @@
 
 Wave rig texture is **2048×3840**: the historical 2048×2304 pixels and approved shield/ram rows through y3328 remain byte-identical RGBA. Raider r2 appends 16 cells with its approved 26ms duration (416ms cycle), common 248px UV and pivot. Shield/ram keep 40ms (640ms). Idle/tell/hit/death and all other roles are unchanged.
 
-First-playable stone breaker uses a separate **2080×520** texture: the approved sixteen full 256px cells are repacked eight across with 2px transparent padding (260px pitch). Each full cell is RGBA-identical to its approved 4096×256 source, including transparent pixels; pivot (.5,.12109375), square worldSize .559006211093322 and 45ms remain unchanged. Separate texture avoids exceeding the shared importer's max4096 texture dimension. Actual first-playable draw-batch contribution still needs Unity measurement.
+First-playable enemy roles remain historical. Stone breaker is separated from #410 by user direction; its earlier a910372 integration and approved source remain preserved in git/artifacts. The shared wave atlas remains height3840; first-playable does not reference that atlas.
 
-Inputs are pinned in approved-walks.json. Approval sources are enemy-walk-shield-ram-399-20261026, enemy-walk-audit-raider-r2-20261023 and m3-walk-next-review-423-20261027; their old pending labels are historical. Put shield-raider-16.png, ram-runner-16.png, raider-r2-spriteskin-16.png and stone-breaker-r3-16.png in one owned source directory, then:
+Inputs are pinned in approved-walks.json. Approval sources are enemy-walk-shield-ram-399-20261026, enemy-walk-audit-raider-r2-20261023; their old pending labels are historical. Put shield-raider-16.png, ram-runner-16.png, and raider-r2-spriteskin-16.png in one owned source directory, then:
 
 ```sh
 node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --source SOURCE_DIRECTORY
@@ -14,7 +14,7 @@ node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --check
 node tools/art-authoring/enemy-rigs/test-approved-extensions.mjs
 ```
 
-Importer accepts original2304, prior3328 or current3840 shared height and verifies preserved rows. After a historical bake, run this importer last. First-playableArt registry contains the separate stone texture; its meta and registry are committed. No first-playable raider/shield/ram identities change: wave ram is humanoid while first-playable ram is a different historical drawing. No Core/data or gameplay consumers change. Native comparisons, Unity profiles and replay/hash/C05 verification remain separate parent-owned gates.
+Importer accepts original2304, prior3328 or current3840 shared height and verifies preserved rows. After a historical bake, run this importer last. No new first-playable texture or registry entry is required. No first-playable raider/shield/ram identities change: wave ram is humanoid while first-playable ram is a different historical drawing. No Core/data or gameplay consumers change. Native comparisons, Unity profiles and replay/hash/C05 verification remain separate parent-owned gates.
 
 ## Historical authoring pipeline (preserved)
 
