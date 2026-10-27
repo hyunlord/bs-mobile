@@ -213,8 +213,7 @@ namespace Tests.PlayMode
             Click("EstateMap.Build"); yield return null;
             Assert.That(screen.LastConstructionReason, Is.EqualTo("started"));
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(granary.Id));
-            // Editor evidence uses the existing development clock control; this is not native real-time evidence.
-            Click("EstateMap.Skip60"); yield return null;
+            yield return CaptureNaturalConstruction(granary.Id, false, "estate-r7-granary");
             Assert.That(screen.Building(granary.Id).Level, Is.EqualTo(1));
 
             Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
@@ -224,13 +223,55 @@ namespace Tests.PlayMode
             Assert.That(Rects("EstateMap.ConstructionSign").Length, Is.EqualTo(1));
             var fieldImage = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
             Assert.That(fieldImage.sprite, Is.SameAs(EstateArt.Load().Get("construction-field-1-lit")));
-            yield return Capture("estate-r7-field-construction");
-            Click("EstateMap.Skip60"); yield return null;
+            yield return CaptureNaturalConstruction(field.Id, true, "estate-r7-field");
             Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
             Assert.That(screen.State.Estate.Active, Is.Null);
             Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
             yield return Capture("estate-r7-field-complete");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "Only the prototype copy changes.");
+        }
+
+        // Actual Editor development-copy UI: normal Build commands and the view's real monotonic clock only.
+        // No native claim, synthetic sprite substitution, resource grant or development time skip.
+        IEnumerator CaptureNaturalConstruction(int buildingId, bool field, string name)
+        {
+            var screen = app.EstateMap;
+            Assert.That(screen.State.Estate.Active?.BuildingId, Is.EqualTo(buildingId));
+            var deadline = Time.realtimeSinceStartupAsDouble + screen.State.Estate.Active.TotalSeconds + 15;
+            for (var stage = 1; stage <= 3; stage++)
+            {
+                while (EstateConstructionArt.Stage(screen.State.Estate.Active) < stage)
+                {
+                    Assert.That(screen.State.Estate.Active?.BuildingId, Is.EqualTo(buildingId), "Work ended before its stage capture.");
+                    Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline), "Normal construction clock timed out.");
+                    yield return null;
+                }
+                // The normal view requests its redraw when the stage changes; let that redraw settle.
+                yield return null;
+                Assert.That(screen.State.Estate.Active?.BuildingId, Is.EqualTo(buildingId));
+                Assert.That(EstateConstructionArt.Stage(screen.State.Estate.Active), Is.EqualTo(stage), "Do not label a skipped stage as observed.");
+                var role = EstateConstructionArt.Role(field, stage, true);
+                var sprite = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + buildingId).sprite;
+                Assert.That(sprite, Is.SameAs(EstateArt.Load().Get(role)), "Capture the actual stage sprite, not only the clock state.");
+                var captureName = stage == 1 ? name + "-construction" : name + "-construction-stage-" + stage;
+                yield return Capture(captureName);
+                Assert.That(EstateConstructionArt.Stage(screen.State.Estate.Active), Is.EqualTo(stage), "Capture crossed a stage boundary.");
+                var work = screen.State.Estate.Active;
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
+                var csv = Path.Combine(output, "estate-r7-construction-observations.csv");
+                if (!File.Exists(csv)) File.WriteAllText(csv, "name,source,surface,buildingId,stage,totalSeconds,remainingSeconds,role,frame\n");
+                File.AppendAllText(csv, $"{captureName},{BuildIdentity.Commit},Editor-development-copy-normal-clock,{buildingId},{stage},{work.TotalSeconds},{work.RemainingSeconds},{role},{Time.frameCount}\n");
+            }
+            while (screen.State.Estate.Active != null)
+            {
+                Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(buildingId));
+                Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline), "Normal construction completion timed out.");
+                yield return null;
+            }
+            yield return null;
+            Assert.That(screen.Building(buildingId).Level, Is.EqualTo(1));
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
+            if (!field) yield return Capture(name + "-complete");
         }
 
         [UnityTest, Timeout(180000)]
