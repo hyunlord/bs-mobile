@@ -1,3 +1,5 @@
+관문: 부분 — 2026-10-27 두 프로필 실패0, 추가 입력 검사2/2, 미설명 skip0. 실제 플레이 전후 캡처는 아직 미완료. 초안 유지.
+
 관문: 부분 — 승인 문장15종 통합·픽셀·해시는 통과, wave-1a PlayMode 청록 감시1건 실패로 중단.
 변경: 기존8아틀라스의15crop 및 방어 방패의 대체 문장만 교체. measured_volley·manifest·Core·data는 보존.
 결정: 초안 유지. 추가 Unity·native 캡처 실행 없이 실패 관측을 보고한다.
@@ -48,3 +50,20 @@ Merged the isolated #415 guard without rewriting history (a5e7b83 includes 0543c
 The prerequisite's full attempt had 236 actual cyan-free observations, but two wave-1a map interaction tests hit `Movement surface` instead of their target in graphical Editor. Graphical Editor also reserialized EditorSettings.asset. #415 preserves both failures and the invalid runner record. Under the repeated-failure rule, **no new #411 Unity run or native comparison was started**. The prior #411 failed Unity record is historical and does not validate this new head. Keep this PR draft; no merger authorization.
 
 15 approved crop checks and both importer tests passed again; pixels outside approved cells and measured_volley remain unchanged. Core/data are unchanged. Missing actual before/after surfaces remain missing, not replaced by catalog fixtures. C05 remains unnecessary for pixel-only replacements unless actual batching changes are observed.
+
+## 2026-10-27: batchmode 재검증
+
+검증 HEAD `d0455d9c3e65d510e07a0464ab4a23c092575afa`, 10:30:16–10:43:37 KST. 자기 잠금 해제 완료. 추적 파일 변경0.
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---|---|
+| first-playable |828/0/25|55/0/42|
+| wave-1a |838/0/15|84/0/13|
+
+기존 도구로 frozen C05 combat sidecar와 m1-showcase-review melee catalog를 생성한 뒤 두 검사를 각각 실행: 1/0/0씩 통과. 네 전체 XML+두 추가 XML을 기존 skip 검사기로 합산하면 미설명0/기존 목록1. 예외 목록 변경0. stock runner의 exit1은 입력 없는 두 전체 실행 skip이며 추가 실행으로 실제 검사했다.
+
+이번 실행 시각의 보존된 실제 캡처 sidecar154개에서 cyanPixels>0은0개. 감시 자체의 고의 청록 negative-control은 실제 캡처에서 제외한다.
+
+앞선 같은 날 실행은 wave CardPool 캡처에서 first-playable 전용 heirloom_service/seed_crown을 찾다가 1건 실패했다. 실제 wave UI가 제공하는 crop_guard_signet으로 테스트 대상을 바로잡았으며 production catalog/Core/View는 수정하지 않았다. 실패 원자료 pr411-tests와 수정 후 pr411-retry-tests를 모두 보존한다.
+
+현재 roles-15 전후와 house-states-vassal은 표시 상태를 직접 주는 fixture이며 실제 플레이로 부르지 않는다. card-pool-crop_guard_signet은 실제 wave 카드 목록 UI다. harvest-flag는 runtime consumer가 없어 역할 목록으로만 확인하며 새 연결은 하지 않는다. 실제 전투 전후 녹화는 입력 idle20분·외부CPU 조건 충족 후 별도 수행한다.
