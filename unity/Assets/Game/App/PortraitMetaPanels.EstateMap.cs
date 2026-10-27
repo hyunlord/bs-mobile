@@ -219,7 +219,7 @@ namespace Game.App
             if (item.Layer == EstateDrawLayer.Terrain || item.Layer == EstateDrawLayer.Ground || item.Layer == EstateDrawLayer.Landmark)
             {
                 var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
-                terrain.IsometricGround = item.IsometricGround; terrain.WaterOnly = item.WaterOnly;
+                terrain.IsometricGround = item.IsometricGround; terrain.WaterOnly = item.WaterOnly; terrain.DarkBank = EstateTerrainImage.IsDarkBank(item);
                 terrain.RoadPoints = item.RoadPoints; terrain.RoadWidth = item.RoadWidth; terrain.RoadFootprints = item.RoadFootprints;
                 terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
@@ -490,7 +490,10 @@ namespace Game.App
     {
         public Vector2 Grid;
         public float PaintedWidth;
-        public bool Landmark, WaterLandmark, IsometricRoad, IsometricGround, WaterOnly;
+        public bool Landmark, WaterLandmark, IsometricRoad, IsometricGround, WaterOnly, DarkBank;
+        public static bool IsDarkBank(EstateDrawItem item) => item.Source == "river-bank" &&
+            item.Layer == EstateDrawLayer.Landmark && item.Role.StartsWith("bank-", StringComparison.Ordinal) &&
+            item.Role.EndsWith("-dark", StringComparison.Ordinal);
         public int RoadQuarterTurns;
         public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         protected override void OnPopulateMesh(VertexHelper mesh)
@@ -509,7 +512,7 @@ namespace Game.App
                 var fraction = new Vector2((vertex.position.x - rect.xMin) / rect.width, (vertex.position.y - rect.yMin) / rect.height);
                 var offset = fraction - pivot;
                 var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * rect.height / rect.width));
-                vertex.uv1 = new Vector4(grid.x, grid.y, WaterOnly ? (WaterLandmark ? 4 : 3) : WaterLandmark ? 2 : Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
+                vertex.uv1 = new Vector4(grid.x, grid.y, WaterOnly ? (WaterLandmark ? 4 : 3) : WaterLandmark ? 2 : Landmark ? 1 : 0, DarkBank ? 1 : 0); mesh.SetUIVertex(vertex, i);
             }
         }
         // Round the grid path, not the texture: a single dirt strip follows the estate axes without per-cell diamonds.

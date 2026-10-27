@@ -87,3 +87,11 @@ skipped in every profile: 0 unexplained, 1 listed
 청록 감시 UTC [2026-10-27T04:16:57Z, 2026-10-27T04:27:12Z)에서 실제 캡처 관측 262건, 청록 양성 0건 / 0픽셀. 정확한 `guard-self-test-negative-control-(True|False)` 4건만 따로 제외했다. 원자료는 `artifacts/playmode-capture-monitor/events.jsonl`, 집계는 `pr431-authorized-tests/actual-cyan-summary.json`이다. 관측 수는 고유 PNG 수와 다르다.
 
 실행 XML·fixture·로그는 `artifacts/day-20261027/pr431-authorized-tests`. native 공사·키아트 비교·강둑 ROI·묶음 차이와 사용자 화면 승인은 아직 미완료다. CI 최종 결과는 이 기록 push 뒤 PR에서 확인한다. Unity 통과를 native 또는 시각 통과로 확대하지 않는다.
+
+## Dark river-bank display follow-up (2026-10-27; runtime verification pending)
+
+The fresh Editor whole-map capture at source `bdbc578` shows three manually selected bank/adjacent-ground samples with Y′ 32.46/66.44, 28.47/67.33, and 28.47/66.78 (encoded RGB weighted by .2126/.7152/.0722). The banks are only 42–49% as bright and read as near-black outlines. Evidence: `artifacts/day-20261027/editor-visual-review-431/measurements.json`, `whole-bank-ground-rois-3x.png`; these are localized samples, not a new global acceptance threshold.
+
+The closed-bank path uses approved `bank-*-dark` art, white restoration parameters, and an above-night layer. It does **not** use the older 40% landmark tint, so applying a second restoration tint is not the remedy. A display-only candidate adds 0.04 linear RGB through the spare UI vertex UV component exclusively for those closed-bank roles. This preserves authored texture bytes, alpha, old landmark/water shader branches, the single shared material, layer order and planned draw items. Lit banks, trees, water and old landmarks are unchanged. The lift is a calibration candidate derived from the measured dark-ground gap, not a passed visual result.
+
+Focused checks cover real-plan role selection, neutral restoration parameters, exclusions and UV-channel isolation. Fresh first-playable/wave-1a EditMode/PlayMode results and the same bank/ground ROI captures are required after this View/shader change; the earlier successful Unity record is not current evidence for it. No new native attempt is authorized: the one native run failed at `EstateEntryProbe`'s `Title.Enter` lookup before its first capture and remains stopped.

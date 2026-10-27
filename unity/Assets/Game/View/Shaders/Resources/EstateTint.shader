@@ -33,8 +33,8 @@ Shader "Game/UI/EstateTint"
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            struct Attributes { float4 vertex : POSITION; float4 color : COLOR; float2 uv : TEXCOORD0; float3 grid : TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
-            struct Varyings { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 uv : TEXCOORD0; float4 local : TEXCOORD1; float3 grid : TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
+            struct Attributes { float4 vertex : POSITION; float4 color : COLOR; float2 uv : TEXCOORD0; float4 grid : TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct Varyings { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 uv : TEXCOORD0; float4 local : TEXCOORD1; float4 grid : TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
             sampler2D _MainTex;
             fixed4 _Color, _TextureSampleAdd;
             float4 _MainTex_ST, _ClipRect;
@@ -89,6 +89,16 @@ Shader "Game/UI/EstateTint"
                 // them; retain only their cool water pixels in both ground and above-night passes (#426).
                 if (input.grid.z > 2.5)
                     sample.a *= smoothstep(.005, .035, min(source.g - source.r, source.b - source.r));
+                // Approved dark bank art was only 42–49% as bright as neighbouring closed ground in the
+                // captured ROIs. Lift its display in linear light; preserve source pixels, alpha and shared batching.
+                if (input.grid.w > .5)
+                {
+                    #ifdef UNITY_COLORSPACE_GAMMA
+                    sample.rgb = LinearToGammaSpace(saturate(GammaToLinearSpace(sample.rgb) + .04));
+                    #else
+                    sample.rgb = saturate(sample.rgb + .04);
+                    #endif
+                }
                 sample.a *= input.color.a;
                 #ifdef UNITY_UI_CLIP_RECT
                 sample.a *= UnityGet2DClipping(input.local.xy, _ClipRect);

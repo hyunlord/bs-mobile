@@ -95,7 +95,47 @@ namespace Tests.EditMode
             var plan = EstatePlanner.Plan(EstateDecorRules.Load(), EstateArt.Load(), config, state.Estate);
             Assert.That(plan.Items.Where(i => i.Role == "riverbank-patch" || i.Role == "river-bend-patch").All(i => i.WaterOnly), Is.True);
             Assert.That(plan.Items.Count(i => i.Source == "river-bank"), Is.GreaterThan(0));
+            foreach (var bank in plan.Items.Where(i => i.Source == "river-bank"))
+            {
+                Assert.That(EstateTerrainImage.IsDarkBank(bank), Is.EqualTo(bank.Role.EndsWith("-dark", StringComparison.Ordinal)));
+                Assert.That(bank.Colour, Is.EqualTo(Color.white), "Authored bank art keeps neutral restoration parameters.");
+            }
             Assert.That(plan.Items.Where(i => i.Source == "wood").All(i => i.Role.StartsWith("estate-tree-", StringComparison.Ordinal)), Is.True);
+        }
+
+        [TestCase("bank-straight-01-dark", "river-bank", EstateDrawLayer.Landmark, true)]
+        [TestCase("bank-bridge-02-dark", "river-bank", EstateDrawLayer.Landmark, true)]
+        [TestCase("bank-straight-01-lit", "river-bank", EstateDrawLayer.Standing, false)]
+        [TestCase("bank-straight-01-dark", "river-bank", EstateDrawLayer.Veiled, false)]
+        [TestCase("riverbank-patch", "landmark", EstateDrawLayer.Landmark, false)]
+        [TestCase("estate-tree-conifer-01-dark", "wood", EstateDrawLayer.Veiled, false)]
+        public void DisplayBrightnessLiftIsExclusiveToApprovedAboveNightDarkBanks(string role, string source, EstateDrawLayer layer, bool expected)
+        {
+            var item = new EstateDrawItem { Role = role, Source = source, Layer = layer, Colour = Color.white };
+            Assert.That(EstateTerrainImage.IsDarkBank(item), Is.EqualTo(expected));
+            Assert.That(item.Colour, Is.EqualTo(Color.white), "Do not apply a second restoration tint to authored dark art.");
+        }
+
+        [TestCase(false)] [TestCase(true)]
+        public void BankDisplayFlagUsesOnlyTheSpareUvComponent(bool darkBank)
+        {
+            var owner = new GameObject("bank-display", typeof(RectTransform), typeof(Canvas));
+            var texture = new Texture2D(8, 8);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, 8, 8), new Vector2(.5f, .5f));
+            try
+            {
+                var canvas = owner.GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
+                var rect = UiShell.Rect("bank", owner.transform); rect.sizeDelta = new Vector2(100, 100);
+                var image = rect.gameObject.AddComponent<EstateTerrainImage>();
+                image.sprite = sprite; image.PaintedWidth = 100; image.DarkBank = darkBank;
+                Canvas.ForceUpdateCanvases();
+                var mesh = image.canvasRenderer.GetMesh(); var uv = new List<Vector4>(); mesh.GetUVs(1, uv);
+                Assert.That(uv.Count, Is.EqualTo(4));
+                Assert.That(uv.All(v => v.w == (darkBank ? 1 : 0)), Is.True);
+                Assert.That(uv.All(v => v.z == 0), Is.True, "The bank must not receive landmark darkening or river alpha masking.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(owner); UnityEngine.Object.DestroyImmediate(sprite); UnityEngine.Object.DestroyImmediate(texture); }
         }
 
         [Test] public void MovingResidentCrossesOnlyTheStandingDepthOrderWithoutRebuildingStaticObjects()
