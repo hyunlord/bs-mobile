@@ -7,7 +7,7 @@ namespace Game.View
     // GameVisualTokens.PersonWalkCyclePixels of ground per cycle at its own pixel scale, so the feet stay planted. Faster than
     // GameVisualTokens.PersonWalkMaxCyclesPerSecond the walk plays at that rate instead and the feet slide (user decision).
     // Core never gives militia or guard the "move" state, so the View shows the walk whenever they move and their state's own
-    // standing frame when they do not. A single-frame "move" role (peasant, returning, vassal) keeps the time-based path.
+    // standing frame when they do not. Single-frame move roles retain their time-based path.
     public sealed class PersonSheetWalk
     {
         readonly Dictionary<(string kind,int id),(Vector2 last,float time,float phase,int generation)> phases=new Dictionary<(string,int),(Vector2,float,float,int)>(256);
@@ -15,7 +15,7 @@ namespace Game.View
         public int Count=>phases.Count;
         public static bool Applies(ArtVisual move)=>move.UvRects.Count>1;
         // One walk cycle of ground in Unity units: the cycle's source pixels at the role's own pixel scale.
-        public static float Stride(ArtVisual move)=>GameVisualTokens.PersonWalkCyclePixels*move.WorldSize.y/move.CellPixels.y;
+        public static float Stride(ArtVisual move)=>(move.CyclePixels>0?move.CyclePixels:GameVisualTokens.PersonWalkCyclePixels)*move.WorldSize.y/move.CellPixels.y;
         // Cycles advanced by moving this distance in this time: one per stride, at most the rate cap.
         public static float Advance(float phase,float distance,float stride,float seconds)=>Advance(phase,distance,stride,seconds,GameVisualTokens.PersonWalkMaxCyclesPerSecond);
         public static float Advance(float phase,float distance,float stride,float seconds,float maxCyclesPerSecond)=>Mathf.Repeat(phase+Mathf.Min(distance/stride,maxCyclesPerSecond*Mathf.Max(0,seconds)),1);

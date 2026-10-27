@@ -3,7 +3,7 @@
   "licenses": [
     {
       "id": "generated-actors",
-      "origin": "Generated with built-in image_gen for this project",
+      "origin": "Generated with built-in image_gen for this project; approved people SpriteSkin16 walks, Release m3-people-walk-review-433-20261027; lossless union crops (#436)",
       "source": "https://openai.com/policies/terms-of-use/",
       "prompt": "docs/licenses/prompts/actors-atlas-v2-prompt.txt",
       "commercialUse": "Project-generated output used and distributed under the applicable OpenAI output terms, subject to their restrictions."
@@ -258,8 +258,8 @@
     {
       "id": "actors",
       "path": "Assets/Art/actors.png",
-      "width": 1254,
-      "height": 1254,
+      "width": 2048,
+      "height": 2048,
       "padding": 2,
       "license": "generated-actors"
     },
@@ -4138,22 +4138,113 @@
       "atlas": "actors",
       "frames": [
         {
-          "x": 706,
-          "y": 90,
-          "width": 178,
-          "height": 214
+          "x": 1256,
+          "y": 914,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1447,
+          "y": 914,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1638,
+          "y": 914,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1829,
+          "y": 914,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 2,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 193,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 384,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 575,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 766,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 957,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1148,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1339,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1530,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1721,
+          "y": 1256,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 2,
+          "y": 1484,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 193,
+          "y": 1484,
+          "width": 186,
+          "height": 204
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.3924731182795699,
+        "y": 0.00980392156862745
       },
       "worldSize": {
-        "x": 0.365981,
-        "y": 0.44
+        "x": 0.37569147903726713,
+        "y": 0.41204871894409945
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 40,
+      "tween": "none",
+      "cyclePixels": 61.06071581787939
     },
     {
       "id": "person.peasant.work",
@@ -4757,25 +4848,116 @@
     },
     {
       "id": "person.returning.move",
-      "atlas": "crops-people",
+      "atlas": "actors",
       "frames": [
         {
-          "x": 692,
-          "y": 943,
-          "width": 247,
-          "height": 245
+          "x": 384,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 575,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 766,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 957,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 1148,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 1339,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 1530,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 1721,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 2,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 193,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 384,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 575,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 766,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 957,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 1148,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 1339,
+          "y": 1712,
+          "width": 187,
+          "height": 224
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.32620320855614976,
+        "y": 0.008928571428571428
       },
       "worldSize": {
-        "x": 0.443592,
-        "y": 0.44
+        "x": 0.3777113256987578,
+        "y": 0.4524456521739131
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 40,
+      "tween": "none",
+      "cyclePixels": 61.06071581787939
     },
     {
       "id": "person.returning.work",
@@ -4870,22 +5052,113 @@
       "atlas": "actors",
       "frames": [
         {
-          "x": 403,
-          "y": 62,
-          "width": 212,
-          "height": 236
+          "x": 1256,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1447,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1638,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1829,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1256,
+          "y": 230,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1447,
+          "y": 230,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1638,
+          "y": 230,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1829,
+          "y": 230,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1256,
+          "y": 458,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1447,
+          "y": 458,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1638,
+          "y": 458,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1829,
+          "y": 458,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1256,
+          "y": 686,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1447,
+          "y": 686,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1638,
+          "y": 686,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1829,
+          "y": 686,
+          "width": 159,
+          "height": 205
         }
       ],
       "pivot": {
-        "x": 0.5,
-        "y": 0.08
+        "x": 0.5094339622641509,
+        "y": 0.00975609756097561
       },
       "worldSize": {
-        "x": 0.395254,
-        "y": 0.44
+        "x": 0.3124757375776398,
+        "y": 0.4028775232919255
       },
-      "frameMs": 350,
-      "tween": "walk"
+      "frameMs": 40,
+      "tween": "none",
+      "cyclePixels": 59.985697116093824
     },
     {
       "id": "person.vassal.work",
