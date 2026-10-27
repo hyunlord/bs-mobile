@@ -293,9 +293,12 @@ namespace Tests.PlayMode
         {
             var scroll = app.Ui.GetComponentInChildren<ScrollRect>();
             Assert.That(scroll, Is.Not.Null);
-            foreach (var id in new[] { "core:heirloom_service", "core:seed_crown" })
+            foreach (var id in new[] { "core:crop_guard_signet" })
             {
-                var icon = app.Ui.GetComponentsInChildren<Image>().Single(image => image.name == "Icon " + id);
+                var icons = app.Ui.GetComponentsInChildren<Image>();
+                var matches = icons.Where(image => image.name == "Icon " + id).ToArray();
+                Assert.That(matches.Length, Is.EqualTo(1), id + "; actual icons: " + string.Join(", ", icons.Select(image => image.name)));
+                var icon = matches[0];
                 Canvas.ForceUpdateCanvases();
                 var target = Mathf.Max(0, -icon.rectTransform.anchoredPosition.y - 80);
                 scroll.content.anchoredPosition = new Vector2(scroll.content.anchoredPosition.x,
