@@ -1,6 +1,6 @@
 # First-playable approved enemy walks (#429)
 
-2026-10-27 · v3 · 관문: 부분 — 승인 적5종 정적 계약 통과. 아래 e0c2c06 Unity/리플레이 기록은 3종 당시 역사 기록이며 5종 변경 뒤 재실행 대기.
+2026-10-27 · v4 초안 · 관문: 부분 — 5종 두 프로필·추가 시험·종료 해시 통과(4749000). 실제 비교 영상 확보·그리기 호출 회귀 미해결·최종 CI 대기. e0c2c06 기록은 3종 당시 역사 기록으로 보존.
 
 | Content / role suffix | 승인 Release | frames × frameMs | pivot | worldSize |
 |---|---|---|---|---|
@@ -58,3 +58,46 @@ Release `m3-bell-whistle-walk-review-428-20261027`의 과거 pending 문구는 �
 공통 atlas를2080×1560에서2080×2600으로 아래쪽 확장했다. 기존48칸과 모든 기존gutter RGBA가 byte동일하다. 위쪽48칸 rect/pivot/time 계약도 동일하고 새32칸만 추가했다. 원본PNG는 artifacts/429/bell-whistle에 보존. atlas 개수18은 그대로, rawRGBA 약20.63MiB(이전12.38MiB에서+8.25MiB), Unity maxTextureSize4096·비압축·NPOT그대로 설정은 유지한다. rawPNG파일과 UV정규화값은 높이 변경으로 달라지지만 기존셀 RGBA/픽셀rect는 불변이다.
 
 정적 검사: 5종80칸 sourceRGBA 재구성 SHA 모두일치, 기존48칸+gutter byte동일, 이전HEAD대비 역할변경은 bell/whistle walk2개만, binding불변. first-playable-art registry18/roles372/bindings343 통과, Node16/16, boundaries9, diffcheck통과. 테스트 case2개를 추가했으며 새전체 Unity·실제영상·리플레이 검증은 아직 실행하지 않았다. 기존 3종 기록을 재사용해5종통과로 주장하지 않는다.
+
+## Five-species runtime verification (2026-10-27)
+
+정확한 tested commit: 47490004986a112a5fd10be1d07e05d3b45179cc. 5종 승인 원본 적용 및 오프라인 captureFramerate 테스트 helper 포함. 아래 결과는 위 e0c2c06의 3종 역사 실행과 별개다.
+
+| Profile | Suite | Passed | Failed | Skipped |
+|---|---|---:|---:|---:|
+| first-playable | EditMode | 862 | 0 | 25 |
+| first-playable | PlayMode | 53 | 0 | 45 |
+| wave-1a | EditMode | 872 | 0 | 15 |
+| wave-1a | PlayMode | 85 | 0 | 13 |
+| supplemental | combat EditMode | 1 | 0 | 0 |
+| supplemental | melee EditMode | 1 | 0 | 0 |
+
+네 기본 XML은 skipped-in-every-profile unexplained2/listed1이므로 stock 기록을 그대로 보존한다. 정식 생성 fixture로 combat/melee 두 테스트 실행 후 6 XML 합산 unexplained0/listed1. 기존 listed는 Tests.PlayMode.WaveWorldTests.RecordedWaveRangeExportsActualTickFrames(선택적 영상 export). 예외 추가나 suite 합산 수치 변조 없음. 전체 runner exit0/14:12:16 KST는 parent 실행 기록이며 이 검토는 XML·리플레이·sidecar readback이다.
+
+청록: 실행 시간대 UTC05:01–05:13에 보존된 sidecar190개 중 실제 캡처188개 전부 cyan0. 자체검사2파일 제외. 두 프로필 로그의 CYAN_CAPTURE_FAILURE 각1건은 guard-self-test-negative-control-True가 의도적으로 주입한 1픽셀 검출 시험이며 실제 화면 실패가 아니다. 공유 자체검사 파일은 마지막 프로필 결과로 덮어써졌으므로 파일 수와 로그 수가 다르다. cyan-audit.json에 분리 기록.
+
+리플레이 frozen61aa591ea8f05dc1ec7b30968652df654aa423d824b786ede6145915fdc183ba 재검증: Seed30000/Tick27000/EndKind0, StateHash69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5. 이 fixture의 저장 checkpoint0; 종료 해시 검증이며 정상플레이/성능 증거 아님.
+
+근거: artifacts/day-20261027/pr432-five-tests/{record.md,combat.xml,melee.xml,combined-skip-record.txt,combined-skips.txt,replay-hash.txt,replay-input.sha256,cyan-audit.json}. 검토 시 tracked git status clean.
+
+남음: 실제 30초 기존/신규1배 영상, 5종 각각 실제 다리 가시성·전환 판독, 최종 CI quality/secrets 결과. CPU성능/C05 통과 주장 없음.
+
+## Actual five-species offline comparison (#432)
+
+관문: 부분 — 기술·실제 프레임 증거 확보, **그리기 호출 회귀 미해결**, 사용자 영상 판정 대기. 같은30초 drawCalls는 before14–17(평균15.4667) → after43–94(평균66.8789). +332.4% 평균 호출 수 증가는 숨기지 않으며 성능 통과로 보고하지 않는다.
+
+[30초 영상·선정된5장 Release](https://github.com/hyunlord/bs-mobile/releases/tag/fp-five-enemy-walks-432-20261027). BEFORE왼쪽390×844 / AFTER오른쪽390×844, 합계780×844,60fps,1800frames,30s. 무음 world-only 실제 기록 debug-input이며 정상 플레이·성능 측정이 아니다. seed30000, input61aa591e…,tick19891–20790. baseline ff453e83918e68db5db63974b01c161e6399823e / candidate47490004986a112a5fd10be1d07e05d3b45179cc. 전후 모든1800장의 tick/stateHash/appliedCommands/alpha/camera 동일, 원본390×844 PNG 헤더 확인. 별도 capture PlayMode는 각1/1, 실패0·skip0, CYAN_CAPTURE_FAILURE 로그0.
+
+| 종류 | 실제 표본 frame / tick / ID | 화면에서 확인한 것 | 한계 |
+|---|---|---|---|
+| stone_breaker | 940 / 20361 / 24631 | 상단 왼쪽에서 두 장화 자세 변화 | 근처 동종과 일부 겹침 |
+| rope_catcher | 1670 / 20726 / 25874 | 상단 왼쪽 밧줄 인물의 다리 교대 | 옆 피해 숫자 일부 |
+| ember_sapper | 50 / 19916 / 24515 | 하단 중앙 불씨 인물의 다리 자세 변화 | 후속+4/+8프레임 피격 숫자·효과, 그 구간을 순수 걷기 증거로 쓰지 않음 |
+| bell_thief | 1010 / 20396 / 24957 | 상단 오른쪽 종 인물의 장화 교대 | 표본 주변은 몸·다리 읽힘 |
+| whistle_hunter | 550 / 20166 / 24947 | 하단 중앙 작은 창 인물의 다리 벌림/모임 | 작은 크기에서 세부는 제한 |
+
+선정 프레임과 ±4/±8 실제 캡처를 직접 보았다. 확대 내부 검토물은 운동 위상 확인 보조이며 배포5장은 리사이즈 없는1배 전체화면 전후다. centreFrames는767/661/879/981/804로 전후동일하지만 가림·걸음 증명과 구별한다. 다섯 종 동시노출을 주장하지 않는다.
+
+원인 후보: EnemyDrawQueue.cs:49는 Y painter order로 정렬하고 :54는 연속된 같은 Texture만 합친다. first-playable 신규walk는 별도atlas, 기존 적·idle/hit/death는 역사atlas라 Y순 A/B/A가 여러묶음이 될 수 있다. 이는 코드상 가능한 기전이며 해당실행의 texture-run계측으로 인과를 확정한 것은 아니다. 정렬/아틀라스 재포장 변경은 범위 밖이라 하지 않았다.
+
+작은 정본 [초별 호출표](first-playable-walks-429-drawcalls.csv)는 실제 sidecar1800쌍의60frame 구간 min/mean/max 집계다. 전체PNG/raw sidecar는 로컬보존, ZIP/중복전체업로드 없음. 원자료경로 artifacts/day-20261027/fp-five-offline-20261027-1414. 최종CI는 PR체크에서 확인하며 사용자승인 전 draft유지.
