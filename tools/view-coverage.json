@@ -65,18 +65,20 @@
       ],
       "pinned": [
         { "dir": "unity/Assets/Game", "pattern": "HeroRigPreviewEnabled\\s*=(?!=)", "count": 2, "reason": "RunCoordinator copies activeHeroRig into the renderer; the wave-only visual review (it refuses non-wave profiles) sets it for the existing-b hero review." },
-        { "dir": "unity/Assets/Game/App", "pattern": "activeHeroRig\\s*=(?!=)", "count": 5, "reason": "Feel.cs assigns true only inside IsWave branches, the wave benchmark rejects non-wave profiles, visual review assigns false; a new assignment must be reviewed." },
+        { "dir": "unity/Assets/Game/App", "pattern": "activeHeroRig\\s*=(?!=)", "count": 5, "reason": "Feel.cs assigns true only inside IsWave branches; FP01 rejects crowd replay, so its benchmark assignment is false; visual review assigns false. A new assignment must be reviewed." },
         { "dir": "unity/Assets/Game", "pattern": "hero\\.preview-b\\.", "count": 5, "reason": "Rig roles are requested by WorldHeroRig.HeroVisual, and the wave-only concept review sizes its picture from hero.preview-b.idle." }
       ]
     },
     {
       "file": "unity/Assets/Game/View/M1CombatPresentation.cs",
       "profiles": ["wave-1a"],
-      "reason": "The M1 combat review draws only wave attacks and projectiles whose source the combat review configured; the wave benchmark that runs it refuses non-wave profiles.",
+      "reason": "The M1 combat review draws only configured wave attacks and projectiles. The explicit first-playable benchmark rejects --m1-combat-case, so its new entry path cannot configure this review.",
       "evidence": [
         { "file": "unity/Assets/Game/View/WorldWave.cs", "text": "if(DrawM1CombatAttack(attack,current.Tick,alpha,attackIndex,current.Lord.Position,lordPoint))continue;" },
         { "file": "unity/Assets/Game/View/M1CombatPresentation.cs", "text": "if(attack.Source==null||!m1CombatShapes.TryGetValue(attack.Source,out var m1CombatShape))return false;" },
-        { "file": "unity/Assets/Game/App/RunCoordinator.WaveBenchmark.cs", "text": "if (!IsWave || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException(\"Wave benchmark requires wave-1a, a replay path, and no autoplay capture.\");" }
+        { "file": "unity/Assets/Game/App/RunCoordinator.WaveBenchmark.cs", "text": "if ((!IsWave && firstPlayableBenchmark == null) || index < 0 || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException(\"Benchmark requires wave-1a or explicit first-playable FP01, a replay path, and no autoplay capture.\");" },
+        { "file": "unity/Assets/Game/App/FirstPlayableBenchmark.cs", "text": "\"--crowd-target60-experiment\", \"--m1-combat-case\", \"--knight-review\"" },
+        { "file": "unity/Assets/Game/App/FirstPlayableBenchmark.cs", "text": "if (Array.IndexOf(args, flag) >= 0) throw new ArgumentException(\"FP01 cannot be combined with \" + flag + \".\");" }
       ]
     },
     {

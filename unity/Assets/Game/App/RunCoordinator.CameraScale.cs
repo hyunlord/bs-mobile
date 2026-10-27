@@ -17,7 +17,7 @@ namespace Game.App
         bool cameraScaleCollectBounds;
         int BenchmarkWidth => crowdBenchmark != null || cameraScaleComparison != null || recordedReplay != null ? 1920 : 1600;
         int BenchmarkHeight => crowdBenchmark != null || cameraScaleComparison != null || recordedReplay != null ? 1080 : 900;
-        int BenchmarkDisplayEnd => cameraScaleComparison?.EndTick ?? CrowdEndTick;
+        int BenchmarkDisplayEnd => firstPlayableBenchmark != null ? FirstPlayableBenchmark.EndTick : cameraScaleComparison?.EndTick ?? CrowdEndTick;
         void ConfigureCameraScaleReview()
         {
             if (cameraScaleComparison == null) return;
