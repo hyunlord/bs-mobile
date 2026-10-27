@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "sourceCommit": "47490004986a112a5fd10be1d07e05d3b45179cc",
+  "replaySha256": "61aa591ea8f05dc1ec7b30968652df654aa423d824b786ede6145915fdc183ba",
+  "dataHash": "6AC1ACFC4B2E80DD510EE0A41D0039BC05932A5FEF1776CC1B2A4BF2E928C36D",
+  "endTick": 27000,
+  "endHash": "69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5",
+  "windows": [
+    [
+      19891,
+      20790
+    ]
+  ],
+  "densityBins": [
+    [
+      0,
+      224
+    ],
+    [
+      225,
+      249
+    ],
+    [
+      250,
+      null
+    ]
+  ],
+  "selection": "Window chosen before new performance measurements from the existing #432 five-species review. density-selection.csv scans all 900 selected ticks; bins contain 198/353/349 ticks. All five species exist in every selected tick; camera visibility is a separate claim. Prefix and suffix use the unchanged original commands; the full terminal hash is mandatory.",
+  "viewport": {
+    "width": 1600,
+    "height": 900
+  },
+  "repetitions": 3,
+  "modes": {
+    "uncapped": {
+      "targetFrameRate": -1,
+      "vSyncCount": 0
+    },
+    "capped": {
+      "targetFrameRate": 60,
+      "vSyncCount": 0
+    }
+  },
+  "regression": {
+    "maximumIncreaseRatio": 0.2,
+    "statistic": "pooled nearest-rank wall p95 per density across three repetitions",
+    "acceptance": "warning only; Mac has no absolute p95 pass threshold"
+  },
+  "stutter": {
+    "thresholdMilliseconds": 33,
+    "maximumRatio": 0.001,
+    "severeThresholdMilliseconds": 100,
+    "maximumSevereFrames": 0,
+    "comparison": "strictly greater; each density in each repetition"
+  },
+  "fixture": "first-playable-fp01",
+  "profile": "first-playable",
+  "commands": 27052,
+  "measurementEndTick": 20790,
+  "classification": "Invulnerable stress fixture; SetInvulnerable and GrantLevel are recorded inputs. Not normal play or balance evidence.",
+  "requiredEnemies": [
+    "core:stone_breaker",
+    "core:rope_catcher",
+    "core:ember_sapper",
+    "core:bell_thief",
+    "core:whistle_hunter"
+  ],
+  "selectionSourceSha256": "08fc0391a0917f7d6093d890dbca3e5cfcb67182cceda7c712f8cbdf58baca74",
+  "baselineStatus": "not-measured",
+  "sourceCommitMeaning": "Existing #432 reviewed renderer and data snapshot, not an assertion of the original recorder commit."
+}
