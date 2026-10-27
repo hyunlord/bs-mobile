@@ -85,3 +85,22 @@ The completed-run restart regression now passes. Actual captures: **251, cyan 0*
 **Overall runner FAIL / stopped:** `skipped in every profile: 2 unexplained, 1 listed`, exit 1, in both daytime runs. No skip exception or assertion was weakened. The missing frozen-combat fixtures and opt-in melee profile remain the reasons documented above. Four green XML suites are not a passing full runner. The repeated failure rule stops further Unity work; #411 verification is blocked by its prerequisite. #410 was not recorded because external worldsim_probe/StorageManagement load exceeded the permitted CPU limit. Estate integration remains read-only preparation, and optional #422 was not started. All PRs remain drafts; no game/Core/save/data code changed.
 
 Evidence source commit: `1a0f540b896ea9b1541d9d96482b19f27415d27c`. The exact runner block is in the PR body; raw logs/XML remain at the owned paths above. Historical graphical failures are retained, not replaced by these newer measurements.
+
+## User-authorized prerequisite execution (2026-10-27)
+
+At unchanged Unity source (HEAD894da84; Unity source still1a0f540), existing tools generated both missing inputs and each test actually ran: frozen combat **1 passed /0 failed /0 skipped**, opt-in melee **1 passed /0 failed /0 skipped**. No new code or skip exception was needed. The earlier four-profile XML and failed stock-runner exit remain historical facts; the supplemental executions close their two coverage gaps.
+
+Owned outputs: `artifacts/day-20261027/resume/prerequisites`. Lock10:14:46–10:15:55 KST, released on completion. First-playable export restored; tracked status clean. Existing commands, with OUT pointing at that owned directory:
+
+```sh
+UNITY_CONTENT_PROFILE=wave-1a UNITY_WAVE_BENCHMARK=1 bash tools/prepare-unity.sh
+dotnet run --project core/src/SowSiege.Sim -c Release -- showcase-fixtures artifacts/benchmarks/c05/data data/review/m1-weapon-combat-cases.json "$OUT/combat"
+M1_COMBAT_FIXTURES="$OUT/combat" "$EDITOR" -batchmode -projectPath "$PWD/unity" -runTests -testPlatform EditMode -testFilter M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes -testResults "$OUT/combat.xml" -logFile "$OUT/combat.log"
+dotnet run --project core/src/SowSiege.Sim -c Release -- melee-aim-fixture data "$OUT/melee" m1-showcase-review
+UNITY_CONTENT_PROFILE=m1-showcase-review bash tools/prepare-unity.sh
+MELEE_AIM_REPLAY_FIXTURES="$OUT/melee" "$EDITOR" -batchmode -projectPath "$PWD/unity" -runTests -testPlatform EditMode -testFilter Tests.EditMode.MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures -testResults "$OUT/melee.xml" -logFile "$OUT/melee.log"
+UNITY_CONTENT_PROFILE=first-playable bash tools/prepare-unity.sh
+node tools/unity-skipped-everywhere.mjs tools/unity-skip-exceptions.txt artifacts/day-20261027/pr415-retry-tests/*.xml "$OUT/combat.xml" "$OUT/melee.xml"
+```
+
+Combined existing checker result: **0 unexplained,1 listed** (only the pre-existing optional recorded-input export). This is a six-result verification set, not a claim that the stock two-profile runner alone prepares those inputs. On a future Unity change, rerun the four normal suites and both supplemental exports/tests before combining results. #415 remains draft, no merge authorization inferred.
