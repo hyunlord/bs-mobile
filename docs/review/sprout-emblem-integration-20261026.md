@@ -67,3 +67,13 @@ The prerequisite's full attempt had 236 actual cyan-free observations, but two w
 앞선 같은 날 실행은 wave CardPool 캡처에서 first-playable 전용 heirloom_service/seed_crown을 찾다가 1건 실패했다. 실제 wave UI가 제공하는 crop_guard_signet으로 테스트 대상을 바로잡았으며 production catalog/Core/View는 수정하지 않았다. 실패 원자료 pr411-tests와 수정 후 pr411-retry-tests를 모두 보존한다.
 
 현재 roles-15 전후와 house-states-vassal은 표시 상태를 직접 주는 fixture이며 실제 플레이로 부르지 않는다. card-pool-crop_guard_signet은 실제 wave 카드 목록 UI다. harvest-flag는 runtime consumer가 없어 역할 목록으로만 확인하며 새 연결은 하지 않는다. 실제 전투 전후 녹화는 입력 idle20분·외부CPU 조건 충족 후 별도 수행한다.
+
+## 2026-10-27: 실제 입력 캡처 도우미 포함 최종 검증
+
+검증 HEAD `6b383f644e8e078f5866822120adf8987f9757ad`, 10:57:32–11:10:09 KST. 두 프로필 및 추가 입력 검사 결과는 위와 동일: first-playable 828/55, wave-1a 838/84 통과, 실패0. combat/melee 추가 검사 각각1/0/0, 합산 미설명skip0/기존목록1. 예외 추가0, 추적파일 변경0, 자기 잠금 해제.
+
+캡처 감시 events.jsonl의 이 실행 261건 중 guard 자체 시험4건을 제외한 실제 캡처 관측257건은 청록0. 실제 플레이 성공을 의미하는 수치가 아니라 해당 테스트 화면의 청록 감시 결과다.
+
+선택 실행 전용 first-playable 캡처 도우미는 실제 기록 명령을 InteractiveSession에 적용하며 체크포인트/종료 해시를 확인한다. 각 프레임의 실제 적 ID와 viewport 안 중심 ID, 그리기 묶음을 sidecar에 기록한다. 기본 테스트에서는 비활성이다. 실제 전후 영상 실행은 외부 CPU와 사용자 입력 대기 조건 때문에 아직 미실행이다.
+
+원자료: `artifacts/day-20261027/pr411-final-tests`, `pr411-final-run.log`.
