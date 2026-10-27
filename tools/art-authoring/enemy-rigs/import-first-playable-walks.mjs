@@ -47,8 +47,10 @@ if (check) {
             assert.equal(pixels[(y * spec.atlas.width + x) * 4 + 3], 0, 'transparent two-pixel gutters');
     }
 } else {
-    if (!manifest.atlases.some(atlas => atlas.id === spec.atlas.id)) manifest.atlases.push(spec.atlas);
+    const atlasIndex = manifest.atlases.findIndex(atlas => atlas.id === spec.atlas.id);
+    if (atlasIndex < 0) manifest.atlases.push(spec.atlas);
+    else manifest.atlases[atlasIndex] = spec.atlas;
     fs.writeFileSync(path.join(root, atlasPath), encodeRgbaPng({ width: spec.atlas.width, height: spec.atlas.height, pixels }));
     fs.writeFileSync(path.join(root, manifestPath), `${JSON.stringify(manifest, null, 2)}\n`);
 }
-console.log(`${check ? 'verified' : 'imported'} 3 approved first-playable roles, 48 full 256px cells; source RGBA preserved`);
+console.log(`${check ? 'verified' : 'imported'} ${spec.roles.length} approved first-playable roles, ${spec.roles.length * 16} full 256px cells; source RGBA preserved`);

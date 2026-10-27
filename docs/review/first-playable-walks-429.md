@@ -1,6 +1,6 @@
 # First-playable approved enemy walks (#429)
 
-2026-10-27 · v2 · 관문: 부분 — 정적 계약·Unity 두 프로필+보충 검사·frozen 리플레이 검증 통과, 실제 비교 영상 대기. 게임 규칙 변경 없음.
+2026-10-27 · v3 · 관문: 부분 — 승인 적5종 정적 계약 통과. 아래 e0c2c06 Unity/리플레이 기록은 3종 당시 역사 기록이며 5종 변경 뒤 재실행 대기.
 
 | Content / role suffix | 승인 Release | frames × frameMs | pivot | worldSize |
 |---|---|---|---|---|
@@ -50,3 +50,11 @@ skipped in every profile: 0 unexplained, 1 listed
 리플레이: 기존 frozen 입력 artifacts/day-20261027/replay-proof/first-playable-30000.ssreplay를 interactive-replay로 재검증했다. 입력 SHA256 61aa591ea8f05dc1ec7b30968652df654aa423d824b786ede6145915fdc183ba, Seed30000/Tick27000/EndKind0, StateHash 69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5. 기록된 checkpoint/end hash 검증 성공이며, 별도 옛 fixture의 44049CB5…와 입력이 다르므로 서로 비교하지 않는다. 무적 correctness fixture이며 정상 플레이 성능 증거가 아니다.
 
 실제 전/후 비교 영상·적별 가시 프레임·묶음 수·CI 최종 결과는 대기다. 위 검증을 사용자 영상 승인으로 확대하지 않는다.
+
+## 사용자 승인 추가: bell/whistle r1 (#432)
+
+Release `m3-bell-whistle-walk-review-428-20261027`의 과거 pending 문구는 최신 사용자 승인으로 대체된다. bell_thief와 whistle_hunter 각16×40ms, 셀256×256, 바닥(128,225), pivot(.5,.12109375). worldSize는 각각 .5124223602484472 / .4145962732919255이다. 승인된 손–종/휘파람–창 연결 그림은 그대로이며 가려진 입술/뒤 손목은 확인 불가 한계로 유지한다.
+
+공통 atlas를2080×1560에서2080×2600으로 아래쪽 확장했다. 기존48칸과 모든 기존gutter RGBA가 byte동일하다. 위쪽48칸 rect/pivot/time 계약도 동일하고 새32칸만 추가했다. 원본PNG는 artifacts/429/bell-whistle에 보존. atlas 개수18은 그대로, rawRGBA 약20.63MiB(이전12.38MiB에서+8.25MiB), Unity maxTextureSize4096·비압축·NPOT그대로 설정은 유지한다. rawPNG파일과 UV정규화값은 높이 변경으로 달라지지만 기존셀 RGBA/픽셀rect는 불변이다.
+
+정적 검사: 5종80칸 sourceRGBA 재구성 SHA 모두일치, 기존48칸+gutter byte동일, 이전HEAD대비 역할변경은 bell/whistle walk2개만, binding불변. first-playable-art registry18/roles372/bindings343 통과, Node16/16, boundaries9, diffcheck통과. 테스트 case2개를 추가했으며 새전체 Unity·실제영상·리플레이 검증은 아직 실행하지 않았다. 기존 3종 기록을 재사용해5종통과로 주장하지 않는다.

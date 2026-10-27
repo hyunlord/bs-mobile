@@ -4,7 +4,7 @@
     "id": "first-playable-enemy-walks-429",
     "path": "Assets/Art/first-playable-enemy-walks-429.png",
     "width": 2080,
-    "height": 1560,
+    "height": 2600,
     "padding": 2,
     "license": "generated-actors"
   },
@@ -358,6 +358,242 @@
         "worldSize": {
           "x": 0.5217391303537672,
           "y": 0.5217391303537672
+        },
+        "frameMs": 40,
+        "tween": "none"
+      }
+    },
+    {
+      "sourcePath": "artifacts/429/bell-whistle/bell-thief-r1-16.png",
+      "sourceSha256": "6a9058adba2818fe17bfab047b9b1b04ae0d6b3617cead7c5946406a6ea1e90d",
+      "sourcePixelSha256": "0e603ec421b2f52df1e7d90c469f1645c683a10ec21fb38aa9ed2b93fd03d8ef",
+      "release": "m3-bell-whistle-walk-review-428-20261027",
+      "role": {
+        "id": "enemy.core.bell_thief.walk",
+        "atlas": "first-playable-enemy-walks-429",
+        "frames": [
+          {
+            "x": 2,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 1562,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 2,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 1822,
+            "width": 256,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.12109375
+        },
+        "worldSize": {
+          "x": 0.5124223602484472,
+          "y": 0.5124223602484472
+        },
+        "frameMs": 40,
+        "tween": "none"
+      }
+    },
+    {
+      "sourcePath": "artifacts/429/bell-whistle/whistle-hunter-r1-16.png",
+      "sourceSha256": "17e75c78971be8b331f5bc6caf11811c25ff05cd6ebaf4c1fdd5963126428f5e",
+      "sourcePixelSha256": "9d9a762d6c188cc0409c8862721420fafeb0a15f361b5483252de50bb9aa4c93",
+      "release": "m3-bell-whistle-walk-review-428-20261027",
+      "role": {
+        "id": "enemy.core.whistle_hunter.walk",
+        "atlas": "first-playable-enemy-walks-429",
+        "frames": [
+          {
+            "x": 2,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 2082,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 2,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 262,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 522,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 782,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1042,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1302,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1562,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          },
+          {
+            "x": 1822,
+            "y": 2342,
+            "width": 256,
+            "height": 256
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.12109375
+        },
+        "worldSize": {
+          "x": 0.4145962732919255,
+          "y": 0.4145962732919255
         },
         "frameMs": 40,
         "tween": "none"

@@ -5,6 +5,8 @@ namespace Game.Tests
 {
     public sealed class FirstPlayableApprovedWalkTests
     {
+        [TestCase("bell_thief", 40, .5f, .512422360f)]
+        [TestCase("whistle_hunter", 40, .5f, .414596273f)]
         [TestCase("stone_breaker", 45, .5f, .559006211f)]
         [TestCase("rope_catcher", 40, .5f, .503105590f)]
         [TestCase("ember_sapper", 40, .4609375f, .521739130f)]
