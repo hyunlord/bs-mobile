@@ -75,7 +75,7 @@ node tools/check-wave-regression.mjs artifacts/wave-density/next-uncapped artifa
 node tools/check-wave-regression.mjs artifacts/wave-density/next-uncapped artifacts/wave-density/uncapped --reason docs/review/MEASURED-REGRESSION-REASON.md
 ```
 
-- 비용 추세: 상한 없는3회에서 각 밀도400–599/600–799/800+의 반복별 p95와3회 통합 p95를 기록한다. 같은 기기·설정의 기준 대비 **통합 p95 증가가20%를 초과**하면 경고한다. 정확히20%는 경고가 아니다. Mac 절대 p95 합격선은 없으며 실제 기기 성능 합격선은 보류 중인 Fold7 #98에서 다룬다.
+- 비용 추세: 상한 없는3회에서 각 밀도400–599/600–799/800+의 반복별 p95와3회 통합 p95를 기록한다. 같은 기기·설정의 기준 대비 **통합 p95 증가가20%를 초과**하면 기본 실패다. 정확히20%는 회귀 실패가 아니다. 요약 도구의 warning 통계와 과거 warning 기록은 보존하되, 현재 PR 관문에는 위 검사기를 사용한다. Mac 절대 p95 합격선은 없으며 실제 기기 성능 합격선은 보류 중인 Fold7 #98에서 다룬다.
 - 끊김: 상한60fps의 **각 반복·각 밀도**에서 **33ms 초과 프레임 비율≤0.1%**, **100ms 초과 프레임0개**를 모두 만족해야 한다. 정확히33ms/100ms는 각각 초과에 포함하지 않는다. 좋은 반복이나 통합 비율로 나쁜 반복을 숨기지 않는다.
 - 두 모드 모두 필요한 반복·밀도·종결 해시가 없으면 미완료다. 0명령·따라잡기·느린 프레임도 모두 남긴다. 유효하지 않은 포커스 이탈 실행을 필터링으로 되살리지 않는다.
 
@@ -208,12 +208,16 @@ APP="$PWD/artifacts/fp01-release/Sow and Siege.app/Contents/MacOS/Sow and Siege"
 ```sh
 node tools/summarize-wave-benchmark-v2.mjs uncapped artifacts/fp01-main/uncapped \
   --contract benchmarks/first-playable-fp01/contract.json
-node tools/summarize-wave-benchmark-v2.mjs uncapped artifacts/fp01-candidate/uncapped \
-  --reference artifacts/fp01-main/uncapped --contract benchmarks/first-playable-fp01/contract.json
+node tools/check-wave-regression.mjs artifacts/fp01-candidate/uncapped artifacts/fp01-main/uncapped \
+  --contract benchmarks/first-playable-fp01/contract.json
 ```
 
 판정은 같은 기기·viewport1600×900·quality·Metal/Mono·uncapped 설정에서 3회 밀도별 통합p95.
-기준 대비20% 초과는 경고이며 PR의 회귀 판단에 사용한다. 임의 시간 제외, 고부하 프레임 제외,
+기준 대비20% 초과는 기본 **실패(exit 1)**다(#451). 요약 도구의 `warning`은 통계 분류이며
+통과 판정이 아니다. PR에 추적 이슈 번호와 명시적 사유를 남긴 경우에만 `--reason REASON.md`로
+`explained-regression`을 기록한다(통과 `pass`와 다름). 입력 누락·설정 불일치·중단은 사유로 면제할 수 없다.
+`--contract` 생략 시 기존 C05 `contract-v2.json`이 그대로 기본값이며 FP01에는 명시해야 한다.
+기존 C05/FP01 계약 파일과 역사 측정 결과는 바꾸지 않는다. 임의 시간 제외, 고부하 프레임 제외,
 스폰/해상도 축소, 밀도 bin 재선정으로 개선시키지 않는다. 캡처 때 사용한390×844 영상은 외형 증거이며
 1600×900 성능 수치로 바꿔 부르지 않는다. worldBatchDrawCalls는 UI·파이프라인 패스를 제외한 제출 수다.
 
