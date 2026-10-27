@@ -208,12 +208,16 @@ APP="$PWD/artifacts/fp01-release/Sow and Siege.app/Contents/MacOS/Sow and Siege"
 ```sh
 node tools/summarize-wave-benchmark-v2.mjs uncapped artifacts/fp01-main/uncapped \
   --contract benchmarks/first-playable-fp01/contract.json
-node tools/summarize-wave-benchmark-v2.mjs uncapped artifacts/fp01-candidate/uncapped \
-  --reference artifacts/fp01-main/uncapped --contract benchmarks/first-playable-fp01/contract.json
+node tools/check-wave-regression.mjs artifacts/fp01-candidate/uncapped artifacts/fp01-main/uncapped \
+  --contract benchmarks/first-playable-fp01/contract.json
 ```
 
 판정은 같은 기기·viewport1600×900·quality·Metal/Mono·uncapped 설정에서 3회 밀도별 통합p95.
-기준 대비20% 초과는 경고이며 PR의 회귀 판단에 사용한다. 임의 시간 제외, 고부하 프레임 제외,
+기준 대비20% 초과는 기본 **실패(exit 1)**다(#451). 요약 도구의 `warning`은 통계 분류이며
+통과 판정이 아니다. PR에 추적 이슈 번호와 명시적 사유를 남긴 경우에만 `--reason REASON.md`로
+`explained-regression`을 기록한다(통과 `pass`와 다름). 입력 누락·설정 불일치·중단은 사유로 면제할 수 없다.
+`--contract` 생략 시 기존 C05 `contract-v2.json`이 그대로 기본값이며 FP01에는 명시해야 한다.
+기존 C05/FP01 계약 파일과 역사 측정 결과는 바꾸지 않는다. 임의 시간 제외, 고부하 프레임 제외,
 스폰/해상도 축소, 밀도 bin 재선정으로 개선시키지 않는다. 캡처 때 사용한390×844 영상은 외형 증거이며
 1600×900 성능 수치로 바꿔 부르지 않는다. worldBatchDrawCalls는 UI·파이프라인 패스를 제외한 제출 수다.
 

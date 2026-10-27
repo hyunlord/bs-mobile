@@ -18,3 +18,22 @@ test('an explanation cannot excuse missing evidence or a missing reference', () 
   for (const changed of [{ status: 'incomplete' }, { status: 'baseline' }, { reference: null }, { mode: 'capped' }])
     assert.throws(() => enforceWaveRegression({ ...summary, ...changed }, reason));
 });
+
+test('CLI options preserve C05 default and accept contract/reason in either order', async () => {
+  const { parseWaveRegressionArgs } = await import('./check-wave-regression.mjs');
+  assert.deepEqual(parseWaveRegressionArgs(['current', 'base']), { current: 'current', reference: 'base' });
+  for (const options of [ ['--contract', 'fp.json', '--reason', 'why.md'], ['--reason', 'why.md', '--contract', 'fp.json'] ])
+    assert.deepEqual(parseWaveRegressionArgs(['current', 'base', ...options]), { current: 'current', reference: 'base', contractPath: 'fp.json', reasonPath: 'why.md' });
+  assert.deepEqual(parseWaveRegressionArgs(['current', 'base', '--reason', 'why.md']), { current: 'current', reference: 'base', reasonPath: 'why.md' });
+});
+test('CLI rejects unknown, duplicate, missing-value flags and extra positionals', async () => {
+  const { parseWaveRegressionArgs } = await import('./check-wave-regression.mjs');
+  assert.equal(typeof parseWaveRegressionArgs, 'function');
+  for (const args of [[], ['current'], ['--contract', 'fp.json'],
+    ['current','base','--contract'], ['current','base','--reason'],
+    ['current','base','--contract','--reason','why.md'],
+    ['current','base','--contract','a','--contract','b'],
+    ['current','base','--reason','a','--reason','b'],
+    ['current','base','--unknown','a'], ['current','base','extra']])
+    assert.throws(() => parseWaveRegressionArgs(args), undefined, JSON.stringify(args));
+});
