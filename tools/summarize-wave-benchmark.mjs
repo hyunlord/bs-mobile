@@ -69,7 +69,9 @@ function loadRun(directory, contract) {
     assert.equal(identity[key].toUpperCase(), value.toUpperCase(), `${key} differs from frozen fixture`);
   }
   assert.equal(identity.tick, contract.endTick);
-  assert.equal(identity.commands, 14403, 'Incomplete original C05 command stream');
+  assert.equal(identity.commands, contract.commands ?? 14403, 'Incomplete original fixture command stream');
+  if (contract.profile) assert.equal(identity.profile, contract.profile, 'Wrong benchmark profile');
+  if (contract.fixture) assert.equal(identity.fixture, contract.fixture, 'Wrong benchmark fixture');
   assert.equal(identity.width, contract.viewport.width); assert.equal(identity.height, contract.viewport.height);
   assert.equal(identity.targetFrameRate, contract.targetFrameRate); assert.equal(identity.vSyncCount, 0);
   assert.equal(identity.renderWarmupFrames, 120);
@@ -106,7 +108,16 @@ function loadRun(directory, contract) {
     }
     previous = row;
   }
-  assert.equal(rows.at(-1).tick, contract.endTick, 'Missing terminal rendered state');
+  if (contract.fixture === 'first-playable-fp01') {
+    for (const [start, end] of contract.windows) {
+      const selected = rows.filter(row => row.tick >= start && row.tick <= end);
+      assert.equal(selected[0]?.tick, start, 'FP01 tick coverage must include the first post-warmup state');
+      for (let i = 1; i < selected.length; i++)
+        assert.ok(selected[i].tick - selected[i - 1].tick <= 1, 'FP01 tick coverage has a gap; duplicate ticks are allowed, skipped ticks are not');
+      assert.equal(selected.at(-1)?.tick, end, 'FP01 tick coverage must include the measured endpoint');
+    }
+  }
+  assert.equal(rows.at(-1).tick, contract.measurementEndTick ?? contract.endTick, 'Missing terminal rendered state');
   for (const [start, end] of contract.windows) assert.ok(rows.some(r => r.tick >= start && r.tick <= end), 'Missing measurement window');
   const timings = parseNumbers(path.join(directory, 'render-timings.csv'), timingHeaders, timingExtensions);
   assert.equal(timings.length, identity.renderTimingSamples, 'Truncated render timing CSV');
