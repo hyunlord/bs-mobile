@@ -202,7 +202,16 @@ namespace Tests.EditMode
             Assert.That(plan.StateOf(new Vector2Int(21, 21)), Is.EqualTo("closed"), "r5: the old centre's corner is outskirts, outside the lit start.");
             Assert.That(plan.StateOf(new Vector2Int(45, 30)), Is.EqualTo("closed"));
             Assert.That(plan.StateOf(new Vector2Int(45, 10)), Is.Null, "Outside every zone.");
-            foreach (var item in plan.Items.Where(i => i.Source == "frontier" || i.Source == "wood")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
+            foreach (var item in plan.Items.Where(i => i.Source == "frontier")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
+            var woods = plan.Items.Where(i => i.Source == "wood").ToArray();
+            Assert.That(woods, Is.Not.Empty);
+            foreach (var item in woods)
+            {
+                Assert.That(item.Role, Does.Match("^estate-tree-(conifer|broadleaf|shrub)-0[12]-dark$"), item.Key);
+                Assert.That(EstateArt.Load().Has(item.Role), Is.True, item.Key);
+                Assert.That(item.Colour, Is.EqualTo(Color.white), "Approved dark artwork must not receive a second closed tint: " + item.Key);
+                Assert.That(item.Layer, Is.EqualTo(EstateDrawLayer.Veiled), item.Key);
+            }
         }
 
         [Test] public void ThePlanIsDeterministicAndKeepsDecorationOffFootprintsAndRoads()
@@ -264,7 +273,18 @@ namespace Tests.EditMode
             var landmarks = plan.In(EstateDrawLayer.Landmark).ToArray();
             Assert.That(landmarks, Is.Not.Empty);
             Assert.That(rules.night.landmarkBrightness, Is.EqualTo(.4f).Within(1e-5f));
-            foreach (var item in landmarks)
+            Assert.That(landmarks.All(i => i.Source == "landmark" || i.Source == "river-bank"), Is.True);
+            Assert.That(landmarks.Any(i => i.Source == "landmark"), Is.True);
+            var banks = landmarks.Where(i => i.Source == "river-bank").ToArray();
+            Assert.That(banks, Is.Not.Empty);
+            foreach (var bank in banks)
+            {
+                Assert.That(bank.Role, Does.Match("^bank-(straight|inside|outside|bridge)-0[12]-dark$"), bank.Key);
+                Assert.That(EstateArt.Load().Has(bank.Role), Is.True, bank.Key);
+                Assert.That(bank.Colour, Is.EqualTo(Color.white), "Approved dark bank artwork is already shaded.");
+                Assert.That(bank.Layer, Is.EqualTo(EstateDrawLayer.Landmark), bank.Key);
+            }
+            foreach (var item in landmarks.Where(i => i.Source == "landmark"))
             {
                 Assert.That(item.Source, Is.EqualTo("landmark"));
                 Assert.That(item.Colour.g, Is.EqualTo(.4f).Within(1e-5f));

@@ -60,3 +60,11 @@
 | ConstructionQueuesAndCompletesWithRealTimeAndTheSkip | 60초 공사의 30초 시점에도 redraw=false 요구, 새 stage2 전환과 충돌 | 같은 단계 false / 단계 경계 true 및 자원·Lv0·예약 유지 검사 |
 
 소유 worktree의 `artifacts/day-20261027/pr426-retry-tests`에 XML/로그, `estate-test-contracts.patch`에 미적용 테스트 수정안, `repeated-failure-stop.md`에 중단 기록을 보존한다. 초기 실패는 `pr426-tests`에 있다. 화면·묶음·강둑 밝기·native는 미완료이며 시각 통과로 보고하지 않는다. 잠금은 11:38:06 해제했다.
+
+## 2026-10-27 사용자 승인 후 테스트 계약 재개 (#431)
+
+위 반복 실패와 당시 미적용안은 역사 기록으로 유지한다. 사용자가 재개를 승인하여 보존한 `estate-test-contracts.patch`를 적용했다. 게임 코드·Core·저장·자원·테스트 예외·묶음 예산은 변경하지 않았다.
+
+- 기존 `landmark`의 40% 실루엣 및 닫힌 구역 검사, `frontier`의 closed tint 검사는 유지한다. 승인 강둑에는 dark role 존재·Landmark 층·원본색을, 승인 나무에는 dark role 존재·Veiled 층·원본색을 추가 검사한다. 원화가 이미 어두운 항목에 중복 tint를 요구하지 않는다.
+- 같은 공사 단계의 Advance는 false/계획 동일 객체, 33% 경계를 넘으면 true/stage2 그림으로 검사한다. 30초 잔여·Lv0·활성 건물·예약 두 칸은 유지되고, 기존 자원 차감·완공·대기열 검사도 보존한다.
+- 이 재개 커밋의 검증은 patch 적용 가능성, diff 공백, Unity 경계 정적 검사뿐이다. 두 프로필의 새 실행·native 공사·화면/강둑 밝기 검증은 부모 세션 담당이며 아직 통과로 기록하지 않는다. 새 Unity 기록 전 push하지 않는다.
