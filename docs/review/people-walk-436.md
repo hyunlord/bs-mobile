@@ -80,3 +80,43 @@
 실제 PNG에서 가신·귀환 주민·주민을 확인했다. 주민 검토 frame100은 익은 곡물이 하체 일부를 가리며 같은 좌표 주민이 겹친다. 중심점 viewport 관찰은 완전 비가림이나 사용자 승인으로 확대하지 않는다. 후반 draw calls 평균 +0.503은 그대로 기록하며 텍스처 수 불변을 묶음 수 불변이라고 표현하지 않는다.
 
 검증 스크립트와 원자료는 자기 작업트리 artifacts/day-20261027/people436/의 analyze-replays.mjs, replay-comparison.json, peasant-analysis.mjs, peasant-analysis.json 및 videos-r1·peasant-video-r1에 보존했다. 원본 성공 캡처 전체는 업로드하지 않고 선정 비교 영상3개와 표본 정지화면만 Release에 올린다.
+
+## #439 메모리 축소와 승인 main 반영 · 2026-10-27
+
+관문: 부분 — 실행 대상 `9fbad22b648def4a022c628e756735bc36dfa94d`의 두 프로필 및 추가 입력 검사 실패 0. 아래가 최신 검증이며, 위 2048-square 배치·이전 실행 결과는 역사 기록으로 보존한다. CI 최종 결과와 사용자 판정은 PR에서 별도로 기록한다.
+
+#411 squash `a44bf7ae6a5811de057c8f12410ce4a5d8fb0d3f`를 일반 merge하고 그 커밋의 actors를 재생성 기준으로 삼았다. 원본 PNG SHA256은 `060b8316485f3d8e36b1bdee0a9d10e1040a6ac7cc35e49e863b67a9b52bae42`다. 새싹 문장이 들어간 1254×1254 전체 RGBA, 859개 비대상 역할, legacy importer 54개 crop을 보존한다. 승인된 새 48칸은 RGBA·union crop·pivot·worldSize·frameMs·cyclePixels 및 layout이 이전 후보와 동일하다. 바뀐 것은 빈 atlas 면적과 bottom-origin y 보정(794→686)이다.
+
+| 메모리 계산 항목 | 이전 후보 | 현재 후보 |
+|---|---:|---:|
+| atlas 크기 | 2048×2048 | 1920×1940 |
+| 무압축 RGBA 할당 | 16,777,216 bytes | 14,899,200 bytes |
+| 1254-square 원본 대비 증가 | 10,487,152 bytes (10.00 MiB) | 8,609,136 bytes (8.21 MiB) |
+| 이전 후보 대비 절감 | — | 1,878,016 bytes (1.79 MiB) |
+| 텍스처 수 증가 | 0 | 0 |
+
+이는 mipmap 없는 소스 할당 계산이며 실제 GPU/native 메모리 측정값이 아니다. `ArtPreparation`의 Uncompressed·NPOT=None 계약은 유지한다. `pack.mjs` / `check.mjs`, sprout replacement 단위 검사 2개, diff 검사가 통과했다. 기존 #411 `installed.json`은 당시 전체 파일 기록으로 보존하며 이번 문장 보존은 기준 atlas 영역 전체 RGBA 동일성으로 검사한다.
+
+### 같은 커밋의 실제 Unity 결과
+
+원자료: 자기 작업트리 `artifacts/day-20261027/pr439-memory-main-tests/`. `record.md`의 source commit과 여섯 XML을 직접 대조했다.
+
+| 프로필 | 검사 | 통과 | 실패 | skip |
+|---|---|---:|---:|---:|
+|first-playable|EditMode|865|0|25|
+|first-playable|PlayMode|56|0|45|
+|wave-1a|EditMode|875|0|15|
+|wave-1a|PlayMode|88|0|13|
+|opt-in frozen combat sidecar|추가 EditMode|1|0|0|
+|opt-in melee aim catalog|추가 EditMode|1|0|0|
+
+기본 네 suite 기록의 `2 unexplained / 1 listed`를 그대로 남겼다. 기존 생성 도구로 입력을 준비한 추가 두 XML을 합친 결과는 **0 unexplained / 1 listed**다. 남은 listed는 기존 optional recorded-input sequence export 한 건이며 예외를 추가하지 않았다.
+
+두 fixture 생성 로그는 이전 `pr436-people-tests`의 같은 파일과 **바이트 동일**하다. FP seed30000–30004의 27000틱 기록 및 wave seed30000–30004의 3000틱 기록을 각각 Mono parity 테스트가 다시 통과했다. seed30000 종료 해시는 위 표의 FP `44049CB5…7FB33D1C`, wave `866612B8…E2AC2CF`와 같다. C05나 실기 성능을 증명하지 않는다.
+
+### 남은 성능·화면 판정
+
+- 최종 제출 SHA를 명시해 **Claude Code 야간 대기열에 wave-1a C05를 요청**한다. 이 변경 작업에서는 직접 성능 측정을 하지 않는다.
+- first-playable 성능은 **FP01 / #443 장면 계약과 main 기준선 3회**가 먼저 필요하다. C05는 wave-1a 전용이므로 first-playable 성능 통과로 확대하지 않는다.
+- 승인 원본 Release `m3-people-walk-review-433-20261027`와 기존 비교 Release `people-walk-game-review-436-20261027`는 수정하지 않는다. RGBA 보존으로 그림 승인·외형 비교를 재사용하되, 과거 영상의 draw calls나 실행 시각을 이번 커밋 측정값이라고 부르지 않는다.
+- 이번 실행의 청록 관찰 집계·실측 메모리·CI 최종 결과는 이 문서에서 새 수치를 주장하지 않는다. 담당자의 원자료 확인 후 PR에 기록한다.
