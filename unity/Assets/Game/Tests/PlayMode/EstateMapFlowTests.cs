@@ -32,8 +32,8 @@ namespace Tests.PlayMode
         {
             if (CanonicalContent.ProfileName != "wave-1a") Assert.Ignore("Requires wave-1a export.");
             Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty);
-            priorAsyncCompilation = EditorSettings.asyncShaderCompilation;
-            if (ShaderProbeMode == "off") EditorSettings.asyncShaderCompilation = false;
+            priorAsyncCompilation = ShaderUtil.allowAsyncCompilation;
+            if (ShaderProbeMode == "off") ShaderUtil.allowAsyncCompilation = false;
             priorDirectory = RunCoordinator.MetaDirectoryOverride; priorPrefix = RunCoordinator.PreferencePrefixOverride;
             priorWidth = Screen.width; priorHeight = Screen.height;
             var id = Guid.NewGuid().ToString("N");
@@ -48,7 +48,7 @@ namespace Tests.PlayMode
 
         [UnityTearDown] public IEnumerator Cleanup()
         {
-            if (priorAsyncCompilation.HasValue) { EditorSettings.asyncShaderCompilation = priorAsyncCompilation.Value; priorAsyncCompilation = null; }
+            if (priorAsyncCompilation.HasValue) { ShaderUtil.allowAsyncCompilation = priorAsyncCompilation.Value; priorAsyncCompilation = null; }
             foreach (var boot in Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None)) Object.Destroy(boot.gameObject);
             yield return null;
             if (directory != null)
@@ -579,7 +579,7 @@ namespace Tests.PlayMode
             var waitStarted = Time.realtimeSinceStartup;
             var compilingAtWait = ShaderUtil.anythingCompiling;
             var compilingBefore = ShaderUtil.anythingCompiling;
-            Debug.Log($"M3A7_CAPTURE before name={name} mode={ShaderProbeMode} anythingCompiling={compilingBefore} async={EditorSettings.asyncShaderCompilation} frame={Time.frameCount}");
+            Debug.Log($"M3A7_CAPTURE before name={name} mode={ShaderProbeMode} anythingCompiling={compilingBefore} async={ShaderUtil.allowAsyncCompilation} frame={Time.frameCount}");
             yield return PlayModeCaptureGuard.WaitForShaders(name); var captureProbe = PlayModeCaptureGuard.Begin(name);
             var image = ScreenCapture.CaptureScreenshotAsTexture();
             var compilingAfter = ShaderUtil.anythingCompiling;
@@ -590,7 +590,7 @@ namespace Tests.PlayMode
                 var probe = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/m3a7-shader-" + ShaderProbeMode)); Directory.CreateDirectory(probe);
                 var csv = Path.Combine(probe, "captures.csv");
                 if (!File.Exists(csv)) File.WriteAllText(csv, "name,frame,screen,async,compilingAtWait,compilingBefore,compilingAfter,elapsedThroughCaptureSeconds,cyanPixels\n");
-                File.AppendAllText(csv, $"{name},{Time.frameCount},{app.CurrentScreenName},{EditorSettings.asyncShaderCompilation},{compilingAtWait},{compilingBefore},{compilingAfter},{(Time.realtimeSinceStartup-waitStarted).ToString(System.Globalization.CultureInfo.InvariantCulture)},{cyan}\n");
+                File.AppendAllText(csv, $"{name},{Time.frameCount},{app.CurrentScreenName},{ShaderUtil.allowAsyncCompilation},{compilingAtWait},{compilingBefore},{compilingAfter},{(Time.realtimeSinceStartup-waitStarted).ToString(System.Globalization.CultureInfo.InvariantCulture)},{cyan}\n");
                 File.WriteAllBytes(Path.Combine(probe, name + ".png"), image.EncodeToPNG());
                 PlayModeCaptureGuard.Check(image, captureProbe, path, compilingAfter);
                 Assert.That(cyan, Is.Zero, "Cyan capture regression: " + name);
