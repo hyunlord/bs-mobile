@@ -1,4 +1,4 @@
-관문: 부분 — 2026-10-27 두 프로필 실패0, 추가 입력 검사2/2, 미설명 skip0. 실제 플레이 전후 캡처는 아직 미완료. 초안 유지.
+관문: 부분 — cdea663 두 프로필 실패0·보충 검사2/2·미설명 skip0·실제 캡처 청록0. 실제 전후 화면을 게시했으며 파손 목수집 문장은 이펙트 가림 한계가 있다. 초안·사용자 시각 판정 대기.
 
 관문: 부분 — 승인 문장15종 통합·픽셀·해시는 통과, wave-1a PlayMode 청록 감시1건 실패로 중단.
 변경: 기존8아틀라스의15crop 및 방어 방패의 대체 문장만 교체. measured_volley·manifest·Core·data는 보존.
@@ -90,3 +90,25 @@ The prerequisite's full attempt had 236 actual cyan-free observations, but two w
 | wave-1a | 838 / 0 / 15 | 84 / 0 / 13 |
 
 기존 도구로 생성한 combat sidecar와 opt-in melee 입력의 보충 실행은 각각1/0/0, 합산 공통 skip0 unexplained/1 listed. 새로운 skip 예외를 추가하지 않았다. 실행 뒤 추적 파일 변경0. 실제 입력 결산·combat 전후 비교 영상은 아직 대기이며 직접 만든 상태 화면으로 대신하지 않는다.
+
+## 2026-10-27 14:00: 오프라인 캡처 후 정확한 HEAD 재검증
+
+검증 소스 `cdea6630e158953739e97ab3045ea5b1d41ef610`, 13:49:46–14:00:12 KST. 두 프로필 batchmode 및 기존 도구로 생성한 combat/melee 보충 입력 검사 후 wrapper exit0, 자기 잠금 해제. 실행 뒤 추적 파일 변경0. 이 후속 기록 커밋은 문서만 바꾸며 새로운 Unity 실행으로 표현하지 않는다.
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---:|---:|
+| first-playable |828/0/25|55/0/42|
+| wave-1a |838/0/15|84/0/13|
+
+보충 combat/melee 각각1/0/0. 전체4 XML의 기존 skip2건으로 stock runner exit1을 보존하며, 보충2 XML을 합친 기존 검사기는 미설명0/기존목록1이다. 예외 목록 추가0. 실제 감시 events.jsonl261건 중 guard 자체 시험4건(의도적 cyan1픽셀2건 포함)을 분리한 실제 캡처257건은 cyanPixels0. 원자료 `artifacts/day-20261027/pr411-offline-tests`, `pr411-offline-tests.console.log`, `pr411-offline-guard-events.json`.
+
+### 실제 화면 증거
+
+[선택 전후 PNG와 provenance README Release](https://github.com/hyunlord/bs-mobile/releases/tag/sprout-actual-captures-411-20261027). 전체 raw/성공 중복 자료는 로컬 보존한다.
+
+- native 돌격 깃발·방어 궤도 방패: before b7cc3e2 / after feb8ba0, 각600프레임. 동일 frame150/tick375/alpha0.5에서 보이는 실제 게임 렌더러. 모든 index/tick/alpha 및 원본 입력/종료 해시 동일. 명시적 isolated combat hypothesis fixture, 오프라인60fps 무음이며 정상 획득 진행·성능 증거가 아니다.
+- 실제 first-playable 가신 방패와 완주 UiRunPanels.Summary의 heirloom_service/seed_crown: before51fb5aa / aftercdea663. 실제 입력을 실행하며 SetInvulnerable·GrantLevel debug 입력 포함을 표시했다. 각 입력 종료 해시 동일. 필터4회 통과, 청록 감시547+4+547+4=1102건0. 해당 필터에는 negative control 실행 없음.
+- 목수집 ID11(core:carpenter_hammer,5500/6000) 폐허·파손·완성: 실제 기존 입력 접두부 뒤 ordinary Advance 이동을 추가한 **새 derived review 입력**, 원본 재생과 구별. 카메라/좌표로 hedge/windmill과 구별. 이전 stale-camera ruin 실패는 보존하고 증거로 쓰지 않았다. 폐허 tick4724·파손270·완성351 비교와 각 새 종료 해시는 Release CARPENTER-README에 있다. 파손 문장은 파란 효과가 덮어 세부 판독 제한을 남긴다.
+- harvest-flag는 실제 runtime consumer 없음: 역할 목록만, 게임 연결은 추가하지 않는다. 누락 role fallback의 정상 게임 발동 화면은 별도 미확인이다.
+
+사용자의 오프라인60fps 승인에 따라 CPU/입력 idle 관문을 적용하지 않았으며, Unity/native 상호배제와 자기 잠금은 유지했다. 실시간 성능/C05 근거로 전용하지 않는다. 기존 역사 실패·중단 기록은 위에 그대로 보존한다. PR은 초안 유지, 병합·사용자 시각 판정은 별도다.
