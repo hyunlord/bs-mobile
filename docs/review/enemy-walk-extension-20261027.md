@@ -29,3 +29,13 @@ a910372 initially included approved stone breaker from m3-walk-next-review-423-2
 - EditMode regression updated but not executed in this bounded preparation lane. No Unity, build, Core test, replay run, native capture or performance measurement here.
 
 Parent verification must record actual wave3 before/after at equal ticks/scale, Unity suites, replay hash and final CI. Inventory/centre-in-view metadata alone does not prove sprite visibility. C05 remains Claude Code night queue only. Historical mixed-scope first-playable captures are not #410 delivery evidence. Draft remains; no merge authorization implied.
+
+## Wave-three runtime verification
+
+2026-10-27 11:11:25–11:21:49 KST, HEAD `373b43c16a0b0aa24a27d98497165a9479e82f96`. first-playable Edit829/Play53, wave Edit839/Play82 passed; all failed0. Skips25/42 and15/13 preserve profile-specific cases. Existing tools generated combat sidecars/melee catalog; two supplemental tests each1/0/0. Six XMLs through unchanged skip checker: unexplained0/listed1. No exception added. Actual cyan observations251, cyan-positive0; guard self-tests4 excluded. Tracked files unchanged; own lock released.
+
+Crowd411 rerun from the same unchanged Core/data verifies tick11530/hash`59805294BB813DA1D34D1CF505F49A42513975DE373696EA247FB1B5B8C43619`. InputSHA`4fe0f97f23d20b487730be03ae76f5d7551ec88b787d43566f0cde41cd5a079c`; recorded data51DA41A2/current6AC1ACFC retained under ADR0058, no replay rewrite. This is .NET verification, not native comparison.
+
+Evidence: `artifacts/day-20261027/pr410-final-tests`, `pr410-final-run-start2.log`, `crowd411-probe/result-current.txt`. Earlier four-enemy suite at1df2c3f is historical and does not replace this wave-three record.
+
+Actual matched video remains blocked by shared Mac external CPU/user-idle conditions. C05 is Claude Code night queue only; the PR body pins the latest pushed SHA. No performance claim or merge approval.
