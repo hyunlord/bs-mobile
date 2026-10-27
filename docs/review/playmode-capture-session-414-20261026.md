@@ -70,3 +70,18 @@ Owned run: `artifacts/day-20261027/pr415-tests`, 09:04:54–09:13:28 KST; own lo
 The first-playable failure is `UiCaptureTests.PortraitAndSquareRetainRunAndCaptureRealUi:76`: after completed-run Retry, two fixed update yields did not replace the session. The log immediately after summary capture records `Run.unity` loading in 140.505ms (82.313ms thread wait); `BeginRun` assigns Session only after asynchronous scene loading. This supports a timing race, not a cyan/pointer failure. Intentional save-denied exceptions belong to separate passing failure-recovery tests. The test now uses the same bounded session-change wait already used for its death-retry path, with an immediate error check; game code is unchanged. Revalidation is required before claiming this correction passes.
 
 The two skipped tests require extra execution environments, not exemptions: frozen C05 combat sidecars plus `UNITY_WAVE_BENCHMARK=1`, and the `m1-showcase-review` opt-in melee profile. The stock two-profile runner does not prepare those prerequisites. This limitation is preserved rather than treating the skips as a pass.
+
+## Revalidation and stop (2026-10-27, 1a0f540)
+
+Owned run: `artifacts/day-20261027/pr415-retry-tests`, 09:14:24–09:22:48 KST. Own lock released 09:22:48; no Unity process remained. No tracked settings or other tracked files were changed by Unity.
+
+| Profile | EditMode pass/fail/skip | PlayMode pass/fail/skip |
+|---|---:|---:|
+| first-playable | 828 / 0 / 25 | 53 / 0 / 42 |
+| wave-1a | 838 / 0 / 15 | 82 / 0 / 13 |
+
+The completed-run restart regression now passes. Actual captures: **251, cyan 0**; two separate positive cyan negative-controls correctly detected one pixel each. The initial run had 250 actual captures, cyan 0. Both actual sessions used the nonpersistent async-compilation switch and restoration; persisted EditorSettings bytes are unchanged.
+
+**Overall runner FAIL / stopped:** `skipped in every profile: 2 unexplained, 1 listed`, exit 1, in both daytime runs. No skip exception or assertion was weakened. The missing frozen-combat fixtures and opt-in melee profile remain the reasons documented above. Four green XML suites are not a passing full runner. The repeated failure rule stops further Unity work; #411 verification is blocked by its prerequisite. #410 was not recorded because external worldsim_probe/StorageManagement load exceeded the permitted CPU limit. Estate integration remains read-only preparation, and optional #422 was not started. All PRs remain drafts; no game/Core/save/data code changed.
+
+Evidence source commit: `1a0f540b896ea9b1541d9d96482b19f27415d27c`. The exact runner block is in the PR body; raw logs/XML remain at the owned paths above. Historical graphical failures are retained, not replaced by these newer measurements.
