@@ -23,7 +23,7 @@
 
 `ArtCatalog.Load` → first-playable이면 `Resources/FirstPlayableArt` → `ArtCatalog.Resolve("enemy", DefinitionId, state)`. `WorldRenderer`는 위치가 바뀌고 hit/death가 아니면 walk를 선택한다. first-playable에서는 wave가 null이므로 `EnemyRigAtlas.TrySample`를 거치지 않는다. `Draw`가 `floor(time*1000/frameMs)%16`으로 UV를 선택한다. 기존 idle/hit/death 역할과 wave 걷기는 변경하지 않는다. 이동거리 기반 stride를 새로 발명하지 않는다.
 
-기존 ActorMotion.SampleEnemy의 전체 sprite 흔들림과 좌우 facing은 유지한다. 이 overlay와 승인 그림의 실제 조합, 상태 전환 크기, 1배 before/after 영상은 Unity에서 확인해야 한다. 셀 몸 크기와 투명 여백을 자르지 않았으므로 승인 worldSize를 그대로 사용한다.
+first-playable은 ActorMotion.SampleEnemy에 Pursuer 종류를 넘기며 이 분기는 offset=0/scale=1/rotation=0이다. 전체 sprite 흔들림을 추가하지 않고 좌우 facing만 유지한다. 승인 그림의 상태 전환 크기(특히 stone의 역사 idle 대비 약6px 기준점 차이)와 1배 before/after 영상은 Unity에서 확인해야 한다. 셀 몸 크기와 투명 여백을 자르지 않았으므로 승인 worldSize를 그대로 사용한다.
 
 `FirstPlayableApprovedWalkTests`는 실제 Resource registry와 catalog binding으로 3종16칸·시간·pivot·worldSize·idle/hit/death 별도atlas를 검사한다. 소스만 추가했고 Unity에서 실행하지 않았다. Core/data/save/runtime .cs 변경 없음은 소스 경계 증거이며 실제 리플레이 해시 재실행을 대신하지 않는다.
 
