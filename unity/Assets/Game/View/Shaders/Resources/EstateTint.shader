@@ -74,7 +74,7 @@ Shader "Game/UI/EstateTint"
                 sample.rgb = lerp(dark, tinted, input.color.b);
                 // Above-night landmarks retain contour and texture, never original-colour river banks.
                 // The shared material batches these cool silhouettes with other estate sprites.
-                if (input.grid.z > .5)
+                if (input.grid.z > .5 && (input.grid.z < 2.5 || input.grid.z > 3.5))
                 {
                     sample.rgb = luma * fixed3(.65, .8, 1) * input.color.g;
                     // Source hue identifies water only; the dark overlay never restores its original colour.
@@ -85,6 +85,10 @@ Shader "Game/UI/EstateTint"
                         sample.rgb = lerp(sample.rgb, deepWater, water);
                     }
                 }
+                // River patches formerly baked round stone banks into the terrain. The approved separate banks replace
+                // them; retain only their cool water pixels in both ground and above-night passes (#426).
+                if (input.grid.z > 2.5)
+                    sample.a *= smoothstep(.005, .035, min(source.g - source.r, source.b - source.r));
                 sample.a *= input.color.a;
                 #ifdef UNITY_UI_CLIP_RECT
                 sample.a *= UnityGet2DClipping(input.local.xy, _ClipRect);

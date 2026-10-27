@@ -109,7 +109,20 @@ namespace Game.App
                     throw new InvalidOperationException("Normal build button did not start " + kind + ": config=" + app.EstateMap.Config.Version + " reason=" + app.EstateMap.LastConstructionReason);
                 yield return rendered;
                 Capture(kind == "meta:granary" ? "granary-construction" : "construction");
-                while (app.EstateMap.Building(building.Id).Level == 0) yield return null;
+                var capturedStage = 1;
+                while (app.EstateMap.Building(building.Id).Level == 0)
+                {
+                    var stage = EstateConstructionArt.Stage(app.EstateMap.State.Estate.Active);
+                    if (stage > capturedStage)
+                    {
+                        // Observe the real clock only: no resource grants, direct state edits or time acceleration.
+                        capturedStage = stage;
+                        yield return rendered;
+                        Capture((kind == "meta:granary" ? "granary" : "field") + "-construction-stage-" + stage);
+                        RecordConstruction("art-stage-" + stage, building.Id, "observed");
+                    }
+                    yield return null;
+                }
                 RecordConstruction("complete", building.Id, "completed");
                 yield return rendered;
                 Capture(kind == "meta:granary" ? "granary-complete" : "field-complete");

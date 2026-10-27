@@ -223,7 +223,7 @@ namespace Tests.PlayMode
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id));
             Assert.That(Rects("EstateMap.ConstructionSign").Length, Is.EqualTo(1));
             var fieldImage = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
-            Assert.That(fieldImage.sprite, Is.SameAs(EstateArt.Load().Body("field", 1)));
+            Assert.That(fieldImage.sprite, Is.SameAs(EstateArt.Load().Get("construction-field-1-lit")));
             yield return Capture("estate-r7-field-construction");
             Click("EstateMap.Skip60"); yield return null;
             Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
@@ -258,7 +258,7 @@ namespace Tests.PlayMode
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id)); Assert.That(screen.Notice, Is.EqualTo("경작지 공사 시작"));
             Assert.That(Rects("EstateMap.ConstructionSign").Length, Is.EqualTo(1));
             var fieldArt = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
-            Assert.That(fieldArt.sprite, Is.SameAs(EstateArt.Load().Body("field", 1)), "Construction uses empty start-stage furrows.");
+            Assert.That(fieldArt.sprite, Is.SameAs(EstateArt.Load().Get("construction-field-1-lit")), "Construction uses the approved field stage, with its own authored ground anchor.");
             Assert.That(fieldArt.color, Is.EqualTo(Color.white));
             Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(field.Id)), screen.Map.VisibleCentre), Is.LessThan(1));
             yield return Capture("estate-flow-build");

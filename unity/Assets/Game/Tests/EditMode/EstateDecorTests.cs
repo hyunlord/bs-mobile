@@ -60,8 +60,8 @@ namespace Tests.EditMode
             Assert.That((homeArt.Stage, homeArt.Colour), Is.EqualTo((2, Color.white)), "The starting home is complete, not the ruined manor stage.");
             Assert.That(plan.Lamps.Any(l => l.Item1 == new Vector2(home.X + 1, home.Y + 1) && l.Item2 == rules.night.homeLampCells), Is.True);
             var started = AccountEstate.StartConstruction(catalog, config, state, 0, 0, granary.Id).State;
-            var item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.BuildingId == granary.Id);
-            Assert.That((item.BuildingArt, item.Stage), Is.EqualTo(("field", rules.Stage(rules.fieldFenceKind, 0))), "Construction shows empty furrows, with the separate UI work sign.");
+            var item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.SiteId == granary.Id);
+            Assert.That(item.Role, Is.EqualTo("construction-building-1-lit"), "Approved construction replaces the temporary empty-furrow body.");
             Assert.That(item.Colour, Is.EqualTo(Color.white));
             var done = AccountEstate.Advance(catalog, config, started, 60, 60).State;
             done = AccountEstate.StartConstruction(catalog, config, done, 60, 60, granary.Id).State;
