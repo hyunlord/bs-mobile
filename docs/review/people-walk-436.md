@@ -1,8 +1,8 @@
 # Approved people walks (#436)
 
-관문: 부분 — 두 프로필의 EditMode/PlayMode 실패 0, 실제 캡처 감시 청록 0. 실제 전후 영상·선택 프레임 관찰 및 사용자 화면 판정은 아직 완료하지 않았다.
+관문: 부분 — 두 프로필의 EditMode/PlayMode 실패 0, 실제 캡처 감시 청록 0. 실제 전후 영상·16칸 선택 확인 완료. 사용자 화면 판정·병합은 대기한다.
 
-작성 2026-10-27. 테스트 대상 `9a43e70341d20ab21970f8948d5d51c0275bcf2c`; 원판 비교 기준 `7e5ca6d0ca2010389ac45bea012e529907f3fd03`. 이 기록은 게임 적용 승인이나 PR 병합 승인이 아니다. CI 최종 결과는 별도 확인 후 기록한다.
+작성 2026-10-27. 테스트 대상 `9a43e70341d20ab21970f8948d5d51c0275bcf2c`; 원판 비교 기준 `7e5ca6d0ca2010389ac45bea012e529907f3fd03`. 이 기록은 게임 적용 승인이나 PR 병합 승인이 아니다. 기록 커밋75a070c의 required CI [40465436750](https://github.com/hyunlord/bs-mobile/actions/runs/40465436750)는 quality·secrets 모두 최종 통과했다. 후속 문서 커밋 CI는 PR에 최종 결과를 별도로 남긴다.
 
 ## 범위와 원본
 
@@ -65,4 +65,18 @@
 
 **wave-1a의 자연 출현 제한:** `core/src/SowSiege.Core/Simulation.cs`는 `WaveRuntime`이 있을 때 `estate.Initialize()`를 실행하지 않는다. 따라서 일반 wave 판의 estate `People`은 없고, wave 작업 집단의 사람은 별도 militia/guard 경로다. 세 역할의 카탈로그 준비와 자연 게임 등장 검증을 분리한다. 이 PR에서 임의 사람을 만들거나 Core 규칙을 바꿔 wave 등장 증거를 만들지 않는다.
 
-실제 FP 전후 비교는 같은 기록 명령과 seed, 카메라, 틱으로 오프라인 60fps 렌더한 뒤 제출한다. `WorldRenderer`의 실제 `DrawActor` 뒤에서 선택 role/frame/위치를 관찰한다. 관찰자의 중심점 viewport 포함은 다른 물체에 가리지 않았다는 증명이 아니므로 영상 확인이 필요하다. 전체 종료 해시·checkpoint, 전후 매 프레임 해시·카메라·사람 위치 일치와 역할별 이동 중 선택 coverage를 따로 기록할 예정이다. 이 문서 작성 시 해당 영상과 최종 사용자 화면 판정은 **미완료**다.
+## 실제 오프라인 전후 영상
+
+[비교 Release](https://github.com/hyunlord/bs-mobile/releases/tag/people-walk-game-review-436-20261027). Time.captureFramerate=60, 디버그 명령이 포함된 기존 FP seed30000 입력을 그대로 사용했다. 정상 사람 플레이·성능 측정 증거가 아니다. 3쌍 모두 15 checkpoint와 전체 종료 해시가 위 FP 값과 같다. 각 프레임 명령 순번·Core 해시·카메라·실제 사람 위치가 전후 동일하다.
+
+|장면|틱|프레임/길이|이동 중 viewport 관찰|평균 draw calls 전→후|p95 전→후|
+|---|---|---|---|---|---|
+|기본 카메라 초반|180–1079|1800 /30초|가신1268건,16칸 전부|12.209→12.209|14→14|
+|기본 카메라 후반|23400–24299|1800 /30초|귀환 주민185건,16칸 전부|14.407→14.911|15→15|
+|주민 검토 카메라|430–780|702 /11.7초|주민1400건,16칸 전부|12.195→12.195|14→14|
+
+기본 카메라에서 이동 주민은 화면 밖이므로 별도 **REVIEW CAMERA**로 (6.74,6)을 바라보았다. 로컬 진단 before d6e0cf0 / after35a19ed의 Editor 전용 카메라 변경은 게임 PR에 포함하지 않는다. 기본 카메라 before c400899 / after9a43e70이며, 양쪽 모두 같은 캡처 관찰자를 쓴다. 영상 인코딩 결과는 60/1fps, 각1800/702프레임으로 확인했다.
+
+실제 PNG에서 가신·귀환 주민·주민을 확인했다. 주민 검토 frame100은 익은 곡물이 하체 일부를 가리며 같은 좌표 주민이 겹친다. 중심점 viewport 관찰은 완전 비가림이나 사용자 승인으로 확대하지 않는다. 후반 draw calls 평균 +0.503은 그대로 기록하며 텍스처 수 불변을 묶음 수 불변이라고 표현하지 않는다.
+
+검증 스크립트와 원자료는 자기 작업트리 artifacts/day-20261027/people436/의 analyze-replays.mjs, replay-comparison.json, peasant-analysis.mjs, peasant-analysis.json 및 videos-r1·peasant-video-r1에 보존했다. 원본 성공 캡처 전체는 업로드하지 않고 선정 비교 영상3개와 표본 정지화면만 Release에 올린다.
