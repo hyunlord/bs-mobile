@@ -58,6 +58,36 @@ test('FP01 summary accepts its command count and measured endpoint, requires exa
   assert.equal(summarize().status, 'baseline');
   const cli = spawnSync(process.execPath, ['tools/summarize-wave-benchmark-v2.mjs', 'uncapped', dir, '--contract', 'benchmarks/first-playable-fp01/contract.json'], { encoding: 'utf8' });
   assert.equal(cli.status, 0, cli.stderr); assert.equal(JSON.parse(cli.stdout).status, 'baseline');
+  // The CLI gate must consume this full FP01 fixture, not silently fall back to C05.
+  const candidate = fs.mkdtempSync(path.join(os.tmpdir(), 'fp01-regression-'));
+  t.after(() => fs.rmSync(candidate, { recursive: true, force: true }));
+  fs.cpSync(dir, candidate, { recursive: true });
+  const reasonFile = path.join(candidate, 'reason.md');
+  fs.writeFileSync(reasonFile, '#451 records an intentionally measured visual cost and the remaining mitigation; this is not a performance pass.');
+  const gate = (...options) => spawnSync(process.execPath,
+    ['tools/check-wave-regression.mjs', candidate, dir, ...options], { encoding: 'utf8' });
+  const contractArgs = ['--contract', 'benchmarks/first-playable-fp01/contract.json'];
+  assert.notEqual(gate().status, 0, 'C05 remains the default and must reject FP01 input');
+  assert.equal(JSON.parse(gate(...contractArgs).stdout).status, 'pass');
+  const setFrameCost = wallMs => {
+    for (let repeat = 1; repeat <= 3; repeat++) {
+      const target = path.join(candidate, `run-${repeat}/frames.csv`);
+      const rows = parseCsv(fs.readFileSync(target, 'utf8'), frameHeaders);
+      fs.writeFileSync(target, formatCsv(frameHeaders, rows.map(row => ({ ...row, wallMs }))));
+    }
+  };
+  setFrameCost(12);
+  assert.equal(JSON.parse(gate(...contractArgs).stdout).status, 'pass', 'exactly +20% is allowed');
+  setFrameCost(12.001);
+  const rejected = gate(...contractArgs);
+  assert.equal(rejected.status, 1); assert.match(rejected.stderr, /exceeds 20%/);
+  for (const options of [[...contractArgs, '--reason', reasonFile], ['--reason', reasonFile, ...contractArgs]]) {
+    const explained = gate(...options);
+    assert.equal(explained.status, 0, explained.stderr);
+    assert.equal(JSON.parse(explained.stdout).status, 'explained-regression');
+  }
+  fs.rmSync(path.join(candidate, 'run-3'), { recursive: true });
+  assert.equal(gate(...contractArgs, '--reason', reasonFile).status, 1, 'reason cannot excuse missing run');
   const file = path.join(dir, 'run-1/benchmark.json'), original = fs.readFileSync(file, 'utf8');
   for (const change of [{ profile: 'wave-1a' }, { fixture: 'c05' }, { commands: 14403 }, { tick: 20790 }]) {
     fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(original), ...change }));
