@@ -24,13 +24,22 @@ const definitions = [
 const atlasPath = 'unity/Assets/Art/actors.png';
 const oldBytes = readBase(atlasPath), old = decodeRgbaPng(oldBytes);
 assert.deepEqual([old.width, old.height], [1254, 1254]);
-const width = 2048, height = 2048, padding = 2;
+const layout = JSON.parse(fs.readFileSync(path.join(root, 'tools/art-authoring/people-walk/layout.json'), 'utf8'));
+const { width, height, padding } = layout;
+assert.equal(layout.legacySize, old.width);
+assert.equal(layout.frames.length, 48);
+const reserved = [{ x: 0, y: 0, width: old.width, height: old.height }];
+for (const frame of layout.frames) {
+  const rect = { x: frame.x - padding, y: frame.y - padding,
+    width: frame.width + padding * 2, height: frame.height + padding * 2 };
+  assert.ok(rect.x >= 0 && rect.y >= 0 && rect.x + rect.width <= width && rect.y + rect.height <= height);
+  for (const other of reserved) assert.ok(rect.x + rect.width <= other.x || other.x + other.width <= rect.x ||
+    rect.y + rect.height <= other.y || other.y + other.height <= rect.y, 'layout padding/legacy overlap');
+  reserved.push(rect);
+}
 const pixels = Buffer.alloc(width * height * 4);
 for (let y = 0; y < old.height; y++) old.pixels.copy(pixels, y * width * 4, y * old.width * 4, (y + 1) * old.width * 4);
 // Reserve the WHOLE old atlas, including undeclared legacy sprites and currently transparent pixels.
-const slots = [];
-for (let row = 0; row < 5; row++) for (let col = 0; col < 4; col++) slots.push({ x: 1256 + col * 191, y: 2 + row * 228 });
-for (let row = 0; row < 3; row++) for (let col = 0; col < 10; col++) slots.push({ x: 2 + col * 191, y: 1256 + row * 228 });
 let slot = 0;
 const clips = definitions.map(([kind, expected, anchorX, cellWorldSize, cyclePixels]) => {
   const filename = `person-${kind}-r1-16.png`, bytes = fs.readFileSync(path.join(source, filename));
@@ -45,7 +54,11 @@ const clips = definitions.map(([kind, expected, anchorX, cellWorldSize, cyclePix
   assert.ok(w + padding * 2 <= 191 && h + padding * 2 <= 228);
   const frames = [], rgbaSha256 = [];
   for (let index = 0; index < 16; index++) {
-    const { x, y } = slots[slot++];
+    const placement = layout.frames.find(f => f.kind === kind && f.index === index);
+    assert.ok(placement, kind + ':' + index);
+    assert.deepEqual([placement.width, placement.height], [w, h], 'approved union crop geometry');
+    const { x, y } = placement;
+    slot++;
     assert.ok(x + w + padding <= width && y + h + padding <= height);
     const crop = Buffer.alloc(w * h * 4);
     for (let row = 0; row < h; row++) {
@@ -73,7 +86,7 @@ for (const profile of ['first-playable', 'wave1a']) {
   const name = `unity/Assets/Art/${profile}-manifest.json`;
   const m = JSON.parse(fs.readFileSync(path.join(root, name), 'utf8'));
   const atlas = m.atlases.find(a => a.id === 'actors');
-  assert.ok(atlas && (atlas.width === old.width || atlas.width === width));
+  assert.ok(atlas && ([old.width, 2048, width].includes(atlas.width)));
   atlas.width = width; atlas.height = height;
   for (const clip of clips) {
     const role = m.roles.find(r => r.id === `person.${clip.kind}.move`);
