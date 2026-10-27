@@ -1,11 +1,46 @@
 using System.IO;
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Tests.PlayMode
 {
     public sealed class PlayModeCaptureGuardTests
     {
+#if UNITY_EDITOR
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CaptureSessionRestoresOriginalCompilationSetting(bool original)
+        {
+            var previous = ShaderUtil.allowAsyncCompilation;
+            var persistedSetting = EditorSettings.asyncShaderCompilation;
+            var session = new PlayModeCaptureSession();
+            try
+            {
+                ShaderUtil.allowAsyncCompilation = original;
+                session.BeginSession();
+                Assert.That(ShaderUtil.allowAsyncCompilation, Is.False);
+                session.EndSession();
+                Assert.That(ShaderUtil.allowAsyncCompilation, Is.EqualTo(original));
+                Assert.That(EditorSettings.asyncShaderCompilation, Is.EqualTo(persistedSetting), "Runtime switch must not change the persisted project setting.");
+            }
+            finally { ShaderUtil.allowAsyncCompilation = previous; }
+        }
+
+        [UnityTest]
+        public IEnumerator CaptureWaitsForTwoUpdateFrames()
+        {
+            Assert.That(ShaderUtil.allowAsyncCompilation, Is.False, "Session guard must cover every fixture.");
+            yield return null;
+            var frame = Time.frameCount;
+            yield return PlayModeCaptureGuard.WaitForShaders("guard-update-frames-test");
+            Assert.That(Time.frameCount - frame, Is.GreaterThanOrEqualTo(2));
+        }
+#endif
         [TestCase(false)]
         [TestCase(true)]
         public void CaptureGuardRecordsBeforeFailingAndAcceptsCleanPixels(bool cyan)
