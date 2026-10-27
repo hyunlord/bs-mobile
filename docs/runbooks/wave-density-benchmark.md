@@ -75,7 +75,7 @@ node tools/check-wave-regression.mjs artifacts/wave-density/next-uncapped artifa
 node tools/check-wave-regression.mjs artifacts/wave-density/next-uncapped artifacts/wave-density/uncapped --reason docs/review/MEASURED-REGRESSION-REASON.md
 ```
 
-- 비용 추세: 상한 없는3회에서 각 밀도400–599/600–799/800+의 반복별 p95와3회 통합 p95를 기록한다. 같은 기기·설정의 기준 대비 **통합 p95 증가가20%를 초과**하면 경고한다. 정확히20%는 경고가 아니다. Mac 절대 p95 합격선은 없으며 실제 기기 성능 합격선은 보류 중인 Fold7 #98에서 다룬다.
+- 비용 추세: 상한 없는3회에서 각 밀도400–599/600–799/800+의 반복별 p95와3회 통합 p95를 기록한다. 같은 기기·설정의 기준 대비 **통합 p95 증가가20%를 초과**하면 기본 실패다. 정확히20%는 회귀 실패가 아니다. 요약 도구의 warning 통계와 과거 warning 기록은 보존하되, 현재 PR 관문에는 위 검사기를 사용한다. Mac 절대 p95 합격선은 없으며 실제 기기 성능 합격선은 보류 중인 Fold7 #98에서 다룬다.
 - 끊김: 상한60fps의 **각 반복·각 밀도**에서 **33ms 초과 프레임 비율≤0.1%**, **100ms 초과 프레임0개**를 모두 만족해야 한다. 정확히33ms/100ms는 각각 초과에 포함하지 않는다. 좋은 반복이나 통합 비율로 나쁜 반복을 숨기지 않는다.
 - 두 모드 모두 필요한 반복·밀도·종결 해시가 없으면 미완료다. 0명령·따라잡기·느린 프레임도 모두 남긴다. 유효하지 않은 포커스 이탈 실행을 필터링으로 되살리지 않는다.
 
