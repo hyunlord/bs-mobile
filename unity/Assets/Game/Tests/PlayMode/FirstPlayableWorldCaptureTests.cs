@@ -184,8 +184,10 @@ namespace Tests.PlayMode
             var image = new Texture2D(width, height, TextureFormat.RGB24, false);
             var world = owner.AddComponent<WorldRenderer>();
             var written = 0; var retained = new HashSet<long>();
+            var priorCaptureRate = Time.captureFramerate;
             try
             {
+                Time.captureFramerate = 60;
                 var initial = session.View.CaptureFrame(); var settings = CanonicalContent.Presentation.Camera;
                 world.Initialize(camera, new WorldCameraSettings(settings.WorldUnitsPerUnityUnit, settings.MinHalfHeight, settings.MaxHalfHeight, settings.EstatePadding, settings.FollowMilliseconds, settings.ZoomMilliseconds), replay.Header.Options.Run.EstateId, initial.MapWidth, initial.MapHeight);
                 yield return PlayModeCaptureGuard.WaitForShaders("FP recorded range setup");
@@ -258,6 +260,7 @@ namespace Tests.PlayMode
             }
             finally
             {
+                Time.captureFramerate = priorCaptureRate;
                 File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
                 camera.targetTexture = null; target.Release(); Object.Destroy(target); Object.Destroy(image); Object.Destroy(owner); Object.Destroy(cameraOwner);
             }
