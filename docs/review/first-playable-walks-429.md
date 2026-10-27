@@ -145,3 +145,27 @@ Release `m3-bell-whistle-walk-review-428-20261027`의 과거 pending 문구는 �
 실제PNG 전후0·50·550·741·828·851·960·1162의8쌍을 직접 보았다. stone_breaker(741/851/960), rope_catcher(1162), ember_sapper(50/1162), bell_thief(741/828/851), whistle_hunter(550)의 주요 실루엣을 확인했다. 새 사각 배경·명백한UV오류·겹침 역전·비대상 그림 교체는 발견하지 못했다. 550의 반투명 적도 전후 유지되며,0/50/741 하단 단색 지도 경계는before에도 있는 기존 표현이다. **PASS는 표본의 atlas 통합 회귀 검사에 한정**한다. 큰 물결/불꽃의 가림, 작은 적의 세부 판독 한계가 있다. 정지 표본으로 걷기 자연스러움·전체프레임 무결점·사용자 승인을 대신하지 않는다.
 
 영상 ffprobe 직접 확인: 780×844(각390×844),60/1fps,1800프레임,30.000초. 고정seed30000,debug명령 SetInvulnerable/GrantLevel 포함,world-only,Time.captureFramerate60 오프라인 렌더다. 정상플레이·실시간 성능 증거가 아니다.
+
+## 2026-10-27 main 합류 후 검증 — source 6cf8ebc
+
+관문: 두 프로필 실패0·동일30초 호출 증가0% 통과. 이 절은 실제 실행 소스 `6cf8ebcce923bac6d50d6fc1588c0e3b73968837`의 결과다. 문서 기록 커밋을 실행 소스로 바꾸어 적지 않는다.
+
+| 프로필 | Suite | Passed | Failed | Skipped |
+|---|---|---:|---:|---:|
+| first-playable | EditMode | 863 | 0 | 25 |
+| first-playable | PlayMode | 55 | 0 | 45 |
+| wave-1a | EditMode | 873 | 0 | 15 |
+| wave-1a | PlayMode | 87 | 0 | 13 |
+| supplemental | combat EditMode | 1 | 0 | 0 |
+| supplemental | melee EditMode | 1 | 0 | 0 |
+| after 오프라인 캡처 | PlayMode | 1 | 0 | 0 |
+
+XML 직접 확인. 기본4 suite의 root result는 Skipped:Ignored이며 실패0이다. 입력 미생성 공통2skip을 기존 도구로 생성한 보충 입력으로 실제 실행한 뒤 합산 미설명0/listed1이다. listed는 기존 선택적 영상export, 예외 추가 없음. 원자료는 `artifacts/day-20261027/pr432-main-unified-tests`; 보충 마지막 XML 종료18:28:47 KST, 캡처 XML 종료18:32:17 KST다. 캡처 runner complete는18:32:19 KST에 기록되었다.
+
+`artifacts/day-20261027/fp-unified-after-main-6cf8ebc/pair-validation.json`을 다시 검증했다. before/after 모두 평균15.4666667, p95호출17, 최대호출17, **증가0%**다. 입력SHA `61aa591ea8f05dc1ec7b30968652df654aa423d824b786ede6145915fdc183ba`, 종료해시 `69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5`, 구간19891–20790틱/1800프레임이 같다. 1800/1800프레임의 stateHash·카메라·submittedInstances·tick/alpha·명령 수·적ID/종류/viewport센터·buildingStates가 일치한다. sourceDirty=false,complete=true이며 캡처 완료 뒤 추적파일 변경0을 확인한 뒤 이 문서를 썼다. 프레임별 호출 수 배열도 이전1602d79 통합 실행과 동일하므로 초별 통합CSV를 중복 생성하지 않는다.
+
+main 병합은 문서 전용이 아니다. 승인 새싹 문장15종 atlas 및WorldOrbits fallback, 선택적 결산UI 캡처가 포함된다. 따라서 이 비교를 '적 픽셀만 변경된 실험'이라고 부르지 않는다. 순수atlas 인과 검증·영상은 기존1602d79 자료를 그대로 유지한다. 새6cf8ebc 자료는 현재main 합류 상태의 구조적 호출 관문 재검증이다. `FP_QA_SUMMARY`는 켜지 않았으며 일반world-only60fps 렌더 경로를 사용했다.
+
+병합 후 실제 PNG50·741을 직접 보고 같은 번호의 기존before/1602after와 비교했다. 적·영웅·배경에 명백한UV깨짐·사각외곽·겹침 역전은 발견하지 못했다(표본 한정). main 승인 문장 차이는 허용 범위지만 이 두 화면에서 모든 문장의 노출을 검증한 것은 아니다. 캡처walk.log에 CYAN_CAPTURE_FAILURE 문자열은 없으나, 이것을 전1800PNG의 cyan0 계측으로 해석하지 않는다. 전체청록 픽셀 전수검사는 미실시, 선택이미지 시각 확인만 했다.
+
+초안 유지. CPU/GPU 프레임시간·사용자 영상 승인으로 확대해석하지 않는다. 최종 CI는 게시 커밋의 실행이 끝난 뒤 PR에서 확인한다. 비압축atlas 산술비용+4.76MiB와 앞서 보존한 실패는 그대로다.
