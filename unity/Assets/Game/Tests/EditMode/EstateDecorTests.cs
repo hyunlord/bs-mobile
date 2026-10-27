@@ -29,7 +29,10 @@ namespace Tests.EditMode
             Assert.That(rules.astra.seed, Is.EqualTo(20261024)); Assert.That(rules.astra.styleVersion, Is.EqualTo("art-v1"));
         }
 
-        [Test] public void EveryRoleAndBuildingStageHasPackedArt()
+        [TestCase("m3a-prototype-r2")] [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")] [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")] [TestCase("m3a-prototype-r7")]
+        public void EveryRoleAndBuildingStageHasPackedArt(string version)
         {
             var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var roles = rules.astra.kits.SelectMany(k => k.props).Concat(new[] { "grass", "rocks" })
@@ -39,10 +42,33 @@ namespace Tests.EditMode
                 .Concat(new[] { rules.yardGround.well, rules.yardGround.house, rules.yardGround.other, rules.terrain.restored, rules.terrain.sage, rules.terrain.fallow, rules.fieldFenceCorner })
                 .Where(r => !string.IsNullOrEmpty(r)).Distinct();
             foreach (var role in roles) Assert.That(art.Get(role), Is.Not.Null, role);
-            foreach (var kind in rules.kindArt.Select(k => k.art).Distinct())
-                for (var stage = 1; stage <= 3; stage++) { Assert.That(art.Body(kind, stage), Is.Not.Null, kind + stage); Assert.That(art.Shadow(kind, stage), Is.Not.Null); }
+            var config = CanonicalContent.CreateAccountEstateConfig(version);
+            foreach (var building in config.Buildings)
+            {
+                var mapping = rules.ArtOf(building.Kind);
+                Assert.That(mapping, Is.Not.Null, version + ": " + building.Kind);
+                foreach (var stage in Enumerable.Range(0, building.MaxLevel() + 1).Select(level => rules.Stage(building.Kind, level)).Distinct())
+                {
+                    Assert.That(art.Body(mapping.art, stage), Is.Not.Null, version + ": " + building.Kind + " stage " + stage);
+                    Assert.That(art.Shadow(mapping.art, stage), Is.Not.Null);
+                }
+            }
             Assert.That(art.BuildingPivot("manor", 1), Is.EqualTo(new Vector2(.5f, .125f)), "Astra's anchor (128, 280) on a 256x320 canvas.");
             Assert.That(art.BodyWidth("house", 1), Is.EqualTo(90), "Astra scales bodies by the trimmed opaque width (assembly.js bodyWidths), not drawRect.");
+        }
+
+        [Test] public void HistoricalBuildingsKeepAllThreeStagesWhileIronworksUsesOnlyItsApprovedCompletion()
+        {
+            var art = EstateArt.Load();
+            foreach (var kind in new[] { "manor", "house", "well", "granary", "field", "lumberyard", "forge", "scriptorium", "barracks", "watchtower" })
+                for (var stage = 1; stage <= 3; stage++)
+                {
+                    Assert.That(art.Body(kind, stage), Is.Not.Null, kind + stage);
+                    Assert.That(art.Shadow(kind, stage), Is.Not.Null);
+                }
+            Assert.That(art.HasBuilding("ironworks", 1), Is.True);
+            Assert.That(art.HasBuilding("ironworks", 2), Is.False, "No unapproved duplicate stages.");
+            Assert.That(art.HasBuilding("ironworks", 3), Is.False, "No unapproved duplicate stages.");
         }
 
         [Test] public void CoreLevelsPickTheThreeStageArt()
