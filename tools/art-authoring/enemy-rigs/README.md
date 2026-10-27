@@ -1,19 +1,20 @@
 # Six articulated enemy rigs (#209)
 
-## Approved walk replacement (#399, 2026-10-26)
+## Approved walk replacements (#399 / #423, 2026-10-27)
 
-The runtime atlas is now **2048×3328**. Its first 2048×2304 RGBA pixels remain exactly the historical atlas; the final four rows append the approved shield raider and ram runner walks, sixteen 256px cells each. Only their `.walk` roles change. Their original pivot/world size remain unchanged, `frameMs:40`, `tween:none`, no distance-cycle field: each cycle still lasts 640ms. Tell, idle and the other four species retain their original pixels and metadata. One shared texture retains the existing batch contract; the importer does not repaint, rescale or add outlines.
+Wave rig texture is **2048×3840**: the historical 2048×2304 pixels and approved shield/ram rows through y3328 remain byte-identical RGBA. Raider r2 appends 16 cells with its approved 26ms duration (416ms cycle), common 248px UV and pivot. Shield/ram keep 40ms (640ms). Idle/tell/hit/death and all other roles are unchanged.
 
-Approved input provenance, PNG SHA-256 and original part SHA-256 are pinned in `approved-walks.json`. Source Release: [enemy-walk-shield-ram-399-20261026](https://github.com/hyunlord/bs-mobile/releases/tag/enemy-walk-shield-ram-399-20261026). The Release's original candidate/PENDING label predates user approval and is preserved as history. The ram runner is a humanoid charger, not a boar.
+First-playable stone breaker uses a separate **2080×520** texture: the approved sixteen full 256px cells are repacked eight across with 2px transparent padding (260px pitch). Each full cell is RGBA-identical to its approved 4096×256 source, including transparent pixels; pivot (.5,.12109375), square worldSize .559006211093322 and 45ms remain unchanged. Separate texture avoids exceeding the shared importer's max4096 texture dimension. Actual first-playable draw-batch contribution still needs Unity measurement.
+
+Inputs are pinned in approved-walks.json. Approval sources are enemy-walk-shield-ram-399-20261026, enemy-walk-audit-raider-r2-20261023 and m3-walk-next-review-423-20261027; their old pending labels are historical. Put shield-raider-16.png, ram-runner-16.png, raider-r2-spriteskin-16.png and stone-breaker-r3-16.png in one owned source directory, then:
 
 ```sh
-gh release download enemy-walk-shield-ram-399-20261026 --repo hyunlord/bs-mobile \
-  --pattern shield-raider-16.png --pattern ram-runner-16.png --dir artifacts/enemy-integration-prep
-node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --source artifacts/enemy-integration-prep
+node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --source SOURCE_DIRECTORY
 node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --check
+node tools/art-authoring/enemy-rigs/test-approved-extensions.mjs
 ```
 
-The importer is idempotent and checks the historical pixel hash before writing. It accepts the historical 2304px-high atlas or the already integrated 3328px atlas. After any historical `bake.mjs` regeneration/install below, **run this approved importer last**; never install the old fragment as the finished runtime manifest. The original baker is a preserved historical generator and does not recreate the approved SpriteSkin animation. If its historical pixels differ, the importer stops for review instead of silently dropping newer artwork. `--check` detects a reverted eight-frame runtime install. Native visual comparison, Unity suites, replay verification and the night C05 gate remain separate from this pixel/metadata validation.
+Importer accepts original2304, prior3328 or current3840 shared height and verifies preserved rows. After a historical bake, run this importer last. First-playableArt registry contains the separate stone texture; its meta and registry are committed. No first-playable raider/shield/ram identities change: wave ram is humanoid while first-playable ram is a different historical drawing. No Core/data or gameplay consumers change. Native comparisons, Unity profiles and replay/hash/C05 verification remain separate parent-owned gates.
 
 ## Historical authoring pipeline (preserved)
 

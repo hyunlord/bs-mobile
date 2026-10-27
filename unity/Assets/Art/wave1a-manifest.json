@@ -491,7 +491,7 @@
       "id": "fallow-enemy-rigs",
       "path": "Assets/Art/fallow-enemy-rigs.png",
       "width": 2048,
-      "height": 3328,
+      "height": 3840,
       "padding": 4,
       "license": "fallow-enemy-rigs"
     },
@@ -11104,50 +11104,98 @@
       "atlas": "fallow-enemy-rigs",
       "frames": [
         {
-          "x": 1540,
-          "y": 516,
-          "width": 248,
-          "height": 248
-        },
-        {
-          "x": 1796,
-          "y": 516,
-          "width": 248,
-          "height": 248
-        },
-        {
           "x": 4,
-          "y": 772,
+          "y": 3332,
           "width": 248,
           "height": 248
         },
         {
           "x": 260,
-          "y": 772,
+          "y": 3332,
           "width": 248,
           "height": 248
         },
         {
           "x": 516,
-          "y": 772,
+          "y": 3332,
           "width": 248,
           "height": 248
         },
         {
           "x": 772,
-          "y": 772,
+          "y": 3332,
           "width": 248,
           "height": 248
         },
         {
           "x": 1028,
-          "y": 772,
+          "y": 3332,
           "width": 248,
           "height": 248
         },
         {
           "x": 1284,
-          "y": 772,
+          "y": 3332,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 3332,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 3332,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 4,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 260,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 516,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 772,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1028,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1284,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1540,
+          "y": 3588,
+          "width": 248,
+          "height": 248
+        },
+        {
+          "x": 1796,
+          "y": 3588,
           "width": 248,
           "height": 248
         }
@@ -11160,7 +11208,7 @@
         "x": 0.6453105882352942,
         "y": 0.6453105882352942
       },
-      "frameMs": 80,
+      "frameMs": 26,
       "tween": "none"
     },
     {

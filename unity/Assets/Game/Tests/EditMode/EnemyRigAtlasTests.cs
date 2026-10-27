@@ -42,7 +42,7 @@ namespace Tests.EditMode
         }
 
 
-        // #399: the two approved replacements keep their 640ms cycle; untouched species retain their own timing.
+        // #399/#423: shield/ram keep 640ms; raider r2 uses its approved 416ms cycle.
         [Test]
         public void BakedRigsKeepTimeBasedWalkWithOnlyApprovedSixteenFrameReplacements()
         {
@@ -51,10 +51,10 @@ namespace Tests.EditMode
             Assert.That(walks.Length, Is.EqualTo(6), "six baked rigs");
             foreach (var walk in walks)
             {
-                var approved = walk.id == "enemy.rig.shield_raider.walk" || walk.id == "enemy.rig.ram_runner.walk";
+                var approved = walk.id == "enemy.rig.shield_raider.walk" || walk.id == "enemy.rig.ram_runner.walk" || walk.id == "enemy.rig.raider.walk";
                 var count = approved ? 16 : 8;
                 Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((count, 0f)), walk.id);
-                var expectedMs = approved || walk.id == "enemy.rig.wine_wasp.walk" ? 40
+                var expectedMs = walk.id == "enemy.rig.raider.walk" ? 26 : approved || walk.id == "enemy.rig.wine_wasp.walk" ? 40
                     : walk.id == "enemy.rig.seed_mite.walk" ? 55 : 80;
                 Assert.That(walk.frameMs, Is.EqualTo(expectedMs), walk.id);
                 Assert.That(walk.atlas, Is.EqualTo("fallow-enemy-rigs"), "retain one shared texture");
@@ -66,6 +66,18 @@ namespace Tests.EditMode
                         Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % count), walk.id);
                 }
             }
+        }
+
+        [Test]
+        public void FirstPlayableStoneWalkUsesApprovedFullCellsWithoutChangingIdle()
+        {
+            var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "first-playable-manifest.json")));
+            var walk = System.Array.Find(m.roles, r => r.id == "enemy.core.stone_breaker.walk");
+            Assert.That((walk.frames.Length, walk.frameMs, walk.tween), Is.EqualTo((16, 45, "none")));
+            Assert.That((walk.pivot.x, walk.pivot.y), Is.EqualTo((.5f, .12109375f)));
+            Assert.That(System.Array.Find(m.roles, r => r.id == "enemy.core.stone_breaker.idle").frames.Length, Is.EqualTo(1));
+            for (var i = 0; i < 16; i++)
+                Assert.That((walk.frames[i].x, walk.frames[i].y, walk.frames[i].width, walk.frames[i].height), Is.EqualTo(((i % 8) * 260 + 2, (i / 8) * 260 + 2, 256, 256)));
         }
 
         // A sixteen-frame sheet with a cycle length plays by distance: one stride is one cycle across the sixteen frames, a standing

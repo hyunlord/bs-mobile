@@ -19,13 +19,15 @@ const frames = index => Array.from({ length: 16 }, (_, frame) => ({
   width: spec.cell - spec.padding * 2, height: spec.cell - spec.padding * 2,
 }));
 const expectedRole = (walk, index) => ({ id: walk.id, atlas: 'fallow-enemy-rigs', frames: frames(index),
-  pivot: spec.pivot, worldSize: walk.worldSize, frameMs: spec.frameMs, tween: spec.tween });
+  pivot: spec.pivot, worldSize: walk.worldSize, frameMs: walk.frameMs ?? spec.frameMs, tween: spec.tween });
 
 function checkBase(atlas) {
   assert.equal(atlas.width, spec.width);
-  assert.ok([spec.baseHeight, spec.height].includes(atlas.height));
+  assert.ok([spec.baseHeight, spec.previousHeight, spec.height].includes(atlas.height));
   assert.equal(hash(atlas.pixels.subarray(0, spec.width * spec.baseHeight * 4)), spec.basePixelsSha256,
     'Historical atlas pixels changed; do not silently overwrite newer artwork');
+  if (atlas.height >= spec.previousHeight) assert.equal(hash(atlas.pixels.subarray(0, spec.width * spec.previousHeight * 4)),
+    spec.previousPixelsSha256, 'Previously approved shield/ram pixels changed');
 }
 
 function check(atlas, manifest) {
@@ -34,12 +36,13 @@ function check(atlas, manifest) {
   const definition = manifest.atlases.find(a => a.id === 'fallow-enemy-rigs');
   assert.equal(definition.width, spec.width); assert.equal(definition.height, spec.height);
   for (const [index, walk] of spec.walks.entries()) {
-    assert.equal(hash(fs.readFileSync(path.join(root, walk.source))), walk.sourceSha256);
+    if (walk.source) assert.equal(hash(fs.readFileSync(path.join(root, walk.source))), walk.sourceSha256);
     assert.deepEqual(manifest.roles.find(r => r.id === walk.id), expectedRole(walk, index));
     const reconstructed = Buffer.alloc(4096 * 256 * 4);
     for (let frame = 0; frame < 16; frame++) for (let y = 0; y < 256; y++) {
       const from = ((spec.baseHeight + index * 512 + Math.floor(frame / 8) * 256 + y) * spec.width + (frame % 8) * 256) * 4;
-      const to = (y * 4096 + frame * 256) * 4;
+      const columns = walk.sourceColumns ?? 16;
+      const to = ((Math.floor(frame / columns) * 256 + y) * columns * 256 + (frame % columns) * 256) * 4;
       atlas.pixels.copy(reconstructed, to, from, from + 256 * 4);
     }
     assert.equal(hash(reconstructed), walk.pixelsSha256, `${walk.id} exact approved RGBA including transparent pixels`);
@@ -67,9 +70,10 @@ else if (args.length === 2 && args[0] === '--source') {
     const bytes = fs.readFileSync(path.join(args[1], walk.file));
     assert.equal(hash(bytes), walk.sha256, `${walk.file} approved Release bytes`);
     const source = decodeRgbaPng(bytes);
-    assert.equal(source.width, 4096); assert.equal(source.height, 256);
+    const columns = walk.sourceColumns ?? 16;
+    assert.equal(source.width, columns * 256); assert.equal(source.height, 16 / columns * 256);
     for (let frame = 0; frame < 16; frame++) for (let y = 0; y < spec.cell; y++) {
-      const from = (y * source.width + frame * spec.cell) * 4;
+      const from = ((Math.floor(frame / columns) * spec.cell + y) * source.width + (frame % columns) * spec.cell) * 4;
       const to = ((spec.baseHeight + index * 512 + Math.floor(frame / 8) * 256 + y) * spec.width + (frame % 8) * 256) * 4;
       source.pixels.copy(pixels, to, from, from + spec.cell * 4);
     }
@@ -83,4 +87,36 @@ else if (args.length === 2 && args[0] === '--source') {
   fs.writeFileSync(atlasPath, encodeRgbaPng(atlas));
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 } else throw new Error('Usage: node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --check | --source DIR');
-console.log('PASS: approved walks 2×16, original 2048×2304 RGBA unchanged, shared atlas 2048×3328, 4px transparent padding');
+const fpPath = path.join(art, 'first-playable-manifest.json');
+const stone = spec.firstPlayable;
+const stonePath = path.join(art, stone.file);
+const fp = JSON.parse(fs.readFileSync(fpPath));
+if (args[0] === '--source') {
+  const bytes = fs.readFileSync(path.join(args[1], stone.file));
+  assert.equal(hash(bytes), stone.sha256, 'Approved stone breaker Release bytes');
+  const source = decodeRgbaPng(bytes);
+  assert.equal(source.width, 4096); assert.equal(source.height, 256);
+  const pixels = Buffer.alloc(stone.atlas.width * stone.atlas.height * 4);
+  for (const [frame, rect] of stone.role.frames.entries()) for (let y = 0; y < 256; y++) {
+    const from = (y * source.width + frame * 256) * 4;
+    source.pixels.copy(pixels, ((rect.y + y) * stone.atlas.width + rect.x) * 4, from, from + 256 * 4);
+  }
+  fs.writeFileSync(stonePath, encodeRgbaPng({ width: stone.atlas.width, height: stone.atlas.height, pixels }));
+  const at = fp.roles.findIndex(r => r.id === stone.role.id);
+  assert.ok(at >= 0, 'Existing first-playable walk role required');
+  fp.roles[at] = stone.role;
+  const atlasIndex = fp.atlases.findIndex(a => a.id === stone.atlas.id);
+  if (atlasIndex < 0) fp.atlases.push(stone.atlas); else fp.atlases[atlasIndex] = stone.atlas;
+  fs.writeFileSync(fpPath, JSON.stringify(fp, null, 2) + '\n');
+}
+const stoneImage = decodeRgbaPng(fs.readFileSync(stonePath));
+assert.equal(stoneImage.width, stone.atlas.width); assert.equal(stoneImage.height, stone.atlas.height);
+const stoneOriginal = Buffer.alloc(4096 * 256 * 4);
+for (const [frame, rect] of stone.role.frames.entries()) for (let y = 0; y < 256; y++) {
+  const from = ((rect.y + y) * stoneImage.width + rect.x) * 4;
+  stoneImage.pixels.copy(stoneOriginal, (y * 4096 + frame * 256) * 4, from, from + 256 * 4);
+}
+assert.equal(hash(stoneOriginal), stone.pixelsSha256, 'Every approved full-cell RGBA pixel preserved');
+assert.deepEqual(fp.roles.find(r => r.id === stone.role.id), stone.role);
+assert.deepEqual(fp.atlases.find(a => a.id === stone.atlas.id), stone.atlas);
+console.log('PASS: four approved 16-frame walks, historical/shared RGBA preserved, shared atlas 2048×3840; padded stone atlas 2080×520, full 256px cells preserved');
