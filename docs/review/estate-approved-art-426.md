@@ -41,3 +41,22 @@
 - PlayMode `EstateMapFlowTests.FreshR7EstateBuildsItsGranaryBeforeTheFieldAndCompletesWithoutAccountWrites`: 첫 진입, 전체, 선행조건, 공사1/완공. 테스트 안의 기존 `Skip60`는 Editor 개발 시계 증거이며 native 정상 시간 증거가 아니다.
 - 개발 macOS `--estate-entry-probe --estate-entry-output <비어 있는 자기 소유 절대 경로>`: 첫 진입0/1/30, 경작지 거부 사유, 정상 곡창60초→경작지30초. 이번 변경은 진행률을 관측만 하여 stage2/3에서 추가 캡처한다. 곡창은 시작 약20/40초, 경작지는 약10/20초에 도달한다. 실제 시점은 `construction.csv` elapsedSeconds에 남긴다. 기존180초 deadline 유지.
 - stage 관측은 게임 규칙이나 저장을 바꾸지 않는다. 새로운 자원 지급·공사 시간 수정·native 가속 없음.
+
+## 2026-10-27 두 프로필 실행: 반복 실패로 중단
+
+소스 `d6928f7d3890fa40dc3c29bdc33ba27fb2dd628b`, Mac 소유 잠금 아래 11:26:49–11:38:06 실행. 첫 configure의 `EstateCarryView` 네임스페이스 누락은 한 번 수정했으며 최초 실패 로그를 보존했다.
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---:|---:|
+| first-playable | 867 / 3 / 25 | 53 / 0 / 45 |
+| wave-1a | 877 / 3 / 15 | 85 / 0 / 13 |
+
+같은 세 실패가 두 프로필에서 반복되어 사용자 중단 규칙을 적용한다. 추가 수정·Unity 재실행·native 건설 시도는 하지 않았다. 공통 입력 의존 skip 두 건은 앞 PR에서 실제 실행됐지만 이 실패 실행에서는 후속 입력 생성 단계로 넘어가지 않았다. 이 PR의 실행 결과를 다른 PR의 성공 기록으로 대체하지 않는다.
+
+| 실패 테스트 | 확인한 원인 | 미적용 수정안 |
+|---|---|---|
+| LargeLandmarksHaveFortyPercentSilhouettesButSmallPropsStayUnderTheNight | 모든 위층 그림을 기존 landmark 실루엣으로 가정, 새 승인 river-bank 불인정 | 기존 landmark 밝기 검사 유지 + 승인 dark bank 역할·층·원본색 검사 |
+| RestorationColoursFollowTendedLand | 이미 어두운 tree 원화에도 기존 closed tint 요구 | frontier 검사 유지 + dark tree 역할·Veiled층·white 검사로 이중 어둠 방지 |
+| ConstructionQueuesAndCompletesWithRealTimeAndTheSkip | 60초 공사의 30초 시점에도 redraw=false 요구, 새 stage2 전환과 충돌 | 같은 단계 false / 단계 경계 true 및 자원·Lv0·예약 유지 검사 |
+
+소유 worktree의 `artifacts/day-20261027/pr426-retry-tests`에 XML/로그, `estate-test-contracts.patch`에 미적용 테스트 수정안, `repeated-failure-stop.md`에 중단 기록을 보존한다. 초기 실패는 `pr426-tests`에 있다. 화면·묶음·강둑 밝기·native는 미완료이며 시각 통과로 보고하지 않는다. 잠금은 11:38:06 해제했다.
