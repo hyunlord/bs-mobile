@@ -488,12 +488,12 @@
       "license": "feel-charger"
     },
     {
+      "height": 3072,
       "id": "fallow-enemy-rigs",
-      "path": "Assets/Art/fallow-enemy-rigs.png",
-      "width": 2048,
-      "height": 2304,
+      "license": "fallow-enemy-rigs",
       "padding": 4,
-      "license": "fallow-enemy-rigs"
+      "path": "Assets/Art/fallow-enemy-rigs.png",
+      "width": 3072
     },
     {
       "id": "m1-review-weapons",
@@ -10872,68 +10872,116 @@
       "tween": "none"
     },
     {
-      "id": "enemy.rig.seed_mite.walk",
       "atlas": "fallow-enemy-rigs",
+      "frameMs": 28,
       "frames": [
         {
-          "x": 4,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2052,
+          "y": 4
         },
         {
-          "x": 260,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2308,
+          "y": 4
         },
         {
-          "x": 516,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2564,
+          "y": 4
         },
         {
-          "x": 772,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2820,
+          "y": 4
         },
         {
-          "x": 1028,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2052,
+          "y": 260
         },
         {
-          "x": 1284,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2308,
+          "y": 260
         },
         {
-          "x": 1540,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2564,
+          "y": 260
         },
         {
-          "x": 1796,
-          "y": 4,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2820,
+          "y": 260
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2052,
+          "y": 516
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2308,
+          "y": 516
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2564,
+          "y": 516
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2820,
+          "y": 516
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2052,
+          "y": 772
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2308,
+          "y": 772
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2564,
+          "y": 772
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2820,
+          "y": 772
         }
       ],
+      "id": "enemy.rig.seed_mite.walk",
       "pivot": {
         "x": 0.5,
         "y": 0.16935483870967738
       },
+      "tween": "none",
       "worldSize": {
         "x": 0.715248,
         "y": 0.715248
-      },
-      "frameMs": 55,
-      "tween": "none"
+      }
     },
     {
       "id": "enemy.rig.seed_mite.tell",
@@ -10986,68 +11034,116 @@
       "tween": "none"
     },
     {
-      "id": "enemy.rig.crop_grazer.walk",
       "atlas": "fallow-enemy-rigs",
+      "frameMs": 40,
       "frames": [
         {
-          "x": 772,
-          "y": 260,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2052,
+          "y": 1028
         },
         {
-          "x": 1028,
-          "y": 260,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2308,
+          "y": 1028
         },
         {
-          "x": 1284,
-          "y": 260,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2564,
+          "y": 1028
         },
         {
-          "x": 1540,
-          "y": 260,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2820,
+          "y": 1028
         },
         {
-          "x": 1796,
-          "y": 260,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2052,
+          "y": 1284
         },
         {
-          "x": 4,
-          "y": 516,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2308,
+          "y": 1284
         },
         {
-          "x": 260,
-          "y": 516,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2564,
+          "y": 1284
         },
         {
-          "x": 516,
-          "y": 516,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2820,
+          "y": 1284
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2052,
+          "y": 1540
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2308,
+          "y": 1540
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2564,
+          "y": 1540
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2820,
+          "y": 1540
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2052,
+          "y": 1796
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2308,
+          "y": 1796
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2564,
+          "y": 1796
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2820,
+          "y": 1796
         }
       ],
+      "id": "enemy.rig.crop_grazer.walk",
       "pivot": {
         "x": 0.5080645161290323,
         "y": 0.06854838709677424
       },
+      "tween": "none",
       "worldSize": {
         "x": 0.6042432470588235,
         "y": 0.6042432470588235
-      },
-      "frameMs": 80,
-      "tween": "none"
+      }
     },
     {
       "id": "enemy.rig.crop_grazer.tell",
@@ -11442,68 +11538,116 @@
       "tween": "none"
     },
     {
-      "id": "enemy.rig.wine_wasp.walk",
       "atlas": "fallow-enemy-rigs",
+      "frameMs": 20,
       "frames": [
         {
-          "x": 1796,
-          "y": 1540,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2052,
+          "y": 2052
         },
         {
-          "x": 4,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2308,
+          "y": 2052
         },
         {
-          "x": 260,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2564,
+          "y": 2052
         },
         {
-          "x": 516,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2820,
+          "y": 2052
         },
         {
-          "x": 772,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2052,
+          "y": 2308
         },
         {
-          "x": 1028,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2308,
+          "y": 2308
         },
         {
-          "x": 1284,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2564,
+          "y": 2308
         },
         {
-          "x": 1540,
-          "y": 1796,
+          "height": 248,
           "width": 248,
-          "height": 248
+          "x": 2820,
+          "y": 2308
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2052,
+          "y": 2564
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2308,
+          "y": 2564
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2564,
+          "y": 2564
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2820,
+          "y": 2564
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2052,
+          "y": 2820
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2308,
+          "y": 2820
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2564,
+          "y": 2820
+        },
+        {
+          "height": 248,
+          "width": 248,
+          "x": 2820,
+          "y": 2820
         }
       ],
+      "id": "enemy.rig.wine_wasp.walk",
       "pivot": {
         "x": 0.5080645161290323,
         "y": 0.155241935483871
       },
+      "tween": "none",
       "worldSize": {
         "x": 0.8961508396946566,
         "y": 0.8961508396946566
-      },
-      "frameMs": 40,
-      "tween": "none"
+      }
     },
     {
       "id": "enemy.rig.wine_wasp.tell",

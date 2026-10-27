@@ -1,0 +1,563 @@
+{
+  "release": "m3-nonhuman-walk16-449-20261027",
+  "baseCommit": "59d4080",
+  "baseAtlas": {
+    "width": 2048,
+    "height": 2304,
+    "pixelSha256": "734ba5fd14d55e518bd392bd55185caa9cb25a764c101da45497ab78fd92b3cc"
+  },
+  "atlas": {
+    "height": 3072,
+    "id": "fallow-enemy-rigs",
+    "license": "fallow-enemy-rigs",
+    "padding": 4,
+    "path": "Assets/Art/fallow-enemy-rigs.png",
+    "width": 3072
+  },
+  "roles": [
+    {
+      "role": {
+        "atlas": "fallow-enemy-rigs",
+        "frameMs": 28,
+        "frames": [
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 4
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 4
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 4
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 4
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 260
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 260
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 260
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 260
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 516
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 516
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 516
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 516
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 772
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 772
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 772
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 772
+          }
+        ],
+        "id": "enemy.rig.seed_mite.walk",
+        "pivot": {
+          "x": 0.5,
+          "y": 0.16935483870967738
+        },
+        "tween": "none",
+        "worldSize": {
+          "x": 0.715248,
+          "y": 0.715248
+        }
+      },
+      "source": "seed_mite-walk16-r1-16frames.png",
+      "sourceSha256": "ab53efd3f34159d004610ed68d1fb751a917159c6410c7c40d98a8b5b7d9fcfa",
+      "pixelSha256": "6f2ec5dce34297615f449ca1c6bbb3ab4568bfaa773822ed8507b421fe429dc7",
+      "prior": {
+        "id": "enemy.rig.seed_mite.walk",
+        "atlas": "fallow-enemy-rigs",
+        "frames": [
+          {
+            "x": 4,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 260,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 516,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 772,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1028,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1284,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1540,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1796,
+            "y": 4,
+            "width": 248,
+            "height": 248
+          }
+        ],
+        "pivot": {
+          "x": 0.5,
+          "y": 0.16935483870967738
+        },
+        "worldSize": {
+          "x": 0.715248,
+          "y": 0.715248
+        },
+        "frameMs": 55,
+        "tween": "none"
+      }
+    },
+    {
+      "role": {
+        "atlas": "fallow-enemy-rigs",
+        "frameMs": 40,
+        "frames": [
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 1028
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 1028
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 1028
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 1028
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 1284
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 1284
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 1284
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 1284
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 1540
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 1540
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 1540
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 1540
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 1796
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 1796
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 1796
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 1796
+          }
+        ],
+        "id": "enemy.rig.crop_grazer.walk",
+        "pivot": {
+          "x": 0.5080645161290323,
+          "y": 0.06854838709677424
+        },
+        "tween": "none",
+        "worldSize": {
+          "x": 0.6042432470588235,
+          "y": 0.6042432470588235
+        }
+      },
+      "source": "crop_grazer-walk16-r2-16frames.png",
+      "sourceSha256": "42115dcb5889c5a4a78e8c071a57c77264f2277c0cfd44802d278886b4670b77",
+      "pixelSha256": "ac23d3937bde8ae361f3432d29dc9efe82f7290a9f2eb642fbd472d0729e62d6",
+      "prior": {
+        "id": "enemy.rig.crop_grazer.walk",
+        "atlas": "fallow-enemy-rigs",
+        "frames": [
+          {
+            "x": 772,
+            "y": 260,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1028,
+            "y": 260,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1284,
+            "y": 260,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1540,
+            "y": 260,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1796,
+            "y": 260,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 4,
+            "y": 516,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 260,
+            "y": 516,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 516,
+            "y": 516,
+            "width": 248,
+            "height": 248
+          }
+        ],
+        "pivot": {
+          "x": 0.5080645161290323,
+          "y": 0.06854838709677424
+        },
+        "worldSize": {
+          "x": 0.6042432470588235,
+          "y": 0.6042432470588235
+        },
+        "frameMs": 80,
+        "tween": "none"
+      }
+    },
+    {
+      "role": {
+        "atlas": "fallow-enemy-rigs",
+        "frameMs": 20,
+        "frames": [
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 2052
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 2052
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 2052
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 2052
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 2308
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 2308
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 2308
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 2308
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 2564
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 2564
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 2564
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 2564
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2052,
+            "y": 2820
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2308,
+            "y": 2820
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2564,
+            "y": 2820
+          },
+          {
+            "height": 248,
+            "width": 248,
+            "x": 2820,
+            "y": 2820
+          }
+        ],
+        "id": "enemy.rig.wine_wasp.walk",
+        "pivot": {
+          "x": 0.5080645161290323,
+          "y": 0.155241935483871
+        },
+        "tween": "none",
+        "worldSize": {
+          "x": 0.8961508396946566,
+          "y": 0.8961508396946566
+        }
+      },
+      "source": "wine_wasp-walk16-r2-16frames.png",
+      "sourceSha256": "645f984985ff43269f4521281c5a5a57135d4eacc6a8879c7ed8d49238156dcd",
+      "pixelSha256": "1314f7b652c48781f2b1908464f66353574166edb312ea9dc54f2bd923a8b9a5",
+      "prior": {
+        "id": "enemy.rig.wine_wasp.walk",
+        "atlas": "fallow-enemy-rigs",
+        "frames": [
+          {
+            "x": 1796,
+            "y": 1540,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 4,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 260,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 516,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 772,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1028,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1284,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          },
+          {
+            "x": 1540,
+            "y": 1796,
+            "width": 248,
+            "height": 248
+          }
+        ],
+        "pivot": {
+          "x": 0.5080645161290323,
+          "y": 0.155241935483871
+        },
+        "worldSize": {
+          "x": 0.8961508396946566,
+          "y": 0.8961508396946566
+        },
+        "frameMs": 40,
+        "tween": "none"
+      }
+    }
+  ],
+  "preservedManifestSha256": "741e152c64c2097d50fd930179a913088681b3fad1b4ff693b81603bd771c8eb"
+}
