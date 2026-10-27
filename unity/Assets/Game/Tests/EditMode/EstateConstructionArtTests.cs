@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Game.App;
 using Game.App.Generated;
+using Game.View;
 using NUnit.Framework;
 using SowSiege.Core;
 using UnityEngine;
