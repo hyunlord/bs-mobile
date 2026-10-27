@@ -13,6 +13,23 @@ namespace Tests.EditMode
 {
     public sealed class EstateConstructionArtTests
     {
+        [Test] public void ConstructionPaintedHeightNeverExceedsItsCompletedBuildingAndKeepsFieldReadable()
+        {
+            var art = EstateArt.Load();
+            var rules = EstateDecorRules.Load();
+            foreach (var kind in rules.kindArt)
+                for (var level = 1; level < kind.stages.Length; level++)
+                    for (var stage = 1; stage <= 3; stage++) foreach (var lit in new[] { false, true })
+                    {
+                        var role = EstateConstructionArt.Role(kind.kind == rules.fieldFenceKind, stage, lit);
+                        var width = EstateConstructionArt.CappedWidth(art, role, kind.art, kind.stages[level], 192);
+                        var actual = art.OpaqueHeight(role) * width / art.Get(role).rect.width;
+                        Assert.That(actual, Is.LessThanOrEqualTo(art.BodyHeight(kind.art, kind.stages[level]) * .75f + .001f), kind.kind);
+                        Assert.That(art.Pivot(role), Is.EqualTo(new Vector2(.5f, .225f)));
+                        if (kind.kind == rules.fieldFenceKind) Assert.That(width, Is.EqualTo(136));
+                    }
+        }
+
         [TestCase(100, 1)] [TestCase(68, 1)] [TestCase(67, 2)]
         [TestCase(35, 2)] [TestCase(34, 3)] [TestCase(1, 3)] [TestCase(0, 3)]
         public void ProgressCrossesOnlyTheApprovedThirtyThreeAndSixtySixPercentBoundaries(int remaining, int expected) =>

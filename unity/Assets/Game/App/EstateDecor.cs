@@ -356,8 +356,10 @@ namespace Game.App
                 {
                     var distance = EstateNight.LightDistance(centre, litAreas, config.Version == "m3a-prototype-r7");
                     var role = EstateConstructionArt.Role(b.Kind == rules.fieldFenceKind, EstateConstructionArt.Stage(estate.Active), night.Alpha(distance) < night.edgeAlpha);
+                    var completedWidth = buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth;
                     plan.Items.Add(new EstateDrawItem { Role = role, Source = "construction", SiteId = b.Id, Grid = centre,
-                        Width = 136, Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"construction-{b.Id}" });
+                        Width = art == null ? 136 : EstateConstructionArt.CappedWidth(art, role, artKind, rules.Stage(b.Kind, level), completedWidth),
+                        Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"construction-{b.Id}" });
                     continue;
                 }
                 plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind,

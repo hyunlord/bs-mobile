@@ -140,7 +140,14 @@ namespace Game.App
 
         void Click(string name)
         {
-            var button = app.Ui.GetComponentsInChildren<Button>().Single(item => item.name == name);
+            var buttons = app.Ui.GetComponentsInChildren<Button>(true);
+            var matches = buttons.Where(item => item.name == name && item.gameObject.activeInHierarchy).ToArray();
+            if (matches.Length != 1)
+                throw new InvalidOperationException("UI action unavailable: " + name + "; matches=" + matches.Length +
+                    "; screen=" + app.CurrentScreenName + "; frame=" + Time.frameCount +
+                    "; uiActive=" + app.Ui.gameObject.activeInHierarchy + "; buttons=" +
+                    string.Join("|", buttons.Select(item => item.name + ":active=" + item.gameObject.activeInHierarchy + ":enabled=" + item.interactable)));
+            var button = matches[0];
             if (!button.interactable) throw new InvalidOperationException("Disabled normal UI button: " + name);
             UnityEngine.Debug.Log("EstateEntryProbe UI action: " + name);
             button.onClick.Invoke();

@@ -20,6 +20,13 @@ namespace Game.App
         public static string Role(bool field, int stage, bool lit) =>
             "construction-" + (field ? "field" : "building") + "-" + stage + (lit ? "-lit" : "-dark");
 
+        public static float CappedWidth(EstateArt art, string role, string kind, int completedStage, float completedWidth)
+        {
+            var completedHeight = art.BodyHeight(kind, completedStage) * completedWidth / art.BuildingCanvas.x;
+            var originalHeight = art.OpaqueHeight(role) * 136 / art.Get(role).rect.width;
+            return 136 * Mathf.Min(1, completedHeight / originalHeight);
+        }
+
         // Snap each doorway to the existing road graph, then use its stable BFS. A missing route draws no worker.
         public static Vector2[] Route(EstatePlan plan, Vector2Int from, Vector2Int to)
         {

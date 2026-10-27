@@ -4,11 +4,11 @@
   "atlases": [
     {
       "file": "estate-building-shadows.png",
-      "sha256": "9c49e034158758eaa9ce24f8d9eca96e2473954b3f95f3366a3330d9a9d206b4"
+      "sha256": "cfd471f235076074b0c1b3c53a79c9c6f9604e9631e618d7d26860d65cd78a83"
     },
     {
       "file": "estate-buildings.png",
-      "sha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee"
+      "sha256": "258b242a1ffc5dbe51bfd28bf96929e8ad45b35aa96db90945b807e3e1e199f0"
     },
     {
       "file": "estate-decor.png",
@@ -25,6 +25,98 @@
       "file": "buildings-30-body-atlas.png",
       "sha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee"
     },
+    "replacements": [
+      {
+        "id": "scriptorium-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s1-sprout-r3.png",
+        "sha256": "3bc1e27aa95e0e652b6e92d4762ab076327871b17f08568751299d707a6d379e",
+        "rect": [
+          768,
+          960,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "scriptorium-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s2-sprout-r3.png",
+        "sha256": "24c58754e7e737e8a99455d27c49c77cfdb203ef654d6de93840e4634f58959f",
+        "rect": [
+          1024,
+          960,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "scriptorium-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s3-sprout-r3.png",
+        "sha256": "e157f8a68c9cdf36329c70b710caa680727a8bbf46700970ee59d0256fb77462",
+        "rect": [
+          0,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "barracks-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s1-sprout-r3.png",
+        "sha256": "9d657253d555df176bafc683b1e80118f1e353134b7504e5bd332a809d8dd740",
+        "rect": [
+          256,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "barracks-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s2-sprout-r3.png",
+        "sha256": "080b553c283587019f61616a863b41fd2fedfcc5448ccef3120e81630e95064d",
+        "rect": [
+          512,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "barracks-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s3-sprout-r3.png",
+        "sha256": "4d7e8b395b227d04f56532b4c1dee53dff4c90c6bf30694702013b00558ae285",
+        "rect": [
+          768,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "ironworks-s1",
+        "kind": "ironworks",
+        "stage": 1,
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "ironworks-complete-r2.png",
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "sha256": "f6d4b50967c1f01be5d542d2c59a6e82dbf02b48f35016a1d2db8b1f3f6d5017",
+        "rect": [
+          0,
+          1920,
+          256,
+          320
+        ]
+      }
+    ],
     "shadowScale": 0.5,
     "canvas": [
       256,
@@ -51,7 +143,8 @@
           177.40800000000002,
           101.54666666666668
         ],
-        "bodyWidth": 117
+        "bodyWidth": 117,
+        "bodyHeight": 89
       },
       {
         "id": "manor-s2",
@@ -73,7 +166,8 @@
           191.14666666666668,
           120.66133333333335
         ],
-        "bodyWidth": 141
+        "bodyWidth": 141,
+        "bodyHeight": 110
       },
       {
         "id": "manor-s3",
@@ -95,7 +189,8 @@
           224.00000000000003,
           150.52800000000002
         ],
-        "bodyWidth": 199
+        "bodyWidth": 199,
+        "bodyHeight": 141
       },
       {
         "id": "house-s1",
@@ -117,7 +212,8 @@
           160.260162601626,
           86.20054200542005
         ],
-        "bodyWidth": 90
+        "bodyWidth": 90,
+        "bodyHeight": 74
       },
       {
         "id": "house-s2",
@@ -139,7 +235,8 @@
           166.93766937669375,
           110.48238482384824
         ],
-        "bodyWidth": 118
+        "bodyWidth": 118,
+        "bodyHeight": 101
       },
       {
         "id": "house-s3",
@@ -161,7 +258,8 @@
           224,
           144.47696476964768
         ],
-        "bodyWidth": 137
+        "bodyWidth": 137,
+        "bodyHeight": 121
       },
       {
         "id": "granary-s1",
@@ -183,7 +281,8 @@
           150.58823529411765,
           114.19607843137254
         ],
-        "bodyWidth": 103
+        "bodyWidth": 103,
+        "bodyHeight": 99
       },
       {
         "id": "granary-s2",
@@ -205,7 +304,8 @@
           196.39215686274508,
           123.6078431372549
         ],
-        "bodyWidth": 129
+        "bodyWidth": 129,
+        "bodyHeight": 113
       },
       {
         "id": "granary-s3",
@@ -227,7 +327,8 @@
           224,
           143.68627450980392
         ],
-        "bodyWidth": 175
+        "bodyWidth": 175,
+        "bodyHeight": 138
       },
       {
         "id": "field-s1",
@@ -249,7 +350,8 @@
           220.5360824742268,
           116.61855670103091
         ],
-        "bodyWidth": 202
+        "bodyWidth": 202,
+        "bodyHeight": 110
       },
       {
         "id": "field-s2",
@@ -271,7 +373,8 @@
           220.5360824742268,
           118.35051546391752
         ],
-        "bodyWidth": 198
+        "bodyWidth": 198,
+        "bodyHeight": 112
       },
       {
         "id": "field-s3",
@@ -293,7 +396,8 @@
           223.99999999999997,
           118.92783505154638
         ],
-        "bodyWidth": 207
+        "bodyWidth": 207,
+        "bodyHeight": 115
       },
       {
         "id": "lumberyard-s1",
@@ -315,7 +419,8 @@
           193.37721518987343,
           100.3746835443038
         ],
-        "bodyWidth": 95
+        "bodyWidth": 95,
+        "bodyHeight": 77
       },
       {
         "id": "lumberyard-s2",
@@ -337,7 +442,8 @@
           205.2860759493671,
           111.71645569620253
         ],
-        "bodyWidth": 171
+        "bodyWidth": 171,
+        "bodyHeight": 99
       },
       {
         "id": "lumberyard-s3",
@@ -359,7 +465,8 @@
           224,
           121.9240506329114
         ],
-        "bodyWidth": 205
+        "bodyWidth": 205,
+        "bodyHeight": 118
       },
       {
         "id": "forge-s1",
@@ -381,7 +488,8 @@
           196.86597938144328,
           110.2680412371134
         ],
-        "bodyWidth": 148
+        "bodyWidth": 148,
+        "bodyHeight": 100
       },
       {
         "id": "forge-s2",
@@ -403,7 +511,8 @@
           221.69072164948452,
           133.36082474226802
         ],
-        "bodyWidth": 191
+        "bodyWidth": 191,
+        "bodyHeight": 121
       },
       {
         "id": "forge-s3",
@@ -425,7 +534,8 @@
           223.99999999999997,
           144.3298969072165
         ],
-        "bodyWidth": 185
+        "bodyWidth": 185,
+        "bodyHeight": 135
       },
       {
         "id": "scriptorium-s1",
@@ -447,7 +557,8 @@
           198.32411067193675,
           156.2687747035573
         ],
-        "bodyWidth": 157
+        "bodyWidth": 157,
+        "bodyHeight": 141
       },
       {
         "id": "scriptorium-s2",
@@ -469,7 +580,8 @@
           216.0316205533597,
           214.26086956521738
         ],
-        "bodyWidth": 192
+        "bodyWidth": 192,
+        "bodyHeight": 205
       },
       {
         "id": "scriptorium-s3",
@@ -491,7 +603,8 @@
           224,
           219.57312252964428
         ],
-        "bodyWidth": 209
+        "bodyWidth": 209,
+        "bodyHeight": 212
       },
       {
         "id": "barracks-s1",
@@ -513,7 +626,8 @@
           208.32,
           149.632
         ],
-        "bodyWidth": 173
+        "bodyWidth": 173,
+        "bodyHeight": 140
       },
       {
         "id": "barracks-s2",
@@ -535,7 +649,8 @@
           213.248,
           202.496
         ],
-        "bodyWidth": 197
+        "bodyWidth": 197,
+        "bodyHeight": 192
       },
       {
         "id": "barracks-s3",
@@ -557,7 +672,8 @@
           224,
           212.352
         ],
-        "bodyWidth": 206
+        "bodyWidth": 206,
+        "bodyHeight": 208
       },
       {
         "id": "watchtower-s1",
@@ -579,7 +695,8 @@
           224,
           134.73684210526315
         ],
-        "bodyWidth": 148
+        "bodyWidth": 148,
+        "bodyHeight": 115
       },
       {
         "id": "watchtower-s2",
@@ -601,7 +718,8 @@
           200.42105263157893,
           202.10526315789474
         ],
-        "bodyWidth": 129
+        "bodyWidth": 129,
+        "bodyHeight": 188
       },
       {
         "id": "watchtower-s3",
@@ -623,7 +741,8 @@
           199.57894736842104,
           229.89473684210526
         ],
-        "bodyWidth": 153
+        "bodyWidth": 153,
+        "bodyHeight": 224
       },
       {
         "id": "well-s1",
@@ -645,7 +764,8 @@
           151.63076923076923,
           99.93846153846152
         ],
-        "bodyWidth": 106
+        "bodyWidth": 106,
+        "bodyHeight": 90
       },
       {
         "id": "well-s2",
@@ -667,7 +787,8 @@
           184.94358974358974,
           121.76410256410256
         ],
-        "bodyWidth": 136
+        "bodyWidth": 136,
+        "bodyHeight": 111
       },
       {
         "id": "well-s3",
@@ -689,7 +810,31 @@
           223.99999999999997,
           132.1025641025641
         ],
-        "bodyWidth": 200
+        "bodyWidth": 200,
+        "bodyHeight": 126
+      },
+      {
+        "id": "ironworks-s1",
+        "kind": "ironworks",
+        "stage": 1,
+        "rect": [
+          0,
+          1920,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          0,
+          0,
+          256,
+          320
+        ],
+        "bodyWidth": 181,
+        "bodyHeight": 165
       }
     ]
   },
@@ -717,7 +862,8 @@
         2,
         352,
         342
-      ]
+      ],
+      "opaqueHeight": 338
     },
     {
       "id": "terrain-sage",
@@ -742,7 +888,8 @@
         2,
         352,
         338
-      ]
+      ],
+      "opaqueHeight": 332
     },
     {
       "id": "terrain-path",
@@ -767,7 +914,8 @@
         2,
         352,
         348
-      ]
+      ],
+      "opaqueHeight": 344
     },
     {
       "id": "terrain-restoration",
@@ -792,7 +940,8 @@
         2,
         349,
         352
-      ]
+      ],
+      "opaqueHeight": 346
     },
     {
       "id": "river-bend-patch",
@@ -817,7 +966,8 @@
         2,
         352,
         231
-      ]
+      ],
+      "opaqueHeight": 215
     },
     {
       "id": "riverbank-patch",
@@ -842,7 +992,8 @@
         356,
         352,
         250
-      ]
+      ],
+      "opaqueHeight": 223
     },
     {
       "id": "bridge-landing-patch",
@@ -867,7 +1018,8 @@
         356,
         352,
         224
-      ]
+      ],
+      "opaqueHeight": 202
     },
     {
       "id": "frontier-ink-edge",
@@ -892,7 +1044,8 @@
         356,
         352,
         241
-      ]
+      ],
+      "opaqueHeight": 210
     },
     {
       "id": "lv0-stone-foundation-lit",
@@ -917,7 +1070,8 @@
         356,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "lv0-stone-foundation-dark",
@@ -942,7 +1096,8 @@
         356,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "lv0-broken-fence-lit",
@@ -967,7 +1122,8 @@
         356,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 144
     },
     {
       "id": "lv0-broken-fence-dark",
@@ -992,7 +1148,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 144
     },
     {
       "id": "lv0-charred-frame-lit",
@@ -1017,7 +1174,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 144
     },
     {
       "id": "lv0-charred-frame-dark",
@@ -1042,7 +1200,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 144
     },
     {
       "id": "lv0-weedy-field-lit",
@@ -1067,7 +1226,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "lv0-weedy-field-dark",
@@ -1092,7 +1252,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "lv0-stone-corner-lit",
@@ -1117,7 +1278,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "lv0-stone-corner-dark",
@@ -1142,7 +1304,8 @@
         608,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "lv0-survey-stakes-lit",
@@ -1167,7 +1330,8 @@
         802,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 144
     },
     {
       "id": "lv0-survey-stakes-dark",
@@ -1192,7 +1356,8 @@
         802,
         272,
         192
-      ]
+      ],
+      "opaqueHeight": 144
     },
     {
       "id": "road-straight",
@@ -1217,7 +1382,8 @@
         802,
         512,
         512
-      ]
+      ],
+      "opaqueHeight": 512
     },
     {
       "id": "road-bend",
@@ -1242,7 +1408,8 @@
         802,
         512,
         512
-      ]
+      ],
+      "opaqueHeight": 512
     },
     {
       "id": "road-fork",
@@ -1267,7 +1434,8 @@
         1316,
         512,
         512
-      ]
+      ],
+      "opaqueHeight": 512
     },
     {
       "id": "ground-grass-r4",
@@ -1292,7 +1460,8 @@
         1316,
         512,
         512
-      ]
+      ],
+      "opaqueHeight": 512
     },
     {
       "id": "soil-patch-r4-01",
@@ -1317,7 +1486,8 @@
         1316,
         96,
         67
-      ]
+      ],
+      "opaqueHeight": 57
     },
     {
       "id": "soil-patch-r4-02",
@@ -1342,7 +1512,8 @@
         1316,
         128,
         48
-      ]
+      ],
+      "opaqueHeight": 33
     },
     {
       "id": "soil-patch-r4-03",
@@ -1367,7 +1538,8 @@
         1316,
         160,
         110
-      ]
+      ],
+      "opaqueHeight": 95
     },
     {
       "id": "soil-patch-r4-04",
@@ -1392,7 +1564,8 @@
         1316,
         192,
         133
-      ]
+      ],
+      "opaqueHeight": 113
     },
     {
       "id": "soil-patch-r4-05",
@@ -1417,7 +1590,8 @@
         1316,
         224,
         149
-      ]
+      ],
+      "opaqueHeight": 105
     },
     {
       "id": "soil-patch-r4-06",
@@ -1442,7 +1616,8 @@
         1830,
         256,
         173
-      ]
+      ],
+      "opaqueHeight": 146
     },
     {
       "id": "yard-earth",
@@ -1467,7 +1642,8 @@
         2,
         224,
         158
-      ]
+      ],
+      "opaqueHeight": 152
     },
     {
       "id": "yard-grass",
@@ -1492,7 +1668,8 @@
         2,
         224,
         167
-      ]
+      ],
+      "opaqueHeight": 161
     },
     {
       "id": "yard-stone",
@@ -1517,7 +1694,8 @@
         2,
         224,
         167
-      ]
+      ],
+      "opaqueHeight": 161
     },
     {
       "id": "garden",
@@ -1542,7 +1720,8 @@
         2,
         128,
         101
-      ]
+      ],
+      "opaqueHeight": 97
     },
     {
       "id": "laundry",
@@ -1567,7 +1746,8 @@
         2,
         128,
         83
-      ]
+      ],
+      "opaqueHeight": 79
     },
     {
       "id": "firewood",
@@ -1592,7 +1772,8 @@
         2,
         128,
         85
-      ]
+      ],
+      "opaqueHeight": 81
     },
     {
       "id": "scrap",
@@ -1617,7 +1798,8 @@
         2,
         128,
         83
-      ]
+      ],
+      "opaqueHeight": 80
     },
     {
       "id": "sacks",
@@ -1642,7 +1824,8 @@
         2,
         128,
         88
-      ]
+      ],
+      "opaqueHeight": 84
     },
     {
       "id": "cart",
@@ -1667,7 +1850,8 @@
         2,
         128,
         86
-      ]
+      ],
+      "opaqueHeight": 83
     },
     {
       "id": "books",
@@ -1692,7 +1876,8 @@
         2,
         128,
         99
-      ]
+      ],
+      "opaqueHeight": 96
     },
     {
       "id": "rack",
@@ -1717,7 +1902,8 @@
         2,
         128,
         128
-      ]
+      ],
+      "opaqueHeight": 124
     },
     {
       "id": "saw",
@@ -1742,7 +1928,8 @@
         2,
         128,
         102
-      ]
+      ],
+      "opaqueHeight": 99
     },
     {
       "id": "bucket",
@@ -1767,7 +1954,8 @@
         2,
         128,
         82
-      ]
+      ],
+      "opaqueHeight": 80
     },
     {
       "id": "grass",
@@ -1792,7 +1980,8 @@
         171,
         128,
         84
-      ]
+      ],
+      "opaqueHeight": 80
     },
     {
       "id": "rocks",
@@ -1817,7 +2006,8 @@
         171,
         128,
         71
-      ]
+      ],
+      "opaqueHeight": 68
     },
     {
       "id": "fence",
@@ -1842,7 +2032,8 @@
         171,
         128,
         87
-      ]
+      ],
+      "opaqueHeight": 84
     },
     {
       "id": "cluster-fallow-1",
@@ -1867,7 +2058,8 @@
         171,
         192,
         141
-      ]
+      ],
+      "opaqueHeight": 137
     },
     {
       "id": "cluster-fallow-2",
@@ -1892,7 +2084,8 @@
         171,
         192,
         120
-      ]
+      ],
+      "opaqueHeight": 116
     },
     {
       "id": "cluster-fallow-3",
@@ -1917,7 +2110,8 @@
         171,
         192,
         106
-      ]
+      ],
+      "opaqueHeight": 102
     },
     {
       "id": "cluster-sage-1",
@@ -1942,7 +2136,8 @@
         171,
         192,
         168
-      ]
+      ],
+      "opaqueHeight": 164
     },
     {
       "id": "cluster-sage-2",
@@ -1967,7 +2162,8 @@
         171,
         192,
         92
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "cluster-sage-3",
@@ -1992,7 +2188,8 @@
         171,
         192,
         160
-      ]
+      ],
+      "opaqueHeight": 156
     },
     {
       "id": "cluster-restored-1",
@@ -2017,7 +2214,8 @@
         171,
         192,
         160
-      ]
+      ],
+      "opaqueHeight": 156
     },
     {
       "id": "cluster-restored-2",
@@ -2042,7 +2240,8 @@
         171,
         192,
         98
-      ]
+      ],
+      "opaqueHeight": 95
     },
     {
       "id": "cluster-restored-3",
@@ -2067,7 +2266,8 @@
         341,
         192,
         157
-      ]
+      ],
+      "opaqueHeight": 153
     },
     {
       "id": "tree-cluster-4",
@@ -2092,7 +2292,8 @@
         341,
         174,
         192
-      ]
+      ],
+      "opaqueHeight": 163
     },
     {
       "id": "tree-cluster-5",
@@ -2117,7 +2318,8 @@
         341,
         184,
         192
-      ]
+      ],
+      "opaqueHeight": 158
     },
     {
       "id": "house-fence-kit",
@@ -2142,7 +2344,8 @@
         341,
         192,
         182
-      ]
+      ],
+      "opaqueHeight": 124
     },
     {
       "id": "field-fence-segment",
@@ -2167,7 +2370,8 @@
         341,
         176,
         192
-      ]
+      ],
+      "opaqueHeight": 117
     },
     {
       "id": "field-fence-corner",
@@ -2192,7 +2396,8 @@
         341,
         192,
         190
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "sheep-paddock",
@@ -2217,7 +2422,8 @@
         341,
         192,
         182
-      ]
+      ],
+      "opaqueHeight": 129
     },
     {
       "id": "frontier-ruin",
@@ -2242,7 +2448,8 @@
         341,
         160,
         152
-      ]
+      ],
+      "opaqueHeight": 110
     },
     {
       "id": "frontier-dead-tree",
@@ -2267,7 +2474,8 @@
         341,
         154,
         160
-      ]
+      ],
+      "opaqueHeight": 150
     },
     {
       "id": "frontier-broken-fence",
@@ -2292,7 +2500,8 @@
         341,
         155,
         160
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "frontier-empty-armor",
@@ -2317,7 +2526,8 @@
         341,
         160,
         158
-      ]
+      ],
+      "opaqueHeight": 97
     },
     {
       "id": "frontier-dry-well",
@@ -2342,7 +2552,8 @@
         535,
         160,
         154
-      ]
+      ],
+      "opaqueHeight": 124
     },
     {
       "id": "frontier-stump-tracks",
@@ -2367,7 +2578,8 @@
         535,
         160,
         160
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "bridge-ne-sw-base",
@@ -2392,7 +2604,8 @@
         535,
         224,
         201
-      ]
+      ],
+      "opaqueHeight": 174
     },
     {
       "id": "bridge-ne-sw-rail",
@@ -2417,7 +2630,8 @@
         535,
         224,
         201
-      ]
+      ],
+      "opaqueHeight": 156
     },
     {
       "id": "bridge-nw-se-base",
@@ -2442,7 +2656,8 @@
         535,
         224,
         197
-      ]
+      ],
+      "opaqueHeight": 176
     },
     {
       "id": "bridge-nw-se-rail",
@@ -2467,7 +2682,8 @@
         535,
         224,
         197
-      ]
+      ],
+      "opaqueHeight": 145
     },
     {
       "id": "peasant-farm",
@@ -2492,7 +2708,8 @@
         535,
         66,
         96
-      ]
+      ],
+      "opaqueHeight": 85
     },
     {
       "id": "peasant-carry",
@@ -2517,7 +2734,8 @@
         535,
         54,
         96
-      ]
+      ],
+      "opaqueHeight": 84
     },
     {
       "id": "peasant-build",
@@ -2542,7 +2760,8 @@
         535,
         60,
         96
-      ]
+      ],
+      "opaqueHeight": 87
     },
     {
       "id": "construction-building-1-lit",
@@ -2567,7 +2786,8 @@
         535,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 64
     },
     {
       "id": "construction-building-1-dark",
@@ -2592,7 +2812,8 @@
         535,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 65
     },
     {
       "id": "construction-building-2-lit",
@@ -2617,7 +2838,8 @@
         535,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 114
     },
     {
       "id": "construction-building-2-dark",
@@ -2642,7 +2864,8 @@
         535,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 114
     },
     {
       "id": "construction-building-3-lit",
@@ -2667,7 +2890,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 135
     },
     {
       "id": "construction-building-3-dark",
@@ -2692,7 +2916,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 135
     },
     {
       "id": "construction-field-1-lit",
@@ -2717,7 +2942,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 66
     },
     {
       "id": "construction-field-1-dark",
@@ -2742,7 +2968,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 67
     },
     {
       "id": "construction-field-2-lit",
@@ -2767,7 +2994,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 66
     },
     {
       "id": "construction-field-2-dark",
@@ -2792,7 +3020,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 66
     },
     {
       "id": "construction-field-3-lit",
@@ -2817,7 +3046,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 67
     },
     {
       "id": "construction-field-3-dark",
@@ -2842,7 +3072,8 @@
         738,
         136,
         160
-      ]
+      ],
+      "opaqueHeight": 68
     },
     {
       "id": "construction-timber-pile",
@@ -2867,7 +3098,8 @@
         738,
         44,
         32
-      ]
+      ],
+      "opaqueHeight": 23
     },
     {
       "id": "construction-stone-pile",
@@ -2892,7 +3124,8 @@
         738,
         38,
         30
-      ]
+      ],
+      "opaqueHeight": 18
     },
     {
       "id": "construction-ladder",
@@ -2917,7 +3150,8 @@
         738,
         40,
         52
-      ]
+      ],
+      "opaqueHeight": 44
     },
     {
       "id": "construction-wheelbarrow",
@@ -2942,7 +3176,8 @@
         738,
         44,
         40
-      ]
+      ],
+      "opaqueHeight": 28
     },
     {
       "id": "construction-worker-hammer",
@@ -2967,7 +3202,8 @@
         738,
         64,
         76
-      ]
+      ],
+      "opaqueHeight": 63
     },
     {
       "id": "construction-worker-carry",
@@ -2992,7 +3228,8 @@
         738,
         52,
         60
-      ]
+      ],
+      "opaqueHeight": 53
     },
     {
       "id": "bank-straight-01-lit",
@@ -3017,7 +3254,8 @@
         738,
         136,
         64
-      ]
+      ],
+      "opaqueHeight": 56
     },
     {
       "id": "bank-straight-01-dark",
@@ -3042,7 +3280,8 @@
         738,
         136,
         64
-      ]
+      ],
+      "opaqueHeight": 56
     },
     {
       "id": "bank-straight-02-lit",
@@ -3067,7 +3306,8 @@
         738,
         136,
         53
-      ]
+      ],
+      "opaqueHeight": 45
     },
     {
       "id": "bank-straight-02-dark",
@@ -3092,7 +3332,8 @@
         738,
         136,
         53
-      ]
+      ],
+      "opaqueHeight": 45
     },
     {
       "id": "bank-inside-01-lit",
@@ -3117,7 +3358,8 @@
         900,
         120,
         58
-      ]
+      ],
+      "opaqueHeight": 50
     },
     {
       "id": "bank-inside-01-dark",
@@ -3142,7 +3384,8 @@
         900,
         120,
         58
-      ]
+      ],
+      "opaqueHeight": 50
     },
     {
       "id": "bank-inside-02-lit",
@@ -3167,7 +3410,8 @@
         900,
         120,
         58
-      ]
+      ],
+      "opaqueHeight": 50
     },
     {
       "id": "bank-inside-02-dark",
@@ -3192,7 +3436,8 @@
         900,
         120,
         58
-      ]
+      ],
+      "opaqueHeight": 50
     },
     {
       "id": "bank-outside-01-lit",
@@ -3217,7 +3462,8 @@
         900,
         136,
         70
-      ]
+      ],
+      "opaqueHeight": 62
     },
     {
       "id": "bank-outside-01-dark",
@@ -3242,7 +3488,8 @@
         900,
         136,
         70
-      ]
+      ],
+      "opaqueHeight": 62
     },
     {
       "id": "bank-outside-02-lit",
@@ -3267,7 +3514,8 @@
         900,
         136,
         75
-      ]
+      ],
+      "opaqueHeight": 65
     },
     {
       "id": "bank-outside-02-dark",
@@ -3292,7 +3540,8 @@
         900,
         136,
         75
-      ]
+      ],
+      "opaqueHeight": 67
     },
     {
       "id": "bank-bridge-01-lit",
@@ -3317,7 +3566,8 @@
         900,
         88,
         47
-      ]
+      ],
+      "opaqueHeight": 39
     },
     {
       "id": "bank-bridge-01-dark",
@@ -3342,7 +3592,8 @@
         900,
         88,
         47
-      ]
+      ],
+      "opaqueHeight": 39
     },
     {
       "id": "bank-bridge-02-lit",
@@ -3367,7 +3618,8 @@
         900,
         88,
         53
-      ]
+      ],
+      "opaqueHeight": 45
     },
     {
       "id": "bank-bridge-02-dark",
@@ -3392,7 +3644,8 @@
         900,
         88,
         53
-      ]
+      ],
+      "opaqueHeight": 45
     },
     {
       "id": "estate-tree-conifer-01-lit",
@@ -3417,7 +3670,8 @@
         900,
         95,
         136
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "estate-tree-conifer-01-dark",
@@ -3442,7 +3696,8 @@
         900,
         95,
         136
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "estate-tree-conifer-02-lit",
@@ -3467,7 +3722,8 @@
         900,
         89,
         124
-      ]
+      ],
+      "opaqueHeight": 116
     },
     {
       "id": "estate-tree-conifer-02-dark",
@@ -3492,7 +3748,8 @@
         900,
         89,
         124
-      ]
+      ],
+      "opaqueHeight": 116
     },
     {
       "id": "estate-tree-broadleaf-01-lit",
@@ -3517,7 +3774,8 @@
         900,
         124,
         97
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "estate-tree-broadleaf-01-dark",
@@ -3542,7 +3800,8 @@
         900,
         124,
         97
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "estate-tree-broadleaf-02-lit",
@@ -3567,7 +3826,8 @@
         1038,
         136,
         96
-      ]
+      ],
+      "opaqueHeight": 88
     },
     {
       "id": "estate-tree-broadleaf-02-dark",
@@ -3592,7 +3852,8 @@
         1038,
         136,
         96
-      ]
+      ],
+      "opaqueHeight": 88
     },
     {
       "id": "estate-tree-shrub-01-lit",
@@ -3617,7 +3878,8 @@
         1038,
         104,
         47
-      ]
+      ],
+      "opaqueHeight": 39
     },
     {
       "id": "estate-tree-shrub-01-dark",
@@ -3642,7 +3904,8 @@
         1038,
         104,
         47
-      ]
+      ],
+      "opaqueHeight": 39
     },
     {
       "id": "estate-tree-shrub-02-lit",
@@ -3667,7 +3930,8 @@
         1038,
         84,
         53
-      ]
+      ],
+      "opaqueHeight": 45
     },
     {
       "id": "estate-tree-shrub-02-dark",
@@ -3692,7 +3956,8 @@
         1038,
         84,
         53
-      ]
+      ],
+      "opaqueHeight": 45
     },
     {
       "id": "worker-carry-se-00",
@@ -3717,7 +3982,8 @@
         1038,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-01",
@@ -3742,7 +4008,8 @@
         1038,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-02",
@@ -3767,7 +4034,8 @@
         1038,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-03",
@@ -3792,7 +4060,8 @@
         1038,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-04",
@@ -3817,7 +4086,8 @@
         1038,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-05",
@@ -3842,7 +4112,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-06",
@@ -3867,7 +4138,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-se-07",
@@ -3892,7 +4164,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 204
     },
     {
       "id": "worker-carry-se-08",
@@ -3917,7 +4190,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-se-09",
@@ -3942,7 +4216,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 200
     },
     {
       "id": "worker-carry-se-10",
@@ -3967,7 +4242,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-se-11",
@@ -3992,7 +4268,8 @@
         1296,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-se-12",
@@ -4017,7 +4294,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-se-13",
@@ -4042,7 +4320,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 204
     },
     {
       "id": "worker-carry-se-14",
@@ -4067,7 +4346,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 206
     },
     {
       "id": "worker-carry-se-15",
@@ -4092,7 +4372,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-00",
@@ -4117,7 +4398,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-01",
@@ -4142,7 +4424,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-02",
@@ -4167,7 +4450,8 @@
         1554,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-03",
@@ -4192,7 +4476,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-04",
@@ -4217,7 +4502,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-05",
@@ -4242,7 +4528,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-06",
@@ -4267,7 +4554,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     },
     {
       "id": "worker-carry-sw-07",
@@ -4292,7 +4580,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 204
     },
     {
       "id": "worker-carry-sw-08",
@@ -4317,7 +4606,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-sw-09",
@@ -4342,7 +4632,8 @@
         1812,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 200
     },
     {
       "id": "worker-carry-sw-10",
@@ -4367,7 +4658,8 @@
         2070,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-sw-11",
@@ -4392,7 +4684,8 @@
         2070,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-sw-12",
@@ -4417,7 +4710,8 @@
         2070,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 201
     },
     {
       "id": "worker-carry-sw-13",
@@ -4442,7 +4736,8 @@
         2070,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 204
     },
     {
       "id": "worker-carry-sw-14",
@@ -4467,7 +4762,8 @@
         2070,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 206
     },
     {
       "id": "worker-carry-sw-15",
@@ -4492,7 +4788,8 @@
         2070,
         256,
         256
-      ]
+      ],
+      "opaqueHeight": 207
     }
   ]
 }

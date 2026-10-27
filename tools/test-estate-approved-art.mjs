@@ -17,3 +17,24 @@ test('only approved dark bank and tree revisions enter the runtime atlas', () =>
   assert.equal(relevant.length, 28);
   assert.ok(relevant.filter(a => a.id.endsWith('-dark')).every(a => a.file.includes('-dark-r2-')));
 });
+test('six emblem crops preserve historical outside pixels and alpha without requiring Git history', async () => {
+  const { createHash } = await import('node:crypto');
+  const { decodeRgbaPng } = await import('./wave1a-art.mjs');
+  const dir = 'unity/Assets/Resources/EstateArt/';
+  const image = decodeRgbaPng(fs.readFileSync(dir + 'estate-buildings.png'));
+  const manifest = JSON.parse(fs.readFileSync(dir + 'estate-art.json'));
+  const crops = manifest.buildings.replacements.filter(r => r.file.endsWith('-sprout-r3.png'));
+  assert.equal(crops.length, 6);
+  const baseline = spec.buildings.historicalPreservation;
+  assert.equal(image.width, baseline.width);
+  const outside = Buffer.from(image.pixels.subarray(0, baseline.width * baseline.height * 4));
+  const alpha = Buffer.alloc(baseline.width * baseline.height);
+  for (let y = 0; y < baseline.height; y++) for (let x = 0; x < baseline.width; x++) {
+    const index = y * baseline.width + x;
+    alpha[index] = outside[index * 4 + 3];
+    if (crops.some(({ rect: [cx, cy, w, h] }) => x >= cx && x < cx + w && y >= cy && y < cy + h)) outside.fill(0, index * 4, index * 4 + 4);
+  }
+  assert.equal(createHash('sha256').update(outside).digest('hex'), baseline.outsideCropSha256);
+  assert.equal(createHash('sha256').update(alpha).digest('hex'), baseline.alphaSha256);
+  assert.equal(manifest.buildings.records.find(r => r.kind === 'ironworks').pivot[1], .125);
+});

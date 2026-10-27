@@ -6,7 +6,60 @@
     "body": "buildings-30-body-atlas.png",
     "shadow": "buildings-30-shadow-atlas.png",
     "shadowScale": 0.5,
-    "manifest": "buildings-manifest.json"
+    "manifest": "buildings-manifest.json",
+    "overrides": [
+      {
+        "id": "scriptorium-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s1-sprout-r3.png"
+      },
+      {
+        "id": "scriptorium-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s2-sprout-r3.png"
+      },
+      {
+        "id": "scriptorium-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s3-sprout-r3.png"
+      },
+      {
+        "id": "barracks-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s1-sprout-r3.png"
+      },
+      {
+        "id": "barracks-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s2-sprout-r3.png"
+      },
+      {
+        "id": "barracks-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s3-sprout-r3.png"
+      }
+    ],
+    "additions": [
+      {
+        "id": "ironworks-s1",
+        "kind": "ironworks",
+        "stage": 1,
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "ironworks-complete-r2.png",
+        "pivot": [
+          0.5,
+          0.125
+        ]
+      }
+    ],
+    "historicalPreservation": {
+      "sourceFile": "buildings-30-body-atlas.png",
+      "sourceSha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee",
+      "width": 1280,
+      "height": 1920,
+      "outsideCropSha256": "72932adeaf3de8aa28c47bbfb0d5f658181aff404088d3b4774b72f4c046be21",
+      "alphaSha256": "62d4d3ae1edcbef977606e38dd1b8906b2487189514c925b183dc9fa3256a7d1"
+    }
   },
   "atlasWidth": 2048,
   "padding": 2,

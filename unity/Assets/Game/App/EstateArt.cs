@@ -12,8 +12,8 @@ namespace Game.App
     {
         [Serializable] sealed class Manifest { public string version; public BuildingSet buildings; public Entry[] sprites; }
         [Serializable] sealed class BuildingSet { public float shadowScale; public int[] canvas; public BuildingRecord[] records; }
-        [Serializable] sealed class BuildingRecord { public string id, kind; public int stage; public int[] rect; public float[] pivot; public float[] drawRect; public float bodyWidth; }
-        [Serializable] sealed class Entry { public string id, atlas, layer; public int[] rect; public float[] pivot; public float displayWidth; }
+        [Serializable] sealed class BuildingRecord { public string id, kind; public int stage; public int[] rect; public float[] pivot; public float[] drawRect; public float bodyWidth, bodyHeight; }
+        [Serializable] sealed class Entry { public string id, atlas, layer; public int[] rect; public float[] pivot; public float displayWidth, opaqueHeight; }
 
         public const string Directory = "EstateArt";
         static EstateArt loaded;
@@ -38,6 +38,7 @@ namespace Game.App
         public IEnumerable<string> SpriteIds => manifest.sprites.Select(s => s.id);
         public bool Has(string id) => manifest.sprites.Any(s => s.id == id);
         public float DisplayWidth(string id) => Find(id).displayWidth;
+        public float OpaqueHeight(string id) => Find(id).opaqueHeight;
         public string Layer(string id) => Find(id).layer;
         public Vector2 Pivot(string id) { var e = Find(id); return new Vector2(e.pivot[0], e.pivot[1]); }
 
@@ -83,6 +84,7 @@ namespace Game.App
         // Opaque width of the painted body inside its 256-wide canvas (alpha > 8, measured by tools/estate-art.mjs): Astra draws a
         // building of screen width w at scale w / bodyWidth (assembly.js bodyWidths, trim()).
         public float BodyWidth(string kind, int stage) => Building(kind, stage).bodyWidth;
+        public float BodyHeight(string kind, int stage) => Building(kind, stage).bodyHeight;
 
         public Sprite Body(string kind, int stage)
         {
