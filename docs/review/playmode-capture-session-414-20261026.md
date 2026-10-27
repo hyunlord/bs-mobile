@@ -62,3 +62,45 @@ The user superseded the graphical/EndOfFrame approach: both profiles and both te
 - Restoration regression cases now exercise the runtime switch and assert that the persisted EditorSettings value is unchanged. The frame-wait test uses two update frames, not WaitForEndOfFrame.
 - Static verification: shell syntax, Unity boundaries (9 assemblies), whitespace and unchanged tracked ProjectSettings all pass. No Unity, Standalone, build or full profile test was run for this revision. Runtime settings-file invariance remains to be checked after tomorrow's run.
 - Next authorized execution is after 07:00: #415 two profiles, then #411. Historical failed XML/results above are preserved and are not evidence for the corrected revision. Both PRs remain draft.
+
+## Daytime batchmode verification (2026-10-27, 9877ccc)
+
+Owned run: `artifacts/day-20261027/pr415-tests`, 09:04:54–09:13:28 KST; own lock released at 09:13:28. First-playable EditMode 828/0/25, PlayMode 52/1/42; wave-1a EditMode 838/0/15, PlayMode 82/0/13 (pass/fail/skip). Tracked files, including ProjectSettings, remained unchanged. The prior wave-1a map pointer failures did not recur. Existing two unlisted cross-profile skips remain; no exceptions added.
+
+The first-playable failure is `UiCaptureTests.PortraitAndSquareRetainRunAndCaptureRealUi:76`: after completed-run Retry, two fixed update yields did not replace the session. The log immediately after summary capture records `Run.unity` loading in 140.505ms (82.313ms thread wait); `BeginRun` assigns Session only after asynchronous scene loading. This supports a timing race, not a cyan/pointer failure. Intentional save-denied exceptions belong to separate passing failure-recovery tests. The test now uses the same bounded session-change wait already used for its death-retry path, with an immediate error check; game code is unchanged. Revalidation is required before claiming this correction passes.
+
+The two skipped tests require extra execution environments, not exemptions: frozen C05 combat sidecars plus `UNITY_WAVE_BENCHMARK=1`, and the `m1-showcase-review` opt-in melee profile. The stock two-profile runner does not prepare those prerequisites. This limitation is preserved rather than treating the skips as a pass.
+
+## Revalidation and stop (2026-10-27, 1a0f540)
+
+Owned run: `artifacts/day-20261027/pr415-retry-tests`, 09:14:24–09:22:48 KST. Own lock released 09:22:48; no Unity process remained. No tracked settings or other tracked files were changed by Unity.
+
+| Profile | EditMode pass/fail/skip | PlayMode pass/fail/skip |
+|---|---:|---:|
+| first-playable | 828 / 0 / 25 | 53 / 0 / 42 |
+| wave-1a | 838 / 0 / 15 | 82 / 0 / 13 |
+
+The completed-run restart regression now passes. Actual captures: **251, cyan 0**; two separate positive cyan negative-controls correctly detected one pixel each. The initial run had 250 actual captures, cyan 0. Both actual sessions used the nonpersistent async-compilation switch and restoration; persisted EditorSettings bytes are unchanged.
+
+**Overall runner FAIL / stopped:** `skipped in every profile: 2 unexplained, 1 listed`, exit 1, in both daytime runs. No skip exception or assertion was weakened. The missing frozen-combat fixtures and opt-in melee profile remain the reasons documented above. Four green XML suites are not a passing full runner. The repeated failure rule stops further Unity work; #411 verification is blocked by its prerequisite. #410 was not recorded because external worldsim_probe/StorageManagement load exceeded the permitted CPU limit. Estate integration remains read-only preparation, and optional #422 was not started. All PRs remain drafts; no game/Core/save/data code changed.
+
+Evidence source commit: `1a0f540b896ea9b1541d9d96482b19f27415d27c`. The exact runner block is in the PR body; raw logs/XML remain at the owned paths above. Historical graphical failures are retained, not replaced by these newer measurements.
+
+## User-authorized prerequisite execution (2026-10-27)
+
+At unchanged Unity source (HEAD894da84; Unity source still1a0f540), existing tools generated both missing inputs and each test actually ran: frozen combat **1 passed /0 failed /0 skipped**, opt-in melee **1 passed /0 failed /0 skipped**. No new code or skip exception was needed. The earlier four-profile XML and failed stock-runner exit remain historical facts; the supplemental executions close their two coverage gaps.
+
+Owned outputs: `artifacts/day-20261027/resume/prerequisites`. Lock10:14:46–10:15:55 KST, released on completion. First-playable export restored; tracked status clean. Existing commands, with OUT pointing at that owned directory:
+
+```sh
+UNITY_CONTENT_PROFILE=wave-1a UNITY_WAVE_BENCHMARK=1 bash tools/prepare-unity.sh
+dotnet run --project core/src/SowSiege.Sim -c Release -- showcase-fixtures artifacts/benchmarks/c05/data data/review/m1-weapon-combat-cases.json "$OUT/combat"
+M1_COMBAT_FIXTURES="$OUT/combat" "$EDITOR" -batchmode -projectPath "$PWD/unity" -runTests -testPlatform EditMode -testFilter M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes -testResults "$OUT/combat.xml" -logFile "$OUT/combat.log"
+dotnet run --project core/src/SowSiege.Sim -c Release -- melee-aim-fixture data "$OUT/melee" m1-showcase-review
+UNITY_CONTENT_PROFILE=m1-showcase-review bash tools/prepare-unity.sh
+MELEE_AIM_REPLAY_FIXTURES="$OUT/melee" "$EDITOR" -batchmode -projectPath "$PWD/unity" -runTests -testPlatform EditMode -testFilter Tests.EditMode.MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures -testResults "$OUT/melee.xml" -logFile "$OUT/melee.log"
+UNITY_CONTENT_PROFILE=first-playable bash tools/prepare-unity.sh
+node tools/unity-skipped-everywhere.mjs tools/unity-skip-exceptions.txt artifacts/day-20261027/pr415-retry-tests/*.xml "$OUT/combat.xml" "$OUT/melee.xml"
+```
+
+Combined existing checker result: **0 unexplained,1 listed** (only the pre-existing optional recorded-input export). This is a six-result verification set, not a claim that the stock two-profile runner alone prepares those inputs. On a future Unity change, rerun the four normal suites and both supplemental exports/tests before combining results. #415 remains draft, no merge authorization inferred.
