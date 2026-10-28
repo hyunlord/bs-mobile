@@ -46,6 +46,17 @@ namespace Tests.EditMode
             var rules = EstateDecorRules.Load(); var original = JsonUtility.ToJson(rules);
             var state = AccountEstate.NewPrototype(CanonicalContent.CreateMetaCatalog(), config, 0, 0);
             var plan = EstatePlanner.Plan(rules, EstateArt.Load(), config, state.Estate);
+            var allOpen = state.Estate with { OpenZones = config.Zones.Select(z => z.Id).ToArray() };
+            var full = EstatePlanner.Plan(rules, EstateArt.Load(), config, allOpen);
+            var river = layout.riverCells.Select(c => new Vector2Int(c.x, c.y)).ToHashSet();
+            foreach (var cell in river)
+            {
+                var point = EstateMapModel.Project(cell + new Vector2(.5f, .5f));
+                Assert.That(full.Scene.LandAllowed(point.x, point.y), Is.False, "No empty-land decoration on water.");
+                Assert.That(full.Scene.RoadsideAllowed(point.x, point.y), Is.False, "No roadside decoration on water.");
+            }
+            foreach (var item in full.Items.Where(i => i.Source == "soil" || i.Source == "empty-land" || i.Source == "roadside"))
+                Assert.That(river.Contains(Vector2Int.FloorToInt(item.Grid)), Is.False, item.Key);
             Assert.That(JsonUtility.ToJson(rules), Is.EqualTo(original));
             var r7 = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
             Assert.That(EstateR8Layout.Pieces(rules, r7), Is.SameAs(rules.placed));
