@@ -42,23 +42,47 @@ namespace Tests.EditMode
         }
 
 
-        // #363: the baked rigs (wave art only) keep eight walk frames with no cycle length, so they keep the time-based walk and
-        // show exactly the frames they showed before (same frame for every time as the old fixed-eight formula).
+        // #455 changes only three approved nonhuman walk roles; historical human rigs retain eight keys.
         [Test]
-        public void BakedRigsKeepTheirEightFrameTimeBasedWalk()
+        public void BakedRigsKeepTheirApprovedTimeBasedWalk()
         {
             var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "wave1a-manifest.json")));
             var walks = System.Array.FindAll(m.roles, r => r.id.StartsWith("enemy.rig.", System.StringComparison.Ordinal) && r.id.EndsWith(".walk", System.StringComparison.Ordinal));
             Assert.That(walks.Length, Is.EqualTo(6), "six baked rigs");
             foreach (var walk in walks)
             {
-                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((8, 0f)), walk.id);
+                var approved = walk.id == "enemy.rig.seed_mite.walk" || walk.id == "enemy.rig.crop_grazer.walk" || walk.id == "enemy.rig.wine_wasp.walk";
+                var count = approved ? 16 : 8;
+                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((count, 0f)), walk.id);
                 for (var frame = 0; frame < 2000; frame++)
                 {
                     var time = frame / 60f;
                     Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Walk, time, walk.frameMs, 0, walk.frames.Length),
-                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % 8), walk.id);
+                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % count), walk.id);
                 }
+            }
+        }
+
+        [TestCase(WaveEnemyKind.SeedThief, "seed_mite", 28)]
+        [TestCase(WaveEnemyKind.RipeGrazer, "crop_grazer", 40)]
+        [TestCase(WaveEnemyKind.Ranged, "wine_wasp", 20)]
+        public void ApprovedNonhumanWalksSelectAllSixteenFramesFromTheSharedTexture(WaveEnemyKind kind, string name, int frameMs)
+        {
+            var registry = UnityEngine.Resources.Load<ArtRegistry>("Wave1aArt");
+            var catalog = ArtCatalog.FromJson(registry.manifest.text, registry.atlases);
+            var rig = new EnemyRigAtlas(catalog);
+            var walk = catalog.ResolveRole("enemy.rig." + name + ".walk");
+            var idle = catalog.ResolveRole("enemy.rig." + name + ".idle");
+            Assert.That(walk.UvRects.Count, Is.EqualTo(16));
+            Assert.That(walk.FrameMs, Is.EqualTo(frameMs));
+            Assert.That(walk.Texture, Is.SameAs(idle.Texture));
+            Assert.That(walk.Pivot, Is.EqualTo(idle.Pivot));
+            Assert.That(walk.WorldSize, Is.EqualTo(idle.WorldSize));
+            for (var frame = 0; frame < 16; frame++)
+            {
+                Assert.That(rig.TrySample(kind, "approach", true, "walk", (frame + .25f) * frameMs / 1000, 0, out var actual, out var uv), Is.True);
+                Assert.That(actual, Is.SameAs(walk));
+                Assert.That(uv, Is.EqualTo(walk.UvRects[frame]));
             }
         }
 

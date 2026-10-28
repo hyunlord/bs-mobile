@@ -35,6 +35,7 @@ node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
 node --test tools/wave1a-art.test.mjs
 node tools/wave1a-art.mjs "$PWD"
+node tools/art-authoring/enemy-rigs/import-nonhuman-walks.mjs --check
 node --test tools/test-estate-art.mjs tools/test-estate-approved-sites.mjs
 node tools/estate-art.mjs --check
 node tools/wave1a-audio.mjs --check
