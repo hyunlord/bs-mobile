@@ -171,6 +171,10 @@ namespace Game.View
         readonly List<(string kind,int id)> retiredFacing = new List<(string,int)>(1024);
         int facingGeneration;
         readonly PersonSheetWalk personWalk = new PersonSheetWalk();
+#if UNITY_EDITOR
+        // Review observes the selected draw frame; no callback or allocation exists in players.
+        public Action<int, string, int, Vector2> PeopleWalkObserved { get; set; }
+#endif
         // Distance-based enemy walks for walk roles with cyclePixels (#363); time-based rigs never touch it.
         readonly PersonSheetWalk enemyWalk = new PersonSheetWalk();
         Vector2 previousRenderedLord;
@@ -376,11 +380,22 @@ namespace Game.View
                     }
                 }
                 var walk = Resolve("person", person.Role, "move");
-                if (!PersonSheetWalk.Applies(walk)) { Draw(Resolve("person", person.Role, activity), GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f); continue; }
+                if (!PersonSheetWalk.Applies(walk))
+                {
+                    var single = Resolve("person", person.Role, activity);
+                    Draw(single, GameVisualTokens.AllyLayer, personPosition, visualTime + person.Id * 0.13f);
+#if UNITY_EDITOR
+                    PeopleWalkObserved?.Invoke(person.Id, single.RoleId, -1, personPosition);
+#endif
+                    continue;
+                }
                 var walkFrame = personWalk.Frame("person", person.Id, personPosition, visualTime, step != Vector2.zero, walk, facingGeneration);
                 var shown = walkFrame >= 0 ? walk : Resolve("person", person.Role, activity);
                 var personFacing = Facing("person", person.Id, step); var personUv = walkFrame >= 0 ? walk.UvRects[walkFrame] : (Rect?)null;
                 DrawActor(shown, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, -1, facing: personFacing, uv: personUv);
+#if UNITY_EDITOR
+                PeopleWalkObserved?.Invoke(person.Id, shown.RoleId, walkFrame, personPosition);
+#endif
                 DrawAllyMarker(person.Role, shown, personUv, GameVisualTokens.AllyLayer, personPosition, visualTime, shown.WorldSize, walkFrame >= 0, -1, personFacing, null);
             }
             if (presentationDiagnosticsActive) diagnostics.WaveWorldObjectsMs = DiagnosticInterval(ref diagnosticCheckpoint);

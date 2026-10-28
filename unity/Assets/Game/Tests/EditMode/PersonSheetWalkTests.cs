@@ -18,10 +18,17 @@ namespace Game.Tests
         static ArtManifest Manifest(string file) => JsonUtility.FromJson<ArtManifest>(File.ReadAllText(Path.Combine(Application.dataPath, "Art", file)));
 
         // The real person roles and their atlas only, over a blank texture of the registered size.
-        static ArtCatalog People(string file)
+        static ArtCatalog People(string file, bool singleFrameFixture = false)
         {
             var m = Manifest(file);
             m.roles = m.roles.Where(r => r.id.StartsWith("person.", StringComparison.Ordinal)).ToArray();
+            if (singleFrameFixture)
+                foreach (var kind in Others)
+                {
+                    var move = m.roles.Single(r => r.id == $"person.{kind}.move");
+                    move.frames = new[] { move.frames[0] };
+                    move.cyclePixels = 0;
+                }
             m.bindings = m.bindings.Where(b => b.kind == "person").ToArray();
             var atlases = m.roles.Select(r => r.atlas).Distinct().ToArray();
             m.atlases = m.atlases.Where(a => atlases.Contains(a.id)).ToArray();
@@ -51,7 +58,7 @@ namespace Game.Tests
                     Assert.That((role.pivot, role.worldSize, role.tween), Is.EqualTo((move.pivot, move.worldSize, move.tween)), kind + "." + state);
                 }
             }
-            foreach (var kind in Others) Assert.That(Role(kind, "move").frames.Length, Is.EqualTo(1), kind + " keeps its time-based single frame");
+            foreach (var kind in Others) Assert.That(Role(kind, "move").frames.Length, Is.EqualTo(16), kind + " approved people walk");
             Assert.That(GameVisualTokens.PersonWalkCyclePixels, Is.EqualTo(record.cyclePixels));
         }
 
@@ -124,9 +131,55 @@ namespace Game.Tests
 
         [Test] public void SingleFrameMoveRolesKeepTheTimeBasedPath()
         {
-            var catalog = People("first-playable-manifest.json");
-            foreach (var kind in Others) Assert.That(PersonSheetWalk.Applies(catalog.Resolve("person", kind, "move")), Is.False, kind);
+            var catalog = People("first-playable-manifest.json", singleFrameFixture: true);
+            foreach (var kind in Others) Assert.That(PersonSheetWalk.Applies(catalog.Resolve("person", kind, "move")), Is.False, kind + " synthetic single-frame fallback remains supported");
             foreach (var kind in Soldiers) Assert.That(PersonSheetWalk.Applies(catalog.Resolve("person", kind, "move")), Is.True, kind);
+        }
+
+        [TestCase("first-playable-manifest.json", "vassal", 59.985697116f, 0.50310559f)]
+        [TestCase("first-playable-manifest.json", "peasant", 61.060715818f, 0.51708075f)]
+        [TestCase("first-playable-manifest.json", "returning", 61.060715818f, 0.51708075f)]
+        [TestCase("wave1a-manifest.json", "vassal", 59.985697116f, 0.50310559f)]
+        [TestCase("wave1a-manifest.json", "peasant", 61.060715818f, 0.51708075f)]
+        [TestCase("wave1a-manifest.json", "returning", 61.060715818f, 0.51708075f)]
+        public void ApprovedPeopleUseTheirOwnSourceStrideInBothProfiles(string file, string kind, float sourceStride, float sourceCellWorldSize)
+        {
+            var catalog = People(file);
+            var move = catalog.Resolve("person", kind, "move");
+            Assert.That(PersonSheetWalk.Applies(move), Is.True);
+            Assert.That(move.UvRects.Count, Is.EqualTo(16));
+            Assert.That(move.UvRects.Distinct().Count(), Is.EqualTo(16));
+            Assert.That(move.FrameMs, Is.EqualTo(40));
+            Assert.That(move.Tween, Is.EqualTo("none"));
+            Assert.That(move.CyclePixels, Is.EqualTo(sourceStride).Within(0.00002f));
+            var stride = PersonSheetWalk.Stride(move);
+            Assert.That(stride, Is.EqualTo(sourceStride * sourceCellWorldSize / 256).Within(0.000001f), "union crop must not change source scale");
+            Assert.That(move.Pivot.y * move.CellPixels.y, Is.EqualTo(2).Within(0.00001f), "source baseline225 in union bottom227");
+            var walk = new PersonSheetWalk();
+            walk.Frame("person", 12, Vector2.zero, 0, true, move, 1);
+            for (var i = 1; i <= 16; i++)
+            {
+                var at = Vector2.left * (stride * (i - .5f) / 16);
+                Assert.That(walk.Frame("person", 12, at, i, true, move, i), Is.EqualTo(i - 1), "reverse travel preserves ordered distance phases");
+                Assert.That(walk.Frame("person", 12, at, i + .1f, false, move, i), Is.EqualTo(-1), "stationary uses original activity art");
+                Assert.That(walk.Frame("person", 12, at, i + .2f, true, move, i), Is.EqualTo(i - 1), "stationary keeps phase");
+            }
+        }
+
+        [TestCase("first-playable-manifest.json")]
+        [TestCase("wave1a-manifest.json")]
+        public void ChangingToReturningKeepsThePeasantLegScaleAndPhase(string file)
+        {
+            var catalog = People(file);
+            var peasant = catalog.Resolve("person", "peasant", "move");
+            var returning = catalog.Resolve("person", "returning", "move");
+            Assert.That(PersonSheetWalk.Stride(returning), Is.EqualTo(PersonSheetWalk.Stride(peasant)).Within(0.000001f));
+            Assert.That(returning.WorldSize.y / returning.CellPixels.y, Is.EqualTo(peasant.WorldSize.y / peasant.CellPixels.y).Within(0.000001f));
+            var walk = new PersonSheetWalk();
+            walk.Frame("person", 42, Vector2.zero, 0, true, peasant, 1);
+            var at = Vector2.right * (PersonSheetWalk.Stride(peasant) * 4.5f / 16);
+            Assert.That(walk.Frame("person", 42, at, 1, true, peasant, 2), Is.EqualTo(4));
+            Assert.That(walk.Frame("person", 42, at, 2, true, returning, 3), Is.EqualTo(4));
         }
     }
 }

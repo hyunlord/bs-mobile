@@ -1,0 +1,392 @@
+{
+  "width": 1920,
+  "height": 1940,
+  "padding": 2,
+  "legacySize": 1254,
+  "frames": [
+    {
+      "kind": "returning",
+      "index": 0,
+      "x": 2,
+      "y": 1256,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 1,
+      "x": 2,
+      "y": 1484,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 2,
+      "x": 2,
+      "y": 1712,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 3,
+      "x": 193,
+      "y": 1256,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 4,
+      "x": 193,
+      "y": 1484,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 5,
+      "x": 193,
+      "y": 1712,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 6,
+      "x": 384,
+      "y": 1256,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 7,
+      "x": 384,
+      "y": 1484,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 8,
+      "x": 384,
+      "y": 1712,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 9,
+      "x": 575,
+      "y": 1256,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 10,
+      "x": 575,
+      "y": 1484,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 11,
+      "x": 575,
+      "y": 1712,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 12,
+      "x": 766,
+      "y": 1256,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 13,
+      "x": 766,
+      "y": 1484,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 14,
+      "x": 766,
+      "y": 1712,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "returning",
+      "index": 15,
+      "x": 957,
+      "y": 1256,
+      "width": 187,
+      "height": 224
+    },
+    {
+      "kind": "vassal",
+      "index": 0,
+      "x": 957,
+      "y": 1484,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 1,
+      "x": 957,
+      "y": 1693,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 2,
+      "x": 1120,
+      "y": 1484,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 3,
+      "x": 1148,
+      "y": 1256,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 4,
+      "x": 1120,
+      "y": 1693,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 5,
+      "x": 1283,
+      "y": 1465,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 6,
+      "x": 1283,
+      "y": 1674,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 7,
+      "x": 1446,
+      "y": 2,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 8,
+      "x": 1256,
+      "y": 2,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 9,
+      "x": 1609,
+      "y": 2,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 10,
+      "x": 1446,
+      "y": 211,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 11,
+      "x": 1256,
+      "y": 211,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 12,
+      "x": 1609,
+      "y": 211,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 13,
+      "x": 1446,
+      "y": 420,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 14,
+      "x": 1256,
+      "y": 420,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "vassal",
+      "index": 15,
+      "x": 1609,
+      "y": 420,
+      "width": 159,
+      "height": 205
+    },
+    {
+      "kind": "peasant",
+      "index": 0,
+      "x": 1446,
+      "y": 629,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 1,
+      "x": 1256,
+      "y": 629,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 2,
+      "x": 1636,
+      "y": 629,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 3,
+      "x": 1256,
+      "y": 837,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 4,
+      "x": 1256,
+      "y": 1045,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 5,
+      "x": 1311,
+      "y": 1253,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 6,
+      "x": 1446,
+      "y": 837,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 7,
+      "x": 1446,
+      "y": 1045,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 8,
+      "x": 1636,
+      "y": 837,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 9,
+      "x": 1636,
+      "y": 1045,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 10,
+      "x": 1501,
+      "y": 1253,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 11,
+      "x": 1691,
+      "y": 1253,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 12,
+      "x": 1446,
+      "y": 1461,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 13,
+      "x": 1446,
+      "y": 1669,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 14,
+      "x": 1636,
+      "y": 1461,
+      "width": 186,
+      "height": 204
+    },
+    {
+      "kind": "peasant",
+      "index": 15,
+      "x": 1636,
+      "y": 1669,
+      "width": 186,
+      "height": 204
+    }
+  ]
+}

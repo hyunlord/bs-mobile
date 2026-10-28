@@ -1,0 +1,439 @@
+{
+  "version": 1,
+  "release": "m3-people-walk-review-433-20261027",
+  "base": "a44bf7ae6a5811de057c8f12410ce4a5d8fb0d3f",
+  "atlas": "unity/Assets/Art/actors.png",
+  "originalSize": [
+    1254,
+    1254
+  ],
+  "size": [
+    1920,
+    1940
+  ],
+  "originalAtlasSha256": "060b8316485f3d8e36b1bdee0a9d10e1040a6ac7cc35e49e863b67a9b52bae42",
+  "originalDecodedRgbaSha256": "bf9e83f5f58914ddc13070280961dd7d401dbbffdaf62ed6a50c35ff0eaf3dd1",
+  "atlasSha256": "09b8d9e9c41b9f51afc318f72dad3ca44a789649dc58a8e38009319e3033a704",
+  "oldPixelsPreserved": 1572516,
+  "importerRectsPreserved": 54,
+  "textureCountDelta": 0,
+  "uncompressedRgbaBytesDelta": 8609136,
+  "padding": 2,
+  "strideProvenance": "Approved PeopleGait.cs formula + approved rig-source PNG alpha contour, Node double precision; not Unity float measurement. See derive-stride.mjs.",
+  "clips": [
+    {
+      "kind": "vassal",
+      "filename": "person-vassal-r1-16.png",
+      "sourceSha256": "dc875996c8b7b46a217e0be82103d6f9d7344ff9a89a881eb62d1971c9374cf6",
+      "crop": {
+        "left": 44,
+        "top": 22,
+        "width": 159,
+        "height": 205
+      },
+      "pivot": {
+        "x": 0.5094339622641509,
+        "y": 0.00975609756097561
+      },
+      "worldSize": {
+        "x": 0.3124757375776398,
+        "y": 0.4028775232919255
+      },
+      "unitsPerPixel": 0.0019652562111801245,
+      "cyclePixels": 59.985697116093824,
+      "frameMs": 40,
+      "frames": [
+        {
+          "x": 957,
+          "y": 1484,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 957,
+          "y": 1693,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1120,
+          "y": 1484,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1148,
+          "y": 1256,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1120,
+          "y": 1693,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1283,
+          "y": 1465,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1283,
+          "y": 1674,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1446,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1256,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1609,
+          "y": 2,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1446,
+          "y": 211,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1256,
+          "y": 211,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1609,
+          "y": 211,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1446,
+          "y": 420,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1256,
+          "y": 420,
+          "width": 159,
+          "height": 205
+        },
+        {
+          "x": 1609,
+          "y": 420,
+          "width": 159,
+          "height": 205
+        }
+      ],
+      "rgbaSha256": [
+        "d78472d84bcd3f5cf56a27a2ecfc9641b448aa594c384276822a759cc7aa46c2",
+        "e279a601c42c87feccca347ea3ba2b4978a7e7a74693e211c40790821aed4cc3",
+        "dd942b0c2c23ef89184e16dfbef7597a9e5b9c7bfe329bdc21fc3001a66018e3",
+        "acc5818cc2daad708551f9666235206ddc5ef1162616be35197cac1ba9c02045",
+        "03722c2af4dd56de6825e2b0cadf441a56941e6d220eb3abd4cae8ddcb0cf6e3",
+        "2cbfcee66f7c2748b4a730d17f5fe36150d4670123be439df10ec52fc4969f4d",
+        "58ef7f72d55b9dee3bb98bc327d95d355f5dad9659afae6471a8b0c3e219c5c2",
+        "c8aab0ea06d8e33bc126a83bfb8db02fd8ca025fab8c1439733dd0cc2489ae77",
+        "cea2fc12a8eb4fc8d5924a3e5a9e8484fa7c0ed495e740b024e6002d76022824",
+        "9e7b3dfd0e52fd1ccb61e8a34f392c0981ff6e6c9d933c80955899f7cc884156",
+        "995d5161cebc4d55c1c6bbe5874e587c02af6a0756bca7e53ef915a1e6302e95",
+        "c8a9eeece5a023d6223ebc11a582fd9168db2aec6e0bac6e52652ccfca1198f3",
+        "1176fe3625304d87b486b75561014dd5edbf95ab17b4e28137eccfe5fa0b0f88",
+        "48378af772881a7d97aead302ee377d5a8c8d76899d32cc061b46da5a691c54c",
+        "fb3d4d74521d5123bb6f8818cce61d2ee64fa2eb43d077eafc0afa08a7125c4e",
+        "6f178b2fff4248b2da0f697f057570069927a17aa225c49a2bb5464c6e046ef1"
+      ]
+    },
+    {
+      "kind": "peasant",
+      "filename": "person-peasant-r1-16.png",
+      "sourceSha256": "2482ad9d70a3397b636dfe6849f618e2e0b0b5ac97e4fb2710e7750cff301175",
+      "crop": {
+        "left": 37,
+        "top": 23,
+        "width": 186,
+        "height": 204
+      },
+      "pivot": {
+        "x": 0.3924731182795699,
+        "y": 0.00980392156862745
+      },
+      "worldSize": {
+        "x": 0.37569147903726713,
+        "y": 0.41204871894409945
+      },
+      "unitsPerPixel": 0.0020198466614906835,
+      "cyclePixels": 61.06071581787939,
+      "frameMs": 40,
+      "frames": [
+        {
+          "x": 1446,
+          "y": 629,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1256,
+          "y": 629,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1636,
+          "y": 629,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1256,
+          "y": 837,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1256,
+          "y": 1045,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1311,
+          "y": 1253,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1446,
+          "y": 837,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1446,
+          "y": 1045,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1636,
+          "y": 837,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1636,
+          "y": 1045,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1501,
+          "y": 1253,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1691,
+          "y": 1253,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1446,
+          "y": 1461,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1446,
+          "y": 1669,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1636,
+          "y": 1461,
+          "width": 186,
+          "height": 204
+        },
+        {
+          "x": 1636,
+          "y": 1669,
+          "width": 186,
+          "height": 204
+        }
+      ],
+      "rgbaSha256": [
+        "c9365abf4a53a8b79505a3cd5c6c7c6173559706f591e443f9aa39f424950db7",
+        "4dca1c5257f2dafe67eba1e22cf7f06421a05488c4a025240d20c1440a10c2f6",
+        "b8a15e35b55e266e64c5ad71ae2058773d786525f335a69f45703ffb3db42f1e",
+        "5ab2ef0224c9811779a4549ec97724152fff10aed9fbb854cc21bf3298e41eea",
+        "ace3cd659b3d0c21c26296b97122a1ff6fc9e3200f85642873c4763d73035ee5",
+        "8e8597058d1b96c116e0153e8d2f080d60dbafe44575848e26ac84df4f52e0d0",
+        "3605af6c2e28b557d5f6e80c985b13b3d07def2bb07a719e889762baf640eb42",
+        "ea1aefabcee4bcca9e975c9adf7e7e342516562bf5df7e1606755218653de5ae",
+        "e80609c791004d277c7c3a1f09eb120fdcdad90527cf6159d7e5866ba5ed25f3",
+        "99cad06f2c07b51cd2af1572f5226b2b4754f739def41091baa9b3b37af5bd0d",
+        "d32d5c8fe655c8f294ec0e20dcb8812bf34070897810eae0f5ec426103b11da6",
+        "67a97c14f212b46623ee5d8f49e1ef35c9b1caf0ba4a13aee89184ebff6d3043",
+        "e8d7cd236364fbce1d016fd89315085865768bd4b828b35fda8e1eb62ae4cbeb",
+        "6aa350c1d7b7263d36524e1e06dc708bed26d7d09bf021a339863aed57cb768d",
+        "52f84b5eea73632248a0d1e9f9ede3b0b96de51b02eed70d315cef9b06c41e2e",
+        "0de5f981906e65e4d240e6d1f1c709a4f93b1617b37b7bbfa574a4b6b50f93c6"
+      ]
+    },
+    {
+      "kind": "returning",
+      "filename": "person-returning-r1-16.png",
+      "sourceSha256": "302d9d5cd9941f1857fdf0b7dc89e4a7c2d6b74ac5f36c7c05a85a6a9ce1deb4",
+      "crop": {
+        "left": 49,
+        "top": 3,
+        "width": 187,
+        "height": 224
+      },
+      "pivot": {
+        "x": 0.32620320855614976,
+        "y": 0.008928571428571428
+      },
+      "worldSize": {
+        "x": 0.3777113256987578,
+        "y": 0.4524456521739131
+      },
+      "unitsPerPixel": 0.0020198466614906835,
+      "cyclePixels": 61.06071581787939,
+      "frameMs": 40,
+      "frames": [
+        {
+          "x": 2,
+          "y": 1256,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 2,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 2,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 193,
+          "y": 1256,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 193,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 193,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 384,
+          "y": 1256,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 384,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 384,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 575,
+          "y": 1256,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 575,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 575,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 766,
+          "y": 1256,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 766,
+          "y": 1484,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 766,
+          "y": 1712,
+          "width": 187,
+          "height": 224
+        },
+        {
+          "x": 957,
+          "y": 1256,
+          "width": 187,
+          "height": 224
+        }
+      ],
+      "rgbaSha256": [
+        "1714887e45c5168ed7969cf9a994e6f42cd711f0879ca2cd8cac389eefdb3aae",
+        "68703d4e989506e2284f956a61e2123242feedb4585f628a27e0bde451e0936d",
+        "bdbc649a95a37bc22d745f976f8c9010c7c980300f23e722b43aefbde0ba6874",
+        "8d6a4055adce0b43f99938b35230e94a0d3a19038a4ff04c2e60ee78676f42ac",
+        "9ccbb1c45e789b2a38536fc4c24c8d42ac3d9a495145f739cc76135d3d9dd330",
+        "559c81bb835ee8aa3d3cd6865ac8db22637eb4c0ad4a7286d07541bf6c8e37a2",
+        "3682c15ca7847bde3e1bf3707c8548452ef584d8d91bc519fa4d4e05a8a5f019",
+        "41cebe96104af53698f38b6a1deb0b4de77100581fc8a40889b8debce51226e4",
+        "6fff659b0fe1bf2055bce0726f75365a404e52dfc4f38662c89e98326d46f62f",
+        "6ed668a3fdd38f2bc894da1dc4cb8d710b0e83ee3d52506db7851a2046585473",
+        "b91d17e28bd4df10b5a8bee44da84c7a7d4118cb4dbc4b02baeafdb451c6d1f4",
+        "9ec0d02c7e7b39bbf35e5d690de38ccb90e47a95657692cdd6d1fdd52daf22b0",
+        "c664b15c440d9627896b2b1c9eb573c00a0d9a9822efaea254af0c59a874c108",
+        "e8c64f346158c9989b285645cab516ba7fde4a9172565141378c744ab698a0dd",
+        "5b01307c95695e7708a22d25a3a4f7cbc4324aec1aec7b7b13f9db50adedf28a",
+        "71a28ff65104b1c0b4658d703e6fc5d70bc0ca56700c234ab504f39e48d99ebe"
+      ]
+    }
+  ]
+}
