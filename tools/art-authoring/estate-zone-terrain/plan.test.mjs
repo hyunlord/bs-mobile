@@ -18,7 +18,8 @@ test("all 13 zones and 64 approved source records validate", () => {
     validate(contract, sources, config);
     assert.equal(sources.assets.length, 64);
     assert.equal(contract.zones.length, 13);
-    assert.equal(contract.defaultBuildingWidthPx, null);
+    assert.equal(contract.defaultBuildingWidthPx, 75);
+    assert.equal(contract.minimumBuildingWidthPx, 50);
 });
 test("Astra FNV matches known vectors and UTF16 arithmetic", () => {
     assert.equal(hash(""), 2166136261);
@@ -188,15 +189,80 @@ test("building changes hide catalog entries without refilling quota", () => {
         before.filter((p) => !hit(p)),
     );
 });
-test("future single default config supports either reviewed width without placement changes", () => {
-    for (const width of [75, 50]) {
+test("approved default75/min50 and both review widths preserve placement", () => {
+    for (const value of [null, 50, 60]) {
         const c = clone(contract);
-        c.defaultBuildingWidthPx = width;
-        assert.deepEqual(run(c), run());
+        c.defaultBuildingWidthPx = value;
+        assert.throws(() => run(c));
     }
+    const invalid = clone(contract);
+    invalid.minimumBuildingWidthPx = 49;
+    assert.throws(() => run(invalid));
+    assert.deepEqual(run(contract, { zoom: 75 }), run(contract, { zoom: 50 }));
     const s = clone(sources);
     s.assets.find(
         (a) => a.variantId === "forest-cluster-01" && a.state === "dark",
     ).projection = "flat-uv";
     assert.throws(() => validate(contract, s, config));
+});
+
+test("seeded small-prop spacing and scale stay bounded and hide-only", () => {
+    const dense = read("./dense-source-assets.json");
+    const propAssets = dense.assets.filter(
+        (a) => a.projection === "isometric-sprite" && a.scale === 1,
+    );
+    const s = clone(sources);
+    s.assets.push(...propAssets);
+    const c = clone(contract);
+    const t = c.themes.find((t) => t.id === "village");
+    Object.assign(t, {
+        mode: "candidate-plan",
+        spacingChoices: [3, 4],
+        scaleRange: [0.85, 1],
+        density: 1,
+        maxCount: 16,
+        variants: [...new Set(propAssets.map((a) => a.variantId))].map(
+            (variantId) => ({ variantId, reserveCells: [2, 2] }),
+        ),
+    });
+    const first = plan(c, s, config);
+    const props = first.filter((p) => p.theme === "village");
+    assert.ok(props.length > 1);
+    assert.ok(props.every((p) => p.scale >= 0.85 && p.scale <= 1));
+    assert.ok(new Set(props.map((p) => p.scale)).size > 1);
+    t.spacingChoices.reverse();
+    assert.deepEqual(plan(c, s, config, { zoom: 50 }), first);
+    const r = props[0].footprint;
+    const hit = (p) =>
+        p.footprint.x < r.x + r.width &&
+        r.x < p.footprint.x + p.footprint.width &&
+        p.footprint.y < r.y + r.height &&
+        r.y < p.footprint.y + p.footprint.height;
+    assert.deepEqual(
+        plan(c, s, config, { reserved: [r] }),
+        first.filter((p) => !hit(p)),
+    );
+    for (const value of [[], [0], [-1], [NaN]]) {
+        t.spacingChoices = value;
+        assert.throws(() => plan(c, s, config));
+    }
+    t.spacingChoices = [3, 4];
+    t.scaleRange = [0.8, 1.1];
+    assert.throws(() => plan(c, s, config));
+});
+test("dense sources preserve all120 alternatives and explicit anchors", () => {
+    const d = read("./dense-source-assets.json");
+    assert.equal(d.assets.length, 120);
+    assert.equal(new Set(d.assets.map((a) => a.file)).size, 120);
+    assert.equal(d.assets.filter((a) => a.scale === 1).length, 60);
+    for (const a of d.assets) {
+        assert.match(a.sha256, /^[a-f0-9]{64}$/);
+        assert.ok(a.pivotTopLeft.every((v, i) => v >= 0 && v <= a.canvas[i]));
+        if (a.projection === "registered-chunk")
+            assert.deepEqual(a.pivotTopLeft, [0, 0]);
+    }
+    assert.equal(
+        d.scenes.classification,
+        "ART_COMPOSITION_NOT_VALIDATED_GAME_PLACEMENT",
+    );
 });

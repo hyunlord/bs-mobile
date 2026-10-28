@@ -34,10 +34,9 @@ export function validate(c, s, config) {
         c.candidateOnly === true, "Unsupported candidate contract");
     require(Number.isSafeInteger(c.seed), "Invalid seed");
     require(JSON.stringify(c.reviewBuildingWidthsPx) === "[75,50]" &&
-        (c.defaultBuildingWidthPx === null ||
-            c.reviewBuildingWidthsPx.includes(
-                c.defaultBuildingWidthPx,
-            )), "Default remains pending; previews must be 75 and 50");
+        c.defaultBuildingWidthPx === 75 &&
+        c.minimumBuildingWidthPx ===
+            50, "Approved camera contract requires default75/minimum50");
     require(s.release ===
         "estate-r8-terrain-488-20261028", "Unapproved source Release");
     const ids = new Set(config.zones.map((z) => z.id));
@@ -82,6 +81,18 @@ export function validate(c, s, config) {
             t.density <= 1 &&
             Number.isSafeInteger(t.maxCount) &&
             t.maxCount >= 0, "Invalid theme budget");
+        require(t.spacingChoices === undefined ||
+            (Array.isArray(t.spacingChoices) &&
+                t.spacingChoices.length > 0 &&
+                t.spacingChoices.every(
+                    (x) => Number.isSafeInteger(x) && x > 0,
+                )), "Invalid spacing choices");
+        require(t.scaleRange === undefined ||
+            (pair(t.scaleRange) &&
+                t.scaleRange[0] > 0 &&
+                t.scaleRange[0] <= t.scaleRange[1] &&
+                t.scaleRange[1] <=
+                    1), "Scale must stay within conservative footprint");
         require(["candidate-plan", "preserve-existing"].includes(
             t.mode,
         ), "Unknown mode");
@@ -119,10 +130,20 @@ export function plan(c, s, config, state = {}) {
             t = themes.get(mapping.theme);
         rectangle(z);
         if (t.mode === "preserve-existing") continue;
-        const variants = [...t.variants].sort((a, b) => ordinal(a.variantId, b.variantId)),
+        const variants = [...t.variants].sort((a, b) =>
+                ordinal(a.variantId, b.variantId),
+            ),
             candidates = [];
-        for (let y = z.y; y < z.y + z.height; y += t.spacingCells)
-            for (let x = z.x; x < z.x + z.width; x += t.spacingCells) {
+        const spacing = [...(t.spacingChoices ?? [t.spacingCells])].sort(
+            (a, b) => a - b,
+        );
+        const step = (axis, x, y) =>
+            spacing[
+                hash([c.seed, c.version, z.id, axis, x, y].join("|")) %
+                    spacing.length
+            ];
+        for (let y = z.y; y < z.y + z.height; y += step("row", z.x, y))
+            for (let x = z.x; x < z.x + z.width; x += step("column", x, y)) {
                 const prefix = `${c.seed}|${c.version}|${z.id}|${x}|${y}`;
                 if (hash(`${prefix}|density`) / 4294967296 >= t.density)
                     continue;
@@ -144,6 +165,11 @@ export function plan(c, s, config, state = {}) {
                     zoneId: z.id,
                     theme: t.id,
                     variant: v.variantId,
+                    scale: t.scaleRange
+                        ? t.scaleRange[0] +
+                          (t.scaleRange[1] - t.scaleRange[0]) *
+                              (hash(`${key}|scale`) / 4294967296)
+                        : 1,
                     footprint,
                     priority: hash(key),
                 });

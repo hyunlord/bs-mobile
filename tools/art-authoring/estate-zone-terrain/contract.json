@@ -2,7 +2,7 @@
   "version": "estate-zone-themes-v1",
   "configVersion": "m3a-prototype-r8",
   "seed": 20261028,
-  "defaultBuildingWidthPx": null,
+  "defaultBuildingWidthPx": 75,
   "reviewBuildingWidthsPx": [
     75,
     50
@@ -333,5 +333,6 @@
         }
       ]
     }
-  ]
+  ],
+  "minimumBuildingWidthPx": 50
 }

@@ -1,6 +1,6 @@
 # r8 zone terrain authoring groundwork (#495)
 
-관문: 부분 — 승인 소스 64/64 SHA·PNG 크기 일치, Node 14/14 통과. 게임 렌더·밀도·카메라·Unity는 NOT_RUN.
+관문: 부분 — 승인 소스 64/64 SHA·PNG 크기 일치, Node 16/16 통과. 게임 렌더·밀도·카메라·Unity는 NOT_RUN.
 
 2026-10-28. Base main `31f64a656ca528ce8a1617aaead0abd3946c81a9` (#485). Design: [#490 v0.3](https://github.com/hyunlord/bs-mobile/pull/490), related #489. This is authoring groundwork, not the completed zone terrain feature. No Core/data/Unity files, imported textures, save format, historical r3–r7 settings or original art change.
 
@@ -20,11 +20,11 @@ River r5 registration/chunks are deliberately outside this first slice: the exis
 
 The future Unity adapter must consume emitted stable candidates, not silently introduce a second divergent sampler. It must re-evaluate current building, yard, door, curved road, plaza, river, bridge and **projected alpha/display** exclusions when state changes. Today's rectangular candidate exclusions are not that full check. Unspecified shore/terrain reservations are labelled hypotheses; metadata floor dimensions are not proven physical collision geometry. Moving buildings must hide conflicting candidates without changing Core rules.
 
-There is **no jitter or adjacent-variant avoidance yet**. These remain integration work with the projected-art exclusion stage. Do not claim final art density or repeat-pattern quality from candidate counts. Candidates are not automatically lit just because a saved zone opened: the future adapter must retain fallow/sage/restored progression.
+There is **no positional jitter or adjacent-variant avoidance yet**. These remain integration work with the projected-art exclusion stage. Do not claim final art density or repeat-pattern quality from candidate counts. Candidates are not automatically lit just because a saved zone opened: the future adapter must retain fallow/sage/restored progression.
 
-## Camera and pending default
+## Camera decision history
 
-Building **width** review candidates are 75px and 50px. `defaultBuildingWidthPx` is explicitly null, so neither is selected as the user's final default. The existing product camera remains unchanged. Integration must retain the legacy fallback until selection, use one configurable chosen value, and compare the same density targets at both preview widths without reseeding placement.
+At the first groundwork commit, building-width candidates were75px and50px with null default. The later user decision (2026-10-28 21:50) fixes **default75px / minimum50px**; current authoring contract and validation reflect it. Existing product camera remains unchanged in this scoped commit. Integration must use one product setting and compare the same density targets at both widths without reseeding placement. The actual Unity home BodyWidth105.75 and Astra preview native98.7 are different references: product camera must calibrate from actual displayed artwork, not copy the preview scale.
 
 Opened-zone union drag bounds plus 1–2 cells, all-zoom continuous dark forest/fog and zero uncovered black areas are still NOT_IMPLEMENTED in this groundwork. No current camera behavior is claimed to satisfy them.
 
@@ -38,7 +38,7 @@ node tools/art-authoring/estate-zone-terrain/plan.mjs \
   data/opt-in/account-estate/m3a-prototype-r8.json
 ```
 
-The tests are included in `tools/check.sh`: identity/geometry/pair failure cases, CLI unknown-argument rejection, exact hash vectors, reversed inputs, zoom independence, open-order invariance, old-profile routing, footprint/reservation exclusion, stale SHA and unsafe source path rejection. Initial test-first failure was the missing implementation module; subsequent 14 tests pass. No repeated product/runtime failure occurred.
+The tests are included in `tools/check.sh`: identity/geometry/pair failure cases, CLI unknown-argument rejection, exact hash vectors, reversed inputs, zoom independence, open-order invariance, old-profile routing, footprint/reservation exclusion, stale SHA and unsafe source path rejection. Initial test-first failure was the missing implementation module; subsequent tests pass. No repeated product/runtime failure occurred.
 
 ## Remaining full-feature gate
 
@@ -53,3 +53,21 @@ No Unity lock was taken for this slice. No Unity/build/native run, screenshot, d
 ## First CI failure preserved
 
 The first secrets run40688311728 flagged 12 public `shore-accent-01..04` art IDs because the JSON field was named `key`. No credentials were involved. The current field is `variantId`; only the 12 exact historical47e2f2af fingerprints are listed in the existing `.gitleaksignore`, with no current-path or scanner-rule exception. The failed run remains visible.
+
+## Approved dense source follow-up (21:50 decision)
+
+[dense-source-assets.json](../../tools/art-authoring/estate-zone-terrain/dense-source-assets.json) adds120 exact approved identities: props24, river92, fog4. All120 PNG SHA256 and IHDR sizes were checked against downloaded files; originals stay in untracked artifacts, with no runtime import. Both scales remain provenance alternatives (60 at1x), not120 textures to load. Select registered chunks OR validated contextual modules at matching sockets, never overlay both. Chunks use explicit top-left anchor(0,0) plus global nativeOrigin; modules preserve floorAnchorNative; props preserve their source pivots. Fog is exterior overlay, not ground or opaque-tree coverage.
+
+The registry pins SHA256 of the six requested metadata sources, preserves NATIVE-CAMERA-r1 as **offline art camera**, and identifies DENSE-SCENES-r2's2110 placements as art composition, not validated runtime placement. Historical metadata approval-pending text remains source history; latest user approval authorizes this selection. River exact asset SHA comes from GitHub Release asset digest and is checked against actual downloaded PNG, not inferred from a filename.
+
+Optional small-prop spacing choices use stable per-row/per-cell hashes; optional scaleRange is constrained to(0,1], keeps the full conservative reservation rectangle, and cannot enlarge collision bounds. Defaults retain prior spacing and scale1. Tests exercise varying small props, reversed spacing input, camera independence, retained boundary/overlap checks and hide-only reservation changes. Projected-art exclusions remain the future View consumer's responsibility. No density result is inferred.
+
+Rebuild source registry after downloading the six metadata files plus Release asset JSON:
+
+```sh
+node tools/art-authoring/estate-zone-terrain/dense-sources.mjs artifacts/estate-zone-terrain
+```
+
+Final local Node suite16/16. CI source changes only authoring tools and this report; another owner may have uncommitted Unity camera work in the same worktree, which is explicitly excluded from this commit and its claims.
+
+Small-prop variation is supported/tested by fixtures only: current contract's village/approach/meadow still preserve existing decoration, so this commit does not enable new small-prop placement in the product or authoring default layout.
