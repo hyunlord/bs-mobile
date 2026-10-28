@@ -12,6 +12,15 @@ namespace Tests.EditMode
     // "무기 연출 2차" pilot: storm_fork lightning and muster_horn soldiers.
     public sealed class WeaponPresentationPilotTests
     {
+        [Test]
+        public void ApprovedSporeKeepsBakedOpacityWithoutChangingOtherAttackForms()
+        {
+            Assert.That(WorldRenderer.PersistentAttackOpacity("attack.core.spore_fan.field", "field"), Is.EqualTo(1f));
+            Assert.That(WorldRenderer.PersistentAttackOpacity("attack.other.field", "field"), Is.EqualTo(GameVisualTokens.FieldOpacity));
+            Assert.That(WorldRenderer.PersistentAttackOpacity("attack.core.spore_fan.field", "nova"), Is.EqualTo(GameVisualTokens.AreaAttackOpacity));
+            Assert.That(WorldRenderer.PersistentAttackOpacity("attack.core.ember_wand.projectile", "projectile"), Is.EqualTo(GameVisualTokens.TravellingAttackOpacity));
+        }
+
         const float Frame = 1f / 60;
 
         [Serializable] sealed class Level { public int damage, range, cooldownTicks, speed, count, lifetimeTicks, knockback; }

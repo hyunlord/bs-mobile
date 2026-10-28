@@ -1,0 +1,76 @@
+{
+  "release": "m3-combat-fx-audit-456-20261028",
+  "sourceAtlasSha256": "dc20fda29f41600100f90cbf7cd586fa594bc877f8077ca24a7f4f61822c3cfb",
+  "outputAtlasSha256": "604cbe04b5f97c1ed36753697ba2231753835f11aafd51acd15461ede30b95ca",
+  "outsideChanged": 0,
+  "outsideRgbaSha256": "61eb084e69855b7d47b0a2b0bc3ef7e303da0eac974acc7457117573f54aa7b9",
+  "changedPixels": 16712,
+  "assets": [
+    {
+      "png": "iron-edge-candidate-r1.png",
+      "role": "attack.core.iron_blade.sector90",
+      "sha256": "e8a807acd6e563310f1e5966d2b5ada1c93977830f18f51bd87beeae9e6f77c9",
+      "rect": [
+        125,
+        145,
+        118,
+        114
+      ]
+    },
+    {
+      "png": "harvest-edge-candidate-r1.png",
+      "role": "attack.core.harvest_scythe.sector180",
+      "sha256": "59b5f1d2b1f85de6f91cf7024a072ca12c9d2d455be0808c2423b473161af833",
+      "rect": [
+        399,
+        142,
+        150,
+        133
+      ]
+    },
+    {
+      "png": "ember-candidate-r4-final.png",
+      "role": "attack.core.ember_wand.projectile",
+      "sha256": "6412200fd2665ad243a7c06499d15be881fd400378b643ff3e6aee101741a27b",
+      "rect": [
+        724,
+        174,
+        126,
+        71
+      ]
+    },
+    {
+      "png": "ward-candidate-r4-final.png",
+      "role": "attack.core.ward_orbit.orbit",
+      "sha256": "1f96417c0b77eba0cb63d27f0c01df007be932777d779c72ecca504af48f4b4b",
+      "rect": [
+        1026,
+        144,
+        134,
+        116
+      ]
+    },
+    {
+      "png": "canal-edge-candidate-r1.png",
+      "role": "attack.core.canal_bow.piercing",
+      "sha256": "00e5b6f935fcb7da5eff4bfd2403719b3e106981ca35d33777d458a1638eb9d9",
+      "rect": [
+        95,
+        463,
+        154,
+        73
+      ]
+    },
+    {
+      "png": "spore-combined-effective-alpha-r4-final.png",
+      "role": "attack.core.spore_fan.field",
+      "sha256": "4698b9b851362a7661e724cd9bb2168e17dbc76ae6c9c9bed28e7e3138140d09",
+      "rect": [
+        1028,
+        433,
+        132,
+        130
+      ]
+    }
+  ]
+}

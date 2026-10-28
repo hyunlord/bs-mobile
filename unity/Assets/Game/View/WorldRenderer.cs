@@ -393,7 +393,7 @@ namespace Game.View
                 var before = Point(attack.PreviousPosition); var position = Vector2.Lerp(before, Point(attack.Position), alpha);
                 var visual = Resolve("attack", attack.SourceId, attack.Form);
                 var size = attack.Form == "field" || attack.Form == "nova" ? Vector2.one * (attack.PresentationRadius ?? attack.Radius) * 2 / settings.WorldUnitsPerUnityUnit : visual.WorldSize;
-                Draw(visual, GameVisualTokens.AttackLayer, position, (float)attack.AgeTicks / current.TickRate, size, Angle(Point(attack.Position) - before), opacity: attack.Form == "field" ? GameVisualTokens.FieldOpacity : attack.Form == "nova" ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity);
+                Draw(visual, GameVisualTokens.AttackLayer, position, (float)attack.AgeTicks / current.TickRate, size, Angle(Point(attack.Position) - before), opacity: PersistentAttackOpacity(visual.RoleId, attack.Form));
             }
             if (presentationDiagnosticsActive) diagnostics.AttackEffectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
             for (var enemyIndex = 0; enemyIndex < current.Enemies.Count; enemyIndex++)
@@ -706,6 +706,11 @@ namespace Game.View
                 }
             }
         }
+        // #475: the approved spore PNG already contains the .10 interior and .34 border opacity.
+        public static float PersistentAttackOpacity(string roleId, string form) =>
+            form == "field" ? (roleId == "attack.core.spore_fan.field" ? 1f : GameVisualTokens.FieldOpacity)
+            : form == "nova" ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity;
+
         bool ShouldDrawAttack(PresentationEvent effect) => !(activeAttackSources.Contains(effect.SourceId) && (WorldEffects.IsTravelling(effect.Shape) || effect.Shape == "field" || effect.Shape == "nova"));
         void DrawAttack(PresentationEvent effect, float age, float progress)
         {
