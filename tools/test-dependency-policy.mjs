@@ -112,7 +112,9 @@ test('dispatch tests preserve PR policy context and trend publication excludes d
   assert.match(ci, /GITHUB_EVENT_PATH="\$\{DEPENDENCY_EVENT_PATH:-\$GITHUB_EVENT_PATH\}" \.\/tools\/check.sh/);
   assert.match(ci, /statuses: write/);
   assert.match(ci, /result==='success'\?'success':'failure'/);
-  assert.match(metrics, /workflow_run.event != 'workflow_dispatch'/);
+  assert.match(metrics, /workflow_run.event == 'push'/);
+  assert.match(metrics, /workflow_run.head_branch == 'main'/);
+  assert.match(metrics, /workflow_run.conclusion == 'success'/);
 });
 test('metadata from first signed commit cannot authorize a second Dependabot change', async () => {
   const signed = { author: { login: 'dependabot[bot]' }, commit: { verification: { verified: true }, message: 'metadata' } };
