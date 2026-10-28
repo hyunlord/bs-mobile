@@ -73,3 +73,21 @@ node tools/wave1a-art.mjs
 - `unity/Assets/Game/Tests/PlayMode/CombatFxCaptureTests.cs`: 실패를 통과로 잡은 fixture 소스 보존. 재개 시 가시성·장면 유효성 검사 개선 필요.
 
 두 포자 PNG는 각각 477,734바이트이며 byte-identical이다. 해시 불변 검사는 fixture의 미변경 authoritative session만 증명한다. 요구된 실제 전체 리플레이 종료 해시는 아직 실행하지 않았다.
+
+### 원인 분리 후 허용된 1회 재실행 (17:23, c8b8badc)
+
+읽기 전용 조사로 반복 발판의 출처를 확인했다. `EstateSystem.Initialize`는 siteCount 20,
+spacing 500으로 5×4 부지를 생성한다. fixture가 원본 `Buildings`를 유지했고,
+`WorldRenderer`의 건물 루프가 `building.unassigned.site`를 그대로 그렸다.
+`buildings.png`의 (992,1002,202,174) 그림은 실패 캡처의 반복 발판과 동일하다.
+적 `core:raider`의 actors crop 자체는 정상이며 UV 오류로 단정했던 초기 해석은 잘못이었다.
+또한 fixture의 적 X 오프셋은 +1400부터라 화면 밖에 놓였다.
+
+사용자가 원인 확인 후 1회만 재실행을 승인하여 테스트에서 성장 객체·진행 목록을 비우고,
+적을 화면 안으로 옮기며 전체 적 경계 검사를 추가했다. 제품 코드와 그림은 바꾸지 않았다.
+하지만 새 검사에서 적 상태를 잘못된 `move`로 요청하여
+`Missing art binding: enemy|core:raider|move`로 실패했다. 실제 렌더러는 이 정지 fixture에서
+`idle`을 선택한다. 이것은 작성자의 검사 코드 오류이며 제품 결함이나 그림 실패가 아니다.
+PNG를 내보내기 전에 실패했고, 추가 재시도 없이 중단하여 잠금을 해제했다.
+원본 로그·XML은 `artifacts/combat-fx-475/fixture-cause-confirmed-logs/`에 보존한다.
+시각 통과·6종 전체 검증·최종 Unity 기록은 여전히 미완료다.
