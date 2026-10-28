@@ -113,7 +113,7 @@ namespace Game.App
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
     public sealed class EstateDrawItem
     {
-        public bool IsometricGround;
+        public bool IsometricGround; public bool WaterOnly;
         public bool IsometricRoad; public int RoadQuarterTurns;
         public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
@@ -123,6 +123,7 @@ namespace Game.App
     public sealed class EstatePlan
     {
         public readonly List<EstateDrawItem> Items = new List<EstateDrawItem>();
+        public Vector2[] CarryRoute = Array.Empty<Vector2>();
         public readonly HashSet<Vector2Int> Road = new HashSet<Vector2Int>();
         public readonly Dictionary<int, int> SiteVariants = new Dictionary<int, int>();
         // Grid rectangle that is painted and covered by the night: the zones' bounds plus the night margin.
@@ -309,7 +310,7 @@ namespace Game.App
                 // Tree groups join Astra's empty-land candidates on tended land [가설]; the selection itself stays art-v1.
                 if (o.Kind == "empty-land" && rules.trees.ids.Length > 0 && rules.trees.states.Contains(StateAt(grid)) && AstraDecor.Rand(rules.astra, "tree", o.Key) < rules.trees.share)
                 {
-                    role = rules.trees.ids[(int)(AstraDecor.Rand(rules.astra, "tree-variant", o.Key) * rules.trees.ids.Length)];
+                    role = TreeRole((int)(AstraDecor.Rand(rules.astra, "tree-variant", o.Key) * 6), false);
                     width = art != null && art.Has(role) && art.DisplayWidth(role) > 0 ? art.DisplayWidth(role) : width;
                 }
                 plan.Items.Add(new EstateDrawItem { Role = role, Source = o.Kind, Grid = grid, Width = width, Colour = rules.Colour(StateAt(grid) ?? "restored"),
@@ -350,10 +351,19 @@ namespace Game.App
                     AddSite(plan, b.Id, role, centre, 136, "approved");
                     continue;
                 }
-                // Every construction site uses the authored empty furrows and the UI's work sign, not a faded finished body.
-                if (building) { artKind = "field"; level = 0; }
+                // Approved construction silhouettes replace the temporary empty-field body (#426).
+                if (building)
+                {
+                    var distance = EstateNight.LightDistance(centre, litAreas, config.Version == "m3a-prototype-r7");
+                    var role = EstateConstructionArt.Role(b.Kind == rules.fieldFenceKind, EstateConstructionArt.Stage(estate.Active), night.Alpha(distance) < night.edgeAlpha);
+                    var completedWidth = buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth;
+                    plan.Items.Add(new EstateDrawItem { Role = role, Source = "construction", SiteId = b.Id, Grid = centre,
+                        Width = art == null ? 136 : EstateConstructionArt.CappedWidth(art, role, artKind, rules.Stage(b.Kind, level), completedWidth),
+                        Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"construction-{b.Id}" });
+                    continue;
+                }
                 plan.Items.Add(new EstateDrawItem { Source = "building", BuildingId = b.Id, BuildingArt = artKind,
-                    Stage = building ? rules.Stage(rules.fieldFenceKind, 0) : rules.Stage(b.Kind, level), Grid = centre,
+                    Stage = rules.Stage(b.Kind, level), Grid = centre,
                     Width = buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth, Colour = Color.white,
                     Layer = EstateDrawLayer.Standing, SortY = P(centre).y, Key = $"estate-{b.Id:00}" });
             }
@@ -367,12 +377,21 @@ namespace Game.App
                     Add(plan, rules.fieldFenceCorner, "fence", new Vector2(b.X, b.Y), art, rules.Colour(StateAt(new Vector2(b.X, b.Y)) ?? "restored"));
                     Add(plan, rules.peasants.farm, "peasant", new Vector2(b.X + .6f, b.Y + kind.Height + .2f), art, Color.white);
                 }
-                if (b.Kind == rules.peasants.carryKind) Add(plan, rules.peasants.carry, "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + kind.Height * .6f), art, Color.white);
+                if (b.Kind == rules.peasants.carryKind && estate.Active == null) Add(plan, rules.peasants.carry, "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + kind.Height * .6f), art, Color.white);
             }
             if (estate.Active != null)
             {
                 var b = buildings.First(x => x.Id == estate.Active.BuildingId); var kind = kinds[b.Kind];
-                Add(plan, rules.peasants.build, "peasant", new Vector2(b.X - .3f, b.Y + kind.Height + .1f), art, Color.white);
+                Add(plan, "construction-worker-hammer", "peasant", new Vector2(b.X - .3f, b.Y + kind.Height + .1f), art, Color.white);
+                var props = new[] { "timber-pile", "stone-pile", "ladder", "wheelbarrow" };
+                for (var i = 0; i < 2; i++)
+                    Add(plan, "construction-" + props[(b.Id + i) % props.Length], "construction-prop",
+                        new Vector2(b.X + .3f + i * .9f, b.Y + kind.Height + .25f), art, Color.white);
+                var granary = buildings.FirstOrDefault(x => x.Kind == rules.peasants.carryKind && x.Level > 0);
+                if (granary != null && granary.Id != b.Id)
+                    plan.CarryRoute = EstateConstructionArt.Route(plan, Door(granary), Door(b));
+                if (plan.CarryRoute.Length < 2)
+                    Add(plan, "construction-worker-carry", "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + .5f), art, Color.white);
             }
 
             // Terrain skeleton pieces placed explicitly (river, bridge with its front rail, paddock) when their zone exists.
@@ -383,6 +402,22 @@ namespace Game.App
                 var layer = ground ? EstateDrawLayer.Terrain : closed ? EstateDrawLayer.Veiled : EstateDrawLayer.Standing;
                 var colour = ground && !closed ? Color.white : rules.Colour(state);
                 Add(plan, piece.id, "placed", grid, art, colour, layer);
+                if (piece.id == "riverbank-patch" || piece.id == "river-bend-patch")
+                {
+                    plan.Items[plan.Items.Count - 1].WaterOnly = true;
+                    for (var side = 0; side < 2; side++)
+                    {
+                        var bank = piece.id == "river-bend-patch" ? (side == 0 ? "inside" : "outside") : "straight";
+                        var role = "bank-" + bank + "-0" + (side + 1) + (closed ? "-dark" : "-lit");
+                        Add(plan, role, "river-bank", grid + new Vector2(side == 0 ? -.9f : .9f, side == 0 ? .9f : -.9f), art,
+                            Color.white, closed ? EstateDrawLayer.Landmark : EstateDrawLayer.Standing);
+                    }
+                }
+                if (piece.id == "bridge-nw-se-base")
+                    for (var side = 0; side < 2; side++)
+                        Add(plan, "bank-bridge-0" + (side + 1) + (closed ? "-dark" : "-lit"), "river-bank",
+                            grid + new Vector2(side == 0 ? -.7f : .7f, side == 0 ? .7f : -.7f), art,
+                            Color.white, closed ? EstateDrawLayer.Landmark : EstateDrawLayer.Standing);
                 if (!string.IsNullOrEmpty(piece.rail)) Add(plan, piece.rail, "placed", grid, art, colour, closed ? EstateDrawLayer.Veiled : EstateDrawLayer.Foreground);
                 if (!string.IsNullOrEmpty(piece.with) && !closed) Add(plan, piece.with, "peasant", new Vector2(piece.withU, piece.withV), art, Color.white);
             }
@@ -406,7 +441,7 @@ namespace Game.App
                     var wood = zone == null ? null : cl.woods.FirstOrDefault(w => w.zone == zone.Id && w.ids.Length > 0);
                     var variant = AstraDecor.Rand(rules.astra, "closed-variant", key);
                     if (wood != null && AstraDecor.Rand(rules.astra, "closed-wood", key) < wood.share)
-                        Add(plan, wood.ids[(int)(variant * wood.ids.Length)], "wood", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
+                        Add(plan, TreeRole((int)(variant * 6), true), "wood", at, art, Color.white, EstateDrawLayer.Veiled);
                     else if (AstraDecor.Rand(rules.astra, "closed-dead-tree", key) < cl.deadTreeShare || f.ids.Length == 0)
                         Add(plan, cl.deadTree, "frontier", at, art, rules.Colour("closed"), EstateDrawLayer.Veiled);
                     else
@@ -418,10 +453,12 @@ namespace Game.App
                 (i.Source == "placed" || i.Role == "frontier-ruin")).ToArray();
             foreach (var item in silhouettes)
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
-                    Colour = new Color(0, night.landmarkBrightness, 1, 1),
+                    WaterOnly = item.WaterOnly, Colour = new Color(0, night.landmarkBrightness, 1, 1),
                     Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
             return plan;
         }
+
+        static string TreeRole(int variant, bool dark) => "estate-tree-" + new[] { "conifer", "broadleaf", "shrub" }[variant / 2] + "-0" + (variant % 2 + 1) + (dark ? "-dark" : "-lit");
 
         static void Add(EstatePlan plan, string role, string source, Vector2 grid, EstateArt art, Color colour, EstateDrawLayer layer = EstateDrawLayer.Standing)
         {

@@ -29,7 +29,10 @@ namespace Tests.EditMode
             Assert.That(rules.astra.seed, Is.EqualTo(20261024)); Assert.That(rules.astra.styleVersion, Is.EqualTo("art-v1"));
         }
 
-        [Test] public void EveryRoleAndBuildingStageHasPackedArt()
+        [TestCase("m3a-prototype-r2")] [TestCase("m3a-prototype-r3")]
+        [TestCase("m3a-prototype-r4")] [TestCase("m3a-prototype-r5")]
+        [TestCase("m3a-prototype-r6")] [TestCase("m3a-prototype-r7")]
+        public void EveryRoleAndBuildingStageHasPackedArt(string version)
         {
             var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var roles = rules.astra.kits.SelectMany(k => k.props).Concat(new[] { "grass", "rocks" })
@@ -39,10 +42,33 @@ namespace Tests.EditMode
                 .Concat(new[] { rules.yardGround.well, rules.yardGround.house, rules.yardGround.other, rules.terrain.restored, rules.terrain.sage, rules.terrain.fallow, rules.fieldFenceCorner })
                 .Where(r => !string.IsNullOrEmpty(r)).Distinct();
             foreach (var role in roles) Assert.That(art.Get(role), Is.Not.Null, role);
-            foreach (var kind in rules.kindArt.Select(k => k.art).Distinct())
-                for (var stage = 1; stage <= 3; stage++) { Assert.That(art.Body(kind, stage), Is.Not.Null, kind + stage); Assert.That(art.Shadow(kind, stage), Is.Not.Null); }
+            var config = CanonicalContent.CreateAccountEstateConfig(version);
+            foreach (var building in config.Buildings)
+            {
+                var mapping = rules.ArtOf(building.Kind);
+                Assert.That(mapping, Is.Not.Null, version + ": " + building.Kind);
+                foreach (var stage in Enumerable.Range(0, building.MaxLevel() + 1).Select(level => rules.Stage(building.Kind, level)).Distinct())
+                {
+                    Assert.That(art.Body(mapping.art, stage), Is.Not.Null, version + ": " + building.Kind + " stage " + stage);
+                    Assert.That(art.Shadow(mapping.art, stage), Is.Not.Null);
+                }
+            }
             Assert.That(art.BuildingPivot("manor", 1), Is.EqualTo(new Vector2(.5f, .125f)), "Astra's anchor (128, 280) on a 256x320 canvas.");
             Assert.That(art.BodyWidth("house", 1), Is.EqualTo(90), "Astra scales bodies by the trimmed opaque width (assembly.js bodyWidths), not drawRect.");
+        }
+
+        [Test] public void HistoricalBuildingsKeepAllThreeStagesWhileIronworksUsesOnlyItsApprovedCompletion()
+        {
+            var art = EstateArt.Load();
+            foreach (var kind in new[] { "manor", "house", "well", "granary", "field", "lumberyard", "forge", "scriptorium", "barracks", "watchtower" })
+                for (var stage = 1; stage <= 3; stage++)
+                {
+                    Assert.That(art.Body(kind, stage), Is.Not.Null, kind + stage);
+                    Assert.That(art.Shadow(kind, stage), Is.Not.Null);
+                }
+            Assert.That(art.HasBuilding("ironworks", 1), Is.True);
+            Assert.That(art.HasBuilding("ironworks", 2), Is.False, "No unapproved duplicate stages.");
+            Assert.That(art.HasBuilding("ironworks", 3), Is.False, "No unapproved duplicate stages.");
         }
 
         [Test] public void CoreLevelsPickTheThreeStageArt()
@@ -60,8 +86,8 @@ namespace Tests.EditMode
             Assert.That((homeArt.Stage, homeArt.Colour), Is.EqualTo((2, Color.white)), "The starting home is complete, not the ruined manor stage.");
             Assert.That(plan.Lamps.Any(l => l.Item1 == new Vector2(home.X + 1, home.Y + 1) && l.Item2 == rules.night.homeLampCells), Is.True);
             var started = AccountEstate.StartConstruction(catalog, config, state, 0, 0, granary.Id).State;
-            var item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.BuildingId == granary.Id);
-            Assert.That((item.BuildingArt, item.Stage), Is.EqualTo(("field", rules.Stage(rules.fieldFenceKind, 0))), "Construction shows empty furrows, with the separate UI work sign.");
+            var item = EstatePlanner.Plan(rules, art, config, started.Estate).Items.Single(i => i.SiteId == granary.Id);
+            Assert.That(item.Role, Is.EqualTo("construction-building-1-lit"), "Approved construction replaces the temporary empty-furrow body.");
             Assert.That(item.Colour, Is.EqualTo(Color.white));
             var done = AccountEstate.Advance(catalog, config, started, 60, 60).State;
             done = AccountEstate.StartConstruction(catalog, config, done, 60, 60, granary.Id).State;
@@ -202,7 +228,16 @@ namespace Tests.EditMode
             Assert.That(plan.StateOf(new Vector2Int(21, 21)), Is.EqualTo("closed"), "r5: the old centre's corner is outskirts, outside the lit start.");
             Assert.That(plan.StateOf(new Vector2Int(45, 30)), Is.EqualTo("closed"));
             Assert.That(plan.StateOf(new Vector2Int(45, 10)), Is.Null, "Outside every zone.");
-            foreach (var item in plan.Items.Where(i => i.Source == "frontier" || i.Source == "wood")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
+            foreach (var item in plan.Items.Where(i => i.Source == "frontier")) Assert.That(item.Colour, Is.EqualTo(rules.Colour("closed")), item.Key);
+            var woods = plan.Items.Where(i => i.Source == "wood").ToArray();
+            Assert.That(woods, Is.Not.Empty);
+            foreach (var item in woods)
+            {
+                Assert.That(item.Role, Does.Match("^estate-tree-(conifer|broadleaf|shrub)-0[12]-dark$"), item.Key);
+                Assert.That(EstateArt.Load().Has(item.Role), Is.True, item.Key);
+                Assert.That(item.Colour, Is.EqualTo(Color.white), "Approved dark artwork must not receive a second closed tint: " + item.Key);
+                Assert.That(item.Layer, Is.EqualTo(EstateDrawLayer.Veiled), item.Key);
+            }
         }
 
         [Test] public void ThePlanIsDeterministicAndKeepsDecorationOffFootprintsAndRoads()
@@ -264,7 +299,18 @@ namespace Tests.EditMode
             var landmarks = plan.In(EstateDrawLayer.Landmark).ToArray();
             Assert.That(landmarks, Is.Not.Empty);
             Assert.That(rules.night.landmarkBrightness, Is.EqualTo(.4f).Within(1e-5f));
-            foreach (var item in landmarks)
+            Assert.That(landmarks.All(i => i.Source == "landmark" || i.Source == "river-bank"), Is.True);
+            Assert.That(landmarks.Any(i => i.Source == "landmark"), Is.True);
+            var banks = landmarks.Where(i => i.Source == "river-bank").ToArray();
+            Assert.That(banks, Is.Not.Empty);
+            foreach (var bank in banks)
+            {
+                Assert.That(bank.Role, Does.Match("^bank-(straight|inside|outside|bridge)-0[12]-dark$"), bank.Key);
+                Assert.That(EstateArt.Load().Has(bank.Role), Is.True, bank.Key);
+                Assert.That(bank.Colour, Is.EqualTo(Color.white), "Approved dark bank artwork is already shaded.");
+                Assert.That(bank.Layer, Is.EqualTo(EstateDrawLayer.Landmark), bank.Key);
+            }
+            foreach (var item in landmarks.Where(i => i.Source == "landmark"))
             {
                 Assert.That(item.Source, Is.EqualTo("landmark"));
                 Assert.That(item.Colour.g, Is.EqualTo(.4f).Within(1e-5f));
