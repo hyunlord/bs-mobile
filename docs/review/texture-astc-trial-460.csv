@@ -1,0 +1,10 @@
+source,mode,atlas,width,height,format,raw_bytes,alpha_mae,alpha_max_error,transparent_leak,gutter_nonzero_samples,gutter_max_alpha
+d257dc7,rgba,fallow-enemy-rigs,2048,2304,RGBA32,18874368,0,0,0,0,0
+d257dc7,rgba,feel-hero-b-layered,2048,2048,RGBA32,16777216,0,0,0,0,0
+d257dc7,rgba,hero-knight,2564,2164,RGBA32,22193984,0,0,0,0,0
+d257dc7,4,fallow-enemy-rigs,2048,2304,ASTC_4x4,4718592,0.16392559475368923,41,4645,0,0
+d257dc7,4,feel-hero-b-layered,2048,2048,ASTC_4x4,4194304,0.18625235557556152,73,6190,0,0
+d257dc7,4,hero-knight,2564,2164,ASTC_4x4,5548496,0.1290537111318094,72,4532,0,0
+d257dc7,6,fallow-enemy-rigs,2048,2304,ASTC_6x6,2101248,0.4528268178304036,122,7683,0,0
+d257dc7,6,feel-hero-b-layered,2048,2048,ASTC_6x6,1871424,0.33358311653137207,203,9492,0,0
+d257dc7,6,hero-knight,2564,2164,ASTC_6x6,2472128,0.2738486249246643,252,9006,102,1

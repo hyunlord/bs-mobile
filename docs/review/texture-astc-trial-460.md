@@ -47,7 +47,7 @@ node tools/summarize-astc-trial.mjs artifacts/TRIAL unity/Assets/Art/wave1a-mani
 - Node 수치 검사: 3/3 통과.
 - Unity6000.6.4f1 / Apple M4 Max / Metal, 소스 `d257dc7`: 16px RGBA·ASTC4·ASTC6 probe 각 요청 형식과 raw bytes 확인.
 - 전체 3atlas × rgba/4/6 실제 압축·GPU decode 통과. 원본 전투→rgba 왕복 24장 PNG 바이트 동일. 각 리플레이 실행 체크포인트·종료 해시 확인.
-- 두 프로필 전체: 실행 중. 모바일 결과: **미실행**.
+- 두 프로필 전체: first-playable EditMode 865 / PlayMode 55, wave-1a 875 / 87 통과, 실패 0. 원명령 exit1은 sidecar/catalog 없는 skip2 때문이며 그대로 보존. 기존 생성 도구로 두 입력을 만든 보완 검사 각각1/1 통과 후 결합 skip 0 unexplained / 1 listed. 추적 파일 변화 0, 소유 잠금 해제. 모바일 결과: **미실행**.
 - 모바일 ASTC 적용 및 예산 변경: **미승인·미적용**.
 
 ## 실제 압축 기록 (2026-10-28)
@@ -58,7 +58,7 @@ node tools/summarize-astc-trial.mjs artifacts/TRIAL unity/Assets/Art/wave1a-mani
 | fallow-enemy-rigs | 18 | 4.5 | 2.0039 | 0.1639 / 0.4528 | 41 / 122 | 0 / 0 |
 | feel-hero-b-layered | 16 | 4 | 1.7847 | 0.1863 / 0.3336 | 73 / 203 | 0 / 0 |
 
-원본·rgba 왕복은 alpha 오차와 패딩 누출 모두 0이다. 위 alpha 수치는 0–255 채널 단위이고 패딩은 역할별 중복 샘플이 있을 수 있다. ASTC6 영웅 시트의 경계 누출은 0으로 덮지 않는다. 압축 후 알파 손실은 사용자 확대 검토 대상이며 자동 품질 통과가 아니다.
+원본·rgba 왕복은 alpha 오차와 패딩 누출 모두 0이다. 위 alpha 수치는 0–255 채널 단위이고 패딩은 역할별 중복 샘플이 있을 수 있다. ASTC6 영웅 패딩의 비영 102샘플은 최대 alpha **1/255**인 미세 누출이며, atlas 전체의 최대 alpha 오차 **252**와 다른 지표다. 경계 누출을 0으로 덮지 않는다. 압축 후 알파 손실은 사용자 확대 검토 대상이며 자동 품질 통과가 아니다.
 
 제안: 영웅·적 시트는 ASTC4 후보부터 검토하고, ASTC6 영웅 시트는 누출 해결/사용자 확인 전 권하지 않는다. legacy atlas는 전투 품질 대표로 삼지 않는다. 세 atlas의 raw payload만 55.1658→13.7915/6.1462MiB이며, Mac 실제 적용이나 모바일 실행 메모리 절감이 아니다. importer 설정 및 예산 관문은 변경하지 않았다.
 
@@ -71,3 +71,11 @@ node tools/summarize-astc-trial.mjs artifacts/TRIAL unity/Assets/Art/wave1a-mani
 - [EditorUtility.CompressTexture](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorUtility.CompressTexture.html)
 - [플랫폼별 압축 형식과 미지원 시 RGBA 해제](https://docs.unity3d.com/6000.6/Documentation/Manual/texture-choose-format-by-platform.html)
 - [형식별 payload 비트 수](https://docs.unity3d.com/6000.6/Documentation/Manual/texture-formats-reference.html)
+
+## 표본 검토와 공개 납품
+
+독립 검토2건: 실제 전투 frame0 원본/rgba/4/6과 기존 셀 시트8장을 확인했다. 선정 표본에서 새 사각·명백한 halo·실루엣 단절·다리 누락은 보이지 않았으며 ASTC6 확대 얼굴·천·갑옷·날개가 더 부드럽고 ASTC4가 원본에 가깝다는 관찰이다. 사용자 품질 승인이나 전체 연속 걷기 통과는 아니다.
+
+셀 시트의 1x는 native atlas crop COMPOSITE이지 390px 게임 화면1배가 아니다. 3x는 첫 접지 위상만이다. 실제 전투 개별 캡처는720×1560이며 비교 합성보드/반복 영상은 drawtext 실패 후 미완료로 남긴다. 새로운 이미지 생성·대체 후처리는 하지 않았다.
+
+선정한4role×1x/3x와 실제 전투 frame0 원본/ASTC4/ASTC6, 작은 수치표만 [검토 Release](https://github.com/hyunlord/bs-mobile/releases/tag/astc-texture-trial-461-20261028)에 공개한다. 전체 성공 원자료는 로컬 보존한다. 수치 정본은 [CSV](texture-astc-trial-460.csv)이며 동일 atlas/manifest와 summarize 명령으로 재생성한다.
