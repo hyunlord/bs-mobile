@@ -64,17 +64,20 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
-        public IEnumerator DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
+        public IEnumerator HistoricalR7DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
         {
             var historicalCatalog = CanonicalContent.CreateMetaCatalog();
             var historicalConfig = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
             SaveFixture(historicalCatalog, AccountEstate.NewPrototype(historicalCatalog, historicalConfig, 0, 0));
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4), "The option is off by default: the manor page is unchanged.");
+            Assert.That(app.Progression.State.Estate?.ConfigVersion, Is.EqualTo(historicalConfig.Version));
             var account = MetaSaveCodec.Encode(app.Progression.State);
 
             yield return SetOption(true); yield return ScreenIs("EstateMap");
             var screen = app.EstateMap;
+            Assert.That(screen.FromSave, Is.True);
+            Assert.That(screen.Config.Version, Is.EqualTo(historicalConfig.Version));
             Assert.That(Rects("EstateMap.Building:").Length, Is.EqualTo(screen.State.Estate.Buildings.Count(b => b.Level > 0 || screen.UnderConstruction(b.Id))));
             foreach (var site in screen.State.Estate.Buildings.Where(b => b.Level == 0 && !screen.UnderConstruction(b.Id)))
                 Assert.That(Rects("EstateMap.Site:" + site.Id + ":").Length, Is.EqualTo(1), "An unbuilt site uses one approved Astra footprint instead of temporary separate fragments.");
@@ -180,7 +183,7 @@ namespace Tests.PlayMode
             Focus(empty + new Vector2(.5f, .5f)); Tap(empty); yield return null;
             Assert.That(screen.Selected, Is.Null, "A tap on empty open ground closes the selection.");
 
-            Assert.That(app.Progression.State.Estate, Is.Null);
+            Assert.That(app.Progression.State.Estate?.ConfigVersion, Is.EqualTo(historicalConfig.Version), "A historical account keeps its persisted estate while the development copy changes.");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
@@ -197,6 +200,7 @@ namespace Tests.PlayMode
             var account = MetaSaveCodec.Encode(app.Progression.State);
             Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r8"));
             Assert.That(screen.FromSave, Is.False);
+            Assert.That(app.Progression.State.Estate, Is.Null, "A fresh account has no persisted estate; the map owns a development copy.");
             Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
             Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
             yield return Capture("estate-r8-first-entry");
@@ -242,6 +246,7 @@ namespace Tests.PlayMode
             Assert.That(screen.State.Estate.Active, Is.Null);
             Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
             yield return Capture("estate-r8-field-complete");
+            Assert.That(app.Progression.State.Estate, Is.Null, "Construction must not persist the fresh development estate.");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "Only the prototype copy changes.");
         }
 
