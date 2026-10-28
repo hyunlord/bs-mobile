@@ -31,7 +31,7 @@ Core·콘텐츠·입력·리플레이·기존 역할의 셀/피벗/크기/재생
 
 | 검사 | 결과 |
 |---|---|
-| 정확 crop 교체·바깥 RGBA 해시·유효 알파 | Node 5/5 통과 |
+| 정확 crop 교체·바깥 RGBA 해시·유효 알파 | Node 8/8 통과 |
 | first-playable/wave 아트 계약 테스트 | Node 21/21 통과 |
 | manifest/registry 검증 | 두 프로필 통과 |
 | Unity EditMode/PlayMode 두 프로필 | NOT_RUN, 공유 Mac 잠금 슬롯 대기 |

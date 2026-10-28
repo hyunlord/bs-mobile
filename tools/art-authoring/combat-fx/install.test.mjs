@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import { createHash } from 'node:crypto';
 import test from 'node:test';
 import { decodeRgbaPng } from '../../wave1a-art.mjs';
-import { crops } from './install.mjs';
+import os from 'node:os';
+import path from 'node:path';
+import { crops, writeChecked } from './install.mjs';
 import { unaffectedContract } from './contracts.mjs';
 const record = JSON.parse(fs.readFileSync(new URL('./installed.json', import.meta.url)));
 const current = decodeRgbaPng(fs.readFileSync(new URL('../../../unity/Assets/Art/fx.png', import.meta.url)));
@@ -34,4 +36,18 @@ test('all unapproved FX aliases keep decoded frames and geometry in both profile
   }
   assert.equal(record.preservedAliases.length,4);
   assert.deepEqual([current.width,current.height],record.dimensions);
+});
+
+for(const changedIndex of [0,1,2])test(`unrelated edit in target ${changedIndex} aborts all writes`,()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'combat-fx-preflight-'));
+  try{
+    const outputs=['fx.png','first-playable-manifest.json','wave1a-manifest.json'].map((name,i)=>{
+      const target=path.join(dir,name),before=Buffer.from('baseline-'+name),after=Buffer.from('candidate-'+name);
+      fs.writeFileSync(target,i===changedIndex?Buffer.from('foreign-'+name):before);
+      return {target,before,after};
+    });
+    const snapshots=outputs.map(o=>fs.readFileSync(o.target));
+    assert.throws(()=>writeChecked(outputs),/unrelated target changes/);
+    outputs.forEach((o,i)=>assert.deepEqual(fs.readFileSync(o.target),snapshots[i]));
+  }finally{fs.rmSync(dir,{recursive:true});}
 });
