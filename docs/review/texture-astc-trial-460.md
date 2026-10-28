@@ -99,3 +99,21 @@ estate-art는 전투 role/frame padding 계약이 아니므로 0샘플을 통과
 최종7c1c3b0 재검증: first-playable EditMode893/PlayMode55, wave-1a903/88, 실패0. 원명령exit1/입력없는공통skip2 기록을 보존하고 기존생성도구 보완검사각1pass 후0unexplained/1listed로 확인했다. 추적파일변화0·소유잠금해제. Node수치검사4/4, boundariesPASS.
 
 추가 독립 시각 관찰: estate 전체atlas 원본/4/6의 축소 표본에서 새사각·윤곽단절·후광증가가 눈에 띄지 않았다. 상단빨강/노랑영역·줄무늬·주민어두운패딩은 original에도 있으며 압축신규결함으로 판정하지 않는다. 실제알파합성과 미세질감 우열은 이전체atlas 표시만으로 검증할 수 없다.
+
+## #473 이후 최신 estate 실제 재측정 (2026-10-28)
+
+main `0f9096aeeed21ad3fede6538927a4aad60d0ba23`을 정상 merge한 source `7817fd56e3cb2a36f9bba4ffb9e22ad847635b05`에서 동일 helper로 estate-decor만 RGBA/ASTC4/ASTC6 각1회 실행했다. 2048×2428 새 atlas의 괭이·망치·자루 작업24칸을 포함하며, 16:01:42까지 세 시험 각각1pass/0fail. 제품 importer·원판·Core는 수정하지 않았다. hero-knight와 fallow-enemy-rigs PNG/meta 네 파일은 main2074f57의 Git blob과 동일하므로 이전 실제 압축 수치를 재사용한다.
+
+| 실제 형식 | payload B | alpha MAE | 최대 alpha 오차 | 원본 투명 픽셀 누출 |
+|---|---:|---:|---:|---:|
+| RGBA32 | 19,890,176 | 0 | 0 | 0 |
+| ASTC4×4 | 4,972,544 | 0.351172 | 106 | 9,807 |
+| ASTC6×6 | 2,216,160 | 0.756492 | 221 | 19,339 |
+
+실제 포맷·블록 바이트 수·Metal GPU decode를 확인했고 RGBA 왕복 RGB/alpha 오차는0이다. estate 패딩은 별도 계약이므로 NOT_MEASURED를 유지한다. 새24칸 모두 native crop 1배·nearest3배로 원본/4/6을 풀밭·어둠 위에 비교했다(COMPOSITE). 이는 실제 영지 renderer나 모바일 품질·메모리·성능 검증이 아니다. 94개 전체 Editor 객체측정은 다시 하지 않았으므로 이전 객체총량과 합치지 않는다. 사용자 품질 승인 및 제품 적용은 대기한다.
+
+재생성: 기존 `ASTC_TRIAL_TARGET=estate-decor`, 모드 `rgba|4|6`, `WAVE_QA_START_TICK=WAVE_QA_END_TICK=2850`으로 opt-in PlayMode 시험을 실행한 다음 `node tools/summarize-astc-trial.mjs <fresh-output>/textures unity/Assets/Resources/EstateArt/estate-art.json`. 전체 원자료는 로컬에 보존하고 선정 비교판·작은 정본 CSV만 Release로 공유한다.
+
+최신source7817fd56 두 프로필: first-playable Edit898/Play55, wave-1a Edit908/Play89, 모두fail0. 원명령exit1의 공통 입력부재skip2는 그대로 보존했고 기존 도구 입력 생성 후 combat/melee 각각1pass로 실제 실행하여 combined0unexplained/1listed를 확인했다(새 예외 없음). trackedclean에서 16:13 공유잠금을 해제했다. Node4/4·Unity 경계검사 통과. 최신 상위3개 rawpayload 합계58.13458→14.53365/6.475006MiB이며 모바일/GPU RAM이 아니다.
+
+새24칸 선정판 독립 관찰: 위치·도구 연결·실루엣 유지, 명백한 새 사각매트/후광/끊김 없음. ASTC6에서 모자·천·가는 도구가 더 부드러워 보이며, 이는 정지 COMPOSITE 관찰로 전애니메이션/사용자승인 증거가 아니다. 1배 열 제목이 겹친 최초 출력은 짧은 ORIGINAL/ASTC4/ASTC6 제목으로 고쳤고 그림 픽셀은 바꾸지 않았다. Release의 최신 `estate-{hoe,hammer,sack}-alpha-{1x,3x}-COMPOSITE.png`와 `latest-estate-metrics.csv`에 이 추가시험을 따로 공개했다.
