@@ -1,0 +1,1509 @@
+{
+  "status": "DESIGN_ONLY_NOT_RUNTIME_CONFIG",
+  "proposedVersion": "m3a-prototype-r8",
+  "saveFormat": 6,
+  "source": {
+    "path": "data/opt-in/account-estate/m3a-prototype-r7.json",
+    "sha256": "0780f8d5f1845735e480906d9ad4f74f46bbed37050ca6f6de0f9bb41c716916"
+  },
+  "constraints": {
+    "singleRectanglePerZone": true,
+    "totalCells": 1664,
+    "startExact": [
+      24,
+      24,
+      12,
+      12
+    ],
+    "initialBuildingDataUnchanged": true,
+    "historicalR3ThroughR7Frozen": true
+  },
+  "coordinateContract": {
+    "cellBounds": "half-open [x,x+width) × [y,y+height)",
+    "nativeIsometricCell": [
+      64,
+      32
+    ],
+    "projection": "u=32*(x-y), v=16*(x+y)",
+    "water": "View-only proposal; does not subtract logical cells, block movement/building placement, or gate unlocking."
+  },
+  "zones": [
+    {
+      "id": "zone:start",
+      "x": 24,
+      "y": 24,
+      "width": 12,
+      "height": 12,
+      "openAtStart": true,
+      "previousProductionThreshold": null,
+      "unlock": null,
+      "area": 144,
+      "anyOpenNeighbor": [
+        "zone:outskirts-north",
+        "zone:outskirts-east",
+        "zone:outskirts-south",
+        "zone:outskirts-west"
+      ]
+    },
+    {
+      "id": "zone:outskirts-north",
+      "x": 20,
+      "y": 20,
+      "width": 20,
+      "height": 4,
+      "openAtStart": false,
+      "previousProductionThreshold": 2,
+      "unlock": {
+        "completedProductionSites": 2,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 80,
+      "anyOpenNeighbor": [
+        "zone:start",
+        "zone:outskirts-east",
+        "zone:outskirts-west",
+        "zone:inner-village",
+        "zone:inner-northeast-wood",
+        "zone:inner-fallow"
+      ]
+    },
+    {
+      "id": "zone:outskirts-east",
+      "x": 36,
+      "y": 24,
+      "width": 4,
+      "height": 12,
+      "openAtStart": false,
+      "previousProductionThreshold": 2,
+      "unlock": {
+        "completedProductionSites": 2,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 48,
+      "anyOpenNeighbor": [
+        "zone:start",
+        "zone:outskirts-north",
+        "zone:outskirts-south",
+        "zone:inner-fallow"
+      ]
+    },
+    {
+      "id": "zone:outskirts-south",
+      "x": 20,
+      "y": 36,
+      "width": 20,
+      "height": 4,
+      "openAtStart": false,
+      "previousProductionThreshold": 2,
+      "unlock": {
+        "completedProductionSites": 2,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 80,
+      "anyOpenNeighbor": [
+        "zone:start",
+        "zone:outskirts-east",
+        "zone:outskirts-west",
+        "zone:inner-village",
+        "zone:inner-fallow",
+        "zone:inner-ruins"
+      ]
+    },
+    {
+      "id": "zone:outskirts-west",
+      "x": 20,
+      "y": 24,
+      "width": 4,
+      "height": 12,
+      "openAtStart": false,
+      "previousProductionThreshold": 2,
+      "unlock": {
+        "completedProductionSites": 2,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 48,
+      "anyOpenNeighbor": [
+        "zone:start",
+        "zone:outskirts-north",
+        "zone:outskirts-south",
+        "zone:inner-village"
+      ]
+    },
+    {
+      "id": "zone:inner-village",
+      "x": 8,
+      "y": 20,
+      "width": 12,
+      "height": 20,
+      "openAtStart": false,
+      "previousProductionThreshold": 2,
+      "unlock": {
+        "completedProductionSites": 2,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 240,
+      "anyOpenNeighbor": [
+        "zone:outskirts-north",
+        "zone:outskirts-south",
+        "zone:outskirts-west",
+        "zone:inner-west-hill",
+        "zone:inner-windmill"
+      ]
+    },
+    {
+      "id": "zone:inner-northeast-wood",
+      "x": 20,
+      "y": 8,
+      "width": 20,
+      "height": 12,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 240,
+      "anyOpenNeighbor": [
+        "zone:outskirts-north",
+        "zone:inner-west-hill",
+        "zone:inner-fields"
+      ]
+    },
+    {
+      "id": "zone:inner-west-hill",
+      "x": 12,
+      "y": 10,
+      "width": 8,
+      "height": 10,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 80,
+      "anyOpenNeighbor": [
+        "zone:inner-village",
+        "zone:inner-northeast-wood"
+      ]
+    },
+    {
+      "id": "zone:inner-windmill",
+      "x": 12,
+      "y": 40,
+      "width": 8,
+      "height": 9,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 72,
+      "anyOpenNeighbor": [
+        "zone:inner-village",
+        "zone:inner-ruins"
+      ]
+    },
+    {
+      "id": "zone:inner-fields",
+      "x": 40,
+      "y": 10,
+      "width": 8,
+      "height": 10,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 80,
+      "anyOpenNeighbor": [
+        "zone:inner-northeast-wood",
+        "zone:inner-fallow"
+      ]
+    },
+    {
+      "id": "zone:inner-fallow",
+      "x": 40,
+      "y": 20,
+      "width": 12,
+      "height": 20,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 240,
+      "anyOpenNeighbor": [
+        "zone:outskirts-north",
+        "zone:outskirts-east",
+        "zone:outskirts-south",
+        "zone:inner-fields",
+        "zone:inner-riverside"
+      ]
+    },
+    {
+      "id": "zone:inner-ruins",
+      "x": 20,
+      "y": 40,
+      "width": 20,
+      "height": 12,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 240,
+      "anyOpenNeighbor": [
+        "zone:outskirts-south",
+        "zone:inner-windmill",
+        "zone:inner-riverside"
+      ]
+    },
+    {
+      "id": "zone:inner-riverside",
+      "x": 40,
+      "y": 40,
+      "width": 8,
+      "height": 9,
+      "openAtStart": false,
+      "previousProductionThreshold": 4,
+      "unlock": {
+        "completedProductionSites": 3,
+        "cost": {
+          "meta:timber": 60
+        },
+        "seconds": 30
+      },
+      "area": 72,
+      "anyOpenNeighbor": [
+        "zone:inner-fallow",
+        "zone:inner-ruins"
+      ]
+    }
+  ],
+  "buildings": [
+    {
+      "kind": "m3a:home",
+      "x": 28,
+      "y": 27,
+      "width": 2,
+      "height": 2,
+      "startsComplete": true
+    },
+    {
+      "kind": "meta:granary",
+      "x": 24,
+      "y": 24,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "meta:forge",
+      "x": 33,
+      "y": 24,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "meta:scriptorium",
+      "x": 28,
+      "y": 24,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "meta:barracks",
+      "x": 33,
+      "y": 27,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "m3a:watchtower",
+      "x": 33,
+      "y": 33,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "m3a:well_shrine",
+      "x": 30,
+      "y": 30,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "m3a:field",
+      "x": 24,
+      "y": 28,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "m3a:lumber_camp",
+      "x": 24,
+      "y": 32,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    },
+    {
+      "kind": "m3a:ironworks",
+      "x": 33,
+      "y": 30,
+      "width": 2,
+      "height": 2,
+      "startsComplete": false
+    }
+  ],
+  "adjacencies": [
+    {
+      "a": "zone:start",
+      "b": "zone:outskirts-north",
+      "sharedEdgeCells": 12,
+      "axis": "y",
+      "coordinate": 24,
+      "fromInclusive": 24,
+      "toExclusive": 36
+    },
+    {
+      "a": "zone:start",
+      "b": "zone:outskirts-east",
+      "sharedEdgeCells": 12,
+      "axis": "x",
+      "coordinate": 36,
+      "fromInclusive": 24,
+      "toExclusive": 36
+    },
+    {
+      "a": "zone:start",
+      "b": "zone:outskirts-south",
+      "sharedEdgeCells": 12,
+      "axis": "y",
+      "coordinate": 36,
+      "fromInclusive": 24,
+      "toExclusive": 36
+    },
+    {
+      "a": "zone:start",
+      "b": "zone:outskirts-west",
+      "sharedEdgeCells": 12,
+      "axis": "x",
+      "coordinate": 24,
+      "fromInclusive": 24,
+      "toExclusive": 36
+    },
+    {
+      "a": "zone:outskirts-north",
+      "b": "zone:outskirts-east",
+      "sharedEdgeCells": 4,
+      "axis": "y",
+      "coordinate": 24,
+      "fromInclusive": 36,
+      "toExclusive": 40
+    },
+    {
+      "a": "zone:outskirts-north",
+      "b": "zone:outskirts-west",
+      "sharedEdgeCells": 4,
+      "axis": "y",
+      "coordinate": 24,
+      "fromInclusive": 20,
+      "toExclusive": 24
+    },
+    {
+      "a": "zone:outskirts-north",
+      "b": "zone:inner-village",
+      "sharedEdgeCells": 4,
+      "axis": "x",
+      "coordinate": 20,
+      "fromInclusive": 20,
+      "toExclusive": 24
+    },
+    {
+      "a": "zone:outskirts-north",
+      "b": "zone:inner-northeast-wood",
+      "sharedEdgeCells": 20,
+      "axis": "y",
+      "coordinate": 20,
+      "fromInclusive": 20,
+      "toExclusive": 40
+    },
+    {
+      "a": "zone:outskirts-north",
+      "b": "zone:inner-fallow",
+      "sharedEdgeCells": 4,
+      "axis": "x",
+      "coordinate": 40,
+      "fromInclusive": 20,
+      "toExclusive": 24
+    },
+    {
+      "a": "zone:outskirts-east",
+      "b": "zone:outskirts-south",
+      "sharedEdgeCells": 4,
+      "axis": "y",
+      "coordinate": 36,
+      "fromInclusive": 36,
+      "toExclusive": 40
+    },
+    {
+      "a": "zone:outskirts-east",
+      "b": "zone:inner-fallow",
+      "sharedEdgeCells": 12,
+      "axis": "x",
+      "coordinate": 40,
+      "fromInclusive": 24,
+      "toExclusive": 36
+    },
+    {
+      "a": "zone:outskirts-south",
+      "b": "zone:outskirts-west",
+      "sharedEdgeCells": 4,
+      "axis": "y",
+      "coordinate": 36,
+      "fromInclusive": 20,
+      "toExclusive": 24
+    },
+    {
+      "a": "zone:outskirts-south",
+      "b": "zone:inner-village",
+      "sharedEdgeCells": 4,
+      "axis": "x",
+      "coordinate": 20,
+      "fromInclusive": 36,
+      "toExclusive": 40
+    },
+    {
+      "a": "zone:outskirts-south",
+      "b": "zone:inner-fallow",
+      "sharedEdgeCells": 4,
+      "axis": "x",
+      "coordinate": 40,
+      "fromInclusive": 36,
+      "toExclusive": 40
+    },
+    {
+      "a": "zone:outskirts-south",
+      "b": "zone:inner-ruins",
+      "sharedEdgeCells": 20,
+      "axis": "y",
+      "coordinate": 40,
+      "fromInclusive": 20,
+      "toExclusive": 40
+    },
+    {
+      "a": "zone:outskirts-west",
+      "b": "zone:inner-village",
+      "sharedEdgeCells": 12,
+      "axis": "x",
+      "coordinate": 20,
+      "fromInclusive": 24,
+      "toExclusive": 36
+    },
+    {
+      "a": "zone:inner-village",
+      "b": "zone:inner-west-hill",
+      "sharedEdgeCells": 8,
+      "axis": "y",
+      "coordinate": 20,
+      "fromInclusive": 12,
+      "toExclusive": 20
+    },
+    {
+      "a": "zone:inner-village",
+      "b": "zone:inner-windmill",
+      "sharedEdgeCells": 8,
+      "axis": "y",
+      "coordinate": 40,
+      "fromInclusive": 12,
+      "toExclusive": 20
+    },
+    {
+      "a": "zone:inner-northeast-wood",
+      "b": "zone:inner-west-hill",
+      "sharedEdgeCells": 10,
+      "axis": "x",
+      "coordinate": 20,
+      "fromInclusive": 10,
+      "toExclusive": 20
+    },
+    {
+      "a": "zone:inner-northeast-wood",
+      "b": "zone:inner-fields",
+      "sharedEdgeCells": 10,
+      "axis": "x",
+      "coordinate": 40,
+      "fromInclusive": 10,
+      "toExclusive": 20
+    },
+    {
+      "a": "zone:inner-windmill",
+      "b": "zone:inner-ruins",
+      "sharedEdgeCells": 9,
+      "axis": "x",
+      "coordinate": 20,
+      "fromInclusive": 40,
+      "toExclusive": 49
+    },
+    {
+      "a": "zone:inner-fields",
+      "b": "zone:inner-fallow",
+      "sharedEdgeCells": 8,
+      "axis": "y",
+      "coordinate": 20,
+      "fromInclusive": 40,
+      "toExclusive": 48
+    },
+    {
+      "a": "zone:inner-fallow",
+      "b": "zone:inner-riverside",
+      "sharedEdgeCells": 8,
+      "axis": "y",
+      "coordinate": 40,
+      "fromInclusive": 40,
+      "toExclusive": 48
+    },
+    {
+      "a": "zone:inner-ruins",
+      "b": "zone:inner-riverside",
+      "sharedEdgeCells": 9,
+      "axis": "x",
+      "coordinate": 40,
+      "fromInclusive": 40,
+      "toExclusive": 49
+    }
+  ],
+  "unlockContract": {
+    "neighborMode": "ANY_OPEN_EDGE_ADJACENT",
+    "conditions": "Any one open edge-neighbor AND production threshold AND no other zone work AND wallet cost AND protected reserve; no new AND-chain, guardian or bridge prerequisite.",
+    "source": "core/src/SowSiege.Core/AccountEstate.cs:446-470"
+  },
+  "river": {
+    "widthRule": "Centerline cells plus each cell at x+1; stepped diagonal sections may occupy three columns on a row.",
+    "centerline": [
+      [
+        26,
+        8
+      ],
+      [
+        26,
+        9
+      ],
+      [
+        26,
+        10
+      ],
+      [
+        26,
+        11
+      ],
+      [
+        26,
+        12
+      ],
+      [
+        27,
+        12
+      ],
+      [
+        27,
+        13
+      ],
+      [
+        28,
+        13
+      ],
+      [
+        28,
+        14
+      ],
+      [
+        29,
+        14
+      ],
+      [
+        29,
+        15
+      ],
+      [
+        30,
+        15
+      ],
+      [
+        30,
+        16
+      ],
+      [
+        31,
+        16
+      ],
+      [
+        31,
+        17
+      ],
+      [
+        32,
+        17
+      ],
+      [
+        32,
+        18
+      ],
+      [
+        33,
+        18
+      ],
+      [
+        33,
+        19
+      ],
+      [
+        34,
+        19
+      ],
+      [
+        34,
+        20
+      ],
+      [
+        35,
+        20
+      ],
+      [
+        35,
+        21
+      ],
+      [
+        36,
+        21
+      ],
+      [
+        36,
+        22
+      ],
+      [
+        37,
+        22
+      ],
+      [
+        37,
+        23
+      ],
+      [
+        38,
+        23
+      ],
+      [
+        38,
+        24
+      ],
+      [
+        39,
+        24
+      ],
+      [
+        39,
+        25
+      ],
+      [
+        40,
+        25
+      ],
+      [
+        40,
+        26
+      ],
+      [
+        41,
+        26
+      ],
+      [
+        41,
+        27
+      ],
+      [
+        42,
+        27
+      ],
+      [
+        42,
+        28
+      ],
+      [
+        43,
+        28
+      ],
+      [
+        44,
+        28
+      ],
+      [
+        44,
+        29
+      ],
+      [
+        44,
+        30
+      ],
+      [
+        44,
+        31
+      ],
+      [
+        44,
+        32
+      ],
+      [
+        44,
+        33
+      ],
+      [
+        44,
+        34
+      ],
+      [
+        44,
+        35
+      ],
+      [
+        44,
+        36
+      ],
+      [
+        44,
+        37
+      ],
+      [
+        44,
+        38
+      ],
+      [
+        44,
+        39
+      ],
+      [
+        44,
+        40
+      ],
+      [
+        44,
+        41
+      ],
+      [
+        44,
+        42
+      ],
+      [
+        44,
+        43
+      ],
+      [
+        44,
+        44
+      ],
+      [
+        44,
+        45
+      ],
+      [
+        44,
+        46
+      ],
+      [
+        44,
+        47
+      ],
+      [
+        44,
+        48
+      ]
+    ],
+    "cells": [
+      [
+        26,
+        8
+      ],
+      [
+        27,
+        8
+      ],
+      [
+        26,
+        9
+      ],
+      [
+        27,
+        9
+      ],
+      [
+        26,
+        10
+      ],
+      [
+        27,
+        10
+      ],
+      [
+        26,
+        11
+      ],
+      [
+        27,
+        11
+      ],
+      [
+        26,
+        12
+      ],
+      [
+        27,
+        12
+      ],
+      [
+        28,
+        12
+      ],
+      [
+        27,
+        13
+      ],
+      [
+        28,
+        13
+      ],
+      [
+        29,
+        13
+      ],
+      [
+        28,
+        14
+      ],
+      [
+        29,
+        14
+      ],
+      [
+        30,
+        14
+      ],
+      [
+        29,
+        15
+      ],
+      [
+        30,
+        15
+      ],
+      [
+        31,
+        15
+      ],
+      [
+        30,
+        16
+      ],
+      [
+        31,
+        16
+      ],
+      [
+        32,
+        16
+      ],
+      [
+        31,
+        17
+      ],
+      [
+        32,
+        17
+      ],
+      [
+        33,
+        17
+      ],
+      [
+        32,
+        18
+      ],
+      [
+        33,
+        18
+      ],
+      [
+        34,
+        18
+      ],
+      [
+        33,
+        19
+      ],
+      [
+        34,
+        19
+      ],
+      [
+        35,
+        19
+      ],
+      [
+        34,
+        20
+      ],
+      [
+        35,
+        20
+      ],
+      [
+        36,
+        20
+      ],
+      [
+        35,
+        21
+      ],
+      [
+        36,
+        21
+      ],
+      [
+        37,
+        21
+      ],
+      [
+        36,
+        22
+      ],
+      [
+        37,
+        22
+      ],
+      [
+        38,
+        22
+      ],
+      [
+        37,
+        23
+      ],
+      [
+        38,
+        23
+      ],
+      [
+        39,
+        23
+      ],
+      [
+        38,
+        24
+      ],
+      [
+        39,
+        24
+      ],
+      [
+        40,
+        24
+      ],
+      [
+        39,
+        25
+      ],
+      [
+        40,
+        25
+      ],
+      [
+        41,
+        25
+      ],
+      [
+        40,
+        26
+      ],
+      [
+        41,
+        26
+      ],
+      [
+        42,
+        26
+      ],
+      [
+        41,
+        27
+      ],
+      [
+        42,
+        27
+      ],
+      [
+        43,
+        27
+      ],
+      [
+        42,
+        28
+      ],
+      [
+        43,
+        28
+      ],
+      [
+        44,
+        28
+      ],
+      [
+        45,
+        28
+      ],
+      [
+        44,
+        29
+      ],
+      [
+        45,
+        29
+      ],
+      [
+        44,
+        30
+      ],
+      [
+        45,
+        30
+      ],
+      [
+        44,
+        31
+      ],
+      [
+        45,
+        31
+      ],
+      [
+        44,
+        32
+      ],
+      [
+        45,
+        32
+      ],
+      [
+        44,
+        33
+      ],
+      [
+        45,
+        33
+      ],
+      [
+        44,
+        34
+      ],
+      [
+        45,
+        34
+      ],
+      [
+        44,
+        35
+      ],
+      [
+        45,
+        35
+      ],
+      [
+        44,
+        36
+      ],
+      [
+        45,
+        36
+      ],
+      [
+        44,
+        37
+      ],
+      [
+        45,
+        37
+      ],
+      [
+        44,
+        38
+      ],
+      [
+        45,
+        38
+      ],
+      [
+        44,
+        39
+      ],
+      [
+        45,
+        39
+      ],
+      [
+        44,
+        40
+      ],
+      [
+        45,
+        40
+      ],
+      [
+        44,
+        41
+      ],
+      [
+        45,
+        41
+      ],
+      [
+        44,
+        42
+      ],
+      [
+        45,
+        42
+      ],
+      [
+        44,
+        43
+      ],
+      [
+        45,
+        43
+      ],
+      [
+        44,
+        44
+      ],
+      [
+        45,
+        44
+      ],
+      [
+        44,
+        45
+      ],
+      [
+        45,
+        45
+      ],
+      [
+        44,
+        46
+      ],
+      [
+        45,
+        46
+      ],
+      [
+        44,
+        47
+      ],
+      [
+        45,
+        47
+      ],
+      [
+        44,
+        48
+      ],
+      [
+        45,
+        48
+      ]
+    ],
+    "bridges": [
+      {
+        "id": "bridge:north-wood",
+        "x": 28,
+        "y": 16,
+        "width": 7,
+        "height": 1,
+        "cells": [
+          [
+            28,
+            16
+          ],
+          [
+            29,
+            16
+          ],
+          [
+            30,
+            16
+          ],
+          [
+            31,
+            16
+          ],
+          [
+            32,
+            16
+          ],
+          [
+            33,
+            16
+          ],
+          [
+            34,
+            16
+          ]
+        ],
+        "waterCells": [
+          [
+            30,
+            16
+          ],
+          [
+            31,
+            16
+          ],
+          [
+            32,
+            16
+          ]
+        ],
+        "landApproachCells": [
+          [
+            28,
+            16
+          ],
+          [
+            29,
+            16
+          ],
+          [
+            33,
+            16
+          ],
+          [
+            34,
+            16
+          ]
+        ],
+        "hostZones": [
+          "zone:inner-northeast-wood"
+        ],
+        "leftBankDry": true,
+        "rightBankDry": true
+      },
+      {
+        "id": "bridge:east-fallow",
+        "x": 42,
+        "y": 33,
+        "width": 6,
+        "height": 1,
+        "cells": [
+          [
+            42,
+            33
+          ],
+          [
+            43,
+            33
+          ],
+          [
+            44,
+            33
+          ],
+          [
+            45,
+            33
+          ],
+          [
+            46,
+            33
+          ],
+          [
+            47,
+            33
+          ]
+        ],
+        "waterCells": [
+          [
+            44,
+            33
+          ],
+          [
+            45,
+            33
+          ]
+        ],
+        "landApproachCells": [
+          [
+            42,
+            33
+          ],
+          [
+            43,
+            33
+          ],
+          [
+            46,
+            33
+          ],
+          [
+            47,
+            33
+          ]
+        ],
+        "hostZones": [
+          "zone:inner-fallow"
+        ],
+        "leftBankDry": true,
+        "rightBankDry": true
+      },
+      {
+        "id": "bridge:south-riverside",
+        "x": 42,
+        "y": 44,
+        "width": 6,
+        "height": 1,
+        "cells": [
+          [
+            42,
+            44
+          ],
+          [
+            43,
+            44
+          ],
+          [
+            44,
+            44
+          ],
+          [
+            45,
+            44
+          ],
+          [
+            46,
+            44
+          ],
+          [
+            47,
+            44
+          ]
+        ],
+        "waterCells": [
+          [
+            44,
+            44
+          ],
+          [
+            45,
+            44
+          ]
+        ],
+        "landApproachCells": [
+          [
+            42,
+            44
+          ],
+          [
+            43,
+            44
+          ],
+          [
+            46,
+            44
+          ],
+          [
+            47,
+            44
+          ]
+        ],
+        "hostZones": [
+          "zone:inner-riverside"
+        ],
+        "leftBankDry": true,
+        "rightBankDry": true
+      }
+    ]
+  },
+  "verification": {
+    "zoneCount": 13,
+    "totalArea": 1664,
+    "uniqueCells": 1664,
+    "unionComponents": 1,
+    "enclosedMissingCells": 0,
+    "allZonesReachableAfter3ProductionSites": true,
+    "configuredProducingBuildingKinds": [
+      "m3a:field",
+      "m3a:lumber_camp",
+      "m3a:ironworks"
+    ],
+    "zonesReachableAfter2ProductionSites": [
+      "zone:start",
+      "zone:outskirts-north",
+      "zone:outskirts-east",
+      "zone:outskirts-south",
+      "zone:outskirts-west",
+      "zone:inner-village"
+    ],
+    "riverComponents": 1,
+    "visualDryBankCellCounts": [
+      1194,
+      370
+    ],
+    "visualDryBanksConnectedByThreeBridges": true,
+    "riverStartOverlap": 0,
+    "riverBuildingOverlap": 0,
+    "initialBuildingCount": 10,
+    "buildingCells": 40,
+    "bridges": 3
+  }
+}
