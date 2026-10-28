@@ -77,3 +77,12 @@ Native는 승인된1회 실행으로 정상 완료했다. wave-1a/isWave=true/po
 artifact 검증기가390×844를 고정 가정하여 native 성공 뒤 크기 검사에서 종료1을 냈다. 원본 오류는 보존했고 재실행하지 않았다. 사용자 native 계약은390 고정이 아니므로, 실제 크기834×1808의 모든 PNG/CSV 일치·12상태·청록0·정상 완료2건을 독립 재검사해 통과했다. 검토용390×844 이미지는 원본을 비율 유지 축소·패딩한 파생본으로 표시한다.
 
 원자료 위치: `artifacts/day-20261028/431-execution/run-20261028-091000-38040/`와 `artifacts/day-20261028/431-label-native/estate-native-20261028-092025-15723/`. [선정 비교 표본 Release](https://github.com/hyunlord/bs-mobile/releases/tag/estate-approved-art-431-r4-20261028). 전체 성공 로그/화면 묶음은 업로드하지 않는다. 필수 CI 최종 결과는 보고 커밋 기준 PR 코멘트에 남긴다. PR초안·#444 병합 뒤 순서 유지.
+
+## 2026-10-28 병합 승인 후 최신 main 재검증
+
+사용자 #431 squash 병합 승인 후 main `437d62a4c8f25700979f22cbf0877f648b978aaa`를 강제 push 없이 merge했다. FP01 관련 Unity 코드·검사가 들어와 기존 기록을 재사용하지 않았다. 새 검증 source `424e0b2a4d3e9a0cd22d0c64a8c062de22456214`, 10:39~10:50 KST 실행이다.
+
+- first-playable EditMode893/0/25, PlayMode55/0/46; wave-1a EditMode903/0/15, PlayMode88/0/13 (통과/실패/skip).
+- 기존 sidecar·melee 보충 각1/1. 원래 runner exit1/미설명2 기록은 보존, 보충 합산 미설명0/목록1.
+- 실행 후 추적파일 변경0, 자기 잠금10:50 해제. Native는 앞서 승인된1회 성공을 유지하며 재실행하지 않았다.
+- 원자료 `artifacts/day-20261028/431-execution/merge-20261028-103857/`. 보고 커밋의 최신 quality·secrets 최종 통과 후 병합한다.
