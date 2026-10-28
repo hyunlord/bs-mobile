@@ -66,6 +66,9 @@ namespace Tests.PlayMode
         [UnityTest, Timeout(180000)]
         public IEnumerator DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
         {
+            var historicalCatalog = CanonicalContent.CreateMetaCatalog();
+            var historicalConfig = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            SaveFixture(historicalCatalog, AccountEstate.NewPrototype(historicalCatalog, historicalConfig, 0, 0));
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4), "The option is off by default: the manor page is unchanged.");
             var account = MetaSaveCodec.Encode(app.Progression.State);

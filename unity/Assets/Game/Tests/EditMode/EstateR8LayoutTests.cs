@@ -18,7 +18,22 @@ namespace Tests.EditMode
             var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
             var again = EstatePlanner.Plan(rules, art, config, state.Estate);
-            Assert.That(again.Items.Select(i => i.Key), Is.EqualTo(plan.Items.Select(i => i.Key)));
+            string Item(EstateDrawItem i) => i.Key + i.Role + i.Grid.ToString("F4");
+            Assert.That(again.Items.Select(Item), Is.EqualTo(plan.Items.Select(Item)));
+            var footprints = state.Estate.Buildings.SelectMany(b =>
+            {
+                var kind = config.Buildings.Single(k => k.Kind == b.Kind);
+                return Enumerable.Range(b.X, kind.Width).SelectMany(x => Enumerable.Range(b.Y, kind.Height).Select(y => new Vector2Int(x, y)));
+            }).ToHashSet();
+            Assert.That(plan.Road.Overlaps(footprints), Is.False);
+            foreach (var item in plan.Items.Where(i => i.Source == "yard" || i.Source == "roadside" || i.Source == "empty-land"))
+            {
+                var cell = Vector2Int.FloorToInt(item.Grid);
+                Assert.That(config.Zones.Any(z => state.Estate.OpenZones.Contains(z.Id) && cell.x >= z.X && cell.y >= z.Y && cell.x < z.X + z.Width && cell.y < z.Y + z.Height), Is.True, item.Key);
+                Assert.That(footprints.Contains(cell) && item.Source != "yard", Is.False, item.Key);
+            }
+            foreach (var item in plan.In(EstateDrawLayer.Veiled))
+                Assert.That(plan.StateOf(Vector2Int.FloorToInt(item.Grid)), Is.EqualTo("closed").Or.Null, item.Key);
             Assert.That(plan.Items.Where(i => i.Source == "road").All(i => i.RoadPoints != null && i.RoadPoints.Length >= 2 && i.Role.StartsWith("road-")), Is.True);
             Assert.That(plan.Count("road"), Is.LessThan(plan.Road.Count));
             foreach (var zone in config.Zones)

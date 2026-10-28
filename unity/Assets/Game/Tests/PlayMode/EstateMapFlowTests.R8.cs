@@ -64,6 +64,13 @@ namespace Tests.PlayMode
             Assert.That(app.EstateMap.State.Estate.OpenZones.Length, Is.EqualTo(target));
             Assert.That(app.EstateMap.FromSave, Is.True);
             ZoomTo(app.EstateMap.Map.WholeMap);
+            var map = app.EstateMap.Map;
+            Assert.That(map.MapSize.x, Is.LessThanOrEqualTo(map.Viewport.x + .01f));
+            Assert.That(map.MapSize.y, Is.LessThanOrEqualTo(map.Viewport.y - map.TopInset - map.BottomInset + .01f));
+            Assert.That(map.MapSize.x / map.MapSize.y, Is.EqualTo(map.MapExtent.x / map.MapExtent.y).Within(.001f), "Compact r8 keeps the approved projection, not the historical tall-map framing.");
+            var riverCount = EstateR8Layout.Load().placed.Count(p => p.id.StartsWith("river", StringComparison.Ordinal));
+            Assert.That(app.EstateMap.Plan(EstateDecorRules.Load(), EstateArt.Load()).Items.Count(i => i.Source == "placed" && i.Role.StartsWith("river", StringComparison.Ordinal)), Is.EqualTo(riverCount));
+            CheckBatchBudget(config.Version, "on");
             var openedArea = config.Zones.Where(z => state.Estate.OpenZones.Contains(z.Id)).Sum(z => z.Width * z.Height);
             Debug.Log($"r8 {label} area={openedArea}/1664: normal Core commands with simulated clock, elapsed={clock}s claims={claims}; 10 authored sites, not the concept's future developed building count.");
             yield return Capture("estate-r8-" + label);
