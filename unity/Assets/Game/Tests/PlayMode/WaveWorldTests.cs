@@ -266,8 +266,10 @@ namespace Tests.PlayMode
             var owner=new GameObject("Recorded tick sequence QA");var cameraOwner=new GameObject("Recorded tick camera");
             var camera=cameraOwner.AddComponent<Camera>();var texture=new RenderTexture(720,1560,24);camera.targetTexture=texture;
             var image=new Texture2D(720,1560,TextureFormat.RGB24,false);var written=0;var warmStart=System.Math.Max(1,start-120);
+            AstcTextureTrial astcTrial=null;
             try
             {
+                astcTrial=AstcTextureTrial.OpenFromEnvironment();
                 var initial=session.View.CaptureFrame();var config=CanonicalContent.Presentation.Camera;var world=owner.AddComponent<WorldRenderer>();
                 world.Initialize(camera,new WorldCameraSettings(config.WorldUnitsPerUnityUnit,config.MinHalfHeight,config.MaxHalfHeight,config.EstatePadding,config.FollowMilliseconds,config.ZoomMilliseconds),catalog.Tuning.DefaultEstate,initial.MapWidth,initial.MapHeight);
                 using(var ledger=new StreamWriter(Path.Combine(output,"frames-local.tsv")))
@@ -310,7 +312,7 @@ namespace Tests.PlayMode
                 string replayHash;using(var sha=SHA256.Create())replayHash=System.BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-","");
                 File.WriteAllText(Path.Combine(output,"sequence-local.txt"),$"classification=deterministic actual-input GPU replay; 30 Hz simulation ticks; card waits omitted; world only; 720x1560; no audio; not native/live autoplay or performance evidence\nreplay={Path.GetFullPath(replayPath)}\nreplaySha256={replayHash}\nexpectedRendererCommit={expectedRendererCommit}\ngeneratedBuildIdentityCommit={BuildIdentity.Commit}\ngeneratedSourceHash={BuildIdentity.SourceHash}\ngeneratedSourceDirty={BuildIdentity.SourceDirty}\nsourceVerification=external git and prepare verification required; generated metadata alone does not verify current source\ndataHash={CanonicalContent.DataHash}\nstartTick={start}\nendTick={end}\nwarmStartTick={warmStart}\nframes={written}\nverifiedCheckpoints={checkedCheckpoints}\nterminalVerification=PASS\nterminalTick={summary.Tick}\nterminalKind={terminalKind}\nterminalStateHash={summary.StateHash}\nsameTickCommands=applied in recorded order before that tick frame; no extra frames\nrawFramesAndMetadata=local only; selected encoded video is review evidence\n");
             }
-            finally{Object.Destroy(image);Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);}
+            finally{Object.Destroy(image);Object.Destroy(owner);Object.Destroy(cameraOwner);texture.Release();Object.Destroy(texture);astcTrial?.Dispose();}
         }
         [UnityTest, Timeout(300000)]
         public IEnumerator ActualWaveSnapshotDrawsAuthoredPixels()

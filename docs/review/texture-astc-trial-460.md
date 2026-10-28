@@ -1,0 +1,56 @@
+# ASTC 압축 격리 시험 — #460 / #461
+
+- 날짜: 2026-10-28. 상태: **도구 준비 / Unity 실행 전 / 품질 미판정**.
+- 기준 main: `437d62a4c8f25700979f22cbf0877f648b978aaa`.
+- 범위: 임시 텍스처 사본을 실제 ASTC 4×4·6×6으로 압축하고 같은 실제 입력 리플레이 장면에서 비교한다. 적용안·예산은 제안만 한다.
+- 원본 PNG, importer `.meta`, Prepare의 Uncompressed 계약, Mac 기본 표시, Core·리플레이는 바꾸지 않는다.
+
+## 대상과 증거 구분
+
+| registry ID | 원본 크기 | 성격 |
+| --- | --- | --- |
+| hero-knight | 2564×2164 | 현재 영웅 시트 |
+| fallow-enemy-rigs | 2048×2304 | 기준 main 적 시트; #455의 확장 atlas와 혼동 금지 |
+| feel-hero-b-layered | 2048×2048 | legacy 참조; 실제 전투 사용을 주장하지 않고 별도 셀 비교 |
+
+리소스 registry 참조 크기와 실제 화면 사용 여부는 다르다. 원자료·PNG는 로컬 artifacts에 두고, 선정한 비교 화면과 작은 정본 측정표만 납품한다.
+
+## 실행 계약
+
+공유 Mac 잠금·시간 제한을 먼저 따른다. Unity 슬롯 승인 전에는 실행하지 않는다. 기존 `RecordedWaveRangeExportsActualTickFrames`에 다음 환경변수만 추가한다.
+
+- `ASTC_TRIAL_MODE=rgba`, `4`, `6`: 모드마다 새 프로세스/신선한 출력 경로.
+- `ASTC_TRIAL_OUTPUT`: atlas 원본 GPU readback, 실제 ASTC blocks, GPU decode PNG, 형식/바이트 보고서 디렉터리. 빈 폴더 필수.
+- `ASTC_TRIAL_INVENTORY_PATHS`: 선택. 감사 목록의 `Assets/...png` 경로를 한 줄씩 적은 파일. 첫 실행에만 지정하여 실제 Editor format·크기·mipmap·readable·Profiler runtime bytes를 기록한다. 모바일 실측이 아니다.
+- 기존 `WAVE_QA_REPLAY`, `WAVE_QA_START_TICK`, `WAVE_QA_END_TICK`, `WAVE_QA_SEQUENCE_OUTPUT`, `WAVE_QA_RENDERER_COMMIT`도 명시한다. 세 모드는 동일 입력·범위·카메라·소스 커밋을 사용한다.
+
+기존 30Hz 실제 입력 캡처는 체크포인트와 전체 종료 해시를 검사한다. 비교는 동일 frame 번호의 정지 화면을 사용한다. UI 없는 전투 1배와 최근접 3배 확대, 네 걷기 위상을 사전 선정한다. 이것은 성능 측정이나 모바일 실행이 아니다.
+
+압축 전에 `SystemInfo.SupportsTextureFormat`을 확인한다. 지원하지 않으면 실패하며 원본 대체·비슷한 손실 모사로 통과시키지 않는다. `EditorUtility.CompressTexture`가 실패하면 원본을 그대로 둘 수 있으므로 요청 형식과 실제 `texture.format`의 동일성을 확인한다. mipmap은 하나이며 바이트 수는 `ceil(w/block) × ceil(h/block) × 16`과 실제 raw payload를 비교한다.
+
+registry의 배열 참조만 일시 교체하고 finally에서 복원·cache invalidate한다. AssetDatabase save/import, 플랫폼 전환, importer 수정은 하지 않는다. 기본 환경변수가 없으면 아무 압축도 수행하지 않는다.
+
+## 품질·메모리 기록
+
+```sh
+node --test tools/test-astc-trial.mjs
+node tools/summarize-astc-trial.mjs artifacts/TRIAL unity/Assets/Art/wave1a-manifest.json
+```
+
+알파 MAE/최대 오차, 투명 원본에 생긴 알파, 불투명 픽셀 손실, 역할 주변 패딩의 비영 알파를 기록한다. 압축 후 패딩이 손상되어도 원본의 정확한 투명 패딩 검사를 완화하지 않는다. RGB 평균만으로 가는 선·저알파 효과 통과를 판정하지 않는다. 선택 셀은 풀밭과 어두운 배경 위 1배·3배로 비교한다. legacy atlas는 비활성 셀 비교로 명시한다.
+
+`rgba`는 GPU readback 왕복 대조군이다. 대조군은 atlas RGBA 왕복 모든 채널 바이트 동일성을 강제한다. 원래 게임 캡처와 이 대조군이 달라지면 색공간·알파 왕복 문제부터 보고하고 ASTC 비교를 중단한다. decoded PNG는 다시 RGBA이므로 파일 크기·메모리 절감의 증거가 아니다. 압축 payload, Editor texture memory, 모바일 지원/미지원 해제 비용을 각각 구별한다.
+
+## 결과
+
+- Node 수치 검사: 3/3 통과.
+- Unity 컴파일, 실제 ASTC 인코딩·GPU decode, 전투 캡처, 모바일 결과: **미실행**.
+- 모바일 ASTC 적용 및 예산 변경: **미승인·미적용**.
+
+## 근거
+
+설치된 Unity 6000.6.4f1 공식 문서에서 확인했다. AndroidPlayer(SDK/NDK/JDK)와 iOSSupport는 설치되어 있다. astcenc CLI는 PATH에 없고 Unity 내장 dylib에는 encode/decode 심볼이 있지만 직접 ABI 호출은 이번 경로가 아니다.
+
+- [EditorUtility.CompressTexture](https://docs.unity3d.com/6000.6/Documentation/ScriptReference/EditorUtility.CompressTexture.html)
+- [플랫폼별 압축 형식과 미지원 시 RGBA 해제](https://docs.unity3d.com/6000.6/Documentation/Manual/texture-choose-format-by-platform.html)
+- [형식별 payload 비트 수](https://docs.unity3d.com/6000.6/Documentation/Manual/texture-formats-reference.html)

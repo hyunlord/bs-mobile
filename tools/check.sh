@@ -33,7 +33,7 @@ node tools/meta-content.mjs "$PWD"
 node --test tools/test-meta-content.mjs
 node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
-node --test tools/wave1a-art.test.mjs
+node --test tools/wave1a-art.test.mjs tools/test-astc-trial.mjs
 node tools/wave1a-art.mjs "$PWD"
 node --test tools/test-estate-art.mjs tools/test-estate-approved-sites.mjs
 node tools/estate-art.mjs --check
