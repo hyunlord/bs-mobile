@@ -1,6 +1,6 @@
 # ASTC 압축 격리 시험 — #460 / #461
 
-- 날짜: 2026-10-28. 상태: **도구 준비 / Unity 실행 전 / 품질 미판정**.
+- 날짜: 2026-10-28. 상태: **실제 ASTC 압축·GPU decode 확인 / 사용자 품질 판정 대기**.
 - 기준 main: `437d62a4c8f25700979f22cbf0877f648b978aaa`.
 - 범위: 임시 텍스처 사본을 실제 ASTC 4×4·6×6으로 압축하고 같은 실제 입력 리플레이 장면에서 비교한다. 적용안·예산은 제안만 한다.
 - 원본 PNG, importer `.meta`, Prepare의 Uncompressed 계약, Mac 기본 표시, Core·리플레이는 바꾸지 않는다.
@@ -45,8 +45,24 @@ node tools/summarize-astc-trial.mjs artifacts/TRIAL unity/Assets/Art/wave1a-mani
 ## 결과
 
 - Node 수치 검사: 3/3 통과.
-- Unity 컴파일, 실제 ASTC 인코딩·GPU decode, 전투 캡처, 모바일 결과: **미실행**.
+- Unity6000.6.4f1 / Apple M4 Max / Metal, 소스 `d257dc7`: 16px RGBA·ASTC4·ASTC6 probe 각 요청 형식과 raw bytes 확인.
+- 전체 3atlas × rgba/4/6 실제 압축·GPU decode 통과. 원본 전투→rgba 왕복 24장 PNG 바이트 동일. 각 리플레이 실행 체크포인트·종료 해시 확인.
+- 두 프로필 전체: 실행 중. 모바일 결과: **미실행**.
 - 모바일 ASTC 적용 및 예산 변경: **미승인·미적용**.
+
+## 실제 압축 기록 (2026-10-28)
+
+| atlas | RGBA payload MiB | ASTC4 MiB | ASTC6 MiB | alpha MAE 4 / 6 | alpha 최대 오차 4 / 6 | 패딩 비영 alpha 4 / 6 |
+| --- | ---: | ---: | ---: | --- | --- | --- |
+| hero-knight | 21.1658 | 5.2915 | 2.3576 | 0.1291 / 0.2738 | 72 / 252 | 0 / 102 |
+| fallow-enemy-rigs | 18 | 4.5 | 2.0039 | 0.1639 / 0.4528 | 41 / 122 | 0 / 0 |
+| feel-hero-b-layered | 16 | 4 | 1.7847 | 0.1863 / 0.3336 | 73 / 203 | 0 / 0 |
+
+원본·rgba 왕복은 alpha 오차와 패딩 누출 모두 0이다. 위 alpha 수치는 0–255 채널 단위이고 패딩은 역할별 중복 샘플이 있을 수 있다. ASTC6 영웅 시트의 경계 누출은 0으로 덮지 않는다. 압축 후 알파 손실은 사용자 확대 검토 대상이며 자동 품질 통과가 아니다.
+
+제안: 영웅·적 시트는 ASTC4 후보부터 검토하고, ASTC6 영웅 시트는 누출 해결/사용자 확인 전 권하지 않는다. legacy atlas는 전투 품질 대표로 삼지 않는다. 세 atlas의 raw payload만 55.1658→13.7915/6.1462MiB이며, Mac 실제 적용이나 모바일 실행 메모리 절감이 아니다. importer 설정 및 예산 관문은 변경하지 않았다.
+
+로컬 증거: `artifacts/astc-trial/probe-r1`, `full-original-r1`, `full-rgba-r1`, `full-4-r1`, `full-6-r1`, `metrics-*.json`. 실제 전투는 tick2850–2873, 원본/각모드 동일. 별도 셀 시트는 COMPOSITE로 분리한다. ffmpeg drawtext 미지원으로 같은 배치의 제목 합성 2건이 실패했으며 그 경로를 중단했다. 원본 캡처·압축 결과는 정상 보존한다.
 
 ## 근거
 
