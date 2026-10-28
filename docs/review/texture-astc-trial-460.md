@@ -79,3 +79,23 @@ node tools/summarize-astc-trial.mjs artifacts/TRIAL unity/Assets/Art/wave1a-mani
 셀 시트의 1x는 native atlas crop COMPOSITE이지 390px 게임 화면1배가 아니다. 3x는 첫 접지 위상만이다. 실제 전투 개별 캡처는720×1560이며 비교 합성보드/반복 영상은 drawtext 실패 후 미완료로 남긴다. 새로운 이미지 생성·대체 후처리는 하지 않았다.
 
 선정한4role×1x/3x와 실제 전투 frame0 원본/ASTC4/ASTC6, 작은 수치표만 [검토 Release](https://github.com/hyunlord/bs-mobile/releases/tag/astc-texture-trial-461-20261028)에 공개한다. 전체 성공 원자료는 로컬 보존한다. 수치 정본은 [CSV](texture-astc-trial-460.csv)이며 동일 atlas/manifest와 summarize 명령으로 재생성한다.
+
+## #431 병합 후 현재 최대3개 보완
+
+main `2074f57478f56707d91094a3fa6412bd033468db`에서 estate-decor가18.1875MiB로 커졌다. 현재 최대3개는 hero-knight21.1658 / estate-decor18.1875 / fallow-enemy-rigs18MiB다. 앞의437d62a 전투3개 시험은 역사 결과로 보존하며 legacy hero-b는 보조 표본이다. 감사#460에서 기존 hero/enemy 원본·meta 바이트 동일성을 확인했으므로 압축 수치를 재사용하지만, 다른 시점의 전체 Editor 객체 메모리를 합치지는 않는다.
+
+source `7c1c3b0`에서 `ASTC_TRIAL_TARGET=estate-decor`를 명시하여 고정 경로 `Assets/Resources/EstateArt/estate-decor.png`만 읽었다. 다른 값·빈값은 전체 시험에서 거부한다(16px probe-only early return은 대상 선택 전이므로 전모드 failclosed를 주장하지 않는다). 미지정 기본3개와 순서는 그대로다. 영지 atlas는 전투 registry에 끼우지 않았다. rgba/4/6 실제 압축·GPU decode 각1pass이며, RGBA 전체 채널 왕복오차0이다. 실제 영지 renderer 캡처는 **NOT_RUN**이다.
+
+| 대상2048×2328 | RGBA | ASTC4 | ASTC6 |
+| --- | ---: | ---: | ---: |
+| raw payload bytes | 19070976 | 4767744 | 2123136 |
+| alpha MAE | 0 | 0.347283 | 0.744500 |
+| alpha 최대 오차 | 0 | 106 | 143 |
+| 원본투명→비영alpha 픽셀 | 0 | 9408 | 18805 |
+| 역할별 padding | NOT_MEASURED | NOT_MEASURED | NOT_MEASURED |
+
+estate-art는 전투 role/frame padding 계약이 아니므로 0샘플을 통과로 표기하지 않는다. Release에는 새 합성 대신 전체 원본/ASTC4decode/ASTC6decode PNG3장과 정본CSV 추가3행만 올렸다. 현재 최대3개 payload 합계57.3533→14.3383/6.3863MiB는 블록 크기 비교이며 모바일/GPU 실행메모리가 아니다. 원본·제품 importer는 변경하지 않았다.
+
+최종7c1c3b0 재검증: first-playable EditMode893/PlayMode55, wave-1a903/88, 실패0. 원명령exit1/입력없는공통skip2 기록을 보존하고 기존생성도구 보완검사각1pass 후0unexplained/1listed로 확인했다. 추적파일변화0·소유잠금해제. Node수치검사4/4, boundariesPASS.
+
+추가 독립 시각 관찰: estate 전체atlas 원본/4/6의 축소 표본에서 새사각·윤곽단절·후광증가가 눈에 띄지 않았다. 상단빨강/노랑영역·줄무늬·주민어두운패딩은 original에도 있으며 압축신규결함으로 판정하지 않는다. 실제알파합성과 미세질감 우열은 이전체atlas 표시만으로 검증할 수 없다.
