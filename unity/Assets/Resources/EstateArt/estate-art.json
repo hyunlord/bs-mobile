@@ -12,7 +12,7 @@
     },
     {
       "file": "estate-decor.png",
-      "sha256": "417a1aa685e6de4049d293345bb6b399cfc665d7bdfbbf35c448cf664726efdd"
+      "sha256": "9ac2ea91acb837d69ee020d5246635c929389483848a262f82e34ae48e11e50f"
     },
     {
       "file": "estate-terrain.png",
@@ -4790,6 +4790,630 @@
         256
       ],
       "opaqueHeight": 207
+    },
+    {
+      "id": "worker-hoe-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-00.png",
+        "sha256": "4f1e5ee3dcd1f0854d90f0d5767fb3516d4f6dad5cceccad400039affda0cb97",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1550,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hoe-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-01.png",
+        "sha256": "05c3281e42e9703e415c1866c561c0123c0f947a0461d8cddb3f41bcb012f6f7",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1648,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 62
+    },
+    {
+      "id": "worker-hoe-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-02.png",
+        "sha256": "6bb9eb6a9713a5bf1f1ebae9290bf3516f68e92a63a6cde8d3de7deb1e1bedc9",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1746,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 78
+    },
+    {
+      "id": "worker-hoe-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-03.png",
+        "sha256": "ece6fed6d06aa9d8174901b2d744f7295e75adfbd43a20175c40f5d92b1f0e61",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1844,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 57
+    },
+    {
+      "id": "worker-hoe-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-04.png",
+        "sha256": "9c4fc42738bdffe1f04811929e9a39fb2a7b48f380f424926d9552e831c99206",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1942,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hoe-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-05.png",
+        "sha256": "7b517111628d448e3a3093f9064a40ad4af984cd35a7bebf268b67fb757aa7a3",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        2,
+        2328,
+        96,
+        96
+      ],
+      "opaqueHeight": 53
+    },
+    {
+      "id": "worker-hoe-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-06.png",
+        "sha256": "641cd98a6b93ff1454db2def1a096d971f0eff5d50ee1ddb047fdc448642a369",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        100,
+        2328,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hoe-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-07.png",
+        "sha256": "9ff9d6dae73b93761717ccf7deccbc5ae9553cbe617f31f162144b2c3b6e3272",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        198,
+        2328,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hammer-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-00-r1.png",
+        "sha256": "759e0f9809176ee9185c62b1424e519757d7e6833f5a2ed33314fc041291b71b",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        296,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "worker-hammer-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-01-r1.png",
+        "sha256": "48fe22347c4206c8f094609296707de71f02a1db34a499d0a9873e175f09f0bd",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        362,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "worker-hammer-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-02-r1.png",
+        "sha256": "d0d6d4e0d57b79af7abbdbf282402b85e70aedaa361defa85ea2a5c20fedbb91",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        428,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "worker-hammer-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-03-r1.png",
+        "sha256": "4513632eabd339c0e7f2d5db98d92076ddf05d2ba7c649d73f5726cbea4c3f54",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        494,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-04-r1.png",
+        "sha256": "fd54c305b81919c2587f25a8f0b5489a5d95f79f18f79b6ede6355e6afa4495c",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        560,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-05-r1.png",
+        "sha256": "4a871192c6a9aab90cb1c8dcc587dc995b6ea2b1bc47a4add2cb1cf23b6d614b",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        626,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-06-r1.png",
+        "sha256": "115c739e6d20976bbe4f98cad27662dc33fac99da06021367a5da0fd548b249d",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        692,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-07-r1.png",
+        "sha256": "656ce0048940c716afdf5b03102af75548d13dc91aab88a2f2ed8b2e420427b8",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        758,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 61
+    },
+    {
+      "id": "worker-sack-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-00.png",
+        "sha256": "bd2c3ef14d252353cc59a6c58e0fb3ee926b8679fbcca68ef97cd554d7a8c747",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        824,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-sack-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-01.png",
+        "sha256": "2ea8b82353c3c1013540a6400667558277281f3345f821f7b290106d12e9d817",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        892,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 51
+    },
+    {
+      "id": "worker-sack-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-02.png",
+        "sha256": "129303723c4b55e34c2b549b403f6055c2b0c9cb8b2021ea096b11c72879e2c9",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        960,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 43
+    },
+    {
+      "id": "worker-sack-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-03.png",
+        "sha256": "70ead409316afbe9b552f94c93b585fea7ae01e00820ce370876d119b10c71d6",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1028,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 36
+    },
+    {
+      "id": "worker-sack-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-04.png",
+        "sha256": "70ead409316afbe9b552f94c93b585fea7ae01e00820ce370876d119b10c71d6",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1096,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 36
+    },
+    {
+      "id": "worker-sack-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-05.png",
+        "sha256": "17a35f1862f09a7e6f56e7ef3a8ef9d89d3a4cc217773353b12f44108973f5bd",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1164,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 42
+    },
+    {
+      "id": "worker-sack-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-06.png",
+        "sha256": "f207cbd1b32fb81b92c9d73bcc190e62012ec82f1b92bcff48e413d9473fa44e",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1232,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 50
+    },
+    {
+      "id": "worker-sack-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-07.png",
+        "sha256": "bd2c3ef14d252353cc59a6c58e0fb3ee926b8679fbcca68ef97cd554d7a8c747",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1300,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 54
     }
   ]
 }

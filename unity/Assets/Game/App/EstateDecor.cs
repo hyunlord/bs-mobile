@@ -124,6 +124,7 @@ namespace Game.App
     {
         public readonly List<EstateDrawItem> Items = new List<EstateDrawItem>();
         public Vector2[] CarryRoute = Array.Empty<Vector2>();
+        public readonly List<EstateResidentJob> Residents = new List<EstateResidentJob>();
         public readonly HashSet<Vector2Int> Road = new HashSet<Vector2Int>();
         public readonly Dictionary<int, int> SiteVariants = new Dictionary<int, int>();
         // Grid rectangle that is painted and covered by the night: the zones' bounds plus the night margin.
@@ -375,14 +376,15 @@ namespace Game.App
                 if (b.Kind == rules.fieldFenceKind)
                 {
                     Add(plan, rules.fieldFenceCorner, "fence", new Vector2(b.X, b.Y), art, rules.Colour(StateAt(new Vector2(b.X, b.Y)) ?? "restored"));
-                    Add(plan, rules.peasants.farm, "peasant", new Vector2(b.X + .6f, b.Y + kind.Height + .2f), art, Color.white);
+                    if (estate.Active == null || estate.Active.BuildingId != b.Id)
+                        plan.Residents.Add(new EstateResidentJob(b.Id, EstateResidentKind.Hoe, new Vector2(b.X + .6f, b.Y + kind.Height + .2f)));
                 }
                 if (b.Kind == rules.peasants.carryKind && estate.Active == null) Add(plan, rules.peasants.carry, "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + kind.Height * .6f), art, Color.white);
             }
             if (estate.Active != null)
             {
                 var b = buildings.First(x => x.Id == estate.Active.BuildingId); var kind = kinds[b.Kind];
-                Add(plan, "construction-worker-hammer", "peasant", new Vector2(b.X - .3f, b.Y + kind.Height + .1f), art, Color.white);
+                plan.Residents.Add(new EstateResidentJob(b.Id, EstateResidentKind.Hammer, new Vector2(b.X - .3f, b.Y + kind.Height + .1f)));
                 var props = new[] { "timber-pile", "stone-pile", "ladder", "wheelbarrow" };
                 for (var i = 0; i < 2; i++)
                     Add(plan, "construction-" + props[(b.Id + i) % props.Length], "construction-prop",
@@ -390,6 +392,8 @@ namespace Game.App
                 var granary = buildings.FirstOrDefault(x => x.Kind == rules.peasants.carryKind && x.Level > 0);
                 if (granary != null && granary.Id != b.Id)
                     plan.CarryRoute = EstateConstructionArt.Route(plan, Door(granary), Door(b));
+                if (plan.CarryRoute.Length > 1)
+                    plan.Residents.Add(new EstateResidentJob(granary.Id, EstateResidentKind.Carry, plan.CarryRoute[0]));
                 if (plan.CarryRoute.Length < 2)
                     Add(plan, "construction-worker-carry", "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + .5f), art, Color.white);
             }
@@ -455,6 +459,7 @@ namespace Game.App
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
                     WaterOnly = item.WaterOnly, Colour = new Color(0, night.landmarkBrightness, 1, 1),
                     Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
+            EstateResidentJob.ApplyBudget(plan);
             return plan;
         }
 

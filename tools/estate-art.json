@@ -2039,6 +2039,318 @@
       ],
       "displayWidth": 66,
       "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-00",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-00.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-01",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-01.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-02",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-02.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-03",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-03.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-04",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-04.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-05",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-05.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-06",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-06.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hoe-07",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "peasant-hoe-r2-07.png",
+      "atlas": "decor",
+      "maxSize": 96,
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-00",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-00-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-01",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-01-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-02",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-02-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-03",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-03-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-04",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-04-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-05",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-05-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-06",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-06-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-hammer-07",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-hammer-frame-07-r1.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-00",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-00.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-01",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-01.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-02",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-02.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-03",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-03.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-04",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-04.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-05",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-05.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-06",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-06.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-sack-07",
+      "release": "m3-estate-work-loops-444-20261027",
+      "file": "worker-sack-work-native-07.png",
+      "atlas": "decor",
+      "maxSize": 66,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
     }
   ]
 }

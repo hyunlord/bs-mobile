@@ -63,5 +63,16 @@ namespace Game.App
             // Only approved SE/SW art exists. Uphill legs keep that horizontal facing; no invented rear frames.
             return (Vector2.Lerp(Points[end - 1], Points[end], fraction), delta.x >= 0, (int)(Math.Max(0, seconds) / .05 % 16));
         }
+
+        public (Vector2 Grid, bool East, int Frame, bool Working) SampleWork(double seconds)
+        {
+            var travel = 2.0 * Length / PixelsPerSecond;
+            if (Points.Length < 2 || travel <= 0) return (Vector2.zero, true, 0, false);
+            // Points[0] is the granary. Complete the round trip before unloading there, never at the construction end.
+            var phase = Math.Max(0, seconds) % (travel + 2.4);
+            if (phase >= travel) return (Points[0], true, Math.Min(7, (int)((phase - travel) / .3)), true);
+            var pose = Sample(phase);
+            return (pose.Grid, pose.East, pose.Frame, false);
+        }
     }
 }
