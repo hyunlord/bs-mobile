@@ -39,8 +39,15 @@ public sealed class AccountEstateR8MapTests(ITestOutputHelper output)
         AccountEstate.Validate(Catalog, current);
         var cells = new HashSet<(int, int)>();
         foreach (var zone in current.Zones)
+        {
             for (int x = zone.X; x < zone.X + zone.Width; x++)
-                for (int y = zone.Y; y < zone.Y + zone.Height; y++) Assert.True(cells.Add((x, y)), zone.Id);
+            {
+                for (int y = zone.Y; y < zone.Y + zone.Height; y++)
+                {
+                    Assert.True(cells.Add((x, y)), zone.Id);
+                }
+            }
+        }
         Assert.Equal(13, current.Zones.Length); Assert.Equal(1664, cells.Count);
         Assert.Equal((8, 8, 51, 51), (cells.Min(c => c.Item1), cells.Min(c => c.Item2), cells.Max(c => c.Item1), cells.Max(c => c.Item2)));
     }
@@ -115,7 +122,9 @@ public sealed class AccountEstateR8MapTests(ITestOutputHelper output)
         var source = UnityExport.Generate(Data);
         Assert.Contains("(version ?? \"m3a-prototype-r8\") switch", source);
         foreach (var revision in new[] { "r2", "r3", "r4", "r5", "r6", "r7", "r8" })
+        {
             Assert.Contains("\"m3a-prototype-" + revision + "\" => new global::SowSiege.Core.AccountEstateConfig", source);
+        }
         Assert.DoesNotContain(UnityExportSnapshot.Capture(Data).Files, f => f.RelativePath.StartsWith("opt-in/", StringComparison.Ordinal));
     }
 
