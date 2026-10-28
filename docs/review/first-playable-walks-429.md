@@ -169,3 +169,24 @@ main 병합은 문서 전용이 아니다. 승인 새싹 문장15종 atlas 및Wo
 병합 후 실제 PNG50·741을 직접 보고 같은 번호의 기존before/1602after와 비교했다. 적·영웅·배경에 명백한UV깨짐·사각외곽·겹침 역전은 발견하지 못했다(표본 한정). main 승인 문장 차이는 허용 범위지만 이 두 화면에서 모든 문장의 노출을 검증한 것은 아니다. 캡처walk.log에 CYAN_CAPTURE_FAILURE 문자열은 없으나, 이것을 전1800PNG의 cyan0 계측으로 해석하지 않는다. 전체청록 픽셀 전수검사는 미실시, 선택이미지 시각 확인만 했다.
 
 초안 유지. CPU/GPU 프레임시간·사용자 영상 승인으로 확대해석하지 않는다. 최종 CI는 게시 커밋의 실행이 끝난 뒤 PR에서 확인한다. 비압축atlas 산술비용+4.76MiB와 앞서 보존한 실패는 그대로다.
+
+## 2026-10-28 latest main merge source 검증 — 56e395b
+
+관문: 두 프로필·보충 시험 실패 0. 실행 소스 `56e395b91afe1cba2c617eeb21b0f81366b48f47`은 main `2c7987c`의 FP01 지원을 정상 merge한 커밋이다. 이전 `6cf8ebc` 기록을 재사용하지 않고 공유 Mac 잠금 아래 08:48:15–08:59:00 KST에 새로 실행했다. 종료 후 추적 파일 변경 0, 자기 잠금 해제 확인.
+
+| Profile | Suite | Passed | Failed | Skipped |
+|---|---|---:|---:|---:|
+| first-playable | EditMode | 871 | 0 | 25 |
+| first-playable | PlayMode | 55 | 0 | 45 |
+| wave-1a | EditMode | 881 | 0 | 15 |
+| wave-1a | PlayMode | 87 | 0 | 13 |
+| supplemental | combat EditMode | 1 | 0 | 0 |
+| supplemental | melee EditMode | 1 | 0 | 0 |
+
+기본 runner exit 1과 공통 미설명 skip 2/기존 listed 1은 원자료에 보존한다. 기존 `showcase-fixtures`·`melee-aim-fixture` 도구로 입력을 생성하고 해당 테스트를 같은 소스에서 실행하여, 6 XML 통합은 **미설명 0 / 기존 listed 1**이다. 예외 추가·검사 완화·원본 XML 수정 없음. listed 항목은 `Tests.PlayMode.WaveWorldTests.RecordedWaveRangeExportsActualTickFrames`(선택적 기록 영상 출력)다.
+
+PlayMode 로그의 청록 검출은 두 프로필 각 1건 모두 `guard-self-test-negative-control-True` 의도적 1픽셀 음성 대조군이다. 다른 `CYAN_CAPTURE_FAILURE`는 0건이며 이를 별도 전체 픽셀 재스캔으로 표현하지 않는다.
+
+재현: `UNITY_TESTS_OUTPUT=artifacts/day-20261028/pr432-exact-head-tests bash tools/unity-tests.sh`, 이어 기존 combat/melee fixture 생성과 두 단일 EditMode 시험, `node tools/unity-skipped-everywhere.mjs tools/unity-skip-exceptions.txt <위 경로>/*.xml`. 정확한 실행 명령은 같은 worktree의 `artifacts/day-20261028/pr432-plan/run-profiles.sh`, 원자료는 `pr432-exact-head-tests/{record.md,combat.xml,melee.xml,combined-skip-record.txt}`에 보존한다.
+
+이 실행은 Unity 기능 검증이다. FP01 무상한 3회 성능 측정은 대기이며 기존 30초 오프라인 drawCalls +0% 결과를 새 소스의 p95 성능으로 확대하지 않는다. 과거 실패 및 1602d79 순수 atlas 인과 비교는 그대로 보존한다.
