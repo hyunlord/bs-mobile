@@ -1,7 +1,7 @@
 # Texture memory inventory and budget proposal (#460)
 
-Status: proposal / static audit, 2026-10-28. Source main `437d62a4c8f25700979f22cbf0877f648b978aaa`.
-No production change, compression acceptance, Unity execution, device measurement or memory-performance claim.
+Status: proposal / static audit, 2026-10-28. Current source main `2074f57478f56707d91094a3fa6412bd033468db`, after approved #431. Historical source437d62a is retained below.
+No production change or compression acceptance. This documentation lane ran no Unity; a separate Mac Editor import probe is attributed below. No mobile/device-gameplay memory-performance claim.
 
 ## Finding
 
@@ -30,11 +30,11 @@ MiB = bytes / 1,048,576. RGBA32 without mipmaps = width × height × 4.
 |---|---:|---:|---:|
 | first-playable registry | 17 | 123779312 | 118.045151 |
 | wave1a registry | 34 | 271536368 | 258.957260 |
-| Estate resources | 4 | 34799616 | 33.187500 |
+| Estate resources | 4 | 49856512 | 47.546875 |
 | Portrait UI resources | 50 | 8641372 | 8.241055 |
 | Title resources | 2 | 12587560 | 12.004433 |
 | Extra hero resources | 4 | 35647456 | 33.996063 |
-| Union (FP registry is a subset of wave at this source) | 94 | 363212372 | 346.386311 |
+| Union (FP registry is a subset of wave at this source) | 94 | 378269268 | 360.745686 |
 
 The union is **not a measured scene peak**. A first-playable registry-only loading estimate is 118.05 MiB; wave registry-only is 258.96 MiB. Additional cached UI/estate/legacy rig resources, dynamic fonts and rendering allocations must be added according to actual screen history. Loading both catalogs must deduplicate shared Texture2D instances, not add both table rows. No exact Android, iOS or Mac resident total has been measured.
 
@@ -54,17 +54,17 @@ Block estimates use `ceil(width / blockWidth) × ceil(height / blockHeight) × 1
 
 All 94 inventoried PNGs have mipmaps disabled and isReadable false. DefaultTexturePlatform is Automatic format (-1), Uncompressed (0), with no active platform overrides. Standalone/Android/iOS blocks have overridden=0: their serialized compression field, sometimes 1, is **inactive**, not evidence of compressed output. CSV preserves these inactive values rather than silently interpreting them as effective settings.
 
-Combat ArtPreparation explicitly sets Default texture type, sRGB, alpha from input, alpha transparency, clamp/bilinear, no mip, uncompressed, NPOT=None and size ceiling NextPowerOfTwo(max dimension). It temporarily enables readability for alpha-padding validation, then disables it (`ArtPreparation.cs:34–46`). Other resources are governed by their checked-in metadata. The table deliberately uses a uniform RGBA32 planning estimate on Mac/iOS/Android; metadata alone does not prove the final TextureFormat (for example, an image without effective alpha may import as RGB24). actual imported format and resident bytes remain **NOT_MEASURED** on all three. No ASTC/ETC2/BC production override is enabled.
+Combat ArtPreparation explicitly sets Default texture type, sRGB, alpha from input, alpha transparency, clamp/bilinear, no mip, uncompressed, NPOT=None and size ceiling NextPowerOfTwo(max dimension). It temporarily enables readability for alpha-padding validation, then disables it (`ArtPreparation.cs:34–46`). Other resources are governed by their checked-in metadata. The table deliberately uses a uniform RGBA32 planning estimate on Mac/iOS/Android; metadata alone does not prove the final TextureFormat (for example, an image without effective alpha may import as RGB24). Mac Editor formats/object-memory were subsequently probed as detailed below; iOS/Android formats and all gameplay scene-resident totals remain **NOT_MEASURED**. No ASTC/ETC2/BC production override is enabled.
 
-A readable CPU image copy is not retained for these 94 assets after preparation. This does not mean zero CPU allocation overall. Preparation briefly uses readable textures and GetPixels32. Runtime Sprite/UV arrays, loading transients, native allocation overhead, GPU row alignment and driver copies are excluded. Mip overhead is zero for the inventoried base-level assets; if future trials enable mipmaps, sum each level explicitly (roughly +1/3 for large square chains, not a blanket exact constant).
+The verified flag is isReadable=false for these94 assets after preparation. The flag alone does not determine whether CPU/native copies exist, and does not imply zero CPU allocation. Preparation briefly uses readable textures and GetPixels32. Runtime Sprite/UV arrays, loading transients, native allocation overhead, GPU row alignment and driver copies are excluded. Mip overhead is zero for the inventoried base-level assets; if future trials enable mipmaps, sum each level explicitly (roughly +1/3 for large square chains, not a blanket exact constant).
 
 ### Platform planning table (not runtime measurements)
 
 | Target | FP registry RGBA32 estimate | Wave registry RGBA32 estimate | Full 94 PNG inventory estimate | Actual imported/resident format |
 |---|---:|---:|---:|---|
-| Mac | 118.045151 MiB | 258.957260 MiB | 346.386311 MiB | NOT_MEASURED |
-| iOS | 118.045151 MiB | 258.957260 MiB | 346.386311 MiB | NOT_MEASURED |
-| Android | 118.045151 MiB | 258.957260 MiB | 346.386311 MiB | NOT_MEASURED |
+| Mac | 118.045151 MiB | 258.957260 MiB | 360.745686 MiB | 91 unchanged assets: historical Editor probe; 3 changed: NOT_MEASURED |
+| iOS | 118.045151 MiB | 258.957260 MiB | 360.745686 MiB | NOT_MEASURED |
+| Android | 118.045151 MiB | 258.957260 MiB | 360.745686 MiB | NOT_MEASURED |
 
 Per-asset platform estimates equal each CSV row's rgba32_bytes under this deliberately uniform assumption. Identical columns express the absence of active overrides, not identical real hardware allocation or support. CSV platform settings retain each target's serialized fields.
 
@@ -89,7 +89,7 @@ Calculated by reading both profile manifests at each PR base/head, summing uniqu
 
 ## Budget proposal and next small PRs
 
-[Proposal] A 150 MiB gameplay-resident texture target is **not currently met** by the wave registry estimate alone (258.96 MiB). Even theoretical 6×6 compression of only the top three leaves wave at209.94 MiB, before extra cached UI/estate/fonts/masks; the full inventory becomes297.37 MiB. These are format-arithmetic scenarios, not measured savings or approved settings. Treat150 MiB as a target requiring further loading/packing/compression decisions, never a claimed pass. Apply any future budget to a named profile and lifecycle checkpoint (cold title, fresh combat, estate then combat), while retaining the independent inventory total.
+[Proposal] A 150 MiB gameplay-resident texture target is **not currently met** by the wave registry estimate alone (258.96 MiB). Even theoretical 6×6 compression of only the previously selected three combat textures leaves wave at209.94 MiB, before extra cached UI/estate/fonts/masks; the current full inventory becomes311.73 MiB (historical437d62a inventory297.37 MiB). These are format-arithmetic scenarios, not measured savings or approved settings. Treat150 MiB as a target requiring further loading/packing/compression decisions, never a claimed pass. Apply any future budget to a named profile and lifecycle checkpoint (cold title, fresh combat, estate then combat), while retaining the independent inventory total.
 
 1. Adopt this pinned inventory as a **report-only baseline**, not a hard pass limit. Track registry, estate, portrait, extra hero, mutable masks, fonts and capture costs separately. A total-image budget must not reward splitting one texture into many batches.
 2. Compression trial: isolated branch, exact three source images and target settings, no production application before user visual approval. Compare full-size alpha borders, 115px actors and moving/crowded frames. Record PNG/source unchanged, actual imported TextureFormat/graphicsFormat, dimensions, mipmapCount, isReadable and Profiler.GetRuntimeMemorySizeLong on each target. Device/driver support and fallback cannot be proven by this document.
@@ -98,9 +98,9 @@ Calculated by reading both profile manifests at each PR base/head, summing uniqu
 
 ## Verification and limits
 
-Read-only git inspection and Node arithmetic at the pinned SHA; no Unity, build, process termination or shared-Mac lock. The CSV was generated from the two manifest atlas arrays and all tracked nested Resources PNGs using PNG IHDR and LFS object content. Metadata was read from the same Git ref, not a potentially reimported worktree. Reproduction inputs are the source SHA, paths and dimensions in CSV; proposed reusable CLI remains a separate task. The full inventory sum is363212372 bytes, 94 unique rows; all mip/readability flags are0. Source file line numbers above refer to the pinned SHA.
+Read-only git inspection and Node arithmetic at the pinned SHA; no Unity, build, process termination or shared-Mac lock. The CSV was generated from the two manifest atlas arrays and all tracked nested Resources PNGs using PNG IHDR and LFS object content. Metadata was read from the same Git ref, not a potentially reimported worktree. Reproduction inputs are the source SHA, paths and dimensions in CSV; proposed reusable CLI remains a separate task. The current full inventory sum is378269268 bytes,94 unique rows; all mip/readability flags are0. Loader line references unchanged by431 retain their earlier locations; EstateArt and EstateMap source shifted in431, so use the named methods and the refresh references below.
 
-Graft located loader code, but returned an older implementation; current git source was read directly and overrides the stale search result. Actual Mac/iOS/Android texture formats, resident memory, compression quality, loading peak, frame timing and user visual approval remain unmeasured. This document does not imply any of those gates passed.
+Graft located loader code, but returned an older implementation; current git source was read directly and overrides the stale search result. Actual iOS/Android texture formats, gameplay resident memory, loading peak and frame timing remain unmeasured. Separate Mac Editor import and compression evidence below does not establish gameplay-memory or user-approval gates. This document does not imply any of those gates passed.
 
 ### Recheck committed arithmetic without Unity
 
@@ -122,4 +122,33 @@ for (const r of rows.slice(0, 3)) console.log(r[1], {
 NODE
 ```
 
-Expected94rows /363212372bytes. This verifies committed arithmetic, not extraction completeness or live import settings; those require the pinned source inspection described above.
+Expected94rows /378269268bytes. This verifies committed arithmetic, not extraction completeness or live import settings; those require the pinned source inspection described above.
+
+## Post-#431 refresh and historical baseline
+
+#431 merged as2074f574 on2026-10-28. No additional PNG paths: construction stages, static props and carrying-worker SE/SW16 frames use the existing estate atlas. EstateCarryView.cs:19–27 resolves worker-carry-se/sw through EstateArt.Get; EstateConstructionArt.cs:20–27 resolves construction stage roles through the same imported atlas loader. Current inventory is94 images/360.745686 MiB; historical437d62a was94/346.386311 MiB. Combat registries and other categories are unchanged.
+
+| Changed atlas | Previous dimensions | Current dimensions | RGBA32 delta |
+|---|---|---|---:|
+| estate-decor | 2048×740 | 2048×2328 | +13008896 B /12.406250 MiB |
+| estate-buildings | 1280×1920 | 1280×2240 | +1638400 B /1.562500 MiB |
+| estate-building-shadows | 640×960 | 640×1120 | +409600 B /0.390625 MiB |
+| #431 total | | | +15056896 B /14.359375 MiB |
+
+The **current global** largest three are hero-knight21.165833 MiB, estate-decor18.187500 MiB, fallow-enemy-rigs18 MiB. The earlier **combat-registry** top-three compression selection is unchanged; do not confuse it with this refreshed global ordering. CSV sorts all categories by uncompressed planning bytes.
+
+## Separate Mac Editor import measurements
+
+Probe source d257dc7 (main437d62a plus Editor-only diagnostic), Unity6000.6.4f1, Apple M4 Max/Metal. The separate probe loads each texture via AssetDatabase.LoadAssetAtPath and records TextureFormat, dimensions, mipmapCount, isReadable and Profiler.GetRuntimeMemorySizeLong. Original evidence: artifacts/astc-trial/full-rgba-r1/textures/inventory.json in the separate bs-mobile-astc-trial-460 worktree. See [compression trial PR #465](https://github.com/hyunlord/bs-mobile/pull/465) and [selected review evidence](https://github.com/hyunlord/bs-mobile/releases/tag/astc-texture-trial-461-20261028).
+
+Historical94:93RGBA32 and1RGB24 (title-background), all mipmapCount1/readablefalse. Sum of per-object Profiler values724986304 B/691.400818 MiB. This is an **Editor object-memory sum**, not GPU-only bytes, process memory, a measured gameplay scene peak or a mobile result. Its roughly2×relation to source arithmetic does not prove a particular CPU-copy implementation.
+
+Current CSV carries91 rows only where both PNG and importer metadata are byte-identical between437d62a and2074f574, retaining the original probe source. Their object-memory sum688283120 B/656.397934 MiB is likewise a partial historical-object sum. The three replaced estate textures are NOT_MEASURED, not assigned the old runtime values. All current94 static defaults remain no mip/readablefalse/no active platform override. No new Unity execution is claimed.
+
+Trial source preservation (PNG LFS SHA256 unchanged after431; metadata also unchanged):
+
+- hero-knight:76c75e804a9fb782207e26e2295bca7c74b8c8bb29eeb055d557610a7e8fe4c6
+- fallow-enemy-rigs:5a69aaf13a67ea6885234be74e4d984e00b7b77323f113024b15e05ebebf8bde
+- fallow-hero-b-layers:945eed1f6592292ac9138c3000f17422d90d8a9a351020533b3174b8f005dce4
+
+The separate actual encoding trial reports combined three-texture payload55.1658→13.7915MiB (ASTC4×4) or6.1462MiB (ASTC6×6). Payload is **not runtime RAM**. ASTC6×6 hero gutter has102 alpha samples with max1, while global image alpha max-error252 is a different metric. Compression remains review-only: no production application or quality acceptance is implied. The refreshed estate-decor global top-three entry was not part of that completed trial. An additional estate trial is pending; this report does not count it as completed.
