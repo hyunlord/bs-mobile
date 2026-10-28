@@ -1,0 +1,337 @@
+{
+  "version": "estate-zone-themes-v1",
+  "configVersion": "m3a-prototype-r8",
+  "seed": 20261028,
+  "defaultBuildingWidthPx": null,
+  "reviewBuildingWidthsPx": [
+    75,
+    50
+  ],
+  "candidateOnly": true,
+  "zones": [
+    {
+      "id": "zone:start",
+      "theme": "village"
+    },
+    {
+      "id": "zone:outskirts-north",
+      "theme": "approach"
+    },
+    {
+      "id": "zone:outskirts-east",
+      "theme": "approach"
+    },
+    {
+      "id": "zone:outskirts-south",
+      "theme": "approach"
+    },
+    {
+      "id": "zone:outskirts-west",
+      "theme": "approach"
+    },
+    {
+      "id": "zone:inner-village",
+      "theme": "village"
+    },
+    {
+      "id": "zone:inner-northeast-wood",
+      "theme": "wood"
+    },
+    {
+      "id": "zone:inner-west-hill",
+      "theme": "hill"
+    },
+    {
+      "id": "zone:inner-windmill",
+      "theme": "meadow"
+    },
+    {
+      "id": "zone:inner-fields",
+      "theme": "fields"
+    },
+    {
+      "id": "zone:inner-fallow",
+      "theme": "fallow"
+    },
+    {
+      "id": "zone:inner-ruins",
+      "theme": "ruins"
+    },
+    {
+      "id": "zone:inner-riverside",
+      "theme": "riverside"
+    }
+  ],
+  "themes": [
+    {
+      "id": "village",
+      "mode": "preserve-existing",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": []
+    },
+    {
+      "id": "approach",
+      "mode": "preserve-existing",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": []
+    },
+    {
+      "id": "wood",
+      "mode": "candidate-plan",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": [
+        {
+          "key": "forest-cluster-01",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "forest-cluster-02",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "forest-cluster-03",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "forest-cluster-04",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        }
+      ]
+    },
+    {
+      "id": "hill",
+      "mode": "candidate-plan",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": [
+        {
+          "key": "hill-01",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "hill-02",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "hill-03",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "hill-04",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        }
+      ]
+    },
+    {
+      "id": "meadow",
+      "mode": "preserve-existing",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": []
+    },
+    {
+      "id": "fields",
+      "mode": "candidate-plan",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": [
+        {
+          "key": "field-cluster-01",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "field-cluster-02",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "field-cluster-03",
+          "reserveCells": [
+            2,
+            4
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "field-cluster-04",
+          "reserveCells": [
+            2,
+            4
+          ],
+          "reservationStatus": "source-grid"
+        }
+      ]
+    },
+    {
+      "id": "fallow",
+      "mode": "candidate-plan",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": [
+        {
+          "key": "fallow-01",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "fallow-02",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "fallow-03",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "fallow-04",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        }
+      ]
+    },
+    {
+      "id": "ruins",
+      "mode": "candidate-plan",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": [
+        {
+          "key": "ruins-01",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "ruins-02",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "ruins-03",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        },
+        {
+          "key": "ruins-04",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "source-grid"
+        }
+      ]
+    },
+    {
+      "id": "riverside",
+      "mode": "candidate-plan",
+      "spacingCells": 4,
+      "density": 0.6,
+      "maxCount": 12,
+      "variants": [
+        {
+          "key": "shore-accent-01",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "hypothesis-needs-projected-alpha-check"
+        },
+        {
+          "key": "shore-accent-02",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "hypothesis-needs-projected-alpha-check"
+        },
+        {
+          "key": "shore-accent-03",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "hypothesis-needs-projected-alpha-check"
+        },
+        {
+          "key": "shore-accent-04",
+          "reserveCells": [
+            2,
+            2
+          ],
+          "reservationStatus": "hypothesis-needs-projected-alpha-check"
+        }
+      ]
+    }
+  ]
+}
