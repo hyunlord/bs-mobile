@@ -40,6 +40,6 @@
 
 ## 범위·한계
 
-강 폭의 native 수직 단면 비율은 기존 대비0.878591–1.183515로±20% 이내다. 논리100셀 중심은 모두 물 alpha255이며 주 수로는 연결된다. 엄격한 alpha128 위상 검사에는 섬 가장자리(431,921)의 alpha146 고립1픽셀이 남아 STRICT_SINGLE_COMPONENT는 FAIL로 기록했다. 이 예외는 주 수로 단절이 아니며 수정해 숨기지 않는다.
+강 폭의 native 수직 단면 비율은 기존 대비0.878591–1.183515로±20% 이내다. 논리100셀 중심은 모두 물 alpha255이며 주 수로는 연결된다. 엄격한 alpha128 위상 검사에는 강물 마스크 경계(431,921)의 alpha146 고립1픽셀이 남아 STRICT_SINGLE_COMPONENT는 FAIL로 기록했다. 이 예외는 주 수로 단절이 아니며 수정해 숨기지 않는다.
 
 원본·실패 강r1/r2·상세점유마스크는 로컬 output/estate-r8-variety-20261028에 보존한다. Release에는 선택된 자산·요약·배치·출처만 포함한다. 재사용 승인 자산은 VARIETY-SCENES-r3.json의 publishedSource URL/atlas crop으로 해석할 수 있다.
