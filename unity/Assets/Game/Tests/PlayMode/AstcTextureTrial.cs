@@ -59,6 +59,12 @@ namespace Tests.PlayMode
             var supported = SystemInfo.SupportsTextureFormat(format);
             File.WriteAllText(Path.Combine(directory, "environment.txt"), $"unity={Application.unityVersion}\nmode={mode}\nformat={format}\ngpuSupported={supported}\ndevice={SystemInfo.graphicsDeviceName}\napi={SystemInfo.graphicsDeviceType}\nclassification=Editor actual compression quality trial; not mobile memory measurement\n");
             Assert.That(supported, Is.True, "No supported GPU decode path; do not substitute original pixels.");
+            if (Environment.GetEnvironmentVariable("ASTC_TRIAL_SMALL_PROBE") == "1")
+            {
+                ProbeFormats(directory);
+                File.AppendAllText(Path.Combine(directory, "environment.txt"), "probeOnly=true; no atlas replacement; combat remains original\n");
+                return;
+            }
             var inventoryPath = Environment.GetEnvironmentVariable("ASTC_TRIAL_INVENTORY_PATHS");
             if (!string.IsNullOrEmpty(inventoryPath))
             {
@@ -106,13 +112,43 @@ namespace Tests.PlayMode
             registry.atlases = replacement;
             ArtCatalog.InvalidateCache();
         }
+        static void ProbeFormats(string directory)
+        {
+            foreach (var block in new[] { 4, 6 })
+            {
+                var format = block == 4 ? TextureFormat.ASTC_4x4 : TextureFormat.ASTC_6x6;
+                Assert.That(SystemInfo.SupportsTextureFormat(format), Is.True, format.ToString());
+                var texture = new Texture2D(16, 16, TextureFormat.RGBA32, false, false);
+                Texture2D decoded = null;
+                try
+                {
+                    var pixels = new Color32[256];
+                    for (var i = 0; i < pixels.Length; i++) pixels[i] = new Color32((byte)(i % 16 * 17), (byte)(i / 16 * 17), 120, (byte)(i % 16 * 17));
+                    texture.SetPixels32(pixels); texture.Apply(false, false);
+                    EditorUtility.CompressTexture(texture, format, TextureCompressionQuality.Best);
+                    Assert.That(texture.format, Is.EqualTo(format));
+                    var payload = texture.GetRawTextureData<byte>().ToArray();
+                    Assert.That(payload.Length, Is.EqualTo(((16 + block - 1) / block) * ((16 + block - 1) / block) * 16));
+                    File.WriteAllBytes(Path.Combine(directory, "probe-" + block + ".blocks"), payload);
+                    texture.Apply(false, false); decoded = Readback(texture);
+                    File.WriteAllBytes(Path.Combine(directory, "probe-" + block + ".png"), decoded.EncodeToPNG());
+                }
+                finally
+                {
+                    if (decoded != null) UnityEngine.Object.DestroyImmediate(decoded);
+                    UnityEngine.Object.DestroyImmediate(texture);
+                }
+            }
+        }
         static Texture2D Readback(Texture texture)
         {
             var target = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             var prior = RenderTexture.active;
+            var priorSrgbWrite = GL.sRGBWrite;
             var image = new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false, false);
             try
             {
+                GL.sRGBWrite = QualitySettings.activeColorSpace == ColorSpace.Linear;
                 Graphics.Blit(texture, target);
                 RenderTexture.active = target;
                 image.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
@@ -120,7 +156,7 @@ namespace Tests.PlayMode
                 return image;
             }
             catch { UnityEngine.Object.DestroyImmediate(image); throw; }
-            finally { RenderTexture.active = prior; RenderTexture.ReleaseTemporary(target); }
+            finally { GL.sRGBWrite = priorSrgbWrite; RenderTexture.active = prior; RenderTexture.ReleaseTemporary(target); }
         }
         public void Dispose()
         {

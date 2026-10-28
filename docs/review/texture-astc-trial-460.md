@@ -20,6 +20,7 @@
 공유 Mac 잠금·시간 제한을 먼저 따른다. Unity 슬롯 승인 전에는 실행하지 않는다. 기존 `RecordedWaveRangeExportsActualTickFrames`에 다음 환경변수만 추가한다.
 
 - `ASTC_TRIAL_MODE=rgba`, `4`, `6`: 모드마다 새 프로세스/신선한 출력 경로.
+- `ASTC_TRIAL_SMALL_PROBE=1`: 최초 실행에만 사용. 16×16 실제 ASTC 4×4·6×6 encode/GPU decode를 먼저 확인하고 atlas는 교체하지 않는다. 이 실행의 전투 화면은 압축 비교가 아니다.
 - `ASTC_TRIAL_OUTPUT`: atlas 원본 GPU readback, 실제 ASTC blocks, GPU decode PNG, 형식/바이트 보고서 디렉터리. 빈 폴더 필수.
 - `ASTC_TRIAL_INVENTORY_PATHS`: 선택. 감사 목록의 `Assets/...png` 경로를 한 줄씩 적은 파일. 첫 실행에만 지정하여 실제 Editor format·크기·mipmap·readable·Profiler runtime bytes를 기록한다. 모바일 실측이 아니다.
 - 기존 `WAVE_QA_REPLAY`, `WAVE_QA_START_TICK`, `WAVE_QA_END_TICK`, `WAVE_QA_SEQUENCE_OUTPUT`, `WAVE_QA_RENDERER_COMMIT`도 명시한다. 세 모드는 동일 입력·범위·카메라·소스 커밋을 사용한다.
