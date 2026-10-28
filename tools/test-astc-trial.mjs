@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { blockBytes, pixelMetrics, gutterMetrics } from './summarize-astc-trial.mjs';
+import { blockBytes, pixelMetrics, gutterMetrics, roleGutters } from './summarize-astc-trial.mjs';
 test('ASTC payload rounds each dimension independently, no silent resize', () => {
   assert.equal(blockBytes(2564, 2164, 4), 5548496);
   assert.equal(blockBytes(2564, 2164, 6), 2472128);
@@ -19,4 +19,9 @@ test('gutter scan excludes interior and clips atlas edges', () => {
   const pixels = Buffer.alloc(4 * 4 * 4); pixels[3] = 9; pixels[(1 * 4 + 1) * 4 + 3] = 255;
   const m = gutterMetrics({ width: 4, height: 4, pixels }, [{ x: 1, y: 1, width: 2, height: 2 }], 4);
   assert.equal(m.samples, 12); assert.equal(m.nonzeroAlpha, 1); assert.equal(m.maxAlpha, 9);
+});
+
+test('estate padding is explicitly unmeasured, never a zero-sample pass', () => {
+  assert.equal(roleGutters({}, { version: "estate-art-r1" }, "estate-decor").status, "NOT_MEASURED");
+  assert.throws(() => roleGutters({}, { roles: [] }, "missing"));
 });

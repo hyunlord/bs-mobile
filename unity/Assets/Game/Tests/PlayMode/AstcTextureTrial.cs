@@ -79,11 +79,15 @@ namespace Tests.PlayMode
                 }
                 File.WriteAllText(Path.Combine(directory, "inventory.json"), JsonUtility.ToJson(inventory, true));
             }
-            foreach (var id in Targets)
+            var selected = Environment.GetEnvironmentVariable("ASTC_TRIAL_TARGET");
+            Assert.That(selected == null || selected == "estate-decor", Is.True, "ASTC_TRIAL_TARGET may only add the isolated estate-decor trial.");
+            foreach (var id in selected == null ? Targets : new[] { selected })
             {
                 var index = Array.FindIndex(manifest.atlases, item => item.id == id);
-                Assert.That(index, Is.GreaterThanOrEqualTo(0), id);
-                var source = originals[index];
+                var estateOnly = id == "estate-decor";
+                if (!estateOnly) Assert.That(index, Is.GreaterThanOrEqualTo(0), id);
+                var source = estateOnly ? AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Resources/EstateArt/estate-decor.png") : originals[index];
+                Assert.That(source, Is.Not.Null, id);
                 var copy = Readback(source); owned.Add(copy);
                 copy.name = id + "-trial-" + mode;
                 copy.filterMode = source.filterMode; copy.wrapMode = source.wrapMode;
@@ -107,10 +111,14 @@ namespace Tests.PlayMode
                 finally { UnityEngine.Object.DestroyImmediate(decoded); }
                 var row = new Row { atlas=id, mode=mode, format=copy.format.ToString(), width=copy.width, height=copy.height, block=block, mipCount=copy.mipmapCount, rawBytes=rawByteCount, expectedBytes=expected, gpuSupported=supported, graphicsDevice=SystemInfo.graphicsDeviceName, graphicsApi=SystemInfo.graphicsDeviceType.ToString(), evidence="Actual compressed texture GPU readback; decoded PNG is RGBA again, not memory saving evidence." };
                 File.WriteAllText(Path.Combine(directory, id + ".json"), JsonUtility.ToJson(row, true));
-                replacement[index] = copy;
+                if (!estateOnly) replacement[index] = copy;
             }
-            registry.atlases = replacement;
-            ArtCatalog.InvalidateCache();
+            if (selected == null)
+            {
+                registry.atlases = replacement;
+                ArtCatalog.InvalidateCache();
+            }
+            else File.AppendAllText(Path.Combine(directory, "environment.txt"), "estateOnly=true; no registry replacement; combat remains original\n");
         }
         static void ProbeFormats(string directory)
         {
