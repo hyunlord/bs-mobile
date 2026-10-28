@@ -120,3 +120,24 @@
 - first-playable 성능은 **FP01 / #443 장면 계약과 main 기준선 3회**가 먼저 필요하다. C05는 wave-1a 전용이므로 first-playable 성능 통과로 확대하지 않는다.
 - 승인 원본 Release `m3-people-walk-review-433-20261027`와 기존 비교 Release `people-walk-game-review-436-20261027`는 수정하지 않는다. RGBA 보존으로 그림 승인·외형 비교를 재사용하되, 과거 영상의 draw calls나 실행 시각을 이번 커밋 측정값이라고 부르지 않는다.
 - 이번 실행의 청록 관찰 집계·실측 메모리·CI 최종 결과는 이 문서에서 새 수치를 주장하지 않는다. 담당자의 원자료 확인 후 PR에 기록한다.
+
+## 최신 main 통합 후 재검증 · 2026-10-28
+
+관문: 부분 — 실제 실행 source `92323f70bbef5b35b75221fad955dff83b11af42`에서 두 프로필과 supplemental 모두 실패 0. #446 FP01 코드를 포함한 main `2c7987c`를 merge한 뒤의 새 기록이다. 전날 이 source의 CI quality 실패는 이전 Unity 기록을 사용한 정책 실패로 보존하며, 새 기록 커밋의 최종 CI는 PR에 기록한다.
+
+공유 Mac 자기 잠금 **09:00:16–09:09:11 KST**, batchmode 순차 실행. 종료 시 first-playable 복구, 추적 파일 변경 없음, 자기 잠금 해제를 확인했다. 원자료: `artifacts/day-20261028/pr439-current-main-tests/`; 실행 로그: `artifacts/day-20261028/people439/run-profiles.log`.
+
+| 프로필 | 검사 | 통과 | 실패 | skip |
+|---|---|---:|---:|---:|
+|first-playable|EditMode|873|0|25|
+|first-playable|PlayMode|56|0|45|
+|wave-1a|EditMode|883|0|15|
+|wave-1a|PlayMode|88|0|13|
+|frozen combat sidecar|추가 EditMode|1|0|0|
+|opt-in melee aim catalog|추가 EditMode|1|0|0|
+
+기본 runner exit1과 `2 unexplained / 1 listed`는 보존했다. 기존 생성 도구로 두 입력을 준비해 해당 테스트를 실제 실행한 여섯 XML 합산은 **0 unexplained / 1 listed**다. 예외를 추가하지 않았다. 양쪽 프로필 fixture 생성 로그는 전날 `pr439-memory-main-tests`와 바이트 동일하다.
+
+이번 시간대 capture monitor 266건 중 합성 guard self-test 4건을 제외한 실제 관찰 **262건의 cyanPixels 합계 0**이다. 합성 negative control 두 건의 각 1픽셀은 의도된 검출 시험이며 실제 청록 재발이 아니다.
+
+그림·atlas·실행 코드는 이번 기록 작업에서 바꾸지 않았다. 메모리 추정은 +8.21MiB, 이전 후보 대비 −1.79MiB 그대로다. 새 제출 SHA로 Claude Code 대기열의 C05·FP01 비교를 요청하되 여기서는 성능 측정을 실행하지 않는다. FP01 main 기준선 3회가 선행해야 하며, 두 프로필 기능 검사를 성능 판정으로 확대하지 않는다. PR은 초안·사용자 병합 승인 대기를 유지한다.
