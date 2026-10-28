@@ -64,14 +64,20 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
-        public IEnumerator DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
+        public IEnumerator HistoricalR7DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
         {
+            var historicalCatalog = CanonicalContent.CreateMetaCatalog();
+            var historicalConfig = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            SaveFixture(historicalCatalog, AccountEstate.NewPrototype(historicalCatalog, historicalConfig, 0, 0));
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4), "The option is off by default: the manor page is unchanged.");
+            Assert.That(app.Progression.State.Estate?.ConfigVersion, Is.EqualTo(historicalConfig.Version));
             var account = MetaSaveCodec.Encode(app.Progression.State);
 
             yield return SetOption(true); yield return ScreenIs("EstateMap");
             var screen = app.EstateMap;
+            Assert.That(screen.FromSave, Is.True);
+            Assert.That(screen.Config.Version, Is.EqualTo(historicalConfig.Version));
             Assert.That(Rects("EstateMap.Building:").Length, Is.EqualTo(screen.State.Estate.Buildings.Count(b => b.Level > 0 || screen.UnderConstruction(b.Id))));
             foreach (var site in screen.State.Estate.Buildings.Where(b => b.Level == 0 && !screen.UnderConstruction(b.Id)))
                 Assert.That(Rects("EstateMap.Site:" + site.Id + ":").Length, Is.EqualTo(1), "An unbuilt site uses one approved Astra footprint instead of temporary separate fragments.");
@@ -177,7 +183,7 @@ namespace Tests.PlayMode
             Focus(empty + new Vector2(.5f, .5f)); Tap(empty); yield return null;
             Assert.That(screen.Selected, Is.Null, "A tap on empty open ground closes the selection.");
 
-            Assert.That(app.Progression.State.Estate, Is.Null);
+            Assert.That(app.Progression.State.Estate?.ConfigVersion, Is.EqualTo(historicalConfig.Version), "A historical account keeps its persisted estate while the development copy changes.");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
@@ -186,19 +192,20 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
-        public IEnumerator FreshR7EstateBuildsItsGranaryBeforeTheFieldAndCompletesWithoutAccountWrites()
+        public IEnumerator FreshR8EstateBuildsItsGranaryBeforeTheFieldAndCompletesWithoutAccountWrites()
         {
             PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
             var screen = app.EstateMap;
             var account = MetaSaveCodec.Encode(app.Progression.State);
-            Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r7"));
+            Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r8"));
             Assert.That(screen.FromSave, Is.False);
+            Assert.That(app.Progression.State.Estate, Is.Null, "A fresh account has no persisted estate; the map owns a development copy.");
             Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
             Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
-            yield return Capture("estate-r7-first-entry");
+            yield return Capture("estate-r8-first-entry");
             ZoomTo(screen.Map.WholeMap);
-            yield return Capture("estate-r7-whole");
+            yield return Capture("estate-r8-whole");
             ZoomTo(screen.Map.Opening);
 
             var field = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:field");
@@ -207,13 +214,13 @@ namespace Tests.PlayMode
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "EstateMap.ConstructionReason").text, Is.EqualTo("곡물창고 Lv1 필요"));
             Assert.That(screen.State.Estate.Active, Is.Null, "A fresh field still requires the granary; do not grant resources or bypass Core.");
             Assert.That(screen.ConstructionPreview(field.Id).Reason, Is.EqualTo("parent-required"));
-            yield return Capture("estate-r7-field-parent-required");
+            yield return Capture("estate-r8-field-parent-required");
             var granary = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             Focus(screen.Centre(granary.Id)); Tap(new Vector2Int(granary.X, granary.Y)); yield return null;
             Click("EstateMap.Build"); yield return null;
             Assert.That(screen.LastConstructionReason, Is.EqualTo("started"));
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(granary.Id));
-            yield return CaptureNaturalConstruction(granary.Id, false, "estate-r7-granary");
+            yield return CaptureNaturalConstruction(granary.Id, false, "estate-r8-granary");
             Assert.That(screen.Building(granary.Id).Level, Is.EqualTo(1));
 
             Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
@@ -234,11 +241,12 @@ namespace Tests.PlayMode
             Assert.That(signCorners[1].y, Is.LessThanOrEqualTo(worldFront.y), "Closed-sheet label stays below the foundation front edge.");
             Tap(new Vector2Int(field.X, field.Y)); yield return null;
             Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty, "Reopening the sheet removes the redundant map label.");
-            yield return CaptureNaturalConstruction(field.Id, true, "estate-r7-field");
+            yield return CaptureNaturalConstruction(field.Id, true, "estate-r8-field");
             Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
             Assert.That(screen.State.Estate.Active, Is.Null);
             Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
-            yield return Capture("estate-r7-field-complete");
+            yield return Capture("estate-r8-field-complete");
+            Assert.That(app.Progression.State.Estate, Is.Null, "Construction must not persist the fresh development estate.");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "Only the prototype copy changes.");
         }
 
@@ -491,7 +499,9 @@ namespace Tests.PlayMode
             var night = Rects("EstateMap.Night").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "The night covers the land to come.");
             Assert.That(Rects("EstateMap.Landmark:").Length, Is.GreaterThan(0));
             Assert.That(Rects("EstateMap.Landmark:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Large silhouettes remain readable above the night.");
-            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(7), "All seven river patches remain readable.");
+            var riverCount = screen.Config.Version == EstateR8Layout.Version
+                ? EstateR8Layout.Load().placed.Count(p => p.id.StartsWith("river", StringComparison.Ordinal)) : 7;
+            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(riverCount), "Every configured river patch remains readable; historical layouts retain seven.");
             Assert.That(Rects("EstateMap.Lamps").Single().GetSiblingIndex(), Is.LessThan(night.GetSiblingIndex()), "Warm lamps cannot paint brown clouds above the night.");
             Assert.That(Rects("EstateMap.Site").Where(r => r.name == "EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");

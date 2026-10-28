@@ -41,7 +41,7 @@ namespace Game.Editor
                 importer.isReadable = true; importer.SaveAndReimport();
                 var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(atlas.path);
                 if (texture.width != atlas.width || texture.height != atlas.height) throw new InvalidOperationException("Imported atlas dimensions mismatch: " + atlas.id);
-                ValidateAlphaPadding(manifest, atlas, texture);
+                ValidateSourceAlphaPadding(manifest, atlas, File.ReadAllBytes(atlas.path));
                 importer.isReadable = false; importer.SaveAndReimport();
                 textures[i] = AssetDatabase.LoadAssetAtPath<Texture2D>(atlas.path);
             }
@@ -64,6 +64,17 @@ namespace Game.Editor
                 if(process.ExitCode!=0)throw new InvalidOperationException("Art contract validation failed: "+error+output);
                 UnityEngine.Debug.Log("Art contract: "+output.Trim());
             }
+        }
+        public static void ValidateSourceAlphaPadding(ArtManifest manifest, ArtAtlasDefinition atlas, byte[] png)
+        {
+            var source = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            try
+            {
+                if (!ImageConversion.LoadImage(source, png, false)) throw new InvalidOperationException("Invalid source atlas PNG: " + atlas.id);
+                if (source.width != atlas.width || source.height != atlas.height) throw new InvalidOperationException("Source atlas dimensions mismatch: " + atlas.id);
+                ValidateAlphaPadding(manifest, atlas, source);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(source); }
         }
         static void ValidateAlphaPadding(ArtManifest manifest, ArtAtlasDefinition atlas, Texture2D texture)
         {

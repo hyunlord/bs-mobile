@@ -71,7 +71,7 @@ namespace Game.App
         [Serializable] public sealed class Sites { public string ground = "yard-earth"; public float siteWidth = 1.15f, roadWidth = 1.4f, aspect = .5f, siteAlpha = .9f, roadAlpha = .75f; }
         [Serializable] public sealed class Wood { public string zone; public string[] ids = Array.Empty<string>(); public float share = .7f; }
         // Explicit terrain-skeleton pieces (rivers, bridges, a paddock): grid point of the pivot, reserved cells, layer.
-        [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
+        [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v, rotation; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
         [Serializable] public sealed class Peasants { public string farm = "peasant-farm", carry = "peasant-carry", build = "peasant-build", carryKind = "meta:granary"; }
 
         static EstateDecorRules loaded;
@@ -113,7 +113,7 @@ namespace Game.App
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
     public sealed class EstateDrawItem
     {
-        public bool IsometricGround; public bool WaterOnly;
+        public bool IsometricGround; public bool WaterOnly; public float Rotation;
         public bool IsometricRoad; public int RoadQuarterTurns;
         public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
@@ -152,7 +152,8 @@ namespace Game.App
         public static EstatePlan Plan(EstateDecorRules rules, EstateArt art, AccountEstateConfig config, MetaEstateState estate)
         {
             var plan = new EstatePlan();
-            var buildingScale = config.Version == "m3a-prototype-r7" ? 1.5f : rules.buildingScale;
+            var pieces = EstateR8Layout.Pieces(rules, config);
+            var buildingScale = EstateR8Layout.UsesPlazaRendering(config) ? 1.5f : rules.buildingScale;
             var kinds = config.Buildings.ToDictionary(k => k.Kind, StringComparer.Ordinal);
             bool OpenCell(Vector2Int c) => config.Zones.Any(z => estate.OpenZones.Contains(z.Id) && c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
             bool AnyZone(Vector2Int c) => config.Zones.Any(z => c.x >= z.X && c.x < z.X + z.Width && c.y >= z.Y && c.y < z.Y + z.Height);
@@ -173,7 +174,9 @@ namespace Game.App
             var taken = new HashSet<Vector2Int>();
             foreach (var b in buildings) for (var u = 0; u < kinds[b.Kind].Width; u++) for (var v = 0; v < kinds[b.Kind].Height; v++) taken.Add(new Vector2Int(b.X + u, b.Y + v));
             var reserved = new HashSet<Vector2Int>(taken);
-            foreach (var piece in rules.placed)
+            if (config.Version == EstateR8Layout.Version)
+                foreach (var cell in EstateR8Layout.Load().riverCells) reserved.Add(new Vector2Int(cell.x, cell.y));
+            foreach (var piece in pieces)
                 for (var u = 0; piece.reserve.Length == 4 && u < piece.reserve[2]; u++) for (var v = 0; v < piece.reserve[3]; v++) reserved.Add(new Vector2Int(piece.reserve[0] + u, piece.reserve[1] + v));
 
             // Roads follow free open cells, so a building between two doors cannot break the path (#389).
@@ -185,14 +188,19 @@ namespace Game.App
             var routes = new List<double[][]>();
             var ribbonRoutes = new List<List<Vector2Int>>();
             var origin = buildings.FirstOrDefault(b => kinds[b.Kind].StartsComplete);
-            if (origin != null && config.Version == "m3a-prototype-r7")
+            if (origin != null && EstateR8Layout.UsesPlazaRendering(config))
             {
                 var openCells = config.Zones.Where(z => estate.OpenZones.Contains(z.Id))
                     .SelectMany(z => Enumerable.Range(0, z.Width * z.Height)
                         .Select(i => new Vector2Int(z.X + i % z.Width, z.Y + i / z.Width)))
                     .Where(c => !taken.Contains(c)).ToHashSet();
-                var bridge = rules.placed.FirstOrDefault(p => p.id == "bridge-nw-se-base");
+                var bridge = EstateR8Layout.RoadBridge(pieces, config);
                 Vector2Int? bridgeCell = bridge == null ? null : new Vector2Int(Mathf.FloorToInt(bridge.u), Mathf.FloorToInt(bridge.v));
+                if (config.Version == EstateR8Layout.Version && bridgeCell.HasValue)
+                {
+                    // The road is visible through unreclaimed land, but cannot open or build on those cells.
+                    foreach (var cell in RoadPath(Door(origin), bridgeCell.Value, c => AnyZone(c) && !taken.Contains(c))) openCells.Add(cell);
+                }
                 if (bridgeCell.HasValue) openCells.Add(bridgeCell.Value);
                 foreach (var path in TrunkRoads(Door(origin), buildings.Where(b => b.Id != origin.Id).Select(Door), openCells, bridgeCell))
                 {
@@ -233,7 +241,7 @@ namespace Game.App
             // the open zones mixes fallow and sage by seed and takes the cool closed colour.
             // Patches spill past their block, so the outermost ring of blocks stays bare: every patch ends inside the night's
             // opaque rim at the area's edge.
-            if (config.Version == "m3a-prototype-r7")
+            if (EstateR8Layout.UsesPlazaRendering(config))
             {
                 const int tileCells = 8;
                 for (var u = plan.Area.xMin; u < plan.Area.xMax; u += tileCells)
@@ -254,14 +262,14 @@ namespace Game.App
                 }
             // Roads: Astra's painted earth along each grid path instead of flat diamonds.
             var sg = rules.sites;
-            if (config.Version == "m3a-prototype-r7")
+            if (EstateR8Layout.UsesPlazaRendering(config))
             {
                 for (var index = 0; index < ribbonRoutes.Count; index++)
                 {
                     var path = ribbonRoutes[index];
                     if (path.Count < 2) continue;
                     var points = path.Select(c => (Vector2)c + new Vector2(.5f, .5f)).ToArray();
-                    var bridge = rules.placed.FirstOrDefault(p => p.id == "bridge-nw-se-base");
+                    var bridge = EstateR8Layout.RoadBridge(pieces, config);
                     if (index == 2 && bridge != null) points[points.Length - 1] = new Vector2(bridge.u, bridge.v);
                     var projected = points.Select(P).ToArray();
                     var centre = new Vector2((projected.Min(p => p.x) + projected.Max(p => p.x)) * .5f,
@@ -346,7 +354,7 @@ namespace Game.App
                 // existing hit footprint and remains visible when optional decoration is disabled.
                 if (b.Level == 0 && !building)
                 {
-                    var distance = EstateNight.LightDistance(centre, litAreas, config.Version == "m3a-prototype-r7");
+                    var distance = EstateNight.LightDistance(centre, litAreas, EstateR8Layout.UsesPlazaRendering(config));
                     var light = night.Alpha(distance) < night.edgeAlpha ? "lit" : "dark";
                     var role = "lv0-" + SiteNames[plan.SiteVariants[b.Id]] + "-" + light;
                     AddSite(plan, b.Id, role, centre, 136, "approved");
@@ -355,7 +363,7 @@ namespace Game.App
                 // Approved construction silhouettes replace the temporary empty-field body (#426).
                 if (building)
                 {
-                    var distance = EstateNight.LightDistance(centre, litAreas, config.Version == "m3a-prototype-r7");
+                    var distance = EstateNight.LightDistance(centre, litAreas, EstateR8Layout.UsesPlazaRendering(config));
                     var role = EstateConstructionArt.Role(b.Kind == rules.fieldFenceKind, EstateConstructionArt.Stage(estate.Active), night.Alpha(distance) < night.edgeAlpha);
                     var completedWidth = buildingScale * (kind.Width + kind.Height) * EstateMapModel.HalfWidth;
                     plan.Items.Add(new EstateDrawItem { Role = role, Source = "construction", SiteId = b.Id, Grid = centre,
@@ -399,7 +407,7 @@ namespace Game.App
             }
 
             // Terrain skeleton pieces placed explicitly (river, bridge with its front rail, paddock) when their zone exists.
-            foreach (var piece in rules.placed.Where(p => config.Zones.Any(z => z.Id == p.zone)))
+            foreach (var piece in pieces.Where(p => config.Zones.Any(z => z.Id == p.zone)))
             {
                 var grid = new Vector2(piece.u, piece.v); var state = StateAt(grid) ?? "fallow";
                 var closed = state == "closed"; var ground = art != null && art.Has(piece.id) && art.Layer(piece.id) == "ground";
@@ -409,12 +417,14 @@ namespace Game.App
                 if (piece.id == "riverbank-patch" || piece.id == "river-bend-patch")
                 {
                     plan.Items[plan.Items.Count - 1].WaterOnly = true;
+                    plan.Items[plan.Items.Count - 1].Rotation = piece.rotation;
                     for (var side = 0; side < 2; side++)
                     {
                         var bank = piece.id == "river-bend-patch" ? (side == 0 ? "inside" : "outside") : "straight";
                         var role = "bank-" + bank + "-0" + (side + 1) + (closed ? "-dark" : "-lit");
-                        Add(plan, role, "river-bank", grid + new Vector2(side == 0 ? -.9f : .9f, side == 0 ? .9f : -.9f), art,
+                        Add(plan, role, "river-bank", grid + EstateR8Layout.RotateGridOffset(new Vector2(side == 0 ? -.9f : .9f, side == 0 ? .9f : -.9f), piece.rotation), art,
                             Color.white, closed ? EstateDrawLayer.Landmark : EstateDrawLayer.Standing);
+                        plan.Items[plan.Items.Count - 1].Rotation = piece.rotation;
                     }
                 }
                 if (piece.id == "bridge-nw-se-base")
@@ -457,7 +467,7 @@ namespace Game.App
                 (i.Source == "placed" || i.Role == "frontier-ruin")).ToArray();
             foreach (var item in silhouettes)
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
-                    WaterOnly = item.WaterOnly, Colour = new Color(0, night.landmarkBrightness, 1, 1),
+                    WaterOnly = item.WaterOnly, Rotation = item.Rotation, Colour = new Color(0, night.landmarkBrightness, 1, 1),
                     Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
             EstateResidentJob.ApplyBudget(plan);
             return plan;
