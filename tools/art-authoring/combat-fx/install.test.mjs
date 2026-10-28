@@ -12,6 +12,11 @@ test('approved six source crops preserve atlas dimensions and all other pixels',
   for(const {rect:[x,y,w,h]} of record.assets)for(let row=y;row<y+h;row++)outside.fill(0,(row*current.width+x)*4,(row*current.width+x+w)*4);
   assert.equal(createHash('sha256').update(outside).digest('hex'),record.outsideRgbaSha256);
   assert.equal(record.outsideChanged,0);
+  for(const {rect:[x,y,w,h],rgbaSha256} of record.assets){
+    const crop=Buffer.alloc(w*h*4);
+    for(let row=0;row<h;row++)current.pixels.copy(crop,row*w*4,((y+row)*current.width+x)*4,((y+row)*current.width+x+w)*4);
+    assert.equal(createHash('sha256').update(crop).digest('hex'),rgbaSha256);
+  }
 });
 test('spore combined PNG keeps approved effective alpha while other role contracts stay unchanged', () => {
   const manifest=JSON.parse(fs.readFileSync(new URL('../../../unity/Assets/Art/first-playable-manifest.json',import.meta.url)));

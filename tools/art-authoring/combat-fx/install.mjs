@@ -24,7 +24,8 @@ export function install(source, baseline) {
     const role = manifest.roles.find(r => r.id === id);
     assert.equal(role.atlas, 'fx'); assert.equal(role.frames.length, 1);
     const frame = role.frames[0], bytes = fs.readFileSync(path.join(source, png));
-    return { png, role: id, sha256: sha(bytes), rect: [frame.x, frame.y, frame.width, frame.height], image: decodeRgbaPng(bytes) };
+    const image = decodeRgbaPng(bytes);
+    return { png, role: id, sha256: sha(bytes), rgbaSha256: sha(image.pixels), rect: [frame.x, frame.y, frame.width, frame.height], image };
   });
   const after = replaceCells(before, cells), bytes = encodeRgbaPng(after);
   assert.deepEqual(decodeRgbaPng(bytes).pixels, after.pixels);

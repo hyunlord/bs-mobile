@@ -10,6 +10,7 @@
       "png": "iron-edge-candidate-r1.png",
       "role": "attack.core.iron_blade.sector90",
       "sha256": "e8a807acd6e563310f1e5966d2b5ada1c93977830f18f51bd87beeae9e6f77c9",
+      "rgbaSha256": "e6632ada648d286bc7e8054952cacd1a840b62065763cee6495f92650924cf2a",
       "rect": [
         125,
         145,
@@ -21,6 +22,7 @@
       "png": "harvest-edge-candidate-r1.png",
       "role": "attack.core.harvest_scythe.sector180",
       "sha256": "59b5f1d2b1f85de6f91cf7024a072ca12c9d2d455be0808c2423b473161af833",
+      "rgbaSha256": "eb46f844b156b5419c9624045d5c3e86bf717cddcab9f5494cdf92724fc2a6e9",
       "rect": [
         399,
         142,
@@ -32,6 +34,7 @@
       "png": "ember-candidate-r4-final.png",
       "role": "attack.core.ember_wand.projectile",
       "sha256": "6412200fd2665ad243a7c06499d15be881fd400378b643ff3e6aee101741a27b",
+      "rgbaSha256": "f24ff9af342d7aa14c2f2586449b9eeb320c00433180b54cc9ccebac80bcc94a",
       "rect": [
         724,
         174,
@@ -43,6 +46,7 @@
       "png": "ward-candidate-r4-final.png",
       "role": "attack.core.ward_orbit.orbit",
       "sha256": "1f96417c0b77eba0cb63d27f0c01df007be932777d779c72ecca504af48f4b4b",
+      "rgbaSha256": "620749a3c6b929b248f94d634e576e9288d5aa31ffc16cccd44be130230e53e5",
       "rect": [
         1026,
         144,
@@ -54,6 +58,7 @@
       "png": "canal-edge-candidate-r1.png",
       "role": "attack.core.canal_bow.piercing",
       "sha256": "00e5b6f935fcb7da5eff4bfd2403719b3e106981ca35d33777d458a1638eb9d9",
+      "rgbaSha256": "c263095b1eb342f067e69d14b7887d4bc31f4adbeaf853dbd2422d4f1adefa01",
       "rect": [
         95,
         463,
@@ -65,6 +70,7 @@
       "png": "spore-combined-effective-alpha-r4-final.png",
       "role": "attack.core.spore_fan.field",
       "sha256": "4698b9b851362a7661e724cd9bb2168e17dbc76ae6c9c9bed28e7e3138140d09",
+      "rgbaSha256": "d27b72e953dfb6f4a3ce3fa8bd39ae9abf52b986ce1c157d9fb3bd340c3e3942",
       "rect": [
         1028,
         433,
