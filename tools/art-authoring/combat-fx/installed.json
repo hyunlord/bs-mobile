@@ -1,10 +1,14 @@
 {
   "release": "m3-combat-fx-audit-456-20261028",
   "sourceAtlasSha256": "dc20fda29f41600100f90cbf7cd586fa594bc877f8077ca24a7f4f61822c3cfb",
-  "outputAtlasSha256": "604cbe04b5f97c1ed36753697ba2231753835f11aafd51acd15461ede30b95ca",
+  "outputAtlasSha256": "8387222f7a465cb2d11d74329aa05a048c789780fd5850a7cb070b574b24fefa",
+  "dimensions": [
+    1254,
+    1254
+  ],
   "outsideChanged": 0,
   "outsideRgbaSha256": "61eb084e69855b7d47b0a2b0bc3ef7e303da0eac974acc7457117573f54aa7b9",
-  "changedPixels": 16712,
+  "changedPixels": 59853,
   "assets": [
     {
       "png": "iron-edge-candidate-r1.png",
@@ -77,6 +81,468 @@
         132,
         130
       ]
+    }
+  ],
+  "preservedAliases": [
+    {
+      "rect": [
+        661,
+        249,
+        118,
+        114
+      ],
+      "sourceRect": [
+        125,
+        145,
+        118,
+        114
+      ],
+      "aliases": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "feedback.hit.default"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "feedback.lord-hit.default"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "feedback.hit.default"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "feedback.lord-hit.default"
+        }
+      ],
+      "rgbaSha256": "9962be02d68f0d092969cde929844eff199a08ef109ce40f5a89e4344555c29a"
+    },
+    {
+      "rect": [
+        1019,
+        264,
+        150,
+        133
+      ],
+      "sourceRect": [
+        399,
+        142,
+        150,
+        133
+      ],
+      "aliases": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.boundary_hinge.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.joiner_square.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.ruin_keystone.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.scaffold_step.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.levy_bread_wrap.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.muster_roll.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.return_path_knot.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.shock_absorber_pad.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.meadow_buckle.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.root_binding_cord.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.seed_pouch_lining.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.wind_seed_flag.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.ash_gathering_charm.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.bitter_seed_dust.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.canal_gate_pin.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.clay_water_bead.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.crop_guard_signet.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.drum_tension_rope.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.front_rank_peg.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.harvest_basket_lid.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.long_shot_counter.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.projectile_return_hook.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.rain_watch_cup.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.repair_apron.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.ripe_bell_clapper.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.slow_burn_wick.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.soup_portion_cup.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.squad_route_board.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.turning_weight.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.windmill_brake.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.sowing_sworddance.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.warded_masonry.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.rain_channel_shot.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.mill_return_disc.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.venom_reaping.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.sheltered_sowing.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.rally_kitchen.sector180"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.seed_crown.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.boundary_hinge.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.joiner_square.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.ruin_keystone.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.scaffold_step.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.levy_bread_wrap.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.muster_roll.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.return_path_knot.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.shock_absorber_pad.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.meadow_buckle.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.root_binding_cord.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.seed_pouch_lining.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.wind_seed_flag.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.ash_gathering_charm.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.bitter_seed_dust.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.canal_gate_pin.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.clay_water_bead.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.crop_guard_signet.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.drum_tension_rope.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.front_rank_peg.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.harvest_basket_lid.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.long_shot_counter.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.projectile_return_hook.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.rain_watch_cup.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.repair_apron.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.ripe_bell_clapper.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.slow_burn_wick.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.soup_portion_cup.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.squad_route_board.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.turning_weight.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.windmill_brake.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.sowing_sworddance.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.warded_masonry.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.rain_channel_shot.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.mill_return_disc.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.venom_reaping.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.sheltered_sowing.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.rally_kitchen.sector180"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.seed_crown.sector180"
+        }
+      ],
+      "rgbaSha256": "7c35b158787f6cd6156dc3a3270312cf13120e48d9b75abf478158ae3e4e4d89"
+    },
+    {
+      "rect": [
+        111,
+        263,
+        134,
+        116
+      ],
+      "sourceRect": [
+        1026,
+        144,
+        134,
+        116
+      ],
+      "aliases": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.windmill_crank.orbit"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.windmill_crank.orbit"
+        }
+      ],
+      "rgbaSha256": "c851414135dd66ec3d757c8d29eb3fd1c29251bb8e058f93a9c700bf7776c185"
+    },
+    {
+      "rect": [
+        679,
+        2,
+        154,
+        73
+      ],
+      "sourceRect": [
+        95,
+        463,
+        154,
+        73
+      ],
+      "aliases": [
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.carpenter_hammer.projectile"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.hedge_drum.projectile"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.windmill_crank.projectile"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.muster_horn.projectile"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.core.soup_ladle.projectile"
+        },
+        {
+          "manifest": "first-playable-manifest.json",
+          "role": "attack.unassigned.projectile"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.carpenter_hammer.projectile"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.hedge_drum.projectile"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.windmill_crank.projectile"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.muster_horn.projectile"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.core.soup_ladle.projectile"
+        },
+        {
+          "manifest": "wave1a-manifest.json",
+          "role": "attack.unassigned.projectile"
+        }
+      ],
+      "rgbaSha256": "6fd6d0e206e521b22f69b94812f10dabdd02ca79b1706069523ea490c7ea4dbe"
+    }
+  ],
+  "unapprovedContracts": [
+    {
+      "name": "first-playable-manifest.json",
+      "before": {
+        "roles": 101,
+        "sha256": "b5ff2db0438e37ddf43747e5e637a0a0d3a785877bdc757a5b99677d39e7f273"
+      }
+    },
+    {
+      "name": "wave1a-manifest.json",
+      "before": {
+        "roles": 101,
+        "sha256": "b5ff2db0438e37ddf43747e5e637a0a0d3a785877bdc757a5b99677d39e7f273"
+      }
     }
   ]
 }

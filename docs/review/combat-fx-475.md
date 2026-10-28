@@ -10,7 +10,8 @@
 Core·콘텐츠·입력·리플레이·기존 역할의 셀/피벗/크기/재생 시간은 변경하지 않는다.
 
 - `tools/art-authoring/combat-fx/installed.json`: 각 승인 PNG SHA-256, 기존 crop, atlas 전후 SHA-256.
-- 변경 16,712픽셀, 승인 crop 바깥 변경 0. atlas 해상도·텍스처 수 불변.
+- 변경 59,853픽셀, 승인 crop 6개와 역사 보존 복사 칸 4개 바깥 변경 0. atlas 해상도·텍스처 수 불변.
+- 같은 crop을 공유하던 비승인 역할 47개/프로필(피격 피드백·도구·진화 등)은 원판 4개를 같은 atlas의 빈칸에 복사하고 참조만 바꿨다. 두 프로필의 비승인 fx 역할 전체에 대해 RGBA·셀 크기·피벗·world size·재생값 계약 해시가 동일하다.
 - 포자 combined PNG에는 내부 0.10·테두리 0.34의 유효 알파가 이미 포함된다. 이 field role만 View 불투명도 1로 그린다. 다른 field·nova·projectile 알파는 유지한다.
 - 철검/낫은 first-playable의 transient area(최대 0.26, 0.18초)이며 wave 전용 arc를 교체하지 않는다.
 - wave-1a의 불씨 투사체는 공용 `attack.core.ember_wand.projectile`을 읽으므로 C05 대상이다. 측정은 Claude Code 야간 대기열에 요청한다.
@@ -30,7 +31,7 @@ Core·콘텐츠·입력·리플레이·기존 역할의 셀/피벗/크기/재생
 
 | 검사 | 결과 |
 |---|---|
-| 정확 crop 교체·바깥 RGBA 해시·유효 알파 | Node 4/4 통과 |
+| 정확 crop 교체·바깥 RGBA 해시·유효 알파 | Node 5/5 통과 |
 | first-playable/wave 아트 계약 테스트 | Node 21/21 통과 |
 | manifest/registry 검증 | 두 프로필 통과 |
 | Unity EditMode/PlayMode 두 프로필 | NOT_RUN, 공유 Mac 잠금 슬롯 대기 |
@@ -44,7 +45,7 @@ Core·콘텐츠·입력·리플레이·기존 역할의 셀/피벗/크기/재생
 ## 재생성
 
 ```sh
-node tools/art-authoring/combat-fx/install.mjs RELEASE_DIRECTORY ORIGINAL_FX_PNG
+node tools/art-authoring/combat-fx/install.mjs RELEASE_DIRECTORY BASELINE_DIRECTORY
 node --test tools/art-authoring/combat-fx/install.test.mjs tools/art-authoring/sprout-emblems/replace.test.mjs
 node tools/first-playable-art.mjs
 node tools/wave1a-art.mjs
