@@ -30,3 +30,5 @@ ASTC4 산식은 ceil(width/4)×ceil(height/4)×16 bytes, mip 없음. 전체94PNG
 ## 검증
 
 Node: 기록누락·stale identity·틀린산식 음성대조, 실제git PR diff통합, Mac보존/모바일계산. Unity: 각3atlas Android/iPhone ASTC4override조회 및 MacRGBA유지, 원본padding alpha1실패/0통과, 두프로필예정. 결과는 실행 후 갱신한다.
+
+PR head와 CI merge checkout의 PNG가 다르면 merge 그림을 PR 그림으로 오인하지 않는다. head blob 또는 로컬 LFS oid를 읽고, 그 oid가 없을 때만 해당 PNG 경로 하나를 `git lfs fetch --include`로 받는다. checkout은 바꾸지 않는다.

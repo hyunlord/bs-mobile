@@ -30,3 +30,5 @@ CI에 작은 Node 검사와 변경 기록이 추가된다. 플랫폼별 모든 �
 ## 검증
 
 Node 음성 대조(누락, stale identity, 산식 오류), 실제 git PR diff, 1MiB 초과 비LFS 원본을 검사한다. Unity EditMode는 세 atlas의 모바일 override와 Mac RGBA 유지, padding alpha0 허용·alpha1 거절을 검사한다. 두 프로필 실행 기록과 실제 ASTC 시험 출처는 PR 검토 문서에 남긴다. 실기 성능을 증명하지 않는다.
+
+PR head와 CI merge checkout의 PNG가 다르면 merge 그림을 PR 그림으로 오인하지 않는다. head blob 또는 로컬 LFS oid를 읽고, 그 oid가 없을 때만 해당 PNG 경로 하나를 `git lfs fetch --include`로 받는다. checkout은 바꾸지 않는다.

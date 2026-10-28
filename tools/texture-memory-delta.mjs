@@ -48,11 +48,15 @@ export function checkTextureMemoryDelta({changed,base,head,cwd=process.cwd()}) {
   const blob=(ref,p)=>{try{return git(['show',`${ref}:${p}`]);}catch(error){if(error.status===128)return null;throw error;}};
   const records=changed.filter(p=>/^docs\/metrics\/texture-memory-deltas\/[^/]+\.json$/.test(p)).flatMap(p=>JSON.parse(blob(head,p)).records);
   for(const p of textures){const matches=records.filter(r=>r.path===p);assert.equal(matches.length,1,`Missing or duplicate texture memory record: ${p}`);
-    const before=blob(ancestor,p),after=blob(head,p),bi=identity(before),ai=identity(after);let current=null;
-    if(ai){const raw=fs.readFileSync(path.join(cwd,p));assert.deepEqual(identity(raw),ai,`Working PNG is not PR head: ${p}`);assert(raw.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Expected decoded LFS PNG');current=parsePlatforms(blob(head,p+'.meta').toString(),raw.readUInt32BE(16),raw.readUInt32BE(20),raw[25]);}
+    const before=blob(ancestor,p),after=blob(head,p),bi=identity(before),ai=identity(after);let current=null,colorType=6;
+    if(ai){let raw=after;
+      if(!raw.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))){const working=fs.existsSync(path.join(cwd,p))?fs.readFileSync(path.join(cwd,p)):null;
+        if(working&&identity(working).sha256===ai.sha256)raw=working;
+        else {const common=git(['rev-parse','--git-common-dir']).toString().trim();const object=path.resolve(cwd,common,'lfs','objects',ai.sha256.slice(0,2),ai.sha256.slice(2,4),ai.sha256);if(!fs.existsSync(object))git(['lfs','fetch','--include='+p,'--exclude=','origin',head]);assert(fs.existsSync(object),`PR head LFS object missing after scoped fetch: ${p}`);raw=fs.readFileSync(object);}}
+      assert.deepEqual(identity(raw),ai,`Decoded PR head PNG identity differs: ${p}`);assert(raw.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Expected decoded LFS PNG');colorType=raw[25];current=parsePlatforms(blob(head,p+'.meta').toString(),raw.readUInt32BE(16),raw.readUInt32BE(20),colorType);}
     // A changed LFS base may not be hydrated in CI. Its oid/size anchors the explicitly declared before estimate.
     const oldMeta=blob(ancestor,p+'.meta');
-    const previous=bi&&ai&&oldMeta&&bi.sha256===ai.sha256?parsePlatforms(oldMeta.toString(),current.width,current.height,fs.readFileSync(path.join(cwd,p))[25]):null;
+    const previous=bi&&ai&&oldMeta&&bi.sha256===ai.sha256?parsePlatforms(oldMeta.toString(),current.width,current.height,colorType):null;
     validateRecord(matches[0],bi,ai,current,previous);
   }
 }
