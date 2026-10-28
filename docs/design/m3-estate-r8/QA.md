@@ -20,3 +20,10 @@ Actually opened `geometry-topdown.png` and `geometry-isometric.png`. Both show r
 No runtime configuration was created/loaded, no save roundtrip was executed, and no normal resource progression, camera/UI, navigation, construction collision or performance was tested. Water/bridges are View-only proposals; the document correctly discloses that current Core does not block building movement onto water-display cells. Runtime road routing and first-screen readability remain implementation-PR work.
 
 Independent recomputed results are retained locally in `output/estate-r8-design-476/qa/independent-geometry.json`; they do not substitute for user design acceptance or later runtime gates.
+
+## Commands and independent method
+
+- `python3 - <<'PY' ... PY` (read-only inline audit, output only to QA): loaded `geometry-proposal.json` and actualr7 JSON; expanded each rectangle into an independently owned cell map. Counted inter-owner4-neighbor cell edges to derive adjacency rather than reusing the generator's rectangle edge formula. Flood-filled union/complement/dry banks and checked each bridge's endpoints against distinct dry components. Compared initial building fields and computed sourceSHA-256; compared historical files to `git show HEAD:<path>`. Actual result:13/1664/0overlap/0holes,24exact adjacency pairs, all3bridges valid.
+- A second `python3 -` read-only comparison verified each proposed unlock object equals r7 except completedProductionSites4→3 in exactly7zones. Actual result: no other unlock changes.
+- `rg -n 'ProductionSitesComplete|ConfigVersion|Adjacent' core/src/SowSiege.Core/AccountEstate.cs` and bounded `sed` reads verified actualCore contracts at lines85,199,446–470; `AccountEstateContract.cs` confirms one rectangle per zone.
+- `view_image` opened both finalPNG diagrams. No generator rerun, code execution through Core, Unity launch or runtime test occurred. Runtime status: **NOT_RUN**.
