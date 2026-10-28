@@ -23,6 +23,7 @@ namespace Tests.EditMode
                 Assert.That(settings.overridden,Is.True,platform);
                 Assert.That(settings.format,Is.EqualTo(TextureImporterFormat.ASTC_4x4),platform);
                 Assert.That(settings.maxTextureSize,Is.EqualTo(4096));
+                Assert.That(settings.compressionQuality,Is.EqualTo(100),"Match approved trial Best quality request");
             }
             Assert.That(AssetDatabase.LoadAssetAtPath<Texture2D>(path).format,Is.EqualTo(TextureFormat.RGBA32),"Mac editor stays RGBA");
         }

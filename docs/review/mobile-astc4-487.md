@@ -32,3 +32,7 @@ ASTC4 산식은 ceil(width/4)×ceil(height/4)×16 bytes, mip 없음. 전체94PNG
 Node: 기록누락·stale identity·틀린산식 음성대조, 실제git PR diff통합, Mac보존/모바일계산. Unity: 각3atlas Android/iPhone ASTC4override조회 및 MacRGBA유지, 원본padding alpha1실패/0통과, 두프로필예정. 결과는 실행 후 갱신한다.
 
 PR head와 CI merge checkout의 PNG가 다르면 merge 그림을 PR 그림으로 오인하지 않는다. head blob 또는 로컬 LFS oid를 읽고, 그 oid가 없을 때만 해당 PNG 경로 하나를 `git lfs fetch --include`로 받는다. checkout은 바꾸지 않는다.
+
+## 압축 품질과 최초 기록
+
+승인된 실제 시험은 `TextureCompressionQuality.Best`였다. 모바일 override도 compressionQuality=100(Best)로 명시한다([Unity API](https://docs.unity3d.com/cn/current/ScriptReference/TextureImporter.SetPlatformTextureSettings.html)). 이는 요청 품질의 일치이며 EditorUtility와 플랫폼 importer 인코더의 바이트 동일성을 주장하지 않는다. Default/Standalone 품질은 바꾸지 않는다. 최초985e5aee(품질50)의 focused4·FP902/55·wave912/89는 실패0, 보충각1통과/미설명skip0/기존listed1로 보존하며 최종품질100 기록을 대신하지 않는다.
