@@ -79,6 +79,12 @@ test('removing the wave-only rig gate invalidates the profile scope', t => {
   assert.match(problems(dir).join('\n'), /scope unity\/Assets\/Game\/View\/WorldHeroRig\.cs: cited code no longer present/);
 });
 
+test('allowing combat review in FP01 invalidates the wave-only presentation scope', t => {
+  const dir = sandbox(t);
+  edit(dir, 'unity/Assets/Game/App/FirstPlayableBenchmark.cs', '"--m1-combat-case", ', '');
+  assert.match(problems(dir).join('\n'), /scope unity\/Assets\/Game\/View\/M1CombatPresentation\.cs: cited code no longer present/);
+});
+
 test('a new enemy rig kind requires its rig roles', t => {
   const dir = sandbox(t);
   edit(dir, 'unity/Assets/Game/View/EnemyRigAtlas.cs', '"ram_runner", "wine_wasp" }', '"ram_runner", "wine_wasp", "flood_tusk" }');
