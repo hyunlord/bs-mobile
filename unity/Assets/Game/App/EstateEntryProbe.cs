@@ -4,6 +4,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using Game.View;
+using Game.App.Generated;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -68,6 +69,10 @@ namespace Game.App
                 if (app != null && !string.IsNullOrEmpty(app.Error)) throw new InvalidOperationException(app.Error);
                 yield return null;
             }
+            UnityEngine.Debug.Log("EstateEntryProbe title contract: profile=" + CanonicalContent.ProfileName +
+                "; isWave=" + app.IsWave + "; portrait=" + app.Ui.PortraitEnabled);
+            if (!app.Ui.PortraitEnabled)
+                throw new InvalidOperationException("Estate entry probe requires the wave-1a portrait build. The first-playable 시작 button starts combat, not the estate; no substitute click was attempted.");
             app.Ui.SynchronizeViewport();
             yield return null;
             Canvas.ForceUpdateCanvases();
@@ -109,7 +114,20 @@ namespace Game.App
                     throw new InvalidOperationException("Normal build button did not start " + kind + ": config=" + app.EstateMap.Config.Version + " reason=" + app.EstateMap.LastConstructionReason);
                 yield return rendered;
                 Capture(kind == "meta:granary" ? "granary-construction" : "construction");
-                while (app.EstateMap.Building(building.Id).Level == 0) yield return null;
+                var capturedStage = 1;
+                while (app.EstateMap.Building(building.Id).Level == 0)
+                {
+                    var stage = EstateConstructionArt.Stage(app.EstateMap.State.Estate.Active);
+                    if (stage > capturedStage)
+                    {
+                        // Observe the real clock only: no resource grants, direct state edits or time acceleration.
+                        capturedStage = stage;
+                        yield return rendered;
+                        Capture((kind == "meta:granary" ? "granary" : "field") + "-construction-stage-" + stage);
+                        RecordConstruction("art-stage-" + stage, building.Id, "observed");
+                    }
+                    yield return null;
+                }
                 RecordConstruction("complete", building.Id, "completed");
                 yield return rendered;
                 Capture(kind == "meta:granary" ? "granary-complete" : "field-complete");
@@ -127,7 +145,14 @@ namespace Game.App
 
         void Click(string name)
         {
-            var button = app.Ui.GetComponentsInChildren<Button>().Single(item => item.name == name);
+            var buttons = app.Ui.GetComponentsInChildren<Button>(true);
+            var matches = buttons.Where(item => item.name == name && item.gameObject.activeInHierarchy).ToArray();
+            if (matches.Length != 1)
+                throw new InvalidOperationException("UI action unavailable: " + name + "; matches=" + matches.Length +
+                    "; screen=" + app.CurrentScreenName + "; frame=" + Time.frameCount +
+                    "; uiActive=" + app.Ui.gameObject.activeInHierarchy + "; buttons=" +
+                    string.Join("|", buttons.Select(item => item.name + ":active=" + item.gameObject.activeInHierarchy + ":enabled=" + item.interactable)));
+            var button = matches[0];
             if (!button.interactable) throw new InvalidOperationException("Disabled normal UI button: " + name);
             UnityEngine.Debug.Log("EstateEntryProbe UI action: " + name);
             button.onClick.Invoke();

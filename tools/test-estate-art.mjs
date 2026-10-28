@@ -1,9 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { decodeRgbaPng } from './wave1a-art.mjs';
-import { build, check, downsample, encodeRgbaPng, opaqueWidth, pack } from './estate-art.mjs';
+import { build, check, downsample, encodeRgbaPng, opaqueWidth, opaqueHeight, replaceBuildingCrop, pack } from './estate-art.mjs';
 
 const image = (width, height, fill) => ({ width, height, pixels: Buffer.from(Array.from({ length: width * height }, (_, i) => fill(i % width, Math.floor(i / width))).flat()) });
+
+test('building crop swaps cannot alter alpha or neighbouring pixels', () => {
+  const atlas = image(8, 8, () => [10, 20, 30, 255]);
+  const original = Buffer.from(atlas.pixels);
+  const replacement = image(2, 3, () => [40, 50, 60, 255]);
+  replaceBuildingCrop(atlas, [2, 1, 2, 3], replacement);
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++)
+    if (x < 2 || x >= 4 || y < 1 || y >= 4)
+      assert.deepEqual(atlas.pixels.subarray((y * 8 + x) * 4, (y * 8 + x + 1) * 4), original.subarray((y * 8 + x) * 4, (y * 8 + x + 1) * 4));
+  replacement.pixels[3] = 0;
+  assert.throws(() => replaceBuildingCrop(atlas, [2, 1, 2, 3], replacement), /changed alpha/);
+  assert.equal(opaqueHeight(image(4, 8, (x, y) => [0, 0, 0, y >= 3 && y <= 5 ? 255 : 8]), [0, 0, 4, 8]), 3);
+});
 
 test('PNG encoding round-trips through the repository decoder', () => {
   const source = image(5, 3, (x, y) => [x * 40, y * 80, 7, x === 4 ? 0 : 255]);

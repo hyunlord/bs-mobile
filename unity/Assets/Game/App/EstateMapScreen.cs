@@ -159,7 +159,7 @@ namespace Game.App
         public EstatePlan Plan(EstateDecorRules rules, EstateArt art)
         {
             var estate = State.Estate;
-            var layout = string.Join(";", estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y + "," + b.Level)) + "|" + estate.Active?.BuildingId + "|" + string.Join(",", estate.OpenZones);
+            var layout = string.Join(";", estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y + "," + b.Level)) + "|" + estate.Active?.BuildingId + ":" + EstateConstructionArt.Stage(estate.Active) + "|" + string.Join(",", estate.OpenZones);
             if (plan == null || layout != planLayout) { plan = EstatePlanner.Plan(rules, art, Config, estate); planLayout = layout; }
             return plan;
         }
@@ -183,7 +183,7 @@ namespace Game.App
         public bool SkipTime(long seconds) { skipped += Math.Max(0, seconds); return Advance(); }
 
         static string Shape(MetaEstateState estate) =>
-            string.Join(",", estate.Buildings.Select(b => b.Level + (b.Branch ?? ""))) + "|" + estate.Active?.BuildingId + "|" +
+            string.Join(",", estate.Buildings.Select(b => b.Level + (b.Branch ?? ""))) + "|" + estate.Active?.BuildingId + ":" + EstateConstructionArt.Stage(estate.Active) + "|" +
             string.Join(",", estate.Reservations.Select(r => r.BuildingId)) + "|" + string.Join(",", estate.OpenZones) + "|" +
             estate.ZoneWork?.ZoneId + "|" + string.Join(",", estate.AchievedTasks) + "|" + (estate.Buildings.Any(b => b.Stock > 0) ? "stock" : "");
 
