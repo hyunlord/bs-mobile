@@ -1,8 +1,8 @@
 # r8 zone terrain authoring groundwork (#495)
 
-관문: 부분 — 승인 소스 64/64 SHA·PNG 크기 일치, Node 16/16 통과. 게임 렌더·밀도·카메라·Unity는 NOT_RUN.
+관문: 부분 — 승인 소스 64/64 SHA·PNG 크기 일치, Node 18/18 통과. 게임 렌더·밀도·카메라·Unity는 NOT_RUN.
 
-2026-10-28. Base main `31f64a656ca528ce8a1617aaead0abd3946c81a9` (#485). Design: [#490 v0.3](https://github.com/hyunlord/bs-mobile/pull/490), related #489. This is authoring groundwork, not the completed zone terrain feature. No Core/data/Unity files, imported textures, save format, historical r3–r7 settings or original art change.
+2026-10-28. Base main `31f64a656ca528ce8a1617aaead0abd3946c81a9` (#485). Design: [#490 v0.4](https://github.com/hyunlord/bs-mobile/pull/490), related #489. This is authoring groundwork, not the completed zone terrain feature. No Core/data/Unity files, imported textures, save format, historical r3–r7 settings or original art change.
 
 ## Sources and explicit scope
 
@@ -10,7 +10,7 @@
 
 128 source references include alternative scales. Select **54 1x sprite PNGs + 10 flat-UV 512px floor PNGs = 64**. The 2x/1024 alternatives are not duplicate runtime imports. All 64 files were downloaded to this worktree's untracked artifacts and SHA256 plus PNG IHDR dimensions checked. No pixel editing, atlas packing, alpha-quality claim or GPU allocation occurred. Floor material projection remains distinct from isometric sprite projection. Runtime Unity pivot conversion will be `(x/width, 1-y/height)`; source coordinates remain unmodified here.
 
-River r5 registration/chunks are deliberately outside this first slice: the existing river is unchanged. The new source mapping is **not** an EstateArt role registration. References cannot be used by the product renderer yet.
+Approved river r2 registration/chunks are recorded in the dense source registry below; river r3 is explicitly not adopted. The existing product river is unchanged. The new source mapping is **not** an EstateArt role registration. References cannot be used by the product renderer yet.
 
 ## Executable candidate contract
 
@@ -68,6 +68,23 @@ Rebuild source registry after downloading the six metadata files plus Release as
 node tools/art-authoring/estate-zone-terrain/dense-sources.mjs artifacts/estate-zone-terrain
 ```
 
-Final local Node suite16/16. CI source changes only authoring tools and this report; another owner may have uncommitted Unity camera work in the same worktree, which is explicitly excluded from this commit and its claims.
+Historical 2026-10-28 local Node suite16/16. CI source changes only authoring tools and this report; another owner may have uncommitted Unity camera work in the same worktree, which is explicitly excluded from this commit and its claims.
 
 Small-prop variation is supported/tested by fixtures only: current contract's village/approach/meadow still preserve existing decoration, so this commit does not enable new small-prop placement in the product or authoring default layout.
+
+## 2026-10-29 field r3 selection; river r2 retained
+
+The latest user decision approves **field props only** from VARIETY-FIELDS-r3: six forms × three nominal sizes (S64×32 / M96×48 / L128×64), each bright/dark and1x/2x =72 source PNG alternatives. [field-source-assets.json](../../tools/art-authoring/estate-zone-terrain/field-source-assets.json) pins exact SHA256, canvas, floor and top-left pivot. All72 downloaded PNGs match SHA256 and IHDR sizes. Together with unchanged64 initial and120 dense sources, this is256 verified source alternatives, not256 runtime textures.
+
+The field-slot selector returns only these r3 forms. The previous24 general props remain preserved for non-field slots; preservation is not permission to stack both sets in a field slot. The92 river assets remain byte-for-byte the previous dense-river-r2 selection. River r3 is **not adopted**, even though it is in the same Release and r3 preview images. No r3 scene composition or river metadata is selected or imported. The original metadata's approval-pending label is preserved as history; it does not negate the later field-only user approval.
+
+Pivots are visually estimated floor centers, not physically measured vertices. Bright/dark silhouette differences are retained, not normalized. Field-between05 soil must be excluded from prop occupancy/density counts; nominal floor rectangles are not opaque occupancy evidence. These sources do not prove runtime density or overall r3 preview approval.
+
+Reproduce the source registry after downloading VARIETY-FIELDS-r3.json, VARIETY-PIECES-r3.md, VARIETY-PROVENANCE-r3.json and the Release asset listing:
+
+```sh
+node tools/art-authoring/estate-zone-terrain/field-sources.mjs artifacts/estate-zone-terrain
+node --test tools/art-authoring/estate-zone-terrain/plan.test.mjs
+```
+
+Light Node suite18/18 passes, including all18 form/size combinations in both states/resolutions, no general-prop fallback, invalid pivot/duplicate rejection and explicit river-r3 injection rejection. Dense registry and original64 registry remain unchanged. Unity/build/game application remain NOT_RUN; the six local camera files belonging to the other owner are not staged. No PR body update is made after this push.

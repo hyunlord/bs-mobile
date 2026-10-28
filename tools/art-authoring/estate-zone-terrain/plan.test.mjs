@@ -266,3 +266,68 @@ test("dense sources preserve all120 alternatives and explicit anchors", () => {
         "ART_COMPOSITION_NOT_VALIDATED_GAME_PLACEMENT",
     );
 });
+
+test("field r3 selection covers six forms and three sizes without general-prop fallback", async () => {
+    const { validateFieldSelection, selectFieldVariants } =
+        await import("./field-sources.mjs");
+    const field = read("./field-source-assets.json");
+    const dense = read("./dense-source-assets.json");
+    validateFieldSelection(field, dense);
+    for (const size of ["S", "M", "L"])
+        for (const scale of [1, 2])
+            for (const state of ["bright", "dark"]) {
+                const selected = selectFieldVariants(
+                    field,
+                    dense,
+                    size,
+                    scale,
+                    state,
+                );
+                assert.deepEqual(
+                    selected.map((a) => a.shape),
+                    [1, 2, 3, 4, 5, 6],
+                );
+                assert.ok(
+                    selected.every(
+                        (a) => a.metadata === "VARIETY-FIELDS-r3.json",
+                    ),
+                );
+                assert.ok(
+                    selected.every(
+                        (a) => !dense.assets.some((b) => a.file === b.file),
+                    ),
+                );
+            }
+    assert.throws(() => selectFieldVariants(field, dense, "XL", 1, "bright"));
+    const broken = clone(field);
+    broken.assets[0].pivotTopLeft[0]++;
+    assert.throws(() => validateFieldSelection(broken, dense), /pivot/);
+    const duplicate = clone(field);
+    duplicate.assets[0] = clone(duplicate.assets[1]);
+    assert.throws(() => validateFieldSelection(duplicate, dense), /unique/);
+});
+
+test("field updates cannot opt into river r3 even when it shares the Release", async () => {
+    const { validateFieldSelection } = await import("./field-sources.mjs");
+    const field = read("./field-source-assets.json");
+    const dense = read("./dense-source-assets.json");
+    assert.throws(
+        () =>
+            validateFieldSelection(
+                { ...field, riverMetadata: "variety-river-r3-placement.json" },
+                dense,
+            ),
+        /river r2/,
+    );
+    const changed = clone(dense);
+    const river = changed.assets.find(
+        (a) => a.projection === "registered-chunk",
+    );
+    river.file = river.file.replace("dense-river-r2", "variety-river-r3");
+    assert.throws(() => validateFieldSelection(field, changed), /river r3/);
+    river.file = dense.assets.find(
+        (a) => a.projection === "registered-chunk",
+    ).file;
+    river.metadata = "variety-river-r3-placement.json";
+    assert.throws(() => validateFieldSelection(field, changed), /river r3/);
+});
