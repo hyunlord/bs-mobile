@@ -21,7 +21,8 @@ export async function publishMetrics({ repository, runId, github = runGitHub }) 
   let incoming;
   const output = join(root, 'durable');
   const history = join(output, 'history');
-  const artifacts = JSON.parse(await github(['api', `repos/${repository}/actions/runs/${runId}/artifacts`, '--paginate', '--slurp', '--jq', '[.[].artifacts[] | select(.name | startswith("evidence-"))]']));
+  const pages = JSON.parse(await github(['api', `repos/${repository}/actions/runs/${runId}/artifacts`, '--paginate', '--slurp']));
+  const artifacts = pages.flatMap(page => page.artifacts).filter(artifact => artifact.name.startsWith('evidence-'));
   if (artifacts.length !== 1 || artifacts[0].expired) throw new Error('Expected exactly one unexpired evidence artifact');
   await github(async () => {
     incoming = await mkdtemp(join(root, 'incoming-'));
