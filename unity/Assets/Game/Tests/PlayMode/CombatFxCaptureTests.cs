@@ -24,10 +24,10 @@ namespace Tests.PlayMode
             var stateHash = session.ComputeStateHash();
             var original = session.View.CaptureFrame();
             var origin = original.Lord.Position;
-            var attackPoint = new WorldPoint(origin.X + 700, origin.Y + 500);
-            var enemies = Enumerable.Range(0, 12).Select(i => new EnemyView(i + 1, "core:raider", new WorldPoint(origin.X + 1400 + i % 4 * 250, origin.Y + (i / 4 - 1) * 400), 100, 100)).ToArray();
-            var frame = original with { Enemies = enemies, Events = Array.Empty<PresentationEvent>() };
-            var snapshot = session.View.CaptureFirstPlayable() with { Attacks = Array.Empty<ActiveAttackView>() };
+            var attackPoint = new WorldPoint(origin.X + 200, origin.Y + 450);
+            var enemies = Enumerable.Range(0, 12).Select(i => new EnemyView(i + 1, "core:raider", new WorldPoint(origin.X - 350 + i % 4 * 300, origin.Y + 250 + i / 4 * 250), 100, 100)).ToArray();
+            var frame = original with { Enemies = enemies, Events = Array.Empty<PresentationEvent>(), Buildings = Array.Empty<BuildingView>(), Farms = Array.Empty<FarmView>(), People = Array.Empty<PersonView>(), Loot = Array.Empty<GroundLootView>(), Remains = Array.Empty<RemainView>() };
+            var snapshot = session.View.CaptureFirstPlayable() with { Attacks = Array.Empty<ActiveAttackView>(), BuildingProgress = Array.Empty<BuildingProgressView>(), People = Array.Empty<PersonActivityView>(), MapEvents = Array.Empty<MapEventView>() };
             var sourceIds = new[] { "iron_blade", "harvest_scythe", "ember_wand", "ward_orbit", "canal_bow", "spore_fan" };
             var forms = new[] { "sector90", "sector180", "projectile", "orbit", "piercing", "field" };
             var output = Environment.GetEnvironmentVariable("COMBAT_FX_FIXTURE_OUTPUT");
@@ -49,10 +49,22 @@ namespace Tests.PlayMode
                     {
                         yield return PlayModeCaptureGuard.WaitForShaders("combat-fx-fixture:" + sourceIds[index]);
                         for (var n = 0; n < 3; n++) { world.Present(frame, frame, snapshot, 1, 0, new Rect(0, 0, 390, 844)); yield return null; }
+                        Assert.That(frame.Buildings.Count + frame.Farms.Count + frame.People.Count + snapshot.BuildingProgress.Count, Is.Zero, "No inherited fresh-session growth props in isolated fixture.");
+                        var enemyVisual = ArtCatalog.Load().Resolve("enemy", "core:raider", "move");
+                        Debug.Log("Combat FX fixture enemy role=" + enemyVisual.RoleId + " texture=" + enemyVisual.Texture.name + " uv=" + enemyVisual.UvRects[0]);
+                        foreach (var enemy in enemies)
+                        {
+                            var ground = new Vector3((float)enemy.Position.X / settings.WorldUnitsPerUnityUnit, (float)enemy.Position.Y / settings.WorldUnitsPerUnityUnit, 0);
+                            var lower = camera.WorldToViewportPoint(ground - new Vector3(enemyVisual.WorldSize.x * enemyVisual.Pivot.x, enemyVisual.WorldSize.y * enemyVisual.Pivot.y, 0));
+                            var upper = camera.WorldToViewportPoint(ground + new Vector3(enemyVisual.WorldSize.x * (1 - enemyVisual.Pivot.x), enemyVisual.WorldSize.y * (1 - enemyVisual.Pivot.y), 0));
+                            Assert.That(lower.x, Is.InRange(0f, 1f)); Assert.That(lower.y, Is.InRange(0f, 1f));
+                            Assert.That(upper.x, Is.InRange(0f, 1f)); Assert.That(upper.y, Is.InRange(0f, 1f));
+                        }
                         Read(); var control = image.GetPixels32();
                         var source = "core:" + sourceIds[index];
                         var role = ArtCatalog.Load().Resolve("attack", source, forms[index]);
                         Assert.That(role.RoleId, Is.EqualTo("attack.core." + sourceIds[index] + "." + forms[index]));
+                        Debug.Log("Combat FX fixture role=" + role.RoleId + " texture=" + role.Texture.name + " uv=" + role.UvRects[0] + " visibleEnemies=" + enemies.Length + " inheritedBuildings=" + frame.Buildings.Count);
                         var shown = frame;
                         var fx = snapshot;
                         if (index == 0 || index == 1)
