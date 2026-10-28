@@ -20,8 +20,8 @@ public sealed class AccountEstateR6MapTests
     {
         var source = UnityExport.Generate(Data);
         Assert.Contains("CreateAccountEstateConfig(string version = null)", source);
-        Assert.Contains("(version ?? \"m3a-prototype-r7\") switch", source);
-        foreach (var version in new[] { "r2", "r3", "r4", "r5", "r6", "r7" })
+        Assert.Contains("(version ?? \"m3a-prototype-r8\") switch", source);
+        foreach (var version in new[] { "r2", "r3", "r4", "r5", "r6", "r7", "r8" })
         {
             Assert.Contains("\"m3a-prototype-" + version + "\" => new global::SowSiege.Core.AccountEstateConfig", source);
         }
