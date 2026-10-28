@@ -4,12 +4,12 @@
 
 ## Independently checked
 
--13 distinct zone IDs, each one rectangle;1664 summed and unique cells,0overlap,1connected union,0enclosed missing cells. The outline is a stepped approximation under the current single-rectangle-per-ID Core contract, not the approved painting's pixel outline.
--Start exactly(24,24,12,12), only start initially open. All10 initial building kind/position/size/startsComplete fields match r7,40unique building cells inside start. Source SHA-256 matches the referenced r7 file; historicalr3–r7 bytes match currentHEAD.
--24 actual shared-edge pairs recomputed from cell ownership, exactly matching reported edge lengths and every neighbor list. Core `StartZoneUnlock` uses ANY open edge neighbor; cost/reserve/production/idle-work remain separate required checks. Corner contact is not adjacency.
--River100cells, connected and entirely within the union;0overlap with start or building footprints. Dry land has1194/370-cell banks. Each of3 complete bridge rectangles is within the union, avoids buildings, has two dry endpoints on different banks and crosses water (3/2/2cells). All dry land plus bridges is connected.
--The proposal changes only seven unlock thresholds4→3; other unlock fields match r7. Current producing kinds are field/lumber_camp/ironworks, and Core counts completed facilities rather than summed levels. Graph reachability is13/13 at3; this is not an economy/time/playability test and does not authorize data changes.
--`AccountEstateZone` has a single rectangle; no new grouped IDs or multipart-zone runtime structure is invented. ConfigVersion mismatch rejection exists in Core. Retaining save format6 does not migrate r7 saves; proposal explicitly requires a new r8 estate/save path and keeps automatic migration out of scope.
+- 13 distinct zone IDs, each one rectangle;1664 summed and unique cells,0overlap,1connected union,0enclosed missing cells. The outline is a stepped approximation under the current single-rectangle-per-ID Core contract, not the approved painting's pixel outline.
+- Start exactly(24,24,12,12), only start initially open. All10 initial building kind/position/size/startsComplete fields match r7,40unique building cells inside start. Source SHA-256 matches the referenced r7 file; historicalr3–r7 bytes match currentHEAD.
+- 24 actual shared-edge pairs recomputed from cell ownership, exactly matching reported edge lengths and every neighbor list. Core `StartZoneUnlock` uses ANY open edge neighbor; cost/reserve/production/idle-work remain separate required checks. Corner contact is not adjacency.
+- River100cells, connected and entirely within the union;0overlap with start or building footprints. Dry land has1194/370-cell banks. Each of3 complete bridge rectangles is within the union, avoids buildings, has two dry endpoints on different banks and crosses water (3/2/2cells). All dry land plus bridges is connected.
+- The proposal changes only seven unlock thresholds4→3; other unlock fields match r7. Current producing kinds are field/lumber_camp/ironworks, and Core counts completed facilities rather than summed levels. Graph reachability is13/13 at3; this is not an economy/time/playability test and does not authorize data changes.
+- `AccountEstateZone` has a single rectangle; no new grouped IDs or multipart-zone runtime structure is invented. ConfigVersion mismatch rejection exists in Core. Retaining save format6 does not migrate r7 saves; proposal explicitly requires a new r8 estate/save path and keeps automatic migration out of scope.
 
 ## Visual review
 
