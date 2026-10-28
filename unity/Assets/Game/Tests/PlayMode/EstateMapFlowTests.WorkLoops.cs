@@ -35,6 +35,7 @@ namespace Tests.PlayMode
             Assert.That(residents.Length, Is.EqualTo(3));
             Assert.That(residents.Length, Is.LessThanOrEqualTo(EstateResidentJob.VisibleLimit));
             Assert.That(residents.Count(v => v.name == "EstateMap.CarryWorker"), Is.EqualTo(1));
+            yield return RecordEstateWorkLoopBatches(residents);
             yield return Capture("estate-work-loops-editor-fixture");
             var output = Environment.GetEnvironmentVariable("ESTATE_WORK_LOOPS_VIDEO");
             if (!string.IsNullOrEmpty(output))
@@ -67,6 +68,26 @@ namespace Tests.PlayMode
                 finally { Time.captureFramerate = previousRate; foreach (var resident in residents) if (resident != null) resident.enabled = true; }
             }
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account));
+        }
+
+        IEnumerator RecordEstateWorkLoopBatches(EstateCarryView[] residents)
+        {
+            var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/work-loops-466"));
+            Directory.CreateDirectory(output);
+            var csv = new System.Text.StringBuilder("seconds,materialRuns,batches,drawCalls,setPass\n");
+            foreach (var resident in residents) resident.enabled = false;
+            try
+            {
+                for (var seconds = 0; seconds <= 30; seconds += 5)
+                {
+                    foreach (var resident in residents) resident.RefreshAt(seconds);
+                    Canvas.ForceUpdateCanvases();
+                    var counts = new int[3]; yield return Batches(counts);
+                    csv.AppendLine($"{seconds},{EstateMapView.MaterialBreaks(View().transform)},{counts[0]},{counts[1]},{counts[2]}");
+                }
+                File.WriteAllText(Path.Combine(output, "active-fixture-batches.csv"), csv.ToString());
+            }
+            finally { foreach (var resident in residents) if (resident != null) resident.enabled = true; }
         }
     }
 }
