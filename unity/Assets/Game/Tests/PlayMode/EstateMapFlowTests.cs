@@ -186,19 +186,19 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
-        public IEnumerator FreshR7EstateBuildsItsGranaryBeforeTheFieldAndCompletesWithoutAccountWrites()
+        public IEnumerator FreshR8EstateBuildsItsGranaryBeforeTheFieldAndCompletesWithoutAccountWrites()
         {
             PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
             var screen = app.EstateMap;
             var account = MetaSaveCodec.Encode(app.Progression.State);
-            Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r7"));
+            Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r8"));
             Assert.That(screen.FromSave, Is.False);
             Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
             Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
-            yield return Capture("estate-r7-first-entry");
+            yield return Capture("estate-r8-first-entry");
             ZoomTo(screen.Map.WholeMap);
-            yield return Capture("estate-r7-whole");
+            yield return Capture("estate-r8-whole");
             ZoomTo(screen.Map.Opening);
 
             var field = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:field");
@@ -207,13 +207,13 @@ namespace Tests.PlayMode
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "EstateMap.ConstructionReason").text, Is.EqualTo("곡물창고 Lv1 필요"));
             Assert.That(screen.State.Estate.Active, Is.Null, "A fresh field still requires the granary; do not grant resources or bypass Core.");
             Assert.That(screen.ConstructionPreview(field.Id).Reason, Is.EqualTo("parent-required"));
-            yield return Capture("estate-r7-field-parent-required");
+            yield return Capture("estate-r8-field-parent-required");
             var granary = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             Focus(screen.Centre(granary.Id)); Tap(new Vector2Int(granary.X, granary.Y)); yield return null;
             Click("EstateMap.Build"); yield return null;
             Assert.That(screen.LastConstructionReason, Is.EqualTo("started"));
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(granary.Id));
-            yield return CaptureNaturalConstruction(granary.Id, false, "estate-r7-granary");
+            yield return CaptureNaturalConstruction(granary.Id, false, "estate-r8-granary");
             Assert.That(screen.Building(granary.Id).Level, Is.EqualTo(1));
 
             Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
@@ -234,11 +234,11 @@ namespace Tests.PlayMode
             Assert.That(signCorners[1].y, Is.LessThanOrEqualTo(worldFront.y), "Closed-sheet label stays below the foundation front edge.");
             Tap(new Vector2Int(field.X, field.Y)); yield return null;
             Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty, "Reopening the sheet removes the redundant map label.");
-            yield return CaptureNaturalConstruction(field.Id, true, "estate-r7-field");
+            yield return CaptureNaturalConstruction(field.Id, true, "estate-r8-field");
             Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
             Assert.That(screen.State.Estate.Active, Is.Null);
             Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
-            yield return Capture("estate-r7-field-complete");
+            yield return Capture("estate-r8-field-complete");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "Only the prototype copy changes.");
         }
 

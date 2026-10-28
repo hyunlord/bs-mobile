@@ -24,6 +24,7 @@ node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs tools/te
 node --test tools/wave1a-content.test.mjs
 DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
 node tools/verify-unity-boundaries.mjs
+node tools/verify-estate-r8-layout.mjs
 node --test tools/test-diagnostic-*.mjs
 node --test tools/test-weapon-holdout.mjs
 node --test tools/test-first-playable*.mjs

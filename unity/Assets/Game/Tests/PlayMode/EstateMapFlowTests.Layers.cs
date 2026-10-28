@@ -15,11 +15,11 @@ namespace Tests.PlayMode
     public sealed partial class EstateMapFlowTests
     {
         [UnityTest, Timeout(180000)]
-        public IEnumerator FreshR7LayerCapturesKeepTheSameSceneAndCamera()
+        public IEnumerator FreshR8LayerCapturesKeepTheSameSceneAndCamera()
         {
             PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
-            Assert.That(app.EstateMap.Config.Version, Is.EqualTo("m3a-prototype-r7"));
+            Assert.That(app.EstateMap.Config.Version, Is.EqualTo("m3a-prototype-r8"));
             Assert.That(app.EstateMap.FromSave, Is.False);
             Assert.That(Screen.width, Is.EqualTo(390));
             Assert.That(Screen.height, Is.EqualTo(844));
@@ -36,9 +36,9 @@ namespace Tests.PlayMode
             }
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
             Directory.CreateDirectory(output);
-            File.WriteAllText(Path.Combine(output, "estate-r7-layer-membership.csv"), csv.ToString());
+            File.WriteAllText(Path.Combine(output, "estate-r8-layer-membership.csv"), csv.ToString());
             // Capture the untouched first entry before disabling anything. UI outside the map and viewport masking stay intact.
-            yield return Capture("estate-r7-layers-reference");
+            yield return Capture("estate-r8-layers-reference");
             ExportLayerGeometry(graphics, output);
             var labels = new[] { "ground", "night-light", "roads", "sites-decor", "final" };
             try
@@ -48,7 +48,7 @@ namespace Tests.PlayMode
                     for (var i = 0; i < graphics.Length; i++)
                         graphics[i].enabled = enabled[i] && LayerStage(graphics[i], view.transform) <= stage;
                     Canvas.ForceUpdateCanvases();
-                    yield return Capture("estate-r7-layers-" + stage + "-" + labels[stage]);
+                    yield return Capture("estate-r8-layers-" + stage + "-" + labels[stage]);
                     Assert.That(View(), Is.SameAs(view), "Layer isolation must not rebuild the map.");
                     Assert.That(view.GetComponentsInChildren<Graphic>(true), Is.EqualTo(graphics), "Graphic instances and hierarchy order must remain unchanged.");
                     Assert.That(view.Model.Zoom, Is.EqualTo(zoom));
@@ -106,8 +106,8 @@ namespace Tests.PlayMode
                     }
                 }
             }
-            File.WriteAllText(Path.Combine(output, "estate-r7-layer-geometry.csv"), geometry.ToString());
-            File.WriteAllText(Path.Combine(output, "estate-r7-road-centrelines.csv"), roads.ToString());
+            File.WriteAllText(Path.Combine(output, "estate-r8-layer-geometry.csv"), geometry.ToString());
+            File.WriteAllText(Path.Combine(output, "estate-r8-road-centrelines.csv"), roads.ToString());
             var model = View().Model;
             var frame = new StringBuilder("kind,id,gridX,gridY,screenX,screenY,scale,zoom\n");
             var viewport = (RectTransform)View().transform;
@@ -121,7 +121,7 @@ namespace Tests.PlayMode
             Point("centre", "camera", model.ViewportToGrid(model.VisibleCentre));
             foreach (var zone in app.EstateMap.Config.Zones.Where(app.EstateMap.Open))
                 foreach (var corner in new[] { new Vector2(zone.X, zone.Y), new Vector2(zone.X + zone.Width, zone.Y), new Vector2(zone.X + zone.Width, zone.Y + zone.Height), new Vector2(zone.X, zone.Y + zone.Height) }) Point("open-corner", zone.Id, corner);
-            File.WriteAllText(Path.Combine(output, "estate-r7-layer-frame.csv"), frame.ToString());
+            File.WriteAllText(Path.Combine(output, "estate-r8-layer-frame.csv"), frame.ToString());
         }
 
         void MeasureRoadCrossSections(Graphic[] graphics, string output)
@@ -130,8 +130,8 @@ namespace Tests.PlayMode
             var rows = new StringBuilder("index,sample,screenX,screenY,thresholdRgb,changedSamples,spanPx,centreDelta,maxDelta\n");
             try
             {
-                Assert.That(before.LoadImage(File.ReadAllBytes(Path.Combine(output, "estate-r7-layers-1-night-light-390x844.png"))), Is.True);
-                Assert.That(after.LoadImage(File.ReadAllBytes(Path.Combine(output, "estate-r7-layers-2-roads-390x844.png"))), Is.True);
+                Assert.That(before.LoadImage(File.ReadAllBytes(Path.Combine(output, "estate-r8-layers-1-night-light-390x844.png"))), Is.True);
+                Assert.That(after.LoadImage(File.ReadAllBytes(Path.Combine(output, "estate-r8-layers-2-roads-390x844.png"))), Is.True);
                 Assert.That(after.width, Is.EqualTo(before.width)); Assert.That(after.height, Is.EqualTo(before.height));
                 var a = before.GetPixels32(); var b = after.GetPixels32();
                 for (var index = 0; index < graphics.Length; index++)
@@ -158,7 +158,7 @@ namespace Tests.PlayMode
                         rows.AppendLine(string.Join(",", index, sample, LayerNumber(centre.x), LayerNumber(centre.y), 12, changed, changed == 0 ? 0 : hi - lo + 1, centreDelta, maxDelta));
                     }
                 }
-                File.WriteAllText(Path.Combine(output, "estate-r7-road-crosssections.csv"), rows.ToString());
+                File.WriteAllText(Path.Combine(output, "estate-r8-road-crosssections.csv"), rows.ToString());
             }
             finally { UnityEngine.Object.Destroy(before); UnityEngine.Object.Destroy(after); }
         }

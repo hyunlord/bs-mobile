@@ -47,7 +47,7 @@ namespace Game.App
             var bottom = BottomBar + BottomGap * 3 + WorkHeight + (panel > 0 ? panel + BottomGap : 0);
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
             // The spaced r7 opening fits all 12×12 cells; legacy openings keep their authored night margin.
-            screen.Map.SetFocus(screen.OpenAreas(screen.Config.Version == "m3a-prototype-r7" ? 0 : night.openingMargin));
+            screen.Map.SetFocus(screen.OpenAreas(EstateR8Layout.UsesPlazaRendering(screen.Config) ? 0 : night.openingMargin));
             if (!screen.Map.Framed) screen.FrameFirstView();
             // Centre the selected foundation in the unobscured band above the sheet; while moving, the camera stays where the
             // player put it so the destination preview remains visible.
@@ -58,7 +58,7 @@ namespace Game.App
             // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
             var art = EstateArt.Load(); var tint = art.Tint;
             var terrainTint = viewport.gameObject.AddComponent<EstateTerrainMaterial>();
-            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), screen.Config.Version == "m3a-prototype-r7");
+            terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), EstateR8Layout.UsesPlazaRendering(screen.Config));
             ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
             var plan = screen.Plan(rules, art);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
@@ -93,7 +93,7 @@ namespace Game.App
             // The night reaches `nightOverhang` cells past the painted area: terrain patches spill past their blocks, and whatever
             // spills stays under the night before its opaque rim.
             var o = night.nightOverhang; var nightArea = new RectInt(plan.Area.x - o, plan.Area.y - o, plan.Area.width + 2 * o, plan.Area.height + 2 * o);
-            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray(), screen.Config.Version == "m3a-prototype-r7"));
+            nightGraphic.Show(nightArea, EstateNight.Field(night, nightArea, screen.Config.Zones.Where(screen.Open).Select(z => new RectInt(z.X, z.Y, z.Width, z.Height)).ToArray(), EstateR8Layout.UsesPlazaRendering(screen.Config)));
             view.Track(nightGraphic);
             foreach (var item in OrderedEstateLandmarks(plan, art))
                 Paint(viewport, view, art, tint, "EstateMap.Landmark:" + item.Role, item);
