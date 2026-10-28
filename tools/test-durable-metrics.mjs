@@ -47,11 +47,18 @@ import { spawnSync } from 'node:child_process';
 const fixture = { schemaVersion: 1, timestamp: '2026-01-01T00:00:00Z', commit: 'a'.repeat(40), stage: 'S0', model: 'scaffold', config: { iterations: 3 }, runtime: { version: 'test' }, seed: 42, tickP95Ms: 0.01, balanceDispersion: null, measurementScope: 'infrastructure' };
 const fakeDirectory = mkdtempSync(join(tmpdir(), 'metrics-fake-gh-'));
 writeFileSync(join(fakeDirectory, 'gh'), `#!/usr/bin/env node
-import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
+import {readFileSync,writeFileSync,appendFileSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 const args=process.argv.slice(2); appendFileSync(process.env.FAKE_LOG, JSON.stringify(args)+'\\n');
 const stage=args.slice(0,2).join(' ');
-if(stage===process.env.FAKE_FAIL_STAGE){console.error(process.env.FAKE_ERROR);process.exit(1);}
+if(stage===process.env.FAKE_FAIL_STAGE){
+  if(process.env.FAKE_ERROR==='partial'){
+    const file=join(args[args.indexOf('--dir')+1],stage==='run download'?'metrics.json':args[args.indexOf('--pattern')+1]);
+    const calls=readFileSync(process.env.FAKE_LOG,'utf8').trim().split('\\n').map(JSON.parse).filter(a=>a.slice(0,2).join(' ')===stage);
+    if(calls.length===1){writeFileSync(file,'partial');console.error('HTTP 429');process.exit(1);}
+    if(existsSync(file)&&!args.includes('--clobber')){console.error('file already exists');process.exit(1);}
+  }else{console.error(process.env.FAKE_ERROR);process.exit(1);}
+}
 const sample=JSON.parse(process.env.FAKE_SAMPLE);
 if(args[0]==='api') console.log(JSON.stringify([{name:'evidence-test',expired:false}]));
 else if(stage==='run download') writeFileSync(join(args[args.indexOf('--dir')+1],'metrics.json'), JSON.stringify(sample));
@@ -89,5 +96,13 @@ for (const error of ['Resource not accessible by integration (HTTP 403)', 'Bad c
   test(`fake gh fails without retry or SKIPPED: ${error}`, () => {
     const result = runPublisher('release view', error); assert.equal(result.status, 1);
     assert.doesNotMatch(result.stdout, /SKIPPED/); assert.equal(result.calls.filter(args => args[1] === 'view').length, 1);
+  });
+}
+
+for (const stage of ['run download', 'release download']) {
+  test('recovers after partial file writes and429 during '+stage, () => {
+    const result = runPublisher(stage, 'partial');
+    assert.equal(result.status, 0, result.stderr); assert.doesNotMatch(result.stdout, /SKIPPED/);
+    assert.equal(result.calls.filter(args => args[1] === 'upload').length, 1);
   });
 }

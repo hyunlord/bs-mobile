@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readdir } from 'node:fs/promises';
+import { mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -18,13 +18,15 @@ export async function publishMetrics({ repository, runId, github = runGitHub }) 
     throw new Error('GITHUB_REPOSITORY and numeric RUN_ID are required');
   }
   const root = await mkdtemp(join(tmpdir(), 'durable-metrics-'));
-  const incoming = join(root, 'incoming');
+  let incoming;
   const output = join(root, 'durable');
   const history = join(output, 'history');
-  await mkdir(incoming);
   const artifacts = JSON.parse(await github(['api', `repos/${repository}/actions/runs/${runId}/artifacts`, '--paginate', '--slurp', '--jq', '[.[].artifacts[] | select(.name | startswith("evidence-"))]']));
   if (artifacts.length !== 1 || artifacts[0].expired) throw new Error('Expected exactly one unexpired evidence artifact');
-  await github(['run', 'download', runId, '--repo', repository, '--name', artifacts[0].name, '--dir', incoming]);
+  await github(async () => {
+    incoming = await mkdtemp(join(root, 'incoming-'));
+    return ['run', 'download', runId, '--repo', repository, '--name', artifacts[0].name, '--dir', incoming];
+  });
   const render = () => {
     const result = spawnSync(process.execPath, [fileURLToPath(new URL('./metrics.mjs', import.meta.url)), join(incoming, 'metrics.json'), output], { encoding: 'utf8' });
     if (result.error) throw result.error;
@@ -34,7 +36,7 @@ export async function publishMetrics({ repository, runId, github = runGitHub }) 
   const [record] = await readdir(history);
   const release = JSON.parse(await github(['release', 'view', tag, '--repo', repository, '--json', 'assets']));
   for (const name of selectHistory(release.assets)) {
-    if (name !== record) await github(['release', 'download', tag, '--repo', repository, '--pattern', name, '--dir', history]);
+    if (name !== record) await github(['release', 'download', tag, '--repo', repository, '--pattern', name, '--dir', history, '--clobber']);
   }
   render();
   await github(['release', 'upload', tag, join(history, record), join(output, 'index.html'), '--repo', repository, '--clobber']);

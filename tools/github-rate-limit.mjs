@@ -10,12 +10,12 @@ export function isRateLimit(message) {
 }
 
 export async function runGitHub(args, {
-  execute = async () => spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }),
+  execute = async commandArgs => spawnSync('gh', commandArgs, { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }),
   sleep = setTimeout,
   notice = console.log,
 } = {}) {
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const result = await execute();
+    const result = await execute(typeof args === 'function' ? await args() : args);
     if (result.error) throw result.error;
     if (result.status === 0) return result.stdout;
     const message = `${result.stderr ?? ''}\n${result.stdout ?? ''}`;
