@@ -58,3 +58,22 @@ CI 최종 실행 링크·결과는 PR 코멘트에 기록한다. #431 초안 유
 정적 확인: Unity boundaries·diff whitespace·native launcher bash 문법 통과. 실제 실행 통과는 별도다. 주민 작업 루프 #444는 여전히 #431 병합 뒤에만 진행한다.
 
 제철소 완공 표본은 `CompletedIronworksUsesApprovedArtInAnExplicitEditorFixture`에서 r7 격리 저장 사본의 대장간·제철소 Lv1 상태를 명시적으로 준비한다. 실제 UI 진입·선택 뒤 별도 제철소 그림(대장간 재사용 아님)을 검사하고 `estate-r7-ironworks-complete-editor-fixture-390x844.png`로 캡처한다. PNG 옆 provenance에도 native 정상 건설 증거가 아님을 적는다. 진입 뒤 계정·디스크 바이트 보존을 검사한다. 이 표본은 native 곡창→경작지 진행이나 자원을 바꾸지 않는다. 아직 실행 전이다.
+
+## 2026-10-28 재개 검증 결과
+
+검증 source `c6b19b36749923a39bc6ce890748e92e084db2fa`. 09:10~09:24 KST 실행 후 자기 잠금을 해제했다. 실행 뒤 추적 파일 변경0. 이전 실패와 원인 미확정 기록은 위에 보존한다.
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---|---|
+| first-playable |885/0/25|55/0/46|
+| wave-1a |895/0/15|88/0/13|
+
+combat sidecar·opt-in melee 입력 생성 후 보충 검사는 각각1/1 통과했다. 원래 runner exit1/미설명 skip2 기록은 보존하며, 보충 XML 합산 후 미설명0/목록1이다. 실제 Editor 캡처269건 청록0; 감시 자체시험4건(의도한 양성2건)은 별도다. 재생 fixture의 기존5seed와 메타 parity 검사는 통과했다.
+
+공사 시트 열림 시 이름표가 그림을 가리지 않고, 닫힘 시 기초 앞쪽 아래로 내려간다. 실제 곡창·경작지1→2→3→완공 비교판에서 단계가 읽히며 완공 축소가 눈에 띄지 않는다고 부모 검토와 독립 검토2명이 확인했다. 이는 정성 판정이며 새 픽셀 높이 측정값을 주장하지 않는다. 제철소 전용 그림은 명시적 Editor 저장 상태 fixture로 확인했다. 밝은 기초 받침·직선 길의 키아트C 차이는 남아 있으며 이번 추가 수정 범위 밖이다. 사용자 최종 화면 승인은 대기다.
+
+Native는 승인된1회 실행으로 정상 완료했다. wave-1a/isWave=true/portrait=true를 기록했으며, 새 영지의 경작지는 `parent-required`로 비활성, 곡창→경작지를 실제 시간과 정상 UI로 건설했다. 최초 곡물120/목재180에서 자원 지급·시간 건너뛰기 없이 진행했다. 캡처12장 모두834×1808·청록0·포커스True, 공사 완료2건. `result.txt`의 “eight” 문구는 과거 캡처 수 문구이며 실제 CSV·PNG12개로 확인했다.
+
+artifact 검증기가390×844를 고정 가정하여 native 성공 뒤 크기 검사에서 종료1을 냈다. 원본 오류는 보존했고 재실행하지 않았다. 사용자 native 계약은390 고정이 아니므로, 실제 크기834×1808의 모든 PNG/CSV 일치·12상태·청록0·정상 완료2건을 독립 재검사해 통과했다. 검토용390×844 이미지는 원본을 비율 유지 축소·패딩한 파생본으로 표시한다.
+
+원자료 위치: `artifacts/day-20261028/431-execution/run-20261028-091000-38040/`와 `artifacts/day-20261028/431-label-native/estate-native-20261028-092025-15723/`. [선정 비교 표본 Release](https://github.com/hyunlord/bs-mobile/releases/tag/estate-approved-art-431-r4-20261028). 전체 성공 로그/화면 묶음은 업로드하지 않는다. 필수 CI 최종 결과는 보고 커밋 기준 PR 코멘트에 남긴다. PR초안·#444 병합 뒤 순서 유지.
