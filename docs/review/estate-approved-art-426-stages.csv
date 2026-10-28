@@ -1,0 +1,7 @@
+name,source,surface,buildingId,stage,totalSeconds,remainingSeconds,role,frame
+estate-r7-granary-construction,108236b35590dc231b97280a26667ddbe6a719e7,Editor-development-copy-normal-clock,2,1,60,60,construction-building-1-lit,2742
+estate-r7-granary-construction-stage-2,108236b35590dc231b97280a26667ddbe6a719e7,Editor-development-copy-normal-clock,2,2,60,40,construction-building-2-lit,11358
+estate-r7-granary-construction-stage-3,108236b35590dc231b97280a26667ddbe6a719e7,Editor-development-copy-normal-clock,2,3,60,20,construction-building-3-lit,19358
+estate-r7-field-construction,108236b35590dc231b97280a26667ddbe6a719e7,Editor-development-copy-normal-clock,8,1,30,30,construction-field-1-lit,28417
+estate-r7-field-construction-stage-2,108236b35590dc231b97280a26667ddbe6a719e7,Editor-development-copy-normal-clock,8,2,30,20,construction-field-2-lit,33611
+estate-r7-field-construction-stage-3,108236b35590dc231b97280a26667ddbe6a719e7,Editor-development-copy-normal-clock,8,3,30,10,construction-field-3-lit,38295

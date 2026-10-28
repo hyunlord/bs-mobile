@@ -93,6 +93,25 @@ export function opaqueWidth(image, [x, y, w, h]) {
   return right < 0 ? 0 : right - left + 1;
 }
 
+export function opaqueHeight(image, [x, y, w, h]) {
+  let top = h, bottom = -1;
+  for (let row = 0; row < h; row++) for (let col = 0; col < w; col++)
+    if (image.pixels[((y + row) * image.width + x + col) * 4 + 3] > 8) {
+      top = Math.min(top, row); bottom = Math.max(bottom, row);
+    }
+  return bottom < 0 ? 0 : bottom - top + 1;
+}
+
+export function replaceBuildingCrop(image, rect, replacement) {
+  const [x, y, w, h] = rect;
+  if (replacement.width !== w || replacement.height !== h) fail('building replacement must keep its original cell');
+  for (let row = 0; row < h; row++) for (let col = 0; col < w; col++) {
+    const a = ((y + row) * image.width + x + col) * 4, b = (row * w + col) * 4;
+    if (image.pixels[a + 3] !== replacement.pixels[b + 3]) fail('emblem replacement changed alpha');
+  }
+  for (let row = 0; row < h; row++) replacement.pixels.copy(image.pixels, ((y + row) * image.width + x) * 4, row * w * 4, (row + 1) * w * 4);
+}
+
 export function build(spec, readSource) {
   const files = {}, entries = [];
   for (const atlasId of [...new Set(spec.assets.map(a => a.atlas))]) {
@@ -105,18 +124,40 @@ export function build(spec, readSource) {
         pivot: asset.pivot, displayWidth: asset.displayWidth, layer: asset.layer });
     }
     const { atlas, rects } = pack(images, spec.atlasWidth, spec.padding);
-    members.forEach((asset, i) => { entries.find(e => e.id === asset.id).rect = rects[i]; });
+    members.forEach((asset, i) => { const e = entries.find(e => e.id === asset.id); e.rect = rects[i]; e.opaqueHeight = opaqueHeight(images[i], [0, 0, images[i].width, images[i].height]); });
     files[`estate-${atlasId}.png`] = encodeRgbaPng(atlas);
   }
-  const b = spec.buildings, body = readSource(b.body), bodyImage = decodeRgbaPng(body), shadow = decodeRgbaPng(readSource(b.shadow));
-  files['estate-buildings.png'] = body;
-  files['estate-building-shadows.png'] = encodeRgbaPng(downsample(shadow, Math.round(shadow.width * b.shadowScale), Math.round(shadow.height * b.shadowScale)));
+  const b = spec.buildings, body = readSource(b.body), original = decodeRgbaPng(body), shadow = decodeRgbaPng(readSource(b.shadow));
   const records = JSON.parse(readSource(b.manifest).toString('utf8')).records;
+  const replacements = [];
+  for (const replacement of b.overrides ?? []) {
+    const record = records.find(r => r.id === replacement.id);
+    if (!record) fail('unknown building replacement ' + replacement.id);
+    const bytes = readSource(replacement.file);
+    replaceBuildingCrop(original, record.atlasRect, decodeRgbaPng(bytes));
+    replacements.push({ ...replacement, sha256: sha256(bytes), rect: record.atlasRect });
+  }
+  // Append approved distinct buildings below historical cells, preserving every old crop coordinate.
+  const additions = b.additions ?? [], bodyImage = { width: original.width, height: original.height + additions.length * 320,
+    pixels: Buffer.alloc(original.width * (original.height + additions.length * 320) * 4) };
+  original.pixels.copy(bodyImage.pixels);
+  additions.forEach((addition, i) => {
+    const bytes = readSource(addition.file), image = decodeRgbaPng(bytes);
+    if (image.width !== 256 || image.height !== 320) fail('additional building must use the 256x320 contract');
+    const rect = [0, original.height + i * 320, 256, 320];
+    for (let row = 0; row < 320; row++) image.pixels.copy(bodyImage.pixels, ((rect[1] + row) * bodyImage.width) * 4, row * 1024, (row + 1) * 1024);
+    records.push({ id: addition.id, kind: addition.kind, stage: addition.stage, atlasRect: rect, pivotNormalizedBottomLeft: addition.pivot, drawRect: [0, 0, 256, 320] });
+    replacements.push({ ...addition, sha256: sha256(bytes), rect });
+  });
+  files['estate-buildings.png'] = replacements.length ? encodeRgbaPng(bodyImage) : body;
+  const extendedShadow = { width: shadow.width, height: shadow.height + additions.length * 320, pixels: Buffer.alloc(shadow.width * (shadow.height + additions.length * 320) * 4) };
+  shadow.pixels.copy(extendedShadow.pixels);
+  files['estate-building-shadows.png'] = encodeRgbaPng(downsample(extendedShadow, Math.round(extendedShadow.width * b.shadowScale), Math.round(extendedShadow.height * b.shadowScale)));
   const buildings = records.map(r => ({ id: r.id, kind: r.kind, stage: r.stage, rect: r.atlasRect, pivot: r.pivotNormalizedBottomLeft, drawRect: r.drawRect,
-    bodyWidth: opaqueWidth(bodyImage, r.atlasRect) }));
+    bodyWidth: opaqueWidth(bodyImage, r.atlasRect), bodyHeight: opaqueHeight(bodyImage, r.atlasRect) }));
   const manifest = { version: spec.version, note: spec.note,
     atlases: Object.keys(files).sort().map(name => ({ file: name, sha256: sha256(files[name]) })),
-    buildings: { release: b.release, body: { file: b.body, sha256: sha256(body) }, shadowScale: b.shadowScale, canvas: [256, 320], records: buildings },
+    buildings: { release: b.release, body: { file: b.body, sha256: sha256(body) }, replacements, shadowScale: b.shadowScale, canvas: [256, 320], records: buildings },
     sprites: entries };
   files['estate-art.json'] = Buffer.from(JSON.stringify(manifest, null, 2) + '\n');
   return files;
@@ -134,7 +175,7 @@ export function check(directory = path.join(root, outputDirectory)) {
     if (x < 0 || y < 0 || x + w > image.width || y + h > image.height) fail(sprite.id + ' rect outside its atlas');
     if (!(sprite.pivot?.length === 2)) fail(sprite.id + ' pivot');
   }
-  if (manifest.buildings.records.length !== 30) fail('expected 10 building kinds x 3 stages');
+  if (manifest.buildings.records.length !== 31 || manifest.buildings.records.filter(r => r.kind === 'ironworks' && r.stage === 1).length !== 1) fail('expected historical 30 stages plus approved ironworks stage 1');
   if (manifest.buildings.records.some(r => !(r.bodyWidth > 0))) fail('every building stage needs its opaque body width');
   return manifest;
 }
