@@ -41,6 +41,7 @@ node tools/wave1a-audio.mjs --check
 node --test tools/test-view-coverage.mjs
 node tools/view-coverage.mjs "$PWD"
 node tools/content-report.mjs --check
+node --test tools/test-durable-metrics.mjs
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs
 node --test tools/test-device-metrics.mjs
