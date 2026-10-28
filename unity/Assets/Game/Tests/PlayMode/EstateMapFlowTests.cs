@@ -491,7 +491,9 @@ namespace Tests.PlayMode
             var night = Rects("EstateMap.Night").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "The night covers the land to come.");
             Assert.That(Rects("EstateMap.Landmark:").Length, Is.GreaterThan(0));
             Assert.That(Rects("EstateMap.Landmark:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Large silhouettes remain readable above the night.");
-            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(7), "All seven river patches remain readable.");
+            var riverCount = screen.Config.Version == EstateR8Layout.Version
+                ? EstateR8Layout.Load().placed.Count(p => p.id.StartsWith("river", StringComparison.Ordinal)) : 7;
+            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(riverCount), "Every configured river patch remains readable; historical layouts retain seven.");
             Assert.That(Rects("EstateMap.Lamps").Single().GetSiblingIndex(), Is.LessThan(night.GetSiblingIndex()), "Warm lamps cannot paint brown clouds above the night.");
             Assert.That(Rects("EstateMap.Site").Where(r => r.name == "EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");

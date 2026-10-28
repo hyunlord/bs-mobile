@@ -155,7 +155,9 @@ namespace Tests.EditMode
 
         [Test] public void AClosedZoneExplainsItsUnlockCondition()
         {
-            var screen = Screen();
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var config = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            var screen = Screen(AccountEstate.NewPrototype(catalog, config, 0, 0));
             var zone = screen.Config.Zones.Single(z => z.Id == "zone:inner-village");
             Assert.That(screen.ZoneAt(new Vector2Int(45, 30)).Id, Is.EqualTo(zone.Id));
             Assert.That(screen.ZoneLabel(zone), Is.EqualTo("닫힌 구역"));

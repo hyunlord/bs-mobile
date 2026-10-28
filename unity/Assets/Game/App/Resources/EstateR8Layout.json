@@ -433,97 +433,113 @@
       "id": "riverbank-patch",
       "zone": "zone:inner-northeast-wood",
       "u": 27,
-      "v": 8.5
+      "v": 8.5,
+      "rotation": 0
     },
     {
-      "id": "riverbank-patch",
+      "id": "river-bend-patch",
       "zone": "zone:inner-northeast-wood",
       "u": 27,
-      "v": 12.5
+      "v": 12.5,
+      "rotation": 0
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-northeast-wood",
       "u": 29,
-      "v": 14.5
+      "v": 14.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-northeast-wood",
       "u": 31,
-      "v": 16.5
+      "v": 16.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-northeast-wood",
       "u": 33,
-      "v": 18.5
+      "v": 18.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:outskirts-north",
       "u": 35,
-      "v": 20.5
+      "v": 20.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:outskirts-north",
       "u": 37,
-      "v": 22.5
+      "v": 22.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:outskirts-east",
       "u": 39,
-      "v": 24.5
+      "v": 24.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-fallow",
       "u": 41,
-      "v": 26.5
+      "v": 26.5,
+      "rotation": 63.43495
     },
     {
-      "id": "riverbank-patch",
+      "id": "river-bend-patch",
       "zone": "zone:inner-fallow",
       "u": 43,
-      "v": 28.5
+      "v": 28.5,
+      "rotation": 63.43495
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-fallow",
       "u": 45,
-      "v": 30.5
+      "v": 30.5,
+      "rotation": 0
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-fallow",
       "u": 45,
-      "v": 34.5
+      "v": 34.5,
+      "rotation": 0
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-fallow",
       "u": 45,
-      "v": 38.5
+      "v": 38.5,
+      "rotation": 0
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-riverside",
       "u": 45,
-      "v": 42.5
+      "v": 42.5,
+      "rotation": 0
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-riverside",
       "u": 45,
-      "v": 46.5
+      "v": 46.5,
+      "rotation": 0
     },
     {
       "id": "riverbank-patch",
       "zone": "zone:inner-riverside",
       "u": 45,
-      "v": 48.5
+      "v": 48.5,
+      "rotation": 0
     },
     {
       "id": "bridge-nw-se-base",

@@ -219,7 +219,7 @@ namespace Game.App
             if (item.Layer == EstateDrawLayer.Terrain || item.Layer == EstateDrawLayer.Ground || item.Layer == EstateDrawLayer.Landmark)
             {
                 var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
-                terrain.IsometricGround = item.IsometricGround; terrain.WaterOnly = item.WaterOnly; terrain.DarkBank = EstateTerrainImage.IsDarkBank(item);
+                terrain.Rotation = item.Rotation; terrain.IsometricGround = item.IsometricGround; terrain.WaterOnly = item.WaterOnly; terrain.DarkBank = EstateTerrainImage.IsDarkBank(item);
                 terrain.RoadPoints = item.RoadPoints; terrain.RoadWidth = item.RoadWidth; terrain.RoadFootprints = item.RoadFootprints;
                 terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
@@ -233,6 +233,7 @@ namespace Game.App
             image.color = tint != null ? c : new Color(1, 1, 1, c.a);
             var size = sprite.rect.size; var pivot = item.RoadPoints != null ? new Vector2(.5f, .5f) : new Vector2(sprite.pivot.x / size.x, sprite.pivot.y / size.y);
             view.Prop(rect, item.Grid, item.Width / (EstateMapModel.HalfWidth * 2), pivot, item.Aspect > 0 ? item.Aspect : size.y / size.x);
+            rect.localRotation = Quaternion.Euler(0, 0, item.Rotation);
             return image;
         }
 
@@ -489,7 +490,7 @@ namespace Game.App
     public sealed class EstateTerrainImage : Image
     {
         public Vector2 Grid;
-        public float PaintedWidth;
+        public float PaintedWidth, Rotation;
         public bool Landmark, WaterLandmark, IsometricRoad, IsometricGround, WaterOnly, DarkBank;
         public static bool IsDarkBank(EstateDrawItem item) => item.Source == "river-bank" &&
             item.Layer == EstateDrawLayer.Landmark && item.Role.StartsWith("bank-", StringComparison.Ordinal) &&
@@ -511,7 +512,8 @@ namespace Game.App
                 mesh.PopulateUIVertex(ref vertex, i);
                 var fraction = new Vector2((vertex.position.x - rect.xMin) / rect.width, (vertex.position.y - rect.yMin) / rect.height);
                 var offset = fraction - pivot;
-                var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * rect.height / rect.width));
+                var gridOffset = EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * rect.height / rect.width));
+                var grid = Grid + EstateR8Layout.RotateGridOffset(gridOffset, Rotation);
                 vertex.uv1 = new Vector4(grid.x, grid.y, WaterOnly ? (WaterLandmark ? 4 : 3) : WaterLandmark ? 2 : Landmark ? 1 : 0, DarkBank ? 1 : 0); mesh.SetUIVertex(vertex, i);
             }
         }

@@ -71,7 +71,7 @@ namespace Game.App
         [Serializable] public sealed class Sites { public string ground = "yard-earth"; public float siteWidth = 1.15f, roadWidth = 1.4f, aspect = .5f, siteAlpha = .9f, roadAlpha = .75f; }
         [Serializable] public sealed class Wood { public string zone; public string[] ids = Array.Empty<string>(); public float share = .7f; }
         // Explicit terrain-skeleton pieces (rivers, bridges, a paddock): grid point of the pivot, reserved cells, layer.
-        [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
+        [Serializable] public sealed class Placed { public string id, rail, zone; public float u, v, rotation; public int[] reserve = Array.Empty<int>(); public string with; public float withU, withV; }
         [Serializable] public sealed class Peasants { public string farm = "peasant-farm", carry = "peasant-carry", build = "peasant-build", carryKind = "meta:granary"; }
 
         static EstateDecorRules loaded;
@@ -113,7 +113,7 @@ namespace Game.App
     // tint shader and an optional height/width override (yard grounds are stretched ellipses).
     public sealed class EstateDrawItem
     {
-        public bool IsometricGround; public bool WaterOnly;
+        public bool IsometricGround; public bool WaterOnly; public float Rotation;
         public bool IsometricRoad; public int RoadQuarterTurns;
         public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         public string Role, Source; public Vector2 Grid; public float Width, Aspect = -1; public Color Colour = Color.white;
@@ -417,12 +417,14 @@ namespace Game.App
                 if (piece.id == "riverbank-patch" || piece.id == "river-bend-patch")
                 {
                     plan.Items[plan.Items.Count - 1].WaterOnly = true;
+                    plan.Items[plan.Items.Count - 1].Rotation = piece.rotation;
                     for (var side = 0; side < 2; side++)
                     {
                         var bank = piece.id == "river-bend-patch" ? (side == 0 ? "inside" : "outside") : "straight";
                         var role = "bank-" + bank + "-0" + (side + 1) + (closed ? "-dark" : "-lit");
-                        Add(plan, role, "river-bank", grid + new Vector2(side == 0 ? -.9f : .9f, side == 0 ? .9f : -.9f), art,
+                        Add(plan, role, "river-bank", grid + EstateR8Layout.RotateGridOffset(new Vector2(side == 0 ? -.9f : .9f, side == 0 ? .9f : -.9f), piece.rotation), art,
                             Color.white, closed ? EstateDrawLayer.Landmark : EstateDrawLayer.Standing);
+                        plan.Items[plan.Items.Count - 1].Rotation = piece.rotation;
                     }
                 }
                 if (piece.id == "bridge-nw-se-base")
@@ -465,7 +467,7 @@ namespace Game.App
                 (i.Source == "placed" || i.Role == "frontier-ruin")).ToArray();
             foreach (var item in silhouettes)
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
-                    WaterOnly = item.WaterOnly, Colour = new Color(0, night.landmarkBrightness, 1, 1),
+                    WaterOnly = item.WaterOnly, Rotation = item.Rotation, Colour = new Color(0, night.landmarkBrightness, 1, 1),
                     Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
             EstateResidentJob.ApplyBudget(plan);
             return plan;

@@ -242,7 +242,7 @@ namespace Tests.EditMode
 
         [Test] public void ThePlanIsDeterministicAndKeepsDecorationOffFootprintsAndRoads()
         {
-            var (config, _, state) = Estate(); var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
+            var (config, _, state) = Estate("m3a-prototype-r7"); var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
             string Key(EstateDrawItem i) => i.Key + i.Role + i.Grid.ToString("F4");
             var first = EstatePlanner.Plan(rules, art, config, state.Estate); var second = EstatePlanner.Plan(rules, art, config, state.Estate);
             Assert.That(second.Items.Select(Key), Is.EqualTo(first.Items.Select(Key)), "Same estate, same plan.");

@@ -10,6 +10,57 @@ namespace Tests.EditMode
     public sealed class EstateR8LayoutTests
     {
         [Test]
+        public void R8RoadsAndZoneLabelsUseTheApprovedLayoutRatherThanHistoricalCoordinates()
+        {
+            var config = CanonicalContent.CreateAccountEstateConfig();
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var state = AccountEstate.NewPrototype(catalog, config, 0, 0);
+            var rules = EstateDecorRules.Load(); var art = EstateArt.Load();
+            var plan = EstatePlanner.Plan(rules, art, config, state.Estate);
+            var again = EstatePlanner.Plan(rules, art, config, state.Estate);
+            Assert.That(again.Items.Select(i => i.Key), Is.EqualTo(plan.Items.Select(i => i.Key)));
+            Assert.That(plan.Items.Where(i => i.Source == "road").All(i => i.RoadPoints != null && i.RoadPoints.Length >= 2 && i.Role.StartsWith("road-")), Is.True);
+            Assert.That(plan.Count("road"), Is.LessThan(plan.Road.Count));
+            foreach (var zone in config.Zones)
+                for (var x = zone.X; x < zone.X + zone.Width; x++)
+                    for (var y = zone.Y; y < zone.Y + zone.Height; y++)
+                        Assert.That(plan.Items.Any(i => i.IsometricGround &&
+                            Mathf.Abs(i.Grid.x - (x + .5f)) < i.Width / (4 * EstateMapModel.HalfWidth) &&
+                            Mathf.Abs(i.Grid.y - (y + .5f)) < i.Width / (4 * EstateMapModel.HalfWidth)), Is.True, zone.Id);
+            var screen = new EstateMapScreen(catalog, config, state);
+            foreach (var zone in config.Zones.Where(z => !z.OpenAtStart))
+            {
+                Assert.That(screen.ZoneAt(new Vector2Int(zone.X, zone.Y)).Id, Is.EqualTo(zone.Id));
+                Assert.That(screen.ZoneLabel(zone), Is.EqualTo("닫힌 구역"), "All r8 production requirements are reachable: " + zone.Id);
+            }
+            Assert.That(screen.OpenZone("zone:outskirts-east"), Is.False);
+            Assert.That(screen.Notice, Is.EqualTo("생산 터를 더 완성해야 합니다"));
+        }
+
+        [Test]
+        public void RiverArtFollowsTheProjectedTangentAndOnlyTurnsUseBendArt()
+        {
+            var layout = EstateR8Layout.Load();
+            var river = layout.placed.Where(p => p.id.StartsWith("river")).ToArray();
+            Assert.That(river.Count(p => p.id == "river-bend-patch"), Is.EqualTo(2));
+            foreach (var piece in river.Where(p => p.id == "riverbank-patch"))
+            {
+                var expected = piece.u > 27 && piece.u < 45 ? 63.43495f : 0;
+                Assert.That(piece.rotation, Is.EqualTo(expected).Within(.001f));
+                // The straight art's NE slope becomes vertical on the central diagonal grid path.
+                var artTangent = EstateR8Layout.RotateGridOffset(new Vector2(0, -1), piece.rotation);
+                var screenTangent = EstateMapModel.Project(artTangent).normalized;
+                if (expected != 0) Assert.That(Mathf.Abs(screenTangent.x), Is.LessThan(.001f));
+            }
+            Assert.That(EstateDecorRules.Load().placed.All(p => p.rotation == 0), Is.True, "Historical art direction is untouched.");
+            var config = CanonicalContent.CreateAccountEstateConfig();
+            var state = AccountEstate.NewPrototype(CanonicalContent.CreateMetaCatalog(), config, 0, 0);
+            var plan = EstatePlanner.Plan(EstateDecorRules.Load(), EstateArt.Load(), config, state.Estate);
+            foreach (var silhouette in plan.Items.Where(i => i.Source == "landmark" && i.Role.StartsWith("river")))
+                Assert.That(silhouette.Rotation, Is.EqualTo(plan.Items.Single(i => i.Source == "placed" && i.Role == silhouette.Role && i.Grid == silhouette.Grid).Rotation));
+        }
+
+        [Test]
         public void DefaultIsR8AndSavedVersionsKeepTheirOwnGeometry()
         {
             var catalog = CanonicalContent.CreateMetaCatalog();
