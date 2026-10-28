@@ -51,6 +51,7 @@ import {readFileSync,writeFileSync,appendFileSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 const args=process.argv.slice(2); appendFileSync(process.env.FAKE_LOG, JSON.stringify(args)+'\\n');
 const stage=args.slice(0,2).join(' ');
+if(args[0]==='api'&&args.includes('--slurp')&&(args.includes('--jq')||args.includes('--template'))){console.error('the --slurp option is not supported with --jq or --template');process.exit(1);}
 if(stage===process.env.FAKE_FAIL_STAGE){
   if(process.env.FAKE_ERROR==='partial'){
     const file=join(args[args.indexOf('--dir')+1],stage==='run download'?'metrics.json':args[args.indexOf('--pattern')+1]);
@@ -60,7 +61,7 @@ if(stage===process.env.FAKE_FAIL_STAGE){
   }else{console.error(process.env.FAKE_ERROR);process.exit(1);}
 }
 const sample=JSON.parse(process.env.FAKE_SAMPLE);
-if(args[0]==='api') console.log(JSON.stringify([{name:'evidence-test',expired:false}]));
+if(args[0]==='api') console.log(JSON.stringify([{artifacts:[{name:'gitleaks-results.sarif',expired:false}]},{artifacts:[{name:'evidence-test',expired:false}]}]));
 else if(stage==='run download') writeFileSync(join(args[args.indexOf('--dir')+1],'metrics.json'), JSON.stringify(sample));
 else if(stage==='release view') console.log(JSON.stringify({assets:Array.from({length:429},(_,i)=>({name:i.toString(16).padStart(40,'0')+'-0123456789abcdef.json',createdAt:new Date(1700000000000+i*1000).toISOString()}))}));
 else if(stage==='release download') writeFileSync(join(args[args.indexOf('--dir')+1],args[args.indexOf('--pattern')+1]),JSON.stringify({data:sample}));
@@ -76,8 +77,11 @@ function runPublisher(stage = '', error = '') {
   return { ...result, calls: readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)) };
 }
 
-test('fake gh archives only30 of429 assets, uploads exactly new record+index and never deletes', () => {
+test('fake gh reads multiple artifact pages with compatible flags and archives only30 of429 assets, uploads exactly new record+index and never deletes', () => {
   const result = runPublisher(); assert.equal(result.status, 0, result.stderr);
+  const listing = result.calls.find(args => args[0] === 'api');
+  assert.ok(listing.includes('--paginate') && listing.includes('--slurp'));
+  assert.ok(!listing.includes('--jq') && !listing.includes('--template'));
   assert.equal(result.calls.filter(args => args[1] === 'download' && args[0] === 'release').length, 30);
   const uploads = result.calls.filter(args => args[1] === 'upload'); assert.equal(uploads.length, 1);
   assert.equal(uploads[0].length, 8); assert.match(uploads[0][3], /[a-f0-9]{40}-[a-f0-9]{16}\.json$/); assert.match(uploads[0][4], /index\.html$/);
