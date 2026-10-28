@@ -114,9 +114,9 @@ namespace Tests.PlayMode
         }
         static void ProbeFormats(string directory)
         {
-            foreach (var block in new[] { 4, 6 })
+            foreach (var block in new[] { 0, 4, 6 })
             {
-                var format = block == 4 ? TextureFormat.ASTC_4x4 : TextureFormat.ASTC_6x6;
+                var format = block == 4 ? TextureFormat.ASTC_4x4 : block == 6 ? TextureFormat.ASTC_6x6 : TextureFormat.RGBA32;
                 Assert.That(SystemInfo.SupportsTextureFormat(format), Is.True, format.ToString());
                 var texture = new Texture2D(16, 16, TextureFormat.RGBA32, false, false);
                 Texture2D decoded = null;
@@ -125,13 +125,17 @@ namespace Tests.PlayMode
                     var pixels = new Color32[256];
                     for (var i = 0; i < pixels.Length; i++) pixels[i] = new Color32((byte)(i % 16 * 17), (byte)(i / 16 * 17), 120, (byte)(i % 16 * 17));
                     texture.SetPixels32(pixels); texture.Apply(false, false);
-                    EditorUtility.CompressTexture(texture, format, TextureCompressionQuality.Best);
+                    if (block != 0) EditorUtility.CompressTexture(texture, format, TextureCompressionQuality.Best);
                     Assert.That(texture.format, Is.EqualTo(format));
                     var payload = texture.GetRawTextureData<byte>().ToArray();
-                    Assert.That(payload.Length, Is.EqualTo(((16 + block - 1) / block) * ((16 + block - 1) / block) * 16));
+                    var expected = block == 0 ? 16 * 16 * 4 : ((16 + block - 1) / block) * ((16 + block - 1) / block) * 16;
+                    Assert.That(payload.Length, Is.EqualTo(expected));
                     File.WriteAllBytes(Path.Combine(directory, "probe-" + block + ".blocks"), payload);
                     texture.Apply(false, false); decoded = Readback(texture);
                     File.WriteAllBytes(Path.Combine(directory, "probe-" + block + ".png"), decoded.EncodeToPNG());
+                    if (block == 0) CollectionAssert.AreEqual(payload, decoded.GetRawTextureData<byte>().ToArray(), "Small RGBA readback control");
+                    var row = new Row { atlas="probe16", mode=block.ToString(), format=texture.format.ToString(), width=16, height=16, block=block, mipCount=texture.mipmapCount, rawBytes=payload.Length, expectedBytes=expected, gpuSupported=true, graphicsDevice=SystemInfo.graphicsDeviceName, graphicsApi=SystemInfo.graphicsDeviceType.ToString(), evidence="16px capability probe, not atlas quality evidence" };
+                    File.WriteAllText(Path.Combine(directory, "probe-" + block + ".json"), JsonUtility.ToJson(row, true));
                 }
                 finally
                 {
