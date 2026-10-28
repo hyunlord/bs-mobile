@@ -1,6 +1,6 @@
 # 모바일 ASTC4 적용 (#487)
 
-상태: 구현·정적검사, Unity 검증 대기. 2026-10-28. 사용자가 #465 실제 ASTC4 품질시험 후 모바일 적용을 승인했다. 이 PR은 승인된 최대3개 atlas만 대상으로 하며 그 밖의 텍스처·FX는 그대로다.
+상태: Node·Unity 검증 통과, 초안 PR·CI 확인 단계. 2026-10-28. 사용자가 #465 실제 ASTC4 품질시험 후 모바일 적용을 승인했다. 이 PR은 승인된 최대3개 atlas만 대상으로 하며 그 밖의 텍스처·FX는 그대로다.
 
 ## 변경과 경계
 
@@ -29,10 +29,26 @@ ASTC4 산식은 ceil(width/4)×ceil(height/4)×16 bytes, mip 없음. 전체94PNG
 
 ## 검증
 
-Node: 기록누락·stale identity·틀린산식 음성대조, 실제git PR diff통합, Mac보존/모바일계산. Unity: 각3atlas Android/iPhone ASTC4override조회 및 MacRGBA유지, 원본padding alpha1실패/0통과, 두프로필예정. 결과는 실행 후 갱신한다.
+Node: 기록누락·stale identity·틀린산식 음성대조, 실제git PR diff통합, Mac보존/모바일계산. Unity: 각3atlas Android/iPhone ASTC4override조회 및 MacRGBA유지, 원본padding alpha1실패/0통과, 두 프로필 실행 완료. 아래 최종 기록을 따른다.
 
 PR head와 CI merge checkout의 PNG가 다르면 merge 그림을 PR 그림으로 오인하지 않는다. head blob 또는 로컬 LFS oid를 읽고, 그 oid가 없을 때만 해당 PNG 경로 하나를 `git lfs fetch --include`로 받는다. checkout은 바꾸지 않는다.
 
 ## 압축 품질과 최초 기록
 
 승인된 실제 시험은 `TextureCompressionQuality.Best`였다. 모바일 override도 compressionQuality=100(Best)로 명시한다([Unity API](https://docs.unity3d.com/cn/current/ScriptReference/TextureImporter.SetPlatformTextureSettings.html)). 이는 요청 품질의 일치이며 EditorUtility와 플랫폼 importer 인코더의 바이트 동일성을 주장하지 않는다. Default/Standalone 품질은 바꾸지 않는다. 최초985e5aee(품질50)의 focused4·FP902/55·wave912/89는 실패0, 보충각1통과/미설명skip0/기존listed1로 보존하며 최종품질100 기록을 대신하지 않는다.
+
+## 최종 실행 기록
+
+## Unity tests
+commit: 9cacf28db3b2fc21d6cdc74345615ecab8264ded
+first-playable EditMode: passed 902, failed 0, skipped 25
+first-playable PlayMode: passed 55, failed 0, skipped 47
+wave-1a EditMode: passed 912, failed 0, skipped 15
+wave-1a PlayMode: passed 89, failed 0, skipped 13
+skipped in every profile: 0 unexplained, 1 listed
+
+Supplemental fixtures: frozen combat sidecar1/1 and opt-in melee catalog1/1 pass. Original full runner exit1/known two missing inputs preserved; combined coverage has zero unexplained skips. Existing listed manual two-camera test remains. No new exceptions.
+
+2026-10-28 19:05:04 KST 잠금 해제. 최종 실행 후 추적 파일 변경 0. 모바일 품질100/ASTC4, Mac RGBA 유지, source padding alpha0허용·alpha1거절 focused4/4도 통과했다.
+
+확인용 직접 링크: [전투1배](https://github.com/hyunlord/bs-mobile/releases/download/astc-texture-trial-461-20261028/combat-frame0-native-1x.png), [전투3배](https://github.com/hyunlord/bs-mobile/releases/download/astc-texture-trial-461-20261028/combat-frame0-roi-3x.png), [영웅걷기1배](https://github.com/hyunlord/bs-mobile/releases/download/astc-texture-trial-461-20261028/hero-core-frontier_knight-walk-cells-1x.png), [영웅걷기3배](https://github.com/hyunlord/bs-mobile/releases/download/astc-texture-trial-461-20261028/hero-core-frontier_knight-four-phases-3x.png), [영지알파1배](https://github.com/hyunlord/bs-mobile/releases/download/astc-texture-trial-461-20261028/estate-hoe-alpha-1x-COMPOSITE.png), [영지알파3배](https://github.com/hyunlord/bs-mobile/releases/download/astc-texture-trial-461-20261028/estate-hoe-alpha-3x-COMPOSITE.png). ORIGINAL/ASTC4열이 이번 대상이며 ASTC6은 역사 비교다.
