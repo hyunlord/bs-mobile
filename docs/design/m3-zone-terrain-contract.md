@@ -10,7 +10,7 @@
 
 [승인 r8 배치 설계](m3a-r8-layout-proposal.md)의 13개 사각형과 [기하 계약](m3-estate-r8/GEOMETRY.md)을 사용한다. 구역 개방 시 테마가 드러나되, 새 생산시설·자원·인구·상호작용은 생기지 않는다. 저장 형식, Core 규칙, 리플레이·골든 해시, 기본 데이터 트리는 불변이다. r3~r7 설정과 그림 배치는 보존한다. r8의 마을 생산시설 조건 2, 나머지 안쪽 7구역 조건 3은 선행 설계/구현 소유이며 여기서 바꾸지 않는다.
 
-검토 기준 B는 승인된 m3-estate-keyarts-r2-20261024 동네 그림이다. 7/13·13/13 개방 화면을 같은 확대와 전체 보기에서 비교한다. 현재 열 채의 건물만 있는 사실을 숨기거나 B의 장기 건물 수·주민 수를 구현했다고 표현하지 않는다. [구역 아트 검토](../review/estate-zone-art-482.md)의 새 콘셉트는 사용자 승인 PENDING이다. 내부 QA PASS를 런타임 자산 사용 승인으로 간주하지 않는다.
+검토 기준 B는 [m3-estate-expansion-concept-468-20261028 Release](https://github.com/hyunlord/bs-mobile/releases/tag/m3-estate-expansion-concept-468-20261028)의 `B-half-r2-390x844.png`와 `B-full-r2-390x844.png`다. 실제 Release 첨부 이름을 확인했다. 7/13 개방은 half, 13/13 개방은 full과 같은 390×844 크기로 비교하고, 같은 확대와 전체 보기를 함께 낸다. 이전 m3-estate-keyarts-r2-20261024 동네 B는 이번 반개방/전체 개방 판정 기준이 아니다. 현재 열 채의 건물만 있는 사실을 숨기거나 B의 장기 건물 수·주민 수를 구현했다고 표현하지 않는다. [구역 아트 검토](../review/estate-zone-art-482.md)의 새 콘셉트는 사용자 승인 PENDING이다. 내부 QA PASS를 런타임 자산 사용 승인으로 간주하지 않는다.
 
 ## 2. JSON 역할 계약 [제안]
 
