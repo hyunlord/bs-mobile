@@ -1,6 +1,6 @@
 # Texture memory inventory and budget proposal (#460)
 
-Status: proposal / static audit, 2026-10-28. Current source main `2074f57478f56707d91094a3fa6412bd033468db`, after approved #431. Historical source437d62a is retained below.
+Status: proposal / static audit, 2026-10-28. Current source main `0f9096aeeed21ad3fede6538927a4aad60d0ba23`, after approved #473. Historical sources437d62a and2074f574 are retained below.
 No production change or compression acceptance. This documentation lane ran no Unity; a separate Mac Editor import probe is attributed below. No mobile/device-gameplay memory-performance claim.
 
 ## Finding
@@ -30,11 +30,11 @@ MiB = bytes / 1,048,576. RGBA32 without mipmaps = width × height × 4.
 |---|---:|---:|---:|
 | first-playable registry | 17 | 123779312 | 118.045151 |
 | wave1a registry | 34 | 271536368 | 258.957260 |
-| Estate resources | 4 | 49856512 | 47.546875 |
+| Estate resources | 4 | 50675712 | 48.328125 |
 | Portrait UI resources | 50 | 8641372 | 8.241055 |
 | Title resources | 2 | 12587560 | 12.004433 |
 | Extra hero resources | 4 | 35647456 | 33.996063 |
-| Union (FP registry is a subset of wave at this source) | 94 | 378269268 | 360.745686 |
+| Union (FP registry is a subset of wave at this source) | 94 | 379088468 | 361.526936 |
 
 The union is **not a measured scene peak**. A first-playable registry-only loading estimate is 118.05 MiB; wave registry-only is 258.96 MiB. Additional cached UI/estate/legacy rig resources, dynamic fonts and rendering allocations must be added according to actual screen history. Loading both catalogs must deduplicate shared Texture2D instances, not add both table rows. No exact Android, iOS or Mac resident total has been measured.
 
@@ -62,9 +62,9 @@ The verified flag is isReadable=false for these94 assets after preparation. The 
 
 | Target | FP registry RGBA32 estimate | Wave registry RGBA32 estimate | Full 94 PNG inventory estimate | Actual imported/resident format |
 |---|---:|---:|---:|---|
-| Mac | 118.045151 MiB | 258.957260 MiB | 360.745686 MiB | 91 unchanged assets: historical Editor probe; 3 changed: NOT_MEASURED |
-| iOS | 118.045151 MiB | 258.957260 MiB | 360.745686 MiB | NOT_MEASURED |
-| Android | 118.045151 MiB | 258.957260 MiB | 360.745686 MiB | NOT_MEASURED |
+| Mac | 118.045151 MiB | 258.957260 MiB | 361.526936 MiB | 91 unchanged assets: historical Editor probe; 3 changed: NOT_MEASURED |
+| iOS | 118.045151 MiB | 258.957260 MiB | 361.526936 MiB | NOT_MEASURED |
+| Android | 118.045151 MiB | 258.957260 MiB | 361.526936 MiB | NOT_MEASURED |
 
 Per-asset platform estimates equal each CSV row's rgba32_bytes under this deliberately uniform assumption. Identical columns express the absence of active overrides, not identical real hardware allocation or support. CSV platform settings retain each target's serialized fields.
 
@@ -89,7 +89,7 @@ Calculated by reading both profile manifests at each PR base/head, summing uniqu
 
 ## Budget proposal and next small PRs
 
-[Proposal] A 150 MiB gameplay-resident texture target is **not currently met** by the wave registry estimate alone (258.96 MiB). Even theoretical 6×6 compression of only the previously selected three combat textures leaves wave at209.94 MiB, before extra cached UI/estate/fonts/masks; the current full inventory becomes311.73 MiB (historical437d62a inventory297.37 MiB). These are format-arithmetic scenarios, not measured savings or approved settings. Treat150 MiB as a target requiring further loading/packing/compression decisions, never a claimed pass. Apply any future budget to a named profile and lifecycle checkpoint (cold title, fresh combat, estate then combat), while retaining the independent inventory total.
+[Proposal] A 150 MiB gameplay-resident texture target is **not currently met** by the wave registry estimate alone (258.96 MiB). Even theoretical 6×6 compression of only the previously selected three combat textures leaves wave at209.94 MiB, before extra cached UI/estate/fonts/masks; the current full inventory becomes312.51 MiB (historical437d62a inventory297.37 MiB). These are format-arithmetic scenarios, not measured savings or approved settings. Treat150 MiB as a target requiring further loading/packing/compression decisions, never a claimed pass. Apply any future budget to a named profile and lifecycle checkpoint (cold title, fresh combat, estate then combat), while retaining the independent inventory total.
 
 1. Adopt this pinned inventory as a **report-only baseline**, not a hard pass limit. Track registry, estate, portrait, extra hero, mutable masks, fonts and capture costs separately. A total-image budget must not reward splitting one texture into many batches.
 2. Compression trial: isolated branch, exact three source images and target settings, no production application before user visual approval. Compare full-size alpha borders, 115px actors and moving/crowded frames. Record PNG/source unchanged, actual imported TextureFormat/graphicsFormat, dimensions, mipmapCount, isReadable and Profiler.GetRuntimeMemorySizeLong on each target. Device/driver support and fallback cannot be proven by this document.
@@ -98,7 +98,7 @@ Calculated by reading both profile manifests at each PR base/head, summing uniqu
 
 ## Verification and limits
 
-Read-only git inspection and Node arithmetic at the pinned SHA; no Unity, build, process termination or shared-Mac lock. The CSV was generated from the two manifest atlas arrays and all tracked nested Resources PNGs using PNG IHDR and LFS object content. Metadata was read from the same Git ref, not a potentially reimported worktree. Reproduction inputs are the source SHA, paths and dimensions in CSV; proposed reusable CLI remains a separate task. The current full inventory sum is378269268 bytes,94 unique rows; all mip/readability flags are0. Loader line references unchanged by431 retain their earlier locations; EstateArt and EstateMap source shifted in431, so use the named methods and the refresh references below.
+Read-only git inspection and Node arithmetic at the pinned SHA; no Unity, build, process termination or shared-Mac lock. The CSV was generated from the two manifest atlas arrays and all tracked nested Resources PNGs using PNG IHDR and LFS object content. Metadata was read from the same Git ref, not a potentially reimported worktree. Reproduction inputs are the source SHA, paths and dimensions in CSV; proposed reusable CLI remains a separate task. The current full inventory sum is379088468 bytes,94 unique rows; all mip/readability flags are0. Loader line references unchanged by431 retain their earlier locations; EstateArt and EstateMap source shifted in431, so use the named methods and the refresh references below.
 
 Graft located loader code, but returned an older implementation; current git source was read directly and overrides the stale search result. Actual iOS/Android texture formats, gameplay resident memory, loading peak and frame timing remain unmeasured. Separate Mac Editor import and compression evidence below does not establish gameplay-memory or user-approval gates. This document does not imply any of those gates passed.
 
@@ -122,11 +122,11 @@ for (const r of rows.slice(0, 3)) console.log(r[1], {
 NODE
 ```
 
-Expected94rows /378269268bytes. This verifies committed arithmetic, not extraction completeness or live import settings; those require the pinned source inspection described above.
+Expected94rows /379088468bytes. This verifies committed arithmetic, not extraction completeness or live import settings; those require the pinned source inspection described above.
 
 ## Post-#431 refresh and historical baseline
 
-#431 merged as2074f574 on2026-10-28. No additional PNG paths: construction stages, static props and carrying-worker SE/SW16 frames use the existing estate atlas. EstateCarryView.cs:19–27 resolves worker-carry-se/sw through EstateArt.Get; EstateConstructionArt.cs:20–27 resolves construction stage roles through the same imported atlas loader. Current inventory is94 images/360.745686 MiB; historical437d62a was94/346.386311 MiB. Combat registries and other categories are unchanged.
+#431 merged as2074f574 on2026-10-28. No additional PNG paths: construction stages, static props and carrying-worker SE/SW16 frames use the existing estate atlas. EstateCarryView.cs:19–27 resolves worker-carry-se/sw through EstateArt.Get; EstateConstructionArt.cs:20–27 resolves construction stage roles through the same imported atlas loader. The2074f574 inventory was94 images/360.745686 MiB; historical437d62a was94/346.386311 MiB. Combat registries and other categories are unchanged.
 
 | Changed atlas | Previous dimensions | Current dimensions | RGBA32 delta |
 |---|---|---|---:|
@@ -135,7 +135,7 @@ Expected94rows /378269268bytes. This verifies committed arithmetic, not extracti
 | estate-building-shadows | 640×960 | 640×1120 | +409600 B /0.390625 MiB |
 | #431 total | | | +15056896 B /14.359375 MiB |
 
-The **current global** largest three are hero-knight21.165833 MiB, estate-decor18.187500 MiB, fallow-enemy-rigs18 MiB. The earlier **combat-registry** top-three compression selection is unchanged; do not confuse it with this refreshed global ordering. CSV sorts all categories by uncompressed planning bytes.
+At2074f574 the **global** largest three were hero-knight21.165833 MiB, estate-decor18.187500 MiB, fallow-enemy-rigs18 MiB. The earlier **combat-registry** top-three compression selection is unchanged; do not confuse it with this refreshed global ordering. CSV sorts all categories by uncompressed planning bytes.
 
 ## Separate Mac Editor import measurements
 
@@ -143,12 +143,40 @@ Probe source d257dc7 (main437d62a plus Editor-only diagnostic), Unity6000.6.4f1,
 
 Historical94:93RGBA32 and1RGB24 (title-background), all mipmapCount1/readablefalse. Sum of per-object Profiler values724986304 B/691.400818 MiB. This is an **Editor object-memory sum**, not GPU-only bytes, process memory, a measured gameplay scene peak or a mobile result. Its roughly2×relation to source arithmetic does not prove a particular CPU-copy implementation.
 
-Current CSV carries91 rows only where both PNG and importer metadata are byte-identical between437d62a and2074f574, retaining the original probe source. Their object-memory sum688283120 B/656.397934 MiB is likewise a partial historical-object sum. The three replaced estate textures are NOT_MEASURED, not assigned the old runtime values. All current94 static defaults remain no mip/readablefalse/no active platform override. No new Unity execution is claimed.
+Current CSV carries91 rows only where both PNG and importer metadata are byte-identical between437d62a and0f9096a, retaining the original probe source. Their object-memory sum688283120 B/656.397934 MiB is likewise a partial historical-object sum. The three replaced estate textures are NOT_MEASURED, not assigned the old runtime values. All current94 static defaults remain no mip/readablefalse/no active platform override. No new Unity execution is claimed.
 
-Trial source preservation (PNG LFS SHA256 unchanged after431; metadata also unchanged):
+Trial source preservation (PNG LFS SHA256 and metadata unchanged through473, verified against original2074f574 inventory and437d62a):
 
 - hero-knight:76c75e804a9fb782207e26e2295bca7c74b8c8bb29eeb055d557610a7e8fe4c6
 - fallow-enemy-rigs:5a69aaf13a67ea6885234be74e4d984e00b7b77323f113024b15e05ebebf8bde
 - fallow-hero-b-layers:945eed1f6592292ac9138c3000f17422d90d8a9a351020533b3174b8f005dce4
 
-The separate actual encoding trial reports combined three-texture payload55.1658→13.7915MiB (ASTC4×4) or6.1462MiB (ASTC6×6). Payload is **not runtime RAM**. ASTC6×6 hero gutter has102 alpha samples with max1, while global image alpha max-error252 is a different metric. Compression remains review-only: no production application or quality acceptance is implied. The refreshed estate-decor global top-three entry was not part of that completed trial. An additional estate trial is pending; this report does not count it as completed.
+The separate actual encoding trial reports combined three-texture payload55.1658→13.7915MiB (ASTC4×4) or6.1462MiB (ASTC6×6). Payload is **not runtime RAM**. ASTC6×6 hero gutter has102 alpha samples with max1, while global image alpha max-error252 is a different metric. Compression remains review-only: no production application or quality acceptance is implied. The later estate-decor trial completed separately at source7c1c3b0 (main2074f574), using the2048×2328 source. Actual RGBA/ASTC4/ASTC6 payloads were19070976/4767744/2123136 B. Combining its payload with the unchanged hero and enemy assets gives the2074f574 global top-three comparison57.3533→14.3383/6.3863 MiB. This does not update the older full-inventory Editor probe or measure mobile RAM.
+
+[Completed selected visual evidence](https://github.com/hyunlord/bs-mobile/pull/465#issuecomment-6461064844) uses existing actual captures and GPU-decoded images, without a new encode or Unity execution: native1×/ROI3× combat boards, four selected hero/raider/wasp phases, estate1×/3× COMPOSITE boards, and24 actual frames over0.8s. These are bounded samples, not a30s video, full walk cycle, actual estate-renderer capture, mobile result, or user quality approval. Earlier drawtext failures remain recorded. Estate alpha MAE was0.347283/0.744500 (ASTC4/6), maxima106/143, with9408/18805 originally transparent pixels becoming nonzero; role padding remains NOT_MEASURED. Compression application still awaits user visual acceptance.
+
+## Post-#473 current-source refresh
+
+#473 merged as0f9096aeeed21ad3fede6538927a4aad60d0ba23 on2026-10-28. The24 estate work-loop frames expand the existing estate-decor atlas from2048×2328 to2048×2428: +819200 RGBA32 planning bytes /0.781250 MiB. No additional PNG paths; the union remains94 images, now379088468 B /361.526936 MiB. Estate resources are50675712 B /48.328125 MiB. Combat, UI, title and extra-hero counts and byte totals remain unchanged.
+
+| Current global top three | Dimensions | RGBA32 planning bytes / MiB | ASTC4 arithmetic bytes | ASTC6 arithmetic bytes |
+|---|---|---:|---:|---:|
+| hero-knight | 2564×2164 | 22193984 /21.165833 | 5548496 | 2472128 |
+| estate-decor | 2048×2428 | 19890176 /18.968750 | 4972544 | 2216160 |
+| fallow-enemy-rigs | 2048×2304 | 18874368 /18.000000 | 4718592 | 2101248 |
+
+The historical d257dc7 full-inventory Editor-object probe still applies only to91 unchanged PNG+meta pairs. The new estate atlas does not inherit its old object-memory or quality results. Static ASTC block arithmetic in this table is not an actual encode, hardware residency or approved quality claim.
+
+### Actual compression refresh for the current estate atlas
+
+A separate actual encode/GPU-readback run at source7817fd56 (main0f9096a plus the Editor-only trial) tested this exact2048×2428 estate-decor source on Apple M4 Max/Metal. RGBA round-trip RGB/alpha error was0. ASTC4 and ASTC6 reported the expected graphics formats and payloads4972544/2216160 B. Combined with the two byte-identical historical hero/enemy sources, the current top-three payload comparison is58.134583→14.533646/6.475006 MiB. These block payloads are not runtime object memory, scene residency or mobile RAM.
+
+| Current estate result | RGBA | ASTC4 | ASTC6 |
+|---|---:|---:|---:|
+| payload bytes | 19890176 | 4972544 | 2216160 |
+| alpha MAE | 0 | 0.351172 | 0.756492 |
+| alpha maximum error | 0 | 106 | 221 |
+| originally transparent pixels with nonzero alpha | 0 | 9807 | 19339 |
+| role padding | NOT_MEASURED | NOT_MEASURED | NOT_MEASURED |
+
+Evidence belongs to [trial PR465](https://github.com/hyunlord/bs-mobile/pull/465): latest-estate/metrics-rgba.json, metrics-4.json and metrics-6.json. The old2048×2328 encode remains historical. This refresh does not fill the CSV mac_profiler_object_bytes fields: the actual encoding/readback is a different measurement from the d257dc7 Editor object probe. Actual estate-renderer capture, mobile formats/residency and user visual approval remain unverified.
