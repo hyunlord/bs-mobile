@@ -47,7 +47,7 @@ wave-1a EditMode: passed 912, failed 0, skipped 15
 wave-1a PlayMode: passed 89, failed 0, skipped 13
 skipped in every profile: 0 unexplained, 1 listed
 
-Supplemental fixtures: frozen combat sidecar1/1 and opt-in melee catalog1/1 pass. Original full runner exit1/known two missing inputs preserved; combined coverage has zero unexplained skips. Existing listed manual two-camera test remains. No new exceptions.
+Supplemental fixtures: frozen combat sidecar1/1 and opt-in melee catalog1/1 pass. Original full runner exit1/known two missing inputs preserved; combined coverage has zero unexplained skips. Existing listed skip: `Tests.PlayMode.WaveWorldTests.RecordedWaveRangeExportsActualTickFrames` is an optional recorded-input sequence export, intentionally enabled only by WAVE_QA_* variables. No new exceptions.
 
 2026-10-28 19:05:04 KST 잠금 해제. 최종 실행 후 추적 파일 변경 0. 모바일 품질100/ASTC4, Mac RGBA 유지, source padding alpha0허용·alpha1거절 focused4/4도 통과했다.
 
