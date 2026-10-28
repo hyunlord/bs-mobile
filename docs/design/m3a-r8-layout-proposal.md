@@ -2,7 +2,7 @@
 
 - 추적: [#476](https://github.com/hyunlord/bs-mobile/issues/476). **문서 PR은 사용자 승인 후 병합한다. 자동 병합을 예약하지 않는다.**
 - [확정] 사용자는 장기 배치 방향 B안과 강가 발전 후 r2 그림을 승인했다. [승인 그림](https://github.com/hyunlord/bs-mobile/releases/tag/m3-estate-expansion-concept-468-20261028).
-- [제안] 이 문서의 정확한 r8 좌표, 다리 위치, 진행 조건은 이번 PR의 검토 대상이다. B 방향 승인을 이 수치의 사전 승인으로 확대하지 않는다.
+- [확정] 이 문서의 정확한 r8 좌표, 다리 위치와 생산시설 완성 조건 4→3 제안은 2026-10-28 사용자가 승인했다. 구현은 별도 PR에서 수행한다.
 - **구현은 Codex, r8 새 설정 파일, r3~r7 동결, 저장 형식 유지.** 이번 PR은 문서·설계 도식만 변경하며 게임 코드·설정·저장을 수정하지 않는다.
 
 ## 적용 문서와 현행 제약
@@ -84,9 +84,11 @@ r7은 외곽 4곳과 마을에 완료 생산시설 2개, 나머지 7곳에 4개�
 
 ## 검증·검토판
 
-![r8 평면 격자와 강·다리·시작 건물](m3-estate-r8/geometry-topdown.png)
+저장소 PNG는 Git LFS 대상이므로 GitHub 열람용 이미지는 같은 Release의 일반 PNG를 직접 연결한다. 원본 LFS 파일과 SVG는 보존한다.
 
-![r8 등각 격자](m3-estate-r8/geometry-isometric.png)
+![r8 평면 격자와 강·다리·시작 건물](https://github.com/hyunlord/bs-mobile/releases/download/m3-estate-expansion-concept-468-20261028/r8-design-geometry-topdown.png)
+
+![r8 등각 격자](https://github.com/hyunlord/bs-mobile/releases/download/m3-estate-expansion-concept-468-20261028/r8-design-geometry-isometric.png)
 
 - [평면 격자판](m3-estate-r8/geometry-topdown.svg): 구역 좌표·면적, 강·다리, 시작 건물 10채.
 - [등각 격자판](m3-estate-r8/geometry-isometric.svg): 64×32 투영, 같은 논리 셀·구역·강·다리.

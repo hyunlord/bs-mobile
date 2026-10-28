@@ -27,3 +27,7 @@ Independent recomputed results are retained locally in `output/estate-r8-design-
 - A second `python3 -` read-only comparison verified each proposed unlock object equals r7 except completedProductionSites4→3 in exactly7zones. Actual result: no other unlock changes.
 - `rg -n 'ProductionSitesComplete|ConfigVersion|Adjacent' core/src/SowSiege.Core/AccountEstate.cs` and bounded `sed` reads verified actualCore contracts at lines85,199,446–470; `AccountEstateContract.cs` confirms one rectangle per zone.
 - `view_image` opened both finalPNG diagrams. No generator rerun, code execution through Core, Unity launch or runtime test occurred. Runtime status: **NOT_RUN**.
+
+## Subsequent user decision (2026-10-28)
+
+The user approved PR #478 and the production threshold 4-to-3 correction, and authorized squash merge after updating main and passing CI. The pending-approval statements above describe the earlier review state. Game implementation remains a separate task.
