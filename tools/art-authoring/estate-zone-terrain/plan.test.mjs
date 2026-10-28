@@ -196,7 +196,7 @@ test("future single default config supports either reviewed width without placem
     }
     const s = clone(sources);
     s.assets.find(
-        (a) => a.key === "forest-cluster-01" && a.state === "dark",
+        (a) => a.variantId === "forest-cluster-01" && a.state === "dark",
     ).projection = "flat-uv";
     assert.throws(() => validate(contract, s, config));
 });

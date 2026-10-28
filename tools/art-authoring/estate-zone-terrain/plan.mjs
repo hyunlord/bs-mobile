@@ -47,8 +47,8 @@ export function validate(c, s, config) {
         c.zones.every((z) => ids.has(z.id)), "13 exact zone IDs required");
     const assets = new Map();
     for (const a of s.assets) {
-        require(typeof a.key === "string" &&
-            a.key.length > 0 &&
+        require(typeof a.variantId === "string" &&
+            a.variantId.length > 0 &&
             ["bright", "dark"].includes(a.state), "Bad source key/state");
         require(typeof a.file === "string" &&
             basename(a.file) === a.file &&
@@ -63,13 +63,13 @@ export function validate(c, s, config) {
         require(["flat-uv", "isometric-sprite"].includes(
             a.projection,
         ), "Invalid projection");
-        const id = `${a.key}|${a.state}`;
+        const id = `${a.variantId}|${a.state}`;
         require(!assets.has(id), "Duplicate source state");
         assets.set(id, a);
     }
     for (const a of s.assets)
         require(assets.has(
-            `${a.key}|${a.state === "bright" ? "dark" : "bright"}`,
+            `${a.variantId}|${a.state === "bright" ? "dark" : "bright"}`,
         ), "Missing source state pair");
     const themes = new Map();
     for (const t of c.themes) {
@@ -88,12 +88,12 @@ export function validate(c, s, config) {
         require(t.mode === "preserve-existing"
             ? t.variants.length === 0
             : t.variants.length > 0, "Invalid theme variants");
-        require(new Set(t.variants.map((v) => v.key)).size ===
+        require(new Set(t.variants.map((v) => v.variantId)).size ===
             t.variants.length, "Duplicate variant");
         for (const v of t.variants)
             require(["bright", "dark"].every(
                 (state) =>
-                    assets.get(`${v.key}|${state}`)?.projection ===
+                    assets.get(`${v.variantId}|${state}`)?.projection ===
                     "isometric-sprite",
             ) &&
                 pair(v.reserveCells) &&
@@ -119,7 +119,7 @@ export function plan(c, s, config, state = {}) {
             t = themes.get(mapping.theme);
         rectangle(z);
         if (t.mode === "preserve-existing") continue;
-        const variants = [...t.variants].sort((a, b) => ordinal(a.key, b.key)),
+        const variants = [...t.variants].sort((a, b) => ordinal(a.variantId, b.variantId)),
             candidates = [];
         for (let y = z.y; y < z.y + z.height; y += t.spacingCells)
             for (let x = z.x; x < z.x + z.width; x += t.spacingCells) {
@@ -127,7 +127,7 @@ export function plan(c, s, config, state = {}) {
                 if (hash(`${prefix}|density`) / 4294967296 >= t.density)
                     continue;
                 const v = variants[hash(`${prefix}|variant`) % variants.length],
-                    key = `${prefix}|${v.key}`;
+                    key = `${prefix}|${v.variantId}`;
                 const footprint = {
                     x,
                     y,
@@ -143,7 +143,7 @@ export function plan(c, s, config, state = {}) {
                     key,
                     zoneId: z.id,
                     theme: t.id,
-                    variant: v.key,
+                    variant: v.variantId,
                     footprint,
                     priority: hash(key),
                 });
