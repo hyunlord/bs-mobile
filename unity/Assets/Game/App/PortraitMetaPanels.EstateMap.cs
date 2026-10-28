@@ -72,7 +72,7 @@ namespace Game.App
             {
                 var colour = item.Colour;
                 if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) colour.a *= .45f;
-                var name = item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : "EstateMap.Site";
+                var name = item.Source == "yard-ground" ? "EstateMap.Decor:yard-ground" : item.Source == "construction" ? "EstateMap.Building:" + item.SiteId : item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : "EstateMap.Site";
                 Paint(viewport, view, art, terrainTint.Material, name, item, colour: colour);
             }
             if (screen.Moving)
@@ -119,25 +119,33 @@ namespace Game.App
             var standing = plan.In(EstateDrawLayer.Standing).Where(Decor).OrderBy(i => i.SortY).ThenBy(i => i.BuildingId < 0 ? 1 : 0).ThenBy(i => i.Key, StringComparer.Ordinal).ToArray();
             foreach (var item in standing.Where(i => i.BuildingId >= 0))
                 Paint(viewport, view, art, tint, "EstateMap.Shadow:" + item.BuildingId, item, art.Shadow(item.BuildingArt, item.Stage), new Color(1, 1, 1, .8f));
+            var depthAnchors = new List<(RectTransform Rect, float Y)>();
             foreach (var item in standing)
             {
                 if (item.BuildingId < 0)
                 {
                     var siteColour = item.Colour;
                     if (item.SiteId >= 0 && screen.Moving && screen.Selected == item.SiteId) siteColour.a *= .45f;
-                    Paint(viewport, view, art, tint, item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item, colour: siteColour);
+                    var prop = Paint(viewport, view, art, tint, item.Source == "construction" ? "EstateMap.Building:" + item.SiteId : item.SiteId >= 0 ? "EstateMap.Site:" + item.SiteId + ":" + item.Role : DecorSources.Contains(item.Source) ? "EstateMap.Decor:" + item.Source : "EstateMap.Piece:" + item.Role, item, colour: siteColour);
+                    depthAnchors.Add((prop.rectTransform, item.SortY));
                     continue;
                 }
                 var building = screen.Building(item.BuildingId); var kind = screen.Kind(building.Kind);
                 var colour = item.Colour; if (screen.Moving && screen.Selected == building.Id) colour.a *= .45f;
-                Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);
+                var body = Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);
+                depthAnchors.Add((body.rectTransform, item.SortY));
+            }
+            if (screen.DecorEnabled && plan.CarryRoute.Length > 1)
+            {
+                var resident = UiShell.Rect("EstateMap.CarryWorker", viewport);
+                resident.gameObject.AddComponent<EstateCarryView>().Configure(art, screen.Map, plan.CarryRoute, depthAnchors);
             }
             foreach (var item in plan.In(EstateDrawLayer.Foreground).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Piece:" + item.Role, item);
-            // Keep the small site sign readable after neighbouring buildings are drawn; names stay in the sheet.
-            foreach (var building in screen.State.Estate.Buildings.Where(b => screen.UnderConstruction(b.Id)))
+            // The open sheet already names the work. Otherwise place its label below the front foundation, not over the art.
+            foreach (var building in screen.State.Estate.Buildings.Where(b => panel <= 0 && screen.UnderConstruction(b.Id)))
             {
                 var kind = screen.Kind(building.Kind);
-                view.Pin(NameTag(ui, viewport, "공사 중"), new Vector2(building.X + kind.Width * .5f, building.Y + kind.Height * .5f), -18);
+                view.Pin(NameTag(ui, viewport, "공사 중"), new Vector2(building.X + kind.Width, building.Y + kind.Height), -(16 / screen.Map.Scale + 4));
             }
             if (screen.Moving && screen.Selected != null)
             {
@@ -211,7 +219,7 @@ namespace Game.App
             if (item.Layer == EstateDrawLayer.Terrain || item.Layer == EstateDrawLayer.Ground || item.Layer == EstateDrawLayer.Landmark)
             {
                 var terrain = rect.gameObject.AddComponent<EstateTerrainImage>();
-                terrain.IsometricGround = item.IsometricGround;
+                terrain.IsometricGround = item.IsometricGround; terrain.WaterOnly = item.WaterOnly; terrain.DarkBank = EstateTerrainImage.IsDarkBank(item);
                 terrain.RoadPoints = item.RoadPoints; terrain.RoadWidth = item.RoadWidth; terrain.RoadFootprints = item.RoadFootprints;
                 terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
@@ -482,7 +490,10 @@ namespace Game.App
     {
         public Vector2 Grid;
         public float PaintedWidth;
-        public bool Landmark, WaterLandmark, IsometricRoad, IsometricGround;
+        public bool Landmark, WaterLandmark, IsometricRoad, IsometricGround, WaterOnly, DarkBank;
+        public static bool IsDarkBank(EstateDrawItem item) => item.Source == "river-bank" &&
+            item.Layer == EstateDrawLayer.Landmark && item.Role.StartsWith("bank-", StringComparison.Ordinal) &&
+            item.Role.EndsWith("-dark", StringComparison.Ordinal);
         public int RoadQuarterTurns;
         public Vector2[] RoadPoints; public float RoadWidth; public RectInt[] RoadFootprints;
         protected override void OnPopulateMesh(VertexHelper mesh)
@@ -501,7 +512,7 @@ namespace Game.App
                 var fraction = new Vector2((vertex.position.x - rect.xMin) / rect.width, (vertex.position.y - rect.yMin) / rect.height);
                 var offset = fraction - pivot;
                 var grid = Grid + EstateMapModel.Unproject(new Vector2(offset.x * PaintedWidth, -offset.y * PaintedWidth * rect.height / rect.width));
-                vertex.uv1 = new Vector4(grid.x, grid.y, WaterLandmark ? 2 : Landmark ? 1 : 0, 0); mesh.SetUIVertex(vertex, i);
+                vertex.uv1 = new Vector4(grid.x, grid.y, WaterOnly ? (WaterLandmark ? 4 : 3) : WaterLandmark ? 2 : Landmark ? 1 : 0, DarkBank ? 1 : 0); mesh.SetUIVertex(vertex, i);
             }
         }
         // Round the grid path, not the texture: a single dirt strip follows the estate axes without per-cell diamonds.

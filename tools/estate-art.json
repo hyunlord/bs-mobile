@@ -1,12 +1,65 @@
 {
   "version": "estate-art-r1",
-  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24). User-approved 2026-10-26 Lv0 six lit/dark pairs use ASSET-LIST.md floor-centre anchors; roads use the approved straight/bend/fork512 only. Approved r4 grass and six soil patches (2026-10-26) retain original pixels and central anchors; only View dressing uses them.",
+  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24). User-approved 2026-10-26 Lv0 six lit/dark pairs use ASSET-LIST.md floor-centre anchors; roads use the approved straight/bend/fork512 only. Approved r4 grass and six soil patches (2026-10-26) retain original pixels and central anchors; only View dressing uses them. Approved #426 construction 407/412, bank/tree 416/418, carrying workers423; anchors follow Release ASSET-LIST and full256-cell ATLAS-CONTRACT.",
   "buildings": {
     "release": "m3-estate-autodecor-20261024",
     "body": "buildings-30-body-atlas.png",
     "shadow": "buildings-30-shadow-atlas.png",
     "shadowScale": 0.5,
-    "manifest": "buildings-manifest.json"
+    "manifest": "buildings-manifest.json",
+    "overrides": [
+      {
+        "id": "scriptorium-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s1-sprout-r3.png"
+      },
+      {
+        "id": "scriptorium-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s2-sprout-r3.png"
+      },
+      {
+        "id": "scriptorium-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s3-sprout-r3.png"
+      },
+      {
+        "id": "barracks-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s1-sprout-r3.png"
+      },
+      {
+        "id": "barracks-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s2-sprout-r3.png"
+      },
+      {
+        "id": "barracks-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s3-sprout-r3.png"
+      }
+    ],
+    "additions": [
+      {
+        "id": "ironworks-s1",
+        "kind": "ironworks",
+        "stage": 1,
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "ironworks-complete-r2.png",
+        "pivot": [
+          0.5,
+          0.125
+        ]
+      }
+    ],
+    "historicalPreservation": {
+      "sourceFile": "buildings-30-body-atlas.png",
+      "sourceSha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee",
+      "width": 1280,
+      "height": 1920,
+      "outsideCropSha256": "72932adeaf3de8aa28c47bbfb0d5f658181aff404088d3b4774b72f4c046be21",
+      "alphaSha256": "62d4d3ae1edcbef977606e38dd1b8906b2487189514c925b183dc9fa3256a7d1"
+    }
   },
   "atlasWidth": 2048,
   "padding": 2,
@@ -162,7 +215,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 28,
       "layer": "standing"
@@ -175,7 +228,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 30,
       "layer": "standing"
@@ -188,7 +241,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -201,7 +254,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -214,7 +267,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -227,7 +280,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -240,7 +293,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -253,7 +306,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -266,7 +319,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -279,7 +332,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 21,
       "layer": "standing"
@@ -292,7 +345,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 17,
       "layer": "standing"
@@ -305,7 +358,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 14,
       "layer": "standing"
@@ -318,7 +371,7 @@
       "maxSize": 128,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": 27,
       "layer": "standing"
@@ -331,7 +384,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -344,7 +397,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -357,7 +410,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -370,7 +423,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -383,7 +436,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -396,7 +449,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -409,7 +462,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -422,7 +475,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -435,7 +488,7 @@
       "maxSize": 192,
       "pivot": [
         0.5,
-        0.0
+        0
       ],
       "displayWidth": null,
       "layer": "standing"
@@ -972,6 +1025,1020 @@
       ],
       "displayWidth": null,
       "layer": "ground"
+    },
+    {
+      "id": "construction-building-1-lit",
+      "release": "m3-construction-review-407-20261026",
+      "file": "building-stage1-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-building-1-dark",
+      "release": "m3-construction-review-407-20261026",
+      "file": "building-stage1-dark-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-building-2-lit",
+      "release": "m3-construction-review-407-20261026",
+      "file": "building-stage2-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-building-2-dark",
+      "release": "m3-construction-review-407-20261026",
+      "file": "building-stage2-dark-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-building-3-lit",
+      "release": "m3-construction-review-407-20261026",
+      "file": "building-stage3-lit-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-building-3-dark",
+      "release": "m3-construction-review-407-20261026",
+      "file": "building-stage3-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-field-1-lit",
+      "release": "m3-construction-review-407-20261026",
+      "file": "field-stage1-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-field-1-dark",
+      "release": "m3-construction-review-407-20261026",
+      "file": "field-stage1-dark-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-field-2-lit",
+      "release": "m3-construction-review-407-20261026",
+      "file": "field-stage2-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-field-2-dark",
+      "release": "m3-construction-review-407-20261026",
+      "file": "field-stage2-dark-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-field-3-lit",
+      "release": "m3-construction-review-407-20261026",
+      "file": "field-stage3-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-field-3-dark",
+      "release": "m3-construction-review-407-20261026",
+      "file": "field-stage3-dark-1x.png",
+      "atlas": "decor",
+      "maxSize": 160,
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-timber-pile",
+      "release": "m3-construction-review-407-20261026",
+      "file": "timber-pile-1x.png",
+      "atlas": "decor",
+      "maxSize": 44,
+      "pivot": [
+        0.5,
+        0.125
+      ],
+      "displayWidth": 44,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-stone-pile",
+      "release": "m3-construction-review-407-20261026",
+      "file": "stone-pile-1x.png",
+      "atlas": "decor",
+      "maxSize": 38,
+      "pivot": [
+        0.5,
+        0.133333333333
+      ],
+      "displayWidth": 38,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-ladder",
+      "release": "m3-construction-review-407-20261026",
+      "file": "ladder-1x.png",
+      "atlas": "decor",
+      "maxSize": 52,
+      "pivot": [
+        0.5,
+        0.076923076923
+      ],
+      "displayWidth": 40,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-wheelbarrow",
+      "release": "m3-construction-review-407-20261026",
+      "file": "wheelbarrow-1x.png",
+      "atlas": "decor",
+      "maxSize": 44,
+      "pivot": [
+        0.5,
+        0.1
+      ],
+      "displayWidth": 44,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-worker-hammer",
+      "release": "m3-construction-review-407-20261026",
+      "file": "worker-hammer-1x.png",
+      "atlas": "decor",
+      "maxSize": 76,
+      "pivot": [
+        0.34375,
+        0.131578947368
+      ],
+      "displayWidth": 64,
+      "layer": "standing"
+    },
+    {
+      "id": "construction-worker-carry",
+      "release": "m3-construction-review-407-20261026",
+      "file": "worker-carry-1x.png",
+      "atlas": "decor",
+      "maxSize": 60,
+      "pivot": [
+        0.5,
+        0.066666666667
+      ],
+      "displayWidth": 52,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-straight-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-straight-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.0625
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-straight-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-straight-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.0625
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-straight-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-straight-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-straight-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-straight-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-inside-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-inside-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 120,
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-inside-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-inside-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 120,
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-inside-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-inside-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 120,
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-inside-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-inside-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 120,
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-outside-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-outside-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.05714285714285716
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-outside-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-outside-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.05714285714285716
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-outside-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-outside-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.053333333333333344
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-outside-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-outside-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.053333333333333344
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-bridge-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-bridge-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 88,
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 88,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-bridge-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-bridge-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 88,
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 88,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-bridge-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-bridge-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 88,
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 88,
+      "layer": "standing"
+    },
+    {
+      "id": "bank-bridge-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "bank-bridge-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 88,
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 88,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-conifer-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-conifer-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.02941176470588236
+      ],
+      "displayWidth": 95,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-conifer-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-conifer-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.02941176470588236
+      ],
+      "displayWidth": 95,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-conifer-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-conifer-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 124,
+      "pivot": [
+        0.5,
+        0.032258064516129004
+      ],
+      "displayWidth": 89,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-conifer-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-conifer-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 124,
+      "pivot": [
+        0.5,
+        0.032258064516129004
+      ],
+      "displayWidth": 89,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-broadleaf-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-broadleaf-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 124,
+      "pivot": [
+        0.5,
+        0.04123711340206182
+      ],
+      "displayWidth": 124,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-broadleaf-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-broadleaf-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 124,
+      "pivot": [
+        0.5,
+        0.04123711340206182
+      ],
+      "displayWidth": 124,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-broadleaf-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-broadleaf-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.04166666666666663
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-broadleaf-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-broadleaf-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 136,
+      "pivot": [
+        0.5,
+        0.04166666666666663
+      ],
+      "displayWidth": 136,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-shrub-01-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-shrub-01-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 104,
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 104,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-shrub-01-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-shrub-01-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 104,
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 104,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-shrub-02-lit",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-shrub-02-lit-1x.png",
+      "atlas": "decor",
+      "maxSize": 84,
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 84,
+      "layer": "standing"
+    },
+    {
+      "id": "estate-tree-shrub-02-dark",
+      "release": "m3-riverbank-clusters-review-416-20261026",
+      "file": "tree-cluster-shrub-02-dark-r2-1x.png",
+      "atlas": "decor",
+      "maxSize": 84,
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 84,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-00",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-00.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-01",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-01.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-02",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-02.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-03",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-03.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-04",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-04.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-05",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-05.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-06",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-06.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-07",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-07.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-08",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-08.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-09",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-09.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-10",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-10.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-11",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-11.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-12",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-12.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-13",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-13.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-14",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-14.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-se-15",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-se-r1-frames-worker-carry-se-15.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-00",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-00.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-01",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-01.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-02",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-02.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-03",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-03.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-04",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-04.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-05",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-05.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-06",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-06.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-07",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-07.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-08",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-08.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-09",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-09.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-10",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-10.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-11",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-11.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-12",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-12.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-13",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-13.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-14",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-14.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
+    },
+    {
+      "id": "worker-carry-sw-15",
+      "release": "m3-walk-next-review-423-20261027",
+      "file": "worker-carry-sw-r1-frames-worker-carry-sw-15.png",
+      "atlas": "decor",
+      "maxSize": 256,
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing"
     }
   ]
 }
