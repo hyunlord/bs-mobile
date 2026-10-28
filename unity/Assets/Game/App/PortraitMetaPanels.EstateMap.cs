@@ -135,10 +135,10 @@ namespace Game.App
                 var body = Paint(viewport, view, art, tint, "EstateMap.Building:" + building.Id, item, art.Body(item.BuildingArt, item.Stage), colour);
                 depthAnchors.Add((body.rectTransform, item.SortY));
             }
-            if (screen.DecorEnabled && plan.CarryRoute.Length > 1)
+            if (screen.DecorEnabled) foreach (var job in EstateResidentJob.Select(plan.Residents))
             {
-                var resident = UiShell.Rect("EstateMap.CarryWorker", viewport);
-                resident.gameObject.AddComponent<EstateCarryView>().Configure(art, screen.Map, plan.CarryRoute, depthAnchors);
+                var resident = UiShell.Rect(job.Kind == EstateResidentKind.Carry ? "EstateMap.CarryWorker" : "EstateMap.Worker:" + job.Key, viewport);
+                resident.gameObject.AddComponent<EstateCarryView>().Configure(art, screen.Map, job, plan.CarryRoute, depthAnchors);
             }
             foreach (var item in plan.In(EstateDrawLayer.Foreground).Where(Decor)) Paint(viewport, view, art, tint, "EstateMap.Piece:" + item.Role, item);
             // The open sheet already names the work. Otherwise place its label below the front foundation, not over the art.
