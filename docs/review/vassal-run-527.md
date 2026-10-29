@@ -1,7 +1,7 @@
 # 가신 전투 구현 검증 (#527)
 
 - 날짜: 2026-10-29
-- 상태: 부분 — 사용자 재개 승인 후 IDE0011 수정·변경 파일 형식 검사 통과. Unity·최종 CI 대기.
+- 상태: 부분 — 사용자 재개 승인 후 IDE0011 수정·변경 파일 형식 검사 통과. Unity 두 프로필 및 보충 입력 검사 통과. 최종 비교·CI 대기.
 - PR: [#528](https://github.com/hyunlord/bs-mobile/pull/528), 초안 유지.
 - 설계 정본: #525 r2 (`25b49d0293b8f4b26755ec0e6db8f8d9836b20fb`).
 
@@ -57,3 +57,17 @@ dotnet core/src/SowSiege.CompatSim/bin/Release/net8.0/SowSiege.CompatSim.dll int
 - 새 Sim·테스트 코드의 누락 중괄호를 직접 추가했다. 규칙·예외 변경 없음.
 - `dotnet format --no-restore --verify-no-changes --include <변경 Core/Sim/테스트 .cs>`: exit 0, IDE0011 없음. CompatSim 참조 로딩 경고는 환경 이슈 [#533](https://github.com/hyunlord/bs-mobile/issues/533)로 분리했으며 최종 판정은 CI quality다.
 - 최종 이동 산술 적용본으로 crowd-411 실제 입력을 실행했다: 11530틱, `59805294BB813DA1D34D1CF505F49A42513975DE373696EA247FB1B5B8C43619` 동일. ADR0058에 따라 기록 당시 data hash를 보존하고 현재 catalog로 실행했다. 원본 replay bytes 변경 없음.
+
+## 최종 구현 Unity 기록 (0fbdb2e7)
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---|---|
+| first-playable | 911 / 0 / 25 | 55 / 0 / 52 |
+| wave-1a | 921 / 0 / 15 | 94 / 0 / 13 |
+
+기본 실행은 두 입력 부재로 skip 집계 exit 1이었다. 기존 도구로 frozen combat sidecar와 opt-in melee catalog를 생성한 뒤 해당 테스트를 각각 1/1 통과시켰다(새 예외 없음). 여섯 XML의 합산은 `skipped in every profile: 0 unexplained, 1 listed`이며 listed는 선택적 recorded-input sequence export다. 실행 뒤 추적 파일 변경 0. 원래 exit 1 로그도 보존한다.
+
+- 가신 적용은 명시적 개발 opt-in에서 실제 출정 snapshot으로 검증했다. 꺼진 경우 기존 미적용 안내 유지.
+- 390×844·1080×2520의 opt-in 상단/하단 캡처에서 여섯 효과와 상한 표시를 확인했다. 상한 도달 문구의 최대 편성 시각 표본·실기는 미확인이다.
+- 초상화 6crop 교체: crop 밖 RGBA 변경 0, 플랫폼별 추정 텍스처 증가 0 bytes.
+- 과거 비활성 긴 화면의 제목 가림은 opt-in 화면과 구별하여 기록한다. 이번 opt-in 하단 캡처는 제목과 출전 칸 표시가 유지된다.
