@@ -150,9 +150,10 @@ namespace Game.App
                 tag.gameObject.AddComponent<Image>().color = weapon ? new Color32(44,79,150,255) : tool ? new Color32(79,107,46,255) : new Color32(107,62,143,255);
                 var tagText = PortraitWidgets.Label(ui, tag, weapon ? "무기" : tool ? "도구" : "특허장", 0, 0, tag.rect.width, 20, 13); tagText.color = Color.white; tagText.alignment = TextAnchor.MiddleCenter;
                 Text(ui, chooseRect, detail.CurrentLevel > 0 ? "Lv " + detail.CurrentLevel + " → " + detail.NextLevel : "새로 얻음", 148, 14, cardWidth - 164, 13);
-                Text(ui, chooseRect, display.DisplayName, 76, 36, cardWidth - 94, 20);
-                var description = Text(ui, chooseRect, display.EffectDescription, 76, 72, cardWidth - 94, 15);
-                var y = Mathf.Max(130, 72 + description.rectTransform.rect.height + 10);
+                var name = Text(ui, chooseRect, display.DisplayName, 76, 36, cardWidth - 94, 20);
+                var descriptionY = Mathf.Max(72, 36 + name.rectTransform.rect.height + 4);
+                var description = Text(ui, chooseRect, display.EffectDescription, 76, descriptionY, cardWidth - 94, 15);
+                var y = Mathf.Max(130, descriptionY + description.rectTransform.rect.height + 10);
                 var evolution = CardEvolutionLine(detail, first, displays);
                 if (evolution.Length > 0)
                 {
