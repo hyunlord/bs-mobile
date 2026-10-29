@@ -6,7 +6,7 @@
 
 ## 1. 현재 사실과 새 제안의 경계
 
-근거 pin `5a685320ae5f1df7b3ff249d64fd575bfebf4cbd`. 현재 데이터는 [progression.json](../../../data/meta/progression.json), 산식은 [MetaEngine](../../../core/src/SowSiege.Core/MetaEngine.cs), 기존 투영은 [MetaRunAdapter](../../../core/src/SowSiege.Core/MetaRunAdapter.cs), 경로 분리는 [MetaProgression](../../../core/src/SowSiege.Core/MetaProgression.cs)이다.
+근거 pin `5a685320ae5f1df7b3ff249d64fd575bfebf4cbd`. 현재 데이터는 [progression.json](../../../data/meta/progression.json), 산식은 [MetaEngine](../../../core/src/SowSiege.Core/MetaEngine.cs), 기존 투영은 [MetaRunAdapter](../../../core/src/SowSiege.Core/MetaRunAdapter.cs), 경로 분리는 [MetaProgression](../../../unity/Assets/Game/App/MetaProgression.cs)이다.
 
 | 항목 | 현재 구현 | 이 설계 제안 |
 |---|---|---|
