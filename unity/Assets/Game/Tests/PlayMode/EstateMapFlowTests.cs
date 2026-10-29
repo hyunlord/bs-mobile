@@ -64,6 +64,43 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
+        public IEnumerator EstateDevelopmentChromeIsAbsentWithoutExplicitOptIn()
+        {
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var account = MetaSaveCodec.Encode(app.Progression.State);
+            var screen = app.EstateMap;
+            foreach (var development in new[] { false, true })
+            {
+                void Render()
+                {
+                    app.Ui.Clear();
+                    PortraitMetaPanels.EstateMap(app.Ui, screen, app.Progression.State, new EstateMapActions(developmentOption: development)
+                    {
+                        Redraw = Render, Depart = () => { }, Settings = () => { }, Navigate = _ => { },
+                    });
+                }
+                Render(); yield return null; Canvas.ForceUpdateCanvases();
+                foreach (var name in new[] { "EstateMap.Decor", "EstateMap.Skip60", "EstateMap.Skip600" })
+                    Assert.That(Buttons(name).Count(button => button.name == name), Is.EqualTo(development ? 1 : 0), name);
+                Assert.That(Rects("EstateMap.ZoomLevel").Length, Is.EqualTo(development ? 1 : 0));
+                Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("영지 시제품 · 저장 안 함")), Is.EqualTo(development));
+                Assert.That(Buttons("EstateMap.ZoomIn").Length, Is.EqualTo(1), "Normal map zoom remains available.");
+                Assert.That(Buttons("EstateMap.ZoomOut").Length, Is.EqualTo(1));
+                Assert.That(Buttons("EstateMap.QueueToggle").Length, Is.EqualTo(1));
+                yield return Capture(development ? "estate-development-chrome-on" : "estate-development-chrome-off");
+                if (development)
+                {
+                    var before = screen.DecorEnabled;
+                    Click("EstateMap.Decor"); yield return null;
+                    Assert.That(screen.DecorEnabled, Is.EqualTo(!before), "Development functionality is preserved.");
+                    Click("EstateMap.Decor"); yield return null;
+                }
+            }
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The visibility policy does not change account save bytes.");
+        }
+
+        [UnityTest, Timeout(180000)]
         public IEnumerator HistoricalR7DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
         {
             var historicalCatalog = CanonicalContent.CreateMetaCatalog();

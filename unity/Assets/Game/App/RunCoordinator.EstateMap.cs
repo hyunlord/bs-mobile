@@ -63,7 +63,7 @@ namespace Game.App
                     estateMapSource = bytes;
                 }
                 estateMap.Advance();
-                MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions
+                MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions(UnityEngine.Debug.isDebugBuild, EstatePrototypeActive)
                 {
                     Redraw = ShowEstateMap, Depart = ShowPortraitDeparture, Settings = () => ShowSettings(false), Navigate = NavigatePortraitMeta,
                     ViewChanged = SaveEstateView,

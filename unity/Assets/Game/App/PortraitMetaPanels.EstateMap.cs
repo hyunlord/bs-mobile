@@ -11,6 +11,11 @@ namespace Game.App
 {
     public sealed class EstateMapActions
     {
+        public bool DevelopmentControls { get; }
+        public EstateMapActions(bool developmentBuild = false, bool developmentOption = false)
+        {
+            DevelopmentControls = developmentBuild || developmentOption;
+        }
         public Action Redraw, Depart, Settings;
         public Action<int, Vector2> ViewChanged;
         public Action<PortraitMetaPage> Navigate;
@@ -168,11 +173,14 @@ namespace Game.App
             GoalLine(ui, root, screen, actions, width);
             string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.UsesBodyCamera && screen.Map.Zoom == 1 ? "동네" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
             var controlsY = height - bottom - 104;
-            var decorToggle = ActionButton(ui, root, "EstateMap.Decor", "장식 " + (screen.DecorEnabled ? "켬" : "끔"), () => { screen.ToggleDecor(); actions.Redraw(); }, 10, controlsY + 4, 84, true, 44);
-            Compact(decorToggle.transform);
-            var chip = ColorPlate(root, "EstateMap.ZoomLevel", BarInk, 10, controlsY + 60, 56, 28);
-            var zoomCaption = Caption(ui, chip, ZoomName(), 0, 0, 56, 28, 13, false, TextAnchor.MiddleCenter);
-            view.Zoomed += () => zoomCaption.text = ZoomName();
+            if (actions.DevelopmentControls && panel <= 0)
+            {
+                var decorToggle = ActionButton(ui, root, "EstateMap.Decor", "장식 " + (screen.DecorEnabled ? "켬" : "끔"), () => { screen.ToggleDecor(); actions.Redraw(); }, 10, controlsY + 4, 84, true, 44);
+                Compact(decorToggle.transform);
+                var chip = ColorPlate(root, "EstateMap.ZoomLevel", BarInk, 10, controlsY + 60, 56, 28);
+                var zoomCaption = Caption(ui, chip, ZoomName(), 0, 0, 56, 28, 13, false, TextAnchor.MiddleCenter);
+                view.Zoomed += () => zoomCaption.text = ZoomName();
+            }
             // The view is remembered for the next visit (#379): written when a drag ends or the zoom changes, never per frame.
             view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
             var zoomIn = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
@@ -185,7 +193,6 @@ namespace Game.App
             }
             if (panel > 0)
             {
-                decorToggle.gameObject.SetActive(false); chip.gameObject.SetActive(false);
                 zoomIn.gameObject.SetActive(false); zoomOut.gameObject.SetActive(false);
             }
             var panelTop = height - BottomBar - BottomGap * 3 - WorkHeight - panel;
@@ -289,9 +296,9 @@ namespace Game.App
             if (collapsed) Caption(ui, line, "목표 ▸", 12, 0, lineWidth - 16, GoalHeight, 14);
             else
             {
-                Caption(ui, line, "영지 시제품 · 저장 안 함" + (screen.FromSave ? " · 계정 영지 사본" : " · 새 영지"), 10, 2, lineWidth - 34, 20, 12).color = new Color32(243, 213, 140, 255);
+                if (actions.DevelopmentControls) Caption(ui, line, "영지 시제품 · 저장 안 함" + (screen.FromSave ? " · 계정 영지 사본" : " · 새 영지"), 10, 2, lineWidth - 34, 20, 12).color = new Color32(243, 213, 140, 255);
                 var claimWidth = screen.GoalReady ? 64 : 0;
-                Caption(ui, line, screen.Notice.Length > 0 ? screen.Notice : screen.GoalText(), 10, 21, lineWidth - 34 - claimWidth, 20, 13);
+                Caption(ui, line, screen.Notice.Length > 0 ? screen.Notice : screen.GoalText(), 10, actions.DevelopmentControls ? 21 : 11, lineWidth - 34 - claimWidth, 20, 13);
                 Caption(ui, line, "▾", lineWidth - 24, 0, 20, GoalHeight, 14);
                 Hit(line, "EstateMap.Goal", () => { screen.ToggleGoal(); actions.Redraw(); }, 0, 0, lineWidth - claimWidth - 4, GoalHeight);
                 if (screen.GoalReady) ActionButton(ui, line, "EstateMap.GoalClaim", "받기", () => { screen.ClaimGoal(); actions.Redraw(); }, lineWidth - claimWidth - 28, 0, claimWidth, true, 44, "ui.button.primary");
@@ -446,12 +453,15 @@ namespace Game.App
         {
             var strip = ColorPlate(root, "EstateMap.Work", BarInk, 8, y, width - 16, WorkHeight);
             const float skip = 62; var claim = screen.StockTotal > 0 ? 78f : 0f;
-            var textWidth = width - 16 - skip * 2 - claim - 12;
+            var textWidth = width - 16 - (actions.DevelopmentControls ? skip * 2 : 0) - claim - 12;
             var line = Caption(ui, strip, screen.WorkLine(), 10, 0, textWidth - 10, WorkHeight, 12);
             Hit(strip, "EstateMap.QueueToggle", () => { screen.ToggleQueue(); actions.Redraw(); }, 0, 0, textWidth, WorkHeight);
             claimLabel = claim > 0 ? ActionButton(ui, strip, "EstateMap.ClaimStock", "받기 " + screen.StockTotal, () => { screen.ClaimProduction(); actions.Redraw(); }, textWidth, 0, claim - 4, true, 44, "ui.button.primary").GetComponentInChildren<Text>() : null;
-            ActionButton(ui, strip, "EstateMap.Skip60", "+1분", () => { screen.SkipTime(60); actions.Redraw(); }, textWidth + claim, 0, skip - 4, true, 44);
-            ActionButton(ui, strip, "EstateMap.Skip600", "+10분", () => { screen.SkipTime(600); actions.Redraw(); }, textWidth + claim + skip, 0, skip - 4, true, 44);
+            if (actions.DevelopmentControls)
+            {
+                ActionButton(ui, strip, "EstateMap.Skip60", "+1분", () => { screen.SkipTime(60); actions.Redraw(); }, textWidth + claim, 0, skip - 4, true, 44);
+                ActionButton(ui, strip, "EstateMap.Skip600", "+10분", () => { screen.SkipTime(600); actions.Redraw(); }, textWidth + claim + skip, 0, skip - 4, true, 44);
+            }
             Compact(strip);
             return line;
         }
