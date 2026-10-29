@@ -115,4 +115,4 @@ M1-4 실행 표본: `0bd300c`의 독립 8방향 40클립 232자세와 실제 무
 
 ## 정식 r8 지도 전환 · 2026-10-30
 
-[14 정식 지도 저장·이관·롤백 제안](14-estate-map-release-proposal.md): 지도 기본 화면과 온보딩 07~09 방향은 사용자 결정이다. 기존 장원 저장의 일회 이관·생산 단일화·롤백·신규 효과 대응 관문은 문서 승인 대기이며 구현되지 않았다. [ADR0076](../../adr/0076-formal-estate-map-migration.md), [#546](https://github.com/hyunlord/bs-mobile/issues/546)을 따른다.
+[14 정식 지도 저장·이관·롤백 제안](14-estate-map-release-proposal.md): 지도 기본 화면과 온보딩 07~09 방향은 사용자 결정이다. 기존 장원 저장의 일회 이관·생산 단일화·롤백·신규 효과 대응 관문은 2026-10-30 문서 최종 승인됐으며 구현되지 않았다. 효과 수치는 [가설], 저장/Core 검토의 구현 관문은 유지한다. [ADR0076](../../adr/0076-formal-estate-map-migration.md), [#546](https://github.com/hyunlord/bs-mobile/issues/546)을 따른다.
