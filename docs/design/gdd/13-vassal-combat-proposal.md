@@ -43,8 +43,8 @@
 | 최대체력 | 출정 시작 기본 최대체력에1회 적용, 시작 현재체력은 새 최대체력 | 진행 중 구매/강화로 회복·상한 재설정 금지. 회복은 최종 최대체력까지만 |
 | 이동 | 영주 기본 이동속도에1회 | 투사체속도·아군속도·공격속도에는 적용하지 않음 |
 | 농지 성장 | 농지 성장 진행량에만 적용 | 사람 모집·건축·계정 생산/공사시간·수확 수량·XP에 추가 곱하지 않음. 기존 FP Growth의 더 넓은 범위와 다른 새 버전임을 기록 |
-| 아군 | 전장 아군의 피해 및 초기 최대체력에 각각1회 | 계정 초상 가신을 새 소환개체로 만들지 않음. 기존 person.vassal과 계정가신ID를 혼용하지 않음. 영주·건물·적 제외 |
-| 경험치 | 적/수확/세금/지도 이벤트의 최종 판 안 XP 지급에1회 | 재화·메타 보상·계정 레벨·부활/광고 보상은 제외. 서로 중첩되는 지급 경로에 두 번 곱하지 않음 |
+| 아군 | wave의 기존 WaveGroup 타격 피해 및 생성 최대체력에 각각1회 | 계정 초상을 새 소환개체로 만들지 않음. legacy PersonState와 혼용하지 않음. 영주·건물·적 제외 |
+| 경험치 | wave 적 처치 XP 및 완료 보상(growth/irrigation/shipment/mission) 생성 XP에1회 | legacy 세금/이벤트 경로를 새로 만들지 않음. 재화·메타 보상·계정 레벨 제외, 보상 생성과 수집에 두 번 곱하지 않음 |
 
 영지 효과의 Attack/Heal/Magnet은 현행 고정 Amount·PeriodTicks 계약을 그대로 둔다. 가신 공격을 영지 공격에 곱하거나 농지 성장에 영지 자석 보너스를 재적용하지 않는다. 영지+가신을 함께 켠 경우도 별도 조합 관문이며 각각 PASS를 합쳐 전체 PASS라 하지 않는다.
 
@@ -56,12 +56,13 @@
 
 - **피해:** 기존 영웅/아이템/특허장/무기레벨/진화 파이프라인이 산출한 피해 `D_existing`에 마지막으로 유효한 `D_existing>0`일 때만 `D=max(1,floor(D_existing×(1000+bAttack)/1000))`를 한 번 적용한다. `D_existing<=0` 또는 기존 무효/완전 차단 판정은 원래0/무효로 유지하여 피해를 새로 만들지 않는다. 기존 파이프라인 내부 반올림을 이동하지 않는다. 아군 피해는 같은 마지막 단계에서 Attack 대신 Allies만 적용한다.
 - **체력/이동:** 기존 영웅·아이템 등으로 계산한 해당 시점의 가신 제외 값 `H_existing`, `V_existing`에 각각 한 번 floor 곱을 한다. 가신 계수는 snapshot 상수이며, 기존 정상 판 안 성장으로 기본값이 바뀌면 원래 값에서 재계산한다. 이전 가신 적용 결과에 다시 곱하지 않는다. 현재체력 증가·회복·부활 규칙은 기존 경로를 따르고 새 최종 최대체력을 넘지 않는다. 계정 변화로는 재계산하지 않는다.
-- **아군 적격성:** 첫 구현 후보는 [WorldState](../../../core/src/SowSiege.Core/WorldState.cs)의 `PersonState.Role == "vassal"`에만 제한한다(`person.vassal`은 표현 역할명이며 별도 타입이 아님). [EstateSystem](../../../core/src/SowSiege.Core/EstateSystem.cs)의 `peasant`, `militia`, `guard`, `returning`은 제외한다. 민병/징집병, 주민, 귀환 중 사람, 전환된 적, 건물, 영주에는 확장하지 않는다. 현행 wave는 [Simulation](../../../core/src/SowSiege.Core/Simulation.cs)의 estate.Initialize/Tick 경로를 실행하지 않아 이 역할이 없으므로 Allies는 no-op이다. 새 개체를 생성하지 않는다. 따라서 wave에서 징집 조장의 실제 전투 기여는0이며, 이 능력의 활성화는 별도 전장 아군 설계/승인 없이 약속하지 않는다. 현재 및 판 중 새로 생성되는 적격 개체 모두 생성 시 최대체력에 한 번 적용한다. 피해는 타격마다 기존 최종값에 한 번, 회복/부활은 적용된 최대체력으로 clamp하며 재부활 때 중복 배율을 금지한다. 현행 자연 귀환 전환은 militia/guard에만 있고 vassal에는 없다. 다음은 향후 역할 전환을 위한 방어적 제안이다: 역할이 vassal에서 비적격 역할로 바뀌면 피해 배율을 즉시 제외하고 최대체력은 가신 제외 기본값으로 복원하여 현재체력을 clamp한다. 반대 전환은 원래 기본값에서 최대체력을 재계산하되 전환만으로 현재체력을 회복하지 않는다. 구성원 수를 HP에서 환산하는 코드도 해당 개체의 적용된 1인당 체력을 사용해야 하며 역사 경로는 수정하지 않는다. 이 역할 전환/구성원 수 계약을 구현 테스트에 고정한다.
-- **Growth 나머지:** 키는 판 안 농지의 안정적인 entity ID다. `numerator=기존 진행량×(1000+bGrowth)+remainder`, 지급량은 `numerator/1000` 정수몫, 새 나머지는 `%1000`이다. 같은 농지의 성장단계 전환에서는 보존하고 수확/재파종의 새 주기 시작 또는 농지 제거 때 폐기한다. 새 entity에는 이전 ID의 나머지를 재사용하지 않는다. 영주 사망만으로 살아 있는 농지의 나머지를 지우지 않는다.
-- **XP 나머지:** 키는 영주 entity ID와 지급 범주(enemy/harvest/tax/event)의 쌍이다. 같은 몫/나머지 식을 사용하고 범주 사이 나머지를 합치지 않는다. 레벨업·시즌 전환·동일 판의 사망/부활에서는 보존하며 판 종료/새 출정에서 초기화한다. 동일 보상 이벤트 중복 지급 방지는 기존 이벤트 처리 책임이며 나머지로 중복 지급을 정당화하지 않는다.
+- **아군 적격성:** wave의 [WaveRuntimeState](../../../core/src/SowSiege.Core/WaveRuntimeState.cs) `WaveGroup`을 대상으로 한다. [WaveWorkSystem](../../../core/src/SowSiege.Core/WaveWorkSystem.cs)의 기존 군집 생성과 `TickGroups` 타격(`world.AllyDamage` 집계)이 적용 지점이다. 기존 `GroupCap`·일꾼·임무 조건을 유지하며 추가 소환/군집수를 만들지 않는다. 생성 시 `max(1, gear.Capacity)` 기반 체력을 한 번 증폭해 개체의 가신 적용 최대체력으로 저장한다. 판 중 생성도 같은 고정 snapshot을 사용한다. idle 군집 재사용/귀환/훈련/편대 전환은 HP를 다시 곱하거나 무상 회복하지 않는다. `ConsumeMissionFood`의 회복 상한은 기존 gear.Capacity 대신 그 개체의 적용된 최대체력을 사용한다. 사망한 개체의 새 부활 기능은 만들지 않는다. 영주·적·건물·투사체에는 Allies를 적용하지 않는다.
+- **역사 사람과 구별:** `PersonState.Role=="vassal"`은 legacy estate 사람 경로다. wave가 그 경로를 건너뛴다는 사실만으로 wave 아군 전체가 없다고 판단하면 안 된다. 앞선 초안의 wave Allies no-op 해석은 WaveGroup 확인으로 정정했다. 이번 opt-in은 WaveGroup에만 적용하고 기존 peasant/militia/guard/returning/vassal 사람 경로는 그대로 둔다.
+- **Growth 나머지:** 키는 wave `WaveWork.Kind=="grain"`의 안정적인 entity ID다. [WaveGrowthPrimitives](../../../core/src/SowSiege.Core/WaveGrowthPrimitives.cs)의 `AdvanceTime`에 도달하기 전 기존 생존/휴면/건조/연결건물/workGate 조건을 모두 유지하고, 허용된 grain의 기존 +1 진행량에만 적용한다. building/water/운송에는 적용하지 않는다. `numerator=기존 진행량×(1000+bGrowth)+remainder`, 지급량은 `numerator/1000` 정수몫, 새 나머지는 `%1000`이다. 같은 농지의 성장단계 전환에서는 보존하고 수확/재파종의 새 주기 시작 또는 농지 제거 때 폐기한다. 새 entity에는 이전 ID의 나머지를 재사용하지 않는다. 영주 사망만으로 살아 있는 농지의 나머지를 지우지 않는다.
+- **XP 나머지:** 키는 판 영주와 지급 범주(enemy/growth/irrigation/shipment/mission)의 쌍이다. wave는 단일 영주이므로 판 내 고정키 lord를 사용한다. 적은 WaveRuntimeSystem의 처치 XP 지급, 나머지는 WaveCompletionLedger.Claim에서 중복 완료 검사를 통과한 보상을 생성할 때만 적용한다. 이때 kind 인자는 growth/irrigation/shipment/mission으로 이미 구별된다. 만들어진 WaveReward.Experience를 저장·복구하고 Collect는 그대로 지급하며 다시 곱하지 않는다. 미수집 보상이 있어도 생성 때 반영된 나머지를 되돌리지 않는다. 역사 HarvestExperience 합계 집계는 그대로 유지하고 새 범주별 나머지/진단은 별도 필드로 둔다. 같은 몫/나머지 식을 사용하고 범주 사이 나머지를 합치지 않는다. 레벨업·시즌 전환·동일 판의 사망/부활에서는 보존하며 판 종료/새 출정에서 초기화한다. 동일 보상 이벤트 중복 지급 방지는 기존 이벤트 처리 책임이며 나머지로 중복 지급을 정당화하지 않는다.
 - **복구/해시:** Growth/XP 키를 안정적으로 정렬한 나머지0..999를 runtime state와 hash에 포함한다. 복구는 저장된 값을 그대로 되살린다. phase 전환 중 유지할 entity와 제거할 entity를 동일 규칙으로 처리하며, 사라진 농지의 고아 키는 거부한다. snapshot은 계수와 버전, runtime state는 변화하는 나머지를 소유한다.
 
-필수 경계 테스트는 기존 배율2종과 가신 배율의 순서/단1회 floor, 판 중 적격 아군 생성·사망·회복·부활, 비적격 민병/전환적 제외, 농지 단계전환/수확/제거/ID재사용, XP 범주별 작은 지급의 누적, 사망·phase·저장복구 전후 동일 나머지·hash다. 타입 매핑이나 기존 판 안 성장 경로가 이 계약과 충돌하면 구현자가 임의 확장하지 않고 설계 차이를 보고한다.
+필수 경계 테스트는 기존 배율2종과 가신 배율의 순서/단1회 floor, 판 중 적격 아군 생성·사망·회복·부활, 비적격 legacy 사람/적 제외 및 WaveGroup idle 재사용/식량회복 상한, 농지 단계전환/수확/제거/ID재사용, XP 범주별 작은 지급의 누적, 사망·phase·저장복구 전후 동일 나머지·hash다. 타입 매핑이나 기존 판 안 성장 경로가 이 계약과 충돌하면 구현자가 임의 확장하지 않고 설계 차이를 보고한다.
 
 ## 3. 시작 snapshot과 변경 불가 경계 [제안]
 
