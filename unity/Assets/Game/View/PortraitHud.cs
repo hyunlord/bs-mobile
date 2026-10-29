@@ -8,7 +8,7 @@ namespace Game.View
     public sealed class PortraitHud
     {
         readonly UiShell ui;readonly ContentCatalog catalog;
-        readonly RectTransform root,hp,xp,pool;
+        readonly RectTransform root,hp,xp,pool,backing;
         readonly BufferedHudText health,level,time,season;
         static readonly string[] Seasons={"봄","여름","가을","겨울"};
         readonly UiDamageFeedback feedback;
@@ -16,6 +16,7 @@ namespace Game.View
         readonly string[] shown=new string[13];
         readonly BufferedHudText[] slotLevels=new BufferedHudText[13];
         readonly int[] shownLevels=new int[13];
+        readonly RectTransform[] levelPlates=new RectTransform[13];
         readonly Dictionary<string,Image> icons=new Dictionary<string,Image>(StringComparer.Ordinal);
         Vector2 layoutSize;long lastHealth=long.MinValue,lastMaximum,lastExperience,lastRequired;int lastLevel=-1,lastSecond=-1,lastSeason=-1;
         public float ReservedTopPixels=>(root.rect.height+PortraitTokens.HudInset)*ui.Canvas.scaleFactor;
@@ -23,18 +24,20 @@ namespace Game.View
         {
             this.ui=ui;this.catalog=catalog;ui.SynchronizeViewport();
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);
+            backing=PortraitWidgets.Place("Battle HUD parchment",root,4,-PortraitTokens.HudInset,382,84);
+            ui.Surface(backing,"ui.panel").raycastTarget=false;
             var medal = PortraitWidgets.Place("Level medallion", root, 10, 0, 48, 48);
-            ui.Surface(medal, "ui.medallion").type = Image.Type.Simple;
-            var levelLabel = PortraitWidgets.Label(ui, medal, "", 0, 0, 48, 48, 18); levelLabel.alignment = TextAnchor.MiddleCenter;
+            PortraitWidgets.Label(ui, medal, "Lv", 8, 8, 24, 24, 18);
+            var levelLabel = PortraitWidgets.Label(ui, medal, "", 30, 8, 24, 24, 18); levelLabel.alignment = TextAnchor.MiddleLeft;
             level = BufferedHudText.Create(levelLabel);
             var rail = PortraitWidgets.Place("Health", root, 62, 4, 170, 18); ui.Surface(rail, "ui.xp.rail").pixelsPerUnitMultiplier = 3.6f;
             hp = UiShell.Rect("Fill", rail); UiShell.Stretch(hp, 3); ui.Surface(hp, "ui.hp.fill").pixelsPerUnitMultiplier = 4.5f;
-            var healthLabel = PortraitWidgets.Label(ui, rail, "", 8, 0, 154, 18, 11); healthLabel.color = Color.white;
+            var healthLabel = PortraitWidgets.Label(ui, rail, "", 8, 0, 154, 18, 13); healthLabel.color = Color.white;
             var healthShadow = healthLabel.gameObject.AddComponent<Shadow>(); healthShadow.effectColor = GameVisualTokens.Ink; healthShadow.effectDistance = new Vector2(0,-1); health = BufferedHudText.Create(healthLabel);
             var xpRail = PortraitWidgets.Place("Experience", root, 62, 26, 170, 12); ui.Surface(xpRail, "ui.xp.rail").pixelsPerUnitMultiplier = 3.6f;
             xp = UiShell.Rect("Fill", xpRail); UiShell.Stretch(xp, 2); ui.Surface(xp, "ui.xp.fill").pixelsPerUnitMultiplier = 4.5f;
-            var seasonLabel = PortraitWidgets.Label(ui, root, "", 238, 2, 84, 18, 11); seasonLabel.name = "Current season"; seasonLabel.alignment = TextAnchor.MiddleCenter; seasonLabel.color = new Color32(243,213,140,255); season = BufferedHudText.Create(seasonLabel);
-            var timer = PortraitWidgets.Label(ui, root, "", 238, 20, 84, 24, 20); timer.alignment = TextAnchor.MiddleCenter; timer.color = Color.white; time = BufferedHudText.Create(timer);
+            var seasonLabel = PortraitWidgets.Label(ui, root, "", 238, 0, 84, 18, 13); seasonLabel.name = "Current season"; seasonLabel.alignment = TextAnchor.MiddleCenter; seasonLabel.color = PortraitTokens.CreamButtonInk; season = BufferedHudText.Create(seasonLabel);
+            var timer = PortraitWidgets.Label(ui, root, "", 238, 18, 84, 26, 20); timer.alignment = TextAnchor.MiddleCenter; timer.color = PortraitTokens.CreamButtonInk; time = BufferedHudText.Create(timer);
             if (pause != null)
             {
                 var pauseButton = PortraitWidgets.Button(ui, root, "", pause, 332, 0, 48, 48, true, "ui.button.round.blue");
@@ -54,22 +57,26 @@ namespace Game.View
             }
             for(var i=0;i<slots.Length;i++)
             {
-                slots[i]=PortraitWidgets.Place("Equipment "+i,root,10+i*28f,52,26,26);
-                ui.Surface(slots[i],"ui.slot").pixelsPerUnitMultiplier=9.6f;slots[i].gameObject.SetActive(false);
-                var badge=PortraitWidgets.Label(ui,slots[i],"",16,15,14,16,11);badge.color=Color.white;badge.alignment=TextAnchor.MiddleRight;
-                var shadow=badge.gameObject.AddComponent<Shadow>();shadow.effectColor=Color.black;shadow.effectDistance=new Vector2(0,-1);slotLevels[i]=BufferedHudText.Create(badge);
+                slots[i]=PortraitWidgets.Place("Equipment "+i,root,10+i*28f,48,28,28);
+                slots[i].gameObject.SetActive(false);
+                var badgePlate=PortraitWidgets.Place("Level badge",slots[i],9,12,20,16);
+                levelPlates[i]=badgePlate;badgePlate.gameObject.SetActive(false);
+                badgePlate.gameObject.AddComponent<Image>().color=new Color32(239,227,198,255);
+                var badge=PortraitWidgets.Label(ui,badgePlate,"",0,0,20,16,13);badge.color=PortraitTokens.CreamButtonInk;badge.alignment=TextAnchor.MiddleCenter;
+                slotLevels[i]=BufferedHudText.Create(badge);
             }
             if(hitFeedback)feedback=new UiDamageFeedback(ui,hp);
             Layout();
         }
         void Prewarm(string id)
-        {if(!icons.ContainsKey(id))icons.Add(id,ui.Icon(pool,id,16));}
+        {if(!icons.ContainsKey(id))icons.Add(id,ui.Icon(pool,id,28));}
         void Layout()
         {
             var size=ui.SafeRoot.rect.size;if(size==layoutSize)return;layoutSize=size;
             root.anchoredPosition=new Vector2(0,-PortraitTokens.HudInset);
             root.sizeDelta=new Vector2(0,Mathf.Min(PortraitTokens.HudHeight,size.y*.1f-PortraitTokens.HudInset));
-            var y=Mathf.Max(44,root.rect.height-26);
+            backing.sizeDelta=new Vector2(size.x-8,root.rect.height+PortraitTokens.HudInset);
+            var y=Mathf.Max(44,root.rect.height-28);
             for(var i=0;i<slots.Length;i++)slots[i].anchoredPosition=new Vector2(10+i*28f,-y);
         }
         public void Present(RunFrame frame,FirstPlayableFrame first)
@@ -100,6 +107,7 @@ namespace Game.View
         }
         void SetSlot(int index,string id,int equipmentLevel)
         {
+            levelPlates[index].gameObject.SetActive(equipmentLevel>0);
             if(shownLevels[index]!=equipmentLevel){shownLevels[index]=equipmentLevel;slotLevels[index].Begin();if(equipmentLevel>0)slotLevels[index].Append(equipmentLevel);slotLevels[index].End();}
             if(string.Equals(shown[index],id,StringComparison.Ordinal))return;
             var old=shown[index];if(old!=null&&icons.TryGetValue(old,out var previous)&&previous.transform.parent==slots[index])previous.transform.SetParent(pool,false);
