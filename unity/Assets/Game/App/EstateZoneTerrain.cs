@@ -49,6 +49,14 @@ namespace Game.App
             return new Rect(at.x - width * pivot.x, at.y - height * (1 - pivot.y), width, height);
         }
 
+        public static bool ReserveCandidate(Rect bounds, List<Rect> candidateBounds, IEnumerable<Rect> blocked, bool reserve)
+        {
+            if (reserve && candidateBounds.Any(r => r.Overlaps(bounds))) return false;
+            // Immutable candidate reservations precede mutable building/road rejection: hide, never refill.
+            if (reserve) candidateBounds.Add(bounds);
+            return !blocked.Any(r => r.Overlaps(bounds));
+        }
+
         public static void Apply(EstatePlan plan, EstateArt art, AccountEstateConfig config, MetaEstateState estate)
         {
             if (config.Version != EstateR8Layout.Version || art == null) return;
@@ -108,11 +116,7 @@ namespace Game.App
                 var sprite = art.Get(role);
                 var width = art.DisplayWidth(role) * settings.spriteScale * scale;
                 var bounds = ProjectedBounds(at, width, sprite.rect.width / sprite.rect.height, art.Pivot(role));
-                if (reserve && candidateBounds.Any(r => r.Overlaps(bounds))) return;
-                // Reserve candidate space before mutable building/road rejection: moving a building hides
-                // candidates but never refills neighbours or changes their identities (#495 hide-only contract).
-                if (reserve) candidateBounds.Add(bounds);
-                if (blocked.Any(r => r.Overlaps(bounds))) return;
+                if (!ReserveCandidate(bounds, candidateBounds, blocked, reserve)) return;
                 plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = at, Width = width,
                     Colour = Color.white, Layer = state == "bright" ? EstateDrawLayer.Standing : EstateDrawLayer.Landmark,
                     SortY = EstateMapModel.Project(at).y, Key = key });

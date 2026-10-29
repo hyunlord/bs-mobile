@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Collections.Generic;
 using Game.App;
 using Game.App.Generated;
 using NUnit.Framework;
@@ -49,6 +50,16 @@ namespace Tests.EditMode
                     Assert.That(first.Select(i => i.Key).Distinct().Count(), Is.EqualTo(first.Length));
                 }
             }
+        }
+
+        [Test] public void BlockedCandidatesKeepTheirReservationInsteadOfRefillingNeighbours()
+        {
+            var candidates = new List<Rect>();
+            var first = new Rect(0, 0, 10, 10);
+            Assert.That(EstateZoneTerrain.ReserveCandidate(first, candidates, new[] { first }, true), Is.False);
+            Assert.That(candidates, Is.EqualTo(new[] { first }));
+            Assert.That(EstateZoneTerrain.ReserveCandidate(new Rect(5, 0, 10, 10), candidates, new Rect[0], true), Is.False);
+            Assert.That(EstateZoneTerrain.ReserveCandidate(new Rect(20, 0, 10, 10), candidates, new Rect[0], true), Is.True);
         }
 
         [Test] public void ProjectedReservationsIncludeTallArtAboveItsFootprint()

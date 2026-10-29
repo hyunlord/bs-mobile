@@ -103,3 +103,5 @@ Light Node suite18/18 passes, including all18 form/size combinations in both sta
 정적 검사: Node 후보/정체성18개 + runtime atlas3개 통과, Unity 경계 검사 통과, `git diff --check` 통과. 새 EditMode 검사(75/50 카메라, 역사 설정 미적용, FNV, 공용 texture, pivot, 결정적 계획, 투영 예약)는 **작성만 / NOT_RUN**.
 
 07:00 이후 순서: 가신 UI 다음 #496 잠금 획득 → 두 프로필 → Astra r2 동일 장면75/50 및 절반/전체복원 캡처 → 밀도/빈땅/연속빈땅/그리기호출 실제측정 → Core/replay/save 회귀. 강 chunk가 열린 경계를 걸칠 때 중심으로 밝음/어둠을 고르고 기존 어둠마스크를 덧씌우므로, 상태 경계의 색 이음새도 별도 확대 확인한다. 실패 두 번이면 중단한다. 초안 유지, 사용자 승인 전 병합하지 않는다.
+
+후보예약은 건물/길에 가려진 후보도 유지해 이웃 후보를 재충원하지 않는다. 이 hide-only 계약 때문에 건물 밀집 화면에서 목표 군집/소품 수가 부족할 수 있으며 실제 캡처에서 측정해야 한다. 이를 명시한 EditMode 회귀검사는 작성했고 아직 실행하지 않았다.
