@@ -46,3 +46,13 @@
 [감사표·출처·설계 필요](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/AUDIT.md) · [화면 계약](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/DESIGN.md) · [README](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/README.md)
 
 화면PNG10개와 흐름판2개,문서3개,정적QA JSON1개로 전달한다.
+
+## r2 사용자 검토 반영
+
+r1 그림·감사 원본과 당시 구현 경계는 보존한다. r2는04의 종류별 색(특허장 보라·도구 초록)을 복원하고06의 빈 결산을 시안용 **[예시] 생존06:42 · Lv8 · 수확12 · 곡물24 · 목재18 · 철재3 · 인장0 · 새 해금 없음**으로 채운다. 예시 수치를 정상 플레이 실측, 실제 지급 약속 또는 경제 확정값으로 해석하지 않는다.
+
+**07–09는 정식 r8 영지 지도 흐름 기준으로 사용자 결정이 완료되었다.** 위 r1의 “정식 신규 계정 지도 진입/저장 활성화는 설계 필요”는 방향 미정 상태를 뜻하는 항목에서 제외한다. 자동 장원에서 정식 r8 지도로의 신규/기존 계정 및 저장 이관 상세는 별도 문서 PR에서 진행한다. 이 결정은 게임 구현 완료나 첫 계정 저장 검증을 뜻하지 않는다.
+
+r2 root 시각 검토94/PASS. 04·06의 글자 오류0,48px미만hit0,흐름판의 다른8화면은 r1 대비 RGBA byte 차이0이다. 구체적인 결산 숫자는 사용자가 지정한 값이 아니라 이번 시안에서 작성한 예시다. 06예시 자재와07시제품 지갑은 연속 저장 시뮬레이션이 아니다.
+
+[04·06 전후 비교](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/onboarding-revisions-r1-r2-1560x900.png) · [흐름01–05 r2](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/onboarding-flow-page-1-r2-1950x920.png) · [흐름06–10 r2](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/onboarding-flow-page-2-r2-1950x920.png) · [감사 r2](https://github.com/hyunlord/bs-mobile/releases/download/onboarding-first10-542-20261030/AUDIT-r2.md). 게임 코드·데이터·기존 Release 파일은 변경하지 않으며, 사용자 최종 그림 승인 전 병합하지 않는다.
