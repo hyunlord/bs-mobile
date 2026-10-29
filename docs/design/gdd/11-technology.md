@@ -118,3 +118,7 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR 0067: ArchitectureGuard는 저장소 루트 artifacts/의 생성 사본에서 콘텐츠 ID를 모으지 않는다](../../adr/0067-architecture-guard-ignores-generated-artifacts.md)
 - [ADR 0068: unity/를 바꾸는 PR은 맥 Unity 전체 실행 기록이 있어야 병합한다](../../adr/0068-mac-unity-test-record-before-merge.md)
 - [ADR 0069: opt-in 실험 데이터는 데이터 트리 해시 밖에 두고, 봇 실행도 프로필로 어둠 속 영지를 켠다](../../adr/0069-opt-in-experiment-data-outside-the-data-hash.md)
+
+## [확정] 가신 snapshot·format8 · 2026-10-29
+
+[가신6 전투 적용 r2](13-vassal-combat-proposal.md)는 새 replay format8과 독립 `vassal-run-v1` 블록을 사용한다. format7/schema1·2·old golden은 변경하지 않는다. 시작 snapshot 고정·absent bytes 보존·unknown version/flag 거부·복구 시 live 계정 재조회 금지를 후속 ADR/구현에서 검증한다. 유료 출처 원장이나 eligibility hash/flag는 넣지 않는다. format8은 승인된 설계이며 현행 reader 지원이나 게임 코드·데이터 구현 완료를 뜻하지 않는다.
