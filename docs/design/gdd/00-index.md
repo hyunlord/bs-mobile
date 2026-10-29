@@ -1,5 +1,11 @@
 # 살아 있는 GDD · 00 색인과 결정 기록
 
+## 최신 사용자 결정 · SLG 우선순위 / 2026-10-30
+
+개발 중심을 SLG로 옮기며 직접 C# 서버(Codex 별도 ADR), 신규 r8 서버 계정, 첫 출시 월드맵을 설계한다. 개발 자동 장원 저장의 제품 이관과 그림 다듬기는 하지 않는다. 영웅 뽑기는 확률 공개·천장을 전제로 허용하며 가신 판매 금지와 판 안 cap은 유지한다. 과거 추가 영웅·서버·PvP·동맹 제외는 이 사용자 승인 범위에서 대체한다. **구현 완료가 아니다.**
+
+[SLG 로드맵](../../plans/slg-roadmap.md)의 단계별 관문을 따르며, 설계 문서 병합은 2026-10-30 사용자 승인되었으며 모든 수치는 [가설]로 유지한다. 병력 [#550](https://github.com/hyunlord/bs-mobile/issues/550) → 영웅 [#551](https://github.com/hyunlord/bs-mobile/issues/551) → 연구 [#552](https://github.com/hyunlord/bs-mobile/issues/552) → 월드 [#553](https://github.com/hyunlord/bs-mobile/issues/553) 순서로 별도 문서 PR을 검토한다. 아래 “현재”와 보류 장부의 날짜가 더 오래된 항목은 당시 구현·결정 기록으로 읽는다. SDK·실결제 및 기존 특정 기기 보류를 이 문서로 자동 해제하지 않는다.
+
 > **2026-10-21 현재:** 무기 묶음 #248–#335가 사용자 승인 뒤 main에 머지됐다. 영웅은 Astra가 Unity 리그로 구운 옆모습 기사 시트다(걷기 r8.5 [#334](https://github.com/hyunlord/bs-mobile/pull/334), 서기·공격 5종·피격·이동 핵심 자세 [#337](https://github.com/hyunlord/bs-mobile/pull/337): Release `hero-side-actions-game-r4-20261020`의 r3 그림에 r4 불기 핵심 자세 외곽선·발 모으기 A, 발 모으기 B r2). 무기 6종 2차 연출과 공통 타격 반응층([#335](https://github.com/hyunlord/bs-mobile/pull/335), 수로 활 진화형은 현재 그대로), 뿔나팔 진화형 Y, 징집병·수비대와 뿔나팔 병사의 Soldier B 걷기([#332](https://github.com/hyunlord/bs-mobile/pull/332)·[#267](https://github.com/hyunlord/bs-mobile/pull/267))가 들어갔다. 남은 관문은 아군 병사 가독성([#338](https://github.com/hyunlord/bs-mobile/issues/338))과 그리기 묶음·실기기 측정([#339](https://github.com/hyunlord/bs-mobile/issues/339))이다. 아래 2026-10-13 M1-4·M1-5 결정("AI 생성 2D 프레임 방식 중단, 기성 리그 기사 비교")과 "PR255·257·261 초안"은 당시 기록이다. #126·#98·1b·#224 보류는 유지한다.
 
 버전: 1.6 · 날짜: 2026-10-24 · 변경: #235 장부의 도전 받기 금빛 강조를 #248 구현으로 고치고(시각·실기 승인은 별도), 맨 위 영웅 시트 출처를 [packed-frames](../../../tools/art-authoring/knight-sheets/packed-frames.json) 기록에 맞췄다([#357](https://github.com/hyunlord/bs-mobile/issues/357) G02·G04). 이전 1.5(2026-10-22): 무기 묶음 #248–#335 머지, main 검증 결과, 2026-10-19~22 사용자 결정(#316 영지 형식 7, #341 crowd-411 판정)을 최신 결정·장부에 적고, 맨 위 현재 상태를 고쳤다(#340). 이전 스택 1.4 + main 1.2(2026-10-17): 스택을 main에 옮기며 합쳤다. 스택 1.4(2026-10-13)는 M1-4 2D 프레임 영웅 채택과 3D 중단·검증 경계를 기록했다. main 1.2(2026-10-17)는 #292 M2 "어둠 속 영지" 결정을 기록했다. 이전 1.0(2026-10-12)은 분산된 설계를 현재 사용자 결정과 역사 프로필로 구분했다.
@@ -112,3 +118,7 @@ M1-4 실행 표본: `0bd300c`의 독립 8방향 40클립 232자세와 실제 무
 ## 승인된 설계 r2 · 가신6 전투 적용 / 2026-10-29
 
 [#523](https://github.com/hyunlord/bs-mobile/issues/523)의 [13 가신6 전투 적용 r2](13-vassal-combat-proposal.md)를 사용자 수정·승인 후 문서 병합한다. format8/독립 `vassal-run-v1`, 유료 자원·가속의 간접 전투력 허용, 능력별 cap 필수, 직접 가신·조각·능력 판매 금지를 확정했다. 현행 슬롯/레벨 cap은 유지한다. 계수는 가설이며 구현 후 wave 정상 입력·C05의 가신 없음/최대 비교로 조정한다. C05 스트레스는 정상 생존율 근거와 구분한다. FP01에는 wave 전용 가신 효과를 적용하지 않고, 가신 블록 absent의 기존 해시·성능 회귀만 확인한다. old replay/golden은 보존하고 SDK·게임 구현은 별도다. r1 승인 대기와 earned-only 대안은 대체된 이력이다.
+
+## 정식 r8 지도·서버 저장 축소안 · 2026-10-30
+
+[14 신규 정식 계정의 지도·서버 저장·효과](14-estate-map-release-proposal.md): 사용자 결정은 신규 r8 지도와 정식 서버 저장이다. 출시 전 실제 사용자 저장이 없다는 사용자 전제에 따라 개발 자동 장원 이관은 하지 않으며 개발 빌드 읽기 전용으로 보존한다. 효과 대응표는 [가설]로 유지하고 C# 서버 ADR은 Codex 별도 작업이다. 이전 이관안 승인은 대체됐으며 축소안은 2026-10-30 사용자 최종 승인되었다. [ADR0076](../../adr/0076-formal-estate-map-migration.md), [#546](https://github.com/hyunlord/bs-mobile/issues/546)을 따른다.
