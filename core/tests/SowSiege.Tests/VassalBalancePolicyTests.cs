@@ -23,7 +23,7 @@ public sealed class VassalBalancePolicyTests
         var data = Path.Combine(AppContext.BaseDirectory, "data");
         var meta = MetaContentLoader.Read(data);
         var cases = VassalBalanceCli.Cases(meta, VassalContentLoader.Load(data));
-        Assert.Equal(4, cases.Length);
+        Assert.Equal(5, cases.Length);
         Assert.Equal("none", cases[0].Id);
         Assert.Null(cases[0].Options);
         MetaAbility[][] expected =
@@ -32,7 +32,7 @@ public sealed class VassalBalancePolicyTests
             [MetaAbility.Attack, MetaAbility.Growth, MetaAbility.Experience],
             [MetaAbility.Attack, MetaAbility.Health, MetaAbility.Allies]
         ];
-        for (var index = 1; index < cases.Length; index++)
+        for (var index = 1; index <= expected.Length; index++)
         {
             var options = cases[index].Options!;
             Assert.Equal(3, options.Snapshot.Roster.Count);
@@ -40,6 +40,26 @@ public sealed class VassalBalancePolicyTests
             Assert.Equal(expected[index - 1].Order(), options.Snapshot.Effects.Where(e => e.Bonus > 0).Select(e => e.Ability).Order());
             Assert.Equal(VassalRunCodec.Encode(options), VassalRunCodec.Encode(VassalRunCodec.Decode(VassalRunCodec.Encode(options))));
         }
+    }
+
+    [Fact]
+    public void MiddleCaseUsesLevelTenRankTwoWithoutChangingMaximumUnlockCapacity()
+    {
+        var data = Path.Combine(AppContext.BaseDirectory, "data");
+        var cases = VassalBalanceCli.Cases(MetaContentLoader.Read(data), VassalContentLoader.Load(data));
+        var middle = Assert.Single(cases, c => c.Id == "middle-attack-health-movement").Options!;
+        var maximum = Assert.Single(cases, c => c.Id == "attack-health-movement").Options!;
+        Assert.Equal(3, middle.Snapshot.Roster.Count);
+        Assert.All(middle.Snapshot.Roster, v => { Assert.Equal(10, v.Level); Assert.Equal(2, v.Rank); Assert.True(v.Eligible); });
+        Assert.Equal(maximum.Snapshot.Roster.Select(v => v.Id), middle.Snapshot.Roster.Select(v => v.Id));
+        Assert.Equal(maximum.Snapshot.BasisHash, middle.Snapshot.BasisHash);
+        Assert.Equal(maximum.Snapshot.EffectiveSlots, middle.Snapshot.EffectiveSlots);
+        Assert.Equal(maximum.Snapshot.EffectiveLevelCap, middle.Snapshot.EffectiveLevelCap);
+        Assert.Equal(new[] { MetaAbility.Attack, MetaAbility.Health, MetaAbility.Movement },
+            middle.Snapshot.Effects.Where(e => e.Bonus > 0).Select(e => e.Ability));
+        Assert.All(middle.Snapshot.Effects.Where(e => e.Bonus > 0), effect =>
+            Assert.True(effect.Bonus < maximum.Snapshot.Effects.Single(e => e.Ability == effect.Ability).Bonus));
+        Assert.Equal(VassalRunCodec.Encode(middle), VassalRunCodec.Encode(VassalRunCodec.Decode(VassalRunCodec.Encode(middle))));
     }
 
     [Fact]

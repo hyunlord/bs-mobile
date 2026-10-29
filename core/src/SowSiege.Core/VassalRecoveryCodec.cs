@@ -10,9 +10,11 @@ namespace SowSiege.Core
     public static class VassalRecoveryCodec
     {
         private const string Magic = "SowSiege-vassal-recovery-v1";
-        private const int MaximumCommands = 1000000;
-        private const int MaximumBytes = 128 * 1024 * 1024;
-        private const int MaximumExtensionBytes = 16 * 1024 * 1024;
+        private const int MaximumCommands = ReplayCodec.MaximumCommands;
+        private const int MaximumBytes = 134217728;
+        private const int MaximumExtensionBytes = 16777216;
+        private const int MaximumHeaderBytes = 131072;
+        private const int MinimumCommandBytes = 29;
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
 
         public static byte[] Capture(InteractiveSession session, IReadOnlyList<ReplayCommand> commands)
@@ -32,7 +34,7 @@ namespace SowSiege.Core
             using var writer = new BinaryWriter(output, Utf8, true);
             WriteText(writer, Magic); writer.Write(1);
             using var headerBytes = new MemoryStream(); ReplayCodec.WriteHeader(headerBytes, header);
-            WriteBlock(writer, headerBytes.ToArray(), ReplayCodec.MaximumVassalBlockBytes * 2);
+            WriteBlock(writer, headerBytes.ToArray(), MaximumHeaderBytes);
             WriteText(writer, session.InitialCatalogHash);
             writer.Write(prefix.Length);
             foreach (var command in prefix)
@@ -56,7 +58,7 @@ namespace SowSiege.Core
                 using var input = new MemoryStream(bytes, false);
                 using var reader = new BinaryReader(input, Utf8, true);
                 if (ReadText(reader) != Magic || reader.ReadInt32() != 1) { throw new InvalidDataException("Unsupported recovery format."); }
-                var headerBytes = ReadBlock(reader, ReplayCodec.MaximumVassalBlockBytes * 2);
+                var headerBytes = ReadBlock(reader, MaximumHeaderBytes);
                 using var headerInput = new MemoryStream(headerBytes, false);
                 using var headerReader = new BinaryReader(headerInput, Utf8, true);
                 var header = ReplayCodec.ReadHeader(headerReader);
@@ -66,7 +68,7 @@ namespace SowSiege.Core
                 if (!headerBytes.SequenceEqual(canonicalHeader.ToArray())) { throw new InvalidDataException("Noncanonical recovery header."); }
                 var catalogHash = ReadText(reader); ReplayCodec.ValidateHash(catalogHash);
                 var count = reader.ReadInt32();
-                if (count < 0 || count > MaximumCommands || count > (input.Length - input.Position) / 29)
+                if (count < 0 || count > MaximumCommands || count > (input.Length - input.Position) / MinimumCommandBytes)
                 { throw new InvalidDataException("Invalid recovery command count."); }
                 var commands = new ReplayCommand[count];
                 var tick = 0;

@@ -463,5 +463,55 @@
     "Symbol": "SowSiege.Core.FieldOptions.ReviewVersion",
     "Value": "2",
     "Reason": "Opt-in field radius serialization discriminator for isolated visual-review arenas in replay v6. Spawn/recycle radii are explicit review data; historical field-v1 constants remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.ReplayCodec.VassalVersion",
+    "Value": "8",
+    "Reason": "ADR0075 opt-in vassal replay wire discriminator only; historical formats 1-7 remain unchanged."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MaximumBytes",
+    "Value": "134217728",
+    "Reason": "ADR0075 untrusted recovery input allocation bound of 128 MiB; not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MaximumExtensionBytes",
+    "Value": "16777216",
+    "Reason": "ADR0075 untrusted recovery remainder block allocation bound of 16 MiB; not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MaximumHeaderBytes",
+    "Value": "131072",
+    "Reason": "ADR0075 recovery header allocation bound, 64 KiB vassal block plus bounded replay metadata; not gameplay tuning."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRecoveryCodec.MinimumCommandBytes",
+    "Value": "29",
+    "Reason": "Minimum encoded command byte width: tag4 + sequence8 + tick4 + kind4 + input4 + null text marker1 + value4. Decoder allocation defense only."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumBytes",
+    "Value": "65536",
+    "Reason": "ADR0075 vassal block allocation bound (64 KiB) for untrusted replay input."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumDefinitions",
+    "Value": "64",
+    "Reason": "ADR0075 serialized definition array allocation bound; not active roster size, which comes from opt-in data."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumIdentifierCharacters",
+    "Value": "128",
+    "Reason": "ADR0075 identifier character allocation bound; not a gameplay level or roster limit."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.Sha256HexCharacters",
+    "Value": "64",
+    "Reason": "SHA256 hexadecimal digest width in the source-file identity."
+  },
+  {
+    "Symbol": "SowSiege.Core.VassalRunCodec.MaximumTextBytes",
+    "Value": "512",
+    "Reason": "ADR0075 bounded UTF8 string bytes in an untrusted vassal replay block."
   }
 ]

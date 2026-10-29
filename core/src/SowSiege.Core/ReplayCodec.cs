@@ -33,7 +33,7 @@ namespace SowSiege.Core
         private const int EndTag = 3;
         private const int HashLength = 64;
         internal const int MaximumStringBytes = 4096;
-        private const int MaximumCommands = 1000000;
+        internal const int MaximumCommands = 1000000;
         private const string Magic = "SowSiege-replay";
         private static readonly Encoding Utf8 = new UTF8Encoding(false, true);
         public static ReplayHeader Header(InteractiveOptions options)

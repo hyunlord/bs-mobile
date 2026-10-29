@@ -8,6 +8,10 @@ namespace SowSiege.Core
     public static class VassalRunCodec
     {
         public const int MaximumBytes = 65536;
+        public const int MaximumDefinitions = 64;
+        public const int MaximumIdentifierCharacters = 128;
+        public const int Sha256HexCharacters = 64;
+        private const int MaximumTextBytes = 512;
         private static readonly UTF8Encoding Utf8 = new(false, true);
 
         public static byte[] Encode(VassalRunOptions options)
@@ -37,14 +41,14 @@ namespace SowSiege.Core
                 var rules = ReadRules(r);
                 string content = Text(r); int arithmetic = r.ReadInt32(), remainder = r.ReadInt32();
                 int slots = r.ReadInt32(), cap = r.ReadInt32(), forge = r.ReadInt32(), barracks = r.ReadInt32(); string basis = Text(r);
-                var roster = new VassalRosterEntry[Count(r, 3)];
+                var roster = new VassalRosterEntry[Count(r, rules.Caps.MaximumSlots)];
                 for (int i = 0; i < roster.Length; i++)
                 {
                     string id = Text(r); int level = r.ReadInt32(), rank = r.ReadInt32();
                     if (r.ReadByte() != 1) { throw new InvalidDataException("Vassal must be eligible."); }
                     roster[i] = new(id, level, rank);
                 }
-                var effects = new VassalEffect[Count(r, 6)];
+                var effects = new VassalEffect[Count(r, Enum.GetValues(typeof(MetaAbility)).Length)];
                 for (int i = 0; i < effects.Length; i++) { effects[i] = new((MetaAbility)r.ReadInt32(), r.ReadInt32(), r.ReadInt32()); }
                 if (stream.Position != stream.Length) { throw new InvalidDataException("Trailing vassal bytes."); }
                 return VassalRun.Freeze(new(new(rules.Id, rules.Version, content, arithmetic, remainder, slots, cap, forge, barracks, basis, roster, effects), rules));
@@ -60,10 +64,10 @@ namespace SowSiege.Core
             using var stream = new MemoryStream(); using var w = new BinaryWriter(stream, Utf8, true);
             Text(w, "vassal-content-v1"); WriteRules(w, rules); w.Flush(); return Digest(stream.ToArray());
         }
-        internal static string HashBasis(int forge, int barracks)
+        internal static string HashBasis(VassalRunRules rules, int forge, int barracks)
         {
             using var stream = new MemoryStream(); using var w = new BinaryWriter(stream, Utf8, true);
-            Text(w, "vassal-cap-basis-v1"); w.Write(1); w.Write(3); w.Write(4); w.Write(5); w.Write(2); w.Write(20); w.Write(5);
+            Text(w, "vassal-cap-basis-v1"); WriteRules(w, rules);
             w.Write(forge); w.Write(barracks); w.Flush(); return Digest(stream.ToArray());
         }
         internal static string Digest(byte[] bytes)
@@ -72,19 +76,27 @@ namespace SowSiege.Core
         }
         private static void WriteRules(BinaryWriter w, VassalRunRules rules)
         {
-            Text(w, rules.Id); w.Write(rules.Version); w.Write(rules.Vassals.Count);
+            Text(w, rules.Id); w.Write(rules.Version); Text(w, rules.ContentHash); WriteCaps(w, rules.Caps); w.Write(rules.Vassals.Count);
             foreach (var definition in rules.Vassals) { Text(w, definition.Id); w.Write((int)definition.Ability); }
             w.Write(rules.Effects.Count);
             foreach (var rule in rules.Effects) { w.Write((int)rule.Ability); w.Write(rule.Base); w.Write(rule.PerLevel); w.Write(rule.PerRank); w.Write(rule.Cap); }
         }
         private static VassalRunRules ReadRules(BinaryReader r)
         {
-            string id = Text(r); int version = r.ReadInt32(); var definitions = new VassalDefinition[Count(r, 64)];
+            string id = Text(r); int version = r.ReadInt32(); string contentHash = Text(r); var caps = ReadCaps(r); var definitions = new VassalDefinition[Count(r, MaximumDefinitions)];
             for (int i = 0; i < definitions.Length; i++) { definitions[i] = new(Text(r), (MetaAbility)r.ReadInt32()); }
-            var effects = new VassalEffectRule[Count(r, 6)];
+            var effects = new VassalEffectRule[Count(r, Enum.GetValues(typeof(MetaAbility)).Length)];
             for (int i = 0; i < effects.Length; i++) { effects[i] = new((MetaAbility)r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32()); }
-            return new(id, version, definitions, effects);
+            var rules = new VassalRunRules(id, version, definitions, effects, caps, contentHash);
+            VassalRun.ValidateRules(rules); return rules;
         }
+        private static void WriteCaps(BinaryWriter w, VassalCapRules caps)
+        {
+            w.Write(caps.BaseSlots); w.Write(caps.MaximumSlots); w.Write(caps.BarracksLevelsPerSlot);
+            w.Write(caps.BaseLevelCap); w.Write(caps.LevelCapPerForgeLevel); w.Write(caps.MaximumLevel); w.Write(caps.MaximumRank);
+        }
+        private static VassalCapRules ReadCaps(BinaryReader r) =>
+            new(r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32(), r.ReadInt32());
         private static int Count(BinaryReader r, int maximum)
         {
             int count = r.ReadInt32(); if (count < 0 || count > maximum) { throw new InvalidDataException("Invalid vassal array length."); }
@@ -92,12 +104,12 @@ namespace SowSiege.Core
         }
         private static void Text(BinaryWriter w, string value)
         {
-            var bytes = Utf8.GetBytes(value); if (bytes.Length > 512) { throw new ArgumentException("Vassal string too long."); }
+            var bytes = Utf8.GetBytes(value); if (bytes.Length > MaximumTextBytes) { throw new ArgumentException("Vassal string too long."); }
             w.Write(bytes.Length); w.Write(bytes);
         }
         private static string Text(BinaryReader r)
         {
-            int length = Count(r, 512); var bytes = r.ReadBytes(length);
+            int length = Count(r, MaximumTextBytes); var bytes = r.ReadBytes(length);
             if (bytes.Length != length) { throw new EndOfStreamException(); }
             return Utf8.GetString(bytes);
         }

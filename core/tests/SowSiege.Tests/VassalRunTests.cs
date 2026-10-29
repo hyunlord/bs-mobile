@@ -26,8 +26,10 @@ public sealed class VassalRunTests
             state.Vassals[id] = new(level, rank, 0, true);
         }
         state = state with { ActiveVassalIds = abilities.Select(a => meta.Vassals.Single(v => v.Ability == a).Id).ToArray() };
-        var rules = new VassalRunRules("vassal-run-v1", 1,
-            meta.Vassals.OrderBy(v => v.Id, StringComparer.Ordinal).Select(v => new VassalDefinition(v.Id, v.Ability)).ToArray(), VassalRun.ApprovedEffects);
+        var rules = SowSiege.Sim.VassalContentLoader.Load(Path.Combine(AppContext.BaseDirectory, "data")) with
+        {
+            Vassals = meta.Vassals.OrderBy(v => v.Id, StringComparer.Ordinal).Select(v => new VassalDefinition(v.Id, v.Ability)).ToArray()
+        };
         return VassalRun.Create(meta, state, rules);
     }
 
@@ -103,7 +105,7 @@ public sealed class VassalRunTests
     }
 
     [Fact]
-    public void UnknownFlagsAndUnsupportedCoefficientsAreRejected()
+    public void UnknownFlagsAndCoefficientsChangedWithoutSnapshotAreRejected()
     {
         var options = Options(); var bytes = VassalRunCodec.Encode(options);
         using (var stream = new MemoryStream(bytes))
@@ -114,7 +116,7 @@ public sealed class VassalRunTests
         }
         Assert.Throws<InvalidDataException>(() => VassalRunCodec.Decode(bytes));
         var rules = options.Rules.Effects.ToArray(); rules[0] = rules[0] with { Base = 11 };
-        Assert.Throws<ArgumentException>(() => VassalRun.ValidateRules(options.Rules with { Effects = rules }));
+        Assert.Throws<ArgumentException>(() => VassalRun.Validate(options with { Rules = options.Rules with { Effects = rules } }));
     }
 
     [Theory]
@@ -150,6 +152,7 @@ public sealed class VassalRunTests
         var options = VassalRun.Create(meta, MetaEngine.NewGame(meta), rules);
         Assert.Equal(6, rules.Vassals.Count);
         Assert.Single(options.Snapshot.Roster);
-        Assert.Equal(VassalRunCodec.HashRules(rules), options.Snapshot.ContentHash);
+        Assert.Equal(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(
+            Path.Combine(root, "opt-in", "vassals", "vassal-run-v1.json")))), options.Snapshot.ContentHash);
     }
 }

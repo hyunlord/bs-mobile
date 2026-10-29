@@ -5,7 +5,7 @@ namespace SowSiege.Core
 {
     public static partial class ReplayCodec
     {
-        internal const int MaximumVassalBlockBytes = 65536;
+        internal const int MaximumVassalBlockBytes = VassalRunCodec.MaximumBytes;
 
         internal static ReplayCommand ReadRecoveryCommand(BinaryReader reader)
         {

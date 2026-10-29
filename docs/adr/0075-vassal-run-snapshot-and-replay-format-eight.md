@@ -89,3 +89,11 @@ Core 구현 및 집중 검사는 진행했으며 실제 실행 범위·미완료
 4. live 계정/정의 변경에도 snapshot 불변. 나머지/maxHP 변조가 hash를 바꿈. 저장→복구→다음 입력이 uninterrupted 실행과 일치.
 5. estate off/on × 가신 off/on 조합, 두 Core 타깃 및 Unity 실행은 실제 수행 범위만 보고.
 6. 효과 검증 뒤 UI 미적용 안내를 제거하고 실제 raw/capped 값과 상한 도달을 표시. 포트레이트 승인 자산 사용.
+
+## 2026-10-29 AG003 재개: 수치 정본과 형식 상수
+
+능력별 B/S/R·판 안 cap 및 슬롯·레벨·승급 한계는 `data/opt-in/vassals/vassal-run-v1.json`의 정본 값이다. 위 표는 그 데이터의 설명이며 Core의 별도 승인값 배열로 중복 고정하지 않는다. Sim 로더가 원본 파일 바이트의 SHA256을 계산하고, Unity exporter는 같은 규칙과 원본 파일 hash를 생성 코드에 주입한다. Core는 파일을 읽지 않는다. Snapshot의 `ContentHash`는 재직렬화한 규칙 hash가 아니라 **실제로 읽은 파일 내용 hash**다. 따라서 공백만 바뀐 파일도 새 content identity이며 기본 데이터 트리 hash는 변하지 않는다.
+
+출정 시 규칙·편성·계산 결과를 불변 사본으로 만들고, `BasisHash`에는 원본 파일 hash와 계수·cap·편성 한계를 포함한 전체 규칙 및 대장간/병영 기준 상태를 결합한다. Replay는 동결 규칙을 운반하므로 이후 로컬 데이터가 바뀌어도 당시 판을 재현한다. 로더의 JSON 검증은 호스트 신뢰 경계이고 Core codec은 구조·정렬·재계산·결합 hash를 검증한다. 이 hash는 내부 일관성/손상 검출이지, 공격자가 규칙과 hash를 모두 다시 만든 파일의 출처 인증은 아니다.
+
+형식 상수는 기존 `tools/ArchitectureGuard/algorithm-constants.json`의 **완전한 기호명 + 정확한 값 + 알고리즘 근거** 절차를 따른다. 선례는 `ReplayCodec.EstateVersion`(format7), `ReplayCodec.MaximumCommands`(할당 제한), `PlayerInput.Scale`(permille 고정소수점 단위)이다. 가신 산술은 기존 `PlayerInput.Scale`을 재사용하며, format8 번호 및 새 codec의 byte/record 할당 제한만 같은 검토 목록에 기록한다. 능력 계수·상한·편성 수는 이 목록에 추가하지 않는다. AG003 검사 로직·허용 literal·예외 범위는 바꾸지 않는다.

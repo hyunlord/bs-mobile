@@ -32,7 +32,7 @@ namespace SowSiege.Core
             if (!Enum.IsDefined(typeof(MetaAbility), ability)) { throw new ArgumentException("Unknown vassal ability."); }
             if (value <= 0 && (ability == MetaAbility.Attack || ability == MetaAbility.Allies)) { return value; }
             if (value < 0) { throw new ArgumentOutOfRangeException(nameof(value)); }
-            return checked((int)(checked((long)value * (1000 + Snapshot.Effects[(int)ability].Bonus)) / 1000));
+            return checked((int)(checked((long)value * ((long)PlayerInput.Scale + Snapshot.Effects[(int)ability].Bonus)) / PlayerInput.Scale));
         }
         public int AdvanceGrain(int id, int amount)
         {
@@ -48,8 +48,8 @@ namespace SowSiege.Core
         private int Accumulate(int amount, MetaAbility ability, int remainder, out int next)
         {
             if (amount < 0) { throw new ArgumentOutOfRangeException(nameof(amount)); }
-            long numerator = checked((long)amount * (1000 + Snapshot.Effects[(int)ability].Bonus) + remainder);
-            int result = checked((int)(numerator / 1000)); next = (int)(numerator % 1000); return result;
+            long numerator = checked((long)amount * ((long)PlayerInput.Scale + Snapshot.Effects[(int)ability].Bonus) + remainder);
+            int result = checked((int)(numerator / PlayerInput.Scale)); next = (int)(numerator % PlayerInput.Scale); return result;
         }
         public int RegisterGroup(int id, int baseHealth)
         {

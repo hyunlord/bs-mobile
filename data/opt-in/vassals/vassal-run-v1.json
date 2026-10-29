@@ -1,6 +1,15 @@
 {
   "id": "vassal-run-v1",
   "version": 1,
+  "caps": {
+    "baseSlots": 1,
+    "maximumSlots": 3,
+    "barracksLevelsPerSlot": 4,
+    "baseLevelCap": 5,
+    "levelCapPerForgeLevel": 2,
+    "maximumLevel": 20,
+    "maximumRank": 5
+  },
   "vassals": [
     { "id": "core:fertility_surveyor", "ability": "Growth" },
     { "id": "core:furrow_guard", "ability": "Attack" },

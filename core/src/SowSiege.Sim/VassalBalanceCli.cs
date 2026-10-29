@@ -34,12 +34,20 @@ public static class VassalBalanceCli
             var selected = state with { ActiveVassalIds = abilities.Select(a => meta.Vassals.Single(v => v.Ability == a).Id).ToArray() };
             return new(id, VassalRun.Create(meta, selected, rules));
         }
+        var middle = state with
+        {
+            ActiveVassalIds = new[] { MetaAbility.Attack, MetaAbility.Health, MetaAbility.Movement }
+                .Select(a => meta.Vassals.Single(v => v.Ability == a).Id).ToArray(),
+            Vassals = state.Vassals.ToDictionary(pair => pair.Key,
+                pair => pair.Value with { Level = 10, Rank = 2 }, StringComparer.Ordinal)
+        };
         return new[]
         {
             new BalanceCase("none", null),
             Maximum("attack-health-movement", MetaAbility.Attack, MetaAbility.Health, MetaAbility.Movement),
             Maximum("growth-experience-attack", MetaAbility.Growth, MetaAbility.Experience, MetaAbility.Attack),
-            Maximum("allies-health-attack", MetaAbility.Allies, MetaAbility.Health, MetaAbility.Attack)
+            Maximum("allies-health-attack", MetaAbility.Allies, MetaAbility.Health, MetaAbility.Attack),
+            new BalanceCase("middle-attack-health-movement", VassalRun.Create(meta, middle, rules))
         };
     }
 
@@ -107,6 +115,7 @@ public static class VassalBalanceCli
             normalWave = c05Only ? "NOT_RUN (--c05-only)" : "REQUESTED",
             policy = Policy,
             admission = "Normal runs use only Advance and ChooseCard; full original duration or natural death. Same tick-indexed movement and ordinal offered-card policy, not identical card-command streams when XP differs. No invulnerability, grants, speedup or rewards. Max accounts are catalog-valid synthetic completed accounts, not claimed earned playthroughs.",
+            middleState = "Lv10 rank2 attack/health/movement vassals on the same synthetic completed account and unlock capacity as maximum cases; not a midpoint account-economy progression claim. Same 32 seeds, duration and input policy; no per-run grants.",
             fp01 = "HISTORICAL_REGRESSION_ONLY; no vassal effect comparison",
             performance = "NOT_RUN; combatSeconds is simulation ticks / tickRate, not wall time",
             c05 = original is not null ? new { replaySha256 = FileHash(args[3]), dataHash = ContentLoader.Hash(args[4], false), policy = "Original commands unchanged; original verified first; derivative failure preserves first rejected command and observed failure state. Stress prefix, not normal survival evidence." } : null,
