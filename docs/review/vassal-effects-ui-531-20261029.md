@@ -1,6 +1,6 @@
 # 가신 효과 UI 구현 후 시안 r1 / HUD r2
 
-관문: 부분 — 오프라인 기술 PASS·시각 PASS94. r1 가신탭·출정확인은 사용자 승인, HUD r2는 사용자 검토 대기이며 게임 적용·Unity·실기·성능은 NOT_RUN이다.
+관문: 부분 — 오프라인 기술 PASS·시각 PASS94. r1 가신탭·출정확인과 HUD r2까지 세 화면 모두 사용자 승인되었으며 게임 적용·Unity·실기·성능은 NOT_RUN이다.
 
 이슈: https://github.com/hyunlord/bs-mobile/issues/531
 
@@ -16,7 +16,7 @@ Release: https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-53
 
 원본6초상 SHA와 기존 그림을 보존했다. 전달은 native3+설명포함3장보드 PNG4, 계약JSON1, README/QA/DESIGN3으로 정확8파일이다. 후보와 소스/검증은 보존하며 신규 ZIP을 만들지 않는다. 버튼 크기는 오프라인 명세이며 실제 기기 터치 검증을 대신하지 않는다.
 
-이 문서PR은 시안 검토를 위해 열어 두며 임의 병합하지 않는다.
+사용자는 세 화면 승인 기록을 반영한 이 문서 PR의 squash 병합을 명시 승인했다.
 
 ## HUD r2 후속
 
@@ -24,8 +24,12 @@ Release: https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-53
 
 원본 그림 alpha≥32 가시 경계를 기준으로 비율을 유지해 긴 변28px로 표시한다. alpha≥128 경계의 긴 변은26~28px이며 불투명 픽셀28px라는 주장은 아니다. 레벨1/12는 그림 옆에 유지한다. 예약84px/844=9.9526%, pause48×48 및 HP/XP·가신 상태를 보존한다. 새 터치는 없으며 후반 우측 여백16px다.
 
-Root 실제크기 시각검토 c3 PASS94. c1 레벨 누락 REVISE86과 c2 밀집 REVISE88은 보존했다. native2장390×844의 y84 이후 월드는 r1 대비 rawRGBA 차이0, 글리프 누락·텍스트 넘침0이다. 전달은 native2·나란히판·28px 접사4PNG와 계약JSON·README·QA로 새7파일이다. 게임 코드·데이터 변경 없음, Unity·실기·성능 NOT_RUN. HUD r2 사용자 승인 전 PR은 미병합으로 유지한다.
+Root 실제크기 시각검토 c3 PASS94. c1 레벨 누락 REVISE86과 c2 밀집 REVISE88은 보존했다. native2장390×844의 y84 이후 월드는 r1 대비 rawRGBA 차이0, 글리프 누락·텍스트 넘침0이다. 전달은 native2·나란히판·28px 접사4PNG와 계약JSON·README·QA로 새7파일이다. 게임 코드·데이터 변경 없음, Unity·실기·성능 NOT_RUN. HUD r2도 사용자 승인되었으며 이 기록 PR은 최신 CI 통과 후 squash 병합한다.
 
 - [초반4 HUD](https://github.com/hyunlord/bs-mobile/releases/download/vassal-effects-ui-531-20261029/vassal-hud-early4-r2-390x844.png)
 - [후반14 HUD](https://github.com/hyunlord/bs-mobile/releases/download/vassal-effects-ui-531-20261029/vassal-hud-late14-r2-390x844.png)
 - [나란히 비교](https://github.com/hyunlord/bs-mobile/releases/download/vassal-effects-ui-531-20261029/vassal-hud-early-late-r2-780x900.png)
+
+## 사용자 최종 승인
+
+2026-10-29 사용자 승인: 가신탭 r1·출정확인 r1·HUD r2 세 화면 모두 승인. 게임 적용은 Codex가 #528 다음에 별도 수행한다. 이 PR은 승인 기록만 변경하며 게임 코드·데이터 및 공개 Release 원본 자산은 변경하지 않는다.
