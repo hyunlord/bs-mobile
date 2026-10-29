@@ -88,3 +88,18 @@ node --test tools/art-authoring/estate-zone-terrain/plan.test.mjs
 ```
 
 Light Node suite18/18 passes, including all18 form/size combinations in both states/resolutions, no general-prop fallback, invalid pivot/duplicate rejection and explicit river-r3 injection rejection. Dense registry and original64 registry remain unchanged. Unity/build/game application remain NOT_RUN; the six local camera files belonging to the other owner are not staged. No PR body update is made after this push.
+
+## 2026-10-30 야간 구현 — Unity 미검증
+
+사용자 야간 제한에 따라 Unity·Standalone·dotnet·성능 실행과 Mac 잠금은 사용하지 않았다. 아래는 코드/정적 증거이며 화면 승인이나 실제 밀도 통과가 아니다.
+
+- r8만 건물 몸체 폭 기준 기본75px / 핀치 하한50px / 별도 전체 보기. 드래그 중심은 열린 구역 합집합+1.5셀로 제한한다. r7 이전 카메라는 유지한다.
+- 승인 1x 128개를 공용 atlas 하나에 등록했다. 원본 SHA와 pivot을 유지하고 field r3의 6형태×3크기, 군집, fog, 승인 **dense-river-r2 등록 chunk24개**를 포함한다. 강 r3는 포함하지 않는다. 강은 승인 nativeOrigin(64×32 투영)에 놓고 기존 반복 강/강둑 조각을 대체하며 다리는 유지한다.
+- r8 구역별 군집과 소품은 seed·구역ID·후보 좌표로 결정한다. 배치 후 건물/부지 그림의 투영 사각형과 길·논리 강 셀을 제외한다. 후보가 가려져도 다른 후보를 다시 채우지 않는다. 외곽은 world 위치에 고정된 어두운 숲과 fog를 깐다. 기존 마당/길/일꾼을 유지한다.
+- `EstateZoneDensity.json` 수치는 **[가설]**이다. 화면당 군집4–8/소품10–18, 빈 땅≤40%, 연속빈땅≤20% 달성은 아직 측정하지 않았다. 모든 구역/배율별 캡처로 판단해야 하며 정적 개수로 대신하지 않는다.
+- atlas 생성 0.83초. 2048×2436, 추가 예상메모리 Mac RGBA32 **19,955,712bytes(19.03MiB)**, iOS/Android ASTC4 각각 **4,988,928bytes(4.76MiB)**. 디바이스 측정 아님. 그리기 호출 증가분은 미측정이며 같은 atlas가 기존 건물과 Y 순서로 교차할 때 추가 묶음이 생길 수 있다.
+- 변경 없음: Core, `data/`(역사 r3~r7 포함), replay/save codec. 실행 해시·저장 바이트 재검증은 낮 순서에 남는다.
+
+정적 검사: Node 후보/정체성18개 + runtime atlas3개 통과, Unity 경계 검사 통과, `git diff --check` 통과. 새 EditMode 검사(75/50 카메라, 역사 설정 미적용, FNV, 공용 texture, pivot, 결정적 계획, 투영 예약)는 **작성만 / NOT_RUN**.
+
+07:00 이후 순서: 가신 UI 다음 #496 잠금 획득 → 두 프로필 → Astra r2 동일 장면75/50 및 절반/전체복원 캡처 → 밀도/빈땅/연속빈땅/그리기호출 실제측정 → Core/replay/save 회귀. 강 chunk가 열린 경계를 걸칠 때 중심으로 밝음/어둠을 고르고 기존 어둠마스크를 덧씌우므로, 상태 경계의 색 이음새도 별도 확대 확인한다. 실패 두 번이면 중단한다. 초안 유지, 사용자 승인 전 병합하지 않는다.

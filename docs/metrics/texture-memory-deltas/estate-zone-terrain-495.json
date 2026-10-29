@@ -1,0 +1,30 @@
+{
+  "status": "ESTIMATE",
+  "records": [
+    {
+      "path": "unity/Assets/Resources/EstateArt/estate-zone-terrain.png",
+      "before": null,
+      "after": {
+        "identity": {
+          "sha256": "8a915ae1269a4df4b129830988d5508b5fd586b55e6a7c74d539a3d30c0c1f41",
+          "fileBytes": 2438660
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2436,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 19955712,
+          "android": 4988928,
+          "ios": 4988928
+        }
+      },
+      "reason": "Approved #488 one-resolution clusters, field props r3, fog and registered river r2; one runtime atlas, mobile ASTC4, no Unity/device measurement at night"
+    }
+  ]
+}

@@ -469,6 +469,7 @@ namespace Game.App
                 plan.Items.Add(new EstateDrawItem { Role = item.Role, Source = "landmark", Grid = item.Grid, Width = item.Width, Aspect = item.Aspect,
                     WaterOnly = item.WaterOnly, Rotation = item.Rotation, Colour = new Color(0, night.landmarkBrightness, 1, 1),
                     Layer = EstateDrawLayer.Landmark, SortY = item.SortY, Key = "landmark-" + item.Key });
+            EstateZoneTerrain.Apply(plan, art, config, estate);
             EstateResidentJob.ApplyBudget(plan);
             return plan;
         }

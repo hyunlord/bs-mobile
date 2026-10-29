@@ -37,6 +37,8 @@ namespace Game.App
         {
             var root = Page(ui, "EstateMap", ""); var width = Width(ui); var height = Height(ui);
             var rules = EstateDecorRules.Load(); var night = rules.night;
+            var art = EstateArt.Load();
+            screen.ConfigureCamera(art, rules);
             root.GetComponent<Image>().color = night.Colour;
 
             // The map fills the page; bars and panels sit over it and become insets so every row can still be dragged into view.
@@ -56,7 +58,7 @@ namespace Game.App
             // Painted map (#375, #379): ground over the whole painted area, Astra's terrain patches and earth roads, the art of the
             // land outside the open zones, one continuous night by distance from open land, warm lamps, then yard grounds,
             // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
-            var art = EstateArt.Load(); var tint = art.Tint;
+            var tint = art.Tint;
             var terrainTint = viewport.gameObject.AddComponent<EstateTerrainMaterial>();
             terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), EstateR8Layout.UsesPlazaRendering(screen.Config));
             ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
@@ -164,7 +166,7 @@ namespace Game.App
 
             ResourceStrip(ui, root, screen.Catalog, screen.State, actions.Navigate, width);
             GoalLine(ui, root, screen, actions, width);
-            string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
+            string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.UsesBodyCamera && screen.Map.Zoom == 1 ? "동네" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
             var controlsY = height - bottom - 104;
             var decorToggle = ActionButton(ui, root, "EstateMap.Decor", "장식 " + (screen.DecorEnabled ? "켬" : "끔"), () => { screen.ToggleDecor(); actions.Redraw(); }, 10, controlsY + 4, 84, true, 44);
             Compact(decorToggle.transform);
@@ -175,6 +177,12 @@ namespace Game.App
             view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
             var zoomIn = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
             var zoomOut = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 54, controlsY + 52);
+            if (screen.Map.UsesBodyCamera)
+            {
+                var overview = ActionButton(ui, root, "EstateMap.Overview", screen.Map.Zoom == screen.Map.WholeMap ? "영지" : "전체",
+                    () => { view.ToggleOverview(); actions.Redraw(); }, 104, controlsY + 4, 84, true, 44);
+                Compact(overview.transform); overview.gameObject.SetActive(panel <= 0);
+            }
             if (panel > 0)
             {
                 decorToggle.gameObject.SetActive(false); chip.gameObject.SetActive(false);
@@ -207,7 +215,7 @@ namespace Game.App
                 .ThenBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal);
 
         // Sources the [장식 켬/끔] development switch hides (#372); terrain, buildings, the river skeleton and the darkness stay.
-        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil" };
+        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil", "zone-cluster", "zone-prop" };
 
         // One estate sprite: its pivot stands on the item's grid point, `Width` is in scale-1 canvas units, and the colour goes to
         // the EstateTint shader as (saturation, brightness, light, alpha). Without the shader the art draws untinted.
@@ -945,6 +953,13 @@ namespace Game.App
         public void Step(int direction)
         {
             if (Model != null && Model.StepZoom(direction, Model.VisibleCentre))
+            { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
+        }
+
+        public void ToggleOverview()
+        {
+            if (Model == null || !Model.UsesBodyCamera) return;
+            if (Model.SetZoom(Model.Zoom == Model.WholeMap ? Model.Opening : Model.WholeMap, Model.VisibleCentre))
             { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
         }
 
