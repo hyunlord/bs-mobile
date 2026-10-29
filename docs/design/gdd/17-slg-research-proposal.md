@@ -1,6 +1,6 @@
 # 17 · SLG 경제·군사·영지 연구 제안
 
-상태: **사용자 검토 대기**. 2026-10-30, 추적 [#552](https://github.com/hyunlord/bs-mobile/issues/552). [로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554), 선행 [병력 #555](https://github.com/hyunlord/bs-mobile/pull/555)·[영웅 #557](https://github.com/hyunlord/bs-mobile/pull/557), [신규 r8/서버 저장 #547](https://github.com/hyunlord/bs-mobile/pull/547)을 전제로 한 문서다. 모든 신규 노드·단계·비용·시간·효과·상한은 **[가설]**이며 구현 데이터가 아니다. 사용자 승인 전 병합하지 않는다. 코드·데이터·아트·SDK 변경 없음.
+상태: **사용자 승인 — 수치는 [가설] 유지**. 2026-10-30, 추적 [#552](https://github.com/hyunlord/bs-mobile/issues/552). [로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554), 선행 [병력 #555](https://github.com/hyunlord/bs-mobile/pull/555)·[영웅 #557](https://github.com/hyunlord/bs-mobile/pull/557), [신규 r8/서버 저장 #547](https://github.com/hyunlord/bs-mobile/pull/547)을 전제로 한 문서다. 모든 신규 노드·단계·비용·시간·효과·상한은 **[가설]**이며 구현 데이터가 아니다. 사용자 승인에 따라 06:00 이후 최신 main·CI 확인 후 squash 병합한다. 코드·데이터·아트·SDK 변경 없음.
 
 ## 1. 현재 기록소와 연구 트리를 구분한다
 
