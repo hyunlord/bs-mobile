@@ -1,6 +1,6 @@
-# 가신 효과 UI 구현 후 시안 r1
+# 가신 효과 UI 구현 후 시안 r1 / HUD r2
 
-관문: 부분 — 오프라인 기술 PASS·시각 PASS94. 사용자 시안 승인 대기이며 게임 적용·Unity·실기·성능은 NOT_RUN이다.
+관문: 부분 — 오프라인 기술 PASS·시각 PASS94. r1 가신탭·출정확인은 사용자 승인, HUD r2는 사용자 검토 대기이며 게임 적용·Unity·실기·성능은 NOT_RUN이다.
 
 이슈: https://github.com/hyunlord/bs-mobile/issues/531
 
@@ -17,3 +17,15 @@ Release: https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-53
 원본6초상 SHA와 기존 그림을 보존했다. 전달은 native3+설명포함3장보드 PNG4, 계약JSON1, README/QA/DESIGN3으로 정확8파일이다. 후보와 소스/검증은 보존하며 신규 ZIP을 만들지 않는다. 버튼 크기는 오프라인 명세이며 실제 기기 터치 검증을 대신하지 않는다.
 
 이 문서PR은 시안 검토를 위해 열어 두며 임의 병합하지 않는다.
+
+## HUD r2 후속
+
+사용자는 r1 가신탭과 출정확인을 승인했다. 기존 r1 파일8개는 보존하고 HUD r2만 추가한다. 후반 UI 부하 표본은 현행 카탈로그의 서로 다른 무기7·도구7이다. 실제 장비 상한 변경을 뜻하지 않는다. 초반은 각2개, 후반은 각2개와 비터치 +5 표시로 접고 전체 내역은 기존 일시정지에서 확인하는 설계다.
+
+원본 그림 alpha≥32 가시 경계를 기준으로 비율을 유지해 긴 변28px로 표시한다. alpha≥128 경계의 긴 변은26~28px이며 불투명 픽셀28px라는 주장은 아니다. 레벨1/12는 그림 옆에 유지한다. 예약84px/844=9.9526%, pause48×48 및 HP/XP·가신 상태를 보존한다. 새 터치는 없으며 후반 우측 여백16px다.
+
+Root 실제크기 시각검토 c3 PASS94. c1 레벨 누락 REVISE86과 c2 밀집 REVISE88은 보존했다. native2장390×844의 y84 이후 월드는 r1 대비 rawRGBA 차이0, 글리프 누락·텍스트 넘침0이다. 전달은 native2·나란히판·28px 접사4PNG와 계약JSON·README·QA로 새7파일이다. 게임 코드·데이터 변경 없음, Unity·실기·성능 NOT_RUN. HUD r2 사용자 승인 전 PR은 미병합으로 유지한다.
+
+- [초반4 HUD](https://github.com/hyunlord/bs-mobile/releases/download/vassal-effects-ui-531-20261029/vassal-hud-early4-r2-390x844.png)
+- [후반14 HUD](https://github.com/hyunlord/bs-mobile/releases/download/vassal-effects-ui-531-20261029/vassal-hud-late14-r2-390x844.png)
+- [나란히 비교](https://github.com/hyunlord/bs-mobile/releases/download/vassal-effects-ui-531-20261029/vassal-hud-early-late-r2-780x900.png)
