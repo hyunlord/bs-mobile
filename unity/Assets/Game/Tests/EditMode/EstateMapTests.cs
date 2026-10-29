@@ -11,6 +11,16 @@ namespace Tests.EditMode
 {
     public sealed class EstateMapTests
     {
+        [TestCase(false, false, false)]
+        [TestCase(false, true, true)]
+        [TestCase(true, false, true)]
+        [TestCase(true, true, true)]
+        public void EstateDevelopmentControlsRequireBuildOrExplicitOption(bool build, bool option, bool expected)
+        {
+            Assert.That(new EstateMapActions(build, option).DevelopmentControls, Is.EqualTo(expected));
+            Assert.That(new EstateMapActions().DevelopmentControls, Is.False, "A normal caller never opts in implicitly.");
+        }
+
         const float Top = 94, Bottom = 72;
         // The wide prototype map (#374) keeps the r2 layout shifted by (26, 26) into its 20×20 centre zone at (20, 20);
         // (45, 30) is closed land in the village extension.
