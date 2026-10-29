@@ -29,4 +29,4 @@
 
 ## 검증
 
-문서 정합성 검토와 `node tools/check-docs.mjs`, `git diff --check`를 수행한다. 후속 구현에서 format1–7 및 format7 schema1/2의 기존 bytes/golden 보존, format8 estate/가신 옵션 조합, unknown-version 거부, snapshot 복원 후 동일 해시를 검사한다. 이 ADR의 추가만으로 runtime·codec·밸런스 관문을 통과한 것으로 보고하지 않는다. 해당 실행 검증은 **NOT_RUN**이다.
+문서 정합성 검토와 `node tools/check-docs.mjs`, `git diff --check`를 수행한다. 후속 구현에서 format1–7 및 format7 schema1/2의 기존 bytes/golden 보존, format8 estate/가신 옵션 조합, unknown-version 거부, snapshot 복원 후 동일 해시를 검사한다. 이 ADR의 추가만으로 runtime·codec·밸런스 관문을 통과한 것으로 보고하지 않는다. 가신 효과는 wave 전용이다. 효과 없음/최대 비교는 wave 정상 입력과 C05에서 수행하고 C05 스트레스·Quit 결과를 정상 생존율로 일반화하지 않는다. FP01에는 가신 효과를 적용하지 않으며, 가신 블록 absent의 기존 해시·성능 회귀만 확인한다. 해당 실행 검증은 **NOT_RUN**이다.
