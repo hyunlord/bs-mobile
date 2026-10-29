@@ -50,6 +50,17 @@ namespace Tests.EditMode
             Assert.That(loaded.HasSeen(FirstRunHint.Muster), Is.False);
         }
 
+        [Test] public void VassalCombatIsExplicitOptInAndRoundTripsOutsideTheAccountSave()
+        {
+            var settings = RunPreferences.Load(prefix);
+            Assert.That(settings.VassalCombat, Is.False);
+            settings.VassalCombat = true;
+            settings.Save();
+            Assert.That(RunPreferences.Load(prefix).VassalCombat, Is.True);
+            PlayerPrefs.SetInt(prefix + "vassalCombat", 2);
+            Assert.That(RunPreferences.Load(prefix).VassalCombat, Is.False);
+        }
+
         [Test] public void SelectedRigPreferenceRoundTripsIndependentlyOfFeelDefaults()
         {
             PlayerPrefs.SetInt(prefix + "heroRigSelectedB", 0);

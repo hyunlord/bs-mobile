@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sowsiege:vassal-run-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "vassals", "effects"],
+  "properties": {
+    "id": { "const": "vassal-run-v1" },
+    "version": { "const": 1 },
+    "vassals": {
+      "type": "array", "minItems": 1, "maxItems": 64, "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "ability"],
+        "properties": { "id": { "type": "string", "minLength": 1, "maxLength": 128 }, "ability": { "$ref": "#/$defs/ability" } }
+      }
+    },
+    "effects": {
+      "type": "array", "minItems": 6, "maxItems": 6,
+      "prefixItems": [
+        { "const": { "ability": "Attack", "base": 10, "perLevel": 3, "perRank": 6, "cap": 100 } },
+        { "const": { "ability": "Health", "base": 20, "perLevel": 5, "perRank": 10, "cap": 150 } },
+        { "const": { "ability": "Movement", "base": 5, "perLevel": 1, "perRank": 3, "cap": 50 } },
+        { "const": { "ability": "Growth", "base": 10, "perLevel": 3, "perRank": 5, "cap": 100 } },
+        { "const": { "ability": "Allies", "base": 15, "perLevel": 4, "perRank": 8, "cap": 150 } },
+        { "const": { "ability": "Experience", "base": 5, "perLevel": 2, "perRank": 4, "cap": 80 } }
+      ]
+    }
+  },
+  "$defs": { "ability": { "enum": ["Attack", "Health", "Movement", "Growth", "Allies", "Experience"] } }
+}

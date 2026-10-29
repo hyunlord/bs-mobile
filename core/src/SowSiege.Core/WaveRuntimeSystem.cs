@@ -42,7 +42,7 @@ namespace SowSiege.Core
             };
             modules = new(definition);
             queries = new(world, catalog.Tuning.World.Farms.Spacing, interactive?.Field is not null);
-            subscriptions = new(catalog, world, modules, queries);
+            subscriptions = new(catalog, world, modules, queries, interactive?.Vassals);
             enemies = new(catalog, world, random, interactive, modules, subscriptions, queries);
             work = new(catalog, world, interactive, modules, subscriptions, queries);
             estate = interactive is null ? WaveEstateSystem.Create(catalog, world, null, estateLoadout, estateSeed) : WaveEstateSystem.Create(catalog, world, interactive, interactive.EstateLoadout, interactive.EstateSeed);
@@ -152,6 +152,7 @@ namespace SowSiege.Core
                 if (enemy.Health > 0) { continue; }
                 work.OnKill(enemy);
                 var xp = catalog.Enemies[enemy.Definition].Experience;
+                if (interactive?.Vassals is { } vassals) { xp = vassals.AwardExperience("enemy", xp); }
                 world.Experience += xp;
                 world.KillExperience += xp;
                 state.Emit(world.Tick, "enemy-killed", enemy.Definition, enemy.Id, enemy.Position, enemy.Position, xp);
@@ -347,6 +348,7 @@ namespace SowSiege.Core
 
         private void Hit(EnemyState enemy, int damage, string source, Position origin, int knockback, int activation)
         {
+            if (damage > 0 && interactive?.Vassals is { } vassals) { damage = vassals.Scale(damage, MetaAbility.Attack); }
             var actual = Math.Min(enemy.Health, damage);
             if (actual <= 0)
             {

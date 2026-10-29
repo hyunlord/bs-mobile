@@ -1,0 +1,20 @@
+{
+  "id": "vassal-run-v1",
+  "version": 1,
+  "vassals": [
+    { "id": "core:fertility_surveyor", "ability": "Growth" },
+    { "id": "core:furrow_guard", "ability": "Attack" },
+    { "id": "core:levy_sergeant", "ability": "Allies" },
+    { "id": "core:return_captain", "ability": "Movement" },
+    { "id": "core:ripe_escort", "ability": "Health" },
+    { "id": "core:tithe_clerk", "ability": "Experience" }
+  ],
+  "effects": [
+    { "ability": "Attack", "base": 10, "perLevel": 3, "perRank": 6, "cap": 100 },
+    { "ability": "Health", "base": 20, "perLevel": 5, "perRank": 10, "cap": 150 },
+    { "ability": "Movement", "base": 5, "perLevel": 1, "perRank": 3, "cap": 50 },
+    { "ability": "Growth", "base": 10, "perLevel": 3, "perRank": 5, "cap": 100 },
+    { "ability": "Allies", "base": 15, "perLevel": 4, "perRank": 8, "cap": 150 },
+    { "ability": "Experience", "base": 5, "perLevel": 2, "perRank": 4, "cap": 80 }
+  ]
+}

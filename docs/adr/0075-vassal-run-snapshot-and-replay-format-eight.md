@@ -35,7 +35,9 @@ wave는 계정 가신을 전투에 투영하지 않는다. 역사 first-playable
 | Allies | 15/4/8 | 150 | WaveGroup 생성 최대 HP와 최종 피해 각각 한 번 |
 | Experience | 5/2/4 | 80 | 적 처치 및 완료 보상 생성 때 한 번 |
 
-`raw=B+S×(level−1)+R×rank`, `bonus=min(cap,sum(raw))`다. 피해·HP·속도는 기존 산술이 끝난 값에 `floor(base×(1000+bonus)/1000)`을 적용한다. 양수 피해만 최소 1이며 기존 0/무효 피해를 새로 만들지 않는다. 이미 가신 배율이 적용된 값을 다시 증폭하지 않는다. 독립 건물 고정 피해·환경 피해·legacy 사람은 제외한다.
+`raw=B+S×(level−1)+R×rank`, `bonus=min(cap,sum(raw))`다. 피해·HP는 기존 산술이 끝난 값에 `floor(base×(1000+bonus)/1000)`을 적용한다. 양수 피해만 최소 1이며 기존 0/무효 피해를 새로 만들지 않는다. 이미 가신 배율이 적용된 값을 다시 증폭하지 않는다. 독립 건물 고정 피해·환경 피해·legacy 사람은 제외한다.
+
+**이동 산술 보수안(2026-10-29 사용자 결정):** 기존 아이템·입력 정규화·Feel 13/10 및 그 나머지 계산을 먼저 그대로 수행한다. 그 결과의 축별 이동 크기에 마지막으로 `floor(abs(delta)×(1000+bonus)/1000)`을 한 번 적용하고 원래 부호를 복원한 뒤 기존 지도 경계로 제한한다. 좌우 방향 편향을 만들지 않도록 음수 좌표값 자체를 floor하지 않는다. Feel 나머지의 분모·단위는 바꾸지 않고 가신 이동용 새 나머지도 만들지 않는다. 작은 이동량에서는 가신 효과가 내림으로 사라질 수 있으며 이는 보수안의 알려진 양자화 한계다. 합성 분수 누적이나 기존 속도 사전 증폭은 기존 계산 순서·나머지 계약을 바꾸므로 채택하지 않았다. 가신 블록이 없으면 이 후처리도 실행하지 않는다.
 
 Growth/XP는 `numerator=base×(1000+bonus)+remainder`, 지급량 `numerator/1000`, 새 나머지 `numerator%1000`이다. Growth는 살아 있는 grain entity ID별로 보존하고 수확·적 소비 등 해당 주기 종료 때 폐기한다. 다음 ID에 넘기지 않는다. 현재 wave의 단일 성숙 구간을 legacy 다단계 성장으로 확장하지 않는다. XP는 고정 lord와 enemy/growth/irrigation/shipment/mission 범주별로 분리한다. 중복 완료 거부 이후에만 나머지를 진행시키고, Collect는 저장된 보상만 지급한다. 기존 HarvestExperience 집계는 유지한다.
 
@@ -79,7 +81,7 @@ format8을 모르는 reader는 unknown version으로 실패한다. snapshot을 �
 
 ## 검증 계획과 현재 상태
 
-ADR 단계이며 Core/UI 구현·Unity·성능 실행은 NOT_RUN이다. 후속 구현에서 다음을 실제 확인하고 결과를 별도로 기록한다.
+Core 구현 및 집중 검사는 진행했으며 실제 실행 범위·미완료 항목은 [검증 기록](../review/vassal-run-527.md)에 구분한다. 다음은 최종 관문이며 Unity·성능을 Core 검사로 대체하지 않는다.
 
 1. format1~7 원본 bytes·실행 경로 음성 대조, 기존 golden·crowd-411·C05·FP01 종료 hash 불변.
 2. 슬롯/레벨/승급/중복·empty enabled·계수 cap·버전/hash/unknown bits/trailing bytes 거부.

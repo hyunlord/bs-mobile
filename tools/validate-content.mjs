@@ -11,9 +11,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run']);
 // Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
-const optInSchemaKinds = new Set(['account-estate']);
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -36,6 +36,7 @@ function inferKind(relative) {
     segments.shift();
     if (segments[0] === 'estate-light' && segments.length === 2) return 'estate-light';
     if (segments[0] === 'account-estate' && segments.length === 2) return 'account-estate';
+    if (segments[0] === 'vassals' && segments.length === 2) return 'vassal-run';
   }
   if (segments[0] === 'test') segments.shift();
   return directoryKinds.get(segments[0]) ?? (segments.length === 1 ? path.basename(segments[0], '.json') : null);
@@ -137,7 +138,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
       continue;
     }
     records.push({ relative, kind, record, schemaValid });
-    if (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate'].includes(kind) || Object.hasOwn(record, 'id')) {
+    if (kind !== 'vassal-run' && (!['tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate'].includes(kind) || Object.hasOwn(record, 'id'))) {
       if (typeof record.id !== 'string' || !namespaceId.test(record.id)) {
         errors.push(`${relative}: invalid namespace ID`);
       } else if (ids.has(record.id)) {
@@ -151,6 +152,15 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     }
     if (kind === 'presentation' && schemaValid && record.camera.minHalfHeight > record.camera.maxHalfHeight) errors.push(`${relative}: camera minHalfHeight must not exceed maxHalfHeight`);
     if (kind === 'skin' && containsNumber(record)) errors.push(`${relative}: skin must not contain numeric stats`);
+  }
+  for (const { relative, record } of records.filter(entry => entry.kind === 'vassal-run' && entry.schemaValid)) {
+    const account = records.find(entry => entry.kind === 'meta' && entry.schemaValid)?.record;
+    const definitions = record.vassals;
+    if (!account || definitions.length !== account.vassals.length || definitions.some((definition, index) =>
+      !account.vassals.some(vassal => vassal.id === definition.id && vassal.ability === definition.ability) ||
+      index > 0 && definitions[index - 1].id >= definition.id)) {
+      errors.push(`${relative}: account vassal definitions must match in unique ordinal order`);
+    }
   }
   function reference(relative, field, id, kind) {
     if (!relative.startsWith(`test${path.sep}`) && !relative.startsWith(`profiles${path.sep}`) && ids.get(id)?.relative.startsWith(`test${path.sep}`)) errors.push(`${relative}: canonical reference cannot use test content ${field}`);

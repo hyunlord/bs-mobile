@@ -20,7 +20,10 @@ namespace SowSiege.Core
             get
             {
                 var speed = Simulation.Wave?.MovementSpeed(Catalog.Tuning.World.Map.LordSpeed) ?? Catalog.Tuning.World.Map.LordSpeed;
-                return Options.Feel?.FasterLord == true ? (double)speed * FeelExperimentState.SpeedNumerator / FeelExperimentState.SpeedDenominator : speed;
+                var nominal = Options.Feel?.FasterLord == true ? (double)speed * FeelExperimentState.SpeedNumerator / FeelExperimentState.SpeedDenominator : speed;
+                // With vassals this is a full-axis, zero-remainder estimate; actual movement scales each completed axis delta.
+                return State.Vassals is { } vassals && vassals.Snapshot.Effects[(int)MetaAbility.Movement].Bonus != 0
+                    ? vassals.Scale(checked((int)Math.Floor(nominal)), MetaAbility.Movement) : nominal;
             }
         }
         public InteractiveSession(ContentCatalog catalog, InteractiveOptions options)
@@ -31,6 +34,14 @@ namespace SowSiege.Core
             if (options.Run.EstateLoadout is not null) { throw new ArgumentException("Interactive runs select an estate loadout through InteractiveOptions.Estate."); }
             ReplayCodec.ValidateHash(options.DataHash);
             options = options with { Feel = FeelExperimentOptions.Normalize(options.Feel) };
+            VassalRunState? vassals = null;
+            if (options.Vassals is { } requestedVassals)
+            {
+                if (catalog.WaveRuntime is null) { throw new ArgumentException("Vassal combat requires a wave runtime."); }
+                options = options with { Vassals = VassalRun.Freeze(requestedVassals) };
+                catalog = VassalCatalogCopy.Freeze(catalog);
+                vassals = new(options.Vassals);
+            }
             if (options.Feel is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Feel experiments require a wave runtime."); }
             if (options.Field is not null && catalog.WaveRuntime is null) { throw new ArgumentException("Fields require a wave runtime."); }
             if (options.Feel?.ImmediateContact == true)
@@ -52,8 +63,10 @@ namespace SowSiege.Core
                 foreach (var gear in aimWave.Gear.Values)
                 { if (gear.Aim is not null && gear.Aim != "nearest-enemy") { throw new ArgumentException("Unsupported gear aim."); } }
             }
+            var existingMaximumHealth = options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth;
+            var maximumHealth = vassals?.Scale(existingMaximumHealth, MetaAbility.Health) ?? existingMaximumHealth;
             if (options.HostRewards?.Revive is { } revive &&
-                (revive.RestoreHealth > (options.Feel is { ReadableHealth: true } ? FeelExperimentState.Health : catalog.Tuning.World.Map.LordHealth) || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
+                (revive.RestoreHealth > maximumHealth || revive.InvulnerabilityTicks > int.MaxValue - catalog.Tuning.DurationTicks))
             { throw new ArgumentException("Host revive rules exceed run limits.", nameof(options)); }
             var initialCatalogHash = PortableStateCodec.HashCatalog(catalog);
             if (options.Estate is { } estate)
@@ -65,7 +78,7 @@ namespace SowSiege.Core
                 // The recorded catalog hash pins the loadout contents; the data tree hash cannot tell two loadouts of one tree apart (ADR0064 section 4).
                 if (!string.Equals(estate.LoadoutCatalogHash, initialCatalogHash, StringComparison.Ordinal)) { throw new ArgumentException("Estate loadout catalog hash mismatch.", nameof(options)); }
             }
-            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode };
+            Catalog = catalog; Options = options; InitialCatalogHash = initialCatalogHash; State = new() { Aim = options.InitialAimMode, Vassals = vassals };
             if (options.Estate is not null) { State.EstateLoadout = options.Estate.LoadoutId; State.EstateSeed = options.Run.Seed; }
             if (options.Feel is not null) { State.Feel = new(options.Feel); }
             if (options.HostRewards is not null) { State.HostRewards = new(); }
@@ -81,6 +94,15 @@ namespace SowSiege.Core
         internal RunStatus Status => Simulation.IsComplete ? RunStatus.Completed : Simulation.World.PendingCards.Length > 0 ? RunStatus.AwaitingCard : RunStatus.Running;
         public int HostRerollsGranted => State.HostRewards?.RerollGrants ?? 0;
         public bool HostRevived => State.HostRewards?.Revived ?? false;
+        public VassalRunOptions? VassalSnapshot => Options.Vassals is { } vassals ? VassalRun.Freeze(vassals) : null;
+        private int MaximumHealth
+        {
+            get
+            {
+                var existing = State.Feel?.MaximumHealth(Catalog.Tuning.World.Map.LordHealth) ?? Catalog.Tuning.World.Map.LordHealth;
+                return State.Vassals?.Scale(existing, MetaAbility.Health) ?? existing;
+            }
+        }
         public bool CanHostRevive => Options.HostRewards?.Revive is not null && State.HostRewards is { Revived: false }
             && Simulation.World.LordHealth <= 0 && Simulation.World.Tick < Catalog.Tuning.DurationTicks;
         public void Apply(ReplayCommand command)
@@ -187,7 +209,7 @@ namespace SowSiege.Core
                 for (var i = 0; i < w.Farms.Count; i++) { var p = w.Farms[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
                 for (var i = 0; i < w.Buildings.Count; i++) { var p = w.Buildings[i].Position; extent = Math.Max(extent, Math.Max(Math.Abs(p.X - w.Estate.X), Math.Abs(p.Y - w.Estate.Y))); }
                 return new(w.Tick, Status, w.Season, Math.Max(0, c.Tuning.World.Seasons.Take(w.Season + 1).Sum(s => s.DurationTicks) - w.Tick), c.Tuning.DurationTicks, c.Tuning.TickRate, map.Width, map.Height,
-                    new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, session.State.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
+                    new(InteractiveState.Point(w.Lord), InteractiveState.Point(w.WaveRuntime?.Facing ?? w.WeaponCombat?.Facing ?? new Position(1, 0)), w.LordHealth, session.MaximumHealth), InteractiveState.Point(w.Estate), w.Experience, session.Simulation.RequiredExperience, w.Level, extent,
                     new(living, people.Length, farms.Length, buildings.Length, session.State.Events.Count(e => e.Kind == PresentationKind.Attack && (e.Shape == "projectile" || e.Shape == "rays"))),
                     buffer is null ? Array.AsReadOnly(enemies) : buffer.Enemies, Array.AsReadOnly(farms), Array.AsReadOnly(buildings), Array.AsReadOnly(people), Array.AsReadOnly(loot), Array.AsReadOnly(remains), Array.AsReadOnly(w.Equipment.Select(e => new EquipmentView(e.Id, e.Level)).ToArray()), Array.AsReadOnly(session.State.Events.ToArray()), session.State.Field?.Frame(w.Estate));
             }
