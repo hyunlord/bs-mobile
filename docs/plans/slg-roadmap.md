@@ -1,6 +1,6 @@
 # SLG 출시 로드맵
 
-상태: **사용자 방향 결정 반영 / 상세 단계·담당 배분은 승인 대기**. 2026-10-30. 추적 [#549](https://github.com/hyunlord/bs-mobile/issues/549). 이 문서는 구현 완료 보고가 아니다. 신규 게임 코드·데이터·SDK·아트 제작은 이번 범위가 아니다. 문서 PR도 사용자 승인 전 병합하지 않는다.
+상태: **사용자 승인 — 2026-10-30**. 2026-10-30. 추적 [#549](https://github.com/hyunlord/bs-mobile/issues/549). 이 문서는 구현 완료 보고가 아니다. 신규 게임 코드·데이터·SDK·아트 제작은 이번 범위가 아니다. 사용자 승인에 따라 06:00 이후 최신 main·CI 확인 후 squash 병합한다.
 
 ## 방향과 기존 결정의 대체 범위
 
@@ -49,7 +49,7 @@
 
 ## 문서 PR 순서와 서버 ADR 인계
 
-1. 축소 [#547](https://github.com/hyunlord/bs-mobile/pull/547): 신규 r8·서버 정본, 개발 저장 이관 제외, 장원 효과 대응 유지. 이전 승인/06시 예약 병합은 새 범위 승인 대기로 대체한다.
+1. 축소 [#547](https://github.com/hyunlord/bs-mobile/pull/547): 신규 r8·서버 정본, 개발 저장 이관 제외, 장원 효과 대응 유지. 이전 예약은 취소했으며, 2026-10-30 사용자 승인으로 축소안의 06:00 이후 병합을 진행한다.
 2. 이 로드맵 [#549](https://github.com/hyunlord/bs-mobile/issues/549).
 3. 병력 [#550](https://github.com/hyunlord/bs-mobile/issues/550) → 영웅 [#551](https://github.com/hyunlord/bs-mobile/issues/551) → 연구 [#552](https://github.com/hyunlord/bs-mobile/issues/552) → 월드 [#553](https://github.com/hyunlord/bs-mobile/issues/553). 각각 별도 문서 PR이며 가설/의존/미구현을 표시한다.
 
