@@ -58,7 +58,10 @@ namespace Game.App
             if (settings.clusterSpacing <= 0 || settings.propSpacing <= 0 || settings.boundaryCells < 1 ||
                 settings.minimumScale <= 0 || settings.maximumScale < settings.minimumScale || settings.spriteScale <= 0)
                 throw new InvalidOperationException("Invalid zone density settings.");
-            var river = JsonUtility.FromJson<River>(Resources.Load<TextAsset>("EstateZoneRiver").text);
+            var riverAsset = Resources.Load<TextAsset>("EstateZoneRiver");
+            if (riverAsset == null) throw new InvalidOperationException("Missing approved r2 river placement.");
+            var river = JsonUtility.FromJson<River>(riverAsset.text);
+            if (river?.chunks == null || river.chunks.Length == 0) throw new InvalidOperationException("Empty approved r2 river placement.");
             // Approved r2 chunks use exactly the same 64x32 projection as the runtime map.
             // Remove the legacy repeated river strips and banks, preserving bridges and their foreground rails.
             plan.Items.RemoveAll(i => i.Source == "river-bank" || i.Role == "riverbank-patch" || i.Role == "river-bend-patch");
@@ -97,7 +100,7 @@ namespace Game.App
             }
             // Replace generic empty-land filler, not yards, roads, construction or residents.
             plan.Items.RemoveAll(i => i.Source == "empty-land" || i.Source == "wood" || i.Source == "frontier");
-            var accepted = new List<Rect>();
+            var candidateBounds = new List<Rect>();
             void Place(string variant, string state, Vector2 at, string key, string source, float scale, bool reserve)
             {
                 var role = "zone-" + variant + "-" + state;
@@ -105,8 +108,10 @@ namespace Game.App
                 var sprite = art.Get(role);
                 var width = art.DisplayWidth(role) * settings.spriteScale * scale;
                 var bounds = ProjectedBounds(at, width, sprite.rect.width / sprite.rect.height, art.Pivot(role));
-                if (reserve && accepted.Any(r => r.Overlaps(bounds))) return;
-                if (reserve) accepted.Add(bounds);
+                if (reserve && candidateBounds.Any(r => r.Overlaps(bounds))) return;
+                // Reserve candidate space before mutable building/road rejection: moving a building hides
+                // candidates but never refills neighbours or changes their identities (#495 hide-only contract).
+                if (reserve) candidateBounds.Add(bounds);
                 if (blocked.Any(r => r.Overlaps(bounds))) return;
                 plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = at, Width = width,
                     Colour = Color.white, Layer = state == "bright" ? EstateDrawLayer.Standing : EstateDrawLayer.Landmark,
