@@ -98,3 +98,53 @@ C05 원본은 frozen catalog로 먼저 검증했다. 아래는 같은 명령의 
 18:20 KST 정상128행+C05파생4행 기록 완료, 자신의 Mac 잠금 해제. 비교 CLI는 C05 카드 거부1건 때문에 exit1이며 재실행하지 않았다.
 
 사용자 후속 결정: Core 관문 통과 뒤 승인 [가신 UI](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-531-20261029)를 적용하고 그 다음 #496으로 간다. 새 UI·#496은 미착수다. 현재 실패를 통과로 바꾸지 않고, 이 기록은 추가 CI 반복을 피하기 위해 로컬 문서 커밋/PR 코멘트/Release scalar 자료로 보존한다.
+
+## 2026-10-29 사용자 승인 재개: 수치 정본 분리
+
+구현 commit `62558a324919c0cb3369badee357b517b1c369b2`. 이전 AG003 실패 기록은 위에 그대로 보존한다.
+
+- B/S/R·능력 cap·슬롯/레벨/승급 한계: opt-in JSON이 정본. 원본 파일 SHA256을 snapshot ContentHash에 사용한다. Core 파일 I/O 없음.
+- 검토된 형식 상수: 기존 algorithm-constants.json에 format8 번호와 codec 할당/해시 길이 상수10개만 등록. 기존 PlayerInput.Scale·ReplayCodec.MaximumCommands 재사용. AG003 코드·literal 허용 범위 변경0.
+- 독립 검토에서 누락 numeric 필드의0대입과 int 배율 덧셈을 확인해 필수 필드 검사 및 Int64 덧셈으로 보완했다. 최종 독립 검토 차단 사항0.
+- 집중78/78, 전체Core885/885(실패0·skip0), netstandard2.1 Release 경고0·오류0. 로컬 ArchitectureGuard 위반0.
+- crowd-411 실제 원본11530틱 종료`59805294BB813DA1D34D1CF505F49A42513975DE373696EA247FB1B5B8C43619` 유지. 입력sha·recorded/currentdatahash는 별도 raw JSON에 보존. 역사 headerhash를 사용하는 ADR0058 재실행이며 일반strict검증을 우회한 새 정책이 아니다.
+- 변경파일 dotnet format exit0, CompatSim 참조 환경 경고는 기존 #533에 해당. CI quality를 최종 형식 판정으로 사용한다.
+
+### 이번 최초 CI 실패 (보존)
+
+[40851230909](https://github.com/hyunlord/bs-mobile/actions/runs/40851230909): qualityFAIL/secretsPASS. 새 caps 필드가 기존 opt-in JSON schema에 누락돼 `additionalProperties` 오류가 기본 validator 검사를 함께 실패시켰다. AG003 재발이 아니다. Schema에 required caps 구조를 추가하고, 기존 효과 상한 요구·additionalProperties=false는 유지한다. 잘못된 필드를 허용해 통과시키지 않는다.
+
+### 재개 후 Unity 실행
+
+| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---|---|
+| first-playable | 911/0/25 | 55/0/52 |
+| wave-1a | 921/0/15 | 94/0/13 |
+
+실행 소스는 `62558a324919c0cb3369badee357b517b1c369b2`. 기본 도구의 누락 입력 2건으로 exit1인 원기록은 보존한다. 기존 showcase-fixtures·melee-aim-fixture/prepare-unity로 해당 입력을 생성하고 두 검사를 각각 1/1 통과시켰다. 여섯 XML 합산: `0 unexplained, 1 listed`. 예외 추가0, 실행 후 추적 파일 변경0. listed는 선택적 recorded-input export다.
+
+## 데이터 정본 전환 후 중간 상태 포함 효과 비교
+
+동일 이동·카드 선택 정책, seed 30000~30031. 최대는 3칸 계약을 지키는 서로 다른 최대 레벨/승급 편성 3개다. 6능력 동시 최대가 아니다. 중간 상태는 Lv10·승급2 공격/체력/이동이며 편성 해금 여력만 같은 합성 계정을 사용한다. XP 차이 때문에 카드 명령열은 달라질 수 있다. 시간은 시뮬레이션 tick/30Hz이며 CPU·프레임 성능이 아니다.
+
+| 편성 | 완료/거부 | 생존 | 평균 전투초 | 없음 대비 평균초 | 평균 레벨 | 평균 처치 |
+|---|---|---|---:|---:|---:|---:|
+| none | 32/0 | 13/32 | 682.01 | 0.00 | 23.19 | 890.44 |
+| attack-health-movement | 32/0 | 25/32 | 824.20 | 142.19 | 28.06 | 1186.59 |
+| growth-experience-attack | 32/0 | 19/32 | 718.21 | 36.20 | 25.09 | 953.41 |
+| allies-health-attack | 32/0 | 25/32 | 824.20 | 142.19 | 28.00 | 1186.81 |
+| middle-attack-health-movement | 32/0 | 20/32 | 783.49 | 101.48 | 28.03 | 1113.19 |
+
+C05 원본은 frozen catalog로 먼저 검증했다. 아래는 같은 명령의 파생 실행이며 무적 스트레스 구간이다. 거부된 접두부를 생존·완료 결과로 취급하지 않는다.
+
+| 편성 | 상태 | 도달 tick | 첫 거부 sequence | 사유 |
+|---|---|---:|---:|---|
+| none | COMPLETED | 14400 | — | running |
+| attack-health-movement | COMPLETED | 14400 | — | running |
+| growth-experience-attack | REJECTED | 840 | 841 | ArgumentException: Card is not offered. |
+| allies-health-attack | COMPLETED | 14400 | — | running |
+| middle-attack-health-movement | COMPLETED | 14400 | — | running |
+
+정본 scalar CSV·snapshot/seed/DLL provenance는 [balance.csv](../metrics/vassal-run-527/data-contract/balance.csv)와 [provenance.json](../metrics/vassal-run-527/data-contract/provenance.json)에 둔다. 정상 생존은 이 자동 정책 표본의 결과이며 사람 밸런스 판정은 아니다. 성능 NOT_RUN, Claude Code 대기열 별도.
+
+중간 상태 포함 비교 실행은 정상160/160 완료, C05파생4완료/1거부로 exit1이다. XP 카드 선택 거부는 기존 고정 명령과 달라진 진행 상태의 불일치이며 실패 접두부를 보존했다. 수치 조정 없음. 두 PlayMode 로그의 CYAN_CAPTURE_FAILURE는 각각 guard-self-test-negative-control-True(의도적1픽셀) 한 건뿐이다. 실제 캡처 청록 실패0.

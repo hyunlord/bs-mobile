@@ -1,0 +1,335 @@
+{
+  "contract": "vassal-balance-v1",
+  "profile": "wave-1a",
+  "dataHash": "6AC1ACFC4B2E80DD510EE0A41D0039BC05932A5FEF1776CC1B2A4BF2E928C36D",
+  "coreAssembly": {
+    "targetFramework": ".NETCoreApp,Version=v8.0",
+    "mvid": "67ea47eb-36fa-4e7b-8a90-a7d6bd241c19",
+    "sha256": "F6F75B41067218B6AAC260E44821F5436149436BFF892FD23AF410B410EEFCCB",
+    "location": "/Users/rexxa/work/bs-mobile-vassal-527/core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Core.dll"
+  },
+  "catalogHash": "638E1956EE9FF187AD4708E5A2D428EABBF4B03DA927DF89BBBF233D5F791B9F",
+  "durationTicks": 27000,
+  "seeds": [
+    30000,
+    30001,
+    30002,
+    30003,
+    30004,
+    30005,
+    30006,
+    30007,
+    30008,
+    30009,
+    30010,
+    30011,
+    30012,
+    30013,
+    30014,
+    30015,
+    30016,
+    30017,
+    30018,
+    30019,
+    30020,
+    30021,
+    30022,
+    30023,
+    30024,
+    30025,
+    30026,
+    30027,
+    30028,
+    30029,
+    30030,
+    30031
+  ],
+  "normalWave": "COMPLETED (160/160)",
+  "policy": "octagon-180ticks-ordinal-card-v1",
+  "admission": "Normal runs use only Advance and ChooseCard; full original duration or natural death. Same tick-indexed movement and ordinal offered-card policy, not identical card-command streams when XP differs. No invulnerability, grants, speedup or rewards. Max accounts are catalog-valid synthetic completed accounts, not claimed earned playthroughs.",
+  "middleState": "Lv10 rank2 attack/health/movement vassals on the same synthetic completed account and unlock capacity as maximum cases; not a midpoint account-economy progression claim. Same 32 seeds, duration and input policy; no per-run grants.",
+  "fp01": "HISTORICAL_REGRESSION_ONLY; no vassal effect comparison",
+  "performance": "NOT_RUN; combatSeconds is simulation ticks / tickRate, not wall time",
+  "c05": {
+    "replaySha256": "F8D65A26EFA2D7CAAD0EDEEC459418F1E269F7AED80980A8C7142CD7481CD9E5",
+    "dataHash": "942CFEA33A25F90CBD5053D711C9BBFF1279DBE481950F2081C765B6093C3FDC",
+    "policy": "Original commands unchanged; original verified first; derivative failure preserves first rejected command and observed failure state. Stress prefix, not normal survival evidence."
+  },
+  "cases": [
+    {
+      "id": "none",
+      "snapshot": null
+    },
+    {
+      "id": "attack-health-movement",
+      "snapshot": {
+        "rulesId": "vassal-run-v1",
+        "rulesVersion": 1,
+        "contentHash": "E91E04CCDC631BF22E654AAD233F9AF2C78EA1DED12C27890BF8E925422BC3C1",
+        "arithmeticVersion": 1,
+        "remainderVersion": 1,
+        "effectiveSlots": 3,
+        "effectiveLevelCap": 20,
+        "forgeLevel": 10,
+        "barracksLevel": 10,
+        "basisHash": "ED053DCAC618DB71626EC864E7C6230F19734730BF772CBCE3E24550004F40F9",
+        "roster": [
+          {
+            "id": "core:furrow_guard",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          },
+          {
+            "id": "core:return_captain",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          },
+          {
+            "id": "core:ripe_escort",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          }
+        ],
+        "effects": [
+          {
+            "ability": 0,
+            "raw": 97,
+            "bonus": 97
+          },
+          {
+            "ability": 1,
+            "raw": 165,
+            "bonus": 150
+          },
+          {
+            "ability": 2,
+            "raw": 39,
+            "bonus": 39
+          },
+          {
+            "ability": 3,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 4,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 5,
+            "raw": 0,
+            "bonus": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "growth-experience-attack",
+      "snapshot": {
+        "rulesId": "vassal-run-v1",
+        "rulesVersion": 1,
+        "contentHash": "E91E04CCDC631BF22E654AAD233F9AF2C78EA1DED12C27890BF8E925422BC3C1",
+        "arithmeticVersion": 1,
+        "remainderVersion": 1,
+        "effectiveSlots": 3,
+        "effectiveLevelCap": 20,
+        "forgeLevel": 10,
+        "barracksLevel": 10,
+        "basisHash": "ED053DCAC618DB71626EC864E7C6230F19734730BF772CBCE3E24550004F40F9",
+        "roster": [
+          {
+            "id": "core:fertility_surveyor",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          },
+          {
+            "id": "core:furrow_guard",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          },
+          {
+            "id": "core:tithe_clerk",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          }
+        ],
+        "effects": [
+          {
+            "ability": 0,
+            "raw": 97,
+            "bonus": 97
+          },
+          {
+            "ability": 1,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 2,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 3,
+            "raw": 92,
+            "bonus": 92
+          },
+          {
+            "ability": 4,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 5,
+            "raw": 63,
+            "bonus": 63
+          }
+        ]
+      }
+    },
+    {
+      "id": "allies-health-attack",
+      "snapshot": {
+        "rulesId": "vassal-run-v1",
+        "rulesVersion": 1,
+        "contentHash": "E91E04CCDC631BF22E654AAD233F9AF2C78EA1DED12C27890BF8E925422BC3C1",
+        "arithmeticVersion": 1,
+        "remainderVersion": 1,
+        "effectiveSlots": 3,
+        "effectiveLevelCap": 20,
+        "forgeLevel": 10,
+        "barracksLevel": 10,
+        "basisHash": "ED053DCAC618DB71626EC864E7C6230F19734730BF772CBCE3E24550004F40F9",
+        "roster": [
+          {
+            "id": "core:furrow_guard",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          },
+          {
+            "id": "core:levy_sergeant",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          },
+          {
+            "id": "core:ripe_escort",
+            "level": 20,
+            "rank": 5,
+            "eligible": true
+          }
+        ],
+        "effects": [
+          {
+            "ability": 0,
+            "raw": 97,
+            "bonus": 97
+          },
+          {
+            "ability": 1,
+            "raw": 165,
+            "bonus": 150
+          },
+          {
+            "ability": 2,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 3,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 4,
+            "raw": 131,
+            "bonus": 131
+          },
+          {
+            "ability": 5,
+            "raw": 0,
+            "bonus": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "middle-attack-health-movement",
+      "snapshot": {
+        "rulesId": "vassal-run-v1",
+        "rulesVersion": 1,
+        "contentHash": "E91E04CCDC631BF22E654AAD233F9AF2C78EA1DED12C27890BF8E925422BC3C1",
+        "arithmeticVersion": 1,
+        "remainderVersion": 1,
+        "effectiveSlots": 3,
+        "effectiveLevelCap": 20,
+        "forgeLevel": 10,
+        "barracksLevel": 10,
+        "basisHash": "ED053DCAC618DB71626EC864E7C6230F19734730BF772CBCE3E24550004F40F9",
+        "roster": [
+          {
+            "id": "core:furrow_guard",
+            "level": 10,
+            "rank": 2,
+            "eligible": true
+          },
+          {
+            "id": "core:return_captain",
+            "level": 10,
+            "rank": 2,
+            "eligible": true
+          },
+          {
+            "id": "core:ripe_escort",
+            "level": 10,
+            "rank": 2,
+            "eligible": true
+          }
+        ],
+        "effects": [
+          {
+            "ability": 0,
+            "raw": 49,
+            "bonus": 49
+          },
+          {
+            "ability": 1,
+            "raw": 85,
+            "bonus": 85
+          },
+          {
+            "ability": 2,
+            "raw": 20,
+            "bonus": 20
+          },
+          {
+            "ability": 3,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 4,
+            "raw": 0,
+            "bonus": 0
+          },
+          {
+            "ability": 5,
+            "raw": 0,
+            "bonus": 0
+          }
+        ]
+      }
+    }
+  ],
+  "sourceCommit": "62558a324919c0cb3369badee357b517b1c369b2",
+  "retainedColumns": "All scalar fields; verbose counters omitted. Regenerate via Sim vassal-balance.",
+  "rows": 165
+}
