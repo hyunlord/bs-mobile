@@ -113,6 +113,6 @@ M1-4 실행 표본: `0bd300c`의 독립 8방향 40클립 232자세와 실제 무
 
 [#523](https://github.com/hyunlord/bs-mobile/issues/523)의 [13 가신6 전투 적용 r2](13-vassal-combat-proposal.md)를 사용자 수정·승인 후 문서 병합한다. format8/독립 `vassal-run-v1`, 유료 자원·가속의 간접 전투력 허용, 능력별 cap 필수, 직접 가신·조각·능력 판매 금지를 확정했다. 현행 슬롯/레벨 cap은 유지한다. 계수는 가설이며 구현 후 wave 정상 입력·C05의 가신 없음/최대 비교로 조정한다. C05 스트레스는 정상 생존율 근거와 구분한다. FP01에는 wave 전용 가신 효과를 적용하지 않고, 가신 블록 absent의 기존 해시·성능 회귀만 확인한다. old replay/golden은 보존하고 SDK·게임 구현은 별도다. r1 승인 대기와 earned-only 대안은 대체된 이력이다.
 
-## 정식 r8 지도 전환 · 2026-10-30
+## 정식 r8 지도·서버 저장 축소안 · 2026-10-30
 
-[14 정식 지도 저장·이관·롤백 제안](14-estate-map-release-proposal.md): 지도 기본 화면과 온보딩 07~09 방향은 사용자 결정이다. 기존 장원 저장의 일회 이관·생산 단일화·롤백·신규 효과 대응 관문은 2026-10-30 문서 최종 승인됐으며 구현되지 않았다. 효과 수치는 [가설], 저장/Core 검토의 구현 관문은 유지한다. [ADR0076](../../adr/0076-formal-estate-map-migration.md), [#546](https://github.com/hyunlord/bs-mobile/issues/546)을 따른다.
+[14 신규 정식 계정의 지도·서버 저장·효과](14-estate-map-release-proposal.md): 사용자 결정은 신규 r8 지도와 정식 서버 저장이다. 출시 전 실제 사용자 저장이 없다는 사용자 전제에 따라 개발 자동 장원 이관은 하지 않으며 개발 빌드 읽기 전용으로 보존한다. 효과 대응표는 [가설]로 유지하고 C# 서버 ADR은 Codex 별도 작업이다. 이전 이관안 승인은 대체됐으며 축소안은 재승인 대기다. [ADR0076](../../adr/0076-formal-estate-map-migration.md), [#546](https://github.com/hyunlord/bs-mobile/issues/546)을 따른다.
