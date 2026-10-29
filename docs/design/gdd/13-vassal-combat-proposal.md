@@ -94,7 +94,7 @@
 
 블록 absent이면 기존 format/헤더/옵션/종결 bytes 그대로다. enabled+빈 roster는 명시적 실험 on 상태로 absent와 다르며0효과를 명확히 기록한다. format8을 모르는 reader는 unknown version 오류로 실패해야 하고, 조용히 가신효과를 버려 format7로 재생하면 안 된다. 새 format8 내부에서 estate absent/present 및 melee 옵션의 조합을 검증하며 기존 estate schema의 의미를 재사용·변경하지 않는다.
 
-후속 구현은 승인된 format8 계약을 ADR과 검사로 구체화한다. `null/absent`는 과거와 동일 바이트/실행경로여야 하며, 효과가0인 명시적 enabled snapshot은 absent와 구분한다. 알 수 없는 버전·중복ID·범위 밖 값·hash불일치는 거부한다. 기본 프로필/datahash에 실험값을 섞지 않고 `data/opt-in/` 경계를 유지한다.
+[ADR 0075](../../adr/0075-independent-vassal-replay-format-eight.md)가 승인된 format8 선택과 호환 경계를 기록한다. 후속 구현은 구체 wire 계약을 기술 문서와 검사로 구체화한다. `null/absent`는 과거와 동일 바이트/실행경로여야 하며, 효과가0인 명시적 enabled snapshot은 absent와 구분한다. 알 수 없는 버전·중복ID·범위 밖 값·hash불일치는 거부한다. 기본 프로필/datahash에 실험값을 섞지 않고 `data/opt-in/` 경계를 유지한다.
 
 - old format1–7, schema1/2, 기존 golden·종결해시는 그대로 보존한다. 새 효과를 켠 결과는 새 fixture/hash로 추가하며 기존값을 재고정하지 않는다.
 - 현재 C05/FP01에는 가신 snapshot이 없으므로 원본 재생에 새 계정 snapshot을 주입하지 않는다. 후속 비교 입력은 원본의 불변 복사와 새 메타데이터로 분리한다.
