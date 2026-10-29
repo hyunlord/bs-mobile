@@ -118,3 +118,7 @@ ADR의 당시 상태·실패를 소급해서 성공으로 바꾸지 않는다. �
 - [ADR 0067: ArchitectureGuard는 저장소 루트 artifacts/의 생성 사본에서 콘텐츠 ID를 모으지 않는다](../../adr/0067-architecture-guard-ignores-generated-artifacts.md)
 - [ADR 0068: unity/를 바꾸는 PR은 맥 Unity 전체 실행 기록이 있어야 병합한다](../../adr/0068-mac-unity-test-record-before-merge.md)
 - [ADR 0069: opt-in 실험 데이터는 데이터 트리 해시 밖에 두고, 봇 실행도 프로필로 어둠 속 영지를 켠다](../../adr/0069-opt-in-experiment-data-outside-the-data-hash.md)
+
+## [승인 대기 제안] 가신 snapshot·재생 확장 검토 · 2026-10-29
+
+[가신6 전투 적용 제안](13-vassal-combat-proposal.md)은 시작 snapshot, 새 선택형 가신 블록과 format8 후보를 검토한다. 현행 format7/schema1·2가 가신 snapshot을 이미 수납한다는 뜻이 아니다. old replay/golden 및 absent bytes 보존·unknown version 거부·복구시 live 계정 재조회 금지는 승인 후 별도 ADR/구현 관문이다. 현재 게임 코드·데이터는 변경하지 않았다.
