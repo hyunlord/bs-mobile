@@ -1,6 +1,6 @@
 # 18 · 첫 출시 월드맵·행군·연맹 제안
 
-상태: **사용자 검토 대기**. 2026-10-30, 추적 [#553](https://github.com/hyunlord/bs-mobile/issues/553). 서버 하나의 월드맵을 첫 출시에 포함하는 것은 사용자 결정이다. 아래 크기·시간·인원·속도·보호·도움·보상 등 **모든 신규 수치는 [가설]**이다. [로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554), [병력 #555](https://github.com/hyunlord/bs-mobile/pull/555), [영웅 #557](https://github.com/hyunlord/bs-mobile/pull/557), [연구 #558](https://github.com/hyunlord/bs-mobile/pull/558), [신규 r8 서버 계정 #547](https://github.com/hyunlord/bs-mobile/pull/547)의 후속 문서다. 코드·데이터·그림·SDK는 변경하지 않는다. 사용자 승인 전 병합하지 않는다.
+상태: **사용자 승인 — 수치는 [가설] 유지**. 2026-10-30, 추적 [#553](https://github.com/hyunlord/bs-mobile/issues/553). 서버 하나의 월드맵을 첫 출시에 포함하는 것은 사용자 결정이다. 아래 크기·시간·인원·속도·보호·도움·보상 등 **모든 신규 수치는 [가설]**이다. [로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554), [병력 #555](https://github.com/hyunlord/bs-mobile/pull/555), [영웅 #557](https://github.com/hyunlord/bs-mobile/pull/557), [연구 #558](https://github.com/hyunlord/bs-mobile/pull/558), [신규 r8 서버 계정 #547](https://github.com/hyunlord/bs-mobile/pull/547)의 후속 문서다. 코드·데이터·그림·SDK는 변경하지 않는다. 사용자 승인에 따라 06:00 이후 최신 main·CI 확인 후 squash 병합한다.
 
 ## 1. 범위와 현재 구현 경계
 
