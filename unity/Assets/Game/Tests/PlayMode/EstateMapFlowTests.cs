@@ -101,6 +101,57 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
+        public IEnumerator ApprovedEstateChromeKeepsNavigationAndDisabledSpeedupOutsideTheMap()
+        {
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var screen = app.EstateMap; var account = MetaSaveCodec.Encode(app.Progression.State);
+            void Render()
+            {
+                app.Ui.Clear();
+                PortraitMetaPanels.EstateMap(app.Ui, screen, app.Progression.State, new EstateMapActions()
+                {
+                    Redraw = Render, Depart = () => { }, Settings = () => { }, Navigate = _ => { },
+                });
+            }
+            Render(); yield return null; Canvas.ForceUpdateCanvases();
+            Assert.That(Named("Estate.Depart").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Named("Tab.Estate").GetComponent<RectTransform>().rect.height, Is.EqualTo(48));
+            Assert.That(Rects("EstateMap.Work").Single().rect.height, Is.EqualTo(screen.StockTotal > 0 ? 44 : 28));
+            Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "Resource bar").sprite, Is.Not.Null);
+            Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.GoalLine").sprite, Is.Not.Null);
+            var site = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
+            screen.Select(site.Id); Render(); yield return null; Canvas.ForceUpdateCanvases();
+            var accelerate = Named("EstateMap.Accelerate");
+            Assert.That(accelerate.interactable, Is.False, "Acceleration is a visual placeholder until BM is approved.");
+            var before = MetaSaveCodec.Encode(screen.State);
+            accelerate.onClick.Invoke();
+            Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(before));
+            Assert.That(Named("EstateMap.Close").GetComponent<RectTransform>().rect.size, Is.EqualTo(new Vector2(48, 48)));
+            Assert.That(Buttons("EstateMap.Skip60"), Is.Empty);
+            Assert.That(Buttons("EstateMap.Skip600"), Is.Empty);
+            Assert.That(Buttons("EstateMap.ZoomIn"), Has.Length.EqualTo(1));
+            var zoom = Named("EstateMap.ZoomOut").GetComponent<RectTransform>();
+            var sheet = Rects("EstateMap.Selection").Single(r => r.GetComponent<Image>() != null);
+            var zoomCorners = new Vector3[4]; var sheetCorners = new Vector3[4];
+            zoom.GetWorldCorners(zoomCorners); sheet.GetWorldCorners(sheetCorners);
+            Assert.That(zoomCorners[0].y, Is.GreaterThanOrEqualTo(sheetCorners[1].y), "Zoom stays above the selected sheet.");
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account));
+            yield return Capture("estate-approved-r3-selection-formal");
+            Click("EstateMap.Build"); yield return null;
+            Assert.That(screen.UnderConstruction(site.Id), Is.True);
+            Assert.That(Named("EstateMap.ConstructionClose").interactable, Is.True);
+            Assert.That(Named("EstateMap.Move").interactable, Is.False);
+            Assert.That(Named("EstateMap.Accelerate").interactable, Is.False);
+            yield return Capture("estate-approved-r3-construction-formal");
+            screen.SkipTime(600); Render(); yield return null;
+            Assert.That(screen.Building(site.Id).Level, Is.EqualTo(1));
+            Assert.That(Named("EstateMap.Move").interactable, Is.True);
+            Assert.That(Named("EstateMap.Accelerate").interactable, Is.False);
+            yield return Capture("estate-approved-r3-complete-formal");
+        }
+
+        [UnityTest, Timeout(180000)]
         public IEnumerator HistoricalR7DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
         {
             var historicalCatalog = CanonicalContent.CreateMetaCatalog();
