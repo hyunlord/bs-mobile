@@ -239,7 +239,8 @@ namespace Tests.PlayMode
             Assert.That(screen.Selected, Is.EqualTo(forge.Id), "A tap on any cell of the footprint selects the building.");
             Assert.That(Rects("EstateMap.NameTag"), Is.Empty, "Names stay in the sheet instead of hiding building art.");
             Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(forge.Id)), screen.Map.VisibleCentre), Is.LessThan(1), "Selection centres its foundation above the sheet.");
-            Assert.That(Buttons("EstateMap.Zoom"), Is.Empty); Assert.That(Buttons("EstateMap.Decor"), Is.Empty);
+            Assert.That(Buttons("EstateMap.Zoom"), Has.Length.EqualTo(2), "Approved r3 keeps both zoom buttons above the selected sheet.");
+            Assert.That(Buttons("EstateMap.Decor"), Is.Empty);
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.True, "The selected building stays between the bars and the panel.");
             Assert.That(screen.Map.MapSize.y, Is.GreaterThan(screen.Map.Viewport.y - screen.Map.TopInset - screen.Map.BottomInset), "The wide map can be dragged to every row behind the panel.");
