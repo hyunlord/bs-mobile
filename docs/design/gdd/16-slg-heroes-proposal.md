@@ -1,6 +1,6 @@
 # 16 · SLG 영웅 수집·모집·가신 관계 제안
 
-상태: **사용자 검토 대기**. 2026-10-30, 추적 [#551](https://github.com/hyunlord/bs-mobile/issues/551). 영웅 수집/뽑기 허용, 확률 공개·천장은 사용자 결정이다. 아래 신규 영웅·확률·비용·성장·상한·보상 수치는 모두 **[가설]**이며 출시 데이터가 아니다. 승인 전 병합하지 않는다. [로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554)와 선행 [병력 #555](https://github.com/hyunlord/bs-mobile/pull/555)를 따른다. 코드·데이터·그림·SDK 변경 없음.
+상태: **사용자 승인 — 수치는 [가설] 유지**. 2026-10-30, 추적 [#551](https://github.com/hyunlord/bs-mobile/issues/551). 영웅 수집/뽑기 허용, 확률 공개·천장은 사용자 결정이다. 아래 신규 영웅·확률·비용·성장·상한·보상 수치는 모두 **[가설]**이며 출시 데이터가 아니다. 사용자 승인에 따라 06:00 이후 최신 main·CI 확인 후 squash 병합한다. [로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554)와 선행 [병력 #555](https://github.com/hyunlord/bs-mobile/pull/555)를 따른다. 코드·데이터·그림·SDK 변경 없음.
 
 ## 1. 현재 구현과 새 설계
 
