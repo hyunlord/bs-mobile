@@ -1,73 +1,100 @@
 # 가신 전투 구현 검증 (#527)
 
 - 날짜: 2026-10-29
-- 상태: 부분 — 사용자 재개 승인 후 IDE0011 수정·변경 파일 형식 검사 통과. Unity 두 프로필 및 보충 입력 검사 통과. 최종 비교·CI 대기.
-- PR: [#528](https://github.com/hyunlord/bs-mobile/pull/528), 초안 유지.
+- 상태: 초안 검토. 사용자 병합 승인 대기, 성능은 별도 Claude Code 대기열.
+- PR: [#528](https://github.com/hyunlord/bs-mobile/pull/528).
 - 설계 정본: #525 r2 (`25b49d0293b8f4b26755ec0e6db8f8d9836b20fb`).
+- 실행 소스: `0fbdb2e7dec771f1ff90cc63580a4403275594f0`. 이후 문서/수치 기록만 변경.
 
-## 사용자 확인에 따른 비교 범위
+## 구현과 범위
 
-FP01에는 wave의 Growth·Allies·완료 XP 시스템을 추가하지 않는다. FP01은 원래 입력·종료 해시 회귀만 검사한다. 새 효과 비교는 C05의 명령을 그대로 사용하는 파생 실행과 별도의 정상 wave 입력으로 한다. C05는 무적 스트레스 입력이므로 생존 밸런스 증거가 아니다.
+6개 능력, 출정 고정 snapshot, 정수 permille와 나머지·아군 최대 HP 복구, format8/vassal-run-v1을 구현했다. 블록이 없으면 역사 format1~7 bytes/실행 경로를 유지한다. 계정 저장 형식6은 바꾸지 않는다. 실제 명령으로 나머지를 만든 후 저장/복구/계속 실행하는 회귀도 포함한다.
 
-## 실행 기록
+이동은 기존 계산을 완료한 축별 크기에 마지막으로 floor 곱 1회 후 방향을 복원한다. 기존 Feel 나머지 단위는 유지하며 작은 이동량에서 보너스가 양자화되어 사라지는 한계가 있다. [ADR0075](../adr/0075-vassal-run-snapshot-and-replay-format-eight.md)에 근거를 기록했다.
 
-아래는 구현 중 로컬 작업본의 기록이다. 이후 추가 테스트·코드의 최종 검증과 CI를 대신하지 않는다.
+FP01은 역사 회귀만이며 Growth·Allies·완료 XP를 추가하지 않는다. 효과 비교는 정상 wave와 C05 고정 명령 파생본으로 구별한다. 개발 빌드/Editor wave 명시적 opt-in에서만 적용하고 기본값은 off다. 꺼진 상태의 미적용 안내는 유지한다. 이미 시작한 판에는 이후 편성 변경이 반영되지 않는다.
+
+## 검증
 
 | 검사 | 결과 | 범위 |
 |---|---|---|
-| 가신 집중 테스트 최초 | 45 통과 / 2 실패 | 새 catalog 격리 테스트의 입력 구성 오류. 원자료 보존 |
-| 수정 후 재빌드 | 컴파일 실패 | 새 비교 도구가 없는 `WaveGroupView.Members`를 참조. 실제 처치 카운터로 수정 |
-| 가신 집중 테스트 재검증 | 50/50, skip 0 | 수정된 두 fixture 및 비교 정책 검사 포함 |
-| 전체 Core 테스트 | 857/857, skip 0 | net8.0, 아래 후속 보강 전 실행 |
-| C07 역사 입력 | 양 타깃 동일 | 27000틱, `97152EB9E83B4158DB8714AAA76CE73435595B3CC3A62E918918E87480A219ED` |
-| A03 역사 입력 | 양 타깃 동일 | 27000틱, `2E394387DDE118A2F84E76419FC381474C4F071BCAF06D5E0C8A694EF8CE5FE6` |
-| C05 역사 입력 | 양 타깃 동일 | 14400틱, `B056B090575693A13CEEAB514E909F5C2C346FF2B1007598A4EE6E9B2DE8AEE8` |
-| FP01 역사 입력 | 양 타깃 동일 | 27000틱, `69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5` |
+| Core 전체 | 872/872, skip 0 | net8.0 |
+| 가신 집중 | 82/82, skip 0 | snapshot 격리, cap, 나머지 복구, 역사 음성 대조 |
+| netstandard2.1 | 빌드 경고/오류 0 | 실기/IL2CPP 아님 |
+| 변경 파일 형식 | exit 0, IDE0011 0 | CompatSim 참조 경고는 #533, 최종 판단 CI quality |
+| C07 역사 | 양 타깃 동일, 27000틱 | `97152EB9E83B4158DB8714AAA76CE73435595B3CC3A62E918918E87480A219ED` |
+| A03 역사 | 양 타깃 동일, 27000틱 | `2E394387DDE118A2F84E76419FC381474C4F071BCAF06D5E0C8A694EF8CE5FE6` |
+| C05 역사 | 양 타깃 동일, 14400틱 | `B056B090575693A13CEEAB514E909F5C2C346FF2B1007598A4EE6E9B2DE8AEE8` |
+| FP01 역사 | 양 타깃 동일, 27000틱 | `69E7182A9FB4EBF154E85551F2A2C6696F8EFBD30A87EC3C1046DF593361CDB5` |
+| crowd-411 실제 입력 | 11530틱 동일 | `59805294BB813DA1D34D1CF505F49A42513975DE373696EA247FB1B5B8C43619` |
 
-양 타깃은 .NET host에서 실제 net8.0 / netstandard2.1 Core DLL을 사용했다. Unity Mono·IL2CPP·기기 실행 또는 성능 증거가 아니다.
+역사 양 타깃 검사는 .NET host에서 실제 net8.0/netstandard2.1 DLL을 사용했다. crowd-411은 ADR0058에 따라 기록 당시 header data hash와 현재 catalog를 사용했다. replay SHA256 `4fe0f97f23d20b487730be03ae76f5d7551ec88b787d43566f0cde41cd5a079c`; 원본 bytes 변경 없음.
 
-재생성 명령:
+| Unity 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
+|---|---|---|
+| first-playable | 911 / 0 / 25 | 55 / 0 / 52 |
+| wave-1a | 921 / 0 / 15 | 94 / 0 / 13 |
+
+기본 4 XML은 두 입력 부재로 skip 집계 exit 1이었다. 기존 도구로 frozen combat sidecar와 opt-in melee catalog를 생성한 뒤 해당 테스트를 각각 1/1 통과시켰다(새 예외 없음). 여섯 XML 합산 `skipped in every profile: 0 unexplained, 1 listed`. listed는 선택적 recorded-input export다. 실행 뒤 추적 파일 변경0. 기본 실행의 exit1도 보존한다.
+
+## 실제 화면
+
+[선정 표본 4장 Release](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-run-527-20261029).
+
+390×844·1080×2520의 opt-in 상단/하단에서 초상화, 다음 출정 고정 안내, 여섯 합산→적용/상한 표시를 확인했다. 네 캡처 cyanPixels=0, compiling 전/후 false. 초기 계정 공격10‰/나머지0 표본이며 최대 편성의 cap 도달 문구와 실기 판정은 미확인이다. 별도의 기존 비활성 긴 화면은 제목 가림이 있으나 이번 opt-in 하단에서는 제목과 출전 칸 표시가 유지된다.
+
+초상화6crop 밖 RGBA 변경0, atlas크기/import동일. [메모리 증가 기록](../metrics/texture-memory-deltas/527.json): Mac/iOS/Android 모두 추정 증가0bytes. 장치 측정은 아니다.
+
+## 재생성
 
 ```sh
 dotnet test core/tests/SowSiege.Tests/SowSiege.Tests.csproj --configuration Release
 node tools/verify-wave-history-parity.mjs artifacts/vassal-history-new
 dotnet core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll interactive-replay data benchmarks/first-playable-fp01/run.ssreplay first-playable
 dotnet core/src/SowSiege.CompatSim/bin/Release/net8.0/SowSiege.CompatSim.dll interactive-replay data benchmarks/first-playable-fp01/run.ssreplay first-playable
+# C05 frozen data export는 wave-density-benchmark 런북의 기존 경로 사용
+dotnet core/src/SowSiege.Sim/bin/Release/net8.0/SowSiege.Sim.dll vassal-balance data artifacts/vassal-balance-new benchmarks/wave-c05/run.ssreplay artifacts/benchmarks/c05/data
 ```
 
-## 후속 보강 및 미완료
+## 보존한 실패·중단
 
-- 실제 명령으로 생성한 grain/XP 나머지·group 최대 HP를 저장·복구한 후 계속 실행하는 검사 추가. 집중 82/82 및 전체 872/872에서 통과.
-- 실제 opt-in 세션 생성 후 원본 catalog 변경·반환 snapshot 변경 시도에 대한 격리 검사 추가. 집중 82/82 및 전체 872/872에서 통과.
-- 정적 검토에서 수동 format8 header의 all-false Feel writer/reader 불일치 발견. writer 정규화와 회귀 검사 추가. 집중 82/82 및 전체 872/872에서 통과.
-- 이동은 사용자 지정 보수안: 기존 이동 계산 후 축별 이동 크기에 가신 배율을 마지막으로 floor 1회 적용. ADR0075에 기존 나머지 계약 유지와 양자화 한계를 기록했다.
-- 정상 wave 128회 실행은 완료했으나 최종 이동 산술 변경 전 결과이므로 최종 비교로 쓰지 않는다. C05 파생 효과 비교·성능 측정은 NOT_RUN이다.
-- UI 안내 제거·초상화 통합·Unity 두 프로필·crowd-411 명시 검증·최종 CI는 아직 완료하지 않았다.
+- 최초 집중검사45통과/2실패: 새 catalog격리 fixture입력 오류. 실제 World 멤버 대신 없는 `WaveGroupView.Members`를 쓴 비교 도구 compile실패도 수정했다. 이후50/50·전체857/857, 보강 후82/82·872/872.
+- format8 all-false Feel writer/reader 불일치를 정적검토에서 발견해 writer정규화와 회귀검사 추가.
+- 17:15 두 차례 형식 검사에 CompatSim 참조 로딩과 IDE0011이 함께 남아 중단·잠금 해제. 사용자 재개 승인 뒤 누락 중괄호를 직접 추가하고 변경파일 `--include` exit0을 확인했다. 규칙 비활성/예외 추가 없음. 참조 로딩은 [환경 이슈 #533](https://github.com/hyunlord/bs-mobile/issues/533).
+- 최종 이동 변경 전 정상wave128회 결과는 최종 비교에 쓰지 않는다. 최종 산술로 전부 재실행했다.
 
-## 17:15 중단 기록
+## 최종 CI 중단
 
-- 집중 검사: 82/82, skip 0 (`artifacts/vassal-527/tests/vassal-final-second.trx`).
-- 전체 Core: 872/872, skip 0 (`core-all-final.trx`). netstandard2.1 빌드 오류·경고 0.
-- 형식 검사 최초와 재실행 모두 CompatSim 참조 로딩 실패 및 새 Sim/테스트 코드 IDE0011(중괄호 누락)이 남았다. whitespace 수정과 solution restore만으로 해결되지 않았다. `format.log` / `format-final.log` 보존. 두 번 같은 실패 중단 규칙을 적용하여 추가 수정·Unity 실행을 중단했다.
-- Unity 실행 전 prepare/export는 앞 단계 실패로 실행되지 않았다. 최신 구현 CI는 미실행이며, ADR 커밋의 CI 성공과 구별한다. 구현은 로컬 작업본에 보존했다.
-- 17:15 공유 Mac 잠금 해제 확인. #528 초안 유지, 병합하지 않는다. 후속 순서는 #528 완료 → #496 → 전투 UI → 영지 UI 그대로다.
+- [CI 40846618660](https://github.com/hyunlord/bs-mobile/actions/runs/40846618660): quality FAIL, secrets PASS. ArchitectureGuard AG003 32건. Core 단위/형식 단계 전에 중단되어 CI의 tests TRX 업로드도 입력 파일 없음으로 실패했다.
+- PR 본문 갱신으로 이미 예약됐던 동일 SHA의 [CI 40846916123](https://github.com/hyunlord/bs-mobile/actions/runs/40846916123)도 같은 quality 실패 후 취소 처리. 수정 없는 중복 실행이며 두 기록을 모두 보존한다. 추가 실행·구현을 중단한다.
+- IDE0011 재발이 아니다. `VassalRunContract`의 능력 B/S/R/cap, 슬롯/레벨/승급 검증식은 게임플레이 데이터 중복이므로 알고리즘 예외에 넣을 수 없다. format8 판별자·codec 할당 제한과 구분해야 한다.
+- 다음 수정 방향(미구현): 승인 opt-in/MetaCatalog 정본을 불변 출정 규칙으로 주입하고 Core에서 상한 근거·재계산 검증을 유지한다. 이 근거를 replay에도 고정해야 하므로 단순 형식 수정이 아니라 snapshot/wire 검증 계약 구체화가 필요하다. Guard 비활성·광범위 예외·host 검증으로만 이동하는 우회는 하지 않았다.
+- 두 프로필/역사 해시의 통과를 전체 관문 통과로 표현하지 않는다. #528 초안 유지, #496 미착수.
 
-## 사용자 승인 후 재개
+## 최종 이동 산술 기준 효과 비교
 
-- 새 Sim·테스트 코드의 누락 중괄호를 직접 추가했다. 규칙·예외 변경 없음.
-- `dotnet format --no-restore --verify-no-changes --include <변경 Core/Sim/테스트 .cs>`: exit 0, IDE0011 없음. CompatSim 참조 로딩 경고는 환경 이슈 [#533](https://github.com/hyunlord/bs-mobile/issues/533)로 분리했으며 최종 판정은 CI quality다.
-- 최종 이동 산술 적용본으로 crowd-411 실제 입력을 실행했다: 11530틱, `59805294BB813DA1D34D1CF505F49A42513975DE373696EA247FB1B5B8C43619` 동일. ADR0058에 따라 기록 당시 data hash를 보존하고 현재 catalog로 실행했다. 원본 replay bytes 변경 없음.
+동일 이동·카드 선택 정책, seed 30000~30031. 최대는 3칸 계약을 지키는 서로 다른 최대 레벨/승급 편성 3개다. 6능력 동시 최대가 아니다. XP 차이 때문에 카드 명령열은 달라질 수 있다. 시간은 시뮬레이션 tick/30Hz이며 CPU·프레임 성능이 아니다.
 
-## 최종 구현 Unity 기록 (0fbdb2e7)
+| 편성 | 완료/거부 | 생존 | 평균 전투초 | 없음 대비 평균초 | 평균 레벨 | 평균 처치 |
+|---|---|---|---:|---:|---:|---:|
+| none | 32/0 | 13/32 | 682.01 | 0.00 | 23.19 | 890.44 |
+| attack-health-movement | 32/0 | 25/32 | 824.20 | 142.19 | 28.06 | 1186.59 |
+| growth-experience-attack | 32/0 | 19/32 | 718.21 | 36.20 | 25.09 | 953.41 |
+| allies-health-attack | 32/0 | 25/32 | 824.20 | 142.19 | 28.00 | 1186.81 |
 
-| 프로필 | EditMode 통과/실패/skip | PlayMode 통과/실패/skip |
-|---|---|---|
-| first-playable | 911 / 0 / 25 | 55 / 0 / 52 |
-| wave-1a | 921 / 0 / 15 | 94 / 0 / 13 |
+C05 원본은 frozen catalog로 먼저 검증했다. 아래는 같은 명령의 파생 실행이며 무적 스트레스 구간이다. 거부된 접두부를 생존·완료 결과로 취급하지 않는다.
 
-기본 실행은 두 입력 부재로 skip 집계 exit 1이었다. 기존 도구로 frozen combat sidecar와 opt-in melee catalog를 생성한 뒤 해당 테스트를 각각 1/1 통과시켰다(새 예외 없음). 여섯 XML의 합산은 `skipped in every profile: 0 unexplained, 1 listed`이며 listed는 선택적 recorded-input sequence export다. 실행 뒤 추적 파일 변경 0. 원래 exit 1 로그도 보존한다.
+| 편성 | 상태 | 도달 tick | 첫 거부 sequence | 사유 |
+|---|---|---:|---:|---|
+| none | COMPLETED | 14400 | — | running |
+| attack-health-movement | COMPLETED | 14400 | — | running |
+| growth-experience-attack | REJECTED | 840 | 841 | ArgumentException: Card is not offered. |
+| allies-health-attack | COMPLETED | 14400 | — | running |
 
-- 가신 적용은 명시적 개발 opt-in에서 실제 출정 snapshot으로 검증했다. 꺼진 경우 기존 미적용 안내 유지.
-- 390×844·1080×2520의 opt-in 상단/하단 캡처에서 여섯 효과와 상한 표시를 확인했다. 상한 도달 문구의 최대 편성 시각 표본·실기는 미확인이다.
-- 초상화 6crop 교체: crop 밖 RGBA 변경 0, 플랫폼별 추정 텍스처 증가 0 bytes.
-- 과거 비활성 긴 화면의 제목 가림은 opt-in 화면과 구별하여 기록한다. 이번 opt-in 하단 캡처는 제목과 출전 칸 표시가 유지된다.
+정본 scalar CSV·snapshot/seed/DLL provenance는 [balance.csv](../metrics/vassal-run-527/balance.csv)와 [provenance.json](../metrics/vassal-run-527/provenance.json)에 둔다. 정상 생존은 이 자동 정책 표본의 결과이며 사람 밸런스 판정은 아니다. 성능 NOT_RUN, Claude Code 대기열 별도.
+
+## 종료와 다음 순서
+
+18:20 KST 정상128행+C05파생4행 기록 완료, 자신의 Mac 잠금 해제. 비교 CLI는 C05 카드 거부1건 때문에 exit1이며 재실행하지 않았다.
+
+사용자 후속 결정: Core 관문 통과 뒤 승인 [가신 UI](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-531-20261029)를 적용하고 그 다음 #496으로 간다. 새 UI·#496은 미착수다. 현재 실패를 통과로 바꾸지 않고, 이 기록은 추가 CI 반복을 피하기 위해 로컬 문서 커밋/PR 코멘트/Release scalar 자료로 보존한다.
