@@ -13,6 +13,10 @@ builder.Services.AddSingleton(services => EstateContent.Load(services.GetRequire
 builder.Services.AddSingleton<EstateApplication>();
 builder.Services.AddSingleton(services => NpgsqlDataSource.Create(services.GetRequiredService<IConfiguration>().GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
 builder.Services.AddSingleton<AccountStore>();
+builder.Services.AddSingleton(services => RecruitPool.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"]!));
+builder.Services.AddSingleton(services => new RecruitOptions(Convert.FromHexString(services.GetRequiredService<IConfiguration>()["Recruit:SeedKey"] is { Length: >= 64 } key
+    ? key : throw new InvalidOperationException("Recruit:SeedKey (>=32 bytes hex) required."))));
+builder.Services.AddSingleton<RecruitStore>();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
@@ -31,6 +35,7 @@ if (!app.Environment.IsDevelopment() || app.Configuration["Prototype:Enabled"] !
     throw new InvalidOperationException("This prototype requires Development and explicit Prototype:Enabled=true.");
 }
 await app.Services.GetRequiredService<AccountStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
+await app.Services.GetRequiredService<RecruitStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));
 app.MapPost("/prototype/accounts", async (AccountStore store, CancellationToken cancellation) =>
@@ -45,7 +50,40 @@ app.MapPost("/v1/estate/commands", async (EstateCommand command, HttpContext con
     }
     return await Execute(context, store, cache, command, cancellation);
 }).RequireRateLimiting("prototype");
+app.MapGet("/v1/heroes/recruit/odds", async (HttpContext context, AccountStore store, RecruitStore recruit, CancellationToken cancellation) =>
+    await Authenticated(context, store, async id => Results.Ok(await recruit.OddsAsync(id, cancellation)), cancellation)).RequireRateLimiting("prototype");
+app.MapPost("/v1/heroes/recruit", async (RecruitCommand command, HttpContext context, AccountStore store, RecruitStore recruit, ConnectionCache cache, CancellationToken cancellation) =>
+{
+    if (!RecruitDraw.IsValid(command))
+    {
+        return Results.BadRequest(new ApiError("invalid-command"));
+    }
+    return await Authenticated(context, store, async id =>
+    {
+        string response = await recruit.RecruitAsync(id, command, cancellation);
+        await cache.TouchAsync(id);
+        return Results.Content(response, "application/json");
+    }, cancellation);
+}).RequireRateLimiting("prototype");
 app.Run();
+
+static async Task<IResult> Authenticated(HttpContext context, AccountStore store, Func<Guid, Task<IResult>> action, CancellationToken cancellation)
+{
+    string header = context.Request.Headers.Authorization.ToString();
+    Guid? id = header.StartsWith("Bearer ", StringComparison.Ordinal) ? await store.AuthenticateAsync(header[7..], cancellation) : null;
+    if (id is null)
+    {
+        return Results.Unauthorized();
+    }
+    try
+    {
+        return await action(id.Value);
+    }
+    catch (CommandConflictException conflict)
+    {
+        return Results.Conflict(new ApiError(conflict.Message));
+    }
+}
 
 static async Task<IResult> Execute(HttpContext context, AccountStore store, ConnectionCache cache, EstateCommand? command, CancellationToken cancellation)
 {

@@ -1,0 +1,25 @@
+{
+  "id": "slg:recruit_pool_v1",
+  "kind": "slg-recruit-pool",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "sources": [
+    "docs/design/gdd/16-slg-heroes-proposal.md",
+    "data/opt-in/slg/content-draft-v1.json"
+  ],
+  "poolFamilyId": "slg:standard",
+  "poolVersion": "slg:standard-v1",
+  "costGems": 100,
+  "guaranteeAfterMisses": 19,
+  "guaranteedRarity": "epic",
+  "probabilityScale": 10000,
+  "entries": [
+    { "heroId": "slg:field_guide", "rarity": "common", "weight": 7000 },
+    { "heroId": "slg:river_warden", "rarity": "rare", "weight": 2500 },
+    { "heroId": "slg:ruin_seeker", "rarity": "epic", "weight": 500 }
+  ],
+  "duplicateShards": { "common": 5, "rare": 10, "epic": 20 },
+  "prototypeInitialGems": 3000,
+  "notes": "Server prototype only. weight is per 10000. guaranteeAfterMisses=19 means after 19 consecutive non-epic draws the next draw is epic. prototypeInitialGems is a development grant because no gem source exists before #122; it is not a release economy value."
+}

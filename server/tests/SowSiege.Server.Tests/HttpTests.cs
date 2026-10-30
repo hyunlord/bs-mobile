@@ -49,6 +49,25 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task RecruitEndpointsRequireAuthAndStrictPayload()
+    {
+        using var factory = new PrototypeFactory();
+        using var client = factory.CreateClient();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/v1/heroes/recruit/odds")).StatusCode);
+        var created = (await (await client.PostAsJsonAsync("/prototype/accounts", new { })).Content.ReadFromJsonAsync<AccountCreated>())!;
+        client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        var odds = (await client.GetFromJsonAsync<RecruitOdds>("/v1/heroes/recruit/odds"))!;
+        Assert.Equal(1.0, odds.Next.Sum(o => o.Probability), 12);
+        var forged = new { commandId = Guid.NewGuid(), expectedVersion = 0, poolVersion = odds.PoolVersion, heroId = "slg:ruin_seeker" };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/heroes/recruit", forged)).StatusCode);
+        var command = new RecruitCommand(Guid.NewGuid(), 0, odds.PoolVersion);
+        var reply = await (await client.PostAsJsonAsync("/v1/heroes/recruit", command)).Content.ReadFromJsonAsync<RecruitReply>();
+        Assert.True(reply!.Done);
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync("/v1/heroes/recruit", command with { CommandId = Guid.NewGuid() })).StatusCode);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public void ProductionCannotStartPrototypeEndpoints()
     {
         using var factory = new PrototypeFactory("Production");
@@ -67,7 +86,8 @@ public sealed class HttpTests
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
                 ["ConnectionStrings:Postgres"] = postgres,
-                ["ConnectionStrings:Redis"] = "127.0.0.1:1"
+                ["ConnectionStrings:Redis"] = "127.0.0.1:1",
+                ["Recruit:SeedKey"] = RecruitTests.TestKeyHex
             }));
         }
     }
