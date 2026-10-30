@@ -17,3 +17,17 @@ test('CLI rejects missing capture or unknown flags rather than generating metric
   assert.throws(()=>run([]),/Usage:/);
   assert.throws(()=>run(['--ignore-unsupported']),/Unknown option/);
 });
+
+test('approved metric requires fixed masks, reads RED rather than alpha, and preserves strict exclusions', async()=>{
+  const {approvedMeasurement,screenReferenceMask}=await import('./measure-estate-render-density.mjs');
+  const base={width:2,height:2,items:[],water:[],land:[]};
+  const texture=red=>({width:2,height:2,pixels:Uint8Array.from(Array.from({length:4},()=>[red,0,0,255]).flat())});
+  assert.equal(approvedMeasurement(base,()=>null,null,null).status,'UNKNOWN');
+  assert.deepEqual([...screenReferenceMask(base,texture(0))],[0,0,0,0]);
+  const result=approvedMeasurement(base,()=>null,texture(255),texture(0));
+  assert.equal(result.status,'MEASURED');assert.equal(result.values.dryLandPixels,4);assert.equal(result.values.emptyDryLandPercent,100);
+  assert.throws(()=>screenReferenceMask(base,{...texture(0),width:3}),/width/);
+  const quad={name:'soil',source:'soil',category:'ground',order:1,active:true,texture:'soil',filter:'Point',vertices:[{x:0,y:0,u:0,v:1,a:1},{x:2,y:0,u:1,v:1,a:1},{x:2,y:2,u:1,v:0,a:1},{x:0,y:2,u:0,v:0,a:1}],triangles:[0,1,2,0,2,3]};
+  const soil=approvedMeasurement({...base,items:[quad,{...quad,name:'prop',category:'prop',order:0}]},()=>texture(255),texture(255),texture(0));
+  assert.equal(soil.values.visibleTerrainPropCount,0);assert.equal(soil.values.emptyDryLandPercent,100);
+});

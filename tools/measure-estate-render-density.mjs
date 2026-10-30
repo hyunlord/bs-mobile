@@ -82,7 +82,7 @@ export function measure(input, loadTexture) {
     if(!item.active)continue;
     try {
       const kind=category(item);
-      if(['lighting','ground'].includes(kind))continue; // Runtime darkness/lamps are not authoring artwork; source fog does occlude.
+      if(kind==='lighting' || (kind==='ground' && !input.strictApprovedReference))continue; // Runtime darkness/lamps are not authoring artwork; source fog does occlude.
       const alpha=raster(item,width,height,item.clip??clip,loadTexture(item.texture));
       let visiblePixels=0,rawPixels=0;
       for(let p=0;p<size;p++){
@@ -91,21 +91,22 @@ export function measure(input, loadTexture) {
         if(contribution>=threshold)visiblePixels++;
         if(kind==='path' && contribution>=threshold){paths[p]=1;coverage[p]=1;strictCoverage[p]=1;}
         else if(kind==='exterior'){if(contribution>=128/255)coverage[p]=1;}
-        else if(!['water','fog'].includes(kind) && contribution>=threshold){coverage[p]=1;strictCoverage[p]=1;}
+        else if(!['water','fog','ground'].includes(kind) && contribution>=threshold){coverage[p]=1;strictCoverage[p]=1;}
         // Water and paths remain occluders; exterior is excluded from count but participates in visibility/coverage.
         transparency[p]*=1-alpha[p];
       }
-      rows.push({name:item.name,source:item.source,role:item.role,category:kind,rawPixels,visiblePixels,visible:visiblePixels>=minimumPixels,counted:!['exterior','water','path','shadow','building','fog'].includes(kind)&&visiblePixels>=minimumPixels});
+      rows.push({name:item.name,source:item.source,role:item.role,category:kind,rawPixels,visiblePixels,visible:visiblePixels>=minimumPixels,counted:!['exterior','water','path','shadow','building','fog','ground'].includes(kind)&&visiblePixels>=minimumPixels});
     } catch(error){errors.push(String(error.message));}
   }
   const emptyMask=new Uint8Array(size);
   let land=0,dry=0,bare=0,strictBare=0,dryWithoutPaths=0,bareWithoutPaths=0;
-  if(!input.land?.length || !Array.isArray(input.water))errors.push('Missing logical ground/water polygons');
+  if(input.strictApprovedReference && (!input.landReferenceMask || !input.waterAlphaMask))errors.push('Missing approved screen land/visual-water reference masks');
+  else if(!input.landReferenceMask && (!input.land?.length || !Array.isArray(input.water)))errors.push('Missing logical ground/water polygons');
   else for(let y=0;y<height;y++)for(let x=0;x<width;x++){
     if(x+.5<clip[0]||x+.5>=clip[2]||y+.5<clip[1]||y+.5>=clip[3])continue;
-    if(!input.land.some(poly=>inside(x+.5,y+.5,poly)))continue;
+    if(input.landReferenceMask ? input.landReferenceMask[y*width+x]<128/255 : !input.land.some(poly=>inside(x+.5,y+.5,poly)))continue;
     land++;if(input.waterAlphaMask ? input.waterAlphaMask[y*width+x]>=128/255 : input.water.some(poly=>inside(x+.5,y+.5,poly)))continue;
-    const p=y*width+x;dry++;if(coverage[p]<threshold){bare++;emptyMask[p]=1;}if(strictCoverage[p]<threshold)strictBare++;
+    const p=y*width+x;dry++;if((input.strictApprovedReference?strictCoverage[p]:coverage[p])<threshold){bare++;emptyMask[p]=1;}if(strictCoverage[p]<threshold)strictBare++;
     if(paths[p]<threshold){dryWithoutPaths++;if(strictCoverage[p]<threshold)bareWithoutPaths++;}
   }
   const pct=(a,b)=>b?100*a/b:null;
@@ -117,6 +118,20 @@ export function measure(input, loadTexture) {
   }
   const values={dryLandPixels:dry,largestConnectedEmptyPixels:largestEmptyPixels,largestConnectedEmptyComponentPercent:pct(largestEmptyPixels,dry),visibleCountsBySource,visibleCountsByRole,visibleTerrainPropCount:rows.filter(r=>r.counted).length,visiblePrimaryBuildings:rows.filter(r=>r.category==='building'&&r.visible).length,logicalLandScreenPercent:pct(land,size),emptyDryLandPercent:pct(bare,dry),strictEmptyDryLandPercent:pct(strictBare,dry),emptyDryLandExcludingPathsPercent:pct(bareWithoutPaths,dryWithoutPaths)};
   return {status:errors.length?'UNKNOWN':'MEASURED',schema:'estate-density-r2-actual-mesh-v2',largestEmptyMethod:'4-neighbor pixel connectivity on clipped dry logical land with post-occlusion occupancy below 32/255; denominator all dry logical land pixels. Paths count as occupied. This added metric is not an original Astra metric.',referenceParity:'PARTIAL: original occupancy32/canopy128 contribution method recovered. Reference mask reprojection available; CG.high reference vs Unity bilinear sampling remains disclosed; authored fog occludes but never fills terrain.',thresholds:{alphaContribution:32,visiblePixels:8},camera:input.camera,geometryProvenance:input.geometryProvenance,waterMethod:input.waterAlphaMask?'Recovered original world water mask, alpha128, bilinear reprojected to actual exported camera':'Runtime logical river cells',values:errors.length?null:values,diagnosticPartialValues:errors.length?values:undefined,errors,items:rows};
+}
+// Approved screenshot masks encode occupancy in red, not PNG alpha. No resizing or logical-cell fallback.
+export function screenReferenceMask(input, texture) {
+  assert.equal(texture.width,input.width,'Reference mask width differs from capture');
+  assert.equal(texture.height,input.height,'Reference mask height differs from capture');
+  return Float32Array.from({length:input.width*input.height},(_,i)=>texture.pixels[i*4]/255);
+}
+export function approvedMeasurement(input, loadTexture, land, water) {
+  if(!land || !water) return {status:'UNKNOWN',values:null,errors:['Approved screen land and visual-water masks are required; logical water is not a substitute']};
+  const result=measure({...input,strictApprovedReference:true,landReferenceMask:screenReferenceMask(input,land),waterAlphaMask:screenReferenceMask(input,water)},loadTexture);
+  result.largestEmptyMethod='4-neighbor connectivity on approved RED land minus approved RED visual-water; strict post-occlusion alpha32 occupancy including paths, excluding exterior/ground/water';
+  result.waterMethod='Approved capture-space visual-water RED >=128; land RED >=128; no resampling';
+  result.referenceParity='Same fixed denominator and alpha32 contribution contract; Node bilinear sampling differs from historical CG.high; compare measured baseline error before interpreting parity.';
+  return result;
 }
 export function referenceWaterMask(input, texture, zones, world) {
   assert(world && [...world.origin,...world.size,...world.cell].every(Number.isFinite), "Explicit finite water mask world geometry required");
@@ -164,12 +179,13 @@ function pair(text, name) {
 }
 export function run(argv) {
   const {values:opts,positionals}=parseArgs({args:argv,allowPositionals:true,options:{
+    'approved-land-mask':{type:'string'}, 'approved-water-mask':{type:'string'},
     selftest:{type:'boolean'}, 'texture-root':{type:'string'},
     'reference-water-mask':{type:'string'}, 'water-origin':{type:'string'},
     'water-size':{type:'string'}, 'grid-cell':{type:'string'}, 'zone-config':{type:'string'}
   }});
   if(opts.selftest){assert.equal(positionals.length,0);selftest();return null;}
-  assert.equal(positionals.length,1,'Usage: node tools/measure-estate-render-density.mjs capture.png.density.json [--texture-root unity] [--reference-water-mask mask.png --water-origin=-256,448 --water-size=1152,1152 --grid-cell=64,32 --zone-config config.json]');
+  assert.equal(positionals.length,1,'Usage: node tools/measure-estate-render-density.mjs capture.png.density.json [--texture-root unity] --approved-land-mask capture-land.png --approved-water-mask capture-visual-water.png [--reference-water-mask mask.png --water-origin=-256,448 --water-size=1152,1152 --grid-cell=64,32 --zone-config config.json]');
   const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
   const inputBytes=fs.readFileSync(positionals[0]),input=JSON.parse(inputBytes),cache=new Map(),textures=[];
   const textureRoot=path.resolve(opts['texture-root']??path.join(root,'unity'));
@@ -181,7 +197,13 @@ export function run(argv) {
     }
     return cache.get(file);
   };
-  const result=measure(input,load);
+  const legacy=measure(input,load);
+  const maskProvenance={};
+  const readMask=key=>{if(!opts[key])return null;const bytes=fs.readFileSync(opts[key]);maskProvenance[key]={path:opts[key],sha256:sha(bytes)};return decodeRgbaPng(bytes);};
+  const result=approvedMeasurement(input,load,readMask('approved-land-mask'),readMask('approved-water-mask'));
+  result.primaryMetric='approved-reference-strict-visual-water';
+  result.legacyLogicalWaterMeasurement=legacy;
+  result.approvedMaskProvenance=maskProvenance;
   result.provenance={capture:{path:positionals[0],sha256:sha(inputBytes)},textures};
   const referenceOptions=['reference-water-mask','water-origin','water-size','grid-cell','zone-config'];
   if(referenceOptions.some(k=>opts[k]!==undefined)){

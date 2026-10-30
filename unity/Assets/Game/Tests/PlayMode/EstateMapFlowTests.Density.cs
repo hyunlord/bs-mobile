@@ -17,8 +17,8 @@ namespace Tests.PlayMode
         [Serializable] sealed class DensityVertex { public float x, y, u, v, a; }
         [Serializable] sealed class DensityItem
         {
-            public string name, role, source, texture, filter, shader, unsupported;
-            public int order; public bool active;
+            public string name, role, source, category, texture, filter, shader, unsupported, instanceId, authoredCategory;
+            public int order, graphicDepth, authoredDrawOrder; public bool active;
             public string[] clipMasks; public bool clipValid;
             public float inheritedAlpha; public float[] clip, rect, spriteRect, pivot, tint, uvRect;
             public DensityVertex[] vertices; public int[] triangles;
@@ -28,6 +28,27 @@ namespace Tests.PlayMode
             public int width, height; public string camera, geometryProvenance;
             public float[] clip; public DensityPolygon[] land, water;
             public DensityItem[] items; public string[] errors;
+            public int authoredGraphics, authoredEmittedInstances, authoredCapturedQuads;
+            public bool authoredMeshMappingValid; public string waterDenominatorContract;
+        }
+        static bool AuthoredQuadIndicesMatch(int vertexCount, int[] indices, int instances)
+        {
+            if (vertexCount != instances * 4 || indices == null || indices.Length != instances * 6) return false;
+            var local = new[] { 0, 1, 2, 0, 2, 3 };
+            for (var q = 0; q < instances; q++)
+                for (var n = 0; n < local.Length; n++)
+                    if (indices[q * 6 + n] != q * 4 + local[n]) return false;
+            return true;
+        }
+        [NUnit.Framework.Test]
+        public void AuthoredDensityMappingRequiresCompleteOrderedQuadIndices()
+        {
+            var two = new[] { 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7 };
+            NUnit.Framework.Assert.That(AuthoredQuadIndicesMatch(8, two, 2), NUnit.Framework.Is.True);
+            NUnit.Framework.Assert.That(AuthoredQuadIndicesMatch(8, two, 1), NUnit.Framework.Is.False, "Stale emitted-instance mapping must not be guessed.");
+            NUnit.Framework.Assert.That(AuthoredQuadIndicesMatch(7, two, 2), NUnit.Framework.Is.False);
+            two[6] = 0;
+            NUnit.Framework.Assert.That(AuthoredQuadIndicesMatch(8, two, 2), NUnit.Framework.Is.False, "The second quad must not reference the first quad's vertices.");
         }
         void ExportDensity(string path)
         {
@@ -92,22 +113,47 @@ namespace Tests.PlayMode
                 points = new[] { new Vector2(x,y), new Vector2(x+w,y), new Vector2(x+w,y+h), new Vector2(x,y+h) }
                     .Select(GridPoint).Select(p => new DensityPoint { x = p.x, y = p.y }).ToArray() };
             var clip = Bounds(rect); var items = new List<DensityItem>(); var errors = new List<string>();
+            int authoredGraphics = 0, authoredEmittedInstances = 0, authoredCapturedQuads = 0;
+            bool authoredMeshMappingValid = true;
+            string AuthoredCategory(string value)
+            {
+                switch (value)
+                {
+                    case "ground-decal": return "ground";
+                    case "river": return "water";
+                    case "building-prop": case "bridge": return "prop";
+                    case "prop": case "cluster": case "path": case "exterior": return value;
+                    default: return null;
+                }
+            }
+            DensityVertex[] Vertices(Graphic graphic, Vector3[] positions, Vector2[] uv, Color32[] colours, int start, int count)
+            {
+                var result = new DensityVertex[count];
+                for (var i = 0; i < count; i++)
+                {
+                    var n = start + i;
+                    var screen = ScreenPoint(graphic.rectTransform.TransformPoint(positions[n]));
+                    result[i] = new DensityVertex { x = screen.x, y = screen.y, u = uv[n].x, v = uv[n].y, a = colours[n].a / 255f };
+                }
+                return result;
+            }
             foreach (var graphic in view.GetComponentsInChildren<Graphic>(true).OrderBy(g => g.canvasRenderer.absoluteDepth))
             {
                 if (graphic.transform == view.transform) continue;
                 var tag = graphic.GetComponent<EstateDensityTag>();
-                var image = graphic as Image; var raw = graphic as RawImage;
+                var image = graphic as Image; var raw = graphic as RawImage; var authored = graphic as EstateAuthoredTerrainGraphic;
                 var entry = new DensityItem { name = graphic.name, role = tag?.Role ?? "", source = tag?.Source ?? "",
-                    order = graphic.canvasRenderer.absoluteDepth, active = graphic.isActiveAndEnabled && !graphic.canvasRenderer.cull,
+                    order = items.Count, graphicDepth = graphic.canvasRenderer.absoluteDepth, active = graphic.isActiveAndEnabled && !graphic.canvasRenderer.cull,
                     inheritedAlpha = graphic.canvasRenderer.GetInheritedAlpha(), clip = clip, rect = Bounds(graphic.rectTransform),
                     tint = new[] {graphic.color.r,graphic.color.g,graphic.color.b,graphic.color.a}, shader = graphic.materialForRendering?.shader?.name };
+                if (authored != null && authored.Ground) entry.source = "terrain";
                 if (entry.name == "EstateMap.Night") entry.source = "night";
                 else if (entry.name == "EstateMap.Lamps") entry.source = "illumination";
                 else if (entry.name == "EstateMap.Ground") entry.source = "terrain";
                 if (entry.source == "" && graphic.GetComponentInParent<EstateCarryView>() != null) entry.source = "peasant";
                 if (!entry.active || entry.source == "night" || entry.source == "illumination" || entry.source == "terrain" || entry.source == "soil" || entry.source == "yard-ground") { items.Add(entry); continue; }
                 var texture = graphic.mainTexture as Texture2D;
-                if (image == null && raw == null) entry.unsupported = "Non Image/RawImage graphic needs explicit category and mesh contract";
+                if (image == null && raw == null && authored == null) entry.unsupported = "Non Image/RawImage graphic needs explicit category and mesh contract";
                 if (texture == null) entry.unsupported = "Missing Texture2D";
                 else
                 {
@@ -126,22 +172,72 @@ namespace Tests.PlayMode
                     entry.spriteRect = new[] {sr.x,sr.y,sr.width,sr.height}; entry.pivot = new[] {image.sprite.pivot.x,image.sprite.pivot.y};
                 }
                 if (raw != null) entry.uvRect = new[] {raw.uvRect.x,raw.uvRect.y,raw.uvRect.width,raw.uvRect.height};
+                if (authored != null)
+                {
+                    authoredGraphics++; authoredEmittedInstances += authored.RenderedInstances.Count;
+                }
                 var mesh = graphic.canvasRenderer.GetMesh();
-                if (mesh == null) entry.unsupported = "CanvasRenderer has no current mesh";
+                if (mesh == null)
+                {
+                    entry.unsupported = "CanvasRenderer has no current mesh";
+                    if (authored != null)
+                    {
+                        authoredMeshMappingValid = false; errors.Add(graphic.name + ": " + entry.unsupported);
+                    }
+                }
                 else
                 {
                     var positions = mesh.vertices; var uv = mesh.uv; var colours = mesh.colors32;
                     if (uv.Length != positions.Length || colours.Length != positions.Length) entry.unsupported = "Mesh attributes incomplete";
-                    else entry.vertices = positions.Select((p,i) => {
-                        var screen = ScreenPoint(graphic.rectTransform.TransformPoint(p));
-                        return new DensityVertex {x=screen.x,y=screen.y,u=uv[i].x,v=uv[i].y,a=colours[i].a/255f}; }).ToArray();
+                    else entry.vertices = Vertices(graphic, positions, uv, colours, 0, positions.Length);
                     entry.triangles = mesh.triangles;
+                    if (authored != null)
+                    {
+                        var emitted = authored.RenderedInstances;
+                        var mappingValid = texture != null && entry.vertices != null &&
+                            AuthoredQuadIndicesMatch(positions.Length, entry.triangles, emitted.Count) &&
+                            emitted.Select(i => i.id).Distinct().Count() == emitted.Count;
+                        if (!mappingValid)
+                        {
+                            authoredMeshMappingValid = false;
+                            entry.unsupported = $"Authored emitted-instance/mesh mismatch: instances={emitted.Count}, vertices={positions.Length}, indices={entry.triangles.Length}";
+                            errors.Add(graphic.name + ": " + entry.unsupported);
+                        }
+                        else
+                        {
+                            var assets = authored.Layout.assets.ToDictionary(a => a.id, StringComparer.Ordinal);
+                            for (var q = 0; q < emitted.Count; q++)
+                            {
+                                var instance = emitted[q]; var asset = assets[instance.assetId];
+                                var vertices = Vertices(graphic, positions, uv, colours, q * 4, 4);
+                                var category = AuthoredCategory(instance.category);
+                                var piece = new DensityItem {
+                                    name = graphic.name + ":" + instance.id, role = instance.assetId, source = "authored-" + instance.category,
+                                    category = category, instanceId = instance.id, authoredCategory = instance.category,
+                                    order = items.Count, graphicDepth = entry.graphicDepth, authoredDrawOrder = instance.drawOrder,
+                                    active = entry.active, inheritedAlpha = entry.inheritedAlpha, tint = entry.tint,
+                                    shader = entry.shader, texture = entry.texture, filter = entry.filter,
+                                    clip = entry.clip, clipMasks = entry.clipMasks, clipValid = entry.clipValid,
+                                    rect = new[] { vertices.Min(v => v.x), vertices.Min(v => v.y), vertices.Max(v => v.x), vertices.Max(v => v.y) },
+                                    spriteRect = new[] { (float)asset.rect[0], texture.height - asset.rect[1] - asset.rect[3], asset.rect[2], asset.rect[3] },
+                                    pivot = new[] { asset.anchor[0], asset.size[1] - asset.anchor[1] },
+                                    vertices = vertices, triangles = entry.triangles.Skip(q * 6).Take(6).Select(index => index - q * 4).ToArray(),
+                                    unsupported = category == null ? "Unmapped authored category: " + instance.category : entry.unsupported
+                                };
+                                if (piece.unsupported != null) errors.Add(piece.name + ": " + piece.unsupported);
+                                items.Add(piece); authoredCapturedQuads++;
+                            }
+                            continue;
+                        }
+                    }
                 }
                 items.Add(entry);
             }
             var document = new DensityExport { width = Screen.width, height = Screen.height, clip = clip,
                 camera = $"zoom={map.Zoom};scale={map.Scale};centre={map.ViewportToGrid(map.VisibleCentre)};topInset={map.TopInset};bottomInset={map.BottomInset};frame={Time.frameCount}",
-                geometryProvenance = "Runtime config-zone polygons and EstateR8Layout riverCells; compare against DENSE-SCENES-r2 before asserting reference parity. Full map viewport, bars excluded from art composition.",
+                geometryProvenance = "Actual CanvasRenderer mesh positions/UV/vertex alpha in absolute Graphic depth and emitted quad order; authored IDs are supplied by the same OnPopulateMesh call. Full map viewport, bars excluded. Logical river cells are provenance only, not the strict visual-water denominator.",
+                authoredGraphics = authoredGraphics, authoredEmittedInstances = authoredEmittedInstances, authoredCapturedQuads = authoredCapturedQuads,
+                authoredMeshMappingValid = authoredMeshMappingValid, waterDenominatorContract = "approved-reference-visual-water-alpha128; never substitute logical river cells",
                 land = app.EstateMap.Config.Zones.Select(z => Polygon(z.X,z.Y,z.Width,z.Height)).ToArray(),
                 water = EstateR8Layout.Load().riverCells.Select(c => Polygon(c.x,c.y,1,1)).ToArray(),
                 items = items.ToArray(), errors = errors.ToArray() };
