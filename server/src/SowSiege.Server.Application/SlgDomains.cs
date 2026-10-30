@@ -83,18 +83,31 @@ public sealed class RecruitDomain(RecruitPool pool, int prototypeGems) : IDomain
 }
 
 public sealed record ResearchJob(long Seq, string NodeId, int Level, long StartedAtMs, long CompletesAtMs);
-public sealed record ResearchState(long NextSeq, ResearchJob[] Active, SortedDictionary<string, int> Levels, SortedDictionary<string, long> CompletedAtMs, string[] Proofs);
+public sealed record ResearchState(long NextSeq, ResearchJob[] Active, SortedDictionary<string, int> Levels, SortedDictionary<string, long> CompletedAtMs, string[] Proofs,
+    ExpeditionRun[]? Runs = null, long NextRun = 1);
+/// <summary>A server-issued personal fallback run (ADR0077 replay settlement). RunId is the issuing commandId.</summary>
+public sealed record ExpeditionRun(Guid RunId, long Ordinal, int Seed, string ProofId, string Resource, long IssuedAtMs, long ExpiresAtMs,
+    string Status, int Attempts, string? Outcome = null, int Granted = 0, string? StateHash = null);
+public sealed record ExpeditionStart([property: JsonRequired] string ProofId, [property: JsonRequired] string Resource);
+/// <summary>Server-only verdict produced by the replay verifier outside the handler. Never accepted from clients.</summary>
+public sealed record ExpeditionVerdict([property: JsonRequired] Guid RunId, [property: JsonRequired] string Verdict, string? EndKind, int Tick, string? StateHash, string ReplayHash);
+/// <summary>Run budget: TTL and failed-verification attempts are server configuration; reward caps come from content data.</summary>
+public sealed record ExpeditionRules(long TtlMilliseconds, int MaxAttempts, IReadOnlyDictionary<string, int> WalletCaps)
+{
+    public const string SettleOperation = "settle-expedition";
+    public static int SeedOf(byte[] seed) => (int)(System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(seed) & 0x7fffffff);
+}
 public sealed record ResearchPayload([property: JsonRequired] string NodeId);
 public sealed record ResearchNodeView(string Id, string Category, int Level, int MaxLevel, string Status, string[] LockReasons,
     IReadOnlyDictionary<string, int> Cost, long Seconds, string Domain, int Value);
 public sealed record ResearchJobView(string NodeId, int Level, long StartedAtMs, long CompletesAtMs, long RemainingSeconds);
-public sealed record ResearchView(long ServerUtcMs, ResearchNodeView[] Nodes, ResearchJobView[] Active, ResearchEffect[] Effects);
+public sealed record ResearchView(long ServerUtcMs, ResearchNodeView[] Nodes, ResearchJobView[] Active, ResearchEffect[] Effects, string[] Proofs, ExpeditionRun[] Runs);
 
 /// <summary>
 /// GDD17 level-1 research as a pure ADR0078 domain handler. Job times use the store's high-watermark UTC
 /// (never the client); Advance settles due jobs once in completion order before any command executes.
 /// </summary>
-public sealed class ResearchDomain(ResearchContent content) : IDomainHandler
+public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? runs = null) : IDomainHandler
 {
     public const string Name = "research";
     public string Domain => Name;
@@ -124,7 +137,92 @@ public sealed class ResearchDomain(ResearchContent content) : IDomainHandler
         return new(context.Account.State, DomainJson.Element(next), DomainJson.Element(ViewOf(context.Account.State, next, context.UtcMilliseconds)), true, "", events);
     }
 
-    public DomainResult Execute(DomainContext context, string operation, JsonElement payload)
+    public string? SeedMaterial(DomainContext context, string operation, JsonElement payload) =>
+        operation == "start-expedition" ? "sow-run-v1\n" + DomainJson.Read<ResearchState>(context.State).NextRun.ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
+
+    public DomainResult Execute(DomainContext context, string operation, JsonElement payload) => operation switch
+    {
+        "start-expedition" => StartExpedition(context, DomainJson.Read<ExpeditionStart>(payload)),
+        ExpeditionRules.SettleOperation => SettleExpedition(context, DomainJson.Read<ExpeditionVerdict>(payload)),
+        _ => ExecuteResearch(context, operation, payload)
+    };
+
+    private DomainResult Reply(DomainContext context, bool done, string reason, MetaState account, ResearchState next, DomainEvent[] events) =>
+        new(account, DomainJson.Element(next), DomainJson.Element(ViewOf(account, next, context.UtcMilliseconds)), done, reason, events);
+
+    private DomainResult StartExpedition(DomainContext context, ExpeditionStart request)
+    {
+        var rules = runs ?? throw new CommandConflictException("unsupported-operation");
+        var state = DomainJson.Read<ResearchState>(context.State);
+        var list = state.Runs ?? [];
+        string? reason = !content.Fallback.ProofIds.Contains(request.ProofId) ? "unknown-proof"
+            : !rules.WalletCaps.ContainsKey(request.Resource) || request.Resource == "meta:charter" ? "unknown-resource"
+            : list.Any(r => r.Status == "open" && r.ExpiresAtMs > context.UtcMilliseconds) ? "run-open" : null;
+        if (reason is not null)
+        {
+            return Reply(context, false, reason, context.Account.State, state, []);
+        }
+        // The fallback run needs no troops, research, collected hero or entry cost (GDD17 §3).
+        var run = new ExpeditionRun(context.CommandId ?? throw new InvalidOperationException("Run id missing."), state.NextRun,
+            ExpeditionRules.SeedOf(context.Seed ?? throw new InvalidOperationException("Run seed missing.")), request.ProofId, request.Resource,
+            context.UtcMilliseconds, checked(context.UtcMilliseconds + rules.TtlMilliseconds), "open", 0);
+        var expired = list.Select(r => r.Status == "open" && r.ExpiresAtMs <= context.UtcMilliseconds ? r with { Status = "expired" } : r);
+        var next = state with { Runs = [.. expired, run], NextRun = state.NextRun + 1 };
+        return Reply(context, true, "issued", context.Account.State, next, [new("expedition-issued", DomainJson.Element(run))]);
+    }
+
+    private DomainResult SettleExpedition(DomainContext context, ExpeditionVerdict verdict)
+    {
+        var rules = runs ?? throw new CommandConflictException("unsupported-operation");
+        var state = DomainJson.Read<ResearchState>(context.State);
+        var list = (state.Runs ?? []).ToList();
+        int index = list.FindIndex(r => r.RunId == verdict.RunId);
+        if (index < 0)
+        {
+            return Reply(context, false, "unknown-run", context.Account.State, state, []);
+        }
+        var run = list[index];
+        if (run.Status != "open")
+        {
+            return Reply(context, false, "already-" + run.Status, context.Account.State, state, []);
+        }
+        if (context.UtcMilliseconds > run.ExpiresAtMs)
+        {
+            list[index] = run with { Status = "expired" };
+            return Reply(context, false, "run-expired", context.Account.State, state with { Runs = list.ToArray() }, [new("expedition-expired", DomainJson.Element(new { run.RunId }))]);
+        }
+        if (verdict.Verdict == "timeout")
+        {
+            // Budget exceeded on our side: not the player's fault, so it does not use up an attempt.
+            return Reply(context, false, "verify-timeout", context.Account.State, state, []);
+        }
+        if (verdict.Verdict != "verified")
+        {
+            int attempts = run.Attempts + 1;
+            list[index] = run with { Attempts = attempts, Status = attempts >= rules.MaxAttempts ? "failed" : "open" };
+            var failed = DomainJson.Element(new { run.RunId, verdict.Verdict, attempts, verdict.ReplayHash });
+            return Reply(context, false, "replay-" + verdict.Verdict, context.Account.State, state with { Runs = list.ToArray() }, [new("expedition-rejected", failed)]);
+        }
+        // Verified: the objective of the prototype fallback run is surviving to the profile duration.
+        bool succeeded = verdict.EndKind == "Duration";
+        var account = context.Account.State;
+        int granted = 0;
+        var proofs = state.Proofs;
+        if (succeeded)
+        {
+            var wallet = new Dictionary<string, int>(account.Wallet);
+            int current = wallet.GetValueOrDefault(run.Resource);
+            granted = Math.Max(0, Math.Min(content.Fallback.MaterialRewardCap, rules.WalletCaps[run.Resource] - current));
+            wallet[run.Resource] = current + granted;
+            account = account with { Wallet = wallet };
+            proofs = proofs.Contains(run.ProofId) ? proofs : [.. proofs, run.ProofId];
+        }
+        list[index] = run with { Status = "settled", Outcome = succeeded ? "objective-complete" : "objective-failed", Granted = granted, StateHash = verdict.StateHash };
+        var settled = DomainJson.Element(new { run.RunId, run.Seed, run.ProofId, verdict.EndKind, verdict.Tick, verdict.StateHash, verdict.ReplayHash, granted, run.Resource, ProofGranted = succeeded });
+        return Reply(context, true, succeeded ? "objective-complete" : "objective-failed", account, state with { Runs = list.ToArray(), Proofs = proofs }, [new("expedition-settled", settled)]);
+    }
+
+    private DomainResult ExecuteResearch(DomainContext context, string operation, JsonElement payload)
     {
         var request = DomainJson.Read<ResearchPayload>(payload);
         var state = DomainJson.Read<ResearchState>(context.State);
@@ -170,6 +268,6 @@ public sealed class ResearchDomain(ResearchContent content) : IDomainHandler
             return new ResearchNodeView(n.Id, n.Category, state.Levels.GetValueOrDefault(n.Id), n.Level, status, locks, n.Cost, n.Seconds, n.Domain, n.Value);
         }).ToArray();
         var jobs = state.Active.Select(j => new ResearchJobView(j.NodeId, j.Level, j.StartedAtMs, j.CompletesAtMs, Math.Max(0, (j.CompletesAtMs - utc + 999) / 1000))).ToArray();
-        return new(utc, nodes, jobs, ResearchRules.Effects(content, state.Levels));
+        return new(utc, nodes, jobs, ResearchRules.Effects(content, state.Levels), state.Proofs, state.Runs ?? []);
     }
 }
