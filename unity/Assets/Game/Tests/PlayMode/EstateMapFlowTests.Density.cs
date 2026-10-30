@@ -19,6 +19,7 @@ namespace Tests.PlayMode
         {
             public string name, role, source, texture, filter, shader, unsupported;
             public int order; public bool active;
+            public string[] clipMasks; public bool clipValid;
             public float inheritedAlpha; public float[] clip, rect, spriteRect, pivot, tint, uvRect;
             public DensityVertex[] vertices; public int[] triangles;
         }
@@ -47,6 +48,45 @@ namespace Tests.PlayMode
                 var corners = new Vector3[4]; transform.GetWorldCorners(corners);
                 var p = corners.Select(ScreenPoint).ToArray();
                 return new[] { p.Min(v => v.x), p.Min(v => v.y), p.Max(v => v.x), p.Max(v => v.y) };
+            }
+            void ExportClip(Graphic graphic, DensityItem entry)
+            {
+                entry.clip = new[] { 0f, 0f, (float)Screen.width, (float)Screen.height };
+                entry.clipValid = true; entry.clipMasks = Array.Empty<string>();
+                var maskable = graphic as MaskableGraphic;
+                if (maskable == null) { entry.unsupported = "Graphic has no MaskableGraphic clipping contract"; return; }
+                if (!maskable.maskable) return;
+                if (graphic.GetComponentsInParent<Mask>().Any(m => m.isActiveAndEnabled))
+                { entry.unsupported = "Stencil Mask alpha requires explicit raster contract"; return; }
+                var owner = MaskUtilities.GetRectMaskForClippable(maskable);
+                if (owner == null) return;
+                var masks = new List<RectMask2D>(); MaskUtilities.GetRectMasksForClip(owner, masks);
+                entry.clipMasks = masks.Select(m => $"{m.name};canvas={m.canvasRect};padding={m.padding};softness={m.softness}").ToArray();
+                if (masks.Any(m => m.softness != Vector2Int.zero))
+                { entry.unsupported = "RectMask2D softness requires fractional clip alpha"; return; }
+                var canvases = owner.GetComponentsInParent<Canvas>();
+                if (canvases.Length == 0) { entry.unsupported = "RectMask2D has no canvas"; return; }
+                // RectMask2D.Canvas uses the outermost Canvas; canvasRect and padding are in that canvas space.
+                var canvas = canvases[canvases.Length - 1];
+                if (canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                { entry.unsupported = "Non-overlay RectMask2D projection needs a separate contract"; return; }
+                bool AxisAligned(RectTransform transform)
+                {
+                    var corners = new Vector3[4]; transform.GetWorldCorners(corners);
+                    var p = corners.Select(ScreenPoint).ToArray();
+                    return Mathf.Abs(p[0].x-p[1].x)<.001f && Mathf.Abs(p[1].y-p[2].y)<.001f &&
+                        Mathf.Abs(p[2].x-p[3].x)<.001f && Mathf.Abs(p[3].y-p[0].y)<.001f;
+                }
+                if (!AxisAligned((RectTransform)canvas.transform) || masks.Any(m => !AxisAligned(m.rectTransform)))
+                { entry.unsupported = "Rotated RectMask2D or canvas requires explicit clip projection"; return; }
+                var combined = Clipping.FindCullAndClipWorldRect(masks, out var valid);
+                entry.clipValid = valid;
+                if (!valid) { entry.clip = new float[4]; return; }
+                var a = ScreenPoint(canvas.transform.TransformPoint(new Vector3(combined.xMin,combined.yMin,0)));
+                var b = ScreenPoint(canvas.transform.TransformPoint(new Vector3(combined.xMax,combined.yMax,0)));
+                entry.clip = new[] { Mathf.Max(0,Mathf.Min(a.x,b.x)), Mathf.Max(0,Mathf.Min(a.y,b.y)),
+                    Mathf.Min(Screen.width,Mathf.Max(a.x,b.x)), Mathf.Min(Screen.height,Mathf.Max(a.y,b.y)) };
+                entry.clipValid = entry.clip[2]>entry.clip[0] && entry.clip[3]>entry.clip[1];
             }
             DensityPolygon Polygon(float x, float y, float w, float h) => new DensityPolygon {
                 points = new[] { new Vector2(x,y), new Vector2(x+w,y), new Vector2(x+w,y+h), new Vector2(x,y+h) }
@@ -77,7 +117,7 @@ namespace Tests.PlayMode
                     if (texture.wrapMode != TextureWrapMode.Clamp) entry.unsupported = "Non-clamp sampler needs explicit wrap semantics";
                 }
                 if (graphic.GetComponentsInParent<CanvasGroup>().Any(g => !g.enabled)) entry.unsupported = "Disabled CanvasGroup semantics not supported";
-                if (graphic.GetComponentsInParent<RectMask2D>().Length != 1) entry.unsupported = "Additional clip hierarchy requires intersection export";
+                ExportClip(graphic, entry);
                 if (graphic.materialForRendering != null && entry.shader != "UI/Default" && !entry.shader.EndsWith("EstateTint", StringComparison.Ordinal)) entry.unsupported = "Unmodelled alpha shader: " + entry.shader;
                 if (graphic is EstateTerrainImage terrain && terrain.WaterOnly) entry.unsupported = "WaterOnly shader modifies alpha by sampled RGB; needs color-space-aware sampler";
                 if (image?.sprite != null)
