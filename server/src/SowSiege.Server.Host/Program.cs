@@ -11,6 +11,9 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.U
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(services => EstateContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"] ?? throw new InvalidOperationException("GameContentRoot required.")));
 builder.Services.AddSingleton<EstateApplication>();
+builder.Services.AddSingleton(services => TrainingContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"]
+    ?? throw new InvalidOperationException("GameContentRoot required."), services.GetRequiredService<EstateContent>()));
+builder.Services.AddSingleton<IDomainHandler, TrainingHandler>();
 builder.Services.AddSingleton(services => NpgsqlDataSource.Create(services.GetRequiredService<IConfiguration>().GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
 builder.Services.AddSingleton<DomainRegistry>();
 builder.Services.AddSingleton<AccountStore>();
