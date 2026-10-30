@@ -65,7 +65,7 @@ namespace Tests.PlayMode
                 else if (entry.name == "EstateMap.Lamps") entry.source = "illumination";
                 else if (entry.name == "EstateMap.Ground") entry.source = "terrain";
                 if (entry.source == "" && graphic.GetComponentInParent<EstateCarryView>() != null) entry.source = "peasant";
-                if (!entry.active || entry.source == "night" || entry.source == "illumination" || entry.source == "terrain" || entry.source == "soil" || entry.source == "yard-ground" || entry.source == "zone-fog") { items.Add(entry); continue; }
+                if (!entry.active || entry.source == "night" || entry.source == "illumination" || entry.source == "terrain" || entry.source == "soil" || entry.source == "yard-ground") { items.Add(entry); continue; }
                 var texture = graphic.mainTexture as Texture2D;
                 if (image == null && raw == null) entry.unsupported = "Non Image/RawImage graphic needs explicit category and mesh contract";
                 if (texture == null) entry.unsupported = "Missing Texture2D";
