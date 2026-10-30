@@ -1,8 +1,10 @@
+import { validateTerrainLayout } from './validate-terrain-layout.mjs';
 import { validateWaveContent } from './wave1a-content.mjs';
 import { validateSystemDesign } from './system-design-v1.mjs';
 import { validateMeta } from './meta-content.mjs';
 import { weaponGrowthFilename, weaponGrowthDuplicateKeys, validateWeaponGrowth } from './validate-weapon-growth.mjs';
 import { validateFirstPlayableDefinitions } from './first-playable-content.mjs';
+import { validateSlgContentDraft } from './validate-slg-content-draft.mjs';
 import { readFile } from 'node:fs/promises';
 import { jsonFiles } from './content-files.mjs';
 import path from 'node:path';
@@ -11,9 +13,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'estate-terrain-layout']);
 // Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
-const optInSchemaKinds = new Set(['account-estate', 'vassal-run']);
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'estate-terrain-layout']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -22,6 +24,8 @@ const directoryKinds = new Map([
 ]);
 
 function inferKind(relative) {
+  if (relative === 'opt-in/estate/terrain-layout-r8.json') return 'estate-terrain-layout';
+  if (relative === path.join('opt-in', 'slg', 'content-draft-v1.json')) return 'slg-content-draft';
   if (relative === 'review/m1-weapon-showcase.json') return 'm1-weapon-showcase';
   if (relative === 'review/m1-weapon-combined-case.json') return 'm1-weapon-combined-case';
   if (relative === 'review/m1-weapon-combat-cases.json') return 'm1-weapon-combat-cases';
@@ -86,7 +90,7 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     try {
       const text = await readFile(file, 'utf8');
       parsed.set(file, JSON.parse(text));
-      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1'].includes(inferKind(path.relative(dataRoot, file)))) {
+      if (weaponGrowthFilename.test(path.relative(dataRoot, file)) || ['weapon','meta','system-design-v1','slg-content-draft','estate-terrain-layout'].includes(inferKind(path.relative(dataRoot, file)))) {
         for (const key of weaponGrowthDuplicateKeys(text)) errors.push(`${path.relative(dataRoot, file)}: duplicate JSON key ${key}`);
       }
     } catch (error) {
@@ -147,11 +151,18 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
         ids.set(record.id, { relative, kind });
       }
     }
+    if (kind === 'estate-terrain-layout' && schemaValid) {
+      const runtime = parsed.get(path.join(dataRoot, 'opt-in/account-estate/m3a-prototype-r8.json'));
+      for (const error of validateTerrainLayout(record, runtime)) errors.push(`${relative}: ${error}`);
+    }
     if (kind === 'tool' && (!isRecord(record.activation) || !isRecord(record.growth))) {
       errors.push(`${relative}: tool requires both activation and growth`);
     }
     if (kind === 'presentation' && schemaValid && record.camera.minHalfHeight > record.camera.maxHalfHeight) errors.push(`${relative}: camera minHalfHeight must not exceed maxHalfHeight`);
     if (kind === 'skin' && containsNumber(record)) errors.push(`${relative}: skin must not contain numeric stats`);
+    if (kind === 'slg-content-draft' && schemaValid) {
+      errors.push(...validateSlgContentDraft(record).map(message => `${relative}: ${message}`));
+    }
   }
   for (const { relative, record } of records.filter(entry => entry.kind === 'vassal-run' && entry.schemaValid)) {
     const account = records.find(entry => entry.kind === 'meta' && entry.schemaValid)?.record;
@@ -169,6 +180,12 @@ export async function validateContent(dataDirectory, { fullPool = false } = {}) 
     } else if (ids.get(id)?.kind !== kind) {
       errors.push(`${relative}: unresolved ${kind} reference ${field}=${id}`);
     }
+  }
+  for (const { relative, record } of records.filter(entry => entry.kind === 'slg-content-draft' && entry.schemaValid)) {
+    for (const encounter of record.worldEncounters) {
+      encounter.enemyReferences.forEach(id => reference(relative, `${encounter.id}.enemyReferences`, id, 'enemy'));
+    }
+    reference(relative, 'contracts.personalFallback.heroId', record.contracts.personalFallback.heroId, 'hero');
   }
   const experimentFiles = new Map(records.filter(entry => entry.kind === 'experiment-tuning').map(entry => [entry.relative, entry.record]));
   const baseTuning = records.find(entry => entry.kind === 'tuning' && entry.relative === 'tuning.json')?.record;
