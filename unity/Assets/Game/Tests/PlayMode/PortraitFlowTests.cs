@@ -696,6 +696,8 @@ namespace Tests.PlayMode
         public IEnumerator PopulatedMaximumHudCaptureIsExplicitRenderOnlyFixture()
         {
             if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Maximum 13-icon fixture requires the first-playable canonical charter catalog; wave has no charters.");
+            Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty, "A previous Boot must not contaminate the isolated maximum HUD fixture.");
+            Assert.That(Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Where(canvas => canvas.isActiveAndEnabled), Is.Empty, "A previous canvas must not cover the isolated maximum HUD capture.");
             var catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new InteractiveOptions(
                 new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true),
