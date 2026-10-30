@@ -10,6 +10,7 @@ namespace Game.App
     // JSON fields mirror the public server DTOs; no Core state or device-save blob crosses this boundary.
     [Serializable] public sealed class BarracksResource { public string id; public int amount; }
     [Serializable] public sealed class BarracksCost { public string materialId; public int amount; }
+    [Serializable] public sealed class BarracksRefundPreview { public string materialId; public int immediateAmount, pendingAmount; }
     [Serializable] public sealed class BarracksUnit
     {
         public string unitId, name;
@@ -31,6 +32,8 @@ namespace Game.App
         public long serverUtcMilliseconds;
         public BarracksUnit[] units;
         public BarracksJob active, waiting;
+        public BarracksCost[] pendingRefunds;
+        public BarracksRefundPreview[] waitingCancellationRefunds;
         public bool HasActive => active != null && active.Exists;
         public bool HasWaiting => waiting != null && waiting.Exists;
     }

@@ -88,6 +88,19 @@ namespace Game.Tests
         }
 
         [Test]
+        public void RefundBalanceAndCancellationPreviewUseAuthoritativeServerAmounts()
+        {
+            var view = JsonUtility.FromJson<BarracksView>("{\"pendingRefunds\":[{\"materialId\":\"meta:grain\",\"amount\":7}],\"waitingCancellationRefunds\":[{\"materialId\":\"meta:grain\",\"immediateAmount\":3,\"pendingAmount\":5}]}");
+            Assert.That(PortraitMetaPanels.BarracksPendingRefundText(view), Is.EqualTo("환불 대기 곡물 7"));
+            var preview = PortraitMetaPanels.BarracksRefundPreviewText(view);
+            StringAssert.Contains("즉시 3 / 환불 대기 5", preview);
+            StringAssert.Contains("공간이 생기면 돌려받습니다", preview);
+            Assert.That(view.pendingRefunds[0].amount, Is.EqualTo(7), "Rendering does not settle or spend the server balance.");
+            view.waitingCancellationRefunds[0].pendingAmount = 0;
+            StringAssert.DoesNotContain("지갑이 가득", PortraitMetaPanels.BarracksRefundPreviewText(view));
+        }
+
+        [Test]
         public void PrototypeTokenRequiresExactOpaqueHexLength()
         {
             Assert.That(BarracksServerClient.ValidToken(new string('a', 64)), Is.True);
