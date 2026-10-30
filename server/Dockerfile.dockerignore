@@ -14,6 +14,9 @@
 !data/opt-in/
 !data/opt-in/account-estate/
 !data/opt-in/account-estate/**
+!data/opt-in/slg/
+!data/opt-in/slg/recruit-pool-v1.json
+!data/opt-in/slg/content-draft-v1.json
 **/bin/
 **/obj/
 **/.env

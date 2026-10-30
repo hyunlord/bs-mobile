@@ -101,7 +101,7 @@ public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateAppl
         applied = new(advanced.Account, estateReply);
         await WriteAsync(connection, transaction, applied.Account, false, cancellation);
         string response = accountResponse
-            ? JsonSerializer.Serialize(new AccountReply(advanced.Done, advanced.Reason, applied.Reply.Estate, advanced.Views, applied.Account.State.Wallet.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new ResourceAmount(p.Key, p.Value)).ToArray()), Json)
+            ? JsonSerializer.Serialize(new AccountReply(advanced.Done, advanced.Reason, applied.Reply.Estate, advanced.Views, applied.Account.State.Wallet.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new ResourceAmount(p.Key, p.Value)).Concat(advanced.Resources.Select(r => new ResourceAmount(r.Id, r.Amount))).ToArray()), Json)
             : JsonSerializer.Serialize(applied.Reply, Json);
         if (commandId is not null)
         {

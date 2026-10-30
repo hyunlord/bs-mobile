@@ -25,6 +25,8 @@ services:
       Prototype__Enabled: "true"
       ConnectionStrings__Postgres: Host=postgres;Database=sow_prototype;Username=sow_local;Password=${POSTGRES_PASSWORD}
       ConnectionStrings__Redis: redis:6379
+      Prototype__RecruitGems: "3000"
+      Domains__SeedKey: ${RECRUIT_SEED_KEY:?Set a local 64-hex recruit seed key in server/.env}
     ports: ["127.0.0.1:5080:8080"]
     depends_on:
       postgres: {condition: service_healthy}

@@ -13,9 +13,9 @@ import Ajv2020 from 'ajv/dist/2020.js';
 
 const namespaceId = /^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$/;
 const experimentFilename = /^(?:experiments\/)?tuning-s4b-[a-zA-Z0-9_-]+\.json$/;
-const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'estate-terrain-layout', 'slg-training-v1']);
+const configurationKinds = new Set(['profile', 'tuning', 'experiment-tuning', 'weapon-growth', 'presentation', 'meta', 'system-design-v1', 'wave-runtime', 'm1-weapon-showcase', 'm1-weapon-combat-cases', 'm1-weapon-combined-case', 'estate-light', 'account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'estate-terrain-layout', 'slg-training-v1']);
 // Kinds that exist only as opt-in experiment data (ADR0069): their schema lives in data/opt-in/schema, outside the data tree hash.
-const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'estate-terrain-layout', 'slg-training-v1']);
+const optInSchemaKinds = new Set(['account-estate', 'vassal-run', 'slg-content-draft', 'slg-recruit-pool', 'estate-terrain-layout', 'slg-training-v1']);
 const directoryKinds = new Map([
   ['tools', 'tool'], ['heroes', 'hero'], ['estates', 'estate'],
   ['weapons', 'weapon'], ['charters', 'charter'], ['items', 'item'],
@@ -26,6 +26,7 @@ const directoryKinds = new Map([
 function inferKind(relative) {
   if (relative === 'opt-in/estate/terrain-layout-r8.json') return 'estate-terrain-layout';
   if (relative === path.join('opt-in', 'slg', 'content-draft-v1.json')) return 'slg-content-draft';
+  if (relative === path.join('opt-in', 'slg', 'recruit-pool-v1.json')) return 'slg-recruit-pool';
   if (relative === 'review/m1-weapon-showcase.json') return 'm1-weapon-showcase';
   if (relative === 'review/m1-weapon-combined-case.json') return 'm1-weapon-combined-case';
   if (relative === 'review/m1-weapon-combat-cases.json') return 'm1-weapon-combat-cases';
