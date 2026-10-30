@@ -99,6 +99,52 @@ public sealed class DomainFoundationTests
         Assert.Equal(0, account.Domains["drain"].GetProperty("timber").GetInt32());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [Trait("Category", "Postgres")]
+    public async Task PendingBalanceFillsAfterLegacyOrOtherDomainSpend(bool legacy)
+    {
+        await using var source = NpgsqlDataSource.Create(Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
+            ?? throw new InvalidOperationException("Postgres required."));
+        var store = new AccountStore(source, new EstateApplication(EstateContent.Load(ContentEstateTests.Root())),
+            new Clock(), new DomainRegistry([new Counter("spender"), new PendingBalance()]));
+        await store.InitializeAsync(CancellationToken.None);
+        var created = await store.CreateAsync(CancellationToken.None);
+        Guid id = (await store.AuthenticateAsync(created.Token, CancellationToken.None))!.Value;
+        Guid commandId = Guid.NewGuid();
+        var estate = new EstateCommand(commandId, 0, "start-construction", created.Estate.Buildings.Single(b => b.Kind == "meta:granary").Id);
+        var domain = new AccountCommand(commandId, 0, "spender", "spend", Object(new { amount = 10 }));
+        string reply = legacy ? await store.ExecuteAsync(id, estate, CancellationToken.None)
+            : await store.ExecuteAccountAsync(id, domain, CancellationToken.None);
+        using var parsed = JsonDocument.Parse(reply);
+        Assert.True(parsed.RootElement.GetProperty("done").GetBoolean());
+        Assert.Equal(120, parsed.RootElement.GetProperty("estate").GetProperty("wallet").GetProperty("meta:grain").GetInt32());
+        Assert.Equal(reply, legacy ? await store.ExecuteAsync(id, estate, CancellationToken.None)
+            : await store.ExecuteAccountAsync(id, domain, CancellationToken.None));
+        await using var query = source.CreateCommand("SELECT count(*) FROM domain_events WHERE account_id=$1 AND domain='refund'");
+        query.Parameters.AddWithValue(id);
+        Assert.Equal(1L, await query.ExecuteScalarAsync());
+    }
+
+    private sealed class PendingBalance : IDomainHandler
+    {
+        public string Domain => "refund";
+        public int StateVersion => 1;
+        public string ContentHash => "test-refund-v1";
+        public JsonElement InitialState => Object(new { pending = 1000 });
+        public JsonElement View(DomainContext context) => context.State;
+        public DomainResult Advance(DomainContext context) => new(context.Account.State, context.State, context.State, true, "", []);
+        public DomainResult Execute(DomainContext context, string operation, JsonElement payload) => throw new NotSupportedException();
+        public DomainResult AfterCommand(DomainContext context)
+        {
+            int amount = Math.Max(0, 120 - context.Account.State.Wallet["meta:grain"]);
+            var wallet = new Dictionary<string, int>(context.Account.State.Wallet) { ["meta:grain"] = 120 };
+            var state = Object(new { pending = context.State.GetProperty("pending").GetInt32() - amount });
+            return new(context.Account.State with { Wallet = wallet }, state, state, true, "", [new("credited", Object(new { amount }))]);
+        }
+    }
+
     private sealed class Drain : IDomainHandler
     {
         public string Domain => "drain";
