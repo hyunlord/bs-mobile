@@ -124,10 +124,10 @@ namespace Tests.PlayMode
             Assert.That(Screen.height, Is.EqualTo(844));
             foreach (var name in new[] { "EstateMap.ZoomIn", "EstateMap.ZoomOut" })
             {
-                var zoom = Named(name);
-                Assert.That(zoom.image.sprite.name, Is.EqualTo("PortraitV0/ui-btn-round-blue"), "Use the approved blue circular art, not the gold procedural circle.");
-                Assert.That(zoom.GetComponent<RectTransform>().rect.size, Is.EqualTo(new Vector2(44, 44)), "The approved layout is unchanged.");
-                Assert.That(zoom.GetComponentInChildren<Text>().text, Is.EqualTo(name.EndsWith("ZoomIn", StringComparison.Ordinal) ? "+" : "−"));
+                var zoomButton = Named(name);
+                Assert.That(zoomButton.image.sprite.name, Is.EqualTo("PortraitV0/ui-btn-round-blue"), "Use the approved blue circular art, not the gold procedural circle.");
+                Assert.That(zoomButton.GetComponent<RectTransform>().rect.size, Is.EqualTo(new Vector2(44, 44)), "The approved layout is unchanged.");
+                Assert.That(zoomButton.GetComponentInChildren<Text>().text, Is.EqualTo(name.EndsWith("ZoomIn", StringComparison.Ordinal) ? "+" : "−"));
             }
             yield return Capture("estate-approved-r3-overview-formal");
             var site = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
