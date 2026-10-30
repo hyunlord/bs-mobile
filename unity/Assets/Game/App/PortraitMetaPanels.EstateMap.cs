@@ -184,8 +184,14 @@ namespace Game.App
             }
             // The view is remembered for the next visit (#379): written when a drag ends or the zoom changes, never per frame.
             view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
-            PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
-            PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 54, controlsY + 52);
+            EstateZoomButton("EstateMap.ZoomIn", "+", 1, controlsY);
+            EstateZoomButton("EstateMap.ZoomOut", "−", -1, controlsY + 52);
+            void EstateZoomButton(string name, string glyph, int direction, float y)
+            {
+                var button = PortraitWidgets.Button(ui, root, glyph, () => view.Step(direction), width - 54, y, 44, 44, true, "ui.button.round.blue");
+                button.name = name;
+                button.GetComponentInChildren<Text>().fontSize = 28;
+            }
 
             Text liveStatus = null;
             if (screen.Specializing) SpecializePanel(ui, root, screen, actions, width, panelTop, panel);
