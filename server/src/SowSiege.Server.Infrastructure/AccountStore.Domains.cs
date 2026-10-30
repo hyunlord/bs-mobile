@@ -90,7 +90,7 @@ public sealed partial class AccountStore
                 {
                     held.Add(item with { Amount = item.Amount - amount });
                 }
-                heldEvents.Add(new("held-credited", JsonSerializer.SerializeToElement(new { item.Seq, item.Domain, materialId = item.Material, amount, remaining = item.Amount - amount })));
+                heldEvents.Add(new("held-credited", JsonSerializer.SerializeToElement(new { item.Seq, item.Domain, materialId = item.Material, amount, remaining = item.Amount - amount }, Json)));
                 changed = true;
             }
             if (changed)
