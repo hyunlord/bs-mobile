@@ -1,6 +1,6 @@
 # 19 · 첫 출시 연맹 생애주기·채팅·도움 제안
 
-상태: **사용자 검토 대기**. 2026-10-30, 추적 [#560](https://github.com/hyunlord/bs-mobile/issues/560). [승인된 월드 GDD18 #559](https://github.com/hyunlord/bs-mobile/pull/559)의 연맹 계약을 구체화한다. [SLG 로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554)의 ④ 서버 운영·연맹에 해당하며 ⑤ 월드맵과 연결한다. **모든 신규 인원·글자·시간·횟수·상한 수치는 [가설]**이고 UI 예시도 확정 가격·밸런스가 아니다. 게임 코드·데이터·서버·SDK는 변경하지 않는다. 이 문서는 사용자 승인 전 병합하지 않는다.
+상태: **사용자 승인 — 2026-10-30**. 2026-10-30, 추적 [#560](https://github.com/hyunlord/bs-mobile/issues/560). [승인된 월드 GDD18 #559](https://github.com/hyunlord/bs-mobile/pull/559)의 연맹 계약을 구체화한다. [SLG 로드맵 #554](https://github.com/hyunlord/bs-mobile/pull/554)의 ④ 서버 운영·연맹에 해당하며 ⑤ 월드맵과 연결한다. **모든 신규 인원·글자·시간·횟수·상한 수치는 [가설]**이고 UI 예시도 확정 가격·밸런스가 아니다. 게임 코드·데이터·서버·SDK는 변경하지 않는다. 사용자 승인에 따라 최신 main과 최종 CI를 확인한 뒤 squash 병합한다.
 
 ## 1. 목적과 첫 출시 경계
 
