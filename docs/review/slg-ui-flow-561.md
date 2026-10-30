@@ -38,3 +38,12 @@
 최종17개 PNG 모두390×844다. 렌더러의 텍스트445개 누락 glyph·폭/높이 넘침0, 터치156개48×48미만·화면 밖·중첩0을 확인했다. 독립 계약 검토와 전17장 직접 시각 검토를 통과했다. 초기 행군 시간00:35 오류는01:10으로 수정했고 이전 후보는 보존했다. 마지막 확인 중 화면의 설명도 플레이어 문장으로 다듬었다. 이 판정은 사용자 최종 화면 승인을 대신하지 않는다.
 
 재생성 원본은 작업 출력의 `export/renderer.swift`, `export/boards.swift`이며 기존 승인된 PNG를 읽어 AppKit으로 렌더한다. 게임 코드가 아니다. 새 그림을 생성하거나 atlas를 덮어쓰지 않았다. 모든 기존 출력과 실패 후보를 보존하고 신규 ZIP은 만들지 않았다. Release에는 실제 크기17장·비교판2장·FLOW/DESIGN/QA/layout 기록4개를 전달한다.
+
+## r2 · 월드 크기 정합 (사용자 승인 — 2026-10-30)
+
+[#566](https://github.com/hyunlord/bs-mobile/pull/566)은 [GDD18 §2.1](../design/gdd/18-slg-world-map-proposal.md#21-첫-출시-크기-정합-r2-가설)과 [ADR0077 §4](../adr/0077-authoritative-slg-server.md)에 맞춰 06 월드 화면의 **128×128 → 512×512 [가설]** 표기만 정정한다. r1 승인 기록과 모든 원본은 보존한다. 등록 계정 10,000개와 동시 접속 1,000명은 별도 측정 목표이며, 도시 표식 1타일 기준 총면적 점유 61.04% → 3.81%는 실제 배치·성능 검증이 아니다. 예시 좌표와 01:10 행군 시간은 유효하므로 유지한다.
+
+- [월드 r2 · 390×844](https://github.com/hyunlord/bs-mobile/releases/download/slg-ui-flow-561-20261030/slg-06-world-r2-390x844.png), [핵심 흐름 r2 비교판](https://github.com/hyunlord/bs-mobile/releases/download/slg-ui-flow-561-20261030/slg-main-flow-r2-1560x1856.png)
+- [FLOW r2](https://github.com/hyunlord/bs-mobile/releases/download/slg-ui-flow-561-20261030/FLOW-r2.md), [정적 동일성 검증 r2](https://github.com/hyunlord/bs-mobile/releases/download/slg-ui-flow-561-20261030/verification-r2.json)
+
+r2는 텍스트 사각형 밖 RGBA 변경0·나머지 7패널 변경0, 텍스트21개 넘침/누락0·터치11개 오류0을 확인했다. 화면 규격과 512×512 표기를 직접 시각 확인했다. 이는 문구·정지 시안 검증이며 게임 적용·실제 지도·서버 부하·실기 관문은 **NOT_RUN**이다.
