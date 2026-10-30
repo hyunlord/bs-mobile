@@ -173,3 +173,11 @@ Light Node suite18/18 passes, including all18 form/size combinations in both sta
 교환 형식은 아직 초안이다. `grid`는 64×32 등각 격자의 셀 좌표, `width`는 그 투영에서 배율 적용 전 native 가로 픽셀 길이다(390px 화면 픽셀이나 셀 개수가 아님). 예를 들어 width=96은 카메라 1배에서 native 96이고 최종 화면 크기는 카메라 배율을 따른다. `sizeVariant`는 지정된 propId/darkPropId의 실제 S/M/L 또는 native variant 및 명시적 width와 서로 일치해야 한다. 현재 reader는 이를 라벨로 읽고 좌표·폭을 자동 환산하지 않으며, role별 크기 일치 검증은 실제 export의 자산 표 계약 확인 후 연결해야 한다. 실제 문서는 유효한 r8 구역, 등록된 밝음/어둠 role 쌍, 고유 id, 유한 grid와 양수 width를 모두 공급해야 한다. 테스트에만 합성 입력을 사용했다.
 
 현재 `ground-grass-r4`는 승인 Release 원판과 atlas crop RGBA 차이가 0이며 원본 평균 RGB가 (131.877,115.502,81.906)이다. 사용자가 바닥 교체 요청을 취소했다: 현재 r4가 맞고 미리보기의 초록 인상은 소품 밀도에서 온다. 기존 원판·role·색을 그대로 유지하며 추가 자산이나 recolor는 없다. 초록 잔디 식별 대기는 해소됐고, 실제 Astra 배치 export 미수신과 생산 로더 미연결만 유지한다. 자세한 계약은 GDD 05 v1.14에 기록했다.
+
+## 로더 한정 EditMode 검증 (2026-10-30 14:34 KST)
+
+- 최초 source `c431f245`: compile 성공, 1통과/1실패/skip0. null entries fixture 거부에서 예상 예외가 없었다. 실패 증거는 `artifacts/day-20261030/loader-filtered-1429/loader.xml`에 보존한다.
+- 수정 source `6b4c36d4`: `Tests.EditMode.EstateAuthoredPlacementTests`만 batchmode로 1회 재실행, **5통과/실패0/skip0**, Unity exit0. 원자료: `artifacts/day-20261030/loader-filtered-1434/{source.txt,loader.xml,loader.log}`.
+- 원인 관측: JsonUtility.ToJson은 entries=null을 `"entries":[]`로 직렬화했다. reader가 null만 거부해 빈 배열이 통과했다. 최소 1항목 계약으로 고쳤으며 raw JSON의 null·필드 누락·빈 배열을 각각 거부하는 3개 테스트와 기존 정상 좌표/부정 입력 검사가 모두 통과했다.
+- 공유 잠금은 실행 전 확인하고 자기 잠금만 획득·해제했다. 종료 후 Unity 없음, 추적 파일 변경 없음.
+- 이는 **로더 compile 및 한정 검사 증거**다. 두 프로필 전체, PlayMode, 생산 연결, 실제 Astra export, 밀도·화질, replay/save 실행 관문을 증명하지 않는다. 자동 밀도 수정 중단과 기존 실패 판정은 유지한다. 최종 CI는 PR에 별도 기록한다.
