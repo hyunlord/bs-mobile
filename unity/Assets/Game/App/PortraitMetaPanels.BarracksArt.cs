@@ -32,6 +32,13 @@ namespace Game.App
             var rect=PortraitWidgets.Place(id,parent,x,y,width,height);var image=rect.gameObject.AddComponent<Image>();
             TrainingSurface(image,id);image.raycastTarget=false;return image;
         }
+        static void BarracksResourceArt(UiShell ui,Transform parent,string id,float x,float y,float size)
+        {
+            // The server has no premium-wallet contract yet; its label remains visible without invented art or balance.
+            if(id=="meta:gems")return;
+            var asset=id=="meta:iron"?"r-iron":id=="meta:grain"?"r-grain":"r-timber";
+            PortraitWidgets.Art(ui,parent,asset,x,y,size,size);
+        }
         static Button TrainingQuantity(UiShell ui,Transform parent,string name,string glyph,Action action,float x,float y,bool enabled)
         {
             var button=ActionButton(ui,parent,name,"",action,x,y,48,enabled);

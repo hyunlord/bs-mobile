@@ -34,14 +34,18 @@ namespace Game.BarracksCapture
             var field = app.Ui.GetComponentInChildren<InputField>();
             if (field == null) throw new InvalidOperationException("Explicit server connection field missing.");
             field.text = File.ReadAllText(Environment.GetEnvironmentVariable("BARRACKS_CAPTURE_TOKEN_FILE")).Trim();
-            Click("Barracks.Connect"); yield return Ready(); yield return Capture("01-connected");
+            Click("Barracks.Connect"); yield return Ready();
+            if (Button("Barracks.CancelWaiting") != null) throw new InvalidOperationException("Empty queue must not show a cancellation button.");
+            yield return Capture("01-connected");
             Click("Barracks.Train"); yield return null; yield return Capture("02-confirm"); Click("Barracks.Train");
             yield return Ready(); yield return Capture("03-active");
             Click("Barracks.Train"); yield return null; Click("Barracks.Train"); yield return Ready(); yield return Capture("04-waiting");
+            if (Button("Barracks.Train")?.interactable != false || !app.Ui.GetComponentsInChildren<Text>().Any(t => t.name == "Barracks.Status" && t.text.Contains("대기열이 가득")))
+                throw new InvalidOperationException("Full queue must disable training and explain why.");
             if (Button("Barracks.CancelWaiting")?.interactable != true) throw new InvalidOperationException("Server waiting queue was not created.");
             Click("Barracks.CancelWaiting"); yield return null; yield return Capture("05-cancel-confirm");
             Click("Barracks.ConfirmCancel"); yield return Ready(); yield return Capture("06-cancel-result");
-            if (Button("Barracks.CancelWaiting")?.interactable == true) throw new InvalidOperationException("Server waiting cancellation was not reflected.");
+            if (Button("Barracks.CancelWaiting") != null) throw new InvalidOperationException("Server waiting cancellation was not reflected.");
             BarracksCapture.Finish(true, "Live server connected, start, waiting queue and cancellation submitted through real UI.");
         }
         Button Button(string name) => app?.Ui?.GetComponentsInChildren<Button>().SingleOrDefault(button => button.name == name);
@@ -71,6 +75,11 @@ namespace Game.BarracksCapture
             var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(viewport, queue);
             if (bounds.min.y < viewport.rect.yMin - 1 || bounds.max.y > viewport.rect.yMax + 1)
                 throw new InvalidOperationException("Training queue is clipped by its viewport.");
+            foreach (var id in new[] { "meta:grain", "meta:timber", "meta:iron", "meta:gems" })
+            {
+                var wallet = app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "Barracks.Wallet:" + id);
+                if (string.IsNullOrWhiteSpace(wallet.text)) throw new InvalidOperationException("Missing server wallet label: " + id);
+            }
             var before = ShaderUtil.anythingCompiling;
             var image = ScreenCapture.CaptureScreenshotAsTexture();
             if (image == null) throw new InvalidOperationException("Screen capture returned null.");

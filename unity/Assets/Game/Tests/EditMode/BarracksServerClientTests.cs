@@ -93,11 +93,52 @@ namespace Game.Tests
             var view = JsonUtility.FromJson<BarracksView>("{\"pendingRefunds\":[{\"materialId\":\"meta:grain\",\"amount\":7}],\"waitingCancellationRefunds\":[{\"materialId\":\"meta:grain\",\"immediateAmount\":3,\"pendingAmount\":5}]}");
             Assert.That(PortraitMetaPanels.BarracksPendingRefundText(view), Is.EqualTo("환불 대기 곡물 7"));
             var preview = PortraitMetaPanels.BarracksRefundPreviewText(view);
-            StringAssert.Contains("즉시 3 / 환불 대기 5", preview);
+            StringAssert.Contains("즉시 3 · 환불 대기 5", preview);
             StringAssert.Contains("공간이 생기면 돌려받습니다", preview);
             Assert.That(view.pendingRefunds[0].amount, Is.EqualTo(7), "Rendering does not settle or spend the server balance.");
             view.waitingCancellationRefunds[0].pendingAmount = 0;
             StringAssert.DoesNotContain("지갑이 가득", PortraitMetaPanels.BarracksRefundPreviewText(view));
+        }
+
+        [Test]
+        public void RefundPreviewKeepsEachResourceOnItsOwnLine()
+        {
+            var view = JsonUtility.FromJson<BarracksView>("{\"waitingCancellationRefunds\":[{\"materialId\":\"meta:grain\",\"immediateAmount\":8,\"pendingAmount\":2},{\"materialId\":\"meta:timber\",\"immediateAmount\":3,\"pendingAmount\":0}]}");
+            var lines = PortraitMetaPanels.BarracksRefundPreviewText(view).Split('\n');
+            Assert.That(lines[0], Is.EqualTo("곡물 즉시 8 · 환불 대기 2"));
+            Assert.That(lines[1], Is.EqualTo("목재 즉시 3 · 환불 대기 0"));
+        }
+
+        [Test]
+        public void CompletionTimeConvertsServerInstantAcrossLocalMidnight()
+        {
+            long instant = new DateTimeOffset(2026, 10, 30, 20, 7, 0, TimeSpan.Zero).ToUnixTimeMilliseconds();
+            var east = TimeZoneInfo.CreateCustomTimeZone("Barracks test UTC+9", TimeSpan.FromHours(9), "UTC+9", "UTC+9");
+            var west = TimeZoneInfo.CreateCustomTimeZone("Barracks test UTC-11", TimeSpan.FromHours(-11), "UTC-11", "UTC-11");
+            Assert.That(PortraitMetaPanels.BarracksCompletionTime(instant, TimeZoneInfo.Utc), Is.EqualTo("20:07"));
+            Assert.That(PortraitMetaPanels.BarracksCompletionTime(instant, east), Is.EqualTo("05:07"));
+            Assert.That(PortraitMetaPanels.BarracksCompletionTime(instant, west), Is.EqualTo("09:07"));
+        }
+
+        [Test]
+        public void WalletLabelsFollowServerBalancesAndDistinguishMissingFromZero()
+        {
+            var resources = new[]
+            {
+                new BarracksResource { id = "meta:grain", amount = 44 },
+                new BarracksResource { id = "meta:timber", amount = 119 },
+                new BarracksResource { id = "meta:iron", amount = 0 }
+            };
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:grain"), Is.EqualTo("44"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:timber"), Is.EqualTo("119"));
+            resources[0].amount = 52;
+            resources[1].amount = 122;
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:grain"), Is.EqualTo("52"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:timber"), Is.EqualTo("122"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:iron"), Is.EqualTo("0"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:missing"), Is.EqualTo("—"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(Array.Empty<BarracksResource>(), "meta:grain"), Is.EqualTo("—"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(null, "meta:grain"), Is.EqualTo("—"));
         }
 
         [Test]
@@ -109,6 +150,14 @@ namespace Game.Tests
             Assert.That(unit.quotes[0].occupiedAfter, Is.EqualTo(17));
             Assert.That(unit.quotes[1].canStart, Is.False);
             Assert.That(unit.quotes[1].estimatedCompletesAtMilliseconds, Is.Zero);
+        }
+
+        [Test]
+        public void IronResourceUsesExistingPaintedSprite()
+        {
+            var sprite = PortraitArt.Get("r-iron");
+            Assert.That(sprite.texture.width, Is.EqualTo(96));
+            Assert.That(sprite.texture.height, Is.EqualTo(96));
         }
 
         [Test]

@@ -9,7 +9,7 @@ namespace Game.App
     // Approved #563: parchment panels, blue primary actions, dark resource/navigation bars.
     public static partial class PortraitMetaPanels
     {
-        public const string BarracksGlyphs = "병영 훈련 서버 연결 개발 계정 새 만들기 기존 토큰 입력 닫기 연결 중 결과 확인 다시 보내기 조회 상비 병력 총 인원 상한 준비 출전 부상 예약 포함 징집 창병 방패 수비병 명 곡물 목재 철재 기본 시간 훈련 뒤 충분 부족 활성 대기 취소 확인 실제 서버 상태 로컬 저장과 별개 이번 실행 동안만 보관 안 됨 병영 필요 선택 자원 모자람 공간 없음 재접속 인증 만료 응답 오류 취소 환불 대기만 가능 서버 주소 실행 옵션 적용 기다려 주세요 연결 실패 새로고침 환불 대기 지갑 가득 차 일부 공간 생기면 돌려받습니다 즉시 계속 기초 생산시설 건설용 쓸 수 없습니다 견적 완료 예정 점유 이번 남은 진행 담지 못한 보관됩니다 공간 시 UTC";
+        public const string BarracksGlyphs = "병영 훈련 서버 연결 개발 계정 새 만들기 기존 토큰 입력 닫기 연결 중 결과 확인 다시 보내기 조회 상비 병력 총 인원 상한 준비 출전 부상 예약 포함 징집 창병 방패 수비병 명 곡물 목재 철재 기본 시간 훈련 뒤 충분 부족 활성 대기 취소 확인 실제 서버 상태 로컬 저장과 별개 이번 실행 동안만 보관 안 됨 병영 필요 선택 자원 모자람 공간 없음 재접속 인증 만료 응답 오류 취소 환불 대기만 가능 서버 주소 실행 옵션 적용 기다려 주세요 연결 실패 새로고침 환불 대기 지갑 가득 차 일부 공간 생기면 돌려받습니다 즉시 계속 기초 생산시설 건설용 쓸 수 없습니다 견적 완료 예정 점유 이번 남은 진행 담지 못한 보관됩니다 공간 시 현지 보석";
         static readonly Color BarracksDark = new Color32(20, 26, 31, 255);
         public static void BarracksConnect(UiShell ui, string endpoint, string status, bool busy, Action<string, bool> connect, Action back)
         {
@@ -40,53 +40,57 @@ namespace Game.App
             var bar=ColorPlate(root,"Barracks.Header",BarracksDark,0,0,w,52);
             Caption(ui,bar,"병영 · 훈련",16,8,w-80,36,22).fontStyle=FontStyle.Bold;
             ActionButton(ui,bar,"Barracks.Back","‹",back,w-56,2,48,!client.Busy);
+            BarracksWallet(ui,root,client.Latest.resources,w);
             if(chosen==null)return;
             var quote=chosen.quotes?.FirstOrDefault(q=>q.count==count);
             float unitWidth=(inner-8)/Math.Max(1,state.units.Length);
             for(var i=0;i<state.units.Length;i++)
             {
-                var unit=state.units[i];ActionButton(ui,root,"Barracks.Unit:"+unit.unitId,unit.name,()=>select(unit.unitId),20+i*(unitWidth+8),58,unitWidth,!client.Busy&&!client.Uncertain,48,unit==chosen?"ui.button.primary":"ui.button.secondary");
+                var unit=state.units[i];ActionButton(ui,root,"Barracks.Unit:"+unit.unitId,unit.name,()=>select(unit.unitId),20+i*(unitWidth+8),98,unitWidth,!client.Busy&&!client.Uncertain,48,unit==chosen?"ui.button.primary":"ui.button.secondary");
             }
-            TrainingImage(root,chosen.unitId=="slg:guard"?"troop-guard":"troop-levy",28,110,80,80).preserveAspect=true;
-            Caption(ui,root,"훈련할 인원",124,113,w-144,26,18,true).fontStyle=FontStyle.Bold;
-            Caption(ui,root,"준비 "+chosen.ready+" · 부상 "+chosen.wounded,124,144,w-144,26,16,true);
-            Caption(ui,root,"병영 Lv "+state.barracksLevel+" · 서버 계정",124,174,w-144,24,14,true);
-            Caption(ui,root,"훈련 수량",20,200,inner,26,18,true).fontStyle=FontStyle.Bold;
-            TrainingQuantity(ui,root,"Barracks.CountLess","minus",()=>quantity(Math.Max(1,count-1)),32,230,count>1&&!client.Busy&&!client.Uncertain);
-            var value=TrainingImage(root,"training-quantity-value",(w-166)/2,230,166,48);
+            TrainingImage(root,chosen.unitId=="slg:guard"?"troop-guard":"troop-levy",28,150,64,64).preserveAspect=true;
+            Caption(ui,root,"훈련할 인원",110,148,w-130,26,18,true).fontStyle=FontStyle.Bold;
+            Caption(ui,root,"준비 "+chosen.ready+" · 부상 "+chosen.wounded,110,175,w-130,26,16,true);
+            Caption(ui,root,"병영 Lv "+state.barracksLevel+" · 서버 계정",110,196,w-130,22,14,true);
+            Caption(ui,root,"훈련 수량",20,218,inner,26,18,true).fontStyle=FontStyle.Bold;
+            TrainingQuantity(ui,root,"Barracks.CountLess","minus",()=>quantity(Math.Max(1,count-1)),32,244,count>1&&!client.Busy&&!client.Uncertain);
+            var value=TrainingImage(root,"training-quantity-value",(w-166)/2,244,166,48);
             Caption(ui,value.transform,count+"명",0,0,166,48,22,true,TextAnchor.MiddleCenter).fontStyle=FontStyle.Bold;
-            TrainingQuantity(ui,root,"Barracks.CountMore","plus",()=>quantity(count+1),w-80,230,count<state.batchLimit&&!client.Busy&&!client.Uncertain);
-            Caption(ui,root,"총 비용",20,287,inner,26,18,true).fontStyle=FontStyle.Bold;
-            var cost=TrainingImage(root,"training-total-cost-row",32,316,w-64,56);
+            TrainingQuantity(ui,root,"Barracks.CountMore","plus",()=>quantity(count+1),w-80,244,count<state.batchLimit&&!client.Busy&&!client.Uncertain);
+            Caption(ui,root,"총 비용",20,296,inner,26,18,true).fontStyle=FontStyle.Bold;
+            var cost=TrainingImage(root,"training-total-cost-row",32,324,w-64,56);
             if(quote?.totalCost!=null)
             {
                 var ids=new[]{"meta:grain","meta:timber","meta:iron"};
                 for(var i=0;i<ids.Length;i++)
                 {
-                    float x=12+i*(w-64)/3;MaterialArt(ui,cost.transform,ids[i],"",x,16,24);
+                    float x=12+i*(w-64)/3;BarracksResourceArt(ui,cost.transform,ids[i],x,16,24);
                     var amount=quote.totalCost.FirstOrDefault(c=>c.materialId==ids[i])?.amount??0;
                     Caption(ui,cost.transform,amount.ToString(),x+30,10,(w-64)/3-42,36,18,true).fontStyle=FontStyle.Bold;
                 }
             }
             else Caption(ui,cost.transform,"서버 견적 확인 필요",14,10,w-92,36,16,true);
-            Caption(ui,root,quote!=null&&quote.canStart?"완료 예정 "+DateTimeOffset.FromUnixTimeMilliseconds(quote.estimatedCompletesAtMilliseconds).ToString("HH:mm 'UTC'")+" · "+Duration(quote.durationMilliseconds/1000):"완료 예정 —",24,378,w-48,25,14,true);
-            Caption(ui,root,"병력 점유 "+state.occupied+" / "+state.capacity+" (이번 훈련 +"+(quote?.count??0)+" 예약)",24,404,w-48,25,14,true);
-            var reason=Caption(ui,root,quote==null?"서버 견적 확인 필요":!quote.canStart?BarracksStatus(quote.reason):BarracksStatus(client.Status),24,431,w-48,36,14,true);reason.name="Barracks.Status";
-            var train=ActionButton(ui,root,"Barracks.Train",client.Uncertain?"같은 요청 결과 확인":confirming?"확인 · "+count+"명 훈련":count+"명 훈련",client.Uncertain?refresh:confirming?submit:confirm,32,472,w-64,!client.Busy&&(client.Uncertain||quote?.canStart==true),48,"ui.button.primary");
+            Caption(ui,root,quote!=null&&quote.canStart?"완료 예정 "+BarracksCompletionTime(quote.estimatedCompletesAtMilliseconds,TimeZoneInfo.Local)+" · "+Duration(quote.durationMilliseconds/1000):"완료 예정 —",24,386,w-48,25,14,true);
+            Caption(ui,root,"병력 점유 "+state.occupied+" / "+state.capacity+" (이번 훈련 +"+(quote?.count??0)+" 예약)",24,412,w-48,25,14,true);
+            var reason=Caption(ui,root,quote==null?"서버 견적 확인 필요":!quote.canStart?BarracksStatus(quote.reason):BarracksStatus(client.Status),24,439,w-48,36,14,true);reason.name="Barracks.Status";
+            var train=ActionButton(ui,root,"Barracks.Train",client.Uncertain?"같은 요청 결과 확인":confirming?"확인 · "+count+"명 훈련":count+"명 훈련",client.Uncertain?refresh:confirming?submit:confirm,32,480,w-64,!client.Busy&&(client.Uncertain||quote?.canStart==true),48,"ui.button.primary");
             var label=train.GetComponentInChildren<Text>();label.GetComponent<PortraitButtonLabel>().enabled=false;label.color=new Color32(247,238,213,255);
-            var queue=Plate(ui,root,"Barracks.Queue","ui.panel",20,534,inner,144);
+            var queue=Plate(ui,root,"Barracks.Queue","ui.panel",20,540,inner,138);
             Caption(ui,queue,state.HasActive?"진행 중 · "+state.active.count+"명":"활성 훈련 없음",14,10,inner-28,28,18,true).fontStyle=FontStyle.Bold;
-            Caption(ui,queue,state.HasActive?"남은 시간 "+Duration(Math.Max(0,state.active.completesAtMilliseconds-state.serverUtcMilliseconds)/1000):"대기 0 / 1",14,42,inner-28,24,16,true);
-            var track=TrainingImage(queue,"training-progress-track",14,81,148,18);
+            Caption(ui,queue,state.HasActive?"남은 시간 "+Duration(Math.Max(0,state.active.completesAtMilliseconds-state.serverUtcMilliseconds)/1000):"",14,36,inner-28,24,16,true);
+            var track=TrainingImage(queue,"training-progress-track",14,66,148,18);
             if(state.HasActive)
             {
                 var progress=(float)Math.Max(0,Math.Min(1,(double)(state.serverUtcMilliseconds-state.active.startedAtMilliseconds)/Math.Max(1,state.active.durationMilliseconds)));
                 var fill=TrainingImage(track.transform,"training-progress-fill",8,5,132,8);fill.type=Image.Type.Filled;fill.fillMethod=Image.FillMethod.Horizontal;fill.fillAmount=progress;
             }
-            var canCancel=state.HasWaiting&&!client.Busy&&!client.Uncertain;
-            var cancelButton=ActionButton(ui,queue,"Barracks.CancelWaiting",state.HasWaiting?"대기 취소":"활성 취소 불가",cancel,inner-174,74,160,canCancel);
-            TrainingSurface(cancelButton.image,"training-cancel-"+(canCancel?"active":"disabled"));
-            Caption(ui,queue,state.HasWaiting?"대기 "+state.waiting.count+"명 · 앞 훈련 완료 후 시작":"대기 0 / 1",14,118,inner-28,22,13,true);
+            if(state.HasWaiting)
+            {
+                var canCancel=!client.Busy&&!client.Uncertain;
+                var cancelButton=ActionButton(ui,queue,"Barracks.CancelWaiting","대기 취소",cancel,inner-174,60,160,canCancel);
+                TrainingSurface(cancelButton.image,"training-cancel-"+(canCancel?"active":"disabled"));
+            }
+            Caption(ui,queue,state.HasWaiting?"대기 "+state.waiting.count+"명 · 앞 훈련 완료 후 시작":"대기 0 / 1",14,114,inner-28,22,13,true);
             var refund=TrainingImage(root,"training-refund-pending-panel",32,690,w-64,82);
             TrainingImage(refund.transform,"training-refund-pending-mark",14,14,20,20);
             var refundText=BarracksPendingRefundText(state);
@@ -109,8 +113,25 @@ namespace Game.App
         public static string BarracksRefundPreviewText(BarracksView state)
         {
             var rows = state.waitingCancellationRefunds ?? Array.Empty<BarracksRefundPreview>();
-            var text = string.Join(" · ", rows.Select(c => MaterialName(c.materialId) + " 즉시 " + c.immediateAmount + " / 환불 대기 " + c.pendingAmount));
+            var text = string.Join("\n", rows.Select(c => MaterialName(c.materialId) + " 즉시 " + c.immediateAmount + " · 환불 대기 " + c.pendingAmount));
             return rows.Any(c => c.pendingAmount > 0) ? text + "\n지갑이 가득 차 일부는 공간이 생기면 돌려받습니다" : text + "\n대기 훈련을 취소하고 자원을 돌려받습니다";
+        }
+        public static string BarracksCompletionTime(long serverUtcMilliseconds, TimeZoneInfo zone) =>
+            TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeMilliseconds(serverUtcMilliseconds), zone).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+        public static string BarracksWalletAmount(BarracksResource[] resources, string id) =>
+            resources?.FirstOrDefault(r => r.id == id)?.amount.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "—";
+        static void BarracksWallet(UiShell ui, Transform root, BarracksResource[] resources, float width)
+        {
+            var bar=ColorPlate(root,"Barracks.Wallet",BarracksDark,0,52,width,40);
+            var ids=new[]{"meta:grain","meta:timber","meta:iron","meta:gems"};
+            var names=new[]{"곡물","목재","철재","보석"};
+            for(var i=0;i<ids.Length;i++)
+            {
+                float x=8+i*(width-16)/4,cell=(width-16)/4;
+                BarracksResourceArt(ui,bar,ids[i],x,8,22);
+                var label=Caption(ui,bar,names[i]+" "+BarracksWalletAmount(resources,ids[i]),x+24,4,cell-26,32,11);
+                label.name="Barracks.Wallet:"+ids[i];
+            }
         }
         static string MaterialName(string id) => id == "meta:grain" ? "곡물" : id == "meta:timber" ? "목재" : id == "meta:iron" ? "철재" : id;
         static string Duration(long seconds) => (seconds / 60) + ":" + (seconds % 60).ToString("00");
