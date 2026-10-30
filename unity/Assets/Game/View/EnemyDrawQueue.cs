@@ -1,12 +1,19 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using Unity.Profiling;
+#endif
 
 namespace Game.View
 {
     // A texture may recur after another texture in painter order: those runs must never be coalesced.
     public sealed class EnemyDrawQueue : IDisposable
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static readonly ProfilerMarker SortMarker = new ProfilerMarker("SowSiege.View.EnemySort");
+        static readonly ProfilerMarker RunMarker = new ProfilerMarker("SowSiege.View.EnemyRunPreparation");
+#endif
         struct Entry
         {
             public Texture2D Texture;
@@ -46,9 +53,15 @@ namespace Game.View
 
         public void Flush(Shader shader, Camera camera)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (SortMarker.Auto())
+#endif
             entries.Sort(PainterOrder.Instance);
             for (var start = 0; start < entries.Count;)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                using var runSample = RunMarker.Auto();
+#endif
                 var texture = entries[start].Texture;
                 var end = start + 1;
                 while (end < entries.Count && end - start < SpriteBatch.MaximumInstances && entries[end].Texture == texture) end++;
