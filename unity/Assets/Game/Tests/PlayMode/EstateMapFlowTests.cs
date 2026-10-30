@@ -601,6 +601,12 @@ namespace Tests.PlayMode
                 $"version,decoration,actualDecorEnabled,base,landmarks,total,withoutLv0Parts,lv0PartsDelta\n{version},{state},{app.EstateMap.DecorEnabled},{baseline},{actual - baseline},{actual},{WithoutLandmarks(true)},{baseline - WithoutLandmarks(true)}\n");
             Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
             Assert.That(app.EstateMap.DecorEnabled, Is.EqualTo(state == "on"), "Batch label must match the actual decoration switch.");
+            if (version == EstateR8Layout.Version)
+            {
+                var authored = View().GetComponentsInChildren<EstateAuthoredTerrainGraphic>();
+                Assert.That(authored.Count(g => g.Ground), Is.EqualTo(1), "Ground remains when decoration is disabled.");
+                Assert.That(authored.Count(g => !g.Ground), Is.EqualTo(state == "on" ? 1 : 0), "Off measurements exclude the approved prop mesh.");
+            }
             Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
             if (version == "m3a-prototype-r6" || version == "m3a-prototype-r7")
                 Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");

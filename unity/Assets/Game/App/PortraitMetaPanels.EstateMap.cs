@@ -77,6 +77,7 @@ namespace Game.App
             {
                 foreach (var groundPlane in new[] { true, false })
                 {
+                    if (!groundPlane && !screen.DecorEnabled) continue;
                     var rect = UiShell.Rect(groundPlane ? "EstateMap.AuthoredGround" : "EstateMap.AuthoredTerrain", viewport); UiShell.Stretch(rect);
                     var graphic = rect.gameObject.AddComponent<EstateAuthoredTerrainGraphic>();
                     graphic.Configure(authored, screen.Map, groundPlane); view.Track(graphic);
