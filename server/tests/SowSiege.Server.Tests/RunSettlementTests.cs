@@ -69,13 +69,13 @@ public sealed class RunSettlementTests
     private static ExpeditionRun Run(DomainResult result) => result.State.GetProperty("runs").Deserialize<ExpeditionRun[]>(AccountStore.Json)!.Last();
 
     [Fact]
-    public void VerifiedSurvivalGrantsProofAndCappedMaterialsOnce()
+    public void VerifiedSurvivalGrantsProofAndThePromisedMaterialOnce()
     {
         var (handler, context) = Handler();
         var issued = handler.Execute(context, "start-expedition", Payload(new { proofId = Proof, resource = "meta:grain" }));
         Assert.Equal((true, "issued"), (issued.Done, issued.Reason));
         var run = Run(issued);
-        Assert.Equal((context.CommandId!.Value, ExpeditionRules.SeedOf(Key), "open"), (run.RunId, run.Seed, run.Status));
+        Assert.Equal((context.CommandId!.Value, ExpeditionRules.SeedOf(Key), "open", 60), (run.RunId, run.Seed, run.Status, run.Promised));
         Assert.Equal("run-open", handler.Execute(context with { State = issued.State }, "start-expedition", Payload(new { proofId = Proof, resource = "meta:grain" })).Reason);
         Assert.Equal("unknown-proof", handler.Execute(context, "start-expedition", Payload(new { proofId = "slg:proof-made-up", resource = "meta:grain" })).Reason);
 
@@ -83,41 +83,42 @@ public sealed class RunSettlementTests
         var verdict = Payload(new { runId = run.RunId, verdict = "verified", endKind = "Duration", tick = 21600, stateHash = new string('a', 64), replayHash = new string('b', 64) });
         var settled = handler.Execute(after, ExpeditionRules.SettleOperation, verdict);
         Assert.Equal((true, "objective-complete"), (settled.Done, settled.Reason));
-        Assert.Equal(context.Account.State.Wallet["meta:grain"] + 60, settled.AccountState.Wallet["meta:grain"]);
+        // The handler never writes over-cap wallet amounts itself; it asks the shared writer to credit the promise.
+        Assert.Equal(context.Account.State.Wallet["meta:grain"], settled.AccountState.Wallet["meta:grain"]);
+        Assert.Equal(new DomainCredit("meta:grain", 60), Assert.Single(settled.Credits!));
         Assert.Contains(Proof, settled.State.GetProperty("proofs").EnumerateArray().Select(p => p.GetString()));
-        var again = handler.Execute(after with { State = settled.State, Account = after.Account with { State = settled.AccountState } }, ExpeditionRules.SettleOperation, verdict);
+        var again = handler.Execute(after with { State = settled.State }, ExpeditionRules.SettleOperation, verdict);
         Assert.Equal((false, "already-settled"), (again.Done, again.Reason));
-        Assert.Equal(settled.AccountState.Wallet["meta:grain"], again.AccountState.Wallet["meta:grain"]);
+        Assert.Null(again.Credits);
+    }
+
+    [Theory]
+    [InlineData(0, 60, "issued")]
+    [InlineData(50, 10, "issued")]
+    [InlineData(60, 0, "issued-proof-only")]
+    [InlineData(75, 0, "issued-proof-only")]
+    public void IssueReservesAgainstRunRewardsStillHeld(int held, int promised, string reason)
+    {
+        var (handler, context) = Handler();
+        var issued = handler.Execute(context with { Held = new Dictionary<string, int> { ["meta:grain"] = held } }, "start-expedition",
+            Payload(new { proofId = Proof, resource = "meta:timber" }));
+        Assert.Equal((reason, promised), (issued.Reason, Run(issued).Promised));
+        var settled = handler.Execute(context with { State = issued.State }, ExpeditionRules.SettleOperation,
+            Payload(new { runId = Run(issued).RunId, verdict = "verified", endKind = "Duration", tick = 1, stateHash = "x", replayHash = "y" }));
+        Assert.Contains(Proof, settled.State.GetProperty("proofs").EnumerateArray().Select(p => p.GetString()));
+        Assert.Equal(promised, settled.Credits?.Single().Amount ?? 0);
     }
 
     [Fact]
-    public void RewardIsCappedByDataAndWalletAndDeathGrantsNothing()
+    public void DeathIsVerifiedButGrantsNothing()
     {
         var (handler, context) = Handler();
-        var full = context.Account with { State = context.Account.State with { Wallet = new(context.Account.State.Wallet) { ["meta:grain"] = 1990 } } };
-        var issued = handler.Execute(context with { Account = full }, "start-expedition", Payload(new { proofId = Proof, resource = "meta:grain" }));
-        var run = Run(issued);
-        var settled = handler.Execute(context with { Account = full, State = issued.State }, ExpeditionRules.SettleOperation,
-            Payload(new { runId = run.RunId, verdict = "verified", endKind = "Duration", tick = 1, stateHash = "x", replayHash = "y" }));
-        Assert.Equal(2000, settled.AccountState.Wallet["meta:grain"]);
-        Assert.Equal((10, 50), (Run(settled).Granted, Run(settled).Pending));
-        Assert.Equal(50, settled.State.GetProperty("pendingMaterials").GetProperty("meta:grain").GetInt32());
-        // Held material is credited as room appears, never dropped.
-        var spent = context.Account with { State = context.Account.State with { Wallet = new(context.Account.State.Wallet) { ["meta:grain"] = 1970 } } };
-        var partly = handler.AfterCommand(context with { Account = spent, State = settled.State });
-        Assert.Equal((2000, 20), (partly.AccountState.Wallet["meta:grain"], partly.State.GetProperty("pendingMaterials").GetProperty("meta:grain").GetInt32()));
-        var emptied = context.Account with { State = context.Account.State with { Wallet = new(context.Account.State.Wallet) { ["meta:grain"] = 0 } } };
-        var flushed = handler.AfterCommand(context with { Account = emptied, State = partly.State });
-        Assert.Equal(20, flushed.AccountState.Wallet["meta:grain"]);
-        Assert.False(flushed.State.GetProperty("pendingMaterials").TryGetProperty("meta:grain", out _));
-
-        var second = Handler();
-        var issued2 = second.Handler.Execute(second.Context, "start-expedition", Payload(new { proofId = Proof, resource = "meta:timber" }));
-        var died = second.Handler.Execute(second.Context with { State = issued2.State }, ExpeditionRules.SettleOperation,
-            Payload(new { runId = Run(issued2).RunId, verdict = "verified", endKind = "Death", tick = 10, stateHash = "x", replayHash = "y" }));
+        var issued = handler.Execute(context, "start-expedition", Payload(new { proofId = Proof, resource = "meta:timber" }));
+        var died = handler.Execute(context with { State = issued.State }, ExpeditionRules.SettleOperation,
+            Payload(new { runId = Run(issued).RunId, verdict = "verified", endKind = "Death", tick = 10, stateHash = "x", replayHash = "y" }));
         Assert.Equal((true, "objective-failed", 0), (died.Done, died.Reason, Run(died).Granted));
         Assert.Empty(died.State.GetProperty("proofs").EnumerateArray());
-        Assert.Equal(second.Context.Account.State.Wallet["meta:timber"], died.AccountState.Wallet["meta:timber"]);
+        Assert.Null(died.Credits);
     }
 
     [Fact]
