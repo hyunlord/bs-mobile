@@ -271,7 +271,7 @@ namespace SowSiege.Core
                         }
                         else
                         {
-                            crop.Health = 0; ripeAvailabilityKnown = false; State.Emit(world.Tick, operations.Action == "consume-seed" ? "seed-theft" : "ripe-consumed", rule.Id, crop.Id, crop.Position, crop.Position, 1);
+                            crop.Health = 0; interactive?.Vassals?.RemoveGrain(crop.Id); ripeAvailabilityKnown = false; State.Emit(world.Tick, operations.Action == "consume-seed" ? "seed-theft" : "ripe-consumed", rule.Id, crop.Id, crop.Position, crop.Position, 1);
                             if (operations.Action == "consume-seed")
                             {
                                 subscriptions.SeedEaten(crop);

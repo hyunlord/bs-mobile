@@ -113,7 +113,7 @@ namespace Game.App
         private bool metaRun,abandoned;
         private readonly HashSet<string> recentGrowth=new HashSet<string>(StringComparer.Ordinal);
         private readonly DesktopControls desktopControls = new DesktopControls();
-        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap }
+        private enum UiScreen { Title, Introduction, Run, Cards, Settings, Summary, Replay, Error, Chapters, Manor, Vassals, Challenges, Estate, Pause, ConfirmAbandon, ConfirmExit, Departure, CardPool, SpendConfirmation, Shop, Idle, Pass, Revive, FakeAdSettings, AdRemoval, EstateMap, DepartureConfirmation }
         private UiScreen screen, settingsOrigin;
         private RunSummary completedSummary;
         private Text activeHint;
@@ -289,7 +289,7 @@ namespace Game.App
             {
                 seed=nextSeed;var started=useMeta?Progression.BeginRun(selectedChapter,seed):null;var c=started?.Catalog??FoundationBoot.Catalog;runCatalog=c;settlement=null;resultFragments.Clear();metaRun=useMeta;abandoned=false;
                 SnapshotFeelPreferences();
-                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions(),DepartureHostRewards(useMeta),MeleeAim:CatalogRunOptions.MeleeAim(c));
+                var options=new InteractiveOptions(new RunOptions(seed,c.Tuning.DefaultHero,c.Tuning.DefaultEstate,"mixed",ManualCards:true,TargetMaterial:IsWave?selectedTarget:null),Aim,FoundationBoot.VerifiedDataHash,activeFeelRules,DepartureFieldOptions(),DepartureHostRewards(useMeta),MeleeAim:CatalogRunOptions.MeleeAim(c),Vassals:DepartureVassals(useMeta));
                 Session=new InteractiveSession(c,options);guardedOffer=null;portraitCardActions=null;CaptureSnapshots();previous=CurrentFrame;accumulator=0;finished=false;telemetryClosed=false;suspendedInterval=false;intervalStarted=0;Speed=1;Error=null;cardsFrame=null;MenuOpen=false;completedSummary=null;
                 recording=new RunRecording(MetaDirectory,options,BuildIdentity.Commit);if(started?.ReplayContext!=null)System.IO.File.WriteAllBytes(recording.ReplayPath+".meta",started.ReplayContext);var device=DeviceFacts.Capture();device.sourceHash=BuildIdentity.SourceHash;device.sourceDirty=BuildIdentity.SourceDirty;telemetry=new FrameTelemetry(recording.DirectoryPath,recording.SessionId,BuildIdentity.Commit,CanonicalContent.DataHash,CurrentFrame.DurationTicks,device);
                 world=new GameObject("World renderer").AddComponent<WorldRenderer>();var settings=CanonicalContent.Presentation.Camera;
@@ -309,7 +309,7 @@ namespace Game.App
             if(Error==null)AutoplayCapture.Active?.OnRunReady(this);
         }
         private void ClearUi(){desktopControls.Reset();ReleaseHint();Ui.Clear();}
-        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>{if(Ui.PortraitEnabled)OpenPause();else ShowSettings(true);},activeHitFeedback);hud.Present(CurrentFrame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
+        private void ShowHud(){screen=UiScreen.Run;ClearUi();hud=new UiHud(Ui,runCatalog??FoundationBoot.Catalog,()=>{if(Ui.PortraitEnabled)OpenPause();else ShowSettings(true);},activeHitFeedback,Session?.VassalSnapshot);hud.Present(CurrentFrame,FirstPlayable);MenuOpen=false;cardsFrame=null;Stick.ResetStick();}
         // Read-only diagnostic view; does not alter lifecycle or the simulation clock.
         public bool CaptureClockPaused => Paused;
         private bool Paused => MenuOpen || loading || parityRunning || applicationPaused || focusLost || Session==null || Session.View.Status!=RunStatus.Running
@@ -488,7 +488,7 @@ namespace Game.App
         {
             if(screen!=UiScreen.Settings)settingsOrigin=screen;
             screen=UiScreen.Settings;MenuOpen=true;Stick.ResetStick();accumulator=0;ClearUi();hud=null;
-            if(Ui.PortraitEnabled){PortraitRunPanels.Settings(Ui,preferences,Aim,()=>ApplyPreferences(true),value=>SetAim(value,inRun),RestoreSettingsOrigin,fakeAds:FakeAdSettingsAction,estatePrototype:EstatePrototypeSetting);return;}
+            if(Ui.PortraitEnabled){PortraitRunPanels.Settings(Ui,preferences,Aim,()=>ApplyPreferences(true),value=>SetAim(value,inRun),RestoreSettingsOrigin,fakeAds:FakeAdSettingsAction,estatePrototype:EstatePrototypeSetting,vassalCombat:VassalCombatSetting);return;}
             var panel=Ui.Panel("Settings");Ui.Label(panel,"설정",UiTokens.Title,72);
             Ui.Label(panel,inRun&&!finished?"판을 잠시 멈췄습니다":"소리와 화면",UiTokens.Caption,40);
             Ui.Slider(panel,"배경음",preferences.MusicVolume,v=>{preferences.MusicVolume=v;ApplyPreferences(true);});

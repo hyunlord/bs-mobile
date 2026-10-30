@@ -10,6 +10,7 @@ namespace Game.View
         readonly UiShell ui;readonly ContentCatalog catalog;
         readonly RectTransform root,hp,xp,pool,backing;
         readonly BufferedHudText health,level,time,season;
+        readonly bool vassalLayout;
         static readonly string[] Seasons={"봄","여름","가을","겨울"};
         readonly UiDamageFeedback feedback;
         readonly RectTransform[] slots=new RectTransform[6];
@@ -22,9 +23,9 @@ namespace Game.View
         readonly int[] hiddenCounts = { -1, -1 };
         Vector2 layoutSize;long lastHealth=long.MinValue,lastMaximum,lastExperience,lastRequired;int lastLevel=-1,lastSecond=-1,lastSeason=-1;
         public float ReservedTopPixels=>(root.rect.height+PortraitTokens.HudInset)*ui.Canvas.scaleFactor;
-        public PortraitHud(UiShell ui,ContentCatalog catalog,Action pause,bool hitFeedback)
+        public PortraitHud(UiShell ui,ContentCatalog catalog,Action pause,bool hitFeedback,VassalRunOptions vassals=null)
         {
-            this.ui=ui;this.catalog=catalog;ui.SynchronizeViewport();
+            this.ui=ui;this.catalog=catalog;vassalLayout=vassals!=null;ui.SynchronizeViewport();
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);
             backing=PortraitWidgets.Place("Battle HUD parchment",root,4,-PortraitTokens.HudInset,382,84);
             ui.Surface(backing,"ui.panel").raycastTarget=false;
@@ -42,7 +43,13 @@ namespace Game.View
             xp = UiShell.Rect("Fill", xpRail); UiShell.Stretch(xp, 2);
             xp.gameObject.AddComponent<Image>().color = PortraitTokens.ExperienceFill;
             var seasonLabel = PortraitWidgets.Label(ui, root, "", 238, 0, 84, 18, 13); seasonLabel.name = "Current season"; seasonLabel.alignment = TextAnchor.MiddleCenter; seasonLabel.color = PortraitTokens.CreamButtonInk; season = BufferedHudText.Create(seasonLabel);
-            var timer = PortraitWidgets.Label(ui, root, "", 238, 18, 84, 26, 20); timer.alignment = TextAnchor.MiddleCenter; timer.color = PortraitTokens.CreamButtonInk; time = BufferedHudText.Create(timer);
+            var timer = PortraitWidgets.Label(ui, root, "", 238, vassalLayout?-4:18, vassalLayout?90:84, 26, vassalLayout?14:20); timer.alignment = TextAnchor.MiddleCenter; timer.color = PortraitTokens.CreamButtonInk; time = BufferedHudText.Create(timer);
+            if (vassalLayout)
+            {
+                seasonLabel.gameObject.SetActive(false);
+                var status = PortraitWidgets.Label(ui, root, "가신 " + vassals.Snapshot.Roster.Count + " · 켜짐", 238, 24, 90, 24, 14);
+                status.name = "Vassal snapshot status"; status.alignment = TextAnchor.MiddleCenter;
+            }
             if (pause != null)
             {
                 var pauseButton = PortraitWidgets.Button(ui, root, "", pause, 332, 0, 48, 48, true, "ui.button.round.blue");
@@ -108,9 +115,10 @@ namespace Game.View
             }
             if(frame.Level!=lastLevel){lastLevel=frame.Level;level.Begin();level.Append(lastLevel);level.End();}
             var seasonIndex=Mathf.Clamp(frame.Season,0,Seasons.Length-1);
-            if(seasonIndex!=lastSeason){lastSeason=seasonIndex;season.Begin();season.Append(Seasons[seasonIndex]);season.End();}
+            var seasonChanged=seasonIndex!=lastSeason;
+            if(seasonChanged){lastSeason=seasonIndex;season.Begin();season.Append(Seasons[seasonIndex]);season.End();}
             var second=frame.Tick/frame.TickRate;
-            if(second!=lastSecond){lastSecond=second;time.Begin();time.Append(second/60,2);time.Append(":");time.Append(second%60,2);time.End();}
+            if(second!=lastSecond||vassalLayout&&seasonChanged){lastSecond=second;time.Begin();if(vassalLayout){time.Append(Seasons[seasonIndex]);time.Append(" · ");}time.Append(second/60,2);time.Append(":");time.Append(second%60,2);time.End();}
             if(frame.Experience!=lastExperience||frame.RequiredExperience!=lastRequired)
             {lastExperience=frame.Experience;lastRequired=frame.RequiredExperience;xp.anchorMax=new Vector2(lastRequired>0?Mathf.Clamp01((float)lastExperience/lastRequired):0,1);}
             for (var group = 0; group < 2; group++)

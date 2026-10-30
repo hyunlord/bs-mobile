@@ -9,10 +9,10 @@ namespace Game.App
 {
     public sealed partial class RunCoordinator
     {
-        const string PortraitMetaGlyphs = "출정 준비 가신 도전 상점 방치 생산 곧 찾아옵니다 돌아가기 출정할 수 없는 지역입니다 레벨업 승급 비용 조각 확인 취소 저장하지 못했습니다 다시 시도해 주세요";
+        const string PortraitMetaGlyphs = PortraitMetaPanels.VassalEffectsGlyphs + " 출정 준비 가신 도전 상점 방치 생산 곧 찾아옵니다 돌아가기 출정할 수 없는 지역입니다 레벨업 승급 비용 조각 확인 취소 저장하지 못했습니다 다시 시도해 주세요 가신 전투 시제품 개발 다음 출정부터 다음 출정에 적용 출정 시 편성 고정 합산 상한 도달 공격 체력 이동 생산 아군 경험치 ‰ →";
         readonly Dictionary<string, int> resultFragments = new Dictionary<string, int>();
         string selectedVassal, spendVassal;
-        bool spendRank;
+        bool spendRank, vassalDetail;
         UiScreen vassalOrigin = UiScreen.Estate;
         MetaRunFacts AccountFacts(bool quit)
         {
@@ -39,7 +39,9 @@ namespace Game.App
             {
                 case PortraitMetaPage.Estate: ShowPortraitEstate(); break;
                 case PortraitMetaPage.Departure: ShowPortraitDeparture(); break;
-                case PortraitMetaPage.Vassals: vassalOrigin = screen == UiScreen.Departure ? screen : UiScreen.Estate; ShowPortraitVassals(); break;
+                case PortraitMetaPage.Vassals:
+                    vassalOrigin = screen == UiScreen.Departure || screen == UiScreen.DepartureConfirmation ? screen : UiScreen.Estate;
+                    vassalDetail = false; ShowPortraitVassals(); break;
                 case PortraitMetaPage.Challenges: ShowPortraitChallenges(); break;
                 case PortraitMetaPage.Shop: ShowPortraitShop(); break;
                 case PortraitMetaPage.Idle: ShowPortraitIdle(); break;
@@ -65,11 +67,30 @@ namespace Game.App
         }
         void ShowPortraitDeparture()
         {
-            MetaPage(UiScreen.Departure, () => PortraitMetaPanels.Departure(Ui, Progression.Catalog, Progression.State,
+            MetaPage(UiScreen.Departure, () => DrawPortraitDeparture(
+                () => { if (CanDepart(selectedChapter)) ShowVassalDepartureConfirmation(); }));
+        }
+        void DrawPortraitDeparture(Action start)
+        {
+            PortraitMetaPanels.Departure(Ui, Progression.Catalog, Progression.State,
                 FoundationBoot.Catalog, displays, selectedChapter,
                 id => { selectedChapter = id; ShowPortraitDeparture(); },
-                () => { if (CanDepart(selectedChapter)) StartRun(); }, ShowPortraitCardPool,
-                () => { vassalOrigin = UiScreen.Departure; ShowPortraitVassals(); }, ShowPortraitEstate));
+                start, ShowPortraitCardPool,
+                () => { vassalOrigin = UiScreen.Departure; vassalDetail = false; ShowPortraitVassals(); }, ShowPortraitEstate,
+                preview: DepartureVassals(true));
+        }
+        void ShowVassalDepartureConfirmation()
+        {
+            var preview = DepartureVassals(true);
+            if (preview == null) { StartRun(); return; }
+            MetaPage(UiScreen.DepartureConfirmation, () =>
+            {
+                DrawPortraitDeparture(() => { });
+                PortraitMetaPanels.VassalDepartureConfirmation(Ui, Progression.Catalog, preview,
+                    () => { if (CanDepart(selectedChapter)) StartRun(); },
+                    () => { vassalOrigin = UiScreen.DepartureConfirmation; vassalDetail = false; ShowPortraitVassals(); },
+                    ShowPortraitDeparture);
+            });
         }
         void ShowPortraitCardPool() => MetaPage(UiScreen.CardPool,
             () => PortraitMetaPanels.CardPool(Ui, FoundationBoot.Catalog, displays, ShowPortraitDeparture));
@@ -77,12 +98,18 @@ namespace Game.App
         {
             if (selectedVassal == null) selectedVassal = Progression.Catalog.Vassals[0].Id;
             MetaPage(UiScreen.Vassals, () => PortraitMetaPanels.Vassals(Ui, Progression.Catalog, Progression.State, selectedVassal,
-                id => { selectedVassal = id; ShowPortraitVassals(); },
+                id => { selectedVassal = id; vassalDetail = true; ShowPortraitVassals(); },
                 id => RequestPortraitSpend(id, false), id => RequestPortraitSpend(id, true),
-                id => MetaAction(() => Progression.ToggleVassal(id), ShowPortraitVassals), NavigatePortraitMeta));
+                id => MetaAction(() => Progression.ToggleVassal(id), ShowPortraitVassals), NavigatePortraitMeta, DepartureVassals(true),
+                vassalDetail, () => { vassalDetail = false; ShowPortraitVassals(); }));
         }
         void RestoreVassalOrigin()
-        { if (vassalOrigin == UiScreen.Departure) ShowPortraitDeparture(); else ShowPortraitEstate(); }
+        {
+            if (vassalDetail && VassalCombatActive) { vassalDetail = false; ShowPortraitVassals(); }
+            else if (vassalOrigin == UiScreen.DepartureConfirmation) ShowVassalDepartureConfirmation();
+            else if (vassalOrigin == UiScreen.Departure) ShowPortraitDeparture();
+            else ShowPortraitEstate();
+        }
         void ShowPortraitChallenges() => MetaPage(UiScreen.Challenges,
             () => PortraitMetaPanels.Challenges(Ui, Progression.Catalog, Progression.State,
                 sequence => MetaAction(() => Progression.Claim(sequence), ShowPortraitChallenges), NavigatePortraitMeta, displays));

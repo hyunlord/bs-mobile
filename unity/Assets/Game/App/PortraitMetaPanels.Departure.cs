@@ -13,7 +13,7 @@ namespace Game.App
     {
         public static void Departure(UiShell ui, MetaCatalog catalog, MetaState state, ContentCatalog runCatalog,
             IReadOnlyDictionary<string, ContentDisplay> displays, string chapterId, Action<string> selectChapter,
-            Action start, Action cards, Action vassals, Action back, bool pendingRun = false)
+            Action start, Action cards, Action vassals, Action back, bool pendingRun = false, VassalRunOptions preview = null)
         {
             var root = Page(ui, "Departure", ""); var width = Width(ui) - 32;
             PortraitRunPanels.RoundIcon(ui, root, "Departure.Back", "‹", back, 16, 50);
@@ -51,7 +51,7 @@ namespace Game.App
                 Hit(body, "Departure.VassalSlot:" + i, vassals, i * (cell + 8), y, cell, 112, i < slots);
             }
             y += 120;
-            Caption(ui, body, "가신 능력 보너스는 이번 출정에 적용되지 않습니다.", 0, y, width, 28, 11); y += 30;
+            Caption(ui, body, preview == null ? "가신 능력 보너스는 이번 출정에 적용되지 않습니다." : "다음 출정에 적용 · 출정 시 편성 고정", 0, y, width, 28, 11); y += 30;
             Caption(ui, body, "시작 장비 · 영웅 기본", 0, y, width, 26, 16); y += 30;
             var equipment = new[] { "철날 검", "씨앗 자루" }; var equipmentArt = new[] { "e-iron_blade", "e-seed_bag" };
             for (var i = 0; i < 2; i++)

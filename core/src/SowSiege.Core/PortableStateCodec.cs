@@ -743,6 +743,11 @@ namespace SowSiege.Core
                 if (rewards.Revive is { } revive) { Write(revive.RestoreHealth); Write(revive.InvulnerabilityTicks); Write((int)revive.Preservation); }
             }
             if (value.Estate is { } estate) { Write("estate-run-options-v1"); Write(estate.Version); Write(estate.LoadoutId); Write(estate.LoadoutCatalogHash); }
+            if (value.Vassals is { } vassals)
+            {
+                Write("vassal-run-options-v1");
+                var bytes = VassalRunCodec.Encode(vassals); Write(bytes.Length); writer.Write(bytes);
+            }
         }
         private void Write(FeelExperimentOptions? value)
         {
@@ -799,6 +804,11 @@ namespace SowSiege.Core
                 if (field.Options.Version == FieldOptions.ReviewVersion) { Write("review-field-radii-v1"); Write(field.Options.SpawnRadius); Write(field.Options.RecycleRadius); }
                 Write("field-state-v1"); Write(field.Seed); Write(field.Travel.X); Write(field.Travel.Y);
                 Write(field.ArenaBossId); Write(field.ArenaCenter.X); Write(field.ArenaCenter.Y);
+            }
+            if (value.Vassals is { } vassals)
+            {
+                Write("vassal-run-state-v1");
+                var bytes = vassals.Encode(); Write(bytes.Length); writer.Write(bytes);
             }
         }
         private void Write(PortableRandom? value)
