@@ -42,6 +42,8 @@ namespace Game.App
         {
             var root = Page(ui, "EstateMap", ""); var width = Width(ui); var height = Height(ui);
             var rules = EstateDecorRules.Load(); var night = rules.night;
+            var art = EstateArt.Load();
+            screen.ConfigureCamera(art, rules);
             root.GetComponent<Image>().color = night.Colour;
 
             // The map fills the page; bars and panels sit over it and become insets so every row can still be dragged into view.
@@ -64,15 +66,26 @@ namespace Game.App
             // Painted map (#375, #379): ground over the whole painted area, Astra's terrain patches and earth roads, the art of the
             // land outside the open zones, one continuous night by distance from open land, warm lamps, then yard grounds,
             // shadows, and buildings and props sorted by foot. Grid lines show only while a building is being moved.
-            var art = EstateArt.Load(); var tint = art.Tint;
+            var tint = art.Tint;
             var terrainTint = viewport.gameObject.AddComponent<EstateTerrainMaterial>();
             terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), EstateR8Layout.UsesPlazaRendering(screen.Config));
             ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
             var plan = screen.Plan(rules, art);
+            var authored = EstateAuthoredLayout.Load(screen.Config);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
+            if (authored != null)
+            {
+                foreach (var groundPlane in new[] { true, false })
+                {
+                    if (!groundPlane && !screen.DecorEnabled) continue;
+                    var rect = UiShell.Rect(groundPlane ? "EstateMap.AuthoredGround" : "EstateMap.AuthoredTerrain", viewport); UiShell.Stretch(rect);
+                    var graphic = rect.gameObject.AddComponent<EstateAuthoredTerrainGraphic>();
+                    graphic.Configure(authored, screen.Map, groundPlane); view.Track(graphic);
+                }
+            }
             foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : item.Source == "soil" ? "EstateMap.Decor:soil" : "EstateMap.Terrain", item);
             foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)
                 .OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1)
@@ -172,7 +185,7 @@ namespace Game.App
 
             ResourceStrip(ui, root, screen.Catalog, screen.State, actions.Navigate, width);
             GoalLine(ui, root, screen, actions, width);
-            string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
+            string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.UsesBodyCamera && screen.Map.Zoom == 1 ? "동네" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
             var controlsY = panel > 0 ? panelTop - 112 : workTop - 128;
             if (actions.DevelopmentControls && panel <= 0)
             {
@@ -184,6 +197,12 @@ namespace Game.App
             }
             // The view is remembered for the next visit (#379): written when a drag ends or the zoom changes, never per frame.
             view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
+            if (screen.Map.UsesBodyCamera)
+            {
+                var overview = ActionButton(ui, root, "EstateMap.Overview", screen.Map.Zoom == screen.Map.WholeMap ? "영지" : "전체",
+                    () => { view.ToggleOverview(); actions.Redraw(); }, 104, controlsY + 4, 84, true, 44);
+                Compact(overview.transform); overview.gameObject.SetActive(panel <= 0);
+            }
             EstateZoomButton("EstateMap.ZoomIn", "+", 1, controlsY);
             EstateZoomButton("EstateMap.ZoomOut", "−", -1, controlsY + 52);
             void EstateZoomButton(string name, string glyph, int direction, float y)
@@ -222,7 +241,7 @@ namespace Game.App
                 .ThenBy(i => i.SortY).ThenBy(i => i.Key, StringComparer.Ordinal);
 
         // Sources the [장식 켬/끔] development switch hides (#372); terrain, buildings, the river skeleton and the darkness stay.
-        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil" };
+        static readonly HashSet<string> DecorSources = new HashSet<string>(StringComparer.Ordinal) { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil", "zone-cluster", "zone-prop" };
 
         // One estate sprite: its pivot stands on the item's grid point, `Width` is in scale-1 canvas units, and the colour goes to
         // the EstateTint shader as (saturation, brightness, light, alpha). Without the shader the art draws untinted.
@@ -239,6 +258,10 @@ namespace Game.App
                 terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
             else image = rect.gameObject.AddComponent<Image>();
+#if UNITY_EDITOR
+            var densityTag = image.gameObject.AddComponent<EstateDensityTag>();
+            densityTag.Role = item.Role; densityTag.Source = item.Source;
+#endif
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
             var c = colour ?? item.Colour;
             // Landmark RGB carries shader parameters, not display colours. Linear canvases otherwise convert .4 brightness
@@ -973,6 +996,13 @@ namespace Game.App
         public void Step(int direction)
         {
             if (Model != null && Model.StepZoom(direction, Model.VisibleCentre))
+            { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
+        }
+
+        public void ToggleOverview()
+        {
+            if (Model == null || !Model.UsesBodyCamera) return;
+            if (Model.SetZoom(Model.Zoom == Model.WholeMap ? Model.Opening : Model.WholeMap, Model.VisibleCentre))
             { Layout(); Zoomed?.Invoke(); Moved?.Invoke(); }
         }
 

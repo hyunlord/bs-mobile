@@ -1,0 +1,12 @@
+{
+  "seed": 20261028,
+  "clusterSpacing": 2.5,
+  "propSpacing": 2,
+  "boundaryCells": 12,
+  "clusterDensity": 1,
+  "propDensity": 0.65,
+  "spriteScale": 0.75,
+  "minimumScale": 0.8,
+  "maximumScale": 1,
+  "fogOpacity": 0.3
+}

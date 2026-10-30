@@ -1,0 +1,33 @@
+name: Server prototype
+on:
+  pull_request:
+    paths: ['server/**', 'core/src/SowSiege.Content/**', 'core/src/SowSiege.Core/**', '.github/workflows/server-prototype.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  local-authority:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: sow_test
+          POSTGRES_USER: sow_test
+          POSTGRES_PASSWORD: ephemeral-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sow_test -d sow_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.403
+      - name: Unit and PostgreSQL transaction contracts
+        working-directory: server
+        env:
+          SERVER_TEST_POSTGRES: Host=localhost;Database=sow_test;Username=sow_test;Password=ephemeral-ci-only
+        run: dotnet test tests/SowSiege.Server.Tests --configuration Release

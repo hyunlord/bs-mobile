@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -18,8 +19,52 @@ namespace Game.App
         public static readonly float[] ZoomScales = { 0, 0, 1, 2 };
         public const int Neighbourhood = 2, BuildingDetail = 3, Levels = 4;
         // Levels of the two fitted views.
-        public int WholeMap => FocusIsWider ? 1 : 0;
-        public int Opening => FocusIsWider ? 0 : 1;
+        public int WholeMap => UsesBodyCamera ? 0 : FocusIsWider ? 1 : 0;
+        public int Opening => UsesBodyCamera ? Neighbourhood : FocusIsWider ? 0 : 1;
+        public bool UsesBodyCamera { get; private set; }
+        float defaultBodyScale, minimumBodyScale;
+        Rect[] allowedCentres = Array.Empty<Rect>();
+
+        [Serializable]
+        public sealed class CameraSettings
+        {
+            public float defaultBuildingWidthPx;
+            public float minimumBuildingWidthPx;
+            public float dragMarginCells;
+
+            public static CameraSettings Load()
+            {
+                var asset = Resources.Load<TextAsset>("EstateZoneTerrainSettings");
+                if (asset == null) throw new InvalidOperationException("Missing r8 estate camera settings.");
+                var settings = JsonUtility.FromJson<CameraSettings>(asset.text);
+                if (settings == null || !Positive(settings.defaultBuildingWidthPx) || !Positive(settings.minimumBuildingWidthPx)
+                    || settings.minimumBuildingWidthPx > settings.defaultBuildingWidthPx || !Positive(settings.dragMarginCells))
+                    throw new InvalidOperationException("Invalid r8 estate camera settings.");
+                return settings;
+            }
+        }
+
+        static bool Positive(float value) => value > 0 && !float.IsNaN(value) && !float.IsInfinity(value);
+
+        // Body width excludes transparent canvas. Rectangles arrive in ordinal zone-ID order to break equal-distance ties.
+        public void ConfigureBodyCamera(float bodyWidth, float canvasWidth, float displayedCanvasWidth,
+            CameraSettings settings, IEnumerable<Rect> openedAreas)
+        {
+            if (!Positive(bodyWidth) || !Positive(canvasWidth) || !Positive(displayedCanvasWidth) || settings == null
+                || !Positive(settings.defaultBuildingWidthPx) || !Positive(settings.minimumBuildingWidthPx)
+                || settings.minimumBuildingWidthPx > settings.defaultBuildingWidthPx)
+                throw new ArgumentException("Invalid r8 reference body or camera widths.");
+            var nativeBodyWidth = bodyWidth / canvasWidth * displayedCanvasWidth;
+            defaultBodyScale = settings.defaultBuildingWidthPx / nativeBodyWidth;
+            minimumBodyScale = settings.minimumBuildingWidthPx / nativeBodyWidth;
+            if (defaultBodyScale > ZoomScales[BuildingDetail]) throw new ArgumentException("Reference body exceeds the detail camera scale.");
+            var areas = openedAreas.ToArray();
+            if (areas.Length == 0 || areas.Any(a => !Positive(a.width) || !Positive(a.height)
+                || float.IsNaN(a.x) || float.IsNaN(a.y) || float.IsInfinity(a.x) || float.IsInfinity(a.y)))
+                throw new ArgumentException("The r8 camera requires finite opened-zone bounds.");
+            allowedCentres = areas; UsesBodyCamera = true;
+            if (Viewport.x > 0 && Viewport.y > 0) Clamp();
+        }
         float WholeFit => Mathf.Min(Visible.x / MapExtent.x, Visible.y / MapExtent.y);
         float FocusFit => FocusExtent.x > 0 && FocusExtent.y > 0 ? Mathf.Min(1, Mathf.Min(Visible.x / FocusExtent.x, Visible.y / FocusExtent.y)) : WholeFit;
         // The order is read on the whole viewport, without the bars and panels, so opening a panel never swaps the two levels.
@@ -68,6 +113,13 @@ namespace Game.App
         public float ScaleAt(int zoom)
         {
             zoom = Mathf.Clamp(zoom, 0, Levels - 1);
+            if (UsesBodyCamera)
+            {
+                if (zoom == 1) return minimumBodyScale;
+                if (zoom == Neighbourhood) return defaultBodyScale;
+                if (zoom == BuildingDetail) return ZoomScales[BuildingDetail];
+                return Viewport.x > 0 && Viewport.y > 0 ? WholeFit : 1;
+            }
             if (zoom >= Neighbourhood) return ZoomScales[zoom];
             if (Viewport.x <= 0 || Viewport.y <= 0) return 1;
             return zoom == Opening ? FocusFit : WholeFit;
@@ -112,7 +164,16 @@ namespace Game.App
             return true;
         }
 
-        public bool StepZoom(int direction, Vector2 focus) => SetZoom(Zoom + (direction > 0 ? 1 : direction < 0 ? -1 : 0), focus);
+        public bool StepZoom(int direction, Vector2 focus)
+        {
+            if (direction == 0) return false;
+            if (UsesBodyCamera)
+            {
+                if (Zoom == WholeMap) return direction > 0 && SetZoom(Opening, focus);
+                return SetZoom(Mathf.Clamp(Zoom + (direction > 0 ? 1 : -1), 1, BuildingDetail), focus);
+            }
+            return SetZoom(Zoom + (direction > 0 ? 1 : -1), focus);
+        }
 
         // Finger distance ratio since the pinch started (or since its last step) to a zoom direction.
         public static int PinchDirection(float ratio) => ratio >= PinchStepRatio ? 1 : ratio <= 1 / PinchStepRatio ? -1 : 0;
@@ -151,6 +212,19 @@ namespace Game.App
         // A map smaller than the visible area is centred in it; a larger one cannot be dragged past its edges.
         void Clamp()
         {
+            if (UsesBodyCamera && Zoom != WholeMap)
+            {
+                var centre = ViewportToGrid(VisibleCentre);
+                var nearest = centre; var distance = float.PositiveInfinity;
+                foreach (var area in allowedCentres)
+                {
+                    var candidate = new Vector2(Mathf.Clamp(centre.x, area.xMin, area.xMax), Mathf.Clamp(centre.y, area.yMin, area.yMax));
+                    var squared = (candidate - centre).sqrMagnitude;
+                    if (squared < distance) { distance = squared; nearest = candidate; }
+                }
+                Offset = Project(nearest) * Scale - VisibleCentre;
+                return;
+            }
             var min = MapMin * Scale; var size = MapSize; var visible = Visible;
             Offset = new Vector2(Axis(Offset.x, min.x, size.x, 0, visible.x), Axis(Offset.y, min.y, size.y, TopInset, visible.y));
         }
