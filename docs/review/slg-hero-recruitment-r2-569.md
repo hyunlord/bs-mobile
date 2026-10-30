@@ -1,6 +1,6 @@
 # 영웅 모집 등장 콘티 r2
 
-상태: **콘티 r2 사용자 검토 대기**. 추적 [#569](https://github.com/hyunlord/bs-mobile/issues/569). 초상화 3명은 사용자 승인된 r1 그대로 사용하며, r1 콘티는 결과 선공개·등급 차등 부족으로 재작업한다. r1 파일은 역사 자료로 보존한다. 게임 코드·데이터·SDK를 변경하지 않는다.
+상태: **r2 흐름 사용자 승인 — 2026-10-30**. 추적 [#569](https://github.com/hyunlord/bs-mobile/issues/569). 초상화 3명은 사용자 승인된 r1 그대로 사용하며, r1 콘티는 결과 선공개·등급 차등 부족으로 재작업한다. r1 파일은 역사 자료로 보존한다. 게임 코드·데이터·SDK를 변경하지 않는다.
 
 ## 공개 순서와 등급별 차이
 
@@ -22,7 +22,7 @@
 
 ## 검증 범위
 
-정적 콘티와 오프라인 합성 영상이며 게임 구현이 아니다. 실제 서버·RNG·Unity 재생·터치/건너뛰기 동작·모션 줄이기 동작·모바일 실기·복구 검증은 **NOT_RUN**이다. 최종 그림/연출 승인은 사용자 담당이다.
+정적 콘티와 오프라인 합성 영상이며 게임 구현이 아니다. 실제 서버·RNG·Unity 재생·터치/건너뛰기 동작·모션 줄이기 동작·모바일 실기·복구 검증은 **NOT_RUN**이다. 봉인→고조→공개→결과의 흐름은 승인되었으며, 아래 구현 메모의 연출 강도·체감은 Unity 구현 후 확인한다.
 
 ## 전달물
 
@@ -45,4 +45,17 @@
 - 버튼 표기·영역만 확인했다. 실제 건너뛰기 클릭이나 서버 거래의 동작 통과로 해석하지 않는다.
 - 승인 초상화3장 및 r1 콘티3장의 SHA-256을 작업 전후 비교해 동일함을 확인했다. 신규 체크섬 전달물이나 ZIP은 만들지 않았다.
 
-[검증 기록](https://github.com/hyunlord/bs-mobile/releases/download/slg-hero-recruitment-564-20261030/verification-r2.json), [설계](https://github.com/hyunlord/bs-mobile/releases/download/slg-hero-recruitment-564-20261030/RECRUIT-DESIGN-r2.md), [재생성 소스](https://github.com/hyunlord/bs-mobile/releases/download/slg-hero-recruitment-564-20261030/recruit-renderer-r2.swift). 시안 파일과 검증은 사용자 최종 연출 승인을 대신하지 않는다.
+[검증 기록](https://github.com/hyunlord/bs-mobile/releases/download/slg-hero-recruitment-564-20261030/verification-r2.json), [설계](https://github.com/hyunlord/bs-mobile/releases/download/slg-hero-recruitment-564-20261030/RECRUIT-DESIGN-r2.md), [재생성 소스](https://github.com/hyunlord/bs-mobile/releases/download/slg-hero-recruitment-564-20261030/recruit-renderer-r2.swift). 시안 파일과 검증은 아래 Unity 구현 메모의 반영·체감 검증을 대신하지 않는다.
+
+
+## 사용자 승인 범위와 Unity 구현 메모
+
+사용자는 r2의 봉인→고조→동시 공개→결과 **흐름**을 승인했다. 다만 현재 영상은 공개 순간의 강조가 약하고 서사 흔들림이 눈에 보이지 않는다고 평가했다. 위의 좌우3px·1회 수치 검증은 이 판독성 문제를 해결했다는 증거가 아니다. 기존 r2 이미지·영상은 그대로 보존한다.
+
+Unity 구현에서 다음을 반영한다. 이 메모는 현재 오프라인 영상에 이미 반영된 동작을 설명하지 않는다.
+
+- 희귀·서사: 공개 뒤 0.5초 동안 등급색 폭발광과 배경 잔광을 유지한다.
+- 서사: 공개 프레임에 맞춰 흔들림을 한 번 주고 효과음을 강조한다.
+- 초상화: 약간 확대되었다가 안정된 크기로 정착하게 한다.
+
+흔들림의 세기·곡선, 잔광 감쇠, 초상화 확대량·정착 시간과 효과음 세부는 Unity 구현 단계에서 판독성과 동작 줄이기 규칙을 지키며 조정한다. 게임 코드·데이터·음원·기존 아트는 이번 문서 변경에 포함하지 않으며 실제 Unity 재생·효과음·모바일 체감 검증은 **NOT_RUN**이다.
