@@ -1,6 +1,6 @@
 # ADR0077: SLG 첫 출시를 위한 C# 권위 서버
 
-- 상태: **제안**, 사용자 아키텍처 검토 대기. 코드·배포·SDK 도입 승인이 아니다.
+- 상태: **승인** (#556 병합, 사용자 stage② 로컬 시제품 구현 승인). 정식 배포·실계정·결제·월드 전투 구현 완료를 뜻하지 않는다.
 - 날짜: 2026-10-30
 - 연결: [#548](https://github.com/hyunlord/bs-mobile/issues/548)
 - 결정 근거: 2026-10-30 사용자 결정. 직접 만드는 C# 서버와 월드맵을 첫 출시 범위에 포함한다.
@@ -182,6 +182,29 @@ CI는 GitHub hosted runner에서 경계 검사, 단위·DB 통합, 중복/장애
 
 남은 결정: 군대 전투 규칙·손실/약탈·보호막 정책, 출시 지역/개인정보 보존, 계정 연결 충돌 처리, 실제 CCU와 비용, SignalR Unity 실기 적합성, Redis 라이선스 선택. ADR의 기술 권고와 가설은 이 항목의 검증 완료를 의미하지 않는다.
 
-## 11. 이번 변경의 검증 상태
+## 11. 최초 ADR PR의 검증 상태 (역사 기록)
 
 문서·공식 자료 조사와 현행 코드 읽기만 수행한다. 서버·Unity·모바일·부하·결제·복원은 **NOT_RUN**이다. 구현 파일·데이터·Core·저장 형식·리플레이·역사 해시는 수정하지 않는다. PR은 초안으로 유지하고 사용자 승인 전 병합하지 않는다.
+
+
+## 12. 승인된 stage② 구현 경계 (#575, 2026-10-30)
+
+이번 시제품은 위 S0의 일부인 신규 계정 → 영지 명령 → 재접속만 구현한다.
+replay worker·실로그인·월드맵·PvP·개발 기기 저장 이관은 다음 단계다.
+
+- server/global.json에서 .NET10을 고정하고 root SDK8·Core 두 타깃은 유지한다.
+- core/src/SowSiege.Content는 기존 Sim의 JSON parser와 의미 검증을 소유한다.
+  Sim 공개 API/full validation은 유지하고 서버는 catalog 내부 의미 검증과 기존
+  AccountEstate.Validate를 호출한다. 콘텐츠/아트 외부 참조 검증은 기존 Sim/CI가
+  담당한다. 파일 bytes를 한 번 읽어 parse와 content hash에 같이 사용한다.
+- CompatSim은 공유 parser 소스를 link하며 기존 netstandard2.1 Core DLL을 그대로
+  참조한다. Content 프로젝트를 참조하여 net8 Core가 섞이는 방법은 쓰지 않는다.
+- PostgreSQL이 상태·인증·시계·멱등 응답을 소유한다. 계정 row lock 아래 Core의
+  거부 결과도 시간 경과 상태와 함께 저장한다. Redis는 disposable presence 힌트다.
+- 신규 계정은 r8 설정이다. 기존 v6 codec은 내부 직렬화에만 쓰며 client blob을
+  받지 않는다. DB schema version은 별도로 확인하고 미래 버전을 거부한다.
+- Development와 명시적 prototype 설정이 모두 있어야 호스트가 시작한다. Compose
+  HTTP/테스트 DB 포트는 loopback만, Redis는 내부망만 사용한다. 공개 배포 금지.
+
+실제 Compose 재시작 관문이 끝나기 전에는 완료로 보고하지 않는다. 절차와 실행
+상태는 [서버 stage② 런북](../runbooks/server-stage2.md) 및 #576에 기록한다.
