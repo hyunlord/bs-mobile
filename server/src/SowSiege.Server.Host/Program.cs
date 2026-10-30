@@ -23,7 +23,8 @@ builder.Services.AddSingleton<IDomainHandler>(services =>
     var configuration = services.GetRequiredService<IConfiguration>();
     var estate = services.GetRequiredService<EstateContent>();
     var rules = new ExpeditionRules(TimeSpan.FromSeconds(configuration.GetValue("Runs:TtlSeconds", 3600)).Ticks / TimeSpan.TicksPerMillisecond,
-        configuration.GetValue("Runs:MaxAttempts", 3), estate.Config.WalletCaps,
+        configuration.GetValue("Runs:MaxAttempts", 3), // Same effective cap as training refunds: the smaller of the r8 wallet cap and the material's catalog cap.
+        estate.Config.WalletCaps.ToDictionary(c => c.Key, c => Math.Min(c.Value, estate.Meta.Materials.Single(m => m.Id == c.Key).WalletCap), StringComparer.Ordinal),
         configuration.GetValue("Runs:MaxVerifyTimeouts", 3));
     return new ResearchDomain(ResearchContent.Load(configuration["GameContentRoot"]!), rules);
 });

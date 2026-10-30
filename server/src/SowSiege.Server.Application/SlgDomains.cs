@@ -101,8 +101,9 @@ public sealed record ResearchPayload([property: JsonRequired] string NodeId);
 public sealed record ResearchNodeView(string Id, string Category, int Level, int MaxLevel, string Status, string[] LockReasons,
     IReadOnlyDictionary<string, int> Cost, long Seconds, string Domain, int Value);
 public sealed record ResearchJobView(string NodeId, int Level, long StartedAtMs, long CompletesAtMs, long RemainingSeconds);
+public sealed record MaterialAmount(string MaterialId, int Amount);
 public sealed record ResearchView(long ServerUtcMs, ResearchNodeView[] Nodes, ResearchJobView[] Active, ResearchEffect[] Effects, string[] Proofs, ExpeditionRun[] Runs,
-    IReadOnlyDictionary<string, int> PendingMaterials);
+    MaterialAmount[] PendingMaterials);
 
 /// <summary>
 /// GDD17 level-1 research as a pure ADR0078 domain handler. Job times use the store's high-watermark UTC
@@ -312,6 +313,6 @@ public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? run
         }).ToArray();
         var jobs = state.Active.Select(j => new ResearchJobView(j.NodeId, j.Level, j.StartedAtMs, j.CompletesAtMs, Math.Max(0, (j.CompletesAtMs - utc + 999) / 1000))).ToArray();
         return new(utc, nodes, jobs, ResearchRules.Effects(content, state.Levels), state.Proofs, state.Runs ?? [],
-            state.PendingMaterials ?? new SortedDictionary<string, int>(StringComparer.Ordinal));
+            (state.PendingMaterials ?? new SortedDictionary<string, int>(StringComparer.Ordinal)).Select(p => new MaterialAmount(p.Key, p.Value)).ToArray());
     }
 }
