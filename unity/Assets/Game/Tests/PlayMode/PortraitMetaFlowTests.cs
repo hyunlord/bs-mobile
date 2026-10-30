@@ -56,10 +56,41 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
+        public IEnumerator ExplicitVassalOptInFreezesNormalWaveSnapshotAndShowsCappedValues()
+        {
+            var preferences = RunPreferences.Load(prefix);
+            Assert.That(preferences.VassalCombat, Is.False);
+            preferences.VassalCombat = true; preferences.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Run");
+            var snapshot = app.Session.VassalSnapshot;
+            Assert.That(snapshot, Is.Not.Null);
+            var expected = VassalRun.Create(app.Progression.Catalog, app.Progression.State, CanonicalContent.CreateVassalRunRules());
+            Assert.That(snapshot.Snapshot.ContentHash, Is.EqualTo(expected.Snapshot.ContentHash));
+            Assert.That(snapshot.Snapshot.Roster, Is.EqualTo(expected.Snapshot.Roster));
+            Assert.That(snapshot.Snapshot.Effects, Is.EqualTo(expected.Snapshot.Effects));
+            app.OpenPause(); yield return ScreenIs("Pause");
+            Click("Pause.Abandon"); yield return ScreenIs("ConfirmAbandon");
+            Click("Abandon.Confirm"); yield return ScreenIs("Summary");
+            Click("Summary.Estate"); yield return ScreenIs("Estate");
+            Click("Tab.Vassals"); yield return ScreenIs("Vassals");
+            var labels = app.Ui.GetComponentsInChildren<Text>(true).Select(t => t.text).ToArray();
+            Assert.That(labels, Does.Contain("다음 출정에 적용 · 출정 시 편성 고정"));
+            Assert.That(labels.Any(t => t.Contains("보너스가 적용되지 않습니다")), Is.False);
+            foreach (var effect in expected.Snapshot.Effects)
+            {
+                var cap = expected.Rules.Effects.Single(r => r.Ability == effect.Ability).Cap;
+                Assert.That(labels.Any(t => t.Contains("합산 " + effect.Raw + "‰ → " + effect.Bonus + "‰ / 상한 " + cap + "‰") &&
+                    t.Contains("상한 도달") == (effect.Raw >= cap)), Is.True, effect.Ability.ToString());
+            }
+            yield return CaptureSizes("vassals-opt-in", "Vassals", false);
+        }
+
+        [UnityTest, Timeout(180000)]
         public IEnumerator FirstWaveRunSettlesThenActualMetaRoutesExposeCatalogAndLockedDeparture()
         {
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Run");
             Assert.That(app.Progression, Is.Not.Null);
+            Assert.That(app.Session.VassalSnapshot, Is.Null);
             Assert.That(app.Progression.State.PendingRun, Is.Not.Null);
             Assert.That(app.Progression.Catalog.ManorBuildings.Length, Is.EqualTo(4));
             Assert.That(app.Progression.Catalog.Vassals.Length, Is.EqualTo(6));
@@ -82,6 +113,7 @@ namespace Tests.PlayMode
             app.NavigateBack(); yield return ScreenIs("Estate");
             Click("Tab.Vassals"); yield return ScreenIs("Vassals");
             Assert.That(Buttons("Vassals.Select:").Length, Is.EqualTo(6));
+            Assert.That(app.Ui.GetComponentsInChildren<Text>(true).Any(t => t.text == "이번 출정에서는 가신 능력 보너스가 적용되지 않습니다."), Is.True);
             yield return CaptureSizes("vassals", "Vassals", false);
             Click("Tab.Challenges"); yield return ScreenIs("Challenges");
             Assert.That(Buttons("Challenges.Claim:").Length, Is.EqualTo(20));

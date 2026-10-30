@@ -53,6 +53,7 @@ namespace SowSiege.Core
             World.Lord = World.Estate;
             World.Destination = World.Lord;
             World.LordHealth = interactive?.Feel?.MaximumHealth(map.LordHealth) ?? map.LordHealth;
+            if (interactive?.Vassals is { } vassals) { World.LordHealth = vassals.Scale(World.LordHealth, MetaAbility.Health); }
             World.Food = catalog.Tuning.World.People.InitialFood;
             foreach (var id in catalog.Tools.Keys.OrderBy(value => value, StringComparer.Ordinal)) { World.Tools.Add(id, new()); }
             World.Equipment.Add(new() { Id = catalog.Heroes[options.HeroId].StartingTool });
@@ -103,6 +104,7 @@ namespace SowSiege.Core
             combat.FillLoad();
             estate.FillLoad();
             World.LordHealth = catalog.Tuning.World.Map.LordHealth;
+            if (Interactive?.Vassals is { } vassals) { World.LordHealth = vassals.Scale(Interactive.Feel?.MaximumHealth(catalog.Tuning.World.Map.LordHealth) ?? catalog.Tuning.World.Map.LordHealth, MetaAbility.Health); }
         }
 
         public void Tick() => Advance(null);
@@ -156,6 +158,7 @@ namespace SowSiege.Core
 
         private void MoveManual(PlayerInput input)
         {
+            var origin = World.Lord;
             var map = catalog.Tuning.World.Map;
             var speed = Wave?.MovementSpeed(map.LordSpeed) ?? map.LordSpeed;
             var scale = Math.Max(PlayerInput.Scale, Math.Max(Math.Abs((int)input.X), Math.Abs((int)input.Y)));
@@ -165,11 +168,17 @@ namespace SowSiege.Core
                 World.Lord = Interactive.Feel is { Options: { FasterLord: true } } fieldFeel
                     ? field.Constrain(fieldFeel.Move(World.Lord, input, speed, map, unbounded: true))
                     : field.Constrain(new(checked(World.Lord.X + (int)((long)input.X * speed / scale)), checked(World.Lord.Y + (int)((long)input.Y * speed / scale))));
+                if (Interactive.Vassals is { } fieldVassals) { World.Lord = field.Constrain(VassalMovement.AfterMove(origin, World.Lord, fieldVassals)); }
                 World.Destination = field.Constrain(new(checked(World.Lord.X + input.X), checked(World.Lord.Y + input.Y)));
                 return;
             }
             World.Lord = Interactive?.Feel is { Options: { FasterLord: true } } feel ? feel.Move(World.Lord, input, speed, map) : new(Math.Clamp(World.Lord.X + (int)((long)input.X * speed / scale), 0, map.Width),
                 Math.Clamp(World.Lord.Y + (int)((long)input.Y * speed / scale), 0, map.Height));
+            if (Interactive?.Vassals is { } vassals)
+            {
+                var moved = VassalMovement.AfterMove(origin, World.Lord, vassals);
+                World.Lord = new(Math.Clamp(moved.X, 0, map.Width), Math.Clamp(moved.Y, 0, map.Height));
+            }
             World.Destination = new(Math.Clamp(World.Lord.X + input.X, 0, map.Width), Math.Clamp(World.Lord.Y + input.Y, 0, map.Height));
         }
 

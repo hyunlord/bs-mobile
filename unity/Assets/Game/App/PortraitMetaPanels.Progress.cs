@@ -12,7 +12,7 @@ namespace Game.App
     public static partial class PortraitMetaPanels
     {
         public static void Vassals(UiShell ui, MetaCatalog catalog, MetaState state, string selectedId, Action<string> select,
-            Action<string> requestUpgrade, Action<string> requestRank, Action<string> toggle, Action<PortraitMetaPage> navigate)
+            Action<string> requestUpgrade, Action<string> requestRank, Action<string> toggle, Action<PortraitMetaPage> navigate, VassalRunOptions preview = null)
         {
             var root = Page(ui, "Vassals", "가신"); var width = Width(ui) - 20;
             Caption(ui, root, "출전 " + state.ActiveVassalIds.Length + "/" + Slots(catalog, state) + "칸", Width(ui) - 140, 56, 120, 26, 12, false, TextAnchor.MiddleRight);
@@ -54,7 +54,17 @@ namespace Game.App
                 var unlock = catalog.Challenges.Where(c => c.UnlockVassalIds.Contains(selectedId)).Select(c => c.Name);
                 cursor += Label(ui, body, "해금 조건 · " + string.Join(" · ", unlock), 0, cursor, width - 16) + 8;
             }
-            cursor += Label(ui, body, "이번 출정에서는 가신 능력 보너스가 적용되지 않습니다.", 0, cursor, width - 16, 11);
+            if (preview == null) cursor += Label(ui, body, "이번 출정에서는 가신 능력 보너스가 적용되지 않습니다.", 0, cursor, width - 16, 11);
+            if (preview != null)
+            {
+                cursor += Label(ui, body, "다음 출정에 적용 · 출정 시 편성 고정", 0, cursor, width - 16, 11);
+                foreach (var effect in preview.Snapshot.Effects)
+                {
+                    var limit = preview.Rules.Effects.Single(r => r.Ability == effect.Ability).Cap;
+                    var name = effect.Ability switch { MetaAbility.Attack => "공격", MetaAbility.Health => "체력", MetaAbility.Movement => "이동", MetaAbility.Growth => "생산", MetaAbility.Allies => "아군", MetaAbility.Experience => "경험치", _ => throw new ArgumentOutOfRangeException() };
+                    cursor += Label(ui, body, name + " 합산 " + effect.Raw + "‰ → " + effect.Bonus + "‰ / 상한 " + limit + "‰" + (effect.Raw >= limit ? " · 상한 도달" : ""), 0, cursor, width - 16, 11);
+                }
+            }
             End(body, cursor); Tabs(ui, root, state, navigate);
         }
 
