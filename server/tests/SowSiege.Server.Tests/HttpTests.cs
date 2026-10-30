@@ -68,6 +68,24 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task ResearchEndpointsRequireAuthAndRejectClientTime()
+    {
+        using var factory = new PrototypeFactory();
+        using var client = factory.CreateClient();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/v1/research")).StatusCode);
+        var created = (await (await client.PostAsJsonAsync("/prototype/accounts", new { })).Content.ReadFromJsonAsync<AccountCreated>())!;
+        client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        var view = (await client.GetFromJsonAsync<ResearchView>("/v1/research"))!;
+        Assert.Equal(10, view.Nodes.Length);
+        Assert.All(view.Nodes, n => Assert.Equal("locked", n.Status));
+        var forged = new { commandId = Guid.NewGuid(), expectedVersion = 0, type = "complete-research", completesAt = "2000-01-01T00:00:00Z" };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/research/commands", forged)).StatusCode);
+        var unknown = new { commandId = Guid.NewGuid(), expectedVersion = 0, type = "finish-now" };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/research/commands", unknown)).StatusCode);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public void ProductionCannotStartPrototypeEndpoints()
     {
         using var factory = new PrototypeFactory("Production");

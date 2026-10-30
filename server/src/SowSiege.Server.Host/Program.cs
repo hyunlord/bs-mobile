@@ -17,6 +17,8 @@ builder.Services.AddSingleton(services => RecruitPool.Load(services.GetRequiredS
 builder.Services.AddSingleton(services => new RecruitOptions(Convert.FromHexString(services.GetRequiredService<IConfiguration>()["Recruit:SeedKey"] is { Length: >= 64 } key
     ? key : throw new InvalidOperationException("Recruit:SeedKey (>=32 bytes hex) required."))));
 builder.Services.AddSingleton<RecruitStore>();
+builder.Services.AddSingleton(services => ResearchContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"]!));
+builder.Services.AddSingleton<ResearchStore>();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
@@ -36,6 +38,7 @@ if (!app.Environment.IsDevelopment() || app.Configuration["Prototype:Enabled"] !
 }
 await app.Services.GetRequiredService<AccountStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
 await app.Services.GetRequiredService<RecruitStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
+await app.Services.GetRequiredService<ResearchStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));
 app.MapPost("/prototype/accounts", async (AccountStore store, CancellationToken cancellation) =>
@@ -61,6 +64,21 @@ app.MapPost("/v1/heroes/recruit", async (RecruitCommand command, HttpContext con
     return await Authenticated(context, store, async id =>
     {
         string response = await recruit.RecruitAsync(id, command, cancellation);
+        await cache.TouchAsync(id);
+        return Results.Content(response, "application/json");
+    }, cancellation);
+}).RequireRateLimiting("prototype");
+app.MapGet("/v1/research", async (HttpContext context, AccountStore store, ResearchStore research, CancellationToken cancellation) =>
+    await Authenticated(context, store, async id => Results.Ok(await research.ViewAsync(id, cancellation)), cancellation)).RequireRateLimiting("prototype");
+app.MapPost("/v1/research/commands", async (ResearchCommand command, HttpContext context, AccountStore store, ResearchStore research, ConnectionCache cache, CancellationToken cancellation) =>
+{
+    if (!ResearchRules.IsValid(command))
+    {
+        return Results.BadRequest(new ApiError("invalid-command"));
+    }
+    return await Authenticated(context, store, async id =>
+    {
+        string response = await research.ExecuteAsync(id, command, cancellation);
         await cache.TouchAsync(id);
         return Results.Content(response, "application/json");
     }, cancellation);

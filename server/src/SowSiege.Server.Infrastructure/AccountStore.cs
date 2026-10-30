@@ -104,7 +104,7 @@ public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication 
         return response;
     }
 
-    private static async Task<StoredAccount> ReadAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid id, CancellationToken cancellation)
+    internal static async Task<StoredAccount> ReadAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid id, CancellationToken cancellation)
     {
         await using var command = new NpgsqlCommand("SELECT version,content_hash,payload,utc_highwater,logical_seconds,fraction_ms,codec_version,config_version FROM accounts WHERE id=$1 FOR UPDATE", connection, transaction);
         command.Parameters.AddWithValue(id);
@@ -121,7 +121,7 @@ public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication 
         return new(id, reader.GetInt64(0), reader.GetString(1), decoded.State, new(reader.GetInt64(3), reader.GetInt64(4), reader.GetInt32(5)));
     }
 
-    private static async Task WriteAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, StoredAccount account, bool insert, CancellationToken cancellation)
+    internal static async Task WriteAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, StoredAccount account, bool insert, CancellationToken cancellation)
     {
         const string columns = "version=$2,content_hash=$3,config_version=$4,codec_version=$5,payload=$6,utc_highwater=$7,logical_seconds=$8,fraction_ms=$9";
         string sql = insert ? "INSERT INTO accounts VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)" : "UPDATE accounts SET " + columns + " WHERE id=$1";
