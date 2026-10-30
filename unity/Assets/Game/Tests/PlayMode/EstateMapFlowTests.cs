@@ -120,13 +120,20 @@ namespace Tests.PlayMode
             Assert.That(Rects("EstateMap.Work").Single().rect.height, Is.EqualTo(screen.StockTotal > 0 ? 44 : 28));
             Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "Resource bar").sprite, Is.Not.Null);
             Assert.That(app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.GoalLine").sprite, Is.Not.Null);
+            Assert.That(Screen.width, Is.EqualTo(390));
+            Assert.That(Screen.height, Is.EqualTo(844));
+            yield return Capture("estate-approved-r3-overview-formal");
             var site = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
             screen.Select(site.Id); Render(); yield return null; Canvas.ForceUpdateCanvases();
-            var accelerate = Named("EstateMap.Accelerate");
-            Assert.That(accelerate.interactable, Is.False, "Acceleration is a visual placeholder until BM is approved.");
-            var before = MetaSaveCodec.Encode(screen.State);
-            accelerate.onClick.Invoke();
-            Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(before));
+            void AssertDisabledAccelerationHasNoEffect()
+            {
+                var accelerate = Named("EstateMap.Accelerate");
+                Assert.That(accelerate.interactable, Is.False, "Acceleration is a visual placeholder until BM is approved.");
+                var before = MetaSaveCodec.Encode(screen.State);
+                accelerate.onClick.Invoke();
+                Assert.That(MetaSaveCodec.Encode(screen.State), Is.EqualTo(before));
+            }
+            AssertDisabledAccelerationHasNoEffect();
             Assert.That(Named("EstateMap.Close").GetComponent<RectTransform>().rect.size, Is.EqualTo(new Vector2(48, 48)));
             Assert.That(Buttons("EstateMap.Skip60"), Is.Empty);
             Assert.That(Buttons("EstateMap.Skip600"), Is.Empty);
@@ -142,12 +149,12 @@ namespace Tests.PlayMode
             Assert.That(screen.UnderConstruction(site.Id), Is.True);
             Assert.That(Named("EstateMap.ConstructionClose").interactable, Is.True);
             Assert.That(Named("EstateMap.Move").interactable, Is.False);
-            Assert.That(Named("EstateMap.Accelerate").interactable, Is.False);
+            AssertDisabledAccelerationHasNoEffect();
             yield return Capture("estate-approved-r3-construction-formal");
             screen.SkipTime(600); Render(); yield return null;
             Assert.That(screen.Building(site.Id).Level, Is.EqualTo(1));
             Assert.That(Named("EstateMap.Move").interactable, Is.True);
-            Assert.That(Named("EstateMap.Accelerate").interactable, Is.False);
+            AssertDisabledAccelerationHasNoEffect();
             yield return Capture("estate-approved-r3-complete-formal");
         }
 
