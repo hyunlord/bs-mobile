@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/SowSiege.Server.Host/SowSiege.Server.Host.csproj" />
+  <Project Path="src/SowSiege.Server.Application/SowSiege.Server.Application.csproj" />
+  <Project Path="src/SowSiege.Server.Contracts/SowSiege.Server.Contracts.csproj" />
+  <Project Path="src/SowSiege.Server.Infrastructure/SowSiege.Server.Infrastructure.csproj" />
+  <Project Path="tests/SowSiege.Server.Tests/SowSiege.Server.Tests.csproj" />
+</Solution>

@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../SowSiege.Sim/*.cs" Link="%(Filename)%(Extension)" />
+    <Compile Include="../SowSiege.Content/*.cs" Link="Content/%(Filename)%(Extension)" />
     <Reference Include="SowSiege.Core">
       <HintPath>../SowSiege.Core/bin/$(Configuration)/netstandard2.1/SowSiege.Core.dll</HintPath>
       <Private>true</Private>
