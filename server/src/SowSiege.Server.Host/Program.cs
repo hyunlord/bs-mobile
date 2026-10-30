@@ -23,7 +23,8 @@ builder.Services.AddSingleton<IDomainHandler>(services =>
     var configuration = services.GetRequiredService<IConfiguration>();
     var estate = services.GetRequiredService<EstateContent>();
     var rules = new ExpeditionRules(TimeSpan.FromSeconds(configuration.GetValue("Runs:TtlSeconds", 3600)).Ticks / TimeSpan.TicksPerMillisecond,
-        configuration.GetValue("Runs:MaxAttempts", 3), estate.Config.WalletCaps);
+        configuration.GetValue("Runs:MaxAttempts", 3), estate.Config.WalletCaps,
+        configuration.GetValue("Runs:MaxVerifyTimeouts", 3));
     return new ResearchDomain(ResearchContent.Load(configuration["GameContentRoot"]!), rules);
 });
 builder.Services.AddSingleton(services =>
@@ -32,7 +33,8 @@ builder.Services.AddSingleton(services =>
     string root = configuration["GameContentRoot"]!;
     return new RunVerifier(new(Directory.Exists(Path.Combine(root, "data")) ? Path.Combine(root, "data") : root, configuration["Runs:Profile"] ?? "production",
         configuration.GetValue("Runs:MaxReplayBytes", 4 * 1024 * 1024), TimeSpan.FromSeconds(configuration.GetValue("Runs:VerifySeconds", 30)),
-        configuration.GetValue("Runs:MaxConcurrentVerifications", 1)));
+        configuration.GetValue("Runs:MaxConcurrentVerifications", 1), configuration.GetValue("Runs:MinSubmitIntervalSeconds", 10) * 1000L,
+        configuration.GetValue("Runs:PlayTimeToleranceMilliseconds", 2000L)));
 });
 builder.Services.AddSingleton(services => new DomainRegistry(services.GetServices<IDomainHandler>(),
     services.GetRequiredService<IConfiguration>()["Domains:SeedKey"] is { Length: >= 64 } key ? Convert.FromHexString(key)
@@ -108,10 +110,6 @@ app.MapPost("/v1/runs/{runId:guid}/replay", async (Guid runId, HttpContext conte
     catch (CommandConflictException conflict)
     {
         return Results.Conflict(new ApiError(conflict.Message));
-    }
-    catch (VerificationBusyException)
-    {
-        return Results.Json(new ApiError("verify-timeout"), statusCode: StatusCodes.Status503ServiceUnavailable);
     }
 }).RequireRateLimiting("prototype");
 app.Run();

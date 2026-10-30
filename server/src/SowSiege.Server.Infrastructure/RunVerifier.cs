@@ -9,9 +9,8 @@ using SowSiege.Sim;
 namespace SowSiege.Server.Infrastructure;
 
 /// <summary>Verification budget (server configuration): replay size, wall-clock timeout and concurrent re-executions.</summary>
-public sealed record RunVerifierOptions(string DataDirectory, string Profile, int MaxReplayBytes, TimeSpan Timeout, int MaxConcurrent);
-
-public sealed class VerificationBusyException() : Exception("verify-timeout");
+public sealed record RunVerifierOptions(string DataDirectory, string Profile, int MaxReplayBytes, TimeSpan Timeout, int MaxConcurrent,
+    long MinSubmitIntervalMilliseconds = 10_000, long PlayTimeToleranceMilliseconds = 2_000);
 
 /// <summary>
 /// ADR0077 replay settlement. Re-executes a submitted replay with the shared Core (read-only use of
@@ -42,7 +41,14 @@ public sealed class RunVerifier
     public InteractiveOptions ExpectedOptions(int seed) =>
         new(new RunOptions(seed, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "manual", ManualCards: true), AimMode.Movement, DataHash);
 
-    public async Task<ExpeditionVerdict> VerifyAsync(Guid runId, int seed, byte[] replay, CancellationToken cancellation)
+    /// <summary>
+    /// Real play time: a replay of N ticks cannot be submitted sooner than N/tickRate seconds after issue (minus a small tolerance).
+    /// Offline-generated replays submitted right after issue are rejected here, before any Core re-execution.
+    /// </summary>
+    public bool PlayedLongEnough(long issuedAtMs, long nowMs, int ticks) =>
+        nowMs - issuedAtMs >= (long)ticks * 1000 / catalog.Tuning.TickRate - options.PlayTimeToleranceMilliseconds;
+
+    public async Task<ExpeditionVerdict> VerifyAsync(Guid runId, int seed, byte[] replay, long issuedAtMs, long nowMs, CancellationToken cancellation)
     {
         string replayHash = Convert.ToHexString(SHA256.HashData(replay)).ToLowerInvariant();
         ExpeditionVerdict Reject(string verdict) => new(runId, verdict, null, 0, null, replayHash);
@@ -59,6 +65,10 @@ public sealed class RunVerifier
         catch (Exception error) when (error is InvalidDataException or EndOfStreamException or ArgumentException or FormatException or DecoderFallbackException)
         {
             return Reject("malformed");
+        }
+        if (!PlayedLongEnough(issuedAtMs, nowMs, document.End.Tick))
+        {
+            return Reject("too-early");
         }
         if (document.Header.Options != ExpectedOptions(seed))
         {
@@ -96,11 +106,17 @@ public sealed class RunVerifier
         var view = JsonSerializer.Deserialize<AccountReply>(await store.ExecuteAccountAsync(accountId, null, cancellation), AccountStore.Json)!;
         var runs = view.Domains[ResearchDomain.Name].GetProperty("runs").Deserialize<ExpeditionRun[]>(AccountStore.Json) ?? [];
         var run = runs.SingleOrDefault(r => r.RunId == runId) ?? throw new CommandConflictException("unknown-run");
-        var verdict = await VerifyAsync(runId, run.Seed, replay, cancellation);
-        if (verdict.Verdict == "timeout")
+        long now = view.Domains[ResearchDomain.Name].GetProperty("serverUtcMs").GetInt64();
+        if (run.Status == "open" && run.LastSubmitAtMs > 0 && now - run.LastSubmitAtMs < options.MinSubmitIntervalMilliseconds)
         {
-            // Our budget, not the player's replay: nothing is recorded and the same replay can be resubmitted.
-            throw new VerificationBusyException();
+            // Spacing per run (one open run per account): bounds how often one account can occupy the shared verify slot.
+            throw new CommandConflictException("submit-too-soon");
+        }
+        var verdict = await VerifyAsync(runId, run.Seed, replay, run.IssuedAtMs, now, cancellation);
+        if (verdict.Verdict == "too-early")
+        {
+            // Cheap to detect and never re-executed, so nothing is recorded.
+            throw new CommandConflictException("too-early");
         }
         var commandId = Guid.NewGuid();
         long version = view.Estate.Version;

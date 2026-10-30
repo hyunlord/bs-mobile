@@ -84,15 +84,15 @@ public sealed class RecruitDomain(RecruitPool pool, int prototypeGems) : IDomain
 
 public sealed record ResearchJob(long Seq, string NodeId, int Level, long StartedAtMs, long CompletesAtMs);
 public sealed record ResearchState(long NextSeq, ResearchJob[] Active, SortedDictionary<string, int> Levels, SortedDictionary<string, long> CompletedAtMs, string[] Proofs,
-    ExpeditionRun[]? Runs = null, long NextRun = 1);
+    ExpeditionRun[]? Runs = null, long NextRun = 1, SortedDictionary<string, int>? PendingMaterials = null);
 /// <summary>A server-issued personal fallback run (ADR0077 replay settlement). RunId is the issuing commandId.</summary>
 public sealed record ExpeditionRun(Guid RunId, long Ordinal, int Seed, string ProofId, string Resource, long IssuedAtMs, long ExpiresAtMs,
-    string Status, int Attempts, string? Outcome = null, int Granted = 0, string? StateHash = null);
+    string Status, int Attempts, string? Outcome = null, int Granted = 0, string? StateHash = null, int Pending = 0, long LastSubmitAtMs = 0, int Timeouts = 0);
 public sealed record ExpeditionStart([property: JsonRequired] string ProofId, [property: JsonRequired] string Resource);
 /// <summary>Server-only verdict produced by the replay verifier outside the handler. Never accepted from clients.</summary>
 public sealed record ExpeditionVerdict([property: JsonRequired] Guid RunId, [property: JsonRequired] string Verdict, string? EndKind, int Tick, string? StateHash, string ReplayHash);
 /// <summary>Run budget: TTL and failed-verification attempts are server configuration; reward caps come from content data.</summary>
-public sealed record ExpeditionRules(long TtlMilliseconds, int MaxAttempts, IReadOnlyDictionary<string, int> WalletCaps)
+public sealed record ExpeditionRules(long TtlMilliseconds, int MaxAttempts, IReadOnlyDictionary<string, int> WalletCaps, int MaxTimeouts = 3)
 {
     public const string SettleOperation = "settle-expedition";
     public static int SeedOf(byte[] seed) => (int)(System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(seed) & 0x7fffffff);
@@ -101,7 +101,8 @@ public sealed record ResearchPayload([property: JsonRequired] string NodeId);
 public sealed record ResearchNodeView(string Id, string Category, int Level, int MaxLevel, string Status, string[] LockReasons,
     IReadOnlyDictionary<string, int> Cost, long Seconds, string Domain, int Value);
 public sealed record ResearchJobView(string NodeId, int Level, long StartedAtMs, long CompletesAtMs, long RemainingSeconds);
-public sealed record ResearchView(long ServerUtcMs, ResearchNodeView[] Nodes, ResearchJobView[] Active, ResearchEffect[] Effects, string[] Proofs, ExpeditionRun[] Runs);
+public sealed record ResearchView(long ServerUtcMs, ResearchNodeView[] Nodes, ResearchJobView[] Active, ResearchEffect[] Effects, string[] Proofs, ExpeditionRun[] Runs,
+    IReadOnlyDictionary<string, int> PendingMaterials);
 
 /// <summary>
 /// GDD17 level-1 research as a pure ADR0078 domain handler. Job times use the store's high-watermark UTC
@@ -193,33 +194,75 @@ public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? run
         }
         if (verdict.Verdict == "timeout")
         {
-            // Budget exceeded on our side: not the player's fault, so it does not use up an attempt.
-            return Reply(context, false, "verify-timeout", context.Account.State, state, []);
+            // Our budget, not the player's replay: no attempt is used, but timeouts per run are capped so retries cannot hold the slot forever.
+            int timeouts = run.Timeouts + 1;
+            bool exhausted = timeouts >= rules.MaxTimeouts;
+            list[index] = run with { Timeouts = timeouts, LastSubmitAtMs = context.UtcMilliseconds, Status = exhausted ? "failed" : "open", Outcome = exhausted ? "verify-budget-exhausted" : null };
+            string why = exhausted ? "verify-budget-exhausted" : "verify-timeout";
+            return Reply(context, false, why, context.Account.State, state with { Runs = list.ToArray() }, [new("expedition-" + why, DomainJson.Element(new { run.RunId, timeouts }))]);
         }
         if (verdict.Verdict != "verified")
         {
             int attempts = run.Attempts + 1;
-            list[index] = run with { Attempts = attempts, Status = attempts >= rules.MaxAttempts ? "failed" : "open" };
+            list[index] = run with { Attempts = attempts, LastSubmitAtMs = context.UtcMilliseconds, Status = attempts >= rules.MaxAttempts ? "failed" : "open" };
             var failed = DomainJson.Element(new { run.RunId, verdict.Verdict, attempts, verdict.ReplayHash });
             return Reply(context, false, "replay-" + verdict.Verdict, context.Account.State, state with { Runs = list.ToArray() }, [new("expedition-rejected", failed)]);
         }
         // Verified: the objective of the prototype fallback run is surviving to the profile duration.
         bool succeeded = verdict.EndKind == "Duration";
         var account = context.Account.State;
-        int granted = 0;
+        int granted = 0, held = 0;
         var proofs = state.Proofs;
+        var pending = new SortedDictionary<string, int>(state.PendingMaterials ?? new(), StringComparer.Ordinal);
         if (succeeded)
         {
+            // Reward is never trimmed by a full wallet: what does not fit is held and credited later (same rule as training refunds).
             var wallet = new Dictionary<string, int>(account.Wallet);
             int current = wallet.GetValueOrDefault(run.Resource);
-            granted = Math.Max(0, Math.Min(content.Fallback.MaterialRewardCap, rules.WalletCaps[run.Resource] - current));
+            int reward = content.Fallback.MaterialRewardCap;
+            granted = Math.Max(0, Math.Min(reward, rules.WalletCaps[run.Resource] - current - pending.GetValueOrDefault(run.Resource)));
+            held = reward - granted;
             wallet[run.Resource] = current + granted;
+            if (held > 0)
+            {
+                pending[run.Resource] = checked(pending.GetValueOrDefault(run.Resource) + held);
+            }
             account = account with { Wallet = wallet };
             proofs = proofs.Contains(run.ProofId) ? proofs : [.. proofs, run.ProofId];
         }
-        list[index] = run with { Status = "settled", Outcome = succeeded ? "objective-complete" : "objective-failed", Granted = granted, StateHash = verdict.StateHash };
-        var settled = DomainJson.Element(new { run.RunId, run.Seed, run.ProofId, verdict.EndKind, verdict.Tick, verdict.StateHash, verdict.ReplayHash, granted, run.Resource, ProofGranted = succeeded });
-        return Reply(context, true, succeeded ? "objective-complete" : "objective-failed", account, state with { Runs = list.ToArray(), Proofs = proofs }, [new("expedition-settled", settled)]);
+        list[index] = run with { Status = "settled", Outcome = succeeded ? "objective-complete" : "objective-failed", Granted = granted, Pending = held, StateHash = verdict.StateHash, LastSubmitAtMs = context.UtcMilliseconds };
+        var settled = DomainJson.Element(new { run.RunId, run.Seed, run.ProofId, verdict.EndKind, verdict.Tick, verdict.StateHash, verdict.ReplayHash, granted, held, run.Resource, ProofGranted = succeeded });
+        return Reply(context, true, succeeded ? "objective-complete" : "objective-failed", account, state with { Runs = list.ToArray(), Proofs = proofs, PendingMaterials = pending }, [new("expedition-settled", settled)]);
+    }
+
+    /// <summary>Credits held run materials as wallet room appears, after every command (mirrors the training refund flush).</summary>
+    public DomainResult AfterCommand(DomainContext context)
+    {
+        var state = DomainJson.Read<ResearchState>(context.State);
+        if (state.PendingMaterials is not { Count: > 0 } || runs is null)
+        {
+            return new(context.Account.State, context.State, View(context), true, "", []);
+        }
+        var pending = new SortedDictionary<string, int>(state.PendingMaterials, StringComparer.Ordinal);
+        var wallet = new Dictionary<string, int>(context.Account.State.Wallet);
+        var events = new List<DomainEvent>();
+        foreach (var material in pending.Keys.ToArray())
+        {
+            int amount = Math.Min(pending[material], Math.Max(0, runs.WalletCaps[material] - wallet.GetValueOrDefault(material)));
+            if (amount == 0)
+            {
+                continue;
+            }
+            wallet[material] = checked(wallet.GetValueOrDefault(material) + amount);
+            pending[material] -= amount;
+            if (pending[material] == 0)
+            {
+                pending.Remove(material);
+            }
+            events.Add(new("expedition-material-credited", DomainJson.Element(new { materialId = material, amount })));
+        }
+        var account = context.Account.State with { Wallet = wallet };
+        return Reply(context, true, "", account, state with { PendingMaterials = pending }, events.ToArray());
     }
 
     private DomainResult ExecuteResearch(DomainContext context, string operation, JsonElement payload)
@@ -268,6 +311,7 @@ public sealed class ResearchDomain(ResearchContent content, ExpeditionRules? run
             return new ResearchNodeView(n.Id, n.Category, state.Levels.GetValueOrDefault(n.Id), n.Level, status, locks, n.Cost, n.Seconds, n.Domain, n.Value);
         }).ToArray();
         var jobs = state.Active.Select(j => new ResearchJobView(j.NodeId, j.Level, j.StartedAtMs, j.CompletesAtMs, Math.Max(0, (j.CompletesAtMs - utc + 999) / 1000))).ToArray();
-        return new(utc, nodes, jobs, ResearchRules.Effects(content, state.Levels), state.Proofs, state.Runs ?? []);
+        return new(utc, nodes, jobs, ResearchRules.Effects(content, state.Levels), state.Proofs, state.Runs ?? [],
+            state.PendingMaterials ?? new SortedDictionary<string, int>(StringComparer.Ordinal));
     }
 }
