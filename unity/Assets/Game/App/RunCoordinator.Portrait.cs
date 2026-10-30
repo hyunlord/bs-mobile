@@ -199,7 +199,7 @@ namespace Game.App
             if (CurrentFrame != null)
                 for (var i = 0; i < CurrentFrame.Equipment.Count; i++)
                     if (runCatalog.Tools.ContainsKey(CurrentFrame.Equipment[i].Id)) tools++;
-            return 46 + (Ui.SafeRoot.rect.width - 20) / 2 + Math.Min(tools, 3) * 30 + (tools > 3 ? 40 : 0);
+            return 46 + (Ui.SafeRoot.rect.width - 20) / 2 + System.Math.Min(tools, 3) * 30 + (tools > 3 ? 40 : 0);
         }
         bool PortraitHintFits => Ui.SafeRoot.rect.width - PortraitHintLeft() - 12 >= 170;
         void LayoutPortraitHint()
