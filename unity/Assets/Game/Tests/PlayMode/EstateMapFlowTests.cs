@@ -725,6 +725,7 @@ namespace Tests.PlayMode
             try
             {
                 File.WriteAllBytes(path, image.EncodeToPNG());
+                if (name.StartsWith("estate-r8-", StringComparison.Ordinal)) ExportDensity(path);
                 var cyan = image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
                 var probe = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/m3a7-shader-" + ShaderProbeMode)); Directory.CreateDirectory(probe);
                 var csv = Path.Combine(probe, "captures.csv");

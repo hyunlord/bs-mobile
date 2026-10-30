@@ -239,6 +239,10 @@ namespace Game.App
                 terrain.Grid = item.Grid; terrain.PaintedWidth = item.Width; terrain.IsometricRoad = item.IsometricRoad; terrain.RoadQuarterTurns = item.RoadQuarterTurns; terrain.Landmark = item.Source == "landmark"; terrain.WaterLandmark = terrain.Landmark && item.Role.StartsWith("river", StringComparison.Ordinal); image = terrain;
             }
             else image = rect.gameObject.AddComponent<Image>();
+#if UNITY_EDITOR
+            var densityTag = image.gameObject.AddComponent<EstateDensityTag>();
+            densityTag.Role = item.Role; densityTag.Source = item.Source;
+#endif
             image.sprite = sprite; image.raycastTarget = false; image.material = tint;
             var c = colour ?? item.Colour;
             // Landmark RGB carries shader parameters, not display colours. Linear canvases otherwise convert .4 brightness
