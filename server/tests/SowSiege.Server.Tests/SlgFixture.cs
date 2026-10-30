@@ -28,7 +28,7 @@ internal sealed class SlgFixture(NpgsqlDataSource source, AccountStore store, Sl
     {
         string root = ContentEstateTests.Root();
         var estate = EstateContent.Load(root);
-        var runs = new ExpeditionRules(3_600_000, 3, estate.Config.WalletCaps);
+        var runs = new ExpeditionRules(3_600_000, 3, estate.Config.WalletCaps.ToDictionary(c => c.Key, c => Math.Min(c.Value, estate.Meta.Materials.Single(m => m.Id == c.Key).WalletCap)));
         var registry = new DomainRegistry([new RecruitDomain(RecruitPool.Load(root), 3000), new ResearchDomain(ResearchContent.Load(root), runs)], key);
         var store = new AccountStore(source, new EstateApplication(estate), time, registry);
         await store.InitializeAsync(CancellationToken.None);
