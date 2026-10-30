@@ -46,6 +46,10 @@ public static partial class UnityExport
         source.AppendLine("        };");
         source.AppendLine("        public static global::SowSiege.Core.ContentCatalog CreateCatalog() => " + UnityExportExpression.Write(catalog) + ";");
         source.AppendLine("        public static global::SowSiege.Core.MetaCatalog CreateMetaCatalog() => " + UnityExportExpression.Write(MetaContentLoader.Read(directory)) + ";");
+        var vassalRules = VassalContentLoader.Load(directory);
+        // Export definitions only: callers must explicitly opt in when starting a wave run (ADR0075).
+        source.AppendLine("        public static global::SowSiege.Core.VassalRunRules CreateVassalRunRules() => " + UnityExportExpression.Write(
+            vassalRules with { Vassals = vassalRules.Vassals.ToArray(), Effects = vassalRules.Effects.ToArray() }) + ";");
         // M3a account estate prototype settings for the estate screen (#366; wide map since #374): opt-in data, outside the data
         // tree hash, so the bundle DataHash is unchanged.
         // A saved estate keeps its historical configuration; only a new prototype chooses the current map.
