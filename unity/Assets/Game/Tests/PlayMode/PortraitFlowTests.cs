@@ -472,6 +472,7 @@ namespace Tests.PlayMode
                 AssertViewport(mobile);
                 AssertTouchTargets();
                 if (screen == "run") AssertHudCoverage(size.x == 390);
+                if (screen == "cards" || screen == "pause") AssertBattleTextFitsItsLabel(screen);
                 if (screen == "pause")
                 {
                     AssertPauseScrollDoesNotCoverActions();
@@ -612,6 +613,18 @@ namespace Tests.PlayMode
                 Assert.That(bounds.yMax, Is.LessThanOrEqualTo(band.yMax + 1));
                 foreach (var slot in equipment)
                     Assert.That(bounds.Overlaps(Pixels(slot)), Is.False, "Hint covers equipped slot " + slot.name);
+            }
+        }
+
+        void AssertBattleTextFitsItsLabel(string screen)
+        {
+            var panelName = screen == "pause" ? "Portrait.Pause" : "Portrait.Cards";
+            var panel = app.Ui.GetComponentsInChildren<RectTransform>().Single(rect => rect.name == panelName);
+            foreach (var label in panel.GetComponentsInChildren<Text>())
+            {
+                if (string.IsNullOrEmpty(label.text)) continue;
+                Assert.That(label.preferredHeight, Is.LessThanOrEqualTo(label.rectTransform.rect.height + .5f),
+                    panelName + "/" + label.name + " must fit its own label before viewport scrolling: " + label.text);
             }
         }
 
