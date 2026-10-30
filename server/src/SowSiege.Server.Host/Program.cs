@@ -18,7 +18,22 @@ builder.Services.AddSingleton<IDomainHandler>(services =>
     return new RecruitDomain(RecruitPool.Load(configuration["GameContentRoot"]!),
         RecruitDomain.PrototypeGems(builder.Environment.EnvironmentName, configuration["Prototype:Enabled"], configuration["Prototype:RecruitGems"]));
 });
-builder.Services.AddSingleton<IDomainHandler>(services => new ResearchDomain(ResearchContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"]!)));
+builder.Services.AddSingleton<IDomainHandler>(services =>
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    var estate = services.GetRequiredService<EstateContent>();
+    var rules = new ExpeditionRules(TimeSpan.FromSeconds(configuration.GetValue("Runs:TtlSeconds", 3600)).Ticks / TimeSpan.TicksPerMillisecond,
+        configuration.GetValue("Runs:MaxAttempts", 3), estate.Config.WalletCaps);
+    return new ResearchDomain(ResearchContent.Load(configuration["GameContentRoot"]!), rules);
+});
+builder.Services.AddSingleton(services =>
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    string root = configuration["GameContentRoot"]!;
+    return new RunVerifier(new(Directory.Exists(Path.Combine(root, "data")) ? Path.Combine(root, "data") : root, configuration["Runs:Profile"] ?? "production",
+        configuration.GetValue("Runs:MaxReplayBytes", 4 * 1024 * 1024), TimeSpan.FromSeconds(configuration.GetValue("Runs:VerifySeconds", 30)),
+        configuration.GetValue("Runs:MaxConcurrentVerifications", 1)));
+});
 builder.Services.AddSingleton(services => new DomainRegistry(services.GetServices<IDomainHandler>(),
     services.GetRequiredService<IConfiguration>()["Domains:SeedKey"] is { Length: >= 64 } key ? Convert.FromHexString(key)
         : throw new InvalidOperationException("Domains:SeedKey (>=32 bytes hex) required.")));
@@ -59,12 +74,45 @@ app.MapGet("/v1/account", async (HttpContext context, AccountStore store, Cancel
     await ExecuteAccount(context, store, null, cancellation)).RequireRateLimiting("prototype");
 app.MapPost("/v1/account/commands", async (AccountCommand command, HttpContext context, AccountStore store, CancellationToken cancellation) =>
 {
+    if (command.Domain == ResearchDomain.Name && command.Operation == ExpeditionRules.SettleOperation)
+    {
+        // Verdicts come only from the server replay verifier, never from a client command.
+        return Results.BadRequest(new ApiError("internal-operation"));
+    }
     if (command.CommandId == Guid.Empty || command.ExpectedVersion < 0 || string.IsNullOrWhiteSpace(command.Domain) ||
         string.IsNullOrWhiteSpace(command.Operation) || command.Payload.ValueKind != System.Text.Json.JsonValueKind.Object)
     {
         return Results.BadRequest(new ApiError("invalid-command"));
     }
     return await ExecuteAccount(context, store, command, cancellation);
+}).RequireRateLimiting("prototype");
+app.MapPost("/v1/runs/{runId:guid}/replay", async (Guid runId, HttpContext context, AccountStore store, RunVerifier verifier, CancellationToken cancellation) =>
+{
+    string header = context.Request.Headers.Authorization.ToString();
+    Guid? id = header.StartsWith("Bearer ", StringComparison.Ordinal) ? await store.AuthenticateAsync(header[7..], cancellation) : null;
+    if (id is null)
+    {
+        return Results.Unauthorized();
+    }
+    var limit = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+    if (limit is { IsReadOnly: false })
+    {
+        limit.MaxRequestBodySize = context.RequestServices.GetRequiredService<IConfiguration>().GetValue("Runs:MaxReplayBytes", 4 * 1024 * 1024);
+    }
+    using var body = new MemoryStream();
+    await context.Request.Body.CopyToAsync(body, cancellation);
+    try
+    {
+        return Results.Content(await verifier.SubmitAsync(store, id.Value, runId, body.ToArray(), cancellation), "application/json");
+    }
+    catch (CommandConflictException conflict)
+    {
+        return Results.Conflict(new ApiError(conflict.Message));
+    }
+    catch (VerificationBusyException)
+    {
+        return Results.Json(new ApiError("verify-timeout"), statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
 }).RequireRateLimiting("prototype");
 app.Run();
 
