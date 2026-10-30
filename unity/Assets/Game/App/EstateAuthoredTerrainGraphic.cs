@@ -6,6 +6,7 @@ using UnityEngine.UI;
 namespace Game.App
 {
     // One ordered atlas mesh: no sprite/Y regrouping, generated positions or per-prop GameObjects.
+    [RequireComponent(typeof(CanvasRenderer))]
     public sealed class EstateAuthoredTerrainGraphic : MaskableGraphic
     {
         public EstateMapModel Model;

@@ -11,6 +11,18 @@ namespace Tests.EditMode
     {
         static string Json => Resources.Load<TextAsset>("EstateAuthoredLayout").text;
         static EstateAuthoredLayout.Document Parse(string json) => EstateAuthoredLayout.Parse(json, CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r8"));
+        [Test] public void AddingTheAuthoredGraphicSuppliesItsRequiredCanvasRenderer()
+        {
+            var owner = new GameObject("authored-terrain-contract", typeof(RectTransform));
+            try
+            {
+                var graphic = owner.AddComponent<EstateAuthoredTerrainGraphic>();
+                Assert.That(owner.GetComponent<CanvasRenderer>(), Is.Not.Null);
+                Assert.That(graphic.canvasRenderer, Is.SameAs(owner.GetComponent<CanvasRenderer>()));
+                owner.SetActive(false);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(owner); }
+        }
         [Test] public void ApprovedProtectedExportContainsAllInstancesAndNoReviewBuildings()
         {
             var doc = Parse(Json);
