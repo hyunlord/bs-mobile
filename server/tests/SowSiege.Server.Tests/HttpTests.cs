@@ -56,6 +56,32 @@ public sealed class HttpTests
 
     [Fact]
     [Trait("Category", "Postgres")]
+    public async Task RecruitAndResearchRunThroughAccountCommands()
+    {
+        using var factory = new PrototypeFactory();
+        using var client = factory.CreateClient();
+        var created = (await (await client.PostAsJsonAsync("/prototype/accounts", new { })).Content.ReadFromJsonAsync<AccountCreated>())!;
+        client.DefaultRequestHeaders.Authorization = new("Bearer", created.Token);
+        var account = (await client.GetFromJsonAsync<AccountReply>("/v1/account"))!;
+        var odds = account.Domains["recruit"];
+        Assert.Equal(1.0, odds.GetProperty("next").EnumerateArray().Sum(o => o.GetProperty("probability").GetDouble()), 12);
+        Assert.Equal(3000, account.Resources.Single(r => r.Id == "slg:gem").Amount);
+        Assert.All(account.Domains["research"].GetProperty("nodes").EnumerateArray(), n => Assert.Equal("locked", n.GetProperty("status").GetString()));
+        var forged = new { commandId = Guid.NewGuid(), expectedVersion = account.Estate.Version, domain = "recruit", operation = "recruit",
+            payload = new { poolVersion = odds.GetProperty("poolVersion").GetString(), heroId = "slg:ruin_seeker" } };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/account/commands", forged)).StatusCode);
+        var clientTime = new { commandId = Guid.NewGuid(), expectedVersion = account.Estate.Version, domain = "research", operation = "complete-research",
+            payload = new { nodeId = "slg:research-field-yield", completesAtMs = 0 } };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/account/commands", clientTime)).StatusCode);
+        var recruit = new { commandId = Guid.NewGuid(), expectedVersion = account.Estate.Version, domain = "recruit", operation = "recruit",
+            payload = new { poolVersion = odds.GetProperty("poolVersion").GetString() } };
+        var reply = await (await client.PostAsJsonAsync("/v1/account/commands", recruit)).Content.ReadFromJsonAsync<AccountReply>();
+        Assert.True(reply!.Done);
+        Assert.Equal(2900, reply.Resources.Single(r => r.Id == "slg:gem").Amount);
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
     public void ProductionCannotStartPrototypeEndpoints()
     {
         using var factory = new PrototypeFactory("Production");
@@ -74,7 +100,8 @@ public sealed class HttpTests
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),
                 ["ConnectionStrings:Postgres"] = postgres,
-                ["ConnectionStrings:Redis"] = "127.0.0.1:1"
+                ["ConnectionStrings:Redis"] = "127.0.0.1:1",
+                ["Domains:SeedKey"] = RecruitTests.TestKeyHex, ["Prototype:RecruitGems"] = "3000"
             }));
         }
     }

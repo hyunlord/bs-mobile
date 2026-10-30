@@ -8,7 +8,7 @@ namespace SowSiege.Server.Infrastructure;
 
 public sealed partial class AccountStore
 {
-    private sealed record DomainAdvance(StoredAccount Account, bool Done, string Reason, Dictionary<string, JsonElement> Views);
+    private sealed record DomainAdvance(StoredAccount Account, bool Done, string Reason, Dictionary<string, JsonElement> Views, DomainResource[] Resources);
     private sealed record StoredDomain(int Version, string Hash, JsonElement State);
 
     private async Task<DomainAdvance> ApplyDomainsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
@@ -35,7 +35,7 @@ public sealed partial class AccountStore
         var views = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         if (registry.Handlers.Count == 0)
         {
-            return new(account, true, "", views);
+            return new(account, true, "", views, []);
         }
         long utc = Math.Max(now, account.Clock.HighWatermarkMilliseconds);
         await using (var query = new NpgsqlCommand("SELECT utc_highwater FROM account_job_clocks WHERE account_id=$1", connection, transaction))
@@ -82,7 +82,13 @@ public sealed partial class AccountStore
             var events = changes[handler.Domain];
             if (command?.Domain == handler.Domain)
             {
-                result = handler.Execute(new(account, result.State, utc, command.CommandId), command.Operation, command.Payload);
+                var context = new DomainContext(account, result.State, utc, command.CommandId);
+                string? material = handler.SeedMaterial(context, command.Operation, command.Payload);
+                if (material is not null)
+                {
+                    context = context with { Seed = DomainSeed.Compute(registry.SeedKey ?? throw new InvalidOperationException("Domains:SeedKey required."), account.Id, material) };
+                }
+                result = handler.Execute(context, command.Operation, command.Payload);
                 events.AddRange(result.Events);
                 account = account with { State = result.AccountState };
                 application.Validate(account.State);
@@ -137,6 +143,7 @@ public sealed partial class AccountStore
         await using var clock = new NpgsqlCommand("INSERT INTO account_job_clocks(account_id,utc_highwater) VALUES($1,$2) ON CONFLICT(account_id) DO UPDATE SET utc_highwater=$2", connection, transaction);
         clock.Parameters.AddWithValue(account.Id); clock.Parameters.AddWithValue(utc);
         await clock.ExecuteNonQueryAsync(cancellation);
-        return new(account, done, reason, views);
+        var resources = registry.Handlers.SelectMany(h => h.Resources(results[h.Domain].State)).ToArray();
+        return new(account, done, reason, views, resources);
     }
 }

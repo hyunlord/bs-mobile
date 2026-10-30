@@ -11,6 +11,7 @@ WORKDIR /app
 COPY --from=build /publish .
 COPY data/meta /content/data/meta
 COPY data/opt-in/account-estate /content/data/opt-in/account-estate
+COPY data/opt-in/slg/recruit-pool-v1.json data/opt-in/slg/content-draft-v1.json /content/data/opt-in/slg/
 USER $APP_UID
 ENV ASPNETCORE_URLS=http://+:8080 GameContentRoot=/content
 ENTRYPOINT ["dotnet", "SowSiege.Server.Host.dll"]

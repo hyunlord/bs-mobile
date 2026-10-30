@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Opt-in SLG hero recruit pool for the server prototype ([가설] numbers, GDD16)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "kind", "schemaVersion", "status", "numericStatus", "sources", "poolFamilyId", "poolVersion", "costGems", "guaranteeAfterMisses", "guaranteedRarity", "probabilityScale", "entries", "duplicateShards", "notes"],
+  "properties": {
+    "id": { "const": "slg:recruit_pool_v1" },
+    "kind": { "const": "slg-recruit-pool" },
+    "schemaVersion": { "const": 1 },
+    "status": { "const": "hypothesis" },
+    "numericStatus": { "const": "[가설]" },
+    "sources": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+    "poolFamilyId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_-]*$" },
+    "poolVersion": { "type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_-]*$" },
+    "costGems": { "type": "integer", "minimum": 1 },
+    "guaranteeAfterMisses": { "type": "integer", "minimum": 0 },
+    "guaranteedRarity": { "enum": ["common", "rare", "epic"] },
+    "probabilityScale": { "type": "integer", "minimum": 1 },
+    "entries": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["heroId", "rarity", "weight"],
+        "properties": {
+          "heroId": { "type": "string", "pattern": "^[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$" },
+          "rarity": { "enum": ["common", "rare", "epic"] },
+          "weight": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "duplicateShards": {
+      "type": "object", "additionalProperties": false, "required": ["common", "rare", "epic"],
+      "properties": { "common": { "type": "integer", "minimum": 1 }, "rare": { "type": "integer", "minimum": 1 }, "epic": { "type": "integer", "minimum": 1 } }
+    },
+    "notes": { "type": "string" }
+  }
+}

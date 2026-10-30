@@ -12,7 +12,16 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(services => EstateContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"] ?? throw new InvalidOperationException("GameContentRoot required.")));
 builder.Services.AddSingleton<EstateApplication>();
 builder.Services.AddSingleton(services => NpgsqlDataSource.Create(services.GetRequiredService<IConfiguration>().GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
-builder.Services.AddSingleton<DomainRegistry>();
+builder.Services.AddSingleton<IDomainHandler>(services =>
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    return new RecruitDomain(RecruitPool.Load(configuration["GameContentRoot"]!),
+        RecruitDomain.PrototypeGems(builder.Environment.EnvironmentName, configuration["Prototype:Enabled"], configuration["Prototype:RecruitGems"]));
+});
+builder.Services.AddSingleton<IDomainHandler>(services => new ResearchDomain(ResearchContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"]!)));
+builder.Services.AddSingleton(services => new DomainRegistry(services.GetServices<IDomainHandler>(),
+    services.GetRequiredService<IConfiguration>()["Domains:SeedKey"] is { Length: >= 64 } key ? Convert.FromHexString(key)
+        : throw new InvalidOperationException("Domains:SeedKey (>=32 bytes hex) required.")));
 builder.Services.AddSingleton<AccountStore>();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
