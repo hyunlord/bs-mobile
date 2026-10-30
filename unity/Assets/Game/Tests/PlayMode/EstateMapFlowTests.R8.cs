@@ -66,14 +66,14 @@ namespace Tests.PlayMode
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
             Assert.That(app.EstateMap.State.Estate.OpenZones.Length, Is.EqualTo(target));
             Assert.That(app.EstateMap.FromSave, Is.True);
-            Click("EstateMap.Overview"); Canvas.ForceUpdateCanvases();
+            Click("EstateMap.Overview"); yield return null; Canvas.ForceUpdateCanvases();
             Assert.That(app.EstateMap.Map.Zoom, Is.EqualTo(app.EstateMap.Map.WholeMap));
             var map = app.EstateMap.Map;
             Assert.That(map.MapSize.x, Is.LessThanOrEqualTo(map.Viewport.x + .01f));
             Assert.That(map.MapSize.y, Is.LessThanOrEqualTo(map.Viewport.y - map.TopInset - map.BottomInset + .01f));
             Assert.That(map.MapSize.x / map.MapSize.y, Is.EqualTo(map.MapExtent.x / map.MapExtent.y).Within(.001f), "Compact r8 keeps the approved projection, not the historical tall-map framing.");
             var layout = EstateAuthoredLayout.Load(config);
-            var planes = UnityEngine.Object.FindObjectsByType<EstateAuthoredTerrainGraphic>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var planes = View().GetComponentsInChildren<EstateAuthoredTerrainGraphic>().Where(g => g.isActiveAndEnabled).ToArray();
             Assert.That(planes.Length, Is.EqualTo(2));
             Assert.That(planes.Count(g => g.Ground), Is.EqualTo(1));
             var nightLayer = planes[0].transform.parent.Find("EstateMap.Night");

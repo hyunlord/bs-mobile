@@ -211,3 +211,21 @@ Core rules or test assertions are relaxed. A focused PlayMode first-five-frame
 run must verify the correction before another full record. Repeated failure of
 this construction defect is a stop condition. The wrapper released its own
 shared Mac lock at the end of this failed run.
+
+### Approved-layout retry 3: corrected construction, two harness assumptions
+
+Source `e37b3b55` first-five-frame focused PlayMode passed 1/1, with no tracked
+file change. Full first-playable EditMode 942/0/25 and PlayMode 55/0/54;
+wave EditMode 952/0/15 and PlayMode 93/3/13. The missing-renderer defect did
+not recur. Failure XML/logs remain in `terrain-approved-layout-r3`.
+
+Two full/half captures counted four planes because a global inactive-inclusive
+search ran immediately after the Overview UI redraw and included the prior
+page pending destruction. The assertion remains exactly two active planes,
+non-raycast and below Night, scoped to the current map after one update.
+The saved-state flow's closed-zone tap at cell (45,30) was clamped to screen
+(376.56,457.22), beneath the ZoomIn control. That flow now uses the actual
+Overview button before raycasting the same cell; no direct Core substitution
+or input assertion removal. These three focused flows must pass before final
+full verification. Their first observed failures are retained separately from
+the earlier construction defect and static-density rejection history.
