@@ -1,12 +1,12 @@
 # 가신 효과 UI #539 검증 기록 초안
 
-관문: 부분 — 수정본 두 프로필 실패 0, 보충 검사 후 미설명 skip 0, 실제 표본 8장 청록 0. 출정 패널 비침은 해소됐으며 외부 CI와 사용자 화면 판정은 아직 미확정이다.
+관문: 부분 — 수정본 두 프로필 실패 0, 보충 검사 후 미설명 skip 0, 실제 표본 8장 청록 0. `02fbf8ad`의 CI quality·secrets 통과. 출정 패널 비침은 해소됐으며 사용자 화면 판정은 별도다.
 
 - 최신 소스: `42f4043df6d4c92881d7894957654dcd9a70d731` (`feat/539-vassal-effects-ui`).
 - 부모: [Core #528](https://github.com/hyunlord/bs-mobile/pull/528), base `feat/527-vassal-run-v1`. 부모와 UI 모두 사용자 병합 승인 전 초안이다.
 - 승인 기준: [가신 UI r1·HUD r2](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-531-20261029).
 - Core 규칙·콘텐츠 수·편성/장비 한계를 바꾸지 않았다. UI와 검증 입력만 수정했다.
-- 외부 CI와 공개 링크만 아직 미확정이다. 아래 로컬 결과는 실제 XML·JSON·화면에서 확인한 값이다.
+- [초안 PR #568](https://github.com/hyunlord/bs-mobile/pull/568)의 `02fbf8ad190251bcbceaa240ba2f9ea356ea914c`에서 CI가 통과했다. 아래 결과는 실제 XML·JSON·화면·CI에서 확인한 값이다. 이 기록을 추가한 후속 문서 커밋의 CI는 별도로 확인하며, 이전 통과를 새 head의 결과로 표현하지 않는다.
 
 ## 최종 실행
 
@@ -16,7 +16,7 @@
 | wave-1a EditMode / PlayMode | 929 / 0 / 15, 95 / 0 / 13 |
 | 생성 입력 보충 검사 / 공통 skip | combat 1/1·melee 1/1 통과, 각각 실패·skip0. 6XML 합산0unexplained/1listed |
 | 종료 후 추적 파일 diff | `git status --short` 출력0, HEAD `42f4043d` |
-| CI quality / secrets | PENDING: 최종 결과·링크만 기입 |
+| CI quality / secrets | [40996261531](https://github.com/hyunlord/bs-mobile/actions/runs/40996261531) 둘 다 PASS, head `02fbf8ad` |
 
 ## 보존한 실패와 수정
 
@@ -48,7 +48,7 @@
 
 ## 공개와 다음 관문
 
-- 선정 실패 표본과 승인 비교용 표본만 Release에 공개하며, 링크는 실제 업로드 후 추가한다. 전체 성공 로그를 중복 업로드하지 않는다.
-- Unity 최종 검증은 완료했고 CI와 사용자 승인 전 초안 유지. 그림의 최종 사용자 승인은 별도다.
+- [검토 Release](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-game-539-20261030)에 선정 실패·승인 비교용 표본 7장을 공개했다. Release target과 Unity 검증 소스는 모두 `42f4043d`다. 전체 성공 로그를 중복 업로드하지 않았다.
+- Unity 검증과 `02fbf8ad`의 CI는 완료했고 사용자 승인 전 초안 유지. 후속 문서 커밋은 CI를 다시 확인한다. 그림의 최종 사용자 승인은 별도다.
 - C05/FP01 성능은 이 UI 검증에서 NOT_RUN. 역사 Core 해시는 부모 #528 증거이며 이번 문서가 새 전체 해시 실행을 뜻하지 않는다.
 - 설계 문서 영향은 기존 승인 UI 구현 상태 갱신이며 새 Core 정책은 없다. GDD 동반 변경 여부는 담당자가 최종 확인한다.
