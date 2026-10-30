@@ -7,6 +7,7 @@ using Game.View;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 namespace Tests.PlayMode
 {
@@ -42,6 +43,18 @@ namespace Tests.PlayMode
                     Assert.That(paperBounds.yMax, Is.LessThanOrEqualTo(ui.SafePixels.yMax + .01f));
                     Assert.That(pauseBounds.width / ui.Canvas.scaleFactor, Is.GreaterThanOrEqualTo(48));
                     Assert.That(pauseBounds.height / ui.Canvas.scaleFactor, Is.GreaterThanOrEqualTo(48));
+                    var track = rectangles.Single(rect => rect.name == "Blue XP track").GetComponent<Image>();
+                    var fill = rectangles.Single(rect => rect.name == "Experience").Find("Fill").GetComponent<Image>();
+                    Assert.That(track.color, Is.EqualTo(PortraitTokens.ExperienceTrack));
+                    Assert.That(fill.color, Is.EqualTo(PortraitTokens.ExperienceFill));
+                    Assert.That(fill.color.b, Is.GreaterThan(fill.color.r));
+                    foreach (var name in new[] { "Weapon category", "Tool category", "Weapon overflow", "Tool overflow" })
+                    {
+                        var labelBounds = Pixels(rectangles.Single(rect => rect.name == name));
+                        Assert.That(labelBounds.xMin, Is.GreaterThanOrEqualTo(paperBounds.xMin));
+                        Assert.That(labelBounds.xMax, Is.LessThanOrEqualTo(paperBounds.xMax));
+                        Assert.That(labelBounds.yMin, Is.GreaterThanOrEqualTo(paperBounds.yMin - .01f));
+                    }
                     foreach (var item in rectangles.Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool"))
                     {
                         var bounds = Pixels(item);

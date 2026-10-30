@@ -190,14 +190,13 @@ namespace Game.App
         void ShowPortraitSummary() => ShowAccountResult();
         float PortraitHintLeft()
         {
-            var count = FirstPlayable?.Charters.Count ?? 0;
+            // Category labels and collapsed equipment own the bottom HUD row.
+            // Retain the other contextual hints only when their real trailing space fits.
+            var tools = 0;
             if (CurrentFrame != null)
                 for (var i = 0; i < CurrentFrame.Equipment.Count; i++)
-                {
-                    var id = CurrentFrame.Equipment[i].Id;
-                    if (runCatalog.Weapons.ContainsKey(id) || runCatalog.Tools.ContainsKey(id)) count++;
-                }
-            return 20 + count * 27.5f;
+                    if (runCatalog.Tools.ContainsKey(CurrentFrame.Equipment[i].Id)) tools++;
+            return 46 + (Ui.SafeRoot.rect.width - 20) / 2 + Math.Min(tools, 3) * 30 + (tools > 3 ? 40 : 0);
         }
         bool PortraitHintFits => Ui.SafeRoot.rect.width - PortraitHintLeft() - 12 >= 170;
         void LayoutPortraitHint()

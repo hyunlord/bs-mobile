@@ -12,12 +12,14 @@ namespace Game.View
         readonly BufferedHudText health,level,time,season;
         static readonly string[] Seasons={"봄","여름","가을","겨울"};
         readonly UiDamageFeedback feedback;
-        readonly RectTransform[] slots=new RectTransform[13];
-        readonly string[] shown=new string[13];
-        readonly BufferedHudText[] slotLevels=new BufferedHudText[13];
-        readonly int[] shownLevels=new int[13];
-        readonly RectTransform[] levelPlates=new RectTransform[13];
+        readonly RectTransform[] slots=new RectTransform[6];
+        readonly string[] shown=new string[6];
+        readonly BufferedHudText[] slotLevels=new BufferedHudText[6];
+        readonly int[] shownLevels=new int[6];
+        readonly RectTransform[] levelPlates=new RectTransform[6];
         readonly Dictionary<string,Image> icons=new Dictionary<string,Image>(StringComparer.Ordinal);
+        readonly Text[] categoryLabels = new Text[2], overflowLabels = new Text[2];
+        readonly int[] hiddenCounts = { -1, -1 };
         Vector2 layoutSize;long lastHealth=long.MinValue,lastMaximum,lastExperience,lastRequired;int lastLevel=-1,lastSecond=-1,lastSeason=-1;
         public float ReservedTopPixels=>(root.rect.height+PortraitTokens.HudInset)*ui.Canvas.scaleFactor;
         public PortraitHud(UiShell ui,ContentCatalog catalog,Action pause,bool hitFeedback)
@@ -35,7 +37,10 @@ namespace Game.View
             var healthLabel = PortraitWidgets.Label(ui, rail, "", 8, 0, 154, 18, 13); healthLabel.color = Color.white;
             var healthShadow = healthLabel.gameObject.AddComponent<Shadow>(); healthShadow.effectColor = GameVisualTokens.Ink; healthShadow.effectDistance = new Vector2(0,-1); health = BufferedHudText.Create(healthLabel);
             var xpRail = PortraitWidgets.Place("Experience", root, 62, 26, 170, 12); ui.Surface(xpRail, "ui.xp.rail").pixelsPerUnitMultiplier = 3.6f;
-            xp = UiShell.Rect("Fill", xpRail); UiShell.Stretch(xp, 2); ui.Surface(xp, "ui.xp.fill").pixelsPerUnitMultiplier = 4.5f;
+            var xpBackground = UiShell.Rect("Blue XP track", xpRail); UiShell.Stretch(xpBackground, 2);
+            xpBackground.gameObject.AddComponent<Image>().color = PortraitTokens.ExperienceTrack;
+            xp = UiShell.Rect("Fill", xpRail); UiShell.Stretch(xp, 2);
+            xp.gameObject.AddComponent<Image>().color = PortraitTokens.ExperienceFill;
             var seasonLabel = PortraitWidgets.Label(ui, root, "", 238, 0, 84, 18, 13); seasonLabel.name = "Current season"; seasonLabel.alignment = TextAnchor.MiddleCenter; seasonLabel.color = PortraitTokens.CreamButtonInk; season = BufferedHudText.Create(seasonLabel);
             var timer = PortraitWidgets.Label(ui, root, "", 238, 18, 84, 26, 20); timer.alignment = TextAnchor.MiddleCenter; timer.color = PortraitTokens.CreamButtonInk; time = BufferedHudText.Create(timer);
             if (pause != null)
@@ -53,11 +58,18 @@ namespace Game.View
             {
                 foreach(var id in catalog.Weapons.Keys)Prewarm(id);
                 foreach(var id in catalog.Tools.Keys)Prewarm(id);
-                if(catalog.Runtime!=null)foreach(var id in catalog.Runtime.Charters.Keys)Prewarm(id);
+
+            }
+            for (var group = 0; group < 2; group++)
+            {
+                categoryLabels[group] = PortraitWidgets.Label(ui, root, group == 0 ? "무기" : "도구", 10, 48, 34, 28, 12);
+                categoryLabels[group].name = group == 0 ? "Weapon category" : "Tool category";
+                overflowLabels[group] = PortraitWidgets.Label(ui, root, "", 136, 48, 40, 28, 14);
+                overflowLabels[group].name = group == 0 ? "Weapon overflow" : "Tool overflow";
             }
             for(var i=0;i<slots.Length;i++)
             {
-                slots[i]=PortraitWidgets.Place("Equipment "+i,root,10+i*28f,48,28,28);
+                slots[i]=PortraitWidgets.Place("Equipment "+i,root,46+(i%3)*30f,48,28,28);
                 slots[i].gameObject.SetActive(false);
                 var badgePlate=PortraitWidgets.Place("Level badge",slots[i],9,12,20,16);
                 levelPlates[i]=badgePlate;badgePlate.gameObject.SetActive(false);
@@ -77,7 +89,13 @@ namespace Game.View
             root.sizeDelta=new Vector2(0,Mathf.Min(PortraitTokens.HudHeight,size.y*.1f-PortraitTokens.HudInset));
             backing.sizeDelta=new Vector2(size.x-8,root.rect.height+PortraitTokens.HudInset);
             var y=Mathf.Max(44,root.rect.height-28);
-            for(var i=0;i<slots.Length;i++)slots[i].anchoredPosition=new Vector2(10+i*28f,-y);
+            var groupWidth = (size.x - 20) / 2;
+            for (var group = 0; group < 2; group++)
+            {
+                categoryLabels[group].rectTransform.anchoredPosition = new Vector2(10 + group * groupWidth, -y);
+                overflowLabels[group].rectTransform.anchoredPosition = new Vector2(136 + group * groupWidth, -y);
+            }
+            for(var i=0;i<slots.Length;i++)slots[i].anchoredPosition=new Vector2(46+(i/3)*groupWidth+(i%3)*30,-y);
         }
         public void Present(RunFrame frame,FirstPlayableFrame first)
         {
@@ -95,15 +113,22 @@ namespace Game.View
             if(second!=lastSecond){lastSecond=second;time.Begin();time.Append(second/60,2);time.Append(":");time.Append(second%60,2);time.End();}
             if(frame.Experience!=lastExperience||frame.RequiredExperience!=lastRequired)
             {lastExperience=frame.Experience;lastRequired=frame.RequiredExperience;xp.anchorMax=new Vector2(lastRequired>0?Mathf.Clamp01((float)lastExperience/lastRequired):0,1);}
-            var index=0;
-            for(var i=0;i<frame.Equipment.Count&&index<13;i++)
+            for (var group = 0; group < 2; group++)
             {
-                var id=frame.Equipment[i].Id;
-                if(catalog!=null&&!catalog.Weapons.ContainsKey(id)&&!catalog.Tools.ContainsKey(id))continue;
-                SetSlot(index++,id,frame.Equipment[i].Level);
+                var count = 0;
+                for (var i = 0; i < frame.Equipment.Count; i++)
+                {
+                    var item = frame.Equipment[i];
+                    if (catalog == null || !(group == 0 ? catalog.Weapons.ContainsKey(item.Id) : catalog.Tools.ContainsKey(item.Id))) continue;
+                    if (count < 3) SetSlot(group * 3 + count, item.Id, item.Level);
+                    count++;
+                }
+                for (var index = Math.Min(count, 3); index < 3; index++) SetSlot(group * 3 + index, null, 0);
+                var hidden = Math.Max(0, count - 3);
+                if (hiddenCounts[group] == hidden) continue;
+                hiddenCounts[group] = hidden;
+                overflowLabels[group].text = hidden > 0 ? "+" + hidden : "";
             }
-            if(first!=null)for(var i=0;i<first.Charters.Count&&index<13;i++)SetSlot(index++,first.Charters[i],0);
-            while(index<13)SetSlot(index++,null,0);
         }
         void SetSlot(int index,string id,int equipmentLevel)
         {

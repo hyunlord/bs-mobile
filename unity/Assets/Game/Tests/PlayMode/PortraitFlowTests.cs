@@ -604,7 +604,8 @@ namespace Tests.PlayMode
                 Assert.That(bounds.xMax, Is.LessThanOrEqualTo(app.Ui.SafePixels.xMax));
             }
             var hints = app.Ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name == "Hint" && rect.gameObject.activeInHierarchy).ToArray();
-            if (requireHint) Assert.That(hints.Length, Is.EqualTo(1), "Fresh departure must exercise the actual movement hint geometry.");
+            if (requireHint) Assert.That(hints.Length, Is.EqualTo(0), "Approved HUD removes the fresh departure movement line.");
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(text => text.text.Contains("끌어서 이동")), Is.False);
             var equipment = bands[0].GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool" && rect.gameObject.activeInHierarchy).ToArray();
             foreach (var hint in hints)
             {
@@ -728,13 +729,18 @@ namespace Tests.PlayMode
                 background.gameObject.AddComponent<Image>().color = new Color32(135, 145, 112, 255);
                 var hud = new PortraitHud(ui, catalog, () => { }, false);
                 hud.Present(sourceFrame with { Equipment = equipment, Level = 12 }, sourceFirst with { Charters = charters });
-                var caption = PortraitWidgets.Label(ui, ui.Content, "RENDER-ONLY FIXTURE · 13 icons / Lv12", 8, 96, 374, 24, 13);
+                var caption = PortraitWidgets.Label(ui, ui.Content, "RENDER-ONLY · 13 owned / 6 shown +2 +1", 8, 96, 374, 24, 13);
                 caption.color = Color.white;
                 var shade = caption.gameObject.AddComponent<Shadow>(); shade.effectColor = Color.black; shade.effectDistance = new Vector2(1, -1);
                 yield return null; yield return null; Canvas.ForceUpdateCanvases();
                 var slots = ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool").ToArray();
-                Assert.That(slots.Length, Is.EqualTo(13));
-                var expectedIds = equipment.Select(item => item.Id).Concat(charters).ToArray();
+                Assert.That(slots.Length, Is.EqualTo(6));
+                var expectedIds = equipment.Take(3).Concat(equipment.Skip(5).Take(3)).Select(item => item.Id).ToArray();
+                var texts = ui.GetComponentsInChildren<Text>();
+                Assert.That(texts.Single(text => text.name == "Weapon category").text, Is.EqualTo("무기"));
+                Assert.That(texts.Single(text => text.name == "Tool category").text, Is.EqualTo("도구"));
+                Assert.That(texts.Single(text => text.name == "Weapon overflow").text, Is.EqualTo("+2"));
+                Assert.That(texts.Single(text => text.name == "Tool overflow").text, Is.EqualTo("+1"));
                 for (var index = 0; index < slots.Length; index++)
                 {
                     var slot = slots.Single(rect => rect.name == "Equipment " + index);
@@ -745,7 +751,7 @@ namespace Tests.PlayMode
                     Assert.That(bounds.xMin, Is.GreaterThanOrEqualTo(ui.SafePixels.xMin));
                     Assert.That(bounds.xMax, Is.LessThanOrEqualTo(ui.SafePixels.xMax));
                     Assert.That(bounds.yMin, Is.GreaterThanOrEqualTo(ui.SafePixels.yMax - hud.ReservedTopPixels - .01f));
-                    Assert.That(slot.Find("Level badge").gameObject.activeSelf, Is.EqualTo(index < 9));
+                    Assert.That(slot.Find("Level badge").gameObject.activeSelf, Is.True);
                 }
                 var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/battle-ui-514/editor-run"));
                 Directory.CreateDirectory(output);
@@ -757,8 +763,14 @@ namespace Tests.PlayMode
                 while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
                 Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, probe);
                 Assert.That(Screen.width, Is.EqualTo(390)); Assert.That(Screen.height, Is.EqualTo(844));
+                var retained = slots[0].GetComponentsInChildren<Image>().Single(image => image.name == "Icon " + expectedIds[0]);
+                hud.Present(sourceFrame with { Equipment = new[] { equipment[0] }, Level = 12 }, sourceFirst);
+                Assert.That(texts.Single(text => text.name == "Weapon overflow").text, Is.Empty);
+                Assert.That(texts.Single(text => text.name == "Tool overflow").text, Is.Empty);
+                Assert.That(slots.Count(slot => slot.gameObject.activeSelf), Is.EqualTo(1));
+                Assert.That(slots[0].GetComponentsInChildren<Image>().Single(image => image.name == retained.name), Is.SameAs(retained), "Collapsing must keep the pooled icon object.");
                 Assert.That(session.ComputeStateHash(), Is.EqualTo(stateHash), "Render-only frame copies must not modify the unadvanced first-playable session.");
-                File.WriteAllText(path + ".txt", $"surface=actual Unity Editor render-only HUD fixture; normalPlayEvidence=false; physicalDevice=false; userAcceptance=false; fixture=5 canonical weapons+4 canonical tools at Lv12+4 canonical charters; source=first-playable canonical unadvanced frame copied with view-only overrides; background=flat diagnostic sage, not a gameplay screenshot; ids={string.Join(",", expectedIds)}; stateHashBefore={stateHash}; stateHashAfter={session.ComputeStateHash()}; commit={BuildIdentity.Commit}; sourceHash={BuildIdentity.SourceHash}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}\n");
+                File.WriteAllText(path + ".txt", $"surface=actual Unity Editor render-only HUD fixture; normalPlayEvidence=false; physicalDevice=false; userAcceptance=false; fixture=5 canonical weapons+4 canonical tools at Lv12+4 canonical charters; visible=first3 weapons+first3 tools; foldedWeapons=2; foldedTools=1; charters=pause-only; source=first-playable canonical unadvanced frame copied with view-only overrides; background=flat diagnostic sage, not a gameplay screenshot; ids={string.Join(",", expectedIds)}; stateHashBefore={stateHash}; stateHashAfter={session.ComputeStateHash()}; commit={BuildIdentity.Commit}; sourceHash={BuildIdentity.SourceHash}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}\n");
             }
             finally
             {
