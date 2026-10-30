@@ -1,6 +1,6 @@
 # SLG 화면 흐름 시안 r1
 
-상태: 사용자 검토 대기. 추적 [#561](https://github.com/hyunlord/bs-mobile/issues/561). 승인된 병력·영웅·연구·월드 GDD15–18과 연맹 제안 [#562](https://github.com/hyunlord/bs-mobile/pull/562)을 390×844 오프라인 화면으로 표현한다. 게임 코드·데이터·SDK 변경 없음. 신규 수치는 [가설], 화면 숫자는 [예시]다. 사용자 승인 전 이 기록 PR을 병합하지 않는다.
+상태: 사용자 승인 — 2026-10-30. 추적 [#561](https://github.com/hyunlord/bs-mobile/issues/561). 승인된 병력·영웅·연구·월드 GDD15–18과 연맹 제안 [#562](https://github.com/hyunlord/bs-mobile/pull/562)을 390×844 오프라인 화면으로 표현한다. 게임 코드·데이터·SDK 변경 없음. 신규 수치는 [가설], 화면 숫자는 [예시]다. 사용자 승인에 따라 최신 main과 최종 CI를 확인한 뒤 이 기록 PR을 squash 병합한다.
 
 ## 범위와 읽는 순서
 
