@@ -101,6 +101,17 @@ namespace Game.Tests
         }
 
         [Test]
+        public void SelectedQuotePreservesServerCostTimeAndOccupancyWithoutClientArithmetic()
+        {
+            var unit = JsonUtility.FromJson<BarracksUnit>("{\"unitId\":\"slg:levy\",\"quotes\":[{\"count\":3,\"totalCost\":[{\"materialId\":\"meta:grain\",\"amount\":23}],\"durationMilliseconds\":59001,\"estimatedCompletesAtMilliseconds\":1793365000000,\"occupiedAfter\":17,\"capacity\":60,\"canStart\":true,\"reason\":\"accepted\"},{\"count\":4,\"estimatedCompletesAtMilliseconds\":null,\"canStart\":false,\"reason\":\"capacity\"}]}");
+            Assert.That(unit.quotes[0].totalCost[0].amount, Is.EqualTo(23));
+            Assert.That(unit.quotes[0].durationMilliseconds, Is.EqualTo(59001));
+            Assert.That(unit.quotes[0].occupiedAfter, Is.EqualTo(17));
+            Assert.That(unit.quotes[1].canStart, Is.False);
+            Assert.That(unit.quotes[1].estimatedCompletesAtMilliseconds, Is.Zero);
+        }
+
+        [Test]
         public void PrototypeTokenRequiresExactOpaqueHexLength()
         {
             Assert.That(BarracksServerClient.ValidToken(new string('a', 64)), Is.True);
