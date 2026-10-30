@@ -2,6 +2,20 @@ namespace SowSiege.Server.Infrastructure;
 
 internal static class Schema
 {
+    internal const string ExtensionsSql = """
+        CREATE TABLE IF NOT EXISTS account_domains(
+          account_id uuid NOT NULL REFERENCES accounts(id), domain text NOT NULL,
+          state_version integer NOT NULL, content_hash text NOT NULL, state_json jsonb NOT NULL,
+          PRIMARY KEY(account_id,domain));
+        CREATE TABLE IF NOT EXISTS account_job_clocks(
+          account_id uuid PRIMARY KEY REFERENCES accounts(id), utc_highwater bigint NOT NULL);
+        CREATE TABLE IF NOT EXISTS domain_events(
+          account_id uuid NOT NULL REFERENCES accounts(id), version bigint NOT NULL,
+          domain text NOT NULL, ordinal integer NOT NULL, kind text NOT NULL, data jsonb NOT NULL,
+          PRIMARY KEY(account_id,version,domain,ordinal));
+        INSERT INTO server_schema VALUES(2) ON CONFLICT DO NOTHING;
+        """;
+
     internal const string Sql = """
         CREATE TABLE IF NOT EXISTS server_schema(version integer PRIMARY KEY);
         INSERT INTO server_schema VALUES (1) ON CONFLICT DO NOTHING;

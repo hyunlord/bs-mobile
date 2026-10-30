@@ -8,7 +8,7 @@ using SowSiege.Server.Contracts;
 
 namespace SowSiege.Server.Infrastructure;
 
-public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication application, TimeProvider time)
+public sealed partial class AccountStore(NpgsqlDataSource dataSource, EstateApplication application, TimeProvider time, DomainRegistry? domains = null)
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
@@ -18,10 +18,18 @@ public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         await using var schemaLock = new NpgsqlCommand("SELECT pg_advisory_xact_lock(575)", connection, transaction);
         await schemaLock.ExecuteNonQueryAsync(cancellation);
-        await using var command = new NpgsqlCommand(Schema.Sql, connection, transaction);
+        await using var bootstrap = new NpgsqlCommand("CREATE TABLE IF NOT EXISTS server_schema(version integer PRIMARY KEY)", connection, transaction);
+        await bootstrap.ExecuteNonQueryAsync(cancellation);
+        await using var existing = new NpgsqlCommand("SELECT max(version) FROM server_schema", connection, transaction);
+        object? oldVersion = await existing.ExecuteScalarAsync(cancellation);
+        if (oldVersion is int old && old is not 1 and not 2)
+        {
+            throw new InvalidDataException("Unsupported server schema version.");
+        }
+        await using var command = new NpgsqlCommand(Schema.Sql + (oldVersion is int installed && installed == 2 ? "" : Schema.ExtensionsSql), connection, transaction);
         await command.ExecuteNonQueryAsync(cancellation);
         await using var version = new NpgsqlCommand("SELECT max(version) FROM server_schema", connection, transaction);
-        if (await version.ExecuteScalarAsync(cancellation) is not int current || current != 1)
+        if (await version.ExecuteScalarAsync(cancellation) is not int current || current != 2)
         {
             throw new InvalidDataException("Unsupported server schema version.");
         }
@@ -55,16 +63,22 @@ public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication 
         return await command.ExecuteScalarAsync(cancellation) is Guid id ? id : null;
     }
 
-    public async Task<string> ExecuteAsync(Guid id, EstateCommand? command, CancellationToken cancellation)
+    public Task<string> ExecuteAsync(Guid id, EstateCommand? command, CancellationToken cancellation) => ExecuteTransactionAsync(id, command, null, false, cancellation);
+
+    public Task<string> ExecuteAccountAsync(Guid id, AccountCommand? command, CancellationToken cancellation) => ExecuteTransactionAsync(id, null, command, true, cancellation);
+
+    private async Task<string> ExecuteTransactionAsync(Guid id, EstateCommand? command, AccountCommand? domainCommand, bool accountResponse, CancellationToken cancellation)
     {
         await using var connection = await dataSource.OpenConnectionAsync(cancellation);
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         var account = await ReadAsync(connection, transaction, id, cancellation);
-        string payloadHash = command is null ? "" : Hash(JsonSerializer.Serialize(command, Json));
-        if (command is not null)
+        Guid? commandId = domainCommand?.CommandId ?? command?.CommandId;
+        string payloadHash = domainCommand is not null ? Hash("account-v1:" + JsonSerializer.Serialize(domainCommand, Json))
+            : command is null ? "" : Hash(JsonSerializer.Serialize(command, Json));
+        if (commandId is not null)
         {
             await using var receipt = new NpgsqlCommand("SELECT payload_hash,response FROM commands WHERE account_id=$1 AND command_id=$2", connection, transaction);
-            receipt.Parameters.AddWithValue(id); receipt.Parameters.AddWithValue(command.CommandId);
+            receipt.Parameters.AddWithValue(id); receipt.Parameters.AddWithValue(commandId.Value);
             await using var reader = await receipt.ExecuteReaderAsync(cancellation);
             if (await reader.ReadAsync(cancellation))
             {
@@ -75,13 +89,24 @@ public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication 
                 return reader.GetString(1);
             }
         }
-        var applied = application.Apply(account, command, time.GetUtcNow().ToUnixTimeMilliseconds());
+        if (domainCommand is not null && domainCommand.ExpectedVersion != account.Version)
+        {
+            throw new CommandConflictException("version-conflict");
+        }
+        long now = time.GetUtcNow().ToUnixTimeMilliseconds();
+        bool hasDomains = domains?.Handlers.Count > 0;
+        var applied = application.Apply(account, hasDomains ? null : command, now);
+        var advanced = await ApplyDomainsAsync(connection, transaction, applied.Account, domainCommand, hasDomains ? command : null, now, cancellation);
+        var estateReply = applied.Reply with { Done = hasDomains && command is not null ? advanced.Done : applied.Reply.Done, Reason = hasDomains && command is not null ? advanced.Reason : applied.Reply.Reason, Estate = EstateApplication.View(advanced.Account, applied.Reply.Estate.CreditedSeconds, applied.Reply.Estate.Clock) };
+        applied = new(advanced.Account, estateReply);
         await WriteAsync(connection, transaction, applied.Account, false, cancellation);
-        string response = JsonSerializer.Serialize(applied.Reply, Json);
-        if (command is not null)
+        string response = accountResponse
+            ? JsonSerializer.Serialize(new AccountReply(advanced.Done, advanced.Reason, applied.Reply.Estate, advanced.Views, applied.Account.State.Wallet.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => new ResourceAmount(p.Key, p.Value)).ToArray()), Json)
+            : JsonSerializer.Serialize(applied.Reply, Json);
+        if (commandId is not null)
         {
             await using var receipt = new NpgsqlCommand("INSERT INTO commands VALUES($1,$2,$3,$4)", connection, transaction);
-            receipt.Parameters.AddWithValue(id); receipt.Parameters.AddWithValue(command.CommandId);
+            receipt.Parameters.AddWithValue(id); receipt.Parameters.AddWithValue(commandId.Value);
             receipt.Parameters.AddWithValue(payloadHash); receipt.Parameters.AddWithValue(response);
             await receipt.ExecuteNonQueryAsync(cancellation);
         }
@@ -124,7 +149,7 @@ public sealed class AccountStore(NpgsqlDataSource dataSource, EstateApplication 
     private static async Task WriteAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, StoredAccount account, bool insert, CancellationToken cancellation)
     {
         const string columns = "version=$2,content_hash=$3,config_version=$4,codec_version=$5,payload=$6,utc_highwater=$7,logical_seconds=$8,fraction_ms=$9";
-        string sql = insert ? "INSERT INTO accounts VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)" : "UPDATE accounts SET " + columns + " WHERE id=$1";
+        string sql = insert ? "INSERT INTO accounts(id,version,content_hash,config_version,codec_version,payload,utc_highwater,logical_seconds,fraction_ms) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)" : "UPDATE accounts SET " + columns + " WHERE id=$1";
         await using var command = new NpgsqlCommand(sql, connection, transaction);
         command.Parameters.AddWithValue(account.Id); command.Parameters.AddWithValue(account.Version);
         command.Parameters.AddWithValue(account.ContentHash); command.Parameters.AddWithValue(account.State.Estate!.ConfigVersion);
