@@ -239,6 +239,69 @@ namespace Tests.PlayMode
             yield return CaptureSizes("abandon-confirm", true);
         }
 
+        [UnityTest, Timeout(120000)]
+        public IEnumerator PopulatedMaximumHudCaptureIsExplicitRenderOnlyFixture()
+        {
+            yield return Boot(); Click("Title.Enter"); yield return WaitForScreen("Run");
+            app.NavigateBack(); yield return WaitForScreen("Pause");
+            var catalog = FoundationBoot.Catalog;
+            var equipment = catalog.Weapons.Keys.OrderBy(id => id, StringComparer.Ordinal).Take(5)
+                .Concat(catalog.Tools.Keys.OrderBy(id => id, StringComparer.Ordinal).Take(4))
+                .Select(id => new EquipmentView(id, 12)).ToArray();
+            Assert.That(equipment.Length, Is.EqualTo(9), "Canonical catalog must supply five weapons and four tools.");
+            Assert.That(catalog.Runtime, Is.Not.Null);
+            var charters = catalog.Runtime.Charters.Keys.OrderBy(id => id, StringComparer.Ordinal).Take(4).ToArray();
+            Assert.That(charters.Length, Is.EqualTo(4), "Use real catalog charter IDs, not duplicate placeholder icons.");
+            var stateHash = app.Session.ComputeStateHash();
+            var owner = new GameObject("Maximum HUD render-only fixture", typeof(RectTransform));
+            var originalCanvasEnabled = app.Ui.Canvas.enabled;
+            try
+            {
+                var ui = owner.AddComponent<UiShell>(); ui.Initialize(app.Ui.Font, true);
+                ui.SetPortraitMobileSimulation(true); ui.Canvas.sortingOrder = 11;
+                var hud = new PortraitHud(ui, catalog, () => { }, false);
+                hud.Present(app.Frame with { Equipment = equipment, Level = 12 }, app.FirstPlayable with { Charters = charters });
+                var caption = PortraitWidgets.Label(ui, ui.Content, "RENDER-ONLY FIXTURE · 13 icons / Lv12", 8, 96, 374, 24, 13);
+                caption.color = Color.white;
+                var shade = caption.gameObject.AddComponent<Shadow>(); shade.effectColor = Color.black; shade.effectDistance = new Vector2(1, -1);
+                app.Ui.Canvas.enabled = false;
+                yield return null; yield return null; Canvas.ForceUpdateCanvases();
+                var slots = ui.GetComponentsInChildren<RectTransform>().Where(rect => rect.name.StartsWith("Equipment ", StringComparison.Ordinal) && rect.name != "Equipment pool").ToArray();
+                Assert.That(slots.Length, Is.EqualTo(13));
+                var expectedIds = equipment.Select(item => item.Id).Concat(charters).ToArray();
+                for (var index = 0; index < slots.Length; index++)
+                {
+                    var slot = slots.Single(rect => rect.name == "Equipment " + index);
+                    var icon = slot.GetComponentsInChildren<Image>().Single(image => image.name == "Icon " + expectedIds[index]);
+                    Assert.That(icon.sprite, Is.Not.Null, expectedIds[index]);
+                    Assert.That(icon.rectTransform.rect.size, Is.EqualTo(new Vector2(28, 28)));
+                    var bounds = Pixels(slot);
+                    Assert.That(bounds.xMin, Is.GreaterThanOrEqualTo(ui.SafePixels.xMin));
+                    Assert.That(bounds.xMax, Is.LessThanOrEqualTo(ui.SafePixels.xMax));
+                    Assert.That(bounds.yMin, Is.GreaterThanOrEqualTo(ui.SafePixels.yMax - hud.ReservedTopPixels - .01f));
+                    Assert.That(slot.Find("Level badge").gameObject.activeSelf, Is.EqualTo(index < 9));
+                }
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/battle-ui-514/editor-run"));
+                Directory.CreateDirectory(output);
+                var path = Path.Combine(output, "hud-max13-level12-render-fixture-390x844.png");
+                if (File.Exists(path)) File.Delete(path);
+                yield return PlayModeCaptureGuard.WaitForShaders(path);
+                var probe = PlayModeCaptureGuard.Begin(path); ScreenCapture.CaptureScreenshot(path);
+                var deadline = Time.realtimeSinceStartup + 10;
+                while (!File.Exists(path) && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.That(File.Exists(path), Is.True, path); PlayModeCaptureGuard.CheckFile(path, probe);
+                Assert.That(Screen.width, Is.EqualTo(390)); Assert.That(Screen.height, Is.EqualTo(844));
+                Assert.That(app.Session.ComputeStateHash(), Is.EqualTo(stateHash), "Render-only frame copies must not modify the paused session.");
+                File.WriteAllText(path + ".txt", $"surface=actual Unity Editor render-only HUD fixture; normalPlayEvidence=false; physicalDevice=false; userAcceptance=false; fixture=5 canonical weapons+4 canonical tools at Lv12+4 canonical charters; source=paused actual wave run frame copied with view-only overrides; ids={string.Join(",", expectedIds)}; stateHashBefore={stateHash}; stateHashAfter={app.Session.ComputeStateHash()}; commit={BuildIdentity.Commit}; sourceHash={BuildIdentity.SourceHash}; sourceDirty={BuildIdentity.SourceDirty}; dataHash={CanonicalContent.DataHash}\n");
+            }
+            finally
+            {
+                app.Ui.Canvas.enabled = originalCanvasEnabled;
+                Object.Destroy(owner);
+            }
+            yield return null;
+        }
+
         [UnityTest, Timeout(180000)]
         public IEnumerator ActualOffersCaptureWeaponFrameAndOwnedLevelArrow()
         {
