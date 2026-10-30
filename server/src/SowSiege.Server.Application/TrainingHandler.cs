@@ -12,11 +12,11 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
     public JsonElement InitialState => Encode(new TrainingState(content.Rules.Units.Select(u =>
         new TrainingTroops(u.UnitId, 0, 0, 0, 0)).ToArray(), null, null));
 
-    public JsonElement View(DomainContext context) => Result(context, Read(context.State), context.Account.State, true, "view").View;
+    public JsonElement View(DomainContext context) => Result(context, Read(context), context.Account.State, true, "view").View;
 
     public DomainResult Advance(DomainContext context)
     {
-        var state = Read(context.State);
+        var state = Read(context);
         var events = new List<DomainEvent>();
         while (state.Active is { } active && active.CompletesAtMilliseconds <= context.UtcMilliseconds)
         {
@@ -37,9 +37,9 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
 
     public DomainResult Execute(DomainContext context, string operation, JsonElement payload)
     {
-        var state = Read(context.State);
+        var state = Read(context);
         if (payload.ValueKind != JsonValueKind.Object || payload.EnumerateObject().Select(p => p.Name)
-            .Distinct(StringComparer.Ordinal).Count() != payload.EnumerateObject().Count())
+            .Distinct(StringComparer.OrdinalIgnoreCase).Count() != payload.EnumerateObject().Count())
         {
             return Result(context, state, context.Account.State, false, "invalid-payload");
         }
@@ -72,6 +72,11 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
         if ((long)Occupied(state) + request.Count > level.Capacity) { return Reject("capacity"); }
         var cost = unit.CostPerUnit.ToDictionary(c => c.Key, c => checked(c.Value * request.Count), StringComparer.Ordinal);
         if (cost.Any(c => context.Account.State.Wallet[c.Key] < c.Value)) { return Reject("insufficient-resources"); }
+        var reserve = AccountEstate.ProtectedReserve(estate.Config, context.Account.State);
+        if (reserve.Any(r => context.Account.State.Wallet[r.Key] - cost.GetValueOrDefault(r.Key) < r.Value))
+        {
+            return Reject("protected-reserve");
+        }
         Guid jobId = context.CommandId ?? throw new InvalidOperationException("Training requires a command identity.");
         if (jobId == Guid.Empty || state.Active?.JobId == jobId || state.Waiting?.JobId == jobId)
         {
@@ -142,9 +147,9 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
             ?? throw new InvalidDataException("Unknown completed barracks level.");
     }
 
-    private TrainingState Read(JsonElement json)
+    private TrainingState Read(DomainContext context)
     {
-        var state = json.Deserialize<TrainingState>(TrainingContent.Json) ?? throw new InvalidDataException("Missing training state.");
+        var state = context.State.Deserialize<TrainingState>(TrainingContent.Json) ?? throw new InvalidDataException("Missing training state.");
         var jobs = new[] { state.Active, state.Waiting }.OfType<TrainingJob>().ToArray();
         bool valid = state.Units.Select(u => u.UnitId).Order(StringComparer.Ordinal)
             .SequenceEqual(content.Rules.Units.Select(u => u.UnitId).Order(StringComparer.Ordinal)) &&
@@ -161,7 +166,10 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
                     Duration(state.Active.BaseDurationMilliseconds, state.Active.BonusPermille.Value, content.Rules.MaximumBonusPermille)))) &&
             (state.Waiting is null || (state.Waiting.StartedAtMilliseconds is null && state.Waiting.CompletesAtMilliseconds is null && state.Waiting.BonusPermille is null));
         if (!valid) { throw new InvalidDataException("Invalid training reservation or job state."); }
-        _ = Occupied(state);
+        if (Occupied(state) > Level(context.Account.State).Capacity)
+        {
+            throw new InvalidDataException("Stored troop occupancy exceeds the completed barracks capacity.");
+        }
         return state;
     }
 

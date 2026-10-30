@@ -158,6 +158,7 @@ public sealed class TrainingTests
     [InlineData("{\"unitId\":\"slg:levy\",\"count\":1,\"bonusPermille\":300}")]
     [InlineData("{\"unitId\":\"slg:levy\"}")]
     [InlineData("{\"unitId\":\"slg:levy\",\"count\":1,\"count\":2}")]
+    [InlineData("{\"unitId\":\"slg:levy\",\"count\":1,\"Count\":2}")]
     [InlineData("{\"unitId\":null,\"count\":1}")]
     [InlineData("[]")]
     [InlineData("null")]
@@ -186,6 +187,31 @@ public sealed class TrainingTests
         var invalid = context.State.Deserialize<TrainingState>(TrainingContent.Json)!;
         invalid = invalid with { Units = invalid.Units.Select(u => u with { Reserved = 1 }).ToArray() };
         Assert.Throws<InvalidDataException>(() => Handler.Advance(context with { State = Json(invalid) }));
+    }
+
+    [Fact]
+    public void TroopOccupancyAboveCompletedCapacityFailsClosed()
+    {
+        var context = Initial(1);
+        var invalid = context.State.Deserialize<TrainingState>(TrainingContent.Json)!;
+        invalid = invalid with { Units = invalid.Units.Select(u => u.UnitId == "slg:levy" ? u with { Ready = 61 } : u).ToArray() };
+        Assert.Throws<InvalidDataException>(() => Handler.Advance(context with { State = Json(invalid) }));
+    }
+
+    [Fact]
+    public void TrainingDoesNotSpendTheExistingProtectedProductionReserve()
+    {
+        var context = Initial(1);
+        var reserve = AccountEstate.ProtectedReserve(estate.Config, context.Account.State);
+        Assert.NotEmpty(reserve);
+        var wallet = new Dictionary<string, int>(context.Account.State.Wallet);
+        foreach (var material in reserve) { wallet[material.Key] = material.Value; }
+        context = context with { Account = context.Account with { State = context.Account.State with { Wallet = wallet } } };
+        var result = Handler.Execute(context, "start", Json(new TrainingStart("slg:levy", 1)));
+        Assert.False(result.Done);
+        Assert.Equal("protected-reserve", result.Reason);
+        Assert.Equal(wallet, result.AccountState.Wallet);
+        Assert.Equal(context.State.GetRawText(), result.State.GetRawText());
     }
 
     [Fact]
