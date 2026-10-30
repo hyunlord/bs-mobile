@@ -1,8 +1,54 @@
-# r8 구역 지형 #496 — 반복 실패 중단 (2026-10-30)
+# r8 구역 지형 #496 — 승인 정적 배치 적용 검토 (2026-10-30)
+
+관문: 부분 / STOP — 승인 #574의 2,055개 배치를 실제 렌더하고 전체·절반 복원 12장 캡처를 확보했다. 집중 흐름 2/3 통과, 저장 영지 흐름은 UI 하네스 재실패로 중단했다. 추가 Unity·렌더 변경 없이 보고만 진행한다. 게임 화면의 사용자 승인과 병합은 대기한다.
+
+- 실제 캡처 소스: `0784b5ba`, 2026-10-30 16:28 KST. 전체 개방은 건물 전체 완공을 뜻하지 않는다. 정상 명령으로 다섯 건물을 완공한 고정 fixture이며 일부 Lv0 부지와 개발 UI가 보인다.
+- 전체·절반 각 3장면 × 75/50 = 12장, 청록 픽셀 합계 0. r4 grass 원본은 변경하지 않았다. Review-only 건물을 중복 렌더하지 않는다.
+- [카메라·재질 구간 정본 CSV](estate-approved-layout-574-captures.csv). 실제 drawCalls는 batchmode recorder가 0을 반환하여 **UNKNOWN**이다. 요청한 실제 전후 호출 수 관문은 미충족이다. 구조 material runs 및 SetPass는 대체 증거로 합치지 않는다.
+- 새 atlas 예상 증가량 Mac RGBA32 **21.66MiB**, iOS/Android ASTC4 각각 **5.41MiB**. 이전 atlas를 삭제하지 않아 번들에서 차감하지 않는다. 실제 런타임·모바일 allocation은 미측정이다.
+
+| 카메라 | 승인 고정 미리보기 scale | 실제 scale | 화면 계약 |
+|---|---:|---:|---|
+| 건물 75px | 0.7598784194528875 | 0.7092199 | 390×844, topInset94/bottomInset116 |
+| 건물 50px | 0.5065856129685917 | 0.4728132 | 같은 UI 영역 제외 |
+
+좌표는 전체 복원에서 마을(28,29), 강(45,34), 숲(21,16) 모두 요청값과 같다. 절반 복원의 강만 열린 땅 경계로 (41.5,34)에 clamp된다. 픽셀 고정 마스크를 다른 카메라에 그대로 씌우거나 보정값을 빼지 않고, 승인 배치·물 마스크를 실제 affine에 재투영해 비교한다.
+
+### 승인 화면과 같은 카메라의 지형 점유율
+
+[12장 정본 CSV](estate-approved-layout-574-density.csv). 상하 UI 제외, 승인 native visual-water(alpha128) 제외, 실제 emitted quad ↔ mesh 매핑 일치, bilinear alpha32 기준이다. 화면 내부 개발 버튼 가림은 포함하지 않은 **terrain-mesh occupancy**이며 완성 UI 판독성·사용자 승인을 대신하지 않는다. 승인 reference는10채 완성, 실제 fixture는5채 완성+Lv0+일꾼이므로 객체 수가 같을 필요는 없다. CSV prop count는 모든 실제 가시 항목 집계이고 과거 가설의 zone-prop10–18과 같은 분류가 아니다.
+
+| 전체 복원 75px | 원 승인 CG 고정 camera | 실제 camera 재투영 reference | 실제 game | game 최대 연결 공백 |
+|---|---:|---:|---:|---:|
+| 마을 | 25.04% | 24.26% | 23.40% | 3.75% |
+| 강 | 35.01% | 37.05% | 37.13% | 12.89% |
+| 숲 | 22.72% | 22.13% | 21.86% | 9.33% |
+
+12장 모두 측정 가능하며 빈 땅21.86–37.46%(≤40), 최대 연결 공백3.75–17.07%(≤20)다. 이 지형 수치 관문은 충족하지만 전체 테스트/실제 drawCalls/사용자 화면 판정은 미완료라 PR 관문은 부분·STOP이다. 승인 고정 CG와 Node bilinear의 원본 측정 차이도 보존하며 임의 상수 차감은 하지 않았다. affine 최대잔차0.000105px 이하, source0784b5ba, actual07:28:21–25Z.
+
+재생성 도구 정본은 `tools/measure-estate-render-density.mjs`이며 카메라 재투영 helper와 승인 native-water 출처는 로컬 `artifacts/day-20261030/strict-reference/aligned-comparison.mjs`, `reference-method-readonly.swift:18–19`에 보존한다. base ground plane만 점유율에서 제외하고, 실제 ground-decal은 가림에 포함한다.
+
+### 실행 결과와 남은 검증
+
+| source | 검증 | 결과 |
+|---|---|---|
+| `e37b3b55` | first-playable Edit / Play | 942/0/25, 55/0/54 (pass/fail/skip) |
+| `e37b3b55` | wave Edit / Play | 952/0/15, 93/3/13 |
+| `0784b5ba` | saved-flow + full/half 집중 PlayMode | 2 pass / 1 fail / 0 skip |
+| 최종 source 전체 기록 | 전체 두 프로필 | 미완료; 앞선 전체 기록을 최종 통과로 쓰지 않음 |
+| 환경 의존 입력 2건 | combat fixture sidecar / melee catalog | 보충 실행 NOT_RUN, 예외 목록 추가 없음 |
+
+집중 검사의 full/half는 정확히 두 활성 plane·Night 아래·raycast false 및 실제 정상 개방을 통과했다. saved-flow는 전문화 시트가 열린 상태에서 숨겨진 Overview 버튼을 검색해 실패했다. 동일 흐름 재실패에 따라 수정·Unity를 멈췄다. 다음 제안은 시트를 실제 닫은 뒤 Overview를 누르는 하네스 확인이며 이번에는 구현하지 않는다. `approved-flow-probe/result.xml`과 앞선 두 실패 디렉터리는 보존한다.
+
+`git diff origin/main -- core data/opt-in/account-estate`는 비어 있다. data 변경은 #574 opt-in estate JSON·README·schema뿐이다. 실제 e37 전체 Edit 결과에서 .NET↔Mono first-playable 재생 5seed, wave 재생 5seed, 메타 재생 5seed, 역사 r5 저장 및 view 저장 바이트 유지 검사가 통과했다. 생성 정본 DataHash는 `6AC1ACFC4B2E80DD510EE0A41D0039BC05932A5FEF1776CC1B2A4BF2E928C36D`다. crowd-411 최종 재생은 이번 재시도에서 별도 실행하지 않았으므로 결과를 주장하지 않는다.
+
+---
+
+## 보존된 자동 밀도 생성 실패 (2026-10-30)
 
 관문: 실패 — 보정 후 12/12 화면의 빈 땅 69.57–76.60%(목표 ≤40%), 연속 빈 땅 34.19–62.39%(목표 ≤20%). 같은 밀도 관문 두 번 실패하여 추가 구현·Unity 실행을 중단한다. PR은 초안, 사용자 승인 전 병합 금지.
 
-검사 대상: `ad05935d0b32333c61759845602cc0ebf2dcea33`. 아래 과거 기록의 NOT_RUN은 당시 상태이며 이 절이 현재 판정이다. 원판정·실패 로그·PNG는 삭제하거나 덮어쓰지 않았다.
+검사 대상: `ad05935d0b32333c61759845602cc0ebf2dcea33`. 아래 과거 기록의 NOT_RUN은 당시 상태이며 이 절은 자동 밀도 방식의 원판정이다. 원판정·실패 로그·PNG는 삭제하거나 덮어쓰지 않았다.
 
 ## 화면과 수치
 
