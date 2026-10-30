@@ -1,0 +1,1068 @@
+{
+  "id": "slg:content_draft_v1",
+  "kind": "slg-content-draft",
+  "schemaVersion": 1,
+  "status": "hypothesis",
+  "numericStatus": "[가설]",
+  "runtimeEnabled": false,
+  "sources": [
+    "docs/design/gdd/15-slg-troops-proposal.md",
+    "docs/design/gdd/16-slg-heroes-proposal.md",
+    "docs/design/gdd/17-slg-research-proposal.md",
+    "docs/design/gdd/18-slg-world-map-proposal.md",
+    "https://github.com/hyunlord/bs-mobile/issues/571"
+  ],
+  "units": {
+    "percent": "percentage points: 5 means +5%, not 5x or 0.05%",
+    "seconds": "server/simulation seconds; not client wall clock",
+    "meters": "proposed battle-local metres; not world tiles or estate cells",
+    "resources": "integer grain/timber/iron units",
+    "counts": "integer persons, targets or repetitions",
+    "combat": "maxHealth and attackDamage are battle-local health/damage points; moveMetersPerSecond is metres per second; attackIntervalSeconds is seconds between attacks"
+  },
+  "sharedCaps": {
+    "run.heroDamagePercent": 10,
+    "run.heroMaxHealthPercent": 15,
+    "run.heroMovementPercent": 5,
+    "run.growthPercent": 10,
+    "run.allyDamagePercent": 15,
+    "run.allyMaxHealthPercent": 15,
+    "run.experiencePercent": 8,
+    "training.speedPercent": 30,
+    "construction.speedPercent": 30,
+    "march.speedPercent": 10,
+    "estate.grainProductionPercent": 20,
+    "estate.timberProductionPercent": 20,
+    "estate.ironProductionPercent": 20,
+    "estate.storageSeconds": 18000
+  },
+  "contracts": {
+    "implementationStatus": "draft-only-not-loaded-by-runtime",
+    "numericScope": "All gameplay numbers including inherited GDD values and new combat coefficients are [가설]; schemaVersion and identifiers are format metadata.",
+    "aggregation": "For percent domains, validate existing vassal individual caps, sum eligible vassal + hero growth + passive + active skill + research values, then clamp once; preserve historical absent-block paths. Speed duration=ceil(baseSeconds/(1+cappedBonusPercent/100)), not baseSeconds*(1-bonus). Storage finalSeconds=min(18000,max(mapBaseOrBranchStorageSeconds,legacyEffectELowerBoundSeconds)+researchStorageSeconds); storage cap includes base time, not only research bonuses.",
+    "effectTiming": "run/march effects snapshot at dispatch; job-speed effects snapshot at job start; one hero cannot occupy multiple active marches/runs",
+    "skillActivation": "automatic; no new combat button; starts on cooldown; radiusMeters is measured from the controlled hero for trigger detection and recipient selection. maxTargets limits effect recipients, not detected enemies/objectives: controlled-hero effects target self only (1); standing-allies-in-radius selects up to maxTargets standing allies. Select nearest eligible recipients with stable entityId tie-break at activation; recipient must remain in radius for the radius-bound effect, no mid-duration replacement. One instance per skill, no stacking; duration expires without permanent stat mutation.",
+    "heroParity": "All three level1/promotion0 baseCombat budgets are equal. Rarity never raises base coefficients or cap. This file does not define higher-level progression.",
+    "researchScope": "Only level1 values included; no research-speed node, extra queue, troop-capacity increase or retroactive production. Legacy Research E and completed-node ledgers remain separate.",
+    "troopConservation": "O=sum(R+D+W+Q)<=C; S=N-K; A=min(floor(K*injuryPercent/100),availableBeds); L=K-A; N=S+A+L; temporary summons never enter standing roster",
+    "barracksLevels": [
+      {
+        "level": 0,
+        "totalCapacity": 0,
+        "marchCapacity": 0,
+        "beds": 0,
+        "batchCapacity": 0
+      },
+      {
+        "level": 1,
+        "totalCapacity": 60,
+        "marchCapacity": 20,
+        "beds": 20,
+        "batchCapacity": 10
+      },
+      {
+        "level": 2,
+        "totalCapacity": 120,
+        "marchCapacity": 40,
+        "beds": 40,
+        "batchCapacity": 20
+      },
+      {
+        "level": 3,
+        "totalCapacity": 200,
+        "marchCapacity": 60,
+        "beds": 80,
+        "batchCapacity": 20
+      }
+    ],
+    "injuryPercent": {
+      "pve": 80,
+      "pvp": 60
+    },
+    "queues": {
+      "activeTraining": 1,
+      "waitingTraining": 1,
+      "activeHealing": 1,
+      "activeResearch": 1,
+      "waitingResearch": 1
+    },
+    "materialReward": {
+      "carryPerDepartingSoldier": 10,
+      "carryPerSurvivingSoldier": 10,
+      "resourceOrder": [
+        "grain",
+        "timber",
+        "iron"
+      ],
+      "preDispatchRule": "candidateTotal<=N*10",
+      "victoryRule": "acquiredTotal=min(candidateTotal,S*10); S=0 gives0; unacquired excess is never mailed",
+      "returnRule": "acquired cargo goes to wallet or bounded returnId pending-cargo once; pending cargo blocks new resource-acquiring departures"
+    },
+    "settlement": {
+      "authority": "server-validated-result-only",
+      "battleCommit": "target state, N/K, eligibility/proof and reward entitlement commit once together; army remains D; runId settlement receipt rejects duplicate completion and stale target generations",
+      "returnCommit": "S/A/L, acquired cargo and hero/march unlock commit once; no repeated world/proof grants",
+      "eligibility": "Only the run-contracted account/zone; one-time eligibility does not bypass r8 adjacency, building requirements or cost; no automatic zone opening; research proof grants require the corresponding objective description, not unrelated kills",
+      "worldState": "Shared targetId/generation changes only after verified PvE; no alliance territory/passive income; PvP never grants personal zone/research proof"
+    },
+    "personalFallback": {
+      "heroId": "core:frontier_knight",
+      "minimumTroops": 0,
+      "requiresResearch": false,
+      "requiresCollectedHero": false,
+      "entryCost": {
+        "grain": 0,
+        "timber": 0,
+        "iron": 0
+      },
+      "materialRewardCap": 60,
+      "pendingMaterialCap": 60,
+      "proofIds": [
+        "slg:proof-field-boundary",
+        "slg:proof-wood-worksite",
+        "slg:proof-hill-ore-route",
+        "slg:proof-outpost-defense",
+        "slg:proof-formation-defense",
+        "slg:proof-marker-survival",
+        "slg:proof-basic-clearing",
+        "slg:proof-ruin-records",
+        "slg:proof-riverside-passage",
+        "slg:proof-hero-field-drill"
+      ],
+      "rule": "Actual server-validated personal mission with corresponding objective; no shared target change, no instant reward claim. Before run start, reserve remaining pendingMaterialCap capacity and limit material candidates to that reservation and materialRewardCap. If pending capacity is full, material reward is 0 but eligibility remains attainable. Select required resource before run; explicit discard can clear unwanted pending materials. Free entry does not clone the basic knight: if already locked in a march/run, wait for server-confirmed return/unlock; no research, troop, resource or collected-hero requirement is added."
+    },
+    "validationStatus": {
+      "schema": "PENDING",
+      "balance": "NOT_RUN",
+      "server": "NOT_RUN",
+      "unity": "NOT_RUN",
+      "device": "NOT_RUN"
+    }
+  },
+  "troops": [
+    {
+      "id": "slg:levy",
+      "name": "징집 창병",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/15-slg-troops-proposal.md"
+      ],
+      "role": "저비용 기본 전열; 채집 운반량은 전 병종 동일",
+      "artReference": "기존 창·새싹 방패 계열 실루엣 참조만; 새 atlas 등록 아님",
+      "training": {
+        "buildingId": "meta:barracks",
+        "minimumLevel": 1,
+        "cost": {
+          "grain": 8,
+          "timber": 3,
+          "iron": 0
+        },
+        "secondsPerUnit": 20
+      },
+      "healing": {
+        "buildingId": "meta:barracks",
+        "cost": {
+          "grain": 3,
+          "timber": 1,
+          "iron": 0
+        },
+        "secondsPerUnit": 10
+      },
+      "combat": {
+        "maxHealth": 60,
+        "attackDamage": 10,
+        "attackIntervalSeconds": 1.5,
+        "rangeMeters": 1.5,
+        "moveMetersPerSecond": 2.5
+      },
+      "carryUnitsPerSoldier": 10
+    },
+    {
+      "id": "slg:guard",
+      "name": "방패 수비병",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/15-slg-troops-proposal.md"
+      ],
+      "role": "느린 새싹 방패 전열; 높은 체력과 짧은 사거리",
+      "artReference": "기존 창·새싹 방패 계열 실루엣 참조만; 새 atlas 등록 아님",
+      "training": {
+        "buildingId": "meta:barracks",
+        "minimumLevel": 2,
+        "cost": {
+          "grain": 12,
+          "timber": 3,
+          "iron": 4
+        },
+        "secondsPerUnit": 40
+      },
+      "healing": {
+        "buildingId": "meta:barracks",
+        "cost": {
+          "grain": 5,
+          "timber": 0,
+          "iron": 1
+        },
+        "secondsPerUnit": 20
+      },
+      "combat": {
+        "maxHealth": 100,
+        "attackDamage": 8,
+        "attackIntervalSeconds": 1.6,
+        "rangeMeters": 1.2,
+        "moveMetersPerSecond": 2
+      },
+      "carryUnitsPerSoldier": 10
+    },
+    {
+      "id": "slg:skirmish_spear",
+      "name": "척후 창병",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/15-slg-troops-proposal.md"
+      ],
+      "role": "가벼운 창을 든 이동 전열; 낮은 체력과 긴 근접 사거리, 기병·원거리 아님",
+      "artReference": "기존 창·새싹 방패 계열 실루엣 참조만; 새 atlas 등록 아님",
+      "training": {
+        "buildingId": "meta:barracks",
+        "minimumLevel": 2,
+        "cost": {
+          "grain": 10,
+          "timber": 5,
+          "iron": 2
+        },
+        "secondsPerUnit": 30
+      },
+      "healing": {
+        "buildingId": "meta:barracks",
+        "cost": {
+          "grain": 4,
+          "timber": 1,
+          "iron": 1
+        },
+        "secondsPerUnit": 15
+      },
+      "combat": {
+        "maxHealth": 50,
+        "attackDamage": 9,
+        "attackIntervalSeconds": 1.4,
+        "rangeMeters": 2,
+        "moveMetersPerSecond": 3
+      },
+      "carryUnitsPerSoldier": 10
+    }
+  ],
+  "heroes": [
+    {
+      "id": "slg:field_guide",
+      "name": "농로 길잡이",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/16-slg-heroes-proposal.md"
+      ],
+      "rarity": "common",
+      "level": 1,
+      "promotion": 0,
+      "baseCombat": {
+        "maxHealth": 100,
+        "attackDamage": 10,
+        "attackIntervalSeconds": 1,
+        "rangeMeters": 1.5,
+        "moveMetersPerSecond": 3
+      },
+      "passive": {
+        "id": "slg:field_guide_passive",
+        "name": "농로 읽기",
+        "effect": {
+          "domain": "run.heroMovementPercent",
+          "value": 2,
+          "unit": "percent",
+          "scope": "controlled-hero"
+        }
+      },
+      "skill": {
+        "id": "slg:field_guide_skill",
+        "name": "농로 표식",
+        "trigger": "auto-when-objective-within-radius-and-cooldown-ready",
+        "cooldownSeconds": 12,
+        "durationSeconds": 3,
+        "radiusMeters": 2,
+        "maxTargets": 1,
+        "effect": {
+          "domain": "run.heroMovementPercent",
+          "value": 3,
+          "unit": "percent",
+          "scope": "controlled-hero"
+        },
+        "budgetNote": "자동 발동하는 한시 보너스 초안. 동일 domain의 가신·성장·연구·passive·skill을 합산해 sharedCaps로 한 번 clamp하며 재발동은 중첩하지 않는다. 새 직접 피해·치료·군대 생성 없음. 모든 후보 영웅의 합산 기여는 동일 입력 실험 전 미검증."
+      },
+      "relatedEncounterIds": [
+        "slg:encounter_field_mites"
+      ]
+    },
+    {
+      "id": "slg:river_warden",
+      "name": "강가 수호자",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/16-slg-heroes-proposal.md"
+      ],
+      "rarity": "rare",
+      "level": 1,
+      "promotion": 0,
+      "baseCombat": {
+        "maxHealth": 100,
+        "attackDamage": 10,
+        "attackIntervalSeconds": 1,
+        "rangeMeters": 1.5,
+        "moveMetersPerSecond": 3
+      },
+      "passive": {
+        "id": "slg:river_warden_passive",
+        "name": "나루의 전열",
+        "effect": {
+          "domain": "run.allyMaxHealthPercent",
+          "value": 3,
+          "unit": "percent",
+          "scope": "standing-allies-only"
+        }
+      },
+      "skill": {
+        "id": "slg:river_warden_skill",
+        "name": "길목 호위",
+        "trigger": "auto-when-enemy-within-radius-and-cooldown-ready",
+        "cooldownSeconds": 16,
+        "durationSeconds": 4,
+        "radiusMeters": 3,
+        "maxTargets": 5,
+        "effect": {
+          "domain": "run.allyDamagePercent",
+          "value": 4,
+          "unit": "percent",
+          "scope": "standing-allies-in-radius"
+        },
+        "budgetNote": "자동 발동하는 한시 보너스 초안. 동일 domain의 가신·성장·연구·passive·skill을 합산해 sharedCaps로 한 번 clamp하며 재발동은 중첩하지 않는다. 새 직접 피해·치료·군대 생성 없음. 모든 후보 영웅의 합산 기여는 동일 입력 실험 전 미검증."
+      },
+      "relatedEncounterIds": [
+        "slg:encounter_riverside_watch"
+      ]
+    },
+    {
+      "id": "slg:ruin_seeker",
+      "name": "폐허 탐구자",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/16-slg-heroes-proposal.md"
+      ],
+      "rarity": "epic",
+      "level": 1,
+      "promotion": 0,
+      "baseCombat": {
+        "maxHealth": 100,
+        "attackDamage": 10,
+        "attackIntervalSeconds": 1,
+        "rangeMeters": 1.5,
+        "moveMetersPerSecond": 3
+      },
+      "passive": {
+        "id": "slg:ruin_seeker_passive",
+        "name": "오래된 흔적",
+        "effect": {
+          "domain": "run.growthPercent",
+          "value": 3,
+          "unit": "percent",
+          "scope": "controlled-hero-growth-actions"
+        }
+      },
+      "skill": {
+        "id": "slg:ruin_seeker_skill",
+        "name": "복원 표식",
+        "trigger": "auto-when-objective-within-radius-and-cooldown-ready",
+        "cooldownSeconds": 20,
+        "durationSeconds": 5,
+        "radiusMeters": 2.5,
+        "maxTargets": 1,
+        "effect": {
+          "domain": "run.growthPercent",
+          "value": 5,
+          "unit": "percent",
+          "scope": "controlled-hero-growth-actions"
+        },
+        "budgetNote": "자동 발동하는 한시 보너스 초안. 동일 domain의 가신·성장·연구·passive·skill을 합산해 sharedCaps로 한 번 clamp하며 재발동은 중첩하지 않는다. 새 직접 피해·치료·군대 생성 없음. 모든 후보 영웅의 합산 기여는 동일 입력 실험 전 미검증."
+      },
+      "relatedEncounterIds": [
+        "slg:encounter_ruin_marker"
+      ]
+    }
+  ],
+  "researchNodes": [
+    {
+      "id": "slg:research-field-yield",
+      "name": "밭 순환",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "economy",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "m3a:field",
+            "level": 1
+          }
+        ],
+        "nodes": [],
+        "proofId": "slg:proof-field-boundary"
+      },
+      "cost": {
+        "grain": 60,
+        "timber": 40,
+        "iron": 0
+      },
+      "seconds": 120,
+      "effect": {
+        "domain": "estate.grainProductionPercent",
+        "value": 5,
+        "unit": "percent",
+        "scope": "estate-map-only"
+      }
+    },
+    {
+      "id": "slg:research-wood-yield",
+      "name": "목재 선별",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "economy",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "m3a:lumber_camp",
+            "level": 1
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-field-yield",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-wood-worksite"
+      },
+      "cost": {
+        "grain": 80,
+        "timber": 50,
+        "iron": 10
+      },
+      "seconds": 180,
+      "effect": {
+        "domain": "estate.timberProductionPercent",
+        "value": 5,
+        "unit": "percent",
+        "scope": "estate-map-only"
+      }
+    },
+    {
+      "id": "slg:research-iron-yield",
+      "name": "광석 분류",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "economy",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "m3a:ironworks",
+            "level": 1
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-wood-yield",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-hill-ore-route"
+      },
+      "cost": {
+        "grain": 100,
+        "timber": 60,
+        "iron": 20
+      },
+      "seconds": 240,
+      "effect": {
+        "domain": "estate.ironProductionPercent",
+        "value": 3,
+        "unit": "percent",
+        "scope": "estate-map-only"
+      }
+    },
+    {
+      "id": "slg:research-training",
+      "name": "훈련 교범",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "military",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "meta:barracks",
+            "level": 1
+          }
+        ],
+        "nodes": [],
+        "proofId": "slg:proof-outpost-defense"
+      },
+      "cost": {
+        "grain": 80,
+        "timber": 40,
+        "iron": 10
+      },
+      "seconds": 150,
+      "effect": {
+        "domain": "training.speedPercent",
+        "value": 5,
+        "unit": "percent",
+        "scope": "new-training-jobs"
+      }
+    },
+    {
+      "id": "slg:research-formation",
+      "name": "전열 협동",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "military",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "meta:barracks",
+            "level": 2
+          },
+          {
+            "id": "meta:forge",
+            "level": 1
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-training",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-formation-defense"
+      },
+      "cost": {
+        "grain": 100,
+        "timber": 60,
+        "iron": 25
+      },
+      "seconds": 240,
+      "effect": {
+        "domain": "run.allyDamagePercent",
+        "value": 2,
+        "unit": "percent",
+        "scope": "standing-allies-only"
+      }
+    },
+    {
+      "id": "slg:research-cover",
+      "name": "엄호 교범",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "military",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "meta:barracks",
+            "level": 2
+          },
+          {
+            "id": "meta:forge",
+            "level": 2
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-formation",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-marker-survival"
+      },
+      "cost": {
+        "grain": 120,
+        "timber": 80,
+        "iron": 40
+      },
+      "seconds": 300,
+      "effect": {
+        "domain": "run.allyMaxHealthPercent",
+        "value": 2,
+        "unit": "percent",
+        "scope": "standing-allies-only"
+      }
+    },
+    {
+      "id": "slg:research-building",
+      "name": "공사 도면",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "estate",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "m3a:home",
+            "level": 1
+          }
+        ],
+        "nodes": [],
+        "proofId": "slg:proof-basic-clearing"
+      },
+      "cost": {
+        "grain": 50,
+        "timber": 60,
+        "iron": 0
+      },
+      "seconds": 120,
+      "effect": {
+        "domain": "construction.speedPercent",
+        "value": 5,
+        "unit": "percent",
+        "scope": "new-construction-jobs"
+      }
+    },
+    {
+      "id": "slg:research-storage",
+      "name": "보관 기록",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "estate",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "meta:granary",
+            "level": 1
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-building",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-ruin-records"
+      },
+      "cost": {
+        "grain": 80,
+        "timber": 80,
+        "iron": 15
+      },
+      "seconds": 210,
+      "effect": {
+        "domain": "estate.storageSeconds",
+        "value": 600,
+        "unit": "seconds",
+        "scope": "estate-production-storage"
+      }
+    },
+    {
+      "id": "slg:research-road-survey",
+      "name": "행군 측량",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "gdd-baseline",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "estate",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "m3a:watchtower",
+            "level": 2
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-storage",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-riverside-passage"
+      },
+      "cost": {
+        "grain": 100,
+        "timber": 100,
+        "iron": 30
+      },
+      "seconds": 300,
+      "effect": {
+        "domain": "march.speedPercent",
+        "value": 2,
+        "unit": "percent",
+        "scope": "new-round-trip-march-snapshot"
+      }
+    },
+    {
+      "id": "slg:research-hero-drill",
+      "name": "영주 교련",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/17-slg-research-proposal.md"
+      ],
+      "category": "military",
+      "level": 1,
+      "prerequisites": {
+        "buildings": [
+          {
+            "id": "meta:scriptorium",
+            "level": 1
+          },
+          {
+            "id": "meta:barracks",
+            "level": 1
+          },
+          {
+            "id": "meta:forge",
+            "level": 1
+          }
+        ],
+        "nodes": [
+          {
+            "id": "slg:research-training",
+            "level": 1
+          }
+        ],
+        "proofId": "slg:proof-hero-field-drill"
+      },
+      "cost": {
+        "grain": 90,
+        "timber": 50,
+        "iron": 20
+      },
+      "seconds": 180,
+      "effect": {
+        "domain": "run.heroDamagePercent",
+        "value": 2,
+        "unit": "percent",
+        "scope": "controlled-hero"
+      }
+    }
+  ],
+  "worldEncounters": [
+    {
+      "id": "slg:encounter_field_mites",
+      "name": "밭 경계의 씨앗 진드기",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/18-slg-world-map-proposal.md"
+      ],
+      "category": "monster",
+      "enemyReferences": [
+        "core:seed_mite",
+        "core:crop_grazer"
+      ],
+      "enemyReferenceUse": "design-and-visual-reference-only; no existing enemy stats changed",
+      "minimumTroops": 5,
+      "recommendedTroops": 10,
+      "timeLimitSeconds": 120,
+      "objective": {
+        "type": "defeat-and-hold",
+        "count": 12,
+        "holdSeconds": 30,
+        "description": "지정 밭 경계 표식을 지키며 씨앗 진드기 무리를 격퇴한다. 해당 run 계약의 밭 경계 및 초소 방어 실증만 인정한다."
+      },
+      "materialReward": {
+        "grain": 40,
+        "timber": 10,
+        "iron": 0
+      },
+      "outcomes": {
+        "zoneEligibilityId": "zone:inner-fields",
+        "researchProofIds": [
+          "slg:proof-field-boundary",
+          "slg:proof-outpost-defense"
+        ],
+        "worldState": "defeated-resource-threat-removed"
+      },
+      "requiredHeroId": null,
+      "entryCost": {
+        "grain": 0,
+        "timber": 0,
+        "iron": 0
+      },
+      "respawnSeconds": 600,
+      "repeatPolicy": "one settlement per runId and targetId/generation; fresh generations can repeat finite materials, never duplicate account/zone eligibility or research proof"
+    },
+    {
+      "id": "slg:encounter_wood_wasps",
+      "name": "숲 작업대의 발효 말벌",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/18-slg-world-map-proposal.md"
+      ],
+      "category": "monster",
+      "enemyReferences": [
+        "core:wine_wasp"
+      ],
+      "enemyReferenceUse": "design-and-visual-reference-only; no existing enemy stats changed",
+      "minimumTroops": 6,
+      "recommendedTroops": 12,
+      "timeLimitSeconds": 150,
+      "objective": {
+        "type": "defeat-and-hold",
+        "count": 10,
+        "holdSeconds": 40,
+        "description": "벌목 작업대를 구출하고 주변 전열을 유지하며 말벌 무리를 격퇴한다. 해당 작업대 구출·전열 방어 실증만 인정한다."
+      },
+      "materialReward": {
+        "grain": 20,
+        "timber": 40,
+        "iron": 0
+      },
+      "outcomes": {
+        "zoneEligibilityId": "zone:inner-northeast-wood",
+        "researchProofIds": [
+          "slg:proof-wood-worksite",
+          "slg:proof-formation-defense"
+        ],
+        "worldState": "defeated-resource-threat-removed"
+      },
+      "requiredHeroId": null,
+      "entryCost": {
+        "grain": 0,
+        "timber": 0,
+        "iron": 0
+      },
+      "respawnSeconds": 600,
+      "repeatPolicy": "one settlement per runId and targetId/generation; fresh generations can repeat finite materials, never duplicate account/zone eligibility or research proof"
+    },
+    {
+      "id": "slg:encounter_hill_rubble",
+      "name": "광석길의 잔해 골렘",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/18-slg-world-map-proposal.md"
+      ],
+      "category": "monster",
+      "enemyReferences": [
+        "core:rubble_golem"
+      ],
+      "enemyReferenceUse": "design-and-visual-reference-only; no existing enemy stats changed",
+      "minimumTroops": 8,
+      "recommendedTroops": 16,
+      "timeLimitSeconds": 180,
+      "objective": {
+        "type": "defeat-and-hold",
+        "count": 6,
+        "holdSeconds": 40,
+        "description": "광석 운반 길목을 확보하고 영주가 잔해 골렘을 격퇴한다. 광석길 확보·영주 교련 실증을 기록한다."
+      },
+      "materialReward": {
+        "grain": 10,
+        "timber": 20,
+        "iron": 50
+      },
+      "outcomes": {
+        "zoneEligibilityId": "zone:inner-west-hill",
+        "researchProofIds": [
+          "slg:proof-hill-ore-route",
+          "slg:proof-hero-field-drill"
+        ],
+        "worldState": "defeated-resource-threat-removed"
+      },
+      "requiredHeroId": null,
+      "entryCost": {
+        "grain": 0,
+        "timber": 0,
+        "iron": 0
+      },
+      "respawnSeconds": 600,
+      "repeatPolicy": "one settlement per runId and targetId/generation; fresh generations can repeat finite materials, never duplicate account/zone eligibility or research proof"
+    },
+    {
+      "id": "slg:encounter_ruin_marker",
+      "name": "폐허 기록 표식",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/18-slg-world-map-proposal.md"
+      ],
+      "category": "stronghold",
+      "enemyReferences": [
+        "core:rubble_golem",
+        "core:shield_raider"
+      ],
+      "enemyReferenceUse": "design-and-visual-reference-only; no existing enemy stats changed",
+      "minimumTroops": 10,
+      "recommendedTroops": 20,
+      "timeLimitSeconds": 210,
+      "objective": {
+        "type": "defeat-and-hold",
+        "count": 12,
+        "holdSeconds": 60,
+        "description": "폐허 기록 표식을 방어하며 잔해를 걷고 기록을 회수한다. 표식 생존과 기록 회수를 모두 달성해야 지정 실증을 부여한다."
+      },
+      "materialReward": {
+        "grain": 20,
+        "timber": 40,
+        "iron": 40
+      },
+      "outcomes": {
+        "zoneEligibilityId": "zone:inner-ruins",
+        "researchProofIds": [
+          "slg:proof-marker-survival",
+          "slg:proof-ruin-records"
+        ],
+        "worldState": "recovered"
+      },
+      "requiredHeroId": null,
+      "entryCost": {
+        "grain": 0,
+        "timber": 0,
+        "iron": 0
+      },
+      "respawnSeconds": 1800,
+      "repeatPolicy": "one settlement per runId and targetId/generation; fresh generations can repeat finite materials, never duplicate account/zone eligibility or research proof"
+    },
+    {
+      "id": "slg:encounter_riverside_watch",
+      "name": "강가 통로 초소",
+      "status": "hypothesis",
+      "numericStatus": "[가설]",
+      "proposalOrigin": "new-draft",
+      "sources": [
+        "docs/design/gdd/18-slg-world-map-proposal.md"
+      ],
+      "category": "stronghold",
+      "enemyReferences": [
+        "core:shield_raider",
+        "core:crop_grazer"
+      ],
+      "enemyReferenceUse": "design-and-visual-reference-only; no existing enemy stats changed",
+      "minimumTroops": 10,
+      "recommendedTroops": 20,
+      "timeLimitSeconds": 180,
+      "objective": {
+        "type": "defeat-and-hold",
+        "count": 12,
+        "holdSeconds": 45,
+        "description": "강가 초소 적을 격퇴하고 통로 표식을 유지한다. 지정 통로가 회복되어야 강가 통과 실증을 부여한다."
+      },
+      "materialReward": {
+        "grain": 30,
+        "timber": 50,
+        "iron": 20
+      },
+      "outcomes": {
+        "zoneEligibilityId": "zone:inner-riverside",
+        "researchProofIds": [
+          "slg:proof-riverside-passage"
+        ],
+        "worldState": "recovered"
+      },
+      "requiredHeroId": null,
+      "entryCost": {
+        "grain": 0,
+        "timber": 0,
+        "iron": 0
+      },
+      "respawnSeconds": 1800,
+      "repeatPolicy": "one settlement per runId and targetId/generation; fresh generations can repeat finite materials, never duplicate account/zone eligibility or research proof"
+    }
+  ]
+}
