@@ -113,17 +113,24 @@ namespace Tests.PlayMode
             Assert.That(Texts(), Does.Contain("편성 " + capped.Snapshot.Roster.Count + " / " + capped.Snapshot.EffectiveSlots));
             yield return Capture("fixture-vassal-departure-capped", "frozen capped departure over list backdrop; not account flow");
 
-            foreach (var size in new[] { 2, 7 })
+            foreach (var size in new[] { 2, 0, 7 })
             {
                 app.Ui.Clear(); yield return null;
                 var content = FoundationBoot.Catalog;
-                var weapons = new[] { "core:iron_blade", "core:harvest_scythe" }
+                var weaponIds = new[] { "core:iron_blade", "core:harvest_scythe" }
                     .Concat(content.Weapons.Keys.OrderBy(id => id, StringComparer.Ordinal)).Where(content.Weapons.ContainsKey)
-                    .Distinct(StringComparer.Ordinal).Take(size).ToArray();
-                var tools = new[] { "core:seed_bag", "core:rain_ladle" }
+                    .Distinct(StringComparer.Ordinal).ToArray();
+                var toolIds = new[] { "core:seed_bag", "core:rain_ladle" }
                     .Concat(content.Tools.Keys.OrderBy(id => id, StringComparer.Ordinal)).Where(content.Tools.ContainsKey)
-                    .Distinct(StringComparer.Ordinal).Take(size).ToArray();
-                Assert.That(weapons.Length, Is.EqualTo(size)); Assert.That(tools.Length, Is.EqualTo(size));
+                    .Distinct(StringComparer.Ordinal).ToArray();
+                Assert.That(weaponIds.Length, Is.GreaterThanOrEqualTo(2));
+                Assert.That(toolIds.Length, Is.GreaterThanOrEqualTo(2));
+                // The approved 14-entry layout is a display stress case, not a legal catalog loadout.
+                // Repeated hidden entries exercise counters without creating fake content or changing Core limits.
+                var weapons = size == 0 ? weaponIds : Enumerable.Range(0, size).Select(i => weaponIds[i % weaponIds.Length]).ToArray();
+                var tools = size == 0 ? toolIds : Enumerable.Range(0, size).Select(i => toolIds[i % toolIds.Length]).ToArray();
+                Assert.That(weapons.Length, Is.EqualTo(size == 0 ? content.Weapons.Count : size));
+                Assert.That(tools.Length, Is.EqualTo(size == 0 ? content.Tools.Count : size));
                 var equipment = weapons.Concat(tools).Select(id => new EquipmentView(id, size == 2 ? 1 : 12)).ToArray();
                 var hud = new PortraitHud(app.Ui, content, () => { }, false, capped);
                 hud.Present(app.Frame with { Equipment = equipment }, app.FirstPlayable);
@@ -135,8 +142,9 @@ namespace Tests.PlayMode
                 Assert.That(pauseBounds.height, Is.GreaterThanOrEqualTo(48));
                 Assert.That(app.Ui.GetComponentsInChildren<Transform>().Count(item => item.name.StartsWith("Equipment ", StringComparison.Ordinal) && item.name != "Equipment pool"), Is.EqualTo(4));
                 Assert.That(app.Ui.GetComponentsInChildren<Transform>().Count(item => item.name.StartsWith("Folded equipment ", StringComparison.Ordinal)), Is.EqualTo(size == 2 ? 0 : 2));
-                yield return Capture(size == 2 ? "fixture-vassal-hud-early4" : "fixture-vassal-hud-late14",
-                    "render-only equipment stress fixture; distinct weapons=" + size + "; distinct tools=" + size + "; no loadout cap change");
+                yield return Capture(size == 2 ? "fixture-vassal-hud-early4" : size == 0 ? "fixture-vassal-hud-current-catalog" : "fixture-vassal-hud-late14",
+                    "render-only equipment fixture; weapon entries=" + weapons.Length + "; tool entries=" + tools.Length +
+                    "; repeated hidden entries=" + (size == 7) + "; no loadout cap or catalog change");
             }
         }
 
