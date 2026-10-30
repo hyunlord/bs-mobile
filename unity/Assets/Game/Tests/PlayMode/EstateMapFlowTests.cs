@@ -310,7 +310,8 @@ namespace Tests.PlayMode
             Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
             Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
             yield return Capture("estate-r8-first-entry");
-            ZoomTo(screen.Map.WholeMap);
+            Click("EstateMap.Overview"); Canvas.ForceUpdateCanvases();
+            Assert.That(screen.Map.Zoom, Is.EqualTo(screen.Map.WholeMap), "R8 overview is a separate action, not pinch zoom below the 50px minimum.");
             yield return Capture("estate-r8-whole");
             ZoomTo(screen.Map.Opening);
 
@@ -502,7 +503,11 @@ namespace Tests.PlayMode
             Click("EstateMap.BranchConfirm"); yield return null;
             Assert.That(screen.Building(granary.Id).Branch, Is.EqualTo("granary:long-away"));
 
-            Focus(new Vector2(45.5f, 30.5f)); Tap(new Vector2Int(45, 30)); yield return null;
+            Assert.That(screen.Selected, Is.EqualTo(granary.Id));
+            Click("EstateMap.Close"); yield return null;
+            Assert.That(screen.Selected, Is.Null);
+            Click("EstateMap.Overview"); yield return null;
+            Tap(new Vector2Int(45, 30)); yield return null;
             Assert.That(screen.ZoneChoice, Is.Not.Null); Assert.That(Rects("EstateMap.Zone").Count(r => r.name == "EstateMap.Zone"), Is.EqualTo(1));
             yield return Capture("estate-flow-zone");
 
@@ -669,6 +674,12 @@ namespace Tests.PlayMode
                 $"version,decoration,actualDecorEnabled,base,landmarks,total,withoutLv0Parts,lv0PartsDelta\n{version},{state},{app.EstateMap.DecorEnabled},{baseline},{actual - baseline},{actual},{WithoutLandmarks(true)},{baseline - WithoutLandmarks(true)}\n");
             Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
             Assert.That(app.EstateMap.DecorEnabled, Is.EqualTo(state == "on"), "Batch label must match the actual decoration switch.");
+            if (version == EstateR8Layout.Version)
+            {
+                var authored = View().GetComponentsInChildren<EstateAuthoredTerrainGraphic>();
+                Assert.That(authored.Count(g => g.Ground), Is.EqualTo(1), "Ground remains when decoration is disabled.");
+                Assert.That(authored.Count(g => !g.Ground), Is.EqualTo(state == "on" ? 1 : 0), "Off measurements exclude the approved prop mesh.");
+            }
             Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
             if (version == "m3a-prototype-r6" || version == "m3a-prototype-r7")
                 Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");
@@ -794,6 +805,7 @@ namespace Tests.PlayMode
             try
             {
                 File.WriteAllBytes(path, image.EncodeToPNG());
+                if (name.StartsWith("estate-r8-", StringComparison.Ordinal)) ExportDensity(path);
                 var cyan = image.GetPixels32().Count(c => c.r < 16 && c.g > 230 && c.b > 230);
                 var probe = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/m3a7-shader-" + ShaderProbeMode)); Directory.CreateDirectory(probe);
                 var csv = Path.Combine(probe, "captures.csv");

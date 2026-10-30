@@ -1,5 +1,23 @@
 # 05 · 화면과 유저 편의
 
+버전: 1.17 · 날짜: 2026-10-30 · 변경: #574 승인된 13구역 정적 배치의 실제 화면 승인 및 최신 main 통합 검증 기록. 상태: 사용자 화면 승인, baf918da 두 프로필 실패 0·보충 2/2 통과. 실제 drawCalls는 batchmode 한계로 UNKNOWN([검토 기록](../../review/estate-zone-terrain-495.md)).
+
+## 영지 구역 저작 배치 (#496)
+
+[확정] 자동 후보 증가로 밀도를 맞추는 시도는 반복 실패 후 종료한다. 다음 경로는 Astra가 지정한 구역·소품 ID·격자 좌표·크기 변형을 그대로 표시한다. View가 임의 배치·jitter·좌표 snapping·크기 조정·빈칸 재충원을 하지 않는다. Core·구역 개방·건설·저장·리플레이 계약은 유지한다.
+
+[현재 계약] 사용자 승인 #574의 `terrain-layout-r8.json`(원본 bcbfddb3, 13구역·2,055항목)을 r8에서만 읽는다. `EstateAuthoredLayout`은 소수 grid 좌표, asset anchor, scale, flipX, canvas 중심 rotationRadians, opacity와 signed drawOrder를 그대로 보존한다. sizeVariant는 저작 표식이며 추가 배율을 만들지 않는다. reviewOnly 건물·제외된 보호영역 45항목은 렌더하지 않는다. 기존 실제 건물·주민·공사는 그대로 유지한다.
+
+배경과 구역 지면 뒤에 입력 drawOrder의 소품을 한 atlas 메시로 그리고 그 위에 기존 어둠/빛 마스크를 둔다. 닫힌 땅은 그 마스크로 어둡게 하며, 로더가 열린 땅을 바꾸거나 좌표·밀도를 다시 생성하지 않는다. 기존 r4 grass 원본은 동일하다. 런타임 다운로드는 없고 출처 SHA를 검증한 제작 cache에서 atlas를 만든다. r3~r7은 역사 렌더 경로를 유지한다. 아래 draft API는 수신 전 역사 제안이며 생산 경로에서 호출하지 않는다. 최신 전체 프로필·화면·지형 점유율 관문은 검토 기록대로 통과했다. 그리기 호출과 모바일 실제 allocation은 미측정으로 유지한다.
+
+[초안] `EstateAuthoredPlacements.Parse/Apply`는 별도 API이며 현재 생산 호출과 연결하지 않는다. 실제 export가 도착하면 그 계약과 대조한 뒤 연결한다. Resources의 `EstateAuthoredPlacements` 파일이 없으면 로더는 null을 반환하고 가짜 배치 데이터나 임의 대체물을 만들지 않는다. 기존 실패 렌더와 측정 기록은 보존하며, 이것이 기존 자동 알고리즘을 다시 개선하거나 화면 통과로 승인하는 것은 아니다.
+
+Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draft-v1`, config=`m3a-prototype-r8`, entries 배열이다. 전체 배치 문서는 최소 1항목이 필수이며 entries의 null·누락·빈 배열은 모두 거부한다. 항목은 고유 id, zoneId, 실제 Sprite role ID인 propId/darkPropId, grid=[x,y], sizeVariant(native/S/M/L), width(64×32 투영의 native 표시 폭)를 가진다. sizeVariant는 임의 배율 계산 지시가 아니라 저작 provenance다. 그림은 이미 등록된 role/variant로 정하고 width를 그대로 쓴다. 파일 순서·좌표·크기는 그대로 유지한다. 현재 초안 구현은 열린 상태에 따라 밝음 role + Standing layer, 닫힌 상태에는 어둠 role + Landmark layer를 고정 선택한다. 입력의 layer를 그대로 보존하는 계약은 아니며, 실제 Astra export의 layer 계약은 수신 후 확정한다. 실제 export의 필드 이름·좌표 단위가 다르면 이 초안을 확정으로 강요하지 않고 adapter를 검토한다.
+
+검사는 버전·설정 일치, 누락/중복 ID, 미등록 role, 유한 좌표·양수 width, 선언한 구역 안 anchor를 확인하며 잘못된 입력은 실패한다. 그림 전체 충돌·문/길 가림은 저작 검토 항목으로 남기고 로더가 조용히 위치를 바꾸지 않는다. 단위 검사에만 합성 fixture를 사용하고 생산 Resource에는 예시 배치를 넣지 않는다. 화면 비교와 사용자 판정은 실제 export 이후다.
+
+[확인] 현재 바닥 `ground-grass-r4`는 Release `m3-lv0-sites-review-20261026/ground-grass-r4-512.png`와 SHA256 `525ea7100690e958802a41315b8caa5a69c47ce613e3a1a7a51b28a1ce5c465e`가 같고 atlas crop RGBA 차이 0이다. 원본 RGB 평균은 (131.877,115.502,81.906)으로 마른 갈색이다. 열린 내부의 white tint는 원색을 유지한다. [사용자 결정] 바닥 교체 요청은 취소한다. 현재 r4가 맞으며 미리보기의 초록 인상은 소품 밀도에서 온다. 현재 바닥 원판·role·색과 어둠 경계를 그대로 유지한다. 추가 자산 식별·recolor는 하지 않는다.
+
 버전: 1.14 · 날짜: 2026-10-30 · 변경: #544 사용자 승인 후 +/−만 기존 승인 `ui.button.round.blue` 그림으로 정합. 위치·44px 조작 크기·줌 동작과 나머지 승인 UI는 유지. 상태: 최신 main 포함 두 프로필·실제 파란 +/− 캡처 검증 통과, 사용자 병합 승인. [실행 기록](../../review/estate-ui-544-runtime.md).
 
 버전: 1.13 · 날짜: 2026-10-30 · 변경: #515 승인 영지 UI 상단 r1·건물 선택 3상태 r2·하단 r3를 화면 코드에 연결. 상태: 두 프로필 검사 통과·실제 화면 비교 제출, 사용자 시각 판정 대기([#544 기록](../../review/estate-ui-544-runtime.md)).

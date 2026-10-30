@@ -1,0 +1,2568 @@
+{
+  "version": "estate-zone-art-v1",
+  "release": "estate-r8-terrain-488-20261028",
+  "width": 2048,
+  "height": 2436,
+  "sprites": [
+    {
+      "id": "zone-forest-cluster-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-01-lit-r1-1x.png",
+      "sha256": "fa7cc7e57753b52335da040d14f91ec39f2cb26efc5f3395ad9fa16e131a23f0",
+      "rgbaSha256": "9a8e73fed5acc8fc5d22f8ea5658d9a594b434fb3bd809601b60c172d46547b2"
+    },
+    {
+      "id": "zone-forest-cluster-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        144,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-01-dark-r1-1x.png",
+      "sha256": "1c800f0b5172bd33040fb518eb2c5e94a00f2df2f96b386d25ee67331d54f204",
+      "rgbaSha256": "a711274dd0eabdd3e2fdfc00259a90dbfaab090864135c70eec78022f51f2aa1"
+    },
+    {
+      "id": "zone-forest-cluster-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        284,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-02-lit-r1-1x.png",
+      "sha256": "2188762383721681a15a7954016a2dadced0d7e705d83fb0c15285107b70247e",
+      "rgbaSha256": "2612f4d0250efa73a67e33178ca3cb87989b286a7e42c38166a9da0e9f56d591"
+    },
+    {
+      "id": "zone-forest-cluster-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        424,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-02-dark-r1-1x.png",
+      "sha256": "e12ac88cd04eb056cbcd33cbd6c888e1eea9805e3454bcc774473ec45f2654df",
+      "rgbaSha256": "c893096dbddc5201a3d2d79242dbc6751a4cbccdf27d9014f0454fe7162e7864"
+    },
+    {
+      "id": "zone-forest-cluster-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        564,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-03-lit-r1-1x.png",
+      "sha256": "b8ec96e6de7e6f72c1f5b499645aaa4839a53488b9d1eeda9d34ca4c0ba12bd5",
+      "rgbaSha256": "c8b52402d288381ef9d25a484cd3ee8754cd463136bfc34fd637bf6ee3bde86d"
+    },
+    {
+      "id": "zone-forest-cluster-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        704,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-03-dark-r1-1x.png",
+      "sha256": "ccc5fb0f07b7b2c0917656739d4f5e9b7d5cca42e538fb4575307a1cfc7d28f9",
+      "rgbaSha256": "3f559d6131ba36f37b95a898f9058dade247798117e094811d6eacf80ff8e2a8"
+    },
+    {
+      "id": "zone-forest-cluster-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        844,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-04-lit-r1-1x.png",
+      "sha256": "366ddf0d1738b4b1db18de842f3fa63389ca6e6988802356a5d239f56b333732",
+      "rgbaSha256": "49639b129624971c39ef4c2e114b34c99db5692c1058b97dfd690032755fdf55"
+    },
+    {
+      "id": "zone-forest-cluster-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        984,
+        4,
+        136,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.20454545454545459
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 176,
+      "source": "forest-cluster-04-dark-r1-1x.png",
+      "sha256": "655603cc22284e45f71373cf2f3145ce8ac04c7c1686b6f7d45e4426851e9146",
+      "rgbaSha256": "f5901a02afe90361cf657ae53c57f29c0f4447682624b31a6e737dbcaca6439a"
+    },
+    {
+      "id": "zone-field-cluster-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1124,
+        4,
+        136,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 96,
+      "source": "field-cluster-01-lit-r1-1x.png",
+      "sha256": "c05c60d778f3acc3152f4972f4b8ab48d8d1fd8d40ebfb3c7f265b94110fb946",
+      "rgbaSha256": "75ddc7798312169b1fb6fae14b100dc9750142ff014865ec4f66b7b521a82382"
+    },
+    {
+      "id": "zone-field-cluster-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1264,
+        4,
+        136,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 96,
+      "source": "field-cluster-01-dark-r1-1x.png",
+      "sha256": "e450be6335c5dd6fe9d1418d64a766299d98acfc53c6362f3026c901e60fb5e3",
+      "rgbaSha256": "4be3fbc9ddd009caba059ccb0231fca40c1455eca126fc41b99315e3ea8a4177"
+    },
+    {
+      "id": "zone-field-cluster-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1404,
+        4,
+        136,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 96,
+      "source": "field-cluster-02-lit-r1-1x.png",
+      "sha256": "c595cfdb82c2646386ac472171ed15a10fbdae382dc77e0c967ddad4559af0ee",
+      "rgbaSha256": "e78430bb03af375e81a934834a896376e6f894fffcb50795df0927b1caeeeea4"
+    },
+    {
+      "id": "zone-field-cluster-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1544,
+        4,
+        136,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "opaqueHeight": 96,
+      "source": "field-cluster-02-dark-r1-1x.png",
+      "sha256": "717c6930a5632c9f8a9ecf8fbc5eee02f1d76d16e450af4a8e1213f0634c6d42",
+      "rgbaSha256": "69bc15790db8ede9df35074681717c9f1564ba4c5460cd6ea3dcafffdd1162fa"
+    },
+    {
+      "id": "zone-field-cluster-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1684,
+        4,
+        200,
+        112
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 200,
+      "opaqueHeight": 112,
+      "source": "field-cluster-03-lit-r1-1x.png",
+      "sha256": "379460c04a67a0016df3d4695f49563ad64a971b72ba45e22b6b9d9302e60e34",
+      "rgbaSha256": "722ec6cc703f26ee10645b9f667702276007e5ecafdb7fe7a84f76bed02e4795"
+    },
+    {
+      "id": "zone-field-cluster-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        184,
+        200,
+        112
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 200,
+      "opaqueHeight": 112,
+      "source": "field-cluster-03-dark-r1-1x.png",
+      "sha256": "fc5343521325b1a1d151f82b2a24fcd438a9bd895d574b672a6f55a1087aaebe",
+      "rgbaSha256": "d7df4df28e49e5ddf042305d7222376ed84b954b1488143eeeb8d29164d94f2d"
+    },
+    {
+      "id": "zone-field-cluster-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        208,
+        184,
+        200,
+        112
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 200,
+      "opaqueHeight": 112,
+      "source": "field-cluster-04-lit-r1-1x.png",
+      "sha256": "7a8bb13c0dbb6f3f8de7913007314c520ea89e108904e3d9099b084540ac7368",
+      "rgbaSha256": "378bc690e11741d2299a6ca277f7f47d28d4193e03929298b3544e2593ffa003"
+    },
+    {
+      "id": "zone-field-cluster-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        412,
+        184,
+        200,
+        112
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 200,
+      "opaqueHeight": 112,
+      "source": "field-cluster-04-dark-r1-1x.png",
+      "sha256": "ae24dcf639224821d38ececca56df52f5cf09de4699367bd6ea660f469c6b241",
+      "rgbaSha256": "27613308de944bf171fcac0f9351911a66c22df472eabdf1fa117b4fffd6e146"
+    },
+    {
+      "id": "zone-ruins-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        616,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-01-bright-r2-1x.png",
+      "sha256": "03d1ab2b859133b97f043b0380f6c204a35b140fdcd31d728077696a23e41e62",
+      "rgbaSha256": "5c5cd69f80bc08ccd13f59e4e1bd42a622f99301e55a6ffd5b1d4939d80075d7"
+    },
+    {
+      "id": "zone-ruins-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        780,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-01-dark-r2-1x.png",
+      "sha256": "38c52d38d47040d4ad0ee8fb2789812a0e3364461eb3756ec37dea3c585dec2e",
+      "rgbaSha256": "89a39f66953df95949fe2402cf406009b3849fedbadfe7cc76bb7afde3fe057d"
+    },
+    {
+      "id": "zone-ruins-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        944,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-02-bright-r2-1x.png",
+      "sha256": "197ed20b414ebdcc4b01be895e13709fb60e26db7513ef6994df7e76da44d10f",
+      "rgbaSha256": "e3b6b022fd3abaf6dd0850bb2e9842a54cd7ae833dff9595db7ba59d43fbc2a2"
+    },
+    {
+      "id": "zone-ruins-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1108,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-02-dark-r2-1x.png",
+      "sha256": "0366ffbe6634b395d7fb91dafeba9e75ee0dff7eeee3b8ae96b74090cdcabc16",
+      "rgbaSha256": "154e994b5cf2bf736532f678f5c104164e767a573ce4041150172d92f4bb324a"
+    },
+    {
+      "id": "zone-ruins-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1272,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-03-bright-r2-1x.png",
+      "sha256": "abeb891f7bd2ab22e3743876fd96326e6773c537287260aaf5b93c43b3273bae",
+      "rgbaSha256": "36c8a1266d49e438126b9ebdafdbc1b160322c459f270ba838387b29700c0827"
+    },
+    {
+      "id": "zone-ruins-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1436,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-03-dark-r2-1x.png",
+      "sha256": "3ff7bb63d3b08aa51118c26f73f22249d625d0da12081304b047f0c0d0e1bbca",
+      "rgbaSha256": "2b4bc1e6cd2f223d423e0f0bdd8dbe63329d5890de616f5e9f6ab12d829d436b"
+    },
+    {
+      "id": "zone-ruins-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1600,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-04-bright-r2-1x.png",
+      "sha256": "267bdec672e9de7ebcdd51de83e183029ca87b639d25c99e89259860bd74e17c",
+      "rgbaSha256": "5f4900535548873ffc8a931030c1f33aed4f4cb5db5e63d8bfcaff4da0149c61"
+    },
+    {
+      "id": "zone-ruins-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1764,
+        184,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-ruins-04-dark-r2-1x.png",
+      "sha256": "7aac517ee1b8966929490b814f4217585d488f16a8501ee8927a18b1641cc633",
+      "rgbaSha256": "c843cc04c6f7ab2c61fedafb74a6967a282e0829781465d61341101179f0e7f7"
+    },
+    {
+      "id": "zone-hill-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-01-bright-r2-1x.png",
+      "sha256": "bab3285ec2bda0baf53c0423b00800c4dd51886f612c70d4dc1c4f61dae08064",
+      "rgbaSha256": "b29b560dbe101ec1dcf33c4df3eec6ffd00b0ce3ec0b98638bcfe3328c5a6eb9"
+    },
+    {
+      "id": "zone-hill-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        168,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-01-dark-r2-1x.png",
+      "sha256": "4aca410468011aab8c9c408b5c331366b416e1d7426554e19cf5c095d0752081",
+      "rgbaSha256": "cbb4a7ed0a238dd647e90434f5e4e67b5d6a503770aaea1fe43a64596f259093"
+    },
+    {
+      "id": "zone-hill-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        332,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-02-bright-r2-1x.png",
+      "sha256": "1d5101dd931f6cad8ee250a2e9b3dafbec1bcb0fc1c9ac2706f3da3736b9df51",
+      "rgbaSha256": "36cd20b5041a09500066e6c212bf6bec7ef68811ad17a49a281f46db09174cac"
+    },
+    {
+      "id": "zone-hill-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        496,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-02-dark-r2-1x.png",
+      "sha256": "f0c81cf9877deb77b82be7ed9870c0f3ff897be58c2ab4686c625f6ba7cf4a02",
+      "rgbaSha256": "9c138fff32c922f8845e12241c773bafa117a80c7e07502bc58b083ad16f8855"
+    },
+    {
+      "id": "zone-hill-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        660,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-03-bright-r2-1x.png",
+      "sha256": "c7b2490ee8d91bf497f6c180145e9ab14b41edc5fdbec57285c0787c7ebb38a2",
+      "rgbaSha256": "eaa81fa7ff4edd1c32142200cc3841524da84f890657808dde63e8d71db5bd8b"
+    },
+    {
+      "id": "zone-hill-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        824,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-03-dark-r2-1x.png",
+      "sha256": "4c3209d94b993e7fdb008bb530b207476a8eb87d71ebdf2902cb29645793040f",
+      "rgbaSha256": "d0d231ec3860b5459cd59e9dfa47d90bce308ae1a0191042a83bd4efad224e9a"
+    },
+    {
+      "id": "zone-hill-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        988,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-04-bright-r2-1x.png",
+      "sha256": "4e3f0bea9c27124f623c75a420a8937242ac415a41e2de4efa770eaf453eee92",
+      "rgbaSha256": "d71f308efeb59a02cbfa8e633e82014af98bfec0b2099a840b5e8f238ebdfb17"
+    },
+    {
+      "id": "zone-hill-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1152,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-hill-04-dark-r2-1x.png",
+      "sha256": "37cc737b3319c6892797a819cd5fb1b75b0b46a3901fc080017893d870162482",
+      "rgbaSha256": "a98ce7b4135eb710632359c45f06f0601d4af689a81fcb7f9876ae48ba61e8cc"
+    },
+    {
+      "id": "zone-fallow-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1316,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-01-bright-r2-1x.png",
+      "sha256": "208308a93fff51b28f91a177e1765c7eaa207d38864f70c14bcf22aac9ddc744",
+      "rgbaSha256": "d35c5a3d62dd94faf13b69bdb48aa9d060918a2d446efd0f4def51aaf15b7e08"
+    },
+    {
+      "id": "zone-fallow-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1480,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-01-dark-r2-1x.png",
+      "sha256": "c2a60c6d02e09b55d90a81fbabd730dca3328d010c03ad18a5d94bf8e1d3a657",
+      "rgbaSha256": "eff55f2fd84b29b9bb378dba6f7ea7eff7dde40585ec1143948f12ceb440b5d3"
+    },
+    {
+      "id": "zone-fallow-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1644,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-02-bright-r2-1x.png",
+      "sha256": "3dd425ef1a476f7877463fc166ab422244773b24260253f4f1d1609255cc8df5",
+      "rgbaSha256": "5b5fbe72f80310cc4db4ea5a836abdb206249bd346469015b8391f4459c11390"
+    },
+    {
+      "id": "zone-fallow-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1808,
+        324,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-02-dark-r2-1x.png",
+      "sha256": "368ff398396fc93969f98ae2a246971b5510af2e08cefce30b4397c535a6eec9",
+      "rgbaSha256": "602e0ea5b3518176263e419fdb872e5dc51810afb2625fde67256df597c42eb6"
+    },
+    {
+      "id": "zone-fallow-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        464,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-03-bright-r2-1x.png",
+      "sha256": "b802c86f01a610899c0fe0ff15293f58b9d3da13570cfaf4a247fe36ab72d0da",
+      "rgbaSha256": "fb16447f7be16eddf2f4756f4cbba55fe92dc05eb887bd3e4550865a1cce09cb"
+    },
+    {
+      "id": "zone-fallow-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        168,
+        464,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-03-dark-r2-1x.png",
+      "sha256": "cb39b3ca2e6405b0d3fc1ede5e9e369c22e0154020c62520ab773bdc7332ca96",
+      "rgbaSha256": "797896c4e6cb082cfd4eb9fd50b43139cdcad32ffb59aadc9076b9c708a6773e"
+    },
+    {
+      "id": "zone-fallow-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        332,
+        464,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-04-bright-r2-1x.png",
+      "sha256": "fa5fc15db33b6f117214c057e5abf0c6e6bc3fcaa78905517138444714a97c79",
+      "rgbaSha256": "c6d1c11908942ef2cb175ecbdbe76c6cde399f61f714314fda09f6dca648493b"
+    },
+    {
+      "id": "zone-fallow-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        496,
+        464,
+        160,
+        136
+      ],
+      "pivot": [
+        0.5,
+        0.2941176470588235
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 136,
+      "source": "terrain-r8-fallow-04-dark-r2-1x.png",
+      "sha256": "fb601c16e9f46bcdbf093b405f2b26c9536534261df4f086cd6cfaf8c0d699ec",
+      "rgbaSha256": "bedb1e951f26b16636434eb22d4ceb58540e60f78fe53b25e526050285844443"
+    },
+    {
+      "id": "zone-shore-accent-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        660,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-01-bright-r2-1x.png",
+      "sha256": "1060fcd4bde96ec2ef40de47b045d2a678279f9127a07d4ac52dd414a03761f5",
+      "rgbaSha256": "f6639ce43ffb4549f94a4a7129e4891ab91aa968a22da8077c90a6a130be90be"
+    },
+    {
+      "id": "zone-shore-accent-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        760,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-01-dark-r3-1x.png",
+      "sha256": "1201b46c39911a7ab93974026fcd9931514c7a3b369bab6d440b8a6ca0c39afc",
+      "rgbaSha256": "582275711c2718413c517c3d2c1f92b096e7fcab0aefd8edde4bd86971e5da06"
+    },
+    {
+      "id": "zone-shore-accent-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        860,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-02-bright-r2-1x.png",
+      "sha256": "ed6945b68ec1618ea1d525a5636f3bb8ea1ba4805117f1c33f1eb76847924903",
+      "rgbaSha256": "21fd1e51d3a4c001c335205170bb436d26a3b0ef7bf6984d4ad44c747880d537"
+    },
+    {
+      "id": "zone-shore-accent-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        960,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-02-dark-r3-1x.png",
+      "sha256": "66a40a02fe36697bbd76f16ece24a023192b7f9e7ca7b68aaf31e19a2dfe68b3",
+      "rgbaSha256": "b0c82d25c4a174bd14f482394f8d56c14ddd879f2487a50b937b30fc429b9a00"
+    },
+    {
+      "id": "zone-shore-accent-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1060,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-03-bright-r2-1x.png",
+      "sha256": "65ba686880b3af22048be072a4f9d3e8aff42b349809bed5577a81287f87190d",
+      "rgbaSha256": "2df1c3d566c9b6d02a8180baf7b4aaf98f123678e488e63485d80299de61ab96"
+    },
+    {
+      "id": "zone-shore-accent-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1160,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-03-dark-r3-1x.png",
+      "sha256": "af59a27d2c309c0e6f2b197d1e2999870b67fabe0a9175e2fab048678c0ea07f",
+      "rgbaSha256": "84de5745e244cf09ce4c8b8176aa44de379c3c635ea2cd6ff9b2d86ba93b9e92"
+    },
+    {
+      "id": "zone-shore-accent-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1260,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-04-bright-r2-1x.png",
+      "sha256": "9c03def8383a91fd2254dd6cb30eb3df05cca42c73f682945cfaeeef0c1f2e66",
+      "rgbaSha256": "f36a72ab3c646fe93ec3c0985fcc5747543e795e7c57c5adfa7393d1d8b74a1b"
+    },
+    {
+      "id": "zone-shore-accent-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1360,
+        464,
+        96,
+        72
+      ],
+      "pivot": [
+        0.5,
+        0.38888888888888884
+      ],
+      "displayWidth": 96,
+      "opaqueHeight": 72,
+      "source": "terrain-r8-shore-accent-04-dark-r3-1x.png",
+      "sha256": "46de1e9acfd4136c1c007da3db1de7f2d4ac74f9f34067cfd67639b8513d8a1f",
+      "rgbaSha256": "eb2e7d676f914e9589fd78a1ab81b1f22c09ab485ced983ac51594846096e396"
+    },
+    {
+      "id": "zone-bridge-north-wood-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1460,
+        464,
+        288,
+        224
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 288,
+      "opaqueHeight": 224,
+      "source": "terrain-r8-bridge-north-wood-bright-r1-1x.png",
+      "sha256": "7e24863b67bc3edd499a920e6e9349923a926f335b8c27f565652350b24773f3",
+      "rgbaSha256": "9d89ee88aa9fde5d4dd3145cf638f6d2e98f475b2875c6625560d598b152cc22"
+    },
+    {
+      "id": "zone-bridge-north-wood-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1752,
+        464,
+        288,
+        224
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 288,
+      "opaqueHeight": 224,
+      "source": "terrain-r8-bridge-north-wood-dark-r1-1x.png",
+      "sha256": "3bf86b2d479f8473a6a61b004d03ea0a4ae3e56137339aa85a3fb0acc34c1a68",
+      "rgbaSha256": "a9f48d5747e3718c5117321c10435f254c7216017f41ff45510d64e688553d57"
+    },
+    {
+      "id": "zone-bridge-east-fallow-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        692,
+        256,
+        224
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 224,
+      "source": "terrain-r8-bridge-east-fallow-bright-r1-1x.png",
+      "sha256": "d65c9df3df39a1268bc399dc17e0d9d31127868defe4c24db30d2e13c2094071",
+      "rgbaSha256": "791213111a20446705bf84f37cc730c2868d6220fe8aa9ee56faa16fbc627b70"
+    },
+    {
+      "id": "zone-bridge-south-riverside-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        264,
+        692,
+        256,
+        224
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 224,
+      "source": "terrain-r8-bridge-south-riverside-bright-r1-1x.png",
+      "sha256": "1c13397723762587e451467b23f23786d0b2f511e834eb626527c12a641b9871",
+      "rgbaSha256": "79b64d4fc9586775b4e6e677bc582f833565956d460260bf2cb7f31adbf91f53"
+    },
+    {
+      "id": "zone-bridge-south-riverside-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        524,
+        692,
+        256,
+        224
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 224,
+      "source": "terrain-r8-bridge-south-riverside-dark-r1-1x.png",
+      "sha256": "e3c2378ecefea27a0c5182119dd09f0f77d162f075332b4e2703d947af7fc440",
+      "rgbaSha256": "1a41aab74ee93254558206bff92ae24e63ea65af0e738c6a4c4ad67ee6029b2e"
+    },
+    {
+      "id": "zone-bridge-east-fallow-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        784,
+        692,
+        256,
+        224
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 224,
+      "source": "terrain-r8-bridge-east-fallow-dark-r2-1x.png",
+      "sha256": "5cd9e5810f0d688283a2d95fe9930c1b148b90c8e317a3a596ffeccf04e492ea",
+      "rgbaSha256": "5219eed05dbf43cb947a1b6d0123644714e96df41d0692385bf24d877faf4760"
+    },
+    {
+      "id": "zone-field-between-01-S-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1044,
+        692,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-01-S-bright-r1-1x.png",
+      "sha256": "50ce7e57fb300ffc97ea9bc2801aa285e394ae17e3767f8cc22c86d6ec97a56a",
+      "rgbaSha256": "c2f3cbbd7ee5dcc31c9ac3cc75317e30cc65cbeb8c725fac1ff7ea0f460cef0b"
+    },
+    {
+      "id": "zone-field-between-01-S-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1128,
+        692,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-01-S-dark-r1-1x.png",
+      "sha256": "0988695c6d3d3444a78c850b3529c0c122fdc956cb7d0f4b3256ea8dbdc9d21e",
+      "rgbaSha256": "e3d3ff973ba5ed838402bee6852e3c57f01f6b73f4fb82aecc9b1b8e9ade636b"
+    },
+    {
+      "id": "zone-field-between-01-M-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1212,
+        692,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-01-M-bright-r1-1x.png",
+      "sha256": "254352ffa730d0b73823d96bf230bb87a8454a9b14a4164eaf9be052a8f12da8",
+      "rgbaSha256": "6f928a533a52c946e15adf8b1de1a64a292f7a410d4e6c2f70a9b8189b8eefea"
+    },
+    {
+      "id": "zone-field-between-01-M-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1336,
+        692,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-01-M-dark-r1-1x.png",
+      "sha256": "9f8ab82346fa05556826b7ffae66bfba44709aa4f9b24f6b56546af936a58d8c",
+      "rgbaSha256": "2ae431c373a2d896a5d638d8800bb6b622df45f8cee19eb33f260be725a25cae"
+    },
+    {
+      "id": "zone-field-between-01-L-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1460,
+        692,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-01-L-bright-r1-1x.png",
+      "sha256": "7b7d035555e6fa71fc1fce132b057e257efbac533f64943d9e86dceadbf06995",
+      "rgbaSha256": "987ba4e091fda16f518b1217729c69deb3a717ccae1bdc9dead5ec16b0575ce4"
+    },
+    {
+      "id": "zone-field-between-01-L-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1624,
+        692,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-01-L-dark-r1-1x.png",
+      "sha256": "d352fa1bc525a0d9eac96f15758040ccfa1e40bcbee15aa6dfcd4fb465904888",
+      "rgbaSha256": "12830b9fdd2594bd60c157d40a84b3cb8f5d662e225d2258cf9b79185544faa5"
+    },
+    {
+      "id": "zone-field-between-02-S-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1788,
+        692,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-02-S-bright-r1-1x.png",
+      "sha256": "c77b627ad1434ef8c3531eb4fd5eb97dc6bd55d94f740aba4deae5ed6406fbe3",
+      "rgbaSha256": "1ad54b625a03da7b0c96e38894db4505c71b68a822f49d0a7f77cc6bd33558b4"
+    },
+    {
+      "id": "zone-field-between-02-S-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1872,
+        692,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-02-S-dark-r1-1x.png",
+      "sha256": "851765c80efc095d099f3dfe24b3c2090b913effdeeef82822a4691e43d0d611",
+      "rgbaSha256": "b248da7d430e56c9befc199e100d8a93cbbb7ea991e56e7ba6fb2af3af208671"
+    },
+    {
+      "id": "zone-field-between-02-M-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        920,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-02-M-bright-r1-1x.png",
+      "sha256": "21012f383a11f4078aaea188ad03b326c10e9796b6fecee54a0c2a40a65bf7f2",
+      "rgbaSha256": "d1ec029b8638f706ff8ecf007b161afd795d4aafd3cb3c498f7427d6b20f74b5"
+    },
+    {
+      "id": "zone-field-between-02-M-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        128,
+        920,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-02-M-dark-r1-1x.png",
+      "sha256": "2dcc1445b6cd377ed4120439d217c2de88caa8e9994d46596b6c0c76fdf1654b",
+      "rgbaSha256": "d33237b56a72a7f0da1fa1212c0a1f1a73b08e990b77ebf18e93076299b48a19"
+    },
+    {
+      "id": "zone-field-between-02-L-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        252,
+        920,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-02-L-bright-r1-1x.png",
+      "sha256": "1e28912bdad497c3f378fc34925db733042aabac45a05f7072dc71adee42865e",
+      "rgbaSha256": "9c8128f1144c38645fa34ed49419b663057f758e2bdde2c6b22df8dff75e362b"
+    },
+    {
+      "id": "zone-field-between-02-L-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        416,
+        920,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-02-L-dark-r1-1x.png",
+      "sha256": "6756cb4e74f7a6d3c0df363f6faa512bcad9d869adb7e75764d9096fa98c568e",
+      "rgbaSha256": "a0e50d675d4e110dcb084bd72bccc18f8dde6180cc4ac79b4909dea3c6e50880"
+    },
+    {
+      "id": "zone-field-between-03-S-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        580,
+        920,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-03-S-bright-r1-1x.png",
+      "sha256": "d1ed991f8068deed79e18677f5a1f6db2b247d958c57b42392053404bc9b56fb",
+      "rgbaSha256": "ea49d84219fef170c17247416168a12355a18829eabddac966ba13ffc0be54ee"
+    },
+    {
+      "id": "zone-field-between-03-S-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        664,
+        920,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-03-S-dark-r1-1x.png",
+      "sha256": "9e86ad4ef4f8456f0b44f40823d3cd7a227193ceb5d74a69c63505580bbffa6b",
+      "rgbaSha256": "6387b5e307899270002d1ea0d09ca193ec8ed9d771736b4d6552179c2d897a2a"
+    },
+    {
+      "id": "zone-field-between-03-M-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        748,
+        920,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-03-M-bright-r1-1x.png",
+      "sha256": "5c787332cdd4f4e70e0ecaae5b7f586365af81847355f671a87682f51a3af6b7",
+      "rgbaSha256": "72a346445ee3413c9e0ebe86c8c04da1c9d10123fc1c1ddca76c7e8316839477"
+    },
+    {
+      "id": "zone-field-between-03-M-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        872,
+        920,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-03-M-dark-r1-1x.png",
+      "sha256": "0cf76a7b0b6b1eb99b7116bfe2058970539c4bb1cd7e2872a95166c0f66174a6",
+      "rgbaSha256": "312b43dce72960bd0b19cad25fac5b9d61bed7e165485c416355ddf3723a6d88"
+    },
+    {
+      "id": "zone-field-between-03-L-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        996,
+        920,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-03-L-bright-r1-1x.png",
+      "sha256": "ebb816e283b397964355a6d41432dde71ed57dd11cb6ba54bcedac38dd0de3be",
+      "rgbaSha256": "0047198a2b5f980f3df27b562138243862edb0d059f73c26f074a39c61bb2173"
+    },
+    {
+      "id": "zone-field-between-03-L-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1160,
+        920,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-03-L-dark-r1-1x.png",
+      "sha256": "7f9cc9171d8838cde370663d75623a1089f89fce1b95dccf7a2817bfe58ded8f",
+      "rgbaSha256": "a121339d0fa970c8e25a1797bc249b7e0bf576f10f6508939412edf53c7b93d1"
+    },
+    {
+      "id": "zone-field-between-04-S-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1324,
+        920,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-04-S-bright-r1-1x.png",
+      "sha256": "b44c63c96c658beb96f2e7f0732103f4815bbb226fdfc8f4521abae791452cc8",
+      "rgbaSha256": "3070feec5846910bd3f8f9978ed27c5ad4792005b2a3d35b0781533e99bdb82b"
+    },
+    {
+      "id": "zone-field-between-04-S-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1408,
+        920,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-04-S-dark-r1-1x.png",
+      "sha256": "b95bbc0fea051cfd467568ec0e4b99c0c8aa21f760fccc1bc295c5fb8867acd4",
+      "rgbaSha256": "c6e2321892cc8ffb979d6999026c1559e5a6827f612dc6aaa251af78833dca13"
+    },
+    {
+      "id": "zone-field-between-04-M-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1492,
+        920,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-04-M-bright-r1-1x.png",
+      "sha256": "c621a554ed5c44d7cd5627b2f47e9eb70ff721030b6a30a78f8bc5f5b34d5284",
+      "rgbaSha256": "03c29d886a00ffb051cf8dcb07e0e76302ca303d2477e2ea00d04982c9a6fa76"
+    },
+    {
+      "id": "zone-field-between-04-M-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1616,
+        920,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-04-M-dark-r1-1x.png",
+      "sha256": "426da64f974c898cc91bd9cc703db4bcdcc6b3821a4e1da9f09a62ef9882efe7",
+      "rgbaSha256": "f82934df6f065e6db0414ebf2f1ebf53267f19c2b67c60b15954dfadccaf45e5"
+    },
+    {
+      "id": "zone-field-between-04-L-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1740,
+        920,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-04-L-bright-r1-1x.png",
+      "sha256": "1a6a22f03dfe2c4fe4a298f72b4fefd58e5feb47b912486830c06e57a1273d82",
+      "rgbaSha256": "4abc2601a50add788cb96ac9349dfca302624c068c54888fb5f43933879d20ca"
+    },
+    {
+      "id": "zone-field-between-04-L-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        1028,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-04-L-dark-r1-1x.png",
+      "sha256": "f19d2303ae6b159bb50c6c9ea521c1f56fbee69951fc9b93daf5b9ad45dc40b9",
+      "rgbaSha256": "29769a9ff46d91df0c283049fe2ec731924a412a3980c14221396f8aa91a94da"
+    },
+    {
+      "id": "zone-field-between-05-S-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        168,
+        1028,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-05-S-bright-r1-1x.png",
+      "sha256": "ca684a917d9a47cfb234f1f47db4ebc8b4ada749d0668982543db59b44a2a3b5",
+      "rgbaSha256": "ead29d30d5da03bf43300c9b0ddc6be994b09eb805effb29a9e36c977d90f300"
+    },
+    {
+      "id": "zone-field-between-05-S-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        252,
+        1028,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-05-S-dark-r1-1x.png",
+      "sha256": "45645f9fb4ce86b5a373d59f34a8e7750bc040a2ca962866c95d744d0c9e4cda",
+      "rgbaSha256": "a16a2ddab30c62138c4ddbf7269e4c6647e123d92efb376975f9b08c556deeb7"
+    },
+    {
+      "id": "zone-field-between-05-M-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        336,
+        1028,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-05-M-bright-r1-1x.png",
+      "sha256": "4c4a7355276664133c46a582db3b8282a2f42f2a238529dc3a8c2575fdf8c416",
+      "rgbaSha256": "84d59a9da025c17d21a057da1f9d3a6f036bbc4d35c967540336a13fdd2083dd"
+    },
+    {
+      "id": "zone-field-between-05-M-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        460,
+        1028,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-05-M-dark-r1-1x.png",
+      "sha256": "a21a8a1791938927c37cc3e043bf72fbdf5812abc3540e161a2b8cfe63116be2",
+      "rgbaSha256": "c88cf7e794b16126e7603d742b66c657990527b1f27ebbdbd1db5480ca5d88cc"
+    },
+    {
+      "id": "zone-field-between-05-L-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        584,
+        1028,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-05-L-bright-r1-1x.png",
+      "sha256": "ea84096db7310a5d554f6a0b6006623f3eff715209de81bd49b416876d8d667e",
+      "rgbaSha256": "2f76a332b1c1b416dde03024d63906ab9481f3824d579d0958f34a44a75cca01"
+    },
+    {
+      "id": "zone-field-between-05-L-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        748,
+        1028,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-05-L-dark-r1-1x.png",
+      "sha256": "3c30ae040e2b0a37781b6b09d98ffeeecbfc4cc213ea523c05d76bb76c0f993f",
+      "rgbaSha256": "5bd2ac570f53e61fc57b569c58af9f02f73f8958512f59e708b0453368c587b8"
+    },
+    {
+      "id": "zone-field-between-06-S-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        912,
+        1028,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-06-S-bright-r1-1x.png",
+      "sha256": "246b5f1b41876cfba10bc77bf8675d144ffa8cff8db779923dcd35c182674541",
+      "rgbaSha256": "8e5f78790cb349bc3cdf36fe018576db3e0aca5bd9245f69f5674bec3066cb50"
+    },
+    {
+      "id": "zone-field-between-06-S-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        996,
+        1028,
+        80,
+        52
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 80,
+      "opaqueHeight": 52,
+      "source": "variety-r8-field-between-06-S-dark-r1-1x.png",
+      "sha256": "1074e2f9e63f4c5b46e2f5ad0e93de400f65fb2fe4556f08df78a4fed307ef97",
+      "rgbaSha256": "79fb94ab60e8d2b20ebead8d84aa84fac672e5aa2da80ebddbc09d5557a6abff"
+    },
+    {
+      "id": "zone-field-between-06-M-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1080,
+        1028,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-06-M-bright-r1-1x.png",
+      "sha256": "9d3c27720e187c73cfec188854898b22cda6f5901cb2c7b2fc914fd5c6b9e900",
+      "rgbaSha256": "9a5385a7e57b7ca863bbfa757c555bc320c62cb72d69dbe09518b897863f5dbb"
+    },
+    {
+      "id": "zone-field-between-06-M-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1204,
+        1028,
+        120,
+        78
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 120,
+      "opaqueHeight": 78,
+      "source": "variety-r8-field-between-06-M-dark-r1-1x.png",
+      "sha256": "bf6c26714fc9efd79da222c9e85f32aad2674e088e2113ebc67b5386a1178077",
+      "rgbaSha256": "a81bd268fdef976e77be5c1c911439a07a25dc1a0ee1f528ab11009cfaae5b6a"
+    },
+    {
+      "id": "zone-field-between-06-L-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1328,
+        1028,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-06-L-bright-r1-1x.png",
+      "sha256": "f0a8e233228dab53529f52f20ba7fc86d8fccc2bcbe6790e47aa66f36814cf16",
+      "rgbaSha256": "87b68ad65f1368452b4be46019618d96d0ba47cf5b6070fce952cc570f02202e"
+    },
+    {
+      "id": "zone-field-between-06-L-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1492,
+        1028,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "variety-r8-field-between-06-L-dark-r1-1x.png",
+      "sha256": "eea83a25da06a4df35c9fd80b5a05dfe3f11fe595e1915cece27715fd94f9d75",
+      "rgbaSha256": "17765f6a2e2ed31adb837fa8ff2477a921b754efc6419875832d84d3356e1abd"
+    },
+    {
+      "id": "zone-prop-01-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1656,
+        1028,
+        112,
+        80
+      ],
+      "pivot": [
+        0.5,
+        0.44999999999999996
+      ],
+      "displayWidth": 112,
+      "opaqueHeight": 80,
+      "source": "dense-r8-prop-01-bright-r2-1x.png",
+      "sha256": "fd217b319533ecd16b2ce06f22916447ed5219180e8c8a8abb6a123a14473069",
+      "rgbaSha256": "4352b817cb10078c1b519eee2c7ea726bf1568247dc25b73d4f8681e9b64e06e"
+    },
+    {
+      "id": "zone-prop-01-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1772,
+        1028,
+        112,
+        80
+      ],
+      "pivot": [
+        0.5,
+        0.44999999999999996
+      ],
+      "displayWidth": 112,
+      "opaqueHeight": 80,
+      "source": "dense-r8-prop-01-dark-r3-1x.png",
+      "sha256": "d7c7988c3b8796d4d96f7313bd83544bb5a634b4a74d93d68228ec7e3c6b0a7c",
+      "rgbaSha256": "3698dfad0db7b0c0178cea8aa95ac2be286df4dae95fa4614fdbd7d632066f1d"
+    },
+    {
+      "id": "zone-prop-02-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1888,
+        1028,
+        112,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 112,
+      "opaqueHeight": 96,
+      "source": "dense-r8-prop-02-bright-r2-1x.png",
+      "sha256": "fd70a7c0e08d351985853563263bb4f543a03aeb809534b07b4eb442d982bd20",
+      "rgbaSha256": "fe81428dd68546a4cc88916460e36c68045339b6236b45a2f87a8971d18f348a"
+    },
+    {
+      "id": "zone-prop-02-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        1136,
+        112,
+        96
+      ],
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 112,
+      "opaqueHeight": 96,
+      "source": "dense-r8-prop-02-dark-r3-1x.png",
+      "sha256": "554a69f2e567e70e33c3d15fb139b69a3905dd64ad7aadbc561c223a1bcd240c",
+      "rgbaSha256": "ea73d21740603c88fc86107949fb54db1f256bd312037ef7829124816dee5a4c"
+    },
+    {
+      "id": "zone-prop-03-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        120,
+        1136,
+        112,
+        112
+      ],
+      "pivot": [
+        0.5,
+        0.3214285714285714
+      ],
+      "displayWidth": 112,
+      "opaqueHeight": 112,
+      "source": "dense-r8-prop-03-bright-r2-1x.png",
+      "sha256": "c31d41d74a54f7a0284e7c6bddae39baefab2836920309e1a73c648c85c3133f",
+      "rgbaSha256": "2edf423a027e302e93848edf49b8d9da2790774e19408884e05c10c0973532b7"
+    },
+    {
+      "id": "zone-prop-03-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        236,
+        1136,
+        112,
+        112
+      ],
+      "pivot": [
+        0.5,
+        0.3214285714285714
+      ],
+      "displayWidth": 112,
+      "opaqueHeight": 112,
+      "source": "dense-r8-prop-03-dark-r3-1x.png",
+      "sha256": "c7e6cd2f4676215173237bfb14fdc7d0e761d9e0bb19ae99f4a2ee4859f524b8",
+      "rgbaSha256": "46e0a49d279dfc482cba7459a624bc3bd0cf598f93bba9bf6f1d1eb550a20ff5"
+    },
+    {
+      "id": "zone-prop-04-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        352,
+        1136,
+        160,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.2272727272727273
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 176,
+      "source": "dense-r8-prop-04-bright-r2-1x.png",
+      "sha256": "425f01cb8d30883e5b61ecb6dfaf225ee02a963061bcb0ee40f86725af3b0952",
+      "rgbaSha256": "4acecb5f16c430c46583147b7f5fb8152e0f4f5380989f6c8259498e5b0954a3"
+    },
+    {
+      "id": "zone-prop-04-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        516,
+        1136,
+        160,
+        176
+      ],
+      "pivot": [
+        0.5,
+        0.2272727272727273
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 176,
+      "source": "dense-r8-prop-04-dark-r2-1x.png",
+      "sha256": "81de5bb940d6905fee38d87035a1d18bdcb36f341624960d8ab5bfafa76b1b4a",
+      "rgbaSha256": "217d7a80c641e6003e41c1fd8218fbf47d91ff57d42d0a66ece4b5fb1e82dbf5"
+    },
+    {
+      "id": "zone-prop-05-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        680,
+        1136,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "dense-r8-prop-05-bright-r2-1x.png",
+      "sha256": "391b32badc8cdc1514a027362b42a3928684d3a147a036704db796ae4d0c8414",
+      "rgbaSha256": "853219fc7975b2ed81cca8cfb23cbf1fb8fbd1f765360a67a78eb7276610caea"
+    },
+    {
+      "id": "zone-prop-05-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        844,
+        1136,
+        160,
+        104
+      ],
+      "pivot": [
+        0.5,
+        0.3846153846153846
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 104,
+      "source": "dense-r8-prop-05-dark-r2-1x.png",
+      "sha256": "bb3d612911cb6820ca4e88e88b4761126768aebd5081319c3d65776a96b20f54",
+      "rgbaSha256": "b4ea599c23420394b81c5f6d934efb935d57603dae7c61900c69d808cb4046f8"
+    },
+    {
+      "id": "zone-prop-06-bright",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1008,
+        1136,
+        160,
+        160
+      ],
+      "pivot": [
+        0.5,
+        0.25
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 160,
+      "source": "dense-r8-prop-06-bright-r2-1x.png",
+      "sha256": "4c8e2efc28b0c85b7ed4be5adbb28bc0834ce997ca4194e4eb0943244aaeb7f5",
+      "rgbaSha256": "10ec71d3a45011c2d8743e699acfbda61b43255a4d2da4d7b473160d1396062f"
+    },
+    {
+      "id": "zone-prop-06-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1172,
+        1136,
+        160,
+        160
+      ],
+      "pivot": [
+        0.5,
+        0.25
+      ],
+      "displayWidth": 160,
+      "opaqueHeight": 160,
+      "source": "dense-r8-prop-06-dark-r2-1x.png",
+      "sha256": "d1eba3b770aa46d03794eb0815ac9d7b3590177d61a69847e4e0c36bc788757a",
+      "rgbaSha256": "cc989df0879e7ea540eb0449ae480c806097add77176bf7fb1be56c71d267c36"
+    },
+    {
+      "id": "zone-dense-r8-midnight-mist-01-exterior",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1336,
+        1136,
+        512,
+        256
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "opaqueHeight": 256,
+      "source": "dense-r8-midnight-mist-01-r2-1x.png",
+      "sha256": "76ddcaafedcb15bc61d9e308d4e31372ff216e69e70fb2ddf20a70b9e8cb1f3d",
+      "rgbaSha256": "20e66f18ec8c85e583bae351758c6b3d5d74858a3b3dfd011cce23e1427cad13"
+    },
+    {
+      "id": "zone-dense-r8-midnight-mist-02-exterior",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        1396,
+        512,
+        256
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": 512,
+      "opaqueHeight": 256,
+      "source": "dense-r8-midnight-mist-02-r2-1x.png",
+      "sha256": "a8641d823409ef41b49c6cc369a4142ebab527d3e327163dfeb6500e11bb597c",
+      "rgbaSha256": "20e8250a202a5b29c5e3d82e7abafd5312722683e0abad6f3c87a688d7de4baf"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-0-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        520,
+        1396,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-0-lit-1x.png",
+      "sha256": "2ca027cb8de7fbd07027d631afb3ad5fe276f43131031e71f9000f5184e39570",
+      "rgbaSha256": "4acc702245b6ca12b0cb725f9593b6850b88bf862243c928b7fc2e53680c1a58"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-0-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        780,
+        1396,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-0-lit-1x.png",
+      "sha256": "d5b0e4045134e9eb892737c16c77d490b27593a51abf43e60e8666bc25f9b26a",
+      "rgbaSha256": "5f2c82d71b894faad3533d88016dc289fbaf0b563d4af2878d97223039d5e85e"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-1-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1040,
+        1396,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-1-lit-1x.png",
+      "sha256": "5ec12a790fbc9d2089153b35ac422a59f341f444eb063761432630a22f596b6e",
+      "rgbaSha256": "de90da2e974187f1f4e4bddc6cdf7337ba144c1a8ce18572dbb70c98ed146629"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-1-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1300,
+        1396,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-1-lit-1x.png",
+      "sha256": "268ea21c89f919c36e3ab5606e29a7ec515c6ecb62c98ad29cdbaab83d13d06d",
+      "rgbaSha256": "92a3e3eb934aec30dea750e4505a9fde99137e56cdec0d3861288e699f1c8859"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-2-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1560,
+        1396,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-2-lit-1x.png",
+      "sha256": "3e607440806d9ca82be53918f3f252625c76676c665de2f81fb7a4b8999901ee",
+      "rgbaSha256": "5b0108e2e6bdc02c1669c36aa9b63c5ebbcb975006507ae61839c84c8db22d50"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-2-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        1656,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-2-lit-1x.png",
+      "sha256": "b81de1a6ed720ea666108cf974554bd2282cf5e5f65506c89393caff62e49d31",
+      "rgbaSha256": "9632b0a390d2f10037e8e499cd07eb0ca4521b0d873edc4c6a5abe7d410366c7"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-0-3-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        264,
+        1656,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-0-3-lit-1x.png",
+      "sha256": "6beecb32df0c3bde0ef6e883270518da98e2c34b6b3fece7c727f2045294c44c",
+      "rgbaSha256": "608ca179088ae16185bab2cb453113cc81ef39b33dd25dfcfbc2b3a5913e81c0"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-1-3-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        524,
+        1656,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-1-3-lit-1x.png",
+      "sha256": "7d0ac2d5c54c75dd38178e00027d292a9ee6aec53a2a02edf96e00f06d9731f7",
+      "rgbaSha256": "09818f938d81d31140ddaa8555bd7c0776041ce0abc6cddd4b21f69ae8cbb307"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-3-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        784,
+        1656,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-3-lit-1x.png",
+      "sha256": "5b50675c00b49f625b6b51b98ef0ac75192f7596b5f10086c583c0331aca8984",
+      "rgbaSha256": "9855bbc989f57baa62a57789229d0b3097fbf2a9324eb7dddb0cb551a8da7cfa"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-3-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1044,
+        1656,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-3-lit-1x.png",
+      "sha256": "314097cc39a7fb8db4e25a7d1527c970c7a8ca91ff057d58033eb8ee9075a6bf",
+      "rgbaSha256": "021eed2c8ab8c418f2a678c3cc6adedf5a4de4591b97751d87708bc8b026f7fa"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-0-4-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1304,
+        1656,
+        256,
+        128
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 128,
+      "source": "dense-river-r2-chunk-0-4-lit-1x.png",
+      "sha256": "f9f60e3a9e5a252096e2ae43d9284a726fa9889d649c87c626eec9024d5926a1",
+      "rgbaSha256": "59b3036e9429bc032ba882b6ee0188974fc1287d3628ea54b978d4dbc8aae587"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-1-4-lit-lit",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1564,
+        1656,
+        256,
+        128
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 128,
+      "source": "dense-river-r2-chunk-1-4-lit-1x.png",
+      "sha256": "621d0f0d112dedbd4e76458a69f3177c83f30582fd48ebeb2d8a4ba51a755b00",
+      "rgbaSha256": "849407362f2bcca58bf5b29ae452a6c5e596ce74c0c46f5c8b96a6443e6d7d9f"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-0-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-0-dark-1x.png",
+      "sha256": "61667c3b6ce751ad1d19869ae734f301277b397ec229934ebfa08803e470d07f",
+      "rgbaSha256": "6d15598fd182f43dc0294c5bceae42f84968b0a16b029d1ac745de0acc257a6e"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-0-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        264,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-0-dark-1x.png",
+      "sha256": "7361d8dc017ee3cb797a342a579753ca87b33c75f5485da69a2aa5f8922c877f",
+      "rgbaSha256": "32c37313734355625b10dbcfd83ddf1845bb65f1d96f87a3df1867cc8e8c8cef"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-1-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        524,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-1-dark-1x.png",
+      "sha256": "b82e77c97500cc2bb165789391e32fad1257daac68dc9a11d0def93312bdfb69",
+      "rgbaSha256": "1103b4be7704dd1d884329bdde84159262c3f0b1c80d67d8e739d2f860cb1280"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-1-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        784,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-1-dark-1x.png",
+      "sha256": "55d50056a61b909c6905e1d6dca32ec72eab07d0e17336711a1d520947b43005",
+      "rgbaSha256": "7059cf44adb4536ad612f6ba3717c2a46eeb0a56a96ddb5bfaedbd76785f7570"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-2-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1044,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-2-dark-1x.png",
+      "sha256": "ba4f2161eb4c22db8a9f818e5a127e848215840cd8ffa3bee9b8ddf14c880edb",
+      "rgbaSha256": "ef8a1f55dccad5ee9c59dea2b0e90d407fb4e1e61cfa9be528bab61cee1e0aec"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-2-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1304,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-2-dark-1x.png",
+      "sha256": "2bd1416f7a390f74d5757840000c52af63b1a70bcf2933391200d484c328d9ad",
+      "rgbaSha256": "3b54c20a0607f42b410197ea89e62f64c19639f1ee6b864681224ce04a6a40e8"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-0-3-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1564,
+        1916,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-0-3-dark-1x.png",
+      "sha256": "fd036d30e33067d2e9ab26b40174e728c8b11b548feb613efb57de4821eefb37",
+      "rgbaSha256": "e766f6a80c193147e4bcc65af59de6a34ded2d23784ac5bf8f8b77ec45d63c9c"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-1-3-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        4,
+        2176,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-1-3-dark-1x.png",
+      "sha256": "0d62c86bb4ae04bacd32c0497d909340183e50be005c124029de587c612fb97d",
+      "rgbaSha256": "ed219b352f91b2b7327f6f3f4d721da353a8fc2b37de783122a39623a1fec20c"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-2-3-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        264,
+        2176,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-2-3-dark-1x.png",
+      "sha256": "dccbb0cc2764b7986c401ccb07bf053da3e914362350b07f80e99bebcd1351af",
+      "rgbaSha256": "b3710c276c0e1ad324b3ba2b69ff1df849bd258c691c3f6ab7e97985393de4f8"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-3-3-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        524,
+        2176,
+        256,
+        256
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 256,
+      "source": "dense-river-r2-chunk-3-3-dark-1x.png",
+      "sha256": "b69f1a6745b8fb6363f58c3248cab3f74dc9f8861af284706c75c1a9459f4a4a",
+      "rgbaSha256": "2c3d6ae6369bfaab5c7ba977cc42ce62c3926d90fe0455f7bc381c0762051338"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-0-4-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        784,
+        2176,
+        256,
+        128
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 128,
+      "source": "dense-river-r2-chunk-0-4-dark-1x.png",
+      "sha256": "bf98aa190e533dead2d036b52dd225746bd67a02b8e539b28a47c51c9e3dfe3c",
+      "rgbaSha256": "f66fd5f550c68c9e40eac2b16ab4162064d0d2ba2db48436484af7b04993e5f9"
+    },
+    {
+      "id": "zone-dense-river-r2-chunk-1-4-dark-dark",
+      "atlas": "zone-terrain",
+      "layer": "standing",
+      "rect": [
+        1044,
+        2176,
+        256,
+        128
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "displayWidth": 256,
+      "opaqueHeight": 128,
+      "source": "dense-river-r2-chunk-1-4-dark-1x.png",
+      "sha256": "d9cdf45203a38f360c7e21b23f84049b43bc0629fe012609e518baa3be0e4b9b",
+      "rgbaSha256": "9e17d39130a8f725b375181de82cd3afb472ac9c4b4857a10d959606a870b055"
+    }
+  ]
+}
