@@ -26,7 +26,7 @@ namespace Game.App
     // small departure button over the map. Astra's approved stage sprites provide the building silhouettes.
     public static partial class PortraitMetaPanels
     {
-        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 중심 마을 확장 북동 숲 서쪽 언덕 풍차 밭 휴경지 강가 영지 둘레 0123456789:";
+        public const string EstateMapGlyphs = "영지 시제품 저장 안 함 계정 사본 새 전체 동네 건물 우리 집 망루 우물 경작지 벌목장 철공소 폐허 아직 짓지 않음 완성 재고 전문화 공사 중 이동 닫기 확정 취소 옮길 칸을 누르세요 놓을 수 있습니다 지금 자리입니다 열린 구역 밖입니다 공사 중에는 옮길 수 없습니다 와 과 겹칩니다 탐사로 열 땅 탐사전 여는 땅입니다 이 시제품에서는 열리지 않음 M3c 옮겼습니다 저장하지 않는 시제품입니다 닫힌 출정 목표 생산 재고를 처음 받기 터 2곳 하나 옮기기 달성 보상 모든 받았습니다 가신 도전 상점 보석 짓기 올리기 예약 다음 최고 레벨 공사 시작 진행 없음 비어 있음 자동 착공 켬 끔 대기열 받음 과제 재료가 모자랍니다 첫 경로 몫은 남겨 둡니다 먼저 부모 시설을 지어야 합니다 가득 찼습니다 하나를 골라 성장 방향을 정해요 으로 정하기 고르기 선택 지금 변경 다시 바꿀 수 있음 출정 중에는 고정 구역 개방 준비 원정 보급 창고 장기 검술 공방 카드 연구실 도시 기록소 호위 병영 건설 지원 시간 줄임 철재 생산 집중 판 효과는 M3b에서 연결 분 Lv / + − × ▸ ▾ % 장식 중심 마을 확장 북동 숲 서쪽 언덕 풍차 밭 휴경지 강가 영지 둘레 가속 0123456789:";
         static readonly Color GridLine = new Color32(36, 48, 26, 110);
         static readonly Color BlockTop = new Color32(176, 154, 112, 255);
         static readonly Color BlockLeft = new Color32(132, 112, 80, 255);
@@ -35,8 +35,8 @@ namespace Game.App
         static readonly Color ValidGhost = new Color32(96, 190, 104, 150);
         static readonly Color InvalidGhost = new Color32(205, 64, 48, 150);
         static readonly Color BarInk = new Color32(20, 16, 12, 205);
-        const float BarTop = 6, BarHeight = 40, GoalTop = 50, GoalHeight = 44, BottomBar = 56, BottomGap = 8, WorkHeight = 44;
-        static readonly Color GoodInk = new Color32(168, 222, 150, 255), BadInk = new Color32(240, 140, 120, 255), Gold = new Color32(243, 213, 140, 255);
+        const float BarTop = 6, BarHeight = 40, GoalTop = 50, GoalHeight = 44, BottomBar = 48, BottomGap = 8, WorkHeight = 28;
+        static readonly Color Gold = new Color32(243, 213, 140, 255);
 
         public static void EstateMap(UiShell ui, EstateMapScreen screen, MetaState account, EstateMapActions actions)
         {
@@ -51,7 +51,10 @@ namespace Game.App
             viewport.gameObject.AddComponent<Image>().color = Color.clear; viewport.gameObject.AddComponent<RectMask2D>();
             var view = viewport.gameObject.AddComponent<EstateMapView>(); view.Model = screen.Map;
             var top = GoalTop + GoalHeight; var panel = PanelHeightFor(screen);
-            var bottom = BottomBar + BottomGap * 3 + WorkHeight + (panel > 0 ? panel + BottomGap : 0);
+            var workHeight = actions.DevelopmentControls || screen.StockTotal > 0 ? 44 : WorkHeight;
+            var workTop = height - BottomBar - BottomGap * 3 - workHeight;
+            var panelTop = workTop - 24 - panel;
+            var bottom = height - (panel > 0 ? panelTop : workTop);
             screen.Map.SetFrame(viewport.rect.size, top, bottom);
             // The spaced r7 opening fits all 12×12 cells; legacy openings keep their authored night margin.
             screen.Map.SetFocus(screen.OpenAreas(EstateR8Layout.UsesPlazaRendering(screen.Config) ? 0 : night.openingMargin));
@@ -183,7 +186,7 @@ namespace Game.App
             ResourceStrip(ui, root, screen.Catalog, screen.State, actions.Navigate, width);
             GoalLine(ui, root, screen, actions, width);
             string ZoomName() => screen.Map.Zoom == screen.Map.WholeMap ? "전체" : screen.Map.Zoom == screen.Map.Opening ? "영지" : screen.Map.UsesBodyCamera && screen.Map.Zoom == 1 ? "동네" : screen.Map.Zoom == EstateMapModel.Neighbourhood ? "동네" : "건물";
-            var controlsY = height - bottom - 104;
+            var controlsY = panel > 0 ? panelTop - 112 : workTop - 128;
             if (actions.DevelopmentControls && panel <= 0)
             {
                 var decorToggle = ActionButton(ui, root, "EstateMap.Decor", "장식 " + (screen.DecorEnabled ? "켬" : "끔"), () => { screen.ToggleDecor(); actions.Redraw(); }, 10, controlsY + 4, 84, true, 44);
@@ -194,25 +197,30 @@ namespace Game.App
             }
             // The view is remembered for the next visit (#379): written when a drag ends or the zoom changes, never per frame.
             view.Moved = () => actions.ViewChanged?.Invoke(screen.Map.Zoom, screen.Map.ViewportToGrid(screen.Map.VisibleCentre));
-            var zoomIn = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomIn", "+", () => view.Step(1), width - 54, controlsY);
-            var zoomOut = PortraitRunPanels.RoundIcon(ui, root, "EstateMap.ZoomOut", "−", () => view.Step(-1), width - 54, controlsY + 52);
             if (screen.Map.UsesBodyCamera)
             {
                 var overview = ActionButton(ui, root, "EstateMap.Overview", screen.Map.Zoom == screen.Map.WholeMap ? "영지" : "전체",
                     () => { view.ToggleOverview(); actions.Redraw(); }, 104, controlsY + 4, 84, true, 44);
                 Compact(overview.transform); overview.gameObject.SetActive(panel <= 0);
             }
-            if (panel > 0)
+            EstateZoomButton("EstateMap.ZoomIn", "+", 1, controlsY);
+            EstateZoomButton("EstateMap.ZoomOut", "−", -1, controlsY + 52);
+            void EstateZoomButton(string name, string glyph, int direction, float y)
             {
-                zoomIn.gameObject.SetActive(false); zoomOut.gameObject.SetActive(false);
+                var button = PortraitWidgets.Button(ui, root, glyph, () => view.Step(direction), width - 54, y, 44, 44, true, "ui.button.round.blue");
+                button.name = name;
+                var label = button.GetComponentInChildren<Text>();
+                label.fontSize = 28;
+                label.verticalOverflow = VerticalWrapMode.Overflow;
+                UiShell.Stretch(label.rectTransform);
             }
-            var panelTop = height - BottomBar - BottomGap * 3 - WorkHeight - panel;
+
             Text liveStatus = null;
             if (screen.Specializing) SpecializePanel(ui, root, screen, actions, width, panelTop, panel);
             else if (screen.Selected != null) liveStatus = SelectionPanel(ui, root, screen, actions, width, panelTop, panel);
             else if (screen.ZoneChoice != null) ZonePanel(ui, root, screen, actions, width, panelTop, panel);
             else if (screen.QueueOpen) QueuePanel(ui, root, screen, actions, width, panelTop, panel);
-            var work = WorkStrip(ui, root, screen, actions, width, height - BottomBar - BottomGap * 2 - WorkHeight, out var claimLabel);
+            var work = WorkStrip(ui, root, screen, actions, width, workTop, workHeight, out var claimLabel);
             // Once a second: Core applies the interval; a level, queue, zone or task change redraws (after any drag), while the
             // remaining time and stock only refresh their text.
             view.Redraw = actions.Redraw;
@@ -290,16 +298,16 @@ namespace Game.App
 
         static void ResourceStrip(UiShell ui, RectTransform root, MetaCatalog catalog, MetaState state, Action<PortraitMetaPage> navigate, float width)
         {
-            var bar = ColorPlate(root, "Resource bar", BarInk, 8, BarTop, width - 16, BarHeight);
+            var bar = Plate(ui, root, "Resource bar", "ui.panel", 8, BarTop, width - 16, BarHeight);
             ColorPlate(bar, "Gold rule", new Color32(139, 106, 51, 200), 0, BarHeight - 1, width - 16, 1);
             var cell = (width - 16) / 5;
             for (var i = 0; i < catalog.Materials.Length; i++)
             {
                 var material = catalog.Materials[i]; state.Wallet.TryGetValue(material.Id, out var amount);
                 MaterialArt(ui, bar, material.Id, material.ArtRole, i * cell + 8, 10, 20);
-                Caption(ui, bar, amount.ToString(), i * cell + 31, 6, cell - 33, 28, 13);
+                Caption(ui, bar, amount.ToString(), i * cell + 31, 6, cell - 33, 28, 14, true);
             }
-            Caption(ui, bar, "보석 +", cell * 4 + 6, 6, cell - 10, 28, 13);
+            Caption(ui, bar, "보석 +", cell * 4 + 6, 6, cell - 10, 28, 14, true);
             Hit(bar, "Estate.Gems", () => navigate(PortraitMetaPage.Shop), cell * 4, -2, cell, 44);
         }
 
@@ -307,14 +315,14 @@ namespace Game.App
         {
             var collapsed = screen.GoalCollapsed;
             var lineWidth = collapsed ? 92 : width - 74;
-            var line = ColorPlate(root, "EstateMap.GoalLine", BarInk, 8, GoalTop, lineWidth, GoalHeight);
-            if (collapsed) Caption(ui, line, "목표 ▸", 12, 0, lineWidth - 16, GoalHeight, 14);
+            var line = Plate(ui, root, "EstateMap.GoalLine", "ui.panel", 8, GoalTop, lineWidth, GoalHeight);
+            if (collapsed) Caption(ui, line, "목표 ▸", 12, 0, lineWidth - 16, GoalHeight, 14, true);
             else
             {
-                if (actions.DevelopmentControls) Caption(ui, line, "영지 시제품 · 저장 안 함" + (screen.FromSave ? " · 계정 영지 사본" : " · 새 영지"), 10, 2, lineWidth - 34, 20, 12).color = new Color32(243, 213, 140, 255);
+                if (actions.DevelopmentControls) Caption(ui, line, "영지 시제품 · 저장 안 함" + (screen.FromSave ? " · 계정 영지 사본" : " · 새 영지"), 10, 2, lineWidth - 34, 20, 12, true);
                 var claimWidth = screen.GoalReady ? 64 : 0;
-                Caption(ui, line, screen.Notice.Length > 0 ? screen.Notice : screen.GoalText(), 10, actions.DevelopmentControls ? 21 : 11, lineWidth - 34 - claimWidth, 20, 13);
-                Caption(ui, line, "▾", lineWidth - 24, 0, 20, GoalHeight, 14);
+                Caption(ui, line, screen.Notice.Length > 0 ? screen.Notice : screen.GoalText(), 10, actions.DevelopmentControls ? 21 : 11, lineWidth - 34 - claimWidth, 20, 14, true).fontStyle = FontStyle.Bold;
+                Caption(ui, line, "▾", lineWidth - 24, 0, 20, GoalHeight, 14, true);
                 Hit(line, "EstateMap.Goal", () => { screen.ToggleGoal(); actions.Redraw(); }, 0, 0, lineWidth - claimWidth - 4, GoalHeight);
                 if (screen.GoalReady) ActionButton(ui, line, "EstateMap.GoalClaim", "받기", () => { screen.ClaimGoal(); actions.Redraw(); }, lineWidth - claimWidth - 28, 0, claimWidth, true, 44, "ui.button.primary");
             }
@@ -331,9 +339,15 @@ namespace Game.App
             for (var i = 0; i < pages.Length; i++)
             {
                 var page = pages[i];
-                var caption = Caption(ui, bar, names[i], i * cell, 0, cell, BottomBar, 14, false, TextAnchor.MiddleCenter);
-                if (page == PortraitMetaPage.Estate) caption.color = new Color32(243, 213, 140, 255);
-                Hit(bar, "Tab." + page, () => actions.Navigate(page), i * cell, 0, cell, BottomBar);
+                if (page == PortraitMetaPage.Estate)
+                {
+                    ActionButton(ui, bar, "Tab." + page, names[i], () => actions.Navigate(page), i * cell, 0, cell, true, BottomBar, "ui.button.primary");
+                }
+                else
+                {
+                    Caption(ui, bar, names[i], i * cell, 0, cell, BottomBar, 14, false, TextAnchor.MiddleCenter).fontStyle = FontStyle.Bold;
+                    Hit(bar, "Tab." + page, () => actions.Navigate(page), i * cell, 0, cell, BottomBar);
+                }
                 if (page == PortraitMetaPage.Challenges && Pending(account, MetaClaimKind.Challenge))
                     ColorPlate(bar, "Claim dot", new Color32(194, 39, 28, 255), i * cell + cell - 18, 10, 10, 10);
             }
@@ -361,36 +375,40 @@ namespace Game.App
         static Text SelectionPanel(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y, float height)
         {
             var building = screen.Building(screen.Selected.Value); var kind = screen.Kind(building.Kind); var id = building.Id;
-            var panel = Sheet(root, "EstateMap.Selection", width, y, height);
-            Caption(ui, panel, screen.Name(building.Kind) + " Lv " + building.Level + " / " + kind.MaxLevel(), 14, 8, width - 44, 28, 18);
-            var status = Caption(ui, panel, screen.Status(building), 14, 36, width - 44, 22, 13);
+            var panel = Plate(ui, root, "EstateMap.Selection", "ui.panel", 8, y, width - 16, height);
+            panel.GetComponent<Image>().raycastTarget = true;
+            ActionButton(ui, panel, "EstateMap.Close", "×", () => { screen.Select(null); actions.Redraw(); }, width - 76, 4, 48, true, 48);
+            Caption(ui, panel, screen.Name(building.Kind) + " Lv " + building.Level + " / " + kind.MaxLevel(), 14, 8, width - 108, 28, 18, true);
+            var status = Caption(ui, panel, screen.Status(building), 14, 36, width - 92, 22, 14, true);
             var half = (width - 54) / 2; var third = (width - 64) / 3;
             if (screen.Moving)
             {
-                var reason = Caption(ui, panel, "옮길 칸을 누르세요 · " + screen.ReasonText(screen.PreviewReason), 14, 64, width - 44, 30, 13);
-                reason.color = screen.PreviewValid ? GoodInk : BadInk;
+                var reason = Caption(ui, panel, "옮길 칸을 누르세요 · " + screen.ReasonText(screen.PreviewReason), 14, 64, width - 44, 30, 14, true);
+                reason.color = screen.PreviewValid ? new Color32(40, 83, 42, 255) : new Color32(140, 42, 32, 255);
                 ActionButton(ui, panel, "EstateMap.Confirm", "확정", () => { screen.Confirm(); actions.Redraw(); }, 14, 146, half, screen.PreviewValid, 48, "ui.button.primary");
                 ActionButton(ui, panel, "EstateMap.Cancel", "취소", () => { screen.Cancel(); actions.Redraw(); }, 24 + half, 146, half, true, 48);
                 return status;
             }
             var next = screen.NextStep(id);
             var eligibility = screen.ConstructionPreview(id);
-            Caption(ui, panel, next == null ? "최고 레벨" : "다음 Lv " + (building.Level + 1) + " · " + screen.Amounts(next.Value.Cost) + " · " + EstateMapScreen.Clock(next.Value.Seconds), 14, 60, width - 44, 22, 13);
+            Caption(ui, panel, next == null ? "최고 레벨" : "다음 Lv " + (building.Level + 1) + " · " + screen.Amounts(next.Value.Cost) + " · " + EstateMapScreen.Clock(next.Value.Seconds), 14, 60, width - 44, 42, 14, true);
             if (next != null && !eligibility.Allowed && !screen.UnderConstruction(id) && !screen.Reserved(id))
             {
-                var reason = Caption(ui, panel, eligibility.Text, 14, 86, width - 44, 22, 13);
-                reason.name = "EstateMap.ConstructionReason"; reason.color = Gold;
+                var reason = Caption(ui, panel, eligibility.Text, 14, 106, width - 44, 32, 14, true);
+                reason.name = "EstateMap.ConstructionReason"; reason.color = new Color32(140, 42, 32, 255);
             }
-            else if (screen.Notice.Length > 0) Caption(ui, panel, screen.Notice, 14, 86, width - 44, 22, 13).color = Gold;
+            else if (screen.Notice.Length > 0) Caption(ui, panel, screen.Notice, 14, 106, width - 44, 32, 14, true);
             Button primary;
-            if (screen.Reserved(id))
+            if (screen.UnderConstruction(id))
+                primary = ActionButton(ui, panel, "EstateMap.ConstructionClose", "닫기", () => { screen.Select(null); actions.Redraw(); }, 14, 146, third, true, 48, "ui.button.primary");
+            else if (screen.Reserved(id))
                 primary = ActionButton(ui, panel, "EstateMap.CancelReservation:" + id, "예약 취소", () => { screen.CancelReservation(id); actions.Redraw(); }, 14, 146, third, true, 48);
             else if (next != null)
                 primary = ActionButton(ui, panel, "EstateMap.Build", building.Level == 0 ? "짓기" : "올리기", () => { screen.StartWork(id); actions.Redraw(); }, 14, 146, third, eligibility.Allowed, 48, "ui.button.primary");
             else
                 primary = ActionButton(ui, panel, "EstateMap.Specialize", "전문화", () => { screen.BeginSpecialize(); actions.Redraw(); }, 14, 146, third, kind.Branches != null && kind.Branches.Length > 0, 48, "ui.button.primary");
             ActionButton(ui, panel, "EstateMap.Move", "이동", () => { screen.BeginMove(); actions.Redraw(); }, 24 + third, 146, third, !screen.UnderConstruction(id), 48);
-            ActionButton(ui, panel, "EstateMap.Close", "닫기", () => { screen.Select(null); actions.Redraw(); }, 34 + third * 2, 146, third, true, 48);
+            ActionButton(ui, panel, "EstateMap.Accelerate", "가속", () => { }, 34 + third * 2, 146, third, false, 48);
             if (next == null && building.Branch != null && primary != null) primary.GetComponentInChildren<Text>().text = "전문화 변경";
             Compact(panel);
             return status;
@@ -464,13 +482,13 @@ namespace Game.App
 
         // The work line above the tabs: current construction and queue (tap for the queue), a claim for site stock, and the
         // development time skip that lets the prototype be reviewed without waiting.
-        static Text WorkStrip(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y, out Text claimLabel)
+        static Text WorkStrip(UiShell ui, RectTransform root, EstateMapScreen screen, EstateMapActions actions, float width, float y, float workHeight, out Text claimLabel)
         {
-            var strip = ColorPlate(root, "EstateMap.Work", BarInk, 8, y, width - 16, WorkHeight);
+            var strip = ColorPlate(root, "EstateMap.Work", BarInk, 8, y, width - 16, workHeight);
             const float skip = 62; var claim = screen.StockTotal > 0 ? 78f : 0f;
             var textWidth = width - 16 - (actions.DevelopmentControls ? skip * 2 : 0) - claim - 12;
-            var line = Caption(ui, strip, screen.WorkLine(), 10, 0, textWidth - 10, WorkHeight, 12);
-            Hit(strip, "EstateMap.QueueToggle", () => { screen.ToggleQueue(); actions.Redraw(); }, 0, 0, textWidth, WorkHeight);
+            var line = Caption(ui, strip, screen.WorkLine(), 10, 0, textWidth - 10, workHeight, 14);
+            Hit(strip, "EstateMap.QueueToggle", () => { screen.ToggleQueue(); actions.Redraw(); }, 0, 0, textWidth, workHeight);
             claimLabel = claim > 0 ? ActionButton(ui, strip, "EstateMap.ClaimStock", "받기 " + screen.StockTotal, () => { screen.ClaimProduction(); actions.Redraw(); }, textWidth, 0, claim - 4, true, 44, "ui.button.primary").GetComponentInChildren<Text>() : null;
             if (actions.DevelopmentControls)
             {
