@@ -48,7 +48,7 @@ namespace Game.App
                 // carry an estate is copied again whenever it changes; Progression.State is a fresh copy on every read, so it is
                 // compared by its save bytes. Either way the view keeps its zoom and position.
                 var account = Progression.State;
-                // A new preview uses r6; a saved prototype keeps its own historical grid and economics.
+                // A new preview uses r7; a saved prototype keeps its own historical grid and economics.
                 if (estateConfig == null || (account.Estate != null
                     ? estateConfig.Version != account.Estate.ConfigVersion
                     : estateMap?.FromSave == true))
@@ -63,7 +63,7 @@ namespace Game.App
                     estateMapSource = bytes;
                 }
                 estateMap.Advance();
-                MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions
+                MetaPage(UiScreen.EstateMap, () => PortraitMetaPanels.EstateMap(Ui, estateMap, account, new EstateMapActions(UnityEngine.Debug.isDebugBuild, EstatePrototypeActive)
                 {
                     Redraw = ShowEstateMap, Depart = ShowPortraitDeparture, Settings = () => ShowSettings(false), Navigate = NavigatePortraitMeta,
                     ViewChanged = SaveEstateView,

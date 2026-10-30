@@ -16,7 +16,7 @@ if ! npm_ci; then
 fi
 npm test
 node --test tools/test-verify-evidence.mjs
-node --test tools/test-pr-policy.mjs tools/test-dependency-policy.mjs tools/test-unity-test-record.mjs tools/test-unity-skipped-everywhere.mjs tools/test-pr-changes.mjs
+node --test tools/test-texture-memory-delta.mjs tools/test-pr-policy.mjs tools/test-dependency-policy.mjs tools/test-unity-test-record.mjs tools/test-unity-skipped-everywhere.mjs tools/test-pr-changes.mjs
 node --test tools/test-csv.mjs tools/test-s4*.mjs tools/test-r3-remains-report.mjs tools/test-retrospective-c-prime.mjs
 node --test tools/test-target-parity.mjs
 node --test tools/test-meta-target-parity.mjs
@@ -24,6 +24,7 @@ node --test tools/test-unity-export.mjs tools/test-unity-boundaries.mjs tools/te
 node --test tools/wave1a-content.test.mjs
 DOTNET="$(command -v dotnet)" node --test tools/test-unity-results.mjs
 node tools/verify-unity-boundaries.mjs
+node tools/verify-estate-r8-layout.mjs
 node --test tools/test-diagnostic-*.mjs
 node --test tools/test-weapon-holdout.mjs
 node --test tools/test-first-playable*.mjs
@@ -35,17 +36,18 @@ node --test tools/first-playable-art.test.mjs
 node tools/first-playable-art.mjs "$PWD"
 node --test tools/wave1a-art.test.mjs
 node tools/wave1a-art.mjs "$PWD"
-node --test tools/test-estate-art.mjs
+node --test tools/test-estate-art.mjs tools/test-estate-approved-sites.mjs
 node tools/estate-art.mjs --check
 node tools/wave1a-audio.mjs --check
 node --test tools/test-view-coverage.mjs
 node tools/view-coverage.mjs "$PWD"
 node tools/content-report.mjs --check
+node --test tools/test-durable-metrics.mjs
 node tools/metrics.mjs --selftest
 node --test tools/test-metrics-device.mjs
 node --test tools/test-device-metrics.mjs
 node --test tools/test-mac-wave-frame-window.mjs
-node --test tools/test-wave-benchmark.mjs tools/test-wave-benchmark-v2.mjs tools/test-wave-regression.mjs tools/test-restore-urp-authoring.mjs
+node --test tools/test-first-playable-benchmark.mjs tools/test-wave-benchmark.mjs tools/test-wave-benchmark-v2.mjs tools/test-wave-regression.mjs tools/test-restore-urp-authoring.mjs
 node tools/pr-policy.mjs
 dotnet run --project tools/ArchitectureGuard -- --self-test
 dotnet run --project tools/ArchitectureGuard -- "$PWD"

@@ -9,7 +9,7 @@ public sealed class AccountEstateR6MapTests
     private static string Data => Path.Combine(AppContext.BaseDirectory, "data");
     private static readonly MetaCatalog Catalog = MetaContentLoader.Read(Data);
     private static readonly AccountEstateConfig R5 = AccountEstateConfigLoader.Load(Data, Catalog, "m3a-prototype-r5");
-    private static readonly AccountEstateConfig R6 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.MapPrototypeVersion);
+    private static readonly AccountEstateConfig R6 = AccountEstateConfigLoader.Load(Data, Catalog, AccountEstateConfigLoader.FirstLoginMapVersion);
     private static string Json<T>(T value) => System.Text.Json.JsonSerializer.Serialize(value);
     private static bool Adjacent(AccountEstateZone a, AccountEstateZone b) =>
         (a.X + a.Width == b.X || b.X + b.Width == a.X) && a.Y < b.Y + b.Height && b.Y < a.Y + a.Height ||
@@ -20,8 +20,8 @@ public sealed class AccountEstateR6MapTests
     {
         var source = UnityExport.Generate(Data);
         Assert.Contains("CreateAccountEstateConfig(string version = null)", source);
-        Assert.Contains("(version ?? \"m3a-prototype-r6\") switch", source);
-        foreach (var version in new[] { "r2", "r3", "r4", "r5", "r6" })
+        Assert.Contains("(version ?? \"m3a-prototype-r8\") switch", source);
+        foreach (var version in new[] { "r2", "r3", "r4", "r5", "r6", "r7", "r8" })
         {
             Assert.Contains("\"m3a-prototype-" + version + "\" => new global::SowSiege.Core.AccountEstateConfig", source);
         }

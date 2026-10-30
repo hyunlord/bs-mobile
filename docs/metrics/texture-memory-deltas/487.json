@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "baseline": "3d7ddcf141827e1e2d30a48b2e31a02166805912",
+  "basis": "Expected un-mipped texture payload only; before/after estimates, not device memory. Original PNG identity equals approved trial source7817fd56.",
+  "records": [
+    {
+      "path": "unity/Assets/Art/hero-knight.png",
+      "before": {
+        "identity": {
+          "sha256": "76c75e804a9fb782207e26e2295bca7c74b8c8bb29eeb055d557610a7e8fe4c6",
+          "fileBytes": 1174409
+        },
+        "status": "ESTIMATE",
+        "width": 2564,
+        "height": 2164,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "RGBA32",
+          "ios": "RGBA32"
+        },
+        "bytes": {
+          "mac": 22193984,
+          "android": 22193984,
+          "ios": 22193984
+        }
+      },
+      "after": {
+        "identity": {
+          "sha256": "76c75e804a9fb782207e26e2295bca7c74b8c8bb29eeb055d557610a7e8fe4c6",
+          "fileBytes": 1174409
+        },
+        "status": "ESTIMATE",
+        "width": 2564,
+        "height": 2164,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 22193984,
+          "android": 5548496,
+          "ios": 5548496
+        }
+      },
+      "reason": "2026-10-28 user approved ASTC4 trial (#465); only Android/iOS, original PNG and Mac unchanged"
+    },
+    {
+      "path": "unity/Assets/Art/fallow-enemy-rigs.png",
+      "before": {
+        "identity": {
+          "sha256": "5a69aaf13a67ea6885234be74e4d984e00b7b77323f113024b15e05ebebf8bde",
+          "fileBytes": 1886439
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2304,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "RGBA32",
+          "ios": "RGBA32"
+        },
+        "bytes": {
+          "mac": 18874368,
+          "android": 18874368,
+          "ios": 18874368
+        }
+      },
+      "after": {
+        "identity": {
+          "sha256": "5a69aaf13a67ea6885234be74e4d984e00b7b77323f113024b15e05ebebf8bde",
+          "fileBytes": 1886439
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2304,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 18874368,
+          "android": 4718592,
+          "ios": 4718592
+        }
+      },
+      "reason": "2026-10-28 user approved ASTC4 trial (#465); only Android/iOS, original PNG and Mac unchanged"
+    },
+    {
+      "path": "unity/Assets/Resources/EstateArt/estate-decor.png",
+      "before": {
+        "identity": {
+          "sha256": "9ac2ea91acb837d69ee020d5246635c929389483848a262f82e34ae48e11e50f",
+          "fileBytes": 3662105
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2428,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "RGBA32",
+          "ios": "RGBA32"
+        },
+        "bytes": {
+          "mac": 19890176,
+          "android": 19890176,
+          "ios": 19890176
+        }
+      },
+      "after": {
+        "identity": {
+          "sha256": "9ac2ea91acb837d69ee020d5246635c929389483848a262f82e34ae48e11e50f",
+          "fileBytes": 3662105
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2428,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 19890176,
+          "android": 4972544,
+          "ios": 4972544
+        }
+      },
+      "reason": "2026-10-28 user approved ASTC4 trial (#465); only Android/iOS, original PNG and Mac unchanged"
+    }
+  ]
+}

@@ -31,6 +31,8 @@ namespace Game.App
         OfflineReplayCapture offlineReplayCapture;
         HeroMotionComparisonWindow heroMotionWindow;
         RecordedReplayRender recordedReplay;
+        FirstPlayableBenchmark firstPlayableBenchmark;
+        bool firstPlayableMeasurementStarted;
         string recordedCoreStateHash;
         int CrowdStartTick => recordedReplay?.StartTick ?? heroMotionWindow?.StartTick ?? CrowdReplayBenchmark.StartTick;
         int CrowdEndTick => recordedReplay?.EndTick ?? heroMotionWindow?.EndTick ?? CrowdReplayBenchmark.EndTick;
@@ -158,6 +160,7 @@ namespace Game.App
             public ulong cpuTimerFrequency;
             public long stopwatchFrequency;
             public string timestampContract = "frames entry/exit/nextEntryTimestamp and render observationTimestamp use Stopwatch ticks at stopwatchFrequency. FrameTiming frameStartTimestamp uses Unity CPU timer at cpuTimerFrequency; equal frequencies alone do not establish equal epoch. Preserve delayed observation and calibrate association; never join observedFrame directly.";
+            public string profile = "wave-1a";
             public string windows = "7200-9900,10200-12900,13200-14400", timingContract = "frames.csv: Update-to-next-Update wall includes rendering and pacing; CPU scopes disjoint. render-timings.csv: delayed FrameTimingManager observations, timestamped separately, not joined to density. Allocation delta is main-thread managed allocation; GC count is process-wide generation 0.";
         }
         M1CombatReview combatReview;
@@ -167,13 +170,14 @@ namespace Game.App
         {
             var args = Environment.GetCommandLineArgs();
             var index = Array.IndexOf(args, "--wave-benchmark");
-            if (index < 0 && Array.IndexOf(args, "--wave-benchmark-skip-grounding") < 0 && Array.IndexOf(args, "--crowd-target60-experiment") < 0 && Array.IndexOf(args, "--camera-scale") < 0 && Array.IndexOf(args, "--camera-scale-window") < 0) return;
+            if (index < 0 && Array.IndexOf(args, "--first-playable-benchmark") < 0 && Array.IndexOf(args, "--wave-benchmark-skip-grounding") < 0 && Array.IndexOf(args, "--crowd-target60-experiment") < 0 && Array.IndexOf(args, "--camera-scale") < 0 && Array.IndexOf(args, "--camera-scale-window") < 0) return;
             waveBenchmarkRequested = true;
             try
             {
                 benchmarkTarget60Experiment = DisplayCadence.ParseCrowdTarget60Experiment(args);
                 benchmarkSkipGrounding = ParseWaveBenchmarkSkipGrounding(args);
-                if (!IsWave || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException("Wave benchmark requires wave-1a, a replay path, and no autoplay capture.");
+                firstPlayableBenchmark = FirstPlayableBenchmark.Parse(args, CanonicalContent.ProfileName);
+                if ((!IsWave && firstPlayableBenchmark == null) || index < 0 || index + 1 >= args.Length || AutoplayCapture.Active != null) throw new ArgumentException("Benchmark requires wave-1a or explicit first-playable FP01, a replay path, and no autoplay capture.");
                 var output = Array.IndexOf(args, "--wave-benchmark-output");
                 if (output < 0 || output + 1 >= args.Length) throw new ArgumentException("Missing --wave-benchmark-output directory.");
                 var destination = WaveBenchmarkAccount.Current.OutputDirectory;
@@ -211,12 +215,17 @@ namespace Game.App
                 }
                 var bytes = File.ReadAllBytes(args[index + 1]);
                 using (var sha = SHA256.Create()) benchmarkReplaySha = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant();
-                if (combatReview == null && recordedReplay == null && benchmarkReplaySha != (knightReview?.DamageReplay == true ? KnightReview.DamageSha256 : crowdBenchmark == null ? KnightReview.C05Sha256 : CrowdReplayBenchmark.ReplaySha256)) throw new InvalidDataException("Benchmark fixture identity mismatch.");
+                if (firstPlayableBenchmark == null && combatReview == null && recordedReplay == null && benchmarkReplaySha != (knightReview?.DamageReplay == true ? KnightReview.DamageSha256 : crowdBenchmark == null ? KnightReview.C05Sha256 : CrowdReplayBenchmark.ReplaySha256)) throw new InvalidDataException("Benchmark fixture identity mismatch.");
                 using (var stream = new MemoryStream(bytes)) benchmarkReplay = ReplayCodec.Read(stream);
                 knightReview?.Validate(benchmarkReplaySha, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash);
                 if (combatReview != null && (benchmarkReplay.End.Tick != combatReview.Definition.endTick || benchmarkReplay.End.StateHash != combatReview.Definition.stateHash)) throw new InvalidDataException("Combat replay end tick mismatch.");
                 ContentCatalog frozen = null; string hash = null;
-                if (recordedReplay != null) { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; }   // recorded with this data tree; checked against the header below
+                if (firstPlayableBenchmark != null)
+                {
+                    firstPlayableBenchmark.Validate(benchmarkReplaySha, benchmarkReplay.Header.Options.DataHash, CanonicalContent.DataHash, benchmarkReplay.End.Tick, benchmarkReplay.End.StateHash, benchmarkReplay.End.AppliedCommands);
+                    frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash;
+                }
+                else if (recordedReplay != null) { frozen = FoundationBoot.Catalog; hash = CanonicalContent.DataHash; }   // recorded with this data tree; checked against the header below
                 else if (crowdBenchmark == null) LoadFrozenWaveBenchmark(ref frozen, ref hash);
                 else
                 {
@@ -256,7 +265,7 @@ namespace Game.App
                 Aim = benchmarkReplay.Header.Options.InitialAimMode;
                 seed = benchmarkReplay.Header.Options.Run.Seed;
                 // Only original accepted commands advance state. Warmup has no fabricated input.
-                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < (cameraScaleComparison?.PreRollTick ?? (crowdBenchmark == null && recordedReplay == null ? 7200 : CrowdStartTick))) ApplyBenchmarkCommand(false, ref benchmarkPending);
+                while (benchmarkCommand < benchmarkReplay.Commands.Count && benchmarkReplay.Commands[benchmarkCommand].Tick < (firstPlayableBenchmark != null ? FirstPlayableBenchmark.StartTick : cameraScaleComparison?.PreRollTick ?? (crowdBenchmark == null && recordedReplay == null ? 7200 : CrowdStartTick))) ApplyBenchmarkCommand(false, ref benchmarkPending);
                 CaptureSnapshots(); previous = CurrentFrame;
                 world = new GameObject("World renderer").AddComponent<WorldRenderer>();
                 world.PresentationDiagnosticsEnabled = benchmarkCoreDiagnostics != null;
@@ -359,7 +368,7 @@ namespace Game.App
         }
         void ResetBenchmarkClock() { benchmarkFrameStart = Stopwatch.GetTimestamp(); benchmarkAllocatedStart = benchmarkAllocationAvailable ? GC.GetAllocatedBytesForCurrentThread() : -1; benchmarkGcStart = GC.CollectionCount(0); }
         static double BenchmarkMilliseconds(long start) => (Stopwatch.GetTimestamp() - start) * 1000d / Stopwatch.Frequency;
-        bool BenchmarkWindow(int tick) => cameraScaleComparison != null ? cameraScaleComparison.InWindow(tick) : crowdBenchmark != null || recordedReplay != null ? tick >= CrowdStartTick && tick <= CrowdEndTick : tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
+        bool BenchmarkWindow(int tick) => firstPlayableBenchmark != null ? tick >= FirstPlayableBenchmark.StartTick && tick <= FirstPlayableBenchmark.EndTick : cameraScaleComparison != null ? cameraScaleComparison.InWindow(tick) : crowdBenchmark != null || recordedReplay != null ? tick >= CrowdStartTick && tick <= CrowdEndTick : tick >= 7200 && tick <= 9900 || tick >= 10200 && tick <= 12900 || tick >= 13200 && tick <= 14400;
         void UpdateWaveBenchmark()
         {
             var entryTimestamp = Stopwatch.GetTimestamp();
@@ -397,7 +406,7 @@ namespace Game.App
                     benchmarkTimings.Add(new BenchmarkTiming { observedFrame = Time.frameCount, observationTimestamp = Stopwatch.GetTimestamp(), value = benchmarkTimingBuffer[0] });
                 }
                 var terminalTail=offlineReplayRequested && heroProductionReview!=null && CurrentFrame.Lord.Health<=0 && CurrentFrame.Tick>=BenchmarkDisplayEnd && heroTerminalTailFrames<heroProductionReview.TerminalTailFrames;
-                if (!terminalTail && (heroMotionWindow != null || cameraScaleComparison != null || recordedReplay != null) && CurrentFrame.Tick >= BenchmarkDisplayEnd)
+                if (!terminalTail && (firstPlayableBenchmark != null || heroMotionWindow != null || cameraScaleComparison != null || recordedReplay != null) && CurrentFrame.Tick >= BenchmarkDisplayEnd)
                 {
                     if (offlineReplayCapture != null && offlineReplayCapture.AudioPending) return;
                     // Continue the exact original suffix without rendering or fabricated input.
@@ -452,10 +461,15 @@ namespace Game.App
                     using (BenchmarkPacing.Auto())
                     {
 #endif
-                    accumulator += offlineReplayRequested ? OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
+                    if (firstPlayableBenchmark != null && !firstPlayableMeasurementStarted)
+                    {
+                        // Anchor the measured window at StartTick even if the first post-warmup frame is slow.
+                        firstPlayableMeasurementStarted = true; accumulator = 0;
+                    }
+                    else accumulator += offlineReplayRequested ? OfflineReplayCapture.FrameSeconds : Time.unscaledDeltaTime;
                     var step = 1d / CurrentFrame.TickRate;
                     var advanceBudget = new FrameAdvanceBudget(!offlineReplayRequested);
-                    while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count && ((heroMotionWindow == null && cameraScaleComparison == null && recordedReplay == null) || CurrentFrame.Tick < BenchmarkDisplayEnd))
+                    while (accumulator >= step && benchmarkCommand < benchmarkReplay.Commands.Count && ((firstPlayableBenchmark == null && heroMotionWindow == null && cameraScaleComparison == null && recordedReplay == null) || CurrentFrame.Tick < BenchmarkDisplayEnd))
                     {
                         var command = benchmarkReplay.Commands[benchmarkCommand];
                         if (command.Kind == ReplayCommandKind.Advance && !advanceBudget.TryAdvance(ref accumulator, step)) break;
@@ -600,6 +614,14 @@ namespace Game.App
             profilerTrace.Stop(CurrentFrame?.Tick ?? 0, exception == null ? "run-complete" : "error");
 #endif
             var result = new BenchmarkResult { frameCapacity = benchmarkFrames.Capacity, timingCapacity = benchmarkTimings.Capacity, benchmarkMode = benchmarkMode, profilerEnabled = benchmarkProfilerEnabled, gcMode = UnityEngine.Scripting.GarbageCollector.GCMode.ToString(), commit = BuildIdentity.Commit, sourceHash = BuildIdentity.SourceHash, sourceDirty = BuildIdentity.SourceDirty, replaySha256 = benchmarkReplaySha, developmentBuild = UnityEngine.Debug.isDebugBuild, width = Screen.width, height = Screen.height, targetFrameRate = Application.targetFrameRate, vSyncCount = QualitySettings.vSyncCount, frameTimingEnabled = FrameTimingManager.IsFeatureEnabled(), interrupted = benchmarkInterrupted, frames = benchmarkFrames.Count, renderTimingSamples = benchmarkTimings.Count, platform = Application.platform.ToString(), graphicsApi = SystemInfo.graphicsDeviceType.ToString(), quality = QualitySettings.names[QualitySettings.GetQualityLevel()], error = exception?.ToString() };
+            result.profile = CanonicalContent.ProfileName;
+            if (firstPlayableBenchmark != null)
+            {
+                result.fixture = FirstPlayableBenchmark.Fixture;
+                result.windows = FirstPlayableBenchmark.StartTick + "-" + FirstPlayableBenchmark.EndTick;
+                result.currentDataHash = CanonicalContent.DataHash;
+                result.playbackBoundary = "FP01 invulnerable stress replay, not normal play. Exact original commands: headless prefix to tick19891, 120 rendered warmup frames, uncaptured window through tick20790, headless suffix to the original tick27000 terminal hash. Debug inputs SetInvulnerable and GrantLevel retained. World draw calls exclude UI/pipeline passes. No timing from prefix, warmup or suffix is acceptance evidence.";
+            }
             result.foregroundPolicy = "pause-input-exclude-boundary-resume-v1";
             result.exclusionLedgerContract = "Excluded intervals identify skipped frame IDs. Their timestamp spans may overlap foreground work retained in partialBoundary rows; they are not pure excluded-duration totals. Use each boundary row excludedBackgroundMs for its excluded duration.";
             result.foregroundAppEvidence = "foreground-app-events.csv external NSWorkspace observer required";
@@ -727,6 +749,7 @@ namespace Game.App
             Directory.CreateDirectory(benchmarkOutput);
             benchmarkExclusions.Clear(); benchmarkFocusEvents.Clear();
             benchmarkFrames.Clear(); benchmarkTimings.Clear(); benchmarkLastTiming = 0;
+            firstPlayableMeasurementStarted = false;
             benchmarkCommand = 0; benchmarkWarmFrames = 120; benchmarkPending = default; benchmarkHasPending = false;
             benchmarkMovement = default; benchmarkTraceWindow = 0; benchmarkTraceEndTick = 0; benchmarkStallTraceAttempt = 0;
             benchmarkProfilerEnabled = benchmarkProfileRequested;

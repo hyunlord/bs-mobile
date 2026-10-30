@@ -5,12 +5,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using Game.App;
 using Game.App.Generated;
 using Game.View;
 using NUnit.Framework;
 using SowSiege.Core;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace Tests.PlayMode
@@ -181,8 +184,10 @@ namespace Tests.PlayMode
             var image = new Texture2D(width, height, TextureFormat.RGB24, false);
             var world = owner.AddComponent<WorldRenderer>();
             var written = 0; var retained = new HashSet<long>();
+            var priorCaptureRate = Time.captureFramerate;
             try
             {
+                Time.captureFramerate = 60;
                 var initial = session.View.CaptureFrame(); var settings = CanonicalContent.Presentation.Camera;
                 world.Initialize(camera, new WorldCameraSettings(settings.WorldUnitsPerUnityUnit, settings.MinHalfHeight, settings.MaxHalfHeight, settings.EstatePadding, settings.FollowMilliseconds, settings.ZoomMilliseconds), replay.Header.Options.Run.EstateId, initial.MapWidth, initial.MapHeight);
                 yield return PlayModeCaptureGuard.WaitForShaders("FP recorded range setup");
@@ -239,13 +244,87 @@ namespace Tests.PlayMode
                 Assert.That(checkedCheckpoints, Is.EqualTo(replay.Checkpoints.Count));
                 Assert.That(written, Is.EqualTo((end - start + 1) * 2));
                 Assert.That(retained.SetEquals(stillCommands), Is.True);
+                if (Environment.GetEnvironmentVariable("FP_QA_SUMMARY") == "1")
+                {
+                    Assert.That(session.View.Status, Is.EqualTo(RunStatus.Completed), "Summary capture requires the actual completed replay.");
+                    var terminal = session.View.CaptureFrame();
+                    world.Present(terminal, terminal, session.View.CaptureFirstPlayable(), 1, 0, new Rect(0, 0, width, height));
+                    camera.targetTexture = null;
+                    yield return null;
+                    yield return CaptureRecordedSummary(session, output, manifest);
+                    camera.targetTexture = target;
+                    Assert.That(session.ComputeStateHash(), Is.EqualTo(replay.End.StateHash), "UI must not mutate replay state.");
+                }
                 manifest.complete = true; manifest.terminalHash = session.ComputeStateHash(); manifest.verifiedCheckpoints = checkedCheckpoints;
                 File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
             }
             finally
             {
+                Time.captureFramerate = priorCaptureRate;
                 File.WriteAllText(manifestPath, JsonUtility.ToJson(manifest, true));
                 camera.targetTexture = null; target.Release(); Object.Destroy(target); Object.Destroy(image); Object.Destroy(owner); Object.Destroy(cameraOwner);
+            }
+            yield return null;
+        }
+
+        static IEnumerator CaptureRecordedSummary(InteractiveSession session, string output, RangeManifest manifest)
+        {
+            var frame = session.View.CaptureFrame(); var fp = session.View.CaptureFirstPlayable();
+            var requested = new[] { "core:heirloom_service", "core:seed_crown" };
+            Assert.That(fp.Charters.Contains(requested[0]), Is.True, "Actual replay must own the charter.");
+            Assert.That(fp.Evolutions.Any(e => e.Id == requested[1] && e.Activated), Is.True, "Actual replay must activate the evolution.");
+            var priorWidth = Screen.width; var priorHeight = Screen.height;
+            var owner = new GameObject("Actual replay summary UI", typeof(RectTransform));
+            Font font = null;
+            try
+            {
+                PlayModeWindow.SetCustomRenderingResolution(390, 844, "FP actual summary QA");
+                yield return null; yield return null;
+                font = FontProvider.Create(new[] { "한 해 완료 사망 생존 레벨 처치 수확 보스 격파 미격파 경험치 출처 사냥 세금 피해 비중 무기 도구 아군 다시 하기 나가기 이번 판 빌드" });
+                var ui = owner.AddComponent<UiShell>(); ui.Initialize(font);
+                UiRunPanels.Summary(ui, session.GetSummary(), frame, fp,
+                    new Dictionary<string, ContentDisplay>(StringComparer.Ordinal), () => { }, () => { });
+                yield return null; yield return null; ui.SynchronizeViewport(); Canvas.ForceUpdateCanvases();
+                var scroll = ui.GetComponentInChildren<ScrollRect>(); Assert.That(scroll, Is.Not.Null);
+                Rect Pixels(RectTransform rect)
+                {
+                    var corners = new Vector3[4]; rect.GetWorldCorners(corners);
+                    return Rect.MinMaxRect(corners[0].x, corners[0].y, corners[2].x, corners[2].y);
+                }
+                foreach (var id in requested)
+                {
+                    var icons = ui.GetComponentsInChildren<Image>().Where(i => i.name == "Icon " + id).ToArray();
+                    Assert.That(icons.Length, Is.EqualTo(1), "Actual summary icon " + id);
+                    var icon = icons[0]; var visible = false;
+                    for (var step = 0; step <= 40; step++)
+                    {
+                        scroll.verticalNormalizedPosition = 1 - step / 40f;
+                        yield return null; Canvas.ForceUpdateCanvases();
+                        var viewport = Pixels(scroll.viewport); var bounds = Pixels(icon.rectTransform);
+                        if (viewport.Contains(bounds.min) && viewport.Contains(bounds.max)) { visible = true; break; }
+                    }
+                    Assert.That(visible, Is.True, "Summary icon must be entirely inside the actual scroll viewport: " + id);
+                    var filename = "summary-" + id.Substring(5) + ".png"; var path = Path.Combine(output, filename);
+                    yield return PlayModeCaptureGuard.WaitForShaders(path);
+                    var probe = PlayModeCaptureGuard.Begin(path); var image = ScreenCapture.CaptureScreenshotAsTexture();
+                    try
+                    {
+                        Assert.That(image.width, Is.EqualTo(390), "Actual summary capture width");
+                        Assert.That(image.height, Is.EqualTo(844), "Actual summary capture height");
+                        PlayModeCaptureGuard.Check(image, probe, path); File.WriteAllBytes(path, image.EncodeToPNG());
+                        manifest.summaryFiles.Add(filename); manifest.summaryIconIds.Add(id);
+                    }
+                    finally { Object.Destroy(image); }
+                }
+                manifest.summaryTick = frame.Tick;
+                manifest.summaryHash = session.ComputeStateHash();
+                manifest.summaryClassification = "Actual UiRunPanels.Summary from completed recorded debug-input replay; not normal-play evidence.";
+            }
+            finally
+            {
+                Object.Destroy(owner); if (font != null) Object.Destroy(font);
+                if (priorWidth > 0 && priorHeight > 0)
+                    PlayModeWindow.SetCustomRenderingResolution((uint)priorWidth, (uint)priorHeight, "Restored FP capture viewport");
             }
             yield return null;
         }
@@ -256,6 +335,10 @@ namespace Tests.PlayMode
             public bool sourceDirty, complete;
             public int startTick, endTick, verifiedCheckpoints;
             public string[] debugCommandKinds;
+            public string summaryClassification, summaryHash;
+            public int summaryTick;
+            public List<string> summaryFiles = new List<string>();
+            public List<string> summaryIconIds = new List<string>();
             public List<RangeFrame> frames = new List<RangeFrame>();
         }
         [Serializable] sealed class RangeFrame

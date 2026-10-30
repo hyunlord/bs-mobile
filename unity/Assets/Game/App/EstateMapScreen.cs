@@ -48,6 +48,7 @@ namespace Game.App
         public bool PreviewValid { get; private set; }
         public string PreviewReason { get; private set; } = "";
         public string Notice { get; private set; } = "";
+        public string LastConstructionReason { get; private set; } = "";
         public bool GoalCollapsed { get; private set; }
         public bool Specializing { get; private set; }
         public string BranchChoice { get; private set; }
@@ -158,7 +159,7 @@ namespace Game.App
         public EstatePlan Plan(EstateDecorRules rules, EstateArt art)
         {
             var estate = State.Estate;
-            var layout = string.Join(";", estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y + "," + b.Level)) + "|" + estate.Active?.BuildingId + "|" + string.Join(",", estate.OpenZones);
+            var layout = string.Join(";", estate.Buildings.Select(b => b.Id + ":" + b.X + "," + b.Y + "," + b.Level)) + "|" + estate.Active?.BuildingId + ":" + EstateConstructionArt.Stage(estate.Active) + "|" + string.Join(",", estate.OpenZones);
             if (plan == null || layout != planLayout) { plan = EstatePlanner.Plan(rules, art, Config, estate); planLayout = layout; }
             return plan;
         }
@@ -182,7 +183,7 @@ namespace Game.App
         public bool SkipTime(long seconds) { skipped += Math.Max(0, seconds); return Advance(); }
 
         static string Shape(MetaEstateState estate) =>
-            string.Join(",", estate.Buildings.Select(b => b.Level + (b.Branch ?? ""))) + "|" + estate.Active?.BuildingId + "|" +
+            string.Join(",", estate.Buildings.Select(b => b.Level + (b.Branch ?? ""))) + "|" + estate.Active?.BuildingId + ":" + EstateConstructionArt.Stage(estate.Active) + "|" +
             string.Join(",", estate.Reservations.Select(r => r.BuildingId)) + "|" + string.Join(",", estate.OpenZones) + "|" +
             estate.ZoneWork?.ZoneId + "|" + string.Join(",", estate.AchievedTasks) + "|" + (estate.Buildings.Any(b => b.Stock > 0) ? "stock" : "");
 
@@ -203,8 +204,27 @@ namespace Game.App
             State = result.State; Notice = notice(result.Reason); return result;
         }
 
-        public bool StartWork(int id) => Apply(AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id),
-            reason => reason == "started" ? Name(Building(id).Kind) + " 공사 시작" : reason == "reserved" ? Name(Building(id).Kind) + " 예약" : ReasonText(reason)).Done;
+        // Core commands operate on a copy. Discard this result's state so sheet eligibility uses the same rules without
+        // spending resources, advancing the screen clock or changing its construction queue (#390).
+        public (bool Allowed, string Reason, string Text) ConstructionPreview(int id)
+        {
+            var result = AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id);
+            var parent = Kind(Building(id).Kind).Parent;
+            var text = result.Done ? "" : result.Reason == "parent-required" && parent != null
+                ? Name(parent) + " Lv1 필요" : ReasonText(result.Reason);
+            return (result.Done, result.Reason, text);
+        }
+
+        public bool StartWork(int id)
+        {
+            var result = AccountEstate.StartConstruction(Catalog, Config, State, Monotonic, Wall, id);
+            LastConstructionReason = result.Reason;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!result.Done) UnityEngine.Debug.Log("Estate construction rejected: config=" + Config.Version + " building=" + id + " reason=" + result.Reason);
+#endif
+            return Apply(result, reason => reason == "started" ? Name(Building(id).Kind) + " 공사 시작" :
+                reason == "reserved" ? Name(Building(id).Kind) + " 예약" : ReasonText(reason)).Done;
+        }
 
         public bool CancelReservation(int id) => Apply(AccountEstate.CancelReservation(Catalog, Config, State, Monotonic, Wall, id),
             reason => reason == "cancelled" ? "예약을 취소했습니다" : ReasonText(reason)).Done;

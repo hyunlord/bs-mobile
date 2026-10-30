@@ -64,19 +64,64 @@ namespace Tests.PlayMode
         }
 
         [UnityTest, Timeout(180000)]
-        public IEnumerator DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
+        public IEnumerator EstateDevelopmentChromeIsAbsentWithoutExplicitOptIn()
         {
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var account = MetaSaveCodec.Encode(app.Progression.State);
+            var screen = app.EstateMap;
+            foreach (var development in new[] { false, true })
+            {
+                void Render()
+                {
+                    app.Ui.Clear();
+                    PortraitMetaPanels.EstateMap(app.Ui, screen, app.Progression.State, new EstateMapActions(developmentOption: development)
+                    {
+                        Redraw = Render, Depart = () => { }, Settings = () => { }, Navigate = _ => { },
+                    });
+                }
+                Render(); yield return null; Canvas.ForceUpdateCanvases();
+                foreach (var name in new[] { "EstateMap.Decor", "EstateMap.Skip60", "EstateMap.Skip600" })
+                    Assert.That(Buttons(name).Count(button => button.name == name), Is.EqualTo(development ? 1 : 0), name);
+                Assert.That(Rects("EstateMap.ZoomLevel").Length, Is.EqualTo(development ? 1 : 0));
+                Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("영지 시제품 · 저장 안 함")), Is.EqualTo(development));
+                Assert.That(Buttons("EstateMap.ZoomIn").Length, Is.EqualTo(1), "Normal map zoom remains available.");
+                Assert.That(Buttons("EstateMap.ZoomOut").Length, Is.EqualTo(1));
+                Assert.That(Buttons("EstateMap.QueueToggle").Length, Is.EqualTo(1));
+                yield return Capture(development ? "estate-development-chrome-on" : "estate-development-chrome-off");
+                if (development)
+                {
+                    var before = screen.DecorEnabled;
+                    Click("EstateMap.Decor"); yield return null;
+                    Assert.That(screen.DecorEnabled, Is.EqualTo(!before), "Development functionality is preserved.");
+                    Click("EstateMap.Decor"); yield return null;
+                }
+            }
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The visibility policy does not change account save bytes.");
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator HistoricalR7DevelopmentOptionSwitchesTheEstateTabToTheIsometricMapAndBack()
+        {
+            var historicalCatalog = CanonicalContent.CreateMetaCatalog();
+            var historicalConfig = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            SaveFixture(historicalCatalog, AccountEstate.NewPrototype(historicalCatalog, historicalConfig, 0, 0));
             yield return Boot(); Click("Title.Enter"); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4), "The option is off by default: the manor page is unchanged.");
+            Assert.That(app.Progression.State.Estate?.ConfigVersion, Is.EqualTo(historicalConfig.Version));
             var account = MetaSaveCodec.Encode(app.Progression.State);
 
             yield return SetOption(true); yield return ScreenIs("EstateMap");
-            var screen = app.EstateMap; var config = CanonicalContent.CreateAccountEstateConfig();
-            Assert.That(Rects("EstateMap.Building:").Length, Is.EqualTo(config.Buildings.Length));
+            var screen = app.EstateMap;
+            Assert.That(screen.FromSave, Is.True);
+            Assert.That(screen.Config.Version, Is.EqualTo(historicalConfig.Version));
+            Assert.That(Rects("EstateMap.Building:").Length, Is.EqualTo(screen.State.Estate.Buildings.Count(b => b.Level > 0 || screen.UnderConstruction(b.Id))));
+            foreach (var site in screen.State.Estate.Buildings.Where(b => b.Level == 0 && !screen.UnderConstruction(b.Id)))
+                Assert.That(Rects("EstateMap.Site:" + site.Id + ":").Length, Is.EqualTo(1), "An unbuilt site uses one approved Astra footprint instead of temporary separate fragments.");
             Assert.That(Buttons("EstateMap.Building:"), Is.Empty, "Buildings carry no rectangular buttons; taps use the diamond grid.");
             Assert.That(Rects("EstateMap.NameTag"), Is.Empty, "Names are hidden until a building is selected.");
             Assert.That(Buttons("Estate.Priority:"), Is.Empty);
-            var expected = screen.State.Estate.Buildings.OrderBy(b => EstateMapModel.SortY(b.X, b.Y, 2, 2)).ThenBy(b => b.Id).Select(b => "EstateMap.Building:" + b.Id).ToArray();
+            var expected = screen.State.Estate.Buildings.Where(b => b.Level > 0 || screen.UnderConstruction(b.Id)).OrderBy(b => EstateMapModel.SortY(b.X, b.Y, 2, 2)).ThenBy(b => b.Id).Select(b => "EstateMap.Building:" + b.Id).ToArray();
             Assert.That(Rects("EstateMap.Building:").OrderBy(r => r.GetSiblingIndex()).Select(r => r.name).ToArray(), Is.EqualTo(expected), "Draw order is front corner y, then instance order.");
             // #379: the first visit frames the lit land with a ring of night (key art C); the map carries no zone labels and one
             // continuous night; the marker for the next zone shows only in the whole view.
@@ -86,9 +131,16 @@ namespace Tests.PlayMode
             Assert.That(app.Ui.GetComponentsInChildren<Text>().Any(t => t.text.Contains("탐사로 열 땅")), Is.False, "No zone labels on the map.");
             Assert.That(Named("EstateMap.NextZone", true).gameObject.activeSelf, Is.False);
             var lit = screen.Config.Zones.Single(z => z.OpenAtStart);
-            Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThan(10), "Night shows beside the lit land.");
+            Assert.That(map.GridToViewport(new Vector2(lit.X, lit.Y + lit.Height)).x, Is.GreaterThanOrEqualTo(-.01f), "The complete opening remains inside the viewport.");
+            foreach (var corner in new[] { new Vector2(lit.X, lit.Y), new Vector2(lit.X + lit.Width, lit.Y),
+                new Vector2(lit.X, lit.Y + lit.Height), new Vector2(lit.X + lit.Width, lit.Y + lit.Height) })
+            {
+                var point = map.GridToViewport(corner);
+                Assert.That(point.x, Is.InRange(-.01f, map.Viewport.x + .01f));
+                Assert.That(point.y, Is.InRange(map.TopInset - .01f, map.Viewport.y - map.BottomInset + .01f));
+            }
             var lightDiameter = Mathf.Max(lit.Width, lit.Height) * Mathf.Sqrt(2) * EstateMapModel.HalfWidth;
-            Assert.That(lightDiameter * map.Scale / map.Viewport.x, Is.EqualTo(.6f).Within(.02f), "The rounded first light occupies about sixty percent of the portrait width (#386).");
+            Assert.That(lightDiameter * map.Scale / map.Viewport.x, Is.EqualTo(Mathf.Sqrt(.5f)).Within(.02f), "r7 fits its entire 12x12 projected opening while keeping rounded light (#389).");
             yield return Capture("estate-map-first");
             yield return NightComparison("estate-map-first");
             Assert.That(PlayerPrefs.GetString(prefix + "estateMapView", ""), Is.Empty, "Nothing is remembered until the player moves the map.");
@@ -145,15 +197,16 @@ namespace Tests.PlayMode
             // At building zoom the original footprint leaves the screen once the player pans to the destination; the redraw
             // after the tap must keep the destination preview in view (review on #369).
             View().Step(1); yield return null; Assert.That(screen.Map.Zoom, Is.EqualTo(EstateMapModel.BuildingDetail));
-            Focus(C(4, 4) + new Vector2(.5f, .5f)); Tap(C(4, 4)); yield return null;
-            Assert.That(screen.Preview, Is.EqualTo(C(4, 4))); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
-            Assert.That(screen.Map.InView(C(5, 5)), Is.True, "The destination preview stays on screen after the tap redraws the page.");
+            var destination = VacantCell(screen, 2, 2, screen.Centre(forge.Id));
+            Focus(destination + new Vector2(.5f, .5f)); Tap(destination); yield return null;
+            Assert.That(screen.Preview, Is.EqualTo(destination)); Assert.That(screen.PreviewValid, Is.True, screen.PreviewReason);
+            Assert.That(screen.Map.InView(destination + Vector2.one), Is.True, "The destination preview stays on screen after the tap redraws the page.");
             Assert.That(screen.Map.InView(screen.Centre(forge.Id)), Is.False, "The camera did not jump back to the original footprint.");
             View().Step(-1); yield return null;
             yield return Capture("estate-map-move-valid");
             Click("EstateMap.Confirm"); yield return null;
             Assert.That(screen.Moving, Is.False);
-            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(C(4, 4).x)); Assert.That(screen.Building(forge.Id).Y, Is.EqualTo(C(4, 4).y));
+            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(destination.x)); Assert.That(screen.Building(forge.Id).Y, Is.EqualTo(destination.y));
 
             var home = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:home");
             Click("EstateMap.Move"); yield return null;
@@ -162,16 +215,159 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.Confirm").interactable, Is.False);
             yield return Capture("estate-map-move-blocked");
             Click("EstateMap.Cancel"); yield return null;
-            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(C(4, 4).x), "Cancel keeps the last confirmed place.");
-            Focus(C(3, 0) + new Vector2(.5f, .5f)); Tap(C(3, 0)); yield return null;
+            Assert.That(screen.Building(forge.Id).X, Is.EqualTo(destination.x), "Cancel keeps the last confirmed place.");
+            var empty = VacantCell(screen, 1, 1, screen.Centre(forge.Id));
+            Focus(empty + new Vector2(.5f, .5f)); Tap(empty); yield return null;
             Assert.That(screen.Selected, Is.Null, "A tap on empty open ground closes the selection.");
 
-            Assert.That(app.Progression.State.Estate, Is.Null);
+            Assert.That(app.Progression.State.Estate?.ConfigVersion, Is.EqualTo(historicalConfig.Version), "A historical account keeps its persisted estate while the development copy changes.");
             Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "The prototype only reads the account.");
             yield return SetOption(false); yield return ScreenIs("Estate");
             Assert.That(Buttons("Estate.Priority:").Length, Is.EqualTo(4));
             Assert.That(measuredBreaks.On, Is.LessThanOrEqualTo(17 + 4), "Base on17 plus at most four landmark batches.");
             Assert.That(measuredBreaks.Off, Is.LessThanOrEqualTo(9 + 4), "Base off9 plus at most four landmark batches.");
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator FreshR8EstateBuildsItsGranaryBeforeTheFieldAndCompletesWithoutAccountWrites()
+        {
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var screen = app.EstateMap;
+            var account = MetaSaveCodec.Encode(app.Progression.State);
+            Assert.That(screen.Config.Version, Is.EqualTo("m3a-prototype-r8"));
+            Assert.That(screen.FromSave, Is.False);
+            Assert.That(app.Progression.State.Estate, Is.Null, "A fresh account has no persisted estate; the map owns a development copy.");
+            Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
+            Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
+            yield return Capture("estate-r8-first-entry");
+            ZoomTo(screen.Map.WholeMap);
+            yield return Capture("estate-r8-whole");
+            ZoomTo(screen.Map.Opening);
+
+            var field = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:field");
+            Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
+            Assert.That(Named("EstateMap.Build").interactable, Is.False);
+            Assert.That(app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "EstateMap.ConstructionReason").text, Is.EqualTo("곡물창고 Lv1 필요"));
+            Assert.That(screen.State.Estate.Active, Is.Null, "A fresh field still requires the granary; do not grant resources or bypass Core.");
+            Assert.That(screen.ConstructionPreview(field.Id).Reason, Is.EqualTo("parent-required"));
+            yield return Capture("estate-r8-field-parent-required");
+            var granary = screen.State.Estate.Buildings.Single(b => b.Kind == "meta:granary");
+            Focus(screen.Centre(granary.Id)); Tap(new Vector2Int(granary.X, granary.Y)); yield return null;
+            Click("EstateMap.Build"); yield return null;
+            Assert.That(screen.LastConstructionReason, Is.EqualTo("started"));
+            Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(granary.Id));
+            yield return CaptureNaturalConstruction(granary.Id, false, "estate-r8-granary");
+            Assert.That(screen.Building(granary.Id).Level, Is.EqualTo(1));
+
+            Focus(screen.Centre(field.Id)); Tap(new Vector2Int(field.X, field.Y)); yield return null;
+            Click("EstateMap.Build"); yield return null;
+            Assert.That(screen.LastConstructionReason, Is.EqualTo("started"));
+            Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id));
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty, "The selected building sheet names construction without covering its artwork.");
+            var fieldImage = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
+            Assert.That(fieldImage.sprite, Is.SameAs(EstateArt.Load().Get("construction-field-1-lit")));
+            Click("EstateMap.Close"); yield return null;
+            Canvas.ForceUpdateCanvases(); View().Layout();
+            var sign = Rects("EstateMap.ConstructionSign").Single();
+            var viewport = Named("EstateMap.Viewport", false);
+            var fieldKind = screen.Kind(field.Kind);
+            var front = screen.Map.GridToViewport(new Vector2(field.X + fieldKind.Width, field.Y + fieldKind.Height));
+            var worldFront = viewport.TransformPoint(new Vector3(viewport.rect.xMin + front.x, viewport.rect.yMax - front.y));
+            var signCorners = new Vector3[4]; sign.GetWorldCorners(signCorners);
+            Assert.That(signCorners[1].y, Is.LessThanOrEqualTo(worldFront.y), "Closed-sheet label stays below the foundation front edge.");
+            Tap(new Vector2Int(field.X, field.Y)); yield return null;
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty, "Reopening the sheet removes the redundant map label.");
+            yield return CaptureNaturalConstruction(field.Id, true, "estate-r8-field");
+            Assert.That(screen.Building(field.Id).Level, Is.EqualTo(1));
+            Assert.That(screen.State.Estate.Active, Is.Null);
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
+            yield return Capture("estate-r8-field-complete");
+            Assert.That(app.Progression.State.Estate, Is.Null, "Construction must not persist the fresh development estate.");
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account), "Only the prototype copy changes.");
+        }
+
+        // Actual Editor development-copy UI: normal Build commands and the view's real monotonic clock only.
+        // No native claim, synthetic sprite substitution, resource grant or development time skip.
+        IEnumerator CaptureNaturalConstruction(int buildingId, bool field, string name)
+        {
+            var screen = app.EstateMap;
+            Assert.That(screen.State.Estate.Active?.BuildingId, Is.EqualTo(buildingId));
+            var deadline = Time.realtimeSinceStartupAsDouble + screen.State.Estate.Active.TotalSeconds + 15;
+            for (var stage = 1; stage <= 3; stage++)
+            {
+                while (EstateConstructionArt.Stage(screen.State.Estate.Active) < stage)
+                {
+                    Assert.That(screen.State.Estate.Active?.BuildingId, Is.EqualTo(buildingId), "Work ended before its stage capture.");
+                    Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline), "Normal construction clock timed out.");
+                    yield return null;
+                }
+                // The normal view requests its redraw when the stage changes; let that redraw settle.
+                yield return null;
+                Assert.That(screen.State.Estate.Active?.BuildingId, Is.EqualTo(buildingId));
+                Assert.That(EstateConstructionArt.Stage(screen.State.Estate.Active), Is.EqualTo(stage), "Do not label a skipped stage as observed.");
+                var role = EstateConstructionArt.Role(field, stage, true);
+                var sprite = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + buildingId).sprite;
+                Assert.That(sprite, Is.SameAs(EstateArt.Load().Get(role)), "Capture the actual stage sprite, not only the clock state.");
+                var captureName = stage == 1 ? name + "-construction" : name + "-construction-stage-" + stage;
+                yield return Capture(captureName);
+                Assert.That(EstateConstructionArt.Stage(screen.State.Estate.Active), Is.EqualTo(stage), "Capture crossed a stage boundary.");
+                var work = screen.State.Estate.Active;
+                var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
+                var csv = Path.Combine(output, "estate-r7-construction-observations.csv");
+                if (!File.Exists(csv)) File.WriteAllText(csv, "name,source,surface,buildingId,stage,totalSeconds,remainingSeconds,role,frame\n");
+                File.AppendAllText(csv, $"{captureName},{BuildIdentity.Commit},Editor-development-copy-normal-clock,{buildingId},{stage},{work.TotalSeconds},{work.RemainingSeconds},{role},{Time.frameCount}\n");
+            }
+            while (screen.State.Estate.Active != null)
+            {
+                Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(buildingId));
+                Assert.That(Time.realtimeSinceStartupAsDouble, Is.LessThan(deadline), "Normal construction completion timed out.");
+                yield return null;
+            }
+            yield return null;
+            Assert.That(screen.Building(buildingId).Level, Is.EqualTo(1));
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
+            if (!field) yield return Capture(name + "-complete");
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator CompletedIronworksUsesApprovedArtInAnExplicitEditorFixture()
+        {
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var config = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            var fixture = AccountEstate.Migrate(catalog, config, MetaEngine.NewGame(catalog), 0, 0);
+            fixture = fixture with
+            {
+                Estate = fixture.Estate with
+                {
+                    Buildings = fixture.Estate.Buildings.Select(b =>
+                        b.Kind == "meta:forge" || b.Kind == "m3a:ironworks" ? b with { Level = 1 } : b).ToArray()
+                }
+            };
+            SaveFixture(catalog, fixture);
+            PlayerPrefs.SetInt(prefix + "estatePrototype", 1); PlayerPrefs.Save();
+            yield return Boot(); Click("Title.Enter"); yield return ScreenIs("EstateMap");
+            var screen = app.EstateMap;
+            var account = MetaSaveCodec.Encode(app.Progression.State);
+            var disk = File.ReadAllBytes(Path.Combine(directory, "progress.bin"));
+            Assert.That(screen.FromSave, Is.True);
+            var ironworks = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:ironworks");
+            Assert.That(ironworks.Level, Is.EqualTo(1));
+            Assert.That(screen.State.Estate.Active, Is.Null);
+            Focus(screen.Centre(ironworks.Id)); Tap(new Vector2Int(ironworks.X, ironworks.Y)); yield return null;
+            var art = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + ironworks.Id);
+            Assert.That(art.sprite, Is.SameAs(EstateArt.Load().Body("ironworks", 1)));
+            Assert.That(art.sprite, Is.Not.SameAs(EstateArt.Load().Body("forge", 1)), "Ironworks cannot reuse forge completion art.");
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty);
+            const string name = "estate-r7-ironworks-complete-editor-fixture";
+            const string provenance = "fixture=Editor saved-state completed forge+ironworks; not native normal-construction evidence; no resource grants or native state mutation";
+            Debug.Log(provenance);
+            yield return Capture(name);
+            var note = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta",
+                name + "-" + Screen.width + "x" + Screen.height + ".png.txt"));
+            File.AppendAllText(note, provenance + "\n");
+            Assert.That(MetaSaveCodec.Encode(app.Progression.State), Is.EqualTo(account));
+            Assert.That(File.ReadAllBytes(Path.Combine(directory, "progress.bin")), Is.EqualTo(disk));
         }
 
         [UnityTest, Timeout(180000)]
@@ -197,9 +393,9 @@ namespace Tests.PlayMode
             Assert.That(Named("EstateMap.Build").GetComponentInChildren<Text>().text, Is.EqualTo("짓기"));
             Click("EstateMap.Build"); yield return null;
             Assert.That(screen.State.Estate.Active.BuildingId, Is.EqualTo(field.Id)); Assert.That(screen.Notice, Is.EqualTo("경작지 공사 시작"));
-            Assert.That(Rects("EstateMap.ConstructionSign").Length, Is.EqualTo(1));
+            Assert.That(Rects("EstateMap.ConstructionSign"), Is.Empty, "The selected building sheet names construction without covering its artwork.");
             var fieldArt = app.Ui.GetComponentsInChildren<Image>().Single(i => i.name == "EstateMap.Building:" + field.Id);
-            Assert.That(fieldArt.sprite, Is.SameAs(EstateArt.Load().Body("field", 1)), "Construction uses empty start-stage furrows.");
+            Assert.That(fieldArt.sprite, Is.SameAs(EstateArt.Load().Get("construction-field-1-lit")), "Construction uses the approved field stage, with its own authored ground anchor.");
             Assert.That(fieldArt.color, Is.EqualTo(Color.white));
             Assert.That(Vector2.Distance(screen.Map.GridToViewport(screen.Centre(field.Id)), screen.Map.VisibleCentre), Is.LessThan(1));
             yield return Capture("estate-flow-build");
@@ -252,6 +448,9 @@ namespace Tests.PlayMode
 
         [UnityTest, Timeout(180000)]
         public IEnumerator HistoricalR5SaveKeepsItsGridThroughTheRealEstateEntry() => HistoricalSave("m3a-prototype-r5", 14);
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator HistoricalR6SaveKeepsItsBytesAndGridThroughTheRealEstateEntry() => HistoricalSave("m3a-prototype-r6", 8);
 
         IEnumerator HistoricalSave(string version, int openedWidth)
         {
@@ -329,7 +528,7 @@ namespace Tests.PlayMode
         {
             Assert.That(screen.DecorEnabled, Is.True);
             var plan = screen.Plan(EstateDecorRules.Load(), EstateArt.Load()).Items;
-            var decorSources = new[] { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant" };
+            var decorSources = new[] { "yard", "roadside", "empty-land", "yard-ground", "fence", "peasant", "soil" };
             var sprites = plan.Count(i => decorSources.Contains(i.Source));
             Assert.That(Rects("EstateMap.Decor:").Length, Is.EqualTo(sprites), "Every planned decoration sprite is on the map.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetComponent<Image>().sprite != null), Is.True, "Buildings draw Astra's stage art.");
@@ -337,17 +536,20 @@ namespace Tests.PlayMode
             var night = Rects("EstateMap.Night").Single(); Assert.That(Rects("EstateMap.Veiled:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "The night covers the land to come.");
             Assert.That(Rects("EstateMap.Landmark:").Length, Is.GreaterThan(0));
             Assert.That(Rects("EstateMap.Landmark:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Large silhouettes remain readable above the night.");
-            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(7), "All seven river patches remain readable.");
+            var riverCount = screen.Config.Version == EstateR8Layout.Version
+                ? EstateR8Layout.Load().placed.Count(p => p.id.StartsWith("river", StringComparison.Ordinal)) : 7;
+            Assert.That(Rects("EstateMap.Landmark:river").Length, Is.EqualTo(riverCount), "Every configured river patch remains readable; historical layouts retain seven.");
             Assert.That(Rects("EstateMap.Lamps").Single().GetSiblingIndex(), Is.LessThan(night.GetSiblingIndex()), "Warm lamps cannot paint brown clouds above the night.");
-            Assert.That(Rects("EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
+            Assert.That(Rects("EstateMap.Site").Where(r => r.name == "EstateMap.Site").Concat(Rects("EstateMap.Decor:yard-ground")).All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Painted yards cannot overwrite the rounded night boundary.");
             Assert.That(Rects("EstateMap.Building:").All(r => r.GetSiblingIndex() > night.GetSiblingIndex()), Is.True, "Buildings in open land stand above the night.");
+            Assert.That(Rects("EstateMap.Site:").All(r => r.GetSiblingIndex() < night.GetSiblingIndex()), Is.True, "Approved flat footprints share the painted ground beneath the rounded night boundary.");
             var on = new int[3]; yield return Batches(on); var breaksOn = EstateMapView.MaterialBreaks(View().transform);
-            CheckBatchBudget("m3a-prototype-r6", "on");
+            CheckBatchBudget(screen.Config.Version, "on");
             yield return Capture("estate-decor-on");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.False);
             Assert.That(Rects("EstateMap.Decor:"), Is.Empty);
             var off = new int[3]; yield return Batches(off); var breaksOff = EstateMapView.MaterialBreaks(View().transform);
-            CheckBatchBudget("m3a-prototype-r6", "off");
+            CheckBatchBudget(screen.Config.Version, "off");
             yield return Capture("estate-decor-off");
             Click("EstateMap.Decor"); yield return null; Assert.That(screen.DecorEnabled, Is.True);
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta")); Directory.CreateDirectory(output);
@@ -368,12 +570,13 @@ namespace Tests.PlayMode
         void CheckBatchBudget(string version, string state)
         {
             var graphics = View().GetComponentsInChildren<Graphic>().Where(g => g.isActiveAndEnabled).ToArray();
-            int WithoutLandmarks()
+            int WithoutLandmarks(bool omitSites = false)
             {
                 Material prior = null; Texture texture = null; var count = 0;
                 foreach (var graphic in graphics)
                 {
                     if (graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)) continue;
+                    if (omitSites && graphic.name.StartsWith("EstateMap.Site:", StringComparison.Ordinal)) continue;
                     var material = graphic.materialForRendering;
                     if (count == 0 || material != prior || texture != graphic.mainTexture)
                     { count++; prior = material; texture = graphic.mainTexture; }
@@ -383,11 +586,22 @@ namespace Tests.PlayMode
             var actual = EstateMapView.MaterialBreaks(View().transform); var baseline = WithoutLandmarks();
             var output = Path.GetFullPath(Path.Combine(Application.dataPath, "../../artifacts/portrait-234/editor-meta"));
             Directory.CreateDirectory(output);
+            var transitions = new System.Text.StringBuilder("index,layer,name,material,texture,newRun,isLandmark,isLv0\n");
+            Material previousMaterial = null; Texture previousTexture = null;
+            for (var index = 0; index < graphics.Length; index++)
+            {
+                var graphic = graphics[index]; var material = graphic.materialForRendering; var texture = graphic.mainTexture;
+                string Quote(string value) => "\"" + (value ?? "").Replace("\"", "\"\"") + "\"";
+                transitions.AppendLine($"{index},{Quote(graphic.transform.parent?.name)},{Quote(graphic.name)},{Quote(material?.name)},{Quote(texture?.name)},{(index == 0 || material != previousMaterial || texture != previousTexture ? 1 : 0)},{graphic.name.StartsWith("EstateMap.Landmark:", StringComparison.Ordinal)},{graphic.name.StartsWith("EstateMap.Site:", StringComparison.Ordinal)}");
+                previousMaterial = material; previousTexture = texture;
+            }
+            File.WriteAllText(Path.Combine(output, $"batch-runs-{version}-{state}.csv"), transitions.ToString());
             File.WriteAllText(Path.Combine(output, $"batch-{version}-{state}.csv"),
-                $"version,decoration,base,landmarks,total\n{version},{state},{baseline},{actual - baseline},{actual}\n");
+                $"version,decoration,actualDecorEnabled,base,landmarks,total,withoutLv0Parts,lv0PartsDelta\n{version},{state},{app.EstateMap.DecorEnabled},{baseline},{actual - baseline},{actual},{WithoutLandmarks(true)},{baseline - WithoutLandmarks(true)}\n");
             Debug.Log($"Estate batch budget {version}/{state}: base={baseline}, landmarks={actual - baseline}, total={actual}");
+            Assert.That(app.EstateMap.DecorEnabled, Is.EqualTo(state == "on"), "Batch label must match the actual decoration switch.");
             Assert.That(actual - baseline, Is.LessThanOrEqualTo(4), "Landmarks must not alternate atlases by Y.");
-            if (version == "m3a-prototype-r6")
+            if (version == "m3a-prototype-r6" || version == "m3a-prototype-r7")
                 Assert.That(baseline, Is.LessThanOrEqualTo(state == "on" ? 17 : 9), "Base drawing budget excludes landmarks.");
         }
 
@@ -414,8 +628,24 @@ namespace Tests.PlayMode
             into[2] = setPass.Valid ? (int)setPass.LastValue : -1;
         }
 
-        // The wide prototype map (#374) keeps the r2 layout shifted by (26, 26) into its centre zone.
-        static Vector2Int C(int u, int v) => new Vector2Int(u + 26, v + 26);
+        // Choose real vacant open ground from the current layout; historical fixed r6 coordinates are not r7 destinations.
+        static Vector2Int VacantCell(EstateMapScreen screen, int width, int height, Vector2 awayFrom)
+        {
+            var candidates = new List<Vector2Int>();
+            foreach (var zone in screen.Config.Zones.Where(screen.Open))
+                for (var x = zone.X; x + width <= zone.X + zone.Width; x++)
+                    for (var y = zone.Y; y + height <= zone.Y + zone.Height; y++)
+                    {
+                        var free = true;
+                        for (var u = x; u < x + width; u++)
+                            for (var v = y; v < y + height; v++)
+                                if (screen.BuildingAt(new Vector2Int(u, v)) != null) free = false;
+                        if (free) candidates.Add(new Vector2Int(x, y));
+                    }
+            Assert.That(candidates, Is.Not.Empty, "The layout must provide vacant ground for the move/selection flow.");
+            return candidates.OrderByDescending(c => Vector2.SqrMagnitude(EstateMapModel.Project(c) - EstateMapModel.Project(awayFrom)))
+                .ThenBy(c => c.x).ThenBy(c => c.y).First();
+        }
 
         EstateMapView View() => app.Ui.GetComponentsInChildren<EstateMapView>().Single();
         RectTransform Named(string name, bool includeInactive) => app.Ui.GetComponentsInChildren<RectTransform>(includeInactive).Single(r => r.name == name);

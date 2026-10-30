@@ -11,6 +11,16 @@ namespace Tests.EditMode
 {
     public sealed class EstateMapTests
     {
+        [TestCase(false, false, false)]
+        [TestCase(false, true, true)]
+        [TestCase(true, false, true)]
+        [TestCase(true, true, true)]
+        public void EstateDevelopmentControlsRequireBuildOrExplicitOption(bool build, bool option, bool expected)
+        {
+            Assert.That(new EstateMapActions(build, option).DevelopmentControls, Is.EqualTo(expected));
+            Assert.That(new EstateMapActions().DevelopmentControls, Is.False, "A normal caller never opts in implicitly.");
+        }
+
         const float Top = 94, Bottom = 72;
         // The wide prototype map (#374) keeps the r2 layout shifted by (26, 26) into its 20×20 centre zone at (20, 20);
         // (45, 30) is closed land in the village extension.
@@ -141,6 +151,32 @@ namespace Tests.EditMode
             Assert.That(model.ScaleAt(model.Opening), Is.LessThan(model.ScaleAt(EstateMapModel.Neighbourhood)));
         }
 
+        [TestCase(390, 844)]
+        [TestCase(390, 932)]
+        public void R7OpeningFitsAllOpenCellsAndKeepsTheHomeNearFiftyPixels(int width, int height)
+        {
+            var config = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r7");
+            var catalog = CanonicalContent.CreateMetaCatalog();
+            var screen = new EstateMapScreen(catalog, config, MetaEngine.NewGame(catalog));
+            var model = screen.Map; var start = config.Zones.Single(z => z.OpenAtStart);
+            Assert.That((start.Width, start.Height), Is.EqualTo((12, 12)));
+            model.SetFrame(new Vector2(width, height), Top, Bottom);
+            model.SetFocus(screen.OpenAreas(0)); model.Restore(model.Opening, model.FocusCentre);
+            foreach (var corner in new[] { new Vector2(start.X, start.Y), new Vector2(start.X + start.Width, start.Y),
+                new Vector2(start.X, start.Y + start.Height), new Vector2(start.X + start.Width, start.Y + start.Height) })
+            {
+                var point = model.GridToViewport(corner);
+                Assert.That(point.x, Is.InRange(-.01f, width + .01f));
+                Assert.That(point.y, Is.InRange(Top - .01f, height - Bottom + .01f));
+            }
+            var art = EstateArt.Load(); var plan = EstatePlanner.Plan(EstateDecorRules.Load(), art, config, screen.State.Estate);
+            var home = screen.State.Estate.Buildings.Single(b => b.Kind == "m3a:home");
+            var body = plan.Items.Single(i => i.BuildingId == home.Id);
+            // Manifest drawRect is the painted extent inside the 256×320 padded body cell, not the full transparent rect.
+            const float paintedHomeHeight = 120.66133333333335f;
+            Assert.That(paintedHomeHeight * body.Width / art.BuildingCanvas.x * model.Scale, Is.InRange(45f, 55f));
+        }
+
         [Test] public void PanStopsAtTheDiamondCornersAndKeepsTheMapBetweenTheBars()
         {
             var model = Model();
@@ -208,7 +244,7 @@ namespace Tests.EditMode
 
         static EstateMapScreen Screen(out MetaState account)
         {
-            var config = CanonicalContent.CreateAccountEstateConfig();
+            var config = CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r6");
             Assert.That(config, Is.Not.Null, "The Unity export carries the M3a prototype config.");
             var catalog = CanonicalContent.CreateMetaCatalog(); account = MetaEngine.NewGame(catalog);
             return new EstateMapScreen(catalog, config, account);

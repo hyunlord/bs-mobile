@@ -43,12 +43,17 @@ while pgrep -x "Sow and Siege" > /dev/null; do sleep 15; done   # 측정 중인 
 - **`$MV` 폴더 전체는 정리 대상에서 항상 제외한다.** 쓰기·삭제는 Claude Code의 야간 측정 담당자만 한다. 다른 에이전트는 앱·로그 등을 읽기만 한다. 사용자 대량 삭제 승인은 이 소유권 경계를 해제하지 않는다.
   - **유일한 잠금 예외:** `$MV/agent-busy.lock`은 모든 Unity·빌드 에이전트가 1절대로 생성하고 자기 잠금만 해제한다. 정리 대상으로 삭제하는 것은 허용하지 않는다.
   - 보호 대상:
-  - 대기열 스크립트: `run-queue.sh`, `run-night-*.sh`, `c05-lib.sh`, `idle-sampler.sh`, `run-estate-demo.sh` 등.
+  - 대기열 스크립트: `run-queue.sh`, `run-night-*.sh`, `step-*.sh`, `c05-lib.sh`, `idle-sampler*.sh`, `run-estate-demo.sh` 등.
   - 결과: `$MV/c05/`, 로그 `$MV/c05/night.log`.
   - 측정용 앱 빌드: `base-*`, `decor-*`, `estate-demo-*`, `e35*-*` 같은 폴더.
 - **`stack-move` 작업 폴더:** 측정 앱의 원본이다. checkout·reset·빌드하지 않는다.
 - **실행 중인 프로세스:** `Sow and Siege` 앱, `caffeinate`, 대기열 셸은 종료하지 않는다.
 - **다른 프로젝트·에이전트의 프로세스:** 종료하지 않는다. 예: `worldsim_probe`, `rustc`, `save_load`, 다른 Chrome·Unity 프로젝트. 측정 스크립트는 이 프로세스가 돌면 기다린다.
+  - **유일한 종료 예외 (2026-10-30 사용자 승인, [#540](https://github.com/hyunlord/bs-mobile/issues/540)):** 야간 측정 중에는 `/System/Applications/Siri AI.app` 프로세스 하나만 종료할 수 있다.
+    - 측정 담당 스크립트(`c05-lib.sh`의 `siri_guard`)가 각 측정 시도 직전에 Siri AI가 떠 있으면 종료한다.
+    - night 로그에 종료 시각, pid, 직전 종료 뒤 다시 뜬 간격을 남긴다.
+    - macOS가 다시 띄울 수 있다. 계속 다시 떠서 측정이 안 되면 기존대로 무효 처리하고 재시도한다.
+    - 시스템 설정 변경이나 권한 요청은 하지 않는다. 다른 에이전트는 이 예외를 쓰지 않는다. 위의 다른 프로세스와 사용자 앱은 그대로 둔다.
 
 ## 4. 작업 폴더 분리
 

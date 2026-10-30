@@ -52,7 +52,7 @@ public static partial class UnityExport
         source.AppendLine("        public static global::SowSiege.Core.AccountEstateConfig CreateAccountEstateConfig(string version = null) => (version ?? " + Literal(AccountEstateConfigLoader.MapPrototypeVersion) + ") switch");
         source.AppendLine("        {");
         foreach (var estateVersion in new[] { AccountEstateConfigLoader.PrototypeVersion, AccountEstateConfigLoader.WideMapVersion,
-            AccountEstateConfigLoader.VerticalMapVersion, AccountEstateConfigLoader.NightMapVersion, AccountEstateConfigLoader.MapPrototypeVersion })
+            AccountEstateConfigLoader.VerticalMapVersion, AccountEstateConfigLoader.NightMapVersion, AccountEstateConfigLoader.FirstLoginMapVersion, AccountEstateConfigLoader.PlazaMapVersion, AccountEstateConfigLoader.MapPrototypeVersion })
         {
             var estatePath = AccountEstateConfigLoader.PathFor(directory, estateVersion);
             if (File.Exists(estatePath))

@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+const [source, output, ...extra] = process.argv.slice(2);
+assert.ok(source && output && !extra.length, 'Usage: scan-first-playable-benchmark.mjs SOURCE_SEQUENCE_JSON OUTPUT_CSV');
+const contract = JSON.parse(fs.readFileSync(new URL('../benchmarks/first-playable-fp01/contract.json', import.meta.url)));
+const bytes = fs.readFileSync(source);
+assert.equal(createHash('sha256').update(bytes).digest('hex'), contract.selectionSourceSha256, 'Selection source changed');
+const sequence = JSON.parse(bytes);
+assert.equal(sequence.replaySha256, contract.replaySha256);
+assert.equal(sequence.terminalHash, contract.endHash);
+const rows = sequence.frames.filter((frame, i) => i === 0 || frame.tick !== sequence.frames[i - 1].tick);
+assert.equal(rows.length, contract.measurementEndTick - contract.windows[0][0] + 1);
+const outputRows = rows.map((frame, i) => {
+  assert.equal(frame.tick, contract.windows[0][0] + i);
+  assert.equal(frame.enemyIds.length, frame.enemyKinds.length);
+  const counts = contract.requiredEnemies.map(kind => frame.enemyKinds.filter(id => id === kind).length);
+  assert.ok(counts.every(count => count > 0));
+  return [frame.tick, frame.enemyIds.length, ...counts].join(',');
+});
+fs.writeFileSync(output, ['tick,enemies,stone_breaker,rope_catcher,ember_sapper,bell_thief,whistle_hunter', ...outputRows].join('\n') + '\n', { flag: 'wx' });
+console.log(`FP01 selection: ${rows.length} ticks, all five species present; no performance measurement.`);

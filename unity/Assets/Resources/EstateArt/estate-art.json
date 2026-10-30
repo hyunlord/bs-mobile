@@ -1,22 +1,22 @@
 {
   "version": "estate-art-r1",
-  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24).",
+  "note": "Astra estate art (#375): sources are the listed Release assets; tools/estate-art.mjs downsamples (premultiplied box filter) to maxSize and packs them. To take a re-exported file, download it over the old one and rerun the tool. Tree groups 4-5 and the six frontier traces come from life kits r2 (pad islands removed, user approval 2026-10-24). User-approved 2026-10-26 Lv0 six lit/dark pairs use ASSET-LIST.md floor-centre anchors; roads use the approved straight/bend/fork512 only. Approved r4 grass and six soil patches (2026-10-26) retain original pixels and central anchors; only View dressing uses them. Approved #426 construction 407/412, bank/tree 416/418, carrying workers423; anchors follow Release ASSET-LIST and full256-cell ATLAS-CONTRACT.",
   "atlases": [
     {
       "file": "estate-building-shadows.png",
-      "sha256": "9c49e034158758eaa9ce24f8d9eca96e2473954b3f95f3366a3330d9a9d206b4"
+      "sha256": "cfd471f235076074b0c1b3c53a79c9c6f9604e9631e618d7d26860d65cd78a83"
     },
     {
       "file": "estate-buildings.png",
-      "sha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee"
+      "sha256": "258b242a1ffc5dbe51bfd28bf96929e8ad45b35aa96db90945b807e3e1e199f0"
     },
     {
       "file": "estate-decor.png",
-      "sha256": "605d01bd9c0c66e32e86e10e1c3b784fe25bdc511788fde221d5dcf6fd14df55"
+      "sha256": "9ac2ea91acb837d69ee020d5246635c929389483848a262f82e34ae48e11e50f"
     },
     {
       "file": "estate-terrain.png",
-      "sha256": "4838b5bc5ddf925a963f2a7a9fde927df0b32b716ac192418793aa3c9fa7faf3"
+      "sha256": "2297bad7d2c47d5586dc3bfafc6e2b9655ae4bef4d169196bcb149d06cdeee12"
     }
   ],
   "buildings": {
@@ -25,6 +25,98 @@
       "file": "buildings-30-body-atlas.png",
       "sha256": "7c05718d8666074188a49fe309b9f78378e2caf757f20d6ecf9969a66bab71ee"
     },
+    "replacements": [
+      {
+        "id": "scriptorium-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s1-sprout-r3.png",
+        "sha256": "3bc1e27aa95e0e652b6e92d4762ab076327871b17f08568751299d707a6d379e",
+        "rect": [
+          768,
+          960,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "scriptorium-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s2-sprout-r3.png",
+        "sha256": "24c58754e7e737e8a99455d27c49c77cfdb203ef654d6de93840e4634f58959f",
+        "rect": [
+          1024,
+          960,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "scriptorium-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "scriptorium-s3-sprout-r3.png",
+        "sha256": "e157f8a68c9cdf36329c70b710caa680727a8bbf46700970ee59d0256fb77462",
+        "rect": [
+          0,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "barracks-s1",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s1-sprout-r3.png",
+        "sha256": "9d657253d555df176bafc683b1e80118f1e353134b7504e5bd332a809d8dd740",
+        "rect": [
+          256,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "barracks-s2",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s2-sprout-r3.png",
+        "sha256": "080b553c283587019f61616a863b41fd2fedfcc5448ccef3120e81630e95064d",
+        "rect": [
+          512,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "barracks-s3",
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "barracks-s3-sprout-r3.png",
+        "sha256": "4d7e8b395b227d04f56532b4c1dee53dff4c90c6bf30694702013b00558ae285",
+        "rect": [
+          768,
+          1280,
+          256,
+          320
+        ]
+      },
+      {
+        "id": "ironworks-s1",
+        "kind": "ironworks",
+        "stage": 1,
+        "release": "m3-estate-completion-icons-review-435-20261027",
+        "file": "ironworks-complete-r2.png",
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "sha256": "f6d4b50967c1f01be5d542d2c59a6e82dbf02b48f35016a1d2db8b1f3f6d5017",
+        "rect": [
+          0,
+          1920,
+          256,
+          320
+        ]
+      }
+    ],
     "shadowScale": 0.5,
     "canvas": [
       256,
@@ -51,7 +143,8 @@
           177.40800000000002,
           101.54666666666668
         ],
-        "bodyWidth": 117
+        "bodyWidth": 117,
+        "bodyHeight": 89
       },
       {
         "id": "manor-s2",
@@ -73,7 +166,8 @@
           191.14666666666668,
           120.66133333333335
         ],
-        "bodyWidth": 141
+        "bodyWidth": 141,
+        "bodyHeight": 110
       },
       {
         "id": "manor-s3",
@@ -95,7 +189,8 @@
           224.00000000000003,
           150.52800000000002
         ],
-        "bodyWidth": 199
+        "bodyWidth": 199,
+        "bodyHeight": 141
       },
       {
         "id": "house-s1",
@@ -117,7 +212,8 @@
           160.260162601626,
           86.20054200542005
         ],
-        "bodyWidth": 90
+        "bodyWidth": 90,
+        "bodyHeight": 74
       },
       {
         "id": "house-s2",
@@ -139,7 +235,8 @@
           166.93766937669375,
           110.48238482384824
         ],
-        "bodyWidth": 118
+        "bodyWidth": 118,
+        "bodyHeight": 101
       },
       {
         "id": "house-s3",
@@ -161,7 +258,8 @@
           224,
           144.47696476964768
         ],
-        "bodyWidth": 137
+        "bodyWidth": 137,
+        "bodyHeight": 121
       },
       {
         "id": "granary-s1",
@@ -183,7 +281,8 @@
           150.58823529411765,
           114.19607843137254
         ],
-        "bodyWidth": 103
+        "bodyWidth": 103,
+        "bodyHeight": 99
       },
       {
         "id": "granary-s2",
@@ -205,7 +304,8 @@
           196.39215686274508,
           123.6078431372549
         ],
-        "bodyWidth": 129
+        "bodyWidth": 129,
+        "bodyHeight": 113
       },
       {
         "id": "granary-s3",
@@ -227,7 +327,8 @@
           224,
           143.68627450980392
         ],
-        "bodyWidth": 175
+        "bodyWidth": 175,
+        "bodyHeight": 138
       },
       {
         "id": "field-s1",
@@ -249,7 +350,8 @@
           220.5360824742268,
           116.61855670103091
         ],
-        "bodyWidth": 202
+        "bodyWidth": 202,
+        "bodyHeight": 110
       },
       {
         "id": "field-s2",
@@ -271,7 +373,8 @@
           220.5360824742268,
           118.35051546391752
         ],
-        "bodyWidth": 198
+        "bodyWidth": 198,
+        "bodyHeight": 112
       },
       {
         "id": "field-s3",
@@ -293,7 +396,8 @@
           223.99999999999997,
           118.92783505154638
         ],
-        "bodyWidth": 207
+        "bodyWidth": 207,
+        "bodyHeight": 115
       },
       {
         "id": "lumberyard-s1",
@@ -315,7 +419,8 @@
           193.37721518987343,
           100.3746835443038
         ],
-        "bodyWidth": 95
+        "bodyWidth": 95,
+        "bodyHeight": 77
       },
       {
         "id": "lumberyard-s2",
@@ -337,7 +442,8 @@
           205.2860759493671,
           111.71645569620253
         ],
-        "bodyWidth": 171
+        "bodyWidth": 171,
+        "bodyHeight": 99
       },
       {
         "id": "lumberyard-s3",
@@ -359,7 +465,8 @@
           224,
           121.9240506329114
         ],
-        "bodyWidth": 205
+        "bodyWidth": 205,
+        "bodyHeight": 118
       },
       {
         "id": "forge-s1",
@@ -381,7 +488,8 @@
           196.86597938144328,
           110.2680412371134
         ],
-        "bodyWidth": 148
+        "bodyWidth": 148,
+        "bodyHeight": 100
       },
       {
         "id": "forge-s2",
@@ -403,7 +511,8 @@
           221.69072164948452,
           133.36082474226802
         ],
-        "bodyWidth": 191
+        "bodyWidth": 191,
+        "bodyHeight": 121
       },
       {
         "id": "forge-s3",
@@ -425,7 +534,8 @@
           223.99999999999997,
           144.3298969072165
         ],
-        "bodyWidth": 185
+        "bodyWidth": 185,
+        "bodyHeight": 135
       },
       {
         "id": "scriptorium-s1",
@@ -447,7 +557,8 @@
           198.32411067193675,
           156.2687747035573
         ],
-        "bodyWidth": 157
+        "bodyWidth": 157,
+        "bodyHeight": 141
       },
       {
         "id": "scriptorium-s2",
@@ -469,7 +580,8 @@
           216.0316205533597,
           214.26086956521738
         ],
-        "bodyWidth": 192
+        "bodyWidth": 192,
+        "bodyHeight": 205
       },
       {
         "id": "scriptorium-s3",
@@ -491,7 +603,8 @@
           224,
           219.57312252964428
         ],
-        "bodyWidth": 209
+        "bodyWidth": 209,
+        "bodyHeight": 212
       },
       {
         "id": "barracks-s1",
@@ -513,7 +626,8 @@
           208.32,
           149.632
         ],
-        "bodyWidth": 173
+        "bodyWidth": 173,
+        "bodyHeight": 140
       },
       {
         "id": "barracks-s2",
@@ -535,7 +649,8 @@
           213.248,
           202.496
         ],
-        "bodyWidth": 197
+        "bodyWidth": 197,
+        "bodyHeight": 192
       },
       {
         "id": "barracks-s3",
@@ -557,7 +672,8 @@
           224,
           212.352
         ],
-        "bodyWidth": 206
+        "bodyWidth": 206,
+        "bodyHeight": 208
       },
       {
         "id": "watchtower-s1",
@@ -579,7 +695,8 @@
           224,
           134.73684210526315
         ],
-        "bodyWidth": 148
+        "bodyWidth": 148,
+        "bodyHeight": 115
       },
       {
         "id": "watchtower-s2",
@@ -601,7 +718,8 @@
           200.42105263157893,
           202.10526315789474
         ],
-        "bodyWidth": 129
+        "bodyWidth": 129,
+        "bodyHeight": 188
       },
       {
         "id": "watchtower-s3",
@@ -623,7 +741,8 @@
           199.57894736842104,
           229.89473684210526
         ],
-        "bodyWidth": 153
+        "bodyWidth": 153,
+        "bodyHeight": 224
       },
       {
         "id": "well-s1",
@@ -645,7 +764,8 @@
           151.63076923076923,
           99.93846153846152
         ],
-        "bodyWidth": 106
+        "bodyWidth": 106,
+        "bodyHeight": 90
       },
       {
         "id": "well-s2",
@@ -667,7 +787,8 @@
           184.94358974358974,
           121.76410256410256
         ],
-        "bodyWidth": 136
+        "bodyWidth": 136,
+        "bodyHeight": 111
       },
       {
         "id": "well-s3",
@@ -689,7 +810,31 @@
           223.99999999999997,
           132.1025641025641
         ],
-        "bodyWidth": 200
+        "bodyWidth": 200,
+        "bodyHeight": 126
+      },
+      {
+        "id": "ironworks-s1",
+        "kind": "ironworks",
+        "stage": 1,
+        "rect": [
+          0,
+          1920,
+          256,
+          320
+        ],
+        "pivot": [
+          0.5,
+          0.125
+        ],
+        "drawRect": [
+          0,
+          0,
+          256,
+          320
+        ],
+        "bodyWidth": 181,
+        "bodyHeight": 165
       }
     ]
   },
@@ -717,7 +862,8 @@
         2,
         352,
         342
-      ]
+      ],
+      "opaqueHeight": 338
     },
     {
       "id": "terrain-sage",
@@ -742,7 +888,8 @@
         2,
         352,
         338
-      ]
+      ],
+      "opaqueHeight": 332
     },
     {
       "id": "terrain-path",
@@ -767,7 +914,8 @@
         2,
         352,
         348
-      ]
+      ],
+      "opaqueHeight": 344
     },
     {
       "id": "terrain-restoration",
@@ -792,7 +940,8 @@
         2,
         349,
         352
-      ]
+      ],
+      "opaqueHeight": 346
     },
     {
       "id": "river-bend-patch",
@@ -817,7 +966,8 @@
         2,
         352,
         231
-      ]
+      ],
+      "opaqueHeight": 215
     },
     {
       "id": "riverbank-patch",
@@ -842,7 +992,8 @@
         356,
         352,
         250
-      ]
+      ],
+      "opaqueHeight": 223
     },
     {
       "id": "bridge-landing-patch",
@@ -867,7 +1018,8 @@
         356,
         352,
         224
-      ]
+      ],
+      "opaqueHeight": 202
     },
     {
       "id": "frontier-ink-edge",
@@ -892,7 +1044,580 @@
         356,
         352,
         241
-      ]
+      ],
+      "opaqueHeight": 210
+    },
+    {
+      "id": "lv0-stone-foundation-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "01-stone-foundation-lit-2x.png",
+        "sha256": "a5bcb446111ba81334b8bcb5285a439ef18afdb09f68db5fd8622b2d0a814850",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1064,
+        356,
+        272,
+        192
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "lv0-stone-foundation-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "01-stone-foundation-dark-2x.png",
+        "sha256": "95299cac8bf5919cf29975429e25e9e80e93cfa8fb8da6b4a298753d8a7b7a20",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1338,
+        356,
+        272,
+        192
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "lv0-broken-fence-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "02-broken-fence-lit-2x.png",
+        "sha256": "2155587535c0b318b76557025bee4ec5545a47ad6600ccfdbe68021023dbab89",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1612,
+        356,
+        272,
+        192
+      ],
+      "opaqueHeight": 144
+    },
+    {
+      "id": "lv0-broken-fence-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "02-broken-fence-dark-2x.png",
+        "sha256": "d30b13d0653d2a422ca441789033cfc6edb72b8e91fba09fa6f30e43da7eee00",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        2,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 144
+    },
+    {
+      "id": "lv0-charred-frame-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "03-charred-frame-lit-2x.png",
+        "sha256": "ab2e520ae184e4e5547f172745b73fb67b1b577e35f1c284d214a9af6178164e",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        276,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 144
+    },
+    {
+      "id": "lv0-charred-frame-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "03-charred-frame-dark-2x.png",
+        "sha256": "ef524cf0a81000664052b98ac3baac3b052a8a5b6c9ff9dfd50e188909c353a0",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        550,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 144
+    },
+    {
+      "id": "lv0-weedy-field-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "04-weedy-field-lit-2x.png",
+        "sha256": "1860a30cc59cf87c338002b70126c8edc1722969ad67b8ce71f28d5ca5d92ecf",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        824,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "lv0-weedy-field-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "04-weedy-field-dark-2x.png",
+        "sha256": "6c286a608e7ad90d8867e5d9ff233e6d1dd50ad3e4831c080740420773133bf1",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1098,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "lv0-stone-corner-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "05-stone-corner-lit-2x.png",
+        "sha256": "1942f2b16d8b840ec93beacc368953f705c1d3290a58016d38cc32889c4362a8",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1372,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "lv0-stone-corner-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "05-stone-corner-dark-2x.png",
+        "sha256": "2e5c2744426b26038cb8f6970f351c14604b6b703382b3d5eb913587a51b6163",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        1646,
+        608,
+        272,
+        192
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "lv0-survey-stakes-lit",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "06-survey-stakes-lit-2x.png",
+        "sha256": "f7c4514729a377febd2573ed4f046ad25f1792b6d0060fa0863e151b143b4e5f",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        2,
+        802,
+        272,
+        192
+      ],
+      "opaqueHeight": 144
+    },
+    {
+      "id": "lv0-survey-stakes-dark",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "06-survey-stakes-dark-2x.png",
+        "sha256": "8aa721cde0e7d51a00df4fac8d0d59c616d0021f8035f599d554817302d64f94",
+        "size": [
+          272,
+          192
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.375
+      ],
+      "displayWidth": 136,
+      "layer": "ground",
+      "rect": [
+        276,
+        802,
+        272,
+        192
+      ],
+      "opaqueHeight": 144
+    },
+    {
+      "id": "road-straight",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-path-straight-512.png",
+        "sha256": "cbc386bfaf930dc7d5618b6ca5bd70d5a683c3a80a66a8f57855ba79e4952c5d",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        550,
+        802,
+        512,
+        512
+      ],
+      "opaqueHeight": 512
+    },
+    {
+      "id": "road-bend",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-path-bend-512.png",
+        "sha256": "343cc14de6813b8ca8f89dd7e4686420715f8f1d424ef440bb53af6f46ecb1e2",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1064,
+        802,
+        512,
+        512
+      ],
+      "opaqueHeight": 512
+    },
+    {
+      "id": "road-fork",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-path-fork-512.png",
+        "sha256": "abfa7f92dc9793dd436d488d26d5f272a115ecce3abfd388bd2de25e8dd80f79",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        2,
+        1316,
+        512,
+        512
+      ],
+      "opaqueHeight": 512
+    },
+    {
+      "id": "ground-grass-r4",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "ground-grass-r4-512.png",
+        "sha256": "525ea7100690e958802a41315b8caa5a69c47ce613e3a1a7a51b28a1ce5c465e",
+        "size": [
+          512,
+          512
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        516,
+        1316,
+        512,
+        512
+      ],
+      "opaqueHeight": 512
+    },
+    {
+      "id": "soil-patch-r4-01",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-01.png",
+        "sha256": "efa4af485d8d9df3eb527ed028c14a9fa1175be78e9eb3fe4480cb09b1330717",
+        "size": [
+          96,
+          67
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1030,
+        1316,
+        96,
+        67
+      ],
+      "opaqueHeight": 57
+    },
+    {
+      "id": "soil-patch-r4-02",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-02.png",
+        "sha256": "295536e574aa1454467bca72d875b55f4d6fd2ca646281c248009ab84ac8e4d3",
+        "size": [
+          128,
+          48
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1128,
+        1316,
+        128,
+        48
+      ],
+      "opaqueHeight": 33
+    },
+    {
+      "id": "soil-patch-r4-03",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-03.png",
+        "sha256": "360dc245fec563d5a0f12dc18e82f38eb153005b8efc415ff0ee8863779dd82e",
+        "size": [
+          160,
+          110
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1258,
+        1316,
+        160,
+        110
+      ],
+      "opaqueHeight": 95
+    },
+    {
+      "id": "soil-patch-r4-04",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-04.png",
+        "sha256": "141a77dbf5a2697af0178635921f42e9313f3fd1d599b7b5041c4c84d8ba385a",
+        "size": [
+          192,
+          133
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1420,
+        1316,
+        192,
+        133
+      ],
+      "opaqueHeight": 113
+    },
+    {
+      "id": "soil-patch-r4-05",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-05.png",
+        "sha256": "6aa8bad74031339aba0fc7cb9fd0e593907e4c528c31176d4eada59daa7e5fe7",
+        "size": [
+          224,
+          149
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        1614,
+        1316,
+        224,
+        149
+      ],
+      "opaqueHeight": 105
+    },
+    {
+      "id": "soil-patch-r4-06",
+      "atlas": "terrain",
+      "source": {
+        "release": "m3-lv0-sites-review-20261026",
+        "file": "soil-patch-r4-06.png",
+        "sha256": "90ab5fc60b53c11959494798a4878bfddc244e27bb1ba1f215d2061037f23cb2",
+        "size": [
+          256,
+          173
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "displayWidth": null,
+      "layer": "ground",
+      "rect": [
+        2,
+        1830,
+        256,
+        173
+      ],
+      "opaqueHeight": 146
     },
     {
       "id": "yard-earth",
@@ -917,7 +1642,8 @@
         2,
         224,
         158
-      ]
+      ],
+      "opaqueHeight": 152
     },
     {
       "id": "yard-grass",
@@ -942,7 +1668,8 @@
         2,
         224,
         167
-      ]
+      ],
+      "opaqueHeight": 161
     },
     {
       "id": "yard-stone",
@@ -967,7 +1694,8 @@
         2,
         224,
         167
-      ]
+      ],
+      "opaqueHeight": 161
     },
     {
       "id": "garden",
@@ -992,7 +1720,8 @@
         2,
         128,
         101
-      ]
+      ],
+      "opaqueHeight": 97
     },
     {
       "id": "laundry",
@@ -1017,7 +1746,8 @@
         2,
         128,
         83
-      ]
+      ],
+      "opaqueHeight": 79
     },
     {
       "id": "firewood",
@@ -1042,7 +1772,8 @@
         2,
         128,
         85
-      ]
+      ],
+      "opaqueHeight": 81
     },
     {
       "id": "scrap",
@@ -1067,7 +1798,8 @@
         2,
         128,
         83
-      ]
+      ],
+      "opaqueHeight": 80
     },
     {
       "id": "sacks",
@@ -1092,7 +1824,8 @@
         2,
         128,
         88
-      ]
+      ],
+      "opaqueHeight": 84
     },
     {
       "id": "cart",
@@ -1117,7 +1850,8 @@
         2,
         128,
         86
-      ]
+      ],
+      "opaqueHeight": 83
     },
     {
       "id": "books",
@@ -1142,7 +1876,8 @@
         2,
         128,
         99
-      ]
+      ],
+      "opaqueHeight": 96
     },
     {
       "id": "rack",
@@ -1167,7 +1902,8 @@
         2,
         128,
         128
-      ]
+      ],
+      "opaqueHeight": 124
     },
     {
       "id": "saw",
@@ -1192,7 +1928,8 @@
         2,
         128,
         102
-      ]
+      ],
+      "opaqueHeight": 99
     },
     {
       "id": "bucket",
@@ -1217,7 +1954,8 @@
         2,
         128,
         82
-      ]
+      ],
+      "opaqueHeight": 80
     },
     {
       "id": "grass",
@@ -1242,7 +1980,8 @@
         171,
         128,
         84
-      ]
+      ],
+      "opaqueHeight": 80
     },
     {
       "id": "rocks",
@@ -1267,7 +2006,8 @@
         171,
         128,
         71
-      ]
+      ],
+      "opaqueHeight": 68
     },
     {
       "id": "fence",
@@ -1292,7 +2032,8 @@
         171,
         128,
         87
-      ]
+      ],
+      "opaqueHeight": 84
     },
     {
       "id": "cluster-fallow-1",
@@ -1317,7 +2058,8 @@
         171,
         192,
         141
-      ]
+      ],
+      "opaqueHeight": 137
     },
     {
       "id": "cluster-fallow-2",
@@ -1342,7 +2084,8 @@
         171,
         192,
         120
-      ]
+      ],
+      "opaqueHeight": 116
     },
     {
       "id": "cluster-fallow-3",
@@ -1367,7 +2110,8 @@
         171,
         192,
         106
-      ]
+      ],
+      "opaqueHeight": 102
     },
     {
       "id": "cluster-sage-1",
@@ -1392,7 +2136,8 @@
         171,
         192,
         168
-      ]
+      ],
+      "opaqueHeight": 164
     },
     {
       "id": "cluster-sage-2",
@@ -1417,7 +2162,8 @@
         171,
         192,
         92
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "cluster-sage-3",
@@ -1442,7 +2188,8 @@
         171,
         192,
         160
-      ]
+      ],
+      "opaqueHeight": 156
     },
     {
       "id": "cluster-restored-1",
@@ -1467,7 +2214,8 @@
         171,
         192,
         160
-      ]
+      ],
+      "opaqueHeight": 156
     },
     {
       "id": "cluster-restored-2",
@@ -1492,7 +2240,8 @@
         171,
         192,
         98
-      ]
+      ],
+      "opaqueHeight": 95
     },
     {
       "id": "cluster-restored-3",
@@ -1517,7 +2266,8 @@
         341,
         192,
         157
-      ]
+      ],
+      "opaqueHeight": 153
     },
     {
       "id": "tree-cluster-4",
@@ -1542,7 +2292,8 @@
         341,
         174,
         192
-      ]
+      ],
+      "opaqueHeight": 163
     },
     {
       "id": "tree-cluster-5",
@@ -1567,7 +2318,8 @@
         341,
         184,
         192
-      ]
+      ],
+      "opaqueHeight": 158
     },
     {
       "id": "house-fence-kit",
@@ -1592,7 +2344,8 @@
         341,
         192,
         182
-      ]
+      ],
+      "opaqueHeight": 124
     },
     {
       "id": "field-fence-segment",
@@ -1617,7 +2370,8 @@
         341,
         176,
         192
-      ]
+      ],
+      "opaqueHeight": 117
     },
     {
       "id": "field-fence-corner",
@@ -1642,7 +2396,8 @@
         341,
         192,
         190
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "sheep-paddock",
@@ -1667,7 +2422,8 @@
         341,
         192,
         182
-      ]
+      ],
+      "opaqueHeight": 129
     },
     {
       "id": "frontier-ruin",
@@ -1692,7 +2448,8 @@
         341,
         160,
         152
-      ]
+      ],
+      "opaqueHeight": 110
     },
     {
       "id": "frontier-dead-tree",
@@ -1717,7 +2474,8 @@
         341,
         154,
         160
-      ]
+      ],
+      "opaqueHeight": 150
     },
     {
       "id": "frontier-broken-fence",
@@ -1742,7 +2500,8 @@
         341,
         155,
         160
-      ]
+      ],
+      "opaqueHeight": 89
     },
     {
       "id": "frontier-empty-armor",
@@ -1767,7 +2526,8 @@
         341,
         160,
         158
-      ]
+      ],
+      "opaqueHeight": 97
     },
     {
       "id": "frontier-dry-well",
@@ -1792,7 +2552,8 @@
         535,
         160,
         154
-      ]
+      ],
+      "opaqueHeight": 124
     },
     {
       "id": "frontier-stump-tracks",
@@ -1817,7 +2578,8 @@
         535,
         160,
         160
-      ]
+      ],
+      "opaqueHeight": 128
     },
     {
       "id": "bridge-ne-sw-base",
@@ -1842,7 +2604,8 @@
         535,
         224,
         201
-      ]
+      ],
+      "opaqueHeight": 174
     },
     {
       "id": "bridge-ne-sw-rail",
@@ -1867,7 +2630,8 @@
         535,
         224,
         201
-      ]
+      ],
+      "opaqueHeight": 156
     },
     {
       "id": "bridge-nw-se-base",
@@ -1892,7 +2656,8 @@
         535,
         224,
         197
-      ]
+      ],
+      "opaqueHeight": 176
     },
     {
       "id": "bridge-nw-se-rail",
@@ -1917,7 +2682,8 @@
         535,
         224,
         197
-      ]
+      ],
+      "opaqueHeight": 145
     },
     {
       "id": "peasant-farm",
@@ -1942,7 +2708,8 @@
         535,
         66,
         96
-      ]
+      ],
+      "opaqueHeight": 85
     },
     {
       "id": "peasant-carry",
@@ -1967,7 +2734,8 @@
         535,
         54,
         96
-      ]
+      ],
+      "opaqueHeight": 84
     },
     {
       "id": "peasant-build",
@@ -1992,7 +2760,2660 @@
         535,
         60,
         96
-      ]
+      ],
+      "opaqueHeight": 87
+    },
+    {
+      "id": "construction-building-1-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "building-stage1-lit-1x.png",
+        "sha256": "80313fe6a7ea18d8fa665cebbc8de92fc233f979cf5be4379d01699740d4580c",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1416,
+        535,
+        136,
+        160
+      ],
+      "opaqueHeight": 64
+    },
+    {
+      "id": "construction-building-1-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "building-stage1-dark-1x.png",
+        "sha256": "f2655e5096905705bfaf58d38acded833f42165d358cf9396505c115e58ed4ce",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1554,
+        535,
+        136,
+        160
+      ],
+      "opaqueHeight": 65
+    },
+    {
+      "id": "construction-building-2-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "building-stage2-lit-1x.png",
+        "sha256": "1ca7baf266c57ac89f672408abad08591b08723774979744928715352bc53a2a",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1692,
+        535,
+        136,
+        160
+      ],
+      "opaqueHeight": 114
+    },
+    {
+      "id": "construction-building-2-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "building-stage2-dark-1x.png",
+        "sha256": "ad8b75049e622a29c05e1eb1e177c1024489f68fa0e4941173bf9a51e16c1341",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1830,
+        535,
+        136,
+        160
+      ],
+      "opaqueHeight": 114
+    },
+    {
+      "id": "construction-building-3-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "building-stage3-lit-r2-1x.png",
+        "sha256": "413de338b4df2a222a0b463ed835b11ec92e974efa8a200732596849e5b20014",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        2,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 135
+    },
+    {
+      "id": "construction-building-3-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "building-stage3-dark-r2-1x.png",
+        "sha256": "d3ce2dd9b4a179a6ae2cd8462f23a1f5ea45a8edf965b27fc8aa0730e0925186",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        140,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 135
+    },
+    {
+      "id": "construction-field-1-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "field-stage1-lit-1x.png",
+        "sha256": "283bde88db5d3b0f44241a296e34c08c02333d45c563d3cebaf62846f0b77bb1",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        278,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 66
+    },
+    {
+      "id": "construction-field-1-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "field-stage1-dark-1x.png",
+        "sha256": "afacbfc79b4b98284efce3b93eb1859db5db84cc4e1eef431e7b05fa1920cee6",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        416,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 67
+    },
+    {
+      "id": "construction-field-2-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "field-stage2-lit-1x.png",
+        "sha256": "1283f79034fb355430c0907c359eb8d4676d55d2a27e9cc2e320ef38bcc734c5",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        554,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 66
+    },
+    {
+      "id": "construction-field-2-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "field-stage2-dark-1x.png",
+        "sha256": "f94203c10a399811dd76437d7df201c264c97038ad14a2297ebed402d4ccaf80",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        692,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 66
+    },
+    {
+      "id": "construction-field-3-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "field-stage3-lit-1x.png",
+        "sha256": "1838bc8ae5ec4b00f08cb19b0553394f7c23d06b3361277f408ba32d3ab9b9d8",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        830,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 67
+    },
+    {
+      "id": "construction-field-3-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "field-stage3-dark-1x.png",
+        "sha256": "ccbfdb60ead36155a6e53b3c81a9cd21b45873a06f3b4415e5f1a61dff32d0c6",
+        "size": [
+          136,
+          160
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.225
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        968,
+        738,
+        136,
+        160
+      ],
+      "opaqueHeight": 68
+    },
+    {
+      "id": "construction-timber-pile",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "timber-pile-1x.png",
+        "sha256": "c46775ee0eb3c87608302d33f10c1f41efe83bfe94c217f5146544b1ba42c70f",
+        "size": [
+          44,
+          32
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.125
+      ],
+      "displayWidth": 44,
+      "layer": "standing",
+      "rect": [
+        1106,
+        738,
+        44,
+        32
+      ],
+      "opaqueHeight": 23
+    },
+    {
+      "id": "construction-stone-pile",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "stone-pile-1x.png",
+        "sha256": "dfe75cd6612074daa211b3ee80042cbc8fa753c26c1f49bbd4f662232dcccea8",
+        "size": [
+          38,
+          30
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.133333333333
+      ],
+      "displayWidth": 38,
+      "layer": "standing",
+      "rect": [
+        1152,
+        738,
+        38,
+        30
+      ],
+      "opaqueHeight": 18
+    },
+    {
+      "id": "construction-ladder",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "ladder-1x.png",
+        "sha256": "d9f41eb458865709b11a91779de9a857df26ce2f023c232cdb27da8e58ccf498",
+        "size": [
+          40,
+          52
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.076923076923
+      ],
+      "displayWidth": 40,
+      "layer": "standing",
+      "rect": [
+        1192,
+        738,
+        40,
+        52
+      ],
+      "opaqueHeight": 44
+    },
+    {
+      "id": "construction-wheelbarrow",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "wheelbarrow-1x.png",
+        "sha256": "15af2cab6a763c58b75025f1ab33cd5cabe60c19d181286e075b611c6251e9af",
+        "size": [
+          44,
+          40
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.1
+      ],
+      "displayWidth": 44,
+      "layer": "standing",
+      "rect": [
+        1234,
+        738,
+        44,
+        40
+      ],
+      "opaqueHeight": 28
+    },
+    {
+      "id": "construction-worker-hammer",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "worker-hammer-1x.png",
+        "sha256": "75d1041ec0dd127a5c13a0ba3f5d2a3a992a71030754514e6a220915686209ea",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.131578947368
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        1280,
+        738,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "construction-worker-carry",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-construction-review-407-20261026",
+        "file": "worker-carry-1x.png",
+        "sha256": "511003edb7635058a7c5b54eccada6c0ceb05b5df68ca1544678f4fc9a2edc9a",
+        "size": [
+          52,
+          60
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.066666666667
+      ],
+      "displayWidth": 52,
+      "layer": "standing",
+      "rect": [
+        1346,
+        738,
+        52,
+        60
+      ],
+      "opaqueHeight": 53
+    },
+    {
+      "id": "bank-straight-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-straight-01-lit-1x.png",
+        "sha256": "987d7aaf51a0b68c791397b2132de31efe3b39633a89d4526f92edfe2c4dda40",
+        "size": [
+          136,
+          64
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.0625
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1400,
+        738,
+        136,
+        64
+      ],
+      "opaqueHeight": 56
+    },
+    {
+      "id": "bank-straight-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-straight-01-dark-r2-1x.png",
+        "sha256": "b76405bd2a491bc7f2025073bb4f6dae11d6b4ce496cd30fac34b735fac83a48",
+        "size": [
+          136,
+          64
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.0625
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1538,
+        738,
+        136,
+        64
+      ],
+      "opaqueHeight": 56
+    },
+    {
+      "id": "bank-straight-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-straight-02-lit-1x.png",
+        "sha256": "7c352162359ce31871bf9fb773da35a218b6f8c79f86dc71f3f194bb448b8b31",
+        "size": [
+          136,
+          53
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1676,
+        738,
+        136,
+        53
+      ],
+      "opaqueHeight": 45
+    },
+    {
+      "id": "bank-straight-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-straight-02-dark-r2-1x.png",
+        "sha256": "5bbf228cbd2ed2e5cb17bd15320dadaee28ec2779e21c7208fc216b89df975fe",
+        "size": [
+          136,
+          53
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        1814,
+        738,
+        136,
+        53
+      ],
+      "opaqueHeight": 45
+    },
+    {
+      "id": "bank-inside-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-inside-01-lit-1x.png",
+        "sha256": "d8565bcdfd4df5554ec55ca693b1125f45fc2d13ae43b309611a4ac788795f0a",
+        "size": [
+          120,
+          58
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing",
+      "rect": [
+        2,
+        900,
+        120,
+        58
+      ],
+      "opaqueHeight": 50
+    },
+    {
+      "id": "bank-inside-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-inside-01-dark-r2-1x.png",
+        "sha256": "b169cd1e26d4c1a6bf93a12b294863ef80e9771de29f2cbe52a19176c63428d2",
+        "size": [
+          120,
+          58
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing",
+      "rect": [
+        124,
+        900,
+        120,
+        58
+      ],
+      "opaqueHeight": 50
+    },
+    {
+      "id": "bank-inside-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-inside-02-lit-1x.png",
+        "sha256": "c6e3f8e5db9e683499831008e83053795b24a8ec27fc83b21702ed9ad9b0d849",
+        "size": [
+          120,
+          58
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing",
+      "rect": [
+        246,
+        900,
+        120,
+        58
+      ],
+      "opaqueHeight": 50
+    },
+    {
+      "id": "bank-inside-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-inside-02-dark-r2-1x.png",
+        "sha256": "ddcaa89f96c704a1b8aa4ed9e9c11337e4b82699106f736706481c672321efcb",
+        "size": [
+          120,
+          58
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.06896551724137934
+      ],
+      "displayWidth": 120,
+      "layer": "standing",
+      "rect": [
+        368,
+        900,
+        120,
+        58
+      ],
+      "opaqueHeight": 50
+    },
+    {
+      "id": "bank-outside-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-outside-01-lit-1x.png",
+        "sha256": "00ee174becdbc354673cdf4595d76eed497cc5bc9519a649ccac974f6d545a55",
+        "size": [
+          136,
+          70
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.05714285714285716
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        490,
+        900,
+        136,
+        70
+      ],
+      "opaqueHeight": 62
+    },
+    {
+      "id": "bank-outside-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-outside-01-dark-r2-1x.png",
+        "sha256": "3c17c2142dbf5c5a6d1187934a48a9129cf0836c01f3670f0eaddd1150d48b10",
+        "size": [
+          136,
+          70
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.05714285714285716
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        628,
+        900,
+        136,
+        70
+      ],
+      "opaqueHeight": 62
+    },
+    {
+      "id": "bank-outside-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-outside-02-lit-1x.png",
+        "sha256": "404cb19f90140d320d311ff85d1657762a090d00ec77464e8cdb0e1583701486",
+        "size": [
+          136,
+          75
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.053333333333333344
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        766,
+        900,
+        136,
+        75
+      ],
+      "opaqueHeight": 65
+    },
+    {
+      "id": "bank-outside-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-outside-02-dark-r2-1x.png",
+        "sha256": "995182b0ac272a3e48d64b3998dcf08aba5959b007f26f2f2abb60fbe7ce3d3c",
+        "size": [
+          136,
+          75
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.053333333333333344
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        904,
+        900,
+        136,
+        75
+      ],
+      "opaqueHeight": 67
+    },
+    {
+      "id": "bank-bridge-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-bridge-01-lit-1x.png",
+        "sha256": "444bd5493290f1f24900320fa84a0b6441bb121616499977c7378a53553bd988",
+        "size": [
+          88,
+          47
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 88,
+      "layer": "standing",
+      "rect": [
+        1042,
+        900,
+        88,
+        47
+      ],
+      "opaqueHeight": 39
+    },
+    {
+      "id": "bank-bridge-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-bridge-01-dark-r2-1x.png",
+        "sha256": "839a2928273d4f08849bc70cb0de127c46712d737bade095ff41bee6fb2babf6",
+        "size": [
+          88,
+          47
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 88,
+      "layer": "standing",
+      "rect": [
+        1132,
+        900,
+        88,
+        47
+      ],
+      "opaqueHeight": 39
+    },
+    {
+      "id": "bank-bridge-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-bridge-02-lit-1x.png",
+        "sha256": "8687be96837342e94ef9e6628a8458d295dde922367f429de3debb6a9230ac20",
+        "size": [
+          88,
+          53
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 88,
+      "layer": "standing",
+      "rect": [
+        1222,
+        900,
+        88,
+        53
+      ],
+      "opaqueHeight": 45
+    },
+    {
+      "id": "bank-bridge-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "bank-bridge-02-dark-r2-1x.png",
+        "sha256": "15e4d8c0584f5bb825dc65933d3a33f118b893b52f437e7eb27fac703dee8bb7",
+        "size": [
+          88,
+          53
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 88,
+      "layer": "standing",
+      "rect": [
+        1312,
+        900,
+        88,
+        53
+      ],
+      "opaqueHeight": 45
+    },
+    {
+      "id": "estate-tree-conifer-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-conifer-01-lit-1x.png",
+        "sha256": "5cc3e8a7f7cd98fafaa5b91f6786c0d7181afe6b4ce66b91494e4ce1d837e3af",
+        "size": [
+          95,
+          136
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.02941176470588236
+      ],
+      "displayWidth": 95,
+      "layer": "standing",
+      "rect": [
+        1402,
+        900,
+        95,
+        136
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "estate-tree-conifer-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-conifer-01-dark-r2-1x.png",
+        "sha256": "e7065a5726b37b74c665dd460bc28baf6522611d84f5960e8bda4dd48b823b59",
+        "size": [
+          95,
+          136
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.02941176470588236
+      ],
+      "displayWidth": 95,
+      "layer": "standing",
+      "rect": [
+        1499,
+        900,
+        95,
+        136
+      ],
+      "opaqueHeight": 128
+    },
+    {
+      "id": "estate-tree-conifer-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-conifer-02-lit-1x.png",
+        "sha256": "d2158d386cf61108558d37f9c72a65debab9b4beb9adbadae1f012433f30f2e5",
+        "size": [
+          89,
+          124
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.032258064516129004
+      ],
+      "displayWidth": 89,
+      "layer": "standing",
+      "rect": [
+        1596,
+        900,
+        89,
+        124
+      ],
+      "opaqueHeight": 116
+    },
+    {
+      "id": "estate-tree-conifer-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-conifer-02-dark-r2-1x.png",
+        "sha256": "427019609c89496c024606ac38580cbfd79522a1696fa2ff94d772efb6d38f76",
+        "size": [
+          89,
+          124
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.032258064516129004
+      ],
+      "displayWidth": 89,
+      "layer": "standing",
+      "rect": [
+        1687,
+        900,
+        89,
+        124
+      ],
+      "opaqueHeight": 116
+    },
+    {
+      "id": "estate-tree-broadleaf-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-broadleaf-01-lit-1x.png",
+        "sha256": "c6648a3e53deed995b8cc044f588601eb0cc1a418ce3b7a0866a0372719a0673",
+        "size": [
+          124,
+          97
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.04123711340206182
+      ],
+      "displayWidth": 124,
+      "layer": "standing",
+      "rect": [
+        1778,
+        900,
+        124,
+        97
+      ],
+      "opaqueHeight": 89
+    },
+    {
+      "id": "estate-tree-broadleaf-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-broadleaf-01-dark-r2-1x.png",
+        "sha256": "ed87e1063da5fcd47be9e80fb916076e4c887b2416f5160c189c63be77145789",
+        "size": [
+          124,
+          97
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.04123711340206182
+      ],
+      "displayWidth": 124,
+      "layer": "standing",
+      "rect": [
+        1904,
+        900,
+        124,
+        97
+      ],
+      "opaqueHeight": 89
+    },
+    {
+      "id": "estate-tree-broadleaf-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-broadleaf-02-lit-1x.png",
+        "sha256": "128fb662877ff59f3e878314028d602e9347e6a9f4b90edb230bf7f4da4a77d4",
+        "size": [
+          136,
+          96
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.04166666666666663
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        2,
+        1038,
+        136,
+        96
+      ],
+      "opaqueHeight": 88
+    },
+    {
+      "id": "estate-tree-broadleaf-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-broadleaf-02-dark-r2-1x.png",
+        "sha256": "dddffb2c2a4e5416285c416f91308a69efdf1e46ce2d7ca9cf781be74d92aa40",
+        "size": [
+          136,
+          96
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.04166666666666663
+      ],
+      "displayWidth": 136,
+      "layer": "standing",
+      "rect": [
+        140,
+        1038,
+        136,
+        96
+      ],
+      "opaqueHeight": 88
+    },
+    {
+      "id": "estate-tree-shrub-01-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-shrub-01-lit-1x.png",
+        "sha256": "fbbb2947936c198225d078491fd9bb3582970f0a5dbcc02679077bbd105387bc",
+        "size": [
+          104,
+          47
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 104,
+      "layer": "standing",
+      "rect": [
+        278,
+        1038,
+        104,
+        47
+      ],
+      "opaqueHeight": 39
+    },
+    {
+      "id": "estate-tree-shrub-01-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-shrub-01-dark-r2-1x.png",
+        "sha256": "73fb699b2a6daa4858a4bd3bbd9d96ab4a6a29aa06836808cb138c4e16dcc183",
+        "size": [
+          104,
+          47
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.08510638297872342
+      ],
+      "displayWidth": 104,
+      "layer": "standing",
+      "rect": [
+        384,
+        1038,
+        104,
+        47
+      ],
+      "opaqueHeight": 39
+    },
+    {
+      "id": "estate-tree-shrub-02-lit",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-shrub-02-lit-1x.png",
+        "sha256": "49d487acc1c705a962d28d7809c584d7f2fb674da28f1aadf046ef62676b0a77",
+        "size": [
+          84,
+          53
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 84,
+      "layer": "standing",
+      "rect": [
+        490,
+        1038,
+        84,
+        53
+      ],
+      "opaqueHeight": 45
+    },
+    {
+      "id": "estate-tree-shrub-02-dark",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-riverbank-clusters-review-416-20261026",
+        "file": "tree-cluster-shrub-02-dark-r2-1x.png",
+        "sha256": "857dd499c9fbef53ae2d3c70ad04e45fade62f82cc322604ec35a0ef6a238bff",
+        "size": [
+          84,
+          53
+        ]
+      },
+      "pivot": [
+        0.5,
+        0.07547169811320753
+      ],
+      "displayWidth": 84,
+      "layer": "standing",
+      "rect": [
+        576,
+        1038,
+        84,
+        53
+      ],
+      "opaqueHeight": 45
+    },
+    {
+      "id": "worker-carry-se-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-00.png",
+        "sha256": "83e686c19b4e408a512bc85069a1fe780db09413147ff45db478aeeefc1e511c",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        662,
+        1038,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-01.png",
+        "sha256": "274b376c9e244b2dfc8a32581412ac30b36ff02b8dbc879447849159e24cd945",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        920,
+        1038,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-02.png",
+        "sha256": "208df3286a9b556e38d81e9d4d1290420778d26fb2540f22a93a183107a91265",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1178,
+        1038,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-03.png",
+        "sha256": "c4ff9e814eab9bd5f88048d58cb06db50cb643ac3b1b3970d2233811c3feeba8",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1436,
+        1038,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-04.png",
+        "sha256": "07f2c596c86fd377fcf80a29bca725a89946c9a3ed8c6e981367f666cdbcfd15",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1694,
+        1038,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-05.png",
+        "sha256": "34ff2f3713318bd0992fd8c67d9656366908a7ba32d173b34f516d00661ed831",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        2,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-06.png",
+        "sha256": "6c143dddc18c5a6747f55cc3cf2644896f8bb9c5f5d399a1b45107923f290bcd",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        260,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-se-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-07.png",
+        "sha256": "3607fe633e3d6023ec75497b2b7d448cbb863e36285f325b97e82131e2f55b7e",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        518,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 204
+    },
+    {
+      "id": "worker-carry-se-08",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-08.png",
+        "sha256": "14fc722357f8eebf7f1a7bc405106d104bd0ac2522a20d805ac2e4e69669d01d",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        776,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-se-09",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-09.png",
+        "sha256": "8c55e5ca998f2368a79eeda089837930e2e3750fa7fc8efbd0c79ca29387cdab",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1034,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 200
+    },
+    {
+      "id": "worker-carry-se-10",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-10.png",
+        "sha256": "46ee754437596f9ffc9877347e7a5fac55815660703c082fd1f7c683c671541f",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1292,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-se-11",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-11.png",
+        "sha256": "7427445a2e12173bb38802e89885cbf4b1c69cb64aad036a3cd433c2f1e4e777",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1550,
+        1296,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-se-12",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-12.png",
+        "sha256": "c04f1ecf6695f4193c3fb33baa5fb90e126fda64bdcef7c6325b4f54db027e35",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        2,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-se-13",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-13.png",
+        "sha256": "f9c44a1b8fa06677ca1096431037cd880beaf76a750d9a0b24d1bc1cf83fe92e",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        260,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 204
+    },
+    {
+      "id": "worker-carry-se-14",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-14.png",
+        "sha256": "4618d9f0d6c249412caa8733c6674daef022d1af18dd4625f846d94779c3413d",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        518,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 206
+    },
+    {
+      "id": "worker-carry-se-15",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-se-r1-frames-worker-carry-se-15.png",
+        "sha256": "d898e719177a7b99c2f09465f9e7e2475503e57b90f64f17d1f426b0ec59f276",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        776,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-00.png",
+        "sha256": "eb072021b3e6fa41169e16bbb54f4bb6e30499cced0f2c63735052776746d5aa",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1034,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-01.png",
+        "sha256": "fd6dfbf5c74e73ae768e7c7664ebb85d0abe02b844680c58012f2ef1f63ac27a",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1292,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-02.png",
+        "sha256": "22a174f8fbd3d0481f0da5896c1b0e311c81130b81934c2a167ec4e6bbad6646",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1550,
+        1554,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-03.png",
+        "sha256": "10bca1e42987c034659bdebb953a9819913bb6ed7955840f068e996e046dd14f",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        2,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-04.png",
+        "sha256": "25d8526e9b9d0ad34243be997ec8d3332dfe015a4130f5ed75908bc7de63cba8",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        260,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-05.png",
+        "sha256": "4beab0a40e99aff03c58022571f52f25bd84e76c8fa375df0f087b1e495caf42",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        518,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-06.png",
+        "sha256": "f4ad6423965b05b088c76f80e94b134c2fa35dbf16a92d0a0413a9e3baa619e3",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        776,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-carry-sw-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-07.png",
+        "sha256": "c1b86c1c6b2a371db850ef6bd851d38621334fea99fb00eb7e6614e0fd1e58d0",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1034,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 204
+    },
+    {
+      "id": "worker-carry-sw-08",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-08.png",
+        "sha256": "82432639fe62efb05fb05b980c7ab4ebb6c00ec96ef4de5295a4d280455ecc24",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1292,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-sw-09",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-09.png",
+        "sha256": "7689e212acb30cae318945086303550fe1c2e7c855a56f1e37dc989fdd2a4b98",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1550,
+        1812,
+        256,
+        256
+      ],
+      "opaqueHeight": 200
+    },
+    {
+      "id": "worker-carry-sw-10",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-10.png",
+        "sha256": "9cc2628c52e5616b3d9c31fd30787e953de3d71635ef2f4aae8ac08ab2f9dc7b",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        2,
+        2070,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-sw-11",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-11.png",
+        "sha256": "610d4f5628f7aa757f7913c8bac2279d60f415e5ff84503658f11b0655996346",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        260,
+        2070,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-sw-12",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-12.png",
+        "sha256": "88589a510a6ee7e6e89a47aeb0ece6ce5f758f79e06dc4d667787588c52029a0",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        518,
+        2070,
+        256,
+        256
+      ],
+      "opaqueHeight": 201
+    },
+    {
+      "id": "worker-carry-sw-13",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-13.png",
+        "sha256": "2a269377f96b1cacee70c1363fbb29e5e4f376803b1445b6a5abef952b6bfcf6",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        776,
+        2070,
+        256,
+        256
+      ],
+      "opaqueHeight": 204
+    },
+    {
+      "id": "worker-carry-sw-14",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-14.png",
+        "sha256": "4d80fa9050bffe2cdd5837fbdb88d559b181f3bca89299651f74791b37cb3d94",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1034,
+        2070,
+        256,
+        256
+      ],
+      "opaqueHeight": 206
+    },
+    {
+      "id": "worker-carry-sw-15",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-walk-next-review-423-20261027",
+        "file": "worker-carry-sw-r1-frames-worker-carry-sw-15.png",
+        "sha256": "47f8aee42854e516e61d98f7df9b6a062c61dd23584c77b3f5955bc96a0ff70b",
+        "size": [
+          256,
+          256
+        ]
+      },
+      "pivot": [
+        0.5234375,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1292,
+        2070,
+        256,
+        256
+      ],
+      "opaqueHeight": 207
+    },
+    {
+      "id": "worker-hoe-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-00.png",
+        "sha256": "4f1e5ee3dcd1f0854d90f0d5767fb3516d4f6dad5cceccad400039affda0cb97",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1550,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hoe-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-01.png",
+        "sha256": "05c3281e42e9703e415c1866c561c0123c0f947a0461d8cddb3f41bcb012f6f7",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1648,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 62
+    },
+    {
+      "id": "worker-hoe-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-02.png",
+        "sha256": "6bb9eb6a9713a5bf1f1ebae9290bf3516f68e92a63a6cde8d3de7deb1e1bedc9",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1746,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 78
+    },
+    {
+      "id": "worker-hoe-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-03.png",
+        "sha256": "ece6fed6d06aa9d8174901b2d744f7295e75adfbd43a20175c40f5d92b1f0e61",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1844,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 57
+    },
+    {
+      "id": "worker-hoe-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-04.png",
+        "sha256": "9c4fc42738bdffe1f04811929e9a39fb2a7b48f380f424926d9552e831c99206",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        1942,
+        2070,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hoe-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-05.png",
+        "sha256": "7b517111628d448e3a3093f9064a40ad4af984cd35a7bebf268b67fb757aa7a3",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        2,
+        2328,
+        96,
+        96
+      ],
+      "opaqueHeight": 53
+    },
+    {
+      "id": "worker-hoe-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-06.png",
+        "sha256": "641cd98a6b93ff1454db2def1a096d971f0eff5d50ee1ddb047fdc448642a369",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        100,
+        2328,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hoe-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "peasant-hoe-r2-07.png",
+        "sha256": "9ff9d6dae73b93761717ccf7deccbc5ae9553cbe617f31f162144b2c3b6e3272",
+        "size": [
+          96,
+          96
+        ]
+      },
+      "pivot": [
+        0.3125,
+        0.13541666666666663
+      ],
+      "displayWidth": 96,
+      "layer": "standing",
+      "rect": [
+        198,
+        2328,
+        96,
+        96
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-hammer-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-00-r1.png",
+        "sha256": "759e0f9809176ee9185c62b1424e519757d7e6833f5a2ed33314fc041291b71b",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        296,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "worker-hammer-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-01-r1.png",
+        "sha256": "48fe22347c4206c8f094609296707de71f02a1db34a499d0a9873e175f09f0bd",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        362,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "worker-hammer-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-02-r1.png",
+        "sha256": "d0d6d4e0d57b79af7abbdbf282402b85e70aedaa361defa85ea2a5c20fedbb91",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        428,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 63
+    },
+    {
+      "id": "worker-hammer-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-03-r1.png",
+        "sha256": "4513632eabd339c0e7f2d5db98d92076ddf05d2ba7c649d73f5726cbea4c3f54",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        494,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-04-r1.png",
+        "sha256": "fd54c305b81919c2587f25a8f0b5489a5d95f79f18f79b6ede6355e6afa4495c",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        560,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-05-r1.png",
+        "sha256": "4a871192c6a9aab90cb1c8dcc587dc995b6ea2b1bc47a4add2cb1cf23b6d614b",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        626,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-06-r1.png",
+        "sha256": "115c739e6d20976bbe4f98cad27662dc33fac99da06021367a5da0fd548b249d",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        692,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 58
+    },
+    {
+      "id": "worker-hammer-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-hammer-frame-07-r1.png",
+        "sha256": "656ce0048940c716afdf5b03102af75548d13dc91aab88a2f2ed8b2e420427b8",
+        "size": [
+          64,
+          76
+        ]
+      },
+      "pivot": [
+        0.34375,
+        0.13157894736842102
+      ],
+      "displayWidth": 64,
+      "layer": "standing",
+      "rect": [
+        758,
+        2328,
+        64,
+        76
+      ],
+      "opaqueHeight": 61
+    },
+    {
+      "id": "worker-sack-00",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-00.png",
+        "sha256": "bd2c3ef14d252353cc59a6c58e0fb3ee926b8679fbcca68ef97cd554d7a8c747",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        824,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 54
+    },
+    {
+      "id": "worker-sack-01",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-01.png",
+        "sha256": "2ea8b82353c3c1013540a6400667558277281f3345f821f7b290106d12e9d817",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        892,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 51
+    },
+    {
+      "id": "worker-sack-02",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-02.png",
+        "sha256": "129303723c4b55e34c2b549b403f6055c2b0c9cb8b2021ea096b11c72879e2c9",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        960,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 43
+    },
+    {
+      "id": "worker-sack-03",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-03.png",
+        "sha256": "70ead409316afbe9b552f94c93b585fea7ae01e00820ce370876d119b10c71d6",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1028,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 36
+    },
+    {
+      "id": "worker-sack-04",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-04.png",
+        "sha256": "70ead409316afbe9b552f94c93b585fea7ae01e00820ce370876d119b10c71d6",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1096,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 36
+    },
+    {
+      "id": "worker-sack-05",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-05.png",
+        "sha256": "17a35f1862f09a7e6f56e7ef3a8ef9d89d3a4cc217773353b12f44108973f5bd",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1164,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 42
+    },
+    {
+      "id": "worker-sack-06",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-06.png",
+        "sha256": "f207cbd1b32fb81b92c9d73bcc190e62012ec82f1b92bcff48e413d9473fa44e",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1232,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 50
+    },
+    {
+      "id": "worker-sack-07",
+      "atlas": "decor",
+      "source": {
+        "release": "m3-estate-work-loops-444-20261027",
+        "file": "worker-sack-work-native-07.png",
+        "sha256": "bd2c3ef14d252353cc59a6c58e0fb3ee926b8679fbcca68ef97cd554d7a8c747",
+        "size": [
+          66,
+          66
+        ]
+      },
+      "pivot": [
+        0.4765625,
+        0.09765625
+      ],
+      "displayWidth": 66,
+      "layer": "standing",
+      "rect": [
+        1300,
+        2328,
+        66,
+        66
+      ],
+      "opaqueHeight": 54
     }
   ]
 }

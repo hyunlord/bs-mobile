@@ -33,12 +33,13 @@ Shader "Game/UI/EstateTint"
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
             #include "UnityCG.cginc"
             #include "UnityUI.cginc"
-            struct Attributes { float4 vertex : POSITION; float4 color : COLOR; float2 uv : TEXCOORD0; float3 grid : TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
-            struct Varyings { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 uv : TEXCOORD0; float4 local : TEXCOORD1; float3 grid : TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
+            struct Attributes { float4 vertex : POSITION; float4 color : COLOR; float2 uv : TEXCOORD0; float4 grid : TEXCOORD1; UNITY_VERTEX_INPUT_INSTANCE_ID };
+            struct Varyings { float4 vertex : SV_POSITION; fixed4 color : COLOR; float2 uv : TEXCOORD0; float4 local : TEXCOORD1; float4 grid : TEXCOORD2; UNITY_VERTEX_OUTPUT_STEREO };
             sampler2D _MainTex;
             fixed4 _Color, _TextureSampleAdd;
             float4 _MainTex_ST, _ClipRect;
             float _EstateGround;
+            float _EstateCornerRadius, _EstateLightSpread;
             int _EstateOpenCount;
             float4 _EstateOpenAreas[32];
             fixed4 _EstateClosed;
@@ -60,10 +61,11 @@ Shader "Game/UI/EstateTint"
                         float4 area = _EstateOpenAreas[i];
                         float2 halfSize = (area.zw - area.xy) * .5;
                         float radius = min(halfSize.x, halfSize.y);
+                        if (_EstateCornerRadius > 0) radius = min(radius, _EstateCornerRadius);
                         float2 q = abs(input.grid.xy - (area.xy + area.zw) * .5) - halfSize + radius;
                         distance = min(distance, length(max(q, 0)) + min(max(q.x, q.y), 0) - radius);
                     }
-                    input.color.rgb = lerp(float3(1,1,1), _EstateClosed.rgb, smoothstep(-.5, 2.5, distance));
+                    input.color.rgb = lerp(float3(1,1,1), _EstateClosed.rgb, smoothstep(-.5, 2.5, distance - _EstateLightSpread));
                 }
                 fixed3 source = sample.rgb;
                 fixed luma = dot(sample.rgb, fixed3(.2126, .7152, .0722));
@@ -72,7 +74,7 @@ Shader "Game/UI/EstateTint"
                 sample.rgb = lerp(dark, tinted, input.color.b);
                 // Above-night landmarks retain contour and texture, never original-colour river banks.
                 // The shared material batches these cool silhouettes with other estate sprites.
-                if (input.grid.z > .5)
+                if (input.grid.z > .5 && (input.grid.z < 2.5 || input.grid.z > 3.5))
                 {
                     sample.rgb = luma * fixed3(.65, .8, 1) * input.color.g;
                     // Source hue identifies water only; the dark overlay never restores its original colour.
@@ -82,6 +84,20 @@ Shader "Game/UI/EstateTint"
                         fixed3 deepWater = lerp(fixed3(.022, .055, .09), fixed3(.09, .19, .25), luma * luma);
                         sample.rgb = lerp(sample.rgb, deepWater, water);
                     }
+                }
+                // River patches formerly baked round stone banks into the terrain. The approved separate banks replace
+                // them; retain only their cool water pixels in both ground and above-night passes (#426).
+                if (input.grid.z > 2.5)
+                    sample.a *= smoothstep(.005, .035, min(source.g - source.r, source.b - source.r));
+                // Approved dark bank art was only 42–49% as bright as neighbouring closed ground in the
+                // captured ROIs. Lift its display in linear light; preserve source pixels, alpha and shared batching.
+                if (input.grid.w > .5)
+                {
+                    #ifdef UNITY_COLORSPACE_GAMMA
+                    sample.rgb = LinearToGammaSpace(saturate(GammaToLinearSpace(sample.rgb) + .04));
+                    #else
+                    sample.rgb = saturate(sample.rgb + .04);
+                    #endif
                 }
                 sample.a *= input.color.a;
                 #ifdef UNITY_UI_CLIP_RECT
