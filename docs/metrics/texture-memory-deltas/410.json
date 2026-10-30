@@ -1,0 +1,48 @@
+{
+  "records": [
+    {
+      "path": "unity/Assets/Art/fallow-enemy-rigs.png",
+      "before": {
+        "identity": {
+          "sha256": "5a69aaf13a67ea6885234be74e4d984e00b7b77323f113024b15e05ebebf8bde",
+          "fileBytes": 1886439
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2304,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 18874368,
+          "android": 4718592,
+          "ios": 4718592
+        }
+      },
+      "after": {
+        "identity": {
+          "sha256": "b238aa39294bd4b8d1f38ae39c904e4f4c3ba7696ed969ff3524e7226d76240c",
+          "fileBytes": 3634738
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 3840,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 31457280,
+          "android": 7864320,
+          "ios": 7864320
+        }
+      },
+      "reason": "#410 wave-1a raider/shield/ram 16-frame walk sheets replace the atlas pixels; import settings unchanged (mobile ASTC4 kept)"
+    }
+  ]
+}
