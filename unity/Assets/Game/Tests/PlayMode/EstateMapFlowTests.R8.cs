@@ -23,7 +23,7 @@ namespace Tests.PlayMode
         public IEnumerator R8AllThirteenZonesOpenThroughNormalProductionAndUnlockCommands() => CaptureR8Progress(13, "full-13-of-13");
 
         [Serializable] sealed class R8ReviewRiver { public R8ReviewRiverChunk[] chunks; }
-        [Serializable] sealed class R8ReviewRiverChunk { public string lit, dark; public float x, y, width, height; }
+        [Serializable] sealed class R8ReviewRiverChunk { public string lit, dark; public string[] occupiedZones; public float x, y, width, height; }
 
         IEnumerator CaptureR8Progress(int target, string label)
         {
@@ -83,8 +83,9 @@ namespace Tests.PlayMode
             foreach (var chunk in river.chunks)
             {
                 var drawn = actualRiver.Single(i => i.Key == chunk.lit);
-                var centre = EstateMapModel.Unproject(new Vector2(chunk.x + chunk.width / 2, chunk.y + chunk.height / 2));
-                var lit = config.Zones.Any(z => state.Estate.OpenZones.Contains(z.Id) && centre.x >= z.X && centre.x < z.X + z.Width && centre.y >= z.Y && centre.y < z.Y + z.Height);
+                Assert.That(chunk.occupiedZones, Is.Not.Null, "Each river crop must declare its measured visible-alpha zone intersections.");
+                Assert.That(chunk.occupiedZones.All(id => config.Zones.Any(z => z.Id == id)), Is.True);
+                var lit = chunk.occupiedZones.Intersect(state.Estate.OpenZones).Any();
                 Assert.That(drawn.Role, Is.EqualTo(lit ? chunk.lit : chunk.dark));
                 Assert.That(drawn.Grid, Is.EqualTo(EstateMapModel.Unproject(new Vector2(chunk.x, chunk.y))));
                 Assert.That(drawn.Width, Is.EqualTo(chunk.width));
