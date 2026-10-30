@@ -5,7 +5,9 @@ using SowSiege.Core;
 
 namespace SowSiege.Server.Application;
 
-public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds, Guid? CommandId = null, byte[]? Seed = null);
+/// <summary>Held: read-only per-material amounts currently waiting in the account held queue that this domain credited (set for Execute).</summary>
+public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds, Guid? CommandId = null, byte[]? Seed = null,
+    IReadOnlyDictionary<string, int>? Held = null);
 public sealed record DomainResource(string Id, int Amount);
 public sealed record DomainEvent(string Kind, JsonElement Data);
 /// <summary>A material the account should receive. The shared writer credits it in arrival order, holding what the wallet cannot take.</summary>

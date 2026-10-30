@@ -138,7 +138,9 @@ public sealed partial class AccountStore
             var events = changes[handler.Domain];
             if (command?.Domain == handler.Domain)
             {
-                var context = new DomainContext(account, result.State, utc, command.CommandId);
+                var ownHeld = held.Where(h => h.Domain == handler.Domain).GroupBy(h => h.Material, StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.Sum(h => h.Amount), StringComparer.Ordinal);
+                var context = new DomainContext(account, result.State, utc, command.CommandId, null, ownHeld);
                 string? material = handler.SeedMaterial(context, command.Operation, command.Payload);
                 if (material is not null)
                 {

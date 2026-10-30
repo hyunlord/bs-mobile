@@ -31,6 +31,11 @@ public sealed class HeldMaterialTests
         {
             string material = payload.GetProperty("material").GetString()!;
             int amount = payload.GetProperty("amount").GetInt32();
+            if (operation == "held")
+            {
+                // Echo what the writer reports as this domain's held amount.
+                return new(context.Account.State, JsonSerializer.SerializeToElement(new { held = context.Held?.GetValueOrDefault(material) ?? -1 }), context.State, true, "held", []);
+            }
             if (operation == "credit")
             {
                 return new(context.Account.State, context.State, context.State, true, "credited", [], [new(material, amount)]);
@@ -109,6 +114,8 @@ public sealed class HeldMaterialTests
         var restarted = new AccountStore(setup.Source, app, setup.Clock, new DomainRegistry([new Bank("a"), new Bank("z")]));
         await restarted.InitializeAsync(CancellationToken.None);
         Assert.Equal(30, Amount(Parse(await restarted.ExecuteAccountAsync(setup.Id, null, CancellationToken.None)).Held, Grain));
+        Assert.Equal(30, (await setup.RunAsync("a", "held", 0)).Domains["a"].GetProperty("held").GetInt32());
+        Assert.Equal(0, (await setup.RunAsync("z", "held", 0)).Domains["z"].GetProperty("held").GetInt32());
         var after = await setup.RunAsync("z", "spend", 100);
         Assert.Equal((cap - 70, 0), (Amount(after.Resources, Grain), Amount(after.Held, Grain)));
     }
