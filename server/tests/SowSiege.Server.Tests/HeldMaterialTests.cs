@@ -108,7 +108,7 @@ public sealed class HeldMaterialTests
         // Spending 60 makes room right after the spend: z's 50 first, then 10 of a's 40.
         var spent = await setup.RunAsync("a", "spend", 60);
         Assert.Equal((cap, 30), (Amount(spent.Resources, Grain), Amount(spent.Held, Grain)));
-        var credited = (await setup.HeldEventsAsync()).Select(e => (e.GetProperty("domain").GetString(), e.GetProperty("amount").GetInt32())).ToArray();
+        var credited = (await setup.HeldEventsAsync()).Select(e => (e.GetProperty("domain").GetString()!, e.GetProperty("amount").GetInt32())).ToArray();
         Assert.Equal(new[] { ("z", 50), ("a", 10) }, credited);
         // A restarted store keeps the held remainder and credits it when room appears.
         var restarted = new AccountStore(setup.Source, app, setup.Clock, new DomainRegistry([new Bank("a"), new Bank("z")]));
