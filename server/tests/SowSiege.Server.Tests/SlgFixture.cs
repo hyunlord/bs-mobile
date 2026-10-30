@@ -27,8 +27,10 @@ internal sealed class SlgFixture(NpgsqlDataSource source, AccountStore store, Sl
     public static async Task<AccountStore> StoreAsync(NpgsqlDataSource source, byte[] key, TimeProvider time)
     {
         string root = ContentEstateTests.Root();
-        var registry = new DomainRegistry([new RecruitDomain(RecruitPool.Load(root), 3000), new ResearchDomain(ResearchContent.Load(root))], key);
-        var store = new AccountStore(source, new EstateApplication(EstateContent.Load(root)), time, registry);
+        var estate = EstateContent.Load(root);
+        var runs = new ExpeditionRules(3_600_000, 3, estate.Config.WalletCaps);
+        var registry = new DomainRegistry([new RecruitDomain(RecruitPool.Load(root), 3000), new ResearchDomain(ResearchContent.Load(root), runs)], key);
+        var store = new AccountStore(source, new EstateApplication(estate), time, registry);
         await store.InitializeAsync(CancellationToken.None);
         return store;
     }
