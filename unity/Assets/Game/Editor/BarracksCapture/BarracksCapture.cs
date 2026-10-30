@@ -26,9 +26,14 @@ namespace Game.BarracksCapture
             }
             EditorApplication.update += () =>
             {
-                if (!SessionState.GetBool(Active, false) || !EditorApplication.isPlaying || attached) return;
+                if (!SessionState.GetBool(Active, false) || !EditorApplication.isPlaying) return;
+                if (EditorApplication.timeSinceStartup > SessionState.GetFloat(Active + ".deadline", float.MaxValue))
+                { Finish(false, "Editor capture exceeded 180 seconds."); return; }
+                if (attached) return;
+                var app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>();
+                if (app == null || app.Ui == null) return;
                 attached = true;
-                new GameObject("Explicit barracks capture").AddComponent<BarracksCaptureRunner>();
+                app.StartCoroutine(new BarracksCaptureRunner().Execute());
             };
         }
         public static void Start()
@@ -41,6 +46,11 @@ namespace Game.BarracksCapture
             SessionState.SetBool(Async, ShaderUtil.allowAsyncCompilation);
             SessionState.SetString(Active + ".id", Guid.NewGuid().ToString("N"));
             SessionState.SetBool(Active, true);
+            SessionState.SetFloat(Active + ".deadline", (float)(EditorApplication.timeSinceStartup + 180));
+            attached = false;
+            RunCoordinator.MetaDirectoryOverride = Path.Combine(Output, "local-profile");
+            RunCoordinator.PreferencePrefixOverride = "sowsiege.barracks-capture." + SessionState.GetString(Active + ".id", "") + ".";
+            ShaderUtil.allowAsyncCompilation = false;
             EditorSceneManager.OpenScene("Assets/Scenes/Boot.unity");
             PlayModeWindow.SetCustomRenderingResolution(390, 844, "Barracks QA");
             EditorApplication.isPlaying = true;

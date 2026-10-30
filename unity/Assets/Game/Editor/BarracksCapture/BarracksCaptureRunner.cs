@@ -11,10 +11,10 @@ using UnityEngine.UI;
 
 namespace Game.BarracksCapture
 {
-    public sealed class BarracksCaptureRunner : MonoBehaviour
+    public sealed class BarracksCaptureRunner
     {
         RunCoordinator app;
-        void Start() { ShaderUtil.allowAsyncCompilation = false; StartCoroutine(Guard(Run())); }
+        public IEnumerator Execute() => Guard(Run());
         IEnumerator Guard(IEnumerator steps)
         {
             while (true)
@@ -28,7 +28,7 @@ namespace Game.BarracksCapture
         IEnumerator Run()
         {
             var until = Time.realtimeSinceStartupAsDouble + 45;
-            while ((app = FindFirstObjectByType<RunCoordinator>()) == null || app.Ui == null || Button("Title.Settings") == null)
+            while ((app = UnityEngine.Object.FindFirstObjectByType<RunCoordinator>()) == null || app.Ui == null || Button("Title.Settings") == null)
             { if (Time.realtimeSinceStartupAsDouble > until) throw new TimeoutException("Title.Settings not ready."); yield return null; }
             Click("Title.Settings"); yield return null; Click("Settings.Barracks"); yield return null;
             var field = app.Ui.GetComponentInChildren<InputField>();
@@ -71,7 +71,7 @@ namespace Game.BarracksCapture
                 File.WriteAllText(Path.Combine(BarracksCapture.Output, name + ".txt"), $"size={image.width}x{image.height} cyanPixels={cyan} anythingCompilingBefore={before} anythingCompilingAfter={ShaderUtil.anythingCompiling}\n" + string.Join("\n", app.Ui.GetComponentsInChildren<Text>().Where(t => t.GetComponentInParent<InputField>() == null).Select(t => t.text)));
                 if (cyan != 0 || image.width != 390 || image.height != 844) throw new InvalidOperationException("Cyan or capture size gate failed.");
             }
-            finally { Destroy(image); }
+            finally { UnityEngine.Object.Destroy(image); }
         }
     }
 }
