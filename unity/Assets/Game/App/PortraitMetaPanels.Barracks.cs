@@ -123,7 +123,7 @@ namespace Game.App
         static void BarracksWallet(UiShell ui, Transform root, BarracksResource[] resources, float width)
         {
             var bar=ColorPlate(root,"Barracks.Wallet",BarracksDark,0,52,width,40);
-            var ids=new[]{"meta:grain","meta:timber","meta:iron","meta:gems"};
+            var ids=new[]{"meta:grain","meta:timber","meta:iron","slg:gem"};
             var names=new[]{"곡물","목재","철재","보석"};
             for(var i=0;i<ids.Length;i++)
             {

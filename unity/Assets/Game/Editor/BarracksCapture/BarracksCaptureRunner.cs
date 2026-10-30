@@ -75,7 +75,7 @@ namespace Game.BarracksCapture
             var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(viewport, queue);
             if (bounds.min.y < viewport.rect.yMin - 1 || bounds.max.y > viewport.rect.yMax + 1)
                 throw new InvalidOperationException("Training queue is clipped by its viewport.");
-            foreach (var id in new[] { "meta:grain", "meta:timber", "meta:iron", "meta:gems" })
+            foreach (var id in new[] { "meta:grain", "meta:timber", "meta:iron", "slg:gem" })
             {
                 var wallet = app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "Barracks.Wallet:" + id);
                 if (string.IsNullOrWhiteSpace(wallet.text)) throw new InvalidOperationException("Missing server wallet label: " + id);

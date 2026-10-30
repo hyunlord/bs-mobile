@@ -34,8 +34,8 @@ namespace Game.App
         }
         static void BarracksResourceArt(UiShell ui,Transform parent,string id,float x,float y,float size)
         {
-            // The server has no premium-wallet contract yet; its label remains visible without invented art or balance.
-            if(id=="meta:gems")return;
+            // slg:gem is the recruit domain balance (#591); no approved gem icon exists yet, so only its label is shown.
+            if(id=="slg:gem")return;
             var asset=id=="meta:iron"?"r-iron":id=="meta:grain"?"r-grain":"r-timber";
             PortraitWidgets.Art(ui,parent,asset,x,y,size,size);
         }

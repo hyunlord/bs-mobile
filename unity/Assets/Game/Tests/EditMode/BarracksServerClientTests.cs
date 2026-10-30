@@ -127,7 +127,8 @@ namespace Game.Tests
             {
                 new BarracksResource { id = "meta:grain", amount = 44 },
                 new BarracksResource { id = "meta:timber", amount = 119 },
-                new BarracksResource { id = "meta:iron", amount = 0 }
+                new BarracksResource { id = "meta:iron", amount = 0 },
+                new BarracksResource { id = "slg:gem", amount = 3000 }
             };
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:grain"), Is.EqualTo("44"));
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:timber"), Is.EqualTo("119"));
@@ -136,6 +137,8 @@ namespace Game.Tests
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:grain"), Is.EqualTo("52"));
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:timber"), Is.EqualTo("122"));
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:iron"), Is.EqualTo("0"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "slg:gem"), Is.EqualTo("3000"));
+            Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:gems"), Is.EqualTo("—"));
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(resources, "meta:missing"), Is.EqualTo("—"));
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(Array.Empty<BarracksResource>(), "meta:grain"), Is.EqualTo("—"));
             Assert.That(PortraitMetaPanels.BarracksWalletAmount(null, "meta:grain"), Is.EqualTo("—"));
