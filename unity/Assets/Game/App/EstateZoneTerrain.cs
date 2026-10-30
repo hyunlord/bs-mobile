@@ -28,7 +28,10 @@ namespace Game.App
         }
 
         [Serializable] sealed class River { public Chunk[] chunks; }
-        [Serializable] sealed class Chunk { public string lit, dark; public float x, y, width, height; }
+        [Serializable] sealed class Chunk { public string lit, dark; public string[] occupiedZones; public float x, y, width, height; }
+
+        [Serializable] sealed class Footprints { public Footprint[] entries; }
+        [Serializable] sealed class Footprint { public string role; public float left, top, width, height; }
 
         static float Unit(string key) => (Hash(key) & 0xffffff) / 16777216f;
         public static string Theme(string zone)
@@ -41,6 +44,9 @@ namespace Game.App
             if (zone.Contains("riverside")) return "shore-accent";
             return "forest-cluster";
         }
+
+        public static bool PreserveExisting(string zone) => zone == "zone:start" || zone == "zone:inner-village" ||
+            zone == "zone:inner-windmill" || zone.StartsWith("zone:outskirts-", StringComparison.Ordinal);
 
         public static Rect ProjectedBounds(Vector2 grid, float width, float aspect, Vector2 pivot)
         {
@@ -75,13 +81,15 @@ namespace Game.App
             plan.Items.RemoveAll(i => i.Source == "river-bank" || i.Role == "riverbank-patch" || i.Role == "river-bend-patch");
             foreach (var chunk in river.chunks)
             {
-                var centre = EstateMapModel.Unproject(new Vector2(chunk.x + chunk.width / 2, chunk.y + chunk.height / 2));
-                var lit = config.Zones.Any(z => estate.OpenZones.Contains(z.Id) && centre.x >= z.X && centre.x < z.X + z.Width && centre.y >= z.Y && centre.y < z.Y + z.Height);
+                if (chunk.occupiedZones == null) throw new InvalidOperationException("Missing river alpha occupancy.");
+                var lit = chunk.occupiedZones.Any(id => estate.OpenZones.Contains(id));
                 plan.Items.Add(new EstateDrawItem { Role = lit ? chunk.lit : chunk.dark, Source = "zone-river", Grid = EstateMapModel.Unproject(new Vector2(chunk.x, chunk.y)),
                     Width = chunk.width, Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = chunk.lit });
             }
+            bool PreserveAt(Vector2 at) => config.Zones.Any(z => PreserveExisting(z.Id) && at.x >= z.X && at.x < z.X + z.Width && at.y >= z.Y && at.y < z.Y + z.Height);
             var blocked = new List<Rect>();
-            foreach (var item in plan.Items.Where(i => i.BuildingId >= 0 || i.SiteId >= 0 || i.Source == "placed"))
+            foreach (var item in plan.Items.Where(i => i.BuildingId >= 0 || i.SiteId >= 0 || i.Source == "placed" || i.Source == "yard" || i.Source == "yard-ground" || i.Source == "roadside" ||
+                (i.Source == "empty-land" && PreserveAt(i.Grid))))
             {
                 var width = item.Width;
                 var aspect = 1f;
@@ -97,6 +105,7 @@ namespace Game.App
                     aspect = sprite.rect.width / sprite.rect.height;
                     pivot = art.Pivot(item.Role);
                 }
+                if (item.Aspect > 0) aspect = 1 / item.Aspect;
                 var bounds = ProjectedBounds(item.Grid, width, aspect, pivot);
                 bounds.xMin -= 8; bounds.xMax += 8; bounds.yMin -= 8; bounds.yMax += 8;
                 blocked.Add(bounds);
@@ -107,16 +116,23 @@ namespace Game.App
                 blocked.Add(new Rect(p.x - 22, p.y - 14, 44, 28));
             }
             // Replace generic empty-land filler, not yards, roads, construction or residents.
-            plan.Items.RemoveAll(i => i.Source == "empty-land" || i.Source == "wood" || i.Source == "frontier");
+            plan.Items.RemoveAll(i => (i.Source == "empty-land" || i.Source == "wood" || i.Source == "frontier") && !PreserveAt(i.Grid));
+            var footprintAsset = Resources.Load<TextAsset>("EstateZoneFootprints");
+            if (footprintAsset == null) throw new InvalidOperationException("Missing approved sprite alpha footprints.");
+            var footprints = JsonUtility.FromJson<Footprints>(footprintAsset.text).entries.ToDictionary(f => f.role, StringComparer.Ordinal);
             var candidateBounds = new List<Rect>();
-            void Place(string variant, string state, Vector2 at, string key, string source, float scale, bool reserve)
+            var lowPropCandidates = new List<Rect>();
+            void Place(string variant, string state, Vector2 at, string key, string source, float scale, bool reserve, bool lowProp = false)
             {
                 var role = "zone-" + variant + "-" + state;
                 if (!art.Has(role)) throw new InvalidOperationException("Missing approved zone sprite: " + role);
                 var sprite = art.Get(role);
                 var width = art.DisplayWidth(role) * settings.spriteScale * scale;
-                var bounds = ProjectedBounds(at, width, sprite.rect.width / sprite.rect.height, art.Pivot(role));
-                if (!ReserveCandidate(bounds, candidateBounds, blocked, reserve)) return;
+                var canvas = ProjectedBounds(at, width, sprite.rect.width / sprite.rect.height, art.Pivot(role));
+                var footprint = footprints[role];
+                var bounds = new Rect(canvas.x + canvas.width * footprint.left, canvas.y + canvas.height * footprint.top,
+                    canvas.width * footprint.width, canvas.height * footprint.height);
+                if (!ReserveCandidate(bounds, lowProp ? lowPropCandidates : candidateBounds, blocked, reserve)) return;
                 plan.Items.Add(new EstateDrawItem { Role = role, Source = source, Grid = at, Width = width,
                     Colour = Color.white, Layer = state == "bright" ? EstateDrawLayer.Standing : EstateDrawLayer.Landmark,
                     SortY = EstateMapModel.Project(at).y, Key = key });
@@ -134,13 +150,14 @@ namespace Game.App
                             if (Unit(key + ":density") > density) continue;
                             var at = new Vector2(x + (Unit(key + ":x") - .5f) * spacing * .6f,
                                 y + (Unit(key + ":y") - .5f) * spacing * .6f);
-                            var variant = cluster ? Theme(zone.Id) + "-0" + (Hash(key + ":variant") % 4 + 1) :
+                            var variant = cluster ? (PreserveExisting(zone.Id) ? "fallow" : Theme(zone.Id)) + "-0" + (Hash(key + ":variant") % 4 + 1) :
                                 zone.Id.Contains("fields") ? "field-between-0" + (Hash(key + ":variant") % 6 + 1) + "-" + new[] { "S", "M", "L" }[Hash(key + ":size") % 3] :
                                 "prop-0" + (Hash(key + ":variant") % 6 + 1);
                             Place(variant, state, at, key, cluster ? "zone-cluster" : "zone-prop",
-                                Mathf.Lerp(settings.minimumScale, settings.maximumScale, Unit(key + ":scale")), true);
+                                Mathf.Lerp(settings.minimumScale, settings.maximumScale, Unit(key + ":scale")), true, !cluster && PreserveExisting(zone.Id));
                         }
                 }
+                // Low approved fallow clusters supplement preserved village decoration on fixed world candidates.
                 Candidates(settings.clusterSpacing, settings.clusterDensity, true);
                 Candidates(settings.propSpacing, settings.propDensity, false);
             }

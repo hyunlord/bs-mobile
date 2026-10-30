@@ -64,6 +64,15 @@ namespace Tests.EditMode
             Assert.That(EstateZoneTerrain.ReserveCandidate(new Rect(20, 0, 10, 10), candidates, new Rect[0], true), Is.True);
         }
 
+        [TestCase("zone:start")] [TestCase("zone:inner-village")] [TestCase("zone:inner-windmill")]
+        [TestCase("zone:outskirts-north")] [TestCase("zone:outskirts-east")]
+        [TestCase("zone:outskirts-south")] [TestCase("zone:outskirts-west")]
+        public void PreservedLowDecorationThemesDoNotUseForestReplacement(string id)
+        {
+            Assert.That(EstateZoneTerrain.PreserveExisting(id), Is.True);
+            Assert.That(EstateZoneTerrain.PreserveExisting("zone:inner-northeast-wood"), Is.False);
+        }
+
         [Test] public void ProjectedReservationsIncludeTallArtAboveItsFootprint()
         {
             var bounds = EstateZoneTerrain.ProjectedBounds(Vector2.zero, 100, .5f, new Vector2(.5f, .1f));

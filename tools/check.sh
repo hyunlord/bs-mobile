@@ -37,7 +37,7 @@ node tools/first-playable-art.mjs "$PWD"
 node --test tools/wave1a-art.test.mjs
 node tools/wave1a-art.mjs "$PWD"
 node --test tools/test-estate-art.mjs tools/test-estate-approved-sites.mjs
-node --test tools/art-authoring/estate-zone-terrain/plan.test.mjs tools/art-authoring/estate-zone-terrain/runtime-atlas.test.mjs
+node --test tools/art-authoring/estate-zone-terrain/plan.test.mjs tools/art-authoring/estate-zone-terrain/runtime-atlas.test.mjs tools/art-authoring/estate-zone-terrain/river-gutter.test.mjs tools/art-authoring/estate-zone-terrain/visible-geometry.test.mjs
 node tools/estate-art.mjs --check
 node tools/wave1a-audio.mjs --check
 node --test tools/test-view-coverage.mjs

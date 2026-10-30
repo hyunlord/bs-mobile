@@ -1,10 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
+import { visibleGeometry } from './visible-geometry.mjs';
+import { extrudeGutter } from './river-gutter.mjs';
 import { pack, encodeRgbaPng } from '../../estate-art.mjs';
 import { decodeRgbaPng } from '../../wave1a-art.mjs';
 
-// Approved one-resolution sprites only. River r2 remains in the existing terrain path.
+// Approved one-resolution sprites; only padding is modified for bilinear sampling.
 const base = 'tools/art-authoring/estate-zone-terrain';
 const output = 'unity/Assets/Resources/EstateArt';
 const inputs = [
@@ -20,12 +22,18 @@ const images = selected.map(a => {
   if (image.width !== a.canvas[0] || image.height !== a.canvas[1]) throw new Error(`Source dimensions: ${a.file}`);
   return image;
 });
+const zones = JSON.parse(readFileSync('data/opt-in/account-estate/m3a-prototype-r8.json')).zones;
+const geometry = selected.map((a,i) => visibleGeometry(images[i], a.nativeOrigin, zones));
 const packed = pack(images, 2048, 4);
 if (packed.atlas.height > 4096) throw new Error('Runtime atlas exceeds bounded 2048x4096 budget');
-const sprites = selected.map((a, i) => ({ id: `zone-${a.variantId}-${a.state ?? 'dark'}`, atlas: 'zone-terrain', layer: 'standing', rect: packed.rects[i], pivot: [a.pivotTopLeft[0] / a.canvas[0], 1 - a.pivotTopLeft[1] / a.canvas[1]], displayWidth: a.canvas[0], opaqueHeight: a.canvas[1], source: a.file, sha256: a.sha256 }));
+selected.forEach((source, i) => {
+  if (source.projection === 'registered-chunk') extrudeGutter(packed.atlas, packed.rects[i]);
+});
+const sprites = selected.map((a, i) => ({ id: `zone-${a.variantId}-${a.state ?? 'dark'}`, atlas: 'zone-terrain', layer: 'standing', rect: packed.rects[i], pivot: [a.pivotTopLeft[0] / a.canvas[0], 1 - a.pivotTopLeft[1] / a.canvas[1]], displayWidth: a.canvas[0], opaqueHeight: a.canvas[1], source: a.file, sha256: a.sha256, rgbaSha256: createHash('sha256').update(images[i].pixels).digest('hex') }));
 if (new Set(sprites.map(a => a.id)).size !== sprites.length) throw new Error('Duplicate runtime sprite');
 writeFileSync(`${output}/estate-zone-terrain.png`, encodeRgbaPng(packed.atlas));
 writeFileSync(`${output}/estate-zone-art.json`, JSON.stringify({ version: 'estate-zone-art-v1', release: 'estate-r8-terrain-488-20261028', width: packed.atlas.width, height: packed.atlas.height, sprites }, null, 2) + '\n');
-const river = selected.filter(a => a.projection === 'registered-chunk' && a.state === 'lit').map(a => ({ lit: 'zone-' + a.variantId + '-lit', dark: 'zone-' + a.variantId.replace(/-lit$/, '-dark') + '-dark', x: a.nativeOrigin[0], y: a.nativeOrigin[1], width: a.nativeSize[0], height: a.nativeSize[1] }));
+const river = selected.filter(a => a.projection === 'registered-chunk' && a.state === 'lit').map(a => ({ lit: 'zone-' + a.variantId + '-lit', dark: 'zone-' + a.variantId.replace(/-lit$/, '-dark') + '-dark', x: a.nativeOrigin[0], y: a.nativeOrigin[1], width: a.nativeSize[0], height: a.nativeSize[1], occupiedZones: geometry[selected.indexOf(a)].occupiedZones }));
 writeFileSync('unity/Assets/Game/App/Resources/EstateZoneRiver.json', JSON.stringify({ chunks: river }, null, 2) + '\n');
+writeFileSync('unity/Assets/Game/App/Resources/EstateZoneFootprints.json', JSON.stringify({ entries: sprites.map((s,i) => ({ role:s.id, ...geometry[i] })) }, null, 2) + '\n');
 console.log(JSON.stringify({ sprites: sprites.length, width: packed.atlas.width, height: packed.atlas.height, rgbaBytes: packed.atlas.pixels.length }));

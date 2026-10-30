@@ -47,3 +47,26 @@ test('runtime texture identity and mobile memory delta match committed data', ()
   assert.equal(record.after.formats.android, 'ASTC4'); assert.equal(record.after.formats.ios, 'ASTC4');
   assert.equal(record.after.formats.mac, 'RGBA32');
 });
+
+test('every packed RGBA crop is identical to approved source pixels after padding extrusion', async () => {
+  const { decodeRgbaPng } = await import('../../wave1a-art.mjs');
+  const atlas=decodeRgbaPng(readFileSync(root+'estate-zone-terrain.png'));
+  for(const item of manifest.sprites) {
+    const [x,y,w,h]=item.rect;
+    const hash=createHash('sha256');
+    for(let row=0;row<h;row++) hash.update(atlas.pixels.subarray(((y+row)*atlas.width+x)*4,((y+row)*atlas.width+x+w)*4));
+    assert.equal(hash.digest('hex'),item.rgbaSha256,item.id);
+  }
+});
+
+test('river chunks with off-map canvas centres retain visible land occupancy', () => {
+  const river=read('unity/Assets/Game/App/Resources/EstateZoneRiver.json');
+  for(const chunk of river.chunks) {
+    assert(Array.isArray(chunk.occupiedZones));
+    assert.deepEqual(chunk.occupiedZones,[...new Set(chunk.occupiedZones)].sort());
+  }
+  for(const suffix of ['3-3','0-4','1-4']) {
+    const chunk=river.chunks.find(c=>c.lit.includes(suffix));
+    assert(chunk && chunk.occupiedZones.length>0,suffix);
+  }
+});
