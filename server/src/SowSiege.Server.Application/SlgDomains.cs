@@ -11,7 +11,7 @@ internal static class DomainJson
     public static T Read<T>(JsonElement element) => element.Deserialize<T>(Options) ?? throw new JsonException("Empty domain JSON.");
 }
 
-public sealed record RecruitState(int Gems, int Pity, long Draws, string PoolFamily, string PoolVersion, SortedDictionary<string, int> Heroes);
+public sealed record RecruitState(int Gems, int Pity, long Draws, string PoolFamily, string PoolVersion, SortedDictionary<string, int> Heroes, RecruitResultView? Last = null);
 public sealed record RecruitPayload([property: JsonRequired] string PoolVersion);
 public sealed record RecruitResultView(long DrawIndex, string HeroId, string Rarity, string Outcome, int Shards, bool Guaranteed, int PityBefore, int PityAfter);
 public sealed record RecruitView(string PoolFamilyId, string PoolVersion, string PolicyHash, int CostGems, int GuaranteeAfterMisses, string GuaranteedRarity,
@@ -36,7 +36,7 @@ public sealed class RecruitDomain(RecruitPool pool, int prototypeGems) : IDomain
     public static int PrototypeGems(string environment, string? prototypeEnabled, string? configured) =>
         environment == "Development" && prototypeEnabled == "true" && int.TryParse(configured, out int gems) && gems > 0 ? gems : 0;
 
-    public JsonElement View(DomainContext context) => DomainJson.Element(ViewOf(DomainJson.Read<RecruitState>(context.State), null));
+    public JsonElement View(DomainContext context) { var state = DomainJson.Read<RecruitState>(context.State); return DomainJson.Element(ViewOf(state, state.Last)); }
 
     public DomainResult Advance(DomainContext context) => new(context.Account.State, context.State, View(context), true, "", []);
 
@@ -59,7 +59,7 @@ public sealed class RecruitDomain(RecruitPool pool, int prototypeGems) : IDomain
         if (reason is not null)
         {
             // Rejected before commit: no gem, counter or roster change.
-            return new(context.Account.State, context.State, DomainJson.Element(ViewOf(state, null)), false, reason, []);
+            return new(context.Account.State, context.State, DomainJson.Element(ViewOf(state, state.Last)), false, reason, []);
         }
         var draw = RecruitDraw.Draw(pool, context.Seed ?? throw new InvalidOperationException("Recruit seed missing."), state.Draws, state.Pity);
         var heroes = new SortedDictionary<string, int>(state.Heroes, StringComparer.Ordinal);
@@ -67,7 +67,8 @@ public sealed class RecruitDomain(RecruitPool pool, int prototypeGems) : IDomain
         int shards = duplicate ? pool.DuplicateShards[draw.Entry.Rarity] : 0;
         heroes[draw.Entry.HeroId] = checked(owned + shards);
         var next = state with { Gems = state.Gems - pool.CostGems, Pity = draw.PityAfter, Draws = state.Draws + 1, Heroes = heroes };
-        var result = new RecruitResultView(draw.DrawIndex, draw.Entry.HeroId, draw.Entry.Rarity, duplicate ? "shards" : "unlock", shards, draw.Guaranteed, draw.PityBefore, draw.PityAfter);
+        next = next with { Last = new RecruitResultView(draw.DrawIndex, draw.Entry.HeroId, draw.Entry.Rarity, duplicate ? "shards" : "unlock", shards, draw.Guaranteed, draw.PityBefore, draw.PityAfter) };
+        var result = next.Last;
         var ledger = DomainJson.Element(new
         {
             result.DrawIndex, result.HeroId, result.Rarity, result.Outcome, result.Shards, result.Guaranteed, result.PityBefore, result.PityAfter,
