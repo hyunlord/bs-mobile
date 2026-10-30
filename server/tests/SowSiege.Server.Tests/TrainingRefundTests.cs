@@ -7,6 +7,27 @@ namespace SowSiege.Server.Tests;
 
 public sealed partial class TrainingTests
 {
+    [Fact]
+    public void ExistingVersionOneStateWithoutRefundFieldPreservesTroopsAndJobs()
+    {
+        var context = Initial(1);
+        var active = Handler.Execute(context, "start", Json(new TrainingStart("slg:levy", 2)));
+        var persisted = State(active);
+        persisted = persisted with { Units = persisted.Units.Select(u => u.UnitId == "slg:levy" ? u with { Ready = 1 } : u).ToArray() };
+        var legacy = System.Text.Json.Nodes.JsonNode.Parse(Json(persisted).GetRawText())!.AsObject();
+        Assert.True(legacy.Remove("pendingRefunds"));
+        using var document = JsonDocument.Parse(legacy.ToJsonString());
+        var reopened = Handler.Advance(Next(context, active) with { State = document.RootElement });
+        Assert.Equal(1, Handler.StateVersion);
+        Assert.Empty(State(reopened).PendingRefunds);
+        Assert.Equal(persisted.Units, State(reopened).Units);
+        Assert.Equal(persisted.Active!.JobId, State(reopened).Active!.JobId);
+        Assert.Equal(persisted.Active.CompletesAtMilliseconds, State(reopened).Active!.CompletesAtMilliseconds);
+        Assert.Null(State(reopened).Waiting);
+        Assert.Equal(active.AccountState.Wallet, reopened.AccountState.Wallet);
+        Assert.Empty(reopened.Events);
+    }
+
     [Theory]
     [InlineData(0, 0)]
     [InlineData(5, 2)]
