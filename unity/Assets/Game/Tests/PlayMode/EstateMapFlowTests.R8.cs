@@ -72,25 +72,20 @@ namespace Tests.PlayMode
             Assert.That(map.MapSize.x, Is.LessThanOrEqualTo(map.Viewport.x + .01f));
             Assert.That(map.MapSize.y, Is.LessThanOrEqualTo(map.Viewport.y - map.TopInset - map.BottomInset + .01f));
             Assert.That(map.MapSize.x / map.MapSize.y, Is.EqualTo(map.MapExtent.x / map.MapExtent.y).Within(.001f), "Compact r8 keeps the approved projection, not the historical tall-map framing.");
-            var river = JsonUtility.FromJson<R8ReviewRiver>(Resources.Load<TextAsset>("EstateZoneRiver").text);
-            Assert.That(river.chunks, Is.Not.Empty);
+            var layout = EstateAuthoredLayout.Load(config);
+            var planes = UnityEngine.Object.FindObjectsByType<EstateAuthoredTerrainGraphic>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            Assert.That(planes.Length, Is.EqualTo(2));
+            Assert.That(planes.Count(g => g.Ground), Is.EqualTo(1));
+            var nightLayer = planes[0].transform.parent.Find("EstateMap.Night");
+            Assert.That(nightLayer, Is.Not.Null);
+            Assert.That(planes.All(g => !g.raycastTarget && g.transform.GetSiblingIndex() < nightLayer.GetSiblingIndex()), Is.True,
+                "Every approved terrain/prop layer remains under the existing open-zone darkness mask.");
+            Assert.That(layout.instances.Count(i => i.category == "river"), Is.EqualTo(1));
+            Assert.That(layout.instances.Single(i => i.category == "river").assetId, Is.EqualTo("river-r2-reconstructed-native"));
+            Assert.That(layout.instances.Length, Is.EqualTo(2055));
+            Assert.That(layout.instances.Any(i => i.category == "building"), Is.False);
             var items = app.EstateMap.Plan(EstateDecorRules.Load(), EstateArt.Load()).Items;
-            Assert.That(items.Any(i => i.Source == "river-bank" || i.Role == "riverbank-patch" || i.Role == "river-bend-patch"), Is.False,
-                "Registered r2 water chunks replace every legacy repeated strip and bank.");
-            var actualRiver = items.Where(i => i.Source == "zone-river").ToArray();
-            Assert.That(actualRiver.Length, Is.EqualTo(river.chunks.Length));
-            Assert.That(actualRiver.Select(i => i.Key).Distinct().Count(), Is.EqualTo(river.chunks.Length));
-            foreach (var chunk in river.chunks)
-            {
-                var drawn = actualRiver.Single(i => i.Key == chunk.lit);
-                Assert.That(chunk.occupiedZones, Is.Not.Null, "Each river crop must declare its measured visible-alpha zone intersections.");
-                Assert.That(chunk.occupiedZones.All(id => config.Zones.Any(z => z.Id == id)), Is.True);
-                var lit = chunk.occupiedZones.Intersect(state.Estate.OpenZones).Any();
-                Assert.That(drawn.Role, Is.EqualTo(lit ? chunk.lit : chunk.dark));
-                Assert.That(drawn.Grid, Is.EqualTo(EstateMapModel.Unproject(new Vector2(chunk.x, chunk.y))));
-                Assert.That(drawn.Width, Is.EqualTo(chunk.width));
-                Assert.That(drawn.Layer, Is.EqualTo(EstateDrawLayer.Terrain));
-            }
+            Assert.That(items.Any(i => i.Source.StartsWith("zone-") || i.Source == "river-bank"), Is.False);
             CheckBatchBudget(config.Version, "on");
             var openedArea = config.Zones.Where(z => state.Estate.OpenZones.Contains(z.Id)).Sum(z => z.Width * z.Height);
             Debug.Log($"r8 {label} area={openedArea}/1664: normal Core commands with simulated clock, elapsed={clock}s claims={claims}; 10 authored sites, not the concept's future developed building count.");

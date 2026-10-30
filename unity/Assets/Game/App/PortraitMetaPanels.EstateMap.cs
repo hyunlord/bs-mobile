@@ -68,10 +68,20 @@ namespace Game.App
             terrainTint.Configure(tint, screen.Config.Zones.Where(screen.Open), rules.Colour("closed"), EstateR8Layout.UsesPlazaRendering(screen.Config));
             ui.Canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1;
             var plan = screen.Plan(rules, art);
+            var authored = EstateAuthoredLayout.Load(screen.Config);
             bool Decor(EstateDrawItem item) => screen.DecorEnabled || !DecorSources.Contains(item.Source);
             var ground = Shapes(viewport, "EstateMap.Ground", view);
             // One cell inside the night's edge, so the opaque rim always covers the ground's last pixel row.
             ground.Footprint(plan.Area.x + 1, plan.Area.y + 1, plan.Area.width - 2, plan.Area.height - 2, night.Ground);
+            if (authored != null)
+            {
+                foreach (var groundPlane in new[] { true, false })
+                {
+                    var rect = UiShell.Rect(groundPlane ? "EstateMap.AuthoredGround" : "EstateMap.AuthoredTerrain", viewport); UiShell.Stretch(rect);
+                    var graphic = rect.gameObject.AddComponent<EstateAuthoredTerrainGraphic>();
+                    graphic.Configure(authored, screen.Map, groundPlane); view.Track(graphic);
+                }
+            }
             foreach (var item in plan.In(EstateDrawLayer.Terrain).Where(Decor).OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1).ThenBy(i => art.Get(i.Role).texture.name, StringComparer.Ordinal)) Paint(viewport, view, art, terrainTint.Material, item.Source == "road" ? "EstateMap.Road" : item.Source == "soil" ? "EstateMap.Decor:soil" : "EstateMap.Terrain", item);
             foreach (var item in plan.In(EstateDrawLayer.Ground).Where(Decor)
                 .OrderBy(i => art.Get(i.Role).texture == art.Get(rules.terrain.fallow).texture ? 0 : 1)

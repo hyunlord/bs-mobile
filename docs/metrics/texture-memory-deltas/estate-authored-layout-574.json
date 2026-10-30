@@ -1,0 +1,30 @@
+{
+  "status": "ESTIMATE",
+  "records": [
+    {
+      "path": "unity/Assets/Resources/EstateArt/estate-authored-terrain.png",
+      "before": null,
+      "after": {
+        "identity": {
+          "sha256": "1a2c65032006a25cb3b801c20f70a6544c39e8a89a97f6cfe957e6aeca30915d",
+          "fileBytes": 4332793
+        },
+        "status": "ESTIMATE",
+        "width": 2048,
+        "height": 2772,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 22708224,
+          "android": 5677056,
+          "ios": 5677056
+        }
+      },
+      "reason": "Approved #574 static placement atlas; source crops preserved. Old atlas remains in historical bundle but not requested by new r8 renderer. Device/runtime allocation pending."
+    }
+  ]
+}

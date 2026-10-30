@@ -152,6 +152,7 @@ namespace Game.App
         public static EstatePlan Plan(EstateDecorRules rules, EstateArt art, AccountEstateConfig config, MetaEstateState estate)
         {
             var plan = new EstatePlan();
+            var authored = config.Version == EstateR8Layout.Version;
             var pieces = EstateR8Layout.Pieces(rules, config);
             var buildingScale = EstateR8Layout.UsesPlazaRendering(config) ? 1.5f : rules.buildingScale;
             var kinds = config.Buildings.ToDictionary(k => k.Kind, StringComparer.Ordinal);
@@ -241,52 +242,56 @@ namespace Game.App
             // the open zones mixes fallow and sage by seed and takes the cool closed colour.
             // Patches spill past their block, so the outermost ring of blocks stays bare: every patch ends inside the night's
             // opaque rim at the area's edge.
-            if (EstateR8Layout.UsesPlazaRendering(config))
+            if (!authored)
             {
-                const int tileCells = 8;
-                for (var u = plan.Area.xMin; u < plan.Area.xMax; u += tileCells)
-                    for (var v = plan.Area.yMin; v < plan.Area.yMax; v += tileCells)
-                        plan.Items.Add(new EstateDrawItem { Role = "ground-grass-r4", Source = "terrain", Grid = new Vector2(u + tileCells * .5f, v + tileCells * .5f),
-                            Width = tileCells * 2 * EstateMapModel.HalfWidth, Aspect = .5f, IsometricGround = true,
-                            Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = $"grass-r4-{u}-{v}" });
-                AddSoilPatches(plan, rules, art, OpenCell, reserved);
-            }
-            else for (var u = plan.Area.xMin + t.patchCells; u < plan.Area.xMax - t.patchCells; u += t.patchCells)
-                for (var v = plan.Area.yMin + t.patchCells; v < plan.Area.yMax - t.patchCells; v += t.patchCells)
+                if (EstateR8Layout.UsesPlazaRendering(config))
                 {
-                    var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre) ?? "closed"; var dark = state == "closed";
-                    if (dark) state = AstraDecor.Rand(rules.astra, "closed-terrain", $"{u}-{v}") < cl.sageShare ? "sage" : "fallow";
-                    var role = state == "restored" ? t.restored : state == "sage" ? t.sage : t.fallow;
-                    plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
-                        Colour = dark ? rules.Colour("closed", t.alpha) : new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
+                    const int tileCells = 8;
+                    for (var u = plan.Area.xMin; u < plan.Area.xMax; u += tileCells)
+                        for (var v = plan.Area.yMin; v < plan.Area.yMax; v += tileCells)
+                            plan.Items.Add(new EstateDrawItem { Role = "ground-grass-r4", Source = "terrain", Grid = new Vector2(u + tileCells * .5f, v + tileCells * .5f),
+                                Width = tileCells * 2 * EstateMapModel.HalfWidth, Aspect = .5f, IsometricGround = true,
+                                Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = $"grass-r4-{u}-{v}" });
+                    AddSoilPatches(plan, rules, art, OpenCell, reserved);
                 }
-            // Roads: Astra's painted earth along each grid path instead of flat diamonds.
-            var sg = rules.sites;
-            if (EstateR8Layout.UsesPlazaRendering(config))
-            {
-                for (var index = 0; index < ribbonRoutes.Count; index++)
+                else for (var u = plan.Area.xMin + t.patchCells; u < plan.Area.xMax - t.patchCells; u += t.patchCells)
+                    for (var v = plan.Area.yMin + t.patchCells; v < plan.Area.yMax - t.patchCells; v += t.patchCells)
+                    {
+                        var centre = new Vector2(u + t.patchCells * .5f, v + t.patchCells * .5f); var state = StateAt(centre) ?? "closed"; var dark = state == "closed";
+                        if (dark) state = AstraDecor.Rand(rules.astra, "closed-terrain", $"{u}-{v}") < cl.sageShare ? "sage" : "fallow";
+                        var role = state == "restored" ? t.restored : state == "sage" ? t.sage : t.fallow;
+                        plan.Items.Add(new EstateDrawItem { Role = role, Source = "terrain", Grid = centre, Width = t.patchCells * 2 * EstateMapModel.HalfWidth * t.patchScale,
+                            Colour = dark ? rules.Colour("closed", t.alpha) : new Color(1, 1, 1, t.alpha), Layer = EstateDrawLayer.Terrain, Key = $"terrain-{u}-{v}" });
+                    }
+                // Roads: Astra's painted earth along each grid path instead of flat diamonds.
+                var sg = rules.sites;
+                if (EstateR8Layout.UsesPlazaRendering(config))
                 {
-                    var path = ribbonRoutes[index];
-                    if (path.Count < 2) continue;
-                    var points = path.Select(c => (Vector2)c + new Vector2(.5f, .5f)).ToArray();
-                    var bridge = EstateR8Layout.RoadBridge(pieces, config);
-                    if (index == 2 && bridge != null) points[points.Length - 1] = new Vector2(bridge.u, bridge.v);
-                    var projected = points.Select(P).ToArray();
-                    var centre = new Vector2((projected.Min(p => p.x) + projected.Max(p => p.x)) * .5f,
-                        (projected.Min(p => p.y) + projected.Max(p => p.y)) * .5f);
-                    var width = projected.Max(p => p.x) - projected.Min(p => p.x) + 48;
-                    var height = projected.Max(p => p.y) - projected.Min(p => p.y) + 48;
-                    plan.Items.Add(new EstateDrawItem { Role = "road-straight", Source = "road", Grid = EstateMapModel.Unproject(centre),
-                        Width = width, Aspect = height / width, IsometricRoad = true, RoadPoints = points, RoadWidth = (index <= 2 ? 18 : 11) / (390f / 768f),
-                        RoadFootprints = buildings.Select(b => new RectInt(b.X, b.Y, kinds[b.Kind].Width, kinds[b.Kind].Height)).ToArray(),
-                        Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = $"road-ribbon-{index}" });
+                    for (var index = 0; index < ribbonRoutes.Count; index++)
+                    {
+                        var path = ribbonRoutes[index];
+                        if (path.Count < 2) continue;
+                        var points = path.Select(c => (Vector2)c + new Vector2(.5f, .5f)).ToArray();
+                        var bridge = EstateR8Layout.RoadBridge(pieces, config);
+                        if (index == 2 && bridge != null) points[points.Length - 1] = new Vector2(bridge.u, bridge.v);
+                        var projected = points.Select(P).ToArray();
+                        var centre = new Vector2((projected.Min(p => p.x) + projected.Max(p => p.x)) * .5f,
+                            (projected.Min(p => p.y) + projected.Max(p => p.y)) * .5f);
+                        var width = projected.Max(p => p.x) - projected.Min(p => p.x) + 48;
+                        var height = projected.Max(p => p.y) - projected.Min(p => p.y) + 48;
+                        plan.Items.Add(new EstateDrawItem { Role = "road-straight", Source = "road", Grid = EstateMapModel.Unproject(centre),
+                            Width = width, Aspect = height / width, IsometricRoad = true, RoadPoints = points, RoadWidth = (index <= 2 ? 18 : 11) / (390f / 768f),
+                            RoadFootprints = buildings.Select(b => new RectInt(b.X, b.Y, kinds[b.Kind].Width, kinds[b.Kind].Height)).ToArray(),
+                            Colour = Color.white, Layer = EstateDrawLayer.Terrain, Key = $"road-ribbon-{index}" });
+                    }
                 }
+                else foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
+                    plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "road",
+                        Grid = cell + new Vector2(.5f, .5f), Width = sg.roadWidth * 2 * EstateMapModel.HalfWidth,
+                        Aspect = sg.aspect, Colour = new Color(1, 1, 1, Mathf.Max(.9f, sg.roadAlpha)),
+                        Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
+
             }
-            else foreach (var cell in plan.Road.OrderBy(c => c.x).ThenBy(c => c.y))
-                plan.Items.Add(new EstateDrawItem { Role = sg.ground, Source = "road",
-                    Grid = cell + new Vector2(.5f, .5f), Width = sg.roadWidth * 2 * EstateMapModel.HalfWidth,
-                    Aspect = sg.aspect, Colour = new Color(1, 1, 1, Mathf.Max(.9f, sg.roadAlpha)),
-                    Layer = EstateDrawLayer.Terrain, Key = $"road-{cell.x}-{cell.y}" });
 
             // Astra's scene: built buildings (anchor = footprint centre, w = painted body width at scale 1), the roads, and the open land.
             var scene = new AstraScene();
@@ -311,24 +316,28 @@ namespace Game.App
                 scene.LandColumns = Mathf.CeilToInt((maxX - minX) / (float)rules.astra.landSpacingX); scene.LandRows = Mathf.CeilToInt((maxY - minY) / (float)rules.astra.landSpacingY);
             }
             plan.Scene = scene;
-            var (objects, _) = AstraDecor.Layout(rules.astra, scene);
-            plan.Astra.AddRange(objects);
-            foreach (var o in objects)
+            if (!authored)
             {
-                var grid = EstateMapModel.Unproject(new Vector2((float)o.X, (float)o.Y)); var role = o.Id; var width = (float)o.W;
-                // Tree groups join Astra's empty-land candidates on tended land [가설]; the selection itself stays art-v1.
-                if (o.Kind == "empty-land" && rules.trees.ids.Length > 0 && rules.trees.states.Contains(StateAt(grid)) && AstraDecor.Rand(rules.astra, "tree", o.Key) < rules.trees.share)
+                var (objects, _) = AstraDecor.Layout(rules.astra, scene);
+                plan.Astra.AddRange(objects);
+                foreach (var o in objects)
                 {
-                    role = TreeRole((int)(AstraDecor.Rand(rules.astra, "tree-variant", o.Key) * 6), false);
-                    width = art != null && art.Has(role) && art.DisplayWidth(role) > 0 ? art.DisplayWidth(role) : width;
+                    var grid = EstateMapModel.Unproject(new Vector2((float)o.X, (float)o.Y)); var role = o.Id; var width = (float)o.W;
+                    // Tree groups join Astra's empty-land candidates on tended land [가설]; the selection itself stays art-v1.
+                    if (o.Kind == "empty-land" && rules.trees.ids.Length > 0 && rules.trees.states.Contains(StateAt(grid)) && AstraDecor.Rand(rules.astra, "tree", o.Key) < rules.trees.share)
+                    {
+                        role = TreeRole((int)(AstraDecor.Rand(rules.astra, "tree-variant", o.Key) * 6), false);
+                        width = art != null && art.Has(role) && art.DisplayWidth(role) > 0 ? art.DisplayWidth(role) : width;
+                    }
+                    plan.Items.Add(new EstateDrawItem { Role = role, Source = o.Kind, Grid = grid, Width = width, Colour = rules.Colour(StateAt(grid) ?? "restored"),
+                        Layer = EstateDrawLayer.Standing, SortY = (float)o.Y, Key = o.Key });
                 }
-                plan.Items.Add(new EstateDrawItem { Role = role, Source = o.Kind, Grid = grid, Width = width, Colour = rules.Colour(StateAt(grid) ?? "restored"),
-                    Layer = EstateDrawLayer.Standing, SortY = (float)o.Y, Key = o.Key });
+
             }
 
             // Buildings: yard ground (as assembly.js), shadow and body; stage art follows the Core level.
             var yg = rules.yardGround;
-            foreach (var sb in scene.Buildings)
+            foreach (var sb in authored ? Enumerable.Empty<AstraBuilding>() : scene.Buildings)
             {
                 var id = sb.Kind == "well" ? yg.well : sb.Kind == "house" ? yg.house : yg.other;
                 var grid = EstateMapModel.Unproject(new Vector2((float)sb.X, (float)(sb.Y + yg.offsetY * sb.W + yg.height * .5 * sb.W)));
@@ -404,6 +413,12 @@ namespace Game.App
                     plan.Residents.Add(new EstateResidentJob(granary.Id, EstateResidentKind.Carry, plan.CarryRoute[0]));
                 if (plan.CarryRoute.Length < 2)
                     Add(plan, "construction-worker-carry", "peasant", new Vector2(b.X + kind.Width + .3f, b.Y + .5f), art, Color.white);
+            }
+
+            if (authored)
+            {
+                EstateResidentJob.ApplyBudget(plan);
+                return plan;
             }
 
             // Terrain skeleton pieces placed explicitly (river, bridge with its front rail, paddock) when their zone exists.

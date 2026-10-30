@@ -46,10 +46,11 @@ namespace Tests.EditMode
                 if (version == "m3a-prototype-r7") Assert.That(first, Is.Empty);
                 else
                 {
-                    Assert.That(first.Any(i => i.Source == "zone-cluster"), Is.True);
-                    Assert.That(first.Any(i => i.Source == "zone-fog"), Is.True);
-                    Assert.That(first.Any(i => i.Source == "zone-exterior"), Is.True);
-                    Assert.That(first.Select(i => i.Key).Distinct().Count(), Is.EqualTo(first.Length));
+                    Assert.That(first, Is.Empty, "Approved static layout replaces automatic candidates.");
+                    var layout = EstateAuthoredLayout.Load(config);
+                    Assert.That(layout.instances.Length, Is.EqualTo(2055));
+                    Assert.That(layout.instances.Any(i => i.category == "cluster"), Is.True);
+                    Assert.That(layout.instances.Any(i => i.zoneId == "exterior"), Is.True);
                 }
             }
         }

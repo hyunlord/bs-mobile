@@ -181,3 +181,11 @@ Light Node suite18/18 passes, including all18 form/size combinations in both sta
 - 원인 관측: JsonUtility.ToJson은 entries=null을 `"entries":[]`로 직렬화했다. reader가 null만 거부해 빈 배열이 통과했다. 최소 1항목 계약으로 고쳤으며 raw JSON의 null·필드 누락·빈 배열을 각각 거부하는 3개 테스트와 기존 정상 좌표/부정 입력 검사가 모두 통과했다.
 - 공유 잠금은 실행 전 확인하고 자기 잠금만 획득·해제했다. 종료 후 Unity 없음, 추적 파일 변경 없음.
 - 이는 **로더 compile 및 한정 검사 증거**다. 두 프로필 전체, PlayMode, 생산 연결, 실제 Astra export, 밀도·화질, replay/save 실행 관문을 증명하지 않는다. 자동 밀도 수정 중단과 기존 실패 판정은 유지한다. 최종 CI는 PR에 별도 기록한다.
+
+## 승인 정적 배치 연결 — 2026-10-30, Unity 검증 전
+
+사용자가 #574 보호영역 제외본을 승인했으므로 자동 밀도 보정이 아니라 정적 배치만 연결한다. #574 원본 `bcbfddb3e5b4aabf698a0359927da7bd980cb335`를 normal merge했다. 13구역·2,055항목의 모든 grid/anchor/scale/flip/rotation/opacity/drawOrder를 보존하고, reviewOnly 건물과 제외된 45항목은 그리지 않는다. 기존 Core 건물·공사·주민을 유지하며 기존 grass-r4 SHA도 동일하다. r3~r7은 기존 렌더 경로다.
+
+사용 중인 45 그림만 2048×2772 atlas에 패킹했다. 1px gutter를 바깥에 복제하며 crop 안 RGBA를 바꾸지 않는다. 원격 자료는 제작 cache에서만 읽고 게임은 Resources만 사용한다. 이 atlas 예상 추가분은 Mac RGBA32 **21.66MiB**, iOS/Android ASTC4 **5.41MiB**다. 구 atlas는 역사 자료로 남아 번들에 존재하므로 빌드 전체 메모리가 이만큼 감소했다고 주장하지 않는다. 실행 중 메모리와 실제 그리기 호출은 **NOT_MEASURED**.
+
+Node 승인 데이터·crop 검사 2/2, Unity 경계 정적 검사, texture-memory delta 공식/파일 SHA 검사는 통과했다. 최신 C# 컴파일·전체 두 프로필·실제 캡처·밀도 수치는 아직 **NOT_RUN**. 이전 자동 배치 두 번 실패는 그대로 유효한 역사이며 이번 코드가 그 관문을 통과했다는 뜻이 아니다. 실제 캡처는 첫 접속/7구역/13구역, 승인 village/river/forest 및 75/50px camera를 기록하고 UI·물 제외 분모의 동일성을 별도로 검증한다. 영지 장면은 C05 측정 대상이 아니다.
