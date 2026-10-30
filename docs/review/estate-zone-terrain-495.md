@@ -1,6 +1,6 @@
 # r8 구역 지형 #496 — 승인 정적 배치 적용 검토 (2026-10-30)
 
-관문: 부분 / STOP — 승인 #574의 2,055개 배치를 실제 렌더하고 전체·절반 복원 12장 캡처를 확보했다. 집중 흐름 2/3 통과, 저장 영지 흐름은 UI 하네스 재실패로 중단했다. 추가 Unity·렌더 변경 없이 보고만 진행한다. 게임 화면의 사용자 승인과 병합은 대기한다.
+관문: 통과 — 사용자가 #496 실제 화면을 승인하고 saved-flow 재개 및 두 프로필 통과 뒤 병합을 승인했다. 최신 main `aa51fafd`를 normal merge한 `baf918da`에서 전체 네 suite 실패 0, 입력 보충 2/2 통과, 미설명 skip 0이다. 실제 그리기 호출 수는 아래 한계대로 UNKNOWN이며 화면·테스트 통과를 성능 측정으로 확대하지 않는다.
 
 - 실제 캡처 소스: `0784b5ba`, 2026-10-30 16:28 KST. 전체 개방은 건물 전체 완공을 뜻하지 않는다. 정상 명령으로 다섯 건물을 완공한 고정 fixture이며 일부 Lv0 부지와 개발 UI가 보인다.
 - 전체·절반 각 3장면 × 75/50 = 12장, 청록 픽셀 합계 0. r4 grass 원본은 변경하지 않았다. Review-only 건물을 중복 렌더하지 않는다.
@@ -24,7 +24,7 @@
 | 강 | 35.01% | 37.05% | 37.13% | 12.89% |
 | 숲 | 22.72% | 22.13% | 21.86% | 9.33% |
 
-12장 모두 측정 가능하며 빈 땅21.86–37.46%(≤40), 최대 연결 공백3.75–17.07%(≤20)다. 이 지형 수치 관문은 충족하지만 전체 테스트/실제 drawCalls/사용자 화면 판정은 미완료라 PR 관문은 부분·STOP이다. 승인 고정 CG와 Node bilinear의 원본 측정 차이도 보존하며 임의 상수 차감은 하지 않았다. affine 최대잔차0.000105px 이하, source0784b5ba, actual07:28:21–25Z.
+12장 모두 측정 가능하며 빈 땅21.86–37.46%(≤40), 최대 연결 공백3.75–17.07%(≤20)다. 이 지형 수치 관문을 충족했고 사용자가 실제 화면을 승인했다. 전체 테스트는 아래 최종 소스에서 통과했지만 실제 drawCalls 측정은 여전히 UNKNOWN이다. 승인 고정 CG와 Node bilinear의 원본 측정 차이도 보존하며 임의 상수 차감은 하지 않았다. affine 최대잔차0.000105px 이하, source0784b5ba, actual07:28:21–25Z.
 
 재생성 도구 정본은 `tools/measure-estate-render-density.mjs`이며 카메라 재투영 helper와 승인 native-water 출처는 로컬 `artifacts/day-20261030/strict-reference/aligned-comparison.mjs`, `reference-method-readonly.swift:18–19`에 보존한다. base ground plane만 점유율에서 제외하고, 실제 ground-decal은 가림에 포함한다.
 
@@ -35,12 +35,25 @@
 | `e37b3b55` | first-playable Edit / Play | 942/0/25, 55/0/54 (pass/fail/skip) |
 | `e37b3b55` | wave Edit / Play | 952/0/15, 93/3/13 |
 | `0784b5ba` | saved-flow + full/half 집중 PlayMode | 2 pass / 1 fail / 0 skip |
-| 최종 source 전체 기록 | 전체 두 프로필 | 미완료; 앞선 전체 기록을 최종 통과로 쓰지 않음 |
-| 환경 의존 입력 2건 | combat fixture sidecar / melee catalog | 보충 실행 NOT_RUN, 예외 목록 추가 없음 |
+| `99503272` | saved-flow 수정 후 전체 두 프로필 | FP 942/0/25·55/0/54, wave 952/0/15·96/0/13 |
+| `baf918da` | 최신 main 통합 후 전체 두 프로필 | FP 942/0/25·55/0/54, wave 952/0/15·96/0/13 |
+| `baf918da` | combat fixture sidecar / melee catalog 보충 | 각각 1/1 통과, 합친 skip 감사 0 unexplained / 1 listed |
 
-집중 검사의 full/half는 정확히 두 활성 plane·Night 아래·raycast false 및 실제 정상 개방을 통과했다. saved-flow는 전문화 시트가 열린 상태에서 숨겨진 Overview 버튼을 검색해 실패했다. 동일 흐름 재실패에 따라 수정·Unity를 멈췄다. 다음 제안은 시트를 실제 닫은 뒤 Overview를 누르는 하네스 확인이며 이번에는 구현하지 않는다. `approved-flow-probe/result.xml`과 앞선 두 실패 디렉터리는 보존한다.
+과거 집중 검사의 full/half는 정확히 두 활성 plane·Night 아래·raycast false 및 정상 개방을 통과했지만 saved-flow는 전문화 완료 뒤 Selected가 남아 숨겨진 Overview를 검색해 실패했다. 사용자 재개 승인 후 `99503272`는 실제 Close 버튼을 누르고 Selected=null을 검사한 뒤 기존 Overview·동일 닫힌 구역 Tap을 실행한다. 게임 UI·규칙이나 기존 검사를 완화하지 않았다. 집중 3/3 및 위 두 전체 실행에서 saved-flow가 통과했다. `approved-flow-probe/result.xml`과 모든 이전 실패 디렉터리는 보존한다.
 
-`git diff origin/main -- core data/opt-in/account-estate`는 비어 있다. data 변경은 #574 opt-in estate JSON·README·schema뿐이다. 실제 e37 전체 Edit 결과에서 .NET↔Mono first-playable 재생 5seed, wave 재생 5seed, 메타 재생 5seed, 역사 r5 저장 및 view 저장 바이트 유지 검사가 통과했다. 생성 정본 DataHash는 `6AC1ACFC4B2E80DD510EE0A41D0039BC05932A5FEF1776CC1B2A4BF2E928C36D`다. crowd-411 최종 재생은 이번 재시도에서 별도 실행하지 않았으므로 결과를 주장하지 않는다.
+최종 실행은 2026-10-30 19:38–19:49 KST, `terrain-approved-layout-main-final` 및 `approved-layout-supplemental-main-final`에 보존한다. 전체 실행의 최초 exit 1은 미생성 입력 두 건 때문이며, 기존 생성 도구로 준비해 각각 실제 실행한 뒤 정본 skip 도구로 여섯 XML을 합쳐 감사했다. 예외 목록 변경은 없다. 유일한 listed skip은 환경 변수를 요구하는 수동 RecordedWaveRangeExportsActualTickFrames다. 실제 캡처 294건 청록 0, 감시기 자체 음성 대조 두 건은 의도적으로 청록 1픽셀을 넣어 검출을 확인했다. 실행 중·후 추적 파일 변경 0, 19:49 자기 잠금 해제.
+
+```
+## Unity tests
+commit: baf918da9a571af16c581894bc0686820aa01bcb
+first-playable EditMode: passed 942, failed 0, skipped 25
+first-playable PlayMode: passed 55, failed 0, skipped 54
+wave-1a EditMode: passed 952, failed 0, skipped 15
+wave-1a PlayMode: passed 96, failed 0, skipped 13
+skipped in every profile: 0 unexplained, 1 listed
+```
+
+`git diff origin/main -- core data/opt-in/account-estate`는 비어 있다. data 변경은 #574 opt-in estate JSON·README·schema뿐이다. 최종 baf918da 전체 Edit 결과에서 .NET↔Mono first-playable 재생 5seed, wave 재생 5seed, 메타 재생 5seed, 역사 r5 저장 및 view 저장 바이트 유지 검사가 통과했다. 생성 정본 DataHash는 `6AC1ACFC4B2E80DD510EE0A41D0039BC05932A5FEF1776CC1B2A4BF2E928C36D`다. crowd-411 최종 재생은 이번 재시도에서 별도 실행하지 않았으므로 결과를 주장하지 않는다.
 
 ---
 
