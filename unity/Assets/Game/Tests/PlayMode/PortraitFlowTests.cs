@@ -697,7 +697,6 @@ namespace Tests.PlayMode
         {
             if (CanonicalContent.ProfileName != "first-playable") Assert.Ignore("Maximum 13-icon fixture requires the first-playable canonical charter catalog; wave has no charters.");
             Assert.That(Object.FindObjectsByType<FoundationBoot>(FindObjectsSortMode.None), Is.Empty, "A previous Boot must not contaminate the isolated maximum HUD fixture.");
-            Assert.That(Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).Where(canvas => canvas.isActiveAndEnabled), Is.Empty, "A previous canvas must not cover the isolated maximum HUD capture.");
             var catalog = CanonicalContent.CreateCatalog();
             var session = new InteractiveSession(catalog, new InteractiveOptions(
                 new RunOptions(30000, catalog.Tuning.DefaultHero, catalog.Tuning.DefaultEstate, "mixed", ManualCards: true),
@@ -716,8 +715,11 @@ namespace Tests.PlayMode
             var owner = new GameObject("Maximum HUD render-only fixture", typeof(RectTransform));
             var priorWidth = Screen.width; var priorHeight = Screen.height;
             var font = FontProvider.Create(Array.Empty<string>());
+            var priorCanvases = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            var priorCanvasEnabled = priorCanvases.Select(canvas => canvas.enabled).ToArray();
             try
             {
+                foreach (var canvas in priorCanvases) canvas.enabled = false;
                 PlayModeWindow.SetCustomRenderingResolution(390, 844, "Maximum HUD render-only fixture");
                 yield return null; yield return null;
                 var ui = owner.AddComponent<UiShell>(); ui.Initialize(font, true);
@@ -761,6 +763,8 @@ namespace Tests.PlayMode
             finally
             {
                 Object.Destroy(owner); Object.Destroy(font);
+                for (var index = 0; index < priorCanvases.Length; index++)
+                    if (priorCanvases[index] != null) priorCanvases[index].enabled = priorCanvasEnabled[index];
                 PlayModeWindow.SetCustomRenderingResolution((uint)priorWidth, (uint)priorHeight, "Restored maximum HUD viewport");
             }
             yield return null;

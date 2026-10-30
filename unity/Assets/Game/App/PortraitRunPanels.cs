@@ -48,7 +48,12 @@ namespace Game.App
         {
             var text = PortraitWidgets.Label(ui, parent, value, x, y, width, 24, size);
             text.resizeTextForBestFit = false; text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.rectTransform.sizeDelta = new Vector2(width, Mathf.Max(24, text.preferredHeight + 4));
+            // Viewport changes can leave the Canvas scale from the preceding frame.
+            // Measure the final logical width at unit scale as well, before stacking panels.
+            var settings = text.GetGenerationSettings(new Vector2(width, 0));
+            settings.scaleFactor = 1;
+            var logicalHeight = text.cachedTextGeneratorForLayout.GetPreferredHeight(value, settings);
+            text.rectTransform.sizeDelta = new Vector2(width, Mathf.Max(24, Mathf.Max(text.preferredHeight, logicalHeight) + 4));
             return text;
         }
         static Button Button(UiShell ui, Transform parent, string name, string label, Action action, float x, float y, float width, float height = PortraitTokens.Action, bool enabled = true, string skin = "ui.button.secondary")
