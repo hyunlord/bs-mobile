@@ -140,8 +140,20 @@ namespace Tests.PlayMode
                 var pauseBounds = Pixels((RectTransform)pause.transform);
                 Assert.That(pauseBounds.width, Is.GreaterThanOrEqualTo(48));
                 Assert.That(pauseBounds.height, Is.GreaterThanOrEqualTo(48));
-                Assert.That(app.Ui.GetComponentsInChildren<Transform>().Count(item => item.name.StartsWith("Equipment ", StringComparison.Ordinal) && item.name != "Equipment pool"), Is.EqualTo(4));
-                Assert.That(app.Ui.GetComponentsInChildren<Transform>().Count(item => item.name.StartsWith("Folded equipment ", StringComparison.Ordinal)), Is.EqualTo(size == 2 ? 0 : 2));
+                var slots = app.Ui.GetComponentsInChildren<RectTransform>().Where(item => item.name.StartsWith("Equipment ", StringComparison.Ordinal) && item.name != "Equipment pool").ToArray();
+                Assert.That(slots.Length, Is.EqualTo(Math.Min(weapons.Length, 3) + Math.Min(tools.Length, 3)));
+                foreach (var slot in slots)
+                {
+                    Assert.That(slot.rect.width, Is.EqualTo(28));
+                    Assert.That(slot.rect.height, Is.EqualTo(28));
+                }
+                var labels = app.Ui.GetComponentsInChildren<Text>();
+                Assert.That(labels.Single(text => text.name == "Weapon overflow").text, Is.EqualTo(weapons.Length > 3 ? "+" + (weapons.Length - 3) : ""));
+                Assert.That(labels.Single(text => text.name == "Tool overflow").text, Is.EqualTo(tools.Length > 3 ? "+" + (tools.Length - 3) : ""));
+                var status = labels.Single(text => text.name == "Vassal snapshot status");
+                Assert.That(status.text, Is.EqualTo("가신 " + capped.Snapshot.Roster.Count + " · 켜짐"));
+                var statusBounds = Pixels(status.rectTransform);
+                foreach (var slot in slots) { Assert.That(Pixels(slot).yMax, Is.LessThanOrEqualTo(statusBounds.yMin + .01f)); }
                 yield return Capture(size == 2 ? "fixture-vassal-hud-early4" : size == 0 ? "fixture-vassal-hud-current-catalog" : "fixture-vassal-hud-late14",
                     "render-only equipment fixture; weapon entries=" + weapons.Length + "; tool entries=" + tools.Length +
                     "; repeated hidden entries=" + (size == 7) + "; no loadout cap or catalog change");

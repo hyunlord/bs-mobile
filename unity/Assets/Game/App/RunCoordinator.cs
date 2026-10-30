@@ -587,7 +587,7 @@ namespace Game.App
             if(!Ui.PortraitEnabled&&screen==UiScreen.Cards&&!preferences.HasSeen(FirstRunHint.Card))next=FirstRunHint.Card;
             else if(screen==UiScreen.Run)
             {
-                if(!preferences.HasSeen(FirstRunHint.Move))next=FirstRunHint.Move;
+                if(!Ui.PortraitEnabled&&!preferences.HasSeen(FirstRunHint.Move))next=FirstRunHint.Move;
                 else if(!preferences.HasSeen(FirstRunHint.Harvest)&&HasRipeFarm())next=FirstRunHint.Harvest;
                 else if(!preferences.HasSeen(FirstRunHint.Muster)&&HasMuster())next=FirstRunHint.Muster;
             }

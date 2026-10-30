@@ -24,7 +24,6 @@ namespace Game.App
     public static class PortraitRunPanels
     {
         public const string Glyphs = "휴경의 왕국 돌본 땅에 다시 봄이 깃든다 화면을 눌러 시작 화면을 눌러 장원으로 설정 성장 선택 카드 선택 금지 고정됨 상세 소리 켬 끔 고정할 금지할 카드를 누르세요 이미 카드입니다 다른 취소 다시 뽑기 진화 선택 잠시 멈춤 무기 도구 특허장 빈 칸 계속하기 출정을 포기하시겠어요 이번 출정은 포기로 정산됩니다 돌아가기 포기하고 정산 배경음 효과음 진동 화면 흔들림 피해 숫자 자동 조준 이동 방향 가까운 적 걷기와 피격 실험 다음 출정부터 빠른 걸음 접촉 즉시 피격 잠깐 무적과 밀려남 체력 한 대 피격 잔상 붉은 테 걷기 부위별 애니메이션 새 선택 보유 레벨 진화 진행 완료 조건 켜짐 꺼짐 출정 포기 B ×1.3 100 5~15 % ?";
-        const float Gap = 12;
         public static Button RoundIcon(UiShell ui, Transform parent, string name, string glyph, Action action, float x, float y)
         {
             var rect = PortraitWidgets.Place(name, parent, x, y, 44, 44);
@@ -49,7 +48,12 @@ namespace Game.App
         {
             var text = PortraitWidgets.Label(ui, parent, value, x, y, width, 24, size);
             text.resizeTextForBestFit = false; text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Overflow;
-            text.rectTransform.sizeDelta = new Vector2(width, Mathf.Max(24, text.preferredHeight + 4));
+            // Viewport changes can leave the Canvas scale from the preceding frame.
+            // Measure the final logical width at unit scale as well, before stacking panels.
+            var settings = text.GetGenerationSettings(new Vector2(width, 0));
+            settings.scaleFactor = 1;
+            var logicalHeight = text.cachedTextGeneratorForLayout.GetPreferredHeight(value, settings);
+            text.rectTransform.sizeDelta = new Vector2(width, Mathf.Max(24, Mathf.Max(text.preferredHeight, logicalHeight) + 4));
             return text;
         }
         static Button Button(UiShell ui, Transform parent, string name, string label, Action action, float x, float y, float width, float height = PortraitTokens.Action, bool enabled = true, string skin = "ui.button.secondary")
@@ -118,8 +122,8 @@ namespace Game.App
             var root = Overlay(ui, "Portrait.Cards"); var width = Width(ui); var height = Height(ui); var actions = new PortraitCardActions();
             var heading = PortraitWidgets.Place("Level ribbon", root, (width - 280) / 2, 58, 280, 64);
             var headingArt = ui.Surface(heading, "ui.button.primary"); headingArt.pixelsPerUnitMultiplier = 52f / 30;
-            var title = Text(ui, heading, "레벨 " + frame.Level, 18, 5, 244, 24); title.alignment = TextAnchor.MiddleCenter; title.color = Color.white;
-            var hint = Text(ui, heading, "하나를 고르면 바로 이어서 싸운다", 12, 35, 256, 11); hint.alignment = TextAnchor.MiddleCenter; hint.color = new Color32(216,225,245,255);
+            var title = Text(ui, heading, "레벨 " + frame.Level, 18, 5, 244, 22); title.alignment = TextAnchor.MiddleCenter; title.color = Color.white;
+            var hint = Text(ui, heading, "하나를 고르면 바로 이어서 싸운다", 12, 35, 256, 14); hint.alignment = TextAnchor.MiddleCenter; hint.color = Color.white;
             var hasAd = ad != null && ad.Visible;
             var targetAction = ReplayCommandKind.ChooseCard;
             Action<ReplayCommandKind> arm = kind =>
@@ -145,40 +149,42 @@ namespace Game.App
                     var command = targetAction; targetAction = ReplayCommandKind.ChooseCard;
                     send(command, id);
                 }); actions.Add(choose, true);
-                var slot = PortraitWidgets.Place("Icon slot", chooseRect, 16, 16, 70, 70); ui.Surface(slot, "ui.slot").pixelsPerUnitMultiplier = 6;
-                var icon = ui.Icon(slot, id, 46); PortraitWidgets.Position(icon.rectTransform, 12, 12, 46, 46);
-                var tag = PortraitWidgets.Place("Category", chooseRect, 96, 16, tool || weapon ? 36 : 52, 20);
+                var slot = PortraitWidgets.Place("Icon slot", chooseRect, 16, 20, 46, 46);
+                var icon = ui.Icon(slot, id, 46); PortraitWidgets.Position(icon.rectTransform, 0, 0, 46, 46);
+                var tag = PortraitWidgets.Place("Category", chooseRect, 80, 16, 60, 20);
                 tag.gameObject.AddComponent<Image>().color = weapon ? new Color32(44,79,150,255) : tool ? new Color32(79,107,46,255) : new Color32(107,62,143,255);
-                var tagText = PortraitWidgets.Label(ui, tag, weapon ? "무기" : tool ? "도구" : "특허장", 0, 0, tag.rect.width, 20, 11); tagText.color = Color.white; tagText.alignment = TextAnchor.MiddleCenter;
-                Text(ui, chooseRect, detail.CurrentLevel > 0 ? "Lv " + detail.CurrentLevel + " → " + detail.NextLevel : "새로 얻음", 102 + tag.rect.width, 14, cardWidth - 118 - tag.rect.width, 12);
-                Text(ui, chooseRect, display.DisplayName, 96, 40, cardWidth - 112, 19);
-                var description = Text(ui, chooseRect, display.EffectDescription, 96, 70, cardWidth - 112, 13);
-                var y = Mathf.Max(104, 70 + description.rectTransform.rect.height + 6);
+                var tagText = PortraitWidgets.Label(ui, tag, weapon ? "무기" : tool ? "도구" : "특허장", 0, 0, tag.rect.width, 20, 13); tagText.color = Color.white; tagText.alignment = TextAnchor.MiddleCenter;
+                Text(ui, chooseRect, detail.CurrentLevel > 0 ? "Lv " + detail.CurrentLevel + " → " + detail.NextLevel : "새로 얻음", 148, 14, cardWidth - 164, 13);
+                var name = Text(ui, chooseRect, display.DisplayName, 76, 36, cardWidth - 94, 20);
+                var descriptionY = Mathf.Max(72, 36 + name.rectTransform.rect.height + 4);
+                var description = Text(ui, chooseRect, display.EffectDescription, 76, descriptionY, cardWidth - 94, 15);
+                var y = Mathf.Max(130, descriptionY + description.rectTransform.rect.height + 10);
                 var evolution = CardEvolutionLine(detail, first, displays);
                 if (evolution.Length > 0)
                 {
-                    var band = PortraitWidgets.Place("Evolution ribbon", chooseRect, 96, y, cardWidth - 112, 30);
+                    var band = PortraitWidgets.Place("Evolution ribbon", chooseRect, 18, y, cardWidth - 36, 46);
                     var gold = band.gameObject.AddComponent<Image>(); gold.color = new Color32(243,213,140,255); gold.raycastTarget = false;
-                    var text = Text(ui, band, evolution, 8, 4, cardWidth - 128, 12);
-                    band.sizeDelta = new Vector2(cardWidth - 112, text.rectTransform.rect.height + 8); y += band.rect.height + 4;
+                    var text = Text(ui, band, evolution, 8, 4, cardWidth - 52, 14);
+                    band.sizeDelta = new Vector2(cardWidth - 36, text.rectTransform.rect.height + 8); y += band.rect.height + 4;
                 }
-                var cardHeight = Mathf.Max(154, y + 12); chooseRect.sizeDelta = new Vector2(cardWidth, cardHeight);
-                container.sizeDelta = new Vector2(cardWidth, cardHeight); cursor += cardHeight + Gap;
+                var cardHeight = Mathf.Max(166, y + 12); chooseRect.sizeDelta = new Vector2(cardWidth, cardHeight);
+                container.sizeDelta = new Vector2(cardWidth, cardHeight); cursor += cardHeight + 8;
 
             }
             body.sizeDelta = new Vector2(0, cursor);
-            var footerWidth = (width - 44) / 3;
-            var reroll = Button(ui, root, "Cards.Reroll", "다시 뽑기\n" + offer.Rerolls + "회 남음", () => send(ReplayCommandKind.RerollCards, null), 14, height - 100, footerWidth, 52, offer.Rerolls > 0);
-            reroll.GetComponentInChildren<Text>().fontSize = 13; actions.Add(reroll, offer.Rerolls > 0);
-            var ban = Button(ui, root, "Cards.Ban", "금지\n" + offer.Bans + "회 남음", () => arm(ReplayCommandKind.BanCard), 22 + footerWidth, height - 100, footerWidth, 52, offer.Bans > 0);
-            ban.GetComponentInChildren<Text>().fontSize = 13; actions.Add(ban, offer.Bans > 0);
+            var footerWidth = (width - 54) / 3;
+            var reroll = Button(ui, root, "Cards.Reroll", "다시 뽑기\n" + offer.Rerolls + "회 남음", () => send(ReplayCommandKind.RerollCards, null), 16, height - 98, footerWidth, 58, offer.Rerolls > 0);
+            reroll.GetComponentInChildren<Text>().fontSize = 16; actions.Add(reroll, offer.Rerolls > 0);
+            var ban = Button(ui, root, "Cards.Ban", "금지\n" + offer.Bans + "회 남음", () => arm(ReplayCommandKind.BanCard), 27 + footerWidth, height - 98, footerWidth, 58, offer.Bans > 0);
+            ban.GetComponentInChildren<Text>().fontSize = 16; actions.Add(ban, offer.Bans > 0);
             var canLock = offer.Locks > 0 && offer.Cards.Any(id => id != offer.LockedCardId);
-            var pin = Button(ui, root, "Cards.Lock", "고정\n" + offer.Locks + "회 남음", () => arm(ReplayCommandKind.LockCard), 30 + footerWidth * 2, height - 100, footerWidth, 52, canLock);
-            pin.GetComponentInChildren<Text>().fontSize = 13; actions.Add(pin, canLock);
+            var pin = Button(ui, root, "Cards.Lock", "고정\n" + offer.Locks + "회 남음", () => arm(ReplayCommandKind.LockCard), 38 + footerWidth * 2, height - 98, footerWidth, 58, canLock);
+            pin.GetComponentInChildren<Text>().fontSize = 16; actions.Add(pin, canLock);
             if (hasAd)
             {
                 reroll.gameObject.SetActive(false);
-                var button = PortraitBmPanels.OptionalAdButton(ui, root, ad, rewardedReroll, 14, height - 100, footerWidth);
+                var button = PortraitBmPanels.OptionalAdButton(ui, root, ad, rewardedReroll, 16, height - 98, footerWidth);
+                ((RectTransform)button.transform).sizeDelta = new Vector2(footerWidth, 58);
                 button.name = "Cards.OptionalAd"; button.GetComponentInChildren<Text>().fontSize = 13; actions.Add(button, ad.Enabled);
             }
             return actions;
@@ -213,8 +219,8 @@ namespace Game.App
             var panel = PortraitWidgets.Place("Pause parchment", root, 10, 52, width - 20, height - 156); ui.Surface(panel, "ui.panel").pixelsPerUnitMultiplier = 44f / 18;
             Text(ui, root, "일시정지", 32, 72, 180, 24);
             var seconds = frame.Tick / frame.TickRate;
-            Text(ui, root, (seconds / 60) + ":" + (seconds % 60).ToString("00") + " · 레벨 " + frame.Level, 200, 84, width - 232, 12);
-            var body = Scroll(ui, root, 116, 178); float y = 0; var innerWidth = width - 64;
+            Text(ui, root, (seconds / 60) + ":" + (seconds % 60).ToString("00") + " · 레벨 " + frame.Level, 200, 84, width - 232, 14);
+            var body = Scroll(ui, root, 116, 168); float y = 0; var innerWidth = width - 64;
             var viewport = (RectTransform)body.parent;
             viewport.offsetMin = new Vector2(32, viewport.offsetMin.y); viewport.offsetMax = new Vector2(-32, viewport.offsetMax.y);
             y = Loadout(ui, body, "무기", frame.Equipment.Where(e => catalog.Weapons.ContainsKey(e.Id)).Select(e => e.Id).ToArray(), 5, displays, innerWidth, y, frame);
@@ -237,7 +243,7 @@ namespace Game.App
                 InlinePreference(ui, body, "Pause.DamageNumbers", "피해 숫자", preferences.DamageNumbers, value => { preferences.DamageNumbers = value; preferencesChanged?.Invoke(); }, 0, y, innerWidth); y += 44;
             }
             body.sizeDelta = new Vector2(0, y);
-            Button(ui, root, "Pause.Settings", "상세 설정", settings, 32, height - 164, width - 64, 44);
+            Button(ui, root, "Pause.Settings", "상세 설정", settings, 32, height - 156, width - 64, 48);
             var abandonWidth = (width - 36) / 2.6f;
             Button(ui, root, "Pause.Abandon", "포기", requestAbandon, 14, height - 88, abandonWidth, 60);
             Button(ui, root, "Pause.Continue", "계속", resume, 22 + abandonWidth, height - 88, width - 36 - abandonWidth, 60, true, "ui.button.primary");
@@ -260,7 +266,7 @@ namespace Game.App
             ContentCatalog catalog, IReadOnlyDictionary<string, ContentDisplay> displays, float width, float y)
         {
             if (first.Evolutions.Count == 0) return y;
-            Text(ui, body, "진화 진행", 0, y, width, PortraitTokens.Heading); y += 32;
+            Text(ui, body, "진화 진행", 0, y, width, 20); y += 32;
             foreach (var evolution in first.Evolutions)
             {
                 var relatedCard = new OfferedCardDetail(evolution.Id, "epic", 0, 0, 0, new[] { evolution.Id });
@@ -276,7 +282,7 @@ namespace Game.App
                 }
                 var panel = PortraitWidgets.Place("Evolution:" + evolution.Id, body, 0, y, width, 48);
                 ui.Surface(panel, "ui.hint").pixelsPerUnitMultiplier = 2;
-                var label = Text(ui, panel, clue + "\n" + string.Join(" · ", levels), 12, 8, width - 24, 12);
+                var label = Text(ui, panel, clue + "\n" + string.Join(" · ", levels), 12, 8, width - 24, 14);
                 var panelHeight = label.rectTransform.rect.height + 16;
                 panel.sizeDelta = new Vector2(width, panelHeight); y += panelHeight + 12;
             }
@@ -286,13 +292,13 @@ namespace Game.App
         static float Loadout(UiShell ui, RectTransform body, string title, IReadOnlyList<string> ids, int count,
             IReadOnlyDictionary<string, ContentDisplay> displays, float width, float y, RunFrame frame = null)
         {
-            var caption = Text(ui, body, title + " " + ids.Count + "/" + count, 0, y, width, 13);
+            var caption = Text(ui, body, title + " " + ids.Count + "/" + count, 0, y, width, 14);
             caption.color = title == "무기" ? new Color32(44,79,150,255) : title == "도구" ? new Color32(79,107,46,255) : new Color32(107,62,143,255);
             y += 24;
-            var slotWidth = (width - 24) / 5; var rowHeight = title == "특허장" ? 44 : 48;
+            var slotWidth = (width - 48) / 5; const int rowHeight = 36;
             for (var i = 0; i < count; i++)
             {
-                var slot = PortraitWidgets.Place(title + ".Slot:" + i, body, i * (slotWidth + 6), y, slotWidth, rowHeight);
+                var slot = PortraitWidgets.Place(title + ".Slot:" + i, body, i * (slotWidth + 12), y, slotWidth, rowHeight);
                 var surface = ui.Surface(slot, "ui.slot"); surface.pixelsPerUnitMultiplier = 6;
                 if (i >= ids.Count) { surface.color = new Color(1,1,1,.22f); continue; }
                 var id = ids[i]; var icon = ui.Icon(slot, id, 32); PortraitWidgets.Position(icon.rectTransform, (slotWidth - 32) / 2, (rowHeight - 32) / 2, 32, 32);
@@ -301,7 +307,7 @@ namespace Game.App
                 var badge = PortraitWidgets.Label(ui, slot, equipment.Level.ToString(), slotWidth - 18, rowHeight - 18, 16, 18, 11); badge.color = Color.white; badge.alignment = TextAnchor.MiddleRight;
                 var shadow = badge.gameObject.AddComponent<Shadow>(); shadow.effectColor = Color.black; shadow.effectDistance = new Vector2(0,-1);
             }
-            return y + rowHeight + 10;
+            return y + rowHeight + 6;
         }
 
         public static void Settings(UiShell ui, RunPreferences preferences, AimMode aim, Action preferencesChanged,
