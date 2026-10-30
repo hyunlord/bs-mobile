@@ -41,4 +41,7 @@ state version/content hash 불일치도 자동 해석하지 않는다. 도메인
 병력·영웅·연구 행동, 환불 지갑 초과 정책, 도움·유료 가속, 실계정 인증·배포 없음.
 기존 영지 계약 회귀, v1→v2 payload 보존, 미래 schema/이관 rollback, 도메인 누락·해시
 불일치, UTC 역행·생산 상한 분리, 동시 지출·receipt·late failure 원자성을 검사한다.
-코드 작성 시점 로컬 무거운 검사는 공유 Mac 슬롯 대기이며 실행 결과는 PR에 기록한다.
+2026-10-30 공유 Mac 슬롯에서 SDK 10.0.403과 별도 PostgreSQL/Redis로 검증했다.
+선행 실행 18/18, 최종 소스 `9fe6392f` 실행 20/20 통과(실패 0, skip 0, 약 7초).
+최종 실행은 지갑 상한·필수 필드·기존 receipt 보존·정산 후 지출 순서 검사를 포함한다.
+정본 실행 로그는 `artifacts/server-582/test-final.log`와 TRX이며 CI 결과는 PR에 기록한다.
