@@ -518,3 +518,29 @@ test('opt-in vassal run rules validate coefficients and account references', asy
   await cp(path.join(directory, 'opt-in', 'schema', 'vassal-run.schema.json'), path.join(directory, 'schema', 'vassal-run.schema.json'));
   assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
 });
+
+test('opt-in training rules require strict schema outside the historical data tree', async t => {
+  const source = fileURLToPath(new URL('../data', import.meta.url));
+  const directory = await mkdtemp(path.join(os.tmpdir(), 'bs-training-schema-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  await cp(source, directory, { recursive: true });
+  assert.deepEqual((await validateContent(directory)).errors, []);
+  const file = path.join(directory, 'opt-in', 'slg-training-v1.json');
+  const rules = JSON.parse(await readFile(file, 'utf8'));
+  for (const mutate of [
+    v => { v.units[0].secondsPerUnit = 0; },
+    v => { v.units[0].costPerUnit['meta:grain'] = -1; },
+    v => { v.units[0].clientBonus = 300; },
+    v => { v.levels[0].capacity = -1; },
+    v => { v.maximumBonusPermille = 1001; },
+    v => { delete v.barracksKind; },
+    v => { v.units = []; },
+  ]) {
+    const invalid = structuredClone(rules); mutate(invalid);
+    await writeFile(file, JSON.stringify(invalid));
+    assert.match((await validateContent(directory)).errors.join('\n'), /slg-training-v1\.json: schema violation/);
+  }
+  await writeFile(file, JSON.stringify(rules));
+  await cp(path.join(directory, 'opt-in/schema/slg-training-v1.schema.json'), path.join(directory, 'schema/slg-training-v1.schema.json'));
+  assert.match((await validateContent(directory)).errors.join('\n'), /opt-in-only kinds: data\/opt-in\/schema/);
+});
