@@ -112,6 +112,10 @@ namespace Tests.EditMode
             var confirmed = 0;
             var changed = 0;
             PortraitMetaPanels.VassalDepartureConfirmation(ui, catalog, options, () => confirmed++, () => changed++, () => { });
+            var blocker = Button("Departure snapshot");
+            Assert.That(blocker.transition, Is.EqualTo(Selectable.Transition.None), "An input blocker must not fade the parchment and expose text behind it.");
+            Assert.That(blocker.targetGraphic.raycastTarget, Is.True, "Panel clicks must not reach the outside-dismiss backdrop.");
+            Assert.That(blocker.interactable, Is.False);
             foreach (var id in originalIds)
             {
                 var definition = catalog.Vassals.Single(item => item.Id == id);

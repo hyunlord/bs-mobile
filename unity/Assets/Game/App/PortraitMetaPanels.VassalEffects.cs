@@ -126,7 +126,11 @@ namespace Game.App
             var panelWidth = Width(ui) - 40;
             var top = Mathf.Max(64, (Height(ui) - 580) / 2);
             var panel = Plate(ui, root, "Departure snapshot", "ui.panel", 20, top, panelWidth, 580);
-            panel.gameObject.AddComponent<Button>().interactable = false;
+            var blocker = panel.gameObject.AddComponent<Button>();
+            blocker.transition = Selectable.Transition.None;
+            blocker.targetGraphic = panel.GetComponent<Image>();
+            blocker.targetGraphic.raycastTarget = true;
+            blocker.interactable = false;
             Caption(ui, panel, "출정 확인", 20, 16, panelWidth - 40, 28, 20, true, TextAnchor.MiddleCenter);
             Caption(ui, panel, "편성 " + options.Snapshot.Roster.Count + " / " + options.Snapshot.EffectiveSlots, 20, 55, panelWidth - 40, 24, 16, true, TextAnchor.MiddleCenter);
             Caption(ui, panel, "출정하면 아래 능력이 고정됩니다.", 20, 88, panelWidth - 40, 24, 14, true);
