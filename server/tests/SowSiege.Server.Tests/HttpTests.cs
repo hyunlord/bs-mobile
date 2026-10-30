@@ -41,6 +41,13 @@ public sealed class HttpTests
         Assert.Equal(before, await StoredClockAndReceipts());
         var forged = new { commandId = Guid.NewGuid(), expectedVersion = 0, type = "claim-production", wallet = 999999, now = 999999 };
         Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/estate/commands", forged)).StatusCode);
+        var missingDomainVersion = new { commandId = Guid.NewGuid(), domain = "test", operation = "start", payload = new { } };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/account/commands", missingDomainVersion)).StatusCode);
+        var scalar = new { commandId = Guid.NewGuid(), expectedVersion = 0, domain = "test", operation = "start", payload = 42 };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/account/commands", scalar)).StatusCode);
+        var unknown = new { commandId = Guid.NewGuid(), expectedVersion = 0, domain = "test", operation = "start", payload = new { }, wallet = 999 };
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/v1/account/commands", unknown)).StatusCode);
+        Assert.Equal(before, await StoredClockAndReceipts());
         var refreshed = await client.GetFromJsonAsync<CommandReply>("/v1/estate");
         Assert.Equal(1, refreshed!.Estate.Version);
         client.DefaultRequestHeaders.Authorization = new("Bearer", new string('0', 64));

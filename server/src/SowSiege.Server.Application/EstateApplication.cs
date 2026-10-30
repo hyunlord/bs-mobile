@@ -39,6 +39,15 @@ public sealed class EstateApplication(EstateContent content)
         return new(updated, new(result.Done, result.Reason, View(updated, result.CreditedSeconds, clock.Reason)));
     }
 
+    public void Validate(MetaState state)
+    {
+        if (MetaValidation.ValidateState(content.Meta, state).Length != 0 ||
+            content.Config.WalletCaps.Any(cap => state.Wallet.GetValueOrDefault(cap.Key) > cap.Value))
+        {
+            throw new InvalidDataException("Domain result violates the pinned catalog.");
+        }
+    }
+
     public static bool IsValid(EstateCommand command) => command.CommandId != Guid.Empty && command.ExpectedVersion >= 0 &&
         (command.Type == "start-construction" ? command.BuildingId is > 0 : command.Type == "claim-production" && command.BuildingId is null);
 
