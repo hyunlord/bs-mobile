@@ -21,10 +21,10 @@ namespace Game.View
         static readonly string[] Seasons = { "봄", "여름", "가을", "겨울" };
         public float ReservedTopPixels => portrait!=null?portrait.ReservedTopPixels:fallow != null ? fallow.ReservedTopPixels : root.rect.height * ui.Canvas.scaleFactor;
         public UiHud(UiShell ui) : this(ui,null,null) { }
-        public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings,bool hitFeedback=false)
+        public UiHud(UiShell ui,ContentCatalog catalog,Action openSettings,bool hitFeedback=false,VassalRunOptions vassals=null)
         {
             this.ui=ui;this.catalog=catalog;
-            if(ui.PortraitEnabled){portrait=new PortraitHud(ui,catalog,openSettings,hitFeedback);return;}
+            if(ui.PortraitEnabled){portrait=new PortraitHud(ui,catalog,openSettings,hitFeedback,vassals);return;}
             if(ArtCatalog.UsesWaveArt&&catalog?.WaveRuntime?.ChapterId=="meta:chapter_1")
             {fallow=new FallowHud(ui,catalog,openSettings,hitFeedback);return;}
             root=UiShell.Rect("HUD",ui.Content);root.anchorMin=new Vector2(0,1);root.anchorMax=Vector2.one;root.pivot=new Vector2(.5f,1);root.sizeDelta=new Vector2(0,160);
