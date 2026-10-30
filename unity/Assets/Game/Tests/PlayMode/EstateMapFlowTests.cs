@@ -241,7 +241,8 @@ namespace Tests.PlayMode
             Assert.That(screen.State.Wallet["meta:grain"], Is.EqualTo(120));
             Assert.That(screen.State.Wallet["meta:timber"], Is.EqualTo(180));
             yield return Capture("estate-r8-first-entry");
-            ZoomTo(screen.Map.WholeMap);
+            Click("EstateMap.Overview"); Canvas.ForceUpdateCanvases();
+            Assert.That(screen.Map.Zoom, Is.EqualTo(screen.Map.WholeMap), "R8 overview is a separate action, not pinch zoom below the 50px minimum.");
             yield return Capture("estate-r8-whole");
             ZoomTo(screen.Map.Opening);
 
