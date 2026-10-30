@@ -503,6 +503,9 @@ namespace Tests.PlayMode
             Click("EstateMap.BranchConfirm"); yield return null;
             Assert.That(screen.Building(granary.Id).Branch, Is.EqualTo("granary:long-away"));
 
+            Assert.That(screen.Selected, Is.EqualTo(granary.Id));
+            Click("EstateMap.Close"); yield return null;
+            Assert.That(screen.Selected, Is.Null);
             Click("EstateMap.Overview"); yield return null;
             Tap(new Vector2Int(45, 30)); yield return null;
             Assert.That(screen.ZoneChoice, Is.Not.Null); Assert.That(Rects("EstateMap.Zone").Count(r => r.name == "EstateMap.Zone"), Is.EqualTo(1));
