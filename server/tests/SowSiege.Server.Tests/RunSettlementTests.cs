@@ -140,7 +140,7 @@ public sealed class RunSettlementTests
         var verified = await verifier.VerifyAsync(runId, 4242, bytes, CancellationToken.None);
         Assert.Equal(("verified", end.Kind.ToString(), end.Tick, end.StateHash), (verified.Verdict, verified.EndKind, verified.Tick, verified.StateHash));
         Assert.Equal("options-mismatch", (await verifier.VerifyAsync(runId, 4243, bytes, CancellationToken.None)).Verdict);
-        var (debug, _) = Record(verifier, 4242, 50, c => c.Sequence == 0 ? c with { Kind = ReplayCommandKind.SetInvulnerable, Value = 1 } : c);
+        var (debug, _) = Record(verifier, 4242, 50, c => c.Sequence == 0 ? c with { Kind = ReplayCommandKind.SetInvulnerable, Value = 1, Input = default } : c);
         Assert.Equal("debug-command", (await verifier.VerifyAsync(runId, 4242, debug, CancellationToken.None)).Verdict);
         var forged = (byte[])bytes.Clone();
         forged[^5] ^= 0x01; // inside the terminal state hash text
