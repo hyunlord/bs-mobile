@@ -32,6 +32,10 @@ public sealed class RunSettlementTests
             command = tamper?.Invoke(command) ?? command;
             session.Apply(command);
             ReplayCodec.WriteCommand(output, command);
+            if (command.Kind == ReplayCommandKind.Advance)
+            {
+                tick++;
+            }
         }
         while (session.View.Status != RunStatus.Completed && tick < ticks)
         {
@@ -43,7 +47,6 @@ public sealed class RunSettlementTests
             }
             int phase = tick / 120 % 4;
             Send(ReplayCommandKind.Advance, phase switch { 0 => new PlayerInput(1000, 0), 1 => new PlayerInput(0, 1000), 2 => new PlayerInput(-1000, 0), _ => new PlayerInput(0, -1000) });
-            tick++;
         }
         var summary = session.GetSummary();
         var kind = summary.EndReason == "death" ? ReplayEndKind.Death : summary.EndReason == "duration" ? ReplayEndKind.Duration : ReplayEndKind.Quit;
