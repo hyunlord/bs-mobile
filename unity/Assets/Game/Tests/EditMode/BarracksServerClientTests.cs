@@ -1,5 +1,7 @@
 using System;
 using Game.App;
+using Game.View;
+using UnityEngine.UI;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -42,6 +44,47 @@ namespace Game.Tests
             var escaped = BarracksServerClient.StartJson(id, 17, "bad\"unit", 1);
             StringAssert.Contains("bad\\\"unit", escaped);
             StringAssert.DoesNotContain("token", first);
+        }
+
+        [Test]
+        public void WaitingJobWithNullableServerTimesIsStillWaiting()
+        {
+            var job = JsonUtility.FromJson<BarracksJob>("{\"jobId\":\"pending\",\"unitId\":\"slg:levy\",\"count\":2,\"startedAtMilliseconds\":null,\"completesAtMilliseconds\":null,\"bonusPermille\":null}");
+            Assert.That(job.Exists, Is.True);
+            Assert.That(job.completesAtMilliseconds, Is.Zero);
+        }
+
+        [Test]
+        public void UnconnectedClientCannotInventAccountStateOrQueueSpending()
+        {
+            var client = new BarracksServerClient("http://localhost:5080");
+            Assert.That(client.Start("slg:levy", 1).MoveNext(), Is.False);
+            Assert.That(client.CancelWaiting().MoveNext(), Is.False);
+            Assert.That(client.Latest, Is.Null);
+            Assert.That(client.Uncertain, Is.False);
+            Assert.That(client.Connected, Is.False);
+        }
+
+        [Test]
+        public void DevelopmentConnectUsesPasswordAndMinimum48PixelActions()
+        {
+            var owner = new GameObject("Barracks connection test", typeof(RectTransform));
+            var font = FontProvider.Create(new[] { PortraitMetaPanels.BarracksGlyphs });
+            try
+            {
+                var ui = owner.AddComponent<UiShell>(); ui.Initialize(font);
+                ui.SafeRoot.sizeDelta = new Vector2(390, 844);
+                PortraitMetaPanels.BarracksConnect(ui, "http://localhost:5080", "not-connected", false, (_, __) => { }, () => { });
+                foreach (var button in owner.GetComponentsInChildren<Button>())
+                {
+                    Assert.That(button.GetComponent<RectTransform>().sizeDelta.y, Is.GreaterThanOrEqualTo(48), button.name);
+                }
+                var input = owner.GetComponentInChildren<InputField>();
+                Assert.That(input.contentType, Is.EqualTo(InputField.ContentType.Password));
+                Assert.That(input.text, Is.Empty);
+                Assert.That(PortraitMetaPanels.BarracksStatus("protected-reserve"), Does.Contain("기초 생산시설"));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(owner); UnityEngine.Object.DestroyImmediate(font); }
         }
 
         [Test]

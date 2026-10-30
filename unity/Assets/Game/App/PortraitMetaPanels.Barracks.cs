@@ -44,7 +44,7 @@ namespace Game.App
                 MaterialArt(ui, bar, ids[i], "", x, 14, 24);
                 Caption(ui, bar, (reply.resources.FirstOrDefault(r => r.id == ids[i])?.amount ?? 0).ToString(), x + 30, 8, 76, 36, 16);
             }
-            ActionButton(ui, root, "Barracks.Back", "‹", back, 8, 60, 48, !client.Busy && !client.Uncertain);
+            ActionButton(ui, root, "Barracks.Back", "‹", back, 8, 60, 48, !client.Busy);
             Caption(ui, root, "병영 · 훈련", 68, 60, w - 76, 40, 22, true);
             Caption(ui, root, "병영 Lv " + state.barracksLevel + " · 서버 계정", 18, 106, w - 36, 28, 14, true);
             var body = Body(ui, root, 146, 130);
@@ -101,6 +101,7 @@ namespace Game.App
                 case "not-connected": return "새 계정 또는 기존 계정으로 연결하세요";
                 case "barracks-required": case "unit-locked": return "병영 완공 레벨이 부족합니다";
                 case "insufficient-resources": return "재료가 모자랍니다";
+                case "protected-reserve": return "기초 생산시설 건설용 자원은 훈련에 쓸 수 없습니다";
                 case "queue-full": return "대기열이 가득 찼습니다";
                 case "capacity": return "병력 상한을 넘습니다";
                 case "training-started": return "훈련을 시작했습니다";
