@@ -1,55 +1,54 @@
-# 가신 효과 UI #539 검증 기록
+# 가신 효과 UI #539 검증 기록 초안
 
-관문: 부분 — 두 프로필 테스트 실패 0, 보충 실행 후 미설명 skip 0. 실제 출정 확인 화면의 배경 비침은 시각 수정이 필요하다.
+관문: 부분 — 수정본 두 프로필 실패 0, 보충 검사 후 미설명 skip 0, 실제 표본 8장 청록 0. 출정 패널 비침은 해소됐으며 외부 CI와 사용자 화면 판정은 아직 미확정이다.
 
-- 검증 소스: `192bfaedfde8ba609bc1f8ff96356e4f23223c75`, `feat/539-vassal-effects-ui`.
-- [Core PR #528](https://github.com/hyunlord/bs-mobile/pull/528)의 `feat/527-vassal-run-v1` 위에 쌓는 초안이다. 부모 PR과 이 UI는 사용자 병합 승인 전이다.
-- 승인 기준: [가신 탭·출정 r1 / HUD r2](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-531-20261029). 승인 시안과 실제 계정의 값·편성 수는 다르다.
-- 변경 범위는 View·UI·Unity 테스트 12파일이다. 이 UI 커밋은 Core 규칙·저장·콘텐츠 데이터를 수정하지 않는다.
-- CI 최종 결과와 공개 화면 링크는 아직 미확정이다. 아래 로컬 캡처를 공개 전달한 것으로 표현하지 않는다.
-- 시각 검토 뒤 담당자가 패널 입력 차단기의 `transition=None`·raycast 유지와 회귀 assertion을 추가했다. **그 후 소스의 Unity 검증은 아직 하지 않았다.** 아래 기록은 수정 전 `192bfaed`의 역사 기록이며 수정 후 최종 관문으로 재사용하지 않는다.
+- 최신 소스: `42f4043df6d4c92881d7894957654dcd9a70d731` (`feat/539-vassal-effects-ui`).
+- 부모: [Core #528](https://github.com/hyunlord/bs-mobile/pull/528), base `feat/527-vassal-run-v1`. 부모와 UI 모두 사용자 병합 승인 전 초안이다.
+- 승인 기준: [가신 UI r1·HUD r2](https://github.com/hyunlord/bs-mobile/releases/tag/vassal-effects-ui-531-20261029).
+- Core 규칙·콘텐츠 수·편성/장비 한계를 바꾸지 않았다. UI와 검증 입력만 수정했다.
+- 외부 CI와 공개 링크만 아직 미확정이다. 아래 로컬 결과는 실제 XML·JSON·화면에서 확인한 값이다.
 
-## 실행 관문
+## 최종 실행
 
-| 프로필 | EditMode 통과 / 실패 / skip | PlayMode 통과 / 실패 / skip |
-|---|---:|---:|
-| first-playable | 919 / 0 / 25 | 55 / 0 / 52 |
-| wave-1a | 929 / 0 / 15 | 94 / 0 / 13 |
+| 검증 | 결과 |
+|---|---|
+| first-playable EditMode / PlayMode | 919 / 0 / 25, 55 / 0 / 53 (통과/실패/skip) |
+| wave-1a EditMode / PlayMode | 929 / 0 / 15, 95 / 0 / 13 |
+| 생성 입력 보충 검사 / 공통 skip | combat 1/1·melee 1/1 통과, 각각 실패·skip0. 6XML 합산0unexplained/1listed |
+| 종료 후 추적 파일 diff | `git status --short` 출력0, HEAD `42f4043d` |
+| CI quality / secrets | PENDING: 최종 결과·링크만 기입 |
 
-`tools/unity-tests.sh`의 원래 종료값은 **1**이다. 모든 테스트는 실패 0이지만, 생성 입력이 없는 두 검사가 네 실행에서 모두 skip되어 기록 도구가 거부했다. 원본 `artifacts/day-20261030/vassal-unity/record.md`를 보존한다.
+## 보존한 실패와 수정
 
-| 보충 실행 | 입력 준비 | 결과 |
+| 소스 | 실행 결과 | 판단·조치 |
 |---|---|---|
-| `M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes` | 기존 `showcase-fixtures` 도구로 frozen combat sidecar 생성 | 1 / 1 통과, 실패·skip 0 |
-| `Tests.EditMode.MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures` | 기존 `melee-aim-fixture`와 opt-in `m1-showcase-review` catalog export | 1 / 1 통과, 실패·skip 0 |
+| `192bfaed` | FP Edit 919/0/25, Play 55/0/52; wave Edit 929/0/15, Play 94/0/13 (통과/실패/skip) | 원래 runner exit1: 공통 입력 누락 skip2. 기존 도구로 sidecar·melee catalog를 생성해 해당 검사 각1/1 통과. 6 XML 합산 미설명0/listed1. 이 별도 보충은 원래 exit1을 지우지 않는다 |
+| `192bfaed` 실제 화면 | 출정 확인 뒤의 챕터·장비 글자가 비쳐 전경과 겹침 | 시각 실패. 비활성 패널 Button의 색 전환을 끄고 raycast 차단은 유지, 회귀 assertion 추가 |
+| `dad3e2c9` | FP Edit 919/0/25, Play 55/0/53; wave Edit 929/0/15, Play 94/1/13 | 실패1은 `VassalEffectsCaptureTests.RenderOffEmptyCappedDepartureAndEquipmentStressFixtures`: `Expected: 7 / But was: 5`, 126행. wave catalog의 서로 다른 무기 수를7로 가정한 새 표본 검사 오류. 게임 실패로 확대하지 않으며 실행 자체의 FAIL은 보존 |
+| `42f4043d` | 위 최종 네 suite 실패0. 원래 runner exit1은 공통 입력 누락 skip2. 최신 소스 보충2개 통과와 합산으로 해소 | 실제 catalog 전체의 독립 표본과 14entry 표시 스트레스 표본을 분리. 후자는 숨긴 항목만 반복해 `+N`을 검사하고 실제 loadout으로 주장하지 않음. 게임 콘텐츠·장비 상한 증가 없음 |
 
-기본 4개 XML과 보충 2개 XML을 기존 `tools/unity-skipped-everywhere.mjs`에 함께 넣은 결과는 `skipped in every profile: 0 unexplained, 1 listed`다. 남은 listed는 `Tests.PlayMode.WaveWorldTests.RecordedWaveRangeExportsActualTickFrames`의 선택적 recorded-input export다. 새 예외 등록이나 검사 약화는 없다. 보충 뒤 first-playable generated content를 복원했으며 추적 파일 diff는 0이다.
+첫 실행의 공통 skip2는 `M1CombatReviewTests.ActualFixtureSidecarsMatchFrozenDerivedCatalogHashes`, `Tests.EditMode.MeleeAimReplayParityTests.MonoVerifiesReviewV6FromDotNetWithoutChangingHistoricalFixtures`다. listed1은 선택적 recorded-input sequence export다. 새 예외를 추가하지 않는다. `dad3e2c9`의 first-playable skip1 증가는 wave 전용 화면 fixture가 해당 프로필에서 의도적으로 건너뛰기 때문이다.
 
-실행 정본은 로컬 `artifacts/day-20261030/vassal-unity/`와 `artifacts/day-20261030/supplemental/{combat.xml,melee.xml,combined-skips.txt}`다. `VassalEffectsUiTests`는 OFF 안내 보존, ON 빈 편성의 적용값 0, 실제 Core cap 값, 변경 이후에도 고정되는 출정 snapshot, 소수 permille 표시를 검사한다. 이 단위 검사들은 해당 모든 상태의 실제 화면 판독성을 대신하지 않는다.
+## 실제 렌더 확인과 증거 범위
 
-## 실제 화면 대조
+최종 `42f4043d` 표본은 Unity Editor PlayMode에서 화면을 실제로 그린 것이지만 `testFixture=true`, `normalPlayEvidence=false`, `physicalDevice=false`, `userAcceptance=false`다. 계정 진행·성능·실기·사용자 승인 증거로 대체하지 않는다. r2에서 확인했던 패널·목록과 함께 r3의 OFF 하단·실제 catalog·late14를 확인했다.
 
-실제 Unity Editor PlayMode, 390×844 및 1080×2520 화면 비율 모사다. 물리 기기·사용자 승인·정상 완주 증거가 아니다. 세 화면군의 상단/하단 12개 청록 JSON은 모두 `cyanPixels=0`, 컴파일 전/후 `false`이며 2026-10-30 11:24 KST에 기록됐다.
-
-| 표본 | 실제 확인 | 남은 문제 |
+| 표본 | 확인 | 범위 제한 |
 |---|---|---|
-| 가신 목록 | 390×844에서 6행, 보유/적용/상한, 잠금과 편성 표시, 하단 탭이 읽힌다 | 현재 계정은 1명·Lv1이다. 최대 편성의 상한 도달 문구는 EditMode로 확인했으나 이번 실제 캡처에서 확인하지 못했다 |
-| 출정 확인 | 고정 능력 1명, 미편성 0 값과 출정/편성 변경 버튼이 표시된다 | **승인 시안과 달리 패널 뒤의 챕터·가신·장비 글자가 비쳐 전경 글자와 겹친다. 시각 불합격** |
-| 전투 시작 HUD | 상단 HP·시간·`가신 1 · 켜짐`·일시정지가 보인다 | 실제 캡처는 시작 무기 1개 상태다. 승인 HUD r2의 후기 14개와 `+N` 실제 화면 대조는 미확인 |
+| `fixture-vassal-departure-capped-390x844.png` | 3명·고정 값과 미편성0이 읽히며 승인 시안처럼 패널 뒤 글자가 비치지 않음 | 목록 위에 직접 올린 capped snapshot fixture, 정상 계정 흐름 캡처 아님 |
+| `fixture-vassals-capped-390x844.png` | 6행, 3명 편성, `상한 도달 — 더 강화해도 전투 효과 없음` 표시 확인 | 최대 상태를 구성한 테스트 입력 |
+| `fixture-vassals-enabled-empty-390x844.png` | 보유 능력은 있지만 `편성0/3`, 여섯 적용값0 표시 | 빈 편성 fixture |
+| `fixture-vassals-off(-bottom)-390x844.png` | 하단의 `이번 출정에서는 가신 능력 보너스가 적용되지 않습니다.` 안내가 읽힘 | 기존 OFF 상세 화면을 보존한 fixture |
+| `fixture-vassal-hud-early4-390x844.png` | 2무기·2도구, `가신3 · 켜짐`, 일시정지 표시 확인 | **회색 바탕의 render-only UI fixture**. 실제 전투 세계 위 후기 HUD 증거 아님. HP1800은 주입 frame의 값으로 실제 최대 가신 HP 검증에 사용하지 않음 |
+| 실제 catalog / late14 | 실제 catalog 무기5·도구4는 `+3`/`+2`, late14는 `+5`/`+5`로 접힘. 2+2 아이콘과 수치 읽힘 | 두 이미지 모두 회색 render-only. late14는 반복 숨김 entry가 있는 표시 스트레스이며 합법적인 실제14장비 편성 아님 |
 
-로컬 표본 경로:
+최종 r3 fixture8장의 청록 기록은 모두0, 컴파일 전/후 false다(2026-10-30 12:07 KST). 각 PNG의 `.txt`가 `42f4043d`, `sourceDirty=False`를 기록한다. 로컬 위치는 `artifacts/vassal-539/fixture-captures/`이며 각 PNG의 `.txt`에 소스 commit과 fixture 성격이 있다. 원래 실제 계정 흐름의 목록·출정·시작 HUD는 `artifacts/portrait-234/editor-meta/`이며 새 렌더 fixture와 혼동하지 않는다.
 
-- `artifacts/portrait-234/editor-meta/vassals-approved-list-390x844.png`
-- `artifacts/portrait-234/editor-meta/vassal-departure-approved-390x844.png`
-- `artifacts/portrait-234/editor-meta/vassal-hud-start-390x844.png`
-- 승인 비교 원본: `artifacts/vassal-527/ui-approved-readonly/`의 목록·출정 PNG 및 `vassal-hud-late14-r2-390x844.png`.
+최종 전체 기록은 `artifacts/day-20261030/vassal-unity-r3/record.md`, 보충은 `supplemental-r3/{combat.xml,melee.xml,combined-skips.txt}`다. 보충은12:08KST 완료했다. 원래 전체 runner의 skip 집계 exit1은 보존하고 보충 성공으로 덮어쓰지 않는다.
 
-출정 패널은 `PortraitMetaPanels.VassalEffects.cs`의 `VassalDepartureConfirmation`에서 `ui.panel` 위에 비활성 `Button`을 추가한다. 담당자는 비활성 색 전환을 막는 수정과 회귀 assertion을 추가했다. 이 문서는 수정 전 실패 화면을 보존하며 수정 후 실제 캡처를 다시 확인하기 전 전체 시각 관문 통과를 선언하지 않는다.
+## 공개와 다음 관문
 
-## 한계와 후속
-
-- 필수 CI 최종 결과 미확정. 초안 유지, 자동 병합 없음.
-- OFF/빈 편성/상한 도달/후기 HUD의 실제 시각 비교는 아직 모두 갖춰지지 않았다.
-- 이 커밋의 C05/FP01 성능 측정은 NOT_RUN이다. UI 테스트를 성능 관문으로 대체하지 않는다.
-- 역사 해시의 Core 증거는 부모 #528 기록에 있으며, 이번 문서가 새 전체 해시 실행을 했다는 뜻이 아니다.
-- 설계 문서 영향: 승인 가신 UI 계약을 구현하는 범위이며 새 Core 정책은 없다. GDD 동반 갱신 여부는 PR 작성자가 최종 정리한다.
+- 선정 실패 표본과 승인 비교용 표본만 Release에 공개하며, 링크는 실제 업로드 후 추가한다. 전체 성공 로그를 중복 업로드하지 않는다.
+- Unity 최종 검증은 완료했고 CI와 사용자 승인 전 초안 유지. 그림의 최종 사용자 승인은 별도다.
+- C05/FP01 성능은 이 UI 검증에서 NOT_RUN. 역사 Core 해시는 부모 #528 증거이며 이번 문서가 새 전체 해시 실행을 뜻하지 않는다.
+- 설계 문서 영향은 기존 승인 UI 구현 상태 갱신이며 새 Core 정책은 없다. GDD 동반 변경 여부는 담당자가 최종 확인한다.
