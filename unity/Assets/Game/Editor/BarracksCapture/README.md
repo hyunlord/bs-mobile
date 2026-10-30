@@ -6,7 +6,7 @@ has completed normally, enough spendable materials and an empty training queue.
 The command submits two real one-person training requests through the existing UI.
 
 After the shared-Mac lock is held, export wave-1a as usual, then launch the repository
-Unity version with the project path, `-batchmode`, `-server-url http://127.0.0.1:5082`,
+Unity version with the project path, `-batchmode`, `--server-url http://127.0.0.1:5082`,
 and `-executeMethod Game.BarracksCapture.BarracksCapture.Start` (do not pass `-quit`).
 Set `BARRACKS_CAPTURE_TOKEN_FILE` to the user's private token file and
 `BARRACKS_CAPTURE_DIR` to an empty, agent-owned artifact folder. Never put the token

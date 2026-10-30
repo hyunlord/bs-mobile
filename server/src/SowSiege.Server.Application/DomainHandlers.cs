@@ -18,6 +18,8 @@ public interface IDomainHandler
     JsonElement View(DomainContext context);
     DomainResult Advance(DomainContext context);
     DomainResult Execute(DomainContext context, string operation, JsonElement payload);
+    DomainResult AfterCommand(DomainContext context) =>
+        new(context.Account.State, context.State, View(context), true, "", []);
 }
 
 public sealed class DomainRegistry

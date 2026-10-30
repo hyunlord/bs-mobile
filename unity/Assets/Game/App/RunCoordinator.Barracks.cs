@@ -9,7 +9,7 @@ namespace Game.App
         BarracksServerClient barracksServer;
         string barracksUnit;
         int barracksCount = 1;
-        bool barracksConfirm;
+        bool barracksConfirm, barracksCancelConfirm;
         UnityEngine.Coroutine barracksPoll;
 
         Action BarracksSettingsAction
@@ -45,14 +45,25 @@ namespace Game.App
             if (barracksServer?.Latest?.Training == null) { ShowBarracksConnection(); return; }
             var units = barracksServer.Latest.Training.units;
             if (!units.Any(u => u.unitId == barracksUnit)) barracksUnit = units.FirstOrDefault()?.unitId;
-            MetaPage(UiScreen.Barracks, () => PortraitMetaPanels.Barracks(Ui, barracksServer, barracksUnit, barracksCount, barracksConfirm,
-                id => { barracksUnit = id; barracksConfirm = false; ShowBarracks(); },
+            MetaPage(UiScreen.Barracks, () => PortraitMetaPanels.Barracks(Ui, barracksServer, barracksUnit, barracksCount, barracksConfirm, barracksCancelConfirm,
+                id => { barracksUnit = id; barracksConfirm = false; barracksCancelConfirm = false; ShowBarracks(); },
                 count => { barracksCount = count; barracksConfirm = false; ShowBarracks(); },
-                () => { barracksConfirm = true; ShowBarracks(); },
+                () => { barracksConfirm = true; barracksCancelConfirm = false; ShowBarracks(); },
                 () => { barracksConfirm = false; StartCoroutine(BarracksRequest(barracksServer.Start(barracksUnit, barracksCount))); },
-                () => StartCoroutine(BarracksRequest(barracksServer.CancelWaiting())),
+                () =>
+                {
+                    if (!barracksCancelConfirm) { barracksCancelConfirm = true; barracksConfirm = false; ShowBarracks(); return; }
+                    barracksCancelConfirm = false; StartCoroutine(BarracksRequest(barracksServer.CancelWaiting()));
+                },
+                () => { barracksCancelConfirm = false; ShowBarracks(); },
                 () => StartCoroutine(BarracksRequest(barracksServer.Uncertain ? barracksServer.Retry() : barracksServer.Refresh())),
-                () => ShowSettings(false)));
+                RestoreBarracksSettings));
+            if (barracksCancelConfirm)
+            {
+                UnityEngine.Canvas.ForceUpdateCanvases();
+                var scroll = Ui.GetComponentInChildren<UnityEngine.UI.ScrollRect>();
+                if (scroll != null) scroll.verticalNormalizedPosition = 0;
+            }
 #endif
         }
         void RestoreBarracksSettings() { screen = UiScreen.Settings; ShowSettings(false); }
@@ -61,7 +72,7 @@ namespace Game.App
             while (true)
             {
                 yield return new UnityEngine.WaitForSecondsRealtime(5);
-                if (screen == UiScreen.Barracks && barracksServer?.Latest != null && !barracksServer.Busy && !barracksServer.Uncertain && !barracksConfirm)
+                if (screen == UiScreen.Barracks && barracksServer?.Latest != null && !barracksServer.Busy && !barracksServer.Uncertain && !barracksConfirm && !barracksCancelConfirm)
                     yield return BarracksRequest(barracksServer.Refresh());
             }
         }

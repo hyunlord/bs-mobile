@@ -9,7 +9,7 @@ namespace Game.App
     // Approved #563: parchment panels, blue primary actions, dark resource/navigation bars.
     public static partial class PortraitMetaPanels
     {
-        public const string BarracksGlyphs = "병영 훈련 서버 연결 개발 계정 새 만들기 기존 토큰 입력 닫기 연결 중 결과 확인 다시 보내기 조회 상비 병력 총 인원 상한 준비 출전 부상 예약 포함 징집 창병 방패 수비병 명 곡물 목재 철재 기본 시간 훈련 뒤 충분 부족 활성 대기 취소 확인 실제 서버 상태 로컬 저장과 별개 이번 실행 동안만 보관 안 됨 병영 필요 선택 자원 모자람 공간 없음 재접속 인증 만료 응답 오류 취소 환불 대기만 가능 서버 주소 실행 옵션 적용 기다려 주세요 연결 실패 새로고침";
+        public const string BarracksGlyphs = "병영 훈련 서버 연결 개발 계정 새 만들기 기존 토큰 입력 닫기 연결 중 결과 확인 다시 보내기 조회 상비 병력 총 인원 상한 준비 출전 부상 예약 포함 징집 창병 방패 수비병 명 곡물 목재 철재 기본 시간 훈련 뒤 충분 부족 활성 대기 취소 확인 실제 서버 상태 로컬 저장과 별개 이번 실행 동안만 보관 안 됨 병영 필요 선택 자원 모자람 공간 없음 재접속 인증 만료 응답 오류 취소 환불 대기만 가능 서버 주소 실행 옵션 적용 기다려 주세요 연결 실패 새로고침 환불 대기 지갑 가득 차 일부 공간 생기면 돌려받습니다 즉시 계속 기초 생산시설 건설용 쓸 수 없습니다";
         static readonly Color BarracksDark = new Color32(20, 26, 31, 255);
         public static void BarracksConnect(UiShell ui, string endpoint, string status, bool busy, Action<string, bool> connect, Action back)
         {
@@ -30,8 +30,8 @@ namespace Game.App
             ActionButton(ui, body, "Barracks.Create", "새 서버 계정 만들기", () => connect(null, true), 0, 286, w - 36, !busy);
             Caption(ui, body, BarracksStatus(status), 0, 352, w - 36, 72, 15, true); End(body, 440);
         }
-        public static void Barracks(UiShell ui, BarracksServerClient client, string selected, int count, bool confirming,
-            Action<string> select, Action<int> quantity, Action confirm, Action submit, Action cancel, Action refresh, Action back)
+        public static void Barracks(UiShell ui, BarracksServerClient client, string selected, int count, bool confirming, bool cancelConfirming,
+            Action<string> select, Action<int> quantity, Action confirm, Action submit, Action cancel, Action keepWaiting, Action refresh, Action back)
         {
             var root = Page(ui, "Barracks", ""); ui.ApplySurface(root.GetComponent<Image>(), "ui.panel");
             float w = Width(ui), h = Height(ui), inner = w - 36;
@@ -74,17 +74,37 @@ namespace Game.App
             Caption(ui, detail, count + "명", 72, 157, inner - 144, 42, 18, true, TextAnchor.MiddleCenter);
             ActionButton(ui, detail, "Barracks.CountMore", "+", () => quantity(count + 1), inner - 62, 154, 48,
                 count < state.batchLimit && !client.Busy && !client.Uncertain);
-            var queue = Plate(ui, body, "Barracks.Queue", "ui.panel", 0, 440, inner, 136);
+            var queueHeight = cancelConfirming ? 270 : 136;
+            var queue = Plate(ui, body, "Barracks.Queue", "ui.panel", 0, 440, inner, queueHeight);
             Caption(ui, queue, state.HasActive ? "활성 " + state.active.count + "명 · " + Duration(Math.Max(0, state.active.completesAtMilliseconds - state.serverUtcMilliseconds) / 1000) : "활성 훈련 없음", 14, 10, inner - 28, 28, 15, true);
             Caption(ui, queue, state.HasWaiting ? "대기 " + state.waiting.count + "명 · 앞 훈련 완료 후 시작" : "대기 0 / 1", 14, 44, inner - 28, 24, 14, true);
-            if (state.HasWaiting) ActionButton(ui, queue, "Barracks.CancelWaiting", "대기 취소", cancel, 14, 78, inner - 28, !client.Busy && !client.Uncertain);
+            if (state.HasWaiting)
+            {
+                if (cancelConfirming)
+                {
+                    Caption(ui, queue, BarracksRefundPreviewText(state), 14, 76, inner - 28, 116, 14, true);
+                    ActionButton(ui, queue, "Barracks.CancelWaiting", "확인 · 대기 취소", cancel, 14, 208, (inner - 36) / 2, !client.Busy && !client.Uncertain);
+                    ActionButton(ui, queue, "Barracks.KeepWaiting", "계속 훈련", keepWaiting, 22 + (inner - 36) / 2, 208, (inner - 36) / 2, !client.Busy);
+                }
+                else ActionButton(ui, queue, "Barracks.CancelWaiting", "대기 취소", cancel, 14, 78, inner - 28, !client.Busy && !client.Uncertain);
+            }
+            var refundY = 440 + queueHeight + 12;
+            Caption(ui, body, BarracksPendingRefundText(state), 4, refundY, inner - 8, 54, 14, true);
             var unavailable = !chosen.unlocked ? "병영 Lv " + chosen.requiredBarracksLevel + " 필요" : state.HasWaiting ? "대기열이 가득 찼습니다" :
                 state.occupied + count > state.capacity ? "병력 상한을 넘습니다" : chosen.costPerUnit.Any(c => (long)c.amount * count > (reply.resources.FirstOrDefault(r => r.id == c.materialId)?.amount ?? 0)) ? "재료가 모자랍니다" : null;
-            Caption(ui, body, unavailable ?? BarracksStatus(client.Status), 4, 588, inner - 8, 52, 14, true); End(body, 652);
+            Caption(ui, body, unavailable ?? BarracksStatus(client.Status), 4, refundY + 60, inner - 8, 52, 14, true); End(body, refundY + 120);
             ActionButton(ui, root, "Barracks.Train", client.Uncertain ? "결과 확인 · 같은 요청 다시 보내기" : confirming ? "확인 · " + count + "명 훈련" : count + "명 훈련",
                 client.Uncertain ? refresh : confirming ? submit : confirm, 20, h - 118, w - 40,
                 !client.Busy && (client.Uncertain || unavailable == null), 48, "ui.button.primary");
             ActionButton(ui, root, "Barracks.Refresh", "서버 상태 새로고침", refresh, 20, h - 60, w - 40, !client.Busy && !client.Uncertain);
+        }
+        public static string BarracksPendingRefundText(BarracksView state) =>
+            string.Join(" · ", (state.pendingRefunds ?? Array.Empty<BarracksCost>()).Where(c => c.amount > 0).Select(c => "환불 대기 " + MaterialName(c.materialId) + " " + c.amount));
+        public static string BarracksRefundPreviewText(BarracksView state)
+        {
+            var rows = state.waitingCancellationRefunds ?? Array.Empty<BarracksRefundPreview>();
+            var text = string.Join(" · ", rows.Select(c => MaterialName(c.materialId) + " 즉시 " + c.immediateAmount + " / 환불 대기 " + c.pendingAmount));
+            return rows.Any(c => c.pendingAmount > 0) ? text + "\n지갑이 가득 차 일부는 공간이 생기면 돌려받습니다" : text + "\n대기 훈련을 취소하고 자원을 돌려받습니다";
         }
         static string MaterialName(string id) => id == "meta:grain" ? "곡물" : id == "meta:timber" ? "목재" : id == "meta:iron" ? "철재" : id;
         static string Duration(long seconds) => (seconds / 60) + ":" + (seconds % 60).ToString("00");
@@ -102,7 +122,6 @@ namespace Game.App
                 case "barracks-required": case "unit-locked": return "병영 완공 레벨이 부족합니다";
                 case "insufficient-resources": return "재료가 모자랍니다";
                 case "protected-reserve": return "기초 생산시설 건설용 자원은 훈련에 쓸 수 없습니다";
-                case "refund-policy-pending": return "환불 상한 정책 확인 전에는 대기 훈련을 취소할 수 없습니다";
                 case "queue-full": return "대기열이 가득 찼습니다";
                 case "capacity": return "병력 상한을 넘습니다";
                 case "training-started": return "훈련을 시작했습니다";

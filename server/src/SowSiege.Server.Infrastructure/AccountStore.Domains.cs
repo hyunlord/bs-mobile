@@ -89,6 +89,23 @@ public sealed partial class AccountStore
                 done = result.Done;
                 reason = result.Reason;
             }
+            results[handler.Domain] = result;
+        }
+        if (command is not null || legacyCommand is not null)
+        {
+            foreach (var handler in registry.Handlers)
+            {
+                var settled = handler.AfterCommand(new(account, results[handler.Domain].State, utc, command?.CommandId ?? legacyCommand?.CommandId));
+                account = account with { State = settled.AccountState };
+                application.Validate(account.State);
+                results[handler.Domain] = settled;
+                changes[handler.Domain].AddRange(settled.Events);
+            }
+        }
+        foreach (var handler in registry.Handlers)
+        {
+            var result = results[handler.Domain];
+            var events = changes[handler.Domain];
             if (result.State.ValueKind != JsonValueKind.Object || result.View.ValueKind != JsonValueKind.Object)
             {
                 throw new InvalidDataException("Domain state and view must be objects.");
