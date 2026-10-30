@@ -63,22 +63,10 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
     private DomainResult Start(DomainContext context, TrainingState state, TrainingStart request)
     {
         DomainResult Reject(string reason) => Result(context, state, context.Account.State, false, reason);
-        var level = Level(context.Account.State);
-        if (level.Level == 0) { return Reject("barracks-required"); }
-        var unit = content.Rules.Units.SingleOrDefault(u => u.UnitId == request.UnitId);
-        if (unit is null) { return Reject("unknown-unit"); }
-        if (unit.RequiredBarracksLevel > level.Level) { return Reject("unit-locked"); }
-        if (request.Count <= 0) { return Reject("invalid-count"); }
-        if (request.Count > level.BatchLimit) { return Reject("batch-limit"); }
-        if (state.Waiting is not null) { return Reject("queue-full"); }
-        if ((long)Occupied(state) + request.Count > level.Capacity) { return Reject("capacity"); }
-        var cost = unit.CostPerUnit.ToDictionary(c => c.Key, c => checked(c.Value * request.Count), StringComparer.Ordinal);
-        if (cost.Any(c => context.Account.State.Wallet[c.Key] < c.Value)) { return Reject("insufficient-resources"); }
-        var reserve = AccountEstate.ProtectedReserve(estate.Config, context.Account.State);
-        if (reserve.Any(r => context.Account.State.Wallet[r.Key] - cost.GetValueOrDefault(r.Key) < r.Value))
-        {
-            return Reject("protected-reserve");
-        }
+        string reason = StartRejection(state, context.Account.State, request.UnitId, request.Count);
+        if (reason.Length != 0) { return Reject(reason); }
+        var unit = content.Rules.Units.Single(u => u.UnitId == request.UnitId);
+        var cost = BatchCost(unit, request.Count);
         Guid jobId = context.CommandId ?? throw new InvalidOperationException("Training requires a command identity.");
         if (jobId == Guid.Empty || state.Active?.JobId == jobId || state.Waiting?.JobId == jobId)
         {
@@ -192,7 +180,7 @@ public sealed partial class TrainingHandler(EstateContent estate, TrainingConten
             {
                 var troops = state.Units.Single(u => u.UnitId == unit.UnitId);
                 return new TrainingUnitView(unit.UnitId, unit.Name, unit.RequiredBarracksLevel, unit.RequiredBarracksLevel <= level.Level,
-                    troops.Ready, troops.Deployed, troops.Wounded, troops.Reserved, Materials(unit.CostPerUnit), unit.SecondsPerUnit);
+                    troops.Ready, troops.Deployed, troops.Wounded, troops.Reserved, Materials(unit.CostPerUnit), unit.SecondsPerUnit, Quotes(context, state, account, unit));
             }).ToArray(), JobView(state.Active), JobView(state.Waiting), Materials(state.PendingRefunds), RefundPreview(state, account));
         return new(account, Encode(state), Encode(view), done, reason, events ?? []);
     }
