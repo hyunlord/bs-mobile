@@ -172,4 +172,4 @@ Light Node suite18/18 passes, including all18 form/size combinations in both sta
 
 교환 형식은 아직 초안이다. `grid`는 64×32 등각 격자의 셀 좌표, `width`는 그 투영에서 배율 적용 전 native 가로 픽셀 길이다(390px 화면 픽셀이나 셀 개수가 아님). 예를 들어 width=96은 카메라 1배에서 native 96이고 최종 화면 크기는 카메라 배율을 따른다. `sizeVariant`는 지정된 propId/darkPropId의 실제 S/M/L 또는 native variant 및 명시적 width와 서로 일치해야 한다. 현재 reader는 이를 라벨로 읽고 좌표·폭을 자동 환산하지 않으며, role별 크기 일치 검증은 실제 export의 자산 표 계약 확인 후 연결해야 한다. 실제 문서는 유효한 r8 구역, 등록된 밝음/어둠 role 쌍, 고유 id, 유한 grid와 양수 width를 모두 공급해야 한다. 테스트에만 합성 입력을 사용했다.
 
-현재 `ground-grass-r4`는 승인 Release 원판과 atlas crop RGBA 차이가 0이며 원본 평균 RGB가 (131.877,115.502,81.906)이다. 의도한 초록 잔디의 정확한 파일 식별은 대기 중이다. 원판 recolor·role 이름만 바꾸기·새 그림 생성은 하지 않았다. 자세한 계약은 GDD 05 v1.13에 기록했다.
+현재 `ground-grass-r4`는 승인 Release 원판과 atlas crop RGBA 차이가 0이며 원본 평균 RGB가 (131.877,115.502,81.906)이다. 사용자가 바닥 교체 요청을 취소했다: 현재 r4가 맞고 미리보기의 초록 인상은 소품 밀도에서 온다. 기존 원판·role·색을 그대로 유지하며 추가 자산이나 recolor는 없다. 초록 잔디 식별 대기는 해소됐고, 실제 Astra 배치 export 미수신과 생산 로더 미연결만 유지한다. 자세한 계약은 GDD 05 v1.14에 기록했다.
