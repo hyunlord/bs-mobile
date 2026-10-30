@@ -102,6 +102,7 @@ namespace Game.App
                 case "barracks-required": case "unit-locked": return "병영 완공 레벨이 부족합니다";
                 case "insufficient-resources": return "재료가 모자랍니다";
                 case "protected-reserve": return "기초 생산시설 건설용 자원은 훈련에 쓸 수 없습니다";
+                case "refund-policy-pending": return "환불 상한 정책 확인 전에는 대기 훈련을 취소할 수 없습니다";
                 case "queue-full": return "대기열이 가득 찼습니다";
                 case "capacity": return "병력 상한을 넘습니다";
                 case "training-started": return "훈련을 시작했습니다";
