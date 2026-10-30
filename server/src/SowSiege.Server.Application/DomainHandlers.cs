@@ -3,7 +3,7 @@ using SowSiege.Core;
 
 namespace SowSiege.Server.Application;
 
-public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds);
+public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds, Guid? CommandId = null);
 public sealed record DomainEvent(string Kind, JsonElement Data);
 public sealed record DomainResult(MetaState AccountState, JsonElement State, JsonElement View,
     bool Done, string Reason, DomainEvent[] Events);
