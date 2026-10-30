@@ -1,0 +1,29 @@
+{
+  "records": [
+    {
+      "path": "unity/Assets/Resources/BarracksUI/training.png",
+      "reason": "Approved #589 training UI parts and two existing troop portraits share one texture; desktop source preserved, approved mobile ASTC4 policy applied.",
+      "before": null,
+      "after": {
+        "status": "ESTIMATE",
+        "identity": {
+          "sha256": "e57d4f0ec36fd570ef94c1db2060b1702bcd8a50558401c029fcd93e9e7a947a",
+          "fileBytes": 748259
+        },
+        "width": 1024,
+        "height": 828,
+        "mipmaps": false,
+        "formats": {
+          "mac": "RGBA32",
+          "android": "ASTC4",
+          "ios": "ASTC4"
+        },
+        "bytes": {
+          "mac": 3391488,
+          "android": 847872,
+          "ios": 847872
+        }
+      }
+    }
+  ]
+}

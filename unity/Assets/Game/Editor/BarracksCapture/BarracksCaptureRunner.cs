@@ -38,10 +38,10 @@ namespace Game.BarracksCapture
             Click("Barracks.Train"); yield return null; yield return Capture("02-confirm"); Click("Barracks.Train");
             yield return Ready(); yield return Capture("03-active");
             Click("Barracks.Train"); yield return null; Click("Barracks.Train"); yield return Ready(); yield return Capture("04-waiting");
-            if (Button("Barracks.CancelWaiting") == null) throw new InvalidOperationException("Server waiting queue was not created.");
+            if (Button("Barracks.CancelWaiting")?.interactable != true) throw new InvalidOperationException("Server waiting queue was not created.");
             Click("Barracks.CancelWaiting"); yield return null; yield return Capture("05-cancel-confirm");
-            Click("Barracks.CancelWaiting"); yield return Ready(); yield return Capture("06-cancel-result");
-            if (Button("Barracks.CancelWaiting") != null) throw new InvalidOperationException("Server waiting cancellation was not reflected.");
+            Click("Barracks.ConfirmCancel"); yield return Ready(); yield return Capture("06-cancel-result");
+            if (Button("Barracks.CancelWaiting")?.interactable == true) throw new InvalidOperationException("Server waiting cancellation was not reflected.");
             BarracksCapture.Finish(true, "Live server connected, start, waiting queue and cancellation submitted through real UI.");
         }
         Button Button(string name) => app?.Ui?.GetComponentsInChildren<Button>().SingleOrDefault(button => button.name == name);
@@ -67,7 +67,7 @@ namespace Game.BarracksCapture
             var status = app.Ui.GetComponentsInChildren<Text>().Single(t => t.name == "Barracks.Status");
             if (status.GetComponentInParent<ScrollRect>() != null) throw new InvalidOperationException("Server reason is hidden in scrolling content.");
             var queue = app.Ui.GetComponentsInChildren<RectTransform>().Single(r => r.name == "Barracks.Queue");
-            var viewport = queue.GetComponentInParent<ScrollRect>().viewport;
+            var viewport = (RectTransform)queue.parent;
             var bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(viewport, queue);
             if (bounds.min.y < viewport.rect.yMin - 1 || bounds.max.y > viewport.rect.yMax + 1)
                 throw new InvalidOperationException("Training queue is clipped by its viewport.");

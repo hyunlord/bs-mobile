@@ -1,0 +1,295 @@
+{
+  "release": "slg-screen-assets-581-20261030",
+  "width": 1024,
+  "height": 828,
+  "assets": [
+    {
+      "id": "training-quantity-button-active",
+      "file": "training-quantity-button-active-r2-2x.png",
+      "sha256": "4a52d32a289b09525897b91bcee46b04b43f3c1f9b7d314be2d6fa5ab6e9cbdc",
+      "rect": [
+        4,
+        4,
+        96,
+        96
+      ],
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-quantity-plus-active",
+      "file": "training-quantity-plus-active-r2-2x.png",
+      "sha256": "4b3e6de6de12aad2b09a6b401b878ee58d0e8d58189e89b23e8cae3ee99377dc",
+      "rect": [
+        104,
+        4,
+        48,
+        48
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-quantity-minus-active",
+      "file": "training-quantity-minus-active-r2-2x.png",
+      "sha256": "4e619a528527bc38f9f1cf29dfa1ffab1338d57ee0296efdeca269149dd68770",
+      "rect": [
+        156,
+        4,
+        48,
+        48
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-quantity-button-disabled",
+      "file": "training-quantity-button-disabled-r2-2x.png",
+      "sha256": "e87928094a3b529794e31b7d3f2433904210b20ca283a3269b7ecc1690747c71",
+      "rect": [
+        208,
+        4,
+        96,
+        96
+      ],
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-quantity-plus-disabled",
+      "file": "training-quantity-plus-disabled-r2-2x.png",
+      "sha256": "b3373a312afe0880f54ab9c680648ebe65bebfda05ad0635218b27dc91c32ff2",
+      "rect": [
+        308,
+        4,
+        48,
+        48
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-quantity-minus-disabled",
+      "file": "training-quantity-minus-disabled-r2-2x.png",
+      "sha256": "f46338820cefe50d81cf97594f1222854956bbab0caf33d7a511afa8c8b350fe",
+      "rect": [
+        360,
+        4,
+        48,
+        48
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-quantity-value",
+      "file": "training-quantity-value-r2-2x.png",
+      "sha256": "7d5eb5310e398da547366a07a2d85ed7b8e75bf09f49211ea971bcbf1bae826b",
+      "rect": [
+        412,
+        4,
+        332,
+        96
+      ],
+      "border": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-total-cost-row",
+      "file": "training-total-cost-row-r2-2x.png",
+      "sha256": "db24d81ce66313082683c0c04badbed8ddc99ab7968a6a281d8a3678371a2f51",
+      "rect": [
+        4,
+        104,
+        652,
+        112
+      ],
+      "border": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-cancel-active",
+      "file": "training-cancel-active-r2-2x.png",
+      "sha256": "0525ec81aed3110fc4d94fd5d1b163613b43455161b0f3ff4c1279d2f09ee300",
+      "rect": [
+        660,
+        104,
+        320,
+        96
+      ],
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-cancel-disabled",
+      "file": "training-cancel-disabled-r2-2x.png",
+      "sha256": "7e96ba98aaa15d4589fb5331995a1e3f48d86695887cf5f5f76d686f3dd6ed7f",
+      "rect": [
+        4,
+        220,
+        320,
+        96
+      ],
+      "border": [
+        24,
+        24,
+        24,
+        24
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-refund-pending-panel",
+      "file": "training-refund-pending-panel-r2-2x.png",
+      "sha256": "c6ff42d0a16d73eb9660b1ed2a1c3b5c05f81b9e282869982ca7b875cf025fc1",
+      "rect": [
+        328,
+        220,
+        652,
+        164
+      ],
+      "border": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-refund-pending-mark",
+      "file": "training-refund-pending-mark-r2-2x.png",
+      "sha256": "b2fba8d79f6254b96441a02397d2dc32fc2ccbbc758bbd3d28d1a495dc1c4015",
+      "rect": [
+        4,
+        388,
+        48,
+        48
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-progress-track",
+      "file": "training-progress-track-r1-2x.png",
+      "sha256": "009c75caebc33375817533b271361aa04a434a691aa49825867edd58306c93d7",
+      "rect": [
+        56,
+        388,
+        480,
+        40
+      ],
+      "border": [
+        28,
+        16,
+        28,
+        16
+      ],
+      "scale": 2
+    },
+    {
+      "id": "training-progress-fill",
+      "file": "training-progress-fill-r1-2x.png",
+      "sha256": "0fd7717fe6edfdd285430944b5742a5742db498a74148b831ffaac1e795bc964",
+      "rect": [
+        540,
+        388,
+        432,
+        16
+      ],
+      "border": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "scale": 2
+    },
+    {
+      "id": "troop-levy",
+      "file": "troop-levy-portrait-r1-1x.png",
+      "sha256": "babf08aea5cba430cd8ca77c9e1313238869032984f25fcc5ed92feec04647a8",
+      "rect": [
+        4,
+        440,
+        324,
+        383
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    },
+    {
+      "id": "troop-guard",
+      "file": "troop-guard-portrait-r1-1x.png",
+      "sha256": "96e60ce925b4c4327fb20c23a6fcea67f5a293d802ae41388fcde36acbb807dd",
+      "rect": [
+        332,
+        440,
+        324,
+        383
+      ],
+      "border": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scale": 1
+    }
+  ]
+}

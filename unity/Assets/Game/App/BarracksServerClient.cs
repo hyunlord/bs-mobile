@@ -11,12 +11,21 @@ namespace Game.App
     [Serializable] public sealed class BarracksResource { public string id; public int amount; }
     [Serializable] public sealed class BarracksCost { public string materialId; public int amount; }
     [Serializable] public sealed class BarracksRefundPreview { public string materialId; public int immediateAmount, pendingAmount; }
+    [Serializable] public sealed class BarracksQuote
+    {
+        public int count, occupiedAfter, capacity;
+        public BarracksCost[] totalCost;
+        public long durationMilliseconds, estimatedCompletesAtMilliseconds;
+        public bool canStart;
+        public string reason;
+    }
     [Serializable] public sealed class BarracksUnit
     {
         public string unitId, name;
         public int requiredBarracksLevel, ready, deployed, wounded, reserved, secondsPerUnit;
         public bool unlocked;
         public BarracksCost[] costPerUnit;
+        public BarracksQuote[] quotes;
     }
     [Serializable] public sealed class BarracksJob
     {
