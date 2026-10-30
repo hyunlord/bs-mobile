@@ -6,18 +6,14 @@ using SowSiege.Server.Contracts;
 using SowSiege.Server.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-if (!builder.Environment.IsDevelopment() || builder.Configuration["Prototype:Enabled"] != "true")
-{
-    throw new InvalidOperationException("This prototype requires Development and explicit Prototype:Enabled=true.");
-}
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 8192);
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow);
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddSingleton(EstateContent.Load(builder.Configuration["GameContentRoot"] ?? throw new InvalidOperationException("GameContentRoot required.")));
+builder.Services.AddSingleton(services => EstateContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"] ?? throw new InvalidOperationException("GameContentRoot required.")));
 builder.Services.AddSingleton<EstateApplication>();
-builder.Services.AddSingleton(NpgsqlDataSource.Create(builder.Configuration.GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
+builder.Services.AddSingleton(services => NpgsqlDataSource.Create(services.GetRequiredService<IConfiguration>().GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
 builder.Services.AddSingleton<AccountStore>();
-builder.Services.AddSingleton(new ConnectionCache(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379"));
+builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -30,6 +26,10 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 var app = builder.Build();
+if (!app.Environment.IsDevelopment() || app.Configuration["Prototype:Enabled"] != "true")
+{
+    throw new InvalidOperationException("This prototype requires Development and explicit Prototype:Enabled=true.");
+}
 await app.Services.GetRequiredService<AccountStore>().InitializeAsync(app.Lifetime.ApplicationStopping);
 app.UseRateLimiter();
 app.MapGet("/health", () => Results.Ok(new { status = "ready" }));

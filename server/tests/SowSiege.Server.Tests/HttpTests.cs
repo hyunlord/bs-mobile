@@ -47,13 +47,22 @@ public sealed class HttpTests
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/v1/estate")).StatusCode);
     }
 
-    private sealed class PrototypeFactory : WebApplicationFactory<Program>
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public void ProductionCannotStartPrototypeEndpoints()
+    {
+        using var factory = new PrototypeFactory("Production");
+        var failure = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
+        Assert.Contains("requires Development", failure.Message);
+    }
+
+    private sealed class PrototypeFactory(string environment = "Development") : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             string postgres = Environment.GetEnvironmentVariable("SERVER_TEST_POSTGRES")
                 ?? throw new InvalidOperationException("SERVER_TEST_POSTGRES is required.");
-            builder.UseEnvironment("Development");
+            builder.UseEnvironment(environment);
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Prototype:Enabled"] = "true", ["GameContentRoot"] = ContentEstateTests.Root(),

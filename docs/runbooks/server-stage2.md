@@ -77,3 +77,13 @@ SDK 첫 실행에는 `DOTNET_GENERATE_ASPNET_CERTIFICATE=false`도 설정한다.
 첫 실행이 사용자 login keychain에 localhost 개발 인증서를 자동 생성한 부작용이
 있었다(2026-10-30 14:32 KST). 신뢰 등록·삭제·변경은 하지 않았으며 후속 실행은
 자동 생성을 끈다. 로컬 HTTP 시제품에 HTTPS 개발 인증서는 필요하지 않다.
+
+공유 parser golden의 기준은 `e281a4fa:data/meta/progression.json`이다. 다음 정규화만
+적용한 JSON을 `core/tests/SowSiege.Tests/Fixtures/meta-catalog-e281a4fa.json`에 고정했다:
+materials/chapters/manorBuildings/vassals/challenges 각 record에서 kind, tags,
+designStatus, concept, effect를 제거하고 manorBuildings의 manorEffect를 effect로
+이름 변경한다. `git show e281a4fa:data/meta/progression.json`을 Node JSON.parse로
+읽어 위 필드만 처리한 뒤 JSON.stringify(2칸)로 저장했다. C# parser나 wrapper의
+실행 결과로 기대값을 만들지 않았다. 이 golden은 정본 catalog 변환의 독립 비교다.
+설정 wrapper끼리의 비교는 경로 보존 확인에 불과하며 독립 회귀 증거가 아니다.
+역사 r3~r7 설정 고정 해시와 저장 검사는 기존 AccountEstateR8MapTests 관문을 사용한다.

@@ -39,6 +39,8 @@ public sealed class AccountStoreTests
         await using var counts = source.CreateCommand("SELECT count(*) FROM commands WHERE account_id=$1");
         counts.Parameters.AddWithValue(id);
         Assert.Equal(1L, await counts.ExecuteScalarAsync());
+        time.Now = time.Now.AddDays(2);
+        Assert.Null(await replaced.AuthenticateAsync(created.Token, CancellationToken.None));
     }
 
     [Fact]
