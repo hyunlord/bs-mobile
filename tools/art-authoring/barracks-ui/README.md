@@ -22,3 +22,10 @@ calls and visual QA remain a Unity runtime gate. The queue retains GDD15's activ
 cancellation prohibition; only waiting jobs expose a cancellation confirmation.
 Quotes, costs, UTC completion and occupancy come from the server DTO, never from
 client-side multiplication or the device clock. Missing quotes disable training.
+
+Primary action provenance: `TRAINING-README-r2.md` explicitly reuses #563's blue
+primary button. There is no new rectangular training-submit button in the 12-part
+manifest. `Barracks.Train` therefore keeps `ui.button.primary` →
+`PortraitArt.Get("ui-btn-blue")`; applying `training-cancel-active` or the square
+quantity backing here would use the wrong approved component. Quantity value,
+total cost, progress, cancellation and pending refund use the new atlas pieces.
