@@ -47,35 +47,35 @@ namespace Game.App
             ActionButton(ui, root, "Barracks.Back", "‹", back, 8, 60, 48, !client.Busy);
             Caption(ui, root, "병영 · 훈련", 68, 60, w - 76, 40, 22, true);
             Caption(ui, root, "병영 Lv " + state.barracksLevel + " · 서버 계정", 18, 106, w - 36, 28, 14, true);
-            var body = Body(ui, root, 146, 130);
-            var roster = Plate(ui, body, "Barracks.Roster", "ui.panel", 0, 0, inner, 142);
+            var body = Body(ui, root, 146, 166);
+            var roster = Plate(ui, body, "Barracks.Roster", "ui.panel", 0, 0, inner, 126);
             Caption(ui, roster, "상비 병력", 14, 10, inner - 28, 28, 18, true);
             Caption(ui, roster, "총 인원 / 상한", 14, 44, inner / 2, 26, 16, true);
             Caption(ui, roster, state.occupied + " / " + state.capacity, inner * .66f, 44, inner * .3f, 26, 16, true);
             Caption(ui, roster, "준비 " + state.units.Sum(u => u.ready) + " · 출전 " + state.units.Sum(u => u.deployed)
-                + " · 부상 " + state.units.Sum(u => u.wounded), 14, 78, inner - 28, 24, 15, true);
-            Caption(ui, roster, "훈련 예약 " + state.units.Sum(u => u.reserved) + "명도 상한에 포함됩니다", 14, 110, inner - 28, 22, 13, true);
+                + " · 부상 " + state.units.Sum(u => u.wounded), 14, 70, inner - 28, 24, 15, true);
+            Caption(ui, roster, "훈련 예약 " + state.units.Sum(u => u.reserved) + "명도 상한에 포함됩니다", 14, 98, inner - 28, 22, 13, true);
             float tabWidth = (inner - 8) / Math.Max(1, state.units.Length);
             for (int i = 0; i < state.units.Length; i++)
             {
                 var unit = state.units[i];
-                ActionButton(ui, body, "Barracks.Unit:" + unit.unitId, unit.name, () => select(unit.unitId), i * (tabWidth + 8), 154, tabWidth,
+                ActionButton(ui, body, "Barracks.Unit:" + unit.unitId, unit.name, () => select(unit.unitId), i * (tabWidth + 8), 134, tabWidth,
                     !client.Busy && !client.Uncertain, 48, unit.unitId == selected ? "ui.button.primary" : "ui.button.secondary");
             }
             var chosen = state.units.FirstOrDefault(u => u.unitId == selected) ?? state.units.FirstOrDefault();
             if (chosen == null) { End(body, 212); return; }
-            var detail = Plate(ui, body, "Barracks.TrainingDetail", "ui.panel", 0, 214, inner, 214);
+            var detail = Plate(ui, body, "Barracks.TrainingDetail", "ui.panel", 0, 190, inner, 194);
             Caption(ui, detail, chosen.name + " " + count + "명", 14, 10, inner - 28, 28, 18, true);
             string costs = string.Join(" · ", chosen.costPerUnit.Select(c => MaterialName(c.materialId) + " " + (long)c.amount * count));
-            Caption(ui, detail, costs, 14, 49, inner - 28, 30, 16, true);
-            Caption(ui, detail, "기본 훈련 시간  " + Duration((long)chosen.secondsPerUnit * count), 14, 84, inner - 28, 26, 15, true);
-            Caption(ui, detail, "훈련 뒤 총 인원  " + ((long)state.occupied + count) + " / " + state.capacity, 14, 116, inner - 28, 24, 15, true);
-            ActionButton(ui, detail, "Barracks.CountLess", "−", () => quantity(Math.Max(1, count - 1)), 14, 154, 48, count > 1 && !client.Busy && !client.Uncertain);
-            Caption(ui, detail, count + "명", 72, 157, inner - 144, 42, 18, true, TextAnchor.MiddleCenter);
-            ActionButton(ui, detail, "Barracks.CountMore", "+", () => quantity(count + 1), inner - 62, 154, 48,
+            Caption(ui, detail, costs, 14, 43, inner - 28, 30, 16, true);
+            Caption(ui, detail, "기본 훈련 시간  " + Duration((long)chosen.secondsPerUnit * count), 14, 72, inner - 28, 26, 15, true);
+            Caption(ui, detail, "훈련 뒤 총 인원  " + ((long)state.occupied + count) + " / " + state.capacity, 14, 101, inner - 28, 24, 15, true);
+            ActionButton(ui, detail, "Barracks.CountLess", "−", () => quantity(Math.Max(1, count - 1)), 14, 133, 48, count > 1 && !client.Busy && !client.Uncertain);
+            Caption(ui, detail, count + "명", 72, 136, inner - 144, 42, 18, true, TextAnchor.MiddleCenter);
+            ActionButton(ui, detail, "Barracks.CountMore", "+", () => quantity(count + 1), inner - 62, 133, 48,
                 count < state.batchLimit && !client.Busy && !client.Uncertain);
             var queueHeight = cancelConfirming ? 270 : 136;
-            var queue = Plate(ui, body, "Barracks.Queue", "ui.panel", 0, 440, inner, queueHeight);
+            var queue = Plate(ui, body, "Barracks.Queue", "ui.panel", 0, 396, inner, queueHeight);
             Caption(ui, queue, state.HasActive ? "활성 " + state.active.count + "명 · " + Duration(Math.Max(0, state.active.completesAtMilliseconds - state.serverUtcMilliseconds) / 1000) : "활성 훈련 없음", 14, 10, inner - 28, 28, 15, true);
             Caption(ui, queue, state.HasWaiting ? "대기 " + state.waiting.count + "명 · 앞 훈련 완료 후 시작" : "대기 0 / 1", 14, 44, inner - 28, 24, 14, true);
             if (state.HasWaiting)
@@ -88,14 +88,20 @@ namespace Game.App
                 }
                 else ActionButton(ui, queue, "Barracks.CancelWaiting", "대기 취소", cancel, 14, 78, inner - 28, !client.Busy && !client.Uncertain);
             }
-            var refundY = 440 + queueHeight + 12;
-            Caption(ui, body, BarracksPendingRefundText(state), 4, refundY, inner - 8, 54, 14, true);
+            var refundY = 396 + queueHeight + 12;
+            var refundText = BarracksPendingRefundText(state);
+            if (!string.IsNullOrEmpty(refundText)) Caption(ui, body, refundText, 4, refundY, inner - 8, 54, 14, true);
+            End(body, string.IsNullOrEmpty(refundText) ? 396 + queueHeight : refundY + 54);
             var unavailable = !chosen.unlocked ? "병영 Lv " + chosen.requiredBarracksLevel + " 필요" : state.HasWaiting ? "대기열이 가득 찼습니다" :
                 state.occupied + count > state.capacity ? "병력 상한을 넘습니다" : chosen.costPerUnit.Any(c => (long)c.amount * count > (reply.resources.FirstOrDefault(r => r.id == c.materialId)?.amount ?? 0)) ? "재료가 모자랍니다" : null;
-            Caption(ui, body, unavailable ?? BarracksStatus(client.Status), 4, refundY + 60, inner - 8, 52, 14, true); End(body, refundY + 120);
-            ActionButton(ui, root, "Barracks.Train", client.Uncertain ? "결과 확인 · 같은 요청 다시 보내기" : confirming ? "확인 · " + count + "명 훈련" : count + "명 훈련",
+            var reason = Caption(ui, root, unavailable ?? BarracksStatus(client.Status), 20, h - 164, w - 40, 40, 14, true);
+            reason.name = "Barracks.Status";
+            var trainButton = ActionButton(ui, root, "Barracks.Train", client.Uncertain ? "결과 확인 · 같은 요청 다시 보내기" : confirming ? "확인 · " + count + "명 훈련" : count + "명 훈련",
                 client.Uncertain ? refresh : confirming ? submit : confirm, 20, h - 118, w - 40,
                 !client.Busy && (client.Uncertain || unavailable == null), 48, "ui.button.primary");
+            var trainLabel = trainButton.GetComponentInChildren<Text>();
+            trainLabel.GetComponent<PortraitButtonLabel>().enabled = false;
+            trainLabel.color = new Color32(247, 238, 213, 255);
             ActionButton(ui, root, "Barracks.Refresh", "서버 상태 새로고침", refresh, 20, h - 60, w - 40, !client.Busy && !client.Uncertain);
         }
         public static string BarracksPendingRefundText(BarracksView state) =>
