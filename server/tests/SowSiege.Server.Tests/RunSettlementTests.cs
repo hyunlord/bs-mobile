@@ -10,6 +10,7 @@ namespace SowSiege.Server.Tests;
 public sealed class RunSettlementTests
 {
     private const string Proof = "slg:proof-field-boundary";
+    private const long Late = 10_000_000_000;
     private static readonly byte[] Key = Convert.FromHexString(RecruitTests.TestKeyHex);
     private static readonly Lazy<RunVerifier> SharedVerifier = new(() => Verifier());
 
@@ -99,7 +100,16 @@ public sealed class RunSettlementTests
         var settled = handler.Execute(context with { Account = full, State = issued.State }, ExpeditionRules.SettleOperation,
             Payload(new { runId = run.RunId, verdict = "verified", endKind = "Duration", tick = 1, stateHash = "x", replayHash = "y" }));
         Assert.Equal(2000, settled.AccountState.Wallet["meta:grain"]);
-        Assert.Equal(10, Run(settled).Granted);
+        Assert.Equal((10, 50), (Run(settled).Granted, Run(settled).Pending));
+        Assert.Equal(50, settled.State.GetProperty("pendingMaterials").GetProperty("meta:grain").GetInt32());
+        // Held material is credited as room appears, never dropped.
+        var spent = context.Account with { State = context.Account.State with { Wallet = new(context.Account.State.Wallet) { ["meta:grain"] = 1970 } } };
+        var partly = handler.AfterCommand(context with { Account = spent, State = settled.State });
+        Assert.Equal((2000, 20), (partly.AccountState.Wallet["meta:grain"], partly.State.GetProperty("pendingMaterials").GetProperty("meta:grain").GetInt32()));
+        var emptied = context.Account with { State = context.Account.State with { Wallet = new(context.Account.State.Wallet) { ["meta:grain"] = 0 } } };
+        var flushed = handler.AfterCommand(context with { Account = emptied, State = partly.State });
+        Assert.Equal(20, flushed.AccountState.Wallet["meta:grain"]);
+        Assert.False(flushed.State.GetProperty("pendingMaterials").TryGetProperty("meta:grain", out _));
 
         var second = Handler();
         var issued2 = second.Handler.Execute(second.Context, "start-expedition", Payload(new { proofId = Proof, resource = "meta:timber" }));
@@ -117,8 +127,14 @@ public sealed class RunSettlementTests
         var state = handler.Execute(context, "start-expedition", Payload(new { proofId = Proof, resource = "meta:iron" })).State;
         var runId = Run(new(context.Account.State, state, state, true, "", [])).RunId;
         var bad = Payload(new { runId, verdict = "mismatch", endKind = (string?)null, tick = 0, stateHash = (string?)null, replayHash = "r" });
-        var timeout = handler.Execute(context with { State = state }, ExpeditionRules.SettleOperation, Payload(new { runId, verdict = "timeout", tick = 0, replayHash = "r" }));
-        Assert.Equal("verify-timeout", timeout.Reason);
+        var timeoutState = state;
+        for (int i = 1; i <= 3; i++)
+        {
+            var timeout = handler.Execute(context with { State = timeoutState }, ExpeditionRules.SettleOperation, Payload(new { runId, verdict = "timeout", tick = 0, replayHash = "r" }));
+            timeoutState = timeout.State;
+            Assert.Equal(i < 3 ? ("verify-timeout", "open") : ("verify-budget-exhausted", "failed"), (timeout.Reason, Run(timeout).Status));
+            Assert.Equal((0, i), (Run(timeout).Attempts, Run(timeout).Timeouts));
+        }
         for (int i = 1; i <= 3; i++)
         {
             var result = handler.Execute(context with { State = state }, ExpeditionRules.SettleOperation, bad);
@@ -140,16 +156,53 @@ public sealed class RunSettlementTests
         var verifier = SharedVerifier.Value;
         var runId = Guid.NewGuid();
         var (bytes, end) = Record(verifier, 4242, 600);
-        var verified = await verifier.VerifyAsync(runId, 4242, bytes, CancellationToken.None);
+        var verified = await verifier.VerifyAsync(runId, 4242, bytes, 0, Late, CancellationToken.None);
         Assert.Equal(("verified", end.Kind.ToString(), end.Tick, end.StateHash), (verified.Verdict, verified.EndKind, verified.Tick, verified.StateHash));
-        Assert.Equal("options-mismatch", (await verifier.VerifyAsync(runId, 4243, bytes, CancellationToken.None)).Verdict);
+        Assert.Equal("options-mismatch", (await verifier.VerifyAsync(runId, 4243, bytes, 0, Late, CancellationToken.None)).Verdict);
         var (debug, _) = Record(verifier, 4242, 50, c => c.Sequence == 0 ? c with { Kind = ReplayCommandKind.SetInvulnerable, Value = 1, Input = default } : c);
-        Assert.Equal("debug-command", (await verifier.VerifyAsync(runId, 4242, debug, CancellationToken.None)).Verdict);
+        Assert.Equal("debug-command", (await verifier.VerifyAsync(runId, 4242, debug, 0, Late, CancellationToken.None)).Verdict);
         var forged = (byte[])bytes.Clone();
         forged[^5] ^= 0x01; // inside the terminal state hash text
-        Assert.Contains((await verifier.VerifyAsync(runId, 4242, forged, CancellationToken.None)).Verdict, new[] { "mismatch", "malformed" });
-        Assert.Equal("malformed", (await verifier.VerifyAsync(runId, 4242, [1, 2, 3], CancellationToken.None)).Verdict);
-        Assert.Equal("too-large", (await Verifier(maxBytes: 16).VerifyAsync(runId, 4242, bytes, CancellationToken.None)).Verdict);
+        Assert.Contains((await verifier.VerifyAsync(runId, 4242, forged, 0, Late, CancellationToken.None)).Verdict, new[] { "mismatch", "malformed" });
+        Assert.Equal("malformed", (await verifier.VerifyAsync(runId, 4242, [1, 2, 3], 0, Late, CancellationToken.None)).Verdict);
+        Assert.Equal("too-large", (await Verifier(maxBytes: 16).VerifyAsync(runId, 4242, bytes, 0, Late, CancellationToken.None)).Verdict);
+    }
+
+    [Fact]
+    public async Task ReplaysSubmittedFasterThanRealTimeAreRejectedBeforeReExecution()
+    {
+        var verifier = SharedVerifier.Value;
+        var (bytes, end) = Record(verifier, 777, 600);
+        long boundary = (long)end.Tick * 1000 / 30 - 2000;
+        Assert.Equal("too-early", (await verifier.VerifyAsync(Guid.NewGuid(), 777, bytes, 1_000, 1_000 + boundary - 1, CancellationToken.None)).Verdict);
+        Assert.Equal("verified", (await verifier.VerifyAsync(Guid.NewGuid(), 777, bytes, 1_000, 1_000 + boundary, CancellationToken.None)).Verdict);
+        Assert.Equal("verified", (await verifier.VerifyAsync(Guid.NewGuid(), 777, bytes, 1_000, 1_000 + (long)end.Tick * 1000 / 30 + 5_000, CancellationToken.None)).Verdict);
+        Assert.False(verifier.PlayedLongEnough(0, 1_000, end.Tick));
+    }
+
+    [Fact]
+    [Trait("Category", "Postgres")]
+    public async Task EarlyAndRapidSubmissionsAreRefusedWithoutReExecution()
+    {
+        await using var fixture = await SlgFixture.CreateAsync(Key);
+        var verifier = SharedVerifier.Value;
+        long version = (await fixture.ViewAsync()).Estate.Version;
+        var start = new AccountCommand(Guid.NewGuid(), version, ResearchDomain.Name, "start-expedition", Payload(new { proofId = Proof, resource = "meta:iron" }));
+        var run = SlgFixture.Parse(await fixture.Store.ExecuteAccountAsync(fixture.Id, start, CancellationToken.None))
+            .Domains[ResearchDomain.Name].GetProperty("runs")[0].Deserialize<ExpeditionRun>(AccountStore.Json)!;
+        var (bytes, _) = Record(verifier, run.Seed, 900);
+        // Generated offline and sent one second after issue.
+        fixture.Clock.Now = fixture.Clock.Now.AddSeconds(1);
+        var early = await Assert.ThrowsAsync<CommandConflictException>(() => verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, bytes, CancellationToken.None));
+        Assert.Equal("too-early", early.Message);
+        Assert.Empty(await fixture.EventsAsync("expedition-settled"));
+        Assert.Empty(await fixture.EventsAsync("expedition-rejected"));
+        // A rejected submission stamps the run; the next one must wait the configured interval.
+        Assert.Equal("replay-malformed", SlgFixture.Parse(await verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, [9, 9, 9], CancellationToken.None)).Reason);
+        var rapid = await Assert.ThrowsAsync<CommandConflictException>(() => verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, [9, 9, 9], CancellationToken.None));
+        Assert.Equal("submit-too-soon", rapid.Message);
+        fixture.Clock.Now = fixture.Clock.Now.AddSeconds(40);
+        Assert.Equal("objective-failed", SlgFixture.Parse(await verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, bytes, CancellationToken.None)).Reason);
     }
 
     [Fact]
@@ -167,6 +220,7 @@ public sealed class RunSettlementTests
         int grain = issued.Resources.Single(r => r.Id == "meta:grain").Amount;
 
         var (bytes, end) = Record(verifier, run.Seed, 30_000);
+        fixture.Clock.Now = fixture.Clock.Now.AddSeconds(end.Tick / 30 + 5);
         var settled = SlgFixture.Parse(await verifier.SubmitAsync(fixture.Store, fixture.Id, run.RunId, bytes, CancellationToken.None));
         bool survived = end.Kind == ReplayEndKind.Duration;
         Assert.Equal((true, survived ? "objective-complete" : "objective-failed"), (settled.Done, settled.Reason));
