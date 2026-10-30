@@ -7,7 +7,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class TrainingTests
+public sealed partial class TrainingTests
 {
     private readonly EstateContent estate = EstateContent.Load(ContentEstateTests.Root());
     private TrainingContent Content => TrainingContent.Load(ContentEstateTests.Root(), estate);

@@ -4,7 +4,7 @@ using SowSiege.Server.Contracts;
 
 namespace SowSiege.Server.Application;
 
-public sealed class TrainingHandler(EstateContent estate, TrainingContent content) : IDomainHandler
+public sealed partial class TrainingHandler(EstateContent estate, TrainingContent content) : IDomainHandler
 {
     public string Domain => "training";
     public int StateVersion => 1;
@@ -18,6 +18,8 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
     {
         var state = Read(context);
         var events = new List<DomainEvent>();
+        var account = context.Account.State;
+        (state, account) = FlushRefunds(state, account, events);
         while (state.Active is { } active && active.CompletesAtMilliseconds <= context.UtcMilliseconds)
         {
             state = state with
@@ -32,7 +34,7 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
             events.Add(new("training-completed", Encode(new { active.JobId, active.UnitId, active.Count,
                 completedAtMilliseconds = active.CompletesAtMilliseconds })));
         }
-        return Result(context, state, context.Account.State, true, "advanced", events.ToArray());
+        return Result(context, state, account, true, "advanced", events.ToArray());
     }
 
     public DomainResult Execute(DomainContext context, string operation, JsonElement payload)
@@ -92,8 +94,9 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
             Active = state.Active ?? Activate(job, context.UtcMilliseconds),
             Waiting = state.Active is null ? null : job
         };
-        return Result(context, next, account, true, state.Active is null ? "training-started" : "training-queued",
-            [new("training-reserved", Encode(new { job.JobId, job.UnitId, job.Count, chargedCost = cost }))]);
+        var events = new List<DomainEvent> { new("training-reserved", Encode(new { job.JobId, job.UnitId, job.Count, chargedCost = cost })) };
+        (next, account) = FlushRefunds(next, account, events);
+        return Result(context, next, account, true, state.Active is null ? "training-started" : "training-queued", events.ToArray());
     }
 
     private DomainResult Cancel(DomainContext context, TrainingState state, TrainingCancel request)
@@ -102,21 +105,18 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
         {
             return Result(context, state, context.Account.State, false, "unknown-waiting-job");
         }
-        if (job.ChargedCost.Any(c => (long)context.Account.State.Wallet[c.Key] + c.Value >
-            Math.Min(estate.Config.WalletCaps[c.Key], estate.Meta.Materials.Single(m => m.Id == c.Key).WalletCap)))
-        {
-            // TODO #583: confirm overflow refund policy before enabling this boundary.
-            return Result(context, state, context.Account.State, false, "refund-policy-pending");
-        }
-        var account = context.Account.State with { Wallet = new(context.Account.State.Wallet) };
-        foreach (var material in job.ChargedCost) { account.Wallet[material.Key] += material.Value; }
+        var pending = new Dictionary<string, int>(state.PendingRefunds, StringComparer.Ordinal);
+        foreach (var material in job.ChargedCost) { pending[material.Key] = checked(pending.GetValueOrDefault(material.Key) + material.Value); }
         var next = state with
         {
-            Waiting = null,
+            Waiting = null, PendingRefunds = pending,
             Units = state.Units.Select(u => u.UnitId == job.UnitId ? u with { Reserved = u.Reserved - job.Count } : u).ToArray()
         };
-        return Result(context, next, account, true, "training-cancelled",
-            [new("training-cancelled", Encode(new { job.JobId, job.UnitId, job.Count, refundedCost = job.ChargedCost }))]);
+        var events = new List<DomainEvent> { new("training-cancelled", Encode(new { job.JobId, job.UnitId, job.Count, refundedCost = job.ChargedCost })) };
+        var account = context.Account.State;
+        (next, account) = FlushRefunds(next, account, events);
+        ValidatePending(next, account);
+        return Result(context, next, account, true, "training-cancelled", events.ToArray());
     }
 
     private TrainingJob Activate(TrainingJob job, long atMilliseconds)
@@ -170,6 +170,7 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
         {
             throw new InvalidDataException("Stored troop occupancy exceeds the completed barracks capacity.");
         }
+        ValidatePending(state, context.Account.State);
         return state;
     }
 
@@ -192,7 +193,7 @@ public sealed class TrainingHandler(EstateContent estate, TrainingContent conten
                 var troops = state.Units.Single(u => u.UnitId == unit.UnitId);
                 return new TrainingUnitView(unit.UnitId, unit.Name, unit.RequiredBarracksLevel, unit.RequiredBarracksLevel <= level.Level,
                     troops.Ready, troops.Deployed, troops.Wounded, troops.Reserved, Materials(unit.CostPerUnit), unit.SecondsPerUnit);
-            }).ToArray(), JobView(state.Active), JobView(state.Waiting));
+            }).ToArray(), JobView(state.Active), JobView(state.Waiting), Materials(state.PendingRefunds), RefundPreview(state, account));
         return new(account, Encode(state), Encode(view), done, reason, events ?? []);
     }
 
