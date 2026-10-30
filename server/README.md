@@ -18,7 +18,10 @@ builder.Services.AddSingleton<IDomainHandler, TrainingHandler>();
 - handler는 별도 writer·DB 연결·시계·RNG를 만들지 않는다. `DomainContext`의 계정,
   도메인 JSON과 서버 UTC highwater를 사용하고, 지갑 변경은 복사한 `MetaState`로 반환한다.
 - `Advance`는 도메인 이름 ordinal 순서로 먼저 정산한다. 그 뒤 선택한 `Execute` 또는
-  기존 영지 명령을 실행하며, 마지막에 순수 `View`로 최종 상태를 표시한다.
+  기존 영지 명령을 실행한다. 명령이 있으면 전체 도메인의 `AfterCommand`를 한 번
+  호출하고 마지막에 순수 `View`로 최종 상태를 표시한다. `AfterCommand` 기본값은
+  no-op이며 다른 도메인 지출 후 보류 환불 채우기처럼 즉시 정산할 일만 override한다.
+  시간 진행·완료 처리는 이 hook에서 반복하지 않는다.
 - `Execute`의 작업 ID는 `context.CommandId`에서 유도한다. payload는 도메인별 typed
   계약으로 알 수 없는 필드를 거부한다. `StateVersion`·`ContentHash`는 저장값과 일치해야 한다.
 - 모든 상태·자원 delta·이벤트·receipt·outbox는 공통 계정 행 잠금과 같은 transaction에

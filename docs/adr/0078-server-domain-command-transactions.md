@@ -22,6 +22,12 @@ Core 영지 정산 → Domain 이름 ordinal 순 전체 Advance → 선택 Execu
 순서는 재현 가능성을 위한 계약이지 연구·영웅 효과의 시간 구간 산술을 구현한 것이 아니다.
 효과 변경 시각별 생산 분할은 해당 도메인 구현에서 별도로 검증해야 한다.
 
+사용자 환불 결정 후 명령 실행 직후 `AfterCommand`를 모든 도메인에 ordinal 순서로
+한 번 호출한다. 기본 구현은 no-op이고, 훈련은 다른 도메인/영지 지출로 생긴 지갑
+여유에 보류 환불을 채운다. 시간 정산 `Advance`를 다시 실행하지 않으며 최종 View와
+원장 저장 전에 같은 transaction에서 처리한다. GET은 기존 Advance만 사용한다.
+환불은 Advance에서 생산 수령보다 먼저 채우며, 구체적 잔액 정책은 훈련 도메인 소유다.
+
 서버 DB만 schema 1→2로 이관한다. Core codec6·동결 콘텐츠·역사 리플레이는 그대로다.
 기존 advisory transaction lock 아래 미래 schema를 먼저 거부한 뒤 도메인 JSON,
 도메인별 version/content hash, 이벤트 원장, 계정 작업 UTC high-watermark 테이블을
