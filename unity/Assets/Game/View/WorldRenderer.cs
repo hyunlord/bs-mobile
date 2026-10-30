@@ -16,6 +16,7 @@ namespace Game.View
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         static readonly ProfilerMarker SpriteBatchRebuildMarker = new ProfilerMarker("SowSiege.View.SpriteBatchRebuild");
+        static readonly ProfilerMarker EnemyActorsMarker = new ProfilerMarker("SowSiege.View.EnemyActorPreparation");
         public Action<string, string> DiagnosticEffectCreated;
         public static Action<string, int, int, int> DiagnosticCapacityGrowth;
         internal static readonly ProfilerMarker WaveIndexRebuildMarker = new ProfilerMarker("SowSiege.View.WaveIndexRebuild");
@@ -393,6 +394,9 @@ namespace Game.View
                 Draw(visual, GameVisualTokens.AttackLayer, position, (float)attack.AgeTicks / current.TickRate, size, Angle(Point(attack.Position) - before), opacity: attack.Form == "field" ? GameVisualTokens.FieldOpacity : attack.Form == "nova" ? GameVisualTokens.AreaAttackOpacity : GameVisualTokens.TravellingAttackOpacity);
             }
             if (presentationDiagnosticsActive) diagnostics.AttackEffectsMs = DiagnosticInterval(ref diagnosticCheckpoint);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using (EnemyActorsMarker.Auto())
+#endif
             for (var enemyIndex = 0; enemyIndex < current.Enemies.Count; enemyIndex++)
             {
                 var enemy = current.Enemies[enemyIndex];

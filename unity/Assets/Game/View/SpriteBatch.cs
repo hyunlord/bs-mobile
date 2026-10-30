@@ -12,6 +12,7 @@ namespace Game.View
         public const int MaximumInstances = 511;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         static readonly ProfilerMarker SubmitMarker = new ProfilerMarker("SowSiege.View.SpriteBatchSubmit");
+        static readonly ProfilerMarker AddMarker = new ProfilerMarker("SowSiege.View.SpriteBatchAdd");
         static readonly ProfilerMarker FirstUseMarker = new ProfilerMarker("SowSiege.View.SpriteBatchFirstUse");
         static readonly ProfilerMarker MeshUploadMarker = new ProfilerMarker("SowSiege.View.SpriteBatchMeshUpload");
         static readonly ProfilerMarker PropertyUploadMarker = new ProfilerMarker("SowSiege.View.SpriteBatchPropertyUpload");
@@ -97,6 +98,9 @@ namespace Game.View
                 Flush();
 #endif
             }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            using var addSample = AddMarker.Auto();
+#endif
             var rotation = Quaternion.Euler(0, 0, degrees);
             var offset = rotation * new Vector3(-pivot.x * size.x, -pivot.y * size.y, 0);
             matrices[count] = Matrix4x4.TRS(new Vector3(position.x, position.y, 0) + offset, rotation, new Vector3(size.x, size.y, 1));
