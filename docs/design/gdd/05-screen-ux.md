@@ -8,7 +8,7 @@
 
 [초안] `EstateAuthoredPlacements.Parse/Apply`는 별도 API이며 현재 생산 호출과 연결하지 않는다. 실제 export가 도착하면 그 계약과 대조한 뒤 연결한다. Resources의 `EstateAuthoredPlacements` 파일이 없으면 로더는 null을 반환하고 가짜 배치 데이터나 임의 대체물을 만들지 않는다. 기존 실패 렌더와 측정 기록은 보존하며, 이것이 기존 자동 알고리즘을 다시 개선하거나 화면 통과로 승인하는 것은 아니다.
 
-Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draft-v1`, config=`m3a-prototype-r8`, entries 배열이다. 항목은 고유 id, zoneId, 실제 Sprite role ID인 propId/darkPropId, grid=[x,y], sizeVariant(native/S/M/L), width(64×32 투영의 native 표시 폭)를 가진다. sizeVariant는 임의 배율 계산 지시가 아니라 저작 provenance다. 그림은 이미 등록된 role/variant로 정하고 width를 그대로 쓴다. 파일 순서·좌표·크기는 그대로 유지하며 열린 상태는 밝음/어둠 role 선택만 바꾼다. 실제 export의 필드 이름·좌표 단위가 다르면 이 초안을 확정으로 강요하지 않고 adapter를 검토한다.
+Astra와 맞출 교환 형식 초안은 version=`estate-authored-placements-draft-v1`, config=`m3a-prototype-r8`, entries 배열이다. 항목은 고유 id, zoneId, 실제 Sprite role ID인 propId/darkPropId, grid=[x,y], sizeVariant(native/S/M/L), width(64×32 투영의 native 표시 폭)를 가진다. sizeVariant는 임의 배율 계산 지시가 아니라 저작 provenance다. 그림은 이미 등록된 role/variant로 정하고 width를 그대로 쓴다. 파일 순서·좌표·크기는 그대로 유지한다. 현재 초안 구현은 열린 상태에 따라 밝음 role + Standing layer, 닫힌 상태에는 어둠 role + Landmark layer를 고정 선택한다. 입력의 layer를 그대로 보존하는 계약은 아니며, 실제 Astra export의 layer 계약은 수신 후 확정한다. 실제 export의 필드 이름·좌표 단위가 다르면 이 초안을 확정으로 강요하지 않고 adapter를 검토한다.
 
 검사는 버전·설정 일치, 누락/중복 ID, 미등록 role, 유한 좌표·양수 width, 선언한 구역 안 anchor를 확인하며 잘못된 입력은 실패한다. 그림 전체 충돌·문/길 가림은 저작 검토 항목으로 남기고 로더가 조용히 위치를 바꾸지 않는다. 단위 검사에만 합성 fixture를 사용하고 생산 Resource에는 예시 배치를 넣지 않는다. 화면 비교와 사용자 판정은 실제 export 이후다.
 
