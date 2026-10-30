@@ -190,7 +190,10 @@ namespace Game.App
             {
                 var button = PortraitWidgets.Button(ui, root, glyph, () => view.Step(direction), width - 54, y, 44, 44, true, "ui.button.round.blue");
                 button.name = name;
-                button.GetComponentInChildren<Text>().fontSize = 28;
+                var label = button.GetComponentInChildren<Text>();
+                label.fontSize = 28;
+                label.verticalOverflow = VerticalWrapMode.Overflow;
+                UiShell.Stretch(label.rectTransform);
             }
 
             Text liveStatus = null;
