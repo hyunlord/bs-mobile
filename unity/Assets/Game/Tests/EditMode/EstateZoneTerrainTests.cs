@@ -27,7 +27,9 @@ namespace Tests.EditMode
                 foreach (var size in new[] { "S", "M", "L" })
                     foreach (var state in new[] { "bright", "dark" })
                         Assert.That(art.Has($"zone-field-between-0{shape}-{size}-{state}"), Is.True);
-            Assert.That(art.Pivot("zone-forest-cluster-01-bright"), Is.EqualTo(new Vector2(.5f, 1 - 140f / 176f)));
+            var pivot = art.Pivot("zone-forest-cluster-01-bright");
+            Assert.That(pivot.x, Is.EqualTo(.5f).Within(1e-6f));
+            Assert.That(pivot.y, Is.EqualTo(1 - 140f / 176f).Within(1e-6f));
         }
 
         [Test] public void PlanningIsRepeatableAndHistoricalSettingsDoNotReceiveNewLayers()
