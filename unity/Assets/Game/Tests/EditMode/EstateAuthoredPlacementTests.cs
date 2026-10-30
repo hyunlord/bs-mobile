@@ -18,8 +18,20 @@ namespace Tests.EditMode
         };
 
         static EstateAuthoredPlacements.Document Parse(EstateAuthoredPlacements.Document doc) =>
-            EstateAuthoredPlacements.Parse(JsonUtility.ToJson(doc), CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r8"),
+            ParseJson(JsonUtility.ToJson(doc));
+
+        static EstateAuthoredPlacements.Document ParseJson(string json) =>
+            EstateAuthoredPlacements.Parse(json, CanonicalContent.CreateAccountEstateConfig("m3a-prototype-r8"),
                 id => id == "fixture-bright" || id == "fixture-dark");
+
+        [TestCase(",\"entries\":null")]
+        [TestCase("")]
+        [TestCase(",\"entries\":[]")]
+        public void RawMissingNullAndEmptyEntriesAreRejected(string entries)
+        {
+            var json = "{\"version\":\"estate-authored-placements-draft-v1\",\"config\":\"m3a-prototype-r8\"" + entries + "}";
+            Assert.Throws<InvalidOperationException>(() => ParseJson(json));
+        }
 
         [Test] public void AuthoredCoordinatesWidthAndIdentityAreNotAdjustedByView()
         {
@@ -51,7 +63,9 @@ namespace Tests.EditMode
             var zero = Fixture(); zero.entries[0].width = 0;
             Assert.Throws<InvalidOperationException>(() => Parse(zero));
             var missing = Fixture(); missing.entries = null;
-            Assert.Throws<InvalidOperationException>(() => Parse(missing));
+            var serialized = JsonUtility.ToJson(missing);
+            TestContext.WriteLine("Null entries serialized by JsonUtility: " + serialized);
+            Assert.Throws<InvalidOperationException>(() => ParseJson(serialized));
         }
     }
 }

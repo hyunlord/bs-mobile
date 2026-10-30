@@ -24,7 +24,8 @@ namespace Game.App
         public static Document Parse(string json, AccountEstateConfig config, Func<string, bool> hasSprite)
         {
             var doc = JsonUtility.FromJson<Document>(json);
-            if (doc == null || doc.version != "estate-authored-placements-draft-v1" || doc.config != config.Version || doc.entries == null)
+            if (doc == null || doc.version != "estate-authored-placements-draft-v1" || doc.config != config.Version ||
+                doc.entries == null || doc.entries.Length == 0)
                 throw new InvalidOperationException("Invalid authored estate placement contract.");
             var ids = new HashSet<string>(StringComparer.Ordinal);
             foreach (var item in doc.entries)
