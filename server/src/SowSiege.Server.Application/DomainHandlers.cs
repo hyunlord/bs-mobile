@@ -8,8 +8,10 @@ namespace SowSiege.Server.Application;
 public sealed record DomainContext(StoredAccount Account, JsonElement State, long UtcMilliseconds, Guid? CommandId = null, byte[]? Seed = null);
 public sealed record DomainResource(string Id, int Amount);
 public sealed record DomainEvent(string Kind, JsonElement Data);
+/// <summary>A material the account should receive. The shared writer credits it in arrival order, holding what the wallet cannot take.</summary>
+public sealed record DomainCredit(string Material, int Amount);
 public sealed record DomainResult(MetaState AccountState, JsonElement State, JsonElement View,
-    bool Done, string Reason, DomainEvent[] Events);
+    bool Done, string Reason, DomainEvent[] Events, DomainCredit[]? Credits = null);
 
 // Handlers are pure account transformations: no database, clock, network, or random I/O.
 public interface IDomainHandler
