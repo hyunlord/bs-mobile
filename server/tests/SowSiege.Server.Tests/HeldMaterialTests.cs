@@ -109,7 +109,8 @@ public sealed class HeldMaterialTests
         var spent = await setup.RunAsync("a", "spend", 60);
         Assert.Equal((cap, 30), (Amount(spent.Resources, Grain), Amount(spent.Held, Grain)));
         var credited = (await setup.HeldEventsAsync()).Select(e => (e.GetProperty("domain").GetString()!, e.GetProperty("amount").GetInt32())).ToArray();
-        Assert.Equal(new[] { ("z", 50), ("a", 10) }, credited);
+        // Immediate credits are logged too; the held part is z's 50 before a's 10.
+        Assert.Equal(new[] { ("a", 1), ("z", cap - start), ("z", 50), ("a", 10) }, credited);
         // A restarted store keeps the held remainder and credits it when room appears.
         var restarted = new AccountStore(setup.Source, app, setup.Clock, new DomainRegistry([new Bank("a"), new Bank("z")]));
         await restarted.InitializeAsync(CancellationToken.None);
