@@ -13,7 +13,7 @@ using Xunit;
 
 namespace SowSiege.Server.Tests;
 
-public sealed class TrainingHttpTests
+public sealed partial class TrainingHttpTests
 {
     [Fact]
     [Trait("Category", "Postgres")]

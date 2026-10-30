@@ -9,5 +9,6 @@ public sealed record TrainingUnitView(string UnitId, string Name, int RequiredBa
     int Ready, int Deployed, int Wounded, int Reserved, TrainingMaterialView[] CostPerUnit, int SecondsPerUnit);
 public sealed record TrainingJobView(Guid JobId, string UnitId, int Count, long? StartedAtMilliseconds,
     long? CompletesAtMilliseconds, long DurationMilliseconds, int? BonusPermille, TrainingMaterialView[] ChargedCost);
+public sealed record TrainingRefundPreview(string MaterialId, int ImmediateAmount, int PendingAmount);
 public sealed record TrainingView(int BarracksLevel, int Capacity, int BatchLimit, int Occupied, long ServerUtcMilliseconds,
-    TrainingUnitView[] Units, TrainingJobView? Active, TrainingJobView? Waiting);
+    TrainingUnitView[] Units, TrainingJobView? Active, TrainingJobView? Waiting, TrainingMaterialView[] PendingRefunds, TrainingRefundPreview[] WaitingCancellationRefunds);
