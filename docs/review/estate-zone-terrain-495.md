@@ -165,3 +165,11 @@ Light Node suite18/18 passes, including all18 form/size combinations in both sta
 `52b8c0ea` [CI 41000064956](https://github.com/hyunlord/bs-mobile/actions/runs/41000064956)는 quality의 Full gate에서 `tools/texture-memory-delta.mjs:38` 검사 실패다. Gutter 재생성 후 PNG SHA는 갱신했으나 압축 파일 길이 `fileBytes`가 2,438,660으로 남았고 실제는 2,441,190bytes였다. 뒤의 evidence upload도 앞 단계 중단으로 파일이 없어 실패했다. 이는 Unity 기록 실패로 추정하지 않고 실제 로그 원인으로 남긴다.
 
 사용자 중단을 유지하면서 승인받아 메모리 기록의 `fileBytes` 한 값만 실제 PNG 길이로 정정했다. PNG·렌더 코드·설정·Unity 실행·이미 게시한 화면은 바꾸지 않았다. 예상 GPU 메모리 19.03/4.76MiB는 PNG 압축 파일 길이와 다른 값이며 변하지 않는다. Node `validateRecord`로 PNG/meta/identity 전체 일치를 확인했다. 최종 CI 상태는 PR에 별도로 기록한다.
+
+## 자동 배치 종료 후 로더 준비 (2026-10-30, 5fa03cab)
+
+별도 `EstateAuthoredPlacements.Parse/Apply` API만 준비했다. 생산 호출은 **미연결**이며 실제 Astra export Resource도 없다. 이전 실패 렌더·원자료는 보존한다. 이 준비는 반복 밀도 시도의 재개나 기존 화면 승인에 해당하지 않는다. Unity compile·새 EditMode 검사 실행은 NOT_RUN이다.
+
+교환 형식은 아직 초안이다. `grid`는 64×32 등각 격자의 셀 좌표, `width`는 그 투영에서 배율 적용 전 native 가로 픽셀 길이다(390px 화면 픽셀이나 셀 개수가 아님). 예를 들어 width=96은 카메라 1배에서 native 96이고 최종 화면 크기는 카메라 배율을 따른다. `sizeVariant`는 지정된 propId/darkPropId의 실제 S/M/L 또는 native variant 및 명시적 width와 서로 일치해야 한다. 현재 reader는 이를 라벨로 읽고 좌표·폭을 자동 환산하지 않으며, role별 크기 일치 검증은 실제 export의 자산 표 계약 확인 후 연결해야 한다. 실제 문서는 유효한 r8 구역, 등록된 밝음/어둠 role 쌍, 고유 id, 유한 grid와 양수 width를 모두 공급해야 한다. 테스트에만 합성 입력을 사용했다.
+
+현재 `ground-grass-r4`는 승인 Release 원판과 atlas crop RGBA 차이가 0이며 원본 평균 RGB가 (131.877,115.502,81.906)이다. 의도한 초록 잔디의 정확한 파일 식별은 대기 중이다. 원판 recolor·role 이름만 바꾸기·새 그림 생성은 하지 않았다. 자세한 계약은 GDD 05 v1.13에 기록했다.
