@@ -159,3 +159,9 @@ Light Node suite18/18 passes, including all18 form/size combinations in both sta
 07:00 이후 순서: 가신 UI 다음 #496 잠금 획득 → 두 프로필 → Astra r2 동일 장면75/50 및 절반/전체복원 캡처 → 밀도/빈땅/연속빈땅/그리기호출 실제측정 → Core/replay/save 회귀. 강 chunk가 열린 경계를 걸칠 때 중심으로 밝음/어둠을 고르고 기존 어둠마스크를 덧씌우므로, 상태 경계의 색 이음새도 별도 확대 확인한다. 실패 두 번이면 중단한다. 초안 유지, 사용자 승인 전 병합하지 않는다.
 
 후보예약은 건물/길에 가려진 후보도 유지해 이웃 후보를 재충원하지 않는다. 이 hide-only 계약 때문에 건물 밀집 화면에서 목표 군집/소품 수가 부족할 수 있으며 실제 캡처에서 측정해야 한다. 이를 명시한 EditMode 회귀검사는 작성했고 아직 실행하지 않았다.
+
+## 중단 후 CI 산출물 기록 정정 (2026-10-30)
+
+`52b8c0ea` [CI 41000064956](https://github.com/hyunlord/bs-mobile/actions/runs/41000064956)는 quality의 Full gate에서 `tools/texture-memory-delta.mjs:38` 검사 실패다. Gutter 재생성 후 PNG SHA는 갱신했으나 압축 파일 길이 `fileBytes`가 2,438,660으로 남았고 실제는 2,441,190bytes였다. 뒤의 evidence upload도 앞 단계 중단으로 파일이 없어 실패했다. 이는 Unity 기록 실패로 추정하지 않고 실제 로그 원인으로 남긴다.
+
+사용자 중단을 유지하면서 승인받아 메모리 기록의 `fileBytes` 한 값만 실제 PNG 길이로 정정했다. PNG·렌더 코드·설정·Unity 실행·이미 게시한 화면은 바꾸지 않았다. 예상 GPU 메모리 19.03/4.76MiB는 PNG 압축 파일 길이와 다른 값이며 변하지 않는다. Node `validateRecord`로 PNG/meta/identity 전체 일치를 확인했다. 최종 CI 상태는 PR에 별도로 기록한다.
