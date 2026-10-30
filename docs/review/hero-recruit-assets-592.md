@@ -56,3 +56,5 @@
 정적 화면의 내부 통과는 사용자 아트 승인 및 실제 게임 적용 승인을 대신하지 않는다.
 
 최종 독립 시각 검토는 **94/PASS**다. 화면 참조 소스 34개 해시도 일치한다. [독립 판정](https://github.com/hyunlord/bs-mobile/releases/download/hero-recruit-assets-592-20261030/INDEPENDENT-REVIEW-r1.json)과 [범위 검사](https://github.com/hyunlord/bs-mobile/releases/download/hero-recruit-assets-592-20261030/INDEPENDENT-SCOPE-AUDIT-r1.json)에 실제 검사와 미실행 경계를 기록했다.
+
+Release 게시 후 로컬·원격 **76파일**의 파일명·크기·SHA-256이 모두 일치했다. 문서 검사 `node tools/check-docs.mjs`는 변경 Markdown 1개를 통과했다. 최초 CI의 PR 제목 접두사 오류는 `docs(art)`로 바로잡았으며, 실패 기록은 보존한다.
