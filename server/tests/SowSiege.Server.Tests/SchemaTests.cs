@@ -27,11 +27,11 @@ public sealed class SchemaTests
             var first = new AccountStore(isolated, application, TimeProvider.System);
             var second = new AccountStore(isolated, application, TimeProvider.System);
             await Task.WhenAll(first.InitializeAsync(CancellationToken.None), second.InitializeAsync(CancellationToken.None));
-            await using var future = isolated.CreateCommand("INSERT INTO server_schema VALUES(2)");
+            await using var future = isolated.CreateCommand("INSERT INTO server_schema VALUES(3)");
             await future.ExecuteNonQueryAsync();
             await Assert.ThrowsAsync<InvalidDataException>(() => first.InitializeAsync(CancellationToken.None));
             await using var version = isolated.CreateCommand("SELECT max(version) FROM server_schema");
-            Assert.Equal(2, await version.ExecuteScalarAsync());
+            Assert.Equal(3, await version.ExecuteScalarAsync());
         }
         finally
         {

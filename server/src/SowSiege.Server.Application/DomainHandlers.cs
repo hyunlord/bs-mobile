@@ -15,6 +15,7 @@ public interface IDomainHandler
     int StateVersion { get; }
     string ContentHash { get; }
     JsonElement InitialState { get; }
+    JsonElement View(DomainContext context);
     DomainResult Advance(DomainContext context);
     DomainResult Execute(DomainContext context, string operation, JsonElement payload);
 }

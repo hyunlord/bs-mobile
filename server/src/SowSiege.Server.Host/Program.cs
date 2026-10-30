@@ -12,6 +12,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton(services => EstateContent.Load(services.GetRequiredService<IConfiguration>()["GameContentRoot"] ?? throw new InvalidOperationException("GameContentRoot required.")));
 builder.Services.AddSingleton<EstateApplication>();
 builder.Services.AddSingleton(services => NpgsqlDataSource.Create(services.GetRequiredService<IConfiguration>().GetConnectionString("Postgres") ?? throw new InvalidOperationException("Postgres required.")));
+builder.Services.AddSingleton<DomainRegistry>();
 builder.Services.AddSingleton<AccountStore>();
 builder.Services.AddSingleton(services => new ConnectionCache(services.GetRequiredService<IConfiguration>().GetConnectionString("Redis") ?? "localhost:6379"));
 builder.Services.AddRateLimiter(options =>
@@ -45,7 +46,40 @@ app.MapPost("/v1/estate/commands", async (EstateCommand command, HttpContext con
     }
     return await Execute(context, store, cache, command, cancellation);
 }).RequireRateLimiting("prototype");
+app.MapGet("/v1/account", async (HttpContext context, AccountStore store, CancellationToken cancellation) =>
+    await ExecuteAccount(context, store, null, cancellation)).RequireRateLimiting("prototype");
+app.MapPost("/v1/account/commands", async (AccountCommand command, HttpContext context, AccountStore store, CancellationToken cancellation) =>
+{
+    if (command.CommandId == Guid.Empty || command.ExpectedVersion < 0 || string.IsNullOrWhiteSpace(command.Domain) ||
+        string.IsNullOrWhiteSpace(command.Operation) || command.Payload.ValueKind != System.Text.Json.JsonValueKind.Object)
+    {
+        return Results.BadRequest(new ApiError("invalid-command"));
+    }
+    return await ExecuteAccount(context, store, command, cancellation);
+}).RequireRateLimiting("prototype");
 app.Run();
+
+static async Task<IResult> ExecuteAccount(HttpContext context, AccountStore store, AccountCommand? command, CancellationToken cancellation)
+{
+    string header = context.Request.Headers.Authorization.ToString();
+    Guid? id = header.StartsWith("Bearer ", StringComparison.Ordinal) ? await store.AuthenticateAsync(header[7..], cancellation) : null;
+    if (id is null)
+    {
+        return Results.Unauthorized();
+    }
+    try
+    {
+        return Results.Content(await store.ExecuteAccountAsync(id.Value, command, cancellation), "application/json");
+    }
+    catch (CommandConflictException conflict)
+    {
+        return Results.Conflict(new ApiError(conflict.Message));
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        return Results.BadRequest(new ApiError("invalid-domain-payload"));
+    }
+}
 
 static async Task<IResult> Execute(HttpContext context, AccountStore store, ConnectionCache cache, EstateCommand? command, CancellationToken cancellation)
 {
