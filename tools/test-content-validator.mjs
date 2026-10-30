@@ -2,6 +2,7 @@ import './test-system-design-v1.mjs';
 import './test-normalized-content.mjs';
 import './test-weapon-growth.mjs';
 import './test-production-content.mjs';
+import './test-slg-content-draft.mjs';
 import assert from 'node:assert/strict';
 import { cp, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
