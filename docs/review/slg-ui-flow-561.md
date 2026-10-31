@@ -47,3 +47,7 @@
 - [FLOW r2](https://github.com/hyunlord/bs-mobile/releases/download/slg-ui-flow-561-20261030/FLOW-r2.md), [정적 동일성 검증 r2](https://github.com/hyunlord/bs-mobile/releases/download/slg-ui-flow-561-20261030/verification-r2.json)
 
 r2는 텍스트 사각형 밖 RGBA 변경0·나머지 7패널 변경0, 텍스트21개 넘침/누락0·터치11개 오류0을 확인했다. 화면 규격과 512×512 표기를 직접 시각 확인했다. 이는 문구·정지 시안 검증이며 게임 적용·실제 지도·서버 부하·실기 관문은 **NOT_RUN**이다.
+
+## 후속 결정: 하단 탭 (2026-11-01)
+
+이 시안은 기존 하단 5칸을 유지했다. 이후 사용자가 첫 출시 하단을 영지·월드맵·연맹·상점 4탭 + 출정 단추로 결정했다([#611](https://github.com/hyunlord/bs-mobile/issues/611), [결정 기록](bottom-tabs-first-release-611.md)). 이 시안의 월드·행군·연맹 진입 경로는 월드맵·연맹 탭에서 시작하는 것으로 읽는다. 시안 그림 자체는 보존한다.
