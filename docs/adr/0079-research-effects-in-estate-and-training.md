@@ -1,6 +1,6 @@
-# ADR0079 · 연구 효과를 영지 생산·훈련 계산에 반영 (제안)
+# ADR0079 · 연구 효과를 영지 생산·훈련 계산에 반영
 
-상태: **제안 — Core 변경 필요 부분은 사용자 결정 대기**. 2026-10-31. 연결 [#606](https://github.com/hyunlord/bs-mobile/issues/606). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md), [GDD17 §5](../design/gdd/17-slg-research-proposal.md). 모든 수치는 [가설]이다. 이 문서는 코드·데이터·Core를 바꾸지 않는다.
+상태: **승인(2026-10-31 사용자)** — 아래 §6 조건으로 Core opt-in 입력 3개를 추가한다. 2026-10-31. 연결 [#606](https://github.com/hyunlord/bs-mobile/issues/606). 선행: [ADR0077](0077-authoritative-slg-server.md), [ADR0078](0078-server-domain-command-transactions.md), [GDD17 §5](../design/gdd/17-slg-research-proposal.md). 모든 수치는 [가설]이다. 이 문서는 코드·데이터·Core를 바꾸지 않는다.
 
 ## 1. 현재 사실 (코드 읽기)
 
@@ -44,3 +44,10 @@ Core 변경이 필요한 3개는 **입력이 없을 때 기존 경로와 바이�
 ## 5. 다음 단계
 1. 사용자 결정: Core opt-in 입력 3개(생산·건설·보관)를 추가할지.
 2. 결정 전 진행 가능: 2.1 효과 표 + 2.2 구간 분할 골격(효과 0, Core 무변경) + M1 훈련 연결(#590 병합 후).
+
+## 6. 승인 조건 (2026-10-31)
+
+1. **입력 없음 = 바이트 동일:** 입력이 없을 때 기존 저장 바이트·골든·crowd-411·역사 리플레이 해시가 모두 같아야 한다. 가신 효과(#527, format 8)와 같은 방식으로 기존 테스트에 "입력 없음 = 바이트 동일" 검사를 추가한다.
+2. **Core는 값만 받는다:** Core 입력은 자원별 생산 permille, 건설 속도 permille, 보관 추가초뿐이다. 연구·노드·상한 개념을 Core에 넣지 않는다. 동종 합산과 `sharedCaps` 상한은 서버가 데이터(content-draft)로 계산해 넘긴다(AG003). 최종 상한 18000초는 기존 r8 `storage.maximumSeconds`를 따른다.
+3. **C05 3:3:** Core 산술만 바뀌고 View는 바뀌지 않는다. 그래도 Core PR이므로 야간 측정(C05 3:3) 전에는 병합하지 않는다.
+4. **순서:** (a) 이 ADR 확정 → (b) Core 입력 PR(서버 연결 없이, 테스트만) → (c) 서버 연구 처리기의 구간 분할과 효과 전달 PR. M1 훈련 속도는 Core를 바꾸지 않으므로 (c)와 별도로 먼저 올릴 수 있다.
