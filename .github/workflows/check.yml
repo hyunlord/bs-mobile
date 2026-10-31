@@ -69,7 +69,7 @@ jobs:
         with:
           ref: ${{ needs.dependency-context.outputs.head || github.sha }}
           fetch-depth: 0
-          lfs: true
+          lfs: false
           persist-credentials: false
       - name: Supply strict PR policy context for dispatched dependency CI
         if: needs.dependency-context.result == 'success'
@@ -90,6 +90,25 @@ jobs:
       - name: Select conservative validation scope
         id: scope
         run: node tools/ci-scope.mjs
+      # LFS is fetched only for the full gate, from a cache keyed on the tracked object list (#601).
+      - name: List LFS objects
+        if: steps.scope.outputs.scope != 'docs'
+        id: lfs-list
+        run: |
+          git lfs ls-files -l | cut -d' ' -f1 | sort > "$RUNNER_TEMP/lfs-ids"
+          echo "hash=$(sha256sum "$RUNNER_TEMP/lfs-ids" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Restore LFS objects
+        if: steps.scope.outputs.scope != 'docs'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .git/lfs/objects
+          key: lfs-${{ steps.lfs-list.outputs.hash }}
+          restore-keys: lfs-
+      - name: Fetch only uncached LFS objects
+        if: steps.scope.outputs.scope != 'docs'
+        run: |
+          git lfs pull
+          git lfs checkout
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         if: steps.scope.outputs.scope != 'docs'
         with:
