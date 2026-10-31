@@ -1,5 +1,11 @@
 # 07 아트·캐릭터
 
+버전: 1.14 · 날짜: 2026-10-30 · 변경: #410의 wave-1a 승인 걷기 3종과 최신 main 검증 경로를 합쳤다. 상태: 초안, 새 head의 Unity·C05 재검증 대기.
+
+## wave-1a 승인 걷기 3종 (#410)
+
+사용자 승인 약탈병 r2는 16×26ms, 방패 약탈병·충차 돌격병은 각각 16×40ms로 재생한다. 아래 #399의 두 종 계약은 당시 기록이다. 이번 예외는 wave-1a의 세 종에만 적용하며, first-playable·나머지 적·Core·콘텐츠 규칙은 변경하지 않는다. 최신 main을 일반 merge한 새 head는 이전 `0537368`의 C05 통과를 승계하지 않고 Claude Code 야간 대기열에서 다시 측정한다.
+
 버전: 1.13 · 날짜: 2026-10-28 · 변경: #466 승인 영지 작업 루프의 표시 계약 추가. 상태: 구현 중, 게임 화면 검증·사용자 판정 전. 이전 버전 기록은 아래에 보존.
 
 ## 영지 작업 루프 (#466)
@@ -115,6 +121,14 @@ A 원화를 지금 B 시안의 부위 구성을 참고해 분리·리깅한다. 
 | 공통 접지 | 그림자·먼지; 중복 그림 8장 윤곽과 공통 튀기기 제거 | 사용자 자연스러움 판정을 자동 테스트가 대신하지 않음 |
 
 근거: [기존 바이블](../07_first-playable-art-bible.md), [영웅 저작](../../../tools/art-authoring/hero-b/README.md), [병사 B 포장](../../../tools/art-authoring/soldier-b/README.md), [아군 표식 포장](../../../tools/art-authoring/ally-marker/README.md), [사람 걷기 재생](../../../unity/Assets/Game/View/PersonSheetWalk.cs), [발 접촉 계약](../../../tools/art-authoring/hero-b/CONTACT-CONTRACT.md), [영웅 렌더러](../../../unity/Assets/Game/View/WorldHeroRig.cs), [적 관절 정의](../../../tools/art-authoring/enemy-rigs/rigs.json), [적 atlas](../../../unity/Assets/Game/View/EnemyRigAtlas.cs). 실제 기본 B 선택은 [환경설정](../../../unity/Assets/Game/App/RunPreferences.cs)으로 확인한다. ADR0050의 8프레임·기본 A는 과거 실험 기록이다.
+
+## 승인된 적 걷기 2종 교체 · 현재 예외 계약 (#399, 2026-10-26)
+
+사용자가 승인한 방패 약탈병(`enemy.rig.shield_raider.walk`)과 사람형 돌진 주자(`enemy.rig.ram_runner.walk`)만 16칸·칸당 40ms로 교체한다. 위 역사 표의 나머지 적 4종은 각 8칸을 유지하며, 씨앗 진드기(`seed_mite`) 55ms/칸·440ms/주기, 작물 포식자(`crop_grazer`) 80ms/칸·640ms/주기, 약탈병(`raider`) 80ms/칸·640ms/주기, 발효 말벌(`wine_wasp`) 40ms/칸·320ms/주기로 기존 값을 보존한다. 교체하는 두 종만 16×40ms=640ms이며 여섯 종류 모두 시간 기준 재생이다. `tween:none`, 거리 기준 주기 필드 없음은 그대로다. 원본 pivot·worldSize와 idle·tell 역할, 다른 동작과 Core 규칙·역사 재생 해시는 바꾸지 않는다.
+
+승인 그림은 [Release `enemy-walk-shield-ram-399-20261026`](https://github.com/hyunlord/bs-mobile/releases/tag/enemy-walk-shield-ram-399-20261026)에서 가져온다. 원본 파일·부품 해시는 [approved-walks.json](../../../tools/art-authoring/enemy-rigs/approved-walks.json)에 고정한다. 공유 아틀라스 `fallow-enemy-rigs`의 기존 2048×2304 RGBA는 그대로 두고 아래에 새 32칸을 추가해 2048×3328로 만든다. 각 셀은 256px, 투명 패딩 4px, 표시 rect는 248px다. 현재 TextureImporter의 최대 크기 4096·NPOT 크기 유지 설정은 새 높이 3328을 수용한다. 그림을 다시 칠하거나 크기·외곽선을 바꾸지 않는다.
+
+[가져오기 도구](../../../tools/art-authoring/enemy-rigs/README.md)는 기존 픽셀과 승인된 두 걷기의 픽셀·메타데이터를 검사한다. 이 검사는 실제 게임 화면 판정을 대신하지 않는다. 승인된 것은 원본 걷기 영상이며, 통합 뒤 실제 게임 영상 확인과 C05 성능 회귀 검증은 아직 대기다. Release의 예전 후보/PENDING 표시는 승인 전 역사로 보존한다.
 
 ## M1-1 영웅 3안 제출 계약 · 역사 기록
 

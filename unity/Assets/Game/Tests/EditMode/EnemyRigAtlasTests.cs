@@ -42,24 +42,40 @@ namespace Tests.EditMode
         }
 
 
-        // #363: the baked rigs (wave art only) keep eight walk frames with no cycle length, so they keep the time-based walk and
-        // show exactly the frames they showed before (same frame for every time as the old fixed-eight formula).
+        // #399/#423: shield/ram keep 640ms; raider r2 uses its approved 416ms cycle.
         [Test]
-        public void BakedRigsKeepTheirEightFrameTimeBasedWalk()
+        public void BakedRigsKeepTimeBasedWalkWithOnlyApprovedSixteenFrameReplacements()
         {
             var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "wave1a-manifest.json")));
             var walks = System.Array.FindAll(m.roles, r => r.id.StartsWith("enemy.rig.", System.StringComparison.Ordinal) && r.id.EndsWith(".walk", System.StringComparison.Ordinal));
             Assert.That(walks.Length, Is.EqualTo(6), "six baked rigs");
             foreach (var walk in walks)
             {
-                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((8, 0f)), walk.id);
+                var approved = walk.id == "enemy.rig.shield_raider.walk" || walk.id == "enemy.rig.ram_runner.walk" || walk.id == "enemy.rig.raider.walk";
+                var count = approved ? 16 : 8;
+                Assert.That((walk.frames.Length, walk.cyclePixels), Is.EqualTo((count, 0f)), walk.id);
+                var expectedMs = walk.id == "enemy.rig.raider.walk" ? 26 : approved || walk.id == "enemy.rig.wine_wasp.walk" ? 40
+                    : walk.id == "enemy.rig.seed_mite.walk" ? 55 : 80;
+                Assert.That(walk.frameMs, Is.EqualTo(expectedMs), walk.id);
+                Assert.That(walk.atlas, Is.EqualTo("fallow-enemy-rigs"), "retain one shared texture");
+                Assert.That(walk.tween, Is.EqualTo("none"), walk.id);
                 for (var frame = 0; frame < 2000; frame++)
                 {
                     var time = frame / 60f;
                     Assert.That(EnemyRigAtlas.FrameIndex(EnemyRigPose.Walk, time, walk.frameMs, 0, walk.frames.Length),
-                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % 8), walk.id);
+                        Is.EqualTo(UnityEngine.Mathf.FloorToInt(time * 1000 / walk.frameMs) % count), walk.id);
                 }
             }
+        }
+
+        [Test]
+        public void WaveReplacementsLeaveFirstPlayableStoneWalkHistorical()
+        {
+            var m = UnityEngine.JsonUtility.FromJson<ArtManifest>(System.IO.File.ReadAllText(System.IO.Path.Combine(UnityEngine.Application.dataPath, "Art", "first-playable-manifest.json")));
+            var walk = System.Array.Find(m.roles, r => r.id == "enemy.core.stone_breaker.walk");
+            Assert.That((walk.frames.Length, walk.frameMs, walk.atlas), Is.EqualTo((1, 350, "actors")));
+            Assert.That((walk.pivot.x, walk.pivot.y), Is.EqualTo((.5f, .08f)));
+            Assert.That((walk.frames[0].x, walk.frames[0].y, walk.frames[0].width, walk.frames[0].height), Is.EqualTo((669, 369, 239, 233)));
         }
 
         // A sixteen-frame sheet with a cycle length plays by distance: one stride is one cycle across the sixteen frames, a standing

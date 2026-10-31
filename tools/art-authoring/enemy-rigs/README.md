@@ -1,5 +1,23 @@
 # Six articulated enemy rigs (#209)
 
+## Approved walk replacements (#399 / #423, 2026-10-27)
+
+Wave rig texture is **2048×3840**: the historical 2048×2304 pixels and approved shield/ram rows through y3328 remain byte-identical RGBA. Raider r2 appends 16 cells with its approved 26ms duration (416ms cycle), common 248px UV and pivot. Shield/ram keep 40ms (640ms). Idle/tell/hit/death and all other roles are unchanged.
+
+First-playable enemy roles remain historical. Stone breaker is separated from #410 by user direction; its earlier a910372 integration and approved source remain preserved in git/artifacts. The shared wave atlas remains height3840; first-playable does not reference that atlas.
+
+Inputs are pinned in approved-walks.json. Approval sources are enemy-walk-shield-ram-399-20261026, enemy-walk-audit-raider-r2-20261023; their old pending labels are historical. Put shield-raider-16.png, ram-runner-16.png, and raider-r2-spriteskin-16.png in one owned source directory, then:
+
+```sh
+node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --source SOURCE_DIRECTORY
+node tools/art-authoring/enemy-rigs/import-approved-walks.mjs --check
+node tools/art-authoring/enemy-rigs/test-approved-extensions.mjs
+```
+
+Importer accepts original2304, prior3328 or current3840 shared height and verifies preserved rows. After a historical bake, run this importer last. No new first-playable texture or registry entry is required. No first-playable raider/shield/ram identities change: wave ram is humanoid while first-playable ram is a different historical drawing. No Core/data or gameplay consumers change. Native comparisons, Unity profiles and replay/hash/C05 verification remain separate parent-owned gates.
+
+## Historical authoring pipeline (preserved)
+
 Generated separated-part drawings preserve the existing ink/gouache identities. Exact prompts, reference images, generation session, source file IDs and SHA256 are in `generation-provenance.json`. The actual images are 1254×1254, despite the requested 2048 size. Sources live in `unity/Assets/Game/Editor/Authoring/EnemyRigs/` and never execute in the player. No package/dependency was added.
 
 From repository root:
